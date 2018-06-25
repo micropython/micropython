@@ -31,10 +31,6 @@
 
 #include "nrf.h"
 
-// TODO: nrf51 series need Soft PWM. Not part of HAL.
-
-#if NRF52
-
 #define PWM0  ((NRF_PWM_Type *)NRF_PWM0_BASE)
 #define PWM0_IRQ_NUM PWM1_IRQn
 #define PWM1  ((NRF_PWM_Type *)NRF_PWM1_BASE)
@@ -42,13 +38,9 @@
 #define PWM2  ((NRF_PWM_Type *)NRF_PWM2_BASE)
 #define PWM2_IRQ_NUM PWM2_IRQn
 
-#if 0 // TODO: nrf52840
+#ifdef NRF52840_XXAA
 #define PWM3  ((NRF_PWM_Type *)NRF_PWM3_BASE)
 #define PWM3_IRQ_NUM PWM3_IRQn
-#endif
-
-#else
-#error "Device not supported."
 #endif
 
 /**

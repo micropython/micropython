@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
-# then default to feather52.
-BOARD ?= feather52
+# then default to feather52832.
+BOARD ?= feather52832
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
@@ -12,23 +12,16 @@ SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # TODO: Verify that it is a valid target.
 
-ifeq ($(SD), )
-	# If the build directory is not given, make it reflect the board name.
-	BUILD ?= build-$(BOARD)
-	include ../../py/mkenv.mk
-	include boards/$(BOARD)/mpconfigboard.mk
-	-include mpconfigport.mk
+# If the build directory is not given, make it reflect the board name
+BUILD ?= $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
-else
-	# If the build directory is not given, make it reflect the board name.
-	BUILD ?= build-$(BOARD)-$(SD_LOWER)
-	include ../../py/mkenv.mk
-	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
-	-include mpconfigport.mk
+include ../../py/mkenv.mk
+include boards/$(BOARD)/mpconfigboard.mk
+-include mpconfigport.mk
 
+ifneq ($(SD), )
 	include drivers/bluetooth/bluetooth_common.mk
 endif
-
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
@@ -44,43 +37,33 @@ FATFS_DIR = lib/oofatfs
 
 CROSS_COMPILE = arm-none-eabi-
 
-MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
-
 INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
 INC += -I./../../lib/cmsis/inc
+INC += -I./boards/$(BOARD)
 INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
-INC += -I./modules/machine
 INC += -I./modules/ubluepy
-INC += -I./modules/music
 INC += -I./modules/random
 INC += -I./modules/ble
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
 
-NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
-CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
-
-CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-
-CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) --short-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft -fno-builtin
-
-
-CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
+CFLAGS += -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
+CFLAGS += -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -fstack-usage
 CFLAGS += -fdata-sections -ffunction-sections
-CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
+CFLAGS += -D__START=main
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
@@ -97,17 +80,13 @@ CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
 endif
 
-LIBS = \
-
-ifeq ($(MCU_VARIANT), nrf52)
 LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
 LIBC_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
-LIBS += -L $(dir $(LIBM_FILE_NAME)) -lm
+LIBS := -L $(dir $(LIBM_FILE_NAME)) -lm
 LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
-endif
 
 SRC_HAL = $(addprefix hal/,\
 	hal_uart.c \
@@ -122,19 +101,12 @@ SRC_HAL = $(addprefix hal/,\
 	hal_temp.c \
 	hal_gpio.c \
 	hal_rng.c \
-	)
-
-ifeq ($(MCU_VARIANT), nrf52)
-SRC_HAL += $(addprefix hal/,\
 	hal_pwm.c \
 	)
-endif
-
 
 SRC_C += \
 	mphalport.c \
 	help.c \
-	pin_named_pins.c \
 	fatfs_port.c \
 	fifo.c \
 	tick.c \
@@ -143,7 +115,7 @@ SRC_C += \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
-	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
+	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
@@ -158,18 +130,6 @@ SRC_C += \
 
 
 DRIVERS_SRC_C += $(addprefix modules/,\
-	machine/modmachine.c \
-	machine/uart.c \
-	machine/spi.c \
-	machine/i2c.c \
-	machine/adc.c \
-	machine/pin.c \
-	machine/timer.c \
-	machine/pwm.c \
-	machine/led.c \
-	machine/temp.c \
-	utime/modutime.c \
-	pyb/modpyb.c \
 	ubluepy/modubluepy.c \
 	ubluepy/ubluepy_peripheral.c \
 	ubluepy/ubluepy_service.c \
@@ -180,12 +140,9 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_descriptor.c \
 	ubluepy/ubluepy_scanner.c \
 	ubluepy/ubluepy_scan_entry.c \
-	music/modmusic.c \
-	music/musictunes.c \
 	ble/modble.c \
 	random/modrandom.c \
 	)
-
 
 SRC_COMMON_HAL += \
 	board/__init__.c \
@@ -208,8 +165,8 @@ SRC_COMMON_HAL += \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
 	storage/__init__.c \
-        supervisor/__init__.c \
-        supervisor/Runtime.c \
+	supervisor/__init__.c \
+	supervisor/Runtime.c \
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
@@ -333,10 +290,10 @@ SRC_QSTR_AUTO_DEPS +=
 $(OBJ): | $(HEADER_BUILD)/pins.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
-# both pins_$(BOARD).c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+# both pins_g.c and pins.h
+$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
 	$(call compile_c)
@@ -348,8 +305,6 @@ PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)

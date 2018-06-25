@@ -32,19 +32,8 @@
 
 #define TWI_BASE_POINTERS (const uint32_t[]){NRF_TWI0_BASE, NRF_TWI1_BASE}
 #define TWI_BASE(x) ((NRF_TWI_Type *)TWI_BASE_POINTERS[x])
-
-#if NRF51
-
-#define TWI_IRQ_VALUES (const uint32_t[]){SPI0_TWI0_IRQn, SPI1_TWI1_IRQn}
-
-#elif NRF52
-
 #define TWI_IRQ_VALUES (const uint32_t[]){SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, \
                                           SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn}
-
-#endif
-
-#if NRF52
 
 /**
   * @brief  TWIM Configuration Structure definition
@@ -57,8 +46,6 @@ typedef struct {
   */
 typedef struct {
 } hal_twis_init_t;
-
-#endif
 
 /**
   * @brief  TWI clock frequency type definition

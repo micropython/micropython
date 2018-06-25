@@ -110,14 +110,10 @@ void RTC1_IRQHandler(void)
     common_irq_handler(1);
 }
 
-#if NRF52
-
 void RTC2_IRQHandler(void)
 {
     common_irq_handler(2);
 }
-
-#endif // NRF52
 
 #endif // HAL_RTC_MODULE_ENABLED
 

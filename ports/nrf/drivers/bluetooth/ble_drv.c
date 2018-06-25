@@ -30,6 +30,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define NRF52 // Needed for SD132 v2
+
 #include "py/runtime.h"
 #include "ble_drv.h"
 #include "mpconfigport.h"

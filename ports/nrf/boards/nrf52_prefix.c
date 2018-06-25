@@ -10,7 +10,7 @@
 { \
     { &mcu_pin_type }, \
     .name = MP_QSTR_ ## p_name, \
-    .port = PORT_ ## p_port, \
+    .port = (p_port), \
     .pin = (p_pin), \
-    .adc_channel = p_adc_channel, \
+    .adc_channel = (p_adc_channel), \
 }

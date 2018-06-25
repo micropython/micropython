@@ -29,18 +29,12 @@
 
 #include "nrf.h"
 
-#if NRF51
-  #define POINTERS (const uint32_t[]){NRF_GPIO_BASE}
+#ifdef NRF52832_XXAA
+  #define POINTERS (const uint32_t[]){NRF_P0_BASE}
 #endif
 
-#if NRF52
-  #ifdef NRF52832_XXAA
-    #define POINTERS (const uint32_t[]){NRF_P0_BASE}
-  #endif
-
-  #ifdef NRF52840_XXAA
-    #define POINTERS (const uint32_t[]){NRF_P0_BASE, NRF_P1_BASE}
-  #endif
+#ifdef NRF52840_XXAA
+  #define POINTERS (const uint32_t[]){NRF_P0_BASE, NRF_P1_BASE}
 #endif
 
 #define GPIO_BASE(x) ((NRF_GPIO_Type *)POINTERS[x])
@@ -133,12 +127,10 @@ typedef enum {
     HAL_GPIO_EVENT_CHANNEL_1,
     HAL_GPIO_EVENT_CHANNEL_2,
     HAL_GPIO_EVENT_CHANNEL_3,
-#if NRF52
     HAL_GPIO_EVENT_CHANNEL_4,
     HAL_GPIO_EVENT_CHANNEL_5,
     HAL_GPIO_EVENT_CHANNEL_6,
     HAL_GPIO_EVENT_CHANNEL_7
-#endif
 } hal_gpio_event_channel_t;
 
 typedef struct {

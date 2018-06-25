@@ -1,6 +1,6 @@
 MCU_SERIES = m4
 MCU_VARIANT = nrf52
-MCU_SUB_VARIANT = nrf52832
+MCU_SUB_VARIANT = nrf52
 SOFTDEV_VERSION ?= 2.0.1
 
 LD_FILE = boards/feather52832/custom_nrf52832_dfu_app_$(SOFTDEV_VERSION).ld
@@ -12,11 +12,6 @@ ifeq ($(OS),Windows_NT)
    NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
 else
    NRFUTIL = nrfutil
-endif
-
-ifeq ($(SD), )
-INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
-INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
 endif
 
 CFLAGS += -DADAFRUIT_FEATHER52

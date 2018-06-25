@@ -37,7 +37,7 @@ Prerequisite steps for building the nrf port:
     git submodule update --init
     make -C mpy-cross
 
-By default, the feather52 (nRF52832) is used as compile target. To build and flash issue the following command inside the ports/nrf/ folder:
+By default, the feather52832 is used as compile target. To build and flash issue the following command inside the ports/nrf/ folder:
 
     make
     make flash
@@ -68,7 +68,7 @@ Note: further tuning of features to include in bluetooth or even setting up the 
 Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Flash Util
 ---------------------|-------------------------|------------------------|-------------------------------
 pca10040             | s132                    | Peripheral and Scanner | [Segger](#segger-targets)
-feather52            | s132                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
+feather52832         | s132                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
 pca10056             | s140                    | Peripheral and Scanner | [Segger](#segger-targets)
 
 ## Segger Targets
@@ -99,11 +99,11 @@ note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrf
 * dfu-gen: Generates a Firmware zip to be used by the DFU flash application.
 * dfu-flash: Triggers the DFU flash application to upload the firmware from the generated Firmware zip file.
 
-Example on how to generate and flash feather52 target:
+Example on how to generate and flash feather52832 target:
 
-    make BOARD=feather52 SD=s132
-    make BOARD=feather52 SD=s132 dfu-gen
-    make BOARD=feather52 SD=s132 dfu-flash
+    make BOARD=feather52832 SD=s132
+    make BOARD=feather52832 SD=s132 dfu-gen
+    make BOARD=feather52832 SD=s132 dfu-flash
 
 ## Bluetooth LE REPL
 
