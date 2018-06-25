@@ -43,13 +43,14 @@ INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
 INC += -I./../../lib/cmsis/inc
 INC += -I./boards/$(BOARD)
-INC += -I./device
-INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
-INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/ubluepy
 INC += -I./modules/random
 INC += -I./modules/ble
+INC += -I./nrfx
+INC += -I./nrfx/hal
+INC += -I./nrfx/mdk
+INC += -I./nrfx/drivers/include
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
@@ -91,8 +92,6 @@ LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 SRC_HAL = $(addprefix hal/,\
 	hal_uart.c \
 	hal_uarte.c \
-	hal_spi.c \
-	hal_spie.c \
 	hal_time.c \
 	hal_timer.c \
 	hal_twi.c \
@@ -102,6 +101,10 @@ SRC_HAL = $(addprefix hal/,\
 	hal_gpio.c \
 	hal_rng.c \
 	hal_pwm.c \
+	)
+
+SRC_NRFX = $(addprefix nrfx/,\
+	drivers/src/nrfx_spim.c \
 	)
 
 SRC_C += \
@@ -219,6 +222,7 @@ FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
