@@ -39,7 +39,7 @@ RUN cd /micropython/ports/esp8266 && make axtls && make
 #   && curl -H "Content-Type: application/zip" --data-binary @assets.zip "https://uploads.github.com/repos/ilyamordasov/micropython/releases/$GITHUB_RELEASE_ID/assets?name=assets.zip&access_token=$GITHUB_ACCESS_TOKEN"
 
 RUN cd /micropython/ports/esp8266/build \
-    && zip -r -j binaries_v1.0_$(date +%s) /esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df/bin/*.bin *.bin *.elf
+    && zip -r -j esp8266_v.1.9.4_$(date +%d%m%Y) /esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df/bin/*.bin *.bin *.elf
 
 USER root
 RUN mkdir /mnt/dev
