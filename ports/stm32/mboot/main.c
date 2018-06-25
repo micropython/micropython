@@ -51,10 +51,12 @@
 #undef MICROPY_HW_CLK_PLLN
 #undef MICROPY_HW_CLK_PLLP
 #undef MICROPY_HW_CLK_PLLQ
+#undef MICROPY_HW_FLASH_LATENCY
 #define MICROPY_HW_CLK_PLLM (HSE_VALUE / 1000000)
 #define MICROPY_HW_CLK_PLLN (192)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV4)
 #define MICROPY_HW_CLK_PLLQ (4)
+#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
 
 // Work out which USB device to use for the USB DFU interface
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
@@ -205,10 +207,6 @@ void SystemClock_Config(void) {
     __HAL_RCC_PLL_ENABLE();
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
     }
-
-    #if !defined(MICROPY_HW_FLASH_LATENCY)
-    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
-    #endif
 
     // Increase latency before changing clock
     if (MICROPY_HW_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
