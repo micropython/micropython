@@ -33,19 +33,6 @@
 #include "hal_uart.h"
 
 #define UART_INSTANCE   UART_BASE(0)
-FIL* boot_output_file;
-
-// this table converts from HAL_StatusTypeDef to POSIX errno
-const byte mp_hal_status_to_errno_table[4] = {
-    [HAL_OK] = 0,
-    [HAL_ERROR] = MP_EIO,
-    [HAL_BUSY] = MP_EBUSY,
-    [HAL_TIMEOUT] = MP_ETIMEDOUT,
-};
-
-NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(mp_hal_status_to_errno_table[status])));
-}
 
 #if (MICROPY_PY_BLE_NUS == 0)
 int mp_hal_stdin_rx_chr(void) {
