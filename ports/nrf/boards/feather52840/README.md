@@ -74,7 +74,7 @@ nrfjprog version: 9.7.2
 JLinkARM.dll version: 6.20f
 ```
 
-### Option 1 (nRF52832 or nRF52840): Flash the HW UART Bootloader with `nrfjprog`
+### Flash the USB CDC Bootloader with 'nrfjprog'
 
 > This operation only needs to be done once, and only on boards that don't
   already have the serial bootloader installed.
@@ -83,47 +83,16 @@ Once `nrfjprog` is installed and available in `PATH` you can flash your
 board with the serial bootloader via the following command:
 
 ```
-make SD=s140 BOARD=feather52840 boot-flash
+make SD=s140 BOARD=feather52840 bootloader
 ```
 
 This should give you the following (or very similar) output, and you will see
 a DFU blinky pattern on one of the board LEDs:
 
 ```
-$ make SD=s140 BOARD=feather52840 boot-flash
+$ make SD=s140 BOARD=feather52840 bootloader
 Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.
 nrfjprog --program boards/feather52840/bootloader/feather52840_bootloader_6.0.0_s140_single.hex -f nrf52 --chiperase --reset
-Parsing hex file.
-Erasing user available code and UICR flash areas.
-Applying system reset.
-Checking that the area to write is not protected.
-Programing device.
-Applying system reset.
-Run.
-```
-
-From this point onward, you can now use a simple serial port for firmware
-updates.
-
-### Option 2 (nRF52840): Flash the USB CDC Bootloader with 'nrfjprog'
-
-> This operation only needs to be done once, and only on boards that don't
-  already have the serial bootloader installed.
-
-Once `nrfjprog` is installed and available in `PATH` you can flash your
-board with the serial bootloader via the following command:
-
-```
-make SD=s140 BOARD=feather52840 boot-usb-flash
-```
-
-This should give you the following (or very similar) output, and you will see
-a DFU blinky pattern on one of the board LEDs:
-
-```
-$ make SD=s140 BOARD=feather52840 boot-usb-flash
-Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.
-nrfjprog --program boards/feather52840/bootloader/usb/feather52840_bootloader_6.0.0_s140_single.hex -f nrf52 --chiperase --reset	
 Parsing hex file.
 Erasing user available code and UICR flash areas.
 Applying system reset.
@@ -181,9 +150,9 @@ $ sudo pip install -r requirements.txt
 $ sudo python setup.py install
 ```
 
-#### Changes to `nrfutil` in 0.5.2b
+#### Changes to `nrfutil` in 0.5.2d
 
-**IMPORTANT**: Make sure that you have version **0.5.2b**, since a small
+**IMPORTANT**: Make sure that you have version **0.5.2d**, since a small
 change was required to `dfu_transport_serial.py` to account for the
 increased minimum flash erase time on the nRF52840 compared to the earlier
 nRF52832!
@@ -191,12 +160,7 @@ nRF52832!
 You can also manually change the file with the following new values (lines
 67-68), and reinstall the utility via `sudo python setup.py install`:
 
-```
-FLASH_PAGE_ERASE_MAX_TIME = 0.1      # Worst time to erase a page 100 ms
-FLASH_PAGE_ERASE_MIN_TIME = 0.09      # Best time to erase a page 90 ms
-```
-
-### Flashing CircuitPython
+### Flashing CircuitPython with USB CDC
 
 With the serial bootloader present on your board, you first need to force your
 board into DFU mode by holding down BUTTON1 and RESETTING the board (with
@@ -215,18 +179,38 @@ $ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all dfu-gen d
 This should give you the following results:
 
 ```
-$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 dfu-gen dfu-flash
+$make V=1 BOARD=feather52840 SD=s140 SERIAL=/dev/tty.usbmodem1411 dfu-gen dfu-flash
 nrfutil dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application build-feather52840-s140/firmware.hex build-feather52840-s140/dfu-package.zip
 Zip created at build-feather52840-s140/dfu-package.zip
-nrfutil --verbose dfu serial --package build-feather52840-s140/dfu-package.zip -p /dev/tty.usbmodem1411 -b 115200
-Upgrading target on /dev/tty.usbmodem1411 with DFU package /Users/kevintownsend/Dropbox/microBuilder/Code/CircuitPython/circuitpython-mb/ports/nrf/build-feather52840-s140/dfu-package.zip. Flow control is disabled.
-Starting DFU upgrade of type 4, SoftDevice size: 0, bootloader size: 0, application size: 195252
+nrfutil --verbose dfu serial --package build-feather52840-s140/dfu-package.zip -p /dev/ttyACM1 -b 115200 --singlebank
+Upgrading target on /dev/ttyACM1 with DFU package /home/hathach/Dropbox/adafruit/circuitpython/ada_cp/ports/nrf/build-feather52840-s140/dfu-package.zip. Flow control is disabled, Single bank mode
+Starting DFU upgrade of type 4, SoftDevice size: 0, bootloader size: 0, application size: 199840
 Sending DFU start packet
 Sending DFU init packet
 Sending firmware file
-################################################################################################################################################################################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################################################################################################################################################################################
 Activating new firmware
 
-DFU upgrade took 41.6610329151s
+DFU upgrade took 8.50606513023s
 Device programmed.
+```
+
+### Flashing CircuitPython with MSC UF2
+
+Make `uf2` target to generate the uf2
+
+```
+$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all uf2
+Create firmware.uf2
+../../tools/uf2/utils/uf2conv.py -c -o "build-feather52840-s140/firmware.uf2" "build-feather52840-s140/firmware.hex"
+Converting to uf2, output size: 392192, start address: 0x26000
+Wrote 392192 bytes to build-feather52840-s140/firmware.uf2.
+```
+
+Simply drag and drop firmware.uf2 to the MSC, the nrf52840 will blink fast and reset after done.
+
+**Note**: you need to update `tools/uf2` for uf2conv.py to support hex file input, current circuitpython's master use older verion of uf2conv.py which only support biin file input. To update, change directory to top folder of circuitpython and run. The size of uf2 should be ~400KB, if using the old uf2conv.py the output file would be 1 MB which is not correct.
+
+```
+git submodule update --init
 ```
