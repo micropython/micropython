@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef TIMER_H__
-#define TIMER_H__
+#ifndef __MICROPY_INCLUDED_NRF5_PIN_H__
+#define __MICROPY_INCLUDED_NRF5_PIN_H__
 
-#include "hal_timer.h"
+#include "py/obj.h"
 
-extern const mp_obj_type_t machine_timer_type;
+typedef struct {
+    mp_obj_base_t base;
+    qstr name;
 
-void timer_init0(void);
+    uint32_t port        : 1;
+    uint32_t pin         : 5; // Some ARM processors use 32 bits/PORT
+    uint32_t adc_channel : 4; // 0 is no ADC, ADC channel from 1 to 8
+} pin_obj_t;
 
-#endif // TIMER_H__
+extern const mp_obj_type_t mcu_pin_type;
+
+#endif // __MICROPY_INCLUDED_NRF5_PIN_H__

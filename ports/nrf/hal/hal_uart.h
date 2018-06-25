@@ -32,37 +32,24 @@
 
 #include "nrf.h"
 
-#if NRF51
-  #define UART_HWCONTROL_NONE                  ((uint32_t)UART_CONFIG_HWFC_Disabled << UART_CONFIG_HWFC_Pos)
-  #define UART_HWCONTROL_RTS_CTS               ((uint32_t)(UART_CONFIG_HWFC_Enabled << UART_CONFIG_HWFC_Pos)
-  #define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)\
-                              (((CONTROL) == UART_HWCONTROL_NONE) || \
-                               ((CONTROL) == UART_HWCONTROL_RTS_CTS))
+#define UART_HWCONTROL_NONE                  ((uint32_t)UARTE_CONFIG_HWFC_Disabled << UARTE_CONFIG_HWFC_Pos)
+#define UART_HWCONTROL_RTS_CTS               ((uint32_t)(UARTE_CONFIG_HWFC_Enabled << UARTE_CONFIG_HWFC_Pos)
+#define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)\
+                            (((CONTROL) == UART_HWCONTROL_NONE) || \
+                             ((CONTROL) == UART_HWCONTROL_RTS_CTS))
+#ifdef HAL_UART_MODULE_ENABLED
   #define UART_BASE_POINTERS (const uint32_t[]){NRF_UART0_BASE}
-  #define UART_IRQ_VALUES (const uint32_t[]){UART0_IRQn}
-
-#elif NRF52
-  #define UART_HWCONTROL_NONE                  ((uint32_t)UARTE_CONFIG_HWFC_Disabled << UARTE_CONFIG_HWFC_Pos)
-  #define UART_HWCONTROL_RTS_CTS               ((uint32_t)(UARTE_CONFIG_HWFC_Enabled << UARTE_CONFIG_HWFC_Pos)
-  #define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)\
-                              (((CONTROL) == UART_HWCONTROL_NONE) || \
-                               ((CONTROL) == UART_HWCONTROL_RTS_CTS))
-  #ifdef HAL_UART_MODULE_ENABLED
-    #define UART_BASE_POINTERS (const uint32_t[]){NRF_UART0_BASE}
+  #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn}
+#else // HAL_UARTE_MODULE_ENABLED
+  #ifdef NRF52832_XXAA
+    #define UART_BASE_POINTERS (const uint32_t[]){NRF_UARTE0_BASE}
     #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn}
-  #else // HAL_UARTE_MODULE_ENABLED
-    #ifdef NRF52832_XXAA
-      #define UART_BASE_POINTERS (const uint32_t[]){NRF_UARTE0_BASE}
-      #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn}
-    #elif NRF52840_XXAA
-      #define UART_BASE_POINTERS (const uint32_t[]){NRF_UARTE0_BASE, \
-                                                    NRF_UARTE1_BASE}
-      #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn, \
-                                                 UARTE1_IRQn}
-    #endif // HAL_UARTE_MODULE_ENABLED
-  #endif
-#else
-#error "Device not supported."
+  #elif NRF52840_XXAA
+    #define UART_BASE_POINTERS (const uint32_t[]){NRF_UARTE0_BASE, \
+                                                  NRF_UARTE1_BASE}
+    #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn, \
+                                               UARTE1_IRQn}
+  #endif // HAL_UARTE_MODULE_ENABLED
 #endif
 
 #define UART_BASE(x) ((NRF_UART_Type *)UART_BASE_POINTERS[x])

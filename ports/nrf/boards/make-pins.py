@@ -23,18 +23,6 @@ def parse_port_pin(name_str):
     return (port, int(pin_str))
 
 
-def split_name_num(name_num):
-    num = None
-    for num_idx in range(len(name_num) - 1, -1, -1):
-        if not name_num[num_idx].isdigit():
-            name = name_num[0:num_idx + 1]
-            num_str = name_num[num_idx + 1:]
-            if len(num_str) > 0:
-                num = int(num_str)
-            break
-    return name, num
-
-
 class Pin(object):
     """Holds the information associated with a pin."""
 
@@ -54,10 +42,9 @@ class Pin(object):
         self.board_pin = True
 
     def parse_adc(self, adc_str):
-        if (adc_str[:3] != 'ADC'):
+        if (adc_str[:3] != 'AIN'):
             return
-        (adc, channel) = adc_str.split('_IN')
-        self.adc_channel = 'SAADC_CH_PSELP_PSELP_AnalogInput%d' % int(channel)
+        self.adc_channel = 'SAADC_CH_PSELP_PSELP_AnalogInput%d' % int(adc_str[3])
 
     def print(self):
         print('const pin_obj_t pin_{:s} = PIN({:s}, {:d}, {:d}, {:s});'.format(
@@ -94,20 +81,17 @@ class Pins(object):
             if pin.port == port_num and pin.pin == pin_num:
                 return pin
 
-    def parse_af_file(self, filename, pinname_col, af_col, af_col_end):
+    def parse_af_file(self, filename):
         with open(filename, 'r') as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
                 try:
-                    (port_num, pin_num) = parse_port_pin(row[pinname_col])
+                    (port_num, pin_num) = parse_port_pin(row[0])
                 except:
                     continue
                 pin = Pin(port_num, pin_num)
-                for af_idx in range(af_col, len(row)):
-                    if af_idx < af_col_end:
-                        pin.parse_af(af_idx - af_col, row[af_idx])
-                    elif af_idx == af_col_end:
-                        pin.parse_adc(row[af_idx])
+                if len(row) > 1:
+                    pin.parse_adc(row[1])
                 self.cpu_pins.append(NamedPin(pin.cpu_pin_name(), pin))
 
     def parse_board_file(self, filename):
@@ -121,8 +105,6 @@ class Pins(object):
                 pin = self.find_pin(port_num, pin_num)
                 if pin:
                     pin.set_is_board_pin()
-                    if len(row) == 3:
-                        pin.parse_adc(row[2])
                     self.board_pins.append(NamedPin(row[0], pin))
 
     def print_named(self, label, named_pins):
@@ -173,19 +155,7 @@ def main():
         "-a", "--af",
         dest="af_filename",
         help="Specifies the alternate function file for the chip",
-        default="nrf.csv"
-    )
-    parser.add_argument(
-        "--af-const",
-        dest="af_const_filename",
-        help="Specifies header file for alternate function constants.",
-        default="build/pins_af_const.h"
-    )
-    parser.add_argument(
-        "--af-py",
-        dest="af_py_filename",
-        help="Specifies the filename for the python alternate function mappings.",
-        default="build/pins_af.py"
+        default="nrf_af.csv"
     )
     parser.add_argument(
         "-b", "--board",
@@ -218,7 +188,7 @@ def main():
     print('//')
     if args.af_filename:
         print('// --af {:s}'.format(args.af_filename))
-        pins.parse_af_file(args.af_filename, 1, 2, 2)
+        pins.parse_af_file(args.af_filename)
 
     if args.board_filename:
         print('// --board {:s}'.format(args.board_filename))

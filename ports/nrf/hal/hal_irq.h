@@ -37,11 +37,8 @@
 
 #define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
 
-#ifdef NRF51
-  #include "nrf_soc.h"
-#elif defined(NRF52)
-  #include "nrf_nvic.h"
-#endif
+#define NRF52
+#include "nrf_nvic.h"
 #endif // BLUETOOTH_SD
 
 static inline void hal_irq_clear(uint32_t irq_num) {
