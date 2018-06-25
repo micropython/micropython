@@ -58,9 +58,9 @@
 
 // Work out which USB device to use for the USB DFU interface
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
-#if defined(MICROPY_HW_USB_FS)
+#if MICROPY_HW_USB_FS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#elif defined(MICROPY_HW_USB_HS) && defined(MICROPY_HW_USB_HS_IN_FS)
+#elif MICROPY_HW_USB_HS && MICROPY_HW_USB_HS_IN_FS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
 #else
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
@@ -846,10 +846,8 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
 
 #define USB_XFER_SIZE (DFU_XFER_SIZE)
 
-enum {
-    USB_PHY_FS_ID = 0,
-    USB_PHY_HS_ID = 1,
-};
+#define USB_PHY_FS_ID (0)
+#define USB_PHY_HS_ID (1)
 
 typedef struct _pyb_usbdd_obj_t {
     bool started;
@@ -1248,12 +1246,11 @@ enter_bootloader:
     #endif
     for (;;) {
         #if USE_USB_POLLING
-        #if defined(MICROPY_HW_USB_FS)
+        #if MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
         if (USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_fs_handle);
         }
-        #endif
-        #if defined(MICROPY_HW_USB_HS)
+        #else
         if (USB_OTG_HS->GINTSTS & USB_OTG_HS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_hs_handle);
         }
@@ -1328,12 +1325,11 @@ void I2Cx_EV_IRQHandler(void) {
 #endif
 
 #if !USE_USB_POLLING
-#if defined(MICROPY_HW_USB_FS)
+#if MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
 void OTG_FS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
-#endif
-#if defined(MICROPY_HW_USB_HS)
+#else
 void OTG_HS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_hs_handle);
 }
