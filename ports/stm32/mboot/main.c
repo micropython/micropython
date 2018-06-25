@@ -1249,12 +1249,12 @@ enter_bootloader:
     for (;;) {
         #if USE_USB_POLLING
         #if defined(MICROPY_HW_USB_FS)
-        if (pcd_fs_handle.Instance->GINTSTS & pcd_fs_handle.Instance->GINTMSK) {
+        if (USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_fs_handle);
         }
         #endif
         #if defined(MICROPY_HW_USB_HS)
-        if (pcd_hs_handle.Instance->GINTSTS & pcd_hs_handle.Instance->GINTMSK) {
+        if (USB_OTG_HS->GINTSTS & USB_OTG_HS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_hs_handle);
         }
         #endif
