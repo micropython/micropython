@@ -1,0 +1,15 @@
+#ifndef NRFX_CONFIG_H__
+#define NRFX_CONFIG_H__
+
+#define NRFX_SPIM_ENABLED 1
+
+#ifdef NRF52840_XXAA
+    #define NRFX_SPIM3_ENABLED 1
+#else
+    #define NRFX_SPIM2_ENABLED 1
+#endif
+
+#define NRFX_SPIM_DEFAULT_CONFIG_IRQ_PRIORITY 7
+#define NRFX_SPIM_MISO_PULL_CFG 1
+
+#endif
