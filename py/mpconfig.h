@@ -1198,6 +1198,16 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_SPI (0)
 #endif
 
+// High resolution machine timers require floating point support
+#ifndef MICROPY_PY_MACHINE_HI_RES_TIMER
+#define MICROPY_PY_MACHINE_HI_RES_TIMER MICROPY_PY_BUILTINS_FLOAT
+#else
+#if MICROPY_PY_MACHINE_HI_RES_TIMER && (MICROPY_PY_BUILTINS_FLOAT == 0)
+#undef MICROPY_PY_MACHINE_HI_RES_TIMER
+#define MICROPY_PY_MACHINE_HI_RES_TIMER (0)
+#endif
+#endif
+
 #ifndef MICROPY_PY_USSL
 #define MICROPY_PY_USSL (0)
 // Whether to add finaliser code to ussl objects

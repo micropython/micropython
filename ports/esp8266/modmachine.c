@@ -30,6 +30,11 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_HI_RES_TIMER
+#define USE_US_TIMER 1
+#endif
+
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
@@ -161,21 +166,52 @@ STATIC void esp_timer_cb(void *arg) {
 
 STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-//        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+#if MICROPY_PY_MACHINE_HI_RES_TIMER
+        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+#else
+        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+#endif
     };
+#if MICROPY_PY_MACHINE_HI_RES_TIMER
+    mp_float_t period;
+    mp_int_t p_set_value;
+#endif
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    self->callback = args[2].u_obj;
+    self->callback = args[1].u_obj;
     // Be sure to disarm timer before making any changes
     os_timer_disarm(&self->timer);
     os_timer_setfn(&self->timer, esp_timer_cb, self);
-    os_timer_arm(&self->timer, args[0].u_int, args[1].u_int);
+#if MICROPY_PY_MACHINE_HI_RES_TIMER
+    if (args[3].u_obj != mp_const_none) {
+        mp_float_t freq;
+        if (mp_obj_get_float_maybe(args[3].u_obj, &freq)) {
+            period = 1000.0 / freq;
+        } else {
+            mp_raise_TypeError("Frequency must be a number");
+        }
+    } else {
+        if (!mp_obj_get_float_maybe(args[2].u_obj, &period)) {
+	    mp_raise_TypeError("Period must be a number");
+        }
+    }
+
+    p_set_value = (mp_int_t) period;
+    if (((mp_float_t) p_set_value) == period) {
+        os_timer_arm(&self->timer, p_set_value, args[0].u_int);
+    } else {
+        p_set_value = (mp_int_t) (period * 1000);
+        os_timer_arm_us(&self->timer, p_set_value, args[0].u_int);
+    }
+#else
+    os_timer_arm(&self->timer, args[2].u_int, args[0].u_int);
+#endif
 
     return mp_const_none;
 }
