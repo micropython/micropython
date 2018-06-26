@@ -117,6 +117,9 @@ else
   ifdef INTERNAL_FLASH_FILESYSTEM
     CFLAGS += -finline-limit=55
   endif
+  ifdef CFLAGS_INLINE_LIMIT
+    CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
+  endif
   CFLAGS += -flto
 endif
 
