@@ -33,6 +33,10 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
+
+// This needs to be defined before any ESP SDK headers are included
+#define USE_US_TIMER 1
+
 #include "extmod/misc.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
@@ -126,6 +130,7 @@ soft_reset:
 }
 
 void user_init(void) {
+    system_timer_reinit();
     system_init_done_cb(init_done);
 }
 
