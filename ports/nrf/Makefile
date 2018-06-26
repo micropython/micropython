@@ -98,7 +98,6 @@ SRC_HAL = $(addprefix hal/,\
 	hal_twi.c \
 	hal_adc.c \
 	hal_adce.c \
-	hal_temp.c \
 	hal_gpio.c \
 	hal_rng.c \
 	hal_pwm.c \
