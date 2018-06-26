@@ -65,12 +65,15 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool rea
     args[1] = mp_const_false; // Don't make the file system automatically when mounting.
 
     // Check that there's no file or directory with the same name as the mount point.
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        common_hal_os_stat(mount_path);
-        nlr_pop();
-        // Something with the same name exists.
-        mp_raise_OSError(MP_EEXIST);
+    // But it's ok to mount '/' in any case.
+    if (strcmp(vfs->str, "/") != 0) {
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            common_hal_os_stat(mount_path);
+            nlr_pop();
+            // Something with the same name exists.
+            mp_raise_OSError(MP_EEXIST);
+        }
     }
 
     // check that the destination mount point is unused
