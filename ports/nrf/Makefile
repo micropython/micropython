@@ -226,7 +226,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-.phony: all flash sd binary hex
+.phony: all flash sd binary hex bootloader
 
 all: binary hex
 
@@ -252,22 +252,12 @@ FLASHER ?=
 
 ifeq ($(FLASHER),)
 
-# Adafruit use bootloader that requires writing to its settting ( app valid = 0x0001, crc = 0x0000 )
-ifneq (,$(filter $(BOARD),feather52832 feather52840))
-
+# Also update to bootloader settting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --erasepage $(BOOT_SETTING_ADDR) -f $(MCU_VARIANT)
 	nrfjprog --memwr $(BOOT_SETTING_ADDR) --val 0x00000001 -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
-
-else
-
-flash: $(BUILD)/$(OUTPUT_FILENAME).hex
-	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
-	nrfjprog --reset -f $(MCU_VARIANT)
-	
-endif
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --eraseall -f $(MCU_VARIANT)
@@ -275,6 +265,9 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
+bootloader:
+	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
+	
 else ifeq ($(FLASHER), pyocd)
 
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
@@ -291,7 +284,7 @@ endif
 #####################
 # Flash with DFU
 #####################
-.phony: bootloader dfu-gen dfu-flash dfu-bootloader uf2
+.phony: dfu-gen dfu-flash dfu-bootloader uf2
 
 ifeq ($(OS),Windows_NT)
    NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
@@ -322,9 +315,6 @@ uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
 	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
 
-# Flash bootloader with Jlink
-bootloader:
-	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
 
 
 $(BUILD)/dfu-package.zip: dfu-gen
