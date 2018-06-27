@@ -135,8 +135,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
     ram_start = symbols["_srelocate"][0]
     ram_end = symbols["_estack"][0]
     ram_length = ram_end - ram_start
+    # print(ram_length, "ram length")
+    # print(len(ram_dump) // ram_length, "snapshots")
     if analyze_snapshots == "all":
-        snapshots = range(len(ram_dump) // ram_length - 1, -1, -1)
+        #snapshots = range(len(ram_dump) // ram_length - 1, -1, -1)
+        snapshots = range(4576, -1, -1)
     elif analyze_snapshots == "last":
         snapshots = range(len(ram_dump) // ram_length - 1, len(ram_dump) // ram_length - 2, -1)
     for snapshot_num in snapshots:
@@ -167,16 +170,16 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         mp_state_ctx = symbols["mp_state_ctx"][0]
         manual_symbol_map["mp_state_ctx+20"] = "mp_state_ctx.vm.last_pool"
         last_pool = load_pointer(mp_state_ctx + 20) # (gdb) p &mp_state_ctx.vm.last_pool
-        manual_symbol_map["mp_state_ctx+88"] = "mp_state_ctx.vm.dict_main.map.table"
-        dict_main_table = load_pointer(mp_state_ctx + 88) # (gdb) p &mp_state_ctx.vm.dict_main.map.table
-        manual_symbol_map["mp_state_ctx+68"] = "mp_state_ctx.vm.mp_loaded_modules_dict.map.table"
-        imports_table = load_pointer(mp_state_ctx + 68) # (gdb) p &mp_state_ctx.vm.mp_loaded_modules_dict.map.table
+        manual_symbol_map["mp_state_ctx+104"] = "mp_state_ctx.vm.dict_main.map.table"
+        dict_main_table = load_pointer(mp_state_ctx + 104) # (gdb) p &mp_state_ctx.vm.dict_main.map.table
+        manual_symbol_map["mp_state_ctx+84"] = "mp_state_ctx.vm.mp_loaded_modules_dict.map.table"
+        imports_table = load_pointer(mp_state_ctx + 84) # (gdb) p &mp_state_ctx.vm.mp_loaded_modules_dict.map.table
 
-        manual_symbol_map["mp_state_ctx+104"] = "mp_state_ctx.vm.mp_sys_path_obj.items"
-        manual_symbol_map["mp_state_ctx+120"] = "mp_state_ctx.vm.mp_sys_argv_obj.items"
+        manual_symbol_map["mp_state_ctx+120"] = "mp_state_ctx.vm.mp_sys_path_obj.items"
+        manual_symbol_map["mp_state_ctx+136"] = "mp_state_ctx.vm.mp_sys_argv_obj.items"
 
         for i in range(READLINE_HIST_SIZE):
-            manual_symbol_map["mp_state_ctx+{}".format(128 + i * 4)] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
+            manual_symbol_map["mp_state_ctx+{}".format(144 + i * 4)] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
 
         tuple_type = symbols["mp_type_tuple"][0]
         type_type = symbols["mp_type_type"][0]
@@ -214,8 +217,8 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         pool_start = heap_start + total_byte_len - pool_length - pool_shift
         pool = heap[-pool_length-pool_shift:]
 
-        total_height = 65 * 18
-        total_width = (pool_length // (64 * 16)) * 90
+        total_height = 128 * 18
+        total_width = (pool_length // (128 * 16)) * 85
 
         map_element_blocks = [dict_main_table, imports_table]
         string_blocks = []
@@ -255,7 +258,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             block_data[address] = data
             for k in range(len(data) // 4):
                 word = struct.unpack_from("<I", data, offset=(k * 4))[0]
-                if word < 0x00040000 and k == 0 or address in qstr_pools:
+                if word < len(rom) and k == 0 or address in qstr_pools:
                     potential_type = word
                     bgcolor = "gray"
                     if address in qstr_pools:
@@ -292,11 +295,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 if potential_type == dynamic_type:
                     if k == 0:
                         node.attr["fillcolor"] = "plum"
-                    if k == 3 and 0x20000000 < word < 0x20040000:
+                    if k == 3 and ram_start < word < ram_end:
                         map_element_blocks.append(word)
 
                 if potential_type in function_types:
-                    if k == 2 and 0x20000000 < word < 0x20040000:
+                    if k == 2 and ram_start < word < ram_end:
                         bytecode_blocks.append(word)
 
 
@@ -338,7 +341,12 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             pool_ptr = last_pool
             if not is_qstr(qstr_index):
                 return "object"
+
+            pool = block_data[pool_ptr]
+            prev, total_prev_len, alloc, length = struct.unpack_from("<IIII", pool)
             qstr_index >>= 3
+            if qstr_index > total_prev_len + alloc:
+                return "invalid"
             while pool_ptr != 0:
                 if pool_ptr > ram_start:
                     if pool_ptr in block_data:
@@ -492,7 +500,10 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     offset = len(data)
                     continue
                 offset += 2 + qstr_len + 1
-                qstrs_in_chunk += "  " + data[offset - qstr_len - 1: offset - 1].decode("utf-8")
+                try:
+                    qstrs_in_chunk += "  " + data[offset - qstr_len - 1: offset - 1].decode("utf-8")
+                except UnicodeDecodeError:
+                    qstrs_in_chunk += "  " + "░"*qstr_len
             printable_qstrs = ""
             for i in range(len(qstrs_in_chunk)):
                 c = qstrs_in_chunk[i]
@@ -515,20 +526,28 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         # First render the graph of objects on the heap.
         if draw_heap_ownership:
             ownership_graph.layout(prog="dot")
-            fn = os.path.join(output_directory, "heap_ownership{:04d}.png".format(snapshot_num))
+            fn = os.path.join(output_directory, "heap_ownership{:04d}.svg".format(snapshot_num))
             print(fn)
             ownership_graph.draw(fn)
 
+        # Clear edge positioning from ownership graph layout.
+        if draw_heap_ownership:
+            for edge in ownership_graph.iteredges():
+                del edge.attr["pos"]
+        else:
+            for edge in ownership_graph.edges():
+                ownership_graph.delete_edge(edge)
+
         # Second, render the heap layout in memory order.
-        for node in ownership_graph:
+        for node in ownership_graph.nodes():
             try:
                 address = int(node.name)
             except ValueError:
-                ownership_graph.remove_node(node)
+                ownership_graph.remove_node(node.name)
                 continue
             block = (address - pool_start) // 16
-            x = block // 64
-            y = 64 - block % 64
+            x = block // 128
+            y = 128 - block % 128
             try:
                 height = float(node.attr["height"])
             except:
@@ -537,11 +556,6 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             #if address in block_data:
             #    print(hex(address), block, len(block_data[address]), x, y, height)
             node.attr["pos"] = "{},{}".format(x * 80, (y - (height - 0.25) * 2) * 18) # in inches
-
-        # Clear edge positioning from ownership graph layout.
-        if draw_heap_ownership:
-            for edge in ownership_graph.iteredges():
-                del edge.attr["pos"]
 
         # Reformat block nodes so they are the correct size and do not have keys in them.
         for block in sorted(map_element_blocks):
@@ -565,9 +579,9 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 else:
                     #print("  {}, {}".format(format(key), format(value)))
                     cells.append((key, ""))
-                    if value in block_data:
-                        edge = ownership_graph.get_edge(block, value)
-                        edge.attr["tailport"] = str(key)
+                    # if value in block_data:
+                    #     edge = ownership_graph.get_edge(block, value)
+                    #     edge.attr["tailport"] = str(key)
             rows = ""
             for i in range(len(cells) // 2):
                 rows += "<tr><td port=\"{}\" height=\"18\" width=\"40\">{}</td><td port=\"{}\" height=\"18\" width=\"40\">{}</td></tr>".format(
@@ -586,6 +600,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         if draw_heap_layout:
             fn = os.path.join(output_directory, "heap_layout{:04d}.png".format(snapshot_num))
             print(fn)
+            #ownership_graph.write(fn+".dot")
             ownership_graph.draw(fn)
 
 if __name__ == "__main__":
