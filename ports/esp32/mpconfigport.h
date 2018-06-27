@@ -127,6 +127,7 @@
 #define MICROPY_PY_UHASHLIB                 (1)
 #define MICROPY_PY_UHASHLIB_SHA1            (1)
 #define MICROPY_PY_UHASHLIB_SHA256          (1)
+#define MICROPY_PY_UCRYPTOLIB               (1)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
