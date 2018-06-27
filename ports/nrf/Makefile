@@ -244,6 +244,10 @@ hex: $(BUILD)/$(OUTPUT_FILENAME).hex
 $(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O ihex $< $@
 
+
+#####################
+# Flash with debugger
+#####################
 FLASHER ?=
 
 ifeq ($(FLASHER),)
@@ -282,6 +286,48 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_VARIANT) $<
 
 endif
+
+
+#####################
+# Flash with DFU
+#####################
+.phony: bootloader dfu-gen dfu-flash dfu-bootloader uf2
+
+ifeq ($(OS),Windows_NT)
+   NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
+else
+   NRFUTIL = nrfutil
+endif
+
+
+check_defined = \
+    $(strip $(foreach 1,$1, \
+    $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+    $(error Undefined make flag: $1$(if $2, ($2))))
+
+dfu-gen:
+	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
+
+dfu-flash:
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
+	$(NRFUTIL) --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200 --singlebank
+
+dfu-bootloader:
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
+	$(NRFUTIL) --verbose dfu serial --package $(BOOT_FILE).zip -p $(SERIAL) -b 115200
+
+uf2:
+	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
+	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" "$(BUILD)/$(OUTPUT_FILENAME).hex"
+
+# Flash bootloader with Jlink
+bootloader:
+	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
+
+
+
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
