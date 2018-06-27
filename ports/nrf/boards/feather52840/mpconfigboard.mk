@@ -4,7 +4,7 @@ MCU_SUB_VARIANT = nrf52840
 SOFTDEV_VERSION ?= 6.0.0
 
 LD_FILE = boards/feather52840/bluefruit_nrf52840_s140_$(SOFTDEV_VERSION).ld
-BOOT_FILE = boards/feather52840/bootloader/feather52840_bootloader_$(SOFTDEV_VERSION)_s140_single
+BOOT_FILE = boards/feather52840/bootloader/$(SOFTDEV_VERSION)/feather52840_bootloader_$(SOFTDEV_VERSION)_s140
 
 NRF_DEFINES += -DNRF52840_XXAA
 
