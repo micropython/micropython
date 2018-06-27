@@ -31,7 +31,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <arpa/inet.h>
 
 #include "py/runtime.h"
 
