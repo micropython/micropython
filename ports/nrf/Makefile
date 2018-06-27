@@ -307,27 +307,27 @@ __check_defined = \
     $(if $(value $1),, \
     $(error Undefined make flag: $1$(if $2, ($2))))
 
-dfu-gen:
-	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
+dfu-gen: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
-dfu-flash:
+dfu-flash: $(BUILD)/dfu-package.zip
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	$(NRFUTIL) --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200 --singlebank
+	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank
 
 dfu-bootloader:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
 	$(NRFUTIL) --verbose dfu serial --package $(BOOT_FILE).zip -p $(SERIAL) -b 115200
 
-uf2:
+uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
-	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" "$(BUILD)/$(OUTPUT_FILENAME).hex"
+	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
 
 # Flash bootloader with Jlink
 bootloader:
 	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
 
 
-
+$(BUILD)/dfu-package.zip: dfu-gen
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
