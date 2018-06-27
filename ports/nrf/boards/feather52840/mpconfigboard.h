@@ -44,27 +44,25 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
-#define MICROPY_HW_LED_COUNT        (4)
+#define MICROPY_HW_LED_COUNT        (2)
 #define MICROPY_HW_LED_PULLUP       (1)
 
-#define MICROPY_HW_LED1             (13) // LED1
-#define MICROPY_HW_LED2             (14) // LED2
-#define MICROPY_HW_LED3             (15) // LED3
-#define MICROPY_HW_LED4             (16) // LED4
+#define MICROPY_HW_LED1             (pin_P1_02) // LED1
+#define MICROPY_HW_LED2             (pin_P1_10) // LED2
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_P0_08)
-#define MICROPY_HW_UART1_TX         (pin_P0_06)
-#define MICROPY_HW_UART1_CTS        (pin_P0_07)
-#define MICROPY_HW_UART1_RTS        (pin_P0_05)
-#define MICROPY_HW_UART1_HWFC       (1)
+#define MICROPY_HW_UART1_RX         (pin_P1_00)
+#define MICROPY_HW_UART1_TX         (pin_P0_24)
+#define MICROPY_HW_UART1_CTS        (NULL)
+#define MICROPY_HW_UART1_RTS        (NULL)
+#define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
 
-#define MICROPY_HW_SPI0_SCK         (pin_P1_15)
-#define MICROPY_HW_SPI0_MOSI        (pin_P1_13)
-#define MICROPY_HW_SPI0_MISO        (pin_P1_14)
+#define MICROPY_HW_SPI0_SCK         (pin_P0_20)
+#define MICROPY_HW_SPI0_MOSI        (pin_P0_23)
+#define MICROPY_HW_SPI0_MISO        (pin_P0_22)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
