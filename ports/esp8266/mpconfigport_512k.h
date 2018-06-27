@@ -32,6 +32,9 @@
 #undef MICROPY_PY_FRAMEBUF
 #define MICROPY_PY_FRAMEBUF             (0)
 
+#undef MICROPY_PY_UCRYPTOLIB
+#define MICROPY_PY_UCRYPTOLIB           (0)
+
 #undef mp_import_stat
 #undef mp_builtin_open
 #undef mp_builtin_open_obj
