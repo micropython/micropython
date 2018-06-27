@@ -83,8 +83,8 @@ Functions
 
    Translate the host/port argument into a sequence of 5-tuples that contain all the 
    necessary arguments for creating a socket connected to that service. Arguments
-   *af*, *type*, and *proto* (which have the same meaning as for `socket()` function)
-   can be used to filter which kind of addresses are returned. If a parameter not
+   *af*, *type*, and *proto* (which have the same meaning as for the `socket()` function)
+   can be used to filter which kind of addresses are returned. If a parameter is not
    specified or zero, all combinations of addresses can be returned (requiring
    filtering on the user side).
 
@@ -95,14 +95,14 @@ Functions
    The following example shows how to connect to a given url::
 
       s = usocket.socket()
-      # This assumes that if "type" is not specified, address for
+      # This assumes that if "type" is not specified, an address for
       # SOCK_STREAM will be returned, which may be not true
       s.connect(usocket.getaddrinfo('www.micropython.org', 80)[0][-1])
 
    Recommended use of filtering params::
 
       s = usocket.socket()
-      # Guaranteedly returns address which can be connect'ed to for
+      # Guaranteed to return an address which can be connect'ed to for
       # stream operation.
       s.connect(usocket.getaddrinfo('www.micropython.org', 80, 0, SOCK_STREAM)[0][-1])
 
