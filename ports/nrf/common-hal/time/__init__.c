@@ -29,10 +29,12 @@
 #include "shared-bindings/time/__init__.h"
 #include "tick.h"
 
-inline uint64_t common_hal_time_monotonic() {
-  return ticks_ms;
+#include "nrfx_glue.h"
+
+inline uint64_t common_hal_time_monotonic(void) {
+    return ticks_ms;
 }
 
 void common_hal_time_delay_ms(uint32_t delay) {
-    mp_hal_delay_ms(delay);
+    NRFX_DELAY_US(delay);
 }
