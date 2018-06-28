@@ -65,24 +65,21 @@ STATIC char *str_dup_maybe(const char *str) {
 
 // ...and provide the implementation using them
 #if MICROPY_HAL_HAS_VT100
-STATIC void mp_hal_move_cursor_back(uint pos) {
-    if (pos <= 4) {
-        // fast path for most common case of 1 step back
-        mp_hal_stdout_tx_strn("\b\b\b\b", pos);
-    } else {
-        char vt100_command[6];
-        // snprintf needs space for the terminating null character
-        int n = snprintf(&vt100_command[0], sizeof(vt100_command), "\x1b[%u", pos);
-        if (n > 0) {
-            vt100_command[n] = 'D'; // replace null char
-            mp_hal_stdout_tx_strn(vt100_command, n + 1);
-        }
+STATIC void mp_hal_output_n_chars(const char *chars, uint n) {
+    while (n) {
+        uint n2 = MIN(n, 6);
+        mp_hal_stdout_tx_strn(chars, n2);
+        n -= n2;
     }
 }
 
+STATIC void mp_hal_move_cursor_back(uint pos) {
+    mp_hal_output_n_chars("\b\b\b\b\b\b", pos);
+}
+
 STATIC void mp_hal_erase_line_from_cursor(uint n_chars_to_erase) {
-    (void)n_chars_to_erase;
-    mp_hal_stdout_tx_strn("\x1b[K", 3);
+    mp_hal_output_n_chars("      ", n_chars_to_erase);
+    mp_hal_move_cursor_back(n_chars_to_erase);
 }
 #endif
 
@@ -335,12 +332,12 @@ delete_key:
         rl.cursor_pos -= redraw_step_back;
     }
     if (redraw_from_cursor) {
-        if (rl.line->len < last_line_len) {
-            // erase old chars
-            mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
-        }
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
+        if (rl.line->len < last_line_len) {
+            // erase any remaining old chars
+            mp_hal_erase_line_from_cursor(last_line_len - rl.line->len);
+        }
         // move cursor forward if needed (already moved forward by length of line, so move it back)
         mp_hal_move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward));
         rl.cursor_pos += redraw_step_forward;
