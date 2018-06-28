@@ -28,16 +28,19 @@
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/storage/__init__.h"
+#include "supervisor/filesystem.h"
 
 extern volatile bool mp_msc_enabled;
 
-void common_hal_storage_remount(const char* mount_path, bool readonly) {
-    if (strcmp(mount_path, "/") != 0) {
+void common_hal_storage_remount(const char *mount_path, bool readonly) {
+    if (strcmp(mount_path, "/") != 0)
         mp_raise_OSError(MP_EINVAL);
-    }
 }
 
-void common_hal_storage_erase_filesystem() {
-    mp_raise_NotImplementedError("");
+void common_hal_storage_erase_filesystem(void) {
+    filesystem_init(false, true); // Force a re-format.
+    common_hal_mcu_reset();
+    // We won't actually get here, since we're resetting.
 }

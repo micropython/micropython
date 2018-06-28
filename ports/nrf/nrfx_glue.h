@@ -45,6 +45,8 @@
 extern "C" {
 #endif
 
+#include <drivers/nrfx_common.h>
+
 /**
  * @defgroup nrfx_glue nrfx_glue.h
  * @{
