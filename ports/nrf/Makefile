@@ -104,6 +104,7 @@ SRC_HAL = $(addprefix hal/,\
 
 SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_spim.c \
+	drivers/src/nrfx_twim.c \
 	)
 
 SRC_C += \
