@@ -228,13 +228,15 @@ class SDCard:
         assert nblocks and not len(buf) % 512, 'Buffer length is invalid'
         if nblocks == 1:
             # CMD17: set read address for single block
-            if self.cmd(17, block_num * self.cdv, 0) != 0:
+            if self.cmd(17, block_num * self.cdv, 0, release=False) != 0:
                 raise OSError(5) # EIO
             # receive the data
             self.readinto(buf)
+            # release
+            self.cs(1)
         else:
             # CMD18: set read address for multiple blocks
-            if self.cmd(18, block_num * self.cdv, 0) != 0:
+            if self.cmd(18, block_num * self.cdv, 0, release=False) != 0:
                 raise OSError(5) # EIO
             offset = 0
             mv = memoryview(buf)
