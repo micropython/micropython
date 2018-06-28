@@ -130,6 +130,12 @@
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (128)
 #endif
 
+// Max number of entries in newly allocated QSTR pools. Smaller numbers may make QSTR lookups
+// slightly slower but reduce the waste of unused spots.
+#ifndef MICROPY_QSTR_POOL_MAX_ENTRIES
+#define MICROPY_QSTR_POOL_MAX_ENTRIES (64)
+#endif
+
 // Initial amount for lexer indentation level
 #ifndef MICROPY_ALLOC_LEXER_INDENT_INIT
 #define MICROPY_ALLOC_LEXER_INDENT_INIT (10)
