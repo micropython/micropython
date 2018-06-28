@@ -3,6 +3,8 @@ dist: trusty
 language: c
 compiler:
   - gcc
+git:
+  depth: 1
 env:
   - TRAVIS_BOARD=feather_huzzah
   - TRAVIS_BOARD=arduino_zero
@@ -46,17 +48,11 @@ notifications:
 
 before_script:
   - sudo dpkg --add-architecture i386
-  - |
-    sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system ||
-    sleep 30 ||
-    sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system
 
   - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y qemu-system)
   - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
   - ([[ $TRAVIS_TEST != "qemu" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
-  # For teensy build
-  - sudo apt-get install realpath
   # For nrf builds
   - ([[ $TRAVIS_BOARD != "feather52832" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For huzzah builds
@@ -71,7 +67,7 @@ before_script:
 script:
   # Build mpy-cross first because other builds depend on it.
   - echo 'Building mpy-cross' && echo -en 'travis_fold:start:mpy-cross\\r'
-  - make -C mpy-cross
+  - make -C mpy-cross -j2
   - echo -en 'travis_fold:end:mpy-cross\\r'
 
   - echo 'Building Adafruit binaries' && echo -en 'travis_fold:start:adafruit-bins\\r'
@@ -79,13 +75,13 @@ script:
   - echo -en 'travis_fold:end:adafruit-bins\\r'
 
   - echo 'Building unix' && echo -en 'travis_fold:start:unix\\r'
-  - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix deplibs)
-  - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix)
-  - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix coverage)
+  - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix deplibs -j2)
+  - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix -j2)
+  - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix coverage -j2)
   - echo -en 'travis_fold:end:unix\\r'
 
   - echo 'Building qemu' && echo -en 'travis_fold:start:qemu\\r'
-  - ([[ $TRAVIS_TEST != "qemu" ]] || make -C ports/qemu-arm test)
+  - ([[ $TRAVIS_TEST != "qemu" ]] || make -C ports/qemu-arm test -j2)
   - echo -en 'travis_fold:end:qemu\\r'
 
   # run tests without coverage info
