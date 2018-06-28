@@ -138,8 +138,8 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
     # print(ram_length, "ram length")
     # print(len(ram_dump) // ram_length, "snapshots")
     if analyze_snapshots == "all":
-        #snapshots = range(len(ram_dump) // ram_length - 1, -1, -1)
-        snapshots = range(4576, -1, -1)
+        snapshots = range(len(ram_dump) // ram_length - 1, -1, -1)
+        #snapshots = range(4576, -1, -1)
     elif analyze_snapshots == "last":
         snapshots = range(len(ram_dump) // ram_length - 1, len(ram_dump) // ram_length - 2, -1)
     for snapshot_num in snapshots:
@@ -262,6 +262,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     potential_type = word
                     bgcolor = "gray"
                     if address in qstr_pools:
+                        #print(address, len(data))
                         bgcolor = "tomato"
                     elif potential_type in function_types:
                         bgcolor = "green"
