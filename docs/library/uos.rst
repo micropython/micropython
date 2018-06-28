@@ -193,14 +193,16 @@ used by a particular filesystem driver to store the data for its filesystem.
 
     .. method:: readblocks(block_num, buf)
 
-        Starting at *block_num*, read blocks from the device into *buf* (an array
-        of bytes).  The number of blocks to read is given by the length of *buf*,
+        Starting at the block given by the index *block_num*, read blocks from
+        the device into *buf* (an array of bytes).
+        The number of blocks to read is given by the length of *buf*,
         which will be a multiple of the block size.
 
     .. method:: writeblocks(block_num, buf)
 
-        Starting at *block_num*, write blocks from *buf* (an array of bytes) to
-        the device.  The number of blocks to write is given by the length of *buf*,
+        Starting at the block given by the index *block_num*, write blocks from
+        *buf* (an array of bytes) to the device.
+        The number of blocks to write is given by the length of *buf*,
         which will be a multiple of the block size.
 
     .. method:: ioctl(op, arg)
