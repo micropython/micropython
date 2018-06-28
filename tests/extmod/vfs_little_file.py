@@ -1,4 +1,4 @@
-# Test for VfsLittle using a RAM device
+# Test for VfsLittle using a RAM device, file IO
 
 try:
     import uos
@@ -46,63 +46,65 @@ uos.VfsLittle.mkfs(bdev)
 # construction
 vfs = uos.VfsLittle(bdev)
 
-# statvfs
-print(vfs.statvfs('/'))
-
-# open, write close
-f = vfs.open('test', 'w')
+# create text, print, write, close
+f = vfs.open('test.txt', 'wt')
+print(f)
 f.write('littlefs')
 f.close()
 
-# statvfs after creating a file
-print(vfs.statvfs('/'))
+# close already-closed file
+f.close()
 
-# ilistdir
-print(list(vfs.ilistdir()))
-print(list(vfs.ilistdir('/')))
-print(list(vfs.ilistdir(b'/')))
+# create binary, print, write, flush, close
+f = vfs.open('test.bin', 'wb')
+print(f)
+f.write('littlefs')
+f.flush()
+f.close()
 
-# mkdir, rmdir
-vfs.mkdir('testdir')
-print(list(vfs.ilistdir()))
-print(list(vfs.ilistdir('testdir')))
-vfs.rmdir('testdir')
-print(list(vfs.ilistdir()))
-vfs.mkdir('testdir')
+# create for append
+f = vfs.open('test.bin', 'ab')
+f.write('more')
+f.close()
 
-# stat a file
-print(vfs.stat('test'))
+# create exclusive
+f = vfs.open('test2.bin', 'xb')
+f.close()
 
-# stat a dir
-print(vfs.stat('testdir'))
+# create exclusive with error
+try:
+    vfs.open('test2.bin', 'x')
+except OSError:
+    print('open OSError')
 
-# read
-with vfs.open('test', 'r') as f:
+# read default
+with vfs.open('test.txt', '') as f:
     print(f.read())
 
-# create large file
-with vfs.open('testbig', 'w') as f:
-    data = 'large012' * 32 * 16
-    print('data length:', len(data))
-    for i in range(4):
-        print('write', i)
-        f.write(data)
+# read text
+with vfs.open('test.txt', 'rt') as f:
+    print(f.read())
 
-# stat after creating large file
-print(vfs.statvfs('/'))
+# read binary
+with vfs.open('test.bin', 'rb') as f:
+    print(f.read())
 
-# rename
-vfs.rename('testbig', 'testbig2')
-print(list(vfs.ilistdir()))
+# create read and write
+with vfs.open('test.bin', 'r+b') as f:
+    print(f.read(8))
+    f.write('MORE')
+with vfs.open('test.bin', 'rb') as f:
+    print(f.read())
 
-# remove
-vfs.remove('testbig2')
-print(list(vfs.ilistdir()))
+# seek and tell
+f = vfs.open('test.txt', 'r')
+print(f.tell())
+f.seek(3, 0)
+print(f.tell())
+f.close()
 
-# getcwd, chdir
-print(vfs.getcwd())
-vfs.chdir('/testdir')
-print(vfs.getcwd())
-vfs.chdir('/')
-print(vfs.getcwd())
-vfs.rmdir('testdir')
+# open nonexistent
+try:
+    vfs.open('noexist', 'r')
+except OSError:
+    print('open OSError')

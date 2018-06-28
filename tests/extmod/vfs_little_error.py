@@ -1,4 +1,4 @@
-# Test for VfsLittle using a RAM device
+# Test for VfsLittle using a RAM device, testing error handling
 
 try:
     import uos
@@ -45,64 +45,54 @@ uos.VfsLittle.mkfs(bdev)
 
 # construction
 vfs = uos.VfsLittle(bdev)
-
-# statvfs
-print(vfs.statvfs('/'))
-
-# open, write close
-f = vfs.open('test', 'w')
-f.write('littlefs')
-f.close()
-
-# statvfs after creating a file
-print(vfs.statvfs('/'))
+with open('testfile', 'w') as f:
+    f.write('test')
+vfs.mkdir('testdir')
 
 # ilistdir
-print(list(vfs.ilistdir()))
-print(list(vfs.ilistdir('/')))
-print(list(vfs.ilistdir(b'/')))
-
-# mkdir, rmdir
-vfs.mkdir('testdir')
-print(list(vfs.ilistdir()))
-print(list(vfs.ilistdir('testdir')))
-vfs.rmdir('testdir')
-print(list(vfs.ilistdir()))
-vfs.mkdir('testdir')
-
-# stat a file
-print(vfs.stat('test'))
-
-# stat a dir
-print(vfs.stat('testdir'))
-
-# read
-with vfs.open('test', 'r') as f:
-    print(f.read())
-
-# create large file
-with vfs.open('testbig', 'w') as f:
-    data = 'large012' * 32 * 16
-    print('data length:', len(data))
-    for i in range(4):
-        print('write', i)
-        f.write(data)
-
-# stat after creating large file
-print(vfs.statvfs('/'))
-
-# rename
-vfs.rename('testbig', 'testbig2')
-print(list(vfs.ilistdir()))
+try:
+    vfs.ilistdir('noexist')
+except OSError:
+    print('ilistdir OSError')
 
 # remove
-vfs.remove('testbig2')
-print(list(vfs.ilistdir()))
+try:
+    vfs.remove('noexist')
+except OSError:
+    print('remove OSError')
 
-# getcwd, chdir
-print(vfs.getcwd())
-vfs.chdir('/testdir')
-print(vfs.getcwd())
-vfs.chdir('/')
-print(vfs.getcwd())
-vfs.rmdir('testdir')
+# rmdir
+try:
+    vfs.rmdir('noexist')
+except OSError:
+    print('rmdir OSError')
+
+# rename
+try:
+    vfs.rename('noexist', 'somethingelse')
+except OSError:
+    print('rename OSError')
+
+# mkdir
+try:
+    vfs.mkdir('testdir')
+except OSError:
+    print('mkdir OSError')
+
+# chdir to nonexistent
+try:
+    vfs.chdir('noexist')
+except OSError:
+    print('chdir OSError')
+
+# chdir to file
+try:
+    vfs.chdir('testfile')
+except OSError:
+    print('chdir OSError')
+
+# stat
+try:
+    vfs.stat('noexist')
+except OSError:
+    print('stat OSError')
