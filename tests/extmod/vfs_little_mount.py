@@ -1,4 +1,4 @@
-# Test for VfsLittle using a RAM device
+# Test for VfsLittle using a RAM device, with mount/umount
 
 try:
     import uos
@@ -40,69 +40,30 @@ class RAMFS:
 
 bdev = RAMFS(30)
 
+# initialise path
+import sys
+sys.path.clear()
+sys.path.append('/lfs')
+
 # mkfs
 uos.VfsLittle.mkfs(bdev)
 
 # construction
 vfs = uos.VfsLittle(bdev)
 
-# statvfs
-print(vfs.statvfs('/'))
+# mount
+uos.mount(vfs, '/lfs')
 
-# open, write close
-f = vfs.open('test', 'w')
-f.write('littlefs')
-f.close()
+# import
+with open('/lfs/lfsmod.py', 'w') as f:
+    f.write('print("hello from lfs")\n')
+import lfsmod
 
-# statvfs after creating a file
-print(vfs.statvfs('/'))
+# import package
+uos.mkdir('/lfs/lfspkg')
+with open('/lfs/lfspkg/__init__.py', 'w') as f:
+    f.write('print("package")\n')
+import lfspkg
 
-# ilistdir
-print(list(vfs.ilistdir()))
-print(list(vfs.ilistdir('/')))
-print(list(vfs.ilistdir(b'/')))
-
-# mkdir, rmdir
-vfs.mkdir('testdir')
-print(list(vfs.ilistdir()))
-print(list(vfs.ilistdir('testdir')))
-vfs.rmdir('testdir')
-print(list(vfs.ilistdir()))
-vfs.mkdir('testdir')
-
-# stat a file
-print(vfs.stat('test'))
-
-# stat a dir
-print(vfs.stat('testdir'))
-
-# read
-with vfs.open('test', 'r') as f:
-    print(f.read())
-
-# create large file
-with vfs.open('testbig', 'w') as f:
-    data = 'large012' * 32 * 16
-    print('data length:', len(data))
-    for i in range(4):
-        print('write', i)
-        f.write(data)
-
-# stat after creating large file
-print(vfs.statvfs('/'))
-
-# rename
-vfs.rename('testbig', 'testbig2')
-print(list(vfs.ilistdir()))
-
-# remove
-vfs.remove('testbig2')
-print(list(vfs.ilistdir()))
-
-# getcwd, chdir
-print(vfs.getcwd())
-vfs.chdir('/testdir')
-print(vfs.getcwd())
-vfs.chdir('/')
-print(vfs.getcwd())
-vfs.rmdir('testdir')
+# umount
+uos.umount('/lfs')

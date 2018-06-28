@@ -1,0 +1,11 @@
+<io.TextIOWrapper>
+<io.FileIO>
+open OSError
+littlefs
+littlefs
+b'littlefsmore'
+b'littlefs'
+b'littlefsMORE'
+0
+3
+open OSError
