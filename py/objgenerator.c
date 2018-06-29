@@ -37,11 +37,6 @@
 /******************************************************************************/
 /* generator wrapper                                                          */
 
-typedef struct _mp_obj_gen_wrap_t {
-    mp_obj_base_t base;
-    mp_obj_t *fun;
-} mp_obj_gen_wrap_t;
-
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
@@ -49,9 +44,8 @@ typedef struct _mp_obj_gen_instance_t {
 } mp_obj_gen_instance_t;
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
-    assert(self_fun->base.type == &mp_type_fun_bc);
+    // A generating function is just a bytecode function with type mp_type_gen_wrap
+    mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // bytecode prelude: get state size and exception stack size
     size_t n_state = mp_decode_uint_value(self_fun->bytecode);
@@ -75,13 +69,6 @@ const mp_obj_type_t mp_type_gen_wrap = {
     .call = gen_wrap_call,
     .unary_op = mp_generic_unary_op,
 };
-
-mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
-    mp_obj_gen_wrap_t *o = m_new_obj(mp_obj_gen_wrap_t);
-    o->base.type = &mp_type_gen_wrap;
-    o->fun = MP_OBJ_TO_PTR(fun);
-    return MP_OBJ_FROM_PTR(o);
-}
 
 /******************************************************************************/
 /* generator instance                                                         */
