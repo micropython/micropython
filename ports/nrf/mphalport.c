@@ -32,6 +32,8 @@
 #include "py/mperrno.h"
 #include "hal_uart.h"
 
+extern uint32_t common_hal_mcu_processor_get_frequency(void);
+
 #define UART_INSTANCE   UART_BASE(0)
 FIL* boot_output_file;
 
@@ -90,7 +92,7 @@ void mp_hal_stdout_tx_str(const char *str) {
 // Testing done at 48 MHz on SAMD21 and 120 MHz on SAMD51 (cache on).
 // TODO: Test on NRF. For now, use SAMD51 calibration, even though nRF52 runs slower.
 // Fraction should compensate.
-#define DELAY_LOOP_ITERATIONS_PER_US (30U*120000000U) / common_hal_mcu_processor_get_frequency())
+#define DELAY_LOOP_ITERATIONS_PER_US ( (30U*120000000U) / common_hal_mcu_processor_get_frequency())
 
 void mp_hal_delay_us_loop(uint32_t us) {
     for (uint32_t i = us*DELAY_LOOP_ITERATIONS_PER_US; i > 0; i--) {
