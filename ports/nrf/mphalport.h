@@ -76,4 +76,3 @@ bool mp_hal_stdin_any(void);
 #define mp_hal_ticks_cpu() (0)
 
 #endif
-
