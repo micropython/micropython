@@ -547,6 +547,7 @@ extern const mp_obj_type_t mp_type_slice;
 extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
 extern const mp_obj_type_t mp_type_super;
+extern const mp_obj_type_t mp_type_gen_wrap;
 extern const mp_obj_type_t mp_type_gen_instance;
 extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;
