@@ -92,7 +92,6 @@ SRC_C = \
 	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
-	mphalport.c \
 	ets_alt_task.c \
 	fatfs_port.c \
 	posix_helpers.c \

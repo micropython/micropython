@@ -99,10 +99,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     }
 }
 
-void mp_hal_delay_us(mp_uint_t delay) {
-    tick_delay(delay);
-}
-
+// Use mp_hal_delay_us() for timing of less than 1ms.
 // Do a simple timing loop to wait for a certain number of microseconds.
 // Can be used when interrupts are disabled, which makes tick_delay() unreliable.
 //
@@ -115,8 +112,8 @@ void mp_hal_delay_us(mp_uint_t delay) {
 #define DELAY_LOOP_ITERATIONS_PER_US ( (30U*120000000U) / common_hal_mcu_processor_get_frequency())
 #endif
 
-void mp_hal_delay_us_loop(uint32_t us) {
-    for (uint32_t i = us*DELAY_LOOP_ITERATIONS_PER_US; i > 0; i--) {
+void mp_hal_delay_us(mp_uint_t delay) {
+    for (uint32_t i = delay*DELAY_LOOP_ITERATIONS_PER_US; i > 0; i--) {
         asm volatile("nop");
     }
 }

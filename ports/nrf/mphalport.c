@@ -85,17 +85,3 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
 void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
-
-// Do a simple timing loop to wait for a certain number of microseconds.
-// Can be used when interrupts are disabled, which makes tick_delay() unreliable.
-//
-// Testing done at 48 MHz on SAMD21 and 120 MHz on SAMD51 (cache on).
-// TODO: Test on NRF. For now, use SAMD51 calibration, even though nRF52 runs slower.
-// Fraction should compensate.
-#define DELAY_LOOP_ITERATIONS_PER_US ( (30U*120000000U) / common_hal_mcu_processor_get_frequency())
-
-void mp_hal_delay_us_loop(uint32_t us) {
-    for (uint32_t i = us*DELAY_LOOP_ITERATIONS_PER_US; i > 0; i--) {
-        asm volatile("nop");
-    }
-}

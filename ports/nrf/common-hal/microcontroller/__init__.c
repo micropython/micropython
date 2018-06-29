@@ -33,6 +33,8 @@
 #include "shared-bindings/microcontroller/Processor.h"
 
 // TODO porting common_hal_mcu
+// This routine should work even when interrupts are disabled. Used by OneWire
+// for precise timing.
 void common_hal_mcu_delay_us(uint32_t delay) {
 //    os_delay_us(delay);
 }
@@ -58,4 +60,3 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
         .type = &mcu_processor_type,
     },
 };
-
