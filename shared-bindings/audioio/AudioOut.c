@@ -65,10 +65,10 @@
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
 //|     dac = audioio.AudioOut(board.SPEAKER)
-//|     sine_wave = audioio.RawSample(sine_wave, mono=True, sample_rate=8000)
+//|     sine_wave = audioio.RawSample(sine_wave, sample_rate=8000)
 //|     dac.play(sine_wave, loop=True)
 //|     time.sleep(1)
-//|     sample.stop()
+//|     dac.stop()
 //|
 //|   Playing a wave file from flash::
 //|
