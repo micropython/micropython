@@ -32,8 +32,6 @@
 #include "py/mperrno.h"
 #include "hal_uart.h"
 
-extern uint32_t common_hal_mcu_processor_get_frequency(void);
-
 #define UART_INSTANCE   UART_BASE(0)
 FIL* boot_output_file;
 
