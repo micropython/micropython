@@ -52,6 +52,7 @@ static inline uint32_t hal_tick_fake(void) {
 
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
+
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
@@ -69,6 +70,7 @@ bool mp_hal_stdin_any(void);
 #define mp_hal_pin_od_high(p)    mp_hal_pin_high(p)
 #define mp_hal_pin_open_drain(p) hal_gpio_cfg_pin(p->port, p->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED)
 
+void mp_hal_delay_us_loop(uint32_t us);
 
 // TODO: empty implementation for now. Used by machine_spi.c:69
 #define mp_hal_delay_us_fast(p)
@@ -76,4 +78,3 @@ bool mp_hal_stdin_any(void);
 #define mp_hal_ticks_cpu() (0)
 
 #endif
-

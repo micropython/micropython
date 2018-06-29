@@ -14,6 +14,7 @@
 #include "hal/include/hal_delay.h"
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_sleep.h"
+#include "sam.h"
 
 #include "mpconfigboard.h"
 #include "mphalport.h"
@@ -22,6 +23,7 @@
 #include "usb.h"
 
 extern struct usart_module usart_instance;
+extern uint32_t common_hal_mcu_processor_get_frequency(void);
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
@@ -73,6 +75,24 @@ void mp_hal_delay_ms(mp_uint_t delay) {
 
 void mp_hal_delay_us(mp_uint_t delay) {
     tick_delay(delay);
+}
+
+// Do a simple timing loop to wait for a certain number of microseconds.
+// Can be used when interrupts are disabled, which makes tick_delay() unreliable.
+//
+// Testing done at 48 MHz on SAMD21 and 120 MHz on SAMD51, multiplication and division cancel out.
+// But get the frequency just in case.
+#ifdef SAMD21
+#define DELAY_LOOP_ITERATIONS_PER_US ( (10U*48000000U) / common_hal_mcu_processor_get_frequency())
+#endif
+#ifdef SAMD51
+#define DELAY_LOOP_ITERATIONS_PER_US ( (30U*120000000U) / common_hal_mcu_processor_get_frequency())
+#endif
+
+void mp_hal_delay_us_loop(uint32_t us) {
+    for (uint32_t i = us*DELAY_LOOP_ITERATIONS_PER_US; i > 0; i--) {
+        asm volatile("nop");
+    }
 }
 
 void mp_hal_disable_all_interrupts(void) {
