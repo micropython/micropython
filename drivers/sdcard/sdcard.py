@@ -174,7 +174,7 @@ class SDCard:
         # read until start byte (0xff)
         while True:
             self.spi.readinto(self.tokenbuf, 0xff)
-            if self.tokenbuf[0] == 0xfe:
+            if self.tokenbuf[0] == _TOKEN_DATA:
                 break
 
         # read data
