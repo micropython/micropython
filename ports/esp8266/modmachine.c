@@ -190,16 +190,10 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
     os_timer_setfn(&self->timer, esp_timer_cb, self);
 #if MICROPY_PY_MACHINE_HI_RES_TIMER
     if (args[3].u_obj != mp_const_none) {
-        mp_float_t freq;
-        if (mp_obj_get_float_maybe(args[3].u_obj, &freq)) {
-            period = 1000.0 / freq;
-        } else {
-            mp_raise_TypeError("Frequency must be a number");
-        }
+        mp_float_t freq = mp_obj_get_float(args[3].u_obj);
+	period = 1000.0 / freq;
     } else {
-        if (!mp_obj_get_float_maybe(args[2].u_obj, &period)) {
-	    mp_raise_TypeError("Period must be a number");
-        }
+        period = mp_obj_get_float(args[2].u_obj);
     }
 
     p_set_value = (mp_int_t) period;

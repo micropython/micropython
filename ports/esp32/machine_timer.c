@@ -153,19 +153,11 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 
 #if MICROPY_PY_MACHINE_HI_RES_TIMER
     if (args[3].u_obj != mp_const_none) {
-        mp_float_t freq;
-        if (mp_obj_get_float_maybe(args[3].u_obj, &freq)) {
-	    self->period = (uint64_t) (TIMER_SCALE / freq);
-        } else {
-            mp_raise_TypeError("Frequency must be a number");
-        }
+        mp_float_t freq = mp_obj_get_float(args[3].u_obj);
+	self->period = (uint64_t) (TIMER_SCALE / freq);
     } else {
-        mp_float_t period;
-        if (mp_obj_get_float_maybe(args[2].u_obj, &period)) {
-	    self->period = (uint64_t) (period * TIMER_SCALE / 1000);
-	} else {
-	    mp_raise_TypeError("Period must be a number");
-        }
+        mp_float_t period = mp_obj_get_float(args[2].u_obj);
+	self->period = (uint64_t) (period * TIMER_SCALE / 1000);
     }
 #else
     // Timer uses an 80MHz base clock, which is divided by the divider/scalar, we then convert to ms.
