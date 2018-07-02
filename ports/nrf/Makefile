@@ -61,7 +61,7 @@ CFLAGS += -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
 CFLAGS += -fno-strict-aliasing
-CFLAGS += -fstack-usage
+CFLAGS += -fstack-usage -fno-builtin -fshort-enums
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
 CFLAGS += -D__START=main
