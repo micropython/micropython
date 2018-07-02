@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2016 Sandeep Mistry All right reserved.
  * Copyright (c) 2017 hathach
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,67 +30,103 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "pins.h"
-#include "nrf.h"
+#include "nrfx_twim.h"
+#include "nrf_gpio.h"
 
-void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout ) {
-    if (scl->pin == sda->pin) {
+#define INST_NO 0
+
+static uint8_t twi_error_to_mp(const nrfx_err_t err) {
+    switch (err) {
+    case NRFX_ERROR_DRV_TWI_ERR_ANACK:
+        return MP_ENODEV;
+    case NRFX_ERROR_BUSY:
+        return MP_EBUSY;
+    case NRFX_ERROR_DRV_TWI_ERR_DNACK:
+    case NRFX_ERROR_INVALID_ADDR:
+        return MP_EIO;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
+    if (scl->pin == sda->pin)
         mp_raise_ValueError("Invalid pins");
+
+    const nrfx_twim_t instance = NRFX_TWIM_INSTANCE(INST_NO);
+    self->twim = instance;
+
+    nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
+    config.scl = NRF_GPIO_PIN_MAP(scl->port, scl->pin);
+    config.sda = NRF_GPIO_PIN_MAP(sda->port, sda->pin);
+
+    // change freq. only if it's less than the default 400K
+    if (frequency < 100000) {
+        config.frequency = NRF_TWIM_FREQ_100K;
+    } else if (frequency < 250000) {
+      config.frequency = NRF_TWIM_FREQ_250K;
     }
 
-    NRF_GPIO->PIN_CNF[scl->pin] = ((uint32_t)GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_PULL_Disabled    << GPIO_PIN_CNF_PULL_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+    nrfx_err_t err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
 
-    NRF_GPIO->PIN_CNF[sda->pin] = ((uint32_t)GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_PULL_Disabled    << GPIO_PIN_CNF_PULL_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
-                                    | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
-
-    // 1 for I2C, 0 for SPI
-    self->twi = NRF_TWIM1;
-
-    if ( frequency < 100000 ) {
-      self->twi->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K100;
-    }else if ( frequency < 250000 ) {
-      self->twi->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K250;
-    }else {
-      self->twi->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K400;
+    // A soft reset doesn't uninit the driver so we might end up with a invalid state
+    if (err == NRFX_ERROR_INVALID_STATE) {
+        nrfx_twim_uninit(&self->twim);
+        err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
     }
 
-    self->twi->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
+    if (err != NRFX_SUCCESS)
+        mp_raise_OSError(MP_EIO);
 
-    self->twi->PSEL.SCL = scl->pin;
-    self->twi->PSEL.SDA = sda->pin;
-
+    self->inited = true;
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
-  return self->twi->ENABLE == 0;
+  return !self->inited;
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
-    if (common_hal_busio_i2c_deinited(self)) {
+    if (common_hal_busio_i2c_deinited(self))
         return;
-    }
 
-    uint8_t scl_pin = self->twi->PSEL.SCL;
-    uint8_t sda_pin = self->twi->PSEL.SDA;
+    nrfx_twim_uninit(&self->twim);
 
-    self->twi->ENABLE   = (TWIM_ENABLE_ENABLE_Disabled << TWIM_ENABLE_ENABLE_Pos);
-    self->twi->PSEL.SCL = (TWIM_PSEL_SCL_CONNECT_Disconnected << TWIM_PSEL_SCL_CONNECT_Pos);
-    self->twi->PSEL.SDA = (TWIM_PSEL_SDA_CONNECT_Disconnected << TWIM_PSEL_SDA_CONNECT_Pos);
-
-    reset_pin(scl_pin);
-    reset_pin(sda_pin);
+    self->inited = false;
 }
 
+// nrfx_twim_tx doesn't support 0-length data so we fall back to the hal API
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-  // Write no data when just probing
-  return 0 == common_hal_busio_i2c_write(self, addr, NULL, 0, true);
+    NRF_TWIM_Type *reg = self->twim.p_twim;
+    bool found = true;
+
+    nrfx_twim_enable(&self->twim);
+
+    nrf_twim_address_set(reg, addr);
+    nrf_twim_tx_buffer_set(reg, NULL, 0);
+
+    nrf_twim_task_trigger(reg, NRF_TWIM_TASK_RESUME);
+
+    nrf_twim_task_trigger(reg, NRF_TWIM_TASK_STARTTX);
+    while (nrf_twim_event_check(reg, NRF_TWIM_EVENT_TXSTARTED) == 0 &&
+        nrf_twim_event_check(reg, NRF_TWIM_EVENT_ERROR) == 0);
+    nrf_twim_event_clear(reg, NRF_TWIM_EVENT_TXSTARTED);
+
+    nrf_twim_task_trigger(reg, NRF_TWIM_TASK_STOP);
+    while (nrf_twim_event_check(reg, NRF_TWIM_EVENT_STOPPED) == 0);
+    nrf_twim_event_clear(reg, NRF_TWIM_EVENT_STOPPED);
+
+    if (nrf_twim_event_check(reg, NRF_TWIM_EVENT_ERROR)) {
+        nrf_twim_event_clear(reg, NRF_TWIM_EVENT_ERROR);
+
+        nrf_twim_errorsrc_get_and_clear(reg);
+        found = false;
+    }
+
+    nrfx_twim_disable(&self->twim);
+
+    return found;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
@@ -112,96 +149,23 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len, bool stopBit) {
-  NRF_TWIM_Type* twi = self->twi;
+    if(len == 0)
+        return common_hal_busio_i2c_probe(self, addr) ? 0 : MP_ENODEV;
 
-  twi->ADDRESS       = addr;
-  twi->TASKS_RESUME  = 1;
+    nrfx_twim_enable(&self->twim);
+    const nrfx_err_t err = nrfx_twim_tx(&self->twim, addr, data, len, !stopBit);
+    nrfx_twim_disable(&self->twim);
 
-  twi->TXD.PTR       = (uint32_t) data;
-  twi->TXD.MAXCNT    = len;
-
-  twi->TASKS_STARTTX = 1;
-
-  // Wait for TX started
-  while(!twi->EVENTS_TXSTARTED && !twi->EVENTS_ERROR) {}
-  twi->EVENTS_TXSTARTED = 0;
-
-  // Wait for TX complete
-  if ( len )
-  {
-    while(!twi->EVENTS_LASTTX && !twi->EVENTS_ERROR) {}
-    twi->EVENTS_LASTTX = 0x0UL;
-  }
-
-  if (stopBit || twi->EVENTS_ERROR)
-  {
-    twi->TASKS_STOP = 0x1UL;
-    while(!twi->EVENTS_STOPPED);
-    twi->EVENTS_STOPPED = 0x0UL;
-  }
-  else
-  {
-    twi->TASKS_SUSPEND = 0x1UL;
-    while(!twi->EVENTS_SUSPENDED);
-    twi->EVENTS_SUSPENDED = 0x0UL;
-  }
-
-  if (twi->EVENTS_ERROR)
-  {
-    twi->EVENTS_ERROR = 0x0UL;
-    uint32_t error = twi->ERRORSRC;
-    twi->ERRORSRC = error;
-
-    return error;
-  }
-
-  return 0;
+    return twi_error_to_mp(err);
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t *data, size_t len) {
-  NRF_TWIM_Type* twi = self->twi;
+    if(len == 0)
+        return 0;
 
-  if(len == 0) return 0;
-  bool stopBit = true; // should be a parameter
+    nrfx_twim_enable(&self->twim);
+    const nrfx_err_t err = nrfx_twim_rx(&self->twim, addr, data, len);
+    nrfx_twim_disable(&self->twim);
 
-  twi->ADDRESS       = addr;
-  twi->TASKS_RESUME  = 0x1UL;
-
-  twi->RXD.PTR       = (uint32_t) data;
-  twi->RXD.MAXCNT    = len;
-
-  twi->TASKS_STARTRX = 0x1UL;
-
-  while(!twi->EVENTS_RXSTARTED && !twi->EVENTS_ERROR);
-  twi->EVENTS_RXSTARTED = 0x0UL;
-
-  while(!twi->EVENTS_LASTRX && !twi->EVENTS_ERROR);
-  twi->EVENTS_LASTRX = 0x0UL;
-
-  if (stopBit || twi->EVENTS_ERROR)
-  {
-    twi->TASKS_STOP = 0x1UL;
-    while(!twi->EVENTS_STOPPED);
-    twi->EVENTS_STOPPED = 0x0UL;
-  }
-  else
-  {
-    twi->TASKS_SUSPEND = 0x1UL;
-    while(!twi->EVENTS_SUSPENDED);
-    twi->EVENTS_SUSPENDED = 0x0UL;
-  }
-
-  if (twi->EVENTS_ERROR)
-  {
-    twi->EVENTS_ERROR = 0x0UL;
-    uint32_t error = twi->ERRORSRC;
-    twi->ERRORSRC = error;
-
-    return error;
-  }
-
-  // number of byte read
-//  (void) _p_twim->RXD.AMOUNT;
-
-  return 0;
+    return twi_error_to_mp(err);
 }

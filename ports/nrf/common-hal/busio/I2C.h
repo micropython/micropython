@@ -27,16 +27,15 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
 
-#include "common-hal/microcontroller/Pin.h"
-
-//#include "hal/include/hal_i2c_m_sync.h"
+#include "nrfx_twim.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    volatile bool has_lock;
-    NRF_TWIM_Type* twi;
+    nrfx_twim_t twim;
+    bool inited;
+    bool has_lock;
 } busio_i2c_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
