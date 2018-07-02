@@ -20,14 +20,19 @@ Supported operators are:
    including negated sets (e.g. ``[^a-c]``).
 
 ``'^'``
+   Match the start of the string.
 
 ``'$'``
+   Match the end of the string.
 
 ``'?'``
+   Match zero or one of the previous entity.
 
 ``'*'``
+   Match zero or more of the previous entity.
 
 ``'+'``
+   Match one or more of the previous entity.
 
 ``'??'``
 
@@ -36,6 +41,7 @@ Supported operators are:
 ``'+?'``
 
 ``'|'``
+   Match either the LHS or the RHS of this operator.
 
 ``'(...)'``
    Grouping. Each group is capturing (a substring it captures can be accessed
