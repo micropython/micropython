@@ -138,6 +138,7 @@ static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
+#if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
 #define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
 
@@ -157,6 +158,7 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
     } num = {.f = f};
     return (mp_obj_t)(((num.u & ~0x3) | 2) + 0x80800000);
 }
+#endif
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
     { return (((mp_uint_t)(o)) & 0xff800007) == 0x00000006; }
