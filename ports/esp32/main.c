@@ -147,4 +147,3 @@ void nlr_jump_fail(void *val) {
 void mbedtls_debug_set_threshold(int threshold) {
     (void)threshold;
 }
-
