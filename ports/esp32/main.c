@@ -51,11 +51,14 @@
 #include "modmachine.h"
 #include "modnetwork.h"
 #include "mpthreadport.h"
+#include "main.h"
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 #define MP_TASK_STACK_SIZE      (16 * 1024)
 #define MP_TASK_STACK_LEN       (MP_TASK_STACK_SIZE / sizeof(StackType_t))
+
+TaskHandle_t mp_main_task_handle;
 
 STATIC StaticTask_t mp_task_tcb;
 STATIC StackType_t mp_task_stack[MP_TASK_STACK_LEN] __attribute__((aligned (8)));
@@ -131,8 +134,8 @@ soft_reset:
 
 void app_main(void) {
     nvs_flash_init();
-    xTaskCreateStaticPinnedToCore(mp_task, "mp_task", MP_TASK_STACK_LEN, NULL, MP_TASK_PRIORITY,
-                                  &mp_task_stack[0], &mp_task_tcb, 0);
+    mp_main_task_handle = xTaskCreateStaticPinnedToCore(mp_task, "mp_task", MP_TASK_STACK_LEN, NULL, MP_TASK_PRIORITY,
+							&mp_task_stack[0], &mp_task_tcb, 0);
 }
 
 void nlr_jump_fail(void *val) {
@@ -144,3 +147,4 @@ void nlr_jump_fail(void *val) {
 void mbedtls_debug_set_threshold(int threshold) {
     (void)threshold;
 }
+

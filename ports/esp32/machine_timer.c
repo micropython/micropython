@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "modmachine.h"
+#include "mphalport.h"
 
 #define TIMER_INTR_SEL TIMER_INTR_LEVEL
 #define TIMER_DIVIDER  40000
@@ -109,6 +110,7 @@ STATIC void machine_timer_isr(void *self_in) {
     device->hw_timer[self->index].config.alarm_en = self->repeat;
 
     mp_sched_schedule(self->callback, self);
+    mp_hal_wake_main_task_from_isr();
 }
 
 STATIC void machine_timer_enable(machine_timer_obj_t *self) {

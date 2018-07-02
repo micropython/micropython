@@ -33,6 +33,8 @@
 #include "freertos/task.h"
 #include "rom/uart.h"
 
+#include "main.h"
+
 #include "py/obj.h"
 #include "py/mpstate.h"
 #include "py/mphal.h"
@@ -49,7 +51,8 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         MICROPY_EVENT_POLL_HOOK
-        vTaskDelay(1);
+//        vTaskDelay(1);
+	ulTaskNotifyTake(pdTRUE, 1);
     }
 }
 
@@ -106,7 +109,8 @@ void mp_hal_delay_ms(uint32_t ms) {
             break;
         }
         MICROPY_EVENT_POLL_HOOK
-        vTaskDelay(1);
+	// vTaskDelay(1);
+	ulTaskNotifyTake(pdTRUE, 1);
     }
     if (dt < us) {
         // do the remaining delay accurately
@@ -154,3 +158,12 @@ int *__errno() {
     return &mp_stream_errno;
 }
 */
+
+/* Wake up the main task if it is sleeping */
+void mp_hal_wake_main_task_from_isr(void) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(mp_main_task_handle, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken == pdTRUE) {
+        portYIELD_FROM_ISR();
+    }
+}

@@ -49,6 +49,9 @@ uint32_t mp_hal_get_cpu_freq(void);
 #define mp_hal_quiet_timing_enter() MICROPY_BEGIN_ATOMIC_SECTION()
 #define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
 
+/* Wake up the main task if it is sleeping */
+void mp_hal_wake_main_task_from_isr(void);
+
 // C-level pin HAL
 #include "py/obj.h"
 #include "driver/gpio.h"
