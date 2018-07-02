@@ -26,6 +26,9 @@
 #define MICROPY_HW_UART1_RX     (pin_B7)
 #define MICROPY_HW_UART2_TX     (pin_A2)
 #define MICROPY_HW_UART2_RX     (pin_A3)
+#define MICROPY_HW_UART3_TX     (pin_C10)
+#define MICROPY_HW_UART3_RX     (pin_C11)
+
 
 // USART2 is connected to the ST-LINK USB VCP
 #define MICROPY_HW_UART_REPL PYB_UART_2
