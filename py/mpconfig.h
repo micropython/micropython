@@ -1142,6 +1142,18 @@ typedef double mp_float_t;
 #define MICROPY_PY_URE (0)
 #endif
 
+#ifndef MICROPY_PY_URE_MATCH_GROUPS
+#define MICROPY_PY_URE_MATCH_GROUPS (0)
+#endif
+
+#ifndef MICROPY_PY_URE_MATCH_SPAN_START_END
+#define MICROPY_PY_URE_MATCH_SPAN_START_END (0)
+#endif
+
+#ifndef MICROPY_PY_URE_SUB
+#define MICROPY_PY_URE_SUB (0)
+#endif
+
 #ifndef MICROPY_PY_UHEAPQ
 #define MICROPY_PY_UHEAPQ (0)
 #endif
@@ -1161,6 +1173,14 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UHASHLIB_SHA256
 #define MICROPY_PY_UHASHLIB_SHA256 (1)
+#endif
+
+#ifndef MICROPY_PY_UCRYPTOLIB
+#define MICROPY_PY_UCRYPTOLIB (0)
+#endif
+
+#ifndef MICROPY_PY_UCRYPTOLIB_CONSTS
+#define MICROPY_PY_UCRYPTOLIB_CONSTS (0)
 #endif
 
 #ifndef MICROPY_PY_UBINASCII
