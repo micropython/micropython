@@ -35,9 +35,7 @@
 #include "py/gc.h"
 
 /* This needs to be defined before any ESP SDK headers are included */
-#if MICROPY_PY_MACHINE_HI_RES_TIMER
 #define USE_US_TIMER 1
-#endif
 
 #include "extmod/misc.h"
 #include "lib/mp-readline/readline.h"
@@ -132,9 +130,7 @@ soft_reset:
 }
 
 void user_init(void) {
-#if MICROPY_PY_MACHINE_HI_RES_TIMER
     system_timer_reinit();
-#endif
     system_init_done_cb(init_done);
 }
 

@@ -36,11 +36,8 @@
 #include "modmachine.h"
 
 #define TIMER_INTR_SEL TIMER_INTR_LEVEL
-#if MICROPY_PY_MACHINE_HI_RES_TIMER
 #define TIMER_DIVIDER  40
-#else
-#define TIMER_DIVIDER  40000
-#endif
+
 // TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
 #define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)
 
@@ -138,11 +135,14 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-#if MICROPY_PY_MACHINE_HI_RES_TIMER
+#if MICROPY_PY_BUILTINS_FLOAT
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_period_us,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 #else
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_period_us,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
 #endif
     };
 
@@ -151,17 +151,27 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-#if MICROPY_PY_MACHINE_HI_RES_TIMER
-    if (args[3].u_obj != mp_const_none) {
-        mp_float_t freq = mp_obj_get_float(args[3].u_obj);
-	self->period = (uint64_t) (TIMER_SCALE / freq);
+#if MICROPY_PY_BUILTINS_FLOAT
+    if (args[2].u_obj != mp_const_none) {
+	self->period = (uint64_t) (mp_obj_get_float(args[2].u_obj) * TIMER_SCALE / 1000);
+    } else if (args[3].u_obj != mp_const_none) {
+	self->period = (uint64_t) (TIMER_SCALE / mp_obj_get_float(args[3].u_obj));
+    } else if (args[4].u_obj != mp_const_none) {
+	self->period = (uint64_t) (mp_obj_get_float(args[4].u_obj) * TIMER_SCALE / 1000000);
     } else {
-        mp_float_t period = mp_obj_get_float(args[2].u_obj);
-	self->period = (uint64_t) (period * TIMER_SCALE / 1000);
+	mp_raise_ValueError("Need period or freq value");
     }
 #else
-    // Timer uses an 80MHz base clock, which is divided by the divider/scalar, we then convert to ms.
-    self->period = (args[2].u_int * TIMER_BASE_CLK) / (1000 * TIMER_DIVIDER);
+    // Timer uses an 80MHz base clock, which is divided by the divider/scalar.
+    if (args[2].u_int != 0xffffffff) {
+	self->period = ((uint64_t) args[2].u_int) * TIMER_SCALE / 1000;
+    } else if (args[3].u_int != 0xffffffff) {
+	self->period = TIMER_SCALE / ((uint64_t) args[3].u_int);
+    } else if (args[4].u_int != 0xffffffff) {
+	self->period = ((uint64_t) args[4].u_int) * TIMER_SCALE / 1000000;
+    } else {
+	mp_raise_ValueError("Need period or freq value");
+    }
 #endif
 
     self->repeat = args[0].u_int;
