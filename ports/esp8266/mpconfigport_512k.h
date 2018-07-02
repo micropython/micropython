@@ -32,6 +32,9 @@
 #undef MICROPY_PY_FRAMEBUF
 #define MICROPY_PY_FRAMEBUF             (0)
 
+#undef MICROPY_PY_URE_SUB
+#define MICROPY_PY_URE_SUB              (0)
+
 #undef MICROPY_PY_UCRYPTOLIB
 #define MICROPY_PY_UCRYPTOLIB           (0)
 
