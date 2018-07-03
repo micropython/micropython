@@ -33,13 +33,14 @@
 #include "freertos/task.h"
 #include "rom/uart.h"
 
-#include "main.h"
-
 #include "py/obj.h"
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
+#include "mphalport.h"
+
+TaskHandle_t mp_main_task_handle;
 
 STATIC uint8_t stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
@@ -157,7 +158,7 @@ int *__errno() {
 }
 */
 
-/* Wake up the main task if it is sleeping */
+// Wake up the main task if it is sleeping
 void mp_hal_wake_main_task_from_isr(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     vTaskNotifyGiveFromISR(mp_main_task_handle, &xHigherPriorityTaskWoken);
