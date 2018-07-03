@@ -1,44 +1,33 @@
 /**
   ******************************************************************************
-  * @file      startup_stm32.S
+  * @file      startup_stm32l496xx.s
   * @author    MCD Application Team
-  * @version   V2.0.0
-  * @date      18-February-2014
-  * @brief     STM32Fxxxxx Devices vector table for Atollic TrueSTUDIO toolchain.
+  * @brief     STM32L496xx devices vector table GCC toolchain.
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,
-  *                - Set the vector table entries with the exceptions ISR address
+  *                - Set the vector table entries with the exceptions ISR address,
   *                - Branches to main in the C library (which eventually
   *                  calls main()).
-  *            After Reset the Cortex-M4/M7 processor is in Thread mode,
+  *            After Reset the Cortex-M4 processor is in Thread mode,
   *            priority is Privileged, and the Stack is set to Main.
+  *  Taken from STM32L4 template code for stm32l496 in STM32Cube_FW_L4_V1.11.0
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2017 STMicroelectronics</center></h2>
   *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
+  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
+  * You may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at:
   *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *        http://www.st.com/software_license_agreement_liberty_v2
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
   *
   ******************************************************************************
   */
@@ -64,6 +53,7 @@ defined in linker script */
 .word  _ebss
 /* stack used for SystemInit_ExtMemCtl; always internal RAM used */
 
+.equ BootRAM,        0xF1E0F85F
 /**
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
@@ -120,6 +110,7 @@ LoopFillZerobss:
  * @brief  This is the code that gets called when the processor receives an
  *         unexpected interrupt.  This simply enters an infinite loop, preserving
  *         the system state for examination by a debugger.
+ *
  * @param  None
  * @retval None
 */
@@ -130,7 +121,7 @@ Infinite_Loop:
   .size  Default_Handler, .-Default_Handler
 /******************************************************************************
 *
-* The minimal vector table for a Cortex M4/M7. Note that the proper constructs
+* The minimal vector table for a Cortex-M4.  Note that the proper constructs
 * must be placed on this to ensure that it ends up at physical address
 * 0x0000.0000.
 *
@@ -201,7 +192,7 @@ g_pfnVectors:
   .word     USART3_IRQHandler                 /* USART3                       */
   .word     EXTI15_10_IRQHandler              /* External Line[15:10]s        */
   .word     RTC_Alarm_IRQHandler              /* RTC Alarm (A and B) through EXTI Line */
-  .word     DFSDM3_IRQHandler                 /* Digital filter for sigma delta modulator 3 */
+  .word     DFSDM1_FLT3_IRQHandler            /* Digital filter 3 for sigma delta modulator */
   .word     TIM8_BRK_IRQHandler               /* TIM8 Break                   */
   .word     TIM8_UP_IRQHandler                /* TIM8 Update                  */
   .word     TIM8_TRG_COM_IRQHandler           /* TIM8 Trigger and Commutation */
@@ -220,9 +211,9 @@ g_pfnVectors:
   .word     DMA2_Channel3_IRQHandler          /* DMA2 Channel 3               */
   .word     DMA2_Channel4_IRQHandler          /* DMA2 Channel 4               */
   .word     DMA2_Channel5_IRQHandler          /* DMA2 Channel 5               */
-  .word     DFSDM0_IRQHandler                 /* Digital filter for sigma delta modulator 0 */
-  .word     DFSDM1_IRQHandler                 /* Digital filter for sigma delta modulator 1 */
-  .word     DFSDM2_IRQHandler                 /* Digital filter for sigma delta modulator 2 */
+  .word     DFSDM1_FLT0_IRQHandler            /* Digital filter 0 for sigma delta modulator */
+  .word     DFSDM1_FLT1_IRQHandler            /* Digital filter 1 for sigma delta modulator */
+  .word     DFSDM1_FLT2_IRQHandler            /* Digital filter 2 for sigma delta modulator */
   .word     COMP_IRQHandler                   /* Comporator thru EXTI line    */
   .word     LPTIM1_IRQHandler                 /* Low power timer 1            */
   .word     LPTIM2_IRQHandler                 /* Low power timer 2            */
@@ -241,6 +232,16 @@ g_pfnVectors:
   .word     0                                 /* CRYP crypto                  */
   .word     RNG_IRQHandler                    /* Random number generator      */
   .word     FPU_IRQHandler                    /* FPU                          */
+  /* Following Handlers are only used on L496/4A6xx devices */
+  .word     CRS_IRQHandler                    /* HASH and CRS interrupt       */
+  .word     I2C4_EV_IRQHandler                /* I2C4 event interrupt         */
+  .word     I2C4_ER_IRQHandler                /* I2C4 error interrupt         */
+  .word     DCMI_IRQHandler                   /* DCMI global interrupt        */
+  .word     CAN2_TX_IRQHandler                /* CAN2 TX interrupt            */
+  .word     CAN2_RX0_IRQHandler               /* CAN2 RX0 interrupt           */
+  .word     CAN2_RX1_IRQHandler               /* CAN2 RX1 interrupt           */
+  .word     CAN2_SCE_IRQHandler               /* CAN SCE interrupt            */
+  .word     DMA2D_IRQHandler                  /* DMA2D global interrupt       */
 
 /*******************************************************************************
 *
@@ -309,28 +310,28 @@ g_pfnVectors:
    .weak      EXTI4_IRQHandler
    .thumb_set EXTI4_IRQHandler,Default_Handler
 
-   .weak   DMA1_Channel1_IRQHandler
+   .weak      DMA1_Channel1_IRQHandler
    .thumb_set DMA1_Channel1_IRQHandler,Default_Handler
 
-   .weak   DMA1_Channel2_IRQHandler
+   .weak      DMA1_Channel2_IRQHandler
    .thumb_set DMA1_Channel2_IRQHandler,Default_Handler
 
-   .weak   DMA1_Channel3_IRQHandler
+   .weak      DMA1_Channel3_IRQHandler
    .thumb_set DMA1_Channel3_IRQHandler,Default_Handler
 
-   .weak   DMA1_Channel4_IRQHandler
+   .weak      DMA1_Channel4_IRQHandler
    .thumb_set DMA1_Channel4_IRQHandler,Default_Handler
 
-   .weak   DMA1_Channel5_IRQHandler
+   .weak      DMA1_Channel5_IRQHandler
    .thumb_set DMA1_Channel5_IRQHandler,Default_Handler
 
-   .weak   DMA1_Channel6_IRQHandler
+   .weak      DMA1_Channel6_IRQHandler
    .thumb_set DMA1_Channel6_IRQHandler,Default_Handler
 
-   .weak   DMA1_Channel7_IRQHandler
+   .weak      DMA1_Channel7_IRQHandler
    .thumb_set DMA1_Channel7_IRQHandler,Default_Handler
 
-   .weak    ADC1_2_IRQHandler
+   .weak      ADC1_2_IRQHandler
    .thumb_set ADC1_2_IRQHandler,Default_Handler
 
    .weak      CAN1_TX_IRQHandler
@@ -402,8 +403,8 @@ g_pfnVectors:
    .weak      RTC_Alarm_IRQHandler
    .thumb_set RTC_Alarm_IRQHandler,Default_Handler
 
-   .weak      DFSDM3_IRQHandler
-   .thumb_set DFSDM3_IRQHandler,Default_Handler
+   .weak      DFSDM1_FLT3_IRQHandler
+   .thumb_set DFSDM1_FLT3_IRQHandler,Default_Handler
 
    .weak      TIM8_BRK_IRQHandler
    .thumb_set TIM8_BRK_IRQHandler,Default_Handler
@@ -459,14 +460,14 @@ g_pfnVectors:
    .weak      DMA2_Channel5_IRQHandler
    .thumb_set DMA2_Channel5_IRQHandler,Default_Handler
 
-   .weak      DFSDM0_IRQHandler
-   .thumb_set DFSDM0_IRQHandler,Default_Handler
+   .weak      DFSDM1_FLT0_IRQHandler
+   .thumb_set DFSDM1_FLT0_IRQHandler,Default_Handler
 
-   .weak      DFSDM1_IRQHandler
-   .thumb_set DFSDM1_IRQHandler,Default_Handler
+   .weak      DFSDM1_FLT1_IRQHandler
+   .thumb_set DFSDM1_FLT1_IRQHandler,Default_Handler
 
-   .weak      DFSDM2_IRQHandler
-   .thumb_set DFSDM2_IRQHandler,Default_Handler
+   .weak      DFSDM1_FLT2_IRQHandler
+   .thumb_set DFSDM1_FLT2_IRQHandler,Default_Handler
 
    .weak      COMP_IRQHandler
    .thumb_set COMP_IRQHandler,Default_Handler
@@ -519,4 +520,30 @@ g_pfnVectors:
    .weak      FPU_IRQHandler
    .thumb_set FPU_IRQHandler,Default_Handler
 
+   .weak      CRS_IRQHandler
+   .thumb_set CRS_IRQHandler,Default_Handler
+
+   .weak      I2C4_EV_IRQHandler
+   .thumb_set I2C4_EV_IRQHandler,Default_Handler
+
+   .weak      I2C4_ER_IRQHandler
+   .thumb_set I2C4_ER_IRQHandler,Default_Handler
+
+   .weak      DCMI_IRQHandler
+   .thumb_set DCMI_IRQHandler,Default_Handler
+
+   .weak      CAN2_TX_IRQHandler
+   .thumb_set CAN2_TX_IRQHandler,Default_Handler
+
+   .weak      CAN2_RX0_IRQHandler
+   .thumb_set CAN2_RX0_IRQHandler,Default_Handler
+
+   .weak      CAN2_RX1_IRQHandler
+   .thumb_set CAN2_RX1_IRQHandler,Default_Handler
+
+   .weak      CAN2_SCE_IRQHandler
+   .thumb_set CAN2_SCE_IRQHandler,Default_Handler
+
+   .weak      DMA2D_IRQHandler
+   .thumb_set DMA2D_IRQHandler,Default_Handler
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

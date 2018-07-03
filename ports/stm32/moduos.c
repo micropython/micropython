@@ -82,10 +82,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
+    #if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
     }
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
@@ -148,7 +150,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&uos_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
+    #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

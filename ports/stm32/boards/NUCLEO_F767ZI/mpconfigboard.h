@@ -13,6 +13,9 @@
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 
+#define MICROPY_BOARD_EARLY_INIT    NUCLEO_F767ZI_board_early_init
+void NUCLEO_F767ZI_board_early_init(void);
+
 // HSE is 25MHz
 // VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
 // SYSCLK = VCOClock / PLLP = 432 MHz / 2 = 216 MHz

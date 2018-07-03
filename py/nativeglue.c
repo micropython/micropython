@@ -146,8 +146,8 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_obj_new_dict,
     mp_obj_dict_store,
 #if MICROPY_PY_BUILTINS_SET
-    mp_obj_new_set,
     mp_obj_set_store,
+    mp_obj_new_set,
 #endif
     mp_make_function_from_raw_code,
     mp_native_call_function_n_kw,

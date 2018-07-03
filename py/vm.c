@@ -136,7 +136,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
 #else
-    #define DISPATCH() break
+    #define DISPATCH() goto dispatch_loop
     #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
     #define ENTRY(op) case op
     #define ENTRY_DEFAULT default
@@ -336,7 +336,7 @@ dispatch_loop:
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
-                    if (mp_obj_get_type(top)->attr == mp_obj_instance_attr) {
+                    if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
                         mp_uint_t x = *ip;
                         mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
@@ -434,7 +434,7 @@ dispatch_loop:
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
-                    if (mp_obj_get_type(top)->attr == mp_obj_instance_attr && sp[-1] != MP_OBJ_NULL) {
+                    if (mp_obj_is_instance_type(mp_obj_get_type(top)) && sp[-1] != MP_OBJ_NULL) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
                         mp_uint_t x = *ip;
                         mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
@@ -1270,10 +1270,10 @@ yield:
                     } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
                         fastn[MP_BC_STORE_FAST_MULTI - (mp_int_t)ip[-1]] = POP();
                         DISPATCH();
-                    } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + 7) {
+                    } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NUM_BYTECODE) {
                         SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
                         DISPATCH();
-                    } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + 36) {
+                    } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE) {
                         mp_obj_t rhs = POP();
                         mp_obj_t lhs = TOP();
                         SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
@@ -1322,11 +1322,12 @@ pending_exception_check:
 
                 #if MICROPY_PY_THREAD_GIL
                 #if MICROPY_PY_THREAD_GIL_VM_DIVISOR
-                if (--gil_divisor == 0) {
-                    gil_divisor = MICROPY_PY_THREAD_GIL_VM_DIVISOR;
-                #else
-                {
+                if (--gil_divisor == 0)
                 #endif
+                {
+                    #if MICROPY_PY_THREAD_GIL_VM_DIVISOR
+                    gil_divisor = MICROPY_PY_THREAD_GIL_VM_DIVISOR;
+                    #endif
                     #if MICROPY_ENABLE_SCHEDULER
                     // can only switch threads if the scheduler is unlocked
                     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE)

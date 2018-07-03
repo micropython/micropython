@@ -35,7 +35,7 @@
 #include "dma.h"
 #include "i2c.h"
 
-#if MICROPY_HW_ENABLE_HW_I2C
+#if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
@@ -198,7 +198,7 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
         }
     }
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                                            "Unsupported I2C baudrate: %lu", baudrate));
+                                            "Unsupported I2C baudrate: %u", baudrate));
 }
 
 uint32_t pyb_i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
@@ -1065,4 +1065,4 @@ const mp_obj_type_t pyb_i2c_type = {
     .locals_dict = (mp_obj_dict_t*)&pyb_i2c_locals_dict,
 };
 
-#endif // MICROPY_HW_ENABLE_HW_I2C
+#endif // MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C

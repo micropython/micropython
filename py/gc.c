@@ -328,7 +328,9 @@ void gc_collect_start(void) {
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
     // dict_globals, then the root pointer section of mp_state_vm.
     void **ptrs = (void**)(void*)&mp_state_ctx;
-    gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.qstr_last_chunk) / sizeof(void*));
+    size_t root_start = offsetof(mp_state_ctx_t, thread.dict_locals);
+    size_t root_end = offsetof(mp_state_ctx_t, vm.qstr_last_chunk);
+    gc_collect_root(ptrs + root_start / sizeof(void*), (root_end - root_start) / sizeof(void*));
 
     #if MICROPY_ENABLE_PYSTACK
     // Trace root pointers from the Python stack.
@@ -358,6 +360,13 @@ void gc_collect_end(void) {
     MP_STATE_MEM(gc_last_free_atb_index) = 0;
     MP_STATE_MEM(gc_lock_depth)--;
     GC_EXIT();
+}
+
+void gc_sweep_all(void) {
+    GC_ENTER();
+    MP_STATE_MEM(gc_lock_depth)++;
+    MP_STATE_MEM(gc_stack_overflow) = 0;
+    gc_collect_end();
 }
 
 void gc_info(gc_info_t *info) {
@@ -451,6 +460,7 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     if (!collected && MP_STATE_MEM(gc_alloc_amount) >= MP_STATE_MEM(gc_alloc_threshold)) {
         GC_EXIT();
         gc_collect();
+        collected = 1;
         GC_ENTER();
     }
     #endif

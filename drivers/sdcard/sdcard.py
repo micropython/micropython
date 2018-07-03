@@ -97,7 +97,7 @@ class SDCard:
         csd = bytearray(16)
         self.readinto(csd)
         if csd[0] & 0xc0 == 0x40: # CSD version 2.0
-            self.sectors = ((csd[8] << 8 | csd[9]) + 1) * 2014
+            self.sectors = ((csd[8] << 8 | csd[9]) + 1) * 1024
         elif csd[0] & 0xc0 == 0x00: # CSD version 1.0 (old, <=2GB)
             c_size = csd[6] & 0b11 | csd[7] << 2 | (csd[8] & 0b11000000) << 4
             c_size_mult = ((csd[9] & 0b11) << 1) | csd[10] >> 7
@@ -223,9 +223,6 @@ class SDCard:
         self.cs(1)
         self.spi.write(b'\xff')
 
-    def count(self):
-        return self.sectors
-
     def readblocks(self, block_num, buf):
         nblocks = len(buf) // 512
         assert nblocks and not len(buf) % 512, 'Buffer length is invalid'
@@ -270,3 +267,8 @@ class SDCard:
                 offset += 512
                 nblocks -= 1
             self.write_token(_TOKEN_STOP_TRAN)
+
+    def ioctl(self, op, arg):
+        print('ioctl', op, arg)
+        if op == 4: # get number of blocks
+            return self.sectors

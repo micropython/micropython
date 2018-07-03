@@ -138,6 +138,7 @@ static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
+#if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
 #define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
 
@@ -157,6 +158,7 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
     } num = {.f = f};
     return (mp_obj_t)(((num.u & ~0x3) | 2) + 0x80800000);
 }
+#endif
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
     { return (((mp_uint_t)(o)) & 0xff800007) == 0x00000006; }
@@ -451,22 +453,15 @@ typedef struct _mp_buffer_p_t {
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
-// Stream protocol
-typedef struct _mp_stream_p_t {
-    // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
-    // are implementation-dependent, but will be exposed to user, e.g. via exception).
-    mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
-    mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
-    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
-    mp_uint_t is_text : 1; // default is bytes, set this for text stream
-} mp_stream_p_t;
-
 struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
 
-    // The name of this type.
-    qstr name;
+    // Flags associated with this type.
+    uint16_t flags;
+
+    // The name of this type, a qstr.
+    uint16_t name;
 
     // Corresponds to __repr__ and __str__ special methods.
     mp_print_fun_t print;
@@ -554,6 +549,7 @@ extern const mp_obj_type_t mp_type_slice;
 extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
 extern const mp_obj_type_t mp_type_super;
+extern const mp_obj_type_t mp_type_gen_wrap;
 extern const mp_obj_type_t mp_type_gen_instance;
 extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;

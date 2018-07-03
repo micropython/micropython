@@ -34,6 +34,11 @@ static int uart_os = UART_OS;
 static os_event_t uart_evt_queue[16];
 #endif
 
+// A small, static ring buffer for incoming chars
+// This will only be populated if the UART is not attached to dupterm
+static byte uart_ringbuf_array[16];
+static ringbuf_t uart_ringbuf = {uart_ringbuf_array, sizeof(uart_ringbuf_array), 0, 0};
+
 static void uart0_rx_intr_handler(void *para);
 
 void soft_reset(void);
@@ -170,18 +175,26 @@ static void uart0_rx_intr_handler(void *para) {
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            if (RcvChar == mp_interrupt_char) {
-                mp_keyboard_interrupt();
+            // For efficiency, when connected to dupterm we put incoming chars
+            // directly on stdin_ringbuf, rather than going via uart_ringbuf
+            if (uart_attached_to_dupterm) {
+                if (RcvChar == mp_interrupt_char) {
+                    mp_keyboard_interrupt();
+                } else {
+                    ringbuf_put(&stdin_ringbuf, RcvChar);
+                }
             } else {
-                ringbuf_put(&input_buf, RcvChar);
+                ringbuf_put(&uart_ringbuf, RcvChar);
             }
         }
-
-        mp_hal_signal_input();
 
         // Clear pending FIFO interrupts
         WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
         ETS_UART_INTR_ENABLE();
+
+        if (uart_attached_to_dupterm) {
+            mp_hal_signal_input();
+        }
     }
 }
 
@@ -190,7 +203,7 @@ static void uart0_rx_intr_handler(void *para) {
 bool uart_rx_wait(uint32_t timeout_us) {
     uint32_t start = system_get_time();
     for (;;) {
-        if (input_buf.iget != input_buf.iput) {
+        if (uart_ringbuf.iget != uart_ringbuf.iput) {
             return true; // have at least 1 char ready for reading
         }
         if (system_get_time() - start >= timeout_us) {
@@ -201,7 +214,7 @@ bool uart_rx_wait(uint32_t timeout_us) {
 }
 
 int uart_rx_any(uint8 uart) {
-    if (input_buf.iget != input_buf.iput) {
+    if (uart_ringbuf.iget != uart_ringbuf.iput) {
         return true; // have at least 1 char ready for reading
     }
     return false;
@@ -217,7 +230,7 @@ int uart_tx_any_room(uint8 uart) {
 
 // Returns char from the input buffer, else -1 if buffer is empty.
 int uart_rx_char(void) {
-    return ringbuf_get(&input_buf);
+    return ringbuf_get(&uart_ringbuf);
 }
 
 int uart_rx_one_char(uint8 uart_no) {

@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <unistd.h> // for ssize_t
 #include <string.h>
 
 #include "py/mpconfig.h"
@@ -75,7 +76,7 @@ STATIC mp_obj_t deque_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         case MP_UNARY_OP_BOOL:
             return mp_obj_new_bool(self->i_get != self->i_put);
         case MP_UNARY_OP_LEN: {
-            mp_int_t len = self->i_put - self->i_get;
+            ssize_t len = self->i_put - self->i_get;
             if (len < 0) {
                 len += self->alloc;
             }
