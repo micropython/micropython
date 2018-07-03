@@ -42,7 +42,7 @@ size, which means that to uncompress a compressed stream, 32KB of
 contguous memory needs to be allocated. This requirement may be not
 satisfiable on low-memory devices, which may have total memory available
 less than that amount, and even if not, a contiguous block like that
-may be hard to allocate due to `memory fragmentation`. To accommodate
+may be hard to allocate due to memory fragmentation. To accommodate
 these constraints, MicroPython distribution packages use Gzip compression
 with the dictionary size of 4K, which should be a suitable compromise
 with still achieving some compression while being able to uncompressed
@@ -243,7 +243,7 @@ the data files as "resources", and abstracting away access to them.
 Python supports resource access using its "setuptools" library, using
 ``pkg_resources`` module. MicroPython, following its usual approach,
 implements subset of the functionality of that module, specifically
-`pkg_resources.resource_stream(package, resource)` function.
+``pkg_resources.resource_stream(package, resource)`` function.
 The idea is that an application calls this function, passing a
 resource identifier, which is a relative path to data file within
 the specified package (usually top-level application package). It

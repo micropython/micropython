@@ -54,9 +54,27 @@
 #include "wdt.h"
 #include "genhdr/pllfreqtable.h"
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
+#endif
+
+#if defined(STM32H7)
+#define RCC_SR          RSR
+#define RCC_SR_IWDGRSTF RCC_RSR_IWDG1RSTF
+#define RCC_SR_WWDGRSTF RCC_RSR_WWDG1RSTF
+#define RCC_SR_PORRSTF  RCC_RSR_PORRSTF
+#define RCC_SR_BORRSTF  RCC_RSR_BORRSTF
+#define RCC_SR_PINRSTF  RCC_RSR_PINRSTF
+#define RCC_SR_RMVF     RCC_RSR_RMVF
+#else
+#define RCC_SR          CSR
+#define RCC_SR_IWDGRSTF RCC_CSR_IWDGRSTF
+#define RCC_SR_WWDGRSTF RCC_CSR_WWDGRSTF
+#define RCC_SR_PORRSTF  RCC_CSR_PORRSTF
+#define RCC_SR_BORRSTF  RCC_CSR_BORRSTF
+#define RCC_SR_PINRSTF  RCC_CSR_PINRSTF
+#define RCC_SR_RMVF     RCC_CSR_RMVF
 #endif
 
 #define PYB_RESET_SOFT      (0)
@@ -68,27 +86,37 @@
 STATIC uint32_t reset_cause;
 
 void machine_init(void) {
-    #if defined(MCU_SERIES_F4)
+    #if defined(STM32F4)
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->CR |= PWR_CR_CSBF;
     } else
-    #elif defined(MCU_SERIES_F7)
+    #elif defined(STM32F7)
     if (PWR->CSR1 & PWR_CSR1_SBF) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->CR1 |= PWR_CR1_CSBF;
     } else
+    #elif defined(STM32H7)
+    if (PWR->CPUCR & PWR_CPUCR_SBF || PWR->CPUCR & PWR_CPUCR_STOPF) {
+        // came out of standby or stop mode
+        reset_cause = PYB_RESET_DEEPSLEEP;
+        PWR->CPUCR |= PWR_CPUCR_CSSF;
+    } else
     #endif
     {
         // get reset cause from RCC flags
-        uint32_t state = RCC->CSR;
-        if (state & RCC_CSR_IWDGRSTF || state & RCC_CSR_WWDGRSTF) {
+        uint32_t state = RCC->RCC_SR;
+        if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
-        } else if (state & RCC_CSR_PORRSTF || state & RCC_CSR_BORRSTF) {
+        } else if (state & RCC_SR_PORRSTF
+            #if !defined(STM32F0)
+            || state & RCC_SR_BORRSTF
+            #endif
+            ) {
             reset_cause = PYB_RESET_POWER_ON;
-        } else if (state & RCC_CSR_PINRSTF) {
+        } else if (state & RCC_SR_PINRSTF) {
             reset_cause = PYB_RESET_HARD;
         } else {
             // default is soft reset
@@ -96,7 +124,7 @@ void machine_init(void) {
         }
     }
     // clear RCC reset flags
-    RCC->CSR |= RCC_CSR_RMVF;
+    RCC->RCC_SR |= RCC_SR_RMVF;
 }
 
 void machine_deinit(void) {
@@ -116,11 +144,18 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        printf("S=%lu\nH=%lu\nP1=%lu\nP2=%lu\n",
-               HAL_RCC_GetSysClockFreq(),
-               HAL_RCC_GetHCLKFreq(),
-               HAL_RCC_GetPCLK1Freq(),
-               HAL_RCC_GetPCLK2Freq());
+        #if defined(STM32F0)
+        printf("S=%u\nH=%u\nP1=%u\n",
+               (unsigned int)HAL_RCC_GetSysClockFreq(),
+               (unsigned int)HAL_RCC_GetHCLKFreq(),
+               (unsigned int)HAL_RCC_GetPCLK1Freq());
+        #else
+        printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
+               (unsigned int)HAL_RCC_GetSysClockFreq(),
+               (unsigned int)HAL_RCC_GetHCLKFreq(),
+               (unsigned int)HAL_RCC_GetPCLK1Freq(),
+               (unsigned int)HAL_RCC_GetPCLK2Freq());
+        #endif
     }
 
     // to print info about memory
@@ -157,6 +192,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 
     // free space on flash
     {
+        #if MICROPY_VFS_FAT
         for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
             if (strncmp("/flash", vfs->str, vfs->len) == 0) {
                 // assumes that it's a FatFs filesystem
@@ -167,6 +203,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
                 break;
             }
         }
+        #endif
     }
 
     #if MICROPY_PY_THREAD
@@ -207,7 +244,9 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif
+    #if MICROPY_HW_ENABLE_STORAGE
     storage_flush();
+    #endif
 
     HAL_RCC_DeInit();
     HAL_DeInit();
@@ -217,7 +256,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
     HAL_MPU_Disable();
     #endif
 
-#if defined(MCU_SERIES_F7)
+#if defined(STM32F7) || defined(STM32H7)
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
     // MSP function, so we write it out explicitly here.
     //__set_MSP(*((uint32_t*) 0x1FF00000));
@@ -239,6 +278,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
 
+#if !(defined(STM32F0) || defined(STM32L4))
 // get or set the MCU frequencies
 STATIC mp_uint_t machine_freq_calc_ahb_div(mp_uint_t wanted_div) {
     if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
@@ -258,23 +298,28 @@ STATIC mp_uint_t machine_freq_calc_apb_div(mp_uint_t wanted_div) {
     else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
     else { return RCC_SYSCLK_DIV16; }
 }
+#endif
+
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        mp_obj_t tuple[4] = {
+        mp_obj_t tuple[] = {
            mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
            mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
            mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
+           #if !defined(STM32F0)
            mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
+           #endif
         };
-        return mp_obj_new_tuple(4, tuple);
+        return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
 
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32F0) || defined(STM32L4)
         mp_raise_NotImplementedError("machine.freq set not supported yet");
-        #endif
+        #else
+
+        mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
 
         // default PLL parameters that give 48MHz on PLL48CK
         uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
@@ -353,7 +398,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // even if we don't use the PLL for the system clock, we still need it for USB, RNG and SDIO
         RCC_OscInitTypeDef RCC_OscInitStruct;
         RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+        RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
         RCC_OscInitStruct.PLL.PLLM = m;
@@ -367,7 +412,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // set PLL as system clock source if wanted
         if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
             uint32_t flash_latency;
-            #if defined(MCU_SERIES_F7)
+            #if defined(STM32F7)
             // if possible, scale down the internal voltage regulator to save power
             // the flash_latency values assume a supply voltage between 2.7V and 3.6V
             uint32_t volt_scale;
@@ -395,7 +440,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             }
             #endif
 
-            #if !defined(MCU_SERIES_F7)
+            #if !defined(STM32F7)
             #if !defined(MICROPY_HW_FLASH_LATENCY)
             #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
             #endif
@@ -409,7 +454,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         }
 
         #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
-        #if defined(MCU_SERIES_F7)
+        #if defined(STM32F7)
         #define FREQ_BKP BKP31R
         #else
         #define FREQ_BKP BKP19R
@@ -430,12 +475,14 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     fail:;
         void NORETURN __fatal_error(const char *msg);
         __fatal_error("can't change freq");
+
+        #endif
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
 
 STATIC mp_obj_t machine_sleep(void) {
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
 
     // Enter Stop 1 mode
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
@@ -464,10 +511,12 @@ STATIC mp_obj_t machine_sleep(void) {
 
     #else
 
+    #if !defined(STM32F0)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
+    #endif
 
-    # if defined(MCU_SERIES_F7)
+    # if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     # else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
@@ -476,7 +525,7 @@ STATIC mp_obj_t machine_sleep(void) {
     // reconfigure the system clock after waking up
 
     // enable HSE
-    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY)) {
     }
 
@@ -487,7 +536,11 @@ STATIC mp_obj_t machine_sleep(void) {
 
     // select PLL as system clock source
     MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
+    #if defined(STM32H7)
+    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1) {
+    #else
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
+    #endif
     }
 
     #endif
@@ -499,7 +552,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
 STATIC mp_obj_t machine_deepsleep(void) {
     rtc_init_finalise();
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
     printf("machine.deepsleep not supported yet\n");
 #else
     // We need to clear the PWR wake-up-flag before entering standby, since
@@ -510,22 +563,30 @@ STATIC mp_obj_t machine_deepsleep(void) {
 
     // Note: we only support RTC ALRA, ALRB, WUT and TS.
     // TODO support TAMP and WKUP (PA0 external pin).
-    uint32_t irq_bits = RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE;
+    #if defined(STM32F0)
+    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+    #else
+    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
+    #endif
 
     // save RTC interrupts
-    uint32_t save_irq_bits = RTC->CR & irq_bits;
+    uint32_t save_irq_bits = RTC->CR & CR_BITS;
 
     // disable RTC interrupts
-    RTC->CR &= ~irq_bits;
+    RTC->CR &= ~CR_BITS;
 
     // clear RTC wake-up flags
-    RTC->ISR &= ~(RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF);
+    RTC->ISR &= ~ISR_BITS;
 
-    #if defined(MCU_SERIES_F7)
+    #if defined(STM32F7)
     // disable wake-up flags
     PWR->CSR2 &= ~(PWR_CSR2_EWUP6 | PWR_CSR2_EWUP5 | PWR_CSR2_EWUP4 | PWR_CSR2_EWUP3 | PWR_CSR2_EWUP2 | PWR_CSR2_EWUP1);
     // clear global wake-up flag
     PWR->CR2 |= PWR_CR2_CWUPF6 | PWR_CR2_CWUPF5 | PWR_CR2_CWUPF4 | PWR_CR2_CWUPF3 | PWR_CR2_CWUPF2 | PWR_CR2_CWUPF1;
+    #elif defined(STM32H7)
+    // TODO
     #else
     // clear global wake-up flag
     PWR->CR |= PWR_CR_CWUF;

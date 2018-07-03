@@ -5,7 +5,6 @@
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
-#define MICROPY_HW_ENABLE_CAN       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 
 // HSE is 12MHz
@@ -49,6 +48,12 @@
 #define MICROPY_HW_SPI3_SCK  (pin_B3)
 #define MICROPY_HW_SPI3_MISO (pin_B4)
 #define MICROPY_HW_SPI3_MOSI (pin_B5)
+
+// CAN busses
+#define MICROPY_HW_CAN1_TX (pin_B9)
+#define MICROPY_HW_CAN1_RX (pin_B8)
+#define MICROPY_HW_CAN2_TX (pin_B13)
+#define MICROPY_HW_CAN2_RX (pin_B12)
 
 // The Cerb40 has No LEDs
 

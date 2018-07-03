@@ -170,7 +170,7 @@ void timer_tim5_init(void) {
     __HAL_RCC_TIM5_CLK_ENABLE();
 
     // set up and enable interrupt
-    HAL_NVIC_SetPriority(TIM5_IRQn, IRQ_PRI_TIM5, IRQ_SUBPRI_TIM5);
+    NVIC_SetPriority(TIM5_IRQn, IRQ_PRI_TIM5);
     HAL_NVIC_EnableIRQ(TIM5_IRQn);
 
     // PWM clock configuration
@@ -228,19 +228,33 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
 uint32_t timer_get_source_freq(uint32_t tim_id) {
-    uint32_t source;
+    uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
+        #if defined(STM32F0)
+        source = HAL_RCC_GetPCLK1Freq();
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE;
+        #elif defined(STM32H7)
         source = HAL_RCC_GetPCLK2Freq();
-        if ((uint32_t)((RCC->CFGR & RCC_CFGR_PPRE2) >> 3) != RCC_HCLK_DIV1) {
-            source *= 2;
-        }
+        clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE2;
+        #else
+        source = HAL_RCC_GetPCLK2Freq();
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
+        #endif
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        if ((uint32_t)(RCC->CFGR & RCC_CFGR_PPRE1) != RCC_HCLK_DIV1) {
-            source *= 2;
-        }
+        #if defined(STM32F0)
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE;
+        #elif defined(STM32H7)
+        clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE1;
+        #else
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
+        #endif
+    }
+    if (clk_div != 0) {
+        // APB prescaler for this timer is > 1
+        source *= 2;
     }
     return source;
 }
@@ -605,12 +619,12 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
 
     // set IRQ priority (if not a special timer)
     if (self->tim_id != 5) {
-        HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
+        NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_TIMX);
         if (self->tim_id == 1) {
-            HAL_NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
+            NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX);
         #if defined(TIM8)
         } else if (self->tim_id == 8) {
-            HAL_NVIC_SetPriority(TIM8_CC_IRQn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
+            NVIC_SetPriority(TIM8_CC_IRQn, IRQ_PRI_TIMX);
         #endif
         }
     }
@@ -641,13 +655,15 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     return mp_const_none;
 }
 
-// This table encodes the timer instance and irq number.
+// This table encodes the timer instance and irq number (for the update irq).
 // It assumes that timer instance pointer has the lower 8 bits cleared.
 #define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
 STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F0)
+    TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
+    #elif defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
-    #elif defined(MCU_SERIES_L4)
+    #elif defined(STM32L4)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
     #endif
     TIM_ENTRY(2, TIM2_IRQn),
@@ -665,9 +681,9 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(7, TIM7_IRQn),
     #endif
     #if defined(TIM8)
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(8, TIM8_UP_TIM13_IRQn),
-    #elif defined(MCU_SERIES_L4)
+    #elif defined(STM32L4)
     TIM_ENTRY(8, TIM8_UP_IRQn),
     #endif
     #endif
@@ -686,17 +702,31 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM13)
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
-    #if defined(TIM14)
+    #if defined(STM32F0)
+    TIM_ENTRY(14, TIM14_IRQn),
+    #elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
     #if defined(TIM15)
+    #if defined(STM32F0) || defined(STM32H7)
+    TIM_ENTRY(15, TIM15_IRQn),
+    #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
     #endif
+    #endif
     #if defined(TIM16)
+    #if defined(STM32F0) || defined(STM32H7)
+    TIM_ENTRY(16, TIM16_IRQn),
+    #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
     #endif
+    #endif
     #if defined(TIM17)
+    #if defined(STM32F0) || defined(STM32H7)
+    TIM_ENTRY(17, TIM17_IRQn),
+    #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
+    #endif
     #endif
 };
 #undef TIM_ENTRY
@@ -1441,7 +1471,7 @@ void timer_irq_handler(uint tim_id) {
         if (unhandled != 0) {
             __HAL_TIM_DISABLE_IT(&tim->tim, unhandled);
             __HAL_TIM_CLEAR_IT(&tim->tim, unhandled);
-            printf("Unhandled interrupt SR=0x%02lx (now disabled)\n", unhandled);
+            printf("Unhandled interrupt SR=0x%02x (now disabled)\n", (unsigned int)unhandled);
         }
     }
 }

@@ -108,19 +108,26 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     return r;
 }
 
-STATIC mp_obj_t socket_close(mp_obj_t self_in) {
-    mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    // There's a POSIX drama regarding return value of close in general,
-    // and EINTR error in particular. See e.g.
-    // http://lwn.net/Articles/576478/
-    // http://austingroupbugs.net/view.php?id=529
-    // The rationale MicroPython follows is that close() just releases
-    // file descriptor. If you're interested to catch I/O errors before
-    // closing fd, fsync() it.
-    close(self->fd);
-    return mp_const_none;
+STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(o_in);
+    (void)arg;
+    switch (request) {
+        case MP_STREAM_CLOSE:
+            // There's a POSIX drama regarding return value of close in general,
+            // and EINTR error in particular. See e.g.
+            // http://lwn.net/Articles/576478/
+            // http://austingroupbugs.net/view.php?id=529
+            // The rationale MicroPython follows is that close() just releases
+            // file descriptor. If you're interested to catch I/O errors before
+            // closing fd, fsync() it.
+            close(self->fd);
+            return 0;
+
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
 STATIC mp_obj_t socket_fileno(mp_obj_t self_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
@@ -359,7 +366,7 @@ STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(usocket_locals_dict, usocket_locals_dict_table);
@@ -367,6 +374,7 @@ STATIC MP_DEFINE_CONST_DICT(usocket_locals_dict, usocket_locals_dict_table);
 STATIC const mp_stream_p_t usocket_stream_p = {
     .read = socket_read,
     .write = socket_write,
+    .ioctl = socket_ioctl,
 };
 
 const mp_obj_type_t mp_type_socket = {

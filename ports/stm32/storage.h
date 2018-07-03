@@ -26,10 +26,20 @@
 #ifndef MICROPY_INCLUDED_STM32_STORAGE_H
 #define MICROPY_INCLUDED_STM32_STORAGE_H
 
+#include "drivers/memory/spiflash.h"
+
 #define FLASH_BLOCK_SIZE (512)
 
 #define STORAGE_SYSTICK_MASK    (0x1ff) // 512ms
 #define STORAGE_IDLE_TICK(tick) (((tick) & STORAGE_SYSTICK_MASK) == 2)
+
+// Try to match Python-level VFS block protocol where possible for these constants
+enum {
+    BDEV_IOCTL_INIT = 1,
+    BDEV_IOCTL_SYNC = 3,
+    BDEV_IOCTL_NUM_BLOCKS = 4,
+    BDEV_IOCTL_IRQ_HANDLER = 6,
+};
 
 void storage_init(void);
 uint32_t storage_get_block_size(void);
@@ -43,16 +53,18 @@ bool storage_write_block(const uint8_t *src, uint32_t block);
 mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
-uint32_t flash_bdev_num_blocks(void);
-void flash_bdev_init(void);
-void flash_bdev_irq_handler(void);
-void flash_bdev_flush(void);
+int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg);
 bool flash_bdev_readblock(uint8_t *dest, uint32_t block);
 bool flash_bdev_writeblock(const uint8_t *src, uint32_t block);
 
-void spi_bdev_init(void);
-bool spi_bdev_readblock(uint8_t *dest, uint32_t block);
-bool spi_bdev_writeblock(const uint8_t *src, uint32_t block);
+typedef struct _spi_bdev_t {
+    mp_spiflash_t spiflash;
+    uint32_t flash_tick_counter_last_write;
+} spi_bdev_t;
+
+int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg);
+int spi_bdev_readblocks(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
+int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
 extern const struct _mp_obj_type_t pyb_flash_type;
 

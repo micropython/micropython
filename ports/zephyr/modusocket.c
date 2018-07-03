@@ -299,20 +299,31 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
-STATIC mp_obj_t socket_close(mp_obj_t self_in) {
-    socket_obj_t *socket = self_in;
-    if (socket->ctx != -1) {
-        int res = zsock_close(socket->ctx);
-        RAISE_SOCK_ERRNO(res);
-        socket->ctx = -1;
+STATIC mp_uint_t sock_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    socket_obj_t *socket = o_in;
+    (void)arg;
+    switch (request) {
+        case MP_STREAM_CLOSE:
+            if (socket->ctx != -1) {
+                int res = zsock_close(socket->ctx);
+                RAISE_SOCK_ERRNO(res);
+                if (res == -1) {
+                    *errcode = errno;
+                    return MP_STREAM_ERROR;
+                }
+                socket->ctx = -1;
+            }
+            return 0;
+
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
     }
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
 STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socket_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socket_bind_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socket_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socket_listen_obj) },
@@ -332,7 +343,7 @@ STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 STATIC const mp_stream_p_t socket_stream_p = {
     .read = sock_read,
     .write = sock_write,
-    //.ioctl = sock_ioctl,
+    .ioctl = sock_ioctl,
 };
 
 STATIC const mp_obj_type_t socket_type = {

@@ -45,6 +45,11 @@
 #define BP_IOCTL_SEC_COUNT      (4)
 #define BP_IOCTL_SEC_SIZE       (5)
 
+// At the moment the VFS protocol just has import_stat, but could be extended to other methods
+typedef struct _mp_vfs_proto_t {
+    mp_import_stat_t (*import_stat)(void *self, const char *path);
+} mp_vfs_proto_t;
+
 typedef struct _mp_vfs_mount_t {
     const char *str; // mount point with leading /
     size_t len;

@@ -222,27 +222,26 @@ size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char co
 char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma) {
     fmt_int_t num;
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+    // Only have small ints; get the integer value to format.
+    num = MP_OBJ_SMALL_INT_VALUE(self_in);
+    #else
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         // A small int; get the integer value to format.
         num = MP_OBJ_SMALL_INT_VALUE(self_in);
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    } else if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
+    } else {
+        assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
         // Not a small int.
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
         const mp_obj_int_t *self = self_in;
         // Get the value to format; mp_obj_get_int truncates to mp_int_t.
         num = self->val;
-#else
+        #else
         // Delegate to the implementation for the long int.
         return mp_obj_int_formatted_impl(buf, buf_size, fmt_size, self_in, base, prefix, base_char, comma);
-#endif
-#endif
-    } else {
-        // Not an int.
-        **buf = '\0';
-        *fmt_size = 0;
-        return *buf;
+        #endif
     }
+    #endif
 
     char sign = '\0';
     if (num < 0) {

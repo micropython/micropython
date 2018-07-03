@@ -109,6 +109,7 @@ bool ets_post(uint8 prio, os_signal_t sig, os_param_t param) {
 }
 
 int ets_loop_iter_disable = 0;
+int ets_loop_dont_feed_sw_wdt = 0;
 
 // to implement a 64-bit wide microsecond counter
 static uint32_t system_time_prev = 0;
@@ -128,10 +129,18 @@ bool ets_loop_iter(void) {
     system_time_prev = system_time_cur;
     ets_intr_unlock();
 
+    // 6 words before pend_flag_noise_check is a variable that is used by
+    // the software WDT.  A 1.6 second period timer will increment this
+    // variable and if it gets to 2 then the SW WDT will trigger a reset.
+    extern uint32_t pend_flag_noise_check;
+    uint32_t *sw_wdt = &pend_flag_noise_check - 6;
+
     //static unsigned cnt;
     bool progress = false;
     for (volatile struct task_entry *t = emu_tasks; t < &emu_tasks[MP_ARRAY_SIZE(emu_tasks)]; t++) {
-        system_soft_wdt_feed();
+        if (!ets_loop_dont_feed_sw_wdt) {
+            system_soft_wdt_feed();
+        }
         ets_intr_lock();
         //printf("etc_loop_iter: "); dump_task(t - emu_tasks + FIRST_PRIO, t);
         if (t->i_get != t->i_put) {
@@ -146,7 +155,12 @@ bool ets_loop_iter(void) {
                 t->i_get = 0;
             }
             //ets_intr_unlock();
+            uint32_t old_sw_wdt = *sw_wdt;
             t->task(&t->queue[idx]);
+            if (ets_loop_dont_feed_sw_wdt) {
+                // Restore previous SW WDT counter, in case task fed/cleared it
+                *sw_wdt = old_sw_wdt;
+            }
             //ets_intr_lock();
             //printf("Done calling task %d\n", t - emu_tasks + FIRST_PRIO);
         }

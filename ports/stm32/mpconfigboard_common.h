@@ -27,8 +27,25 @@
 // Common settings and defaults for board configuration.
 // The defaults here should be overridden in mpconfigboard.h.
 
+#include STM32_HAL_H
+
 /*****************************************************************************/
 // Feature settings with defaults
+
+// Whether to include the stm module, with peripheral register constants
+#ifndef MICROPY_PY_STM
+#define MICROPY_PY_STM (1)
+#endif
+
+// Whether to include legacy functions and classes in the pyb module
+#ifndef MICROPY_PY_PYB_LEGACY
+#define MICROPY_PY_PYB_LEGACY (1)
+#endif
+
+// Whether to enable storage on the internal flash of the MCU
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
+#endif
 
 // Whether to enable the RTC, exposed as pyb.RTC
 #ifndef MICROPY_HW_ENABLE_RTC
@@ -40,14 +57,14 @@
 #define MICROPY_HW_ENABLE_RNG (0)
 #endif
 
+// Whether to enable the ADC peripheral, exposed as pyb.ADC and pyb.ADCAll
+#ifndef MICROPY_HW_ENABLE_ADC
+#define MICROPY_HW_ENABLE_ADC (1)
+#endif
+
 // Whether to enable the DAC peripheral, exposed as pyb.DAC
 #ifndef MICROPY_HW_ENABLE_DAC
 #define MICROPY_HW_ENABLE_DAC (0)
-#endif
-
-// Whether to enable the CAN peripheral, exposed as pyb.CAN
-#ifndef MICROPY_HW_ENABLE_CAN
-#define MICROPY_HW_ENABLE_CAN (0)
 #endif
 
 // Whether to enable USB support
@@ -85,22 +102,86 @@
 #define MICROPY_HW_HAS_LCD (0)
 #endif
 
+// The volume label used when creating the flash filesystem
+#ifndef MICROPY_HW_FLASH_FS_LABEL
+#define MICROPY_HW_FLASH_FS_LABEL "pybflash"
+#endif
+
 /*****************************************************************************/
 // General configuration
 
-// Define the maximum number of peripherals that the MCU supports
-#if defined(MCU_SERIES_F7)
+// Configuration for STM32F0 series
+#if defined(STM32F0)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ffff7ac)
+#define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (8)
+
+// Configuration for STM32F4 series
+#elif defined(STM32F4)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
+#define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_TIMER (14)
+#ifdef UART8
+#define MICROPY_HW_MAX_UART (8)
+#else
+#define MICROPY_HW_MAX_UART (6)
+#endif
+
+// Configuration for STM32F7 series
+#elif defined(STM32F7)
+
+#if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff07a10)
+#else
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff0f420)
+#endif
+
 #define PYB_EXTI_NUM_VECTORS (24)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
-#elif defined(MCU_SERIES_L4)
+
+// Configuration for STM32H7 series
+#elif defined(STM32H7)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff1e800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (8)
+
+// Configuration for STM32L4 series
+#elif defined(STM32L4)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (6)
+
 #else
-#define PYB_EXTI_NUM_VECTORS (23)
-#define MICROPY_HW_MAX_TIMER (14)
-#define MICROPY_HW_MAX_UART (6)
+#error Unsupported MCU series
+#endif
+
+// Configure HSE for bypass or oscillator
+#if MICROPY_HW_CLK_USE_BYPASS
+#define MICROPY_HW_CLK_HSE_STATE (RCC_HSE_BYPASS)
+#else
+#define MICROPY_HW_CLK_HSE_STATE (RCC_HSE_ON)
+#endif
+
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+// Provide block device macros if internal flash storage is enabled
+#define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
+#define MICROPY_HW_BDEV_READBLOCK flash_bdev_readblock
+#define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
+#endif
+
+// Enable the storage sub-system if a block device is defined
+#if defined(MICROPY_HW_BDEV_IOCTL)
+#define MICROPY_HW_ENABLE_STORAGE (1)
+#else
+#define MICROPY_HW_ENABLE_STORAGE (0)
 #endif
 
 // Enable hardware I2C if there are any peripherals defined
@@ -111,5 +192,27 @@
 #define MICROPY_HW_ENABLE_HW_I2C (0)
 #endif
 
+// Enable CAN if there are any peripherals defined
+#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX)
+#define MICROPY_HW_ENABLE_CAN (1)
+#else
+#define MICROPY_HW_ENABLE_CAN (0)
+#endif
+
 // Pin definition header file
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"
+
+// D-cache clean/invalidate helpers
+#if __DCACHE_PRESENT == 1
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
+    (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
+        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+#define MP_HAL_CLEAN_DCACHE(addr, size) \
+    (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
+        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+#else
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
+#define MP_HAL_CLEAN_DCACHE(addr, size)
+#endif
+
+#define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)

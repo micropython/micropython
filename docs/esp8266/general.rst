@@ -156,7 +156,7 @@ also has some known issues/limitations:
 
 1. No support for Diffie-Hellman (DH) key exchange and Elliptic-curve
    cryptography (ECC). This means it can't work with sites which force
-   the use of these features (it works ok with classic RSA certifactes).
+   the use of these features (it works ok with classic RSA certificates).
 2. Half-duplex communication nature. axTLS uses a single buffer for both
    sending and receiving, which leads to considerable memory saving and
    works well with protocols like HTTP. But there may be problems with

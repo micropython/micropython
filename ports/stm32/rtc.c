@@ -191,7 +191,7 @@ void rtc_init_finalise() {
 
     // fresh reset; configure RTC Calendar
     RTC_CalendarConfig();
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
     if(__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
     #else
     if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
@@ -223,12 +223,16 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
 
     /*------------------------------ LSE Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSE) == RCC_OSCILLATORTYPE_LSE) {
+        #if !defined(STM32H7)
         // Enable Power Clock
         __HAL_RCC_PWR_CLK_ENABLE();
+        #endif
+
+        // Enable access to the backup domain
         HAL_PWR_EnableBkUpAccess();
         uint32_t tickstart = HAL_GetTick();
 
-        #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+        #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
         //__HAL_RCC_PWR_CLK_ENABLE();
         // Enable write access to Backup domain
         //PWR->CR1 |= PWR_CR1_DBP;
@@ -298,10 +302,10 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         // Exit Initialization mode
         hrtc->Instance->ISR &= (uint32_t)~RTC_ISR_INIT;
 
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4) || defined(STM32H7)
         hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMOUTTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
-        #elif defined(MCU_SERIES_F7)
+        #elif defined(STM32F7)
         hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
         #else
@@ -525,7 +529,6 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         time.Hours = mp_obj_get_int(items[4]);
         time.Minutes = mp_obj_get_int(items[5]);
         time.Seconds = mp_obj_get_int(items[6]);
-        time.SubSeconds = rtc_us_to_subsec(mp_obj_get_int(items[7]));
         time.TimeFormat = RTC_HOURFORMAT12_AM;
         time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
         time.StoreOperation = RTC_STOREOPERATION_SET;
@@ -535,6 +538,10 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
+
+#if defined(STM32F0)
+#define RTC_WKUP_IRQn RTC_IRQn
+#endif
 
 // wakeup(None)
 // wakeup(ms, callback=None)
@@ -631,9 +638,12 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // enable external interrupts on line 22
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4)
         EXTI->IMR1 |= 1 << 22;
         EXTI->RTSR1 |= 1 << 22;
+        #elif defined(STM32H7)
+        EXTI_D1->IMR1 |= 1 << 22;
+        EXTI->RTSR1   |= 1 << 22;
         #else
         EXTI->IMR |= 1 << 22;
         EXTI->RTSR |= 1 << 22;
@@ -641,13 +651,15 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
 
         // clear interrupt flags
         RTC->ISR &= ~(1 << 10);
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4)
         EXTI->PR1 = 1 << 22;
+        #elif defined(STM32H7)
+        EXTI_D1->PR1 = 1 << 22;
         #else
         EXTI->PR = 1 << 22;
         #endif
 
-        HAL_NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP, IRQ_SUBPRI_RTC_WKUP);
+        NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
         //printf("wut=%d wucksel=%d\n", wut, wucksel);
@@ -659,8 +671,10 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // disable external interrupts on line 22
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4)
         EXTI->IMR1 &= ~(1 << 22);
+        #elif defined(STM32H7)
+        EXTI_D1->IMR1 |= 1 << 22;
         #else
         EXTI->IMR &= ~(1 << 22);
         #endif

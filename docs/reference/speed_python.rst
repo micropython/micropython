@@ -63,8 +63,8 @@ used for communication with a device. A typical driver will create the buffer in
 constructor and use it in its I/O methods which will be called repeatedly.
 
 The MicroPython libraries typically provide support for pre-allocated buffers. For
-example, objects which support stream interface (e.g., file or UART) provide `read()`
-method which allocates new buffer for read data, but also a `readinto()` method
+example, objects which support stream interface (e.g., file or UART) provide ``read()``
+method which allocates new buffer for read data, but also a ``readinto()`` method
 to read data into an existing buffer.
 
 Floating Point
@@ -109,10 +109,10 @@ the 10K buffer go (be ready for garbage collection), instead of making a
 long-living memoryview and keeping 10K blocked for GC.
 
 Nonetheless, `memoryview` is indispensable for advanced preallocated buffer
-management. `readinto()` method discussed above puts data at the beginning
+management. ``readinto()`` method discussed above puts data at the beginning
 of buffer and fills in entire buffer. What if you need to put data in the
 middle of existing buffer? Just create a memoryview into the needed section
-of buffer and pass it to `readinto()`.
+of buffer and pass it to ``readinto()``.
 
 Identifying the slowest section of code
 ---------------------------------------
@@ -326,7 +326,7 @@ standard approach would be to write
 
     mypin.value(mypin.value() ^ 1) # mypin was instantiated as an output pin
 
-This involves the overhead of two calls to the `Pin` instance's :meth:`~machine.Pin.value()`
+This involves the overhead of two calls to the :class:`~machine.Pin` instance's :meth:`~machine.Pin.value()`
 method. This overhead can be eliminated by performing a read/write to the relevant bit
 of the chip's GPIO port output data register (odr). To facilitate this the ``stm``
 module provides a set of constants providing the addresses of the relevant registers.

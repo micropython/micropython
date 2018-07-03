@@ -45,6 +45,9 @@ void gc_collect_start(void);
 void gc_collect_root(void **ptrs, size_t len);
 void gc_collect_end(void);
 
+// Use this function to sweep the whole heap and run all finalisers
+void gc_sweep_all(void);
+
 void *gc_alloc(size_t n_bytes, bool has_finaliser);
 void gc_free(void *ptr); // does not call finaliser
 size_t gc_nbytes(const void *ptr);

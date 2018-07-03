@@ -124,10 +124,9 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
     if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
-    } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
-        lhs_val = ((mp_obj_int_t*)lhs_in)->val;
     } else {
-        return MP_OBJ_NULL; // op not supported
+        assert(MP_OBJ_IS_TYPE(lhs_in, &mp_type_int));
+        lhs_val = ((mp_obj_int_t*)lhs_in)->val;
     }
 
     if (MP_OBJ_IS_SMALL_INT(rhs_in)) {

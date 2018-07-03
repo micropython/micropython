@@ -29,6 +29,9 @@
 
 #include "py/obj.h"
 
+// Used only for memoryview types, set in "typecode" to indicate a writable memoryview
+#define MP_OBJ_ARRAY_TYPECODE_FLAG_RW (0x80)
+
 typedef struct _mp_obj_array_t {
     mp_obj_base_t base;
     size_t typecode : 8;

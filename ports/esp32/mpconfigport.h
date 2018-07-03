@@ -38,7 +38,6 @@
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
-#define MICROPY_PY_BUILTINS_COMPLEX         (1)
 #define MICROPY_CPYTHON_COMPAT              (1)
 #define MICROPY_STREAMS_NON_BLOCK           (1)
 #define MICROPY_STREAMS_POSIX_API           (1)
@@ -57,6 +56,7 @@
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
+#define MICROPY_PY_DESCRIPTORS              (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -70,6 +70,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET       (1)
 #define MICROPY_PY_BUILTINS_PROPERTY        (1)
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS     (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT       (1)
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR    (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
 #define MICROPY_PY_BUILTINS_COMPILE         (1)
@@ -97,6 +98,7 @@
 #define MICROPY_PY_CMATH                    (1)
 #define MICROPY_PY_GC                       (1)
 #define MICROPY_PY_IO                       (1)
+#define MICROPY_PY_IO_IOBASE                (1)
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO_BYTESIO               (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
@@ -119,14 +121,18 @@
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UJSON                    (1)
 #define MICROPY_PY_URE                      (1)
+#define MICROPY_PY_URE_SUB                  (1)
 #define MICROPY_PY_UHEAPQ                   (1)
 #define MICROPY_PY_UTIMEQ                   (1)
-#define MICROPY_PY_UHASHLIB                 (0) // We use the ESP32 version
-#define MICROPY_PY_UHASHLIB_SHA1            (MICROPY_PY_USSL && MICROPY_SSL_AXTLS)
+#define MICROPY_PY_UHASHLIB                 (1)
+#define MICROPY_PY_UHASHLIB_SHA1            (1)
+#define MICROPY_PY_UHASHLIB_SHA256          (1)
+#define MICROPY_PY_UCRYPTOLIB               (1)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
+#define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)
@@ -135,21 +141,23 @@
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hw_spi_make_new
-#define MICROPY_PY_MACHINE_SPI_MIN_DELAY    (0)
-#define MICROPY_PY_MACHINE_SPI_MAX_BAUDRATE (ets_get_cpu_frequency() * 1000000 / 200) // roughly
+#define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
+#define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (ets_get_cpu_frequency() * 1000000 / 200) // roughly
 #define MICROPY_PY_USSL                     (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_USSL_FINALISER           (1)
 #define MICROPY_PY_WEBSOCKET                (1)
+#define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
+#define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define mp_type_fileio                      fatfs_type_fileio
-#define mp_type_textio                      fatfs_type_textio
+#define mp_type_fileio                      mp_type_vfs_fat_fileio
+#define mp_type_textio                      mp_type_vfs_fat_textio
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
@@ -220,11 +228,18 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MICROPY_BEGIN_ATOMIC_SECTION() portENTER_CRITICAL_NESTED()
 #define MICROPY_END_ATOMIC_SECTION(state) portEXIT_CRITICAL_NESTED(state)
 
+#if MICROPY_PY_USOCKET_EVENTS
+#define MICROPY_PY_USOCKET_EVENTS_HANDLER extern void usocket_events_handler(void); usocket_events_handler();
+#else
+#define MICROPY_PY_USOCKET_EVENTS_HANDLER
+#endif
+
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        MICROPY_PY_USOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
         MP_THREAD_GIL_ENTER(); \
     } while (0);
@@ -233,6 +248,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        MICROPY_PY_USOCKET_EVENTS_HANDLER \
         asm("waiti 0"); \
     } while (0);
 #endif

@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V2.0.0
   * @date    18-February-2014
-  * @brief   general defines for the usb device library 
+  * @brief   general defines for the usb device library
   ******************************************************************************
   * @attention
   *
@@ -16,14 +16,14 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 
@@ -36,15 +36,15 @@
 /** @addtogroup STM32_USBD_DEVICE_LIBRARY
   * @{
   */
-  
+
 /** @defgroup USB_DEF
   * @brief general defines for the usb device library file
   * @{
-  */ 
+  */
 
 /** @defgroup USB_DEF_Exported_Defines
   * @{
-  */ 
+  */
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -60,12 +60,12 @@
 #define  USB_LEN_LANGID_STR_DESC                        0x04
 #define  USB_LEN_OTHER_SPEED_DESC_SIZ                   0x09
 
-#define  USBD_IDX_LANGID_STR                            0x00 
-#define  USBD_IDX_MFC_STR                               0x01 
+#define  USBD_IDX_LANGID_STR                            0x00
+#define  USBD_IDX_MFC_STR                               0x01
 #define  USBD_IDX_PRODUCT_STR                           0x02
-#define  USBD_IDX_SERIAL_STR                            0x03 
-#define  USBD_IDX_CONFIG_STR                            0x04 
-#define  USBD_IDX_INTERFACE_STR                         0x05 
+#define  USBD_IDX_SERIAL_STR                            0x03
+#define  USBD_IDX_CONFIG_STR                            0x04
+#define  USBD_IDX_INTERFACE_STR                         0x05
 
 #define  USB_REQ_TYPE_STANDARD                          0x00
 #define  USB_REQ_TYPE_CLASS                             0x20
@@ -117,14 +117,14 @@
 #define USBD_STATE_SUSPENDED                              4
 
 
-/*  EP0 State */    
+/*  EP0 State */
 #define USBD_EP0_IDLE                                     0
 #define USBD_EP0_SETUP                                    1
 #define USBD_EP0_DATA_IN                                  2
 #define USBD_EP0_DATA_OUT                                 3
 #define USBD_EP0_STATUS_IN                                4
 #define USBD_EP0_STATUS_OUT                               5
-#define USBD_EP0_STALL                                    6    
+#define USBD_EP0_STALL                                    6
 
 #define USBD_EP_TYPE_CTRL                                 0
 #define USBD_EP_TYPE_ISOC                                 1
@@ -134,53 +134,53 @@
 
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup USBD_DEF_Exported_TypesDefinitions
   * @{
   */
 
-typedef  struct  usb_setup_req 
+typedef  struct  usb_setup_req
 {
-    
-    uint8_t   bmRequest;                      
-    uint8_t   bRequest;                           
-    uint16_t  wValue;                             
-    uint16_t  wIndex;                             
-    uint16_t  wLength;                            
+
+    uint8_t   bmRequest;
+    uint8_t   bRequest;
+    uint16_t  wValue;
+    uint16_t  wIndex;
+    uint16_t  wLength;
 }USBD_SetupReqTypedef;
 
 struct _USBD_HandleTypeDef;
-    
+
 typedef struct _Device_cb
 {
   uint8_t  (*Init)             (struct _USBD_HandleTypeDef *pdev , uint8_t cfgidx);
   uint8_t  (*DeInit)           (struct _USBD_HandleTypeDef *pdev , uint8_t cfgidx);
  /* Control Endpoints*/
-  uint8_t  (*Setup)            (struct _USBD_HandleTypeDef *pdev , USBD_SetupReqTypedef  *req);  
-  uint8_t  (*EP0_TxSent)       (struct _USBD_HandleTypeDef *pdev );    
-  uint8_t  (*EP0_RxReady)      (struct _USBD_HandleTypeDef *pdev );  
+  uint8_t  (*Setup)            (struct _USBD_HandleTypeDef *pdev , USBD_SetupReqTypedef  *req);
+  uint8_t  (*EP0_TxSent)       (struct _USBD_HandleTypeDef *pdev );
+  uint8_t  (*EP0_RxReady)      (struct _USBD_HandleTypeDef *pdev );
   /* Class Specific Endpoints*/
-  uint8_t  (*DataIn)           (struct _USBD_HandleTypeDef *pdev , uint8_t epnum);   
-  uint8_t  (*DataOut)          (struct _USBD_HandleTypeDef *pdev , uint8_t epnum); 
-  uint8_t  (*SOF)              (struct _USBD_HandleTypeDef *pdev); 
-  uint8_t  (*IsoINIncomplete)  (struct _USBD_HandleTypeDef *pdev , uint8_t epnum); 
-  uint8_t  (*IsoOUTIncomplete) (struct _USBD_HandleTypeDef *pdev , uint8_t epnum);   
+  uint8_t  (*DataIn)           (struct _USBD_HandleTypeDef *pdev , uint8_t epnum);
+  uint8_t  (*DataOut)          (struct _USBD_HandleTypeDef *pdev , uint8_t epnum);
+  uint8_t  (*SOF)              (struct _USBD_HandleTypeDef *pdev);
+  uint8_t  (*IsoINIncomplete)  (struct _USBD_HandleTypeDef *pdev , uint8_t epnum);
+  uint8_t  (*IsoOUTIncomplete) (struct _USBD_HandleTypeDef *pdev , uint8_t epnum);
 
-  uint8_t  *(*GetHSConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length); 
-  uint8_t  *(*GetFSConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);   
+  uint8_t  *(*GetHSConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);
+  uint8_t  *(*GetFSConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);
   uint8_t  *(*GetOtherSpeedConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);
   uint8_t  *(*GetDeviceQualifierDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);
-  
+
 } USBD_ClassTypeDef;
 
 /* Following USB Device Speed */
-typedef enum 
+typedef enum
 {
   USBD_SPEED_HIGH  = 0,
   USBD_SPEED_FULL  = 1,
-  USBD_SPEED_LOW   = 2,  
+  USBD_SPEED_LOW   = 2,
 }USBD_SpeedTypeDef;
 
 /* Following USB Device status */
@@ -201,11 +201,11 @@ typedef struct
 
 /* USB Device handle structure */
 typedef struct
-{ 
+{
   uint32_t                status;
-  uint32_t                total_length;    
-  uint32_t                rem_length; 
-  uint32_t                maxpacket;   
+  uint32_t                total_length;
+  uint32_t                rem_length;
+  uint32_t                maxpacket;
 } USBD_EndpointTypeDef;
 
 /* USB Device handle structure */
@@ -214,36 +214,36 @@ typedef struct _USBD_HandleTypeDef
   uint8_t                 id;
   uint32_t                dev_config;
   uint32_t                dev_default_config;
-  uint32_t                dev_config_status; 
-  USBD_SpeedTypeDef       dev_speed; 
+  uint32_t                dev_config_status;
+  USBD_SpeedTypeDef       dev_speed;
   USBD_EndpointTypeDef    ep_in[15];
-  USBD_EndpointTypeDef    ep_out[15];  
-  uint32_t                ep0_state;  
-  uint32_t                ep0_data_len;     
+  USBD_EndpointTypeDef    ep_out[15];
+  uint32_t                ep0_state;
+  uint32_t                ep0_data_len;
   uint8_t                 dev_state;
   uint8_t                 dev_old_state;
   uint8_t                 dev_address;
-  uint8_t                 dev_connection_status;  
+  uint8_t                 dev_connection_status;
   uint8_t                 dev_test_mode;
   uint32_t                dev_remote_wakeup;
 
   USBD_SetupReqTypedef    request;
   USBD_DescriptorsTypeDef *pDesc;
   const USBD_ClassTypeDef *pClass;
-  void                    *pClassData;  
-  void                    *pUserData;    
-  void                    *pData;    
+  void                    *pClassData;
+  void                    *pUserData;
+  void                    *pData;
 } USBD_HandleTypeDef;
 
 /**
   * @}
-  */ 
+  */
 
 
 
 /** @defgroup USBD_DEF_Exported_Macros
   * @{
-  */ 
+  */
 #define  SWAPBYTE(addr)        (((uint16_t)(*((uint8_t *)(addr)))) + \
                                (((uint16_t)(*(((uint8_t *)(addr)) + 1))) << 8))
 
@@ -264,50 +264,50 @@ typedef struct _USBD_HandleTypeDef
 
 
 /* In HS mode and when the DMA is used, all variables and data structures dealing
-   with the DMA during the transaction process should be 4-bytes aligned */    
+   with the DMA during the transaction process should be 4-bytes aligned */
 
 #if defined   (__GNUC__)        /* GNU Compiler */
   #define __ALIGN_END    __attribute__ ((aligned (4)))
-  #define __ALIGN_BEGIN         
-#else                           
+  #define __ALIGN_BEGIN
+#else
   #define __ALIGN_END
   #if defined   (__CC_ARM)      /* ARM Compiler */
-    #define __ALIGN_BEGIN    __align(4)  
+    #define __ALIGN_BEGIN    __align(4)
   #elif defined (__ICCARM__)    /* IAR Compiler */
-    #define __ALIGN_BEGIN 
+    #define __ALIGN_BEGIN
   #elif defined  (__TASKING__)  /* TASKING Compiler */
-    #define __ALIGN_BEGIN    __align(4) 
-  #endif /* __CC_ARM */  
-#endif /* __GNUC__ */ 
-  
+    #define __ALIGN_BEGIN    __align(4)
+  #endif /* __CC_ARM */
+#endif /* __GNUC__ */
+
 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USBD_DEF_Exported_Variables
   * @{
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USBD_DEF_Exported_FunctionsPrototype
   * @{
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 #endif /* __USBD_DEF_H */
 
 /**
   * @}
-  */ 
+  */
 
 /**
 * @}
-*/ 
+*/
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

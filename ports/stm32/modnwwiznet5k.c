@@ -36,8 +36,9 @@
 #include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "spi.h"
+
+#if MICROPY_PY_WIZNET5K && !MICROPY_PY_LWIP
 
 #include "ethernet/wizchip_conf.h"
 #include "ethernet/socket.h"
@@ -500,3 +501,5 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
     .settimeout = wiznet5k_socket_settimeout,
     .ioctl = wiznet5k_socket_ioctl,
 };
+
+#endif // MICROPY_PY_WIZNET5K && !MICROPY_PY_LWIP

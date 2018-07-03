@@ -13,6 +13,9 @@ false true
 80000000
 80000000
 abc
+# GC
+0
+0
 # vstr
 tests
 sts
@@ -41,6 +44,12 @@ data
 12345678
 0
 0
+0
+0
+0
+1
+12345
+6
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
@@ -50,8 +59,10 @@ Warning: test
 +1e+00
 +1e+00
 # binary
-122
+123
 456
+# VM
+2 1
 # scheduler
 sched(0)=1
 sched(1)=1
@@ -79,7 +90,6 @@ b'123'
 b'123'
 OSError
 0
-OSError
 None
 None
 frzstr1
@@ -93,3 +103,4 @@ frzstr_pkg2.mod
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
+b'# test frozen package'
