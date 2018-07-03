@@ -70,7 +70,7 @@
 //|     sine_wave = audioio.RawSample(sine_wave)
 //|     dac.play(sine_wave, loop=True)
 //|     time.sleep(1)
-//|     sample.stop()
+//|     dac.stop()
 //|
 STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, true);

@@ -3,6 +3,7 @@
  * Copyright (c) 2015 Arduino LLC
  * Copyright (c) 2016 Sandeep Mistry All right reserved.
  * Copyright (c) 2017 hathach
+ * Copyright (c) 2018 Artur Pacholec
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,94 +20,111 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-
 #include "shared-bindings/busio/SPI.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "nrf.h"
-#include "pins.h"
+#include "nrfx_spim.h"
+#include "nrf_gpio.h"
 
-// Convert frequency to clock-speed-dependent value. Return 0 if out of range.
-static uint32_t baudrate_to_reg(const uint32_t baudrate) {
-    uint32_t value;
+#if NRFX_SPIM3_ENABLED
+    #define INST_NO 3
+#else
+    #define INST_NO 2
+#endif
 
-    if (baudrate <= 125000) {
-      value = SPI_FREQUENCY_FREQUENCY_K125;
-    } else if (baudrate <= 250000) {
-      value = SPI_FREQUENCY_FREQUENCY_K250;
-    } else if (baudrate <= 500000) {
-      value = SPI_FREQUENCY_FREQUENCY_K500;
-    } else if (baudrate <= 1000000) {
-      value = SPI_FREQUENCY_FREQUENCY_M1;
-    } else if (baudrate <= 2000000) {
-      value = SPI_FREQUENCY_FREQUENCY_M2;
-    } else if (baudrate <= 4000000) {
-      value = SPI_FREQUENCY_FREQUENCY_M4;
-    } else {
-      value = SPI_FREQUENCY_FREQUENCY_M8;
-    }
+// Convert frequency to clock-speed-dependent value
+static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) {
+    if (baudrate <= 125000)
+      return NRF_SPIM_FREQ_125K;
 
-    return value;
+    if (baudrate <= 250000)
+        return NRF_SPIM_FREQ_250K;
+
+    if (baudrate <= 500000)
+        return NRF_SPIM_FREQ_500K;
+
+    if (baudrate <= 1000000)
+        return NRF_SPIM_FREQ_1M;
+
+    if (baudrate <= 2000000)
+        return NRF_SPIM_FREQ_2M;
+
+    if (baudrate <= 4000000)
+        return NRF_SPIM_FREQ_4M;
+
+    if (baudrate <= 8000000)
+        return NRF_SPIM_FREQ_8M;
+
+#ifdef SPIM_FREQUENCY_FREQUENCY_M16
+    if (baudrate <= 16000000)
+        return NRF_SPIM_FREQ_16M;
+#endif
+
+#ifdef SPIM_FREQUENCY_FREQUENCY_M32
+    return NRF_SPIM_FREQ_32M;
+#else
+    return NRF_SPIM_FREQ_8M;
+#endif
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi, const mcu_pin_obj_t * miso) {
+    const nrfx_spim_t instance = NRFX_SPIM_INSTANCE(INST_NO);
+    self->spim = instance;
 
-  // 1 for I2C, 0 for SPI
-  self->spi = NRF_SPI0;
+    nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG;
+    config.frequency = NRF_SPIM_FREQ_8M;
 
-  self->spi->PSELSCK  = clock->pin;
-  self->spi->PSELMOSI = mosi->pin;
-  self->spi->PSELMISO = miso->pin;
+    config.sck_pin = NRF_GPIO_PIN_MAP(clock->port, clock->pin);
 
+    if (mosi != (mcu_pin_obj_t*)&mp_const_none_obj)
+        config.mosi_pin = NRF_GPIO_PIN_MAP(mosi->port, mosi->pin);
 
-#if NRF52840_XXAA
-    self->spi->PSELSCK  |= (clock->port << SPI_PSEL_SCK_PORT_Pos);
-    self->spi->PSELMOSI |= (mosi->port << SPI_PSEL_MOSI_PORT_Pos);
-    self->spi->PSELMISO |= (miso->port << SPI_PSEL_MISO_PORT_Pos);
-#endif
+    if (miso != (mcu_pin_obj_t*)&mp_const_none_obj)
+        config.miso_pin = NRF_GPIO_PIN_MAP(miso->port, miso->pin);
+
+    nrfx_err_t err = nrfx_spim_init(&self->spim, &config, NULL, NULL);
+
+    // A soft reset doesn't uninit the driver so we might end up with a invalid state
+    if (err == NRFX_ERROR_INVALID_STATE) {
+        nrfx_spim_uninit(&self->spim);
+        err = nrfx_spim_init(&self->spim, &config, NULL, NULL);
+    }
+
+    if (err != NRFX_SUCCESS)
+        mp_raise_OSError(MP_EIO);
+
+    self->inited = true;
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
-  return self->spi == NULL;
+    return !self->inited;
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
-    if (common_hal_busio_spi_deinited(self)) {
+    if (common_hal_busio_spi_deinited(self))
         return;
-    }
 
-#ifdef NRF52840_XXAA
-    self->spi->PSEL.SCK  = SPI_PSEL_SCK_CONNECT_Disconnected;
-    self->spi->PSEL.MOSI = SPI_PSEL_MOSI_CONNECT_Disconnected;
-    self->spi->PSEL.MISO = SPI_PSEL_MISO_CONNECT_Disconnected;
-#else
-    self->spi->PSELSCK  = SPI_PSEL_SCK_PSELSCK_Disconnected;
-    self->spi->PSELMOSI = SPI_PSEL_MOSI_PSELMOSI_Disconnected;
-    self->spi->PSELMISO = SPI_PSEL_MISO_PSELMISO_Disconnected;
-#endif
-//    reset_pin(self->clock_pin);
-//    reset_pin(self->MOSI_pin);
-//    reset_pin(self->MISO_pin);
+    nrfx_spim_uninit(&self->spim);
 
-    self->spi = NULL;
+    self->inited = false;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self, uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
   // nrf52 does not support 16 bit
-  if ( bits != 8 ) return false;
+  if (bits != 8)
+      return false;
 
-  self->spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
+  nrf_spim_frequency_set(self->spim.p_reg, baudrate_to_spim_frequency(baudrate));
 
-  uint32_t config = (SPI_CONFIG_ORDER_MsbFirst << SPI_CONFIG_ORDER_Pos);
+  nrf_spim_mode_t mode = NRF_SPIM_MODE_0;
+  if (polarity) {
+      mode = (phase) ? NRF_SPIM_MODE_3 : NRF_SPIM_MODE_2;
+  } else {
+      mode = (phase) ? NRF_SPIM_MODE_1 : NRF_SPIM_MODE_0;
+  }
 
-  config |= ((polarity ? SPI_CONFIG_CPOL_ActiveLow : SPI_CONFIG_CPOL_ActiveHigh) << SPI_CONFIG_CPOL_Pos);
-  config |= ((phase    ? SPI_CONFIG_CPHA_Trailing  : SPI_CONFIG_CPHA_Leading   ) << SPI_CONFIG_CPHA_Pos);
-
-  self->spi->CONFIG    = config;
-  self->spi->FREQUENCY = baudrate_to_reg(baudrate);
-
-  self->spi->ENABLE = (SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
+  nrf_spim_configure(self->spim.p_reg, mode, NRF_SPIM_BIT_ORDER_MSB_FIRST);
 
   return true;
 }
@@ -131,87 +149,59 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self, const uint8_t *data, size_t len) {
-  if (len == 0) {
-    return true;
-  }
+    if (len == 0)
+        return true;
 
-  while (len)
-  {
-    self->spi->TXD = *data;
+    const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(data, len);
+    const nrfx_err_t err = nrfx_spim_xfer(&self->spim, &xfer, 0);
 
-    while(!self->spi->EVENTS_READY);
-
-    (void) self->spi->RXD;
-    data++;
-    len--;
-
-    self->spi->EVENTS_READY = 0x0UL;
-  }
-
-  return true;
+    return (err == NRFX_SUCCESS);
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value) {
-  if (len == 0) {
-    return true;
-  }
+    if (len == 0)
+        return true;
 
-  while (len)
-  {
-    self->spi->TXD = write_value;
+    const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data, len);
+    const nrfx_err_t err = nrfx_spim_xfer(&self->spim, &xfer, 0);
 
-    while(!self->spi->EVENTS_READY);
-
-    *data = self->spi->RXD;
-
-    data++;
-    len--;
-
-    self->spi->EVENTS_READY = 0x0UL;
-  }
-
-  return true;
+    return (err == NRFX_SUCCESS);
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
-  if (len == 0) {
-    return true;
-  }
+    if (len == 0)
+        return true;
 
-  while (len)
-  {
-    self->spi->TXD = *data_out;
+    const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(data_out, len, data_in, len);
+    const nrfx_err_t err = nrfx_spim_xfer(&self->spim, &xfer, 0);
 
-    while(!self->spi->EVENTS_READY);
-
-    *data_in = self->spi->RXD;
-
-    data_out++;
-    data_in++;
-    len--;
-
-    self->spi->EVENTS_READY = 0x0UL;
-  }
-
-  return true;
+    return (err == NRFX_SUCCESS);
 }
-  
+
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
-    switch (self->spi->FREQUENCY) {
-    case SPI_FREQUENCY_FREQUENCY_K125:
+    switch (self->spim.p_reg->FREQUENCY) {
+    case NRF_SPIM_FREQ_125K:
         return 125000;
-    case SPI_FREQUENCY_FREQUENCY_K250:
+    case NRF_SPIM_FREQ_250K:
         return 250000;
-    case SPI_FREQUENCY_FREQUENCY_K500:
+    case NRF_SPIM_FREQ_500K:
         return 500000;
-    case SPI_FREQUENCY_FREQUENCY_M1:
+    case NRF_SPIM_FREQ_1M:
         return 1000000;
-    case SPI_FREQUENCY_FREQUENCY_M2:
+    case NRF_SPIM_FREQ_2M:
         return 2000000;
-    case SPI_FREQUENCY_FREQUENCY_M4:
+    case NRF_SPIM_FREQ_4M:
         return 4000000;
-    case SPI_FREQUENCY_FREQUENCY_M8:
+    case NRF_SPIM_FREQ_8M:
         return 8000000;
+#ifdef SPIM_FREQUENCY_FREQUENCY_M16
+    case NRF_SPIM_FREQ_16M:
+        return 16000000;
+#endif
+#ifdef SPIM_FREQUENCY_FREQUENCY_M32
+    case NRF_SPIM_FREQ_32M:
+        return 32000000;
+#endif
     default:
         return 0;
     }

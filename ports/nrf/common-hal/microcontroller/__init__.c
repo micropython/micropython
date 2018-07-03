@@ -27,14 +27,15 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/microcontroller/Processor.h"
 
-
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-// TODO porting common_hal_mcu
+#include "supervisor/filesystem.h"
+#include "nrfx_glue.h"
+
 void common_hal_mcu_delay_us(uint32_t delay) {
-//    os_delay_us(delay);
+    NRFX_DELAY_US(delay);
 }
 
 void common_hal_mcu_disable_interrupts() {
@@ -48,7 +49,8 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 }
 
 void common_hal_mcu_reset(void) {
-    // TODO: see atmel-samd for functionality
+    filesystem_flush();
+    NVIC_SystemReset();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu

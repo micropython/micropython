@@ -2,11 +2,13 @@
 PYTHON2 ?= $(which python2 || which python2.7)
 PYTHON3 ?= python3
 
-# Select the board to build for: if not given on the command line,
-# then default to PYBV10.
-BOARD ?= metro_m0_express
-ifeq ($(wildcard boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
+# Select the board to build for.
+ifeq ($(BOARD),)
+  $(error You must provide a BOARD parameter)
+else
+  ifeq ($(wildcard boards/$(BOARD)/.),)
+    $(error Invalid BOARD specified)
+  endif
 endif
 
 

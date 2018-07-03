@@ -27,15 +27,13 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
 
-#include "common-hal/microcontroller/Pin.h"
-
-//#include "hal/include/hal_spi_m_sync.h"
-
+#include "nrfx_spim.h"
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    NRF_SPI_Type *spi;
+    nrfx_spim_t spim;
+    bool inited;
     bool has_lock;
 } busio_spi_obj_t;
 
