@@ -7,7 +7,7 @@
     ----------  ---------- ------- -----------------------------------------
     0x000FF000..0x000FFFFF (  4KB) Bootloader Settings
     0x000FE000..0x000FEFFF (  4KB) Master Boot Record Params
-    0x000F4000..0x000FDFFF ( 40KB) Serial + OTA Bootloader
+    0x000F4000..0x000FDFFF ( 40KB) Bootloader (UF2 + CDC + OTA)
 
     0x000ED000..0x000F3FFF (28KB ) Private Config Data (Bonding, Keys, etc.)
     0x000AD000..0x000ECFFF (256KB) User Filesystem
