@@ -121,6 +121,7 @@ extern const struct _mp_print_t mp_stderr_print;
 
 #ifdef _MSC_VER
 #define MICROPY_GCREGS_SETJMP       (1)
+#define MICROPY_USE_INTERNAL_PRINTF (0)
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
