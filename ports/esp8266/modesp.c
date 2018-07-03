@@ -204,14 +204,15 @@ STATIC mp_obj_t esp_neopixel_write_(size_t n_args, const mp_obj_t *args) {
     const mp_obj_t buf = args[1];
     const mp_obj_t is800k = args[2];
     const mp_obj_t frac = n_args > 3 ? args[3] : NULL;
+    const mp_obj_t max = n_args > 4 ? args[4] : NULL;
     
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     esp_neopixel_write(mp_obj_get_pin_obj(pin)->phys_port,
-			    (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k), frac ? mp_obj_get_float(frac) : 1.0);
+			    (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k), frac ? mp_obj_get_float(frac) : 1.0, max ? mp_obj_get_int(max) : 0xFFFFFFFF);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_neopixel_write_obj, 4, 4, esp_neopixel_write_);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_neopixel_write_obj, 4, 5, esp_neopixel_write_);
 
 #if MICROPY_ESP8266_APA102
 STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {

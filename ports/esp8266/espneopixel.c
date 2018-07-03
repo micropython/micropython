@@ -16,7 +16,7 @@
 
 #define NEO_KHZ400 (1)
 
-void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numBytes, bool is800KHz, float frac) {
+uint32_t /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numBytes, bool is800KHz, float frac, uint32_t max) {
 
   uint8_t *p, *end, pix, mask;
   uint32_t t, time0, time1, period, c, startTime, pinMask;
@@ -45,6 +45,7 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
 #endif
 
   uint32_t irq_state = mp_hal_quiet_timing_enter();
+  uint32_t sum = 0;
   for(t = time0;; t = time0) {
     if(pix & mask) t = time1;                             // Bit high duration
     while(((c = mp_hal_ticks_cpu()) - startTime) < period); // Wait for bit start
@@ -55,11 +56,16 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
     if(!(mask >>= 1)) {                                   // Next bit/byte
       if(p >= end) break;
       pix  = *p++ * frac;
+      sum += pix;
+      if (max && sum > max) {
+	pix = 0;  // can't just stop; we need to zero future pixels.
+      }
       mask = 0x80;
     }
   }
   while((mp_hal_ticks_cpu() - startTime) < period); // Wait for last bit
   mp_hal_quiet_timing_exit(irq_state);
+  return sum;
 }
 
 #endif // MICROPY_ESP8266_NEOPIXEL
