@@ -339,7 +339,13 @@ void _socket_settimeout(socket_obj_t *sock, uint64_t timeout_ms) {
 STATIC mp_obj_t socket_settimeout(const mp_obj_t arg0, const mp_obj_t arg1) {
     socket_obj_t *self = MP_OBJ_TO_PTR(arg0);
     if (arg1 == mp_const_none) _socket_settimeout(self, UINT64_MAX);
-    else _socket_settimeout(self, mp_obj_get_float(arg1) * 1000L);
+    else {
+        #if MICROPY_PY_BUILTINS_FLOAT
+        _socket_settimeout(self, mp_obj_get_float(arg1) * 1000L);
+        #else
+        _socket_settimeout(self, mp_obj_get_int(arg1) * 1000);
+        #endif
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_settimeout_obj, socket_settimeout);
