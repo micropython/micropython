@@ -348,5 +348,7 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
+$(PY_BUILD)/nlr%.o: CFLAGS += -Os -fno-lto
+
 include ../../py/mkrules.mk
 
