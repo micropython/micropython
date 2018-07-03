@@ -10,7 +10,7 @@ LONGINT_IMPL = MPZ
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
-CFLAGS_INLINE_LIMIT = 65
+CFLAGS_INLINE_LIMIT = 55
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
