@@ -32,6 +32,11 @@
 #include "py/ringbuf.h"
 #include "lib/utils/interrupt_char.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+extern TaskHandle_t mp_main_task_handle;
+
 extern ringbuf_t stdin_ringbuf;
 
 uint32_t mp_hal_ticks_us(void);
@@ -48,6 +53,9 @@ uint32_t mp_hal_get_cpu_freq(void);
 
 #define mp_hal_quiet_timing_enter() MICROPY_BEGIN_ATOMIC_SECTION()
 #define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
+
+// Wake up the main task if it is sleeping
+void mp_hal_wake_main_task_from_isr(void);
 
 // C-level pin HAL
 #include "py/obj.h"
