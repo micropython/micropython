@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "user_interface.h"
 #include "etshal.h"
+#include "ets_alt_task.h"
 
 const mp_obj_type_t esp_wdt_type;
 
@@ -49,6 +50,8 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
 
     switch (id) {
     case 0:
+        ets_loop_dont_feed_sw_wdt = 1;
+        system_soft_wdt_feed();
         return &wdt_default;
     default:
         mp_raise_ValueError(NULL);

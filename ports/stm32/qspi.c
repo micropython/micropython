@@ -181,16 +181,12 @@ STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, 
 
         QUADSPI->AR = addr;
 
-        // Write out the data
+        // Write out the data 1 byte at a time
         while (len) {
             while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
             }
-            // TODO it seems that writes need to be 32-bit wide to start the xfer...
-            //*(volatile uint8_t*)QUADSPI->DR = *src++;
-            //--len;
-            QUADSPI->DR = *(uint32_t*)src;
-            src += 4;
-            len -= 4;
+            *(volatile uint8_t*)&QUADSPI->DR = *src++;
+            --len;
         }
     }
 
@@ -253,13 +249,23 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
     QUADSPI->ABR = 0; // alternate byte: disable continuous read mode
     QUADSPI->AR = addr; // addres to read from
 
-    // Read in the data
-    while (len) {
-        while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
+    // Read in the data 4 bytes at a time if dest is aligned
+    if (((uintptr_t)dest & 3) == 0) {
+        while (len >= 4) {
+            while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
+            }
+            *(uint32_t*)dest = QUADSPI->DR;
+            dest += 4;
+            len -= 4;
         }
-        *(uint32_t*)dest = QUADSPI->DR;
-        dest += 4;
-        len -= 4;
+    }
+
+    // Read in remaining data 1 byte at a time
+    while (len) {
+        while (!((QUADSPI->SR >> QUADSPI_SR_FLEVEL_Pos) & 0x3f)) {
+        }
+        *dest++ = *(volatile uint8_t*)&QUADSPI->DR;
+        --len;
     }
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag

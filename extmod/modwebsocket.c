@@ -59,6 +59,7 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
 
 STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
+    mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
     mp_obj_websocket_t *o = m_new_obj(mp_obj_websocket_t);
     o->base.type = type;
     o->sock = args[0];
@@ -75,7 +76,7 @@ STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self =  MP_OBJ_TO_PTR(self_in);
-    const mp_stream_p_t *stream_p = mp_get_stream_raise(self->sock, MP_STREAM_OP_READ);
+    const mp_stream_p_t *stream_p = mp_get_stream(self->sock);
     while (1) {
         if (self->to_recv != 0) {
             mp_uint_t out_sz = stream_p->read(self->sock, self->buf + self->buf_pos, self->to_recv, errcode);
