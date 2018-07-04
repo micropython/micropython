@@ -529,6 +529,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 ///  You must either specify freq or both of period and prescaler.
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_freq, ARG_prescaler, ARG_period, ARG_mode, ARG_div, ARG_callback, ARG_deadtime };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_prescaler,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
@@ -546,25 +547,25 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     // set the TIM configuration values
     TIM_Base_InitTypeDef *init = &self->tim.Init;
 
-    if (args[0].u_obj != mp_const_none) {
+    if (args[ARG_freq].u_obj != mp_const_none) {
         // set prescaler and period from desired frequency
-        init->Prescaler = compute_prescaler_period_from_freq(self, args[0].u_obj, &init->Period);
-    } else if (args[1].u_int != 0xffffffff && args[2].u_int != 0xffffffff) {
+        init->Prescaler = compute_prescaler_period_from_freq(self, args[ARG_freq].u_obj, &init->Period);
+    } else if (args[ARG_prescaler].u_int != 0xffffffff && args[ARG_period].u_int != 0xffffffff) {
         // set prescaler and period directly
-        init->Prescaler = args[1].u_int;
-        init->Period = args[2].u_int;
+        init->Prescaler = args[ARG_prescaler].u_int;
+        init->Period = args[ARG_period].u_int;
     } else {
         mp_raise_TypeError("must specify either freq, or prescaler and period");
     }
 
-    init->CounterMode = args[3].u_int;
+    init->CounterMode = args[ARG_mode].u_int;
     if (!IS_TIM_COUNTER_MODE(init->CounterMode)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid mode (%d)", init->CounterMode));
     }
 
-    init->ClockDivision = args[4].u_int == 2 ? TIM_CLOCKDIVISION_DIV2 :
-                          args[4].u_int == 4 ? TIM_CLOCKDIVISION_DIV4 :
-                                               TIM_CLOCKDIVISION_DIV1;
+    init->ClockDivision = args[ARG_div].u_int == 2 ? TIM_CLOCKDIVISION_DIV2 :
+                          args[ARG_div].u_int == 4 ? TIM_CLOCKDIVISION_DIV4 :
+                                                     TIM_CLOCKDIVISION_DIV1;
 
     init->RepetitionCounter = 0;
 
@@ -638,7 +639,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     #else
     if (0) {
     #endif
-        config_deadtime(self, args[6].u_int);
+        config_deadtime(self, args[ARG_deadtime].u_int);
     }
 
     // Enable ARPE so that the auto-reload register is buffered.
@@ -646,10 +647,10 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     self->tim.Instance->CR1 |= TIM_CR1_ARPE;
 
     // Start the timer running
-    if (args[5].u_obj == mp_const_none) {
+    if (args[ARG_callback].u_obj == mp_const_none) {
         HAL_TIM_Base_Start(&self->tim);
     } else {
-        pyb_timer_callback(MP_OBJ_FROM_PTR(self), args[5].u_obj);
+        pyb_timer_callback(MP_OBJ_FROM_PTR(self), args[ARG_callback].u_obj);
     }
 
     return mp_const_none;
