@@ -54,6 +54,8 @@ INC += -I./nrfx/drivers/include
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
+INC += -I../../lib/tinyusb/src
+INC += -I./usb
 
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
@@ -98,6 +100,7 @@ SRC_HAL = $(addprefix hal/,\
 SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_twim.c \
+	drivers/src/nrfx_power.c \
 	)
 
 SRC_C += \
@@ -113,6 +116,8 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
+	usb/tusb_descriptors.c \
+	usb/msc_flash.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
@@ -122,6 +127,14 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
+  lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
+  lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
+  lib/tinyusb/src/common/tusb_fifo.c \
+  lib/tinyusb/src/device/usbd.c \
+  lib/tinyusb/src/device/usbd_desc.c \
+  lib/tinyusb/src/class/msc/msc_device.c \
+  lib/tinyusb/src/class/cdc/cdc_device.c \
+  lib/tinyusb/src/tusb.c \
 	internal_flash.c \
 
 

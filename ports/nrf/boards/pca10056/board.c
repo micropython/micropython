@@ -27,12 +27,38 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "nrf.h"
-
+#include "nrfx.h"
+#include "nrfx_power.h"
 #include "boards/board.h"
+
+#include "tick.h"
+#include "tusb.h"
 
 void board_init(void) {
 
+    // Init USB
+    NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
+    NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
+
+#ifdef SOFTDEVICE_PRESENT
+    // TODO support Softdevice config
+#else
+    // Softdevice is not present, init power module and register tusb power event function
+    // for vusb detect, ready, removed
+    extern void tusb_hal_nrf_power_event(uint32_t event);
+
+    // Power module init
+    const nrfx_power_config_t pwr_cfg = { 0 };
+    nrfx_power_init(&pwr_cfg);
+
+    // USB Power detection
+    const nrfx_power_usbevt_config_t config = { .handler = (nrfx_power_usb_event_handler_t) tusb_hal_nrf_power_event };
+    nrfx_power_usbevt_init(&config);
+
+    nrfx_power_usbevt_enable();
+#endif
+
+    tusb_init();
 }
 
 bool board_requests_safe_mode(void) {
@@ -42,3 +68,24 @@ bool board_requests_safe_mode(void) {
 void reset_board(void) {
 
 }
+
+
+//--------------------------------------------------------------------+
+// tinyusb callbacks
+//--------------------------------------------------------------------+
+void tud_mount_cb(uint8_t rhport) {
+    (void) rhport;
+}
+
+void tud_umount_cb(uint8_t rhport) {
+    (void) rhport;
+}
+
+uint32_t tusb_hal_millis(void)
+{
+    uint64_t ms;
+    uint32_t us;
+    current_tick(&ms, &us);
+    return (uint32_t) ms;
+}
+
