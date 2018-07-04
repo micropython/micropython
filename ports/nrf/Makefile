@@ -116,8 +116,6 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
-	usb/tusb_descriptors.c \
-	usb/msc_flash.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
@@ -127,6 +125,15 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
+	internal_flash.c \
+
+
+ifeq ($(MCU_SUB_VARIANT),nrf52840)
+
+SRC_C += \
+	usb/tusb_descriptors.c \
+	usb/usb_msc_flash.c \
+	usb/usb_cdc.c \
   lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
   lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
   lib/tinyusb/src/common/tusb_fifo.c \
@@ -135,7 +142,8 @@ SRC_C += \
   lib/tinyusb/src/class/msc/msc_device.c \
   lib/tinyusb/src/class/cdc/cdc_device.c \
   lib/tinyusb/src/tusb.c \
-	internal_flash.c \
+  
+endif
 
 
 DRIVERS_SRC_C += $(addprefix modules/,\

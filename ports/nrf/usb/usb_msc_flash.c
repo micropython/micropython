@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     msc_flash.c
+    @file     usb_msc_flash.c
     @author   hathach (tinyusb.org)
 
     @section LICENSE
