@@ -230,11 +230,6 @@ bool start_mp(safe_mode_t safe_mode) {
         serial_connected_before_animation = serial_connected();
 
         tick_rgb_status_animation(&animation);
-
-        #ifdef NRF52840_XXAA
-        extern void tusb_task(void);
-        tusb_task();
-        #endif
     }
 }
 
