@@ -314,6 +314,40 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
     return (prescaler - 1) & 0xffff;
 }
 
+// computes prescaler and period so TIM triggers with a period of t_num/t_den seconds
+STATIC uint32_t compute_prescaler_period_from_t(pyb_timer_obj_t *self, int32_t t_num, int32_t t_den, uint32_t *period_out) {
+    uint32_t source_freq = timer_get_source_freq(self->tim_id);
+    if (t_num <= 0 || t_den <= 0) {
+        mp_raise_ValueError("must have positive freq");
+    }
+    uint64_t period = (uint64_t)source_freq * (uint64_t)t_num / (uint64_t)t_den;
+    uint32_t prescaler = 1;
+    while (period > TIMER_CNT_MASK(self)) {
+        // if we can divide exactly, and without prescaler overflow, do that first
+        if (prescaler <= 13107 && period % 5 == 0) {
+            prescaler *= 5;
+            period /= 5;
+        } else if (prescaler <= 21845 && period % 3 == 0) {
+            prescaler *= 3;
+            period /= 3;
+        } else {
+            // may not divide exactly, but loses minimal precision
+            uint32_t period_lsb = period & 1;
+            prescaler <<= 1;
+            period >>= 1;
+            if (period < prescaler) {
+                // round division up
+                prescaler |= period_lsb;
+            }
+            if (prescaler > 0x10000) {
+                mp_raise_ValueError("period too large");
+            }
+        }
+    }
+    *period_out = (period - 1) & TIMER_CNT_MASK(self);
+    return (prescaler - 1) & 0xffff;
+}
+
 // Helper function for determining the period used for calculating percent
 STATIC uint32_t compute_period(pyb_timer_obj_t *self) {
     // In center mode,  compare == period corresponds to 100%
@@ -529,10 +563,12 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 ///  You must either specify freq or both of period and prescaler.
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_freq, ARG_prescaler, ARG_period, ARG_period_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_prescaler,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_period_hz,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_COUNTERMODE_UP} },
         { MP_QSTR_div,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -546,25 +582,28 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     // set the TIM configuration values
     TIM_Base_InitTypeDef *init = &self->tim.Init;
 
-    if (args[0].u_obj != mp_const_none) {
+    if (args[ARG_freq].u_obj != mp_const_none) {
         // set prescaler and period from desired frequency
-        init->Prescaler = compute_prescaler_period_from_freq(self, args[0].u_obj, &init->Period);
-    } else if (args[1].u_int != 0xffffffff && args[2].u_int != 0xffffffff) {
+        init->Prescaler = compute_prescaler_period_from_freq(self, args[ARG_freq].u_obj, &init->Period);
+    } else if (args[ARG_period].u_int != 0xffffffff && args[ARG_period_hz].u_int != 0xffffffff) {
+        // set prescaler and period from desired period and scaler
+        init->Prescaler = compute_prescaler_period_from_t(self, args[ARG_period].u_int, args[ARG_period_hz].u_int, &init->Period);
+    } else if (args[ARG_prescaler].u_int != 0xffffffff && args[ARG_period].u_int != 0xffffffff) {
         // set prescaler and period directly
-        init->Prescaler = args[1].u_int;
-        init->Period = args[2].u_int;
+        init->Prescaler = args[ARG_prescaler].u_int;
+        init->Period = args[ARG_period].u_int;
     } else {
-        mp_raise_TypeError("must specify either freq, or prescaler and period");
+        mp_raise_TypeError("must specify either freq, period and period_hz, or prescaler and period");
     }
 
-    init->CounterMode = args[3].u_int;
+    init->CounterMode = args[ARG_mode].u_int;
     if (!IS_TIM_COUNTER_MODE(init->CounterMode)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid mode (%d)", init->CounterMode));
     }
 
-    init->ClockDivision = args[4].u_int == 2 ? TIM_CLOCKDIVISION_DIV2 :
-                          args[4].u_int == 4 ? TIM_CLOCKDIVISION_DIV4 :
-                                               TIM_CLOCKDIVISION_DIV1;
+    init->ClockDivision = args[ARG_div].u_int == 2 ? TIM_CLOCKDIVISION_DIV2 :
+                          args[ARG_div].u_int == 4 ? TIM_CLOCKDIVISION_DIV4 :
+                                                     TIM_CLOCKDIVISION_DIV1;
 
     init->RepetitionCounter = 0;
 
@@ -638,7 +677,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     #else
     if (0) {
     #endif
-        config_deadtime(self, args[6].u_int);
+        config_deadtime(self, args[ARG_deadtime].u_int);
     }
 
     // Enable ARPE so that the auto-reload register is buffered.
@@ -646,10 +685,10 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     self->tim.Instance->CR1 |= TIM_CR1_ARPE;
 
     // Start the timer running
-    if (args[5].u_obj == mp_const_none) {
+    if (args[ARG_callback].u_obj == mp_const_none) {
         HAL_TIM_Base_Start(&self->tim);
     } else {
-        pyb_timer_callback(self, args[5].u_obj);
+        pyb_timer_callback(self, args[ARG_callback].u_obj);
     }
 
     return mp_const_none;
