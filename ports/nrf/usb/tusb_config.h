@@ -52,8 +52,8 @@
 
 /*------------- RTOS -------------*/
 #define CFG_TUSB_OS               OPT_OS_NONE
-//#define CFG_TUD_TASK_PRIO         0
 //#define CFG_TUD_TASK_QUEUE_SZ     16
+//#define CFG_TUD_TASK_PRIO         0
 //#define CFG_TUD_TASK_STACK_SZ     150
 
 //--------------------------------------------------------------------+
@@ -90,7 +90,7 @@
 #define CFG_TUD_CDC_FLUSH_ON_SOF    0
 
 // Number of supported Logical Unit Number (At least 1)
-#define CFG_TUD_MSC_MAXLUN        1
+#define CFG_TUD_MSC_MAXLUN          1
 
 // Number of Blocks
 #define CFG_TUD_MSC_BLOCK_NUM       (256*1024)/512

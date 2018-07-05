@@ -116,6 +116,7 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
+	background.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
@@ -127,6 +128,7 @@ SRC_C += \
 	lib/mp-readline/readline.c \
 	internal_flash.c \
 
+#	lib/utils/stdout_helpers.c
 
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 

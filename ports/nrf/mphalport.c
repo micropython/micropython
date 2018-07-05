@@ -32,6 +32,8 @@
 #include "py/mperrno.h"
 #include "hal_uart.h"
 
+#ifndef NRF52840_XXAA
+
 #define UART_INSTANCE   UART_BASE(0)
 
 #if (MICROPY_PY_BLE_NUS == 0)
@@ -84,3 +86,60 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
 void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
+
+#else
+
+#include "tusb.h"
+
+int mp_hal_stdin_rx_chr(void) {
+    for (;;) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        // if (reload_requested) {
+        //     return CHAR_CTRL_D;
+        // }
+        if (tud_cdc_available()) {
+            #ifdef MICROPY_HW_LED_RX
+            gpio_toggle_pin_level(MICROPY_HW_LED_RX);
+            #endif
+            return tud_cdc_read_char();
+        }
+    }
+}
+
+bool mp_hal_stdin_any(void) {
+  return tud_cdc_available() > 0;
+}
+
+void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+
+//    #ifdef MICROPY_HW_LED_TX
+//    gpio_toggle_pin_level(MICROPY_HW_LED_TX);
+//    #endif
+//
+//    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+//    if (boot_output_file != NULL) {
+//        UINT bytes_written = 0;
+//        f_write(boot_output_file, str, len, &bytes_written);
+//    }
+//    #endif
+
+    tud_cdc_write(str, len);
+}
+
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
+    while (len--) {
+        if (*str == '\n') {
+            mp_hal_stdout_tx_strn("\r", 1);
+        }
+        mp_hal_stdout_tx_strn(str++, 1);
+    }
+}
+
+#endif
+
+void mp_hal_stdout_tx_str(const char *str) {
+    mp_hal_stdout_tx_strn(str, strlen(str));
+}
+

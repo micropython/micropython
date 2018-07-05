@@ -36,6 +36,8 @@
 #include "ble_uart.h"
 #endif
 
+#ifndef NRF52840_XXAA
+
 void serial_init(void) {
 
 #if MICROPY_PY_BLE_NUS
@@ -83,4 +85,31 @@ bool serial_bytes_available(void) {
 void serial_write(const char* text) {
   mp_hal_stdout_tx_str(text);
 }
+
+#else
+
+#include "tusb.h"
+
+void serial_init(void) {
+    // usb should be initialized in board_init()
+}
+
+
+bool serial_connected(void) {
+    return tud_cdc_connected();
+}
+
+char serial_read(void) {
+    return (char) tud_cdc_read_char();
+}
+
+bool serial_bytes_available(void) {
+    return tud_cdc_available() > 0;
+}
+
+void serial_write(const char* text) {
+    tud_cdc_write(text, strlen(text));
+}
+
+#endif
 
