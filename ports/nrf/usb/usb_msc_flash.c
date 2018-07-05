@@ -39,6 +39,12 @@
 #include "tusb.h"
 #include "internal_flash.h"
 
+// For updating fatfs's cache
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
+#include "lib/oofatfs/ff.h"
+#include "py/mpstate.h"
+
 /*------------------------------------------------------------------*/
 /* MACRO TYPEDEF CONSTANT ENUM
  *------------------------------------------------------------------*/
@@ -158,6 +164,13 @@ int32_t tud_msc_write10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t 
 
     // bufsize <= CFG_TUD_MSC_BUFSIZE (4096)
     internal_flash_write_blocks(buffer, lba, block_count);
+
+    // update fatfs's cache if address matches
+    fs_user_mount_t* vfs = MP_STATE_VM(vfs_mount_table)->obj;
+
+    if ( (lba <= vfs->fatfs.winsect) && (vfs->fatfs.winsect <= (lba + bufsize/MSC_FLASH_BLOCK_SIZE)) ) {
+        memcpy(vfs->fatfs.win, buffer + MSC_FLASH_BLOCK_SIZE*(vfs->fatfs.winsect-lba), MSC_FLASH_BLOCK_SIZE);
+    }
 
     return block_count*MSC_FLASH_BLOCK_SIZE;
 }
