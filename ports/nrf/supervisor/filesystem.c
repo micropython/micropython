@@ -32,23 +32,23 @@
 
 #include "internal_flash.h"
 
-fs_user_mount_t fs_user_mount_flash;
-mp_vfs_mount_t mp_vfs_mount_flash;
+static fs_user_mount_t _usr_mnt;
+static mp_vfs_mount_t _mp_mnt;
 
 
 void filesystem_init(bool create_allowed) {
     // init the vfs object
-    fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
-    vfs_fat->flags = 0;
-    flash_init_vfs(vfs_fat);
+    fs_user_mount_t *usr_vfs = &_usr_mnt;
+    usr_vfs->flags = 0;
+    flash_init_vfs(usr_vfs);
 
     // try to mount the flash
-    FRESULT res = f_mount(&vfs_fat->fatfs);
+    FRESULT res = f_mount(&usr_vfs->fatfs);
 
     if (res == FR_NO_FILESYSTEM && create_allowed) {
         // no filesystem so create a fresh one
         uint8_t working_buf[_MAX_SS];
-        res = f_mkfs(&vfs_fat->fatfs, FM_FAT | FM_SFD, 4096, working_buf, sizeof(working_buf));
+        res = f_mkfs(&usr_vfs->fatfs, FM_FAT | FM_SFD, 4096, working_buf, sizeof(working_buf));
         // Flush the new file system to make sure its repaired immediately.
         flash_flush();
         if (res != FR_OK) {
@@ -56,24 +56,26 @@ void filesystem_init(bool create_allowed) {
         }
 
         // set label
-        f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
-        flash_flush();
+        f_setlabel(&usr_vfs->fatfs, "CIRCUITPY");
 
         // create lib folder
-        f_mkdir(&vfs_fat->fatfs, "/lib");
+        f_mkdir(&usr_vfs->fatfs, "/lib");
+
+        flash_flush();
     } else if (res != FR_OK) {
         return;
     }
-    mp_vfs_mount_t *vfs = &mp_vfs_mount_flash;
-    vfs->str = "/";
-    vfs->len = 1;
-    vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
-    vfs->next = NULL;
-    MP_STATE_VM(vfs_mount_table) = vfs;
+
+    mp_vfs_mount_t *mp_vfs = &_mp_mnt;
+    mp_vfs->str = "/";
+    mp_vfs->len = 1;
+    mp_vfs->obj = MP_OBJ_FROM_PTR(usr_vfs);
+    mp_vfs->next = NULL;
+    MP_STATE_VM(vfs_mount_table) = mp_vfs;
 
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
-    MP_STATE_PORT(vfs_cur) = vfs;
+    MP_STATE_PORT(vfs_cur) = mp_vfs;
 }
 
 void filesystem_flush(void) {
