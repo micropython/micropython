@@ -332,8 +332,13 @@ STATIC uint32_t compute_prescaler_period_from_t(pyb_timer_obj_t *self, int32_t t
             period /= 3;
         } else {
             // may not divide exactly, but loses minimal precision
+            uint32_t period_lsb = period & 1;
             prescaler <<= 1;
             period >>= 1;
+            if (period < prescaler) {
+                // round division up
+                prescaler |= period_lsb;
+            }
             if (prescaler > 0x10000) {
                 mp_raise_ValueError("period too large");
             }
@@ -588,7 +593,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         init->Prescaler = args[ARG_prescaler].u_int;
         init->Period = args[ARG_period].u_int;
     } else {
-        mp_raise_TypeError("must specify either freq, or prescaler and period");
+        mp_raise_TypeError("must specify either freq, period and period_hz, or prescaler and period");
     }
 
     init->CounterMode = args[ARG_mode].u_int;
