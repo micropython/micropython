@@ -115,6 +115,7 @@ SRC_C += \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
+	nrfx/hal/nrf_nvmc.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	background.c \
 	lib/oofatfs/ff.c \
@@ -135,7 +136,6 @@ ifeq ($(MCU_SUB_VARIANT),nrf52840)
 SRC_C += \
 	usb/tusb_descriptors.c \
 	usb/usb_msc_flash.c \
-	usb/usb_cdc.c \
   lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
   lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
   lib/tinyusb/src/common/tusb_fifo.c \

@@ -37,15 +37,17 @@
 #ifdef NRF52840_XXAA
 
 #include "tusb.h"
-
-#if CFG_TUD_MSC
+#include "nrf_nvmc.h"
 
 /*------------------------------------------------------------------*/
 /* MACRO TYPEDEF CONSTANT ENUM
  *------------------------------------------------------------------*/
-#define MSC_FLASH_ADDR_START      0xAD000
-#define MSC_FLASH_SIZE            (256*1024)
-#define MSC_FLASH_BLOCK_SIZE      512
+#define MSC_FLASH_ADDR_END      0xED000
+#define MSC_FLASH_SIZE          (256*1024)
+#define MSC_FLASH_ADDR_START    (MSC_FLASH_ADDR_END-MSC_FLASH_SIZE)
+#define MSC_FLASH_BLOCK_SIZE    512
+
+#define FL_PAGE_SZ              4096
 
 /*------------------------------------------------------------------*/
 /* VARIABLES
@@ -140,24 +142,79 @@ int32_t tud_msc_scsi_cb (uint8_t rhport, uint8_t lun, uint8_t const scsi_cmd[16]
 }
 
 /*------------------------------------------------------------------*/
+/* Internal Flash
+ *------------------------------------------------------------------*/
+#define NO_CACHE 0xffffffff
+
+uint8_t  _fl_cache[FL_PAGE_SZ] ATTR_ALIGNED(4);
+uint32_t _fl_addr = NO_CACHE;
+
+
+static void fl_flush() {
+    if (_fl_addr == NO_CACHE) return;
+
+    // Skip if data is the same
+    if (memcmp(_fl_cache, (void *)_fl_addr, FL_PAGE_SZ) != 0) {
+//        _is_flashing = true;
+        nrf_nvmc_page_erase(_fl_addr);
+        nrf_nvmc_write_words(_fl_addr, (uint32_t *)_fl_cache, FL_PAGE_SZ / sizeof(uint32_t));
+    }
+
+    _fl_addr = NO_CACHE;
+}
+
+static bool fl_write(uint32_t addr, uint8_t* buf, uint16_t bufsize)
+{
+    uint32_t new_addr = addr & ~(FL_PAGE_SZ - 1);
+
+    if (new_addr != _fl_addr) {
+        fl_flush();
+
+        // writing previous cached data, skip current data until flashing is done
+        // tinyusb stack will invoke write_block() with the same parameters later on
+//        if ( _is_flashing ) return;
+
+        _fl_addr = new_addr;
+        memcpy(_fl_cache, (void *)new_addr, FL_PAGE_SZ);
+    }
+
+    memcpy(_fl_cache + (addr & (FL_PAGE_SZ - 1)), buf, bufsize);
+
+    return true;
+}
+
+
+/*------------------------------------------------------------------*/
 /* Tinyusb Flash READ10 & WRITE10
  *------------------------------------------------------------------*/
 int32_t tud_msc_read10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
-  (void) rhport; (void) lun;
+    (void) rhport;
+    (void) lun;
 
-  uint32_t addr = lba2addr(lba) + offset;
-  memcpy(buffer, (uint8_t*) addr, bufsize);
+    uint32_t addr = lba2addr(lba) + offset;
+    memcpy(buffer, (uint8_t*) addr, bufsize);
 
-  return bufsize;
+    return bufsize;
 }
 
 int32_t tud_msc_write10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
     (void) rhport; (void) lun;
+    uint32_t addr = lba2addr(lba) + offset;
+
+    // bufsize <= CFG_TUD_MSC_BUFSIZE (4096)
+    fl_write(addr, buffer, bufsize);
 
     return bufsize;
 }
 
-#endif
+void tud_msc_write10_complete_cb(uint8_t rhport, uint8_t lun)
+{
+    (void) rhport; (void) lun;
+
+    // flush pending cache when write10 is complete
+    fl_flush();
+}
+
 #endif
