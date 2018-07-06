@@ -30,9 +30,11 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "hal_uart.h"
+
+#include "tick.h"
 
 #if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
+#include "hal_uart.h"
 
 #define UART_INSTANCE   UART_BASE(0)
 
@@ -153,6 +155,98 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 #endif
+
+void mp_hal_delay_ms(mp_uint_t delay) {
+    uint64_t start_tick = ticks_ms;
+    uint64_t duration = 0;
+    while (duration < delay) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        // Check to see if we've been CTRL-Ced by autoreload or the user.
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
+            break;
+        }
+        duration = (ticks_ms - start_tick);
+        // TODO(tannewt): Go to sleep for a little while while we wait.
+    }
+}
+
+void mp_hal_delay_us(mp_uint_t us)
+{
+    register uint32_t delay __ASM ("r0") = us;
+    __ASM volatile (
+#ifdef NRF51
+            ".syntax unified\n"
+#endif
+        "1:\n"
+        " SUBS %0, %0, #1\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+#ifdef NRF52
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+#endif
+        " BNE 1b\n"
+#ifdef NRF51
+        ".syntax divided\n"
+#endif
+        : "+r" (delay));
+}
 
 
 
