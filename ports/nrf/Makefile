@@ -1,19 +1,21 @@
-# Select the board to build for: if not given on the command line,
-# then default to feather52832.
-BOARD ?= feather52832
-ifeq ($(wildcard boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
+# Select the board to build for.
+ifeq ($(BOARD),)
+  $(info You must provide a BOARD parameter with 'BOARD=')
+  $(info Possible values are:)
+  $(info $(sort $(subst /.,,$(subst boards/,,$(wildcard boards/*/.)))))
+  $(error BOARD not defined)
+else
+  ifeq ($(wildcard boards/$(BOARD)/.),)
+    $(error Invalid BOARD specified)
+  endif
 endif
 
 # If SoftDevice is selected, try to use that one.
 # Default to SD132 (exact version can be set with SOFTDEV_VERSION)
-SD ?= s132
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
-# TODO: Verify that it is a valid target.
-
-# If the build directory is not given, make it reflect the board name
-BUILD ?= $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
+# If the build directory with SD
+BUILD = $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
 include ../../py/mkenv.mk
 include boards/$(BOARD)/mpconfigboard.mk

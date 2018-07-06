@@ -28,7 +28,7 @@
 
 #define MICROPY_HW_BOARD_NAME       "PCA10056"
 #define MICROPY_HW_MCU_NAME         "NRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52840-PDK"
+#define MICROPY_PY_SYS_PLATFORM     "nrf52840-DK"
 
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_HAS_SWITCH       (0)
@@ -77,3 +77,8 @@
 
 #define PORT_HEAP_SIZE                (128*1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+
+
+// Temp (could be removed) 0: usb cdc (default), 1 : hwuart (jlink)
+#define CFG_HWUART_FOR_SERIAL        0
+

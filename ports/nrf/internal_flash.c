@@ -74,7 +74,6 @@ void internal_flash_init(void) {
         port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
         port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
     #endif
-//    flash_init(&internal_flash_desc, NVMCTRL);
 }
 
 uint32_t internal_flash_get_block_size(void) {

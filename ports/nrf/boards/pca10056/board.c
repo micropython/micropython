@@ -36,9 +36,11 @@
 
 void board_init(void) {
 
-    // Init USB
+    // Clock
     NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
     NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
+
+    // Init USB
 
 #ifdef SOFTDEVICE_PRESENT
     // TODO support Softdevice config

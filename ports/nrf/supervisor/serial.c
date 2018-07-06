@@ -36,7 +36,7 @@
 #include "ble_uart.h"
 #endif
 
-#ifndef NRF52840_XXAA
+#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
 
 void serial_init(void) {
 
@@ -91,7 +91,7 @@ void serial_write(const char* text) {
 #include "tusb.h"
 
 void serial_init(void) {
-    // usb should be initialized in board_init()
+    // usb is already initialized in board_init()
 }
 
 

@@ -32,13 +32,20 @@
 #include "py/mperrno.h"
 #include "hal_uart.h"
 
-#ifndef NRF52840_XXAA
+#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
 
 #define UART_INSTANCE   UART_BASE(0)
 
 #if (MICROPY_PY_BLE_NUS == 0)
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        // if (reload_requested) {
+        //     return CHAR_CTRL_D;
+        // }
+
         if ( hal_uart_available(UART_INSTANCE) ) {
           uint8_t ch;
           hal_uart_char_read(UART_INSTANCE, &ch);
@@ -99,6 +106,7 @@ int mp_hal_stdin_rx_chr(void) {
         // if (reload_requested) {
         //     return CHAR_CTRL_D;
         // }
+
         if (tud_cdc_available()) {
             #ifdef MICROPY_HW_LED_RX
             gpio_toggle_pin_level(MICROPY_HW_LED_RX);
@@ -106,6 +114,8 @@ int mp_hal_stdin_rx_chr(void) {
             return tud_cdc_read_char();
         }
     }
+
+    return 0;
 }
 
 bool mp_hal_stdin_any(void) {
@@ -114,20 +124,21 @@ bool mp_hal_stdin_any(void) {
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 
-//    #ifdef MICROPY_HW_LED_TX
-//    gpio_toggle_pin_level(MICROPY_HW_LED_TX);
-//    #endif
-//
-//    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-//    if (boot_output_file != NULL) {
-//        UINT bytes_written = 0;
-//        f_write(boot_output_file, str, len, &bytes_written);
-//    }
-//    #endif
+    #ifdef MICROPY_HW_LED_TX
+    gpio_toggle_pin_level(MICROPY_HW_LED_TX);
+    #endif
+
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    if (boot_output_file != NULL) {
+        UINT bytes_written = 0;
+        f_write(boot_output_file, str, len, &bytes_written);
+    }
+    #endif
 
     tud_cdc_write(str, len);
 }
 
+// TODO use stdout_helper.c
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     while (len--) {
         if (*str == '\n') {
@@ -137,9 +148,11 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
 }
 
-#endif
-
 void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
+
+#endif
+
+
 
