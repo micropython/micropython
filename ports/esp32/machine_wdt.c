@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "esp_log.h"
 #include "esp_task_wdt.h"
 
 const mp_obj_type_t machine_wdt_type;
@@ -42,17 +43,32 @@ typedef struct _machine_wdt_obj_t {
 STATIC machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};
 
 STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
     mp_int_t id = 0;
+    mp_int_t timeout = 10;
+    bool panic = true;
+
     if (n_args > 0) {
         id = mp_obj_get_int(args[0]);
+        timeout = mp_obj_get_int(args[1]);
     }
 
     switch (id) {
         case 0:
             esp_task_wdt_add(NULL);
             return &wdt_default;
+        
+        case 1: {
+            mp_int_t rs_code = esp_task_wdt_init(timeout, panic);
+            if(rs_code != ESP_OK) mp_raise_OSError(rs_code);
+
+            ESP_LOGI("WDT init", "id: %d, timeout: %ds, panic: %d", id, timeout, panic);
+
+            esp_task_wdt_add(NULL);
+            return &wdt_default;
+        }
+
         default:
             mp_raise_ValueError(NULL);
     }
