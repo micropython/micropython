@@ -32,23 +32,23 @@
 
 #include "internal_flash.h"
 
-static fs_user_mount_t _usr_mnt;
-static mp_vfs_mount_t _mp_mnt;
+static mp_vfs_mount_t _mp_vfs;
+static fs_user_mount_t _internal_vfs;
 
 
 void filesystem_init(bool create_allowed) {
     // init the vfs object
-    fs_user_mount_t *usr_vfs = &_usr_mnt;
-    usr_vfs->flags = 0;
-    flash_init_vfs(usr_vfs);
+    fs_user_mount_t *int_vfs = &_internal_vfs;
+    int_vfs->flags = 0;
+    flash_init_vfs(int_vfs);
 
     // try to mount the flash
-    FRESULT res = f_mount(&usr_vfs->fatfs);
+    FRESULT res = f_mount(&int_vfs->fatfs);
 
     if (res == FR_NO_FILESYSTEM && create_allowed) {
         // no filesystem so create a fresh one
         uint8_t working_buf[_MAX_SS];
-        res = f_mkfs(&usr_vfs->fatfs, FM_FAT | FM_SFD, 4096, working_buf, sizeof(working_buf));
+        res = f_mkfs(&int_vfs->fatfs, FM_FAT | FM_SFD, 4096, working_buf, sizeof(working_buf));
         // Flush the new file system to make sure its repaired immediately.
         flash_flush();
         if (res != FR_OK) {
@@ -56,20 +56,20 @@ void filesystem_init(bool create_allowed) {
         }
 
         // set label
-        f_setlabel(&usr_vfs->fatfs, "CIRCUITPY");
+        f_setlabel(&int_vfs->fatfs, "CIRCUITPY");
 
         // create lib folder
-        f_mkdir(&usr_vfs->fatfs, "/lib");
+        f_mkdir(&int_vfs->fatfs, "/lib");
 
         flash_flush();
     } else if (res != FR_OK) {
         return;
     }
 
-    mp_vfs_mount_t *mp_vfs = &_mp_mnt;
+    mp_vfs_mount_t *mp_vfs = &_mp_vfs;
     mp_vfs->str = "/";
     mp_vfs->len = 1;
-    mp_vfs->obj = MP_OBJ_FROM_PTR(usr_vfs);
+    mp_vfs->obj = MP_OBJ_FROM_PTR(int_vfs);
     mp_vfs->next = NULL;
     MP_STATE_VM(vfs_mount_table) = mp_vfs;
 
@@ -83,6 +83,13 @@ void filesystem_flush(void) {
 }
 
 void filesystem_writable_by_python(bool writable) {
+    fs_user_mount_t *vfs = &_internal_vfs;
+
+    if (writable) {
+        vfs->flags |= FSUSER_USB_WRITABLE;
+    } else {
+        vfs->flags &= ~FSUSER_USB_WRITABLE;
+    }
 }
 
 bool filesystem_present(void) {
