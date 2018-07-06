@@ -42,3 +42,8 @@ user.props
 # Generated rst files
 ######################
 genrst/
+
+# IDE
+######################
+.vscode
+*.code-workspace
