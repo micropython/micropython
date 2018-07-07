@@ -43,34 +43,40 @@ typedef struct _machine_wdt_obj_t {
 STATIC machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};
 
 STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 3, false);
+    mp_arg_check_num(n_args, n_kw, 0, 2, true);
+    
+    enum {
+        ARG_timeout, ARG_panic
+    };
 
-    mp_int_t id = 0;
-    mp_int_t timeout = 10;
-    bool panic = true;
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_panic, MP_ARG_BOOL, {.u_bool = true} }
+    };
 
-    if (n_args > 0) {
-        id = mp_obj_get_int(args[0]);
-        timeout = mp_obj_get_int(args[1]);
-    }
+    mp_map_t kw_args;
+    mp_arg_val_t mp_args[MP_ARRAY_SIZE(allowed_args)];
 
-    switch (id) {
-        case 0:
-            esp_task_wdt_add(NULL);
-            return &wdt_default;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    mp_arg_parse_all(n_args, args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, mp_args);
+
+    if (mp_args[ARG_timeout].u_int == 0) {
+        esp_task_wdt_add(NULL);
+        ESP_LOGI("WDT init", "default WDT");
+        return &wdt_default;
+    } else if (mp_args[ARG_timeout].u_int > 0) {
         
-        case 1: {
-            mp_int_t rs_code = esp_task_wdt_init(timeout, panic);
-            if(rs_code != ESP_OK) mp_raise_OSError(rs_code);
-
-            ESP_LOGI("WDT init", "id: %d, timeout: %ds, panic: %d", id, timeout, panic);
-
-            esp_task_wdt_add(NULL);
-            return &wdt_default;
+        mp_int_t rs_code = esp_task_wdt_init(mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
+        if (rs_code != ESP_OK) {
+          mp_raise_OSError(rs_code);
         }
 
-        default:
-            mp_raise_ValueError(NULL);
+        ESP_LOGI("WDT init", "timeout: %ds, panic: %d", mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
+
+        esp_task_wdt_add(NULL);
+        return &wdt_default;
+    } else {
+        mp_raise_ValueError(NULL);
     }
 }
 
