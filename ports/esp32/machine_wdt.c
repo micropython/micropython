@@ -50,7 +50,7 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
     };
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 10} },
         { MP_QSTR_panic, MP_ARG_BOOL, {.u_bool = true} }
     };
 
@@ -60,24 +60,15 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_arg_parse_all(n_args, args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, mp_args);
 
-    if (mp_args[ARG_timeout].u_int == 0) {
-        esp_task_wdt_add(NULL);
-        ESP_LOGI("WDT init", "default WDT");
-        return &wdt_default;
-    } else if (mp_args[ARG_timeout].u_int > 0) {
-        
-        mp_int_t rs_code = esp_task_wdt_init(mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
-        if (rs_code != ESP_OK) {
-          mp_raise_OSError(rs_code);
-        }
-
-        ESP_LOGI("WDT init", "timeout: %ds, panic: %d", mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
-
-        esp_task_wdt_add(NULL);
-        return &wdt_default;
-    } else {
-        mp_raise_ValueError(NULL);
+    mp_int_t rs_code = esp_task_wdt_init(mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
+    if (rs_code != ESP_OK) {
+        mp_raise_OSError(rs_code);
     }
+
+    ESP_LOGI("WDT init", "timeout: %ds, panic: %d", mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
+
+    esp_task_wdt_add(NULL);
+    return &wdt_default;
 }
 
 STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
