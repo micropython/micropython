@@ -146,7 +146,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_descriptor.c \
 	ubluepy/ubluepy_scanner.c \
 	ubluepy/ubluepy_scan_entry.c \
-	ble/modble.c \
 	)
 
 SRC_COMMON_HAL += \
@@ -172,6 +171,12 @@ SRC_COMMON_HAL += \
 	storage/__init__.c \
 	supervisor/__init__.c \
 	supervisor/Runtime.c \
+
+ifneq ($(SD), )
+SRC_COMMON_HAL += \
+	bleio/__init__.c \
+	bleio/Adapter.c
+endif
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
