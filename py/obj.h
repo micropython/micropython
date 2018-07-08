@@ -758,7 +758,9 @@ size_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
-mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
+static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
+    return &((mp_obj_dict_t*)MP_OBJ_TO_PTR(dict))->map;
+}
 
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
