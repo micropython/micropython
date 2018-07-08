@@ -452,7 +452,7 @@ STATIC mp_obj_t pin_names(mp_obj_t self_in) {
     mp_obj_t result = mp_obj_new_list(0, NULL);
     mp_obj_list_append(result, MP_OBJ_NEW_QSTR(self->name));
 
-    mp_map_t *map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
+    const mp_map_t *map = &pin_board_pins_locals_dict.map;
     mp_map_elem_t *elem = map->table;
 
     for (mp_uint_t i = 0; i < map->used; i++, elem++) {

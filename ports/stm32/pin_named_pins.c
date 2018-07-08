@@ -44,8 +44,8 @@ const mp_obj_type_t pin_board_pins_obj_type = {
 };
 
 const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
-    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
-    mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
+    const mp_map_t *named_map = &named_pins->map;
+    mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t*)named_map, name, MP_MAP_LOOKUP);
     if (named_elem != NULL && named_elem->value != NULL) {
         return named_elem->value;
     }
