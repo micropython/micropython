@@ -67,15 +67,15 @@ STATIC MP_DEFINE_ATTRTUPLE(
     os_uname_info_obj,
     os_uname_info_fields,
     5,
-    (mp_obj_t)&os_uname_info_sysname_obj,
-    (mp_obj_t)&os_uname_info_nodename_obj,
-    (mp_obj_t)&os_uname_info_release_obj,
-    (mp_obj_t)&os_uname_info_version_obj,
-    (mp_obj_t)&os_uname_info_machine_obj
+    MP_ROM_PTR(&os_uname_info_sysname_obj),
+    MP_ROM_PTR(&os_uname_info_nodename_obj),
+    MP_ROM_PTR(&os_uname_info_release_obj),
+    MP_ROM_PTR(&os_uname_info_version_obj),
+    MP_ROM_PTR(&os_uname_info_machine_obj)
 );
 
 STATIC mp_obj_t os_uname(void) {
-    return (mp_obj_t)&os_uname_info_obj;
+    return MP_OBJ_FROM_PTR(&os_uname_info_obj);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 

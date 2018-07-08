@@ -272,18 +272,18 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
     pyb_dac_init_helper(dac, n_args - 1, args + 1, &kw_args);
 
     // return object
-    return dac;
+    return MP_OBJ_FROM_PTR(dac);
 }
 
 STATIC mp_obj_t pyb_dac_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return pyb_dac_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    return pyb_dac_init_helper(MP_OBJ_TO_PTR(args[0]), n_args - 1, args + 1, kw_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_init_obj, 1, pyb_dac_init);
 
 /// \method deinit()
 /// Turn off the DAC, enable other use of pin.
 STATIC mp_obj_t pyb_dac_deinit(mp_obj_t self_in) {
-    pyb_dac_obj_t *self = self_in;
+    pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->dac_channel == DAC_CHANNEL_1) {
         DAC_Handle.Instance->CR &= ~DAC_CR_EN1;
         #if defined(STM32H7) || defined(STM32L4)
@@ -308,7 +308,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_dac_deinit_obj, pyb_dac_deinit);
 /// Generate a pseudo-random noise signal.  A new random sample is written
 /// to the DAC output at the given frequency.
 STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
-    pyb_dac_obj_t *self = self_in;
+    pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(freq));
@@ -338,7 +338,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_noise_obj, pyb_dac_noise);
 /// the given frequency, and the frequence of the repeating triangle wave
 /// itself is 256 (or 1024, need to check) times smaller.
 STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
-    pyb_dac_obj_t *self = self_in;
+    pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(freq));
@@ -365,7 +365,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_triangle_obj, pyb_dac_triangle);
 /// \method write(value)
 /// Direct access to the DAC output (8 bit only at the moment).
 STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
-    pyb_dac_obj_t *self = self_in;
+    pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->state != DAC_STATE_WRITE_SINGLE) {
         DAC_ChannelConfTypeDef config;
@@ -414,7 +414,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     };
 
     // parse args
-    pyb_dac_obj_t *self = pos_args[0];
+    pyb_dac_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 

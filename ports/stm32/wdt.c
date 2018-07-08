@@ -86,7 +86,7 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // start the watch dog
     IWDG->KR = 0xcccc;
 
-    return (mp_obj_t)&pyb_wdt;
+    return MP_OBJ_FROM_PTR(&pyb_wdt);
 }
 
 STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self_in) {
