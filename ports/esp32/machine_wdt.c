@@ -65,8 +65,6 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
         mp_raise_OSError(rs_code);
     }
 
-    ESP_LOGI("WDT init", "timeout: %ds, panic: %d", mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
-
     esp_task_wdt_add(NULL);
     return &wdt_default;
 }
