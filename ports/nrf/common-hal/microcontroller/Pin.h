@@ -32,6 +32,5 @@
 
 #define mcu_pin_obj_t pin_obj_t
 void reset_all_pins(void);
-void reset_pin(uint8_t pin);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H

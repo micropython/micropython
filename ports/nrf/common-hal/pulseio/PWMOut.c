@@ -30,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "nrf_gpio.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 
 #define PWM_MAX_MODULE    3
@@ -161,7 +162,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
   if (self->pwm)
   {
-    hal_gpio_cfg_pin(pin->port, pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    nrf_gpio_cfg_output(NRF_GPIO_PIN_MAP(pin->port, pin->pin));
 
     // disable before mapping pin channel
     self->pwm->ENABLE = 0;
@@ -201,7 +202,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     }
   }
 
-  hal_gpio_cfg_pin(self->pin->port, self->pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+  nrf_gpio_cfg_default(NRF_GPIO_PIN_MAP(self->pin->port, self->pin->pin));
 
   self->pwm = NULL;
   self->pin = mp_const_none;

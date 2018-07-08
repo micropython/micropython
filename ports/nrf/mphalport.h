@@ -30,7 +30,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hal_gpio.h"
 #include "lib/utils/interrupt_char.h"
 #include "nrf.h"
 #include NRF5_HAL_H
