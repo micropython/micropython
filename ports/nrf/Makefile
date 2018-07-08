@@ -95,10 +95,7 @@ SRC_NRFX = $(addprefix nrfx/,\
 SRC_C += \
 	mphalport.c \
 	fatfs_port.c \
-	fifo.c \
 	tick.c \
-	drivers/softpwm.c \
-	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
