@@ -181,6 +181,11 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 1) | 0x0002000000000001))
 
 #if MICROPY_PY_BUILTINS_FLOAT
+
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_DOUBLE
+#error MICROPY_OBJ_REPR_D requires MICROPY_FLOAT_IMPL_DOUBLE
+#endif
+
 #define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
 #define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
 
