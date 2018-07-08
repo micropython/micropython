@@ -126,14 +126,6 @@
 
 #define MICROPY_KBD_EXCEPTION                    (1)
 
-#ifndef MICROPY_HW_LED_COUNT
-#define MICROPY_HW_LED_COUNT                     (0)
-#endif
-
-#ifndef MICROPY_HW_LED_PULLUP
-#define MICROPY_HW_LED_PULLUP                    (0)
-#endif
-
 #ifndef MICROPY_PY_HW_RNG
 #define MICROPY_PY_HW_RNG                        (1)
 #endif
