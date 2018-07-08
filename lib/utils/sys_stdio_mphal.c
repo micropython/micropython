@@ -53,12 +53,12 @@ STATIC const sys_stdio_obj_t stdio_buffer_obj;
 #endif
 
 void stdio_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    sys_stdio_obj_t *self = self_in;
+    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<io.FileIO %d>", self->fd);
 }
 
 STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    sys_stdio_obj_t *self = self_in;
+    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->fd == STDIO_FD_IN) {
         for (uint i = 0; i < size; i++) {
             int c = mp_hal_stdin_rx_chr();
@@ -75,7 +75,7 @@ STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *er
 }
 
 STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    sys_stdio_obj_t *self = self_in;
+    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->fd == STDIO_FD_OUT || self->fd == STDIO_FD_ERR) {
         mp_hal_stdout_tx_strn_cooked(buf, size);
         return size;
@@ -156,7 +156,7 @@ STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stdio_buffer_obj_stream_p,
-    .locals_dict = (mp_obj_t)&stdio_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&stdio_locals_dict,
 };
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused
