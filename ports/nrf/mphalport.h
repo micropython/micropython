@@ -31,10 +31,7 @@
 #include <stdint.h>
 
 #include "lib/utils/interrupt_char.h"
-#include "nrf.h"
-#include NRF5_HAL_H
 #include "nrfx_uart.h"
-#include "pin.h"
 #include "py/mpconfig.h"
 
 extern nrfx_uart_t serial_instance;
