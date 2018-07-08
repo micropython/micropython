@@ -145,13 +145,13 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {
-        map = mp_obj_dict_get_map(mp_obj_module_get_globals(obj));
+        map = &mp_obj_module_get_globals(obj)->map;
     } else {
         if (type == &mp_type_type) {
             type = MP_OBJ_TO_PTR(obj);
         }
-        if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
-            map = mp_obj_dict_get_map(type->locals_dict);
+        if (type->locals_dict != NULL) {
+            map = &type->locals_dict->map;
         }
     }
     if (map != NULL) {
