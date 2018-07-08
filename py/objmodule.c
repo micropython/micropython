@@ -122,12 +122,6 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
-    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->globals;
-}
-
 /******************************************************************************/
 // Global module table and related functions
 
