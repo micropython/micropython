@@ -175,9 +175,9 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 
     // qstr info
     {
-        mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+        size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
         qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-        printf("qstr:\n  n_pool=" UINT_FMT "\n  n_qstr=" UINT_FMT "\n  n_str_data_bytes=" UINT_FMT "\n  n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+        printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     }
 
     // GC info
@@ -185,9 +185,9 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
         gc_info_t info;
         gc_info(&info);
         printf("GC:\n");
-        printf("  " UINT_FMT " total\n", info.total);
-        printf("  " UINT_FMT " : " UINT_FMT "\n", info.used, info.free);
-        printf("  1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
+        printf("  %u total\n", info.total);
+        printf("  %u : %u\n", info.used, info.free);
+        printf("  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
     }
 
     // free space on flash

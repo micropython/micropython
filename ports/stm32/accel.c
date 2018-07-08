@@ -122,7 +122,7 @@ STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, siz
     pyb_accel_obj.base.type = &pyb_accel_type;
     accel_start();
 
-    return &pyb_accel_obj;
+    return MP_OBJ_FROM_PTR(&pyb_accel_obj);
 }
 
 STATIC mp_obj_t read_axis(int axis) {
@@ -166,7 +166,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
 /// \method filtered_xyz()
 /// Get a 3-tuple of filtered x, y and z values.
 STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
-    pyb_accel_obj_t *self = self_in;
+    pyb_accel_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 

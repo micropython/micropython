@@ -51,8 +51,8 @@ typedef enum {
 
 extern mp_uint_t pyb_usb_flags;
 extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
-extern const struct _mp_obj_tuple_t pyb_usb_hid_mouse_obj;
-extern const struct _mp_obj_tuple_t pyb_usb_hid_keyboard_obj;
+extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_mouse_obj;
+extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_keyboard_obj;
 extern const mp_obj_type_t pyb_usb_vcp_type;
 extern const mp_obj_type_t pyb_usb_hid_type;
 MP_DECLARE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj);

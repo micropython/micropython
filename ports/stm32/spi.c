@@ -603,7 +603,7 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
 };
 
 STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_spi_obj_t *self = self_in;
+    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     spi_print(print, self->spi, true);
 }
 
@@ -625,7 +625,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
         { MP_QSTR_nss,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_NSS_SOFT} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
         { MP_QSTR_ti,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
     };
 
     // parse args
@@ -688,18 +688,18 @@ STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         pyb_spi_init_helper(spi_obj, n_args - 1, args + 1, &kw_args);
     }
 
-    return (mp_obj_t)spi_obj;
+    return MP_OBJ_FROM_PTR(spi_obj);
 }
 
 STATIC mp_obj_t pyb_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return pyb_spi_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    return pyb_spi_init_helper(MP_OBJ_TO_PTR(args[0]), n_args - 1, args + 1, kw_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_init_obj, 1, pyb_spi_init);
 
 /// \method deinit()
 /// Turn off the SPI bus.
 STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
-    pyb_spi_obj_t *self = self_in;
+    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     spi_deinit(self->spi);
     return mp_const_none;
 }
@@ -721,7 +721,7 @@ STATIC mp_obj_t pyb_spi_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     };
 
     // parse args
-    pyb_spi_obj_t *self = pos_args[0];
+    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -756,7 +756,7 @@ STATIC mp_obj_t pyb_spi_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     };
 
     // parse args
-    pyb_spi_obj_t *self = pos_args[0];
+    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -797,7 +797,7 @@ STATIC mp_obj_t pyb_spi_send_recv(size_t n_args, const mp_obj_t *pos_args, mp_ma
     };
 
     // parse args
-    pyb_spi_obj_t *self = pos_args[0];
+    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -918,7 +918,7 @@ STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
 };
 
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
+    machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     spi_print(print, self->spi, false);
 }
 
@@ -1016,15 +1016,15 @@ const mp_obj_type_t machine_hard_spi_type = {
     .print = machine_hard_spi_print,
     .make_new = mp_machine_spi_make_new, // delegate to master constructor
     .protocol = &machine_hard_spi_p,
-    .locals_dict = (mp_obj_t)&mp_machine_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
 };
 
 const spi_t *spi_from_mp_obj(mp_obj_t o) {
     if (MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
-        pyb_spi_obj_t *self = o;
+        pyb_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
     } else if (MP_OBJ_IS_TYPE(o, &machine_hard_spi_type)) {
-        machine_hard_spi_obj_t *self = o;;
+        machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
     } else {
         mp_raise_TypeError("expecting an SPI object");

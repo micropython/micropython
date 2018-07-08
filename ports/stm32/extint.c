@@ -238,7 +238,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                 "ExtInt vector %d is already in use", line));
         } else {
-            const pin_obj_t *other_pin = (const pin_obj_t*)pyb_extint_callback_arg[line];
+            const pin_obj_t *other_pin = MP_OBJ_TO_PTR(pyb_extint_callback_arg[line]);
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                 "IRQ resource already taken by Pin('%q')", other_pin->name));
         }
@@ -356,7 +356,7 @@ void extint_swint(uint line) {
 /// \method line()
 /// Return the line number that the pin is mapped to.
 STATIC mp_obj_t extint_obj_line(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->line);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj, extint_obj_line);
@@ -364,7 +364,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj, extint_obj_line);
 /// \method enable()
 /// Enable a disabled interrupt.
 STATIC mp_obj_t extint_obj_enable(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     extint_enable(self->line);
     return mp_const_none;
 }
@@ -374,7 +374,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_enable_obj, extint_obj_enable);
 /// Disable the interrupt associated with the ExtInt object.
 /// This could be useful for debouncing.
 STATIC mp_obj_t extint_obj_disable(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     extint_disable(self->line);
     return mp_const_none;
 }
@@ -383,7 +383,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_disable_obj, extint_obj_disable);
 /// \method swint()
 /// Trigger the callback from software.
 STATIC mp_obj_t extint_obj_swint(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     extint_swint(self->line);
     return mp_const_none;
 }
@@ -436,7 +436,7 @@ STATIC mp_obj_t extint_regs(void) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(extint_regs_fun_obj, extint_regs);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(extint_regs_obj, (mp_obj_t)&extint_regs_fun_obj);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(extint_regs_obj, MP_ROM_PTR(&extint_regs_fun_obj));
 
 /// \classmethod \constructor(pin, mode, pull, callback)
 /// Create an ExtInt object:
@@ -472,11 +472,11 @@ STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     self->base.type = type;
     self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false);
 
-    return self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC void extint_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<ExtInt line=%u>", self->line);
 }
 
@@ -542,7 +542,7 @@ void Handle_EXTI_Irq(uint32_t line) {
                     *cb = mp_const_none;
                     extint_disable(line);
                     printf("Uncaught exception in ExtInt interrupt handler line %u\n", (unsigned int)line);
-                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
                 }
                 gc_unlock();
                 mp_sched_unlock();
