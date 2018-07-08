@@ -102,7 +102,6 @@ SRC_NRFX = $(addprefix nrfx/,\
 
 SRC_C += \
 	mphalport.c \
-	help.c \
 	fatfs_port.c \
 	fifo.c \
 	tick.c \
