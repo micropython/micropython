@@ -29,7 +29,6 @@
 #include <string.h>
 #include "ble_uart.h"
 #include "ringbuffer.h"
-#include "hal/hal_time.h"
 #include "lib/utils/interrupt_char.h"
 
 #if MICROPY_PY_BLE_NUS

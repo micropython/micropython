@@ -90,7 +90,6 @@ LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 SRC_HAL = $(addprefix hal/,\
-	hal_time.c \
 	hal_rng.c \
 	)
 
