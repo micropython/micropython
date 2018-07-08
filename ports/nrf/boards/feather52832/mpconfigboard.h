@@ -28,9 +28,9 @@
 #define MICROPY_HW_MCU_NAME         "nRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nRF52"
 
-#define MICROPY_HW_UART1_RX         (pin_P0_08)
-#define MICROPY_HW_UART1_TX         (pin_P0_06)
-#define MICROPY_HW_UART1_HWFC       (0)
+#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
+#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
+#define MICROPY_HW_UART_HWFC        (0)
 
 #define PORT_HEAP_SIZE              (32 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,46 +25,47 @@
  * THE SOFTWARE.
  */
 
-#include <errno.h>
 #include <string.h>
 
-#include "py/mpstate.h"
-#include "py/mphal.h"
-#include "py/mperrno.h"
-#include "hal_uart.h"
+#include "mphalport.h"
 
-#define UART_INSTANCE   UART_BASE(0)
+void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
 
 #if (MICROPY_PY_BLE_NUS == 0)
 int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        if ( hal_uart_available(UART_INSTANCE) ) {
-          uint8_t ch;
-          hal_uart_char_read(UART_INSTANCE, &ch);
-          return (int) ch;
-        }
-    }
+    uint8_t data = 0;
 
-    return 0;
+    while (!nrfx_uart_rx_ready(&serial_instance));
+
+    const nrfx_err_t err = nrfx_uart_rx(&serial_instance, &data, sizeof(data));
+    if (err == NRFX_SUCCESS)
+        NRFX_ASSERT(err);
+
+    return data;
 }
 
 bool mp_hal_stdin_any(void) {
-  return hal_uart_available(UART_INSTANCE);
+    return nrfx_uart_rx_ready(&serial_instance);
 }
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-  while(len--) {
-    hal_uart_char_write(UART_INSTANCE, *str++);
-  }
+    if (len == 0)
+        return;
+
+    const nrfx_err_t err = nrfx_uart_tx(&serial_instance, (uint8_t*)str, len);
+    if (err == NRFX_SUCCESS)
+        NRFX_ASSERT(err);
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-  while(len--){
-    if (*str == '\n') {
-      hal_uart_char_write(UART_INSTANCE, '\r');
+    const char cr = '\r';
+
+    while (len--) {
+        if (*str == '\n')
+            mp_hal_stdout_tx_strn(&cr, sizeof(cr));
+
+        mp_hal_stdout_tx_strn(str++, sizeof(char));
     }
-    hal_uart_char_write(UART_INSTANCE, *str++);
-  }
 }
 #endif
 

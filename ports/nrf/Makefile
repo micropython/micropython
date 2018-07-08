@@ -90,7 +90,6 @@ LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 SRC_HAL = $(addprefix hal/,\
-	hal_uart.c \
 	hal_time.c \
 	hal_rng.c \
 	)
@@ -98,6 +97,7 @@ SRC_HAL = $(addprefix hal/,\
 SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_twim.c \
+	drivers/src/nrfx_uart.c \
 	)
 
 SRC_C += \
