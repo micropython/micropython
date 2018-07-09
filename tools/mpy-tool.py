@@ -319,8 +319,8 @@ class RawCode:
                     ndigs = len(digs)
                     digs = ','.join(('%#x' % d) for d in digs)
                     print('STATIC const mp_obj_int_t %s = {{&mp_type_int}, '
-                        '{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t[]){%s}}};'
-                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, digs))
+                        '{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t*)(const uint%u_t[]){%s}}};'
+                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, bits_per_dig, digs))
             elif type(obj) is float:
                 print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
                 print('STATIC const mp_obj_float_t %s = {{&mp_type_float}, %.16g};'
