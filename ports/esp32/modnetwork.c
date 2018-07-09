@@ -115,9 +115,6 @@ const mp_obj_type_t wlan_if_type;
 STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
 STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
-//static wifi_config_t wifi_ap_config = {{{0}}};
-static wifi_config_t wifi_sta_config = {{{0}}};
-
 // Set to "true" if esp_wifi_start() was called
 static bool wifi_started = false;
 
@@ -282,18 +279,44 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
-STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_ssid, ARG_password, ARG_bssid };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
 
-    mp_uint_t len;
-    const char *p;
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    wifi_config_t wifi_sta_config = {{{0}}};
+
+    // configure any parameters that are given
     if (n_args > 1) {
-        memset(&wifi_sta_config, 0, sizeof(wifi_sta_config));
-        p = mp_obj_str_get_data(args[1], &len);
-        memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
-        p = (n_args > 2) ? mp_obj_str_get_data(args[2], &len) : "";
-        memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
+        mp_uint_t len;
+        const char *p;
+        if (args[ARG_ssid].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
+            memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
+        }
+        if (args[ARG_password].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
+            memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
+        }
+        if (args[ARG_bssid].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
+            if (len != sizeof(wifi_sta_config.sta.bssid)) {
+                mp_raise_ValueError(NULL);
+            }
+            wifi_sta_config.sta.bssid_set = 1;
+            memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
+        }
         ESP_EXCEPTIONS( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config) );
     }
+
+    // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
     ESP_EXCEPTIONS( esp_wifi_connect() );
     MP_THREAD_GIL_ENTER();
@@ -301,8 +324,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 1, 7, esp_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     wifi_sta_connect_requested = false;
