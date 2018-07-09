@@ -249,7 +249,7 @@ $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 .phony: all flash sd binary hex bootloader
 
-all: binary hex
+all: binary hex uf2
 
 OUTPUT_FILENAME = firmware
 
@@ -305,7 +305,7 @@ endif
 #####################
 # Flash with DFU
 #####################
-.phony: dfu-gen dfu-flash dfu-bootloader uf2
+.phony: dfu-gen dfu-flash dfu-bootloader
 
 ifeq ($(OS),Windows_NT)
    NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
