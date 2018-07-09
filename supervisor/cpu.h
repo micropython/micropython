@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "py/builtin.h"
+#ifndef MICROPY_INCLUDED_SUPERVISOR_CPU_H
+#define MICROPY_INCLUDED_SUPERVISOR_CPU_H
 
-#if BLUETOOTH_SD
-#include "help_sd.h"
-#endif
+// Adds up to 10 pointers from the CPUs registers to regs. This is used to make sure no actively
+// used heap memory is freed. Its usually implemented in assembly.
+mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs);
 
-const char nrf5_help_text[] =
-"Welcome to MicroPython!\n"
-"\n"
-"For online help please visit http://micropython.org/help/.\n"
-"\n"
-"Quick overview of commands for the board:\n"
-#if MICROPY_HW_HAS_LED
-"  pyb.LED(n)    -- create an LED object for LED n (n=" HELP_TEXT_BOARD_LED ")\n"
-"\n"
-#endif
-#if BLUETOOTH_SD
-HELP_TEXT_SD
-#endif
-"Control commands:\n"
-"  CTRL-A        -- on a blank line, enter raw REPL mode\n"
-"  CTRL-B        -- on a blank line, enter normal REPL mode\n"
-"  CTRL-D        -- on a blank line, do a soft reset of the board\n"
-"  CTRL-E        -- on a blank line, enter paste mode\n"
-"\n"
-"For further help on a specific object, type help(obj)\n"
-;
+#endif  // MICROPY_INCLUDED_SUPERVISOR_CPU_H

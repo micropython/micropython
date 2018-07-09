@@ -33,6 +33,8 @@
     #define INST_NO 2
 #endif
 
+#define MAX_XFER_SIZE ((1U << NRFX_CONCAT_3(SPIM, INST_NO, _EASYDMA_MAXCNT_SIZE)) - 1)
+
 // Convert frequency to clock-speed-dependent value
 static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) {
     if (baudrate <= 125000)
@@ -152,30 +154,68 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self, const uint8_t *data, size
     if (len == 0)
         return true;
 
-    const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(data, len);
-    const nrfx_err_t err = nrfx_spim_xfer(&self->spim, &xfer, 0);
+    const uint32_t parts = len / MAX_XFER_SIZE;
+    const uint32_t remainder = len % MAX_XFER_SIZE;
 
-    return (err == NRFX_SUCCESS);
+    for (uint32_t i = 0; i < parts; ++i) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(data + i * MAX_XFER_SIZE, MAX_XFER_SIZE);
+        if (nrfx_spim_xfer(&self->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    if (remainder > 0) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(data + parts * MAX_XFER_SIZE, remainder);
+        if (nrfx_spim_xfer(&self->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    return true;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value) {
     if (len == 0)
         return true;
 
-    const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data, len);
-    const nrfx_err_t err = nrfx_spim_xfer(&self->spim, &xfer, 0);
+    const uint32_t parts = len / MAX_XFER_SIZE;
+    const uint32_t remainder = len % MAX_XFER_SIZE;
 
-    return (err == NRFX_SUCCESS);
+    for (uint32_t i = 0; i < parts; ++i) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data + i * MAX_XFER_SIZE, MAX_XFER_SIZE);
+        if (nrfx_spim_xfer(&self->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    if (remainder > 0) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data + parts * MAX_XFER_SIZE, remainder);
+        if (nrfx_spim_xfer(&self->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    return true;
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (len == 0)
         return true;
 
-    const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(data_out, len, data_in, len);
-    const nrfx_err_t err = nrfx_spim_xfer(&self->spim, &xfer, 0);
+    const uint32_t parts = len / MAX_XFER_SIZE;
+    const uint32_t remainder = len % MAX_XFER_SIZE;
 
-    return (err == NRFX_SUCCESS);
+    for (uint32_t i = 0; i < parts; ++i) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(data_out + i * MAX_XFER_SIZE, MAX_XFER_SIZE,
+            data_in + i * MAX_XFER_SIZE, MAX_XFER_SIZE);
+        if (nrfx_spim_xfer(&self->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    if (remainder > 0) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(data_out + parts * MAX_XFER_SIZE, remainder,
+            data_in + parts * MAX_XFER_SIZE, remainder);
+        if (nrfx_spim_xfer(&self->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    return true;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {

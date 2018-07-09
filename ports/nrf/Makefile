@@ -10,11 +10,9 @@ else
   endif
 endif
 
-# If SoftDevice is selected, try to use that one.
-# Default to SD132 (exact version can be set with SOFTDEV_VERSION)
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
-# If the build directory with SD
+# Build directory with SD
 BUILD = $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
 include ../../py/mkenv.mk
@@ -94,19 +92,18 @@ LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 SRC_HAL = $(addprefix hal/,\
-	hal_uart.c \
 	hal_rng.c \
 	)
 
 SRC_NRFX = $(addprefix nrfx/,\
+	drivers/src/nrfx_power.c \
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_twim.c \
-	drivers/src/nrfx_power.c \
+	drivers/src/nrfx_uart.c \
 	)
 
 SRC_C += \
 	mphalport.c \
-	help.c \
 	fatfs_port.c \
 	fifo.c \
 	tick.c \
@@ -126,11 +123,10 @@ SRC_C += \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \
+	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	internal_flash.c \
-
-#	lib/utils/stdout_helpers.c
 
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
@@ -233,6 +229,8 @@ SRC_SHARED_BINDINGS = \
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
+SRC_S = supervisor/cpu.s
+
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
@@ -243,6 +241,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os

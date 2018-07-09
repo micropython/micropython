@@ -34,6 +34,7 @@
 #include "nrf_gpio.h"
 
 #define INST_NO 0
+#define MAX_XFER_SIZE ((1U << NRFX_CONCAT_3(TWIM, INST_NO, _EASYDMA_MAXCNT_SIZE)) - 1)
 
 static uint8_t twi_error_to_mp(const nrfx_err_t err) {
     switch (err) {
@@ -152,8 +153,21 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const u
     if(len == 0)
         return common_hal_busio_i2c_probe(self, addr) ? 0 : MP_ENODEV;
 
+    const uint32_t parts = len / MAX_XFER_SIZE;
+    const uint32_t remainder = len % MAX_XFER_SIZE;
+    nrfx_err_t err = NRFX_SUCCESS;
+
     nrfx_twim_enable(&self->twim);
-    const nrfx_err_t err = nrfx_twim_tx(&self->twim, addr, data, len, !stopBit);
+
+    for (uint32_t i = 0; i < parts; ++i) {
+        err = nrfx_twim_tx(&self->twim, addr, data + i * MAX_XFER_SIZE, MAX_XFER_SIZE, !stopBit);
+        if (err != NRFX_SUCCESS)
+            break;
+    }
+
+    if ((remainder > 0) && (err == NRFX_SUCCESS))
+        err = nrfx_twim_tx(&self->twim, addr, data + parts * MAX_XFER_SIZE, remainder, !stopBit);
+
     nrfx_twim_disable(&self->twim);
 
     return twi_error_to_mp(err);
@@ -163,8 +177,21 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t 
     if(len == 0)
         return 0;
 
+    const uint32_t parts = len / MAX_XFER_SIZE;
+    const uint32_t remainder = len % MAX_XFER_SIZE;
+    nrfx_err_t err = NRFX_SUCCESS;
+
     nrfx_twim_enable(&self->twim);
-    const nrfx_err_t err = nrfx_twim_rx(&self->twim, addr, data, len);
+
+    for (uint32_t i = 0; i < parts; ++i) {
+        err = nrfx_twim_rx(&self->twim, addr, data + i * MAX_XFER_SIZE, MAX_XFER_SIZE);
+        if (err != NRFX_SUCCESS)
+            break;
+    }
+
+    if ((remainder > 0) && (err == NRFX_SUCCESS))
+        err = nrfx_twim_rx(&self->twim, addr, data + parts * MAX_XFER_SIZE, remainder);
+
     nrfx_twim_disable(&self->twim);
 
     return twi_error_to_mp(err);

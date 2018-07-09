@@ -27,51 +27,12 @@
 #define FEATHER52840
 
 #define MICROPY_HW_BOARD_NAME       "Feather52840"
-#define MICROPY_HW_MCU_NAME         "NRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52840"
+#define MICROPY_HW_MCU_NAME         "nRF52840"
+#define MICROPY_PY_SYS_PLATFORM     "Feather52840"
 
-#define MICROPY_HW_HAS_LED          (1)
-#define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_FLASH        (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_ENABLE_RNG       (0)
-#define MICROPY_HW_ENABLE_RTC       (0)
-#define MICROPY_HW_ENABLE_TIMER     (0)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
+#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
+#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
+#define MICROPY_HW_UART_HWFC        (0)
 
-#define MICROPY_HW_LED_COUNT        (2)
-#define MICROPY_HW_LED_PULLUP       (1)
-
-#define MICROPY_HW_LED1             (pin_P1_02) // LED1
-#define MICROPY_HW_LED2             (pin_P1_10) // LED2
-
-// UART config
-#define MICROPY_HW_UART1_RX         (pin_P1_00)
-#define MICROPY_HW_UART1_TX         (pin_P0_24)
-#define MICROPY_HW_UART1_CTS        (NULL)
-#define MICROPY_HW_UART1_RTS        (NULL)
-#define MICROPY_HW_UART1_HWFC       (0)
-
-// SPI0 config
-#define MICROPY_HW_SPI0_NAME        "SPI0"
-
-#define MICROPY_HW_SPI0_SCK         (pin_P0_20)
-#define MICROPY_HW_SPI0_MOSI        (pin_P0_23)
-#define MICROPY_HW_SPI0_MISO        (pin_P0_22)
-
-#define MICROPY_HW_PWM0_NAME        "PWM0"
-#define MICROPY_HW_PWM1_NAME        "PWM1"
-#define MICROPY_HW_PWM2_NAME        "PWM2"
-#if 0
-#define MICROPY_HW_PWM3_NAME        "PWM3"
-#endif
-
-#define HELP_TEXT_BOARD_LED         "1,2,3,4"
-
-#define PORT_HEAP_SIZE                (128*1024)
+#define PORT_HEAP_SIZE              (128 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500

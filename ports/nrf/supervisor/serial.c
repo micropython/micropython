@@ -24,51 +24,46 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/serial.h"
-
-#include "py/obj.h"
-#include "py/runtime.h"
 #include "mphalport.h"
-#include "pins.h"
-#include "hal_uart.h"
 
-#if (MICROPY_PY_BLE_NUS)
+#if MICROPY_PY_BLE_NUS
 #include "ble_uart.h"
+#else
+#include "nrf_gpio.h"
+#include "pin.h"
 #endif
 
 #if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
 
-void serial_init(void) {
+#define INST_NO 0
 
+nrfx_uart_t serial_instance = NRFX_UART_INSTANCE(INST_NO);
+
+void serial_init(void) {
 #if MICROPY_PY_BLE_NUS
     ble_uart_init0();
     while (!ble_uart_enabled()) {
         ;
     }
 #else
-  hal_uart_init_t param =
-  {
-      .id           = 0,
-      .rx_pin       = &MICROPY_HW_UART1_RX,
-      .tx_pin       = &MICROPY_HW_UART1_TX,
-#if MICROPY_HW_UART1_HWFC
-      .rts_pin      = &MICROPY_HW_UART1_RTS,
-      .cts_pin      = &MICROPY_HW_UART1_CTS,
-#else
-      .rts_pin      = NULL,
-      .cts_pin      = NULL,
+    nrfx_uart_config_t config = NRFX_UART_DEFAULT_CONFIG;
+    config.pseltxd = MICROPY_HW_UART_TX;
+    config.pselrxd = MICROPY_HW_UART_RX;
+    config.hwfc = MICROPY_HW_UART_HWFC ? NRF_UART_HWFC_ENABLED : NRF_UART_HWFC_DISABLED;
+#ifdef MICROPY_HW_UART_CTS
+    config.pselcts = MICROPY_HW_UART_CTS;
 #endif
-      .flow_control = MICROPY_HW_UART1_HWFC ? true : false,
-      .use_parity   = false,
-      .baud_rate    = HAL_UART_BAUD_115K2,
-      .irq_priority = 6,
-      .irq_num      = UARTE0_UART0_IRQn
-  };
+#ifdef MICROPY_HW_UART_RTS
+    config.pselrts = MICROPY_HW_UART_RTS;
+#endif
 
-  hal_uart_init( UART_BASE(0), &param);
+    const nrfx_err_t err = nrfx_uart_init(&serial_instance, &config, NULL);
+    if (err == NRFX_SUCCESS)
+        NRFX_ASSERT(err);
+
+    nrfx_uart_rx_enable(&serial_instance);
 #endif
 }
-
 
 bool serial_connected(void) {
     return true;
@@ -82,8 +77,8 @@ bool serial_bytes_available(void) {
     return mp_hal_stdin_any();
 }
 
-void serial_write(const char* text) {
-  mp_hal_stdout_tx_str(text);
+void serial_write(const char *text) {
+    mp_hal_stdout_tx_str(text);
 }
 
 #else
@@ -112,4 +107,3 @@ void serial_write(const char* text) {
 }
 
 #endif
-

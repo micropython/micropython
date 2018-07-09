@@ -31,6 +31,7 @@
 
 #include "py/compile.h"
 #include "py/gc_long_lived.h"
+#include "py/gc.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"
 #include "py/runtime.h"
@@ -468,6 +469,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     // (the module that was just loaded) is not a package.  This will be caught
                     // on the next iteration because the file will not exist.
                 }
+
+                // Loading a module thrashes the heap significantly so we explicitly clean up
+                // afterwards.
+                gc_collect();
             }
             if (outer_module_obj != MP_OBJ_NULL) {
                 qstr s = qstr_from_strn(mod_str + last, i - last);

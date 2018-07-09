@@ -121,7 +121,7 @@ mp_obj_t make_obj_long_lived(mp_obj_t obj, uint8_t max_depth){
     } else if (MP_OBJ_IS_TYPE(obj, &mp_type_property)) {
         mp_obj_property_t *prop = MP_OBJ_TO_PTR(obj);
         return MP_OBJ_FROM_PTR(make_property_long_lived(prop, max_depth));
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_str)) {
+    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_str) || MP_OBJ_IS_TYPE(obj, &mp_type_bytes)) {
         mp_obj_str_t *str = MP_OBJ_TO_PTR(obj);
         return MP_OBJ_FROM_PTR(make_str_long_lived(str));
     } else if (MP_OBJ_IS_TYPE(obj, &mp_type_type)) {

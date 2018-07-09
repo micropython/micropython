@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,73 +28,36 @@
 #include <errno.h>
 #include <string.h>
 
+#include "mphalport.h"
 #include "py/mpstate.h"
-#include "py/mphal.h"
-#include "py/mperrno.h"
 
-#include "tick.h"
-
-#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
-#include "hal_uart.h"
-
-#define UART_INSTANCE   UART_BASE(0)
 
 #if (MICROPY_PY_BLE_NUS == 0)
+
+#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
 int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        // if (reload_requested) {
-        //     return CHAR_CTRL_D;
-        // }
+    uint8_t data = 0;
 
-        if ( hal_uart_available(UART_INSTANCE) ) {
-          uint8_t ch;
-          hal_uart_char_read(UART_INSTANCE, &ch);
-          return (int) ch;
-        }
-    }
+    while (!nrfx_uart_rx_ready(&serial_instance));
 
-    return 0;
+    const nrfx_err_t err = nrfx_uart_rx(&serial_instance, &data, sizeof(data));
+    if (err == NRFX_SUCCESS)
+        NRFX_ASSERT(err);
+
+    return data;
 }
 
 bool mp_hal_stdin_any(void) {
-  return hal_uart_available(UART_INSTANCE);
+    return nrfx_uart_rx_ready(&serial_instance);
 }
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    if (len == 0)
+        return;
 
-//    #ifdef MICROPY_HW_LED_TX
-//    gpio_toggle_pin_level(MICROPY_HW_LED_TX);
-//    #endif
-//
-//    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-//    if (boot_output_file != NULL) {
-//        UINT bytes_written = 0;
-//        f_write(boot_output_file, str, len, &bytes_written);
-//    }
-//    #endif
-
-    if ( hal_uart_inited(UART_INSTANCE) ) {
-        while(len--) {
-            hal_uart_char_write(UART_INSTANCE, *str++);
-        }
-    }
-}
-
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-  while(len--){
-    if (*str == '\n') {
-      hal_uart_char_write(UART_INSTANCE, '\r');
-    }
-    hal_uart_char_write(UART_INSTANCE, *str++);
-  }
-}
-#endif
-
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
+    const nrfx_err_t err = nrfx_uart_tx(&serial_instance, (uint8_t*)str, len);
+    if (err == NRFX_SUCCESS)
+        NRFX_ASSERT(err);
 }
 
 #else
@@ -140,22 +104,14 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     tud_cdc_write(str, len);
 }
 
-// TODO use stdout_helper.c
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    while (len--) {
-        if (*str == '\n') {
-            mp_hal_stdout_tx_strn("\r", 1);
-        }
-        mp_hal_stdout_tx_strn(str++, 1);
-    }
-}
+#endif // USB
 
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
+#endif // NUS
 
-#endif
 
+/*------------------------------------------------------------------*/
+/* delay
+ *------------------------------------------------------------------*/
 void mp_hal_delay_ms(mp_uint_t delay) {
     uint64_t start_tick = ticks_ms;
     uint64_t duration = 0;
@@ -247,6 +203,5 @@ void mp_hal_delay_us(mp_uint_t us)
 #endif
         : "+r" (delay));
 }
-
 
 
