@@ -334,7 +334,7 @@ dfu-bootloader:
 
 uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
-	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
+	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
 
 
 
