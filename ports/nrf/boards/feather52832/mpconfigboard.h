@@ -25,47 +25,12 @@
  */
 
 #define MICROPY_HW_BOARD_NAME       "Bluefruit nRF52 Feather"
-#define MICROPY_HW_MCU_NAME         "NRF52832"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52"
+#define MICROPY_HW_MCU_NAME         "nRF52832"
+#define MICROPY_PY_SYS_PLATFORM     "nRF52"
 
-#define MICROPY_HW_HAS_LED          (1)
-#define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_FLASH        (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_ENABLE_RNG       (0)
-#define MICROPY_HW_ENABLE_RTC       (0)
-#define MICROPY_HW_ENABLE_TIMER     (0)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
+#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
+#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
+#define MICROPY_HW_UART_HWFC        (0)
 
-#define MICROPY_HW_LED_COUNT        (2)
-#define MICROPY_HW_LED_PULLUP       (0)
-
-#define MICROPY_HW_LED1             (17) // LED1
-#define MICROPY_HW_LED2             (19) // LED2
-
-// UART config
-#define MICROPY_HW_UART1_RX         (pin_P0_08)
-#define MICROPY_HW_UART1_TX         (pin_P0_06)
-#define MICROPY_HW_UART1_HWFC       (0)
-
-// SPI0 config
-#define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_P0_12) // (Arduino D13)
-#define MICROPY_HW_SPI0_MOSI        (pin_P0_13) // (Arduino D11)
-#define MICROPY_HW_SPI0_MISO        (pin_P0_14) // (Arduino D12)
-
-#define MICROPY_HW_PWM0_NAME        "PWM0"
-#define MICROPY_HW_PWM1_NAME        "PWM1"
-#define MICROPY_HW_PWM2_NAME        "PWM2"
-
-#define HELP_TEXT_BOARD_LED         "1,2"
-
-
-
-#define PORT_HEAP_SIZE                (32*1024)
+#define PORT_HEAP_SIZE              (32 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500

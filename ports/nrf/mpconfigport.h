@@ -93,8 +93,8 @@
 #define MICROPY_PY_BUILTINS_EXECFILE             (0)
 #define MICROPY_PY_BUILTINS_COMPILE              (1)
 #define MICROPY_PY_BUILTINS_HELP                 (1)
-#define MICROPY_PY_BUILTINS_HELP_TEXT            nrf5_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES         (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT            circuitpython_help_text
 #define MICROPY_PY_BUILTINS_INPUT                (1)
 #define MICROPY_MODULE_BUILTIN_INIT              (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS           (0)
@@ -125,14 +125,6 @@
 #define MICROPY_PY_FRAMEBUF                      (1)
 
 #define MICROPY_KBD_EXCEPTION                    (1)
-
-#ifndef MICROPY_HW_LED_COUNT
-#define MICROPY_HW_LED_COUNT                     (0)
-#endif
-
-#ifndef MICROPY_HW_LED_PULLUP
-#define MICROPY_HW_LED_PULLUP                    (0)
-#endif
 
 #ifndef MICROPY_PY_HW_RNG
 #define MICROPY_PY_HW_RNG                        (1)

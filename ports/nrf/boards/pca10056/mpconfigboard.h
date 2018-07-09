@@ -24,56 +24,13 @@
  * THE SOFTWARE.
  */
 
-#define PCA10056
-
 #define MICROPY_HW_BOARD_NAME       "PCA10056"
-#define MICROPY_HW_MCU_NAME         "NRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52840-PDK"
+#define MICROPY_HW_MCU_NAME         "nRF52840"
+#define MICROPY_PY_SYS_PLATFORM     "nRF52840-PDK"
 
-#define MICROPY_HW_HAS_LED          (1)
-#define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_FLASH        (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_ENABLE_RNG       (0)
-#define MICROPY_HW_ENABLE_RTC       (0)
-#define MICROPY_HW_ENABLE_TIMER     (0)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
+#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
+#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
+#define MICROPY_HW_UART_HWFC        (0)
 
-#define MICROPY_HW_LED_COUNT        (4)
-#define MICROPY_HW_LED_PULLUP       (1)
-
-#define MICROPY_HW_LED1             (13) // LED1
-#define MICROPY_HW_LED2             (14) // LED2
-#define MICROPY_HW_LED3             (15) // LED3
-#define MICROPY_HW_LED4             (16) // LED4
-
-// UART config
-#define MICROPY_HW_UART1_RX         (pin_P0_08)
-#define MICROPY_HW_UART1_TX         (pin_P0_06)
-#define MICROPY_HW_UART1_CTS        (pin_P0_07)
-#define MICROPY_HW_UART1_RTS        (pin_P0_05)
-#define MICROPY_HW_UART1_HWFC       (1)
-
-// SPI0 config
-#define MICROPY_HW_SPI0_NAME        "SPI0"
-
-#define MICROPY_HW_SPI0_SCK         (pin_P1_15)
-#define MICROPY_HW_SPI0_MOSI        (pin_P1_13)
-#define MICROPY_HW_SPI0_MISO        (pin_P1_14)
-
-#define MICROPY_HW_PWM0_NAME        "PWM0"
-#define MICROPY_HW_PWM1_NAME        "PWM1"
-#define MICROPY_HW_PWM2_NAME        "PWM2"
-#if 0
-#define MICROPY_HW_PWM3_NAME        "PWM3"
-#endif
-
-#define HELP_TEXT_BOARD_LED         "1,2,3,4"
-
-#define PORT_HEAP_SIZE                (128*1024)
+#define PORT_HEAP_SIZE              (128 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
