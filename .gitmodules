@@ -75,5 +75,5 @@
 	url = https://github.com/NordicSemiconductor/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = git@github.com:hathach/tinyusb.git
+	url = https://github.com/hathach/tinyusb.git
 	branch = develop
