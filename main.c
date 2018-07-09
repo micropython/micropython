@@ -44,6 +44,7 @@
 #include "lib/utils/pyexec.h"
 
 #include "mpconfigboard.h"
+#include "supervisor/cpu.h"
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 // TODO(tannewt): Figure out how to choose language at compile time.
@@ -381,16 +382,17 @@ int __attribute__((used)) main(void) {
 }
 
 void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    void *dummy;
     gc_collect_start();
+
+    mp_uint_t regs[10];
+    mp_uint_t sp = cpu_get_regs_and_sp(regs);
+
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root(&dummy, ((mp_uint_t)&_estack - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));
     gc_collect_end();
 }
 

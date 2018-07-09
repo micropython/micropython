@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/gc_long_lived.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
 #if defined(USE_DEVICE_MODE)
@@ -95,6 +96,13 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             #else
             mp_raise_msg(&mp_type_RuntimeError, "script compilation not supported");
             #endif
+        }
+
+        // If the code was loaded from a file its likely to be running for a while so we'll long
+        // live it and collect any garbage before running.
+        if (input_kind == MP_PARSE_FILE_INPUT) {
+            module_fun = make_obj_long_lived(module_fun, 6);
+            gc_collect();
         }
 
         // execute code
