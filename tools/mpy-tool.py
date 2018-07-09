@@ -347,8 +347,10 @@ class RawCode:
                     n = struct.unpack('<I', struct.pack('<f', self.objs[i]))[0]
                     n = ((n & ~0x3) | 2) + 0x80800000
                     print('    (mp_rom_obj_t)(0x%08x),' % (n,))
-                    print('#else')
-                    print('#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"')
+                    print('#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D')
+                    n = struct.unpack('<Q', struct.pack('<d', self.objs[i]))[0]
+                    n += 0x8004000000000000
+                    print('    (mp_rom_obj_t)(0x%016x),' % (n,))
                     print('#endif')
                 else:
                     print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
