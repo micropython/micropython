@@ -40,8 +40,9 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     claim_pin(pin);
     self->pin = pin;
 
-    gpio_set_pin_pull_mode(pin->pin, GPIO_PULL_OFF);
+    // Must set pull after setting direction.
     gpio_set_pin_direction(pin->pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_pull_mode(pin->pin, GPIO_PULL_OFF);
     return DIGITALINOUT_OK;
 }
 
@@ -154,9 +155,9 @@ void common_hal_digitalio_digitalinout_set_pull(
         default:
             break;
     }
-    // Set pull first to avoid glitches.
-    gpio_set_pin_pull_mode(self->pin->pin, asf_pull);
+    // Must set pull after setting direction.
     gpio_set_pin_direction(self->pin->pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_pull_mode(self->pin->pin, asf_pull);
 }
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
