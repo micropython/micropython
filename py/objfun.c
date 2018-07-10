@@ -338,7 +338,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
-STATIC void fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
         return;
@@ -358,7 +358,7 @@ const mp_obj_type_t mp_type_fun_bc = {
     .call = fun_bc_call,
     .unary_op = mp_generic_unary_op,
 #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = fun_bc_attr,
+    .attr = mp_obj_fun_bc_attr,
 #endif
 };
 
