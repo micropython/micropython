@@ -31,10 +31,7 @@
 #include <stdint.h>
 
 #include "lib/utils/interrupt_char.h"
-#include "nrf.h"
-#include NRF5_HAL_H
 #include "nrfx_uart.h"
-#include "pin.h"
 #include "py/mpconfig.h"
 
 extern nrfx_uart_t serial_instance;
@@ -48,6 +45,8 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 bool mp_hal_stdin_any(void);
+void mp_hal_delay_ms(mp_uint_t ms);
+void mp_hal_delay_us(mp_uint_t us);
 
 #endif
 

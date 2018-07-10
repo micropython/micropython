@@ -72,3 +72,11 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
 void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    NRFX_DELAY_US(ms * 1000);
+}
+
+void mp_hal_delay_us(mp_uint_t us) {
+    NRFX_DELAY_US(us);
+}

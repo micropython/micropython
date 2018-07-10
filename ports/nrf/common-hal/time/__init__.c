@@ -26,15 +26,12 @@
 
 #include "py/mphal.h"
 
-#include "shared-bindings/time/__init__.h"
 #include "tick.h"
 
-#include "nrfx_glue.h"
-
-inline uint64_t common_hal_time_monotonic(void) {
+uint64_t common_hal_time_monotonic(void) {
     return ticks_ms;
 }
 
 void common_hal_time_delay_ms(uint32_t delay) {
-    NRFX_DELAY_US(delay);
+    mp_hal_delay_ms(delay);
 }

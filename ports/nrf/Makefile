@@ -43,9 +43,7 @@ INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
 INC += -I./../../lib/cmsis/inc
 INC += -I./boards/$(BOARD)
-INC += -I./hal
 INC += -I./modules/ubluepy
-INC += -I./modules/random
 INC += -I./modules/ble
 INC += -I./nrfx
 INC += -I./nrfx/hal
@@ -63,7 +61,6 @@ CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -fstack-usage -fno-builtin -fshort-enums
 CFLAGS += -fdata-sections -ffunction-sections
-CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
 CFLAGS += -D__START=main
 
 LDFLAGS = $(CFLAGS)
@@ -89,11 +86,6 @@ LIBS := -L $(dir $(LIBM_FILE_NAME)) -lm
 LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
-SRC_HAL = $(addprefix hal/,\
-	hal_time.c \
-	hal_rng.c \
-	)
-
 SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_twim.c \
@@ -103,10 +95,7 @@ SRC_NRFX = $(addprefix nrfx/,\
 SRC_C += \
 	mphalport.c \
 	fatfs_port.c \
-	fifo.c \
 	tick.c \
-	drivers/softpwm.c \
-	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
@@ -136,7 +125,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_scanner.c \
 	ubluepy/ubluepy_scan_entry.c \
 	ble/modble.c \
-	random/modrandom.c \
 	)
 
 SRC_COMMON_HAL += \
@@ -202,7 +190,8 @@ SRC_SHARED_BINDINGS = \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/SPI.c \
-	bitbangio/OneWire.c
+	bitbangio/OneWire.c \
+	random/__init__.c
 
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
@@ -215,7 +204,6 @@ FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
-OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
