@@ -35,6 +35,13 @@ CWARN += -Wpointer-arith -Wuninitialized
 CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
 
+# Build a static executable.
+# Useful for Windows builds, etc., that must run on multiple operating system versions.
+ifdef STATIC_BUILD
+CFLAGS += -static -static-libgcc -static-libstdc++
+endif
+
+
 # Debugging/Optimization
 ifdef DEBUG
 CFLAGS += -g
@@ -56,6 +63,10 @@ else
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+
+ifdef STATIC_BUILD
+LDFLAGS += -static -static-libgcc -static-libstdc++
+endif
 
 # source files
 SRC_C = \
