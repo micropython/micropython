@@ -34,10 +34,6 @@
 
 #if MICROPY_PY_BLE_NUS
 
-#if BLUETOOTH_WEBBLUETOOTH_REPL
-//#include "hal_time.h"
-#endif // BLUETOOTH_WEBBLUETOOTH_REPL
-
 static ubluepy_uuid_obj_t uuid_obj_service = {
     .base.type = &ubluepy_uuid_type,
     .type = UBLUEPY_UUID_128_BIT,

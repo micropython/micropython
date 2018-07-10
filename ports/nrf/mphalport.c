@@ -85,7 +85,7 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 bool mp_hal_stdin_any(void) {
-  return tud_cdc_available() > 0;
+    return tud_cdc_available() > 0;
 }
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
@@ -127,81 +127,4 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         // TODO(tannewt): Go to sleep for a little while while we wait.
     }
 }
-
-void mp_hal_delay_us(mp_uint_t us)
-{
-    register uint32_t delay __ASM ("r0") = us;
-    __ASM volatile (
-#ifdef NRF51
-            ".syntax unified\n"
-#endif
-        "1:\n"
-        " SUBS %0, %0, #1\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-#ifdef NRF52
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-#endif
-        " BNE 1b\n"
-#ifdef NRF51
-        ".syntax divided\n"
-#endif
-        : "+r" (delay));
-}
-
 

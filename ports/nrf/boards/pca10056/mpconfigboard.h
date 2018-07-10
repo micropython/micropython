@@ -35,7 +35,6 @@
 #define PORT_HEAP_SIZE              (128 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
-
 // Temp (could be removed) 0: usb cdc (default), 1 : hwuart (jlink)
 #define CFG_HWUART_FOR_SERIAL        0
 

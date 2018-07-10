@@ -50,5 +50,7 @@ int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 bool mp_hal_stdin_any(void);
 
+#define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) us)
+
 #endif
 

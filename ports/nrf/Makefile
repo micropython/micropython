@@ -107,6 +107,8 @@ SRC_C += \
 	fatfs_port.c \
 	fifo.c \
 	tick.c \
+	background.c \
+	internal_flash.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
@@ -115,7 +117,6 @@ SRC_C += \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	nrfx/hal/nrf_nvmc.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
-	background.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
@@ -126,24 +127,22 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
-	internal_flash.c \
 
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
 SRC_C += \
 	usb/tusb_descriptors.c \
 	usb/usb_msc_flash.c \
-  lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-  lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
-  lib/tinyusb/src/common/tusb_fifo.c \
-  lib/tinyusb/src/device/usbd.c \
-  lib/tinyusb/src/device/usbd_desc.c \
-  lib/tinyusb/src/class/msc/msc_device.c \
-  lib/tinyusb/src/class/cdc/cdc_device.c \
-  lib/tinyusb/src/tusb.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
+	lib/tinyusb/src/common/tusb_fifo.c \
+	lib/tinyusb/src/device/usbd.c \
+	lib/tinyusb/src/device/usbd_desc.c \
+	lib/tinyusb/src/class/msc/msc_device.c \
+	lib/tinyusb/src/class/cdc/cdc_device.c \
+	lib/tinyusb/src/tusb.c \
   
 endif
-
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/modubluepy.c \
@@ -264,7 +263,6 @@ hex: $(BUILD)/$(OUTPUT_FILENAME).hex
 $(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O ihex $< $@
 
-
 #####################
 # Flash with debugger
 #####################
@@ -300,7 +298,6 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 
 endif
 
-
 #####################
 # Flash with DFU
 #####################
@@ -311,7 +308,6 @@ ifeq ($(OS),Windows_NT)
 else
    NRFUTIL = nrfutil
 endif
-
 
 check_defined = \
     $(strip $(foreach 1,$1, \
@@ -334,8 +330,6 @@ dfu-bootloader:
 uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
 	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
-
-
 
 $(BUILD)/dfu-package.zip: dfu-gen
 

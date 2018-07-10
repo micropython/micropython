@@ -83,8 +83,7 @@ void tud_umount_cb(uint8_t rhport) {
     (void) rhport;
 }
 
-uint32_t tusb_hal_millis(void)
-{
+uint32_t tusb_hal_millis(void) {
     uint64_t ms;
     uint32_t us;
     current_tick(&ms, &us);
