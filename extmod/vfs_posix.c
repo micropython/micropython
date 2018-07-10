@@ -220,6 +220,9 @@ STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     iter->iternext = vfs_posix_ilistdir_it_iternext;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
     const char *path = vfs_posix_get_path_str(self, path_in);
+    if (path[0] == '\0') {
+        path = ".";
+    }
     iter->dir = opendir(path);
     if (iter->dir == NULL) {
         mp_raise_OSError(errno);
