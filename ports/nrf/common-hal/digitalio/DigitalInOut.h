@@ -28,12 +28,10 @@
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    bool output;
+    const mcu_pin_obj_t *pin;
     bool open_drain;
 } digitalio_digitalinout_obj_t;
 

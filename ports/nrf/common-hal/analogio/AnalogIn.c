@@ -37,7 +37,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const
     if (pin->adc_channel == 0)
         mp_raise_ValueError("Pin does not have ADC capabilities");
 
-    hal_gpio_cfg_pin(pin->port, pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+    nrf_gpio_cfg_default(NRF_GPIO_PIN_MAP(pin->port, pin->pin));
 
     self->pin = pin;
 }
