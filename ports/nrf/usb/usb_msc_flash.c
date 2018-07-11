@@ -34,8 +34,6 @@
 */
 /**************************************************************************/
 
-#ifdef NRF52840_XXAA
-
 #include "tusb.h"
 #include "internal_flash.h"
 
@@ -55,9 +53,6 @@
 
 #define FL_PAGE_SZ              4096
 
-/*------------------------------------------------------------------*/
-/* VARIABLES
- *------------------------------------------------------------------*/
 static scsi_sense_fixed_data_t mscd_sense_data =
 {
     .response_code        = 0x70,
@@ -73,94 +68,91 @@ static scsi_mode_parameters_t const msc_dev_mode_para =
     .block_descriptor_length = 0
 };
 
-/*------------------------------------------------------------------*/
-/*
- *------------------------------------------------------------------*/
-
 //--------------------------------------------------------------------+
 // tinyusb callbacks
 //--------------------------------------------------------------------+
-int32_t tud_msc_scsi_cb (uint8_t rhport, uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
-{
-  // read10 & write10 has their own callback and MUST not be handled here
+int32_t tud_msc_scsi_cb (uint8_t rhport, uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) {
+    // read10 & write10 has their own callback and MUST not be handled here
 
-  void const* ptr = NULL;
-  uint16_t len = 0;
+    void const* ptr = NULL;
+    uint16_t len = 0;
 
-  // most scsi handled is input
-  bool in_xfer = true;
+    // most scsi handled is input
+    bool in_xfer = true;
 
-  switch (scsi_cmd[0])
-  {
-    case SCSI_CMD_REQUEST_SENSE:
-      ptr = &mscd_sense_data;
-      len = sizeof(scsi_sense_fixed_data_t);
-    break;
-
-    case SCSI_CMD_MODE_SENSE_6:
-      ptr = &msc_dev_mode_para;
-      len = sizeof(msc_dev_mode_para);
-    break;
-
-    case SCSI_CMD_TEST_UNIT_READY:
-      ptr = NULL;
-      len = 0;
-    break;
-
-    case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-      ptr = NULL;
-      len = 0;
-    break;
-
-    default:
-      // negative is error -> Data stage is STALL, status = failed
-      return -1;
-  }
-
-  // return len must not larger than bufsize
-  TU_ASSERT( bufsize >= len );
-
-  if ( ptr && len )
-  {
-    if(in_xfer)
+    switch ( scsi_cmd[0] )
     {
-      memcpy(buffer, ptr, len);
-    }else
-    {
-      // SCSI output
+        case SCSI_CMD_REQUEST_SENSE:
+            ptr = &mscd_sense_data;
+            len = sizeof(scsi_sense_fixed_data_t);
+        break;
+
+        case SCSI_CMD_MODE_SENSE_6:
+            ptr = &msc_dev_mode_para;
+            len = sizeof(msc_dev_mode_para);
+        break;
+
+        case SCSI_CMD_TEST_UNIT_READY:
+            ptr = NULL;
+            len = 0;
+        break;
+
+        case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
+            ptr = NULL;
+            len = 0;
+        break;
+
+        default:
+            // negative is error -> Data stage is STALL, status = failed
+            return -1;
     }
-  }
 
-  //------------- clear sense data if it is not request sense command -------------//
-  if ( SCSI_CMD_REQUEST_SENSE != scsi_cmd[0] )
-  {
-    mscd_sense_data.sense_key                  = SCSI_SENSEKEY_NONE;
-    mscd_sense_data.additional_sense_code      = 0;
-    mscd_sense_data.additional_sense_qualifier = 0;
-  }
+    // return len must not larger than bufsize
+    TU_ASSERT(bufsize >= len);
 
-  return len;
+    if ( ptr && len )
+            {
+        if ( in_xfer )
+        {
+            memcpy(buffer, ptr, len);
+        } else
+        {
+            // SCSI output
+        }
+    }
+
+    //------------- clear sense data if it is not request sense command -------------//
+    if ( SCSI_CMD_REQUEST_SENSE != scsi_cmd[0] )
+            {
+        mscd_sense_data.sense_key = SCSI_SENSEKEY_NONE;
+        mscd_sense_data.additional_sense_code = 0;
+        mscd_sense_data.additional_sense_qualifier = 0;
+    }
+
+    return len;
 }
 
 /*------------------------------------------------------------------*/
 /* Tinyusb Flash READ10 & WRITE10
  *------------------------------------------------------------------*/
-int32_t tud_msc_read10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
-{
-    (void) rhport; (void) lun; (void) offset;
+int32_t tud_msc_read10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
+    (void) rhport;
+    (void) lun;
+    (void) offset;
 
-    uint32_t const block_count = bufsize/MSC_FLASH_BLOCK_SIZE;
+    uint32_t const block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
 
     internal_flash_read_blocks(buffer, lba, block_count);
 
-    return block_count*MSC_FLASH_BLOCK_SIZE;
+    return block_count * MSC_FLASH_BLOCK_SIZE;
 }
 
-int32_t tud_msc_write10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
-{
-    (void) rhport; (void) lun; (void) offset;
+int32_t tud_msc_write10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
+    (void) rhport;
+    (void) lun;
+    (void) offset;
 
-    uint32_t const block_count = bufsize/MSC_FLASH_BLOCK_SIZE;
+    uint32_t const block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
 
     // bufsize <= CFG_TUD_MSC_BUFSIZE (4096)
     internal_flash_write_blocks(buffer, lba, block_count);
@@ -168,19 +160,17 @@ int32_t tud_msc_write10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t 
     // update fatfs's cache if address matches
     fs_user_mount_t* vfs = MP_STATE_VM(vfs_mount_table)->obj;
 
-    if ( (lba <= vfs->fatfs.winsect) && (vfs->fatfs.winsect <= (lba + bufsize/MSC_FLASH_BLOCK_SIZE)) ) {
-        memcpy(vfs->fatfs.win, buffer + MSC_FLASH_BLOCK_SIZE*(vfs->fatfs.winsect-lba), MSC_FLASH_BLOCK_SIZE);
+    if ( (lba <= vfs->fatfs.winsect) && (vfs->fatfs.winsect <= (lba + bufsize / MSC_FLASH_BLOCK_SIZE)) ) {
+        memcpy(vfs->fatfs.win, buffer + MSC_FLASH_BLOCK_SIZE * (vfs->fatfs.winsect - lba), MSC_FLASH_BLOCK_SIZE);
     }
 
-    return block_count*MSC_FLASH_BLOCK_SIZE;
+    return block_count * MSC_FLASH_BLOCK_SIZE;
 }
 
-void tud_msc_write10_complete_cb(uint8_t rhport, uint8_t lun)
-{
-    (void) rhport; (void) lun;
+void tud_msc_write10_complete_cb (uint8_t rhport, uint8_t lun) {
+    (void) rhport;
+    (void) lun;
 
     // flush pending cache when write10 is complete
     internal_flash_flush();
 }
-
-#endif

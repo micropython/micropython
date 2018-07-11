@@ -10,13 +10,14 @@ else
   endif
 endif
 
+include boards/$(BOARD)/mpconfigboard.mk
+
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # Build directory with SD
-BUILD = $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
+BUILD ?= $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
 include ../../py/mkenv.mk
-include boards/$(BOARD)/mpconfigboard.mk
 -include mpconfigport.mk
 
 ifneq ($(SD), )

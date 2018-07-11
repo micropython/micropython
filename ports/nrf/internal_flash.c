@@ -57,7 +57,7 @@ uint32_t _flash_page_addr = NO_CACHE;
 /* Internal Flash API
  *------------------------------------------------------------------*/
 static inline uint32_t lba2addr(uint32_t block) {
-  return ((uint32_t)__fatfs_flash_start_addr) + block * FILESYSTEM_BLOCK_SIZE;
+    return ((uint32_t)__fatfs_flash_start_addr) + block * FILESYSTEM_BLOCK_SIZE;
 }
 
 void internal_flash_init(void) {
