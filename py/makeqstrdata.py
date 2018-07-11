@@ -114,6 +114,9 @@ def parse_input_headers(infiles):
                 if ident == "":
                     # Sort empty qstr above all still
                     order = -200000
+                elif ident == "__dir__":
+                    # Put __dir__ after empty qstr for builtin dir() to work
+                    order = -190000
                 elif ident.startswith("__"):
                     order -= 100000
                 qstrs[ident] = (order, ident, qstr)

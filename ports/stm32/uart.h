@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_UART_H
-#define MICROPY_INCLUDED_STMHAL_UART_H
+#ifndef MICROPY_INCLUDED_STM32_UART_H
+#define MICROPY_INCLUDED_STM32_UART_H
 
 typedef enum {
     PYB_UART_NONE = 0,
@@ -45,8 +45,9 @@ void uart_init0(void);
 void uart_deinit(void);
 void uart_irq_handler(mp_uint_t uart_id);
 
+void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached);
 mp_uint_t uart_rx_any(pyb_uart_obj_t *uart_obj);
 int uart_rx_char(pyb_uart_obj_t *uart_obj);
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 
-#endif // MICROPY_INCLUDED_STMHAL_UART_H
+#endif // MICROPY_INCLUDED_STM32_UART_H

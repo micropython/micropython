@@ -41,3 +41,20 @@ except TypeError:
     print(True)
 else:
     print(False)
+
+# first arg to super must be a type
+try:
+    super(1, 1)
+except TypeError:
+    print('TypeError')
+
+# store/delete of super attribute not allowed
+assert hasattr(super(B, B()), 'foo')
+try:
+    super(B, B()).foo = 1
+except AttributeError:
+    print('AttributeError')
+try:
+    del super(B, B()).foo
+except AttributeError:
+    print('AttributeError')

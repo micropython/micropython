@@ -31,7 +31,6 @@
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 
 #if defined(MICROPY_HW_LED1)
 
@@ -52,13 +51,13 @@ typedef struct _pyb_led_obj_t {
 } pyb_led_obj_t;
 
 STATIC const pyb_led_obj_t pyb_led_obj[] = {
-    {{&pyb_led_type}, 1, &MICROPY_HW_LED1},
+    {{&pyb_led_type}, 1, MICROPY_HW_LED1},
 #if defined(MICROPY_HW_LED2)
-    {{&pyb_led_type}, 2, &MICROPY_HW_LED2},
+    {{&pyb_led_type}, 2, MICROPY_HW_LED2},
 #if defined(MICROPY_HW_LED3)
-    {{&pyb_led_type}, 3, &MICROPY_HW_LED3},
+    {{&pyb_led_type}, 3, MICROPY_HW_LED3},
 #if defined(MICROPY_HW_LED4)
-    {{&pyb_led_type}, 4, &MICROPY_HW_LED4},
+    {{&pyb_led_type}, 4, MICROPY_HW_LED4},
 #endif
 #endif
 #endif
@@ -282,7 +281,7 @@ void led_debug(int n, int delay) {
 
 void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_led_obj_t *self = self_in;
-    mp_printf(print, "LED(%lu)", self->led_id);
+    mp_printf(print, "LED(%u)", self->led_id);
 }
 
 /// \classmethod \constructor(id)

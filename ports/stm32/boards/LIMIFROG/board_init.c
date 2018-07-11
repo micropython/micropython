@@ -104,10 +104,10 @@ static void LBF_DFU_If_Needed(void)
    // Initialize and assert pin BTLE_RST
    // (hw reset to BLE module, so it won't drive UART3)
 
-    __GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Pin = BT_RST_PIN;
     HAL_GPIO_Init(BT_RST_PORT, &GPIO_InitStruct);
 
@@ -124,7 +124,7 @@ static void LBF_DFU_If_Needed(void)
     // Initialize Extension Port Position 10 = PB8 (bears I2C1_SCL)
     // Use weak pull-up to detect if pin is externally pulled low
 
-    __GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Pin = CONN_POS10_PIN;

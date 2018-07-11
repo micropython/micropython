@@ -7,7 +7,7 @@
 	url = https://github.com/atgreen/libffi
 [submodule "lib/lwip"]
 	path = lib/lwip
-	url = http://git.savannah.gnu.org/r/lwip.git
+	url = https://git.savannah.gnu.org/r/lwip.git
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx

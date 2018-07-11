@@ -70,7 +70,7 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
     while (*name) {
         size_t l = strlen(name);
         // name should end in '.py' and we strip it off
-        mp_obj_list_append(list, mp_obj_new_str(name, l - 3, false));
+        mp_obj_list_append(list, mp_obj_new_str(name, l - 3));
         name += l + 1;
     }
 }
@@ -109,7 +109,7 @@ STATIC void mp_help_print_modules(void) {
     // print the list of modules in a column-first order
     #define NUM_COLUMNS (4)
     #define COLUMN_WIDTH (18)
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *items;
     mp_obj_list_get(list, &len, &items);
     unsigned int num_rows = (len + NUM_COLUMNS - 1) / NUM_COLUMNS;

@@ -18,3 +18,7 @@ print(msg[:7], msg[msg.find(']'):])
 
 # check that unknown errno is still rendered
 print(str(OSError(9999)))
+
+# this tests a failed constant lookup in errno
+errno = uerrno
+print(errno.__name__)

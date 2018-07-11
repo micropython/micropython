@@ -537,83 +537,57 @@ STATIC void mpn_div(mpz_dig_t *num_dig, size_t *num_len, const mpz_dig_t *den_di
         //      not to overflow the borrow variable.  And the shifting of
         //      borrow needs some special logic (it's a shift right with
         //      round up).
-
-        if (DIG_SIZE < 8 * sizeof(mpz_dbl_dig_t) / 2) {
-            const mpz_dig_t *d = den_dig;
-            mpz_dbl_dig_t d_norm = 0;
-            mpz_dbl_dig_signed_t borrow = 0;
-
-            for (mpz_dig_t *n = num_dig - den_len; n < num_dig; ++n, ++d) {
-                d_norm = ((mpz_dbl_dig_t)*d << norm_shift) | (d_norm >> DIG_SIZE);
-                borrow += (mpz_dbl_dig_t)*n - (mpz_dbl_dig_t)quo * (d_norm & DIG_MASK); // will overflow if DIG_SIZE >= 8*sizeof(mpz_dbl_dig_t)/2
-                *n = borrow & DIG_MASK;
-                borrow >>= DIG_SIZE;
-            }
-            borrow += *num_dig; // will overflow if DIG_SIZE >= 8*sizeof(mpz_dbl_dig_t)/2
-            *num_dig = borrow & DIG_MASK;
-            borrow >>= DIG_SIZE;
-
-            // adjust quotient if it is too big
-            for (; borrow != 0; --quo) {
-                d = den_dig;
-                d_norm = 0;
-                mpz_dbl_dig_t carry = 0;
-                for (mpz_dig_t *n = num_dig - den_len; n < num_dig; ++n, ++d) {
-                    d_norm = ((mpz_dbl_dig_t)*d << norm_shift) | (d_norm >> DIG_SIZE);
-                    carry += (mpz_dbl_dig_t)*n + (d_norm & DIG_MASK);
-                    *n = carry & DIG_MASK;
-                    carry >>= DIG_SIZE;
-                }
-                carry += *num_dig;
-                *num_dig = carry & DIG_MASK;
-                carry >>= DIG_SIZE;
-
-                borrow += carry;
-            }
-        } else { // DIG_SIZE == 8 * sizeof(mpz_dbl_dig_t) / 2
-            const mpz_dig_t *d = den_dig;
-            mpz_dbl_dig_t d_norm = 0;
-            mpz_dbl_dig_t borrow = 0;
-
-            for (mpz_dig_t *n = num_dig - den_len; n < num_dig; ++n, ++d) {
-                d_norm = ((mpz_dbl_dig_t)*d << norm_shift) | (d_norm >> DIG_SIZE);
-                mpz_dbl_dig_t x = (mpz_dbl_dig_t)quo * (d_norm & DIG_MASK);
-                if (x >= *n || *n - x <= borrow) {
-                    borrow += (mpz_dbl_dig_t)x - (mpz_dbl_dig_t)*n;
-                    *n = (-borrow) & DIG_MASK;
-                    borrow = (borrow >> DIG_SIZE) + ((borrow & DIG_MASK) == 0 ? 0 : 1); // shift-right with round-up
-                } else {
-                    *n = ((mpz_dbl_dig_t)*n - (mpz_dbl_dig_t)x - (mpz_dbl_dig_t)borrow) & DIG_MASK;
-                    borrow = 0;
-                }
-            }
-            if (borrow >= *num_dig) {
-                borrow -= (mpz_dbl_dig_t)*num_dig;
-                *num_dig = (-borrow) & DIG_MASK;
+        //
+        const mpz_dig_t *d = den_dig;
+        mpz_dbl_dig_t d_norm = 0;
+        mpz_dbl_dig_t borrow = 0;
+        for (mpz_dig_t *n = num_dig - den_len; n < num_dig; ++n, ++d) {
+            d_norm = ((mpz_dbl_dig_t)*d << norm_shift) | (d_norm >> DIG_SIZE);
+            mpz_dbl_dig_t x = (mpz_dbl_dig_t)quo * (d_norm & DIG_MASK);
+            #if DIG_SIZE < MPZ_DBL_DIG_SIZE / 2
+            borrow += (mpz_dbl_dig_t)*n - x; // will overflow if DIG_SIZE >= MPZ_DBL_DIG_SIZE/2
+            *n = borrow & DIG_MASK;
+            borrow = (mpz_dbl_dig_signed_t)borrow >> DIG_SIZE;
+            #else // DIG_SIZE == MPZ_DBL_DIG_SIZE / 2
+            if (x >= *n || *n - x <= borrow) {
+                borrow += x - (mpz_dbl_dig_t)*n;
+                *n = (-borrow) & DIG_MASK;
                 borrow = (borrow >> DIG_SIZE) + ((borrow & DIG_MASK) == 0 ? 0 : 1); // shift-right with round-up
             } else {
-                *num_dig = (*num_dig - borrow) & DIG_MASK;
+                *n = ((mpz_dbl_dig_t)*n - x - borrow) & DIG_MASK;
                 borrow = 0;
             }
+            #endif
+        }
 
-            // adjust quotient if it is too big
-            for (; borrow != 0; --quo) {
-                d = den_dig;
-                d_norm = 0;
-                mpz_dbl_dig_t carry = 0;
-                for (mpz_dig_t *n = num_dig - den_len; n < num_dig; ++n, ++d) {
-                    d_norm = ((mpz_dbl_dig_t)*d << norm_shift) | (d_norm >> DIG_SIZE);
-                    carry += (mpz_dbl_dig_t)*n + (d_norm & DIG_MASK);
-                    *n = carry & DIG_MASK;
-                    carry >>= DIG_SIZE;
-                }
-                carry += (mpz_dbl_dig_t)*num_dig;
-                *num_dig = carry & DIG_MASK;
+        #if DIG_SIZE < MPZ_DBL_DIG_SIZE / 2
+        // Borrow was negative in the above for-loop, make it positive for next if-block.
+        borrow = -borrow;
+        #endif
+
+        // At this point we have either:
+        //
+        //   1. quo was the correct value and the most-sig-digit of num is exactly
+        //      cancelled by borrow (borrow == *num_dig).  In this case there is
+        //      nothing more to do.
+        //
+        //   2. quo was too large, we subtracted too many den from num, and the
+        //      most-sig-digit of num is 1 less than borrow (borrow == *num_dig + 1).
+        //      In this case we must reduce quo and add back den to num until the
+        //      carry from this operation cancels out the borrow.
+        //
+        borrow -= *num_dig;
+        for (; borrow != 0; --quo) {
+            d = den_dig;
+            d_norm = 0;
+            mpz_dbl_dig_t carry = 0;
+            for (mpz_dig_t *n = num_dig - den_len; n < num_dig; ++n, ++d) {
+                d_norm = ((mpz_dbl_dig_t)*d << norm_shift) | (d_norm >> DIG_SIZE);
+                carry += (mpz_dbl_dig_t)*n + (d_norm & DIG_MASK);
+                *n = carry & DIG_MASK;
                 carry >>= DIG_SIZE;
-
-                //assert(borrow >= carry); // enable this to check the logic
-                borrow -= carry;
             }
+            borrow -= carry;
         }
 
         // store this digit of the quotient
@@ -731,17 +705,14 @@ STATIC void mpz_need_dig(mpz_t *z, size_t need) {
 }
 
 STATIC mpz_t *mpz_clone(const mpz_t *src) {
+    assert(src->alloc != 0);
     mpz_t *z = m_new_obj(mpz_t);
     z->neg = src->neg;
     z->fixed_dig = 0;
     z->alloc = src->alloc;
     z->len = src->len;
-    if (src->dig == NULL) {
-        z->dig = NULL;
-    } else {
-        z->dig = m_new(mpz_dig_t, z->alloc);
-        memcpy(z->dig, src->dig, src->alloc * sizeof(mpz_dig_t));
-    }
+    z->dig = m_new(mpz_dig_t, z->alloc);
+    memcpy(z->dig, src->dig, src->alloc * sizeof(mpz_dig_t));
     return z;
 }
 
@@ -1009,6 +980,7 @@ these functions are unused
 /* returns abs(z)
 */
 mpz_t *mpz_abs(const mpz_t *z) {
+    // TODO: handle case of z->alloc=0
     mpz_t *z2 = mpz_clone(z);
     z2->neg = 0;
     return z2;
@@ -1017,6 +989,7 @@ mpz_t *mpz_abs(const mpz_t *z) {
 /* returns -z
 */
 mpz_t *mpz_neg(const mpz_t *z) {
+    // TODO: handle case of z->alloc=0
     mpz_t *z2 = mpz_clone(z);
     z2->neg = 1 - z2->neg;
     return z2;
@@ -1390,21 +1363,20 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
    can have dest, lhs, rhs the same; mod can't be the same as dest
 */
 void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t *mod) {
-    if (lhs->len == 0 || rhs->neg != 0) {
+    if (lhs->len == 0 || rhs->neg != 0 || (mod->len == 1 && mod->dig[0] == 1)) {
         mpz_set_from_int(dest, 0);
         return;
     }
 
+    mpz_set_from_int(dest, 1);
+
     if (rhs->len == 0) {
-        mpz_set_from_int(dest, 1);
         return;
     }
 
     mpz_t *x = mpz_clone(lhs);
     mpz_t *n = mpz_clone(rhs);
     mpz_t quo; mpz_init_zero(&quo);
-
-    mpz_set_from_int(dest, 1);
 
     while (n->len > 0) {
         if ((n->dig[0] & 1) != 0) {
@@ -1435,6 +1407,7 @@ these functions are unused
 */
 mpz_t *mpz_gcd(const mpz_t *z1, const mpz_t *z2) {
     if (z1->len == 0) {
+        // TODO: handle case of z2->alloc=0
         mpz_t *a = mpz_clone(z2);
         a->neg = 0;
         return a;
@@ -1559,7 +1532,7 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs) {
 
 // must return actual int value if it fits in mp_int_t
 mp_int_t mpz_hash(const mpz_t *z) {
-    mp_int_t val = 0;
+    mp_uint_t val = 0;
     mpz_dig_t *d = z->dig + z->len;
 
     while (d-- > z->dig) {
@@ -1674,16 +1647,12 @@ char *mpz_as_str(const mpz_t *i, unsigned int base) {
 }
 #endif
 
-// assumes enough space as calculated by mp_int_format_size
+// assumes enough space in str as calculated by mp_int_format_size
+// base must be between 2 and 32 inclusive
 // returns length of string, not including null byte
 size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, char base_char, char comma, char *str) {
-    if (str == NULL) {
-        return 0;
-    }
-    if (base < 2 || base > 32) {
-        str[0] = 0;
-        return 0;
-    }
+    assert(str != NULL);
+    assert(2 <= base && base <= 32);
 
     size_t ilen = i->len;
 

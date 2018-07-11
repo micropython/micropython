@@ -35,6 +35,18 @@ Functions
    compilation of scripts, and returns ``None``.  Otherwise it returns the current
    optimisation level.
 
+   The optimisation level controls the following compilation features:
+
+   - Assertions: at level 0 assertion statements are enabled and compiled into the
+     bytecode; at levels 1 and higher assertions are not compiled.
+   - Built-in ``__debug__`` variable: at level 0 this variable expands to ``True``;
+     at levels 1 and higher it expands to ``False``.
+   - Source-code line numbers: at levels 0, 1 and 2 source-code line number are
+     stored along with the bytecode so that exceptions can report the line number
+     they occurred at; at levels 3 and higher line numbers are not stored.
+
+   The default optimisation level is usually level 0.
+
 .. function:: alloc_emergency_exception_buf(size)
 
    Allocate *size* bytes of RAM for the emergency exception buffer (a good
@@ -114,5 +126,14 @@ Functions
    the heap may be locked) and scheduling a function to call later will lift
    those restrictions.
 
-   There is a finite stack to hold the scheduled functions and `schedule`
+   Note: If `schedule()` is called from a preempting IRQ, when memory
+   allocation is not allowed and the callback to be passed to `schedule()` is
+   a bound method, passing this directly will fail. This is because creating a
+   reference to a bound method causes memory allocation. A solution is to
+   create a reference to the method in the class constructor and to pass that
+   reference to `schedule()`. This is discussed in detail here
+   :ref:`reference documentation <isr_rules>` under "Creation of Python
+   objects".
+
+   There is a finite stack to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the stack is full.

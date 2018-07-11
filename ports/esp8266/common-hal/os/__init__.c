@@ -58,7 +58,7 @@ STATIC mp_obj_tuple_t os_uname_info_obj = {
 mp_obj_t common_hal_os_uname(void) {
     // We must populate the "release" field each time in case it was GC'd since the last call.
     const char *ver = system_get_sdk_version();
-    os_uname_info_obj.items[2] = mp_obj_new_str(ver, strlen(ver), false);
+    os_uname_info_obj.items[2] = mp_obj_new_str(ver, strlen(ver));
     return (mp_obj_t)&os_uname_info_obj;
 }
 
@@ -75,6 +75,19 @@ bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
             i++;
             new_random >>= 8;
         }
+// We wrap the mp_uos_dupterm function to detect if a UART is attached or not
+mp_obj_t os_dupterm(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t prev_obj = mp_uos_dupterm_obj.fun.var(n_args, args);
+    if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+        ++uart_attached_to_dupterm;
+    }
+    if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
+        --uart_attached_to_dupterm;
+    }
+    return prev_obj;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_dupterm_obj, 1, 2, os_dupterm);
+
     }
     return true;
 }
