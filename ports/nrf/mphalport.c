@@ -25,7 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include <errno.h>
 #include <string.h>
 
 #include "mphalport.h"

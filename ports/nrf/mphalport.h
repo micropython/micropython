@@ -30,12 +30,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hal_gpio.h"
 #include "lib/utils/interrupt_char.h"
-#include "nrf.h"
-#include NRF5_HAL_H
 #include "nrfx_uart.h"
-#include "pin.h"
 #include "py/mpconfig.h"
 
 extern nrfx_uart_t serial_instance;
@@ -49,8 +45,8 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 bool mp_hal_stdin_any(void);
-
-#define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) us)
+void mp_hal_delay_ms(mp_uint_t ms);
+#define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) (us))
 
 #endif
 
