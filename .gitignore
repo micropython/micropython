@@ -58,4 +58,8 @@ TAGS
 #################
 *.orig
 
+# Emacs backup files
+####################
+*~
+
 *.DS_Store
