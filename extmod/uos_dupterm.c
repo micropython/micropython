@@ -34,7 +34,7 @@
 #include "py/stream.h"
 #include "lib/utils/interrupt_char.h"
 
-#ifdef MICROPY_PY_OS_DUPTERM
+#if MICROPY_PY_OS_DUPTERM
 
 void mp_uos_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     mp_obj_t term = MP_STATE_VM(dupterm_objs[dupterm_idx]);

@@ -114,7 +114,7 @@ void asm_x64_mov_r64_to_local(asm_x64_t* as, int src_r64, int dest_local_num);
 void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
 void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
 
-#ifdef GENERIC_ASM_API
+#if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
 // generate native code, and are used by the native emitter.

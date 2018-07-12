@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if MICROPY_NLR_XTENSA
+#if defined(MICROPY_NLR_XTENSA) && MICROPY_NLR_XTENSA
 
 #undef nlr_push
 

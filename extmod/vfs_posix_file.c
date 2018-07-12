@@ -28,7 +28,7 @@
 #include "py/stream.h"
 #include "extmod/vfs_posix.h"
 
-#if MICROPY_VFS_POSIX
+#if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
 
 #include <fcntl.h>
 

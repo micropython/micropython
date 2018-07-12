@@ -526,6 +526,8 @@ struct _mp_obj_type_t {
 extern const mp_obj_type_t mp_type_type;
 extern const mp_obj_type_t mp_type_object;
 extern const mp_obj_type_t mp_type_NoneType;
+extern const mp_obj_type_t mp_type_bool;
+extern const mp_obj_type_t mp_type_int;
 extern const mp_obj_type_t mp_type_str;
 extern const mp_obj_type_t mp_type_bytes;
 extern const mp_obj_type_t mp_type_bytearray;

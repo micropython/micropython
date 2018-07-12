@@ -190,7 +190,7 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #undef DEF_RULE_NC
 0;
 
-#if USE_RULE_NAME
+#if defined(USE_RULE_NAME) && USE_RULE_NAME
 // Define an array of rule names corresponding to each rule
 STATIC const char *const rule_name_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) #rule,
@@ -403,7 +403,7 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
             #endif
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            #if USE_RULE_NAME
+            #if defined(USE_RULE_NAME) && USE_RULE_NAME
             printf("%s(%u) (n=%u)\n", rule_name_table[MP_PARSE_NODE_STRUCT_KIND(pns)], (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
             #else
             printf("rule(%u) (n=%u)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);

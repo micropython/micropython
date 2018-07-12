@@ -26,14 +26,14 @@
 
 #include "py/mpstate.h"
 
-#if MICROPY_NLR_X86
+#if defined(MICROPY_NLR_X86) && MICROPY_NLR_X86
 
 #undef nlr_push
 
 // For reference, x86 callee save regs are:
 //  ebx, esi, edi, ebp, esp, eip
 
-#if MICROPY_NLR_OS_WINDOWS
+#if defined(MICROPY_NLR_OS_WINDOWS) && MICROPY_NLR_OS_WINDOWS
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 #else
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);

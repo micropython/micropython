@@ -35,7 +35,8 @@
 #include "py/mpconfig.h"
 
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
-#if !MICROPY_NLR_SETJMP
+#if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
+#define MICROPY_NLR_SETJMP (0)
 // A lot of nlr-related things need different treatment on Windows
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define MICROPY_NLR_OS_WINDOWS 1

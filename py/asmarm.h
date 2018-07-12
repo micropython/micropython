@@ -122,7 +122,7 @@ void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label);
 void asm_arm_b_label(asm_arm_t *as, uint label);
 void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);
 
-#ifdef GENERIC_ASM_API
+#if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
 // generate native code, and are used by the native emitter.

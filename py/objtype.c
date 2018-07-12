@@ -1283,7 +1283,8 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 attr_get_method[2] = self_in;
                 attr_get_method[3] = MP_OBJ_FROM_PTR(mp_obj_get_type(self_in));
                 dest[0] = mp_call_method_n_kw(2, 0, attr_get_method);
-        }
+            }
+            #endif
         return;
     }
 

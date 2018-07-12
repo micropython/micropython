@@ -1238,6 +1238,22 @@ typedef double mp_float_t;
 #define MICROPY_PY_BTREE (0)
 #endif
 
+#ifndef MICROPY_PY_OS_DUPTERM
+#define MICROPY_PY_OS_DUPTERM (0)
+#endif
+
+#ifndef MICROPY_PY_LWIP_SLIP
+#define MICROPY_PY_LWIP_SLIP (0)
+#endif
+
+#ifndef MICROPY_HW_ENABLE_USB
+#define MICROPY_HW_ENABLE_USB (0)
+#endif
+
+#ifndef MICROPY_PY_WEBREPL
+#define MICROPY_PY_WEBREPL (0)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 

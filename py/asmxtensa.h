@@ -239,7 +239,7 @@ void asm_xtensa_mov_local_reg(asm_xtensa_t *as, int local_num, uint reg_src);
 void asm_xtensa_mov_reg_local(asm_xtensa_t *as, uint reg_dest, int local_num);
 void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_num);
 
-#ifdef GENERIC_ASM_API
+#if defined(GENERIC_ASM_API) && GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
 // generate native code, and are used by the native emitter.
