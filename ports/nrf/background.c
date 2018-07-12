@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef __NRF52_HAL
-#define __NRF52_HAL
+#include "tusb.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "lib/utils/interrupt_char.h"
-#include "nrfx_uart.h"
-#include "py/mpconfig.h"
-
-extern nrfx_uart_t serial_instance;
-
-extern volatile uint64_t ticks_ms;
-
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return ticks_ms;
-}
-
-int mp_hal_stdin_rx_chr(void);
-void mp_hal_stdout_tx_str(const char *str);
-bool mp_hal_stdin_any(void);
-void mp_hal_delay_ms(mp_uint_t ms);
-#define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) (us))
-
+void run_background_tasks(void) {
+#ifdef NRF52840_XXAA
+    tusb_task();
+    tud_cdc_flush();
 #endif
-
+}

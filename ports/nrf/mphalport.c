@@ -28,10 +28,12 @@
 #include <string.h>
 
 #include "mphalport.h"
+#include "py/mpstate.h"
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
 
 #if (MICROPY_PY_BLE_NUS == 0)
+
+#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
 int mp_hal_stdin_rx_chr(void) {
     uint8_t data = 0;
 
@@ -57,26 +59,71 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         NRFX_ASSERT(err);
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    const char cr = '\r';
+#else
 
-    while (len--) {
-        if (*str == '\n')
-            mp_hal_stdout_tx_strn(&cr, sizeof(cr));
+#include "tusb.h"
 
-        mp_hal_stdout_tx_strn(str++, sizeof(char));
+int mp_hal_stdin_rx_chr(void) {
+    for (;;) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        // if (reload_requested) {
+        //     return CHAR_CTRL_D;
+        // }
+
+        if (tud_cdc_available()) {
+            #ifdef MICROPY_HW_LED_RX
+            gpio_toggle_pin_level(MICROPY_HW_LED_RX);
+            #endif
+            return tud_cdc_read_char();
+        }
+    }
+
+    return 0;
+}
+
+bool mp_hal_stdin_any(void) {
+    return tud_cdc_available() > 0;
+}
+
+void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+
+    #ifdef MICROPY_HW_LED_TX
+    gpio_toggle_pin_level(MICROPY_HW_LED_TX);
+    #endif
+
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    if (boot_output_file != NULL) {
+        UINT bytes_written = 0;
+        f_write(boot_output_file, str, len, &bytes_written);
+    }
+    #endif
+
+    tud_cdc_write(str, len);
+}
+
+#endif // USB
+
+#endif // NUS
+
+
+/*------------------------------------------------------------------*/
+/* delay
+ *------------------------------------------------------------------*/
+void mp_hal_delay_ms(mp_uint_t delay) {
+    uint64_t start_tick = ticks_ms;
+    uint64_t duration = 0;
+    while (duration < delay) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        // Check to see if we've been CTRL-Ced by autoreload or the user.
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
+            break;
+        }
+        duration = (ticks_ms - start_tick);
+        // TODO(tannewt): Go to sleep for a little while while we wait.
     }
 }
-#endif
 
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
-
-void mp_hal_delay_ms(mp_uint_t ms) {
-    NRFX_DELAY_US(ms * 1000);
-}
-
-void mp_hal_delay_us(mp_uint_t us) {
-    NRFX_DELAY_US(us);
-}

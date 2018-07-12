@@ -33,19 +33,17 @@
 
 #define FLASH_ROOT_POINTERS
 
-#define FLASH_PAGE_SIZE             0x1000
-#define CIRCUITPY_INTERNAL_NVM_SIZE 0
+#define FLASH_PAGE_SIZE                 0x1000
+#define CIRCUITPY_INTERNAL_NVM_SIZE     0
 
-#define INTERNAL_FLASH_SYSTICK_MASK    (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick) (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
+#define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
+#define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
 
-void internal_flash_init(void);
-uint32_t internal_flash_get_block_size(void);
-uint32_t internal_flash_get_block_count(void);
-void internal_flash_irq_handler(void);
-void internal_flash_flush(void);
-bool internal_flash_read_block(uint8_t *dest, uint32_t block);
-bool internal_flash_write_block(const uint8_t *src, uint32_t block);
+void      internal_flash_init(void);
+uint32_t  internal_flash_get_block_size(void);
+uint32_t  internal_flash_get_block_count(void);
+void      internal_flash_irq_handler(void);
+void      internal_flash_flush(void);
 
 // these return 0 on success, non-zero on error
 mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);

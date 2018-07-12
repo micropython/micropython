@@ -35,8 +35,9 @@
 extern volatile bool mp_msc_enabled;
 
 void common_hal_storage_remount(const char *mount_path, bool readonly) {
-    if (strcmp(mount_path, "/") != 0)
+    if (strcmp(mount_path, "/") != 0) {
         mp_raise_OSError(MP_EINVAL);
+    }
 }
 
 void common_hal_storage_erase_filesystem(void) {

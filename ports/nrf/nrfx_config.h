@@ -1,6 +1,10 @@
 #ifndef NRFX_CONFIG_H__
 #define NRFX_CONFIG_H__
 
+// Power
+#define NRFX_POWER_ENABLED 1
+#define NRFX_POWER_CONFIG_IRQ_PRIORITY 7
+
 // SPI
 #define NRFX_SPIM_ENABLED 1
 

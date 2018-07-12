@@ -238,6 +238,10 @@ extern const struct _mp_obj_module_t ble_module;
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
+extern void run_background_tasks(void);
+#define MICROPY_VM_HOOK_LOOP    run_background_tasks();
+#define MICROPY_VM_HOOK_RETURN  run_background_tasks();
+
 //#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #endif

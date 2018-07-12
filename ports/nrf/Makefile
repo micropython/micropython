@@ -1,22 +1,23 @@
-# Select the board to build for: if not given on the command line,
-# then default to feather52832.
-BOARD ?= feather52832
-ifeq ($(wildcard boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
+# Select the board to build for.
+ifeq ($(BOARD),)
+  $(info You must provide a BOARD parameter with 'BOARD=')
+  $(info Possible values are:)
+  $(info $(sort $(subst /.,,$(subst boards/,,$(wildcard boards/*/.)))))
+  $(error BOARD not defined)
+else
+  ifeq ($(wildcard boards/$(BOARD)/.),)
+    $(error Invalid BOARD specified)
+  endif
 endif
 
-# If SoftDevice is selected, try to use that one.
-# Default to SD132 (exact version can be set with SOFTDEV_VERSION)
-SD ?= s132
+include boards/$(BOARD)/mpconfigboard.mk
+
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
-# TODO: Verify that it is a valid target.
-
-# If the build directory is not given, make it reflect the board name
+# Build directory with SD
 BUILD ?= $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
 include ../../py/mkenv.mk
-include boards/$(BOARD)/mpconfigboard.mk
 -include mpconfigport.mk
 
 ifneq ($(SD), )
@@ -52,6 +53,8 @@ INC += -I./nrfx/drivers/include
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
+INC += -I../../lib/tinyusb/src
+INC += -I./usb
 
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
@@ -87,6 +90,7 @@ LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 SRC_NRFX = $(addprefix nrfx/,\
+	drivers/src/nrfx_power.c \
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_twim.c \
 	drivers/src/nrfx_uart.c \
@@ -96,10 +100,13 @@ SRC_C += \
 	mphalport.c \
 	fatfs_port.c \
 	tick.c \
+	background.c \
+	internal_flash.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
+	nrfx/hal/nrf_nvmc.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
@@ -108,10 +115,25 @@ SRC_C += \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \
+	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
-	internal_flash.c \
 
+ifeq ($(MCU_SUB_VARIANT),nrf52840)
+
+SRC_C += \
+	usb/tusb_descriptors.c \
+	usb/usb_msc_flash.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
+	lib/tinyusb/src/common/tusb_fifo.c \
+	lib/tinyusb/src/device/usbd.c \
+	lib/tinyusb/src/device/usbd_desc.c \
+	lib/tinyusb/src/class/msc/msc_device.c \
+	lib/tinyusb/src/class/cdc/cdc_device.c \
+	lib/tinyusb/src/tusb.c \
+  
+endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/modubluepy.c \
@@ -213,9 +235,9 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-.phony: all flash sd binary hex
+.phony: all flash sd binary hex bootloader
 
-all: binary hex
+all: binary hex uf2
 
 OUTPUT_FILENAME = firmware
 
@@ -231,12 +253,18 @@ hex: $(BUILD)/$(OUTPUT_FILENAME).hex
 $(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O ihex $< $@
 
+#####################
+# Flash with debugger
+#####################
 FLASHER ?=
 
 ifeq ($(FLASHER),)
 
+# Also update to bootloader settting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
+	nrfjprog --erasepage $(BOOT_SETTING_ADDR) -f $(MCU_VARIANT)
+	nrfjprog --memwr $(BOOT_SETTING_ADDR) --val 0x00000001 -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
@@ -245,6 +273,9 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
+bootloader:
+	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
+	
 else ifeq ($(FLASHER), pyocd)
 
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
@@ -256,6 +287,41 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_VARIANT) $<
 
 endif
+
+#####################
+# Flash with DFU
+#####################
+.phony: dfu-gen dfu-flash dfu-bootloader
+
+ifeq ($(OS),Windows_NT)
+   NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
+else
+   NRFUTIL = nrfutil
+endif
+
+check_defined = \
+    $(strip $(foreach 1,$1, \
+    $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+    $(error Undefined make flag: $1$(if $2, ($2))))
+
+dfu-gen: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
+
+dfu-flash: $(BUILD)/dfu-package.zip
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
+	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank
+
+dfu-bootloader:
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
+	$(NRFUTIL) --verbose dfu serial --package $(BOOT_FILE).zip -p $(SERIAL) -b 115200
+
+uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
+	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
+
+$(BUILD)/dfu-package.zip: dfu-gen
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"

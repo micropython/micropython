@@ -80,6 +80,11 @@ void __assert_func(const char *file, int line, const char *func, const char *exp
  */
 #define NRFX_STATIC_ASSERT(expression)
 
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#endif
+
 //------------------------------------------------------------------------------
 
 #ifdef SOFTDEVICE_PRESENT
