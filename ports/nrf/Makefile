@@ -132,7 +132,7 @@ SRC_C += \
 	lib/tinyusb/src/class/msc/msc_device.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
 	lib/tinyusb/src/tusb.c \
-  
+
 endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
@@ -275,16 +275,24 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 
 bootloader:
 	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
-	
+
 else ifeq ($(FLASHER), pyocd)
 
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
-	pyocd-flashtool -t $(MCU_VARIANT) $<
+	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
+	pyocd-tool -t $(MCU_SUB_VARIANT) erase $(BOOT_SETTING_ADDR)
+	pyocd-tool -t $(MCU_SUB_VARIANT) write32 $(BOOT_SETTING_ADDR) 0x00000001
+	pyocd-tool -t $(MCU_SUB_VARIANT) reset
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
-	pyocd-flashtool -t $(MCU_VARIANT) --chip_erase
-	pyocd-flashtool -t $(MCU_VARIANT) $(SOFTDEV_HEX)
-	pyocd-flashtool -t $(MCU_VARIANT) $<
+	pyocd-flashtool -t $(MCU_SUB_VARIANT) --chip_erase
+	pyocd-flashtool -t $(MCU_SUB_VARIANT) $(SOFTDEV_HEX)
+	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
+	pyocd-tool -t $(MCU_SUB_VARIANT) reset $(BOOT_SETTING_ADDR)
+
+bootloader:
+	pyocd-flashtool -t $(MCU_SUB_VARIANT) $(BOOT_FILE).hex --chip_erase
+	pyocd-tool -t $(MCU_SUB_VARIANT) reset
 
 endif
 
