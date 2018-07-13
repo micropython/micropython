@@ -29,6 +29,7 @@ Module             Supported Ports
 `binascii`         **ESP8266**
 `bitbangio`        **SAMD Express, ESP8266**
 `board`            **All Supported**
+`bleio`            **nRF**
 `busio`            **All Supported**
 `digitalio`        **All Supported**
 `gamepad`          **SAMD Express, nRF**

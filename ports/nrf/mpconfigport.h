@@ -126,27 +126,27 @@
 
 #define MICROPY_KBD_EXCEPTION                    (1)
 
-#ifndef MICROPY_PY_HW_RNG
-#define MICROPY_PY_HW_RNG                        (1)
-#endif
-
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (0)
 
 // Scan gamepad every 32ms
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
-// if sdk is in use, import configuration
 #if BLUETOOTH_SD
-#include "bluetooth_conf.h"
+#define MICROPY_PY_BLEIO                         (1)
+#define MICROPY_PY_BLE_NUS                       (0)
+#define MICROPY_PY_UBLUEPY                       (1)
+#define MICROPY_PY_UBLUEPY_PERIPHERAL            (1)
+#define MICROPY_PY_UBLUEPY_CENTRAL               (1)
+#define BLUETOOTH_WEBBLUETOOTH_REPL              (0)
+#endif
+
+#ifndef MICROPY_PY_BLEIO
+#define MICROPY_PY_BLEIO                        (0)
 #endif
 
 #ifndef MICROPY_PY_UBLUEPY
-#define MICROPY_PY_UBLUEPY                       (0)
-#endif
-
-#ifndef MICROPY_PY_BLE_NUS
-#define MICROPY_PY_BLE_NUS                       (0)
+#define MICROPY_PY_UBLUEPY                      (0)
 #endif
 
 // type definitions for the specific machine
@@ -181,10 +181,9 @@ extern const struct _mp_obj_module_t struct_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
+extern const struct _mp_obj_module_t bleio_module;
 
 extern const struct _mp_obj_module_t mp_module_ubluepy;
-
-extern const struct _mp_obj_module_t ble_module;
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
@@ -192,11 +191,10 @@ extern const struct _mp_obj_module_t ble_module;
 #define UBLUEPY_MODULE
 #endif
 
-#if MICROPY_PY_BLE
-extern const struct _mp_obj_module_t ble_module;
-#define BLE_MODULE                        { MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&ble_module) },
+#if MICROPY_PY_BLEIO
+#define BLEIO_MODULE                        { MP_ROM_QSTR(MP_QSTR_bleio), MP_ROM_PTR(&bleio_module) },
 #else
-#define BLE_MODULE
+#define BLEIO_MODULE
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -214,7 +212,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
-    BLE_MODULE \
+    BLEIO_MODULE \
     UBLUEPY_MODULE \
 
 // extra built in names to add to the global namespace
@@ -222,10 +220,6 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR     (MP_QSTR_help), MP_ROM_PTR(&mp_builtin_help_obj) }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj  }, \
     { MP_ROM_QSTR     (MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) }, \
-
-// extra constants
-#define MICROPY_PORT_CONSTANTS \
-    BLE_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
 

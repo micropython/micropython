@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +25,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef HELP_SD_H__
-#define HELP_SD_H__
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
 
-#include "bluetooth_conf.h"
+#include "py/obj.h"
 
-#if MICROPY_PY_BLE
+typedef struct {
+    mp_obj_base_t base;
+} super_adapter_obj_t;
 
-#define HELP_TEXT_SD \
-"If compiled with SD=<softdevice> the additional commands are\n" \
-"available:\n" \
-"  ble.enable()    -- enable bluetooth stack\n" \
-"  ble.disable()   -- disable bluetooth stack\n" \
-"  ble.enabled()   -- check whether bluetooth stack is enabled\n" \
-"  ble.address()   -- return device address as text string\n" \
-"\n"
- 
-#else
-#define HELP_TEXT_SD
-#endif // MICROPY_PY_BLE
-
-#endif
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
