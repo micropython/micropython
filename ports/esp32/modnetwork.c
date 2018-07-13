@@ -351,41 +351,21 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         if (self->if_id == WIFI_IF_STA) {
-            // Case of no arg is only for the STA interface
-            if (wifi_sta_connected) {
-                return MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP);
-            } else if (wifi_sta_connect_requested) {
-                return MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING);
-            } else {
-                switch (wifi_sta_disconn_reason) {
-                    case 0:
-                        // There is no error, connection nor request to connect (activity).  Therefore, we are idle.
-                        return MP_ROM_QSTR(MP_QSTR_STAT_IDLE);
-                        break;
-
-                    case WIFI_REASON_BEACON_TIMEOUT:
-                        // A timeout occured with the beacon
-                        return MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL);
-                        break;
-
-                    case WIFI_REASON_NO_AP_FOUND:
-                        // The AP does not currently exist. It may have before (and been lost)
-                        return MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND);
-                        break;
-
-                    case WIFI_REASON_AUTH_FAIL:
-                        // The credentials/passphrase were wrong
-                        return MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD);
-                        break;
-
-                    default:
-                        // Generic, There are many errors in the ESP-IDF and we don't handle them all.
-                        return MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL);
-                        break;
-                }
-
-            }
-            return mp_const_none;
+          // Case of no arg is only for the STA interface
+          if (wifi_sta_connected) {
+              // Happy path, connected with IP
+              return MP_OBJ_NEW_SMALL_INT(STAT_GOT_IP);
+          } else if (wifi_sta_connect_requested) {
+              // No connection or error, but is requested = Still connecting
+              return MP_OBJ_NEW_SMALL_INT(STAT_CONNECTING);
+          } else if (wifi_sta_disconn_reason == 0) {
+              // No activity, No error = Idle
+              return MP_OBJ_NEW_SMALL_INT(STAT_IDLE);
+          } else {
+              // Simply pass the error through from ESP-identifier
+              return MP_OBJ_NEW_SMALL_INT(wifi_sta_disconn_reason);
+          }
+          return mp_const_none;
         }
 
     }
