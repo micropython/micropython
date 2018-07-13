@@ -125,6 +125,9 @@ static bool wifi_sta_connect_requested = false;
 // Set to "true" if the STA interface is connected to wifi and has IP address.
 static bool wifi_sta_connected = false;
 
+// Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
+static uint8_t wifi_sta_disconn_reason = 0;
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
@@ -138,12 +141,14 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     case SYSTEM_EVENT_STA_GOT_IP:
         ESP_LOGI("network", "GOT_IP");
         wifi_sta_connected = true;
+	      wifi_sta_disconn_reason = 0; // Success so clear error. (incase of new error will be replaced anyway)
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
         // auto-reassociate.
         system_event_sta_disconnected_t *disconn = &event->event_info.disconnected;
         char *message = "";
+	      wifi_sta_disconn_reason = disconn->reason;
         switch (disconn->reason) {
             case WIFI_REASON_BEACON_TIMEOUT:
                 // AP has dropped out; try to reconnect.
@@ -332,12 +337,57 @@ STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     return mp_const_none;
 }
 
+// Cases similar to ESP8266 user_interface.h
+// Error cases are referenced from wifi_err_reason_t in ESP-IDF
+enum {
+    STAT_IDLE                           = 1000,
+    STAT_CONNECTING                     = 1001,
+    STAT_GOT_IP                         = 1010
+};
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
 STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
+    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
-        // no arguments: return None until link status is implemented
-        return mp_const_none;
+        if (self->if_id == WIFI_IF_STA) {
+            // Case of no arg is only for the STA interface
+            if (wifi_sta_connected) {
+                return MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP);
+            } else if (wifi_sta_connect_requested) {
+                return MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING);
+            } else {
+                switch (wifi_sta_disconn_reason) {
+                    case 0:
+                        // There is no error, connection nor request to connect (activity).  Therefore, we are idle.
+                        return MP_ROM_QSTR(MP_QSTR_STAT_IDLE);
+                        break;
+
+                    case WIFI_REASON_BEACON_TIMEOUT:
+                        // A timeout occured with the beacon
+                        return MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL);
+                        break;
+
+                    case WIFI_REASON_NO_AP_FOUND:
+                        // The AP does not currently exist. It may have before (and been lost)
+                        return MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND);
+                        break;
+
+                    case WIFI_REASON_AUTH_FAIL:
+                        // The credentials/passphrase were wrong
+                        return MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD);
+                        break;
+
+                    default:
+                        // Generic, There are many errors in the ESP-IDF and we don't handle them all.
+                        return MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL);
+                        break;
+                }
+
+            }
+            return mp_const_none;
+        }
+
     }
 
     // one argument: return status based on query parameter
@@ -657,6 +707,16 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
     { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
+
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STAT_IDLE)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STAT_CONNECTING)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STAT_GOT_IP)},
+    //Errors from the ESP-IDF
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(WIFI_REASON_NO_AP_FOUND)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(WIFI_REASON_AUTH_FAIL)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_ERROR_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_ERROR_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_ERROR_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
 #endif
 };
 
