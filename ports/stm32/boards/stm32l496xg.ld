@@ -25,7 +25,7 @@ _estack = ORIGIN(RAM) + LENGTH(RAM) + LENGTH(SRAM2);
 
 /* RAM extents for the garbage collector */
 _ram_fs_cache_start = ORIGIN(FS_CACHE);
-_ram_fs_cache_block_size = LENGTH(FS_CACHE);
+_ram_fs_cache_end = ORIGIN(FS_CACHE) + LENGTH(FS_CACHE);
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM) + LENGTH(SRAM2);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
