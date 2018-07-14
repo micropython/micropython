@@ -496,12 +496,8 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 default:
                     goto unsupported_op;
             }
-            // TODO: We just should make mp_obj_new_int() inline and use that
-            if (MP_SMALL_INT_FITS(lhs_val)) {
-                return MP_OBJ_NEW_SMALL_INT(lhs_val);
-            } else {
-                return mp_obj_new_int(lhs_val);
-            }
+            return mp_obj_new_int(lhs_val);
+
 #if MICROPY_PY_BUILTINS_FLOAT
         } else if (mp_obj_is_float(rhs)) {
             mp_obj_t res = mp_obj_float_binary_op(op, lhs_val, rhs);
