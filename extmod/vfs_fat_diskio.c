@@ -57,7 +57,7 @@ STATIC fs_user_mount_t *disk_get_device(void *bdev) {
 
 STATIC
 DSTATUS disk_initialize (
-    bdev_t pdrv              /* Physical drive nmuber (0..) */
+    bdev_t pdrv              /* Physical drive number (0..) */
 )
 {
     fs_user_mount_t *vfs = disk_get_device(pdrv);

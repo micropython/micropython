@@ -30,6 +30,7 @@
 
 #include "py/obj.h"
 #include "py/objnamedtuple.h"
+#include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"

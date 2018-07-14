@@ -158,6 +158,7 @@ NORETURN void mp_raise_RuntimeError(const char *msg);
 NORETURN void mp_raise_ImportError(const char *msg);
 NORETURN void mp_raise_IndexError(const char *msg);
 NORETURN void mp_raise_OSError(int errno_);
+NORETURN void mp_raise_NotImplementedError(const char *msg);
 NORETURN void mp_raise_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG

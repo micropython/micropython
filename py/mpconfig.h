@@ -1242,6 +1242,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_OS_DUPTERM (0)
 #endif
 
+#ifndef MICROPY_PY_LWIP
+#define MICROPY_PY_LWIP (0)
+#endif
+
 #ifndef MICROPY_PY_LWIP_SLIP
 #define MICROPY_PY_LWIP_SLIP (0)
 #endif

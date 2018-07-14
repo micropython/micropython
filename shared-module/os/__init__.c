@@ -77,7 +77,7 @@ void common_hal_os_chdir(const char* path) {
         // subsequent relative paths begin at the root of that VFS.
         for (vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
             if (vfs->len == 1) {
-                mp_obj_t root = mp_obj_new_str("/", 1, false);
+                mp_obj_t root = mp_obj_new_str("/", 1);
                 mp_vfs_proxy_call(vfs, MP_QSTR_chdir, 1, &root);
                 break;
             }

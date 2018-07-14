@@ -48,7 +48,7 @@
 
 #define mp_obj_fat_vfs_t fs_user_mount_t
 
-STATIC mp_import_stat_t fat_vfs_import_stat(void *vfs_in, const char *path) {
+mp_import_stat_t fat_vfs_import_stat(void *vfs_in, const char *path) {
     fs_user_mount_t *vfs = vfs_in;
     FILINFO fno;
     assert(vfs != NULL);
@@ -411,11 +411,11 @@ STATIC mp_obj_t vfs_fat_getlabel(mp_obj_t self_in) {
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
-    return mp_obj_new_str(working_buf, strlen(working_buf), false);
+    return mp_obj_new_str(working_buf, strlen(working_buf));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getlabel_obj, vfs_fat_getlabel);
 
-static mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
+STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
     const char *label_str = mp_obj_str_get_str(label_in);
     FRESULT res = f_setlabel(&self->fatfs, label_str);

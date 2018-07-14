@@ -116,10 +116,11 @@ void mp_init(void) {
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
     #endif
 
-    #ifdef MICROPY_PY_OS_DUPTERM
+    #if MICROPY_PY_OS_DUPTERM
     for (size_t i = 0; i < MICROPY_PY_OS_DUPTERM; ++i) {
         MP_STATE_VM(dupterm_objs[i]) = MP_OBJ_NULL;
     }
+    MP_STATE_VM(dupterm_arr_obj) = MP_OBJ_NULL;
     #endif
 
     #ifdef MICROPY_FSUSERMOUNT
