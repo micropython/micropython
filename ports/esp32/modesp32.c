@@ -141,15 +141,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperatur
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_on_touch), (mp_obj_t)&esp32_wake_on_touch_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_on_ext0), (mp_obj_t)&esp32_wake_on_ext0_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_on_ext1), (mp_obj_t)&esp32_wake_on_ext1_obj },
+    { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WAKEUP_ALL_LOW), mp_const_false },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), mp_const_true },
+    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_PTR(&mp_const_false_obj) },
+    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), MP_ROM_PTR(&mp_const_true_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
