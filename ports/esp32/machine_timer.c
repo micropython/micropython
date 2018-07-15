@@ -138,14 +138,14 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 	ARG_mode = 0,
 	ARG_callback = 1,
 	ARG_period = 2,
-	ARG_period_hz = 3,
+	ARG_tick_hz = 3,
 	ARG_freq = 4,
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_period_hz,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
 #if MICROPY_PY_BUILTINS_FLOAT
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 #else
@@ -168,7 +168,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     }
 #endif
     else {
-	self->period = (((uint64_t) args[ARG_period].u_int) * TIMER_SCALE) / args[ARG_period_hz].u_int;
+	self->period = (((uint64_t) args[ARG_period].u_int) * TIMER_SCALE) / args[ARG_tick_hz].u_int;
     }
 
     self->repeat = args[ARG_mode].u_int;

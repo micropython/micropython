@@ -168,14 +168,14 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
 	ARG_mode = 0,
 	ARG_callback = 1,
 	ARG_period = 2,
-	ARG_period_hz = 3,
+	ARG_tick_hz = 3,
 	ARG_freq = 4,
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_period_hz,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
 #if MICROPY_PY_BUILTINS_FLOAT
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 #else
@@ -208,7 +208,7 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
 #endif
     else {
 	mp_int_t period = args[ARG_period].u_int;
-	mp_int_t hz = args[ARG_period_hz].u_int;
+	mp_int_t hz = args[ARG_tick_hz].u_int;
 	if (hz == 1000) {
 	    os_timer_arm(&self->timer, period, args[ARG_mode].u_int);
 	} else if (hz == 1000000) {
