@@ -48,7 +48,6 @@ int receive_usb(void);
 void mp_hal_set_interrupt_char(int c);
 
 void mp_hal_disable_all_interrupts(void);
-
 void mp_hal_enable_all_interrupts(void);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H

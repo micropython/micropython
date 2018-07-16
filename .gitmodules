@@ -70,6 +70,9 @@
 [submodule "ports/atmel-samd/peripherals"]
 	path = ports/atmel-samd/peripherals
 	url = https://github.com/adafruit/samd-peripherals.git
+[submodule "frozen/Adafruit_CircuitPython_Crickit"]
+	path = frozen/Adafruit_CircuitPython_Crickit
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Crickit
 [submodule "ports/nrf/nrfx"]
 	path = ports/nrf/nrfx
 	url = https://github.com/NordicSemiconductor/nrfx.git

@@ -49,6 +49,9 @@ void shared_module_bitbangio_onewire_deinit(bitbangio_onewire_obj_t* self) {
     common_hal_digitalio_digitalinout_deinit(&self->pin);
 }
 
+// We use common_hal_mcu_delay_us(). It should not be dependent on interrupts
+// to do accurate timekeeping, since we disable interrupts during the delays below.
+
 bool shared_module_bitbangio_onewire_reset(bitbangio_onewire_obj_t* self) {
     common_hal_mcu_disable_interrupts();
     common_hal_digitalio_digitalinout_switch_to_output(&self->pin, false, DRIVE_MODE_OPEN_DRAIN);
