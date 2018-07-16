@@ -134,7 +134,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_characteristic.c \
 	ubluepy/ubluepy_delegate.c \
 	ubluepy/ubluepy_constants.c \
-	ubluepy/ubluepy_descriptor.c \
 	ubluepy/ubluepy_scanner.c \
 	ubluepy/ubluepy_scan_entry.c \
 	)
@@ -168,6 +167,7 @@ ifneq ($(SD), )
 SRC_COMMON_HAL += \
 	bleio/__init__.c \
 	bleio/Adapter.c \
+	bleio/Descriptor.c \
 	bleio/UUID.c
 endif
 

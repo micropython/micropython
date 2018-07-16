@@ -136,12 +136,6 @@ typedef struct _ubluepy_characteristic_obj_t {
     mp_obj_t                value_data;
 } ubluepy_characteristic_obj_t;
 
-typedef struct _ubluepy_descriptor_obj_t {
-    mp_obj_base_t           base;
-    uint16_t                handle;
-    bleio_uuid_obj_t      * p_uuid;
-} ubluepy_descriptor_obj_t;
-
 typedef struct _ubluepy_delegate_obj_t {
     mp_obj_base_t        base;
 } ubluepy_delegate_obj_t;
