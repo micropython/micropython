@@ -49,4 +49,3 @@ void mp_hal_delay_ms(mp_uint_t ms);
 #define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) (us))
 
 #endif
-

@@ -64,8 +64,8 @@ void tick_init() {
     for (uint16_t i = 0; i < PERIPH_COUNT_IRQn; i++) {
         NVIC_SetPriority(i, (1UL << __NVIC_PRIO_BITS) - 1UL);
     }
-    // Bump up the systick interrupt.
-    NVIC_SetPriority(SysTick_IRQn, 1);
+    // Bump up the systick interrupt so nothing else interferes with timekeeping.
+    NVIC_SetPriority(SysTick_IRQn, 0);
     #ifdef SAMD21
     NVIC_SetPriority(USB_IRQn, 1);
     #endif
