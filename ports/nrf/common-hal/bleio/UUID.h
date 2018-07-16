@@ -25,50 +25,17 @@
  * THE SOFTWARE.
  */
 
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
+
 #include "py/obj.h"
-#include "shared-bindings/bleio/__init__.h"
-#include "shared-bindings/bleio/UUID.h"
 #include "shared-bindings/bleio/UUIDType.h"
 
-//| :mod:`bleio` --- Bluetooth Low Energy functionality
-//| ================================================================
-//|
-//| .. module:: bleio
-//|   :synopsis: Bluetooth Low Energy functionality
-//|   :platform: nRF
-//|
-//| The `bleio` module contains methods for managing the BLE adapter.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Adapter
-//|     UUID
-//|     UUIDType
-//|
-//| .. attribute:: adapter
-//|
-//|   BLE Adapter information, such as enabled state as well as MAC
-//|   address.
-//|   This object is the sole instance of `bleio.Adapter`.
-//|
+typedef struct {
+    mp_obj_base_t base;
+    bleio_uuid_type_t type;
+    uint8_t uuid_vs_idx;
+    uint8_t value[2];
+} bleio_uuid_obj_t;
 
-STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),   MP_ROM_QSTR(MP_QSTR_bleio) },
-    { MP_ROM_QSTR(MP_QSTR_UUID),       MP_ROM_PTR(&bleio_uuid_type) },
-
-    // Properties
-    { MP_ROM_QSTR(MP_QSTR_adapter),    MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
-
-    // Enum-like Classes.
-    { MP_ROM_QSTR(MP_QSTR_UUIDType),   MP_ROM_PTR(&bleio_uuidtype_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
-
-const mp_obj_module_t bleio_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&bleio_module_globals,
-};
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H

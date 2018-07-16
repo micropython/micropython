@@ -32,6 +32,7 @@
 
 #include "modubluepy.h"
 #include "ble_drv.h"
+#include "shared-bindings/bleio/UUID.h"
 
 STATIC void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_characteristic_obj_t * self = (ubluepy_characteristic_obj_t *)o;
@@ -60,7 +61,7 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
         return MP_OBJ_FROM_PTR(s);
     }
 
-    if (MP_OBJ_IS_TYPE(uuid_obj, &ubluepy_uuid_type)) {
+    if (MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
         s->p_uuid = MP_OBJ_TO_PTR(uuid_obj);
         // (void)sd_characterstic_add(s);
     } else {

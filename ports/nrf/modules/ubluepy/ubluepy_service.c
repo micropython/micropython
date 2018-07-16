@@ -33,6 +33,8 @@
 
 #include "modubluepy.h"
 #include "ble_drv.h"
+#include "common-hal/bleio/UUID.h"
+#include "shared-bindings/bleio/UUID.h"
 
 STATIC void ubluepy_service_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_service_obj_t * self = (ubluepy_service_obj_t *)o;
@@ -62,7 +64,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
         return MP_OBJ_FROM_PTR(s);
     }
 
-    if (MP_OBJ_IS_TYPE(uuid_obj, &ubluepy_uuid_type)) {
+    if (MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
         s->p_uuid = MP_OBJ_TO_PTR(uuid_obj);
 
         uint8_t type = args[ARG_NEW_TYPE].u_int;
@@ -124,10 +126,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_service_get_chars_obj, service_get_char
 ///
 STATIC mp_obj_t service_get_characteristic(mp_obj_t self_in, mp_obj_t uuid) {
     ubluepy_service_obj_t * self   = MP_OBJ_TO_PTR(self_in);
-    ubluepy_uuid_obj_t    * p_uuid = MP_OBJ_TO_PTR(uuid);
+    bleio_uuid_obj_t    * p_uuid = MP_OBJ_TO_PTR(uuid);
 
     // validate that there is an UUID object passed in as parameter
-    if (!(MP_OBJ_IS_TYPE(uuid, &ubluepy_uuid_type))) {
+    if (!(MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type))) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   translate("Invalid UUID parameter")));
     }

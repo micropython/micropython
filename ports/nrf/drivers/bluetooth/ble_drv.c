@@ -430,11 +430,11 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
         for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
             ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
-            if (p_service->p_uuid->type == UBLUEPY_UUID_16_BIT) {
+            if (p_service->p_uuid->type == UUID_TYPE_16BIT) {
                 type_16bit_present = true;
             }
 
-            if (p_service->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+            if (p_service->p_uuid->type == UUID_TYPE_128BIT) {
                 type_128bit_present = true;
             }
         }

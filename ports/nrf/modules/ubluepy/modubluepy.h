@@ -71,9 +71,9 @@ p.advertise(device_name="micr", services=[s])
 
 */
 
+#include "common-hal/bleio/UUID.h"
 #include "py/obj.h"
 
-extern const mp_obj_type_t ubluepy_uuid_type;
 extern const mp_obj_type_t ubluepy_service_type;
 extern const mp_obj_type_t ubluepy_characteristic_type;
 extern const mp_obj_type_t ubluepy_peripheral_type;
@@ -81,11 +81,6 @@ extern const mp_obj_type_t ubluepy_scanner_type;
 extern const mp_obj_type_t ubluepy_scan_entry_type;
 extern const mp_obj_type_t ubluepy_constants_type;
 extern const mp_obj_type_t ubluepy_constants_ad_types_type;
-
-typedef enum {
-    UBLUEPY_UUID_16_BIT = 1,
-    UBLUEPY_UUID_128_BIT
-} ubluepy_uuid_type_t;
 
 typedef enum {
     UBLUEPY_SERVICE_PRIMARY = 1,
@@ -106,13 +101,6 @@ typedef enum {
     UBLUEPY_ROLE_CENTRAL
 } ubluepy_role_type_t;
 
-typedef struct _ubluepy_uuid_obj_t {
-    mp_obj_base_t       base;
-    ubluepy_uuid_type_t type;
-    uint8_t             value[2];
-    uint8_t             uuid_vs_idx;
-} ubluepy_uuid_obj_t;
-
 typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_base_t       base;
     ubluepy_role_type_t role;
@@ -127,7 +115,7 @@ typedef struct _ubluepy_service_obj_t {
     mp_obj_base_t              base;
     uint16_t                   handle;
     uint8_t                    type;
-    ubluepy_uuid_obj_t       * p_uuid;
+    bleio_uuid_obj_t         * p_uuid;
     ubluepy_peripheral_obj_t * p_periph;
     mp_obj_t                   char_list;
     uint16_t                   start_handle;
@@ -137,7 +125,7 @@ typedef struct _ubluepy_service_obj_t {
 typedef struct _ubluepy_characteristic_obj_t {
     mp_obj_base_t           base;
     uint16_t                handle;
-    ubluepy_uuid_obj_t    * p_uuid;
+    bleio_uuid_obj_t      * p_uuid;
     uint16_t                service_handle;
     uint16_t                user_desc_handle;
     uint16_t                cccd_handle;
@@ -151,7 +139,7 @@ typedef struct _ubluepy_characteristic_obj_t {
 typedef struct _ubluepy_descriptor_obj_t {
     mp_obj_base_t           base;
     uint16_t                handle;
-    ubluepy_uuid_obj_t    * p_uuid;
+    bleio_uuid_obj_t      * p_uuid;
 } ubluepy_descriptor_obj_t;
 
 typedef struct _ubluepy_delegate_obj_t {

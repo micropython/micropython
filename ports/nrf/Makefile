@@ -132,7 +132,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_peripheral.c \
 	ubluepy/ubluepy_service.c \
 	ubluepy/ubluepy_characteristic.c \
-	ubluepy/ubluepy_uuid.c \
 	ubluepy/ubluepy_delegate.c \
 	ubluepy/ubluepy_constants.c \
 	ubluepy/ubluepy_descriptor.c \
@@ -168,7 +167,8 @@ SRC_COMMON_HAL += \
 ifneq ($(SD), )
 SRC_COMMON_HAL += \
 	bleio/__init__.c \
-	bleio/Adapter.c
+	bleio/Adapter.c \
+	bleio/UUID.c
 endif
 
 # These don't have corresponding files in each port but are still located in
@@ -182,6 +182,11 @@ SRC_BINDINGS_ENUMS = \
 	help.c \
 	math/__init__.c \
 	util.c
+
+ifneq ($(SD), )
+SRC_BINDINGS_ENUMS += \
+	bleio/UUIDType.c
+endif
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

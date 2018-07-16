@@ -33,6 +33,8 @@
 #if MICROPY_PY_UBLUEPY
 
 #include "ble_drv.h"
+#include "common-hal/bleio/UUID.h"
+#include "shared-bindings/bleio/UUID.h"
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;
@@ -294,8 +296,8 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
     ubluepy_service_obj_t * p_service = m_new_obj(ubluepy_service_obj_t);
     p_service->base.type = &ubluepy_service_type;
 
-    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
-    p_uuid->base.type = &ubluepy_uuid_type;
+    bleio_uuid_obj_t * p_uuid = m_new_obj(bleio_uuid_obj_t);
+    p_uuid->base.type = &bleio_uuid_type;
 
     p_service->p_uuid = p_uuid;
 
@@ -317,8 +319,8 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
     ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
     p_char->base.type = &ubluepy_characteristic_type;
 
-    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
-    p_uuid->base.type = &ubluepy_uuid_type;
+    bleio_uuid_obj_t * p_uuid = m_new_obj(bleio_uuid_obj_t);
+    p_uuid->base.type = &bleio_uuid_type;
 
     p_char->p_uuid = p_uuid;
 

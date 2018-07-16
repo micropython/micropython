@@ -34,21 +34,21 @@
 
 #if MICROPY_PY_BLE_NUS
 
-static ubluepy_uuid_obj_t uuid_obj_service = {
-    .base.type = &ubluepy_uuid_type,
-    .type = UBLUEPY_UUID_128_BIT,
+static bleio_uuid_obj_t uuid_obj_service = {
+    .base.type = &bleio_uuid_type,
+    .type = UUID_128_BIT,
     .value = {0x01, 0x00}
 };
 
-static ubluepy_uuid_obj_t uuid_obj_char_tx = {
-    .base.type = &ubluepy_uuid_type,
-    .type = UBLUEPY_UUID_128_BIT,
+static bleio_uuid_obj_t uuid_obj_char_tx = {
+    .base.type = &bleio_uuid_type,
+    .type = UUID_128_BIT,
     .value = {0x03, 0x00}
 };
 
-static ubluepy_uuid_obj_t uuid_obj_char_rx = {
-    .base.type = &ubluepy_uuid_type,
-    .type = UBLUEPY_UUID_128_BIT,
+static bleio_uuid_obj_t uuid_obj_char_rx = {
+    .base.type = &bleio_uuid_type,
+    .type = UUID_128_BIT,
     .value = {0x02, 0x00}
 };
 
