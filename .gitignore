@@ -7,7 +7,7 @@
 *.bin
 *.map
 *.hex
-!ports/nrf/**/bootloader/*.hex
+!ports/nrf/**/bootloader/**/*.hex
 *.dis
 *.exe
 
@@ -57,5 +57,9 @@ TAGS
 # Merge leftovers
 #################
 *.orig
+
+# Emacs backup files
+####################
+*~
 
 *.DS_Store

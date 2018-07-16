@@ -30,12 +30,15 @@
 #include <string.h>
 #include <stdbool.h>
 
+#if (BLUETOOTH_SD == 132)
 #define NRF52 // Needed for SD132 v2
+#endif
 
 #include "py/runtime.h"
 #include "ble_drv.h"
 #include "mpconfigport.h"
 #include "nrf_sdm.h"
+#include "nrfx_power.h"
 #include "ble_gap.h"
 #include "ble.h" // sd_ble_uuid_encode
 
@@ -142,6 +145,12 @@ uint32_t ble_drv_stack_enable(void) {
 #endif
     };
 #endif
+
+#if (BLUETOOTH_SD == 140)
+    // The SD takes over the POWER IRQ and will fail if the IRQ is already in use
+    nrfx_power_uninit();
+#endif
+
     uint32_t err_code = sd_softdevice_enable(&clock_config,
                                              softdevice_assert_handler);
 

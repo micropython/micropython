@@ -36,7 +36,7 @@
 #include "lib/oofatfs/ff.h"
 #include "supervisor/shared/rgb_led_status.h"
 
-#include "nrf.h"
+#include "nrf_nvmc.h"
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
@@ -46,17 +46,30 @@
 extern uint32_t __fatfs_flash_start_addr[];
 extern uint32_t __fatfs_flash_length[];
 
+#define NO_CACHE        0xffffffff
+#define FL_PAGE_SZ      4096
+
+uint8_t  _flash_cache[FL_PAGE_SZ] __attribute__((aligned(4)));
+uint32_t _flash_page_addr = NO_CACHE;
+
+
+/*------------------------------------------------------------------*/
+/* Internal Flash API
+ *------------------------------------------------------------------*/
+static inline uint32_t lba2addr(uint32_t block) {
+    return ((uint32_t)__fatfs_flash_start_addr) + block * FILESYSTEM_BLOCK_SIZE;
+}
+
 void internal_flash_init(void) {
     // Activity LED for flash writes.
-    #ifdef MICROPY_HW_LED_MSC
-        struct port_config pin_conf;
-        port_get_config_defaults(&pin_conf);
+#ifdef MICROPY_HW_LED_MSC
+    struct port_config pin_conf;
+    port_get_config_defaults(&pin_conf);
 
-        pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-        port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
-        port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
-    #endif
-//    flash_init(&internal_flash_desc, NVMCTRL);
+    pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+    port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
+    port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+#endif
 }
 
 uint32_t internal_flash_get_block_size(void) {
@@ -67,101 +80,63 @@ uint32_t internal_flash_get_block_count(void) {
     return ((uint32_t) __fatfs_flash_length) / FILESYSTEM_BLOCK_SIZE ;
 }
 
+// TODO support flashing with SD enabled
 void internal_flash_flush(void) {
-}
+    if (_flash_page_addr == NO_CACHE) return;
 
-void flash_flush(void) {
-    internal_flash_flush();
-}
-
-static uint32_t convert_block_to_flash_addr(uint32_t block) {
-  return ((uint32_t)__fatfs_flash_start_addr) + block * FILESYSTEM_BLOCK_SIZE;
-}
-
-bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
-  uint8_t sd_en = 0;
-
-#ifdef MICROPY_HW_LED_MSC
-  port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
-#endif
-  temp_status_color(ACTIVE_WRITE);
-  // non-MBR block, copy to cache
-
-  uint32_t dest = convert_block_to_flash_addr(block);
-
-  uint32_t pagenum = dest / FLASH_PAGE_SIZE;
-  uint32_t* flash_align = (uint32_t*) (pagenum*FLASH_PAGE_SIZE);
-
-  // Read back current page to update only 512 portion
-  __ALIGN(4) uint8_t buf[FLASH_PAGE_SIZE];
-  memcpy(buf, flash_align, FLASH_PAGE_SIZE);
-  memcpy(buf + (dest%FLASH_PAGE_SIZE), src, FILESYSTEM_BLOCK_SIZE);
-
-#ifdef BLUETOOTH_SD
-  (void) sd_softdevice_is_enabled(&sd_en);
-
-  if (sd_en) {
-    if (NRF_SUCCESS != sd_flash_page_erase(pagenum)) {
-      return false;
+    // Skip if data is the same
+    if (memcmp(_flash_cache, (void *)_flash_page_addr, FL_PAGE_SZ) != 0) {
+//        _is_flashing = true;
+        nrf_nvmc_page_erase(_flash_page_addr);
+        nrf_nvmc_write_words(_flash_page_addr, (uint32_t *)_flash_cache, FL_PAGE_SZ / sizeof(uint32_t));
     }
 
-    if (NRF_SUCCESS != sd_flash_write(flash_align, (uint32_t*) buf, FLASH_PAGE_SIZE / sizeof(uint32_t))) {
-      return false;
-    }
-  }
-#endif
-
-  if (!sd_en) {
-    // Erase
-    NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Een << NVMC_CONFIG_WEN_Pos);
-    while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
-
-    NRF_NVMC->ERASEPAGE = dest;
-    while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
-
-    NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos);
-    while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
-
-    // Write
-    uint32_t *p_src = (uint32_t*) buf;
-    uint32_t *p_dest = flash_align;
-    uint32_t i = 0;
-
-    while (i < (FLASH_PAGE_SIZE / sizeof(uint32_t))) {
-      NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos);
-      while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
-
-      *p_dest++ = *p_src++;
-
-      while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
-
-      NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos);
-      while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
-
-      ++i;
-    }
-  }
-
-  clear_temp_status();
-#ifdef MICROPY_HW_LED_MSC
-  port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
-#endif
-  return true;
+    _flash_page_addr = NO_CACHE;
 }
 
 mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-  uint32_t src = convert_block_to_flash_addr(block);
-  memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
-  return 0; // success
+    uint32_t src = lba2addr(block);
+    memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
+    return 0; // success
 }
 
-mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
-  for (size_t i = 0; i < num_blocks; i++) {
-    if (!internal_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
-      return 1; // error
+mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
+
+#ifdef MICROPY_HW_LED_MSC
+    port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
+#endif
+
+    while (num_blocks) {
+        uint32_t const addr      = lba2addr(lba);
+        uint32_t const page_addr = addr & ~(FL_PAGE_SZ - 1);
+
+        uint32_t count = 8 - (lba % 8); // up to page boundary
+        count = MIN(num_blocks, count);
+
+        if (page_addr != _flash_page_addr) {
+            internal_flash_flush();
+
+            // writing previous cached data, skip current data until flashing is done
+            // tinyusb stack will invoke write_block() with the same parameters later on
+            //        if ( _is_flashing ) return;
+
+            _flash_page_addr = page_addr;
+            memcpy(_flash_cache, (void *)page_addr, FL_PAGE_SZ);
+        }
+
+        memcpy(_flash_cache + (addr & (FL_PAGE_SZ - 1)), src, count * FILESYSTEM_BLOCK_SIZE);
+
+        // adjust for next run
+        lba        += count;
+        src        += count * FILESYSTEM_BLOCK_SIZE;
+        num_blocks -= count;
     }
-  }
-  return 0; // success
+
+#ifdef MICROPY_HW_LED_MSC
+    port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+#endif
+
+    return 0; // success
 }
 
 /******************************************************************************/
@@ -224,6 +199,10 @@ const mp_obj_type_t internal_flash_type = {
     .locals_dict = (mp_obj_t)&internal_flash_obj_locals_dict,
 };
 
+/*------------------------------------------------------------------*/
+/* Flash API
+ *------------------------------------------------------------------*/
+
 void flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
@@ -240,4 +219,8 @@ void flash_init_vfs(fs_user_mount_t *vfs) {
 
     vfs->u.ioctl[0] = (mp_obj_t)&internal_flash_obj_ioctl_obj;
     vfs->u.ioctl[1] = (mp_obj_t)&internal_flash_obj;
+}
+
+void flash_flush(void) {
+    internal_flash_flush();
 }

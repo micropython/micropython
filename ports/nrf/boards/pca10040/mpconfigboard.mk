@@ -1,6 +1,7 @@
 MCU_SERIES = m4
 MCU_VARIANT = nrf52
 MCU_SUB_VARIANT = nrf52
+SD ?= s132
 SOFTDEV_VERSION ?= 5.0.0
 
 ifeq ($(SD),)

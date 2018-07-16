@@ -28,6 +28,20 @@ This is a port of CircuitPython to the Nordic Semiconductor nRF52 series of chip
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
 
+## Board Specific Instructions
+
+For board-specific instructions on building and flashing CircuitPython, see
+the following links:
+
+> **NOTE**: These board specific readmes may be more up to date than the
+  generic board-neutral documentation further down.
+
+* Adafruit [Feather nRF52](boards/feather52/README.md): 512KB Flash, 64KB SRAM
+* Adafruit [Feather nRF52840](boards/feather52840/README.md): 1MB Flash, 256KB SRAM
+* Nordic PCA10056 see [Feather nRF52840](boards/feather52840/README.md)
+
+For all other board targets, see the generic notes below.
+
 ## Compile and Flash
 
 Prerequisite steps for building the nrf port:

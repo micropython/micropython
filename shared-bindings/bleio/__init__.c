@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +24,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "py/obj.h"
+#include "shared-bindings/bleio/__init__.h"
 
-#include "mpconfigport.h"
+//| :mod:`bleio` --- Bluetooth Low Energy functionality
+//| ================================================================
+//|
+//| .. module:: bleio
+//|   :synopsis: Bluetooth Low Energy functionality
+//|   :platform: nRF
+//|
+//| The `bleio` module contains methods for managing the BLE adapter.
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     Adapter
+//|
+//| .. attribute:: adapter
+//|
+//|   BLE Adapter information, such as enabled state as well as MAC
+//|   address.
+//|   This object is the sole instance of `bleio.Adapter`.
+//|
 
-#define FLASH_ROOT_POINTERS
+STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bleio) },
+    { MP_ROM_QSTR(MP_QSTR_adapter),  MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
+};
 
-#define FLASH_PAGE_SIZE                 0x1000
-#define CIRCUITPY_INTERNAL_NVM_SIZE     0
+STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
 
-#define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
-
-void      internal_flash_init(void);
-uint32_t  internal_flash_get_block_size(void);
-uint32_t  internal_flash_get_block_count(void);
-void      internal_flash_irq_handler(void);
-void      internal_flash_flush(void);
-
-// these return 0 on success, non-zero on error
-mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
-mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
-
-extern const struct _mp_obj_type_t internal_flash_type;
-
-struct _fs_user_mount_t;
-
-void flash_init_vfs(struct _fs_user_mount_t *vfs);
-void flash_flush(void);
-
-#endif  // MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
+const mp_obj_module_t bleio_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&bleio_module_globals,
+};
