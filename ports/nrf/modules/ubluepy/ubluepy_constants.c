@@ -82,9 +82,6 @@ STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_EVT_GATTS_WRITE),         MP_ROM_INT(80) },
     { MP_ROM_QSTR(MP_QSTR_UUID_CCCD),               MP_ROM_INT(0x2902) },
 
-    { MP_ROM_QSTR(MP_QSTR_ADDR_TYPE_PUBLIC),        MP_ROM_INT(UBLUEPY_ADDR_TYPE_PUBLIC) },
-    { MP_ROM_QSTR(MP_QSTR_ADDR_TYPE_RANDOM_STATIC), MP_ROM_INT(UBLUEPY_ADDR_TYPE_RANDOM_STATIC) },
-
     { MP_ROM_QSTR(MP_QSTR_ad_types),                MP_ROM_PTR(&ubluepy_constants_ad_types_type) },
 };
 

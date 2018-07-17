@@ -33,7 +33,7 @@
 //|
 //| .. class:: bleio.AddressType
 //|
-//|     Enum-like class to define the type of a BLE address.
+//|     Enum-like class to define the type of a BLE address, see also `bleio.Address`.
 //|
 //|     .. data:: PUBLIC
 //|

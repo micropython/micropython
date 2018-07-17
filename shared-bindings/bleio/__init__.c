@@ -27,6 +27,7 @@
 
 #include "py/obj.h"
 #include "shared-bindings/bleio/__init__.h"
+#include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/AddressType.h"
 #include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/UUID.h"
@@ -46,6 +47,7 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
+//|     Address
 //|     AddressType
 //|     Adapter
 //|     Descriptor
@@ -61,6 +63,7 @@
 
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_bleio) },
+    { MP_ROM_QSTR(MP_QSTR_Address),     MP_ROM_PTR(&bleio_address_type) },
     { MP_ROM_QSTR(MP_QSTR_AddressType), MP_ROM_PTR(&bleio_addresstype_type) },
     { MP_ROM_QSTR(MP_QSTR_Descriptor),  MP_ROM_PTR(&bleio_descriptor_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),        MP_ROM_PTR(&bleio_uuid_type) },
