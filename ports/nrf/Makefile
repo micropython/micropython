@@ -185,6 +185,7 @@ SRC_BINDINGS_ENUMS = \
 
 ifneq ($(SD), )
 SRC_BINDINGS_ENUMS += \
+	bleio/AddressType.c \
 	bleio/UUIDType.c
 endif
 
