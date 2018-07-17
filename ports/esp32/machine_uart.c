@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 
 #include "py/runtime.h"
@@ -35,7 +36,19 @@
 #include "py/mperrno.h"
 #include "modmachine.h"
 
-#include "machine_uart.h"
+typedef struct _machine_uart_obj_t {
+    mp_obj_base_t base;
+    uart_port_t uart_num;
+    uint8_t bits;
+    uint8_t parity;
+    uint8_t stop;
+    int8_t tx;
+    int8_t rx;
+    int8_t rts;
+    int8_t cts;
+    uint16_t timeout;       // timeout waiting for first char (in ms)
+    uint16_t timeout_char;  // timeout waiting between chars (in ms)
+} machine_uart_obj_t;
 
 STATIC const char *_parity_name[] = {"None", "1", "0"};
 

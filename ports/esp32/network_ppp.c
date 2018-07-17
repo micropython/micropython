@@ -29,10 +29,10 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/objtype.h"
+#include "py/stream.h"
 #include "netutils.h"
 
 #include "modmachine.h"
-#include "machine_uart.h"
 
 #include "strings.h"
 
@@ -45,7 +45,6 @@
 #include "lwip/dns.h"
 #include "lwip/pppapi.h"
 
-extern const mp_obj_type_t machine_uart_type;
 
 typedef struct _ppp_if_obj_t {
     mp_obj_base_t base;
@@ -53,7 +52,7 @@ typedef struct _ppp_if_obj_t {
     bool active;
     bool connected;
     ppp_pcb *pcb;
-    machine_uart_obj_t* uart;
+    mp_obj_t stream;
     struct netif pppif;
     SemaphoreHandle_t inactiveWaitSem;
     TaskHandle_t client_task_handle;
@@ -89,18 +88,15 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) // wait for
     }
 }
 
-STATIC mp_obj_t get_ppp(mp_obj_t uart) {
+STATIC mp_obj_t get_ppp(mp_obj_t stream) {
     ppp_if_obj_t* self = &ppp_obj;
 
     if (self->initialized) {
         return MP_OBJ_FROM_PTR(&ppp_obj);
     }
+    mp_get_stream_raise(stream, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
+    self->stream = stream;
 
-    if (! MP_OBJ_IS_TYPE(uart, &machine_uart_type)) {
-        mp_raise_TypeError("requires machine.UART type");
-    }
-
-    self->uart = (machine_uart_obj_t*) uart;
     self->inactiveWaitSem = xSemaphoreCreateBinary();
     assert(self->inactiveWaitSem != NULL);
     self->initialized = true;
@@ -111,21 +107,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(get_ppp_obj, get_ppp);
 static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
 {
     ppp_if_obj_t* self = &ppp_obj;
-    mp_stream_p_t* uart_stream = (mp_stream_p_t*)self->uart->base.type->protocol;
     int err;
-
-    return uart_stream->write(self->uart, data, len, &err);
+    return mp_stream_rw(self->stream, data, len, &err, MP_STREAM_RW_WRITE);
 }
 
 static void pppos_client_task() {
     ppp_if_obj_t* self = &ppp_obj;
-    self->uart->timeout = 50;
-    mp_stream_p_t* uart_stream = (mp_stream_p_t*)self->uart->base.type->protocol;
     uint8_t buf[256];
 
     int err;
+    const mp_stream_p_t *stream = mp_get_stream_raise(self->stream, MP_STREAM_OP_READ);
+
     while (ulTaskNotifyTake(pdTRUE, 0) == 0) {
-        int len = uart_stream->read(self->uart, buf, sizeof(buf), &err);
+        int len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
         if (len > 0) {
             pppos_input_tcpip(self->pcb, (u8_t *)buf, len);
         }
