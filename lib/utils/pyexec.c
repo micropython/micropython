@@ -114,11 +114,11 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         } else {
-            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             ret = 0;
         }
     }
@@ -131,8 +131,8 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         {
             size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
             qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-            printf("qstr:\n  n_pool=" UINT_FMT "\n  n_qstr=" UINT_FMT "\n  "
-                   "n_str_data_bytes=" UINT_FMT "\n  n_total_bytes=" UINT_FMT "\n",
+            printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  "
+                   "n_str_data_bytes=%u\n  n_total_bytes=%u\n",
                    (unsigned)n_pool, (unsigned)n_qstr, (unsigned)n_str_data_bytes, (unsigned)n_total_bytes);
         }
 

@@ -51,16 +51,18 @@
 #undef MICROPY_HW_CLK_PLLN
 #undef MICROPY_HW_CLK_PLLP
 #undef MICROPY_HW_CLK_PLLQ
+#undef MICROPY_HW_FLASH_LATENCY
 #define MICROPY_HW_CLK_PLLM (HSE_VALUE / 1000000)
 #define MICROPY_HW_CLK_PLLN (192)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV4)
 #define MICROPY_HW_CLK_PLLQ (4)
+#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
 
 // Work out which USB device to use for the USB DFU interface
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
-#if defined(MICROPY_HW_USB_FS)
+#if MICROPY_HW_USB_FS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#elif defined(MICROPY_HW_USB_HS) && defined(MICROPY_HW_USB_HS_IN_FS)
+#elif MICROPY_HW_USB_HS && MICROPY_HW_USB_HS_IN_FS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
 #else
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
@@ -81,7 +83,7 @@ static uint32_t get_le32(const uint8_t *b) {
 void mp_hal_delay_us(mp_uint_t usec) {
     // use a busy loop for the delay
     // sys freq is always a multiple of 2MHz, so division here won't lose precision
-    const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 2000000 * usec / 2;
+    const uint32_t ucount = CORE_PLL_FREQ / 2000000 * usec / 2;
     for (uint32_t count = 0; ++count <= ucount;) {
     }
 }
@@ -206,10 +208,6 @@ void SystemClock_Config(void) {
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
     }
 
-    #if !defined(MICROPY_HW_FLASH_LATENCY)
-    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
-    #endif
-
     // Increase latency before changing clock
     if (MICROPY_HW_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
         __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
@@ -314,6 +312,14 @@ static int usrbtn_state(void) {
 /******************************************************************************/
 // FLASH
 
+#ifndef MBOOT_SPIFLASH_LAYOUT
+#define MBOOT_SPIFLASH_LAYOUT ""
+#endif
+
+#ifndef MBOOT_SPIFLASH2_LAYOUT
+#define MBOOT_SPIFLASH2_LAYOUT ""
+#endif
+
 typedef struct {
     uint32_t base_address;
     uint32_t sector_size;
@@ -332,7 +338,7 @@ typedef struct {
     || defined(STM32F732xx) \
     || defined(STM32F733xx)
 
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x04000, 4 },
@@ -350,7 +356,7 @@ static const flash_layout_t flash_layout[] = {
 
 #elif defined(STM32F767xx)
 
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg"
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
 // This is for dual-bank mode disabled
 static const flash_layout_t flash_layout[] = {
@@ -378,19 +384,17 @@ static uint32_t flash_get_sector_index(uint32_t addr) {
     return 0;
 }
 
-static int do_mass_erase(void) {
+static int flash_mass_erase(void) {
     // TODO
     return -1;
 }
 
-static int do_page_erase(uint32_t addr) {
+static int flash_page_erase(uint32_t addr) {
     uint32_t sector = flash_get_sector_index(addr);
     if (sector == 0) {
         // Don't allow to erase the sector with this bootloader in it
         return -1;
     }
-
-    led_state(LED0, 1);
 
     HAL_FLASH_Unlock();
 
@@ -411,8 +415,6 @@ static int do_page_erase(uint32_t addr) {
         return -1;
     }
 
-    led_state(LED0, 0);
-
     // Check the erase set bits to 1, at least for the first 256 bytes
     for (int i = 0; i < 64; ++i) {
         if (((volatile uint32_t*)addr)[i] != 0xffffffff) {
@@ -423,14 +425,11 @@ static int do_page_erase(uint32_t addr) {
     return 0;
 }
 
-static int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+static int flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
     if (addr >= flash_layout[0].base_address && addr < flash_layout[0].base_address + flash_layout[0].sector_size) {
         // Don't allow to write the sector with this bootloader in it
         return -1;
     }
-
-    static uint32_t led_tog = 0;
-    led_state(LED0, (led_tog++) & 16);
 
     const uint32_t *src = (const uint32_t*)src8;
     size_t num_word32 = (len + 3) / 4;
@@ -447,6 +446,84 @@ static int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
     // TODO verify data
 
     return 0;
+}
+
+/******************************************************************************/
+// Writable address space interface
+
+static int do_mass_erase(void) {
+    // TODO
+    return flash_mass_erase();
+}
+
+#if defined(MBOOT_SPIFLASH_ADDR) || defined(MBOOT_SPIFLASH2_ADDR)
+static int spiflash_page_erase(mp_spiflash_t *spif, uint32_t addr, uint32_t n_blocks) {
+    for (int i = 0; i < n_blocks; ++i) {
+        int ret = mp_spiflash_erase_block(spif, addr);
+        if (ret != 0) {
+            return ret;
+        }
+        addr += MP_SPIFLASH_ERASE_BLOCK_SIZE;
+    }
+    return 0;
+}
+#endif
+
+static int do_page_erase(uint32_t addr) {
+    led_state(LED0, 1);
+
+    #if defined(MBOOT_SPIFLASH_ADDR)
+    if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
+        return spiflash_page_erase(MBOOT_SPIFLASH_SPIFLASH,
+            addr - MBOOT_SPIFLASH_ADDR, MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE);
+    }
+    #endif
+
+    #if defined(MBOOT_SPIFLASH2_ADDR)
+    if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
+        return spiflash_page_erase(MBOOT_SPIFLASH2_SPIFLASH,
+            addr - MBOOT_SPIFLASH2_ADDR, MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE);
+    }
+    #endif
+
+    return flash_page_erase(addr);
+}
+
+static void do_read(uint32_t addr, int len, uint8_t *buf) {
+    #if defined(MBOOT_SPIFLASH_ADDR)
+    if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
+        mp_spiflash_read(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, buf);
+        return;
+    }
+    #endif
+    #if defined(MBOOT_SPIFLASH2_ADDR)
+    if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
+        mp_spiflash_read(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, buf);
+        return;
+    }
+    #endif
+
+    // Other addresses, just read directly from memory
+    memcpy(buf, (void*)addr, len);
+}
+
+static int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+    static uint32_t led_tog = 0;
+    led_state(LED0, (led_tog++) & 4);
+
+    #if defined(MBOOT_SPIFLASH_ADDR)
+    if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
+        return mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, src8);
+    }
+    #endif
+
+    #if defined(MBOOT_SPIFLASH2_ADDR)
+    if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
+        return mp_spiflash_write(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, src8);
+    }
+    #endif
+
+    return flash_write(addr, src8, len);
 }
 
 /******************************************************************************/
@@ -554,7 +631,7 @@ void i2c_slave_process_rx_end(void) {
         if (len > I2C_CMD_BUF_LEN) {
             len = I2C_CMD_BUF_LEN;
         }
-        memcpy(buf, (void*)i2c_obj.cmd_rdaddr, len);
+        do_read(i2c_obj.cmd_rdaddr, len, buf);
         i2c_obj.cmd_rdaddr += len;
     } else if (buf[0] == I2C_CMD_WRITE) {
         if (i2c_obj.cmd_wraddr == APPLICATION_ADDR) {
@@ -619,6 +696,8 @@ uint8_t i2c_slave_process_tx_byte(void) {
 /******************************************************************************/
 // DFU
 
+#define DFU_XFER_SIZE (2048)
+
 enum {
     DFU_DNLOAD = 1,
     DFU_UPLOAD = 2,
@@ -649,7 +728,7 @@ typedef struct _dfu_state_t {
     uint16_t wBlockNum;
     uint16_t wLength;
     uint32_t addr;
-    uint8_t buf[64] __attribute__((aligned(4)));
+    uint8_t buf[DFU_XFER_SIZE] __attribute__((aligned(4)));
 } dfu_state_t;
 
 static dfu_state_t dfu_state;
@@ -730,7 +809,8 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
     if (cmd == DFU_UPLOAD) {
         if (arg >= 2) {
             dfu_state.cmd = DFU_CMD_UPLOAD;
-            memcpy(buf, (void*)((arg - 2) * max_len + dfu_state.addr), len);
+            uint32_t addr = (arg - 2) * max_len + dfu_state.addr;
+            do_read(addr, len, buf);
             return len;
         }
     } else if (cmd == DFU_GETSTATUS && len == 6) {
@@ -762,23 +842,21 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
 /******************************************************************************/
 // USB
 
-#define USB_TX_LEN (2048)
+#define USB_XFER_SIZE (DFU_XFER_SIZE)
 
-enum {
-    USB_PHY_FS_ID = 0,
-    USB_PHY_HS_ID = 1,
-};
+#define USB_PHY_FS_ID (0)
+#define USB_PHY_HS_ID (1)
 
 typedef struct _pyb_usbdd_obj_t {
     bool started;
+    bool tx_pending;
     USBD_HandleTypeDef hUSBDDevice;
 
     uint8_t bRequest;
     uint16_t wValue;
     uint16_t wLength;
-    uint8_t rx_buf[64];
-    uint8_t tx_buf[USB_TX_LEN];
-    bool tx_pending;
+    __ALIGN_BEGIN uint8_t rx_buf[USB_XFER_SIZE] __ALIGN_END;
+    __ALIGN_BEGIN uint8_t tx_buf[USB_XFER_SIZE] __ALIGN_END;
 
     // RAM to hold the current descriptors, which we configure on the fly
     __ALIGN_BEGIN uint8_t usbd_device_desc[USB_LEN_DEV_DESC] __ALIGN_END;
@@ -800,7 +878,7 @@ static const uint8_t dev_descr[0x12] = "\x12\x01\x00\x01\x00\x00\x00\x40\x83\x04
 static uint8_t cfg_descr[9 + 9 + 9] =
     "\x09\x02\x1b\x00\x01\x01\x00\xc0\x32"
     "\x09\x04\x00\x00\x00\xfe\x01\x02\x04"
-    "\x09\x21\x0b\xff\x00\x00\x08\x1a\x01" // \x00\x08 goes with tx_buf[USB_TX_LEN]
+    "\x09\x21\x0b\xff\x00\x00\x08\x1a\x01" // \x00\x08 goes with USB_XFER_SIZE
 ;
 
 static uint8_t *pyb_usbdd_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
@@ -908,7 +986,7 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
         }
     } else if (req->bmRequest == 0xa1) {
         // device-to-host request
-        int len = dfu_handle_tx(self->bRequest, self->wValue, self->wLength, self->tx_buf, USB_TX_LEN);
+        int len = dfu_handle_tx(self->bRequest, self->wValue, self->wLength, self->tx_buf, USB_XFER_SIZE);
         if (len >= 0) {
             self->tx_pending = true;
             USBD_CtlSendData(&self->hUSBDDevice, self->tx_buf, len);
@@ -1002,6 +1080,8 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
+#define RESET_MODE_NUM_STATES (4)
+#define RESET_MODE_TIMEOUT_CYCLES (8)
 #define RESET_MODE_LED_STATES 0x7421
 
 static int get_reset_mode(void) {
@@ -1009,12 +1089,13 @@ static int get_reset_mode(void) {
     int reset_mode = 1;
     if (usrbtn_state()) {
         // Cycle through reset modes while USR is held
+        // Timeout is roughly 20s, where reset_mode=1
         systick_init();
         led_init();
         reset_mode = 0;
-        for (int i = 0; i < 1000; i++) {
-            if (i % 30 == 0) {
-                if (++reset_mode > 4) {
+        for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
+            if (i % 32 == 0) {
+                if (++reset_mode > RESET_MODE_NUM_STATES) {
                     reset_mode = 1;
                 }
                 uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
@@ -1025,7 +1106,7 @@ static int get_reset_mode(void) {
             if (!usrbtn_state()) {
                 break;
             }
-            mp_hal_delay_ms(20);
+            mp_hal_delay_ms(19);
         }
         // Flash the selected reset mode
         for (int i = 0; i < 6; i++) {
@@ -1130,14 +1211,14 @@ enter_bootloader:
     __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
     #endif
 
-    #if 0
-    #if defined(MICROPY_HW_BDEV_IOCTL)
-    MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_INIT, 0);
+    #if defined(MBOOT_SPIFLASH_ADDR)
+    MBOOT_SPIFLASH_SPIFLASH->config = MBOOT_SPIFLASH_CONFIG;
+    mp_spiflash_init(MBOOT_SPIFLASH_SPIFLASH);
     #endif
 
-    #if defined(MICROPY_HW_BDEV2_IOCTL)
-    MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_INIT, 0);
-    #endif
+    #if defined(MBOOT_SPIFLASH2_ADDR)
+    MBOOT_SPIFLASH2_SPIFLASH->config = MBOOT_SPIFLASH2_CONFIG;
+    mp_spiflash_init(MBOOT_SPIFLASH2_SPIFLASH);
     #endif
 
     dfu_init();
@@ -1163,13 +1244,12 @@ enter_bootloader:
     #endif
     for (;;) {
         #if USE_USB_POLLING
-        #if defined(MICROPY_HW_USB_FS)
-        if (pcd_fs_handle.Instance->GINTSTS & pcd_fs_handle.Instance->GINTMSK) {
+        #if MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
+        if (USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_fs_handle);
         }
-        #endif
-        #if defined(MICROPY_HW_USB_HS)
-        if (pcd_hs_handle.Instance->GINTSTS & pcd_hs_handle.Instance->GINTMSK) {
+        #else
+        if (USB_OTG_HS->GINTSTS & USB_OTG_HS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_hs_handle);
         }
         #endif
@@ -1243,12 +1323,11 @@ void I2Cx_EV_IRQHandler(void) {
 #endif
 
 #if !USE_USB_POLLING
-#if defined(MICROPY_HW_USB_FS)
+#if MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
 void OTG_FS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
-#endif
-#if defined(MICROPY_HW_USB_HS)
+#else
 void OTG_HS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_hs_handle);
 }

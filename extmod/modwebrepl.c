@@ -76,7 +76,7 @@ STATIC char denied_prompt[] = "\r\nAccess denied\r\n";
 STATIC char webrepl_passwd[10];
 
 STATIC void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(websock, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+    const mp_stream_p_t *sock_stream = mp_get_stream(websock);
     int err;
     int old_opts = sock_stream->ioctl(websock, MP_STREAM_SET_DATA_OPTS, FRAME_BIN, &err);
     sock_stream->write(websock, buf, len, &err);
@@ -86,7 +86,7 @@ STATIC void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
 #define SSTR(s) s, sizeof(s) - 1
 STATIC void write_webrepl_str(mp_obj_t websock, const char *str, int sz) {
     int err;
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(websock, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+    const mp_stream_p_t *sock_stream = mp_get_stream(websock);
     sock_stream->write(websock, str, sz, &err);
 }
 
@@ -110,8 +110,7 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 STATIC int write_file_chunk(mp_obj_webrepl_t *self) {
-    const mp_stream_p_t *file_stream =
-        mp_get_stream_raise(self->cur_file, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+    const mp_stream_p_t *file_stream = mp_get_stream(self->cur_file);
     byte readbuf[2 + 256];
     int err;
     mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf + 2, sizeof(readbuf) - 2, &err);
@@ -181,7 +180,7 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     // We know that os.dupterm always calls with size = 1
     assert(size == 1);
     mp_obj_webrepl_t *self = self_in;
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(self->sock, MP_STREAM_OP_READ);
+    const mp_stream_p_t *sock_stream = mp_get_stream(self->sock);
     mp_uint_t out_sz = sock_stream->read(self->sock, buf, size, errcode);
     //DEBUG_printf("webrepl: Read %d initial bytes from websocket\n", out_sz);
     if (out_sz == 0 || out_sz == MP_STREAM_ERROR) {
@@ -293,7 +292,7 @@ STATIC mp_uint_t webrepl_write(mp_obj_t self_in, const void *buf, mp_uint_t size
         // Don't forward output until passwd is entered
         return size;
     }
-    const mp_stream_p_t *stream_p = mp_get_stream_raise(self->sock, MP_STREAM_OP_WRITE);
+    const mp_stream_p_t *stream_p = mp_get_stream(self->sock);
     return stream_p->write(self->sock, buf, size, errcode);
 }
 

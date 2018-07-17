@@ -115,15 +115,18 @@ const mp_obj_type_t wlan_if_type;
 STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
 STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
-//static wifi_config_t wifi_ap_config = {{{0}}};
-static wifi_config_t wifi_sta_config = {{{0}}};
-
 // Set to "true" if esp_wifi_start() was called
 static bool wifi_started = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
+static bool wifi_sta_connect_requested = false;
+
+// Set to "true" if the STA interface is connected to wifi and has IP address.
 static bool wifi_sta_connected = false;
+
+// Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
+static uint8_t wifi_sta_disconn_reason = 0;
 
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
@@ -132,14 +135,20 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     case SYSTEM_EVENT_STA_START:
         ESP_LOGI("wifi", "STA_START");
         break;
+    case SYSTEM_EVENT_STA_CONNECTED:
+        ESP_LOGI("network", "CONNECTED");
+        break;
     case SYSTEM_EVENT_STA_GOT_IP:
         ESP_LOGI("network", "GOT_IP");
+        wifi_sta_connected = true;
+        wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
         // auto-reassociate.
         system_event_sta_disconnected_t *disconn = &event->event_info.disconnected;
         char *message = "";
+        wifi_sta_disconn_reason = disconn->reason;
         switch (disconn->reason) {
             case WIFI_REASON_BEACON_TIMEOUT:
                 // AP has dropped out; try to reconnect.
@@ -151,7 +160,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                 break;
             case WIFI_REASON_AUTH_FAIL:
                 message = "\nauthentication failed";
-                wifi_sta_connected = false;
+                wifi_sta_connect_requested = false;
                 break;
             default:
                 // Let other errors through and try to reconnect.
@@ -159,7 +168,8 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         }
         ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
 
-        if (wifi_sta_connected) {
+        bool reconnected = false;
+        if (wifi_sta_connect_requested) {
             wifi_mode_t mode;
             if (esp_wifi_get_mode(&mode) == ESP_OK) {
                 if (mode & WIFI_MODE_STA) {
@@ -167,9 +177,15 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                     esp_err_t e = esp_wifi_connect();
                     if (e != ESP_OK) {
                         ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
+                    } else {
+                        reconnected = true;
                     }
                 }
             }
+        }
+        if (wifi_sta_connected && !reconnected) {
+            // If already connected and we fail to reconnect
+            wifi_sta_connected = false;
         }
         break;
     }
@@ -268,39 +284,88 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
-STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_ssid, ARG_password, ARG_bssid };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
 
-    mp_uint_t len;
-    const char *p;
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    wifi_config_t wifi_sta_config = {{{0}}};
+
+    // configure any parameters that are given
     if (n_args > 1) {
-        memset(&wifi_sta_config, 0, sizeof(wifi_sta_config));
-        p = mp_obj_str_get_data(args[1], &len);
-        memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
-        p = (n_args > 2) ? mp_obj_str_get_data(args[2], &len) : "";
-        memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
+        mp_uint_t len;
+        const char *p;
+        if (args[ARG_ssid].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
+            memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
+        }
+        if (args[ARG_password].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
+            memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
+        }
+        if (args[ARG_bssid].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
+            if (len != sizeof(wifi_sta_config.sta.bssid)) {
+                mp_raise_ValueError(NULL);
+            }
+            wifi_sta_config.sta.bssid_set = 1;
+            memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
+        }
         ESP_EXCEPTIONS( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config) );
     }
+
+    // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
     ESP_EXCEPTIONS( esp_wifi_connect() );
     MP_THREAD_GIL_ENTER();
-    wifi_sta_connected = true;
+    wifi_sta_connect_requested = true;
 
     return mp_const_none;
 }
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 1, 7, esp_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
-    wifi_sta_connected = false;
+    wifi_sta_connect_requested = false;
     ESP_EXCEPTIONS( esp_wifi_disconnect() );
     return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
+// Cases similar to ESP8266 user_interface.h
+// Error cases are referenced from wifi_err_reason_t in ESP-IDF
+enum {
+    STAT_IDLE       = 1000,
+    STAT_CONNECTING = 1001,
+    STAT_GOT_IP     = 1010,
+};
+
 STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
+    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
-        // no arguments: return None until link status is implemented
+        if (self->if_id == WIFI_IF_STA) {
+            // Case of no arg is only for the STA interface
+            if (wifi_sta_connected) {
+                // Happy path, connected with IP
+                return MP_OBJ_NEW_SMALL_INT(STAT_GOT_IP);
+            } else if (wifi_sta_connect_requested) {
+                // No connection or error, but is requested = Still connecting
+                return MP_OBJ_NEW_SMALL_INT(STAT_CONNECTING);
+            } else if (wifi_sta_disconn_reason == 0) {
+                // No activity, No error = Idle
+                return MP_OBJ_NEW_SMALL_INT(STAT_IDLE);
+            } else {
+                // Simply pass the error through from ESP-identifier
+                return MP_OBJ_NEW_SMALL_INT(wifi_sta_disconn_reason);
+            }
+        }
         return mp_const_none;
     }
 
@@ -370,9 +435,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->if_id == WIFI_IF_STA) {
-        tcpip_adapter_ip_info_t info;
-        tcpip_adapter_get_ip_info(WIFI_IF_STA, &info);
-        return mp_obj_new_bool(info.ip.addr != 0);
+        return mp_obj_new_bool(wifi_sta_connected);
     } else {
         wifi_sta_list_t sta;
         esp_wifi_ap_get_sta_list(&sta);
@@ -624,6 +687,16 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
     { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
+
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STAT_IDLE)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STAT_CONNECTING)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STAT_GOT_IP)},
+    // Errors from the ESP-IDF
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(WIFI_REASON_NO_AP_FOUND)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(WIFI_REASON_AUTH_FAIL)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
 #endif
 };
 

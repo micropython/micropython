@@ -13,6 +13,9 @@ ifneq ($(QSTR_AUTOGEN_DISABLE),1)
 QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
 endif
 
+# Any files listed by this variable will cause a full regeneration of qstrs
+QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
+
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
@@ -224,6 +227,7 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moduheapq.o \
 	extmod/modutimeq.o \
 	extmod/moduhashlib.o \
+	extmod/moducryptolib.o \
 	extmod/modubinascii.o \
 	extmod/virtpin.o \
 	extmod/machine_mem.o \

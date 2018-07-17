@@ -322,7 +322,7 @@ STATIC uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32
 /* MicroPython bindings : adc object (single channel)                         */
 
 STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_obj_adc_t *self = self_in;
+    pyb_obj_adc_t *self = MP_OBJ_TO_PTR(self_in);
     mp_print_str(print, "<ADC on ");
     mp_obj_print_helper(print, self->pin_name, PRINT_STR);
     mp_printf(print, " channel=%u>", self->channel);
@@ -371,14 +371,14 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     o->channel = channel;
     adc_init_single(o);
 
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 /// \method read()
 /// Read the value on the analog pin and return it.  The returned value
 /// will be between 0 and 4095.
 STATIC mp_obj_t adc_read(mp_obj_t self_in) {
-    pyb_obj_adc_t *self = self_in;
+    pyb_obj_adc_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_int(adc_config_and_read_channel(&self->handle, self->channel));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
@@ -418,7 +418,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 ///
 /// This function does not allocate any memory.
 STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_in) {
-    pyb_obj_adc_t *self = self_in;
+    pyb_obj_adc_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
@@ -531,7 +531,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
     tim = pyb_timer_get_handle(tim_in);
 
     // Start adc; this is slow so wait for it to start
-    pyb_obj_adc_t *adc0 = adc_array[0];
+    pyb_obj_adc_t *adc0 = MP_OBJ_TO_PTR(adc_array[0]);
     adc_config_channel(&adc0->handle, adc0->channel);
     HAL_ADC_Start(&adc0->handle);
     // Wait for sample to complete and discard
@@ -560,7 +560,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
         __HAL_TIM_CLEAR_FLAG(tim, TIM_FLAG_UPDATE);
 
         for (size_t array_index = 0; array_index < nadcs; array_index++) {
-            pyb_obj_adc_t *adc = adc_array[array_index];
+            pyb_obj_adc_t *adc = MP_OBJ_TO_PTR(adc_array[array_index]);
             // configure the ADC channel
             adc_config_channel(&adc->handle, adc->channel);
             // for the first sample we need to turn the ADC on
@@ -587,7 +587,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
     }
 
     // Turn the ADC off
-    adc0 = adc_array[0];
+    adc0 = MP_OBJ_TO_PTR(adc_array[0]);
     HAL_ADC_Stop(&adc0->handle);
 
     return mp_obj_new_bool(success);
@@ -735,11 +735,11 @@ STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
     adc_init_all(o, res, en_mask);
 
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
-    pyb_adc_all_obj_t *self = self_in;
+    pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t chan = adc_get_internal_channel(mp_obj_get_int(channel));
     uint32_t data = adc_config_and_read_channel(&self->handle, chan);
     return mp_obj_new_int(data);
@@ -747,7 +747,7 @@ STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel);
 
 STATIC mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
-    pyb_adc_all_obj_t *self = self_in;
+    pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     #if MICROPY_PY_BUILTINS_FLOAT
     float data = adc_read_core_temp_float(&self->handle);
     return mp_obj_new_float(data);
@@ -760,21 +760,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_t
 
 #if MICROPY_PY_BUILTINS_FLOAT
 STATIC mp_obj_t adc_all_read_core_vbat(mp_obj_t self_in) {
-    pyb_adc_all_obj_t *self = self_in;
+    pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     float data = adc_read_core_vbat(&self->handle);
     return mp_obj_new_float(data);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vbat_obj, adc_all_read_core_vbat);
 
 STATIC mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
-    pyb_adc_all_obj_t *self = self_in;
+    pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     float data  = adc_read_core_vref(&self->handle);
     return mp_obj_new_float(data);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
 
 STATIC mp_obj_t adc_all_read_vref(mp_obj_t self_in) {
-    pyb_adc_all_obj_t *self = self_in;
+    pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     adc_read_core_vref(&self->handle);
     return mp_obj_new_float(3.3 * adc_refcor);
 }

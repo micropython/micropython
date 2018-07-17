@@ -304,7 +304,7 @@ static inline void poll_sockets(void) {
 
 static inline void exec_user_callback(lwip_socket_obj_t *socket) {
     if (socket->callback != MP_OBJ_NULL) {
-        mp_call_function_1_protected(socket->callback, socket);
+        mp_call_function_1_protected(socket->callback, MP_OBJ_FROM_PTR(socket));
     }
 }
 
@@ -621,7 +621,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 STATIC const mp_obj_type_t lwip_socket_type;
 
 STATIC void lwip_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    lwip_socket_obj_t *self = self_in;
+    lwip_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<socket state=%d timeout=%d incoming=%p off=%d>", self->state, self->timeout,
         self->incoming.pbuf, self->recv_offset);
 }
@@ -631,7 +631,7 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     lwip_socket_obj_t *socket = m_new_obj_with_finaliser(lwip_socket_obj_t);
-    socket->base.type = (mp_obj_t)&lwip_socket_type;
+    socket->base.type = &lwip_socket_type;
     socket->domain = MOD_NETWORK_AF_INET;
     socket->type = MOD_NETWORK_SOCK_STREAM;
     socket->callback = MP_OBJ_NULL;
@@ -673,11 +673,11 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
     socket->timeout = -1;
     socket->state = STATE_NEW;
     socket->recv_offset = 0;
-    return socket;
+    return MP_OBJ_FROM_PTR(socket);
 }
 
 STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
 
     uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
     mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
@@ -706,7 +706,7 @@ STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_bind_obj, lwip_socket_bind);
 
 STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     mp_int_t backlog = mp_obj_get_int(backlog_in);
 
     if (socket->pcb.tcp == NULL) {
@@ -731,7 +731,7 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_listen_obj, lwip_socket_listen);
 
 STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
 
     if (socket->pcb.tcp == NULL) {
         mp_raise_OSError(MP_EBADF);
@@ -766,7 +766,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
 
     // create new socket object
     lwip_socket_obj_t *socket2 = m_new_obj_with_finaliser(lwip_socket_obj_t);
-    socket2->base.type = (mp_obj_t)&lwip_socket_type;
+    socket2->base.type = &lwip_socket_type;
 
     // We get a new pcb handle...
     socket2->pcb.tcp = socket->incoming.connection;
@@ -790,16 +790,16 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
     memcpy(ip, &(socket2->pcb.tcp->remote_ip), sizeof(ip));
     mp_uint_t port = (mp_uint_t)socket2->pcb.tcp->remote_port;
-    mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
-    client->items[0] = socket2;
+    mp_obj_tuple_t *client = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    client->items[0] = MP_OBJ_FROM_PTR(socket2);
     client->items[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
 
-    return client;
+    return MP_OBJ_FROM_PTR(client);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(lwip_socket_accept_obj, lwip_socket_accept);
 
 STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
 
     if (socket->pcb.tcp == NULL) {
         mp_raise_OSError(MP_EBADF);
@@ -877,7 +877,7 @@ STATIC void lwip_socket_check_connected(lwip_socket_obj_t *socket) {
 }
 
 STATIC mp_obj_t lwip_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     int _errno;
 
     lwip_socket_check_connected(socket);
@@ -905,7 +905,7 @@ STATIC mp_obj_t lwip_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_send_obj, lwip_socket_send);
 
 STATIC mp_obj_t lwip_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     int _errno;
 
     lwip_socket_check_connected(socket);
@@ -938,7 +938,7 @@ STATIC mp_obj_t lwip_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_recv_obj, lwip_socket_recv);
 
 STATIC mp_obj_t lwip_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     int _errno;
 
     lwip_socket_check_connected(socket);
@@ -969,7 +969,7 @@ STATIC mp_obj_t lwip_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t 
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(lwip_socket_sendto_obj, lwip_socket_sendto);
 
 STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     int _errno;
 
     lwip_socket_check_connected(socket);
@@ -1010,7 +1010,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_recvfrom_obj, lwip_socket_recvfrom);
 
 STATIC mp_obj_t lwip_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     lwip_socket_check_connected(socket);
 
     int _errno;
@@ -1052,7 +1052,7 @@ STATIC mp_obj_t lwip_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_sendall_obj, lwip_socket_sendall);
 
 STATIC mp_obj_t lwip_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     mp_uint_t timeout;
     if (timeout_in == mp_const_none) {
         timeout = -1;
@@ -1069,7 +1069,7 @@ STATIC mp_obj_t lwip_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_settimeout_obj, lwip_socket_settimeout);
 
 STATIC mp_obj_t lwip_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     bool val = mp_obj_is_true(flag_in);
     if (val) {
         socket->timeout = -1;
@@ -1082,7 +1082,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblo
 
 STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
-    lwip_socket_obj_t *socket = args[0];
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(args[0]);
 
     int opt = mp_obj_get_int(args[2]);
     if (opt == 20) {
@@ -1137,7 +1137,7 @@ STATIC mp_obj_t lwip_socket_makefile(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_makefile_obj, 1, 3, lwip_socket_makefile);
 
 STATIC mp_uint_t lwip_socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
 
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM:
@@ -1150,7 +1150,7 @@ STATIC mp_uint_t lwip_socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
 }
 
 STATIC mp_uint_t lwip_socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
 
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM:
@@ -1163,7 +1163,7 @@ STATIC mp_uint_t lwip_socket_write(mp_obj_t self_in, const void *buf, mp_uint_t 
 }
 
 STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
 
     if (request == MP_STREAM_POLL) {
@@ -1401,7 +1401,7 @@ STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(state.status);
     }
 
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);

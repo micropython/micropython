@@ -138,6 +138,7 @@ static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
+#if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
 #define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
 
@@ -157,6 +158,7 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
     } num = {.f = f};
     return (mp_obj_t)(((num.u & ~0x3) | 2) + 0x80800000);
 }
+#endif
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
     { return (((mp_uint_t)(o)) & 0xff800007) == 0x00000006; }
@@ -179,6 +181,11 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 1) | 0x0002000000000001))
 
 #if MICROPY_PY_BUILTINS_FLOAT
+
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_DOUBLE
+#error MICROPY_OBJ_REPR_D requires MICROPY_FLOAT_IMPL_DOUBLE
+#endif
+
 #define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
 #define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
 
@@ -455,8 +462,11 @@ struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
 
-    // The name of this type.
-    qstr name;
+    // Flags associated with this type.
+    uint16_t flags;
+
+    // The name of this type, a qstr.
+    uint16_t name;
 
     // Corresponds to __repr__ and __str__ special methods.
     mp_print_fun_t print;
@@ -544,6 +554,7 @@ extern const mp_obj_type_t mp_type_slice;
 extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
 extern const mp_obj_type_t mp_type_super;
+extern const mp_obj_type_t mp_type_gen_wrap;
 extern const mp_obj_type_t mp_type_gen_instance;
 extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;
@@ -752,7 +763,9 @@ size_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
-mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
+static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
+    return &((mp_obj_dict_t*)MP_OBJ_TO_PTR(dict))->map;
+}
 
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
@@ -796,7 +809,9 @@ typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
 } mp_obj_module_t;
-mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
+static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
+    return ((mp_obj_module_t*)MP_OBJ_TO_PTR(module))->globals;
+}
 // check if given module object is a package
 bool mp_obj_is_package(mp_obj_t module);
 

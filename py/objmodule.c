@@ -122,12 +122,6 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
-    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->globals;
-}
-
 /******************************************************************************/
 // Global module table and related functions
 
@@ -192,6 +186,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #endif
 #if MICROPY_PY_UHASHLIB
     { MP_ROM_QSTR(MP_QSTR_uhashlib), MP_ROM_PTR(&mp_module_uhashlib) },
+#endif
+#if MICROPY_PY_UCRYPTOLIB
+    { MP_ROM_QSTR(MP_QSTR_ucryptolib), MP_ROM_PTR(&mp_module_ucryptolib) },
 #endif
 #if MICROPY_PY_UBINASCII
     { MP_ROM_QSTR(MP_QSTR_ubinascii), MP_ROM_PTR(&mp_module_ubinascii) },

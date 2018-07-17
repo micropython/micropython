@@ -319,8 +319,8 @@ class RawCode:
                     ndigs = len(digs)
                     digs = ','.join(('%#x' % d) for d in digs)
                     print('STATIC const mp_obj_int_t %s = {{&mp_type_int}, '
-                        '{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t[]){%s}}};'
-                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, digs))
+                        '{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t*)(const uint%u_t[]){%s}}};'
+                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, bits_per_dig, digs))
             elif type(obj) is float:
                 print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
                 print('STATIC const mp_obj_float_t %s = {{&mp_type_float}, %.16g};'
@@ -347,8 +347,10 @@ class RawCode:
                     n = struct.unpack('<I', struct.pack('<f', self.objs[i]))[0]
                     n = ((n & ~0x3) | 2) + 0x80800000
                     print('    (mp_rom_obj_t)(0x%08x),' % (n,))
-                    print('#else')
-                    print('#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"')
+                    print('#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D')
+                    n = struct.unpack('<Q', struct.pack('<d', self.objs[i]))[0]
+                    n += 0x8004000000000000
+                    print('    (mp_rom_obj_t)(0x%016x),' % (n,))
                     print('#endif')
                 else:
                     print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
