@@ -19,7 +19,7 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
-int mp_hal_stdin_rx_chr(void) {
+MP_WEAK int mp_hal_stdin_rx_chr(void) {
     for (;;) {
 #if 0
 #ifdef USE_HOST_MODE
@@ -52,7 +52,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
