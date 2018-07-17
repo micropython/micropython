@@ -99,11 +99,11 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 // actual location and size is defined by the linker script.
 extern uint8_t _flash_fs_start;
 extern uint8_t _flash_fs_end;
-extern uint32_t _ram_fs_cache_start[2048 / 4];
-extern uint32_t _ram_fs_cache_block_size;
+extern uint8_t _ram_fs_cache_start[0];      // size determined by linker file
+extern uint8_t _ram_fs_cache_end[0];
 
 #define CACHE_MEM_START_ADDR (&_ram_fs_cache_start)
-#define FLASH_SECTOR_SIZE_MAX ((uint32_t)(&_ram_fs_cache_block_size))   // 2k max
+#define FLASH_SECTOR_SIZE_MAX (_ram_fs_cache_end - _ram_fs_cache_start)   // 2k max
 #define FLASH_MEM_SEG1_START_ADDR ((long)&_flash_fs_start)
 #define FLASH_MEM_SEG1_NUM_BLOCKS ((&_flash_fs_end - &_flash_fs_start) / 512)
 
