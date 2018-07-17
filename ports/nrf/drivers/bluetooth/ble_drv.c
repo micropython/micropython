@@ -785,6 +785,18 @@ void ble_drv_scan_start(void) {
     }
 }
 
+void ble_drv_scan_continue(void) {
+    SD_TEST_OR_ENABLE();
+
+#if (BLUETOOTH_SD == 140)
+    uint32_t err_code;
+    if ((err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer)) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not continue scanning. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+#endif
+}
+
 void ble_drv_scan_stop(void) {
     sd_ble_gap_scan_stop();
 }

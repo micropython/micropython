@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2018 Artur Pacholec
  * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,26 +25,20 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/runtime.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
 
-#if MICROPY_PY_UBLUEPY
+#include "shared-module/bleio/Address.h"
+#include "py/objtype.h"
 
-#include "modubluepy.h"
+typedef struct {
+    mp_obj_base_t base;
+    bleio_address_obj_t address;
+    bool connectable;
+    int8_t rssi;
+    mp_obj_t data;
+} bleio_scanentry_obj_t;
 
-STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
-    // GAP events
-    { MP_ROM_QSTR(MP_QSTR_EVT_GAP_CONNECTED),       MP_ROM_INT(16) },
-    { MP_ROM_QSTR(MP_QSTR_EVT_GAP_DISCONNECTED),    MP_ROM_INT(17) },
-    { MP_ROM_QSTR(MP_QSTR_EVT_GATTS_WRITE),         MP_ROM_INT(80) },
-};
+extern const mp_obj_type_t bleio_scanentry_type;
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_locals_dict, ubluepy_constants_locals_dict_table);
-
-const mp_obj_type_t ubluepy_constants_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_constants,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_locals_dict
-};
-
-#endif // MICROPY_PY_UBLUEPY
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H

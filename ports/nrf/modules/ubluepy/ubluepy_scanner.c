@@ -33,31 +33,25 @@
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
+#include "shared-bindings/bleio/ScanEntry.h"
 #include "ble_drv.h"
 
 STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_data_t * data) {
     ubluepy_scanner_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    ubluepy_scan_entry_obj_t * item = m_new_obj(ubluepy_scan_entry_obj_t);
-    item->base.type = &ubluepy_scan_entry_type;
+    // TODO: Don't add new entry for each item, group by address and update
+    bleio_scanentry_obj_t *item = m_new_obj(bleio_scanentry_obj_t);
+    item->base.type = &bleio_scanentry_type;
 
-    vstr_t vstr;
-    vstr_init(&vstr, 17);
+    item->rssi = data->rssi;
+    item->data = mp_obj_new_bytearray(data->data_len, data->p_data);
 
-    vstr_printf(&vstr, ""HEX2_FMT":"HEX2_FMT":"HEX2_FMT":" \
-                         HEX2_FMT":"HEX2_FMT":"HEX2_FMT"",
-                data->p_peer_addr[5], data->p_peer_addr[4], data->p_peer_addr[3],
-                data->p_peer_addr[2], data->p_peer_addr[1], data->p_peer_addr[0]);
-
-    item->addr = mp_obj_new_str(vstr.buf, vstr.len);
-
-    vstr_clear(&vstr);
-
-    item->addr_type = data->addr_type;
-    item->rssi      = data->rssi;
-    item->data      = mp_obj_new_bytearray(data->data_len, data->p_data);
+    item->address.type = data->addr_type;
+    memcpy(item->address.value, data->p_peer_addr, BLEIO_ADDRESS_BYTES);
 
     mp_obj_list_append(self->adv_reports, item);
+
+    ble_drv_scan_continue();
 }
 
 STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {

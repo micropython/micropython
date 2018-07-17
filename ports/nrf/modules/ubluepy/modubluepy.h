@@ -78,7 +78,6 @@ extern const mp_obj_type_t ubluepy_service_type;
 extern const mp_obj_type_t ubluepy_characteristic_type;
 extern const mp_obj_type_t ubluepy_peripheral_type;
 extern const mp_obj_type_t ubluepy_scanner_type;
-extern const mp_obj_type_t ubluepy_scan_entry_type;
 extern const mp_obj_type_t ubluepy_constants_type;
 extern const mp_obj_type_t ubluepy_constants_ad_types_type;
 
@@ -152,15 +151,6 @@ typedef struct _ubluepy_scanner_obj_t {
     mp_obj_base_t base;
     mp_obj_t      adv_reports;
 } ubluepy_scanner_obj_t;
-
-typedef struct _ubluepy_scan_entry_obj_t {
-    mp_obj_base_t base;
-    mp_obj_t      addr;
-    uint8_t       addr_type;
-    bool          connectable;
-    int8_t        rssi;
-    mp_obj_t      data;
-} ubluepy_scan_entry_obj_t;
 
 typedef enum _ubluepy_prop_t {
     UBLUEPY_PROP_BROADCAST      = 0x01,

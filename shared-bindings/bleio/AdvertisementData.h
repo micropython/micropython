@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,11 @@
  * THE SOFTWARE.
  */
 
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADVERTISEMENTDATA_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADVERTISEMENTDATA_H
+
 #include "py/obj.h"
-#include "py/runtime.h"
 
-#if MICROPY_PY_UBLUEPY
+extern const mp_obj_type_t bleio_advertisementdata_type;
 
-#include "modubluepy.h"
-
-STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
-    // GAP events
-    { MP_ROM_QSTR(MP_QSTR_EVT_GAP_CONNECTED),       MP_ROM_INT(16) },
-    { MP_ROM_QSTR(MP_QSTR_EVT_GAP_DISCONNECTED),    MP_ROM_INT(17) },
-    { MP_ROM_QSTR(MP_QSTR_EVT_GATTS_WRITE),         MP_ROM_INT(80) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_locals_dict, ubluepy_constants_locals_dict_table);
-
-const mp_obj_type_t ubluepy_constants_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_constants,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_locals_dict
-};
-
-#endif // MICROPY_PY_UBLUEPY
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADVERTISEMENTDATA_H

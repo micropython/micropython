@@ -108,6 +108,8 @@ void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, u
 
 void ble_drv_scan_start(void);
 
+void ble_drv_scan_continue(void);
+
 void ble_drv_scan_stop(void);
 
 void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt_handler);
