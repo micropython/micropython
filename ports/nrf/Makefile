@@ -102,6 +102,7 @@ SRC_C += \
 	tick.c \
 	background.c \
 	internal_flash.c \
+	interrupt_char.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
@@ -113,7 +114,6 @@ SRC_C += \
 	lib/timeutils/timeutils.c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
-	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
@@ -123,7 +123,6 @@ ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
 SRC_C += \
 	usb/usb.c \
-	usb/tusb_descriptors.c \
 	usb/usb_msc_flash.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \

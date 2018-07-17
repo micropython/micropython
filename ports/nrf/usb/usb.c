@@ -28,11 +28,48 @@
 #include "nrfx_power.h"
 #include "tick.h"
 #include "usb.h"
-
-#include "lib/mp-readline/readline.h"
 #include "lib/utils/interrupt_char.h"
 
 #ifdef NRF52840_XXAA
+
+//--------------------------------------------------------------------+
+// STRING DESCRIPTORS
+//--------------------------------------------------------------------+
+
+// array of pointer to string descriptors
+uint16_t const * const string_desc_arr [] =
+{
+    // 0 index is supported language = English
+    TUD_DESC_STRCONV(0x0409),
+
+    // Manufacturer
+    TUD_DESC_STRCONV('A','d','a','f','r','u','i','t',' ','I','n','d','u','s','t','r','i','e','s'),
+
+    // Product
+    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','Y',' ','n','R','F','5','2'),
+
+    // Serials TODO use chip ID
+    TUD_DESC_STRCONV('1', '2', '3', '4', '5'),
+
+    // CDC Interface
+    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','S','e','r','i','a','l'),
+
+    // MSC Interface
+    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','S','t','o','r','a','g','e'),
+
+    // Custom Interface
+    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','C','u','s','t','o','m')
+};
+
+// tud_desc_set is required by tinyusb stack
+// since CFG_TUD_DESC_AUTO is enabled, we only need to set string_arr
+tud_desc_set_t tud_desc_set =
+{
+    .device     = NULL,
+    .config     = NULL,
+    .string_arr = (uint8_t const **) string_desc_arr,
+    .hid_report = NULL
+};
 
 void usb_init(void) {
 
@@ -55,12 +92,6 @@ void usb_init(void) {
 #endif
 
     tusb_init();
-
-#if MICROPY_KBD_EXCEPTION
-    // set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() fired when Ctrl+C is received
-    // TODO should be called in mp_hal_set_interrupt_char()
-    tud_cdc_set_wanted_char(CHAR_CTRL_C);
-#endif
 }
 
 //--------------------------------------------------------------------+
@@ -91,12 +122,12 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char)
     (void) itf; // not used
 
     if (mp_interrupt_char == wanted_char) {
-        tud_cdc_read_flush(); // flush read fifo
+        tud_cdc_read_flush();    // flush read fifo
         mp_keyboard_interrupt();
     }
 }
 
 #endif
 
-#endif
+#endif // NRF52840_XXAA
 

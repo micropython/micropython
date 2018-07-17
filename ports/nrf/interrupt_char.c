@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 hathach for Adafruit Industries
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_USB_H
-#define MICROPY_INCLUDED_NRF_USB_H
+#include "py/obj.h"
+#include "py/mpstate.h"
+#include "usb.h"
+
+#if MICROPY_KBD_EXCEPTION
+
+int mp_interrupt_char;
+
+void mp_hal_set_interrupt_char(int c) {
+    if (c != -1) {
+        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
+    }
+    mp_interrupt_char = c;
 
 #ifdef NRF52840_XXAA
+    tud_cdc_set_wanted_char(c);
+#endif
+}
 
-#include "tusb.h"
-
-void usb_init(void);
-
-#else
-
-#define usb_init()
+void mp_keyboard_interrupt(void) {
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+    #if MICROPY_ENABLE_SCHEDULER
+    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+    }
+    #endif
+}
 
 #endif
-
-#endif // MICROPY_INCLUDED_NRF_USB_H
