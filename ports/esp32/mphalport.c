@@ -38,6 +38,9 @@
 #include "py/mphal.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
+#include "mphalport.h"
+
+TaskHandle_t mp_main_task_handle;
 
 STATIC uint8_t stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
@@ -49,7 +52,7 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         MICROPY_EVENT_POLL_HOOK
-        vTaskDelay(1);
+        ulTaskNotifyTake(pdFALSE, 1);
     }
 }
 
@@ -106,7 +109,7 @@ void mp_hal_delay_ms(uint32_t ms) {
             break;
         }
         MICROPY_EVENT_POLL_HOOK
-        vTaskDelay(1);
+        ulTaskNotifyTake(pdFALSE, 1);
     }
     if (dt < us) {
         // do the remaining delay accurately
@@ -154,3 +157,12 @@ int *__errno() {
     return &mp_stream_errno;
 }
 */
+
+// Wake up the main task if it is sleeping
+void mp_hal_wake_main_task_from_isr(void) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(mp_main_task_handle, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken == pdTRUE) {
+        portYIELD_FROM_ISR();
+    }
+}

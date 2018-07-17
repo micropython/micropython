@@ -439,7 +439,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // return constant object
-    return (mp_obj_t)&pyb_rtc_obj;
+    return MP_OBJ_FROM_PTR(&pyb_rtc_obj);
 }
 
 // force rtc to re-initialise

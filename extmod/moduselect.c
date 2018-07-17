@@ -45,7 +45,7 @@
 
 typedef struct _poll_obj_t {
     mp_obj_t obj;
-    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, mp_uint_t arg, int *errcode);
+    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t flags;
     mp_uint_t flags_ret;
 } poll_obj_t;
@@ -53,7 +53,7 @@ typedef struct _poll_obj_t {
 STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t flags, bool or_flags) {
     for (mp_uint_t i = 0; i < obj_len; i++) {
         mp_map_elem_t *elem = mp_map_lookup(poll_map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-        if (elem->value == NULL) {
+        if (elem->value == MP_OBJ_NULL) {
             // object not found; get its ioctl and add it to the poll list
             const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
             poll_obj_t *poll_obj = m_new_obj(poll_obj_t);
@@ -61,27 +61,27 @@ STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_
             poll_obj->ioctl = stream_p->ioctl;
             poll_obj->flags = flags;
             poll_obj->flags_ret = 0;
-            elem->value = poll_obj;
+            elem->value = MP_OBJ_FROM_PTR(poll_obj);
         } else {
             // object exists; update its flags
             if (or_flags) {
-                ((poll_obj_t*)elem->value)->flags |= flags;
+                ((poll_obj_t*)MP_OBJ_TO_PTR(elem->value))->flags |= flags;
             } else {
-                ((poll_obj_t*)elem->value)->flags = flags;
+                ((poll_obj_t*)MP_OBJ_TO_PTR(elem->value))->flags = flags;
             }
         }
     }
 }
 
 // poll each object in the map
-STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, mp_uint_t *rwx_num) {
+STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, size_t *rwx_num) {
     mp_uint_t n_ready = 0;
     for (mp_uint_t i = 0; i < poll_map->alloc; ++i) {
         if (!MP_MAP_SLOT_IS_FILLED(poll_map, i)) {
             continue;
         }
 
-        poll_obj_t *poll_obj = (poll_obj_t*)poll_map->table[i].value;
+        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_map->table[i].value);
         int errcode;
         mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_STREAM_POLL, poll_obj->flags, &errcode);
         poll_obj->flags_ret = ret;
@@ -158,15 +158,15 @@ STATIC mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
                 if (!MP_MAP_SLOT_IS_FILLED(&poll_map, i)) {
                     continue;
                 }
-                poll_obj_t *poll_obj = (poll_obj_t*)poll_map.table[i].value;
+                poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_map.table[i].value);
                 if (poll_obj->flags_ret & MP_STREAM_POLL_RD) {
-                    ((mp_obj_list_t*)list_array[0])->items[rwx_len[0]++] = poll_obj->obj;
+                    ((mp_obj_list_t*)MP_OBJ_TO_PTR(list_array[0]))->items[rwx_len[0]++] = poll_obj->obj;
                 }
                 if (poll_obj->flags_ret & MP_STREAM_POLL_WR) {
-                    ((mp_obj_list_t*)list_array[1])->items[rwx_len[1]++] = poll_obj->obj;
+                    ((mp_obj_list_t*)MP_OBJ_TO_PTR(list_array[1]))->items[rwx_len[1]++] = poll_obj->obj;
                 }
                 if ((poll_obj->flags_ret & ~(MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) != 0) {
-                    ((mp_obj_list_t*)list_array[2])->items[rwx_len[2]++] = poll_obj->obj;
+                    ((mp_obj_list_t*)MP_OBJ_TO_PTR(list_array[2]))->items[rwx_len[2]++] = poll_obj->obj;
                 }
             }
             mp_map_deinit(&poll_map);
@@ -191,7 +191,7 @@ typedef struct _mp_obj_poll_t {
 
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(uint n_args, const mp_obj_t *args) {
-    mp_obj_poll_t *self = args[0];
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_uint_t flags;
     if (n_args == 3) {
         flags = mp_obj_get_int(args[2]);
@@ -205,7 +205,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 
 /// \method unregister(obj)
 STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
-    mp_obj_poll_t *self = self_in;
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     // TODO raise KeyError if obj didn't exist in map
     return mp_const_none;
@@ -214,18 +214,18 @@ MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 
 /// \method modify(obj, eventmask)
 STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
-    mp_obj_poll_t *self = self_in;
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP);
     if (elem == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
-    ((poll_obj_t*)elem->value)->flags = mp_obj_get_int(eventmask_in);
+    ((poll_obj_t*)MP_OBJ_TO_PTR(elem->value))->flags = mp_obj_get_int(eventmask_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 
 STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
-    mp_obj_poll_t *self = args[0];
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
     // work out timeout (its given already in ms)
     mp_uint_t timeout = -1;
@@ -258,18 +258,18 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
     return n_ready;
 }
 
-STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
-    mp_obj_poll_t *self = args[0];
+STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_uint_t n_ready = poll_poll_internal(n_args, args);
 
     // one or more objects are ready, or we had a timeout
-    mp_obj_list_t *ret_list = mp_obj_new_list(n_ready, NULL);
+    mp_obj_list_t *ret_list = MP_OBJ_TO_PTR(mp_obj_new_list(n_ready, NULL));
     n_ready = 0;
     for (mp_uint_t i = 0; i < self->poll_map.alloc; ++i) {
         if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
             continue;
         }
-        poll_obj_t *poll_obj = (poll_obj_t*)self->poll_map.table[i].value;
+        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_map.table[i].value);
         if (poll_obj->flags_ret != 0) {
             mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
             ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
@@ -279,7 +279,7 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
             }
         }
     }
-    return ret_list;
+    return MP_OBJ_FROM_PTR(ret_list);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
 
@@ -312,7 +312,7 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
         if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
             continue;
         }
-        poll_obj_t *poll_obj = (poll_obj_t*)self->poll_map.table[i].value;
+        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_map.table[i].value);
         if (poll_obj->flags_ret != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->ret_tuple);
             t->items[0] = poll_obj->obj;
@@ -354,7 +354,7 @@ STATIC mp_obj_t select_poll(void) {
     mp_map_init(&poll->poll_map, 0);
     poll->iter_cnt = 0;
     poll->ret_tuple = MP_OBJ_NULL;
-    return poll;
+    return MP_OBJ_FROM_PTR(poll);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 

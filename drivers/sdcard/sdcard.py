@@ -174,7 +174,7 @@ class SDCard:
         # read until start byte (0xff)
         while True:
             self.spi.readinto(self.tokenbuf, 0xff)
-            if self.tokenbuf[0] == 0xfe:
+            if self.tokenbuf[0] == _TOKEN_DATA:
                 break
 
         # read data
@@ -228,17 +228,22 @@ class SDCard:
         assert nblocks and not len(buf) % 512, 'Buffer length is invalid'
         if nblocks == 1:
             # CMD17: set read address for single block
-            if self.cmd(17, block_num * self.cdv, 0) != 0:
+            if self.cmd(17, block_num * self.cdv, 0, release=False) != 0:
+                # release the card
+                self.cs(1)
                 raise OSError(5) # EIO
-            # receive the data
+            # receive the data and release card
             self.readinto(buf)
         else:
             # CMD18: set read address for multiple blocks
-            if self.cmd(18, block_num * self.cdv, 0) != 0:
+            if self.cmd(18, block_num * self.cdv, 0, release=False) != 0:
+                # release the card
+                self.cs(1)
                 raise OSError(5) # EIO
             offset = 0
             mv = memoryview(buf)
             while nblocks:
+                # receive the data and release card
                 self.readinto(mv[offset : offset + 512])
                 offset += 512
                 nblocks -= 1
