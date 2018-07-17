@@ -122,6 +122,7 @@ SRC_C += \
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
 SRC_C += \
+	usb/usb.c \
 	usb/tusb_descriptors.c \
 	usb/usb_msc_flash.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \

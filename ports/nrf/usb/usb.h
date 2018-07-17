@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 hathach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdbool.h>
-#include "boards/board.h"
-#include "nrfx.h"
-#include "usb.h"
+#ifndef MICROPY_INCLUDED_NRF_USB_H
+#define MICROPY_INCLUDED_NRF_USB_H
 
-void board_init(void) {
+#include "tusb.h"
 
-    // Clock
-    NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
-    NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
+#ifdef NRF52840_XXAA
 
-    usb_init();
-}
+void usb_init(void);
 
-bool board_requests_safe_mode(void) {
-  return false;
-}
+#else
 
-void reset_board(void) {
+#define usb_init()
 
-}
+#endif
 
-
-
-
-
+#endif // MICROPY_INCLUDED_NRF_USB_H
