@@ -211,6 +211,35 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
      */
     #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * 90000 / 8192 - 20)
     HAL_SDRAM_ProgramRefreshRate(hsdram, REFRESH_COUNT);
+
+    #if defined(STM32F7)
+    /* Enable MPU for the SDRAM Memory Region to allow non-aligned
+       accesses (hard-fault otherwise)
+    */
+
+    MPU_Region_InitTypeDef MPU_InitStruct;
+
+    /* Disable the MPU */
+    HAL_MPU_Disable();
+
+    /* Configure the MPU attributes for SDRAM */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.BaseAddress = SDRAM_START_ADDRESS;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_4MB;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
+    MPU_InitStruct.SubRegionDisable = 0x00;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+    /* Enable the MPU */
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+    #endif
 }
 
 bool __attribute__((optimize("O0"))) sdram_test(bool fast) {
