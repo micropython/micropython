@@ -1060,7 +1060,8 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             dest[1] = self;
         }
     #if MICROPY_PY_BUILTINS_PROPERTY
-    } else if (MP_OBJ_IS_TYPE(member, &mp_type_property) && mp_obj_is_native_type(type)) {
+        // If self is MP_OBJ_NULL, we looking at the class itself, not an instance.
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_property) && mp_obj_is_native_type(type) && self != MP_OBJ_NULL) {
         // object member is a property; delegate the load to the property
         // Note: This is an optimisation for code size and execution time.
         // The proper way to do it is have the functionality just below
@@ -1161,7 +1162,8 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         assert(type->locals_dict->base.type == &mp_type_dict); // Micro Python restriction, for now
         mp_map_t *locals_map = &type->locals_dict->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-        if (elem != NULL && MP_OBJ_IS_TYPE(elem->value, &mp_type_property)) {
+        // If base is MP_OBJ_NULL, we looking at the class itself, not an instance.
+        if (elem != NULL && MP_OBJ_IS_TYPE(elem->value, &mp_type_property) && base != MP_OBJ_NULL) {
             // attribute exists and is a property; delegate the store/delete
             // Note: This is an optimisation for code size and execution time.
             // The proper way to do it is have the functionality just below in
