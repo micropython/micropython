@@ -27,16 +27,8 @@
 #ifndef MICROPY_INCLUDED_NRF_USB_H
 #define MICROPY_INCLUDED_NRF_USB_H
 
-#ifdef NRF52840_XXAA
-
 #include "tusb.h"
 
 void usb_init(void);
-
-#else
-
-#define usb_init()
-
-#endif
 
 #endif // MICROPY_INCLUDED_NRF_USB_H

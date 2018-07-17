@@ -26,7 +26,10 @@
 
 #include "py/obj.h"
 #include "py/mpstate.h"
+
+#ifdef NRF52840_XXAA
 #include "usb.h"
+#endif
 
 #if MICROPY_KBD_EXCEPTION
 
