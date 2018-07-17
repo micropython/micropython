@@ -9,5 +9,7 @@
 #ifndef __SDRAM_H__
 #define __SDRAM_H__
 bool sdram_init();
-bool sdram_test();
+void * sdram_start();
+void * sdram_end();
+bool sdram_test(bool fast);
 #endif // __SDRAM_H__
