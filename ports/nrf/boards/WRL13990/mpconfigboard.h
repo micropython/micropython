@@ -38,7 +38,6 @@
 #define MICROPY_PY_MACHINE_TEMP     (1)
 #define MICROPY_PY_RANDOM_HW_RNG    (1)
 
-
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_LED_COUNT        (1)
 #define MICROPY_HW_LED_PULLUP       (0) 
@@ -52,20 +51,11 @@
 //#define MICROPY_HW_UART1_CTS        (7)
 //#define MICROPY_HW_UART1_RTS        (5)
 
-
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
 #define MICROPY_HW_SPI0_SCK         (25)
 #define MICROPY_HW_SPI0_MOSI        (23)
 #define MICROPY_HW_SPI0_MISO        (24)
-
-// SPI1 config
-#define MICROPY_HW_SPI1_NAME        "SPI1"
-#define MICROPY_HW_SPI1_MISO        (20)
-#define MICROPY_HW_SPI1_CLK         (16)
-#define MICROPY_HW_SPI1_MOSI        (14)
-#define MICROPY_HW_SPI1_CS          (12)
-
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
