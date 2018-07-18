@@ -74,13 +74,7 @@ p.advertise(device_name="micr", services=[s])
 #include "common-hal/bleio/UUID.h"
 #include "py/obj.h"
 
-extern const mp_obj_type_t ubluepy_service_type;
 extern const mp_obj_type_t ubluepy_peripheral_type;
-
-typedef enum {
-    UBLUEPY_SERVICE_PRIMARY = 1,
-    UBLUEPY_SERVICE_SECONDARY = 2
-} ubluepy_service_type_t;
 
 typedef enum {
     UBLUEPY_ADDR_TYPE_PUBLIC = 0,
@@ -103,17 +97,6 @@ typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_t            conn_handler;
     mp_obj_t            service_list;
 } ubluepy_peripheral_obj_t;
-
-typedef struct _ubluepy_service_obj_t {
-    mp_obj_base_t              base;
-    uint16_t                   handle;
-    uint8_t                    type;
-    bleio_uuid_obj_t         * p_uuid;
-    ubluepy_peripheral_obj_t * p_periph;
-    mp_obj_t                   char_list;
-    uint16_t                   start_handle;
-    uint16_t                   end_handle;
-} ubluepy_service_obj_t;
 
 typedef struct _ubluepy_advertise_data_t {
     uint8_t *  p_device_name;

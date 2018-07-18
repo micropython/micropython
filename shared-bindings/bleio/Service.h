@@ -24,30 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
 
+#include "shared-module/bleio/Characteristic.h"
 #include "shared-module/bleio/Service.h"
-#include "common-hal/bleio/UUID.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    bleio_service_obj_t *service;
-    uint16_t service_handle;
-    bleio_uuid_obj_t *uuid;
-    mp_obj_t value_data;
-    uint16_t handle;
-    struct {
-        bool broadcast : 1;
-        bool read : 1;
-        bool write_wo_resp : 1;
-        bool write : 1;
-        bool notify : 1;
-        bool indicate : 1;
-    } props;
-    uint16_t user_desc_handle;
-    uint16_t cccd_handle;
-    uint16_t sccd_handle;
-} bleio_characteristic_obj_t;
+const mp_obj_type_t bleio_service_type;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
+extern void common_hal_bleio_service_construct(bleio_service_obj_t *self);
+extern void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H

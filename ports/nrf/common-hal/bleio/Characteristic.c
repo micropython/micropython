@@ -36,8 +36,8 @@ void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self
 }
 
 void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
-    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(self->service);
-    ubluepy_role_type_t role = service->p_periph->role;
+    ubluepy_peripheral_obj_t *peripheral = MP_OBJ_TO_PTR(self->service->periph);
+    ubluepy_role_type_t role = peripheral->role;
 
     if (role == UBLUEPY_ROLE_PERIPHERAL) {
         // TODO: Add indications

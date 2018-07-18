@@ -267,26 +267,29 @@ bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
     return true;
 }
 
-bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
+void ble_drv_service_add(bleio_service_obj_t *service) {
     SD_TEST_OR_ENABLE();
 
-    ble_uuid_t uuid;
-    uuid.type = BLE_UUID_TYPE_BLE;
-    uuid.uuid = p_service_obj->p_uuid->value[0] | (p_service_obj->p_uuid->value[1] << 8);
+    ble_uuid_t uuid = {
+        .type = BLE_UUID_TYPE_BLE,
+        .uuid = service->uuid->value[0] | (service->uuid->value[1] << 8)
+    };
 
-    if (p_service_obj->p_uuid->type == UUID_TYPE_128BIT) {
-        uuid.type  = p_service_obj->p_uuid->uuid_vs_idx;
+    if (service->uuid->type == UUID_TYPE_128BIT) {
+        uuid.type = service->uuid->uuid_vs_idx;
     }
 
-    uint32_t err_code = sd_ble_gatts_service_add(p_service_obj->type,
-                                                 &uuid,
-                                                 &p_service_obj->handle);
-    if (err_code != 0) {
+    uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
+    if (service->is_secondary) {
+        service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
+    }
+
+    if (sd_ble_gatts_service_add(service_type,
+                                 &uuid,
+                                 &service->handle) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  translate("Can not add Service. status: 0x%08lX"), err_code));
+                  translate("Can not add Service.")));
     }
-
-    return true;
 }
 
 bool ble_drv_characteristic_add(bleio_characteristic_obj_t *characteristic) {
@@ -320,7 +323,7 @@ bool ble_drv_characteristic_add(bleio_characteristic_obj_t *characteristic) {
         char_md.p_cccd_md = NULL;
     }
 
-    uuid.type  = BLE_UUID_TYPE_BLE;
+    uuid.type = BLE_UUID_TYPE_BLE;
     if (characteristic->uuid->type == UUID_TYPE_128BIT)
         uuid.type = characteristic->uuid->uuid_vs_idx;
 
@@ -416,12 +419,12 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
         bool type_128bit_present = false;
 
         for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
-            ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
-            if (p_service->p_uuid->type == UUID_TYPE_16BIT) {
+            bleio_service_obj_t * p_service = (bleio_service_obj_t *)p_adv_params->p_services[i];
+            if (p_service->uuid->type == UUID_TYPE_16BIT) {
                 type_16bit_present = true;
             }
 
-            if (p_service->p_uuid->type == UUID_TYPE_128BIT) {
+            if (p_service->uuid->type == UUID_TYPE_128BIT) {
                 type_128bit_present = true;
             }
         }
@@ -439,12 +442,12 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
             uint8_t encoded_size    = 0;
 
             for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
-                ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
+                bleio_service_obj_t * p_service = (bleio_service_obj_t *)p_adv_params->p_services[i];
 
                 ble_uuid_t uuid;
-                uuid.type  = p_service->p_uuid->type;
-                uuid.uuid  = p_service->p_uuid->value[0];
-                uuid.uuid += p_service->p_uuid->value[1] << 8;
+                uuid.type  = p_service->uuid->type;
+                uuid.uuid  = p_service->uuid->value[0];
+                uuid.uuid += p_service->uuid->value[1] << 8;
                 // calculate total size of uuids
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -488,12 +491,12 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
             uint8_t encoded_size    = 0;
 
             for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
-                ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
+                bleio_service_obj_t * p_service = (bleio_service_obj_t *)p_adv_params->p_services[i];
 
                 ble_uuid_t uuid;
-                uuid.type  = p_service->p_uuid->uuid_vs_idx;
-                uuid.uuid  = p_service->p_uuid->value[0];
-                uuid.uuid += p_service->p_uuid->value[1] << 8;
+                uuid.type  = p_service->uuid->uuid_vs_idx;
+                uuid.uuid  = p_service->uuid->value[0];
+                uuid.uuid += p_service->uuid->value[1] << 8;
 
                 // calculate total size of uuids
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
@@ -640,8 +643,8 @@ void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
 }
 
 void ble_drv_attr_s_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
-    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
-    uint16_t conn_handle = service->p_periph->conn_handle;
+    ubluepy_peripheral_obj_t *peripheral = MP_OBJ_TO_PTR(characteristic->service->periph);
+    uint16_t conn_handle = peripheral->conn_handle;
     ble_gatts_value_t gatts_value;
 
     memset(&gatts_value, 0, sizeof(gatts_value));
@@ -659,8 +662,8 @@ void ble_drv_attr_s_write(bleio_characteristic_obj_t *characteristic, mp_buffer_
 }
 
 void ble_drv_attr_s_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
-    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
-    uint16_t conn_handle = service->p_periph->conn_handle;
+    ubluepy_peripheral_obj_t *peripheral = MP_OBJ_TO_PTR(characteristic->service->periph);
+    uint16_t conn_handle = peripheral->conn_handle;
     ble_gatts_hvx_params_t hvx_params;
     uint16_t hvx_len = bufinfo->len;
 
@@ -706,11 +709,13 @@ void ble_drv_adv_report_handler_set(bleio_scanner_obj_t *self, ble_drv_adv_evt_c
 
 
 void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic, ble_drv_gattc_char_data_callback_t cb) {
-    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
+    bleio_service_obj_t *service = characteristic->service;
+    ubluepy_peripheral_obj_t *peripheral = MP_OBJ_TO_PTR(service->periph);
+
     mp_gattc_char_data_observer = characteristic;
     gattc_char_data_handle = cb;
 
-    const uint32_t err_code = sd_ble_gattc_read(service->p_periph->conn_handle,
+    const uint32_t err_code = sd_ble_gattc_read(peripheral->conn_handle,
                                           characteristic->handle,
                                           0);
     if (err_code != 0) {
@@ -724,8 +729,8 @@ void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic, ble_drv_gat
 }
 
 void ble_drv_attr_c_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
-    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
-    uint16_t conn_handle = service->p_periph->conn_handle;
+    ubluepy_peripheral_obj_t *peripheral = MP_OBJ_TO_PTR(characteristic->service->periph);
+    uint16_t conn_handle = peripheral->conn_handle;
 
     ble_gattc_write_params_t write_params;
     write_params.write_op = BLE_GATT_OP_WRITE_REQ;

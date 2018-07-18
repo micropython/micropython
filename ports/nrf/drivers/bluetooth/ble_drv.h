@@ -34,6 +34,7 @@
 
 #include "shared-module/bleio/Characteristic.h"
 #include "shared-module/bleio/Scanner.h"
+#include "shared-module/bleio/Service.h"
 
 #include "modubluepy.h"
 
@@ -92,7 +93,7 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr);
 
 bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
 
-bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj);
+void ble_drv_service_add(bleio_service_obj_t *service);
 
 bool ble_drv_characteristic_add(bleio_characteristic_obj_t *characteristic);
 

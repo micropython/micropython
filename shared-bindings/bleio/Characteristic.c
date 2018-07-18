@@ -91,14 +91,14 @@ STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_printf(print, "Characteristic(uuid: 0x"HEX2_FMT""HEX2_FMT" handle: 0x" HEX2_FMT ")",
-              self->uuid->value[0], self->uuid->value[1], self->handle);
+              self->uuid->value[1], self->uuid->value[0], self->handle);
 }
 
 STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
     self->base.type = &bleio_characteristic_type;
-    self->service = mp_const_none;
+    self->service = NULL;
     self->value_data = NULL;
 
     mp_map_t kw_args;

@@ -35,6 +35,7 @@
 #include "ble_drv.h"
 #include "common-hal/bleio/UUID.h"
 #include "shared-bindings/bleio/Characteristic.h"
+#include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -271,9 +272,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_disconnect_obj, peripheral_d
 ///
 STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
-    ubluepy_service_obj_t    * p_service = MP_OBJ_TO_PTR(service);
+    bleio_service_obj_t    * p_service = MP_OBJ_TO_PTR(service);
 
-    p_service->p_periph = self;
+    p_service->periph = self_in;
 
     mp_obj_list_append(self->service_list, service);
 
@@ -294,13 +295,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
 void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_data) {
-    ubluepy_service_obj_t * p_service = m_new_obj(ubluepy_service_obj_t);
-    p_service->base.type = &ubluepy_service_type;
+    bleio_service_obj_t * p_service = m_new_obj(bleio_service_obj_t);
+    p_service->base.type = &bleio_service_type;
 
     bleio_uuid_obj_t * p_uuid = m_new_obj(bleio_uuid_obj_t);
     p_uuid->base.type = &bleio_uuid_type;
 
-    p_service->p_uuid = p_uuid;
+    p_service->uuid = p_uuid;
 
     p_uuid->type = p_service_data->uuid_type;
     p_uuid->value[0] = p_service_data->uuid & 0xFF;
@@ -316,7 +317,7 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
 }
 
 void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
-    ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
+    bleio_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
     bleio_characteristic_obj_t * p_char = m_new_obj(bleio_characteristic_obj_t);
     p_char->base.type = &bleio_characteristic_type;
 
@@ -410,7 +411,7 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
         mp_uint_t  num_services;
         mp_obj_get_array(self->service_list, &num_services, &services);
 
-        ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[num_services - 1];
+        bleio_service_obj_t * p_service = (bleio_service_obj_t *)services[num_services - 1];
 
         service_disc_retval = ble_drv_discover_services(self,
                                                         self->conn_handle,
@@ -424,7 +425,7 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
     mp_obj_get_array(self->service_list, &num_services, &services);
 
     for (uint16_t s = 0; s < num_services; s++) {
-        ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[s];
+        bleio_service_obj_t * p_service = (bleio_service_obj_t *)services[s];
         bool char_disc_retval = ble_drv_discover_characteristic(p_service,
                                                                 self->conn_handle,
                                                                 p_service->start_handle,

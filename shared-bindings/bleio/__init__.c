@@ -25,7 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/AddressType.h"
@@ -34,6 +33,7 @@
 #include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Scanner.h"
+#include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 #include "shared-bindings/bleio/UUIDType.h"
 
@@ -59,6 +59,7 @@
 //|     Descriptor
 //|     ScanEntry
 //|     Scanner
+//|     Service
 //|     UUID
 //|     UUIDType
 //|
@@ -77,6 +78,7 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
     { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
     { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
+    { MP_ROM_QSTR(MP_QSTR_Service),           MP_ROM_PTR(&bleio_service_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),              MP_ROM_PTR(&bleio_uuid_type) },
 
     // Properties

@@ -36,7 +36,6 @@ STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
     { MP_ROM_QSTR(MP_QSTR_Peripheral),      MP_ROM_PTR(&ubluepy_peripheral_type) },
 #endif
-    { MP_ROM_QSTR(MP_QSTR_Service),         MP_ROM_PTR(&ubluepy_service_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ubluepy_globals, mp_module_ubluepy_globals_table);
