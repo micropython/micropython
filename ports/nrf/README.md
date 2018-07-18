@@ -34,6 +34,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
   * [Thingy:52](http://www.nordicsemi.com/eng/Products/Nordic-Thingy-52)
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
+  * [Sparkfun WRL13990](https://www.sparkfun.com/products/13990)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
 
@@ -106,6 +107,7 @@ wt51822_s4at         | s110                    | Peripheral             | Manual
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
+WRL13990             |                         | Peripheral and Central | [Segger](#segger-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
 
 ## Segger Targets
