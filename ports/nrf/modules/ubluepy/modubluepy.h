@@ -77,8 +77,6 @@ p.advertise(device_name="micr", services=[s])
 extern const mp_obj_type_t ubluepy_service_type;
 extern const mp_obj_type_t ubluepy_characteristic_type;
 extern const mp_obj_type_t ubluepy_peripheral_type;
-extern const mp_obj_type_t ubluepy_constants_type;
-extern const mp_obj_type_t ubluepy_constants_ad_types_type;
 
 typedef enum {
     UBLUEPY_SERVICE_PRIMARY = 1,
@@ -131,10 +129,6 @@ typedef struct _ubluepy_characteristic_obj_t {
     ubluepy_service_obj_t * p_service;
     mp_obj_t                value_data;
 } ubluepy_characteristic_obj_t;
-
-typedef struct _ubluepy_delegate_obj_t {
-    mp_obj_base_t        base;
-} ubluepy_delegate_obj_t;
 
 typedef struct _ubluepy_advertise_data_t {
     uint8_t *  p_device_name;

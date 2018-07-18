@@ -132,8 +132,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_peripheral.c \
 	ubluepy/ubluepy_service.c \
 	ubluepy/ubluepy_characteristic.c \
-	ubluepy/ubluepy_delegate.c \
-	ubluepy/ubluepy_constants.c \
 	)
 
 SRC_COMMON_HAL += \
