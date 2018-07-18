@@ -104,8 +104,6 @@ endif
 
 # for littlefs
 CFLAGS += -DLFS_NO_DEBUG -DLFS_NO_WARN -DLFS_NO_ERROR -DLFS_NO_ASSERT -DLFS_NO_MALLOC
-$(BUILD)/lib/littlefs/lfs.o: CFLAGS += -Wno-unused-parameter -Wno-shadow
-$(BUILD)/lib/littlefs/lfs_util.o: CFLAGS += -Wno-unused-parameter
 
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
