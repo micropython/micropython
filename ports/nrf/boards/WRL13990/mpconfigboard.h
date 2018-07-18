@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Roland van Straten
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,28 +38,20 @@
 #define MICROPY_PY_MACHINE_TEMP     (1)
 #define MICROPY_PY_RANDOM_HW_RNG    (1)
 
-// options to check out
-//#define MICROPY_PY_BLE				(0)
-//#define MICROPY_HW_HAS_SDCARD		(0)
-
 
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_LED_COUNT        (1)
 #define MICROPY_HW_LED_PULLUP       (0) 
 
 #define MICROPY_HW_LED1             (7) // LED1
-//#define MICROPY_HW_LED2             (18) // LED2
-//#define MICROPY_HW_LED3             (19) // LED3
-//#define MICROPY_HW_LED4             (20) // LED4
 
 // UART config
 #define MICROPY_HW_UART1_HWFC       (0)
 #define MICROPY_HW_UART1_RX         (26)
 #define MICROPY_HW_UART1_TX         (27)
-//#define MICROPY_HW_UART1_RX         (8)	// Default by Laird/Nordic
-//#define MICROPY_HW_UART1_TX         (6)
 //#define MICROPY_HW_UART1_CTS        (7)
 //#define MICROPY_HW_UART1_RTS        (5)
+
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
@@ -67,16 +59,16 @@
 #define MICROPY_HW_SPI0_MOSI        (23)
 #define MICROPY_HW_SPI0_MISO        (24)
 
+// SPI1 config
+#define MICROPY_HW_SPI1_NAME        "SPI1"
+#define MICROPY_HW_SPI1_MISO        (20)
+#define MICROPY_HW_SPI1_CLK         (16)
+#define MICROPY_HW_SPI1_MOSI        (14)
+#define MICROPY_HW_SPI1_CS          (12)
+
+
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
 #define MICROPY_HW_PWM2_NAME        "PWM2"
 
 #define HELP_TEXT_BOARD_LED         "1"
-
-// EXTRA FLASH (as used by Laird cs)
-// Connect Macronix MX25R4035F (4MBit) or MX25R8035F (8Mbit)
-#define MICROPY_HW_SPI1_NAME    	"SPI1"
-#define MICROPY_HW_SPI1_MISO		(20)
-#define MICROPY_HW_SPI1_CLK			(16)
-#define MICROPY_HW_SPI1_MOSI		(14)
-#define MICROPY_HW_SPI1_CS			(12)
