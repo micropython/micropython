@@ -94,7 +94,7 @@ static volatile ble_drv_disc_add_service_callback_t disc_add_service_handler;
 static volatile ble_drv_disc_add_char_callback_t    disc_add_char_handler;
 static volatile ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
 
-static mp_obj_t mp_adv_observer;
+static bleio_scanner_obj_t *mp_adv_observer;
 static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
@@ -707,8 +707,8 @@ void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t 
     gattc_event_handler = evt_handler;
 }
 
-void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt_handler) {
-    mp_adv_observer = obj;
+void ble_drv_adv_report_handler_set(bleio_scanner_obj_t *self, ble_drv_adv_evt_callback_t evt_handler) {
+    mp_adv_observer = self;
     adv_event_handler = evt_handler;
 }
 
@@ -760,15 +760,15 @@ void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, u
         ;
     }
 }
-void ble_drv_scan_start(void) {
+void ble_drv_scan_start(uint16_t interval, uint16_t window) {
     SD_TEST_OR_ENABLE();
 
     ble_gap_scan_params_t scan_params;
     memset(&scan_params, 0, sizeof(ble_gap_scan_params_t));
 
     scan_params.active   = 1;
-    scan_params.interval = MSEC_TO_UNITS(100, UNIT_0_625_MS);
-    scan_params.window   = MSEC_TO_UNITS(100, UNIT_0_625_MS);
+    scan_params.interval = MSEC_TO_UNITS(interval, UNIT_0_625_MS);
+    scan_params.window   = MSEC_TO_UNITS(window, UNIT_0_625_MS);
 #if (BLUETOOTH_SD == 140)
     scan_params.scan_phys          = BLE_GAP_PHY_1MBPS;
 #endif
@@ -1003,10 +1003,9 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 #endif
             };
 
-            // TODO: Fix unsafe callback to possible undefined callback...
-            adv_event_handler(mp_adv_observer,
-                              p_ble_evt->header.evt_id,
-                              &adv_data);
+            if (adv_event_handler != NULL) {
+                adv_event_handler(mp_adv_observer, &adv_data);
+            }
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:

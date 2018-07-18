@@ -32,6 +32,7 @@
 #include "shared-bindings/bleio/AdvertisementData.h"
 #include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/ScanEntry.h"
+#include "shared-bindings/bleio/Scanner.h"
 #include "shared-bindings/bleio/UUID.h"
 #include "shared-bindings/bleio/UUIDType.h"
 
@@ -55,6 +56,7 @@
 //|     Adapter
 //|     Descriptor
 //|     ScanEntry
+//|     Scanner
 //|     UUID
 //|     UUIDType
 //|
@@ -71,6 +73,7 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AdvertisementData), MP_ROM_PTR(&bleio_advertisementdata_type) },
     { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
     { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
+    { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),              MP_ROM_PTR(&bleio_uuid_type) },
 
     // Properties

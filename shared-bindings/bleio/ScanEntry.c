@@ -48,7 +48,7 @@
 //|   .. attribute:: address
 //|
 //|   The address of the device. (read-only)
-//|   This attribute is of type `bleio:Address`.
+//|   This attribute is of type `bleio.Address`.
 //|
 
 //|   .. attribute:: manufacturer_specific_data
@@ -75,7 +75,7 @@
 //|   .. attribute:: service_uuids
 //|
 //|   The address of the device. (read-only)
-//|   This attribute is a list of `bleio:UUID`.
+//|   This attribute is a list of `bleio.UUID`.
 //|   This attribute might be empty or incomplete, depending on the advertisement packet.
 //|   Currently only 16-bit UUIDS are listed.
 //|

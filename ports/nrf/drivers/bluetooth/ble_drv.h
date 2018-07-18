@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "shared-module/bleio/Scanner.h"
+
 #include "modubluepy.h"
 
 typedef struct {
@@ -67,7 +69,7 @@ typedef struct {
 typedef void (*ble_drv_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gattc_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
-typedef void (*ble_drv_adv_evt_callback_t)(mp_obj_t self, uint16_t event_id, ble_drv_adv_data_t * data);
+typedef void (*ble_drv_adv_evt_callback_t)(bleio_scanner_obj_t *self, ble_drv_adv_data_t *data);
 typedef void (*ble_drv_disc_add_service_callback_t)(mp_obj_t self, ble_drv_service_data_t * p_service_data);
 typedef void (*ble_drv_disc_add_char_callback_t)(mp_obj_t self, ble_drv_char_data_t * p_desc_data);
 typedef void (*ble_drv_gattc_char_data_callback_t)(mp_obj_t self, uint16_t length, uint8_t * p_data);
@@ -106,13 +108,13 @@ void ble_drv_attr_s_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, 
 
 void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data, bool w_response);
 
-void ble_drv_scan_start(void);
+void ble_drv_scan_start(uint16_t interval, uint16_t window);
 
 void ble_drv_scan_continue(void);
 
 void ble_drv_scan_stop(void);
 
-void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt_handler);
+void ble_drv_adv_report_handler_set(bleio_scanner_obj_t *self, ble_drv_adv_evt_callback_t evt_handler);
 
 void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type);
 
