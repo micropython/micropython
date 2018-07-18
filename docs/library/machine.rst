@@ -74,11 +74,11 @@ Power related functions
    to know that we are coming from `machine.DEEPSLEEP`. For wake up to actually happen,
    wake sources should be configured first, like `Pin` change or `RTC` timeout.
 
-.. only:: port_wipy
+.. function:: wake_reason()
 
-    .. function:: wake_reason()
+   Get the wake reason. See :ref:`constants <machine_constants>` for the possible return values.
 
-        Get the wake reason. See :ref:`constants <machine_constants>` for the possible return values.
+   Availability: ESP32, WiPy.
 
 Miscellaneous functions
 -----------------------
