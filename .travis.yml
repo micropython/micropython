@@ -1,77 +1,146 @@
-sudo: required
-dist: trusty
-language: c
+# global options
+language:
+  - c
 compiler:
   - gcc
 cache:
   directories:
     - "${HOME}/persist"
 env:
-  - MAKEOPTS="-j4"
+  global:
+    - MAKEOPTS="-j4"
 
-before_script:
-# Extra CPython versions
-#  - sudo add-apt-repository -y ppa:fkrull/deadsnakes
-# Extra gcc versions
-#  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
-  - sudo dpkg --add-architecture i386
-  - sudo apt-get update -qq || true
-  - sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system gcc-mingw-w64
-  - sudo apt-get install -y --force-yes gcc-arm-none-eabi
-  # For teensy build
-  - sudo apt-get install realpath
-  # For coverage testing (a specific urllib3 version is needed for requests and cpp-coveralls to work together)
-  - sudo pip install -Iv urllib3==1.22
-  - sudo pip install cpp-coveralls
-  - gcc --version
-  - arm-none-eabi-gcc --version
-  - python3 --version
+# define the successive stages
+stages:
+  - name: test
 
-script:
-  - make ${MAKEOPTS} -C mpy-cross
-  - make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
-  - ls -l ports/minimal/build/firmware.bin
-  - tools/check_code_size.sh
-  - mkdir -p ${HOME}/persist
-  # Save new firmware for reference, but only if building a main branch, not a pull request
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp ports/minimal/build/firmware.bin ${HOME}/persist/; fi'
-  - make ${MAKEOPTS} -C ports/unix deplibs
-  - make ${MAKEOPTS} -C ports/unix
-  - make ${MAKEOPTS} -C ports/unix nanbox
-  - make ${MAKEOPTS} -C ports/bare-arm
-  - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
-  - make ${MAKEOPTS} -C ports/stm32
-  - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
-  - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
-  - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
-  - make ${MAKEOPTS} -C ports/teensy
-  - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
-  - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
-  - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+# define the jobs for the stages
+# order of the jobs has longest running first to optimise total time
+jobs:
+  include:
+    # stm32 port
+    - stage: test
+      env: NAME="stm32 port build"
+      install:
+        # need newer gcc version for Cortex-M7 support
+        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+        - sudo apt-get update -qq || true
+        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - arm-none-eabi-gcc --version
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/stm32
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
 
-  # run tests without coverage info
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
+    # qemu-arm port
+    - stage: test
+      env: NAME="qemu-arm port build and tests"
+      install:
+        # need newer gcc version for nano.specs
+        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+        - sudo apt-get update -qq || true
+        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - sudo apt-get install qemu-system
+        - arm-none-eabi-gcc --version
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
+      after_failure:
+        - grep "FAIL" ports/qemu-arm/build/console.out
 
-  # run tests with coverage info
-  - make ${MAKEOPTS} -C ports/unix coverage
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -d thread)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --emit native)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy -d basics float)
+    # unix coverage
+    - stage: test
+      env: NAME="unix coverage build and tests"
+      install:
+        # a specific urllib3 version is needed for requests and cpp-coveralls to work together
+        - sudo pip install -Iv urllib3==1.22
+        - sudo pip install cpp-coveralls
+        - gcc --version
+        - python3 --version
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix coverage
+        # run the main test suite
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -d thread)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --emit native)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy -d basics float)
+        # test when input script comes from stdin
+        - cat tests/basics/0prelim.py | ports/unix/micropython_coverage | grep -q 'abc'
+        # run coveralls coverage analysis (try to, even if some builds/tests failed)
+        - (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
+      after_failure:
+        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
 
-  # test when input script comes from stdin
-  - cat tests/basics/0prelim.py | ports/unix/micropython_coverage | grep -q 'abc'
+    # standard unix port
+    - stage: test
+      env: NAME="unix port build and tests"
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix
+        - make ${MAKEOPTS} -C ports/unix test
 
-  # run coveralls coverage analysis (try to, even if some builds/tests failed)
-  - (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
+    # unix nanbox
+    - stage: test
+      env: NAME="unix nanbox port build and tests"
+      install:
+        - sudo apt-get install gcc-multilib libffi-dev:i386
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix nanbox
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_nanbox ./run-tests)
 
-  # run tests on stackless build
-  - rm -rf ports/unix/build-coverage
-  - make ${MAKEOPTS} -C ports/unix coverage CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
+    # unix stackless
+    - stage: test
+      env: NAME="unix stackless port build and tests"
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - make ${MAKEOPTS} -C ports/unix test
 
-after_failure:
-  - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
-  - (grep "FAIL" ports/qemu-arm/build/console.out)
+    # windows port via mingw
+    - stage: test
+      env: NAME="windows port build via mingw"
+      install:
+        - sudo apt-get install gcc-mingw-w64
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+
+    # bare-arm and minimal ports
+    - stage: test
+      env: NAME="bare-arm and minimal ports build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+        - arm-none-eabi-gcc --version
+      script:
+        - make ${MAKEOPTS} -C ports/bare-arm
+        - make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
+        - ls -l ports/minimal/build/firmware.bin
+        - tools/check_code_size.sh
+        - mkdir -p ${HOME}/persist
+        # Save new firmware for reference, but only if building a main branch, not a pull request
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp ports/minimal/build/firmware.bin ${HOME}/persist/; fi'
+
+    # cc3200 port
+    - stage: test
+      env: NAME="cc3200 port build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+      script:
+        - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
+        - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
+
+    # teensy port
+    - stage: test
+      env: NAME="teensy port build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+      script:
+        - make ${MAKEOPTS} -C ports/teensy
