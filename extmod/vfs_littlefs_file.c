@@ -39,6 +39,8 @@ typedef struct _vfs_littlefs_file_t {
     mp_obj_base_t base;
     mp_obj_vfs_littlefs_t *vfs;
     lfs_file_t file;
+    struct lfs_file_config cfg;
+    uint8_t file_buffer[0];
 } vfs_littlefs_file_t;
 
 STATIC void vfs_littlefs_file_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -91,13 +93,17 @@ mp_obj_t mp_vfs_littlefs_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t 
         flags = LFS_O_RDONLY;
     }
 
-    vfs_littlefs_file_t *o = m_new_obj_with_finaliser(vfs_littlefs_file_t);
+    vfs_littlefs_file_t *o = m_new_obj_var_with_finaliser(vfs_littlefs_file_t, uint8_t, self->lfs.cfg->prog_size);
     o->base.type = type;
     o->vfs = self;
+    #if !MICROPY_GC_CONSERVATIVE_CLEAR
     memset(&o->file, 0, sizeof(o->file));
+    memset(&o->cfg, 0, sizeof(o->cfg));
+    #endif
+    o->cfg.buffer = &o->file_buffer[0];
 
     const char *path = mp_obj_vfs_littlefs_make_path(self, path_in);
-    int ret = lfs_file_open(&self->lfs, &o->file, path, flags);
+    int ret = lfs_file_opencfg(&self->lfs, &o->file, path, flags, &o->cfg);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }

@@ -106,6 +106,8 @@ STATIC int dev_sync(const struct lfs_config *c) {
 }
 
 STATIC void init_config(struct lfs_config *config, mp_obj_t bdev) {
+    memset(config, 0, sizeof(*config));
+
     config->context = MP_OBJ_TO_PTR(bdev);
 
     config->read = dev_read;
