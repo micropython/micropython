@@ -61,7 +61,7 @@ jobs:
     - stage: test
       env: NAME="unix nanbox port build and tests"
       install:
-        - sudo apt-get install gcc-multilib
+        - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
@@ -90,7 +90,11 @@ jobs:
     - stage: test
       env: NAME="qemu-arm port build and tests"
       install:
-        - sudo apt-get install gcc-arm-none-eabi qemu-system
+        # need newer gcc version for nano.specs
+        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+        - sudo apt-get update -qq || true
+        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - sudo apt-get install qemu-system
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
@@ -99,9 +103,10 @@ jobs:
     - stage: test
       env: NAME="stm32 port build"
       install:
+        # need newer gcc version for Cortex-M7 support
         - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
         - sudo apt-get update -qq || true
-        - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
