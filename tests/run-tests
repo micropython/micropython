@@ -143,9 +143,12 @@ def run_micropython(pyb, args, test_file, is_special=False):
         pyb.enter_raw_repl()
         try:
             output_mupy = pyb.execfile(test_file)
-        except pyboard.PyboardError:
+        except pyboard.PyboardError as e:
             had_crash = True
-            output_mupy = b'CRASH'
+            if not is_special and e.args[0] == 'exception':
+                output_mupy = e.args[1] + e.args[2] + b'CRASH'
+            else:
+                output_mupy = b'CRASH'
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
