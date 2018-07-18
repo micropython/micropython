@@ -1,3 +1,5 @@
+language: c
+
 cache:
   directories:
     - "${HOME}/mpy-cross"
@@ -13,7 +15,6 @@ jobs:
     - stage: mpy-cross
       install:
         - gcc --version
-        - arm-none-eabi-gcc --version
         - python3 --version
       script:
         - make ${MAKEOPTS} -C mpy-cross clean
@@ -30,6 +31,7 @@ jobs:
     - stage: test
       install:
         - sudo apt-get install -y --force-yes gcc-arm-none-eabi
+        - arm-none-eabi-gcc --version
       script:
         - ls mpy-cross
         - make ${MAKEOPTS} -C ports/stm32
