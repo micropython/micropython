@@ -16,25 +16,108 @@ jobs:
       install:
         - gcc --version
         - python3 --version
+        - which python
+        - python --version
       script:
+        - pwd
+        - ls
         - make ${MAKEOPTS} -C mpy-cross clean
         - make ${MAKEOPTS} -C mpy-cross
+        - ls mpy-cross
 
-    # unix port
+    # coverage build
+    - stage: test
+      install:
+        # a specific urllib3 version is needed for requests and cpp-coveralls to work together
+        - sudo pip install -Iv urllib3==1.22
+        - sudo pip install cpp-coveralls
+      script:
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix coverage
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -d thread)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --emit native)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy -d basics float)
+
+        # test when input script comes from stdin
+        - cat tests/basics/0prelim.py | ports/unix/micropython_coverage | grep -q 'abc'
+
+        # run coveralls coverage analysis (try to, even if some builds/tests failed)
+        - (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
+
+    # bare-arm and minimal port
+    - stage: test
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+      script:
+        - make ${MAKEOPTS} -C ports/bare-arm
+        - make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
+
+    # unix port and tests
     - stage: test
       script:
         - ls mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
+        - make ${MAKEOPTS} -C ports/unix nanbox
+
+    # unix nanbox port and tests
+    - stage: test
+      script:
+        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix nanbox
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_nanbox ./run-tests)
+
+    # unix stackless port and tests
+    - stage: test
+      script:
+        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix coverage CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
+
+    # windows port via mingw
+    - stage: test
+      install:
+        - sudo apt-get install gcc-mingw-w64
+      script:
+        - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+
+    # qemu-arm port and tests
+    - stage: test
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+      script:
+        - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
 
     # stm32 port
     - stage: test
       install:
-        - sudo apt-get install -y --force-yes gcc-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
         - ls mpy-cross
         - make ${MAKEOPTS} -C ports/stm32
+        - make ${MAKEOPTS} -C ports/stm32
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
+
+    # cc3200 port
+    - stage: test
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+      script:
+        - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
+        - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
+
+    # teensy port
+    - stage: test
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+      script:
+        - make ${MAKEOPTS} -C ports/teensy
 
 # define the successive stages
 stages:
