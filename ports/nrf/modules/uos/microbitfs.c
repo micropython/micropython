@@ -32,7 +32,6 @@
 #include "microbitfs.h"
 #include "drivers/flash.h"
 #include "modrandom.h"
-#include "py/nlr.h"
 #include "py/obj.h"
 #include "py/stream.h"
 #include "py/runtime.h"
@@ -390,7 +389,7 @@ STATIC mp_obj_t microbit_remove(mp_obj_t filename) {
 
 STATIC void check_file_open(file_descriptor_obj *self) {
     if (!self->open) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "I/O operation on closed file"));
+        mp_raise_ValueError("I/O operation on closed file");
     }
 }
 
@@ -680,7 +679,7 @@ mp_obj_t uos_mbfs_open(size_t n_args, const mp_obj_t *args) {
     }
     return res;
 mode_error:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "illegal mode"));
+    mp_raise_ValueError("illegal mode");
 }
 
 STATIC mp_obj_t uos_mbfs_stat(mp_obj_t filename) {

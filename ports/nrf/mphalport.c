@@ -29,6 +29,7 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "py/runtime.h"
 #include "uart.h"
 #include "nrfx_errors.h"
 #include "nrfx_config.h"
@@ -42,7 +43,7 @@ const byte mp_hal_status_to_errno_table[4] = {
 };
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(mp_hal_status_to_errno_table[status])));
+    mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
 #if !MICROPY_KBD_EXCEPTION

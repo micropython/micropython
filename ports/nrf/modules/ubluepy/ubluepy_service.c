@@ -68,15 +68,13 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
         if (type > 0 &&  type <= UBLUEPY_SERVICE_PRIMARY) {
             s->type = type;
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                      "Invalid Service type"));
+            mp_raise_ValueError("Invalid Service type");
         }
 
         (void)ble_drv_service_add(s);
 
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Invalid UUID parameter"));
+        mp_raise_ValueError("Invalid UUID parameter");
     }
 
     // clear reference to peripheral
@@ -127,8 +125,7 @@ STATIC mp_obj_t service_get_characteristic(mp_obj_t self_in, mp_obj_t uuid) {
 
     // validate that there is an UUID object passed in as parameter
     if (!(MP_OBJ_IS_TYPE(uuid, &ubluepy_uuid_type))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Invalid UUID parameter"));
+        mp_raise_ValueError("Invalid UUID parameter");
     }
 
     mp_obj_t * chars     = NULL;
