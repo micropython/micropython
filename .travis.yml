@@ -1,6 +1,11 @@
-language: c
-
 # global options
+language:
+  - c
+compiler:
+  - gcc
+cache:
+  directories:
+    - "${HOME}/persist"
 env:
   global:
     - MAKEOPTS="-j4"
