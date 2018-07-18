@@ -60,6 +60,10 @@ def build(file,targets,device=DEFAULT_DEVICE):
   for t,target in enumerate(targets):
     tdata = b''
     for image in target:
+      # fixing L476 8-byte align
+      pad = (8 - len(image['data']) % 8 ) % 8
+      image['data'] = image['data'] + bytes(bytearray(8)[0:pad])
+      #
       tdata += struct.pack('<2I',image['address'],len(image['data']))+image['data']
     tdata = struct.pack('<6sBI255s2I',b'Target',0,1, b'ST...',len(tdata),len(target)) + tdata
     data += tdata
