@@ -25,7 +25,7 @@ jobs:
         - sudo pip install -Iv urllib3==1.22
         - sudo pip install cpp-coveralls
       script:
-        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
@@ -52,7 +52,7 @@ jobs:
     - stage: test
       env: NAME="unix port build and tests"
       script:
-        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
         - make ${MAKEOPTS} -C ports/unix test
@@ -61,7 +61,7 @@ jobs:
     - stage: test
       env: NAME="unix nanbox port build and tests"
       script:
-        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix nanbox
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_nanbox ./run-tests)
@@ -70,7 +70,7 @@ jobs:
     - stage: test
       env: NAME="unix stackless port build and tests"
       script:
-        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
@@ -81,7 +81,7 @@ jobs:
       install:
         - sudo apt-get install gcc-mingw-w64
       script:
-        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
     # qemu-arm port and tests
@@ -90,7 +90,7 @@ jobs:
       install:
         - sudo apt-get install gcc-arm-none-eabi
       script:
-        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
 
     # stm32 port
@@ -101,7 +101,7 @@ jobs:
         - sudo apt-get install gcc-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
-        - make $(MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
