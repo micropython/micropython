@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,29 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 
-#if MICROPY_PY_UBLUEPY
+#include "common-hal/bleio/UUID.h"
 
-extern const mp_obj_type_t ubluepy_peripheral_type;
-extern const mp_obj_type_t ubluepy_service_type;
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t service;
+    uint16_t service_handle;
+    bleio_uuid_obj_t *uuid;
+    mp_obj_t value_data;
+    uint16_t handle;
+    struct {
+        bool broadcast : 1;
+        bool read : 1;
+        bool write_wo_resp : 1;
+        bool write : 1;
+        bool notify : 1;
+        bool indicate : 1;
+    } props;
+    uint16_t user_desc_handle;
+    uint16_t cccd_handle;
+    uint16_t sccd_handle;
+} bleio_characteristic_obj_t;
 
-STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_ubluepy) },
-#if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_ROM_QSTR(MP_QSTR_Peripheral),      MP_ROM_PTR(&ubluepy_peripheral_type) },
-#endif
-    { MP_ROM_QSTR(MP_QSTR_Service),         MP_ROM_PTR(&ubluepy_service_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_ubluepy_globals, mp_module_ubluepy_globals_table);
-
-const mp_obj_module_t mp_module_ubluepy = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ubluepy_globals,
-};
-
-#endif // MICROPY_PY_UBLUEPY
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H

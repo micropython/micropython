@@ -30,6 +30,7 @@
 #include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/AddressType.h"
 #include "shared-bindings/bleio/AdvertisementData.h"
+#include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Scanner.h"
@@ -54,6 +55,7 @@
 //|     AddressType
 //|     AdvertisementData
 //|     Adapter
+//|     Characteristic
 //|     Descriptor
 //|     ScanEntry
 //|     Scanner
@@ -71,6 +73,7 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),          MP_ROM_QSTR(MP_QSTR_bleio) },
     { MP_ROM_QSTR(MP_QSTR_Address),           MP_ROM_PTR(&bleio_address_type) },
     { MP_ROM_QSTR(MP_QSTR_AdvertisementData), MP_ROM_PTR(&bleio_advertisementdata_type) },
+    { MP_ROM_QSTR(MP_QSTR_Characteristic),    MP_ROM_PTR(&bleio_characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
     { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
     { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },

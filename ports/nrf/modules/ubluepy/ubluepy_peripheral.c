@@ -34,6 +34,7 @@
 
 #include "ble_drv.h"
 #include "common-hal/bleio/UUID.h"
+#include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/UUID.h"
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -316,26 +317,31 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
 
 void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
     ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
-    ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
-    p_char->base.type = &ubluepy_characteristic_type;
+    bleio_characteristic_obj_t * p_char = m_new_obj(bleio_characteristic_obj_t);
+    p_char->base.type = &bleio_characteristic_type;
 
     bleio_uuid_obj_t * p_uuid = m_new_obj(bleio_uuid_obj_t);
     p_uuid->base.type = &bleio_uuid_type;
 
-    p_char->p_uuid = p_uuid;
+    p_char->uuid = p_uuid;
 
     p_uuid->type = p_desc_data->uuid_type;
     p_uuid->value[0] = p_desc_data->uuid & 0xFF;
     p_uuid->value[1] = p_desc_data->uuid >> 8;
 
     // add characteristic specific data from discovery
-    p_char->props  = p_desc_data->props;
+    p_char->props.broadcast = p_desc_data->props.broadcast;
+    p_char->props.indicate = p_desc_data->props.indicate;
+    p_char->props.notify = p_desc_data->props.notify;
+    p_char->props.read = p_desc_data->props.read;
+    p_char->props.write = p_desc_data->props.write;
+    p_char->props.write_wo_resp = p_desc_data->props.write_wo_resp;
     p_char->handle = p_desc_data->value_handle;
 
     // equivalent to ubluepy_service.c - service_add_characteristic()
     // except the registration of the characteristic towards the bluetooth stack
     p_char->service_handle = p_service->handle;
-    p_char->p_service      = p_service;
+    p_char->service      = p_service;
 
     mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
 }
@@ -430,7 +436,7 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
             mp_uint_t  num_chars;
             mp_obj_get_array(p_service->char_list, &num_chars, &characteristics);
 
-            ubluepy_characteristic_obj_t * p_char = (ubluepy_characteristic_obj_t *)characteristics[num_chars - 1];
+            bleio_characteristic_obj_t * p_char = (bleio_characteristic_obj_t *)characteristics[num_chars - 1];
             uint16_t next_handle = p_char->handle + 1;
             if ((next_handle) < p_service->end_handle) {
                 char_disc_retval = ble_drv_discover_characteristic(p_service,

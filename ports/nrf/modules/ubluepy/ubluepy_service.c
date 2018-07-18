@@ -94,14 +94,13 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
 ///
 STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteristic) {
     ubluepy_service_obj_t        * self   = MP_OBJ_TO_PTR(self_in);
-    ubluepy_characteristic_obj_t * p_char = MP_OBJ_TO_PTR(characteristic);
+    bleio_characteristic_obj_t * p_char = MP_OBJ_TO_PTR(characteristic);
 
     p_char->service_handle = self->handle;
 
     bool retval = ble_drv_characteristic_add(p_char);
-
     if (retval) {
-        p_char->p_service = self;
+        p_char->service = self_in;
     }
 
     mp_obj_list_append(self->char_list, characteristic);
@@ -139,10 +138,10 @@ STATIC mp_obj_t service_get_characteristic(mp_obj_t self_in, mp_obj_t uuid) {
     mp_obj_get_array(self->char_list, &num_chars, &chars);
 
     for (uint8_t i = 0; i < num_chars; i++) {
-        ubluepy_characteristic_obj_t * p_char = (ubluepy_characteristic_obj_t *)chars[i];
+        bleio_characteristic_obj_t * p_char = (bleio_characteristic_obj_t *)chars[i];
 
-        bool type_match = p_char->p_uuid->type == p_uuid->type;
-        bool uuid_match = ((uint16_t)(*(uint16_t *)&p_char->p_uuid->value[0]) ==
+        bool type_match = p_char->uuid->type == p_uuid->type;
+        bool uuid_match = ((uint16_t)(*(uint16_t *)&p_char->uuid->value[0]) ==
                            (uint16_t)(*(uint16_t *)&p_uuid->value[0]));
 
         if (type_match && uuid_match) {

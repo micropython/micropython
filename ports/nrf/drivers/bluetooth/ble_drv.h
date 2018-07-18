@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "shared-module/bleio/Characteristic.h"
 #include "shared-module/bleio/Scanner.h"
 
 #include "modubluepy.h"
@@ -61,7 +62,14 @@ typedef struct {
 typedef struct {
     uint16_t uuid;
     uint8_t  uuid_type;
-    uint8_t  props;
+    struct {
+        bool broadcast : 1;
+        bool read : 1;
+        bool write_wo_resp : 1;
+        bool write : 1;
+        bool notify : 1;
+        bool indicate : 1;
+    } props;
     uint16_t decl_handle;
     uint16_t value_handle;
 } ble_drv_char_data_t;
@@ -72,7 +80,7 @@ typedef void (*ble_drv_gattc_evt_callback_t)(mp_obj_t self, uint16_t event_id, u
 typedef void (*ble_drv_adv_evt_callback_t)(bleio_scanner_obj_t *self, ble_drv_adv_data_t *data);
 typedef void (*ble_drv_disc_add_service_callback_t)(mp_obj_t self, ble_drv_service_data_t * p_service_data);
 typedef void (*ble_drv_disc_add_char_callback_t)(mp_obj_t self, ble_drv_char_data_t * p_desc_data);
-typedef void (*ble_drv_gattc_char_data_callback_t)(mp_obj_t self, uint16_t length, uint8_t * p_data);
+typedef void (*ble_drv_gattc_char_data_callback_t)(bleio_characteristic_obj_t *self, uint16_t length, uint8_t * p_data);
 
 uint32_t ble_drv_stack_enable(void);
 
@@ -86,7 +94,7 @@ bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
 
 bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj);
 
-bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj);
+bool ble_drv_characteristic_add(bleio_characteristic_obj_t *characteristic);
 
 bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params);
 
@@ -100,13 +108,13 @@ void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t 
 
 void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
-void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, ble_drv_gattc_char_data_callback_t cb);
+void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic, ble_drv_gattc_char_data_callback_t cb);
 
-void ble_drv_attr_s_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
+void ble_drv_attr_s_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo);
 
-void ble_drv_attr_s_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
+void ble_drv_attr_s_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo);
 
-void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data, bool w_response);
+void ble_drv_attr_c_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo);
 
 void ble_drv_scan_start(uint16_t interval, uint16_t window);
 

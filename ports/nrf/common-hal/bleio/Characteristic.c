@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,30 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
+#include "ble_drv.h"
+#include "shared-module/bleio/Characteristic.h"
 
-#if MICROPY_PY_UBLUEPY
+void data_callback(bleio_characteristic_obj_t *self, uint16_t length, uint8_t *data) {
+    self->value_data = mp_obj_new_bytearray(length, data);
+}
 
-extern const mp_obj_type_t ubluepy_peripheral_type;
-extern const mp_obj_type_t ubluepy_service_type;
+void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self) {
+    ble_drv_attr_c_read(self, data_callback);
+}
 
-STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_ubluepy) },
-#if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_ROM_QSTR(MP_QSTR_Peripheral),      MP_ROM_PTR(&ubluepy_peripheral_type) },
-#endif
-    { MP_ROM_QSTR(MP_QSTR_Service),         MP_ROM_PTR(&ubluepy_service_type) },
-};
+void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
+    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(self->service);
+    ubluepy_role_type_t role = service->p_periph->role;
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_ubluepy_globals, mp_module_ubluepy_globals_table);
+    if (role == UBLUEPY_ROLE_PERIPHERAL) {
+        // TODO: Add indications
+        if (self->props.notify) {
+            ble_drv_attr_s_notify(self, bufinfo);
+        } else {
+            ble_drv_attr_s_write(self, bufinfo);
+        }
+    } else {
+        ble_drv_attr_c_write(self, bufinfo);
+    }
 
-const mp_obj_module_t mp_module_ubluepy = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ubluepy_globals,
-};
-
-#endif // MICROPY_PY_UBLUEPY
+}

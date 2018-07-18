@@ -28,7 +28,6 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
 
-#include "py/obj.h"
 #include "shared-bindings/bleio/UUIDType.h"
 
 typedef struct {

@@ -98,7 +98,7 @@ static bleio_scanner_obj_t *mp_adv_observer;
 static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
-static mp_obj_t mp_gattc_char_data_observer;
+static bleio_characteristic_obj_t *mp_gattc_char_data_observer;
 
 #if (BLUETOOTH_SD == 140)
 static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
@@ -270,38 +270,26 @@ bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
 bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
     SD_TEST_OR_ENABLE();
 
-    if (p_service_obj->p_uuid->type > BLE_UUID_TYPE_BLE) {
+    ble_uuid_t uuid;
+    uuid.type = BLE_UUID_TYPE_BLE;
+    uuid.uuid = p_service_obj->p_uuid->value[0] | (p_service_obj->p_uuid->value[1] << 8);
 
-        ble_uuid_t uuid;
+    if (p_service_obj->p_uuid->type == UUID_TYPE_128BIT) {
         uuid.type  = p_service_obj->p_uuid->uuid_vs_idx;
-        uuid.uuid  = p_service_obj->p_uuid->value[0];
-        uuid.uuid += p_service_obj->p_uuid->value[1] << 8;
-
-        if (sd_ble_gatts_service_add(p_service_obj->type,
-                                     &uuid,
-                                     &p_service_obj->handle) != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      translate("Can not add Service.")));
-        }
-    } else if (p_service_obj->p_uuid->type == BLE_UUID_TYPE_BLE) {
-        BLE_DRIVER_LOG("adding service\n");
-
-        ble_uuid_t uuid;
-        uuid.type  = p_service_obj->p_uuid->type;
-        uuid.uuid  = p_service_obj->p_uuid->value[0];
-        uuid.uuid += p_service_obj->p_uuid->value[1] << 8;
-
-        if (sd_ble_gatts_service_add(p_service_obj->type,
-                                     &uuid,
-                                     &p_service_obj->handle) != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      translate("Can not add Service.")));
-        }
     }
+
+    uint32_t err_code = sd_ble_gatts_service_add(p_service_obj->type,
+                                                 &uuid,
+                                                 &p_service_obj->handle);
+    if (err_code != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  translate("Can not add Service. status: 0x%08lX"), err_code));
+    }
+
     return true;
 }
 
-bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
+bool ble_drv_characteristic_add(bleio_characteristic_obj_t *characteristic) {
     ble_gatts_char_md_t char_md;
     ble_gatts_attr_md_t cccd_md;
     ble_gatts_attr_t    attr_char_value;
@@ -310,24 +298,19 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
 
     memset(&char_md, 0, sizeof(char_md));
 
-    char_md.char_props.broadcast      = (p_char_obj->props & UBLUEPY_PROP_BROADCAST) ? 1 : 0;
-    char_md.char_props.read           = (p_char_obj->props & UBLUEPY_PROP_READ) ? 1 : 0;
-    char_md.char_props.write_wo_resp  = (p_char_obj->props & UBLUEPY_PROP_WRITE_WO_RESP) ? 1 : 0;
-    char_md.char_props.write          = (p_char_obj->props & UBLUEPY_PROP_WRITE) ? 1 : 0;
-    char_md.char_props.notify         = (p_char_obj->props & UBLUEPY_PROP_NOTIFY) ? 1 : 0;
-    char_md.char_props.indicate       = (p_char_obj->props & UBLUEPY_PROP_INDICATE) ? 1 : 0;
-#if 0
-    char_md.char_props.auth_signed_wr = (p_char_obj->props & UBLUEPY_PROP_NOTIFY) ? 1 : 0;
-#endif
-
+    char_md.char_props.broadcast      = characteristic->props.broadcast;
+    char_md.char_props.read           = characteristic->props.read;
+    char_md.char_props.write_wo_resp  = characteristic->props.write_wo_resp;
+    char_md.char_props.write          = characteristic->props.write;
+    char_md.char_props.notify         = characteristic->props.notify;
+    char_md.char_props.indicate       = characteristic->props.indicate;
 
     char_md.p_char_user_desc  = NULL;
     char_md.p_char_pf         = NULL;
     char_md.p_user_desc_md    = NULL;
     char_md.p_sccd_md         = NULL;
 
-    // if cccd
-    if (p_char_obj->attrs & UBLUEPY_ATTR_CCCD) {
+    if (characteristic->props.notify || characteristic->props.notify) {
         memset(&cccd_md, 0, sizeof(cccd_md));
         BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
         BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
@@ -337,9 +320,12 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
         char_md.p_cccd_md = NULL;
     }
 
-    uuid.type  = p_char_obj->p_uuid->type;
-    uuid.uuid  = p_char_obj->p_uuid->value[0];
-    uuid.uuid += p_char_obj->p_uuid->value[1] << 8;
+    uuid.type  = BLE_UUID_TYPE_BLE;
+    if (characteristic->uuid->type == UUID_TYPE_128BIT)
+        uuid.type = characteristic->uuid->uuid_vs_idx;
+
+    uuid.uuid  = characteristic->uuid->value[0];
+    uuid.uuid += characteristic->uuid->value[1] << 8;
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -365,19 +351,20 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
 
     ble_gatts_char_handles_t handles;
 
-    if (sd_ble_gatts_characteristic_add(p_char_obj->service_handle,
-                                        &char_md,
-                                        &attr_char_value,
-                                        &handles) != 0) {
+    uint32_t err_code = sd_ble_gatts_characteristic_add(characteristic->service_handle,
+                                                        &char_md,
+                                                        &attr_char_value,
+                                                        &handles);
+    if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  translate("Can not add Characteristic.")));
+                  translate("Can not add Characteristic. status: 0x%08lX"), err_code));
     }
 
     // apply handles to object instance
-    p_char_obj->handle           = handles.value_handle;
-    p_char_obj->user_desc_handle = handles.user_desc_handle;
-    p_char_obj->cccd_handle      = handles.cccd_handle;
-    p_char_obj->sccd_handle      = handles.sccd_handle;
+    characteristic->handle           = handles.value_handle;
+    characteristic->user_desc_handle = handles.user_desc_handle;
+    characteristic->cccd_handle      = handles.cccd_handle;
+    characteristic->sccd_handle      = handles.sccd_handle;
 
     return true;
 }
@@ -652,15 +639,18 @@ void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
 
 }
 
-void ble_drv_attr_s_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+void ble_drv_attr_s_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
+    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
+    uint16_t conn_handle = service->p_periph->conn_handle;
     ble_gatts_value_t gatts_value;
+
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len     = len;
+    gatts_value.len     = bufinfo->len;
     gatts_value.offset  = 0;
-    gatts_value.p_value = p_data;
+    gatts_value.p_value = bufinfo->buf;
 
-    uint32_t err_code = sd_ble_gatts_value_set(conn_handle, handle, &gatts_value);
+    uint32_t err_code = sd_ble_gatts_value_set(conn_handle, characteristic->handle, &gatts_value);
 
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -668,17 +658,19 @@ void ble_drv_attr_s_write(uint16_t conn_handle, uint16_t handle, uint16_t len, u
     }
 }
 
-void ble_drv_attr_s_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
-    uint16_t               hvx_len = len;
+void ble_drv_attr_s_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
+    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
+    uint16_t conn_handle = service->p_periph->conn_handle;
     ble_gatts_hvx_params_t hvx_params;
+    uint16_t hvx_len = bufinfo->len;
 
     memset(&hvx_params, 0, sizeof(hvx_params));
 
-    hvx_params.handle = handle;
+    hvx_params.handle = characteristic->handle;
     hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
     hvx_params.offset = 0;
     hvx_params.p_len  = &hvx_len;
-    hvx_params.p_data = p_data;
+    hvx_params.p_data = bufinfo->buf;
 
     while (m_tx_in_progress) {
         ;
@@ -713,13 +705,13 @@ void ble_drv_adv_report_handler_set(bleio_scanner_obj_t *self, ble_drv_adv_evt_c
 }
 
 
-void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, ble_drv_gattc_char_data_callback_t cb) {
-
-    mp_gattc_char_data_observer = obj;
+void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic, ble_drv_gattc_char_data_callback_t cb) {
+    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
+    mp_gattc_char_data_observer = characteristic;
     gattc_char_data_handle = cb;
 
-    uint32_t err_code = sd_ble_gattc_read(conn_handle,
-                                          handle,
+    const uint32_t err_code = sd_ble_gattc_read(service->p_periph->conn_handle,
+                                          characteristic->handle,
                                           0);
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -731,26 +723,26 @@ void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, bl
     }
 }
 
-void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data, bool w_response) {
+void ble_drv_attr_c_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
+    ubluepy_service_obj_t *service = MP_OBJ_TO_PTR(characteristic->service);
+    uint16_t conn_handle = service->p_periph->conn_handle;
 
     ble_gattc_write_params_t write_params;
+    write_params.write_op = BLE_GATT_OP_WRITE_REQ;
 
-    if (w_response) {
-            write_params.write_op = BLE_GATT_OP_WRITE_REQ;
-    } else {
+    if (characteristic->props.write_wo_resp) {
         write_params.write_op = BLE_GATT_OP_WRITE_CMD;
     }
 
     write_params.flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL;
-    write_params.handle   = handle;
+    write_params.handle   = characteristic->handle;
     write_params.offset   = 0;
-    write_params.len      = len;
-    write_params.p_value  = p_data;
+    write_params.len      = bufinfo->len;
+    write_params.p_value  = bufinfo->buf;
 
-    m_write_done = !w_response;
+    m_write_done = (write_params.write_op == BLE_GATT_OP_WRITE_CMD);
 
     uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
-
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
             translate("Can not write attribute value. status: 0x%02x"), (uint16_t)err_code));
@@ -1053,15 +1045,12 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                 char_data.decl_handle  = p_char->handle_decl;
                 char_data.value_handle = p_char->handle_value;
 
-                char_data.props |= (p_char->char_props.broadcast) ? UBLUEPY_PROP_BROADCAST : 0;
-                char_data.props |= (p_char->char_props.read) ? UBLUEPY_PROP_READ : 0;
-                char_data.props |= (p_char->char_props.write_wo_resp) ? UBLUEPY_PROP_WRITE_WO_RESP : 0;
-                char_data.props |= (p_char->char_props.write) ? UBLUEPY_PROP_WRITE : 0;
-                char_data.props |= (p_char->char_props.notify) ? UBLUEPY_PROP_NOTIFY : 0;
-                char_data.props |= (p_char->char_props.indicate) ? UBLUEPY_PROP_INDICATE : 0;
-            #if 0
-                char_data.props |= (p_char->char_props.auth_signed_wr) ? UBLUEPY_PROP_NOTIFY : 0;
-            #endif
+                char_data.props.broadcast = p_char->char_props.broadcast;
+                char_data.props.read = p_char->char_props.read;
+                char_data.props.write_wo_resp = p_char->char_props.write_wo_resp;
+                char_data.props.write = p_char->char_props.write;
+                char_data.props.notify = p_char->char_props.notify;
+                char_data.props.indicate = p_char->char_props.indicate;
 
                 disc_add_char_handler(mp_gattc_disc_char_observer, &char_data);
             }
