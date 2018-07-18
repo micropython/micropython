@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +24,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
-#define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
+#ifndef __MICROPY_INCLUDED_NRF5_MODMACHINE_H__
+#define __MICROPY_INCLUDED_NRF5_MODMACHINE_H__
+
+#include "py/mpstate.h"
+#include "py/nlr.h"
 #include "py/obj.h"
 
-typedef enum {
-    PYEXEC_MODE_RAW_REPL,
-    PYEXEC_MODE_FRIENDLY_REPL,
-} pyexec_mode_kind_t;
+void machine_init(void);
 
-extern pyexec_mode_kind_t pyexec_mode_kind;
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(machine_sleep_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(machine_deepsleep_obj);
 
-// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
-// the pyexec functions if a SystemExit exception is raised by the running code.
-// It will reset to 0 at the start of each execution (eg each REPL entry).
-extern int pyexec_system_exit;
-
-#define PYEXEC_FORCED_EXIT (0x100)
-#define PYEXEC_SWITCH_MODE (0x200)
-
-int pyexec_raw_repl(void);
-int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-int pyexec_frozen_module(const char *name);
-void pyexec_event_repl_init(void);
-int pyexec_event_repl_process_char(int c);
-extern uint8_t pyexec_repl_active;
-mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
-
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
-
-#endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#endif // __MICROPY_INCLUDED_NRF5_MODMACHINE_H__

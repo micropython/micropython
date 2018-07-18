@@ -1,9 +1,10 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Mark Shannon
+ * Copyright (c) 2017 Ayke van Laethem
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +24,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
-#define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#ifndef __MICROPY_INCLUDED_FILESYSTEM_H__
+#define __MICROPY_INCLUDED_FILESYSTEM_H__
 
 #include "py/obj.h"
+#include "py/lexer.h"
 
-typedef enum {
-    PYEXEC_MODE_RAW_REPL,
-    PYEXEC_MODE_FRIENDLY_REPL,
-} pyexec_mode_kind_t;
+#ifndef MBFS_LOG_CHUNK_SIZE
+// This property can be tuned to make the filesystem bigger (while keeping
+// the max number of blocks). Note that it cannot (currently) be increased
+// beyond 8 or uint8_t integers will overflow.
+// 2^7 == 128 bytes
+// (128-2) bytes/block * 252 blocks = 31752 usable bytes
+#define MBFS_LOG_CHUNK_SIZE 7
+#endif
 
-extern pyexec_mode_kind_t pyexec_mode_kind;
+mp_obj_t uos_mbfs_open(size_t n_args, const mp_obj_t *args);
+void microbit_filesystem_init(void);
+mp_lexer_t *uos_mbfs_new_reader(const char *filename);
+mp_import_stat_t uos_mbfs_import_stat(const char *path);
 
-// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
-// the pyexec functions if a SystemExit exception is raised by the running code.
-// It will reset to 0 at the start of each execution (eg each REPL entry).
-extern int pyexec_system_exit;
+MP_DECLARE_CONST_FUN_OBJ_0(uos_mbfs_listdir_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(uos_mbfs_ilistdir_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(uos_mbfs_remove_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(uos_mbfs_stat_obj);
 
-#define PYEXEC_FORCED_EXIT (0x100)
-#define PYEXEC_SWITCH_MODE (0x200)
-
-int pyexec_raw_repl(void);
-int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-int pyexec_frozen_module(const char *name);
-void pyexec_event_repl_init(void);
-int pyexec_event_repl_process_char(int c);
-extern uint8_t pyexec_repl_active;
-mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
-
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
-
-#endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#endif // __MICROPY_INCLUDED_FILESYSTEM_H__

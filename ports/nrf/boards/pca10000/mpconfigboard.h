@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
-#define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
-#include "py/obj.h"
+#define MICROPY_HW_BOARD_NAME       "PCA10000"
+#define MICROPY_HW_MCU_NAME         "NRF51822"
+#define MICROPY_PY_SYS_PLATFORM     "nrf51-dongle"
 
-typedef enum {
-    PYEXEC_MODE_RAW_REPL,
-    PYEXEC_MODE_FRIENDLY_REPL,
-} pyexec_mode_kind_t;
+#define MICROPY_PY_MACHINE_UART     (1)
+#define MICROPY_PY_MACHINE_HW_SPI   (0)
+#define MICROPY_PY_MACHINE_TIMER    (1)
+#define MICROPY_PY_MACHINE_RTCOUNTER (1)
+#define MICROPY_PY_MACHINE_I2C      (0)
+#define MICROPY_PY_MACHINE_ADC      (0)
+#define MICROPY_PY_MACHINE_TEMP     (1)
+#define MICROPY_PY_RANDOM_HW_RNG    (1)
 
-extern pyexec_mode_kind_t pyexec_mode_kind;
+#define MICROPY_HW_HAS_LED          (1)
+#define MICROPY_HW_LED_TRICOLOR     (1)
+#define MICROPY_HW_LED_PULLUP       (1)
 
-// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
-// the pyexec functions if a SystemExit exception is raised by the running code.
-// It will reset to 0 at the start of each execution (eg each REPL entry).
-extern int pyexec_system_exit;
+#define MICROPY_HW_LED_RED          (21) // RED
+#define MICROPY_HW_LED_GREEN        (22) // GREEN
+#define MICROPY_HW_LED_BLUE         (23) // BLUE
 
-#define PYEXEC_FORCED_EXIT (0x100)
-#define PYEXEC_SWITCH_MODE (0x200)
+// UART config
+#define MICROPY_HW_UART1_RX         (11)
+#define MICROPY_HW_UART1_TX         (9)
+#define MICROPY_HW_UART1_HWFC       (0)
 
-int pyexec_raw_repl(void);
-int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-int pyexec_frozen_module(const char *name);
-void pyexec_event_repl_init(void);
-int pyexec_event_repl_process_char(int c);
-extern uint8_t pyexec_repl_active;
-mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
-
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
-
-#endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#define HELP_TEXT_BOARD_LED         "1,2,3"

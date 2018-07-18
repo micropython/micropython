@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2018 Ayke van Laethem
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
-#define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
-#include "py/obj.h"
+#ifndef __MICROPY_INCLUDED_LIB_FLASH_H__
+#define __MICROPY_INCLUDED_LIB_FLASH_H__
+
+#include "nrf_nvmc.h"
+
+#if defined(NRF51)
+#define FLASH_PAGESIZE (1024)
+
+#elif defined(NRF52_SERIES)
+#define FLASH_PAGESIZE (4096)
+#else
+#error Unknown chip
+#endif
+
+#define FLASH_IS_PAGE_ALIGNED(addr) ((uint32_t)(addr) & (FLASH_PAGESIZE - 1))
+
+#if BLUETOOTH_SD
 
 typedef enum {
-    PYEXEC_MODE_RAW_REPL,
-    PYEXEC_MODE_FRIENDLY_REPL,
-} pyexec_mode_kind_t;
+    FLASH_STATE_BUSY,
+    FLASH_STATE_SUCCESS,
+    FLASH_STATE_ERROR,
+} flash_state_t;
 
-extern pyexec_mode_kind_t pyexec_mode_kind;
+void flash_page_erase(uint32_t address);
+void flash_write_byte(uint32_t address, uint8_t value);
+void flash_write_bytes(uint32_t address, const uint8_t *src, uint32_t num_bytes);
+void flash_operation_finished(flash_state_t result);
 
-// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
-// the pyexec functions if a SystemExit exception is raised by the running code.
-// It will reset to 0 at the start of each execution (eg each REPL entry).
-extern int pyexec_system_exit;
+#else
 
-#define PYEXEC_FORCED_EXIT (0x100)
-#define PYEXEC_SWITCH_MODE (0x200)
+#define flash_page_erase nrf_nvmc_page_erase
+#define flash_write_byte nrf_nvmc_write_byte
+#define flash_write_bytes nrf_nvmc_write_bytes
 
-int pyexec_raw_repl(void);
-int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-int pyexec_frozen_module(const char *name);
-void pyexec_event_repl_init(void);
-int pyexec_event_repl_process_char(int c);
-extern uint8_t pyexec_repl_active;
-mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
+#endif
 
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
-
-#endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#endif // __MICROPY_INCLUDED_LIB_FLASH_H__
