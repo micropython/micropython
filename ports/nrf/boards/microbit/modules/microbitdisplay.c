@@ -499,10 +499,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(microbit_display_clear_obj, microbit_display_clear_fun
 
 void microbit_display_set_pixel(microbit_display_obj_t *display, mp_int_t x, mp_int_t y, mp_int_t bright) {
     if (x < 0 || y < 0 || x > 4 || y > 4) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "index out of bounds."));
+        mp_raise_ValueError("index out of bounds.");
     }
     if (bright < 0 || bright > MAX_BRIGHTNESS) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "brightness out of bounds."));
+        mp_raise_ValueError("brightness out of bounds.");
     }
     display->image_buffer[x][y] = bright;
     display->brightnesses |= (1 << bright);
@@ -518,7 +518,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_display_set_pixel_obj, 4, 4, microb
 
 mp_int_t microbit_display_get_pixel(microbit_display_obj_t *display, mp_int_t x, mp_int_t y) {
     if (x < 0 || y < 0 || x > 4 || y > 4) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "index out of bounds."));
+        mp_raise_ValueError("index out of bounds.");
     }
     return display->image_buffer[x][y];
 }

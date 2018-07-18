@@ -122,8 +122,7 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
 
             ble_drv_uuid_add_vs(buffer, &s->uuid_vs_idx);
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                      "Invalid UUID string length"));
+            mp_raise_ValueError("Invalid UUID string length");
         }
     } else if (MP_OBJ_IS_TYPE(uuid_obj, &ubluepy_uuid_type)) {
         // deep copy instance
@@ -132,8 +131,7 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
         s->value[0] = p_old->value[0];
         s->value[1] = p_old->value[1];
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Invalid UUID parameter"));
+        mp_raise_ValueError("Invalid UUID parameter");
     }
 
     return MP_OBJ_FROM_PTR(s);

@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/nlr.h"
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "modmicrobit.h"
