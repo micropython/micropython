@@ -2,7 +2,7 @@ language: c
 
 cache:
   directories:
-    - "${HOME}/mpy-cross"
+    - "${HOME}/build/micropython/micropython/mpy-cross"
 
 env:
   global:
@@ -13,6 +13,7 @@ jobs:
   include:
     # build mpy-cross
     - stage: mpy-cross
+      env: NAME="mpy-cross build"
       install:
         - gcc --version
         - python3 --version
@@ -27,6 +28,7 @@ jobs:
 
     # coverage build
     - stage: test
+      env: NAME="unix coverage build and tests"
       install:
         # a specific urllib3 version is needed for requests and cpp-coveralls to work together
         - sudo pip install -Iv urllib3==1.22
@@ -47,6 +49,7 @@ jobs:
 
     # bare-arm and minimal port
     - stage: test
+      env: NAME="bare-arm and minimal port build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
       script:
@@ -55,6 +58,7 @@ jobs:
 
     # unix port and tests
     - stage: test
+      env: NAME="unix port build and tests"
       script:
         - ls mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
@@ -63,6 +67,7 @@ jobs:
 
     # unix nanbox port and tests
     - stage: test
+      env: NAME="unix nanbox port build and tests"
       script:
         - make $(MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
@@ -71,6 +76,7 @@ jobs:
 
     # unix stackless port and tests
     - stage: test
+      env: NAME="unix stackless port build and tests"
       script:
         - make $(MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
@@ -79,6 +85,7 @@ jobs:
 
     # windows port via mingw
     - stage: test
+      env: NAME="windows port build via mingw"
       install:
         - sudo apt-get install gcc-mingw-w64
       script:
@@ -86,6 +93,7 @@ jobs:
 
     # qemu-arm port and tests
     - stage: test
+      env: NAME="qemu-arm port build and tests"
       install:
         - sudo apt-get install gcc-arm-none-eabi
       script:
@@ -93,6 +101,7 @@ jobs:
 
     # stm32 port
     - stage: test
+      env: NAME="stm32 port build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
         - arm-none-eabi-gcc --version
@@ -106,6 +115,7 @@ jobs:
 
     # cc3200 port
     - stage: test
+      env: NAME="cc3200 port build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
       script:
@@ -114,6 +124,7 @@ jobs:
 
     # teensy port
     - stage: test
+      env: NAME="teensy port build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
       script:
