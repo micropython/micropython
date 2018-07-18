@@ -1,10 +1,16 @@
 language: c
 
+# global options
 env:
   global:
     - MAKEOPTS="-j4"
 
-# define the CI matrix
+# define the successive stages
+stages:
+  - name: mpy-cross
+  - name: test
+
+# define the jobs for the stages
 jobs:
   include:
     # build mpy-cross
@@ -17,7 +23,7 @@ jobs:
       script:
         - make ${MAKEOPTS} -C mpy-cross
 
-    # coverage build
+    # unix coverage
     - stage: test
       env: NAME="unix coverage build and tests"
       install:
@@ -28,27 +34,19 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
+        # run the main test suite
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -d thread)
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --emit native)
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy -d basics float)
-
         # test when input script comes from stdin
         - cat tests/basics/0prelim.py | ports/unix/micropython_coverage | grep -q 'abc'
-
         # run coveralls coverage analysis (try to, even if some builds/tests failed)
         - (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
+      after_failure:
+        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
 
-    # bare-arm and minimal port
-    - stage: test
-      env: NAME="bare-arm and minimal port build"
-      install:
-        - sudo apt-get install gcc-arm-none-eabi
-      script:
-        - make ${MAKEOPTS} -C ports/bare-arm
-        - make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
-
-    # unix port and tests
+    # standard unix port
     - stage: test
       env: NAME="unix port build and tests"
       script:
@@ -57,7 +55,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix
         - make ${MAKEOPTS} -C ports/unix test
 
-    # unix nanbox port and tests
+    # unix nanbox
     - stage: test
       env: NAME="unix nanbox port build and tests"
       install:
@@ -68,7 +66,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix nanbox
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_nanbox ./run-tests)
 
-    # unix stackless port and tests
+    # unix stackless
     - stage: test
       env: NAME="unix stackless port build and tests"
       script:
@@ -86,7 +84,22 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
-    # qemu-arm port and tests
+    # bare-arm and minimal ports
+    - stage: test
+      env: NAME="bare-arm and minimal ports build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+        - arm-none-eabi-gcc --version
+      script:
+        - make ${MAKEOPTS} -C ports/bare-arm
+        - make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
+        - ls -l ports/minimal/build/firmware.bin
+        - tools/check_code_size.sh
+        - mkdir -p ${HOME}/persist
+        # Save new firmware for reference, but only if building a main branch, not a pull request
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp ports/minimal/build/firmware.bin ${HOME}/persist/; fi'
+
+    # qemu-arm port
     - stage: test
       env: NAME="qemu-arm port build and tests"
       install:
@@ -95,9 +108,12 @@ jobs:
         - sudo apt-get update -qq || true
         - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
         - sudo apt-get install qemu-system
+        - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
+      after_failure:
+        - grep "FAIL" ports/qemu-arm/build/console.out
 
     # stm32 port
     - stage: test
@@ -110,7 +126,6 @@ jobs:
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
@@ -132,8 +147,3 @@ jobs:
         - sudo apt-get install gcc-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/teensy
-
-# define the successive stages
-stages:
-  - name: mpy-cross
-  - name: test
