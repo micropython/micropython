@@ -51,7 +51,9 @@ Additional components:
   (preliminary but functional).
 - ports/pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
 - ports/cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
-- ports/esp8266/ -- an experimental port for ESP8266 WiFi modules.
+- ports/esp8266/ -- a version of MicroPython that runs on Espressif's ESP8266 SoC.
+- ports/esp32/ -- a version of MicroPython that runs on Espressif's ESP32 SoC.
+- ports/nrf/ -- a version of MicroPython that runs on Nordic's nRF51 and nRF52 MCUs.
 - extmod/ -- additional (non-core) modules implemented in C.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
