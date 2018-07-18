@@ -1,9 +1,5 @@
 language: c
 
-cache:
-  directories:
-    - "${HOME}/build/micropython/micropython/mpy-cross"
-
 env:
   global:
     - MAKEOPTS="-j4"
@@ -16,15 +12,10 @@ jobs:
       env: NAME="mpy-cross build"
       install:
         - gcc --version
-        - python3 --version
-        - which python
         - python --version
+        - python3 --version
       script:
-        - pwd
-        - ls
-        - make ${MAKEOPTS} -C mpy-cross clean
         - make ${MAKEOPTS} -C mpy-cross
-        - ls mpy-cross
 
     # coverage build
     - stage: test
@@ -34,6 +25,7 @@ jobs:
         - sudo pip install -Iv urllib3==1.22
         - sudo pip install cpp-coveralls
       script:
+        - make $(MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
@@ -60,10 +52,10 @@ jobs:
     - stage: test
       env: NAME="unix port build and tests"
       script:
-        - ls mpy-cross
+        - make $(MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
-        - make ${MAKEOPTS} -C ports/unix nanbox
+        - make ${MAKEOPTS} -C ports/unix test
 
     # unix nanbox port and tests
     - stage: test
@@ -89,6 +81,7 @@ jobs:
       install:
         - sudo apt-get install gcc-mingw-w64
       script:
+        - make $(MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
     # qemu-arm port and tests
@@ -97,16 +90,18 @@ jobs:
       install:
         - sudo apt-get install gcc-arm-none-eabi
       script:
+        - make $(MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
 
     # stm32 port
     - stage: test
       env: NAME="stm32 port build"
       install:
+        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
         - sudo apt-get install gcc-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
-        - ls mpy-cross
+        - make $(MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
