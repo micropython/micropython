@@ -7,21 +7,43 @@ env:
 
 # define the successive stages
 stages:
-  - name: mpy-cross
   - name: test
 
 # define the jobs for the stages
+# order of the jobs has longest running first to optimise total time
 jobs:
   include:
-    # build mpy-cross
-    - stage: mpy-cross
-      env: NAME="mpy-cross build"
+    # stm32 port
+    - stage: test
+      env: NAME="stm32 port build"
       install:
-        - gcc --version
-        - python --version
-        - python3 --version
+        # need newer gcc version for Cortex-M7 support
+        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+        - sudo apt-get update -qq || true
+        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/stm32
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
+
+    # qemu-arm port
+    - stage: test
+      env: NAME="qemu-arm port build and tests"
+      install:
+        # need newer gcc version for nano.specs
+        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+        - sudo apt-get update -qq || true
+        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - sudo apt-get install qemu-system
+        - arm-none-eabi-gcc --version
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
+      after_failure:
+        - grep "FAIL" ports/qemu-arm/build/console.out
 
     # unix coverage
     - stage: test
@@ -30,6 +52,8 @@ jobs:
         # a specific urllib3 version is needed for requests and cpp-coveralls to work together
         - sudo pip install -Iv urllib3==1.22
         - sudo pip install cpp-coveralls
+        - gcc --version
+        - python3 --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
@@ -72,8 +96,8 @@ jobs:
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
-        - make ${MAKEOPTS} -C ports/unix coverage CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
+        - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - make ${MAKEOPTS} -C ports/unix test
 
     # windows port via mingw
     - stage: test
@@ -98,38 +122,6 @@ jobs:
         - mkdir -p ${HOME}/persist
         # Save new firmware for reference, but only if building a main branch, not a pull request
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp ports/minimal/build/firmware.bin ${HOME}/persist/; fi'
-
-    # qemu-arm port
-    - stage: test
-      env: NAME="qemu-arm port build and tests"
-      install:
-        # need newer gcc version for nano.specs
-        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
-        - sudo apt-get update -qq || true
-        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
-        - sudo apt-get install qemu-system
-        - arm-none-eabi-gcc --version
-      script:
-        - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
-      after_failure:
-        - grep "FAIL" ports/qemu-arm/build/console.out
-
-    # stm32 port
-    - stage: test
-      env: NAME="stm32 port build"
-      install:
-        # need newer gcc version for Cortex-M7 support
-        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
-        - sudo apt-get update -qq || true
-        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
-        - arm-none-eabi-gcc --version
-      script:
-        - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/stm32
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
 
     # cc3200 port
     - stage: test
