@@ -108,3 +108,11 @@ try:
     vfs.open('noexist', 'r')
 except OSError:
     print('open OSError')
+
+# open multiple files at the same time
+f1 = vfs.open('test.txt', '')
+f2 = vfs.open('test.bin', 'b')
+print(f1.read())
+print(f2.read())
+f1.close()
+f2.close()
