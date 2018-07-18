@@ -83,12 +83,6 @@ Power related functions
 Miscellaneous functions
 -----------------------
 
-.. only:: port_wipy
-
-    .. function:: rng()
-
-        Return a 24-bit software generated random number.
-
 .. function:: unique_id()
 
    Returns a byte string with a unique identifier of a board/SoC. It will vary
@@ -111,6 +105,12 @@ Miscellaneous functions
    (*) above, and -1 if there was timeout during the main measurement, marked (**)
    above. The timeout is the same for both cases and given by *timeout_us* (which
    is in microseconds).
+
+.. function:: rng()
+
+   Return a 24-bit software generated random number.
+
+   Availability: WiPy.
 
 .. _machine_constants:
 
