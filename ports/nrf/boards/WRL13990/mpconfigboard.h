@@ -26,7 +26,7 @@
 
 #define MICROPY_HW_BOARD_NAME       "SPARKFUN WRL13990"
 #define MICROPY_HW_MCU_NAME         "NRF52832"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52-DK"
+#define MICROPY_PY_SYS_PLATFORM     "nrf52"
 
 #define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MACHINE_HW_PWM   (1)
@@ -40,13 +40,13 @@
 
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_LED_COUNT        (1)
-#define MICROPY_HW_LED_PULLUP       (0) 
+#define MICROPY_HW_LED_PULLUP       (1) 
 
-#define MICROPY_HW_LED1             (7) // LED1
+#define MICROPY_HW_LED1             (7)     // LED1
 
 // UART config
 #define MICROPY_HW_UART1_HWFC       (0)
-#define MICROPY_HW_UART1_RX         (26)
+#define MICROPY_HW_UART1_RX         (26)    // default 115200
 #define MICROPY_HW_UART1_TX         (27)
 //#define MICROPY_HW_UART1_CTS        (7)
 //#define MICROPY_HW_UART1_RTS        (5)
