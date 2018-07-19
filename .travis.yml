@@ -113,6 +113,18 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
+    # nrf port
+    - stage: test
+      env: NAME="nrf port build"
+      install:
+        # need newer gcc version to support variables in linker script
+        - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
+        - sudo apt-get update -qq || true
+        - sudo apt-get install gcc-arm-embedded
+        - arm-none-eabi-gcc --version
+      script:
+        - make ${MAKEOPTS} -C ports/nrf
+
     # bare-arm and minimal ports
     - stage: test
       env: NAME="bare-arm and minimal ports build"
