@@ -517,12 +517,15 @@ def freeze_mpy(base_qstrs, raw_codes):
             print('    MP_QSTR_%s,' % new[i][1])
     print('};')
 
+    # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
+    qstr_pool_alloc = min(len(new), 10)
+
     print()
     print('extern const qstr_pool_t mp_qstr_const_pool;');
     print('const qstr_pool_t mp_qstr_frozen_const_pool = {')
     print('    (qstr_pool_t*)&mp_qstr_const_pool, // previous pool')
     print('    MP_QSTRnumber_of, // previous pool size')
-    print('    %u, // allocated entries' % len(new))
+    print('    %u, // allocated entries' % qstr_pool_alloc)
     print('    %u, // used entries' % len(new))
     print('    {')
     for _, _, qstr in new:
