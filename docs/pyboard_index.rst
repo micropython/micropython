@@ -9,4 +9,5 @@ MicroPython documentation and references
     library/index.rst
     reference/index.rst
     genrst/index.rst
+    develop/index.rst
     license.rst
