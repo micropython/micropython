@@ -29,25 +29,16 @@
 
 #if BLUETOOTH_SD
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "shared-module/bleio/AdvertisementData.h"
-#include "shared-module/bleio/Characteristic.h"
-#include "shared-module/bleio/Device.h"
+#include "shared-bindings/bleio/Device.h"
+#include "shared-bindings/bleio/Scanner.h"
+#include "shared-bindings/bleio/Service.h"
 #include "shared-module/bleio/ScanEntry.h"
-#include "shared-module/bleio/Scanner.h"
-#include "shared-module/bleio/Service.h"
 
 typedef void (*ble_drv_gap_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gatts_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
-typedef void (*ble_drv_gattc_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_adv_evt_callback_t)(bleio_scanner_obj_t *scanner, bleio_scanentry_obj_t *entry);
-typedef void (*ble_drv_gattc_char_data_callback_t)(bleio_characteristic_obj_t *self, uint16_t length, uint8_t * p_data);
 
 uint32_t ble_drv_stack_enable(void);
-
-void ble_drv_stack_disable(void);
 
 uint8_t ble_drv_stack_enabled(void);
 
@@ -67,11 +58,9 @@ void ble_drv_gap_event_handler_set(bleio_device_obj_t *device, ble_drv_gap_evt_c
 
 void ble_drv_gatts_event_handler_set(bleio_device_obj_t *device, ble_drv_gatts_evt_callback_t evt_handler);
 
-void ble_drv_gattc_event_handler_set(bleio_device_obj_t *device, ble_drv_gattc_evt_callback_t evt_handler);
-
 void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
-void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic, ble_drv_gattc_char_data_callback_t cb);
+void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic);
 
 void ble_drv_attr_s_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo);
 

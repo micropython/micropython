@@ -36,8 +36,6 @@
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 
-static volatile bool m_disc_evt_received;
-
 STATIC void gap_event_handler(bleio_device_obj_t *device, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
     if (event_id == BLE_GAP_EVT_CONNECTED) {
         device->conn_handle = conn_handle;
@@ -48,10 +46,6 @@ STATIC void gap_event_handler(bleio_device_obj_t *device, uint16_t event_id, uin
 
 STATIC void gatts_event_handler(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
 
-}
-
-STATIC void gattc_event_handler(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
-    m_disc_evt_received = true;
 }
 
 void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bleio_advertisement_data_t *adv_data) {
@@ -79,8 +73,6 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
     MICROPY_VM_HOOK_LOOP
 #endif
     }
-
-    ble_drv_gattc_event_handler_set(device, gattc_event_handler);
 
     // TODO: read name
 

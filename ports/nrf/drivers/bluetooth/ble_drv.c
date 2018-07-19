@@ -44,12 +44,14 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 #include "ble_drv.h"
-#include "mpconfigport.h"
+#include "nrf_nvic.h"
 #include "nrf_sdm.h"
 #include "nrfx_power.h"
-#include "ble_gap.h"
-#include "ble_hci.h"
-#include "ble.h" // sd_ble_uuid_encode
+#include "py/objstr.h"
+#include "py/runtime.h"
+#include "shared-bindings/bleio/Characteristic.h"
+#include "shared-bindings/bleio/ScanEntry.h"
+#include "shared-bindings/bleio/UUID.h"
 
 #define BLE_DRIVER_LOG printf
 
@@ -60,8 +62,6 @@
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
 #define UNIT_0_625_MS (625)
 #define UNIT_10_MS    (10000)
-#define APP_CFG_NON_CONN_ADV_TIMEOUT 0 // Disable timeout.
-#define NON_CONNECTABLE_ADV_INTERVAL MSEC_TO_UNITS(100, UNIT_0_625_MS)
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(300, UNIT_0_625_MS)
@@ -77,29 +77,24 @@ if (ble_drv_stack_enabled() == 0) { \
     (void)ble_drv_stack_enable(); \
 }
 
-static volatile bool m_adv_in_progress;
-static volatile bool m_tx_in_progress;
+static ble_drv_adv_evt_callback_t adv_event_handler;
+static ble_drv_gatts_evt_callback_t gatts_event_handler;
+static ble_drv_gap_evt_callback_t gap_event_handler;
 
-static ble_drv_gap_evt_callback_t          gap_event_handler;
-static ble_drv_gatts_evt_callback_t        gatts_event_handler;
-
-static bleio_device_obj_t *mp_gap_observer;
+static bleio_characteristic_obj_t *mp_gattc_char_data_observer;
+static bleio_device_obj_t *mp_gattc_disc_service_observer;
+static bleio_service_obj_t *mp_gattc_disc_char_observer;
+static bleio_address_obj_t *mp_connect_address;
 static bleio_device_obj_t *mp_gatts_observer;
+static bleio_scanner_obj_t *mp_adv_observer;
+static bleio_device_obj_t *mp_gap_observer;
 
 static volatile bool m_primary_service_found;
 static volatile bool m_characteristic_found;
+static volatile bool m_tx_in_progress;
 static volatile bool m_write_done;
 
-static volatile ble_drv_adv_evt_callback_t          adv_event_handler;
-static volatile ble_drv_gattc_evt_callback_t        gattc_event_handler;
-static volatile ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
-
-static bleio_scanner_obj_t *mp_adv_observer;
-static bleio_device_obj_t *mp_gattc_observer;
-static bleio_device_obj_t *mp_gattc_disc_service_observer;
-static bleio_service_obj_t *mp_gattc_disc_char_observer;
-static bleio_characteristic_obj_t *mp_gattc_char_data_observer;
-static bleio_address_obj_t *mp_connect_address;
+nrf_nvic_state_t nrf_nvic_state = { 0 };
 
 #if (BLUETOOTH_SD == 140)
 static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
@@ -112,18 +107,11 @@ static ble_data_t m_scan_buffer =
 };
 #endif
 
-#include "nrf_nvic.h"
-
-nrf_nvic_state_t nrf_nvic_state = {0};
-
 void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     BLE_DRIVER_LOG("ERROR: SoftDevice assert!!!");
 }
 
 uint32_t ble_drv_stack_enable(void) {
-    m_adv_in_progress = false;
-    m_tx_in_progress  = false;
-
     nrf_clock_lf_cfg_t clock_config = {
         .source = NRF_CLOCK_LF_SRC_XTAL,
         .rc_ctiv = 0,
@@ -171,10 +159,6 @@ uint32_t ble_drv_stack_enable(void) {
     }
 
     return err_code;
-}
-
-void ble_drv_stack_disable(void) {
-    sd_softdevice_disable();
 }
 
 uint8_t ble_drv_stack_enabled(void) {
@@ -549,24 +533,25 @@ bool ble_drv_advertise_data(bleio_advertisement_data_t *adv_params) {
                   translate("Can not start advertisement. status: 0x%02x"), (uint16_t)err_code));
     }
 
-    m_adv_in_progress = true;
-
     return true;
 }
 
 void ble_drv_advertise_stop(void) {
-    if (m_adv_in_progress == true) {
-        uint32_t err_code;
+    uint32_t err_code;
+
 #if (BLUETOOTH_SD == 140)
-        if ((err_code = sd_ble_gap_adv_stop(m_adv_handle)) != 0) {
+    if (m_adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET)
+        return;
+
+    err_code = sd_ble_gap_adv_stop(m_adv_handle);
 #else
-        if ((err_code = sd_ble_gap_adv_stop()) != 0) {
+    err_code = sd_ble_gap_adv_stop();
 #endif
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      translate("Can not stop advertisement. status: 0x%02x"), (uint16_t)err_code));
-        }
+
+    if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_INVALID_STATE)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                                        translate("Can not stop advertisement. status: 0x%02x"), (uint16_t)err_code));
     }
-    m_adv_in_progress = false;
 }
 
 void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
@@ -644,22 +629,16 @@ void ble_drv_gatts_event_handler_set(bleio_device_obj_t *device, ble_drv_gatts_e
     gatts_event_handler = evt_handler;
 }
 
-void ble_drv_gattc_event_handler_set(bleio_device_obj_t *device, ble_drv_gattc_evt_callback_t evt_handler) {
-    mp_gattc_observer = device;
-    gattc_event_handler = evt_handler;
-}
-
 void ble_drv_adv_report_handler_set(bleio_scanner_obj_t *device, ble_drv_adv_evt_callback_t evt_handler) {
     mp_adv_observer = device;
     adv_event_handler = evt_handler;
 }
 
-void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic, ble_drv_gattc_char_data_callback_t cb) {
+void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic) {
     bleio_service_obj_t *service = characteristic->service;
     bleio_device_obj_t *device = MP_OBJ_TO_PTR(service->device);
 
     mp_gattc_char_data_observer = characteristic;
-    gattc_char_data_handle = cb;
 
     const uint32_t err_code = sd_ble_gattc_read(device->conn_handle, characteristic->handle, 0);
     if (err_code != 0) {
@@ -667,7 +646,7 @@ void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic, ble_drv_gat
                   translate("Can not read attribute value. status: 0x%02x"), (uint16_t)err_code));
     }
 
-    while (gattc_char_data_handle != NULL) {
+    while (mp_gattc_char_data_observer != NULL) {
 #ifdef MICROPY_VM_HOOK_LOOP
     MICROPY_VM_HOOK_LOOP
 #endif
@@ -939,13 +918,18 @@ STATIC void on_characteristic_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *respo
     mp_gattc_disc_char_observer = NULL;
 }
 
+STATIC void on_read_rsp(ble_gattc_evt_read_rsp_t *response) {
+    mp_gattc_char_data_observer->value_data = mp_obj_new_bytearray(response->len, response->data);
+
+    mp_gattc_char_data_observer = NULL;
+}
+
 STATIC void ble_evt_handler(ble_evt_t *p_ble_evt) {
     printf("%s - 0x%02X\r\n", __func__, p_ble_evt->header.evt_id);
 
     switch (p_ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
             BLE_DRIVER_LOG("GAP CONNECT\n");
-            m_adv_in_progress = false;
             gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
 
             ble_gap_conn_params_t conn_params;
@@ -1025,17 +1009,7 @@ STATIC void ble_evt_handler(ble_evt_t *p_ble_evt) {
             break;
 
         case BLE_GATTC_EVT_READ_RSP:
-            BLE_DRIVER_LOG("BLE EVT READ RESPONSE, offset: 0x"HEX2_FMT", length: 0x"HEX2_FMT"\n",
-                           p_ble_evt->evt.gattc_evt.params.read_rsp.offset,
-                           p_ble_evt->evt.gattc_evt.params.read_rsp.len);
-
-            gattc_char_data_handle(mp_gattc_char_data_observer,
-                                   p_ble_evt->evt.gattc_evt.params.read_rsp.len,
-                                   p_ble_evt->evt.gattc_evt.params.read_rsp.data);
-
-            // mark end of read
-            gattc_char_data_handle = NULL;
-
+            on_read_rsp(&p_ble_evt->evt.gattc_evt.params.read_rsp);
             break;
 
         case BLE_GATTC_EVT_WRITE_RSP:

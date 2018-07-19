@@ -31,18 +31,22 @@
 #include "ble_drv.h"
 #include "nrfx.h"
 #include "nrf_error.h"
+#include "nrf_sdm.h"
+#include "py/nlr.h"
 #include "shared-module/bleio/Address.h"
 
 void common_hal_bleio_adapter_set_enabled(bool enabled) {
-    if (enabled) {
-        const uint32_t err = ble_drv_stack_enable();
-        if (err != NRF_SUCCESS) {
-            NRFX_ASSERT(err);
-        }
+    uint32_t err_code;
 
-        printf("SoftDevice enabled\n");
+    if (enabled) {
+        err_code = ble_drv_stack_enable();
     } else {
-        ble_drv_stack_disable();
+        err_code = sd_softdevice_disable();
+    }
+
+    if (err_code != NRF_SUCCESS) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Failed to change softdevice status, error: 0x%08lX", err_code));
     }
 }
 

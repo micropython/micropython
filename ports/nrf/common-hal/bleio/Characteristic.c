@@ -28,12 +28,8 @@
 #include "shared-module/bleio/Characteristic.h"
 #include "shared-module/bleio/Device.h"
 
-void data_callback(bleio_characteristic_obj_t *self, uint16_t length, uint8_t *data) {
-    self->value_data = mp_obj_new_bytearray(length, data);
-}
-
 void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self) {
-    ble_drv_attr_c_read(self, data_callback);
+    ble_drv_attr_c_read(self);
 }
 
 void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
