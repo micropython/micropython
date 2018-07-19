@@ -54,34 +54,6 @@ STATIC void gattc_event_handler(bleio_device_obj_t *device, uint16_t event_id, u
     m_disc_evt_received = true;
 }
 
-STATIC void disc_add_char(bleio_service_obj_t *service, ble_drv_char_data_t *chara_data) {
-    bleio_characteristic_obj_t *chara = m_new_obj(bleio_characteristic_obj_t);
-    chara->base.type = &bleio_characteristic_type;
-
-    bleio_uuid_obj_t * p_uuid = m_new_obj(bleio_uuid_obj_t);
-    p_uuid->base.type = &bleio_uuid_type;
-
-    chara->uuid = p_uuid;
-
-    p_uuid->type = chara_data->uuid_type;
-    p_uuid->value[0] = chara_data->uuid & 0xFF;
-    p_uuid->value[1] = chara_data->uuid >> 8;
-
-    // add characteristic specific data from discovery
-    chara->props.broadcast = chara_data->props.broadcast;
-    chara->props.indicate = chara_data->props.indicate;
-    chara->props.notify = chara_data->props.notify;
-    chara->props.read = chara_data->props.read;
-    chara->props.write = chara_data->props.write;
-    chara->props.write_wo_resp = chara_data->props.write_wo_resp;
-    chara->handle = chara_data->value_handle;
-
-    chara->service_handle = service->handle;
-    chara->service = service;
-
-    mp_obj_list_append(service->char_list, MP_OBJ_FROM_PTR(chara));
-}
-
 void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bleio_advertisement_data_t *adv_data) {
     if (adv_data->connectable) {
         ble_drv_gap_event_handler_set(device, gap_event_handler);
@@ -126,7 +98,7 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
     for (size_t i = 0; i < service_list->len; ++i) {
         bleio_service_obj_t *service = service_list->items[i];
 
-        bool found_char = ble_drv_discover_characteristic(device, service, service->start_handle, disc_add_char);
+        bool found_char = ble_drv_discover_characteristic(device, service, service->start_handle);
         while (found_char) {
             const mp_obj_list_t *char_list = MP_OBJ_TO_PTR(service->char_list);
             const bleio_characteristic_obj_t *characteristic = char_list->items[char_list->len - 1];
@@ -136,7 +108,7 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
                 break;
             }
 
-            found_char = ble_drv_discover_characteristic(device, service, next_handle, disc_add_char);
+            found_char = ble_drv_discover_characteristic(device, service, next_handle);
         }
     }
 }

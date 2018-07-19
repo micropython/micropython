@@ -35,6 +35,7 @@
 #define NRF52 // Needed for SD132 v2
 #endif
 
+#include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
@@ -91,7 +92,6 @@ static volatile bool m_write_done;
 
 static volatile ble_drv_adv_evt_callback_t          adv_event_handler;
 static volatile ble_drv_gattc_evt_callback_t        gattc_event_handler;
-static volatile ble_drv_disc_add_char_callback_t    disc_add_char_handler;
 static volatile ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
 
 static bleio_scanner_obj_t *mp_adv_observer;
@@ -820,11 +820,10 @@ bool ble_drv_discover_services(bleio_device_obj_t *device, uint16_t start_handle
     return m_primary_service_found;
 }
 
-bool ble_drv_discover_characteristic(bleio_device_obj_t *device, bleio_service_obj_t *service, uint16_t start_handle, ble_drv_disc_add_char_callback_t cb) {
+bool ble_drv_discover_characteristic(bleio_device_obj_t *device, bleio_service_obj_t *service, uint16_t start_handle) {
     BLE_DRIVER_LOG("Discover characteristicts. Conn handle: 0x" HEX2_FMT "\n", device->conn_handle);
 
     mp_gattc_disc_char_observer = service;
-    disc_add_char_handler = cb;
 
     ble_gattc_handle_range_t handle_range;
     handle_range.start_handle = start_handle;
@@ -837,7 +836,7 @@ bool ble_drv_discover_characteristic(bleio_device_obj_t *device, bleio_service_o
         return false;
     }
 
-    while (disc_add_char_handler != NULL) {
+    while (mp_gattc_disc_char_observer != NULL) {
 #ifdef MICROPY_VM_HOOK_LOOP
     MICROPY_VM_HOOK_LOOP
 #endif
@@ -900,6 +899,44 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
 
     // mark end of service discovery
     mp_gattc_disc_service_observer = NULL;
+}
+
+STATIC void on_characteristic_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response) {
+    BLE_DRIVER_LOG(">>> characteristic count: %d\n", response->count);
+
+    for (size_t i = 0; i < response->count; ++i) {
+        const ble_gattc_char_t *gattc_char = &response->chars[i];
+
+        bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
+        characteristic->base.type = &bleio_characteristic_type;
+
+        bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
+        uuid->base.type = &bleio_uuid_type;
+        uuid->type = (gattc_char->uuid.type == BLE_UUID_TYPE_BLE) ? UUID_TYPE_16BIT : UUID_TYPE_128BIT;
+        uuid->value[0] = gattc_char->uuid.uuid & 0xFF;
+        uuid->value[1] = gattc_char->uuid.uuid >> 8;
+        characteristic->uuid = uuid;
+
+        characteristic->props.broadcast = gattc_char->char_props.broadcast;
+        characteristic->props.indicate = gattc_char->char_props.indicate;
+        characteristic->props.notify = gattc_char->char_props.notify;
+        characteristic->props.read = gattc_char->char_props.read;
+        characteristic->props.write = gattc_char->char_props.write;
+        characteristic->props.write_wo_resp = gattc_char->char_props.write_wo_resp;
+        characteristic->handle = gattc_char->handle_value;
+
+        characteristic->service_handle = mp_gattc_disc_char_observer->handle;
+        characteristic->service = mp_gattc_disc_char_observer;
+
+        mp_obj_list_append(mp_gattc_disc_char_observer->char_list, MP_OBJ_FROM_PTR(characteristic));
+    }
+
+    if (response->count > 0) {
+        m_characteristic_found = true;
+    }
+
+    // mark end of characteristic discovery
+    mp_gattc_disc_char_observer = NULL;
 }
 
 STATIC void ble_evt_handler(ble_evt_t *p_ble_evt) {
@@ -984,35 +1021,7 @@ STATIC void ble_evt_handler(ble_evt_t *p_ble_evt) {
             break;
 
         case BLE_GATTC_EVT_CHAR_DISC_RSP:
-            BLE_DRIVER_LOG("BLE EVT CHAR DISCOVERY RESPONSE\n");
-            BLE_DRIVER_LOG(">>> characteristic count: %d\n", p_ble_evt->evt.gattc_evt.params.char_disc_rsp.count);
-
-            for (uint16_t i = 0; i < p_ble_evt->evt.gattc_evt.params.char_disc_rsp.count; i++) {
-                ble_gattc_char_t * p_char = &p_ble_evt->evt.gattc_evt.params.char_disc_rsp.chars[i];
-
-                ble_drv_char_data_t char_data;
-                char_data.uuid_type    = p_char->uuid.type;
-                char_data.uuid         = p_char->uuid.uuid;
-                char_data.decl_handle  = p_char->handle_decl;
-                char_data.value_handle = p_char->handle_value;
-
-                char_data.props.broadcast = p_char->char_props.broadcast;
-                char_data.props.read = p_char->char_props.read;
-                char_data.props.write_wo_resp = p_char->char_props.write_wo_resp;
-                char_data.props.write = p_char->char_props.write;
-                char_data.props.notify = p_char->char_props.notify;
-                char_data.props.indicate = p_char->char_props.indicate;
-
-                disc_add_char_handler(mp_gattc_disc_char_observer, &char_data);
-            }
-
-            if (p_ble_evt->evt.gattc_evt.params.char_disc_rsp.count > 0) {
-                m_characteristic_found = true;
-            }
-
-            // mark end of characteristic discovery
-            disc_add_char_handler = NULL;
-
+            on_characteristic_discovery_rsp(&p_ble_evt->evt.gattc_evt.params.char_disc_rsp);
             break;
 
         case BLE_GATTC_EVT_READ_RSP:

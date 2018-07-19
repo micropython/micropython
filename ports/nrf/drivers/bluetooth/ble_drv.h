@@ -39,26 +39,10 @@
 #include "shared-module/bleio/Scanner.h"
 #include "shared-module/bleio/Service.h"
 
-typedef struct {
-    uint16_t uuid;
-    uint8_t  uuid_type;
-    struct {
-        bool broadcast : 1;
-        bool read : 1;
-        bool write_wo_resp : 1;
-        bool write : 1;
-        bool notify : 1;
-        bool indicate : 1;
-    } props;
-    uint16_t decl_handle;
-    uint16_t value_handle;
-} ble_drv_char_data_t;
-
 typedef void (*ble_drv_gap_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gatts_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gattc_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_adv_evt_callback_t)(bleio_scanner_obj_t *scanner, bleio_scanentry_obj_t *entry);
-typedef void (*ble_drv_disc_add_char_callback_t)(bleio_service_obj_t *service, ble_drv_char_data_t * p_desc_data);
 typedef void (*ble_drv_gattc_char_data_callback_t)(bleio_characteristic_obj_t *self, uint16_t length, uint8_t * p_data);
 
 uint32_t ble_drv_stack_enable(void);
@@ -109,7 +93,7 @@ void ble_drv_disconnect(bleio_device_obj_t *device);
 
 bool ble_drv_discover_services(bleio_device_obj_t *device, uint16_t start_handle);
 
-bool ble_drv_discover_characteristic(bleio_device_obj_t *device, bleio_service_obj_t *service, uint16_t start_handle, ble_drv_disc_add_char_callback_t cb);
+bool ble_drv_discover_characteristic(bleio_device_obj_t *device, bleio_service_obj_t *service, uint16_t start_handle);
 
 void ble_drv_discover_descriptors(void);
 
