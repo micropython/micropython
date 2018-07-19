@@ -28,16 +28,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
 
-#include "shared-module/bleio/Address.h"
-#include "py/objtype.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    bleio_address_obj_t address;
-    bool connectable;
-    int8_t rssi;
-    mp_obj_t data;
-} bleio_scanentry_obj_t;
+#include "py/obj.h"
 
 extern const mp_obj_type_t bleio_scanentry_type;
 

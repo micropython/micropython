@@ -29,7 +29,6 @@
 
 #if BLUETOOTH_SD
 
-#include "modubluepy.h"
 #include "ble_drv.h"
 
 void ble_uart_init0(void);

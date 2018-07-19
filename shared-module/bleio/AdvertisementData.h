@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADVERTISEMENTDATA_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADVERTISEMENTDATA_H
 
+#include "py/obj.h"
+
 // Taken from https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile
 enum {
     AdFlags = 0x01,
@@ -72,5 +74,12 @@ enum {
     Ad3DInformationData = 0x3D,
     AdManufacturerSpecificData = 0xFF,
 };
+
+typedef struct {
+    mp_obj_t device_name;
+    mp_obj_t services;
+    mp_obj_t data;
+    bool connectable;
+} bleio_advertisement_data_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADVERTISEMENTDATA_H

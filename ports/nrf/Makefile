@@ -127,10 +127,6 @@ SRC_C += \
 	peripherals/nrf/timers.c \
 	supervisor/shared/memory.c
 
-DRIVERS_SRC_C += $(addprefix modules/,\
-	ubluepy/modubluepy.c \
-	ubluepy/ubluepy_peripheral.c \
-	)
 
 SRC_COMMON_HAL += \
 	analogio/AnalogIn.c \
@@ -163,6 +159,7 @@ SRC_COMMON_HAL += \
 	bleio/Adapter.c \
 	bleio/Characteristic.c \
 	bleio/Descriptor.c \
+	bleio/Device.c \
 	bleio/Scanner.c \
 	bleio/Service.c \
 	bleio/UUID.c

@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,36 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_DEVICE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_DEVICE_H
 
-#include "ble_drv.h"
-#include "py/mphal.h"
-#include "shared-bindings/bleio/ScanEntry.h"
-#include "shared-bindings/bleio/Scanner.h"
-#include "shared-module/bleio/ScanEntry.h"
+#include <stdbool.h>
 
-STATIC void adv_event_handler(bleio_scanner_obj_t *self, ble_drv_adv_data_t *data) {
-    // TODO: Don't add new entry for each item, group by address and update
-    bleio_scanentry_obj_t *item = m_new_obj(bleio_scanentry_obj_t);
-    item->base.type = &bleio_scanentry_type;
+#include "shared-module/bleio/Address.h"
 
-    item->rssi = data->rssi;
-    item->data = mp_obj_new_bytearray(data->data_len, data->p_data);
+typedef struct {
+    mp_obj_base_t base;
+    bool is_peripheral;
+    mp_obj_t name;
+    bleio_address_obj_t address;
+    uint16_t conn_handle;
+    mp_obj_t service_list;
+    mp_obj_t notif_handler;
+    mp_obj_t conn_handler;
+} bleio_device_obj_t;
 
-    item->address.type = data->addr_type;
-    memcpy(item->address.value, data->p_peer_addr, BLEIO_ADDRESS_BYTES);
-
-    mp_obj_list_append(self->adv_reports, item);
-
-    ble_drv_scan_continue();
-}
-
-void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_int_t timeout) {
-    ble_drv_adv_report_handler_set(self, adv_event_handler);
-
-    ble_drv_scan_start(self->interval, self->window);
-
-    mp_hal_delay_ms(timeout);
-
-    ble_drv_scan_stop();
-}
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_DEVICE_H

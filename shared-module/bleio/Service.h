@@ -27,7 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SERVICE_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SERVICE_H
 
-#include "modubluepy.h"
 #include "common-hal/bleio/UUID.h"
 
 typedef struct {
@@ -35,7 +34,7 @@ typedef struct {
     uint16_t handle;
     bool is_secondary;
     bleio_uuid_obj_t *uuid;
-    mp_obj_t periph;
+    mp_obj_t device;
     mp_obj_t char_list;
     uint16_t start_handle;
     uint16_t end_handle;

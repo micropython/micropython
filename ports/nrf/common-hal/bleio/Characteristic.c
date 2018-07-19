@@ -26,6 +26,7 @@
 
 #include "ble_drv.h"
 #include "shared-module/bleio/Characteristic.h"
+#include "shared-module/bleio/Device.h"
 
 void data_callback(bleio_characteristic_obj_t *self, uint16_t length, uint8_t *data) {
     self->value_data = mp_obj_new_bytearray(length, data);
@@ -36,10 +37,9 @@ void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self
 }
 
 void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
-    ubluepy_peripheral_obj_t *peripheral = MP_OBJ_TO_PTR(self->service->periph);
-    ubluepy_role_type_t role = peripheral->role;
+    const bleio_device_obj_t *device = MP_OBJ_TO_PTR(self->service->device);
 
-    if (role == UBLUEPY_ROLE_PERIPHERAL) {
+    if (device->is_peripheral) {
         // TODO: Add indications
         if (self->props.notify) {
             ble_drv_attr_s_notify(self, bufinfo);

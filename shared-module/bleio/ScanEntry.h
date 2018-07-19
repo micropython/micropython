@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H
 
-#if MICROPY_PY_UBLUEPY
+#include "shared-module/bleio/Address.h"
 
-extern const mp_obj_type_t ubluepy_peripheral_type;
-extern const mp_obj_type_t ubluepy_service_type;
+typedef struct {
+    mp_obj_base_t base;
+    bleio_address_obj_t address;
+    bool connectable;
+    int8_t rssi;
+    mp_obj_t data;
+} bleio_scanentry_obj_t;
 
-STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_ubluepy) },
-#if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_ROM_QSTR(MP_QSTR_Peripheral),      MP_ROM_PTR(&ubluepy_peripheral_type) },
-#endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_ubluepy_globals, mp_module_ubluepy_globals_table);
-
-const mp_obj_module_t mp_module_ubluepy = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ubluepy_globals,
-};
-
-#endif // MICROPY_PY_UBLUEPY
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H

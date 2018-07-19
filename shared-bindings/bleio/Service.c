@@ -73,7 +73,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     bleio_service_obj_t *self = m_new_obj(bleio_service_obj_t);
     self->base.type = &bleio_service_type;
-    self->periph = mp_const_none;
+    self->device = mp_const_none;
     self->char_list = mp_obj_new_list(0, NULL);
 
     mp_map_t kw_args;
@@ -81,7 +81,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     enum { ARG_uuid, ARG_secondary };
     static const mp_arg_t allowed_args[] = {
-        { ARG_uuid, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_uuid, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_secondary, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
@@ -92,7 +92,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const mp_obj_t uuid = args[ARG_uuid].u_obj;
 
-    if (uuid == MP_OBJ_NULL) {
+    if (uuid == mp_const_none) {
         return MP_OBJ_FROM_PTR(self);
     }
 

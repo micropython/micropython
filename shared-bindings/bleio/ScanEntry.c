@@ -32,9 +32,10 @@
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "shared-bindings/bleio/Address.h"
-#include "shared-module/bleio/AdvertisementData.h"
-#include "shared-bindings/bleio/UUID.h"
 #include "shared-bindings/bleio/ScanEntry.h"
+#include "shared-bindings/bleio/UUID.h"
+#include "shared-module/bleio/AdvertisementData.h"
+#include "shared-module/bleio/ScanEntry.h"
 
 //| .. currentmodule:: bleio
 //|
