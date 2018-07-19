@@ -43,7 +43,7 @@
 typedef void (*callback_ptr)(void);
 typedef int32_t (*ticker_callback_ptr)(void);
 
-void ticker_init0();
+void ticker_init0(void);
 void ticker_start(void);
 void ticker_stop(void);
 int clear_ticker_callback(uint32_t index);

@@ -63,7 +63,7 @@ STATIC const machine_timer_obj_t machine_timer_obj[] = {
 #endif
 };
 
-void timer_init0() {
+void timer_init0(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(machine_timer_obj); i++) {
         nrfx_timer_uninit(&machine_timer_obj[i].p_instance);
     }

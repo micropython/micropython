@@ -39,7 +39,7 @@ STATIC inline uint32_t rotate_left(uint32_t value, uint32_t shift) {
 
 STATIC volatile flash_state_t flash_operation_state = FLASH_STATE_BUSY;
 
-STATIC void operation_init() {
+STATIC void operation_init(void) {
     flash_operation_state = FLASH_STATE_BUSY;
 }
 
