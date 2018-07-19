@@ -39,11 +39,6 @@
 #include "shared-module/bleio/Service.h"
 
 typedef struct {
-    uint8_t   addr[6];
-    uint8_t   addr_type;
-} ble_drv_addr_t;
-
-typedef struct {
     uint8_t * p_peer_addr;
     uint8_t   addr_type;
     bool      is_scan_resp;
@@ -89,7 +84,7 @@ void ble_drv_stack_disable(void);
 
 uint8_t ble_drv_stack_enabled(void);
 
-void ble_drv_address_get(ble_drv_addr_t * p_addr);
+void ble_drv_address_get(bleio_address_obj_t *address);
 
 bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
 

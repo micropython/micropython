@@ -51,9 +51,5 @@ bool common_hal_bleio_adapter_get_enabled(void) {
 }
 
 void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address) {
-    ble_drv_addr_t drv_addr;
-    ble_drv_address_get(&drv_addr);
-
-    address->type = drv_addr.addr_type;
-    memcpy(address->value, drv_addr.addr, BLEIO_ADDRESS_BYTES);
+    ble_drv_address_get(address);
 }
