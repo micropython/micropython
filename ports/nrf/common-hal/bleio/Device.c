@@ -54,26 +54,6 @@ STATIC void gattc_event_handler(bleio_device_obj_t *device, uint16_t event_id, u
     m_disc_evt_received = true;
 }
 
-STATIC void disc_add_service(bleio_device_obj_t *device, ble_drv_service_data_t * service_data) {
-    bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
-    service->base.type = &bleio_service_type;
-
-    bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-    uuid->base.type = &bleio_uuid_type;
-    uuid->type = (service_data->uuid_type == BLE_UUID_TYPE_BLE) ? UUID_TYPE_16BIT : UUID_TYPE_128BIT;
-    uuid->value[0] = service_data->uuid & 0xFF;
-    uuid->value[1] = service_data->uuid >> 8;
-
-    service->char_list = mp_obj_new_list(0, NULL);
-    service->uuid = uuid;
-    service->device = device;
-    service->handle       = service_data->start_handle;
-    service->start_handle = service_data->start_handle;
-    service->end_handle   = service_data->end_handle;
-
-    mp_obj_list_append(device->service_list, service);
-}
-
 STATIC void disc_add_char(bleio_service_obj_t *service, ble_drv_char_data_t *chara_data) {
     bleio_characteristic_obj_t *chara = m_new_obj(bleio_characteristic_obj_t);
     chara->base.type = &bleio_characteristic_type;
@@ -102,7 +82,6 @@ STATIC void disc_add_char(bleio_service_obj_t *service, ble_drv_char_data_t *cha
     mp_obj_list_append(service->char_list, MP_OBJ_FROM_PTR(chara));
 }
 
-
 void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bleio_advertisement_data_t *adv_data) {
     if (adv_data->connectable) {
         ble_drv_gap_event_handler_set(device, gap_event_handler);
@@ -124,8 +103,9 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
     ble_drv_connect(device);
 
     while (device->conn_handle == BLE_CONN_HANDLE_INVALID) {
-        run_background_tasks();
-//          __asm volatile ("wfi");
+#ifdef MICROPY_VM_HOOK_LOOP
+    MICROPY_VM_HOOK_LOOP
+#endif
     }
 
     ble_drv_gattc_event_handler_set(device, gattc_event_handler);
@@ -133,12 +113,12 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
     // TODO: read name
 
     // find services
-    bool found_service = ble_drv_discover_services(device, BLE_GATT_HANDLE_START, disc_add_service);
+    bool found_service = ble_drv_discover_services(device, BLE_GATT_HANDLE_START);
     while (found_service) {
         const mp_obj_list_t *service_list = MP_OBJ_TO_PTR(device->service_list);
         const bleio_service_obj_t *service = service_list->items[service_list->len - 1];
 
-        found_service = ble_drv_discover_services(device, service->end_handle + 1, disc_add_service);
+        found_service = ble_drv_discover_services(device, service->end_handle + 1);
     }
 
     // find characteristics in each service

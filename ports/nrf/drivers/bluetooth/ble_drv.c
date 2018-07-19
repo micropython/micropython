@@ -36,6 +36,8 @@
 #endif
 
 #include "shared-bindings/bleio/ScanEntry.h"
+#include "shared-bindings/bleio/Service.h"
+#include "shared-bindings/bleio/UUID.h"
 #include "shared-module/bleio/Device.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
@@ -89,7 +91,6 @@ static volatile bool m_write_done;
 
 static volatile ble_drv_adv_evt_callback_t          adv_event_handler;
 static volatile ble_drv_gattc_evt_callback_t        gattc_event_handler;
-static volatile ble_drv_disc_add_service_callback_t disc_add_service_handler;
 static volatile ble_drv_disc_add_char_callback_t    disc_add_char_handler;
 static volatile ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
 
@@ -799,22 +800,18 @@ void ble_drv_disconnect(bleio_device_obj_t *device) {
     sd_ble_gap_disconnect(device->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
 }
 
-bool ble_drv_discover_services(bleio_device_obj_t *device, uint16_t start_handle, ble_drv_disc_add_service_callback_t cb) {
-    BLE_DRIVER_LOG("Discover primary services. Conn handle: 0x" HEX2_FMT "\n", device->conn_handle);
-
+bool ble_drv_discover_services(bleio_device_obj_t *device, uint16_t start_handle) {
     mp_gattc_disc_service_observer = device;
-    disc_add_service_handler = cb;
 
     m_primary_service_found = false;
 
-    uint32_t err_code;
-    err_code = sd_ble_gattc_primary_services_discover(device->conn_handle, start_handle, NULL);
-    if (err_code != 0) {
-        return false;
+    uint32_t err_code = sd_ble_gattc_primary_services_discover(device->conn_handle, start_handle, NULL);
+    if (err_code != NRF_SUCCESS) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Failed to discover serivices. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
 
-    // busy loop until last service has been iterated
-    while (disc_add_service_handler != NULL) {
+    while (mp_gattc_disc_service_observer != NULL) {
 #ifdef MICROPY_VM_HOOK_LOOP
     MICROPY_VM_HOOK_LOOP
 #endif
@@ -840,7 +837,6 @@ bool ble_drv_discover_characteristic(bleio_device_obj_t *device, bleio_service_o
         return false;
     }
 
-    // busy loop until last service has been iterated
     while (disc_add_char_handler != NULL) {
 #ifdef MICROPY_VM_HOOK_LOOP
     MICROPY_VM_HOOK_LOOP
@@ -874,7 +870,39 @@ STATIC void on_adv_report(ble_gap_evt_adv_report_t *report) {
     }
 }
 
-static void ble_evt_handler(ble_evt_t * p_ble_evt) {
+STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response) {
+    BLE_DRIVER_LOG(">>> service count: %d\n", response->count);
+
+    for (size_t i = 0; i < response->count; ++i) {
+        const ble_gattc_service_t *gattc_service = &response->services[i];
+
+        bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
+        service->base.type = &bleio_service_type;
+        service->char_list = mp_obj_new_list(0, NULL);
+        service->start_handle = gattc_service->handle_range.start_handle;
+        service->end_handle = gattc_service->handle_range.end_handle;
+        service->handle = gattc_service->handle_range.start_handle;
+        service->device = mp_gattc_disc_service_observer;
+
+        bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
+        uuid->base.type = &bleio_uuid_type;
+        uuid->type = (gattc_service->uuid.type == BLE_UUID_TYPE_BLE) ? UUID_TYPE_16BIT : UUID_TYPE_128BIT;
+        uuid->value[0] = gattc_service->uuid.uuid & 0xFF;
+        uuid->value[1] = gattc_service->uuid.uuid >> 8;
+        service->uuid = uuid;
+
+        mp_obj_list_append(mp_gattc_disc_service_observer->service_list, service);
+    }
+
+    if (response->count > 0) {
+        m_primary_service_found = true;
+    }
+
+    // mark end of service discovery
+    mp_gattc_disc_service_observer = NULL;
+}
+
+STATIC void ble_evt_handler(ble_evt_t *p_ble_evt) {
     printf("%s - 0x%02X\r\n", __func__, p_ble_evt->header.evt_id);
 
     switch (p_ble_evt->header.evt_id) {
@@ -952,28 +980,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             break;
 
         case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
-            BLE_DRIVER_LOG("BLE EVT PRIMARY SERVICE DISCOVERY RESPONSE\n");
-            BLE_DRIVER_LOG(">>> service count: %d\n", p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.count);
-
-            for (uint16_t i = 0; i < p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.count; i++) {
-                ble_gattc_service_t * p_service = &p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.services[i];
-
-                ble_drv_service_data_t service;
-                service.uuid_type    = p_service->uuid.type;
-                service.uuid         = p_service->uuid.uuid;
-                service.start_handle = p_service->handle_range.start_handle;
-                service.end_handle   = p_service->handle_range.end_handle;
-
-                disc_add_service_handler(mp_gattc_disc_service_observer, &service);
-            }
-
-            if (p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.count > 0) {
-                m_primary_service_found = true;
-            }
-
-            // mark end of service discovery
-            disc_add_service_handler = NULL;
-
+            on_primary_srv_discovery_rsp(&p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp);
             break;
 
         case BLE_GATTC_EVT_CHAR_DISC_RSP:
