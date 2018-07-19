@@ -8,40 +8,39 @@ An overview of all available pins is in the table below. Most of the pins can be
 - When using NFC pins take special care about configuration. See note in [datasheet](http://infocenter.nordicsemi.com/pdf/nRF52832_PS_v1.4.pdf), page 17..18. At reset the pins are set to NFC mode!
 - When UART hardware handshaking is required, select the GPIO's you like and set them accordingly in the `mpconfigboard.h`
 
-
-LABEL | BOARD | CPU | REMARK
---- | --- | --- | ---
-         |P0 |P0 | Reserved 32kHz XTAL 
-         |P1 |P1 | Reserved 32kHz XTAL
-A0       |P2 |P2 | Alternatively ADC0_IN0
-A1       |P3 |P3 | Alternatively ADC0_IN1
-A2       |P4 |P4 | Alternatively ADC0_IN2
-A3       |P5 |P5 | Alternatively ADC0_IN3
-BTN      |P6 |P6 | Button (Low Active)
-LED      |P7 |P7 | Blue LED (High Active)
-NFC1     |P9 |P9 | See datasheet
-NFC2     |P10|P10| See datasheet
-         |P11|P11|
-         |P12|P12|
-         |P13|P13|
-         |P14|P14|
-         |P15|P15|
-         |P16|P16|
-         |P17|P17|
-         |P18|P18|
-         |P19|P19|
-         |P20|P20|
-NRESET   |P21|P21| Can be used as GPIO, see datasheet
-         |P22|P22|
-SPI0_MOSI|P23|P23|
-SPI0_MISO|P24|P24|
-SPI0_SCK |P25|P25|
-RXD      |P26|P26| Receive serial data (baudrate 115200)
-TXD      |P27|P27| Transmit serial data
-A4       |P28|P28| Alternatively ADC0_IN4
-A5       |P29|P29| Alternatively ADC0_IN5
-A6       |P30|P30| Alternatively ADC0_IN6
-A7       |P31|P31| Alternatively ADC0_IN7
+BOARD | CPU | REMARK
+--- | --- | ---
+    |P0 | Reserved 32kHz XTAL 
+    |P1 | Reserved 32kHz XTAL
+A0  |P2 | Alternatively ADC0_IN0
+A1  |P3 | Alternatively ADC0_IN1
+A2  |P4 | Alternatively ADC0_IN2
+A3  |P5 | Alternatively ADC0_IN3
+BTN |P6 | Button (Low Active)
+LED |P7 | Blue LED (High Active)
+NFC1|P9 | See datasheet
+NFC2|P10| See datasheet
+    |P11|
+    |P12|
+    |P13|
+    |P14|
+    |P15|
+    |P16|
+    |P17|
+    |P18|
+    |P19|
+    |P20|
+NRESET|P21| Can be used as GPIO, see datasheet
+    |P22|
+SPI0_MOSI|P23|
+SPI0_MISO|P24|
+SPI0_SCK |P25|
+RXD      |P26| Receive serial data (baudrate 115200)
+TXD      |P27| Transmit serial data
+A4       |P28| Alternatively ADC0_IN4
+A5       |P29| Alternatively ADC0_IN5
+A6       |P30| Alternatively ADC0_IN6
+A7       |P31| Alternatively ADC0_IN7
 
 ## Example
 To get a quick overview of the GPIO pins, a module `show_pins.py` is in the section below. It gives you an overview of all the defined pins and the way they are configured.
