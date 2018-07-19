@@ -605,9 +605,9 @@ microbit_image_obj_t *microbit_image_for_char(char c) {
     return (microbit_image_obj_t *)result;
 }
 
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
 microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_float_t fval) {
-#else // MICROPY_FLOAT_IMPL_NONE
+#else
 microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_int_t fval) {
 #endif
     if (fval < 0) 
@@ -615,9 +615,9 @@ microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_int_t fva
     greyscale_t *result = greyscale_new(imageWidth(lhs), imageHeight(lhs));
     for (int x = 0; x < imageWidth(lhs); ++x) {
         for (int y = 0; y < imageWidth(lhs); ++y) {
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
             int val = min((int)imageGetPixelValue(lhs, x,y)*fval+0.5, MAX_BRIGHTNESS);
-#else // MICROPY_FLOAT_IMPL_NONE
+#else
             int val = min((int)imageGetPixelValue(lhs, x,y)*fval, MAX_BRIGHTNESS);
 #endif
             greyscaleSetPixelValue(result, x, y, val);
@@ -659,13 +659,13 @@ STATIC mp_obj_t image_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     case MP_BINARY_OP_SUBTRACT:
         break;
     case MP_BINARY_OP_MULTIPLY:
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         return microbit_image_dim(lhs, mp_obj_get_float(rhs_in));
 #else
         return microbit_image_dim(lhs, mp_obj_get_int(rhs_in) * 10);
 #endif
     case MP_BINARY_OP_TRUE_DIVIDE:
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         return microbit_image_dim(lhs, 1.0/mp_obj_get_float(rhs_in));
 #else
         break;
