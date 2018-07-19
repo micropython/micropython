@@ -91,6 +91,13 @@ mp_obj_dict_t *make_dict_long_lived(mp_obj_dict_t *dict, uint8_t max_depth) {
     if (dict == NULL || max_depth == 0) {
         return dict;
     }
+    // Don't recurse unnecessarily. Return immediately if we've already seen this dict.
+    if (dict->map.scanning) {
+        return dict;
+    }
+    // Mark that we're processing this dict.
+    dict->map.scanning = 1;
+
     // Update all of the references first so that we reduce the chance of references to the old
     // copies.
     dict->map.table = gc_make_long_lived(dict->map.table);
@@ -100,7 +107,10 @@ mp_obj_dict_t *make_dict_long_lived(mp_obj_dict_t *dict, uint8_t max_depth) {
             dict->map.table[i].value = make_obj_long_lived(value, max_depth - 1);
         }
     }
-    return gc_make_long_lived(dict);
+    dict = gc_make_long_lived(dict);
+    // Done recursing through this dict.
+    dict->map.scanning = 0;
+    return dict;
 }
 
 mp_obj_str_t *make_str_long_lived(mp_obj_str_t *str) {
