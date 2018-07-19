@@ -113,6 +113,15 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
+    # nrf port
+    - stage: test
+      env: NAME="nrf port build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+        - arm-none-eabi-gcc --version
+      script:
+        - make ${MAKEOPTS} -C ports/nrf
+
     # bare-arm and minimal ports
     - stage: test
       env: NAME="bare-arm and minimal ports build"
