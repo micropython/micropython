@@ -45,7 +45,7 @@ STATIC mp_obj_t microbit_sleep(mp_obj_t ms_in) {
     mp_int_t ms = 0;
     if (mp_obj_is_integer(ms_in)) {
         ms = mp_obj_get_int(ms_in);
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     } else {
         ms = (mp_int_t)mp_obj_get_float(ms_in);
 #endif
@@ -97,7 +97,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_panic_obj, 0, 1, microbit_panic);
 
 STATIC mp_obj_t microbit_temperature(void) {
     int temp = nrf_temp_read();
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     return mp_obj_new_float(temp / 4);
 #else
     return mp_obj_new_int(temp / 4);
