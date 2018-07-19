@@ -35,6 +35,7 @@
 #define NRF52 // Needed for SD132 v2
 #endif
 
+#include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-module/bleio/Device.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
@@ -745,8 +746,8 @@ void ble_drv_scan_stop(void) {
     sd_ble_gap_scan_stop();
 }
 
-STATIC void ble_drv_connect_scan_callback(bleio_scanner_obj_t *scanner, ble_drv_adv_data_t *data) {
-    if (memcmp(data->p_peer_addr, mp_connect_address->value, BLEIO_ADDRESS_BYTES) == 0) {
+STATIC void ble_drv_connect_scan_callback(bleio_scanner_obj_t *scanner, bleio_scanentry_obj_t *entry) {
+    if (memcmp(entry->address.value, mp_connect_address->value, BLEIO_ADDRESS_BYTES) == 0) {
         ble_drv_adv_report_handler_set(NULL, NULL);
 
         ble_gap_scan_params_t scan_params;
@@ -760,8 +761,8 @@ STATIC void ble_drv_connect_scan_callback(bleio_scanner_obj_t *scanner, ble_drv_
         ble_gap_addr_t addr;
         memset(&addr, 0, sizeof(addr));
 
-        addr.addr_type = data->addr_type;
-        memcpy(addr.addr, data->p_peer_addr, BLEIO_ADDRESS_BYTES);
+        addr.addr_type = entry->address.type;
+        memcpy(addr.addr, entry->address.value, BLEIO_ADDRESS_BYTES);
 
         BLE_DRIVER_LOG("GAP CONNECTING: "HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT", type: %d\n",
                        addr.addr[5], addr.addr[4], addr.addr[3], addr.addr[2], addr.addr[1], addr.addr[0], addr.addr_type);
@@ -853,6 +854,26 @@ void ble_drv_discover_descriptors(void) {
 
 }
 
+STATIC void on_adv_report(ble_gap_evt_adv_report_t *report) {
+    bleio_scanentry_obj_t *entry = m_new_obj(bleio_scanentry_obj_t);
+    entry->base.type = &bleio_scanentry_type;
+
+    entry->rssi = report->rssi;
+
+    entry->address.type = report->peer_addr.addr_type;
+    memcpy(entry->address.value, report->peer_addr.addr, BLEIO_ADDRESS_BYTES);
+
+#if (BLUETOOTH_SD == 140)
+    entry->data = mp_obj_new_bytearray(report->data.len, report->data.p_data);
+#else
+    entry->data = mp_obj_new_bytearray(report->dlen, report->data);
+#endif
+
+    if (adv_event_handler != NULL) {
+        adv_event_handler(mp_adv_observer, entry);
+    }
+}
+
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
     printf("%s - 0x%02X\r\n", __func__, p_ble_evt->header.evt_id);
 
@@ -920,31 +941,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             break;
 
         case BLE_GAP_EVT_ADV_REPORT:
-            BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
-            ble_drv_adv_data_t adv_data = {
-                .p_peer_addr  = p_ble_evt->evt.gap_evt.params.adv_report.peer_addr.addr,
-                .addr_type    = p_ble_evt->evt.gap_evt.params.adv_report.peer_addr.addr_type,
-#if (BLUETOOTH_SD == 140)
-                .is_scan_resp = p_ble_evt->evt.gap_evt.params.adv_report.type.scannable,
-#else
-                .is_scan_resp = p_ble_evt->evt.gap_evt.params.adv_report.scan_rsp,
-#endif
-                .rssi         = p_ble_evt->evt.gap_evt.params.adv_report.rssi,
-#if (BLUETOOTH_SD == 140)
-                .data_len     = p_ble_evt->evt.gap_evt.params.adv_report.data.len,
-                .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data.p_data,
-#else
-                .data_len     = p_ble_evt->evt.gap_evt.params.adv_report.dlen,
-                .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data,
-#endif
-#if (BLUETOOTH_SD == 132)
-                .adv_type     = p_ble_evt->evt.gap_evt.params.adv_report.type
-#endif
-            };
-
-            if (adv_event_handler != NULL) {
-                adv_event_handler(mp_adv_observer, &adv_data);
-            }
+            on_adv_report(&p_ble_evt->evt.gap_evt.params.adv_report);
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:

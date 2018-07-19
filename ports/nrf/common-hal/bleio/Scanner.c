@@ -33,18 +33,10 @@
 #include "shared-bindings/bleio/Scanner.h"
 #include "shared-module/bleio/ScanEntry.h"
 
-STATIC void adv_event_handler(bleio_scanner_obj_t *self, ble_drv_adv_data_t *data) {
+STATIC void adv_event_handler(bleio_scanner_obj_t *self, bleio_scanentry_obj_t *entry) {
     // TODO: Don't add new entry for each item, group by address and update
-    bleio_scanentry_obj_t *item = m_new_obj(bleio_scanentry_obj_t);
-    item->base.type = &bleio_scanentry_type;
 
-    item->rssi = data->rssi;
-    item->data = mp_obj_new_bytearray(data->data_len, data->p_data);
-
-    item->address.type = data->addr_type;
-    memcpy(item->address.value, data->p_peer_addr, BLEIO_ADDRESS_BYTES);
-
-    mp_obj_list_append(self->adv_reports, item);
+    mp_obj_list_append(self->adv_reports, entry);
 
     ble_drv_scan_continue();
 }

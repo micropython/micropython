@@ -35,18 +35,9 @@
 #include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/Characteristic.h"
 #include "shared-module/bleio/Device.h"
+#include "shared-module/bleio/ScanEntry.h"
 #include "shared-module/bleio/Scanner.h"
 #include "shared-module/bleio/Service.h"
-
-typedef struct {
-    uint8_t * p_peer_addr;
-    uint8_t   addr_type;
-    bool      is_scan_resp;
-    int8_t    rssi;
-    uint8_t   data_len;
-    uint8_t * p_data;
-    uint8_t   adv_type;
-} ble_drv_adv_data_t;
 
 typedef struct {
     uint16_t uuid;
@@ -73,7 +64,7 @@ typedef struct {
 typedef void (*ble_drv_gap_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gatts_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gattc_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
-typedef void (*ble_drv_adv_evt_callback_t)(bleio_scanner_obj_t *scanner, ble_drv_adv_data_t *data);
+typedef void (*ble_drv_adv_evt_callback_t)(bleio_scanner_obj_t *scanner, bleio_scanentry_obj_t *entry);
 typedef void (*ble_drv_disc_add_service_callback_t)(bleio_device_obj_t *device, ble_drv_service_data_t * p_service_data);
 typedef void (*ble_drv_disc_add_char_callback_t)(bleio_service_obj_t *service, ble_drv_char_data_t * p_desc_data);
 typedef void (*ble_drv_gattc_char_data_callback_t)(bleio_characteristic_obj_t *self, uint16_t length, uint8_t * p_data);
