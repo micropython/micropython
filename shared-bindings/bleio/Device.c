@@ -299,7 +299,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_device_start_advertising_obj, 0, bleio_d
 STATIC mp_obj_t bleio_device_stop_advertising(mp_obj_t self_in) {
     bleio_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->is_peripheral) {
+    if (!self->is_peripheral) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Can't advertise in Central mode"));
     }
