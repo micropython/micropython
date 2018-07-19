@@ -43,7 +43,7 @@
 //|
 //|   Create a new Characteristic object identified by the specified UUID.
 //|
-//|   :param uuid: The uuid of the characteristic
+//|   :param bleio.UUID uuid: The uuid of the characteristic
 //|
 
 //|   .. attribute:: broadcast

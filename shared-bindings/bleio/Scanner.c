@@ -65,8 +65,9 @@
 
 //|   .. method:: scan(timeout)
 //|
-//|     Performs a BLE scan lasting :py:data:`timeout` ms.
+//|     Performs a BLE scan.
 //|
+//|     :param int timeout: the scan timeout in ms
 //|     :returns: advertising packets found
 //|     :rtype: list of :py:class:`bleio.ScanEntry`
 //|

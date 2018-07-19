@@ -43,7 +43,8 @@
 //|   Create a new Service object identified by the specified UUID.
 //|   To mark the service as secondary, pass `True` as :py:data:`secondary`.
 //|
-//|   :param uuid: The uuid of the service
+//|   :param bleio.UUID uuid: The uuid of the service
+//|   :param bool secondary: If the service is a secondary one
 //|
 
 //|   .. method:: add_characteristic(characteristic)

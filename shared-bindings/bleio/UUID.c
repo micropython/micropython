@@ -89,7 +89,7 @@ enum {
 //|   - a `str` value in the format of '0xXXXX' for 16-bit or 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX' for 128-bit
 //|   - another UUID object
 //|
-//|   :param uuid: The uuid to encapsulate
+//|   :param int/str uuid: The uuid to encapsulate
 //|
 
 //|   .. attribute:: type
