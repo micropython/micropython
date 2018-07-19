@@ -1,4 +1,3 @@
-import uerrno
 try:
     import uos
 except ImportError:
