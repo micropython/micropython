@@ -324,6 +324,16 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('basics/subclass_native_init.py')# native subclassing corner cases not support
             skip_tests.add('misc/rge_sm.py')                # too large
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
+        elif args.target == 'nrf':
+            skip_tests.add('basics/memoryview1.py')         # no item assignment for memoryview
+            skip_tests.add('extmod/ticks_diff.py')          # unimplemented: utime.ticks_diff
+            skip_tests.add('extmod/time_ms_us.py')          # unimplemented: utime.ticks_ms
+            skip_tests.add('extmod/urandom_basic.py')       # unimplemented: urandom.seed
+            skip_tests.add('micropython/opt_level.py')      # no support for line numbers
+            skip_tests.add('misc/non_compliant.py')         # no item assignment for bytearray
+            for t in tests:
+                if t.startswith('basics/io_'):
+                    skip_tests.add(t)
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -516,7 +526,7 @@ the last matching regex is used:
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal')
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')
     if args.target == 'unix' or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
@@ -531,7 +541,7 @@ the last matching regex is used:
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
-            elif args.target in ('esp8266', 'esp32', 'minimal'):
+            elif args.target in ('esp8266', 'esp32', 'minimal', 'nrf'):
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests
