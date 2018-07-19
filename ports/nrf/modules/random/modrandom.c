@@ -79,7 +79,7 @@ uint32_t machine_rng_generate_random_word(void) {
     return generate_hw_random();
 }
 
-static inline int rand30() {
+static inline int rand30(void) {
     uint32_t val = machine_rng_generate_random_word();
     return (val & 0x3fffffff); // binary mask b00111111111111111111111111111111
 }
