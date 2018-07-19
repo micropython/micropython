@@ -589,7 +589,7 @@ STATIC mp_obj_t uos_mbfs_ilistdir_it_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-STATIC mp_obj_t uos_mbfs_ilistdir() {
+STATIC mp_obj_t uos_mbfs_ilistdir(void) {
     uos_mbfs_ilistdir_it_t *iter = m_new_obj(uos_mbfs_ilistdir_it_t);
     iter->base.type = &mp_type_polymorph_iter;
     iter->iternext = uos_mbfs_ilistdir_it_iternext;
