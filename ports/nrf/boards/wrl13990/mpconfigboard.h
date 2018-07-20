@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "SPARKFUN WRL13990"
+#define MICROPY_HW_BOARD_NAME       "SPARKFUN WRL-13990"
 #define MICROPY_HW_MCU_NAME         "NRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nrf52"
 
@@ -40,7 +40,7 @@
 
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_LED_COUNT        (1)
-#define MICROPY_HW_LED_PULLUP       (1) 
+#define MICROPY_HW_LED_PULLUP       (1)
 
 #define MICROPY_HW_LED1             (7)     // LED1
 
