@@ -1202,6 +1202,10 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         if (socket->pcb.tcp == NULL) {
             return 0;
         }
+
+        // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
+        tcp_recv(socket->pcb.tcp, NULL);
+
         switch (socket->type) {
             case MOD_NETWORK_SOCK_STREAM: {
                 if (socket->pcb.tcp->state == LISTEN) {
@@ -1222,6 +1226,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             if (!socket_is_listener) {
                 pbuf_free(socket->incoming.pbuf);
             } else {
+                // Deregister callback and abort
+                tcp_poll(socket->incoming.connection, NULL, 0);
                 tcp_abort(socket->incoming.connection);
             }
             socket->incoming.pbuf = NULL;
