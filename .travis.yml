@@ -118,9 +118,9 @@ jobs:
       env: NAME="nrf port build"
       install:
         # need newer gcc version to support variables in linker script
-        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+        - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
         - sudo apt-get update -qq || true
-        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - sudo apt-get install gcc-arm-embedded
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C ports/nrf
