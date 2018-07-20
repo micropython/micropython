@@ -3,7 +3,7 @@
 The Sparkfun `WRL-13990` is a very basic, no thrills, `nRF52832-QFAA` based board. It can be used as a DIL socket and eases the development of a Bluetooth Low Energy or other ARM Cortex-M4 applications.
 
 ## Board Pins
-An overview of all available pins is in the table below. Most of the pins can be used for PWM, UART, SPI, I2C, etc. However some pins are special like the ADC and NFC provision. Please refer to the datasheet for additional information:
+An overview of all available pins is in the table below. Most of the pins can be used for PWM, UART, SPI, I2C, etc. However some pins are special like the ADC and NFC provision. Please refer to the datasheet for additional information.
 
 - When using NFC pins take special care about configuration. See note in [datasheet](http://infocenter.nordicsemi.com/pdf/nRF52832_PS_v1.4.pdf), page 17..18. At reset the pins are set to NFC mode!
 - When UART hardware handshaking is required, select the GPIO's you like and set them accordingly in the `mpconfigboard.h`.
@@ -44,29 +44,7 @@ A6  |P30| Alternatively ADC0_IN6
 A7  |P31| Alternatively ADC0_IN7
 
 ## Example
-To get a quick overview of the GPIO pins, a module `show_pins.py` is in the section below. It gives you an overview of all the defined pins and the way they are configured.
-
-```python
-# show_pins.py
-# show all pins of the nrf target board
-# originally from @dhylands, "adapted" for nrf port by @rolandvs
-
-import sys
-if sys.platform in ['nrf52-DK', 'nrf52']:
-    sys.exit(0)
-
-import board
-import machine
-
-def pins():
-    for pin_name in dir(machine.Pin.board):
-        if not (pin_name == '__class__' or pin_name == '__name__'):
-            pin = machine.Pin(str(pin_name))
-            print('{:10s} {:s}'.format(pin_name, str(pin)))
-
-pins()
-
-```
+A script `examples/show_pins.py` can be used to get a nice overview of all the GPIO pins, like the list below:  
 
 Sample output (omitted a few lines):
 
