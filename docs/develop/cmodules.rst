@@ -21,14 +21,14 @@ A module is a directory with the following files:
   * All C files you would like included.
 
 Put the required build commands in ``micropython.mk``. For a simple module, you
-will only have to add the file paths to ``SRC_MOD``, which will include these C
-files in the build:
+will only have to add the file paths to ``SRC_USERMOD``, which will include
+these C files in the build:
 
 .. highlight:: make
 .. code::
 
-    # Add all C files to SRC_MOD.
-    SRC_MOD += $(USER_C_MODULES)/example/example.c
+    # Add all C files to SRC_USERMOD.
+    SRC_USERMOD += example/example.c
 
 This is a very bare bones module named ``example`` that provides
 ``example.double(x)``. Note that the name of the module must be equal to the

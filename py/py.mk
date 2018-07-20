@@ -107,6 +107,8 @@ endif
 ifneq ($(USER_C_MODULES),)
 CFLAGS_MOD += -DMICROPY_CMODULES_INCLUDE_H='"genhdr/cmodules.h"'
 include $(USER_C_MODULES)/*/micropython.mk
+SRC_MOD += $(addprefix $(BUILD)/cmodules/, $(SRC_USERMOD))
+$(SRC_MOD) : | $(BUILD)/cmodules
 SRC_QSTR += $(BUILD)/genhdr/cmodules.h
 endif
 
