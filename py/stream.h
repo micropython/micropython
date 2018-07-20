@@ -41,6 +41,7 @@
 #define MP_STREAM_SET_OPTS      (7)  // Set stream options
 #define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
+#define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD  (0x0001)
