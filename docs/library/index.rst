@@ -40,6 +40,11 @@ best place to find general information of the availability/non-availability
 of a particular feature is the "General Information" section which contains
 information pertaining to a specific `MicroPython port`.
 
+On some ports you are able to discover the available, built-in libraries that
+can be imported by entering the following at the REPL::
+
+    help('modules')
+
 Beyond the built-in libraries described in this documentation, many more
 modules from the Python standard library, as well as further MicroPython
 extensions to it, can be found in `micropython-lib`.
