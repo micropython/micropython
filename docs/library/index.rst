@@ -65,104 +65,31 @@ For example, ``import json`` will first search for a file ``json.py`` (or packag
 directory ``json``) and load that module if it is found.  If nothing is found,
 it will fallback to loading the built-in ``ujson`` module.
 
-.. only:: port_unix
+.. toctree::
+   :maxdepth: 1
 
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       cmath.rst
-       gc.rst
-       math.rst
-       sys.rst
-       ubinascii.rst
-       ucollections.rst
-       uerrno.rst
-       uhashlib.rst
-       uheapq.rst
-       uio.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ussl.rst
-       ustruct.rst
-       utime.rst
-       uzlib.rst
-       _thread.rst
-
-.. only:: port_pyboard
-
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       cmath.rst
-       gc.rst
-       math.rst
-       sys.rst
-       ubinascii.rst
-       ucollections.rst
-       uerrno.rst
-       uhashlib.rst
-       uheapq.rst
-       uio.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ustruct.rst
-       utime.rst
-       uzlib.rst
-       _thread.rst
-
-.. only:: port_wipy
-
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       gc.rst
-       sys.rst
-       ubinascii.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ussl.rst
-       utime.rst
-
-.. only:: port_esp8266
-
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       gc.rst
-       math.rst
-       sys.rst
-       ubinascii.rst
-       ucollections.rst
-       uerrno.rst
-       uhashlib.rst
-       uheapq.rst
-       uio.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ussl.rst
-       ustruct.rst
-       utime.rst
-       uzlib.rst
+   builtins.rst
+   array.rst
+   cmath.rst
+   gc.rst
+   math.rst
+   sys.rst
+   ubinascii.rst
+   ucollections.rst
+   uerrno.rst
+   uhashlib.rst
+   uheapq.rst
+   uio.rst
+   ujson.rst
+   uos.rst
+   ure.rst
+   uselect.rst
+   usocket.rst
+   ussl.rst
+   ustruct.rst
+   utime.rst
+   uzlib.rst
+   _thread.rst
 
 
 MicroPython-specific libraries
@@ -183,40 +110,35 @@ the following libraries.
    uctypes.rst
 
 
-.. only:: port_pyboard
+Libraries specific to the pyboard
+---------------------------------
 
-   Libraries specific to the pyboard
-   ---------------------------------
+The following libraries are specific to the pyboard.
 
-   The following libraries are specific to the pyboard.
+.. toctree::
+  :maxdepth: 2
 
-   .. toctree::
-      :maxdepth: 2
-
-      pyb.rst
-      lcd160cr.rst
-
-.. only:: port_wipy
-
-   Libraries specific to the WiPy
-   ---------------------------------
-
-   The following libraries are specific to the WiPy.
-
-   .. toctree::
-      :maxdepth: 2
-
-      wipy.rst
+  pyb.rst
+  lcd160cr.rst
 
 
-.. only:: port_esp8266
+Libraries specific to the WiPy
+------------------------------
 
-   Libraries specific to the ESP8266
-   ---------------------------------
+The following libraries are specific to the WiPy.
 
-   The following libraries are specific to the ESP8266.
+.. toctree::
+  :maxdepth: 2
 
-   .. toctree::
-      :maxdepth: 2
+  wipy.rst
 
-      esp.rst
+
+Libraries specific to the ESP8266
+---------------------------------
+
+The following libraries are specific to the ESP8266.
+
+.. toctree::
+  :maxdepth: 2
+
+  esp.rst
