@@ -114,13 +114,13 @@ Install the necessary tools to flash and debug using Segger:
 
 [JLink Download](https://www.segger.com/downloads/jlink#)
 
-[nrfjprog linux-32bit Download](https://www.nordicsemi.com/eng/nordic/download_resource/52615/16/95882111/97746)
+[nrfjprog linux-32bit Download](https://www.nordicsemi.com/eng/nordic/Products/nRF52840/nRF5x-Command-Line-Tools-Linux32/58857)
 
-[nrfjprog linux-64bit Download](https://www.nordicsemi.com/eng/nordic/download_resource/51386/21/77886419/94917)
+[nrfjprog linux-64bit Download](https://www.nordicsemi.com/eng/nordic/Products/nRF52840/nRF5x-Command-Line-Tools-Linux64/58852)
 
-[nrfjprog osx Download](https://www.nordicsemi.com/eng/nordic/download_resource/53402/12/97293750/99977)
+[nrfjprog osx Download](https://www.nordicsemi.com/eng/nordic/Products/nRF52840/nRF5x-Command-Line-Tools-OSX/58855)
 
-[nrfjprog win32 Download](https://www.nordicsemi.com/eng/nordic/download_resource/33444/40/22191727/53210)
+[nrfjprog win32 Download](https://www.nordicsemi.com/eng/nordic/Products/nRF52840/nRF5x-Command-Line-Tools-Win32/58850)
 
 note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrfjprog's folder.
 
