@@ -140,31 +140,16 @@ Constants
 Classes
 -------
 
-.. only:: not port_wipy
-
- .. toctree::
+.. toctree::
    :maxdepth: 1
 
    machine.Pin.rst
    machine.Signal.rst
-   machine.UART.rst
-   machine.SPI.rst
-   machine.I2C.rst
-   machine.RTC.rst
-   machine.Timer.rst
-   machine.WDT.rst
-
-.. only:: port_wipy
-
- .. toctree::
-   :maxdepth: 1
-
-   machine.Pin.rst
-   machine.UART.rst
-   machine.SPI.rst
-   machine.I2C.rst
-   machine.RTC.rst
-   machine.Timer.rst
-   machine.WDT.rst
    machine.ADC.rst
+   machine.UART.rst
+   machine.SPI.rst
+   machine.I2C.rst
+   machine.RTC.rst
+   machine.Timer.rst
+   machine.WDT.rst
    machine.SD.rst

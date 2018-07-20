@@ -4,6 +4,11 @@
 class SD -- secure digital memory card
 ======================================
 
+.. warning::
+
+   This is a non-standard class and is only available on the cc3200 port.
+
+
 The SD card class allows to configure and enable the memory card
 module of the WiPy and automatically mount it as ``/sd`` as part
 of the file system. There are several pin combinations that can be
