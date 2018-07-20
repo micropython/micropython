@@ -1,6 +1,6 @@
 # WRL-13990 Board Support
 
-The Sparkfun `WRL-13990` is a very basic, no thrills, `nRF52832-QFAA` based board. It can be used as a DIL socket and eases the development of a Bluetooth Low Energy or other ARM Cortex-M4 applications.
+The Sparkfun `WRL-13990` is a very basic, no thrills, `nRF52832-QFAA` based board. It can be used as a DIL socket and eases the development of Bluetooth Low Energy or other ARM Cortex-M4 applications.
 
 ## Board Pins
 An overview of all available pins is in the table below. Most of the pins can be used for PWM, UART, SPI, I2C, etc. However some pins are special like the ADC and NFC provision. Please refer to the datasheet for additional information.
