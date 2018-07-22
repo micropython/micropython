@@ -38,7 +38,7 @@
 #error Unknown chip
 #endif
 
-#define FLASH_IS_PAGE_ALIGNED(addr) ((uint32_t)(addr) & (FLASH_PAGESIZE - 1))
+#define FLASH_IS_PAGE_ALIGNED(addr) (((uint32_t)(addr) & (FLASH_PAGESIZE - 1)) == 0)
 
 #if BLUETOOTH_SD
 
