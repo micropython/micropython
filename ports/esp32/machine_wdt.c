@@ -43,15 +43,14 @@ typedef struct _machine_wdt_obj_t {
 STATIC machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};
 
 STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 2, true);
     
     enum {
-        ARG_timeout, ARG_panic
+        ARG_id, ARG_timeout
     };
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 10} },
-        { MP_QSTR_panic, MP_ARG_BOOL, {.u_bool = true} }
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5000} }
     };
 
     mp_map_t kw_args;
@@ -60,7 +59,14 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_arg_parse_all(n_args, args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, mp_args);
 
-    mp_int_t rs_code = esp_task_wdt_init(mp_args[ARG_timeout].u_int, mp_args[ARG_panic].u_bool);
+    if (mp_args[ARG_timeout].u_int <= 0) {
+        mp_raise_ValueError("WDT timeout too short");
+    }
+
+    // Convert millis to seconds (esp_task_wdt_init needs seconds)
+    mp_args[ARG_timeout].u_int /= 1000;
+
+    mp_int_t rs_code = esp_task_wdt_init(mp_args[ARG_timeout].u_int, true);
     if (rs_code != ESP_OK) {
         mp_raise_OSError(rs_code);
     }
