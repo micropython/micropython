@@ -31,7 +31,7 @@ def print_exc(e):
 
 # basic exception message
 try:
-    1/0
+    raise Exception('msg')
 except Exception as e:
     print('caught')
     print_exc(e)
@@ -40,7 +40,7 @@ except Exception as e:
 def f():
     g()
 def g():
-    2/0
+    raise Exception('fail')
 try:
     f()
 except Exception as e:
