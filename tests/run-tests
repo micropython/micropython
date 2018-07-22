@@ -277,8 +277,12 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('thread/stress_recurse.py') # has reliability issues
 
     if upy_float_precision == 0:
+        skip_tests.add('extmod/uctypes_le_float.py')
+        skip_tests.add('extmod/uctypes_native_float.py')
+        skip_tests.add('extmod/uctypes_sizeof_float.py')
         skip_tests.add('extmod/ujson_dumps_float.py')
         skip_tests.add('extmod/ujson_loads_float.py')
+        skip_tests.add('extmod/urandom_extra_float.py')
         skip_tests.add('misc/rge_sm.py')
     if upy_float_precision < 32:
         skip_tests.add('float/float2int_intbig.py') # requires fp32, there's float2int_fp30_intbig.py instead
