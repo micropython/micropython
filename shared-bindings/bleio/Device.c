@@ -199,7 +199,7 @@ STATIC mp_obj_t bleio_device_add_service(mp_obj_t self_in, mp_obj_t service_in) 
                   "Can't add services in Central mode"));
     }
 
-    service->device = self_in;
+    service->device = self;
 
     mp_obj_list_append(self->service_list, service);
 
@@ -266,31 +266,21 @@ STATIC mp_obj_t bleio_device_start_advertising(mp_uint_t n_args, const mp_obj_t 
                   "Can't advertise in Central mode"));
     }
 
-    enum { ARG_connectable };
+    enum { ARG_connectable, ARG_data };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_connectable, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_data, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // TODO: data
-    bleio_advertisement_data_t adv_data = {
-        .device_name = self->name,
-        .services = mp_obj_new_list(0, NULL),
-        .data = mp_obj_new_bytearray(0, NULL),
-        .connectable = args[ARG_connectable].u_bool
-    };
-
-    mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
-    for (size_t i = 0; i < service_list->len; ++i) {
-        bleio_service_obj_t *service = MP_OBJ_TO_PTR(service_list->items[i]);
-        if (!service->is_secondary) {
-            mp_obj_list_append(adv_data.services, service_list->items[i]);
-        }
+    mp_buffer_info_t bufinfo = { 0 };
+    if (args[ARG_data].u_obj != mp_const_none) {
+        mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_READ);
     }
 
-    common_hal_bleio_device_start_advertising(self, &adv_data);
+    common_hal_bleio_device_start_advertising(self, args[ARG_connectable].u_bool, &bufinfo);
 
     return mp_const_none;
 }

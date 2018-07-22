@@ -36,7 +36,7 @@ typedef struct {
     bool is_peripheral;
     mp_obj_t name;
     bleio_address_obj_t address;
-    uint16_t conn_handle;
+    volatile uint16_t conn_handle;
     mp_obj_t service_list;
     mp_obj_t notif_handler;
     mp_obj_t conn_handler;

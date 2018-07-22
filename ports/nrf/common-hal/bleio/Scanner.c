@@ -28,25 +28,83 @@
 #include <string.h>
 
 #include "ble_drv.h"
+#include "ble_gap.h"
 #include "py/mphal.h"
+#include "py/nlr.h"
+#include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Scanner.h"
 #include "shared-module/bleio/ScanEntry.h"
 
-STATIC void adv_event_handler(bleio_scanner_obj_t *self, bleio_scanentry_obj_t *entry) {
+#if (BLUETOOTH_SD == 140)
+static uint8_t m_scan_buffer_data[BLE_GAP_SCAN_BUFFER_MIN];
+
+static ble_data_t m_scan_buffer = {
+    m_scan_buffer_data,
+    BLE_GAP_SCAN_BUFFER_MIN
+};
+#endif
+
+STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
+    bleio_scanner_obj_t *scanner = (bleio_scanner_obj_t*)scanner_in;
+    ble_gap_evt_adv_report_t *report = &ble_evt->evt.gap_evt.params.adv_report;
+
+    if (ble_evt->header.evt_id != BLE_GAP_EVT_ADV_REPORT) {
+        return;
+    }
+
     // TODO: Don't add new entry for each item, group by address and update
+    bleio_scanentry_obj_t *entry = m_new_obj(bleio_scanentry_obj_t);
+    entry->base.type = &bleio_scanentry_type;
+    entry->rssi = report->rssi;
 
-    mp_obj_list_append(self->adv_reports, entry);
+    entry->address.type = report->peer_addr.addr_type;
+    memcpy(entry->address.value, report->peer_addr.addr, BLEIO_ADDRESS_BYTES);
 
-    ble_drv_scan_continue();
+#if (BLUETOOTH_SD == 140)
+    entry->data = mp_obj_new_bytearray(report->data.len, report->data.p_data);
+#else
+    entry->data = mp_obj_new_bytearray(report->dlen, report->data);
+#endif
+
+    mp_obj_list_append(scanner->adv_reports, entry);
+
+#if (BLUETOOTH_SD == 140)
+    const uint32_t err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer);
+    if (err_code != NRF_SUCCESS) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+            "Failed to continue scanning, status: 0x%0xlX", err_code));
+    }
+#endif
 }
 
 void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_int_t timeout) {
-    ble_drv_adv_report_handler_set(self, adv_event_handler);
+    ble_drv_add_event_handler(on_ble_evt, self);
 
-    ble_drv_scan_start(self->interval, self->window);
+    ble_gap_scan_params_t scan_params = {
+        .interval = MSEC_TO_UNITS(self->interval, UNIT_0_625_MS),
+        .window = MSEC_TO_UNITS(self->window, UNIT_0_625_MS),
+#if (BLUETOOTH_SD == 140)
+        .scan_phys = BLE_GAP_PHY_1MBPS,
+#endif
+    };
 
-    mp_hal_delay_ms(timeout);
+    common_hal_bleio_adapter_set_enabled(true);
 
-    ble_drv_scan_stop();
+    uint32_t err_code;
+#if (BLUETOOTH_SD == 140)
+    err_code = sd_ble_gap_scan_start(&scan_params, &m_scan_buffer);
+#else
+    err_code = sd_ble_gap_scan_start(&scan_params);
+#endif
+
+    if (err_code != NRF_SUCCESS) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+            "Failed to start scanning, status: 0x%0xlX", err_code));
+    }
+
+    if (timeout > 0) {
+        mp_hal_delay_ms(timeout);
+        sd_ble_gap_scan_stop();
+    }
 }

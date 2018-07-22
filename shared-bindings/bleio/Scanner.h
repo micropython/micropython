@@ -34,5 +34,6 @@
 extern const mp_obj_type_t bleio_scanner_type;
 
 extern void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_int_t timeout);
+extern void common_hal_bleio_scanner_stop(bleio_scanner_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANNER_H

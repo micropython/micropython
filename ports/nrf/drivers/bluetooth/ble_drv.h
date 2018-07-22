@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,65 +28,26 @@
 #ifndef BLUETOOTH_LE_DRIVER_H__
 #define BLUETOOTH_LE_DRIVER_H__
 
-#if BLUETOOTH_SD
+#include "ble.h"
 
-#include "shared-bindings/bleio/Device.h"
-#include "shared-bindings/bleio/Scanner.h"
-#include "shared-bindings/bleio/Service.h"
-#include "shared-module/bleio/ScanEntry.h"
+#if (BLUETOOTH_SD == 132) && (BLE_API_VERSION == 2)
+#define NRF52
+#endif
 
-typedef void (*ble_drv_gap_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
-typedef void (*ble_drv_gatts_evt_callback_t)(bleio_device_obj_t *device, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
-typedef void (*ble_drv_adv_evt_callback_t)(bleio_scanner_obj_t *scanner, bleio_scanentry_obj_t *entry);
+#define MAX_TX_IN_PROGRESS 10
 
-uint32_t ble_drv_stack_enable(void);
+#ifndef BLE_GATT_ATT_MTU_DEFAULT
+    #define BLE_GATT_ATT_MTU_DEFAULT GATT_MTU_SIZE_DEFAULT
+#endif
 
-uint8_t ble_drv_stack_enabled(void);
+#define BLE_CONN_CFG_TAG_CUSTOM 1
 
-void ble_drv_address_get(bleio_address_obj_t *address);
+#define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
+#define UNIT_0_625_MS (625)
+#define UNIT_10_MS    (10000)
 
-bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
+typedef void (*ble_drv_evt_handler_t)(ble_evt_t*, void*);
 
-void ble_drv_service_add(bleio_service_obj_t *service);
-
-bool ble_drv_characteristic_add(bleio_characteristic_obj_t *characteristic);
-
-bool ble_drv_advertise_data(bleio_advertisement_data_t *p_adv_params);
-
-void ble_drv_advertise_stop(void);
-
-void ble_drv_gap_event_handler_set(bleio_device_obj_t *device, ble_drv_gap_evt_callback_t evt_handler);
-
-void ble_drv_gatts_event_handler_set(bleio_device_obj_t *device, ble_drv_gatts_evt_callback_t evt_handler);
-
-void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
-
-void ble_drv_attr_c_read(bleio_characteristic_obj_t *characteristic);
-
-void ble_drv_attr_s_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo);
-
-void ble_drv_attr_s_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo);
-
-void ble_drv_attr_c_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo);
-
-void ble_drv_scan_start(uint16_t interval, uint16_t window);
-
-void ble_drv_scan_continue(void);
-
-void ble_drv_scan_stop(void);
-
-void ble_drv_adv_report_handler_set(bleio_scanner_obj_t *self, ble_drv_adv_evt_callback_t evt_handler);
-
-void ble_drv_connect(bleio_device_obj_t *device);
-
-void ble_drv_disconnect(bleio_device_obj_t *device);
-
-bool ble_drv_discover_services(bleio_device_obj_t *device, uint16_t start_handle);
-
-bool ble_drv_discover_characteristic(bleio_device_obj_t *device, bleio_service_obj_t *service, uint16_t start_handle);
-
-void ble_drv_discover_descriptors(void);
-
-#endif // BLUETOOTH_SD
+void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param);
 
 #endif // BLUETOOTH_LE_DRIVER_H__

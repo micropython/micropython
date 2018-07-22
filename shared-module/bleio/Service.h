@@ -28,13 +28,14 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SERVICE_H
 
 #include "common-hal/bleio/UUID.h"
+#include "shared-module/bleio/Device.h"
 
 typedef struct {
     mp_obj_base_t base;
     uint16_t handle;
     bool is_secondary;
     bleio_uuid_obj_t *uuid;
-    mp_obj_t device;
+    bleio_device_obj_t *device;
     mp_obj_t char_list;
     uint16_t start_handle;
     uint16_t end_handle;

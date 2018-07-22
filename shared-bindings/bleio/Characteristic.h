@@ -31,6 +31,7 @@
 
 extern const mp_obj_type_t bleio_characteristic_type;
 
+extern void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self);
 extern void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self);
 extern void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo);
 

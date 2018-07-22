@@ -32,7 +32,7 @@
 
 extern const mp_obj_type_t bleio_device_type;
 
-extern void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bleio_advertisement_data_t *adv_data);
+extern void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bool connectable, mp_buffer_info_t *raw_data);
 extern void common_hal_bleio_device_stop_advertising(bleio_device_obj_t *device);
 extern void common_hal_bleio_device_connect(bleio_device_obj_t *device);
 extern void common_hal_bleio_device_disconnect(bleio_device_obj_t *device);

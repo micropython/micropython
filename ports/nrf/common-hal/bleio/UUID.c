@@ -25,10 +25,13 @@
  * THE SOFTWARE.
  */
 
+#include "ble.h"
 #include "ble_drv.h"
 #include "common-hal/bleio/UUID.h"
+#include "nrf_error.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/UUID.h"
 
 #define UUID_STR_16BIT_LEN 6
@@ -59,37 +62,44 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, const mp_obj_t *uui
         } else if (str_len == UUID_STR_128BIT_LEN) {
             self->type = UUID_TYPE_128BIT;
 
-            uint8_t buffer[16];
-            buffer[0] = xdigit_8b_value(str_data[35], str_data[34]);
-            buffer[1] = xdigit_8b_value(str_data[33], str_data[32]);
-            buffer[2] = xdigit_8b_value(str_data[31], str_data[30]);
-            buffer[3] = xdigit_8b_value(str_data[29], str_data[28]);
-            buffer[4] = xdigit_8b_value(str_data[27], str_data[26]);
-            buffer[5] = xdigit_8b_value(str_data[25], str_data[24]);
+            ble_uuid128_t vs_uuid;
+            vs_uuid.uuid128[0] = xdigit_8b_value(str_data[35], str_data[34]);
+            vs_uuid.uuid128[1] = xdigit_8b_value(str_data[33], str_data[32]);
+            vs_uuid.uuid128[2] = xdigit_8b_value(str_data[31], str_data[30]);
+            vs_uuid.uuid128[3] = xdigit_8b_value(str_data[29], str_data[28]);
+            vs_uuid.uuid128[4] = xdigit_8b_value(str_data[27], str_data[26]);
+            vs_uuid.uuid128[5] = xdigit_8b_value(str_data[25], str_data[24]);
 
             // 23 '-'
-            buffer[6] = xdigit_8b_value(str_data[22], str_data[21]);
-            buffer[7] = xdigit_8b_value(str_data[20], str_data[19]);
+            vs_uuid.uuid128[6] = xdigit_8b_value(str_data[22], str_data[21]);
+            vs_uuid.uuid128[7] = xdigit_8b_value(str_data[20], str_data[19]);
 
             // 18 '-'
-            buffer[8] = xdigit_8b_value(str_data[17], str_data[16]);
-            buffer[9] = xdigit_8b_value(str_data[15], str_data[14]);
+            vs_uuid.uuid128[8] = xdigit_8b_value(str_data[17], str_data[16]);
+            vs_uuid.uuid128[9] = xdigit_8b_value(str_data[15], str_data[14]);
 
             // 13 '-'
-            buffer[10] = xdigit_8b_value(str_data[12], str_data[11]);
-            buffer[11] = xdigit_8b_value(str_data[10], str_data[9]);
+            vs_uuid.uuid128[10] = xdigit_8b_value(str_data[12], str_data[11]);
+            vs_uuid.uuid128[11] = xdigit_8b_value(str_data[10], str_data[9]);
 
             // 8 '-'
             self->value[0] = xdigit_8b_value(str_data[7], str_data[6]);
             self->value[1] = xdigit_8b_value(str_data[5], str_data[4]);
 
-            buffer[14] = xdigit_8b_value(str_data[3], str_data[2]);
-            buffer[15] = xdigit_8b_value(str_data[1], str_data[0]);
+            vs_uuid.uuid128[14] = xdigit_8b_value(str_data[3], str_data[2]);
+            vs_uuid.uuid128[15] = xdigit_8b_value(str_data[1], str_data[0]);
 
-            ble_drv_uuid_add_vs(buffer, &self->uuid_vs_idx);
+            common_hal_bleio_adapter_set_enabled(true);
+
+            const uint32_t err_code = sd_ble_uuid_vs_add(&vs_uuid, &self->uuid_vs_idx);
+            if (err_code != NRF_SUCCESS) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                    "Failed to add Vendor Specific UUID, status: 0x%08lX", err_code));
+            }
+
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                      "Invalid UUID string length"));
+                "Invalid UUID string length"));
         }
 
         return;
@@ -113,10 +123,10 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, const mp_obj_t *uui
 void common_hal_bleio_uuid_print(bleio_uuid_obj_t *self, const mp_print_t *print) {
     if (self->type == UUID_TYPE_16BIT) {
         mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ")",
-                  self->value[1], self->value[0]);
+            self->value[1], self->value[0]);
     } else {
         mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ", VS idx: " HEX2_FMT ")",
-                  self->value[1], self->value[0], self->uuid_vs_idx);
+            self->value[1], self->value[0], self->uuid_vs_idx);
     }
 }
 

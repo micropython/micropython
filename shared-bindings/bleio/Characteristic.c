@@ -125,6 +125,8 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
                   "Invalid UUID parameter"));
     }
 
+    common_hal_bleio_characteristic_construct(self);
+
     return MP_OBJ_FROM_PTR(self);
 }
 

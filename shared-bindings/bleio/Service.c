@@ -74,7 +74,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     bleio_service_obj_t *self = m_new_obj(bleio_service_obj_t);
     self->base.type = &bleio_service_type;
-    self->device = mp_const_none;
+    self->device = NULL;
     self->char_list = mp_obj_new_list(0, NULL);
 
     mp_map_t kw_args;
