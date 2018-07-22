@@ -1,6 +1,6 @@
 # Nordic files
 #####################
-drivers/bluetooth/s1*/
+bluetooth/s1*/
 
 # Build files
 #####################

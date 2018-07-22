@@ -21,7 +21,7 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 ifneq ($(SD), )
-	include drivers/bluetooth/bluetooth_common.mk
+	include bluetooth/bluetooth_common.mk
 endif
 
 FROZEN_MPY_DIR = freeze
@@ -41,6 +41,7 @@ INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
 INC += -I./../../lib/cmsis/inc
 INC += -I./boards/$(BOARD)
+INC += -I./bluetooth
 INC += -I./modules/ubluepy
 INC += -I./modules/ble
 INC += -I./nrfx
@@ -48,9 +49,6 @@ INC += -I./nrfx/hal
 INC += -I./nrfx/mdk
 INC += -I./nrfx/drivers/include
 INC += -I../../lib/mp-readline
-INC += -I./drivers/bluetooth
-INC += -I./drivers
-INC += -I./peripherals
 INC += -I../../lib/tinyusb/src
 INC += -I./usb
 

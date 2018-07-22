@@ -15,11 +15,11 @@ endif
 
 CFLAGS += -DBLUETOOTH_SD_DEBUG=1
 
-INC += -Idrivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
-INC += -Idrivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
+INC += -Ibluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
+INC += -Ibluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
 
 SOFTDEV_HEX_NAME = $(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_softdevice.hex
-SOFTDEV_HEX_PATH = drivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)
+SOFTDEV_HEX_PATH = bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)
 SOFTDEV_HEX = $(SOFTDEV_HEX_PATH)/$(SOFTDEV_HEX_NAME)
 
 define STACK_MISSING_ERROR
@@ -32,7 +32,7 @@ define STACK_MISSING_ERROR
 #                                                     #
 # Please run the download script:                     #
 #                                                     #
-#      drivers/bluetooth/download_ble_stack.sh        #
+#      bluetooth/download_ble_stack.sh                #
 #                                                     #
 #######################################################
 

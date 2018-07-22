@@ -18,7 +18,7 @@ You then need to download the SD and Nordic SDK files via:
 
 ```
 $ cd ports/nrf
-$ ./drivers/bluetooth/download_ble_stack.sh
+$ ./bluetooth/download_ble_stack.sh
 ```
 
 ## Installing `adafruit-nrfutil`
