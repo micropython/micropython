@@ -41,6 +41,7 @@
 #include "extmod/vfs_fat.h"
 #include "gccollect.h"
 #include "irq.h"
+#include "pyb_irq.h"
 #include "pybthread.h"
 #include "rng.h"
 #include "storage.h"
@@ -638,6 +639,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ),                 MP_ROM_PTR(&pyb_irq_type) },
 
 #if 0
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) },

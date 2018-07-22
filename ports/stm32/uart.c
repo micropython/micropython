@@ -35,6 +35,7 @@
 #include "lib/utils/interrupt_char.h"
 #include "uart.h"
 #include "irq.h"
+#include "pyb_irq.h"
 #include "pendsv.h"
 
 /// \moduleref pyb
@@ -75,8 +76,13 @@
 #define CHAR_WIDTH_8BIT (0)
 #define CHAR_WIDTH_9BIT (1)
 
+typedef enum {
+    IRQ_FLAG_RX_IDLE= 1<<0,
+} uart_irq_flag_t;
+
 struct _pyb_uart_obj_t {
     mp_obj_base_t base;
+    pyb_irq_obj_t irq;
     UART_HandleTypeDef uart;            // this is 17 words big
     IRQn_Type irqn;
     pyb_uart_t uart_id : 8;
@@ -112,7 +118,6 @@ void uart_init0(void) {
         __fatal_error("HAL_RCCEx_PeriphCLKConfig");
     }
     #endif
-
     for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
         MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
     }
@@ -498,7 +503,6 @@ void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
     uart_tx_data(uart_obj, str, len, &errcode);
 }
 
-// this IRQ handler is set up to handle RXNE interrupts only
 void uart_irq_handler(mp_uint_t uart_id) {
     // get the uart object
     pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
@@ -509,6 +513,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
         return;
     }
 
+    self->irq.flags = IRQ_FLAG_NONE;
     if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
         if (self->read_buf_len != 0) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
@@ -536,6 +541,15 @@ void uart_irq_handler(mp_uint_t uart_id) {
             }
         }
     }
+    if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_IDLE) != RESET) {
+        __HAL_UART_CLEAR_IDLEFLAG(&self->uart);
+        self->irq.flags |= IRQ_FLAG_RX_IDLE;
+    }
+    self->irq.flags &= self->irq.enable;
+    if (self->irq.flags != IRQ_FLAG_NONE) {
+        irq_dispatch(&self->irq);
+    }
+
 }
 
 /******************************************************************************/
@@ -577,6 +591,10 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2,
             self->timeout, self->timeout_char,
             self->read_buf_len == 0 ? 0 : self->read_buf_len - 1); // -1 to adjust for usable length of buffer
+        if (self->irq.enable != IRQ_FLAG_NONE) {
+            mp_printf(print, " IRQ callback on%s",
+                      (self->irq.enable&IRQ_FLAG_RX_IDLE)?" RX_IDLE_IRQ":"");
+        }
     }
 }
 
@@ -822,11 +840,17 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         self = m_new0(pyb_uart_obj_t, 1);
         self->base.type = &pyb_uart_type;
         self->uart_id = uart_id;
+        self->irq.base.type = &pyb_irq_type;
+        self->irq.parent = (mp_obj_t*)&self;
         MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] = self;
     } else {
         // reference existing UART object
         self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
     }
+    // Clear IRQs
+    self->irq.enable = IRQ_FLAG_NONE;
+    self->irq.flags = IRQ_FLAG_NONE;
+    self->irq.handler = mp_const_none;
 
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
@@ -968,6 +992,53 @@ STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);
 
+/// \method irq(handler=None, trigger=RX_IDLE_IRQ )
+/// Set the function to be called when the uart receives an interrrupt.
+/// `handler` is passed 1 argument, the uart object.
+/// If `handler` is `None` then the callback will be disabled.
+/// Further set the enabled intterrrupts which can trigger the callback to the
+/// value of the supplied trigger variable.
+STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = IRQ_FLAG_NONE } },
+    };
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (n_args > 1 || kw_args->used != 0) {
+        if (args[ARG_handler].u_obj == mp_const_none) {
+            // Disable IRQs which can be triggered here
+            __HAL_UART_DISABLE_IT(&self->uart, UART_IT_IDLE);
+            self->irq.handler = mp_const_none;
+        } else if (mp_obj_is_callable(args[ARG_handler].u_obj)) {
+            self->irq.handler = args[ARG_handler].u_obj;
+        } else {
+            mp_raise_ValueError("IRQ handler must be None or a callable object");
+        }
+        if (self->irq.handler != mp_const_none) {
+            uint32_t trigger = args[ARG_trigger].u_int;
+            self->irq.enable = IRQ_FLAG_NONE;
+            // Enable IRQ to be triggered here with if .. clauses and remove
+            // it from 'trigger' variable
+            if (trigger&IRQ_FLAG_RX_IDLE) {
+                self->irq.enable |=  IRQ_FLAG_RX_IDLE;
+                __HAL_UART_ENABLE_IT(&self->uart, UART_IT_IDLE);
+                trigger &= ~IRQ_FLAG_RX_IDLE;
+            }
+            // All triggers should be consumed
+            if (trigger != IRQ_FLAG_NONE) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,"IRQ trigger(s) %d unknown", trigger));
+            }
+        }
+    }
+
+    return MP_OBJ_FROM_PTR(&self->irq);
+ }
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
+
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
 
@@ -988,9 +1059,14 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&pyb_uart_readchar_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&pyb_uart_sendbreak_obj) },
 
+    // \method irq(handler=None, trigger=)
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_uart_irq_obj) },
+
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
+    // IRQ flags NO irq is defined in pyb_irq
+    { MP_ROM_QSTR(MP_QSTR_RX_IDLE_IRQ), MP_ROM_INT(IRQ_FLAG_RX_IDLE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
