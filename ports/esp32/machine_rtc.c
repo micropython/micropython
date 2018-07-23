@@ -39,6 +39,7 @@
 #include "timeutils.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
+#include "esp32/ulp.h"
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
@@ -147,10 +148,29 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_memory_obj, 1, 2, machine_rtc_memory);
 
+STATIC mp_obj_t machine_rtc_slow_memory(mp_uint_t n_args, const mp_obj_t *args) {
+	// arg0: self, arg1: addr, arg2: value
+	const mp_uint_t offset = mp_obj_get_int(args[1]);
+	const uint8_t* base = (uint8_t*) RTC_SLOW_MEM;
+	if (n_args == 2) {
+		// read RTC memory
+		return mp_obj_new_int( *(base+offset) );
+	} else {
+		// write RTC memory
+		const uint8_t value = mp_obj_get_int(args[2]);
+		*(uint8_t*)(base+offset) = value;
+		return mp_const_none;
+	}
+
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_slow_memory_obj, 2, 3, machine_rtc_slow_memory);
+
+
 STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&machine_rtc_memory_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_slow_memory), (mp_obj_t)&machine_rtc_slow_memory_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
