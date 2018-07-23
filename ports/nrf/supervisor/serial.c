@@ -26,25 +26,41 @@
 
 #include "py/mphal.h"
 
-#if MICROPY_PY_BLE_NUS
+#if (MICROPY_PY_BLE_NUS == 1)
 #include "ble_uart.h"
 #else
 #include "nrf_gpio.h"
 #include "nrfx_uarte.h"
 #endif
 
-#if !defined(NRF52840_XXAA)
+#if (MICROPY_PY_BLE_NUS == 1)
+
+void serial_init(void) {
+    ble_uart_init();
+}
+
+bool serial_connected(void) {
+    return ble_uart_connected();
+}
+
+char serial_read(void) {
+    return (char) ble_uart_rx_chr();
+}
+
+bool serial_bytes_available(void) {
+    return ble_uart_stdin_any();
+}
+
+void serial_write(const char *text) {
+    ble_uart_stdout_tx_str(text);
+}
+
+#elif !defined(NRF52840_XXAA)
 
 uint8_t serial_received_char;
 nrfx_uarte_t serial_instance = NRFX_UARTE_INSTANCE(0);
 
 void serial_init(void) {
-#if MICROPY_PY_BLE_NUS
-    ble_uart_init0();
-    while (!ble_uart_enabled()) {
-        ;
-    }
-#else
     nrfx_uarte_config_t config = {
         .pseltxd = MICROPY_HW_UART_TX,
         .pselrxd = MICROPY_HW_UART_RX,
@@ -66,7 +82,6 @@ void serial_init(void) {
 
     // enabled receiving
     nrf_uarte_task_trigger(serial_instance.p_reg, NRF_UARTE_TASK_STARTRX);
-#endif
 }
 
 bool serial_connected(void) {
@@ -92,7 +107,6 @@ void serial_write(const char *text) {
 void serial_init(void) {
     // usb is already initialized in board_init()
 }
-
 
 bool serial_connected(void) {
     return tud_cdc_connected();

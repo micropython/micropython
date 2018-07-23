@@ -24,16 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLUETOOTH_LE_UART_H__
-#define BLUETOOTH_LE_UART_H__
+#ifndef MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H
+#define MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H
 
 #include <stdbool.h>
 
 #include "ble_drv.h"
 
-void ble_uart_init0(void);
-void ble_uart_advertise(void);
+void ble_uart_init(void);
 bool ble_uart_connected(void);
-bool ble_uart_enabled(void);
+char ble_uart_rx_chr(void);
+bool ble_uart_stdin_any(void);
+void ble_uart_stdout_tx_str(const char *text);
 
-#endif // BLUETOOTH_LE_UART_H__
+#endif // MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H

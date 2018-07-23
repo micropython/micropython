@@ -131,7 +131,6 @@
 #if BLUETOOTH_SD
     #define MICROPY_PY_BLEIO                     (1)
     #define MICROPY_PY_BLE_NUS                   (0)
-    #define BLUETOOTH_WEBBLUETOOTH_REPL          (0)
 #else
     #ifndef MICROPY_PY_BLEIO
         #define MICROPY_PY_BLEIO                 (0)
