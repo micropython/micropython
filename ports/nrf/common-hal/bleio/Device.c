@@ -297,7 +297,7 @@ STATIC bool discover_characteristics(bleio_device_obj_t *device, bleio_service_o
     m_discovery_successful = false;
 
     uint32_t err_code = sd_ble_gattc_characteristics_discover(device->conn_handle, &handle_range);
-    if (err_code != 0) {
+    if (err_code != NRF_SUCCESS) {
         return false;
     }
 

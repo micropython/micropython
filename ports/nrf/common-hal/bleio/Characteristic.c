@@ -36,7 +36,6 @@
 static volatile bleio_characteristic_obj_t *m_read_characteristic;
 static volatile uint8_t m_tx_in_progress;
 static nrf_mutex_t *m_write_mutex;
-//static volatile bool m_write_done;
 
 STATIC void gatts_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
     bleio_device_obj_t *device = characteristic->service->device;
@@ -101,23 +100,19 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
 
 STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
     bleio_device_obj_t *device = characteristic->service->device;
-    uint16_t conn_handle = device->conn_handle;
     uint32_t err_code;
 
-    ble_gattc_write_params_t write_params;
-    write_params.write_op = BLE_GATT_OP_WRITE_REQ;
+    ble_gattc_write_params_t write_params = {
+        .flags = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL,
+        .write_op = BLE_GATT_OP_WRITE_REQ,
+        .handle = characteristic->handle,
+        .p_value = bufinfo->buf,
+        .len = bufinfo->len,
+    };
 
     if (characteristic->props.write_wo_resp) {
         write_params.write_op = BLE_GATT_OP_WRITE_CMD;
-    }
 
-    write_params.flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL;
-    write_params.handle   = characteristic->handle;
-    write_params.offset   = 0;
-    write_params.len      = bufinfo->len;
-    write_params.p_value  = bufinfo->buf;
-
-    if (write_params.write_op == BLE_GATT_OP_WRITE_CMD) {
         err_code = sd_mutex_acquire(m_write_mutex);
         if (err_code != NRF_SUCCESS) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -125,8 +120,8 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
         }
     }
 
-    err_code = sd_ble_gattc_write(conn_handle, &write_params);
-    if (err_code != 0) {
+    err_code = sd_ble_gattc_write(device->conn_handle, &write_params);
+    if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
             "Failed to write attribute value, status: 0x%08lX", err_code));
     }

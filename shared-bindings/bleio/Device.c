@@ -144,6 +144,8 @@
 //|     Disconnects from the remote device.
 //|     This method can only be called for Peripheral devices.
 //|
+
+// TODO: Add unique MAC address part to name
 static const char default_name[] = "CIRCUITPY";
 
 STATIC void bleio_device_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
