@@ -33,7 +33,6 @@
 typedef struct {
     mp_obj_base_t base;
     bleio_service_obj_t *service;
-    uint16_t service_handle; // TODO: Is this needed?
     bleio_uuid_obj_t *uuid;
     mp_obj_t value_data;
     uint16_t handle;

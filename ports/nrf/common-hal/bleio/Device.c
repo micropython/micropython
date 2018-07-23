@@ -376,8 +376,6 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
         characteristic->props.write = gattc_char->char_props.write;
         characteristic->props.write_wo_resp = gattc_char->char_props.write_wo_resp;
         characteristic->handle = gattc_char->handle_value;
-
-        characteristic->service_handle = m_char_discovery_service->handle;
         characteristic->service = m_char_discovery_service;
 
         mp_obj_list_append(m_char_discovery_service->char_list, MP_OBJ_FROM_PTR(characteristic));

@@ -101,7 +101,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     ble_gatts_char_handles_t handles;
 
     uint32_t err_code;
-    err_code = sd_ble_gatts_characteristic_add(characteristic->service_handle, &char_md, &attr_char_value, &handles);
+    err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &attr_char_value, &handles);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
             "Failed to add characteristic, status: 0x%08lX", err_code));
@@ -111,5 +111,4 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     characteristic->cccd_handle = handles.cccd_handle;
     characteristic->sccd_handle = handles.sccd_handle;
     characteristic->handle = handles.value_handle;
-    characteristic->service = self;
 }
