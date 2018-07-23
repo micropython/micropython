@@ -105,17 +105,6 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, const mp_obj_t *uui
         return;
     }
 
-    // deep copy
-    if (MP_OBJ_IS_TYPE(*uuid, &bleio_uuid_type)) {
-        bleio_uuid_obj_t *other = MP_OBJ_TO_PTR(*uuid);
-        self->type = other->type;
-        self->uuid_vs_idx = other->uuid_vs_idx;
-        self->value[0] = other->value[0];
-        self->value[1] = other->value[1];
-
-        return;
-    }
-
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
               "Invalid UUID parameter"));
 }

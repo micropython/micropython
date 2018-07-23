@@ -87,7 +87,6 @@ enum {
 //|
 //|   - a `int` value in range of 0 to 0xFFFF
 //|   - a `str` value in the format of '0xXXXX' for 16-bit or 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX' for 128-bit
-//|   - another UUID object
 //|
 //|   :param int/str uuid: The uuid to encapsulate
 //|
