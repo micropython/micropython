@@ -37,6 +37,11 @@ CFLAGS_MOD += $(CFLAGS_USERMOD)
 LDFLAGS_MOD += $(LDFLAGS_USERMOD)
 endif
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_MOD += extmod/modbluetooth.c
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+endif
+
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
 	mpstate.o \
