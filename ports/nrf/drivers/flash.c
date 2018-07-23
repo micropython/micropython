@@ -29,7 +29,7 @@
 #if MICROPY_MBFS && BLUETOOTH_SD
 
 #include "drivers/flash.h"
-#include "drivers/bluetooth/ble_drv.h"
+#include "extmod/modbluetooth.h"
 #include "nrf_soc.h"
 
 // Rotates bits in `value` left `shift` times.
@@ -48,7 +48,7 @@ void flash_operation_finished(flash_state_t result) {
 }
 
 STATIC bool operation_wait(uint32_t result) {
-    if (ble_drv_stack_enabled() != 1) {
+    if (!mp_bt_is_enabled()) {
         // SoftDevice is not enabled, no event will be generated.
         return result == NRF_SUCCESS;
     }

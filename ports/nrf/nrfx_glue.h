@@ -36,18 +36,17 @@
 
 #if BLUETOOTH_SD
 
+#include "extmod/modbluetooth.h"
 #if NRF51
 #include "nrf_soc.h"
 #else
 #include "nrf_nvic.h"
 #endif
 
-#include "ble_drv.h"
-
 #if (BLUETOOTH_SD == 110)
 #define NRFX_IRQ_ENABLE(irq_number) \
     do { \
-        if (ble_drv_stack_enabled() == 1) \
+        if (mp_bt_is_enabled()) \
         { \
             sd_nvic_EnableIRQ(irq_number); \
         } else { \
@@ -61,7 +60,7 @@
 #if (BLUETOOTH_SD == 110)
 #define NRFX_IRQ_DISABLE(irq_number) \
     do { \
-        if (ble_drv_stack_enabled() == 1) \
+        if (mp_bt_is_enabled()) \
         { \
             sd_nvic_DisableIRQ(irq_number);  \
         } else { \
@@ -75,7 +74,7 @@
 #if (BLUETOOTH_SD == 110)
 #define NRFX_IRQ_PRIORITY_SET(irq_number, priority) \
     do { \
-        if (ble_drv_stack_enabled() == 1) \
+        if (mp_bt_is_enabled()) \
         { \
             sd_nvic_SetPriority(irq_number, priority); \
         } else { \
@@ -89,7 +88,7 @@
 #if (BLUETOOTH_SD == 110)
 #define NRFX_IRQ_PENDING_SET(irq_number) \
     do { \
-        if (ble_drv_stack_enabled() == 1) \
+        if (mp_bt_is_enabled()) \
         { \
             sd_nvic_SetPendingIRQ(irq_number); \
         } else { \
@@ -103,7 +102,7 @@
 #if (BLUETOOTH_SD == 110)
 #define NRFX_IRQ_PENDING_CLEAR(irq_number) \
     do { \
-        if (ble_drv_stack_enabled() == 1) \
+        if (mp_bt_is_enabled()) \
         { \
             sd_nvic_ClearPendingIRQ(irq_number); \
         } else { \

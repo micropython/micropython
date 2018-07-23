@@ -27,17 +27,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "temp.h"
 #include "nrf_temp.h"
 
 #if BLUETOOTH_SD
-#include "py/nlr.h"
-#include "ble_drv.h"
+#include "extmod/modbluetooth.h"
 #include "nrf_soc.h"
-#define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
+#define BLUETOOTH_STACK_ENABLED() (mp_bt_is_enabled())
 #endif // BLUETOOTH_SD
 
 #if MICROPY_PY_MACHINE_TEMP

@@ -36,9 +36,9 @@
 #include "modrandom.h"
 
 #if BLUETOOTH_SD
+#include "extmod/modbluetooth.h"
 #include "nrf_soc.h"
-#include "ble_drv.h"
-#define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
+#define BLUETOOTH_STACK_ENABLED() (mp_bt_is_enabled())
 #endif
 
 static inline uint32_t generate_hw_random(void) {

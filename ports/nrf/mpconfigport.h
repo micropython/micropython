@@ -187,10 +187,6 @@
 #include "bluetooth_conf.h"
 #endif
 
-#ifndef MICROPY_PY_UBLUEPY
-#define MICROPY_PY_UBLUEPY                       (0)
-#endif
-
 #ifndef MICROPY_PY_BLE_NUS
 #define MICROPY_PY_BLE_NUS                       (0)
 #endif
@@ -216,15 +212,9 @@ extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
-extern const struct _mp_obj_module_t mp_module_ubluepy;
+extern const struct _mp_obj_module_t mp_module_bluetooth;
 extern const struct _mp_obj_module_t music_module;
 extern const struct _mp_obj_module_t random_module;
-
-#if MICROPY_PY_UBLUEPY
-#define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
-#else
-#define UBLUEPY_MODULE
-#endif
 
 #if MICROPY_PY_MUSIC
 #define MUSIC_MODULE                        { MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module) },
@@ -247,28 +237,19 @@ extern const struct _mp_obj_module_t random_module;
 
 #if BLUETOOTH_SD
 
-#if MICROPY_PY_BLE
-extern const struct _mp_obj_module_t ble_module;
-#define BLE_MODULE                        { MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&ble_module) },
-#else
-#define BLE_MODULE
-#endif
-
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    BLE_MODULE \
+    { MP_ROM_QSTR(MP_QSTR_bluetooth), MP_ROM_PTR(&mp_module_bluetooth) }, \
     MUSIC_MODULE \
-    UBLUEPY_MODULE \
     RANDOM_MODULE \
     MICROPY_BOARD_BUILTINS \
 
 
 #else
-extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
@@ -294,7 +275,6 @@ extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
-    BLE_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
 

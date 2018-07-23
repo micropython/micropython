@@ -7,6 +7,7 @@ MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
 MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
+MICROPY_PY_BLUETOOTH = 1
 
 #FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
@@ -115,6 +116,26 @@ INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 INC_ESPCOMP += -I$(ESPCOMP)/pthread/include
 INC_ESPCOMP += -I$(ESPCOMP)/smartconfig_ack/include
 INC_ESPCOMP += -I$(ESPCOMP)/sdmmc/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/api/include/api
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/bta/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/bta/dm/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/bta/gatt/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/bta/sys/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/btc/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/btc/profile/esp/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/btc/profile/esp/blufi/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/btc/profile/std/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/common/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/device/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/hci/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/osi/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/stack/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/stack/btm/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/stack/gap/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/stack/gatt/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/stack/l2cap/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/bluedroid/stack/smp/include
 
 # these flags are common to C and C++ compilation
 CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields \
@@ -186,6 +207,7 @@ SRC_C = \
 	machine_uart.c \
 	modmachine.c \
 	modnetwork.c \
+	bluetooth/bluetooth.c \
 	network_lan.c \
 	network_ppp.c \
 	modsocket.c \
@@ -354,6 +376,29 @@ ESPIDF_WPA_SUPPLICANT_O = $(patsubst %.c,%.o,\
 
 ESPIDF_SDMMC_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/sdmmc/*.c))
 
+ESPIDF_BT_O = $(patsubst %.c,%.o,\
+	$(ESPCOMP)/bt/bt.c \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/api/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/bta/dm/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/bta/gatt/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/bta/sys/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/btc/core/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/btc/profile/esp/blufi/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/btc/profile/std/gap/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/btc/profile/std/gatt/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/device/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/hci/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/main/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/osi/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/stack/btm/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/stack/btu/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/stack/gap/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/stack/gatt/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/stack/hcic/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/stack/l2cap/*.c) \
+	$(wildcard $(ESPCOMP)/bt/bluedroid/stack/smp/*.c) \
+	)
+
 OBJ_ESPIDF =
 LIB_ESPIDF =
 BUILD_ESPIDF_LIB = $(BUILD)/esp-idf
@@ -392,6 +437,7 @@ $(eval $(call gen_espidf_lib_rule,lwip,$(ESPIDF_LWIP_O)))
 $(eval $(call gen_espidf_lib_rule,mbedtls,$(ESPIDF_MBEDTLS_O)))
 $(eval $(call gen_espidf_lib_rule,wpa_supplicant,$(ESPIDF_WPA_SUPPLICANT_O)))
 $(eval $(call gen_espidf_lib_rule,sdmmc,$(ESPIDF_SDMMC_O)))
+$(eval $(call gen_espidf_lib_rule,bt,$(ESPIDF_BT_O)))
 
 # Create all destination build dirs before compiling IDF source
 OBJ_ESPIDF_DIRS = $(sort $(dir $(OBJ_ESPIDF))) $(BUILD_ESPIDF_LIB) $(addprefix $(BUILD_ESPIDF_LIB)/,$(LIB_ESPIDF))
@@ -471,6 +517,7 @@ APP_LD_ARGS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 APP_LD_ARGS += -L$(dir $(LIBSTDCXX_FILE_NAME)) -lstdc++
 APP_LD_ARGS += $(LIBC_LIBM)
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
+APP_LD_ARGS += $(ESPCOMP)/bt/lib/libbtdm_app.a
 APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2
 APP_LD_ARGS += $(OBJ)
 APP_LD_ARGS += $(LIB)

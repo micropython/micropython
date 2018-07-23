@@ -38,13 +38,16 @@ endif
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
-# include py core make definitions
-include ../../py/py.mk
-
+ifneq ($(SD), )
+MICROPY_PY_BLUETOOTH = 1
+endif
 MICROPY_FATFS ?= 0
 FATFS_DIR = lib/oofatfs
 MPY_CROSS = ../../mpy-cross/mpy-cross
 MPY_TOOL = ../../tools/mpy-tool.py
+
+# include py core make definitions
+include ../../py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -197,8 +200,7 @@ SRC_C += \
 	drivers/flash.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
-	drivers/bluetooth/ble_drv.c \
-	drivers/bluetooth/ble_uart.c \
+	bluetooth/bluetooth.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
@@ -216,19 +218,8 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	utime/modutime.c \
 	board/modboard.c \
 	board/led.c \
-	ubluepy/modubluepy.c \
-	ubluepy/ubluepy_peripheral.c \
-	ubluepy/ubluepy_service.c \
-	ubluepy/ubluepy_characteristic.c \
-	ubluepy/ubluepy_uuid.c \
-	ubluepy/ubluepy_delegate.c \
-	ubluepy/ubluepy_constants.c \
-	ubluepy/ubluepy_descriptor.c \
-	ubluepy/ubluepy_scanner.c \
-	ubluepy/ubluepy_scan_entry.c \
 	music/modmusic.c \
 	music/musictunes.c \
-	ble/modble.c \
 	random/modrandom.c \
 	)
 
