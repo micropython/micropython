@@ -29,6 +29,14 @@
 
 #include "py/runtime.h"
 
+static void check_not_unicode(const mp_obj_t arg) {
+#if MICROPY_CPYTHON_COMPAT
+    if (MP_OBJ_IS_STR(arg)) {
+        mp_raise_TypeError("a bytes-like object is required");
+    }
+#endif
+}
+
 #if MICROPY_PY_UHASHLIB
 
 #if MICROPY_PY_UHASHLIB_SHA256
@@ -47,20 +55,12 @@
 #include "lib/axtls/crypto/crypto.h"
 #endif
 
-static void check_not_unicode(const mp_obj_t arg) {
-#if MICROPY_CPYTHON_COMPAT
-    if (MP_OBJ_IS_STR(arg)) {
-        mp_raise_TypeError("a bytes-like object is required");
-    }
-#endif
-
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/sha1.h"
 #endif
 
 #endif
 
-}
 
 typedef struct _mp_obj_hash_t {
     mp_obj_base_t base;

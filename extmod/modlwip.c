@@ -69,12 +69,12 @@
 #define ip_reset_option(pcb, opt) ((pcb)->so_options &= ~(opt))
 #endif
 
-#ifdef MICROPY_PY_LWIP_SLIP
+#if MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
 #include "lwip/sio.h"
 #endif
 
-#ifdef MICROPY_PY_LWIP_SLIP
+#if MICROPY_PY_LWIP_SLIP
 /******************************************************************************/
 // Slip object for modlwip. Requires a serial driver for the port that supports
 // the lwip serial callback functions.
@@ -1419,7 +1419,7 @@ STATIC mp_obj_t lwip_print_pcbs() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(lwip_print_pcbs_obj, lwip_print_pcbs);
 
-#ifdef MICROPY_PY_LWIP
+#if MICROPY_PY_LWIP
 
 STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_lwip) },
@@ -1429,7 +1429,7 @@ STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_print_pcbs), MP_ROM_PTR(&lwip_print_pcbs_obj) },
     // objects
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&lwip_socket_type) },
-#ifdef MICROPY_PY_LWIP_SLIP
+#if MICROPY_PY_LWIP_SLIP
     { MP_ROM_QSTR(MP_QSTR_slip), MP_ROM_PTR(&lwip_slip_type) },
 #endif
     // class constants

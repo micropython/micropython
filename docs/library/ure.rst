@@ -69,7 +69,6 @@ Functions
 .. data:: DEBUG
 
    Flag value, display debug information about compiled expression.
-   (Availability depends on `MicroPython port`.)
 
 
 .. _regex:

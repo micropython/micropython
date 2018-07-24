@@ -77,7 +77,7 @@ SRC_C = \
 	esp_init_data.c \
 	gccollect.c \
 	lexerstr32.c \
-	espuart.c \
+	uart.c \
 	esppwm.c \
 	espneopixel.c \
 	intr.c \
@@ -193,7 +193,10 @@ LIB_SRC_C += \
 	lib/oofatfs/option/unicode.c
 endif
 
+DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \
+	)
+
 SRC_S = \
 	gchelper.s \
 
@@ -206,6 +209,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)

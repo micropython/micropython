@@ -426,9 +426,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
         case MP_QSTR_essid:
             if (self->if_id == STATION_IF) {
-                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid), false);
+                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
             } else {
-                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
             }
             break;
         case MP_QSTR_hidden:

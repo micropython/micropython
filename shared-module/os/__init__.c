@@ -112,9 +112,8 @@ mp_obj_t common_hal_os_listdir(const char* path) {
     mp_obj_t dir_list = mp_obj_new_list(0, NULL);
     mp_obj_t next;
     while ((next = mp_iternext(iter_obj)) != MP_OBJ_STOP_ITERATION) {
-        mp_obj_t *items;
-        mp_obj_get_array_fixed_n(next, 3, &items);
-        mp_obj_list_append(dir_list, items[0]);
+        // next[0] is the filename.
+        mp_obj_list_append(dir_list, mp_obj_subscr(next, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL));
     }
     return dir_list;
 }

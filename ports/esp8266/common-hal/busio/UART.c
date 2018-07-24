@@ -29,7 +29,7 @@
 #include "shared-bindings/busio/UART.h"
 
 #include "ets_sys.h"
-#include "espuart.h"
+#include "uart.h"
 
 #include "py/nlr.h"
 

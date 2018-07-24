@@ -67,10 +67,6 @@
 #define MICROPY_VFS                              (1)
 #define MICROPY_VFS_FAT                          (MICROPY_VFS)
 
-// TODO these should be generic, not bound to fatfs
-#define mp_type_fileio fatfs_type_fileio
-#define mp_type_textio fatfs_type_textio
-
 // use vfs's functions for import stat and builtin open
 #if MICROPY_VFS
 #define mp_import_stat mp_vfs_import_stat
