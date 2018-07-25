@@ -49,6 +49,16 @@
 //|   :param int/str uuid: The uuid to encapsulate
 //|
 
+//|   .. method:: __len__()
+//|
+//|     Returns the uuid length in bits
+//|
+//|     This allows you to:
+//|
+//|       uuid = bleio.UUID(0x1801)
+//|       print(len(uuid))
+//|
+
 //|   .. attribute:: type
 //|
 //|     The UUID type. One of:
@@ -77,6 +87,18 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
     common_hal_bleio_uuid_construct(self, &uuid);
 
     return MP_OBJ_FROM_PTR(self);
+}
+
+STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    const bleio_uuid_type_t type = common_hal_bleio_uuid_get_type(self);
+    const uint8_t len = (type == UUID_TYPE_16BIT) ? 16 : 128;
+    switch (op) {
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
+        default: return MP_OBJ_NULL; // op not supported
+    }
 }
 
 STATIC void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -119,5 +141,6 @@ const mp_obj_type_t bleio_uuid_type = {
     .name = MP_QSTR_UUID,
     .print = bleio_uuid_print,
     .make_new = bleio_uuid_make_new,
+    .unary_op = bleio_uuid_unary_op,
     .locals_dict = (mp_obj_dict_t*)&bleio_uuid_locals_dict
 };
