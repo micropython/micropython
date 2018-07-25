@@ -3,7 +3,8 @@ SRC_SUPERVISOR = \
 	supervisor/memory.c \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
-	supervisor/shared/rgb_led_status.c
+	supervisor/shared/rgb_led_status.c \
+	supervisor/shared/stack.c
 
 ifeq ($(wildcard atmel-samd/supervisor/filesystem.c),)
 	SRC_SUPERVISOR += supervisor/filesystem.c

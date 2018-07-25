@@ -233,5 +233,6 @@ void run_background_tasks(void);
 #define MICROPY_VM_HOOK_RETURN  run_background_tasks();
 
 //#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
+#define CIRCUITPY_DEFAULT_STACK_SIZE 2048
 
 #endif

@@ -51,7 +51,6 @@ void filesystem_init(bool create_allowed, bool force_create) {
 
     // try to mount the flash
     FRESULT res = f_mount(&vfs_fat->fatfs);
-    force_create = true;
 
     if ((res == FR_NO_FILESYSTEM && create_allowed) || force_create) {
         // No filesystem so create a fresh one, or reformat has been requested.

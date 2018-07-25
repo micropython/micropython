@@ -52,6 +52,7 @@
 #include "supervisor/messages/en-US.h"
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -81,11 +82,11 @@ void start_mp(supervisor_allocation* heap) {
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_ctrl_init();
-    mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
+    mp_stack_set_limit(stack_alloc->length - 1024);
 
 #if MICROPY_MAX_STACK_USAGE
     // _ezero (same as _ebss) is an int, so start 4 bytes above it.
-    mp_stack_set_bottom(&_ezero + 1);
+    mp_stack_set_bottom(stack_alloc->ptr);
     mp_stack_fill_with_sentinel();
 #endif
 
@@ -97,7 +98,7 @@ void start_mp(supervisor_allocation* heap) {
     readline_init0();
 
     #if MICROPY_ENABLE_GC
-    gc_init(heap->ptr, heap->ptr + heap->length);
+    gc_init(heap->ptr, heap->ptr + heap->length / 4);
     #endif
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
@@ -171,6 +172,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
 
+        stack_resize();
+        filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
         found_main = maybe_run_list(supported_filenames, &result);
@@ -310,6 +313,12 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         #endif
 
+        stack_init();
+        // TODO(tannewt): Allocate temporary space to hold custom usb descriptors.
+        filesystem_flush();
+        supervisor_allocation* heap = allocate_remaining_memory();
+        start_mp(heap);
+
         // TODO(tannewt): Re-add support for flashing boot error output.
         bool found_boot = maybe_run_list(boot_py_filenames, NULL);
         (void) found_boot;
@@ -325,11 +334,16 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         // Reset to remove any state that boot.py setup. It should only be used to
         // change internal state that's not in the heap.
         reset_port();
+        reset_board();
+        stop_mp();
+        free_memory(heap);
     }
 }
 
 int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
+    stack_resize();
+    filesystem_flush();
     supervisor_allocation* heap = allocate_remaining_memory();
     start_mp(heap);
     autoreload_suspend();
@@ -349,7 +363,7 @@ int run_repl(void) {
 
 int __attribute__((used)) main(void) {
     memory_init();
-    
+
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 

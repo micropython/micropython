@@ -23,17 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- #include "py/obj.h"
- #include "py/runtime.h"
- #include "py/reload.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/reload.h"
 
- #include "lib/utils/interrupt_char.h"
- #include "supervisor/shared/autoreload.h"
+#include "lib/utils/interrupt_char.h"
+#include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/stack.h"
 
- #include "supervisor/shared/rgb_led_status.h"
-
- #include "shared-bindings/supervisor/__init__.h"
- #include "shared-bindings/supervisor/Runtime.h"
+#include "shared-bindings/supervisor/__init__.h"
+#include "shared-bindings/supervisor/Runtime.h"
 
 //| :mod:`supervisor` --- Supervisor settings
 //| =================================================
@@ -107,15 +107,21 @@ STATIC mp_obj_t supervisor_reload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 
-//| .. method:: set_main_file(filename)
+//| .. method:: set_next_stack_limit(size)
 //|
-//|   Set which file to run after a reload.
+//|   Set the size of the stack for the next vm run. If its too large, the default will be used.
 //|
-STATIC mp_obj_t supervisor_set_main_file(void) {
-    
+STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
+    mp_int_t size = mp_obj_get_int(size_obj);
+
+    if (size < 256) {
+        mp_raise_ValueError("Stack size must be at least 256");
+    }
+    set_next_stack_size(size);
+
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(supervisor_set_main_file_obj, supervisor_set_main_file);
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_next_stack_limit);
 
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
@@ -124,7 +130,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_main_file),  MP_ROM_PTR(&supervisor_set_main_file_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_next_stack_limit),  MP_ROM_PTR(&supervisor_set_next_stack_limit_obj) },
 
 };
 
