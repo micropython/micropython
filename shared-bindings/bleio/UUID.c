@@ -29,48 +29,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/bleio/UUID.h"
 
-enum {
-    ServiceUuidGenericAccess = 0x1800,
-    ServiceUuidGenericAttribute = 0x1801,
-    ServiceUuidImmediateAlert = 0x1802,
-    ServiceUuidLinkLoss = 0x1803,
-    ServiceUuidTxPower = 0x1804,
-    ServiceUuidCurrentTimeServiceService = 0x1805,
-    ServiceUuidReferenceTimeUpdateService = 0x1806,
-    ServiceUuidNextDSTChangeService = 0x1807,
-    ServiceUuidGlucose = 0x1808,
-    ServiceUuidHealthThermometer = 0x1809,
-    ServiceUuidDeviceInformation = 0x180A,
-    ServiceUuidHeartRate = 0x180D,
-    ServiceUuidPhoneAlertStatusService = 0x180E,
-    ServiceUuidBatteryService = 0x180F,
-    ServiceUuidBloodPressure = 0x1810,
-    ServiceUuidAlertNotificationService = 0x1811,
-    ServiceUuidHumanInterfaceDevice = 0x1812,
-    ServiceUuidScanParameters = 0x1813,
-    ServiceUuidRunningSpeedAndCadence = 0x1814,
-    ServiceUuidAutomationIO = 0x1815,
-    ServiceUuidCyclingSpeedAndCadence = 0x1816,
-    ServiceUuidCyclingPower = 0x1818,
-    ServiceUuidLocationAndNavigation = 0x1819,
-    ServiceUuidEnvironmentalSensing = 0x181A,
-    ServiceUuidBodyComposition = 0x181B,
-    ServiceUuidUserData = 0x181C,
-    ServiceUuidWeightScale = 0x181D,
-    ServiceUuidBondManagementService = 0x181E,
-    ServiceUuidContinuousGlucoseMonitoring = 0x181F,
-    ServiceUuidInternetProtocolSupportService = 0x1820,
-    ServiceUuidIndoorPositioning = 0x1821,
-    ServiceUuidPulseOximeterService = 0x1822,
-    ServiceUuidHTTPProxy = 0x1823,
-    ServiceUuidTransportDiscovery = 0x1824,
-    ServiceUuidObjectTransferService = 0x1825,
-    ServiceUuidFitnessMachine = 0x1826,
-    ServiceUuidMeshProvisioningService = 0x1827,
-    ServiceUuidMeshProxyService = 0x1828,
-    ServiceUuidReconnectionConfiguration = 0x1829,
-};
-
 //| .. currentmodule:: bleio
 //|
 //| :class:`UUID` -- BLE UUID
@@ -151,49 +109,7 @@ const mp_obj_property_t bleio_uuid_type_obj = {
 };
 
 STATIC const mp_rom_map_elem_t bleio_uuid_locals_dict_table[] = {
-    // Properties
     { MP_ROM_QSTR(MP_QSTR_type), MP_ROM_PTR(&bleio_uuid_type_obj) },
-
-    // Static variables
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_GENERIC_ACCESS),                    MP_ROM_INT(ServiceUuidGenericAccess) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_GENERIC_ATTRIBUTE),                 MP_ROM_INT(ServiceUuidGenericAttribute) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_IMMEDIATE_ALERT),                   MP_ROM_INT(ServiceUuidImmediateAlert) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_LINK_LOSS),                         MP_ROM_INT(ServiceUuidLinkLoss) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_TX_POWER),                          MP_ROM_INT(ServiceUuidTxPower) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_CURRENT_TIME_SERVICE),              MP_ROM_INT(ServiceUuidCurrentTimeServiceService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_REFERENCE_TIME_UPDATE_SERVICE),     MP_ROM_INT(ServiceUuidReferenceTimeUpdateService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_NEXT_DST_CHANGE_SERVICE),           MP_ROM_INT(ServiceUuidNextDSTChangeService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_GLUCOSE),                           MP_ROM_INT(ServiceUuidGlucose) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_HEALTH_THERMOMETER),                MP_ROM_INT(ServiceUuidHealthThermometer) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_DEVICE_INFORMATION),                MP_ROM_INT(ServiceUuidDeviceInformation) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_HEART_RATE),                        MP_ROM_INT(ServiceUuidHeartRate) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_PHONE_ALERT_STATUS_SERVICE),        MP_ROM_INT(ServiceUuidPhoneAlertStatusService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_BATTERY_SERVICE),                   MP_ROM_INT(ServiceUuidBatteryService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_BLOOD_PRESSURE),                    MP_ROM_INT(ServiceUuidBloodPressure) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_ALERT_NOTIFICATION_SERVICE),        MP_ROM_INT(ServiceUuidAlertNotificationService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_HUMAN_INTERFACE_DEVICE),            MP_ROM_INT(ServiceUuidHumanInterfaceDevice) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_SCAN_PARAMETERS),                   MP_ROM_INT(ServiceUuidScanParameters) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_RUNNING_SPEED_AND_CADENCE),         MP_ROM_INT(ServiceUuidRunningSpeedAndCadence) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_AUTOMATION_IO),                     MP_ROM_INT(ServiceUuidAutomationIO) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_CYCLING_SPEED_AND_CADENCE),         MP_ROM_INT(ServiceUuidCyclingSpeedAndCadence) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_CYCLING_POWER),                     MP_ROM_INT(ServiceUuidCyclingPower) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_LOCATION_AND_NAVIGATION),           MP_ROM_INT(ServiceUuidLocationAndNavigation) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_ENVIRONMENTAL_SENSING),             MP_ROM_INT(ServiceUuidEnvironmentalSensing) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_BODY_COMPOSITION),                  MP_ROM_INT(ServiceUuidBodyComposition) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_USER_DATA),                         MP_ROM_INT(ServiceUuidUserData) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_WEIGHT_SCALE),                      MP_ROM_INT(ServiceUuidWeightScale) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_BOND_MANAGEMENT_SERVICE),           MP_ROM_INT(ServiceUuidBondManagementService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_CONTINUOUS_GLUCOSE_MONITORING),     MP_ROM_INT(ServiceUuidContinuousGlucoseMonitoring) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_INTERNET_PROTOCOL_SUPPORT_SERVICE), MP_ROM_INT(ServiceUuidInternetProtocolSupportService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_INDOOR_POSITIONING),                MP_ROM_INT(ServiceUuidIndoorPositioning) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_PULSE_OXIMETER_SERVICE),            MP_ROM_INT(ServiceUuidPulseOximeterService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_HTTP_PROXY),                        MP_ROM_INT(ServiceUuidHTTPProxy) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_TRANSPORT_DISCOVERY),               MP_ROM_INT(ServiceUuidTransportDiscovery) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_OBJECT_TRANSFER_SERVICE),           MP_ROM_INT(ServiceUuidObjectTransferService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_FITNESS_MACHINE),                   MP_ROM_INT(ServiceUuidFitnessMachine) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_MESH_PROVISIONING_SERVICE),         MP_ROM_INT(ServiceUuidMeshProvisioningService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_MESH_PROXY_SERVICE),                MP_ROM_INT(ServiceUuidMeshProxyService) },
-    { MP_ROM_QSTR(MP_QSTR_SERVICE_RECONNECTION_CONFIGURATION),        MP_ROM_INT(ServiceUuidReconnectionConfiguration) }
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_uuid_locals_dict, bleio_uuid_locals_dict_table);
