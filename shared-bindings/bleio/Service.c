@@ -113,7 +113,10 @@ STATIC mp_obj_t bleio_service_add_characteristic(mp_obj_t self_in, mp_obj_t char
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
     bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(characteristic_in);
 
-    // TODO: If service is 128b then update Chara UUID to be 128b too
+    if (self->uuid->type == UUID_TYPE_128BIT) {
+        characteristic->uuid->type = UUID_TYPE_128BIT;
+        characteristic->uuid->uuid_vs_idx = self->uuid->uuid_vs_idx;
+    }
 
     common_hal_bleio_service_add_characteristic(self, characteristic);
 
