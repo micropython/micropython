@@ -76,6 +76,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     self->base.type = &bleio_service_type;
     self->device = NULL;
     self->char_list = mp_obj_new_list(0, NULL);
+    self->handle = 0xFFFF;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
@@ -104,8 +105,6 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
                   "Invalid UUID parameter"));
     }
 
-    common_hal_bleio_service_construct(self);
-
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -117,8 +116,6 @@ STATIC mp_obj_t bleio_service_add_characteristic(mp_obj_t self_in, mp_obj_t char
         characteristic->uuid->type = UUID_TYPE_128BIT;
         characteristic->uuid->uuid_vs_idx = self->uuid->uuid_vs_idx;
     }
-
-    common_hal_bleio_service_add_characteristic(self, characteristic);
 
     characteristic->service = self;
 

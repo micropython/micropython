@@ -291,6 +291,14 @@ STATIC mp_obj_t bleio_device_start_advertising(mp_uint_t n_args, const mp_obj_t 
         mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_READ);
     }
 
+    const mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
+    for (size_t i = 0; i < service_list->len; ++i) {
+        bleio_service_obj_t *service = service_list->items[i];
+        if (service->handle == 0xFFFF) {
+            common_hal_bleio_device_add_service(self, service);
+        }
+    }
+
     common_hal_bleio_device_start_advertising(self, args[ARG_connectable].u_bool, &bufinfo);
 
     return mp_const_none;

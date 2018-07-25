@@ -30,30 +30,6 @@
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/Adapter.h"
 
-void common_hal_bleio_service_construct(bleio_service_obj_t *self) {
-    ble_uuid_t uuid = {
-        .type = BLE_UUID_TYPE_BLE,
-        .uuid = self->uuid->value[0] | (self->uuid->value[1] << 8)
-    };
-
-    if (self->uuid->type == UUID_TYPE_128BIT) {
-        uuid.type = self->uuid->uuid_vs_idx;
-    }
-
-    uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
-    if (self->is_secondary) {
-        service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
-    }
-
-    common_hal_bleio_adapter_set_enabled(true);
-
-    const uint32_t err_code = sd_ble_gatts_service_add(service_type, &uuid, &self->handle);
-    if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-             "Failed to add service, status: 0x%08lX", err_code));
-    }
-}
-
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic) {
     ble_gatts_char_md_t char_md = {
         .char_props.broadcast      = characteristic->props.broadcast,

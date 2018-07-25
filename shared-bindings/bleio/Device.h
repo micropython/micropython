@@ -29,9 +29,11 @@
 
 #include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/Device.h"
+#include "shared-module/bleio/Service.h"
 
 extern const mp_obj_type_t bleio_device_type;
 
+extern void common_hal_bleio_device_add_service(bleio_device_obj_t *device, bleio_service_obj_t *service);
 extern void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bool connectable, mp_buffer_info_t *raw_data);
 extern void common_hal_bleio_device_stop_advertising(bleio_device_obj_t *device);
 extern void common_hal_bleio_device_connect(bleio_device_obj_t *device);

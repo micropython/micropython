@@ -490,6 +490,36 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *device_in) {
     }
 }
 
+void common_hal_bleio_device_add_service(bleio_device_obj_t *device, bleio_service_obj_t *service) {
+    ble_uuid_t uuid = {
+        .type = BLE_UUID_TYPE_BLE,
+        .uuid = service->uuid->value[0] | (service->uuid->value[1] << 8)
+    };
+
+    if (service->uuid->type == UUID_TYPE_128BIT) {
+        uuid.type = service->uuid->uuid_vs_idx;
+    }
+
+    uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
+    if (service->is_secondary) {
+        service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
+    }
+
+    common_hal_bleio_adapter_set_enabled(true);
+
+    const uint32_t err_code = sd_ble_gatts_service_add(service_type, &uuid, &service->handle);
+    if (err_code != NRF_SUCCESS) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+             "Failed to add service, status: 0x%08lX", err_code));
+    }
+
+    const mp_obj_list_t *char_list = MP_OBJ_TO_PTR(service->char_list);
+    for (size_t i = 0; i < char_list->len; ++i) {
+        bleio_characteristic_obj_t *characteristic = char_list->items[i];
+        common_hal_bleio_service_add_characteristic(service, characteristic);
+    }
+}
+
 void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bool connectable, mp_buffer_info_t *raw_data) {
     if (connectable) {
         ble_drv_add_event_handler(on_ble_evt, device);

@@ -32,7 +32,6 @@
 
 const mp_obj_type_t bleio_service_type;
 
-extern void common_hal_bleio_service_construct(bleio_service_obj_t *self);
 extern void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
