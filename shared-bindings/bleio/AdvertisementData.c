@@ -35,8 +35,6 @@
 //| Represents the data to be broadcast during BLE advertising.
 //|
 
-// TODO: Implement constructor and methods
-
 STATIC const mp_rom_map_elem_t bleio_advertisementdata_locals_dict_table[] = {
     // Static variables
     { MP_ROM_QSTR(MP_QSTR_FLAGS),                                         MP_ROM_INT(AdFlags) },
