@@ -90,7 +90,7 @@
 
 //| .. class:: Device(address=None, scan_entry=None)
 //|
-//|   Create a new Device object. If the `address` or `scan_entry` parameters are not `None`,
+//|   Create a new Device object. If the `address` or :py:data:`scan_entry` parameters are not `None`,
 //|   the role is set to Central, otherwise it's set to Peripheral.
 //|
 //|   :param bleio.Address address: The address of the device to connect to
