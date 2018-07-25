@@ -41,6 +41,7 @@
 #include "shared-bindings/bleio/UUID.h"
 #include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/Device.h"
+#include "shared-module/bleio/ScanEntry.h"
 
 //| .. currentmodule:: bleio
 //|
@@ -87,12 +88,13 @@
 //|    central.connect()
 //|
 
-//| .. class:: Device(address=None)
+//| .. class:: Device(address=None, scan_entry=None)
 //|
-//|   Create a new Device object. If the `address` parameter is not `None`,
+//|   Create a new Device object. If the `address` or `scan_entry` parameters are not `None`,
 //|   the role is set to Central, otherwise it's set to Peripheral.
 //|
 //|   :param bleio.Address address: The address of the device to connect to
+//|   :param bleio.ScanEntry scan_entry: The scan entry returned from `bleio.Scanner`
 //|
 
 //|   .. attribute:: name
@@ -167,16 +169,17 @@ STATIC mp_obj_t bleio_device_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
 
-    //TODO: Add ScanEntry
-    enum { ARG_address };
+    enum { ARG_address, ARG_scan_entry };
     static const mp_arg_t allowed_args[] = {
         { ARG_address, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_scan_entry, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t address_obj = args[ARG_address].u_obj;
+    const mp_obj_t scan_entry_obj = args[ARG_scan_entry].u_obj;
 
     if (address_obj != mp_const_none) {
         bleio_address_obj_t *address = MP_OBJ_TO_PTR(address_obj);
@@ -184,6 +187,12 @@ STATIC mp_obj_t bleio_device_make_new(const mp_obj_type_t *type, size_t n_args, 
         self->is_peripheral = false;
         self->address.type = address->type;
         memcpy(self->address.value, address->value, BLEIO_ADDRESS_BYTES);
+    } else if (scan_entry_obj != mp_const_none) {
+        bleio_scanentry_obj_t *scan_entry = MP_OBJ_TO_PTR(scan_entry_obj);
+
+        self->is_peripheral = false;
+        self->address.type = scan_entry->address.type;
+        memcpy(self->address.value, scan_entry->address.value, BLEIO_ADDRESS_BYTES);
     } else {
         self->name = mp_obj_new_str(default_name, strlen(default_name), false);
         common_hal_bleio_adapter_get_address(&self->address);
