@@ -53,90 +53,51 @@
 
 #define FL_PAGE_SZ              4096
 
-static scsi_sense_fixed_data_t mscd_sense_data =
-{
-    .response_code        = 0x70,
-    .sense_key            = 0, // no errors
-    .additional_sense_len = sizeof(scsi_sense_fixed_data_t) - 8
-};
-
-static scsi_mode_parameters_t const msc_dev_mode_para =
-{
-    .mode_data_length        = 3,
-    .medium_type             = 0,
-    .device_specific_para    = 0,
-    .block_descriptor_length = 0
-};
-
 //--------------------------------------------------------------------+
 // tinyusb callbacks
 //--------------------------------------------------------------------+
-int32_t tud_msc_scsi_cb (uint8_t rhport, uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) {
+int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) {
     // read10 & write10 has their own callback and MUST not be handled here
 
-    void const* ptr = NULL;
+    void const* resp = NULL;
     uint16_t len = 0;
 
-    // most scsi handled is input
-    bool in_xfer = true;
-
-    switch ( scsi_cmd[0] )
-    {
-        case SCSI_CMD_REQUEST_SENSE:
-            ptr = &mscd_sense_data;
-            len = sizeof(scsi_sense_fixed_data_t);
-        break;
-
-        case SCSI_CMD_MODE_SENSE_6:
-            ptr = &msc_dev_mode_para;
-            len = sizeof(msc_dev_mode_para);
-        break;
-
+    switch ( scsi_cmd[0] ) {
         case SCSI_CMD_TEST_UNIT_READY:
-            ptr = NULL;
+            // Command that host uses to check our readiness before sending other commands
             len = 0;
         break;
 
         case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-            ptr = NULL;
+            // Host is about to read/write etc ... better not to disconnect disk
             len = 0;
         break;
 
-        default:
-            // negative is error -> Data stage is STALL, status = failed
-            return -1;
+        case SCSI_CMD_START_STOP_UNIT:
+            // Host try to eject/safe remove/powerof us. We could safely disconnect with disk storage, or go into lower power
+            // scsi_start_stop_unit_t const * cmd_start_stop = (scsi_start_stop_unit_t const *) scsi_cmd
+            len = 0;
+        break;
+
+        // negative means error -> tusb could stall and/or response with failed status
+        default: return -1;
     }
 
     // return len must not larger than bufsize
-    TU_ASSERT(bufsize >= len);
+    if ( len > bufsize ) len = bufsize;
 
-    if ( ptr && len )
-            {
-        if ( in_xfer )
-        {
-            memcpy(buffer, ptr, len);
-        } else
-        {
-            // SCSI output
-        }
-    }
-
-    //------------- clear sense data if it is not request sense command -------------//
-    if ( SCSI_CMD_REQUEST_SENSE != scsi_cmd[0] )
-            {
-        mscd_sense_data.sense_key = SCSI_SENSEKEY_NONE;
-        mscd_sense_data.additional_sense_code = 0;
-        mscd_sense_data.additional_sense_qualifier = 0;
+    // copy response to stack's buffer if any
+    if ( resp && len ) {
+        memcpy(buffer, resp, len);
     }
 
     return len;
 }
 
 /*------------------------------------------------------------------*/
-/* Tinyusb Flash READ10 & WRITE10
+/* tinyusb Flash READ10 & WRITE10
  *------------------------------------------------------------------*/
-int32_t tud_msc_read10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
-    (void) rhport;
+int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
     (void) lun;
     (void) offset;
 
@@ -147,8 +108,7 @@ int32_t tud_msc_read10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t o
     return block_count * MSC_FLASH_BLOCK_SIZE;
 }
 
-int32_t tud_msc_write10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
-    (void) rhport;
+int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
     (void) lun;
     (void) offset;
 
@@ -167,8 +127,7 @@ int32_t tud_msc_write10_cb (uint8_t rhport, uint8_t lun, uint32_t lba, uint32_t 
     return block_count * MSC_FLASH_BLOCK_SIZE;
 }
 
-void tud_msc_write10_complete_cb (uint8_t rhport, uint8_t lun) {
-    (void) rhport;
+void tud_msc_write10_complete_cb (uint8_t lun) {
     (void) lun;
 
     // flush pending cache when write10 is complete
