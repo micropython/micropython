@@ -53,12 +53,10 @@
 
 #define FL_PAGE_SZ              4096
 
-//--------------------------------------------------------------------+
-// tinyusb callbacks
-//--------------------------------------------------------------------+
+// Callback invoked when received an SCSI command not in built-in list below
+// - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
+// - READ10 and WRITE10 has their own callbacks
 int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) {
-    // read10 & write10 has their own callback and MUST not be handled here
-
     void const* resp = NULL;
     uint16_t len = 0;
 
@@ -74,7 +72,7 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, 
         break;
 
         case SCSI_CMD_START_STOP_UNIT:
-            // Host try to eject/safe remove/powerof us. We could safely disconnect with disk storage, or go into lower power
+            // Host try to eject/safe remove/poweroff us. We could safely disconnect with disk storage, or go into lower power
             // scsi_start_stop_unit_t const * cmd_start_stop = (scsi_start_stop_unit_t const *) scsi_cmd
             len = 0;
         break;
@@ -94,9 +92,8 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, 
     return len;
 }
 
-/*------------------------------------------------------------------*/
-/* tinyusb Flash READ10 & WRITE10
- *------------------------------------------------------------------*/
+// Callback invoked when received READ10 command.
+// Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
 int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
     (void) lun;
     (void) offset;
@@ -108,6 +105,8 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
     return block_count * MSC_FLASH_BLOCK_SIZE;
 }
 
+// Callback invoked when received WRITE10 command.
+// Process data in buffer to disk's storage and return number of written bytes
 int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
     (void) lun;
     (void) offset;
@@ -127,6 +126,8 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
     return block_count * MSC_FLASH_BLOCK_SIZE;
 }
 
+// Callback invoked when WRITE10 command is completed (status received and accepted by host).
+// used to flush any pending cache.
 void tud_msc_write10_complete_cb (uint8_t lun) {
     (void) lun;
 
