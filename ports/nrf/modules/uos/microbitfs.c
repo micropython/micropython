@@ -558,6 +558,12 @@ STATIC mp_obj_t uos_mbfs_remove(mp_obj_t name) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(uos_mbfs_remove_obj, uos_mbfs_remove);
 
+STATIC mp_obj_t uos_mbfs_file___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    return uos_mbfs_file_close(args[0]);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uos_mbfs_file___exit___obj, 4, 4, uos_mbfs_file___exit__);
+
 typedef struct {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
@@ -609,8 +615,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(microbit_file_writable_obj, microbit_file_writa
 STATIC const mp_map_elem_t uos_mbfs_file_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&uos_mbfs_file_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_name), (mp_obj_t)&uos_mbfs_file_name_obj },
-    //{ MP_ROM_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
-    //{ MP_ROM_QSTR(MP_QSTR___exit__), (mp_obj_t)&file___exit___obj },
+    { MP_ROM_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
+    { MP_ROM_QSTR(MP_QSTR___exit__), (mp_obj_t)&uos_mbfs_file___exit___obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_writable), (mp_obj_t)&microbit_file_writable_obj },
     /* Stream methods */
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
