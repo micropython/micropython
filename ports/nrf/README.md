@@ -30,10 +30,11 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * PCA10031 (dongle)
   * [WT51822-S4AT](http://www.wireless-tag.com/wireless_module/BLE/WT51822-S4AT.html)
 * nRF52832
-  * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html) 
+  * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html)
   * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
   * [Thingy:52](http://www.nordicsemi.com/eng/Products/Nordic-Thingy-52)
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
+  * [Sparkfun WRL-13990](https://www.sparkfun.com/products/13990)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
 
@@ -55,7 +56,7 @@ Alternatively the target board could be defined:
 
      make BOARD=pca10040
      make flash
-     
+
 ## Compile and Flash with Bluetooth Stack
 
 First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
@@ -106,6 +107,7 @@ wt51822_s4at         | s110                    | Peripheral             | Manual
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
+wrl13990             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
 
 ## Segger Targets
