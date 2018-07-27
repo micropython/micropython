@@ -57,24 +57,29 @@
 // - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
 // - READ10 and WRITE10 has their own callbacks
 int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) {
-    void const* resp = NULL;
-    uint16_t len = 0;
+    void const* response = NULL;
+    uint16_t resplen = 0;
 
     switch ( scsi_cmd[0] ) {
         case SCSI_CMD_TEST_UNIT_READY:
             // Command that host uses to check our readiness before sending other commands
-            len = 0;
+            resplen = 0;
         break;
 
         case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
             // Host is about to read/write etc ... better not to disconnect disk
-            len = 0;
+            resplen = 0;
         break;
 
         case SCSI_CMD_START_STOP_UNIT:
             // Host try to eject/safe remove/poweroff us. We could safely disconnect with disk storage, or go into lower power
-            // scsi_start_stop_unit_t const * cmd_start_stop = (scsi_start_stop_unit_t const *) scsi_cmd
-            len = 0;
+            /* scsi_start_stop_unit_t const * start_stop = (scsi_start_stop_unit_t const *) scsi_cmd;
+            // Start bit = 0 : low power mode, if load_eject = 1 : unmount disk storage as well
+            // Start bit = 1 : Ready mode, if load_eject = 1 : mount disk storage
+            start_stop->start;
+            start_stop->load_eject;
+            */
+            resplen = 0;
         break;
 
         // negative means error -> tusb could stall and/or response with failed status
@@ -82,14 +87,14 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, 
     }
 
     // return len must not larger than bufsize
-    if ( len > bufsize ) len = bufsize;
+    if ( resplen > bufsize ) resplen = bufsize;
 
     // copy response to stack's buffer if any
-    if ( resp && len ) {
-        memcpy(buffer, resp, len);
+    if ( response && resplen ) {
+        memcpy(buffer, response, resplen);
     }
 
-    return len;
+    return resplen;
 }
 
 // Callback invoked when received READ10 command.
