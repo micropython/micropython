@@ -218,8 +218,9 @@ SRC_SHARED_BINDINGS = \
 	bitbangio/I2C.c \
 	bitbangio/SPI.c \
 	bitbangio/OneWire.c \
-	random/__init__.c
-
+	random/__init__.c \
+	usb_hid/__init__.c \
+	usb_hid/Device.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
