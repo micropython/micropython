@@ -2579,8 +2579,8 @@ FRESULT create_name (   /* FR_OK: successful, FR_INVALID_NAME: could not create 
         if (w < 0x80 && chk_chr("\"*:<>\?|\x7F", w)) return FR_INVALID_NAME;    /* Reject illegal characters for LFN */
         lfn[di++] = w;                  /* Store the Unicode character */
     }
+    cf = ((w < ' ') || ((w == '/' || w == '\\') && p[si+1] < ' ')) ? NS_LAST : 0;   /* Set last segment flag if end of the path */
     *path = &p[si];                     /* Return pointer to the next segment */
-    cf = (w < ' ') ? NS_LAST : 0;       /* Set last segment flag if end of the path */
 #if _FS_RPATH != 0
     if ((di == 1 && lfn[di - 1] == '.') ||
         (di == 2 && lfn[di - 1] == '.' && lfn[di - 2] == '.')) {    /* Is this segment a dot name? */
