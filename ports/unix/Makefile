@@ -107,11 +107,11 @@ endif
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
-LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(TOP)/lib/libffi/build_dir/out/lib/libffi-*/include)
+LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS_MOD = $(TOP)/lib/libffi/build_dir/out/lib32/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib32/libffi.a
  else
-  LIBFFI_LDFLAGS_MOD = $(TOP)/lib/libffi/build_dir/out/lib/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib/libffi.a
  endif
 else
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
@@ -270,13 +270,16 @@ endif
 
 deplibs: libffi axtls
 
+libffi: $(BUILD)/lib/libffi/include/ffi.h
+
+$(TOP)/lib/libffi/configure: $(TOP)/lib/libffi/autogen.sh
+	cd $(TOP)/lib/libffi; ./autogen.sh
+
 # install-exec-recursive & install-data-am targets are used to avoid building
 # docs and depending on makeinfo
-libffi:
-	cd $(TOP)/lib/libffi; git clean -d -x -f
-	cd $(TOP)/lib/libffi; ./autogen.sh
-	mkdir -p $(TOP)/lib/libffi/build_dir; cd $(TOP)/lib/libffi/build_dir; \
-	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
+$(BUILD)/lib/libffi/include/ffi.h: $(TOP)/lib/libffi/configure
+	mkdir -p $(BUILD)/lib/libffi; cd $(BUILD)/lib/libffi; \
+	$(abspath $(TOP))/lib/libffi/configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
 axtls: $(TOP)/lib/axtls/README
