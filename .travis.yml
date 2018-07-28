@@ -6,7 +6,6 @@ compiler:
 git:
   depth: 1
 env:
-  - MAKEOPTS="-j4"
   - TRAVIS_BOARD=feather_huzzah
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express
@@ -58,17 +57,12 @@ before_script:
   - ([[ $TRAVIS_BOARD != "feather52832" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For huzzah builds
   - if [[ $TRAVIS_BOARD = "feather_huzzah" ]]; then wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar xavf xtensa-lx106-elf-standalone.tar.gz; PATH=$(readlink -f xtensa-lx106-elf/bin):$PATH; fi
+  # For coverage testing (upgrade is used to get latest urllib3 version)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
   - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
   - gcc --version
   - ([[ -z "$TRAVIS_BOARD" ]] || arm-none-eabi-gcc --version)
   - python3 --version
-  
-  - sudo apt-get install realpath
-  # For coverage testing (a specific urllib3 version is needed for requests and cpp-coveralls to work together)
-  - sudo pip install -Iv urllib3==1.22
-  - sudo pip install cpp-coveralls
-
 
 script:
   # Build mpy-cross first because other builds depend on it.
@@ -116,16 +110,8 @@ script:
   - echo -en 'travis_fold:end:build_docs\\r'
 
 
-  # test when input script comes from stdin
-  - cat tests/basics/0prelim.py | ports/unix/micropython_coverage | grep -q 'abc'
-
   # run coveralls coverage analysis (try to, even if some builds/tests failed)
   #- (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
-
-  # run tests on stackless build
-  # - rm -rf ports/unix/build-coverage
-  # - make ${MAKEOPTS} -C ports/unix coverage CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
-  # - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
