@@ -261,6 +261,9 @@ coverage_test: coverage
 	gcov -o build-coverage/py $(TOP)/py/*.c
 	gcov -o build-coverage/extmod $(TOP)/extmod/*.c
 
+coverage_clean:
+	$(MAKE) V=2 BUILD=build-coverage PROG=micropython_coverage clean
+
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
 ifneq ($(CROSS_COMPILE),)

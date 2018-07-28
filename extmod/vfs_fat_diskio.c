@@ -75,8 +75,9 @@ DRESULT disk_read (
             return RES_ERROR;
         }
     } else {
+        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), buff};
         vfs->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->readblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), buff);
+        vfs->readblocks[3] = MP_OBJ_FROM_PTR(&ar);
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->readblocks);
@@ -120,8 +121,9 @@ DRESULT disk_write (
             return RES_ERROR;
         }
     } else {
+        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), (void*)buff};
         vfs->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), (void*)buff);
+        vfs->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->writeblocks);

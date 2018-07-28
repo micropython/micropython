@@ -29,14 +29,6 @@
 
 #include "py/runtime.h"
 
-static void check_not_unicode(const mp_obj_t arg) {
-#if MICROPY_CPYTHON_COMPAT
-    if (MP_OBJ_IS_STR(arg)) {
-        mp_raise_TypeError("a bytes-like object is required");
-    }
-#endif
-}
-
 #if MICROPY_PY_UHASHLIB
 
 #if MICROPY_PY_UHASHLIB_SHA256
@@ -101,6 +93,14 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 }
 
 #else
+
+static void check_not_unicode(const mp_obj_t arg) {
+#if MICROPY_CPYTHON_COMPAT
+    if (MP_OBJ_IS_STR(arg)) {
+        mp_raise_TypeError("a bytes-like object is required");
+    }
+#endif
+}
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);

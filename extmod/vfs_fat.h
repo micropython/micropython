@@ -60,15 +60,6 @@ typedef struct _pyb_file_obj_t {
     FIL fp;
 } pyb_file_obj_t;
 
-
-// These should be general types (mpy TOOD says so). In micropython, these are defined in
-// mpconfigport.h.
-////////////#define mp_type_fileio mp_type_vfs_fat_fileio
-////////////#define mp_type_textio mp_type_vfs_fat_textio
-
-////////////extern const mp_obj_type_t mp_type_fileio;
-////////////extern const mp_obj_type_t mp_type_textio;
-
 extern const byte fresult_to_errno_table[20];
 extern const mp_obj_type_t mp_fat_vfs_type;
 extern const mp_obj_type_t mp_type_vfs_fat_fileio;

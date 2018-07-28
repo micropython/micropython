@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
 #define MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
 
+#include "py/misc.h"
+
 #define CHAR_CTRL_A (1)
 #define CHAR_CTRL_B (2)
 #define CHAR_CTRL_C (3)

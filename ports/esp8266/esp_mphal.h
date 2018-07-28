@@ -40,9 +40,6 @@ void mp_hal_signal_input(void);
 // Call this when data is available in dupterm object
 void mp_hal_signal_dupterm_input(void);
 
-// This variable counts how many times the UART is attached to dupterm
-extern int uart_attached_to_dupterm;
-
 void mp_hal_init(void);
 void mp_hal_rtc_init(void);
 

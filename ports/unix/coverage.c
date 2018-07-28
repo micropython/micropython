@@ -173,7 +173,7 @@ STATIC mp_obj_t extra_coverage(void) {
         gc_unlock();
 
         // using gc_realloc to resize to 0, which means free the memory
-        void *p = gc_alloc(4, false);
+        void *p = gc_alloc(4, false, false);
         mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 0, false));
 
         // calling gc_nbytes with a non-heap pointer
