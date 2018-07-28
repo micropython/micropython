@@ -29,6 +29,6 @@
 void run_background_tasks(void) {
 #ifdef NRF52840_XXAA
     tusb_task();
-    tud_cdc_flush();
+    tud_cdc_write_flush();
 #endif
 }

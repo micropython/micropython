@@ -51,15 +51,10 @@ Prerequisite steps for building the nrf port:
     git submodule update --init
     make -C mpy-cross
 
-By default, the feather52832 is used as compile target. To build and flash issue the following command inside the ports/nrf/ folder:
+To build and flash issue the following command inside the ports/nrf/ folder:
 
-    make
-    make flash
-
-Alternatively the target board could be defined:
-
-     make BOARD=pca10056
-     make flash
+	make BOARD=pca10056
+	make BOARD=pca10056 flash
 
 ## Compile and Flash with Bluetooth Stack
 

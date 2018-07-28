@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,35 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdbool.h>
-#include "boards/board.h"
-#include "nrfx.h"
+#include "py/obj.h"
+#include "py/mpstate.h"
+
+#ifdef NRF52840_XXAA
 #include "usb.h"
+#endif
 
-void board_init(void) {
+#if MICROPY_KBD_EXCEPTION
 
-    // Clock
-    NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
-    NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
+int mp_interrupt_char;
 
-    usb_init();
+void mp_hal_set_interrupt_char(int c) {
+    if (c != -1) {
+        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
+    }
+    mp_interrupt_char = c;
+
+#ifdef NRF52840_XXAA
+    tud_cdc_set_wanted_char(c);
+#endif
 }
 
-bool board_requests_safe_mode(void) {
-  return false;
+void mp_keyboard_interrupt(void) {
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+    #if MICROPY_ENABLE_SCHEDULER
+    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+    }
+    #endif
 }
 
-void reset_board(void) {
-
-}
-
-
-
-
-
+#endif

@@ -350,7 +350,9 @@ typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
     size_t is_ordered : 1;  // an ordered array
-    size_t used : (8 * sizeof(size_t) - 3);
+    size_t scanning : 1;    // true if we're in the middle of scanning linked dictionaries,
+                            // e.g., make_dict_long_lived()
+    size_t used : (8 * sizeof(size_t) - 4);
     size_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
