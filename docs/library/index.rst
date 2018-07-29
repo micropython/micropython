@@ -130,12 +130,13 @@ The following libraries are specific to the pyboard.
 Libraries specific to the WiPy
 ------------------------------
 
-The following libraries are specific to the WiPy.
+The following libraries and classes are specific to the WiPy.
 
 .. toctree::
   :maxdepth: 2
 
   wipy.rst
+  machine.TimerWiPy.rst
 
 
 Libraries specific to the ESP8266
