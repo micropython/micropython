@@ -26,7 +26,6 @@ env:
   - TRAVIS_BOARD=gemma_m0
   - TRAVIS_BOARD=feather52832
   - TRAVIS_BOARD=pca10056
-  - TRAVIS_TEST=qemu
   - TRAVIS_TEST=unix
   - TRAVIS_TEST=docs
 
@@ -49,9 +48,8 @@ notifications:
 before_script:
   - sudo dpkg --add-architecture i386
 
-  - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y qemu-system)
   - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
-  - ([[ $TRAVIS_TEST != "qemu" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
+  - wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb
 
   # For nrf builds
   - ([[ $TRAVIS_BOARD != "feather52832" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
@@ -79,10 +77,6 @@ script:
   - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix -j2)
   - ([[ $TRAVIS_TEST != "unix" ]] || make -C ports/unix coverage -j2)
   - echo -en 'travis_fold:end:unix\\r'
-
-  - echo 'Building qemu' && echo -en 'travis_fold:start:qemu\\r'
-  - ([[ $TRAVIS_TEST != "qemu" ]] || make -C ports/qemu-arm test -j2)
-  - echo -en 'travis_fold:end:qemu\\r'
 
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests -j1)
@@ -115,4 +109,3 @@ script:
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
-  - (grep "FAIL" ports/qemu-arm/build/console.out)
