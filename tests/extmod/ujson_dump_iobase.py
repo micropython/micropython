@@ -24,6 +24,7 @@ class S(io.IOBase):
             # uPy passes a bytearray, CPython passes a str
             buf = str(buf, 'ascii')
         self.buf += buf
+        return len(buf)
 
 
 # dump to the user stream
