@@ -58,7 +58,7 @@ typedef struct _machine_rtc_obj_t {
 STATIC const nrfx_rtc_t machine_rtc_instances[] = {
     NRFX_RTC_INSTANCE(0),
     NRFX_RTC_INSTANCE(1),
-#if NRF52
+#if defined(NRF52_SERIES)
     NRFX_RTC_INSTANCE(2),
 #endif
 };
@@ -67,14 +67,14 @@ STATIC machine_rtc_config_t configs[MP_ARRAY_SIZE(machine_rtc_instances)];
 
 STATIC void interrupt_handler0(nrfx_rtc_int_type_t int_type);
 STATIC void interrupt_handler1(nrfx_rtc_int_type_t int_type);
-#if NRF52
+#if defined(NRF52_SERIES)
 STATIC void interrupt_handler2(nrfx_rtc_int_type_t int_type);
 #endif
 
 STATIC const machine_rtc_obj_t machine_rtc_obj[] = {
     {{&machine_rtcounter_type}, .p_rtc = &machine_rtc_instances[0], .handler=interrupt_handler0, .config=&configs[0]},
     {{&machine_rtcounter_type}, .p_rtc = &machine_rtc_instances[1], .handler=interrupt_handler1, .config=&configs[1]},
-#if NRF52
+#if defined(NRF52_SERIES)
     {{&machine_rtcounter_type}, .p_rtc = &machine_rtc_instances[2], .handler=interrupt_handler2, .config=&configs[2]},
 #endif
 };
@@ -101,7 +101,7 @@ STATIC void interrupt_handler1(nrfx_rtc_int_type_t int_type) {
     interrupt_handler(1);
 }
 
-#if NRF52
+#if defined(NRF52_SERIES)
 STATIC void interrupt_handler2(nrfx_rtc_int_type_t int_type) {
     interrupt_handler(2);
 }
