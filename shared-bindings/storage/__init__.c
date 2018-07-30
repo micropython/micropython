@@ -31,6 +31,7 @@
 #include "extmod/vfs_fat.h"
 #include "py/obj.h"
 #include "py/objnamedtuple.h"
+#include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
 
 //| :mod:`storage` --- storage management

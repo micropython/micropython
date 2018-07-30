@@ -114,6 +114,7 @@ STATIC void mp_reset(void) {
 }
 
 bool soft_reset(void) {
+    gc_sweep_all();
     mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
     mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
@@ -177,3 +178,17 @@ void __assert(const char *file, int line, const char *expr) {
     for (;;) {
     }
 }
+
+#if !MICROPY_DEBUG_PRINTERS
+// With MICROPY_DEBUG_PRINTERS disabled DEBUG_printf is not defined but it
+// is still needed by esp-open-lwip for debugging output, so define it here.
+#include <stdarg.h>
+int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
+int DEBUG_printf(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = mp_vprintf(&MICROPY_DEBUG_PRINTER_DEST, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+#endif

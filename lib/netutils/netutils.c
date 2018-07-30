@@ -41,7 +41,7 @@ mp_obj_t netutils_format_ipv4_addr(uint8_t *ip, netutils_endian_t endian) {
     } else {
         ip_len = snprintf(ip_str, 16, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
     }
-    return mp_obj_new_str(ip_str, ip_len, false);
+    return mp_obj_new_str(ip_str, ip_len);
 }
 
 // Takes an array with a raw IP address, and a port, and returns a net-address

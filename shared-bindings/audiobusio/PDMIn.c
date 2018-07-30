@@ -194,7 +194,7 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
     uint32_t length = MP_OBJ_SMALL_INT_VALUE(destination_length);
 
     mp_buffer_info_t bufinfo;
-    if (MP_OBJ_IS_TYPE(destination, &fatfs_type_fileio)) {
+    if (MP_OBJ_IS_TYPE(destination, &mp_type_fileio)) {
         mp_raise_NotImplementedError("");
     } else if (mp_get_buffer(destination, &bufinfo, MP_BUFFER_WRITE)) {
         if (bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL) < length) {

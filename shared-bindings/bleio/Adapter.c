@@ -86,7 +86,7 @@ STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
 
     common_hal_bleio_adapter_get_address(&vstr);
 
-    const mp_obj_t mac_str = mp_obj_new_str(vstr.buf, vstr.len, false);
+    const mp_obj_t mac_str = mp_obj_new_str(vstr.buf, vstr.len);
 
     vstr_clear(&vstr);
 

@@ -10,4 +10,7 @@ def test_exc(code, exc):
         print("wrong exception")
 
 # object with buffer protocol needed on rhs
-test_exc("(1 << 70) in 1", TypeError)
+try:
+    (1 << 70) in 1
+except TypeError:
+    print('TypeError')

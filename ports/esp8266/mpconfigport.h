@@ -30,6 +30,7 @@
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (0)
 #define MICROPY_ENABLE_SCHEDULER    (1)
+#define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
@@ -40,7 +41,7 @@
 #define MICROPY_PY_BUILTINS_SLICE   (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
-#define MICROPY_PY_DESCRIPTORS      (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT (1)
 #define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT esp_help_text
@@ -51,10 +52,12 @@
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_NONSTANDARD_TYPECODES (0)
 #define MICROPY_PY_COLLECTIONS      (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
+#define MICROPY_PY_IO_IOBASE        (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_STRUCT           (0)
 #define MICROPY_PY_SYS              (1)
@@ -87,8 +90,8 @@
 #define MICROPY_PY_WEBREPL_DELAY    (20)
 #define MICROPY_PY_FRAMEBUF         (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_OS_DUPTERM       (1)
-#define MICROPY_CPYTHON_COMPAT      (0)
+#define MICROPY_PY_OS_DUPTERM       (2)
+#define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
@@ -142,8 +145,8 @@ typedef uint32_t sys_prot_t; // for modlwip
 void *esp_native_code_commit(void*, size_t);
 #define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
-#define mp_type_fileio fatfs_type_fileio
-#define mp_type_textio fatfs_type_textio
+#define mp_type_fileio mp_type_vfs_fat_fileio
+#define mp_type_textio mp_type_vfs_fat_textio
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat

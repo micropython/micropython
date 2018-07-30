@@ -27,8 +27,6 @@
 #define MICROPY_INCLUDED_PY_MPERRNO_H
 
 #include "py/mpconfig.h"
-
-#include "py/mpconfig.h"
 #include "py/obj.h"
 
 #if MICROPY_USE_INTERNAL_ERRNO
@@ -125,7 +123,7 @@
 #define MP_EPIPE            EPIPE
 #define MP_EDOM             EDOM
 #define MP_ERANGE           ERANGE
-#define MP_EWOULDBLOCK      EAGAIN
+#define MP_EWOULDBLOCK      EWOULDBLOCK
 #define MP_EOPNOTSUPP       EOPNOTSUPP
 #define MP_EAFNOSUPPORT     EAFNOSUPPORT
 #define MP_EADDRINUSE       EADDRINUSE

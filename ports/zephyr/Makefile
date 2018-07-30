@@ -20,14 +20,14 @@ FROZEN_DIR = scripts
 # Default target
 all:
 
+include ../../py/mkenv.mk
+include $(TOP)/py/py.mk
+
 # Zephyr (generated) config files - must be defined before include below
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
 ifneq ($(MAKECMDGOALS), clean)
 include $(Z_EXPORTS)
 endif
-
-include ../../py/mkenv.mk
-include $(TOP)/py/py.mk
 
 INC += -I.
 INC += -I$(TOP)
@@ -41,6 +41,7 @@ SRC_C = main.c \
 	modusocket.c \
 	modutime.c \
 	modzephyr.c \
+	modzsensor.c \
 	modmachine.c \
 	machine_pin.c \
 	uart_core.c \
@@ -56,18 +57,10 @@ SRC_QSTR += $(SRC_C)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
+CFLAGS = $(Z_CFLAGS) \
 	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
 
 include $(TOP)/py/mkrules.mk
-
-# We use single target here ($(Z_EXPORTS)) for simplicity, but actually
-# number of things get generated here: 'initconfig' generates C header for
-# Kconfig configuration, 'outputexports' generates make environment with CC,
-# etc., and 'lib' generates other headers which may be included by zephyr.h,
-# e.g. DTS-related.
-$(Z_EXPORTS): $(CONF_FILE)
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports lib
 
 GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
 KCONFIG_TARGETS = \
@@ -81,7 +74,7 @@ $(GENERIC_TARGETS): $(LIBMICROPYTHON)
 $(CLEAN_TARGETS):  clean
 
 $(GENERIC_TARGETS) $(KCONFIG_TARGETS) $(CLEAN_TARGETS):
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) $@
+	$(MAKE) -C outdir/$(BOARD) $@
 
 $(LIBMICROPYTHON): | $(Z_EXPORTS)
 build/genhdr/qstr.i.last: | $(Z_EXPORTS)
@@ -90,16 +83,27 @@ build/genhdr/qstr.i.last: | $(Z_EXPORTS)
 LIBMICROPYTHON_EXTRA_CMD = -$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 
 # MicroPython's global clean cleans everything, fast
-CLEAN_EXTRA = outdir
+CLEAN_EXTRA = outdir libmicropython.a prj_*_merged.conf
 
 # Clean Zephyr things in Zephyr way
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
 
 # This rule is for prj_$(BOARD)_merged.conf, not $(CONF_FILE), which
-# can be overriden
-prj_$(BOARD)_merged.conf: prj_base.conf prj_$(BOARD).conf
+# can be overriden.
+# prj_$(BOARD).conf is optional, that's why it's resolved with $(wildcard)
+# function.
+prj_$(BOARD)_merged.conf: prj_base.conf $(wildcard prj_$(BOARD).conf)
 	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
 	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../ports/zephyr run BOARD=$(BOARD) QEMU_PTY=1"
+
+cmake: outdir/$(BOARD)/Makefile
+
+outdir/$(BOARD)/Makefile: $(CONF_FILE)
+	mkdir -p outdir/$(BOARD) && cmake -DBOARD=$(BOARD) -DCONF_FILE=$(CONF_FILE) -Boutdir/$(BOARD) -H.
+
+$(Z_EXPORTS): outdir/$(BOARD)/Makefile
+	make --no-print-directory -C outdir/$(BOARD) outputexports CMAKE_COMMAND=: >$@
+	make -C outdir/$(BOARD) syscall_macros_h_target syscall_list_h_target kobj_types_h_target

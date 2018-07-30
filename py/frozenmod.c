@@ -43,8 +43,14 @@ extern const char mp_frozen_str_names[];
 extern const uint32_t mp_frozen_str_sizes[];
 extern const char mp_frozen_str_content[];
 
-// On input, *len contains size of name, on output - size of content
+// str_len is length of str. *len is set on on output to size of content
 const char *mp_find_frozen_str(const char *str, size_t str_len, size_t *len) {
+    // If the frozen module pseudo dir (e.g., ".frozen/") is a prefix of str, remove it.
+    if (strncmp(str, MP_FROZEN_FAKE_DIR_SLASH, MP_FROZEN_FAKE_DIR_SLASH_LENGTH) == 0) {
+        str = str + MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+        str_len = str_len - MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+    }
+
     const char *name = mp_frozen_str_names;
 
     size_t offset = 0;

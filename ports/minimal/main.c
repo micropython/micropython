@@ -27,7 +27,9 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 #endif
 
 static char *stack_top;
+#if MICROPY_ENABLE_GC
 static char heap[2048];
+#endif
 
 int main(int argc, char **argv) {
     int stack_dummy;

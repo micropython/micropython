@@ -144,7 +144,7 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
             if (!s) {
                 return mp_const_none;
             }
-            return mp_obj_new_str(s, strlen(s), false);
+            return mp_obj_new_str(s, strlen(s));
         }
         case 'v':
             return mp_const_none;

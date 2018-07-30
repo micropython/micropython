@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"

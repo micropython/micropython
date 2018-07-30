@@ -9,10 +9,12 @@ include $(TOP)/py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
+TINYTEST = $(TOP)/lib/tinytest
+
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I$(TOP)/tools/tinytest/
+INC += -I$(TINYTEST)
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
@@ -44,7 +46,7 @@ SRC_RUN_C = \
 SRC_TEST_C = \
 	test_main.c \
 
-LIB_SRC_C = $(addprefix lib/,\
+LIB_SRC_C += $(addprefix lib/,\
 	libm/math.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \

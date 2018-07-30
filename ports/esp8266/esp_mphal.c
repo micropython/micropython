@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include "ets_sys.h"
 #include "etshal.h"
-#include "espuart.h"
+#include "uart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
 #include "ets_alt_task.h"
@@ -36,7 +36,7 @@
 #include "lib/utils/pyexec.h"
 
 STATIC byte input_buf_array[256];
-ringbuf_t input_buf = {input_buf_array, sizeof(input_buf_array)};
+ringbuf_t stdin_ringbuf = {input_buf_array, sizeof(input_buf_array)};
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
 const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 
@@ -59,7 +59,7 @@ uint32_t mp_hal_get_cpu_freq(void) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        int c = ringbuf_get(&input_buf);
+        int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
         }
@@ -170,7 +170,7 @@ STATIC void dupterm_task_handler(os_event_t *evt) {
         if (c < 0) {
             break;
         }
-        ringbuf_put(&input_buf, c);
+        ringbuf_put(&stdin_ringbuf, c);
     }
     mp_hal_signal_input();
     lock = 0;

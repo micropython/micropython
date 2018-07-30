@@ -123,6 +123,9 @@ typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
+#define mp_type_fileio mp_type_vfs_fat_fileio
+#define mp_type_textio mp_type_vfs_fat_textio
+
 #define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open_obj mp_vfs_open_obj
 

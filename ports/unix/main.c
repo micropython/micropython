@@ -47,6 +47,8 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
+#include "extmod/vfs.h"
+#include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
 
@@ -441,7 +443,24 @@ MP_NOINLINE int main_(int argc, char **argv) {
     gc_init(heap, heap + heap_size);
 #endif
 
+    #if MICROPY_ENABLE_PYSTACK
+    static mp_obj_t pystack[1024];
+    mp_pystack_init(pystack, &pystack[MP_ARRAY_SIZE(pystack)]);
+    #endif
+
     mp_init();
+
+    #if MICROPY_VFS_POSIX
+    {
+        // Mount the host FS at the root of our internal VFS
+        mp_obj_t args[2] = {
+            mp_type_vfs_posix.make_new(&mp_type_vfs_posix, 0, 0, NULL),
+            MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
+        };
+        mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
+        MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+    }
+    #endif
 
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
@@ -486,7 +505,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             vstr_add_strn(&vstr, p + 1, p1 - p - 1);
             path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
         } else {
-            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+            path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
         }
         p = p1 + 1;
     }
@@ -545,7 +564,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return usage(argv);
                 }
                 mp_obj_t import_args[4];
-                import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]), false);
+                import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]));
                 import_args[1] = import_args[2] = mp_const_none;
                 // Ask __import__ to handle imported module specially - set its __name__
                 // to __main__, and also return this leaf module, not top-level package
@@ -611,7 +630,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
             // Set base dir of the script as first entry in sys.path
             char *p = strrchr(basedir, '/');
-            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+            path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);
@@ -636,6 +655,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     #endif
 
+    #if defined(MICROPY_UNIX_COVERAGE)
+    gc_sweep_all();
+    #endif
+
     mp_deinit();
 
 #if MICROPY_ENABLE_GC && !defined(NDEBUG)
@@ -648,6 +671,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     return ret & 0xff;
 }
 
+#if !MICROPY_VFS
 uint mp_import_stat(const char *path) {
     struct stat st;
     if (stat(path, &st) == 0) {
@@ -659,6 +683,7 @@ uint mp_import_stat(const char *path) {
     }
     return MP_IMPORT_STAT_NO_EXIST;
 }
+#endif
 
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught NLR %p\n", val);

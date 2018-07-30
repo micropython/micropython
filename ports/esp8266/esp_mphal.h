@@ -34,8 +34,8 @@ struct _mp_print_t;
 // Structure for UART-only output via mp_printf()
 extern const struct _mp_print_t mp_debug_print;
 
-extern ringbuf_t input_buf;
-// Call this after putting data to input_buf
+extern ringbuf_t stdin_ringbuf;
+// Call this after putting data to stdin_ringbuf
 void mp_hal_signal_input(void);
 // Call this when data is available in dupterm object
 void mp_hal_signal_dupterm_input(void);
@@ -86,7 +86,7 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
     } while (0)
 #define mp_hal_pin_od_high(p) do { \
         if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); } \
-        else { gpio_output_set(1 << (p), 0, 1 << (p), 0); } \
+        else { gpio_output_set(0, 0, 0, 1 << (p)); /* set as input to avoid glitches */ } \
     } while (0)
 #define mp_hal_pin_read(p) pin_get(p)
 #define mp_hal_pin_write(p, v) pin_set((p), (v))

@@ -1,5 +1,11 @@
 # test syntax errors
 
+try:
+    exec
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 def test_syntax(code):
     try:
         exec(code)
@@ -28,6 +34,10 @@ test_syntax(" a\n")
 
 # malformed integer literal (parser error)
 test_syntax("123z")
+
+# input doesn't match the grammar (parser error)
+test_syntax('1 or 2 or')
+test_syntax('{1:')
 
 # can't assign to literals
 test_syntax("1 = 2")

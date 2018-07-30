@@ -39,7 +39,7 @@
 
 typedef struct _mp_obj_namedtuple_type_t {
     mp_obj_type_t base;
-    mp_uint_t n_fields;
+    size_t n_fields;
     qstr fields[];
 } mp_obj_namedtuple_type_t;
 
@@ -48,9 +48,9 @@ typedef struct _mp_obj_namedtuple_t {
 } mp_obj_namedtuple_t;
 
 void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
-
+size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name);
 void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
-
+mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *fields);
 mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 #endif // MICROPY_PY_COLLECTIONS

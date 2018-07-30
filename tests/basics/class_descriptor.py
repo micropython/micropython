@@ -27,8 +27,8 @@ except AttributeError:
 r = m.Forward
 if 'Descriptor' in repr(r.__class__):
     print('SKIP')
-else:
-    print(r)
-    m.Forward = 'a'
-    del m.Forward
+    raise SystemExit
 
+print(r)
+m.Forward = 'a'
+del m.Forward

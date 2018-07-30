@@ -91,7 +91,7 @@ typedef uint32_t mp_float_uint_t;
         if (adj_exp <= MP_FLOAT_FRAC_BITS) {
             // number may have a fraction; xor the integer part with the fractional part
             val = (frc >> (MP_FLOAT_FRAC_BITS - adj_exp))
-                ^ (frc & ((1 << (MP_FLOAT_FRAC_BITS - adj_exp)) - 1));
+                ^ (frc & (((mp_float_uint_t)1 << (MP_FLOAT_FRAC_BITS - adj_exp)) - 1));
         } else if ((unsigned int)adj_exp < BITS_PER_BYTE * sizeof(mp_int_t) - 1) {
             // the number is a (big) whole integer and will fit in val's signed-width
             val = (mp_int_t)frc << (adj_exp - MP_FLOAT_FRAC_BITS);
@@ -102,7 +102,7 @@ typedef uint32_t mp_float_uint_t;
     }
 
     if (u.p.sgn) {
-        val = -val;
+        val = -(mp_uint_t)val;
     }
 
     return val;
@@ -140,12 +140,11 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             return mp_obj_new_float(0);
 
         case 1:
-        default:
-            if (MP_OBJ_IS_STR(args[0])) {
-                // a string, parse it
-                size_t l;
-                const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_decimal(s, l, false, false, NULL);
+        default: {
+            mp_buffer_info_t bufinfo;
+            if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+                // a textual representation, parse it
+                return mp_parse_num_decimal(bufinfo.buf, bufinfo.len, false, false, NULL);
             } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];
@@ -153,6 +152,7 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
                 // something else, try to cast it to a float
                 return mp_obj_new_float(mp_obj_get_float(args[0]));
             }
+        }
     }
 }
 
@@ -296,7 +296,7 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             break;
         case MP_BINARY_OP_POWER:
         case MP_BINARY_OP_INPLACE_POWER:
-            if (lhs_val == 0 && rhs_val < 0) {
+            if (lhs_val == 0 && rhs_val < 0 && !isinf(rhs_val)) {
                 goto zero_division_error;
             }
             if (lhs_val < 0 && rhs_val != MICROPY_FLOAT_C_FUN(floor)(rhs_val)) {

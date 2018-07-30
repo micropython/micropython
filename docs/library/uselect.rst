@@ -9,7 +9,7 @@
 |see_cpython_module| :mod:`cpython:select`.
 
 This module provides functions to efficiently wait for events on multiple
-streams (select streams which are ready for operations).
+``stream`` objects (select streams which are ready for operations).
 
 Functions
 ---------
@@ -35,14 +35,17 @@ Methods
 
 .. method:: poll.register(obj[, eventmask])
 
-   Register *obj* for polling. *eventmask* is logical OR of:
+   Register ``stream`` *obj* for polling. *eventmask* is logical OR of:
 
-   * ``select.POLLIN``  - data available for reading
-   * ``select.POLLOUT`` - more data can be written
-   * ``select.POLLERR`` - error occurred
-   * ``select.POLLHUP`` - end of stream/connection termination detected
+   * ``uselect.POLLIN``  - data available for reading
+   * ``uselect.POLLOUT`` - more data can be written
 
-   *eventmask* defaults to ``select.POLLIN | select.POLLOUT``.
+   Note that flags like ``uselect.POLLHUP`` and ``uselect.POLLERR`` are
+   *not* valid as input eventmask (these are unsolicited events which
+   will be returned from `poll()` regardless of whether they are asked
+   for). This semantics is per POSIX.
+
+   *eventmask* defaults to ``uselect.POLLIN | uselect.POLLOUT``.
 
 .. method:: poll.unregister(obj)
 
@@ -52,16 +55,23 @@ Methods
 
    Modify the *eventmask* for *obj*.
 
-.. method:: poll.poll([timeout])
+.. method:: poll.poll(timeout=-1)
 
-   Wait for at least one of the registered objects to become ready. Returns
-   list of (``obj``, ``event``, ...) tuples, ``event`` element specifies
-   which events happened with a stream and is a combination of ``select.POLL*``
-   constants described above. There may be other elements in tuple, depending
-   on a platform and version, so don't assume that its size is 2. In case of
-   timeout, an empty list is returned.
+   Wait for at least one of the registered objects to become ready or have an
+   exceptional condition, with optional timeout in milliseconds (if *timeout*
+   arg is not specified or -1, there is no timeout).
 
-   Timeout is in milliseconds.
+   Returns list of (``obj``, ``event``, ...) tuples. There may be other elements in
+   tuple, depending on a platform and version, so don't assume that its size is 2.
+   The ``event`` element specifies which events happened with a stream and
+   is a combination of ``uselect.POLL*`` constants described above. Note that
+   flags ``uselect.POLLHUP`` and ``uselect.POLLERR`` can be returned at any time
+   (even if were not asked for), and must be acted on accordingly (the
+   corresponding stream unregistered from poll and likely closed), because
+   otherwise all further invocations of `poll()` may return immediately with
+   these flags set for this stream again.
+
+   In case of timeout, an empty list is returned.
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -70,15 +80,15 @@ Methods
 
 .. method:: poll.ipoll(timeout=-1, flags=0)
 
-   Like :meth:`poll.poll`, but instead returns an iterator which yields
+   Like :meth:`poll.poll`, but instead returns an iterator which yields a
    ``callee-owned tuples``. This function provides efficient, allocation-free
    way to poll on streams.
 
    If *flags* is 1, one-shot behavior for events is employed: streams for
-   which events happened, event mask will be automatically reset (equivalent
-   to ``poll.modify(obj, 0)``), so new events for such a stream won't be
-   processed until new mask is set with `poll.modify()`. This behavior is
-   useful for asynchronous I/O schedulers.
+   which events happened will have their event masks automatically reset
+   (equivalent to ``poll.modify(obj, 0)``), so new events for such a stream
+   won't be processed until new mask is set with `poll.modify()`. This
+   behavior is useful for asynchronous I/O schedulers.
 
    .. admonition:: Difference to CPython
       :class: attention

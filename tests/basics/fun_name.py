@@ -14,3 +14,4 @@ try:
     print(A().Fun.__name__)
 except AttributeError:
     print('SKIP')
+    raise SystemExit

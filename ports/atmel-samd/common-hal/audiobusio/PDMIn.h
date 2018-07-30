@@ -29,7 +29,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 #include "py/obj.h"
 
 typedef struct {

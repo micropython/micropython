@@ -165,7 +165,6 @@ LIB_SRC_C += $(addprefix lib/,\
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(STMHAL_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
@@ -243,7 +242,7 @@ freedos:
 # build an interpreter for coverage testing and do the testing
 coverage:
 	$(MAKE) V=2 \
-	    COPT="-O0" CFLAGS_EXTRA='-DMP_CONFIGFILE="\"mpconfigport_coverage.h\"" \
+	    COPT="-O0" CFLAGS_EXTRA='$(CFLAGS_EXTRA) -DMP_CONFIGFILE="<mpconfigport_coverage.h>" \
 	    -fprofile-arcs -ftest-coverage \
 	    -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wsign-compare \
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
@@ -258,8 +257,12 @@ coverage_test: coverage
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --auto-jobs -d thread
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --auto-jobs --emit native
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
+	cat $(TOP)/tests/basics/0prelim.py | ./micropython_coverage | grep -q 'abc'
 	gcov -o build-coverage/py $(TOP)/py/*.c
 	gcov -o build-coverage/extmod $(TOP)/extmod/*.c
+
+coverage_clean:
+	$(MAKE) V=2 BUILD=build-coverage PROG=micropython_coverage clean
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.

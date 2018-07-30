@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,12 +106,31 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             mp_raise_TypeError("can't send non-None value to a just-started generator");
         }
     } else {
-        *self->code_state.sp = send_value;
+        #if MICROPY_PY_GENERATOR_PEND_THROW
+        // If exception is pending (set using .pend_throw()), process it now.
+        if (*self->code_state.sp != mp_const_none) {
+            throw_value = *self->code_state.sp;
+            *self->code_state.sp = MP_OBJ_NULL;
+        } else
+        #endif
+        {
+            *self->code_state.sp = send_value;
+        }
     }
-    mp_obj_dict_t *old_globals = mp_globals_get();
+
+    // We set self->globals=NULL while executing, for a sentinel to ensure the generator
+    // cannot be reentered during execution
+    if (self->globals == NULL) {
+        mp_raise_ValueError("generator already executing");
+    }
+
+    // Set up the correct globals context for the generator and execute it
+    self->code_state.old_globals = mp_globals_get();
     mp_globals_set(self->globals);
+    self->globals = NULL;
     mp_vm_return_kind_t ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
-    mp_globals_set(old_globals);
+    self->globals = mp_globals_get();
+    mp_globals_set(self->code_state.old_globals);
 
     switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:
@@ -127,9 +146,9 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
         case MP_VM_RETURN_YIELD:
             *ret_val = *self->code_state.sp;
-            if (*ret_val == MP_OBJ_STOP_ITERATION) {
-                self->code_state.ip = 0;
-            }
+            #if MICROPY_PY_GENERATOR_PEND_THROW
+            *self->code_state.sp = mp_const_none;
+            #endif
             break;
 
         case MP_VM_RETURN_EXCEPTION: {
@@ -224,10 +243,24 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
+STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
+    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->code_state.sp == self->code_state.state - 1) {
+        mp_raise_TypeError("can't pend throw to just-started generator");
+    }
+    mp_obj_t prev = *self->code_state.sp;
+    *self->code_state.sp = exc_in;
+    return prev;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_pend_throw_obj, gen_instance_pend_throw);
+
 STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
+    #if MICROPY_PY_GENERATOR_PEND_THROW
+    { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);

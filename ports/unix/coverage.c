@@ -4,6 +4,7 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "py/repl.h"
 #include "py/mpz.h"
 #include "py/builtin.h"
@@ -11,6 +12,7 @@
 #include "py/formatfloat.h"
 #include "py/stream.h"
 #include "py/binary.h"
+#include "py/bc.h"
 
 #if defined(MICROPY_UNIX_COVERAGE)
 
@@ -116,7 +118,6 @@ STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
@@ -145,16 +146,38 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
         mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
         mp_printf(&mp_plat_print, "%ld\n", 123); // long
+        mp_printf(&mp_plat_print, "%lx\n", 0x123); // long hex
         mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
         mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc"); // fixed string precision
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
+        #ifndef NDEBUG
         mp_printf(&mp_plat_print, "%s\n", NULL); // null string
+        #else
+        mp_printf(&mp_plat_print, "(null)\n"); // without debugging mp_printf won't check for null
+        #endif
         mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
+    }
+
+    // GC
+    {
+        mp_printf(&mp_plat_print, "# GC\n");
+
+        // calling gc_free while GC is locked
+        gc_lock();
+        gc_free(NULL);
+        gc_unlock();
+
+        // using gc_realloc to resize to 0, which means free the memory
+        void *p = gc_alloc(4, false, false);
+        mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 0, false));
+
+        // calling gc_nbytes with a non-heap pointer
+        mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
     }
 
     // vstr
@@ -227,7 +250,17 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# str\n");
 
         // intern string
-        mp_printf(&mp_plat_print, "%d\n", MP_OBJ_IS_QSTR(mp_obj_str_intern(mp_obj_new_str("intern me", 9, false))));
+        mp_printf(&mp_plat_print, "%d\n", MP_OBJ_IS_QSTR(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
+    }
+
+    // bytearray
+    {
+        mp_printf(&mp_plat_print, "# bytearray\n");
+
+        // create a bytearray via mp_obj_new_bytearray
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(mp_obj_new_bytearray(4, "data"), &bufinfo, MP_BUFFER_RW);
+        mp_printf(&mp_plat_print, "%.*s\n", bufinfo.len, bufinfo.buf);
     }
 
     // mpz
@@ -251,6 +284,39 @@ STATIC mp_obj_t extra_coverage(void) {
         mpz_set_from_int(&mpz, 1);
         mpz_shl_inpl(&mpz, &mpz, 70);
         mp_printf(&mp_plat_print, "%d\n", mpz_as_uint_checked(&mpz, &value));
+
+        // mpz_set_from_float with inf as argument
+        mpz_set_from_float(&mpz, 1.0 / 0.0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0 as argument
+        mpz_set_from_float(&mpz, 0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0<x<1 as argument
+        mpz_set_from_float(&mpz, 1e-10);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 1<=x<2 as argument
+        mpz_set_from_float(&mpz, 1.5);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 2<x as argument
+        mpz_set_from_float(&mpz, 12345);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_mul_inpl with dest==rhs, lhs!=rhs
+        mpz_t mpz2;
+        mpz_set_from_int(&mpz, 2);
+        mpz_init_from_int(&mpz2, 3);
+        mpz_mul_inpl(&mpz, &mpz2, &mpz);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
     }
 
     // runtime utils
@@ -260,12 +326,12 @@ STATIC mp_obj_t extra_coverage(void) {
         // call mp_call_function_1_protected
         mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_1_protected with invalid args
-        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3, false));
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3));
 
         // call mp_call_function_2_protected
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
-        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3, false), mp_obj_new_str("abc", 3, false));
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
     }
 
     // warning
@@ -304,6 +370,23 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.0f\n", (double)far[0]);
         mp_binary_set_val_array_from_int('d', dar, 0, 456);
         mp_printf(&mp_plat_print, "%.0lf\n", dar[0]);
+    }
+
+    // VM
+    {
+        mp_printf(&mp_plat_print, "# VM\n");
+
+        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        mp_obj_fun_bc_t fun_bc;
+        fun_bc.bytecode = (const byte*)"\x01"; // just needed for n_state
+        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        code_state->fun_bc = &fun_bc;
+        code_state->ip = (const byte*)"\x00"; // just needed for an invalid opcode
+        code_state->sp = &code_state->state[0];
+        code_state->exc_sp = NULL;
+        code_state->old_globals = NULL;
+        mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
+        mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
     }
 
     // scheduler

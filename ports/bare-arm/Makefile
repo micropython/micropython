@@ -36,7 +36,7 @@ SRC_S = \
 #	startup_stm32f40xx.s \
 	gchelper.s \
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
+OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
 all: $(BUILD)/firmware.elf
 

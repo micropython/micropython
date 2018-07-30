@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "espuart.h"
+#include "uart.h"
 #include "user_interface.h"
 #include "mem.h"
 #include "modmachine.h"

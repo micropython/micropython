@@ -213,13 +213,13 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_USSL
     { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
 #endif
-#ifdef MICROPY_PY_LWIP
+#if MICROPY_PY_LWIP
     { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
 #endif
 #if MICROPY_PY_WEBSOCKET
     { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&mp_module_websocket) },
 #endif
-#ifdef MICROPY_PY_WEBREPL
+#if MICROPY_PY_WEBREPL
     { MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&mp_module_webrepl) },
 #endif
 #if MICROPY_PY_FRAMEBUF
@@ -259,17 +259,7 @@ mp_obj_t mp_module_get(qstr module_name) {
         if (el == NULL) {
             return MP_OBJ_NULL;
         }
-
-        if (MICROPY_MODULE_BUILTIN_INIT) {
-            // look for __init__ and call it if it exists
-            mp_obj_t dest[2];
-            mp_load_method_maybe(el->value, MP_QSTR___init__, dest);
-            if (dest[0] != MP_OBJ_NULL) {
-                mp_call_method_n_kw(0, 0, dest);
-                // register module so __init__ is not called again
-                mp_module_register(module_name, el->value);
-            }
-        }
+        mp_module_call_init(module_name, el->value);
     }
 
     // module found, return it
@@ -280,3 +270,19 @@ void mp_module_register(qstr qst, mp_obj_t module) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
     mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
 }
+
+#if MICROPY_MODULE_BUILTIN_INIT
+void mp_module_call_init(qstr module_name, mp_obj_t module_obj) {
+    // Look for __init__ and call it if it exists
+    mp_obj_t dest[2];
+    mp_load_method_maybe(module_obj, MP_QSTR___init__, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        mp_call_method_n_kw(0, 0, dest);
+        // Register module so __init__ is not called again.
+        // If a module can be referenced by more than one name (eg due to weak links)
+        // then __init__ will still be called for each distinct import, and it's then
+        // up to the particular module to make sure it's __init__ code only runs once.
+        mp_module_register(module_name, module_obj);
+    }
+}
+#endif

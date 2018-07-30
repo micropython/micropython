@@ -73,7 +73,7 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
 
     audioio_wavefile_obj_t *self = m_new_obj(audioio_wavefile_obj_t);
     self->base.type = &audioio_wavefile_type;
-    if (MP_OBJ_IS_TYPE(args[0], &fatfs_type_fileio)) {
+    if (MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
         common_hal_audioio_wavefile_construct(self, MP_OBJ_TO_PTR(args[0]));
     } else {
         mp_raise_TypeError("file must be a file opened in byte mode");

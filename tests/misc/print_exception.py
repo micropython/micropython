@@ -56,3 +56,12 @@ try:
     f()
 except Exception as e:
     print_exc(e)
+
+# Test non-stream object passed as output object, only valid for uPy
+if hasattr(sys, 'print_exception'):
+    try:
+        sys.print_exception(Exception, 1)
+        had_exception = False
+    except OSError:
+        had_exception = True
+    assert had_exception
