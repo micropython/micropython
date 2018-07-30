@@ -270,23 +270,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
-    (void)arg;
-    switch (request) {
-        case MP_STREAM_CLOSE:
-            mbedtls_pk_free(&self->pkey);
-            mbedtls_x509_crt_free(&self->cert);
-            mbedtls_x509_crt_free(&self->cacert);
-            mbedtls_ssl_free(&self->ssl);
-            mbedtls_ssl_config_free(&self->conf);
-            mbedtls_ctr_drbg_free(&self->ctr_drbg);
-            mbedtls_entropy_free(&self->entropy);
-            mp_stream_close(self->sock);
-            return 0;
-
-        default:
-            *errcode = MP_EINVAL;
-            return MP_STREAM_ERROR;
+    if (request == MP_STREAM_CLOSE) {
+        mbedtls_pk_free(&self->pkey);
+        mbedtls_x509_crt_free(&self->cert);
+        mbedtls_x509_crt_free(&self->cacert);
+        mbedtls_ssl_free(&self->ssl);
+        mbedtls_ssl_config_free(&self->conf);
+        mbedtls_ctr_drbg_free(&self->ctr_drbg);
+        mbedtls_entropy_free(&self->entropy);
     }
+    // Pass all requests down to the underlying socket
+    return mp_get_stream(self->sock)->ioctl(self->sock, request, arg, errcode);
 }
 
 STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {

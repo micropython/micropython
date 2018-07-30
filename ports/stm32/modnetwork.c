@@ -80,7 +80,7 @@ void mod_network_register_nic(mp_obj_t nic) {
         }
     }
     // nic not registered so add to list
-    mp_obj_list_append(&MP_STATE_PORT(mod_network_nic_list), nic);
+    mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list)), nic);
 }
 
 mp_obj_t mod_network_find_nic(const uint8_t *ip) {
@@ -96,7 +96,7 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
 }
 
 STATIC mp_obj_t network_route(void) {
-    return &MP_STATE_PORT(mod_network_nic_list);
+    return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 

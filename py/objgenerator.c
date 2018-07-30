@@ -68,6 +68,9 @@ const mp_obj_type_t mp_type_gen_wrap = {
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
     .unary_op = mp_generic_unary_op,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_fun_bc_attr,
+    #endif
 };
 
 /******************************************************************************/

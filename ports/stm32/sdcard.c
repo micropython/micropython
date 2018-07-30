@@ -33,6 +33,7 @@
 
 #include "sdcard.h"
 #include "pin.h"
+#include "pin_static_af.h"
 #include "bufhelper.h"
 #include "dma.h"
 #include "irq.h"
@@ -141,20 +142,20 @@ void sdcard_init(void) {
     // which clocks up to 25MHz maximum.
     #if defined(MICROPY_HW_SDMMC2_CK)
     // Use SDMMC2 peripheral with pins provided by the board's config
-    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CK);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CMD);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D0);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D1);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D2);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D3);
     #else
     // Default SDIO/SDMMC1 config
-    mp_hal_pin_config(MICROPY_HW_SDMMC_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(MICROPY_HW_SDMMC_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(MICROPY_HW_SDMMC_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(MICROPY_HW_SDMMC_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDIO_D0);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDIO_D1);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDIO_D2);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDIO_D3);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDIO_CK);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDIO_CMD);
     #endif
 
     // configure the SD card detect pin
@@ -437,7 +438,7 @@ STATIC mp_obj_t pyb_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // return singleton object
-    return (mp_obj_t)&pyb_sdcard_obj;
+    return MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
 }
 
 STATIC mp_obj_t sd_present(mp_obj_t self) {
@@ -576,14 +577,14 @@ void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
     vfs->fatfs.part = part;
-    vfs->readblocks[0] = (mp_obj_t)&pyb_sdcard_readblocks_obj;
-    vfs->readblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
-    vfs->readblocks[2] = (mp_obj_t)sdcard_read_blocks; // native version
-    vfs->writeblocks[0] = (mp_obj_t)&pyb_sdcard_writeblocks_obj;
-    vfs->writeblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
-    vfs->writeblocks[2] = (mp_obj_t)sdcard_write_blocks; // native version
-    vfs->u.ioctl[0] = (mp_obj_t)&pyb_sdcard_ioctl_obj;
-    vfs->u.ioctl[1] = (mp_obj_t)&pyb_sdcard_obj;
+    vfs->readblocks[0] = MP_OBJ_FROM_PTR(&pyb_sdcard_readblocks_obj);
+    vfs->readblocks[1] = MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
+    vfs->readblocks[2] = MP_OBJ_FROM_PTR(sdcard_read_blocks); // native version
+    vfs->writeblocks[0] = MP_OBJ_FROM_PTR(&pyb_sdcard_writeblocks_obj);
+    vfs->writeblocks[1] = MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
+    vfs->writeblocks[2] = MP_OBJ_FROM_PTR(sdcard_write_blocks); // native version
+    vfs->u.ioctl[0] = MP_OBJ_FROM_PTR(&pyb_sdcard_ioctl_obj);
+    vfs->u.ioctl[1] = MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
 }
 
 #endif // MICROPY_HW_HAS_SDCARD

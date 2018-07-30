@@ -181,6 +181,11 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 1) | 0x0002000000000001))
 
 #if MICROPY_PY_BUILTINS_FLOAT
+
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_DOUBLE
+#error MICROPY_OBJ_REPR_D requires MICROPY_FLOAT_IMPL_DOUBLE
+#endif
+
 #define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
 #define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
 
@@ -758,7 +763,9 @@ size_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
-mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in);
+static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
+    return &((mp_obj_dict_t*)MP_OBJ_TO_PTR(dict))->map;
+}
 
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
@@ -802,7 +809,9 @@ typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
 } mp_obj_module_t;
-mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
+static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
+    return ((mp_obj_module_t*)MP_OBJ_TO_PTR(module))->globals;
+}
 // check if given module object is a package
 bool mp_obj_is_package(mp_obj_t module);
 

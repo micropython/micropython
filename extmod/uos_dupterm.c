@@ -85,7 +85,7 @@ int mp_uos_dupterm_rx_chr(void) {
                 return buf[0];
             }
         } else {
-            mp_uos_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", nlr.ret_val);
+            mp_uos_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 
@@ -103,7 +103,7 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
             mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
             nlr_pop();
         } else {
-            mp_uos_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", nlr.ret_val);
+            mp_uos_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 }

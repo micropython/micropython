@@ -55,6 +55,7 @@
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
+#include "sdram.h"
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"
@@ -101,7 +102,7 @@ void NORETURN __fatal_error(const char *msg) {
 
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught exception %p\n", val);
-    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)val);
+    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
     __fatal_error("");
 }
 
@@ -555,7 +556,16 @@ soft_reset:
     mp_stack_set_limit((char*)&_estack - (char*)&_heap_end - 1024);
 
     // GC init
+    #if MICROPY_HW_SDRAM_SIZE
+    sdram_init();
+    #if MICROPY_HW_SDRAM_STARTUP_TEST
+    sdram_test(true);
+    #endif
+
+    gc_init(sdram_start(), sdram_end());
+    #else
     gc_init(&_heap_start, &_heap_end);
+    #endif
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];
@@ -564,9 +574,9 @@ soft_reset:
 
     // MicroPython init
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_init(mp_sys_argv, 0);
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
     // Initialise low-level sub-systems.  Here we need to very basic things like
     // zeroing out memory and resetting any of the sub-systems.  Following this

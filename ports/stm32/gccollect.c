@@ -33,7 +33,7 @@
 #include "gccollect.h"
 #include "systick.h"
 
-mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
+uintptr_t gc_helper_get_regs_and_sp(uintptr_t *regs);
 
 void gc_collect(void) {
     // get current time, in case we want to time the GC
@@ -45,8 +45,8 @@ void gc_collect(void) {
     gc_collect_start();
 
     // get the registers and the sp
-    mp_uint_t regs[10];
-    mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
+    uintptr_t regs[10];
+    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
     #if MICROPY_PY_THREAD

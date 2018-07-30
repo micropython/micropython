@@ -93,7 +93,7 @@ STATIC mp_obj_t pyb_repl_uart(size_t n_args, const mp_obj_t *args) {
         if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {
             return mp_const_none;
         } else {
-            return MP_STATE_PORT(pyb_stdio_uart);
+            return MP_OBJ_FROM_PTR(MP_STATE_PORT(pyb_stdio_uart));
         }
     } else {
         if (args[0] == mp_const_none) {
@@ -102,7 +102,7 @@ STATIC mp_obj_t pyb_repl_uart(size_t n_args, const mp_obj_t *args) {
                 MP_STATE_PORT(pyb_stdio_uart) = NULL;
             }
         } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
-            MP_STATE_PORT(pyb_stdio_uart) = args[0];
+            MP_STATE_PORT(pyb_stdio_uart) = MP_OBJ_TO_PTR(args[0]);
             uart_attach_to_repl(MP_STATE_PORT(pyb_stdio_uart), true);
         } else {
             mp_raise_ValueError("need a UART object");
