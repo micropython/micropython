@@ -49,7 +49,6 @@ before_script:
   - sudo dpkg --add-architecture i386
 
   - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
-  - wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb
 
   # For nrf builds
   - ([[ $TRAVIS_BOARD != "feather52832" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
