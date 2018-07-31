@@ -64,7 +64,7 @@
 //|
 STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {
     if (!MP_OBJ_IS_TYPE(digitalinout_obj, &digitalio_digitalinout_type)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Expected a %q", digitalio_digitalinout_type.name));
+        mp_raise_TypeError_varg("Expected a %q", digitalio_digitalinout_type.name);
     }
     // Convert parameters into expected types.
     const digitalio_digitalinout_obj_t *digitalinout = MP_OBJ_TO_PTR(digitalinout_obj);

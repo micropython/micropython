@@ -71,7 +71,7 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_obj_t carrier_obj = args[0];
 
     if (!MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Expected a %q", pulseio_pwmout_type.name));
+        mp_raise_TypeError_varg("Expected a %q", pulseio_pwmout_type.name);
     }
 
     // create Pulse object from the given pin
