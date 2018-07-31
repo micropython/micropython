@@ -96,7 +96,7 @@ STATIC int adc_find(mp_obj_t id) {
 
     int adc_idx = adc_id;
 
-    if (adc_idx >= 0 && adc_idx <= MP_ARRAY_SIZE(machine_adc_obj)
+    if (adc_idx >= 0 && adc_idx < MP_ARRAY_SIZE(machine_adc_obj)
         && machine_adc_obj[adc_idx].id != (uint8_t)-1) {
         return adc_idx;
     }

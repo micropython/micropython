@@ -113,7 +113,7 @@ void rtc_init0(void) {
 STATIC int rtc_find(mp_obj_t id) {
     // given an integer id
     int rtc_id = mp_obj_get_int(id);
-    if (rtc_id >= 0 && rtc_id <= MP_ARRAY_SIZE(machine_rtc_obj)) {
+    if (rtc_id >= 0 && rtc_id < MP_ARRAY_SIZE(machine_rtc_obj)) {
         return rtc_id;
     }
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
