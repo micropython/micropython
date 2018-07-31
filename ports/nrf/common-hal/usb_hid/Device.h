@@ -41,8 +41,8 @@
 #define USB_HID_DEVICE_MOUSE            1
 #define USB_HID_DEVICE_CONSUMER         1
 #define USB_HID_DEVICE_SYS_CONTROL      1
-#define USB_HID_DEVICE_GAMEPAD          0
-#define USB_HID_DEVICE_DIGITIZER        0
+#define USB_HID_DEVICE_GAMEPAD          1
+#define USB_HID_DEVICE_DIGITIZER        0 // not supported yet
 
 enum {
     USB_HID_REPORT_ID_UNUSED   = 0,
@@ -73,7 +73,7 @@ enum {
 };
 
 #define USB_HID_NUM_DEVICES     (USB_HID_DEVICE_KEYBOARD + USB_HID_DEVICE_MOUSE + USB_HID_DEVICE_CONSUMER + \
-                                 USB_HID_REPORT_ID_SYS_CONTROL + USB_HID_DEVICE_GAMEPAD + USB_HID_DEVICE_DIGITIZER )
+                                 USB_HID_DEVICE_SYS_CONTROL + USB_HID_DEVICE_GAMEPAD + USB_HID_DEVICE_DIGITIZER )
 
 typedef struct  {
     mp_obj_base_t base;
@@ -85,7 +85,7 @@ typedef struct  {
 } usb_hid_device_obj_t;
 
 
-usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES];
+extern usb_hid_device_obj_t usb_hid_devices[];
 
 #ifdef __cplusplus
  }

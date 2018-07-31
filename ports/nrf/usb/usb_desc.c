@@ -154,6 +154,10 @@ uint8_t const usb_desc_hid_generic_report[] =
     HID_REPORT_DESC_SYSTEM_CONTROL( HID_REPORT_ID(USB_HID_REPORT_ID_SYS_CONTROL ), ),
 #endif
 
+#if USB_HID_DEVICE_GAMEPAD
+    HID_REPORT_DESC_GAMEPAD( HID_REPORT_ID(USB_HID_REPORT_ID_GAMEPAD ), )
+#endif
+
 };
 
 //--------------------------------------------------------------------+
