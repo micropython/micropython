@@ -27,11 +27,28 @@
 #ifndef COMMON_HAL_USB_HID_DEVICE_H
 #define COMMON_HAL_USB_HID_DEVICE_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "py/obj.h"
+
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-typedef void* usb_hid_device_obj_t;
+#define USB_HID_NUM_DEVICES 2
+
+typedef struct  {
+    mp_obj_base_t base;
+    uint8_t* report_buffer;
+    uint8_t report_id;     // If non-zero, prefix report with given id.
+    uint8_t report_length; // Length not including Report ID.
+    uint8_t usage_page;
+    uint8_t usage;
+} usb_hid_device_obj_t;
+
+
+usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES];
 
 #ifdef __cplusplus
  }

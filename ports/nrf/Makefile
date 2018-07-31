@@ -119,22 +119,6 @@ SRC_C += \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 
-ifeq ($(MCU_SUB_VARIANT),nrf52840)
-
-SRC_C += \
-	usb/usb.c \
-	usb/usb_msc_flash.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_desc.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/tusb.c \
-
-endif
-
 DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/modubluepy.c \
 	ubluepy/ubluepy_peripheral.c \
@@ -220,8 +204,28 @@ SRC_SHARED_BINDINGS = \
 	bitbangio/OneWire.c \
 	random/__init__.c \
 
-#	usb_hid/__init__.c \
+# USB source files for nrf52840
+ifeq ($(MCU_SUB_VARIANT),nrf52840)
+
+SRC_C += \
+	usb/usb.c \
+	usb/usb_msc_flash.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
+	lib/tinyusb/src/common/tusb_fifo.c \
+	lib/tinyusb/src/device/usbd.c \
+	lib/tinyusb/src/device/usbd_auto_desc.c \
+	lib/tinyusb/src/class/msc/msc_device.c \
+	lib/tinyusb/src/class/cdc/cdc_device.c \
+	lib/tinyusb/src/class/hid/hid_device.c \
+	lib/tinyusb/src/tusb.c \
+
+SRC_COMMON_HAL += \
+	usb_hid/__init__.c \
 	usb_hid/Device.c \
+
+endif
+
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

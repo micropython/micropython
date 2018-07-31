@@ -201,7 +201,7 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
 #ifdef NRF52840_XXAA
 #define USBHID_MODULE                       { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid), (mp_obj_t)&usb_hid_module },
 #else
-#define USBHID_MOUDLE
+#define USBHID_MODULE
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \

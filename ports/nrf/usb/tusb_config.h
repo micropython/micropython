@@ -45,13 +45,13 @@
 //--------------------------------------------------------------------+
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------+
-#define CFG_TUSB_MCU              OPT_MCU_NRF5X
-#define CFG_TUSB_RHPORT0_MODE     OPT_MODE_DEVICE
+#define CFG_TUSB_MCU                OPT_MCU_NRF5X
+#define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
 
-#define CFG_TUSB_DEBUG            0
+#define CFG_TUSB_DEBUG              0
 
 /*------------- RTOS -------------*/
-#define CFG_TUSB_OS               OPT_OS_NONE
+#define CFG_TUSB_OS                 OPT_OS_NONE
 //#define CFG_TUD_TASK_QUEUE_SZ     16
 //#define CFG_TUD_TASK_PRIO         0
 //#define CFG_TUD_TASK_STACK_SZ     150
@@ -60,19 +60,35 @@
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------+
 
-/*------------- Core -------------*/
-#define CFG_TUD_DESC_AUTO         1
-#define CFG_TUD_DESC_VID          0x239A
-#define CFG_TUD_DESC_PID          0x802A
+#define CFG_TUD_ENDOINT0_SIZE        64
 
-#define CFG_TUD_ENDOINT0_SIZE     64
+/*------------- Descriptors -------------*/
+/* Enable auto generated descriptor, tinyusb will try its best to create
+ * descriptor ( device, configuration, hid ) that matches enabled CFG_* in this file
+ *
+ * Note: All CFG_TUD_DESC_* are relevant only if CFG_TUD_DESC_AUTO is enabled
+ */
+#define CFG_TUD_DESC_AUTO           1
+
+/* Note: different class combination e.g CDC and (CDC + MSC) should have different
+ * PID since Host OS will "remembered" device driver after the first plug */
+#define CFG_TUD_DESC_VID            0x239A
+#define CFG_TUD_DESC_PID            0x802A
+
 
 //------------- CLASS -------------//
-#define CFG_TUD_CDC               1
-#define CFG_TUD_MSC               1
-#define CFG_TUD_HID_KEYBOARD      0
-#define CFG_TUD_HID_MOUSE         0
-#define CFG_TUD_HID               0
+#define CFG_TUD_CDC                 1
+#define CFG_TUD_MSC                 1
+#define CFG_TUD_HID                 1
+
+#define CFG_TUD_HID_KEYBOARD        1
+#define CFG_TUD_HID_MOUSE           1
+
+/* Use Boot Protocol for Keyboard, Mouse. Enable this will create separated HID interface
+ * require more IN endpoints. If disabled, they they are all packed into a single
+ * multiple report interface called "Generic". */
+#define CFG_TUD_HID_KEYBOARD_BOOT   0
+#define CFG_TUD_HID_MOUSE_BOOT      0
 
 /*------------------------------------------------------------------*/
 /* CLASS DRIVER
