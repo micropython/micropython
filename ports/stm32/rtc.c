@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "py/runtime.h"
+#include "extint.h"
 #include "rtc.h"
 #include "irq.h"
 
@@ -612,17 +613,17 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     }
 
     // set the callback
-    MP_STATE_PORT(pyb_extint_callback)[22] = callback;
+    MP_STATE_PORT(pyb_extint_callback)[EXTI_RTC_WAKEUP] = callback;
 
     // disable register write protection
     RTC->WPR = 0xca;
     RTC->WPR = 0x53;
 
     // clear WUTE
-    RTC->CR &= ~(1 << 10);
+    RTC->CR &= ~RTC_CR_WUTE;
 
     // wait until WUTWF is set
-    while (!(RTC->ISR & (1 << 2))) {
+    while (!(RTC->ISR & RTC_ISR_WUTWF)) {
     }
 
     if (enable) {
@@ -637,26 +638,26 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         // enable register write protection
         RTC->WPR = 0xff;
 
-        // enable external interrupts on line 22
+        // enable external interrupts on line EXTI_RTC_WAKEUP
         #if defined(STM32L4)
-        EXTI->IMR1 |= 1 << 22;
-        EXTI->RTSR1 |= 1 << 22;
+        EXTI->IMR1 |= 1 << EXTI_RTC_WAKEUP;
+        EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
         #elif defined(STM32H7)
-        EXTI_D1->IMR1 |= 1 << 22;
-        EXTI->RTSR1   |= 1 << 22;
+        EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
+        EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
         #else
-        EXTI->IMR |= 1 << 22;
-        EXTI->RTSR |= 1 << 22;
+        EXTI->IMR |= 1 << EXTI_RTC_WAKEUP;
+        EXTI->RTSR |= 1 << EXTI_RTC_WAKEUP;
         #endif
 
         // clear interrupt flags
-        RTC->ISR &= ~(1 << 10);
+        RTC->ISR &= ~RTC_ISR_WUTF;
         #if defined(STM32L4)
-        EXTI->PR1 = 1 << 22;
+        EXTI->PR1 = 1 << EXTI_RTC_WAKEUP;
         #elif defined(STM32H7)
-        EXTI_D1->PR1 = 1 << 22;
+        EXTI_D1->PR1 = 1 << EXTI_RTC_WAKEUP;
         #else
-        EXTI->PR = 1 << 22;
+        EXTI->PR = 1 << EXTI_RTC_WAKEUP;
         #endif
 
         NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
@@ -665,18 +666,18 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         //printf("wut=%d wucksel=%d\n", wut, wucksel);
     } else {
         // clear WUTIE to disable interrupts
-        RTC->CR &= ~(1 << 14);
+        RTC->CR &= ~RTC_CR_WUTIE;
 
         // enable register write protection
         RTC->WPR = 0xff;
 
-        // disable external interrupts on line 22
+        // disable external interrupts on line EXTI_RTC_WAKEUP
         #if defined(STM32L4)
-        EXTI->IMR1 &= ~(1 << 22);
+        EXTI->IMR1 &= ~(1 << EXTI_RTC_WAKEUP);
         #elif defined(STM32H7)
-        EXTI_D1->IMR1 |= 1 << 22;
+        EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
         #else
-        EXTI->IMR &= ~(1 << 22);
+        EXTI->IMR &= ~(1 << EXTI_RTC_WAKEUP);
         #endif
     }
 

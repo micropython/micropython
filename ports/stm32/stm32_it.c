@@ -574,7 +574,7 @@ void TAMP_STAMP_IRQHandler(void) {
 
 void RTC_WKUP_IRQHandler(void) {
     IRQ_ENTER(RTC_WKUP_IRQn);
-    RTC->ISR &= ~(1 << 10); // clear wakeup interrupt flag
+    RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
@@ -583,7 +583,7 @@ void RTC_WKUP_IRQHandler(void) {
 
 void RTC_IRQHandler(void) {
     IRQ_ENTER(RTC_IRQn);
-    RTC->ISR &= ~(1 << 10); // clear wakeup interrupt flag
+    RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_IRQn);
 }

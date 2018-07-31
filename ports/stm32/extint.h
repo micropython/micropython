@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_STM32_EXTINT_H
 #define MICROPY_INCLUDED_STM32_EXTINT_H
 
+#include "py/mphal.h"
+
 // Vectors 0-15 are for regular pins
 // Vectors 16-22 are for internal sources.
 //
@@ -36,8 +38,13 @@
 #define EXTI_USB_OTG_FS_WAKEUP  (18)
 #define EXTI_ETH_WAKEUP         (19)
 #define EXTI_USB_OTG_HS_WAKEUP  (20)
+#if defined(STM32F0)
+#define EXTI_RTC_TIMESTAMP      (19)
+#define EXTI_RTC_WAKEUP         (20)
+#else
 #define EXTI_RTC_TIMESTAMP      (21)
 #define EXTI_RTC_WAKEUP         (22)
+#endif
 #if defined(STM32F7)
 #define EXTI_LPTIM1_ASYNC_EVENT (23)
 #endif
