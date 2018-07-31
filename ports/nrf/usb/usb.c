@@ -29,6 +29,7 @@
 #include "tick.h"
 #include "usb.h"
 #include "lib/utils/interrupt_char.h"
+#include "lib/mp-readline/readline.h"
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_sdm.h"
@@ -75,7 +76,7 @@ tud_desc_set_t tud_desc_set =
 
     .hid_report =
     {
-        .composite     = NULL,
+        .generic       = NULL,
         .boot_keyboard = NULL,
         .boot_mouse    = NULL
     }
@@ -129,6 +130,12 @@ void usb_init(void) {
     }
 
     tusb_init();
+
+#if MICROPY_KBD_EXCEPTION
+    // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() callback will be invoked when Ctrl+C is received
+    // This callback always got invoked regardless of mp_interrupt_char value since we only set it once here
+    tud_cdc_set_wanted_char(CHAR_CTRL_C);
+#endif
 }
 
 //--------------------------------------------------------------------+
@@ -158,6 +165,8 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char)
 {
     (void) itf; // not used
 
+    // Workaround for using lib/utils/interrupt_char.c
+    // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_read_flush();    // flush read fifo
         mp_keyboard_interrupt();

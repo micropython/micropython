@@ -102,7 +102,6 @@ SRC_C += \
 	tick.c \
 	background.c \
 	internal_flash.c \
-	interrupt_char.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
@@ -115,6 +114,7 @@ SRC_C += \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/pyexec.c \
+	lib/utils/interrupt_char.c \
 	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
@@ -219,7 +219,8 @@ SRC_SHARED_BINDINGS = \
 	bitbangio/SPI.c \
 	bitbangio/OneWire.c \
 	random/__init__.c \
-	usb_hid/__init__.c \
+
+#	usb_hid/__init__.c \
 	usb_hid/Device.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \

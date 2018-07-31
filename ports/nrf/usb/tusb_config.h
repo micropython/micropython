@@ -72,7 +72,7 @@
 #define CFG_TUD_MSC               1
 #define CFG_TUD_HID_KEYBOARD      0
 #define CFG_TUD_HID_MOUSE         0
-#define CFG_TUD_HID_GENERIC       0
+#define CFG_TUD_HID               0
 
 /*------------------------------------------------------------------*/
 /* CLASS DRIVER
