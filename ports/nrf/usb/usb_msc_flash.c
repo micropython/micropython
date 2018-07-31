@@ -82,8 +82,13 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, 
             resplen = 0;
         break;
 
-        // negative means error -> tusb could stall and/or response with failed status
-        default: return -1;
+        default:
+          // Set Sense = Invalid Command Operation
+          tud_msc_set_sense(lun, SCSI_SENSE_ILLEGAL_REQUEST, 0x20, 0x00);
+
+          // negative means error -> tinyusb could stall and/or response with failed status
+          resplen = -1;
+        break;
     }
 
     // return len must not larger than bufsize
