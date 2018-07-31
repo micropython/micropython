@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
+#include "supervisor/shared/translate.h"
 #include "genhdr/autogen_usb_descriptor.h"
 
 #include "tick.h"
@@ -74,11 +75,11 @@ static uint32_t usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report,
 
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
     if (len != self->report_length) {
-        mp_raise_ValueError_varg("Buffer incorrect size. Should be %d bytes.", self->report_length);
+        mp_raise_ValueError_varg(translate("Buffer incorrect size. Should be %d bytes."), self->report_length);
     }
     int32_t status = usb_hid_send_report(self, report, len);
     if (status != ERR_NONE) {
-        mp_raise_msg(&mp_type_OSError, status == USB_BUSY ? "USB Busy" : "USB Error");
+        mp_raise_msg(&mp_type_OSError, status == USB_BUSY ? translate("USB Busy") : translate("USB Error"));
     }
 }
 

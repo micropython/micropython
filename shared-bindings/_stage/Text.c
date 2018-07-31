@@ -28,6 +28,7 @@
 
 #include "__init__.h"
 #include "Text.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: _stage
 //|
@@ -65,19 +66,19 @@ STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     self->font = bufinfo.buf;
     if (bufinfo.len != 2048) {
-        mp_raise_ValueError("font must be 2048 bytes long");
+        mp_raise_ValueError(translate("font must be 2048 bytes long"));
     }
 
     mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
     self->palette = bufinfo.buf;
     if (bufinfo.len != 32) {
-        mp_raise_ValueError("palette must be 32 bytes long");
+        mp_raise_ValueError(translate("palette must be 32 bytes long"));
     }
 
     mp_get_buffer_raise(args[4], &bufinfo, MP_BUFFER_READ);
     self->chars = bufinfo.buf;
     if (bufinfo.len < self->width * self->height) {
-        mp_raise_ValueError("chars buffer too small");
+        mp_raise_ValueError(translate("chars buffer too small"));
     }
 
     return MP_OBJ_FROM_PTR(self);

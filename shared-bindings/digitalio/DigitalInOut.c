@@ -41,6 +41,7 @@
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: digitalio
 //|
@@ -207,7 +208,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_ob
     } else if (value == &digitalio_direction_output_obj) {
         common_hal_digitalio_digitalinout_switch_to_output(self, false, DRIVE_MODE_PUSH_PULL);
     } else {
-        mp_raise_ValueError("Invalid direction.");
+        mp_raise_ValueError(translate("Invalid direction."));
     }
     return mp_const_none;
 }
@@ -236,7 +237,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_value(mp_obj_t self_in, mp_obj_t 
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
-        mp_raise_AttributeError("Cannot set value when direction is input.");
+        mp_raise_AttributeError(translate("Cannot set value when direction is input."));
         return mp_const_none;
     }
     common_hal_digitalio_digitalinout_set_value(self, mp_obj_is_true(value));
@@ -262,7 +263,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_get_drive_mode(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
-        mp_raise_AttributeError("Drive mode not used when direction is input.");
+        mp_raise_AttributeError(translate("Drive mode not used when direction is input."));
         return mp_const_none;
     }
     digitalio_drive_mode_t drive_mode = common_hal_digitalio_digitalinout_get_drive_mode(self);
@@ -277,7 +278,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_o
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
-        mp_raise_AttributeError("Drive mode not used when direction is input.");
+        mp_raise_AttributeError(translate("Drive mode not used when direction is input."));
         return mp_const_none;
     }
     digitalio_drive_mode_t c_drive_mode = DRIVE_MODE_PUSH_PULL;
@@ -310,7 +311,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_OUTPUT) {
-        mp_raise_AttributeError("Pull not used when direction is output.");
+        mp_raise_AttributeError(translate("Pull not used when direction is output."));
         return mp_const_none;
     }
     digitalio_pull_t pull = common_hal_digitalio_digitalinout_get_pull(self);
@@ -327,7 +328,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_OUTPUT) {
-        mp_raise_AttributeError("Pull not used when direction is output.");
+        mp_raise_AttributeError(translate("Pull not used when direction is output."));
         return mp_const_none;
     }
     digitalio_pull_t pull = PULL_NONE;
@@ -336,7 +337,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
     } else if (pull_obj == &digitalio_pull_down_obj) {
         pull = PULL_DOWN;
     } else if (pull_obj != mp_const_none) {
-        mp_raise_ValueError("Unsupported pull value.");
+        mp_raise_ValueError(translate("Unsupported pull value."));
     }
     common_hal_digitalio_digitalinout_set_pull(self, pull);
     return mp_const_none;

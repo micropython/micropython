@@ -38,6 +38,7 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: busio
 //|
@@ -129,7 +130,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, bus
 static void check_lock(busio_spi_obj_t *self) {
     asm("");
     if (!common_hal_busio_spi_has_lock(self)) {
-        mp_raise_RuntimeError("Function requires lock");
+        mp_raise_RuntimeError(translate("Function requires lock"));
     }
 }
 
@@ -164,15 +165,15 @@ STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_
 
     uint8_t polarity = args[ARG_polarity].u_int;
     if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError("Invalid polarity");
+        mp_raise_ValueError(translate("Invalid polarity"));
     }
     uint8_t phase = args[ARG_phase].u_int;
     if (phase != 0 && phase != 1) {
-        mp_raise_ValueError("Invalid phase");
+        mp_raise_ValueError(translate("Invalid phase"));
     }
     uint8_t bits = args[ARG_bits].u_int;
     if (bits != 8 && bits != 9) {
-        mp_raise_ValueError("Invalid number of bits");
+        mp_raise_ValueError(translate("Invalid number of bits"));
     }
 
     if (!common_hal_busio_spi_configure(self, args[ARG_baudrate].u_int,
@@ -337,7 +338,7 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
     normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
 
     if (out_length != in_length) {
-        mp_raise_ValueError("buffer slices must be of equal length");
+        mp_raise_ValueError(translate("buffer slices must be of equal length"));
     }
 
     if (out_length == 0) {

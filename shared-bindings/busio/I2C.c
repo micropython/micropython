@@ -34,6 +34,8 @@
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
+
 //| .. currentmodule:: busio
 //|
 //| :class:`I2C` --- Two wire serial protocol
@@ -115,7 +117,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_i2c___exit___obj, 4, 4, busio_i
 static void check_lock(busio_i2c_obj_t *self) {
     asm("");
     if (!common_hal_busio_i2c_has_lock(self)) {
-        mp_raise_RuntimeError("Function requires lock.");
+        mp_raise_RuntimeError(translate("Function requires lock."));
     }
 }
 
@@ -205,7 +207,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
     uint32_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
     if (length == 0) {
-        mp_raise_ValueError("Buffer must be at least length 1");
+        mp_raise_ValueError(translate("Buffer must be at least length 1"));
     }
 
     uint8_t status = common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, length);

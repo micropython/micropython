@@ -34,6 +34,7 @@
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: pulseio
 //|
@@ -71,7 +72,7 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_obj_t carrier_obj = args[0];
 
     if (!MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
-        mp_raise_TypeError_varg("Expected a %q", pulseio_pwmout_type.name);
+        mp_raise_TypeError_varg(translate("Expected a %q"), pulseio_pwmout_type.name);
     }
 
     // create Pulse object from the given pin
@@ -130,7 +131,7 @@ STATIC mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(pulses, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.typecode != 'H') {
-        mp_raise_TypeError("Array must contain halfwords (type 'H')");
+        mp_raise_TypeError(translate("Array must contain halfwords (type 'H')"));
     }
     common_hal_pulseio_pulseout_send(self, (uint16_t *)bufinfo.buf, bufinfo.len / 2);
     return mp_const_none;

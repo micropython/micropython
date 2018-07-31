@@ -34,6 +34,7 @@
 #include "lib/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
+#include "supervisor/shared/translate.h"
 
 #define EPOCH1970_EPOCH2000_DIFF_SECS    946684800
 
@@ -76,7 +77,7 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     int seconds = mp_obj_get_int(seconds_o);
     #endif
     if (seconds < 0) {
-        mp_raise_ValueError("sleep length must be non-negative");
+        mp_raise_ValueError(translate("sleep length must be non-negative"));
     }
     common_hal_time_delay_ms(1000 * seconds);
     return mp_const_none;
@@ -86,10 +87,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 #if MICROPY_PY_COLLECTIONS
 mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_args != 1) {
-        mp_raise_TypeError("time.struct_time() takes exactly 1 argument");
+        mp_raise_TypeError(translate("time.struct_time() takes exactly 1 argument"));
     }
     if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
-        mp_raise_TypeError("time.struct_time() takes a 9-sequence");
+        mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
 
     mp_obj_tuple_t* tuple = MP_OBJ_TO_PTR(args[0]);
@@ -167,12 +168,12 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     size_t len;
 
     if (!MP_OBJ_IS_TYPE(t, &mp_type_tuple) && !MP_OBJ_IS_TYPE(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
-        mp_raise_TypeError("Tuple or struct_time argument required");
+        mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 
     mp_obj_tuple_get(t, &len, &elems);
     if (len != 9) {
-        mp_raise_TypeError("function takes exactly 9 arguments");
+        mp_raise_TypeError(translate("function takes exactly 9 arguments"));
     }
 
     tm->tm_year = mp_obj_get_int(elems[0]);
@@ -188,7 +189,7 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
-    mp_raise_RuntimeError("RTC is not supported on this board");
+    mp_raise_RuntimeError(translate("RTC is not supported on this board"));
 }
 
 //| .. method:: time()
@@ -224,7 +225,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
 
     mp_int_t secs = mp_obj_int_get_checked(args[0]);
     if (secs < EPOCH1970_EPOCH2000_DIFF_SECS)
-        mp_raise_msg(&mp_type_OverflowError, "timestamp out of range for platform time_t");
+        mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
 
     timeutils_struct_time_t tm;
     timeutils_seconds_since_2000_to_struct_time(secs - EPOCH1970_EPOCH2000_DIFF_SECS, &tm);
@@ -248,16 +249,16 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     size_t len;
 
     if (!MP_OBJ_IS_TYPE(t, &mp_type_tuple) && !MP_OBJ_IS_TYPE(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
-        mp_raise_TypeError("Tuple or struct_time argument required");
+        mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 
     mp_obj_tuple_get(t, &len, &elem);
     if (len != 9) {
-        mp_raise_TypeError("function takes exactly 9 arguments");
+        mp_raise_TypeError(translate("function takes exactly 9 arguments"));
     }
 
     if (mp_obj_get_int(elem[0]) < 2000)
-        mp_raise_msg(&mp_type_OverflowError, "timestamp out of range for platform time_t");
+        mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
                                       mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));

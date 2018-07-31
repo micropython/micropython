@@ -439,20 +439,21 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
+	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
-	$(ECHO) "Create $@"
-	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
+	$(STEPECHO) "Create $@"
+	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 $(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
 
 .INTERMEDIATE: autogen_usb_descriptor.intermediate
 
-autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile
-	install -d $(BUILD)/genhdr
-	$(PYTHON3) tools/gen_usb_descriptor.py \
+autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
+	$(Q)install -d $(BUILD)/genhdr
+	$(Q)$(PYTHON3) tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
 		--vid $(USB_VID)\

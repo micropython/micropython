@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/nvm/ByteArray.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: nvm
 //|
@@ -81,7 +82,7 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
         } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(common_hal_nvm_bytearray_get_length(self), index_in, &slice)) {
-                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -95,19 +96,19 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
                     mp_buffer_info_t bufinfo;
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     if (bufinfo.len != src_len) {
-                        mp_raise_ValueError("Slice and value different lengths.");
+                        mp_raise_ValueError(translate("Slice and value different lengths."));
                     }
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                     if (1 != mp_binary_get_size('@', bufinfo.typecode, NULL)) {
-                        mp_raise_ValueError("Array values should be single bytes.");
+                        mp_raise_ValueError(translate("Array values should be single bytes."));
                     }
                 } else {
-                    mp_raise_NotImplementedError("array/bytes required on right side");
+                    mp_raise_NotImplementedError(translate("array/bytes required on right side"));
                 }
 
                 if (!common_hal_nvm_bytearray_set_bytes(self, slice.start, src_items, src_len)) {
-                    mp_raise_RuntimeError("Unable to write to nvm.");
+                    mp_raise_RuntimeError(translate("Unable to write to nvm."));
                 }
                 return mp_const_none;
                 #else
@@ -133,11 +134,11 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
                 // store
                 mp_int_t byte_value = mp_obj_get_int(value);
                 if (byte_value > 0xff || byte_value < 0) {
-                    mp_raise_ValueError("Bytes must be between 0 and 255.");
+                    mp_raise_ValueError(translate("Bytes must be between 0 and 255."));
                 }
                 uint8_t short_value = byte_value;
                 if (!common_hal_nvm_bytearray_set_bytes(self, index, &short_value, 1)) {
-                    mp_raise_RuntimeError("Unable to write to nvm.");
+                    mp_raise_RuntimeError(translate("Unable to write to nvm."));
                 }
                 return mp_const_none;
             }

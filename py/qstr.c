@@ -104,7 +104,9 @@ const qstr_pool_t mp_qstr_const_pool = {
     {
 #ifndef NO_QSTR
 #define QDEF(id, str) str,
+#define TRANSLATION(id, str)
 #include "genhdr/qstrdefs.generated.h"
+#undef TRANSLATION
 #undef QDEF
 #endif
     },

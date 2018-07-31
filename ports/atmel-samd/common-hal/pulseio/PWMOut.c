@@ -35,6 +35,7 @@
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
 #include "samd/timers.h"
+#include "supervisor/shared/translate.h"
 
 #include "samd/pins.h"
 
@@ -112,11 +113,11 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         && pin->timer[2].index >= TCC_INST_NUM
 #endif
         ) {
-        mp_raise_ValueError("Invalid pin");
+        mp_raise_ValueError(translate("Invalid pin"));
     }
 
     if (frequency == 0 || frequency > 6000000) {
-        mp_raise_ValueError("Invalid PWM frequency");
+        mp_raise_ValueError(translate("Invalid PWM frequency"));
     }
 
     // Figure out which timer we are using.
@@ -180,9 +181,9 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
         if (timer == NULL) {
             if (found) {
-                mp_raise_ValueError("All timers for this pin are in use");
+                mp_raise_ValueError(translate("All timers for this pin are in use"));
             } else {
-                mp_raise_RuntimeError("All timers in use");
+                mp_raise_RuntimeError(translate("All timers in use"));
             }
             return;
         }
@@ -362,7 +363,7 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
                                               uint32_t frequency) {
     if (frequency == 0 || frequency > 6000000) {
-        mp_raise_ValueError("Invalid PWM frequency");
+        mp_raise_ValueError(translate("Invalid PWM frequency"));
     }
     const pin_timer_t* t = self->timer;
     uint8_t resolution;

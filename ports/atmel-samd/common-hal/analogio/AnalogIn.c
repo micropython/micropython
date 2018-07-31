@@ -36,6 +36,7 @@
 
 #include "samd/adc.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "supervisor/shared/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_adc_sync.h"
@@ -59,7 +60,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     }
     if (adc_channel == 0xff) {
         // No ADC function on that pin
-        mp_raise_ValueError("Pin does not have ADC capabilities");
+        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
     }
     claim_pin(pin);
 

@@ -35,10 +35,11 @@
 //|   prints general port information.
 //|
 
+// TODO(tannewt): Figure out how to translate this. Its weird because its a global string.
+
 const char circuitpython_help_text[] =
     "Welcome to Adafruit CircuitPython " MICROPY_GIT_TAG "!\r\n"
     "\r\n"
     "Please visit learn.adafruit.com/category/circuitpython for project guides.\r\n"
     "\r\n"
     "To list built-in modules please do `help(\"modules\")`.\r\n";
-;

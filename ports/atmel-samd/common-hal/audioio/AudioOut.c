@@ -34,6 +34,7 @@
 #include "common-hal/audioio/AudioOut.h"
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
@@ -65,14 +66,14 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     #endif
     // Only support exclusive use of the DAC.
     if (dac_clock_enabled && DAC->CTRLA.bit.ENABLE == 1) {
-        mp_raise_RuntimeError("DAC already in use");
+        mp_raise_RuntimeError(translate("DAC already in use"));
     }
     #ifdef SAMD21
     if (right_channel != NULL) {
-        mp_raise_ValueError("Right channel unsupported");
+        mp_raise_ValueError(translate("Right channel unsupported"));
     }
     if (left_channel != &pin_PA02) {
-        mp_raise_ValueError("Invalid pin");
+        mp_raise_ValueError(translate("Invalid pin"));
     }
     assert_pin_free(left_channel);
     claim_pin(left_channel);
@@ -80,14 +81,14 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     #ifdef SAMD51
     self->right_channel = NULL;
     if (left_channel != &pin_PA02 && left_channel != &pin_PA05) {
-        mp_raise_ValueError("Invalid pin for left channel");
+        mp_raise_ValueError(translate("Invalid pin for left channel"));
     }
     assert_pin_free(left_channel);
     if (right_channel != NULL && right_channel != &pin_PA02 && right_channel != &pin_PA05) {
-        mp_raise_ValueError("Invalid pin for right channel");
+        mp_raise_ValueError(translate("Invalid pin for right channel"));
     }
     if (right_channel == left_channel) {
-        mp_raise_ValueError("Cannot output both channels on the same pin");
+        mp_raise_ValueError(translate("Cannot output both channels on the same pin"));
     }
     claim_pin(left_channel);
     if (right_channel != NULL) {
@@ -169,7 +170,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     }
     if (t == NULL) {
         common_hal_audioio_audioout_deinit(self);
-        mp_raise_RuntimeError("All timers in use");
+        mp_raise_RuntimeError(translate("All timers in use"));
         return;
     }
     self->tc_index = tc_index;
@@ -318,9 +319,9 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
         audio_dma_stop(&self->right_dma);
         #endif
         if (result == AUDIO_DMA_DMA_BUSY) {
-            mp_raise_RuntimeError("No DMA channel found");
+            mp_raise_RuntimeError(translate("No DMA channel found"));
         } else if (result == AUDIO_DMA_MEMORY_ERROR) {
-            mp_raise_RuntimeError("Unable to allocate buffers for signed conversion");
+            mp_raise_RuntimeError(translate("Unable to allocate buffers for signed conversion"));
         }
     }
     Tc* timer = tc_insts[self->tc_index];

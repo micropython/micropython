@@ -97,6 +97,7 @@ SRC_C = \
 	posix_helpers.c \
 	hspi.c \
 	boards/$(BOARD)/pins.c \
+	supervisor/shared/translate.c \
 	$(SRC_MOD)
 
 SRC_COMMON_HAL = \

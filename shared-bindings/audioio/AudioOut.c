@@ -34,6 +34,7 @@
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/audioio/RawSample.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audioio
 //|
@@ -219,7 +220,7 @@ STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
     raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
 
     if (!common_hal_audioio_audioout_get_playing(self)) {
-        mp_raise_RuntimeError("Not playing");
+        mp_raise_RuntimeError(translate("Not playing"));
     }
     common_hal_audioio_audioout_pause(self);
     return mp_const_none;

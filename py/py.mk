@@ -7,6 +7,8 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
+TRANSLATION := en_US
+
 # If qstr autogeneration is not disabled we specify the output header
 # for all collected qstrings.
 ifneq ($(QSTR_AUTOGEN_DISABLE),1)
@@ -288,21 +290,34 @@ FORCE:
 .PHONY: FORCE
 
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
 
 # mpconfigport.mk is optional, but changes to it may drastically change
 # overall config, so they need to be caught
 MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 
+$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po
+	$(Q)msgfmt -o $@ $^
+
+$(HEADER_BUILD)/qstrdefs.preprocessed.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
+	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^"\(Q(.*)\)"/\1/' > $@
+
 # qstr data
+$(HEADER_BUILD)/qstrdefs.enum.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(STEPECHO) "GEN $@"
+	$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+
 # Adding an order only dependency on $(HEADER_BUILD) causes $(HEADER_BUILD) to get
 # created before we run the script to generate the .h
 # Note: we need to protect the qstr names from the preprocessor, so we wrap
 # the lines in "" and then unwrap after the preprocessor is finished.
-$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
-	$(ECHO) "GEN $@"
-	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py --translation $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+
+$(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 
 # Force nlr code to always be compiled with space-saving optimisation so
 # that the function preludes are of a minimal and predictable form.

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,35 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#ifndef MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
+#define MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
 
-#include "flash_api.h"
-#include "py/mperrno.h"
-#include "py/runtime.h"
-#include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/storage/__init__.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/shared/translate.h"
-#include "usb.h"
+const char* translate(const char* c);
 
-extern volatile bool mp_msc_enabled;
-
-void common_hal_storage_remount(const char* mount_path, bool readonly) {
-    if (strcmp(mount_path, "/") != 0) {
-        mp_raise_OSError(MP_EINVAL);
-    }
-
-    // TODO(dhalbert): is this is a good enough check? It checks for
-    // CDC enabled. There is no "MSC enabled" check.
-    if (usb_connected()) {
-        mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
-    }
-
-    flash_set_usb_writable(readonly);
-}
-
-void common_hal_storage_erase_filesystem(void) {
-    filesystem_init(false, true);   // Force a re-format.
-    common_hal_mcu_reset();
-    // We won't actually get here, since we're resetting.
-}
+#endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H

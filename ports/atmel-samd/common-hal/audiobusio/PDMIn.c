@@ -36,6 +36,7 @@
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
@@ -105,7 +106,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
             self->clock_unit = 1;
     #endif
     } else {
-        mp_raise_ValueError("Invalid clock pin");
+        mp_raise_ValueError(translate("Invalid clock pin"));
     }
 
     self->data_pin = data_pin; // PA07, PA19 -> SD0, PA08, PB16 -> SD1
@@ -126,11 +127,11 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         self->serializer = 1;
     #endif
     } else {
-        mp_raise_ValueError("Invalid data pin");
+        mp_raise_ValueError(translate("Invalid data pin"));
     }
 
     if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
-        mp_raise_NotImplementedError("Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported.");
+        mp_raise_NotImplementedError(translate("Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported."));
     }
 
     turn_on_i2s();
@@ -141,12 +142,12 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     } else {
         #ifdef SAMD21
         if ((I2S->CTRLA.vec.SEREN & (1 << self->serializer)) != 0) {
-            mp_raise_RuntimeError("Serializer in use");
+            mp_raise_RuntimeError(translate("Serializer in use"));
         }
         #endif
         #ifdef SAMD51
         if (I2S->CTRLA.bit.RXEN == 1) {
-            mp_raise_RuntimeError("Serializer in use");
+            mp_raise_RuntimeError(translate("Serializer in use"));
         }
         #endif
     }
@@ -163,12 +164,12 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     float mic_clock_freq = 48000000.0f / clock_divisor;
     self->sample_rate =  mic_clock_freq / oversample;
     if (mic_clock_freq <  MIN_MIC_CLOCK || clock_divisor == 0) {
-        mp_raise_ValueError("sampling rate out of range");
+        mp_raise_ValueError(translate("sampling rate out of range"));
     }
     // Find a free GCLK to generate the MCLK signal.
     uint8_t gclk = find_free_gclk(clock_divisor);
     if (gclk > GCLK_GEN_NUM) {
-        mp_raise_RuntimeError("Unable to find free GCLK");
+        mp_raise_RuntimeError(translate("Unable to find free GCLK"));
     }
     self->gclk = gclk;
 

@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: pulseio
 //|
@@ -271,25 +272,25 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     if (value == mp_const_none) {
         // delete item
-        mp_raise_AttributeError("Cannot delete values");
+        mp_raise_AttributeError(translate("Cannot delete values"));
     } else {
         pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
         raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
 
         if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
-            mp_raise_NotImplementedError("Slices not supported");
+            mp_raise_NotImplementedError(translate("Slices not supported"));
         } else {
             uint16_t index = 0;
             if (MP_OBJ_IS_SMALL_INT(index_obj)) {
                 index = MP_OBJ_SMALL_INT_VALUE(index_obj);
             } else {
-                mp_raise_TypeError("index must be int");
+                mp_raise_TypeError(translate("index must be int"));
             }
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pulsein_get_item(self, index));
             } else {
-                mp_raise_AttributeError("Read-only");
+                mp_raise_AttributeError(translate("Read-only"));
             }
         }
     }

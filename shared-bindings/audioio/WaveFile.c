@@ -27,12 +27,11 @@
 #include <stdint.h>
 
 #include "lib/utils/context_manager_helpers.h"
-// #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-// #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audioio/WaveFile.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audioio
 //|
@@ -76,7 +75,7 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
     if (MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
         common_hal_audioio_wavefile_construct(self, MP_OBJ_TO_PTR(args[0]));
     } else {
-        mp_raise_TypeError("file must be a file opened in byte mode");
+        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
 
     return MP_OBJ_FROM_PTR(self);

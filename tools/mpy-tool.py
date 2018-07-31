@@ -571,7 +571,7 @@ def main():
 
     # set config values for qstrs, and get the existing base set of qstrs
     if args.qstr_header:
-        qcfgs, base_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        qcfgs, base_qstrs, _ = qstrutil.parse_input_headers([args.qstr_header])
         config.MICROPY_QSTR_BYTES_IN_LEN = int(qcfgs['BYTES_IN_LEN'])
         config.MICROPY_QSTR_BYTES_IN_HASH = int(qcfgs['BYTES_IN_HASH'])
     else:

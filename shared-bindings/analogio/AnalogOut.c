@@ -34,6 +34,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: analogio
 //|
@@ -114,7 +115,7 @@ STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t valu
    raise_error_if_deinited(common_hal_analogio_analogout_deinited(self));
    uint32_t v = mp_obj_get_int(value);
    if (v >= (1 << 16)) {
-       mp_raise_ValueError("AnalogOut is only 16 bits. Value must be less than 65536.");
+       mp_raise_ValueError(translate("AnalogOut is only 16 bits. Value must be less than 65536."));
    }
    common_hal_analogio_analogout_set_value(self, v);
    return mp_const_none;

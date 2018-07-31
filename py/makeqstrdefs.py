@@ -73,10 +73,11 @@ def qstr_unescape(qstr):
     return qstr
 
 def process_file(f):
-    re_line = re.compile(r"#[line]*\s\d+\s\"([^\"]+)\"")
+    re_line = re.compile(r"#[line]*\s(\d+)\s\"([^\"]+)\"")
     re_qstr = re.compile(r'MP_QSTR_[_a-zA-Z0-9]+')
     output = []
     last_fname = None
+    lineno = 0
     for line in f:
         if line.isspace():
             continue
@@ -84,7 +85,9 @@ def process_file(f):
         if line.startswith(('# ', '#line')):
             m = re_line.match(line)
             assert m is not None
-            fname = m.group(1)
+            #print(m.groups())
+            lineno = int(m.group(1))
+            fname = m.group(2)
             if not fname.endswith(".c"):
                 continue
             if fname != last_fname:
@@ -96,6 +99,9 @@ def process_file(f):
             name = match.replace('MP_QSTR_', '')
             if name not in QSTRING_BLACK_LIST:
                 output.append('Q(' + qstr_unescape(name) + ')')
+        for match in re.findall(r'translate\(\"([^\"]+)\"\)', line):
+            output.append('TRANSLATE("' + match + '")')
+        lineno += 1
 
     write_out(last_fname, output)
     return ""

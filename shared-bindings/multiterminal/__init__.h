@@ -27,6 +27,8 @@
 #ifndef SHARED_BINDINGS_MULTITERMINAL___INIT___H
 #define SHARED_BINDINGS_MULTITERMINAL___INIT___H
 
+#include "py/obj.h"
+
 void common_hal_multiterminal_schedule_secondary_terminal_read(mp_obj_t socket);
 mp_obj_t common_hal_multiterminal_get_secondary_terminal();
 void common_hal_multiterminal_set_secondary_terminal(mp_obj_t secondary_terminal);

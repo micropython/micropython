@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audiobusio
 //|
@@ -221,7 +222,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
     raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
 
     if (!common_hal_audiobusio_i2sout_get_playing(self)) {
-        mp_raise_RuntimeError("Not playing");
+        mp_raise_RuntimeError(translate("Not playing"));
     }
     common_hal_audiobusio_i2sout_pause(self);
     return mp_const_none;

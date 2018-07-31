@@ -17,10 +17,9 @@ CONFDIR      = .
 FORCE         = -E
 VERBOSE       = -v
 
-# User-friendly check for sphinx-build
-ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
-$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed, then set the SPHINXBUILD environment variable to point to the full path of the '$(SPHINXBUILD)' executable. Alternatively you can add the directory with the executable to your PATH. If you don't have Sphinx installed, grab it from http://sphinx-doc.org/)
-endif
+# Make sure you have Sphinx installed, then set the SPHINXBUILD environment variable to point to the
+# full path of the '$(SPHINXBUILD)' executable. Alternatively you can add the directory with the
+# executable to your PATH. If you don't have Sphinx installed, grab it from http://sphinx-doc.org/)
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -190,3 +189,15 @@ pseudoxml:
 	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
+
+# phony target so we always run
+all-source:
+
+locale/circuitpython.pot: all-source
+	find . -iname "*.c" | xargs xgettext -L C --keyword=translate -o circuitpython.pot -p locale
+
+translate: locale/circuitpython.pot
+	for po in $(shell ls locale/*.po); do msgmerge -U $$po locale/circuitpython.pot; done
+
+check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
+	$(PYTHON) tools/check_translations.py $^
