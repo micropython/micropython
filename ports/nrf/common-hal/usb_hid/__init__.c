@@ -31,53 +31,58 @@
 #include "common-hal/usb_hid/Device.h"
 #include "shared-bindings/usb_hid/Device.h"
 
-#define USB_HID_REPORT_LENGTH_KEYBOARD 8
-#define USB_HID_REPORT_LENGTH_MOUSE 4
+#define USB_HID_REPORT_LENGTH_KEYBOARD  8
+#define USB_HID_REPORT_LENGTH_MOUSE     4
+#define USB_HID_REPORT_LENGTH_CONSUMER  2
 
-// Buffers are report size + 1 to include the Report ID prefix byte if needed.
-#ifdef USB_HID_REPORT_ID_KEYBOARD
-static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD + 1];
+#if USB_HID_DEVICE_KEYBOARD
+static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD];
 #endif
-#ifdef USB_HID_REPORT_ID_MOUSE
-static uint8_t mouse_report_buffer[USB_HID_REPORT_LENGTH_MOUSE + 1];
+
+#if USB_HID_DEVICE_MOUSE
+static uint8_t mouse_report_buffer[USB_HID_REPORT_LENGTH_MOUSE];
 #endif
-#ifdef USB_HID_REPORT_ID_CONSUMER
-static uint8_t consumer_report_buffer[USB_HID_REPORT_LENGTH_CONSUMER + 1];
+
+#if USB_HID_DEVICE_CONSUMER
+static uint8_t consumer_report_buffer[USB_HID_REPORT_LENGTH_CONSUMER];
 #endif
+
 #ifdef USB_HID_REPORT_ID_SYS_CONTROL
-static uint8_t sys_control_report_buffer[USB_HID_REPORT_LENGTH_SYS_CONTROL + 1];
+static uint8_t sys_control_report_buffer[USB_HID_REPORT_LENGTH_SYS_CONTROL];
 #endif
+
 #ifdef USB_HID_REPORT_ID_GAMEPAD
-static uint8_t gamepad_report_buffer[USB_HID_REPORT_LENGTH_GAMEPAD + 1];
+static uint8_t gamepad_report_buffer[USB_HID_REPORT_LENGTH_GAMEPAD];
 #endif
+
 #ifdef USB_HID_REPORT_ID_DIGITIZER
-static uint8_t digitizer_report_buffer[USB_HID_REPORT_LENGTH_DIGITIZER + 1];
+static uint8_t digitizer_report_buffer[USB_HID_REPORT_LENGTH_DIGITIZER];
 #endif
 
 usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
-#ifdef USB_HID_REPORT_ID_KEYBOARD
+#if USB_HID_DEVICE_KEYBOARD
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = keyboard_report_buffer,
-//        .endpoint = USB_HID_ENDPOINT_IN,
         .report_id = USB_HID_REPORT_ID_KEYBOARD,
         .report_length = USB_HID_REPORT_LENGTH_KEYBOARD,
         .usage_page = 0x01,
         .usage = 0x06,
     },
 #endif
-#ifdef USB_HID_REPORT_ID_MOUSE
+
+#if USB_HID_DEVICE_MOUSE
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = mouse_report_buffer,
-//        .endpoint = USB_HID_ENDPOINT_IN,
         .report_id = USB_HID_REPORT_ID_MOUSE,
         .report_length = USB_HID_REPORT_LENGTH_MOUSE,
         .usage_page = 0x01,
         .usage = 0x02,
     },
 #endif
-#ifdef USB_HID_REPORT_ID_CONSUMER
+
+#if USB_HID_DEVICE_CONSUMER
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = consumer_report_buffer,
@@ -88,6 +93,7 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
         .usage = 0x01,
     },
 #endif
+
 #ifdef USB_HID_REPORT_ID_SYS_CONTROL
     {
         .base = { .type = &usb_hid_device_type },
