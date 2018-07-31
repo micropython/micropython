@@ -80,11 +80,10 @@ STATIC machine_pwm_config_t hard_configs[MP_ARRAY_SIZE(machine_hard_pwm_instance
 STATIC const machine_hard_pwm_obj_t machine_hard_pwm_obj[] = {
 #if defined(NRF52_SERIES)
     {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[0], .p_config = &hard_configs[0]},
-
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[1], .p_config = &hard_configs[0]},
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[2], .p_config = &hard_configs[0]},
+    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[1], .p_config = &hard_configs[1]},
+    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[2], .p_config = &hard_configs[2]},
 #if NRF52840
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[3], .p_config = &hard_configs[0]},
+    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[3], .p_config = &hard_configs[3]},
 #endif
 #endif
 };
