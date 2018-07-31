@@ -70,21 +70,29 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* 
 }
 
 // Callbacks invoked when receive Get_Report request through control endpoint
-uint16_t tud_hid_generic_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen)
-{
+uint16_t tud_hid_generic_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
     // only support Input Report
     if ( report_type != HID_REPORT_TYPE_INPUT ) return 0;
 
+    // index is ID-1
+    uint8_t idx =  ( report_id ? (report_id-1) : 0 );
+
     // fill buffer with current report
-    memcpy(buffer, usb_hid_devices[report_id].report_buffer, reqlen);
+    memcpy(buffer, usb_hid_devices[idx].report_buffer, reqlen);
     return reqlen;
 }
 
 // Callbacks invoked when receive Set_Report request through control endpoint
-void tud_hid_generic_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
-{
+void tud_hid_generic_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+    // index is ID-1
+    uint8_t idx =  ( report_id ? (report_id-1) : 0 );
+
     if ( report_type == HID_REPORT_TYPE_OUTPUT ) {
-        // TODO Support Keyboard LED e.g Capslock
+        // Check if it is Keyboard device
+        if ( (usb_hid_devices[idx].usage_page == HID_USAGE_PAGE_DESKTOP) && (usb_hid_devices[idx].usage == HID_USAGE_DESKTOP_KEYBOARD) ) {
+            // This is LED indicator (CapsLock, NumLock)
+            // TODO Light up some LED here
+        }
     }
 }
 
