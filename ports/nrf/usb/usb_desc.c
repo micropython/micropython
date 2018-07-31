@@ -150,7 +150,7 @@ uint8_t const usb_desc_hid_generic_report[] =
 #endif
 
 #if USB_HID_DEVICE_CONSUMER
-    HID_REPORT_DESC_MOUSE( HID_REPORT_ID(USB_HID_REPORT_ID_CONSUMER), )
+    HID_REPORT_DESC_CONSUMER( HID_REPORT_ID(USB_HID_REPORT_ID_CONSUMER), )
 #endif
 };
 

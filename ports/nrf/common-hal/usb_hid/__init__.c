@@ -30,6 +30,7 @@
 
 #include "common-hal/usb_hid/Device.h"
 #include "shared-bindings/usb_hid/Device.h"
+#include "tusb.h"
 
 #define USB_HID_REPORT_LENGTH_KEYBOARD  8
 #define USB_HID_REPORT_LENGTH_MOUSE     4
@@ -66,8 +67,8 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
         .report_buffer = keyboard_report_buffer,
         .report_id = USB_HID_REPORT_ID_KEYBOARD,
         .report_length = USB_HID_REPORT_LENGTH_KEYBOARD,
-        .usage_page = 0x01,
-        .usage = 0x06,
+        .usage_page = HID_USAGE_PAGE_DESKTOP,
+        .usage = HID_USAGE_DESKTOP_KEYBOARD,
     },
 #endif
 
@@ -77,8 +78,8 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
         .report_buffer = mouse_report_buffer,
         .report_id = USB_HID_REPORT_ID_MOUSE,
         .report_length = USB_HID_REPORT_LENGTH_MOUSE,
-        .usage_page = 0x01,
-        .usage = 0x02,
+        .usage_page = HID_USAGE_PAGE_DESKTOP,
+        .usage = HID_USAGE_DESKTOP_MOUSE,
     },
 #endif
 
@@ -86,11 +87,10 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = consumer_report_buffer,
-        .endpoint = USB_HID_ENDPOINT_IN,
         .report_id = USB_HID_REPORT_ID_CONSUMER,
         .report_length = USB_HID_REPORT_LENGTH_CONSUMER,
-        .usage_page = 0x0C,
-        .usage = 0x01,
+        .usage_page = HID_USAGE_PAGE_CONSUMER,
+        .usage = HID_USAGE_CONSUMER_CONTROL,
     },
 #endif
 
@@ -98,7 +98,6 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = sys_control_report_buffer,
-        .endpoint = USB_HID_ENDPOINT_IN,
         .report_id = USB_HID_REPORT_ID_SYS_CONTROL,
         .report_length = USB_HID_REPORT_LENGTH_SYS_CONTROL,
         .usage_page = 0x01,
@@ -109,7 +108,6 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = gamepad_report_buffer,
-        .endpoint = USB_HID_ENDPOINT_IN,
         .report_id = USB_HID_REPORT_ID_GAMEPAD,
         .report_length = USB_HID_REPORT_LENGTH_GAMEPAD,
         .usage_page = 0x01,

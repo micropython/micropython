@@ -39,7 +39,7 @@
 // 1 to enable device, 0 to disable
 #define USB_HID_DEVICE_KEYBOARD        1
 #define USB_HID_DEVICE_MOUSE           1
-#define USB_HID_DEVICE_CONSUMER        0
+#define USB_HID_DEVICE_CONSUMER        1
 #define USB_HID_DEVICE_GAMEPAD         0
 
 enum {
