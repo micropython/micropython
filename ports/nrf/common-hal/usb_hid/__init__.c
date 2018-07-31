@@ -31,14 +31,11 @@
 #include "common-hal/usb_hid/Device.h"
 #include "shared-bindings/usb_hid/Device.h"
 
-#define USB_HID_REPORT_ID_KEYBOARD 1
 #define USB_HID_REPORT_LENGTH_KEYBOARD 8
-
-#define USB_HID_REPORT_ID_MOUSE 2
 #define USB_HID_REPORT_LENGTH_MOUSE 4
 
 // Buffers are report size + 1 to include the Report ID prefix byte if needed.
-#ifdef USB_HID_REPORT_LENGTH_KEYBOARD
+#ifdef USB_HID_REPORT_ID_KEYBOARD
 static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD + 1];
 #endif
 #ifdef USB_HID_REPORT_ID_MOUSE

@@ -38,6 +38,10 @@
 
 #define USB_HID_NUM_DEVICES 2
 
+#define USB_HID_REPORT_ID_KEYBOARD  1
+#define USB_HID_REPORT_ID_MOUSE     2
+//#define USB_HID_REPORT_ID_CONSUMER  3
+
 typedef struct  {
     mp_obj_base_t base;
     uint8_t* report_buffer;

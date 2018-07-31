@@ -210,11 +210,11 @@ ifeq ($(MCU_SUB_VARIANT),nrf52840)
 SRC_C += \
 	usb/usb.c \
 	usb/usb_msc_flash.c \
+	usb/usb_desc.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
 	lib/tinyusb/src/common/tusb_fifo.c \
 	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_auto_desc.c \
 	lib/tinyusb/src/class/msc/msc_device.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
 	lib/tinyusb/src/class/hid/hid_device.c \

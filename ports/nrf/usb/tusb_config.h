@@ -60,7 +60,7 @@
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------+
 
-#define CFG_TUD_ENDOINT0_SIZE        64
+#define CFG_TUD_ENDOINT0_SIZE       64
 
 /*------------- Descriptors -------------*/
 /* Enable auto generated descriptor, tinyusb will try its best to create
@@ -68,32 +68,18 @@
  *
  * Note: All CFG_TUD_DESC_* are relevant only if CFG_TUD_DESC_AUTO is enabled
  */
-#define CFG_TUD_DESC_AUTO           1
-
-/* Note: different class combination e.g CDC and (CDC + MSC) should have different
- * PID since Host OS will "remembered" device driver after the first plug */
-#define CFG_TUD_DESC_VID            0x239A
-#define CFG_TUD_DESC_PID            0x802A
-
+#define CFG_TUD_DESC_AUTO           0
 
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
 #define CFG_TUD_MSC                 1
 #define CFG_TUD_HID                 1
 
-#define CFG_TUD_HID_KEYBOARD        1
-#define CFG_TUD_HID_MOUSE           1
-
-/* Use Boot Protocol for Keyboard, Mouse. Enable this will create separated HID interface
- * require more IN endpoints. If disabled, they they are all packed into a single
- * multiple report interface called "Generic". */
-#define CFG_TUD_HID_KEYBOARD_BOOT   0
-#define CFG_TUD_HID_MOUSE_BOOT      0
-
 /*------------------------------------------------------------------*/
 /* CLASS DRIVER
  *------------------------------------------------------------------*/
 
+/*------------- CDC -------------*/
 // FIFO size of CDC TX and RX
 #define CFG_TUD_CDC_RX_BUFSIZE      1024
 #define CFG_TUD_CDC_TX_BUFSIZE      1024
@@ -105,6 +91,8 @@
  */
 #define CFG_TUD_CDC_FLUSH_ON_SOF    0
 
+
+/*------------- MSC -------------*/
 // Number of supported Logical Unit Number (At least 1)
 #define CFG_TUD_MSC_MAXLUN          1
 

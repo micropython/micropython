@@ -36,53 +36,6 @@
 #include "nrf_soc.h"
 #endif
 
-//--------------------------------------------------------------------+
-// STRING DESCRIPTORS
-//--------------------------------------------------------------------+
-
-// array of pointer to string descriptors
-uint16_t const * const string_desc_arr [] =
-{
-    // 0 index is supported language = English
-    TUD_DESC_STRCONV(0x0409),
-
-    // Manufacturer
-    TUD_DESC_STRCONV('A','d','a','f','r','u','i','t',' ','I','n','d','u','s','t','r','i','e','s'),
-
-    // Product
-    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','Y',' ','n','R','F','5','2'),
-
-    // Serials TODO use chip ID
-    TUD_DESC_STRCONV('1', '2', '3', '4', '5'),
-
-    // CDC Interface
-    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','S','e','r','i','a','l'),
-
-    // MSC Interface
-    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','S','t','o','r','a','g','e'),
-
-    // Custom Interface
-    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','C','u','s','t','o','m')
-};
-
-// tud_desc_set is required by tinyusb stack
-// since CFG_TUD_DESC_AUTO is enabled, we only need to set string_arr
-tud_desc_set_t tud_desc_set =
-{
-    .device     = NULL,
-    .config     = NULL,
-    .string_arr = (uint8_t const **) string_desc_arr,
-    .string_count = sizeof(string_desc_arr)/sizeof(string_desc_arr[0]),
-
-    .hid_report =
-    {
-        .generic       = NULL,
-        .boot_keyboard = NULL,
-        .boot_mouse    = NULL
-    }
-};
-
-
 /* tinyusb function that handles power event (detected, ready, removed)
  * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
  */
