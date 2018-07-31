@@ -353,6 +353,8 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
 }
 
 #define OP_BLX(reg) (0x4780 | ((reg) << 3))
+#define OP_LDR_W_HI(reg_base) (0xf8d0 | (reg_base))
+#define OP_LDR_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
 #define OP_SVC(arg) (0xdf00 | (arg))
 
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
@@ -370,8 +372,8 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
         asm_thumb_op16(as, ASM_THUMB_FORMAT_9_10_ENCODE(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER, reg_temp, ASM_THUMB_REG_R7, fun_id));
         asm_thumb_op16(as, OP_BLX(reg_temp));
     } else {
-        // load ptr to function into register using immediate; 6 bytes
-        asm_thumb_mov_reg_i32(as, reg_temp, (mp_uint_t)fun_ptr);
+        // load ptr to function from table, indexed by fun_id using wide load; 6 bytes
+        asm_thumb_op32(as, OP_LDR_W_HI(ASM_THUMB_REG_R7), OP_LDR_W_LO(reg_temp, fun_id << 2));
         asm_thumb_op16(as, OP_BLX(reg_temp));
     }
 }

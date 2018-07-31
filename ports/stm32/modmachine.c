@@ -524,6 +524,20 @@ STATIC mp_obj_t machine_sleep(void) {
 
     // reconfigure the system clock after waking up
 
+    #if defined(STM32F0)
+
+    // Enable HSI48
+    __HAL_RCC_HSI48_ENABLE();
+    while (!__HAL_RCC_GET_FLAG(RCC_FLAG_HSI48RDY)) {
+    }
+
+    // Select HSI48 as system clock source
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_HSI48);
+    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_HSI48) {
+    }
+
+    #else
+
     // enable HSE
     __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY)) {
@@ -542,6 +556,8 @@ STATIC mp_obj_t machine_sleep(void) {
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
     #endif
     }
+
+    #endif
 
     #endif
 
