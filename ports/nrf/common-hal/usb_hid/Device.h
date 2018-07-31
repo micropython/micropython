@@ -37,10 +37,12 @@
 #endif
 
 // 1 to enable device, 0 to disable
-#define USB_HID_DEVICE_KEYBOARD        1
-#define USB_HID_DEVICE_MOUSE           1
-#define USB_HID_DEVICE_CONSUMER        1
-#define USB_HID_DEVICE_GAMEPAD         0
+#define USB_HID_DEVICE_KEYBOARD         1
+#define USB_HID_DEVICE_MOUSE            1
+#define USB_HID_DEVICE_CONSUMER         1
+#define USB_HID_DEVICE_SYS_CONTROL      1
+#define USB_HID_DEVICE_GAMEPAD          0
+#define USB_HID_DEVICE_DIGITIZER        0
 
 enum {
     USB_HID_REPORT_ID_UNUSED   = 0,
@@ -57,12 +59,21 @@ enum {
     USB_HID_REPORT_ID_CONSUMER,
 #endif
 
+#if USB_HID_DEVICE_SYS_CONTROL
+    USB_HID_REPORT_ID_SYS_CONTROL,
+#endif
+
 #if USB_HID_DEVICE_GAMEPAD
     USB_HID_REPORT_ID_GAMEPAD,
 #endif
+
+#if USB_HID_DEVICE_DIGITIZER
+    USB_HID_REPORT_ID_DIGITIZER,
+#endif
 };
 
-#define USB_HID_NUM_DEVICES             (USB_HID_DEVICE_KEYBOARD + USB_HID_DEVICE_MOUSE + USB_HID_DEVICE_CONSUMER + USB_HID_DEVICE_GAMEPAD )
+#define USB_HID_NUM_DEVICES     (USB_HID_DEVICE_KEYBOARD + USB_HID_DEVICE_MOUSE + USB_HID_DEVICE_CONSUMER + \
+                                 USB_HID_REPORT_ID_SYS_CONTROL + USB_HID_DEVICE_GAMEPAD + USB_HID_DEVICE_DIGITIZER )
 
 typedef struct  {
     mp_obj_base_t base;

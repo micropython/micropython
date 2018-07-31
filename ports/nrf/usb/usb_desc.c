@@ -136,9 +136,6 @@ tusb_desc_device_t const usb_desc_dev =
 //--------------------------------------------------------------------+
 // HID Report Descriptor
 //--------------------------------------------------------------------+
-// TODO remove const for dynamic descriptors
-
-
 uint8_t const usb_desc_hid_generic_report[] =
 {
 #if USB_HID_DEVICE_KEYBOARD
@@ -150,15 +147,18 @@ uint8_t const usb_desc_hid_generic_report[] =
 #endif
 
 #if USB_HID_DEVICE_CONSUMER
-    HID_REPORT_DESC_CONSUMER( HID_REPORT_ID(USB_HID_REPORT_ID_CONSUMER), )
+    HID_REPORT_DESC_CONSUMER( HID_REPORT_ID(USB_HID_REPORT_ID_CONSUMER), ),
 #endif
-};
 
+#if USB_HID_DEVICE_SYS_CONTROL
+    HID_REPORT_DESC_SYSTEM_CONTROL( HID_REPORT_ID(USB_HID_REPORT_ID_SYS_CONTROL ), ),
+#endif
+
+};
 
 //--------------------------------------------------------------------+
 // Configuration Descriptor
 //--------------------------------------------------------------------+
-// TODO remove const for dynamic descriptors
 usb_desc_cfg_t const usb_desc_cfg =
 {
     .config =
