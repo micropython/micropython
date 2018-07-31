@@ -91,7 +91,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                   tx->sercom[i].pad == 2)) {
                 continue;
             }
-            tx_pinmux = PINMUX(tx->pin, (i == 0) ? MUX_C : MUX_D);
+            tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
             if (rx == mp_const_none) {
                 sercom = potential_sercom;
@@ -103,7 +103,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                   sercom_insts[rx->sercom[j].index]->USART.CTRLA.bit.ENABLE == 0) ||
                  sercom_index == rx->sercom[j].index) &&
                 rx->sercom[j].pad != tx_pad) {
-                rx_pinmux = PINMUX(rx->pin, (j == 0) ? MUX_C : MUX_D);
+                rx_pinmux = PINMUX(rx->number, (j == 0) ? MUX_C : MUX_D);
                 rx_pad = rx->sercom[j].pad;
                 sercom = sercom_insts[rx->sercom[j].index];
                 sercom_index = rx->sercom[j].index;
@@ -187,20 +187,20 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
 
     if (have_tx) {
-        gpio_set_pin_direction(tx->pin, GPIO_DIRECTION_OUT);
-        gpio_set_pin_pull_mode(tx->pin, GPIO_PULL_OFF);
-        gpio_set_pin_function(tx->pin, tx_pinmux);
-        self->tx_pin  = tx->pin;
+        gpio_set_pin_direction(tx->number, GPIO_DIRECTION_OUT);
+        gpio_set_pin_pull_mode(tx->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(tx->number, tx_pinmux);
+        self->tx_pin  = tx->number;
         claim_pin(tx);
     } else {
         self->tx_pin = NO_PIN;
     }
 
     if (have_rx) {
-        gpio_set_pin_direction(rx->pin, GPIO_DIRECTION_IN);
-        gpio_set_pin_pull_mode(rx->pin, GPIO_PULL_OFF);
-        gpio_set_pin_function(rx->pin, rx_pinmux);
-        self->rx_pin  = rx->pin;
+        gpio_set_pin_direction(rx->number, GPIO_DIRECTION_IN);
+        gpio_set_pin_pull_mode(rx->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(rx->number, rx_pinmux);
+        self->rx_pin  = rx->number;
         claim_pin(rx);
     } else {
         self->rx_pin = NO_PIN;

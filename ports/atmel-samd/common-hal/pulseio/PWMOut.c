@@ -252,7 +252,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     self->timer = timer;
 
-    gpio_set_pin_function(pin->pin, GPIO_PIN_FUNCTION_E + mux_position);
+    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_E + mux_position);
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
 }
@@ -284,7 +284,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
             }
         }
     }
-    reset_pin(self->pin->pin);
+    reset_pin(self->pin->number);
     self->pin = mp_const_none;
 }
 

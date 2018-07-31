@@ -193,9 +193,9 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     claim_pin(word_select);
     claim_pin(data);
 
-    gpio_set_pin_function(self->bit_clock->pin, GPIO_I2S_FUNCTION);
-    gpio_set_pin_function(self->word_select->pin, GPIO_I2S_FUNCTION);
-    gpio_set_pin_function(self->data->pin, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->bit_clock->number, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->word_select->number, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->data->number, GPIO_I2S_FUNCTION);
 
     self->left_justified = left_justified;
     self->playing = false;
@@ -211,11 +211,11 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
         return;
     }
 
-    reset_pin(self->bit_clock->pin);
+    reset_pin(self->bit_clock->number);
     self->bit_clock = mp_const_none;
-    reset_pin(self->word_select->pin);
+    reset_pin(self->word_select->number);
     self->word_select = mp_const_none;
-    reset_pin(self->data->pin);
+    reset_pin(self->data->number);
     self->data = mp_const_none;
 }
 

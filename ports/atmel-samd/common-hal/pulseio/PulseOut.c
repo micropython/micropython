@@ -138,7 +138,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     }
     refcount++;
 
-    self->pin = carrier->pin->pin;
+    self->pin = carrier->pin->number;
 
     PortGroup *const port_base = &PORT->Group[GPIO_PORT(self->pin)];
     self->pincfg = &port_base->PINCFG[self->pin % 32];

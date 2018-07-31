@@ -103,11 +103,11 @@ void rgb_led_status_init() {
 
 void reset_status_led() {
     #ifdef MICROPY_HW_NEOPIXEL
-        reset_pin(MICROPY_HW_NEOPIXEL->pin);
+        reset_pin(MICROPY_HW_NEOPIXEL->number);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        reset_pin(MICROPY_HW_APA102_MOSI->pin);
-        reset_pin(MICROPY_HW_APA102_SCK->pin);
+        reset_pin(MICROPY_HW_APA102_MOSI->number);
+        reset_pin(MICROPY_HW_APA102_SCK->number);
     #endif
 }
 

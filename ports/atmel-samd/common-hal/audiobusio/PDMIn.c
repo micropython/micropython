@@ -210,8 +210,8 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     claim_pin(clock_pin);
     claim_pin(data_pin);
 
-    gpio_set_pin_function(self->clock_pin->pin, GPIO_I2S_FUNCTION);
-    gpio_set_pin_function(self->data_pin->pin, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->clock_pin->number, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->data_pin->number, GPIO_I2S_FUNCTION);
 
     self->bytes_per_sample = oversample >> 3;
     self->bit_depth = bit_depth;
@@ -234,8 +234,8 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
     disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
     disable_clock_generator(self->gclk);
 
-    reset_pin(self->clock_pin->pin);
-    reset_pin(self->data_pin->pin);
+    reset_pin(self->clock_pin->number);
+    reset_pin(self->data_pin->number);
     self->clock_pin = mp_const_none;
     self->data_pin = mp_const_none;
 }

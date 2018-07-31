@@ -93,12 +93,12 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     if (right_channel != NULL) {
         claim_pin(right_channel);
         self->right_channel = right_channel;
-        gpio_set_pin_function(self->right_channel->pin, GPIO_PIN_FUNCTION_B);
+        gpio_set_pin_function(self->right_channel->number, GPIO_PIN_FUNCTION_B);
         audio_dma_init(&self->right_dma);
     }
     #endif
     self->left_channel = left_channel;
-    gpio_set_pin_function(self->left_channel->pin, GPIO_PIN_FUNCTION_B);
+    gpio_set_pin_function(self->left_channel->number, GPIO_PIN_FUNCTION_B);
     audio_dma_init(&self->left_dma);
 
     #ifdef SAMD51
@@ -243,10 +243,10 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
 
     tc_set_enable(tc_insts[self->tc_index], false);
 
-    reset_pin(self->left_channel->pin);
+    reset_pin(self->left_channel->number);
     self->left_channel = mp_const_none;
     #ifdef SAMD51
-    reset_pin(self->right_channel->pin);
+    reset_pin(self->right_channel->number);
     self->right_channel = mp_const_none;
     #endif
 }

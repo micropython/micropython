@@ -51,8 +51,8 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     // These default settings apply when the EIC isn't yet enabled.
     self->eic_channel_a = pin_a->extint_channel;
     self->eic_channel_b = pin_b->extint_channel;
-    self->pin_a = pin_a->pin;
-    self->pin_b = pin_b->pin;
+    self->pin_a = pin_a->number;
+    self->pin_b = pin_b->number;
 
     gpio_set_pin_function(self->pin_a, GPIO_PIN_FUNCTION_A);
     gpio_set_pin_pull_mode(self->pin_a, GPIO_PULL_UP);
