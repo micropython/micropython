@@ -77,6 +77,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_MODE_UART} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -170,6 +171,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     // set timeout
     self->timeout = args[ARG_timeout].u_int;
+
+
+    // Set rs485 mode
+    uart_set_mode(self->uart_num, args[ARG_mode].u_int);
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
