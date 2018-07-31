@@ -33,7 +33,7 @@ void led_init(void) {
     GPIO_InitTypeDef GPIO_InitStructure;
 
     /* Configure I/O speed, mode, output type and pull */
-    GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStructure.Mode = MICROPY_HW_LED_OTYPE;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
 

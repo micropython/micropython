@@ -16,14 +16,14 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc_bot.h"
@@ -36,63 +36,63 @@
   */
 
 
-/** @defgroup MSC_BOT 
+/** @defgroup MSC_BOT
   * @brief BOT protocol module
   * @{
-  */ 
+  */
 
 /** @defgroup MSC_BOT_Private_TypesDefinitions
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup MSC_BOT_Private_Defines
   * @{
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup MSC_BOT_Private_Macros
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup MSC_BOT_Private_Variables
   * @{
-  */ 
+  */
 
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup MSC_BOT_Private_FunctionPrototypes
   * @{
-  */ 
+  */
 static void MSC_BOT_CBW_Decode (USBD_HandleTypeDef  *pdev);
 
-static void MSC_BOT_SendData (USBD_HandleTypeDef  *pdev, 
-                              uint8_t* pbuf, 
+static void MSC_BOT_SendData (USBD_HandleTypeDef  *pdev,
+                              uint8_t* pbuf,
                               uint16_t len);
 
 static void MSC_BOT_Abort(USBD_HandleTypeDef  *pdev);
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup MSC_BOT_Private_Functions
   * @{
-  */ 
+  */
 
 
 
@@ -105,23 +105,23 @@ static void MSC_BOT_Abort(USBD_HandleTypeDef  *pdev);
 void MSC_BOT_Init (USBD_HandleTypeDef  *pdev)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-    
+
   hmsc->bot_state  = USBD_BOT_IDLE;
   hmsc->bot_status = USBD_BOT_STATUS_NORMAL;
-  
+
   hmsc->scsi_sense_tail = 0;
   hmsc->scsi_sense_head = 0;
-  
+
   hmsc->bdev_ops->Init(0);
-  
+
   USBD_LL_FlushEP(pdev, MSC_OUT_EP);
   USBD_LL_FlushEP(pdev, MSC_IN_EP);
-  
+
   /* Prapare EP to Receive First BOT Cmd */
   USBD_LL_PrepareReceive (pdev,
                           MSC_OUT_EP,
                           (uint8_t *)&hmsc->cbw,
-                          USBD_BOT_CBW_LENGTH);    
+                          USBD_BOT_CBW_LENGTH);
 }
 
 /**
@@ -133,15 +133,15 @@ void MSC_BOT_Init (USBD_HandleTypeDef  *pdev)
 void MSC_BOT_Reset (USBD_HandleTypeDef  *pdev)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-    
+
   hmsc->bot_state  = USBD_BOT_IDLE;
-  hmsc->bot_status = USBD_BOT_STATUS_RECOVERY;  
-  
+  hmsc->bot_status = USBD_BOT_STATUS_RECOVERY;
+
   /* Prapare EP to Receive First BOT Cmd */
   USBD_LL_PrepareReceive (pdev,
                           MSC_OUT_EP,
                           (uint8_t *)&hmsc->cbw,
-                          USBD_BOT_CBW_LENGTH);   
+                          USBD_BOT_CBW_LENGTH);
 }
 
 /**
@@ -163,11 +163,11 @@ void MSC_BOT_DeInit (USBD_HandleTypeDef  *pdev)
 * @param  epnum: endpoint index
 * @retval None
 */
-void MSC_BOT_DataIn (USBD_HandleTypeDef  *pdev, 
+void MSC_BOT_DataIn (USBD_HandleTypeDef  *pdev,
                      uint8_t epnum)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  
+
   switch (hmsc->bot_state)
   {
   case USBD_BOT_DATA_IN:
@@ -178,13 +178,13 @@ void MSC_BOT_DataIn (USBD_HandleTypeDef  *pdev,
       MSC_BOT_SendCSW (pdev, USBD_CSW_CMD_FAILED);
     }
     break;
-    
+
   case USBD_BOT_SEND_DATA:
   case USBD_BOT_LAST_DATA_IN:
     MSC_BOT_SendCSW (pdev, USBD_CSW_CMD_PASSED);
-    
+
     break;
-    
+
   default:
     break;
   }
@@ -196,19 +196,19 @@ void MSC_BOT_DataIn (USBD_HandleTypeDef  *pdev,
 * @param  epnum: endpoint index
 * @retval None
 */
-void MSC_BOT_DataOut (USBD_HandleTypeDef  *pdev, 
+void MSC_BOT_DataOut (USBD_HandleTypeDef  *pdev,
                       uint8_t epnum)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  
+
   switch (hmsc->bot_state)
   {
   case USBD_BOT_IDLE:
     MSC_BOT_CBW_Decode(pdev);
     break;
-    
+
   case USBD_BOT_DATA_OUT:
-    
+
     if(SCSI_ProcessCmd(pdev,
                         hmsc->cbw.bLUN,
                         &hmsc->cbw.CB[0]) < 0)
@@ -217,7 +217,7 @@ void MSC_BOT_DataOut (USBD_HandleTypeDef  *pdev,
     }
 
     break;
-    
+
   default:
     break;
   }
@@ -225,32 +225,32 @@ void MSC_BOT_DataOut (USBD_HandleTypeDef  *pdev,
 
 /**
 * @brief  MSC_BOT_CBW_Decode
-*         Decode the CBW command and set the BOT state machine accordingtly  
+*         Decode the CBW command and set the BOT state machine accordingtly
 * @param  pdev: device instance
 * @retval None
 */
 static void  MSC_BOT_CBW_Decode (USBD_HandleTypeDef  *pdev)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  
+
   hmsc->csw.dTag = hmsc->cbw.dTag;
   hmsc->csw.dDataResidue = hmsc->cbw.dDataLength;
-  
+
   if ((USBD_LL_GetRxDataSize (pdev ,MSC_OUT_EP) != USBD_BOT_CBW_LENGTH) ||
       (hmsc->cbw.dSignature != USBD_BOT_CBW_SIGNATURE)||
-        (hmsc->cbw.bLUN > 1) || 
-          (hmsc->cbw.bCBLength < 1) || 
+        (hmsc->cbw.bLUN > 1) ||
+          (hmsc->cbw.bCBLength < 1) ||
             (hmsc->cbw.bCBLength > 16))
   {
-    
+
     SCSI_SenseCode(pdev,
-                   hmsc->cbw.bLUN, 
-                   ILLEGAL_REQUEST, 
+                   hmsc->cbw.bLUN,
+                   ILLEGAL_REQUEST,
                    INVALID_CDB);
-    
-    hmsc->bot_status = USBD_BOT_STATUS_ERROR;   
+
+    hmsc->bot_status = USBD_BOT_STATUS_ERROR;
     MSC_BOT_Abort(pdev);
- 
+
   }
   else
   {
@@ -261,7 +261,7 @@ static void  MSC_BOT_CBW_Decode (USBD_HandleTypeDef  *pdev)
       if(hmsc->bot_state == USBD_BOT_NO_DATA)
       {
        MSC_BOT_SendCSW (pdev,
-                         USBD_CSW_CMD_FAILED); 
+                         USBD_CSW_CMD_FAILED);
       }
       else
       {
@@ -269,17 +269,17 @@ static void  MSC_BOT_CBW_Decode (USBD_HandleTypeDef  *pdev)
       }
     }
     /*Burst xfer handled internally*/
-    else if ((hmsc->bot_state != USBD_BOT_DATA_IN) && 
+    else if ((hmsc->bot_state != USBD_BOT_DATA_IN) &&
              (hmsc->bot_state != USBD_BOT_DATA_OUT) &&
-             (hmsc->bot_state != USBD_BOT_LAST_DATA_IN)) 
+             (hmsc->bot_state != USBD_BOT_LAST_DATA_IN))
     {
       if (hmsc->bot_data_length > 0)
       {
         MSC_BOT_SendData(pdev,
-                         hmsc->bot_data, 
+                         hmsc->bot_data,
                          hmsc->bot_data_length);
       }
-      else if (hmsc->bot_data_length == 0) 
+      else if (hmsc->bot_data_length == 0)
       {
         MSC_BOT_SendCSW (pdev,
                          USBD_CSW_CMD_PASSED);
@@ -297,17 +297,17 @@ static void  MSC_BOT_CBW_Decode (USBD_HandleTypeDef  *pdev)
 * @retval None
 */
 static void  MSC_BOT_SendData(USBD_HandleTypeDef  *pdev,
-                              uint8_t* buf, 
+                              uint8_t* buf,
                               uint16_t len)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  
+
   len = MIN (hmsc->cbw.dDataLength, len);
   hmsc->csw.dDataResidue -= len;
   hmsc->csw.bStatus = USBD_CSW_CMD_PASSED;
   hmsc->bot_state = USBD_BOT_SEND_DATA;
-  
-  USBD_LL_Transmit (pdev, MSC_IN_EP, buf, len);  
+
+  USBD_LL_Transmit (pdev, MSC_IN_EP, buf, len);
 }
 
 /**
@@ -321,22 +321,22 @@ void  MSC_BOT_SendCSW (USBD_HandleTypeDef  *pdev,
                               uint8_t CSW_Status)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  
+
   hmsc->csw.dSignature = USBD_BOT_CSW_SIGNATURE;
   hmsc->csw.bStatus = CSW_Status;
   hmsc->bot_state = USBD_BOT_IDLE;
-  
-  USBD_LL_Transmit (pdev, 
-             MSC_IN_EP, 
-             (uint8_t *)&hmsc->csw, 
+
+  USBD_LL_Transmit (pdev,
+             MSC_IN_EP,
+             (uint8_t *)&hmsc->csw,
              USBD_BOT_CSW_LENGTH);
-  
+
   /* Prapare EP to Receive next Cmd */
   USBD_LL_PrepareReceive (pdev,
                     MSC_OUT_EP,
-                    (uint8_t *)&hmsc->cbw, 
-                    USBD_BOT_CBW_LENGTH);  
-  
+                    (uint8_t *)&hmsc->cbw,
+                    USBD_BOT_CBW_LENGTH);
+
 }
 
 /**
@@ -349,21 +349,21 @@ void  MSC_BOT_SendCSW (USBD_HandleTypeDef  *pdev,
 static void  MSC_BOT_Abort (USBD_HandleTypeDef  *pdev)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  
-  if ((hmsc->cbw.bmFlags == 0) && 
+
+  if ((hmsc->cbw.bmFlags == 0) &&
       (hmsc->cbw.dDataLength != 0) &&
       (hmsc->bot_status == USBD_BOT_STATUS_NORMAL) )
   {
     USBD_LL_StallEP(pdev, MSC_OUT_EP );
   }
   USBD_LL_StallEP(pdev, MSC_IN_EP);
-  
+
   if(hmsc->bot_status == USBD_BOT_STATUS_ERROR)
   {
     USBD_LL_PrepareReceive (pdev,
                       MSC_OUT_EP,
-                      (uint8_t *)&hmsc->cbw, 
-                      USBD_BOT_CBW_LENGTH);    
+                      (uint8_t *)&hmsc->cbw,
+                      USBD_BOT_CBW_LENGTH);
   }
 }
 
@@ -378,30 +378,30 @@ static void  MSC_BOT_Abort (USBD_HandleTypeDef  *pdev)
 void  MSC_BOT_CplClrFeature (USBD_HandleTypeDef  *pdev, uint8_t epnum)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  
+
   if(hmsc->bot_status == USBD_BOT_STATUS_ERROR )/* Bad CBW Signature */
   {
     USBD_LL_StallEP(pdev, MSC_IN_EP);
-    hmsc->bot_status = USBD_BOT_STATUS_NORMAL;    
+    hmsc->bot_status = USBD_BOT_STATUS_NORMAL;
   }
   else if(((epnum & 0x80) == 0x80) && ( hmsc->bot_status != USBD_BOT_STATUS_RECOVERY))
   {
     MSC_BOT_SendCSW (pdev, USBD_CSW_CMD_FAILED);
   }
-  
+
 }
 /**
   * @}
-  */ 
+  */
 
 
 /**
   * @}
-  */ 
+  */
 
 
 /**
   * @}
-  */ 
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

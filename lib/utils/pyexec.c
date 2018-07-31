@@ -36,7 +36,7 @@
 #include "py/gc_long_lived.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
-#if defined(USE_DEVICE_MODE)
+#if MICROPY_HW_ENABLE_USB
 #include "irq.h"
 #include "usb.h"
 #endif
@@ -431,7 +431,7 @@ friendly_repl_reset:
     for (;;) {
     input_restart:
 
-        #if defined(USE_DEVICE_MODE)
+        #if MICROPY_HW_ENABLE_USB
         if (usb_vcp_is_enabled()) {
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs

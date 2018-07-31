@@ -43,9 +43,6 @@
 // Number of traceback entries to reserve in the emergency exception buffer
 #define EMG_TRACEBACK_ALLOC (2 * TRACEBACK_ENTRY_LEN)
 
-// Instance of MemoryError exception - needed by mp_malloc_fail
-const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
-
 // Optionally allocated buffer for storing the first argument of an exception
 // allocated when the heap is locked.
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
@@ -96,7 +93,7 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 // definition module-private so far, have it here.
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
 
-STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
@@ -117,7 +114,7 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
             if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
                 qstr qst = mp_errno_to_str(o->args->items[0]);
                 if (qst != MP_QSTR_NULL) {
-                    mp_printf(print, "[Errno %d] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                    mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
                     return;
                 }
             }
@@ -187,7 +184,7 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
     }
 }
 
-STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
@@ -210,37 +207,12 @@ STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t exc___init__(size_t n_args, const mp_obj_t *args) {
-    mp_obj_exception_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_t argst = mp_obj_new_tuple(n_args - 1, args + 1);
-    self->args = MP_OBJ_TO_PTR(argst);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(exc___init___obj, 1, MP_OBJ_FUN_ARGS_MAX, exc___init__);
-
-STATIC const mp_rom_map_elem_t exc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&exc___init___obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(exc_locals_dict, exc_locals_dict_table);
-
 const mp_obj_type_t mp_type_BaseException = {
     { &mp_type_type },
     .name = MP_QSTR_BaseException,
     .print = mp_obj_exception_print,
     .make_new = mp_obj_exception_make_new,
-    .attr = exception_attr,
-    .locals_dict = (mp_obj_dict_t*)&exc_locals_dict,
-};
-
-#define MP_DEFINE_EXCEPTION(exc_name, base_name) \
-const mp_obj_type_t mp_type_ ## exc_name = { \
-    { &mp_type_type }, \
-    .name = MP_QSTR_ ## exc_name, \
-    .print = mp_obj_exception_print, \
-    .make_new = mp_obj_exception_make_new, \
-    .attr = exception_attr, \
-    .parent = &mp_type_ ## base_name, \
+    .attr = mp_obj_exception_attr,
 };
 
 // List of all exceptions, arranged as in the table at:

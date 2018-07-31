@@ -28,3 +28,30 @@ print(g.throw(123))
 g = gen()
 print(next(g))
 print(g.throw(ZeroDivisionError))
+
+# this user-defined generator doesn't have a throw() method
+class Iter2:
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return 1
+
+def gen2():
+    yield from Iter2()
+
+# the thrown ValueError is not intercepted by the user class
+g = gen2()
+print(next(g))
+try:
+    g.throw(ValueError)
+except:
+    print('ValueError')
+
+# the thrown 123 is not an exception so raises a TypeError
+g = gen2()
+print(next(g))
+try:
+    g.throw(123)
+except TypeError:
+    print('TypeError')

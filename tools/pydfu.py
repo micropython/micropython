@@ -5,7 +5,7 @@
 # details.
 
 """This module implements enough functionality to program the STM32F4xx over
-DFU, without requiringdfu-util.
+DFU, without requiring dfu-util.
 
 See app note AN3156 for a description of the DFU protocol.
 See document UM0391 for a dscription of the DFuse file.
@@ -81,6 +81,7 @@ def init():
     if len(devices) > 1:
         raise ValueError("Multiple DFU devices found")
     __dev = devices[0]
+    __dev.set_configuration()
 
     # Claim DFU interface
     usb.util.claim_interface(__dev, __DFU_INTERFACE)
@@ -167,7 +168,7 @@ def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
             print ("Addr 0x%x %dKBs/%dKBs..." % (xfer_base + xfer_bytes,
                                                  xfer_bytes // 1024,
                                                  xfer_total // 1024))
-        if progress and xfer_count % 256 == 0:
+        if progress and xfer_count % 2 == 0:
             progress(progress_addr, xfer_base + xfer_bytes - progress_addr,
                      progress_size)
 
@@ -175,7 +176,9 @@ def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
         set_address(xfer_base+xfer_bytes)
 
         # Send DNLOAD with fw data
-        chunk = min(64, xfer_total-xfer_bytes)
+        # the "2048" is the DFU transfer size supported by the ST DFU bootloader
+        # TODO: this number should be extracted from the USB config descriptor
+        chunk = min(2048, xfer_total-xfer_bytes)
         __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 2, __DFU_INTERFACE,
                             buf[xfer_bytes:xfer_bytes + chunk], __TIMEOUT)
 
@@ -391,24 +394,25 @@ def get_memory_layout(device):
     intf = cfg[(0, 0)]
     mem_layout_str = get_string(device, intf.iInterface)
     mem_layout = mem_layout_str.split('/')
-    addr = int(mem_layout[1], 0)
-    segments = mem_layout[2].split(',')
-    seg_re = re.compile(r'(\d+)\*(\d+)(.)(.)')
     result = []
-    for segment in segments:
-        seg_match = seg_re.match(segment)
-        num_pages = int(seg_match.groups()[0], 10)
-        page_size = int(seg_match.groups()[1], 10)
-        multiplier = seg_match.groups()[2]
-        if multiplier == 'K':
-            page_size *= 1024
-        if multiplier == 'M':
-            page_size *= 1024 * 1024
-        size = num_pages * page_size
-        last_addr = addr + size - 1
-        result.append(named((addr, last_addr, size, num_pages, page_size),
-                      "addr last_addr size num_pages page_size"))
-        addr += size
+    for mem_layout_index in range(1, len(mem_layout), 2):
+        addr = int(mem_layout[mem_layout_index], 0)
+        segments = mem_layout[mem_layout_index + 1].split(',')
+        seg_re = re.compile(r'(\d+)\*(\d+)(.)(.)')
+        for segment in segments:
+            seg_match = seg_re.match(segment)
+            num_pages = int(seg_match.groups()[0], 10)
+            page_size = int(seg_match.groups()[1], 10)
+            multiplier = seg_match.groups()[2]
+            if multiplier == 'K':
+                page_size *= 1024
+            if multiplier == 'M':
+                page_size *= 1024 * 1024
+            size = num_pages * page_size
+            last_addr = addr + size - 1
+            result.append(named((addr, last_addr, size, num_pages, page_size),
+                          "addr last_addr size num_pages page_size"))
+            addr += size
     return result
 
 

@@ -52,13 +52,9 @@ void mp_stack_set_limit(mp_uint_t limit) {
     MP_STATE_THREAD(stack_limit) = limit;
 }
 
-void mp_exc_recursion_depth(void) {
-    mp_raise_RuntimeError("maximum recursion depth exceeded");
-}
-
 void mp_stack_check(void) {
     if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
-        mp_exc_recursion_depth();
+        mp_raise_recursion_depth();
     }
 }
 

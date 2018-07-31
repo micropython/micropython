@@ -21,9 +21,9 @@ Classes
 
     .. method:: append(val)
 
-        Append new element to the end of array, growing it.
+        Append new element ``val`` to the end of array, growing it.
 
     .. method:: extend(iterable)
 
-        Append new elements as contained in an iterable to the end of
+        Append new elements as contained in `iterable` to the end of
         array, growing it.

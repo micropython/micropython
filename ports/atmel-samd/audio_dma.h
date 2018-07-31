@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H
 
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 #include "py/obj.h"
 #include "shared-module/audioio/RawSample.h"
 #include "shared-module/audioio/WaveFile.h"

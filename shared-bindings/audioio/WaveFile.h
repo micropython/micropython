@@ -29,7 +29,7 @@
 
 #include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 
 extern const mp_obj_type_t audioio_wavefile_type;
 

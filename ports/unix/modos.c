@@ -126,16 +126,16 @@ STATIC mp_obj_t mod_os_system(mp_obj_t cmd_in) {
 
     return MP_OBJ_NEW_SMALL_INT(r);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
+MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
 
 STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
     const char *s = getenv(mp_obj_str_get_str(var_in));
     if (s == NULL) {
         return mp_const_none;
     }
-    return mp_obj_new_str(s, strlen(s), false);
+    return mp_obj_new_str(s, strlen(s));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
+MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
 
 STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
     // TODO: Accept mode param
@@ -171,7 +171,7 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
-    t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name), false);
+    t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name));
     #ifdef _DIRENT_HAVE_D_TYPE
     t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
     #else
@@ -207,7 +207,7 @@ STATIC mp_obj_t mod_os_errno(size_t n_args, const mp_obj_t *args) {
     errno = mp_obj_get_int(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_errno_obj, 0, 1, mod_os_errno);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_errno_obj, 0, 1, mod_os_errno);
 
 STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },

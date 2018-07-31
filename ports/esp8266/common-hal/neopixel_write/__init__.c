@@ -29,5 +29,5 @@
 #include "espneopixel.h"
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
-    esp_neopixel_write(digitalinout->pin->gpio_number, pixels, numBytes);
+    esp_neopixel_write(digitalinout->pin->gpio_number, pixels, numBytes, true /*800 kHz*/);
 }

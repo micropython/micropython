@@ -110,6 +110,7 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
             case EEXIST: return MP_QSTR_File_space_exists;
             case ENODEV: return MP_QSTR_Unsupported_space_operation;
             case EINVAL: return MP_QSTR_Invalid_space_argument;
+            case EROFS:  return MP_QSTR_Read_hyphen_only_space_filesystem;
         }
     }
 

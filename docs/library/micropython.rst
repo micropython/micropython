@@ -35,16 +35,17 @@ Functions
    compilation of scripts, and returns ``None``.  Otherwise it returns the current
    optimisation level.
 
-.. function:: alloc_emergency_exception_buf(size)
+   The optimisation level controls the following compilation features:
 
-   Allocate *size* bytes of RAM for the emergency exception buffer (a good
-   size is around 100 bytes).  The buffer is used to create exceptions in cases
-   when normal RAM allocation would fail (eg within an interrupt handler) and
-   therefore give useful traceback information in these situations.
+   - Assertions: at level 0 assertion statements are enabled and compiled into the
+     bytecode; at levels 1 and higher assertions are not compiled.
+   - Built-in ``__debug__`` variable: at level 0 this variable expands to ``True``;
+     at levels 1 and higher it expands to ``False``.
+   - Source-code line numbers: at levels 0, 1 and 2 source-code line number are
+     stored along with the bytecode so that exceptions can report the line number
+     they occurred at; at levels 3 and higher line numbers are not stored.
 
-   A good way to use this function is to put it at the start of your main script
-   (eg ``boot.py`` or ``main.py``) and then the emergency exception buffer will be active
-   for all the code following it.
+   The default optimisation level is usually level 0.
 
 .. function:: mem_info([verbose])
 
@@ -90,29 +91,3 @@ Functions
    This function can be used to prevent the capturing of Ctrl-C on the
    incoming stream of characters that is usually used for the REPL, in case
    that stream is used for other purposes.
-
-.. function:: schedule(func, arg)
-
-   Schedule the function *func* to be executed "very soon".  The function
-   is passed the value *arg* as its single argument.  "Very soon" means that
-   the MicroPython runtime will do its best to execute the function at the
-   earliest possible time, given that it is also trying to be efficient, and
-   that the following conditions hold:
-
-   - A scheduled function will never preempt another scheduled function.
-   - Scheduled functions are always executed "between opcodes" which means
-     that all fundamental Python operations (such as appending to a list)
-     are guaranteed to be atomic.
-   - A given port may define "critical regions" within which scheduled
-     functions will never be executed.  Functions may be scheduled within
-     a critical region but they will not be executed until that region
-     is exited.  An example of a critical region is a preempting interrupt
-     handler (an IRQ).
-
-   A use for this function is to schedule a callback from a preempting IRQ.
-   Such an IRQ puts restrictions on the code that runs in the IRQ (for example
-   the heap may be locked) and scheduling a function to call later will lift
-   those restrictions.
-
-   There is a finite stack to hold the scheduled functions and `schedule`
-   will raise a `RuntimeError` if the stack is full.

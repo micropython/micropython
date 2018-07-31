@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_EXTINT_H
-#define MICROPY_INCLUDED_STMHAL_EXTINT_H
+#ifndef MICROPY_INCLUDED_STM32_EXTINT_H
+#define MICROPY_INCLUDED_STM32_EXTINT_H
 
 // Vectors 0-15 are for regular pins
 // Vectors 16-22 are for internal sources.
@@ -38,7 +38,7 @@
 #define EXTI_USB_OTG_HS_WAKEUP  (20)
 #define EXTI_RTC_TIMESTAMP      (21)
 #define EXTI_RTC_WAKEUP         (22)
-#if defined(MCU_SERIES_F7)
+#if defined(STM32F7)
 #define EXTI_LPTIM1_ASYNC_EVENT (23)
 #endif
 
@@ -64,4 +64,4 @@ void Handle_EXTI_Irq(uint32_t line);
 
 extern const mp_obj_type_t extint_type;
 
-#endif // MICROPY_INCLUDED_STMHAL_EXTINT_H
+#endif // MICROPY_INCLUDED_STM32_EXTINT_H

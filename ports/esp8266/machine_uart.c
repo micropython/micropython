@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include "ets_sys.h"
-#include "espuart.h"
+#include "uart.h"
 
 #include "py/runtime.h"
 #include "py/stream.h"

@@ -47,6 +47,10 @@
 // make this 1 to dump the heap each time it changes
 #define EXTENSIVE_HEAP_PROFILING (0)
 
+// make this 1 to zero out swept memory to more eagerly
+// detect untraced object still in use
+#define CLEAR_ON_SWEEP (0)
+
 #define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
 #define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
 
@@ -201,29 +205,22 @@ bool gc_is_locked(void) {
         && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
     )
 
-// ptr should be of type void*
-#define VERIFY_MARK_AND_PUSH(ptr) \
-    do { \
-        if (VERIFY_PTR(ptr)) { \
-            size_t _block = BLOCK_FROM_PTR(ptr); \
-            if (ATB_GET_KIND(_block) == AT_HEAD) { \
-                /* an unmarked head, mark it, and push it on gc stack */ \
-                DEBUG_printf("gc_mark(%p)\n", ptr); \
-                ATB_HEAD_TO_MARK(_block); \
-                if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
-                    *MP_STATE_MEM(gc_sp)++ = _block; \
-                } else { \
-                    MP_STATE_MEM(gc_stack_overflow) = 1; \
-                } \
-            } \
-        } \
-    } while (0)
+#ifndef TRACE_MARK
+#if DEBUG_PRINT
+#define TRACE_MARK(block, ptr) DEBUG_printf("gc_mark(%p)\n", ptr)
+#else
+#define TRACE_MARK(block, ptr)
+#endif
+#endif
 
-STATIC void gc_drain_stack(void) {
-    while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
-        // pop the next block off the stack
-        size_t block = *--MP_STATE_MEM(gc_sp);
-
+// Take the given block as the topmost block on the stack. Check all it's
+// children: mark the unmarked child blocks and put those newly marked
+// blocks on the stack. When all children have been checked, pop off the
+// topmost block on the stack and repeat with that one.
+STATIC void gc_mark_subtree(size_t block) {
+    // Start with the block passed in the argument.
+    size_t sp = 0;
+    for (;;) {
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -234,22 +231,41 @@ STATIC void gc_drain_stack(void) {
         void **ptrs = (void**)PTR_FROM_BLOCK(block);
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void*); i > 0; i--, ptrs++) {
             void *ptr = *ptrs;
-            VERIFY_MARK_AND_PUSH(ptr);
+            if (VERIFY_PTR(ptr)) {
+                // Mark and push this pointer
+                size_t childblock = BLOCK_FROM_PTR(ptr);
+                if (ATB_GET_KIND(childblock) == AT_HEAD) {
+                    // an unmarked head, mark it, and push it on gc stack
+                    TRACE_MARK(childblock, ptr);
+                    ATB_HEAD_TO_MARK(childblock);
+                    if (sp < MICROPY_ALLOC_GC_STACK_SIZE) {
+                        MP_STATE_MEM(gc_stack)[sp++] = childblock;
+                    } else {
+                        MP_STATE_MEM(gc_stack_overflow) = 1;
+                    }
+                }
+            }
         }
+
+        // Are there any blocks on the stack?
+        if (sp == 0) {
+            break; // No, stack is empty, we're done.
+        }
+
+        // pop the next block off the stack
+        block = MP_STATE_MEM(gc_stack)[--sp];
     }
 }
 
 STATIC void gc_deal_with_stack_overflow(void) {
     while (MP_STATE_MEM(gc_stack_overflow)) {
         MP_STATE_MEM(gc_stack_overflow) = 0;
-        MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
         // scan entire memory looking for blocks which have been marked but not their children
         for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
             // trace (again) if mark bit set
             if (ATB_GET_KIND(block) == AT_MARK) {
-                *MP_STATE_MEM(gc_sp)++ = block;
-                gc_drain_stack();
+                gc_mark_subtree(block);
             }
         }
     }
@@ -288,6 +304,9 @@ STATIC void gc_sweep(void) {
 #endif
                 free_tail = 1;
                 ATB_ANY_TO_FREE(block);
+                #if CLEAR_ON_SWEEP
+                memset((void*)PTR_FROM_BLOCK(block), 0, BYTES_PER_BLOCK);
+                #endif
                 DEBUG_printf("gc_sweep(%x)\n", PTR_FROM_BLOCK(block));
 
                 #ifdef LOG_HEAP_ACTIVITY
@@ -301,6 +320,9 @@ STATIC void gc_sweep(void) {
             case AT_TAIL:
                 if (free_tail) {
                     ATB_ANY_TO_FREE(block);
+                    #if CLEAR_ON_SWEEP
+                    memset((void*)PTR_FROM_BLOCK(block), 0, BYTES_PER_BLOCK);
+                    #endif
                 }
                 break;
 
@@ -319,19 +341,34 @@ void gc_collect_start(void) {
     MP_STATE_MEM(gc_alloc_amount) = 0;
     #endif
     MP_STATE_MEM(gc_stack_overflow) = 0;
-    MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
+
     // Trace root pointers.  This relies on the root pointers being organised
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
     // dict_globals, then the root pointer section of mp_state_vm.
     void **ptrs = (void**)(void*)&mp_state_ctx;
-    gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.qstr_last_chunk) / sizeof(void*));
+    size_t root_start = offsetof(mp_state_ctx_t, thread.dict_locals);
+    size_t root_end = offsetof(mp_state_ctx_t, vm.qstr_last_chunk);
+    gc_collect_root(ptrs + root_start / sizeof(void*), (root_end - root_start) / sizeof(void*));
+
+    #if MICROPY_ENABLE_PYSTACK
+    // Trace root pointers from the Python stack.
+    ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
+    gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
+    #endif
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
-        VERIFY_MARK_AND_PUSH(ptr);
-        gc_drain_stack();
+        if (VERIFY_PTR(ptr)) {
+            size_t block = BLOCK_FROM_PTR(ptr);
+            if (ATB_GET_KIND(block) == AT_HEAD) {
+                // An unmarked head: mark it, and mark all its children
+                TRACE_MARK(block, ptr);
+                ATB_HEAD_TO_MARK(block);
+                gc_mark_subtree(block);
+            }
+        }
     }
 }
 
@@ -342,6 +379,13 @@ void gc_collect_end(void) {
     MP_STATE_MEM(gc_last_free_atb_index) = MP_STATE_MEM(gc_alloc_table_byte_len) - 1;
     MP_STATE_MEM(gc_lock_depth)--;
     GC_EXIT();
+}
+
+void gc_sweep_all(void) {
+    GC_ENTER();
+    MP_STATE_MEM(gc_lock_depth)++;
+    MP_STATE_MEM(gc_stack_overflow) = 0;
+    gc_collect_end();
 }
 
 void gc_info(gc_info_t *info) {
@@ -437,6 +481,7 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
     if (!collected && MP_STATE_MEM(gc_alloc_amount) >= MP_STATE_MEM(gc_alloc_threshold)) {
         GC_EXIT();
         gc_collect();
+        collected = 1;
         GC_ENTER();
         collected = true;
     }
@@ -748,26 +793,17 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
     void *ptr = ptr_in;
 
-    // sanity check the ptr
-    if (!VERIFY_PTR(ptr)) {
-        return NULL;
-    }
-
-    // get first block
-    size_t block = BLOCK_FROM_PTR(ptr);
-
     GC_ENTER();
-
-    // sanity check the ptr is pointing to the head of a block
-    if (ATB_GET_KIND(block) != AT_HEAD) {
-        GC_EXIT();
-        return NULL;
-    }
 
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         GC_EXIT();
         return NULL;
     }
+
+    // get the GC block number corresponding to this pointer
+    assert(VERIFY_PTR(ptr));
+    size_t block = BLOCK_FROM_PTR(ptr);
+    assert(ATB_GET_KIND(block) == AT_HEAD);
 
     // compute number of new blocks that are requested
     size_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;

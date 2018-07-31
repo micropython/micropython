@@ -40,6 +40,7 @@ Q(/)
 Q(%#o)
 Q(%#x)
 Q({:#b})
+Q( )
 Q(\n)
 Q(maximum recursion depth exceeded)
 Q(<module>)
@@ -51,3 +52,7 @@ Q(<genexpr>)
 Q(<string>)
 Q(<stdin>)
 Q(utf-8)
+
+#if MICROPY_ENABLE_PYSTACK
+Q(pystack exhausted)
+#endif
