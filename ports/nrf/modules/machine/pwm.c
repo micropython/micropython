@@ -63,12 +63,13 @@ typedef struct _machine_hard_pwm_obj_t {
 } machine_hard_pwm_obj_t;
 
 STATIC const nrfx_pwm_t machine_hard_pwm_instances[] = {
-#if NRF52
+#if defined(NRF52_SERIES)
     NRFX_PWM_INSTANCE(0),
     NRFX_PWM_INSTANCE(1),
     NRFX_PWM_INSTANCE(2),
-#elif NRF52840
+#if NRF52840
     NRFX_PWM_INSTANCE(3),
+#endif
 #else
     NULL
 #endif
@@ -77,13 +78,14 @@ STATIC const nrfx_pwm_t machine_hard_pwm_instances[] = {
 STATIC machine_pwm_config_t hard_configs[MP_ARRAY_SIZE(machine_hard_pwm_instances)];
 
 STATIC const machine_hard_pwm_obj_t machine_hard_pwm_obj[] = {
-#if NRF52
+#if defined(NRF52_SERIES)
     {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[0], .p_config = &hard_configs[0]},
 
     {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[1], .p_config = &hard_configs[0]},
     {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[2], .p_config = &hard_configs[0]},
-#elif NRF52840
+#if NRF52840
     {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[3], .p_config = &hard_configs[0]},
+#endif
 #endif
 };
 
