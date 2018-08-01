@@ -45,7 +45,7 @@ typedef struct {
 
 } usb_hid_device_obj_t;
 
-usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES];
+extern usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES];
 
 void usb_hid_init(void);
 void usb_hid_reset(void);
