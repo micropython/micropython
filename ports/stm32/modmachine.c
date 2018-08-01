@@ -483,35 +483,11 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
 
 STATIC mp_obj_t machine_sleep(void) {
     #if defined(STM32L4)
-
-    // Enter Stop 1 mode
+    // Configure the MSI as the clock source after waking up
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
-    HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+    #endif
 
-    // reconfigure system clock after wakeup
-    // Enable Power Control clock
-    __HAL_RCC_PWR_CLK_ENABLE();
-
-    // Get the Oscillators configuration according to the internal RCC registers
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    HAL_RCC_GetOscConfig(&RCC_OscInitStruct);
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    HAL_RCC_OscConfig(&RCC_OscInitStruct);
-
-    // Get the Clocks configuration according to the internal RCC registers
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-    uint32_t pFLatency = 0;
-    HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, &pFLatency);
-
-    // Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 clock dividers
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-    RCC_ClkInitStruct.SYSCLKSource  = RCC_SYSCLKSOURCE_PLLCLK;
-    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, pFLatency);
-
-    #else
-
-    #if !defined(STM32F0)
+    #if !defined(STM32F0) && !defined(STM32L4)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -538,10 +514,12 @@ STATIC mp_obj_t machine_sleep(void) {
 
     #else
 
+    #if !defined(STM32L4)
     // enable HSE
     __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY)) {
     }
+    #endif
 
     // enable PLL
     __HAL_RCC_PLL_ENABLE();
@@ -556,8 +534,6 @@ STATIC mp_obj_t machine_sleep(void) {
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
     #endif
     }
-
-    #endif
 
     #endif
 
