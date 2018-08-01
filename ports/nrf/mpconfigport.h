@@ -95,9 +95,9 @@
 #define MICROPY_MODULE_BUILTIN_INIT              (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS           (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO          (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN            (0)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN            (1)
 #define MICROPY_NONSTANDARD_TYPECODES            (0)
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS          (0)
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS          (1)
 #define MICROPY_PY_SYS_EXIT                      (1)
 #define MICROPY_PY_SYS_MAXSIZE                   (1)
 #define MICROPY_PY_SYS_STDFILES                  (1)
@@ -180,6 +180,7 @@ extern const struct _mp_obj_module_t struct_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
+extern const struct _mp_obj_module_t usb_hid_module;
 extern const struct _mp_obj_module_t bleio_module;
 
 extern const struct _mp_obj_module_t mp_module_ubluepy;
@@ -196,6 +197,12 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
 #define BLEIO_MODULE
 #endif
 
+#ifdef NRF52840_XXAA
+#define USBHID_MODULE                       { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid), (mp_obj_t)&usb_hid_module },
+#else
+#define USBHID_MODULE
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR (MP_QSTR_board           ), (mp_obj_t)&board_module           }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_busio           ), (mp_obj_t)&busio_module           }, \
@@ -206,19 +213,20 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
     { MP_OBJ_NEW_QSTR (MP_QSTR_bitbangio       ), (mp_obj_t)&bitbangio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_os              ), (mp_obj_t)&os_module              }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_random          ), (mp_obj_t)&random_module          }, \
-    { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         },\
+    { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_struct          ), (mp_obj_t)&struct_module          }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
-    BLEIO_MODULE \
+    USBHID_MODULE  \
+    BLEIO_MODULE   \
     UBLUEPY_MODULE \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR     (MP_QSTR_help), MP_ROM_PTR(&mp_builtin_help_obj) }, \
-    { MP_OBJ_NEW_QSTR (MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj  }, \
-    { MP_ROM_QSTR     (MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) }, \
+    { MP_ROM_QSTR     (MP_QSTR_help  ), MP_ROM_PTR(&mp_builtin_help_obj) }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_input ), (mp_obj_t)&mp_builtin_input_obj  }, \
+    { MP_ROM_QSTR     (MP_QSTR_open  ), MP_ROM_PTR(&mp_builtin_open_obj) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
