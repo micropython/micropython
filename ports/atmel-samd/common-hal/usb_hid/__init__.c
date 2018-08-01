@@ -35,7 +35,7 @@
 #include "genhdr/autogen_usb_descriptor.h"
 
 // Buffers are report size + 1 to include the Report ID prefix byte if needed.
-#ifdef USB_HID_REPORT_LENGTH_KEYBOARD
+#ifdef USB_HID_REPORT_ID_KEYBOARD
 static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD + 1];
 #endif
 #ifdef USB_HID_REPORT_ID_MOUSE
@@ -55,7 +55,7 @@ static uint8_t digitizer_report_buffer[USB_HID_REPORT_LENGTH_DIGITIZER + 1];
 #endif
 
 usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
-#ifdef USB_HID_REPORT_LENGTH_KEYBOARD
+#ifdef USB_HID_REPORT_ID_KEYBOARD
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = keyboard_report_buffer,
