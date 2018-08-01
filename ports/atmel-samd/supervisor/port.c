@@ -71,6 +71,9 @@
 #ifdef CIRCUITPY_GAMEPAD_TICKS
 #include "shared-module/gamepad/__init__.h"
 #endif
+#ifdef CIRCUITPY_PEWPEW_TICKS
+#include "shared-module/_pew/__init__.h"
+#endif
 
 extern volatile bool mp_msc_enabled;
 
@@ -224,6 +227,9 @@ void reset_port(void) {
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS
     gamepad_reset();
+#endif
+#ifdef CIRCUITPY_PEWPEW_TICKS
+    pew_reset();
 #endif
 
     reset_event_system();

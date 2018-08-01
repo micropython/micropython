@@ -30,6 +30,7 @@
 
 #include "supervisor/shared/autoreload.h"
 #include "shared-module/gamepad/__init__.h"
+#include "shared-module/_pew/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
@@ -52,6 +53,11 @@ void SysTick_Handler(void) {
     #ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(ticks_ms & CIRCUITPY_GAMEPAD_TICKS)) {
         gamepad_tick();
+    }
+    #endif
+    #ifdef CIRCUITPY_PEWPEW_TICKS
+    if (!(ticks_ms & CIRCUITPY_PEWPEW_TICKS)) {
+        pew_tick();
     }
     #endif
 }

@@ -463,6 +463,13 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
+#if CIRCUITPY_PEW
+extern const struct _mp_obj_module_t pew_module;
+#define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
+#else
+#define PEW_MODULE
+#endif
+
 // These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
 #if MICROPY_PY_UERRNO
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
