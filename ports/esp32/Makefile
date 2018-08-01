@@ -21,7 +21,7 @@ FLASH_FREQ ?= 40m
 FLASH_SIZE ?= 4MB
 CROSS_COMPILE ?= xtensa-esp32-elf-
 
-ESPIDF_SUPHASH := 9a55b42f0841b3d38a61089b1dda4bf28135decd
+ESPIDF_SUPHASH := 1c7a8b3b712c4020562551f692d0ced8f7470d2c
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
@@ -59,6 +59,7 @@ INC += -I$(TOP)/lib/timeutils
 INC += -I$(BUILD)
 
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include
+INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
@@ -73,6 +74,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/heap/include
 INC_ESPCOMP += -I$(ESPCOMP)/json/include
 INC_ESPCOMP += -I$(ESPCOMP)/json/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/log/include
+INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
 INC_ESPCOMP += -I$(ESPCOMP)/newlib/include
 INC_ESPCOMP += -I$(ESPCOMP)/nvs_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/freertos/include
@@ -85,7 +87,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa-debug-module/include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/port/include
@@ -293,6 +294,8 @@ ESPIDF_SOC_O = $(addprefix $(ESPCOMP)/soc/,\
 	esp32/rtc_time.o \
 	esp32/soc_memory_layout.o \
 	esp32/spi_periph.o \
+	esp32/rtc_periph.o \
+	esp32/gpio_periph.o \
 	)
 
 ESPIDF_CXX_O = $(addprefix $(ESPCOMP)/cxx/,\
