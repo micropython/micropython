@@ -100,13 +100,13 @@
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS          (0)
 #define MICROPY_PY_SYS_EXIT                      (1)
 #define MICROPY_PY_SYS_MAXSIZE                   (1)
-#define MICROPY_PY_SYS_STDFILES                  (0)
-#define MICROPY_PY_SYS_STDIO_BUFFER              (0)
+#define MICROPY_PY_SYS_STDFILES                  (1)
+#define MICROPY_PY_SYS_STDIO_BUFFER              (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (0)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS        (0)
 #define MICROPY_PY_CMATH                         (0)
-#define MICROPY_PY_IO                            (0)
-#define MICROPY_PY_IO_FILEIO                     (0)
+#define MICROPY_PY_IO                            (1)
+#define MICROPY_PY_IO_FILEIO                     (1)
 #define MICROPY_PY_UERRNO                        (0)
 #define MICROPY_PY_UBINASCII                     (1)
 #define MICROPY_PY_URANDOM                       (0)
@@ -160,6 +160,9 @@
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
+
+#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+#define mp_type_fileio mp_type_vfs_fat_fileio
 
 // extra built in modules to add to the list of known ones
 
@@ -222,8 +225,6 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t gamepad_singleton; \
-
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
