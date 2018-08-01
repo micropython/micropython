@@ -66,67 +66,67 @@ static uint8_t digitizer_report_buffer[USB_HID_REPORT_LENGTH_DIGITIZER];
 usb_hid_device_obj_t usb_hid_devices[] = {
 #if USB_HID_DEVICE_KEYBOARD
     {
-        .base = { .type = &usb_hid_device_type },
-        .report_buffer = keyboard_report_buffer,
-        .report_id = USB_HID_REPORT_ID_KEYBOARD,
-        .report_length = USB_HID_REPORT_LENGTH_KEYBOARD,
-        .usage_page = HID_USAGE_PAGE_DESKTOP,
-        .usage = HID_USAGE_DESKTOP_KEYBOARD,
+        .base          = { .type = &usb_hid_device_type } ,
+        .report_buffer = keyboard_report_buffer           ,
+        .report_id     = USB_HID_REPORT_ID_KEYBOARD       ,
+        .report_length = USB_HID_REPORT_LENGTH_KEYBOARD   ,
+        .usage_page    = HID_USAGE_PAGE_DESKTOP           ,
+        .usage         = HID_USAGE_DESKTOP_KEYBOARD       ,
     },
 #endif
 
 #if USB_HID_DEVICE_MOUSE
     {
-        .base = { .type = &usb_hid_device_type },
-        .report_buffer = mouse_report_buffer,
-        .report_id = USB_HID_REPORT_ID_MOUSE,
-        .report_length = USB_HID_REPORT_LENGTH_MOUSE,
-        .usage_page = HID_USAGE_PAGE_DESKTOP,
-        .usage = HID_USAGE_DESKTOP_MOUSE,
+        .base          = { .type = &usb_hid_device_type } ,
+        .report_buffer = mouse_report_buffer              ,
+        .report_id     = USB_HID_REPORT_ID_MOUSE          ,
+        .report_length = USB_HID_REPORT_LENGTH_MOUSE      ,
+        .usage_page    = HID_USAGE_PAGE_DESKTOP           ,
+        .usage         = HID_USAGE_DESKTOP_MOUSE          ,
     },
 #endif
 
 #if USB_HID_DEVICE_CONSUMER
     {
-        .base = { .type = &usb_hid_device_type },
-        .report_buffer = consumer_report_buffer,
-        .report_id = USB_HID_REPORT_ID_CONSUMER,
-        .report_length = USB_HID_REPORT_LENGTH_CONSUMER,
-        .usage_page = HID_USAGE_PAGE_CONSUMER,
-        .usage = HID_USAGE_CONSUMER_CONTROL,
+        .base          = { .type = &usb_hid_device_type } ,
+        .report_buffer = consumer_report_buffer           ,
+        .report_id     = USB_HID_REPORT_ID_CONSUMER       ,
+        .report_length = USB_HID_REPORT_LENGTH_CONSUMER   ,
+        .usage_page    = HID_USAGE_PAGE_CONSUMER          ,
+        .usage         = HID_USAGE_CONSUMER_CONTROL       ,
     },
 #endif
 
 #if USB_HID_DEVICE_SYS_CONTROL
     {
-        .base = { .type = &usb_hid_device_type },
-        .report_buffer = sys_control_report_buffer,
-        .report_id = USB_HID_REPORT_ID_SYS_CONTROL,
-        .report_length = USB_HID_REPORT_LENGTH_SYS_CONTROL,
-        .usage_page = HID_USAGE_PAGE_DESKTOP,
-        .usage = HID_USAGE_DESKTOP_SYSTEM_CONTROL,
+        .base          = { .type = &usb_hid_device_type }  ,
+        .report_buffer = sys_control_report_buffer         ,
+        .report_id     = USB_HID_REPORT_ID_SYS_CONTROL     ,
+        .report_length = USB_HID_REPORT_LENGTH_SYS_CONTROL ,
+        .usage_page    = HID_USAGE_PAGE_DESKTOP            ,
+        .usage         = HID_USAGE_DESKTOP_SYSTEM_CONTROL  ,
     },
 #endif
 
 #if USB_HID_DEVICE_GAMEPAD
     {
-        .base = { .type = &usb_hid_device_type },
-        .report_buffer = gamepad_report_buffer,
-        .report_id = USB_HID_REPORT_ID_GAMEPAD,
-        .report_length = USB_HID_REPORT_LENGTH_GAMEPAD,
-        .usage_page = HID_USAGE_PAGE_DESKTOP,
-        .usage = HID_USAGE_DESKTOP_GAMEPAD,
+        .base          = { .type = &usb_hid_device_type } ,
+        .report_buffer = gamepad_report_buffer            ,
+        .report_id     = USB_HID_REPORT_ID_GAMEPAD        ,
+        .report_length = USB_HID_REPORT_LENGTH_GAMEPAD    ,
+        .usage_page    = HID_USAGE_PAGE_DESKTOP           ,
+        .usage         = HID_USAGE_DESKTOP_GAMEPAD        ,
     },
 #endif
 
 #if USB_HID_DEVICE_DIGITIZER
     {
-        .base = { .type = &usb_hid_device_type },
-        .report_buffer = digitizer_report_buffer,
-        .report_id = USB_HID_REPORT_ID_DIGITIZER,
-        .report_length = USB_HID_REPORT_LENGTH_DIGITIZER,
-        .usage_page = 0x0D,
-        .usage = 0x02,
+        .base          = { .type = &usb_hid_device_type } ,
+        .report_buffer = digitizer_report_buffer          ,
+        .report_id     = USB_HID_REPORT_ID_DIGITIZER      ,
+        .report_length = USB_HID_REPORT_LENGTH_DIGITIZER  ,
+        .usage_page    = 0x0D                             ,
+        .usage         = 0x02                             ,
     },
 #endif
 };

@@ -37,15 +37,23 @@
 #define USB_PID     0x802A
 
 /*------------- Interface Numbering -------------*/
-#define ITF_NUM_CDC             0
-#define ITF_NUM_MSC             2
-#define ITF_NUM_HID_GEN         3
-#define ITF_TOTAL               4
+enum {
+    ITF_NUM_CDC = 0  ,
+    ITF_NUM_CDC_DATA ,
+    ITF_NUM_MSC      ,
+    ITF_NUM_HID_GEN  ,
+    ITF_NUM_TOTAL
+};
 
-
-#define ITF_STR_CDC             4
-#define ITF_STR_MSC             5
-#define ITF_STR_HID             6
+enum {
+    ITF_STR_LANGUAGE = 0 ,
+    ITF_STR_MANUFACTURER ,
+    ITF_STR_PRODUCT      ,
+    ITF_STR_SERIAL       ,
+    ITF_STR_CDC          ,
+    ITF_STR_MSC          ,
+    ITF_STR_HID
+};
 
 /*------------- Endpoint Numbering & Size -------------*/
 #define _EP_IN(x)               (0x80 | (x))
@@ -169,10 +177,8 @@ usb_desc_cfg_t const usb_desc_cfg =
     {
         .bLength             = sizeof(tusb_desc_configuration_t),
         .bDescriptorType     = TUSB_DESC_CONFIGURATION,
-
         .wTotalLength        = sizeof(usb_desc_cfg_t),
-        .bNumInterfaces      = ITF_TOTAL,
-
+        .bNumInterfaces      = ITF_NUM_TOTAL,
         .bConfigurationValue = 1,
         .iConfiguration      = 0x00,
         .bmAttributes        = TUSB_DESC_CONFIG_ATT_BUS_POWER,
@@ -371,9 +377,9 @@ usb_desc_cfg_t const usb_desc_cfg =
 // tud_desc_set is required by tinyusb stack
 tud_desc_set_t tud_desc_set =
 {
-    .device     = (uint8_t const*) &usb_desc_dev,
-    .config     = (uint8_t const*) &usb_desc_cfg,
-    .string_arr = (uint8_t const **) string_desc_arr,
+    .device       = &usb_desc_dev,
+    .config       = &usb_desc_cfg,
+    .string_arr   = (uint8_t const **) string_desc_arr,
     .string_count = sizeof(string_desc_arr)/sizeof(string_desc_arr[0]),
 
     .hid_report =
