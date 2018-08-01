@@ -78,8 +78,8 @@ enum {
 typedef struct  {
     mp_obj_base_t base;
     uint8_t* report_buffer;
-    uint8_t report_id;     // If non-zero, prefix report with given id.
-    uint8_t report_length; // Length not including Report ID.
+    uint8_t report_id;
+    uint8_t report_length;
     uint8_t usage_page;
     uint8_t usage;
 } usb_hid_device_obj_t;
