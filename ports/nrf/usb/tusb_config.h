@@ -45,13 +45,13 @@
 //--------------------------------------------------------------------+
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------+
-#define CFG_TUSB_MCU              OPT_MCU_NRF5X
-#define CFG_TUSB_RHPORT0_MODE     OPT_MODE_DEVICE
+#define CFG_TUSB_MCU                OPT_MCU_NRF5X
+#define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
 
-#define CFG_TUSB_DEBUG            0
+#define CFG_TUSB_DEBUG              0
 
 /*------------- RTOS -------------*/
-#define CFG_TUSB_OS               OPT_OS_NONE
+#define CFG_TUSB_OS                 OPT_OS_NONE
 //#define CFG_TUD_TASK_QUEUE_SZ     16
 //#define CFG_TUD_TASK_PRIO         0
 //#define CFG_TUD_TASK_STACK_SZ     150
@@ -60,24 +60,26 @@
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------+
 
-/*------------- Core -------------*/
-#define CFG_TUD_DESC_AUTO         1
-#define CFG_TUD_DESC_VID          0x239A
-#define CFG_TUD_DESC_PID          0x802A
+#define CFG_TUD_ENDOINT0_SIZE       64
 
-#define CFG_TUD_ENDOINT0_SIZE     64
+/*------------- Descriptors -------------*/
+/* Enable auto generated descriptor, tinyusb will try its best to create
+ * descriptor ( device, configuration, hid ) that matches enabled CFG_* in this file
+ *
+ * Note: All CFG_TUD_DESC_* are relevant only if CFG_TUD_DESC_AUTO is enabled
+ */
+#define CFG_TUD_DESC_AUTO           0
 
 //------------- CLASS -------------//
-#define CFG_TUD_CDC               1
-#define CFG_TUD_MSC               1
-#define CFG_TUD_HID_KEYBOARD      0
-#define CFG_TUD_HID_MOUSE         0
-#define CFG_TUD_HID_GENERIC       0
+#define CFG_TUD_CDC                 1
+#define CFG_TUD_MSC                 1
+#define CFG_TUD_HID                 1
 
 /*------------------------------------------------------------------*/
 /* CLASS DRIVER
  *------------------------------------------------------------------*/
 
+/*------------- CDC -------------*/
 // FIFO size of CDC TX and RX
 #define CFG_TUD_CDC_RX_BUFSIZE      1024
 #define CFG_TUD_CDC_TX_BUFSIZE      1024
@@ -89,6 +91,8 @@
  */
 #define CFG_TUD_CDC_FLUSH_ON_SOF    0
 
+
+/*------------- MSC -------------*/
 // Number of supported Logical Unit Number (At least 1)
 #define CFG_TUD_MSC_MAXLUN          1
 

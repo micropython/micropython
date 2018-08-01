@@ -102,7 +102,6 @@ SRC_C += \
 	tick.c \
 	background.c \
 	internal_flash.c \
-	interrupt_char.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
@@ -115,25 +114,10 @@ SRC_C += \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/pyexec.c \
+	lib/utils/interrupt_char.c \
 	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
-
-ifeq ($(MCU_SUB_VARIANT),nrf52840)
-
-SRC_C += \
-	usb/usb.c \
-	usb/usb_msc_flash.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_desc.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/tusb.c \
-
-endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/modubluepy.c \
@@ -218,7 +202,29 @@ SRC_SHARED_BINDINGS = \
 	bitbangio/I2C.c \
 	bitbangio/SPI.c \
 	bitbangio/OneWire.c \
-	random/__init__.c
+	random/__init__.c \
+
+# USB source files for nrf52840
+ifeq ($(MCU_SUB_VARIANT),nrf52840)
+
+SRC_C += \
+	usb/usb.c \
+	usb/usb_msc_flash.c \
+	usb/usb_desc.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
+	lib/tinyusb/src/common/tusb_fifo.c \
+	lib/tinyusb/src/device/usbd.c \
+	lib/tinyusb/src/class/msc/msc_device.c \
+	lib/tinyusb/src/class/cdc/cdc_device.c \
+	lib/tinyusb/src/class/hid/hid_device.c \
+	lib/tinyusb/src/tusb.c \
+
+SRC_COMMON_HAL += \
+	usb_hid/__init__.c \
+	usb_hid/Device.c \
+
+endif
 
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
