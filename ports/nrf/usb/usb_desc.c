@@ -88,22 +88,22 @@ uint16_t const * const string_desc_arr [] =
     TUD_DESC_STRCONV('A','d','a','f','r','u','i','t',' ','I','n','d','u','s','t','r','i','e','s'),
 
     // 2 Product
-    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','Y',' ','n','R','F','5','2'),
+    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','y',' ','n','R','F','5','2'),
 
     // 3 Serials TODO use chip ID
     TUD_DESC_STRCONV('1', '2', '3', '4', '5'),
 
     // 4 CDC Interface
-    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','Y',' ','S','e','r','i','a','l'),
+    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','y',' ','S','e','r','i','a','l'),
 
     // 5 MSC Interface
-    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','Y',' ','S','t','o','r','a','g','e'),
+    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','y',' ','S','t','o','r','a','g','e'),
 
     // 6 HID Interface
-    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','Y',' ','H','I','D'),
+    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','y',' ','H','I','D'),
 
     // Custom Interface
-//    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','Y',' ','C','u','s','t','o','m')
+//    TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','y',' ','C','u','s','t','o','m')
 };
 
 

@@ -92,7 +92,9 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, 
     }
 
     // return len must not larger than bufsize
-    if ( resplen > bufsize ) resplen = bufsize;
+    if ( resplen > bufsize ) {
+        resplen = bufsize;
+    }
 
     // copy response to stack's buffer if any
     if ( response && resplen ) {
