@@ -124,9 +124,9 @@ STATIC esp_err_t mp_bt_advertise_start_internal(void) {
     return esp_ble_gap_start_advertising(&ble_adv_params);
 }
 
-int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, uint8_t *adv_data, size_t adv_data_len, uint8_t *sr_data, size_t sr_data_len) {
+int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
     if (adv_data != NULL) {
-        esp_err_t err = esp_ble_gap_config_adv_data_raw(adv_data, adv_data_len);
+        esp_err_t err = esp_ble_gap_config_adv_data_raw((uint8_t*)adv_data, adv_data_len);
         if (err != 0) {
             return mp_bt_esp_errno(err);
         }
@@ -134,7 +134,7 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, uint8_t *adv
     }
 
     if (sr_data != NULL) {
-        esp_err_t err = esp_ble_gap_config_scan_rsp_data_raw(sr_data, sr_data_len);
+        esp_err_t err = esp_ble_gap_config_scan_rsp_data_raw((uint8_t*)sr_data, sr_data_len);
         if (err != 0) {
             return mp_bt_esp_errno(err);
         }

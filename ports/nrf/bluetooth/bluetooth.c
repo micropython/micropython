@@ -198,7 +198,7 @@ STATIC uint32_t mp_bt_advertise_start_internal(void) {
 }
 #endif
 
-int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, uint8_t *adv_data, size_t adv_data_len, uint8_t *sr_data, size_t sr_data_len) {
+int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
     mp_bt_advertise_stop(); // restart if already started
 
 #if NRF51
