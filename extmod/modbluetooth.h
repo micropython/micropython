@@ -40,7 +40,7 @@ bool mp_bt_is_enabled(void);
 
 // Start advertisement. Will re-start advertisement when already enabled.
 // Returns errno on failure.
-int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, uint8_t *adv_data, size_t adv_data_len, uint8_t *sr_data, size_t sr_data_len);
+int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len);
 
 // Stop advertisement. No-op when already stopped.
 void mp_bt_advertise_stop(void);
