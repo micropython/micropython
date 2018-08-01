@@ -25,21 +25,11 @@
  */
 
 #include <string.h>
-
 #include "tick.h"
 #include "common-hal/usb_hid/Device.h"
-
 #include "py/runtime.h"
-//#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "tusb.h"
-
-//--------------------------------------------------------------------+
-// MACRO TYPEDEF CONSTANT ENUM DECLARATION
-//--------------------------------------------------------------------+
-
-
-//------------- IMPLEMENTATION -------------//
 
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
     return self->usage_page;
