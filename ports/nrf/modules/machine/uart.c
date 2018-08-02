@@ -170,54 +170,21 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
     config.interrupt_priority = 6;
 #endif
 
-    switch (args[ARG_baudrate].u_int) {
-        case 1200:
-            config.baudrate = NRF_UART_BAUDRATE_1200;
-            break;
-        case 2400:
-            config.baudrate = NRF_UART_BAUDRATE_2400;
-            break;
-        case 4800:
-            config.baudrate = NRF_UART_BAUDRATE_4800;
-            break;
-        case 9600:
-            config.baudrate = NRF_UART_BAUDRATE_9600;
-            break;
-        case 14400:
-            config.baudrate = NRF_UART_BAUDRATE_14400;
-            break;
-        case 19200:
-            config.baudrate = NRF_UART_BAUDRATE_19200;
-            break;
-        case 28800:
-            config.baudrate = NRF_UART_BAUDRATE_28800;
-            break;
-        case 38400:
-            config.baudrate = NRF_UART_BAUDRATE_38400;
-            break;
-        case 57600:
-            config.baudrate = NRF_UART_BAUDRATE_57600;
-            break;
-        case 76800:
-            config.baudrate = NRF_UART_BAUDRATE_76800;
-            break;
-        case 115200:
-            config.baudrate = NRF_UART_BAUDRATE_115200;
-            break;
-        case 230400:
-            config.baudrate = NRF_UART_BAUDRATE_230400;
-            break;
-        case 250000:
-            config.baudrate = NRF_UART_BAUDRATE_250000;
-            break;
-        case 1000000:
-            config.baudrate = NRF_UART_BAUDRATE_1000000;
-            break;
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                      "UART baudrate not supported, %u", args[ARG_baudrate].u_int));
-            break;
+    // These baudrates are not supported, it seems.
+    if (args[ARG_baudrate].u_int < 1200 || args[ARG_baudrate].u_int > 1000000) {
+        mp_raise_ValueError("UART baudrate not supported");
     }
+
+    // Magic: calculate 'baudrate' register from the input number.
+    // Every value listed in the datasheet will be converted to the
+    // correct register value, except for 192600. I believe the value
+    // listed in the nrf52 datasheet (0x0EBED000) is incorrectly rounded
+    // and should be 0x0EBEE000, as the nrf51 datasheet lists the
+    // nonrounded value 0x0EBEDFA4.
+    // Some background:
+    // https://devzone.nordicsemi.com/f/nordic-q-a/391/uart-baudrate-register-values/2046#2046
+    config.baudrate = args[ARG_baudrate].u_int / 400 * (uint32_t)(400ULL * (uint64_t)UINT32_MAX / 16000000ULL);
+    config.baudrate = (config.baudrate + 0x800) & 0xffffff000; // rounding
 
     config.pseltxd = MICROPY_HW_UART1_TX;
     config.pselrxd = MICROPY_HW_UART1_RX;
