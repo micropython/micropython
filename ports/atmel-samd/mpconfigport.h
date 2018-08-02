@@ -338,4 +338,8 @@ void run_background_tasks(void);
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
+// TODO(tannewt): Make this 6k+ for any non-express M4 boards because they cache sectors on the
+// stack.
+#define CIRCUITPY_DEFAULT_STACK_SIZE 2048
+
 #endif  // __INCLUDED_MPCONFIGPORT_H

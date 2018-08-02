@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "supervisor/memory.h"
 #include "supervisor/shared/rgb_led_status.h"
 
 #include "hal_gpio.h"
@@ -58,6 +59,8 @@ static const external_flash_device* flash_device = NULL;
 // Track which blocks (up to 32) in the current sector currently live in the
 // cache.
 static uint32_t dirty_mask;
+
+static supervisor_allocation* supervisor_cache = NULL;
 
 // Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready(void) {
@@ -308,6 +311,23 @@ static bool flush_scratch_flash(void) {
 static bool allocate_ram_cache(void) {
     uint8_t blocks_per_sector = SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE;
     uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
+
+    uint32_t table_size = blocks_per_sector * pages_per_block * sizeof(uint32_t);
+    // Attempt to allocate outside the heap first.
+    supervisor_cache = allocate_memory(table_size + SPI_FLASH_ERASE_SIZE, false);
+    if (supervisor_cache != NULL) {
+        MP_STATE_VM(flash_ram_cache) = (uint8_t **) supervisor_cache->ptr;
+        uint8_t* page_start = (uint8_t *) supervisor_cache->ptr + table_size;
+
+        for (uint8_t i = 0; i < blocks_per_sector; i++) {
+            for (uint8_t j = 0; j < pages_per_block; j++) {
+                uint32_t offset = i * pages_per_block + j;
+                MP_STATE_VM(flash_ram_cache)[offset] = page_start + offset * SPI_FLASH_PAGE_SIZE;
+            }
+        }
+        return true;
+    }
+
     MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
@@ -383,14 +403,19 @@ static bool flush_ram_cache(bool keep_cache) {
             write_flash(current_sector + (i * pages_per_block + j) * SPI_FLASH_PAGE_SIZE,
                         MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
                         SPI_FLASH_PAGE_SIZE);
-            if (!keep_cache) {
+            if (!keep_cache && supervisor_cache == NULL) {
                 m_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
             }
         }
     }
     // We're done with the cache for now so give it back.
     if (!keep_cache) {
-        m_free(MP_STATE_VM(flash_ram_cache));
+        if (supervisor_cache != NULL) {
+            free_memory(supervisor_cache);
+            supervisor_cache = NULL;
+        } else {
+            m_free(MP_STATE_VM(flash_ram_cache));
+        }
         MP_STATE_VM(flash_ram_cache) = NULL;
     }
     return true;

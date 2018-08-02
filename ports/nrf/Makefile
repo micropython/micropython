@@ -119,6 +119,7 @@ SRC_C += \
 	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
+	supervisor/shared/memory.c
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/modubluepy.c \
