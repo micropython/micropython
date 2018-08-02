@@ -77,9 +77,9 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
 # - else, if list of newer prerequisites ($?) is not empty, then process just these ($?)
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
-$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(SRC_QSTR_PREPROCESSOR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
 	$(ECHO) "GEN $@"
-	$(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) >$(HEADER_BUILD)/qstr.i.last;
+	$(Q)grep -lE "(MP_QSTR|i18n)" $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) | xargs $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(SRC_QSTR_PREPROCESSOR) >$(HEADER_BUILD)/qstr.i.last;
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(STEPECHO) "GEN $@"
@@ -210,4 +210,3 @@ tags:
 	ctags -e -R $(TOP)
 
 -include $(OBJ:.o=.P)
-
