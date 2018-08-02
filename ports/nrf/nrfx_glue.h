@@ -28,9 +28,31 @@
 #define NRFX_GLUE_H
 
 #include <soc/nrfx_irqs.h>
+#include "py/mperrno.h"
 
 #define NRFX_ASSERT(expression)  do { bool res = expression; (void)res; } while (0)
 #define NRFX_DELAY_US            mp_hal_delay_us
+#define NRFX_CUSTOM_ERROR_CODES  (1)
+
+typedef enum {
+    NRFX_SUCCESS                    = 0,             // Operation performed successfully.
+    NRFX_ERROR_INTERNAL             = MP_EPERM,      // Internal error.
+    NRFX_ERROR_NO_MEM               = MP_ENOMEM,     // No memory for operation.
+    NRFX_ERROR_NOT_SUPPORTED        = MP_EOPNOTSUPP, // Not supported.
+    NRFX_ERROR_INVALID_PARAM        = MP_EINVAL,     // Invalid parameter.
+    NRFX_ERROR_INVALID_STATE        = MP_EBADF,      // Invalid state, operation disallowed in this state.
+    NRFX_ERROR_INVALID_LENGTH       = MP_E2BIG,      // Invalid length.
+    NRFX_ERROR_TIMEOUT              = MP_ETIMEDOUT,  // Operation timed out.
+    NRFX_ERROR_FORBIDDEN            = MP_EACCES,     // Operation is forbidden.
+    NRFX_ERROR_NULL                 = MP_EFAULT,     // Null pointer.
+    NRFX_ERROR_INVALID_ADDR         = MP_EFAULT,     // Bad memory address.
+    NRFX_ERROR_BUSY                 = MP_EBUSY,      // Busy.
+    NRFX_ERROR_ALREADY_INITIALIZED  = MP_EMFILE,     // Module already initialized.
+
+    NRFX_ERROR_DRV_TWI_ERR_OVERRUN  = MP_ENOBUFS,      // TWI error: Overrun.
+    NRFX_ERROR_DRV_TWI_ERR_ANACK    = MP_EHOSTUNREACH, // TWI error: Address not acknowledged.
+    NRFX_ERROR_DRV_TWI_ERR_DNACK    = MP_EIO,          // TWI error: Data not acknowledged.
+} nrfx_err_t;
 
 #if BLUETOOTH_SD
 
