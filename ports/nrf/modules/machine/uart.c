@@ -118,29 +118,16 @@ STATIC void machine_hard_uart_print(const mp_print_t *print, mp_obj_t self_in, m
 
 
 
-/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, read_buf_len=64)
+/// \method init(id, baudrate)
 ///
 /// Initialise the UART bus with the given parameters:
 ///   - `id`is bus id.
 ///   - `baudrate` is the clock rate.
-///   - `bits` is the number of bits per byte, 7, 8 or 9.
-///   - `parity` is the parity, `None`, 0 (even) or 1 (odd).
-///   - `stop` is the number of stop bits, 1 or 2.
-///   - `timeout` is the timeout in milliseconds to wait for the first character.
-///   - `timeout_char` is the timeout in milliseconds to wait between characters.
-///   - `read_buf_len` is the character length of the read buffer (0 to disable).
 STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_flow, ARG_timeout, ARG_timeout_char, ARG_read_buf_len };
+    enum { ARG_id, ARG_baudrate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
-        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
-        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
 
     // parse args
@@ -154,8 +141,6 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
     nrfx_uart_config_t config;
 
     // flow control
-    config.hwfc = args[ARG_flow].u_int;
-
 #if MICROPY_HW_UART1_HWFC
     config.hwfc = NRF_UART_HWFC_ENABLED;
 #else
