@@ -215,8 +215,22 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
 STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_obj_t *self = self_in;
 
-    mp_printf(print, "Pin(%d, mode=%s)", self->pin,
-            (nrf_gpio_pin_dir_get(self->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? "OUT" : "IN");
+    char *pull = "PULL_DISABLED";
+    switch (nrf_gpio_pin_pull_get(self->pin)) {
+        case NRF_GPIO_PIN_PULLUP:
+            pull = "PULL_UP";
+            break;
+        case NRF_GPIO_PIN_PULLDOWN:
+            pull = "PULL_DOWN";
+            break;
+        default:
+            break;
+    }
+
+    mp_printf(print, "Pin(%d, mode=%s, pull=%s)",
+            self->pin,
+            (nrf_gpio_pin_dir_get(self->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? "OUT" : "IN",
+            pull);
 }
 
 STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
