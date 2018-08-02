@@ -44,9 +44,9 @@
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    if (pin->pin != PIN_PA02
+    if (pin->number != PIN_PA02
     #ifdef SAMD51
-        && pin->pin != PIN_PA05
+        && pin->number != PIN_PA05
     #endif
     ) {
         mp_raise_ValueError("AnalogOut not supported on given pin");
@@ -55,7 +55,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
 
     self->channel = 0;
     #ifdef SAMD51
-    if (pin->pin == PIN_PA05) {
+    if (pin->number == PIN_PA05) {
         self->channel = 1;
     }
     #endif
@@ -93,7 +93,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
     }
     claim_pin(pin);
 
-    gpio_set_pin_function(pin->pin, GPIO_PIN_FUNCTION_B);
+    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_B);
 
     dac_sync_enable_channel(&self->descriptor, self->channel);
 }

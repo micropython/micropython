@@ -82,7 +82,7 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     }
 
     adafruit_ptc_get_config_default(&self->config);
-    self->config.pin = pin->pin;
+    self->config.pin = pin->number;
     self->config.yline = pin->touch_y_line;
 
     adafruit_ptc_init(PTC, &self->config);

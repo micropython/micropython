@@ -41,8 +41,8 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     self->pin = pin;
 
     // Must set pull after setting direction.
-    gpio_set_pin_direction(pin->pin, GPIO_DIRECTION_IN);
-    gpio_set_pin_pull_mode(pin->pin, GPIO_PULL_OFF);
+    gpio_set_pin_direction(pin->number, GPIO_DIRECTION_IN);
+    gpio_set_pin_pull_mode(pin->number, GPIO_PULL_OFF);
     return DIGITALINOUT_OK;
 }
 
@@ -54,7 +54,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         return;
     }
-    reset_pin(self->pin->pin);
+    reset_pin(self->pin->number);
     self->pin = mp_const_none;
 }
 
@@ -68,7 +68,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
 void common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t* self, bool value,
         digitalio_drive_mode_t drive_mode) {
-    const uint8_t pin = self->pin->pin;
+    const uint8_t pin = self->pin->number;
     gpio_set_pin_pull_mode(pin, GPIO_PULL_OFF);
     // Turn on "strong" pin driving (more current available). See DRVSTR doc in datasheet.
     hri_port_set_PINCFG_DRVSTR_bit(PORT, (enum gpio_port)GPIO_PORT(pin), GPIO_PIN(pin));
@@ -87,7 +87,7 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 
 void common_hal_digitalio_digitalinout_set_value(
         digitalio_digitalinout_obj_t* self, bool value) {
-    const uint8_t pin = self->pin->pin;
+    const uint8_t pin = self->pin->number;
     const uint8_t port = GPIO_PORT(pin);
     const uint32_t pin_mask = 1U << GPIO_PIN(pin);
     if (value) {
@@ -108,7 +108,7 @@ void common_hal_digitalio_digitalinout_set_value(
 
 bool common_hal_digitalio_digitalinout_get_value(
         digitalio_digitalinout_obj_t* self) {
-    const uint8_t pin = self->pin->pin;
+    const uint8_t pin = self->pin->number;
     if (!self->output) {
         return gpio_get_pin_level(pin);
     } else {
@@ -156,13 +156,13 @@ void common_hal_digitalio_digitalinout_set_pull(
             break;
     }
     // Must set pull after setting direction.
-    gpio_set_pin_direction(self->pin->pin, GPIO_DIRECTION_IN);
-    gpio_set_pin_pull_mode(self->pin->pin, asf_pull);
+    gpio_set_pin_direction(self->pin->number, GPIO_DIRECTION_IN);
+    gpio_set_pin_pull_mode(self->pin->number, asf_pull);
 }
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         digitalio_digitalinout_obj_t* self) {
-    uint32_t pin = self->pin->pin;
+    uint32_t pin = self->pin->number;
     if (self->output) {
         mp_raise_AttributeError("Cannot get pull while in output mode");
         return PULL_NONE;

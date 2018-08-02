@@ -90,7 +90,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     hri_nvmctrl_set_CTRLA_CACHEDIS1_bit(NVMCTRL);
    #endif
 
-    uint32_t pin = digitalinout->pin->pin;
+    uint32_t pin = digitalinout->pin->number;
     port    =  &PORT->Group[GPIO_PORT(pin)];  // Convert GPIO # to port register
     pinMask =  (1UL << (pin % 32));  // From port_pin_set_output_level ASF code.
     ptr     =  pixels;

@@ -117,7 +117,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         mp_raise_msg_varg(&mp_type_MemoryError, "Failed to allocate RX buffer of %d bytes", maxlen * sizeof(uint16_t));
     }
     self->channel = pin->extint_channel;
-    self->pin = pin->pin;
+    self->pin = pin->number;
     self->maxlen = maxlen;
     self->idle_state = idle_state;
     self->start = 0;
@@ -134,7 +134,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         turn_on_external_interrupt_controller();
     }
 
-    gpio_set_pin_function(pin->pin, GPIO_PIN_FUNCTION_A);
+    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_A);
 
     turn_on_cpu_interrupt(self->channel);
 

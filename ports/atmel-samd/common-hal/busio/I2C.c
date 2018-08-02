@@ -59,11 +59,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
             sda->sercom[i].pad != 0) {
             continue;
         }
-        sda_pinmux = PINMUX(sda->pin, (i == 0) ? MUX_C : MUX_D);
+        sda_pinmux = PINMUX(sda->number, (i == 0) ? MUX_C : MUX_D);
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
             if (sercom_index == scl->sercom[j].index &&
                 scl->sercom[j].pad == 1) {
-                scl_pinmux = PINMUX(scl->pin, (j == 0) ? MUX_C : MUX_D);
+                scl_pinmux = PINMUX(scl->number, (j == 0) ? MUX_C : MUX_D);
                 sercom = potential_sercom;
                 break;
             }
@@ -77,36 +77,36 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
-    gpio_set_pin_function(sda->pin, GPIO_PIN_FUNCTION_OFF);
-    gpio_set_pin_function(scl->pin, GPIO_PIN_FUNCTION_OFF);
-    gpio_set_pin_direction(sda->pin, GPIO_DIRECTION_IN);
-    gpio_set_pin_direction(scl->pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_function(sda->number, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_function(scl->number, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(sda->number, GPIO_DIRECTION_IN);
+    gpio_set_pin_direction(scl->number, GPIO_DIRECTION_IN);
 
-    gpio_set_pin_pull_mode(sda->pin, GPIO_PULL_DOWN);
-    gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_DOWN);
+    gpio_set_pin_pull_mode(sda->number, GPIO_PULL_DOWN);
+    gpio_set_pin_pull_mode(scl->number, GPIO_PULL_DOWN);
 
     common_hal_mcu_delay_us(10);
 
-    gpio_set_pin_pull_mode(sda->pin, GPIO_PULL_OFF);
-    gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_OFF);
+    gpio_set_pin_pull_mode(sda->number, GPIO_PULL_OFF);
+    gpio_set_pin_pull_mode(scl->number, GPIO_PULL_OFF);
 
     // We must pull up within 3us to achieve 400khz.
     common_hal_mcu_delay_us(3);
 
-    if (!gpio_get_pin_level(sda->pin) || !gpio_get_pin_level(scl->pin)) {
-        reset_pin(sda->pin);
-        reset_pin(scl->pin);
+    if (!gpio_get_pin_level(sda->number) || !gpio_get_pin_level(scl->number)) {
+        reset_pin(sda->number);
+        reset_pin(scl->number);
         mp_raise_RuntimeError("SDA or SCL needs a pull up");
     }
-    gpio_set_pin_function(sda->pin, sda_pinmux);
-    gpio_set_pin_function(scl->pin, scl_pinmux);
+    gpio_set_pin_function(sda->number, sda_pinmux);
+    gpio_set_pin_function(scl->number, scl_pinmux);
 
     // Set up I2C clocks on sercom.
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
     if (i2c_m_sync_init(&self->i2c_desc, sercom) != ERR_NONE) {
-        reset_pin(sda->pin);
-        reset_pin(scl->pin);
+        reset_pin(sda->number);
+        reset_pin(scl->number);
         mp_raise_OSError(MP_EIO);
     }
 
@@ -114,13 +114,13 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     // Frequency must be set before the I2C device is enabled.
     if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
-        reset_pin(sda->pin);
-        reset_pin(scl->pin);
+        reset_pin(sda->number);
+        reset_pin(scl->number);
         mp_raise_ValueError("Unsupported baudrate");
     }
 
-    self->sda_pin = sda->pin;
-    self->scl_pin = scl->pin;
+    self->sda_pin = sda->number;
+    self->scl_pin = scl->number;
     claim_pin(sda);
     claim_pin(scl);
 
