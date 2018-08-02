@@ -177,10 +177,13 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     mp_convert_member_lookup(obj_obj, type, elem->value, lookup->dest);
                 }
 #if DEBUG_PRINT
-                printf("mp_obj_class_lookup: Returning: ");
-                mp_obj_print(lookup->dest[0], PRINT_REPR); printf(" ");
-                // Don't try to repr() lookup->dest[1], as we can be called recursively
-                printf("<%s @%p>\n", mp_obj_get_type_str(lookup->dest[1]), lookup->dest[1]);
+                DEBUG_printf("mp_obj_class_lookup: Returning: ");
+                mp_obj_print_helper(MICROPY_DEBUG_PRINTER, lookup->dest[0], PRINT_REPR);
+                if (lookup->dest[1] != MP_OBJ_NULL) {
+                    // Don't try to repr() lookup->dest[1], as we can be called recursively
+                    DEBUG_printf(" <%s @%p>", mp_obj_get_type_str(lookup->dest[1]), MP_OBJ_TO_PTR(lookup->dest[1]));
+                }
+                DEBUG_printf("\n");
 #endif
                 return;
             }
