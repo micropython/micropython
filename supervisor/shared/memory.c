@@ -82,7 +82,7 @@ supervisor_allocation* allocate_remaining_memory(void) {
 }
 
 supervisor_allocation* allocate_memory(uint32_t length, bool high) {
-    if ((high_address - low_address) * 4 < (int32_t) length) {
+    if ((high_address - low_address) * 4 < (int32_t) length || length % 4 != 0) {
         return NULL;
     }
     uint8_t index = 0;

@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+// Basic allocations outside them for areas such as the VM heap and stack.
+// supervisor/shared/memory.c has a basic implementation for a continuous chunk of memory. Add it
+// to a SRC_ in a Makefile to use it.
+
 #ifndef MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
 #define MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
 
@@ -38,6 +42,10 @@ typedef struct {
 void memory_init(void);
 void free_memory(supervisor_allocation* allocation);
 supervisor_allocation* allocate_remaining_memory(void);
+
+// Allocate a piece of a given length in bytes. If high_address is true then it should be allocated
+// at a lower address from the top of the stack. Otherwise, addresses will increase starting after
+// statically allocated memory.
 supervisor_allocation* allocate_memory(uint32_t length, bool high_address);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_MEMORY_H

@@ -288,7 +288,8 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/autogen_usb_descriptor.c \
-	freetouch/adafruit_ptc.c
+	freetouch/adafruit_ptc.c \
+	supervisor/shared/memory.c
 
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.

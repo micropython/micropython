@@ -118,6 +118,7 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
+	supervisor/shared/memory.c
 
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 

@@ -52,11 +52,11 @@ void allocate_stack(void) {
     }
 }
 
-inline void stack_init(void) {
+void stack_init(void) {
     allocate_stack();
 }
 
-inline void stack_resize(void) {
+void stack_resize(void) {
     if (next_stack_size == current_stack_size) {
         return;
     }
