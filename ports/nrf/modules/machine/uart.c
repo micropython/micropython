@@ -245,13 +245,9 @@ STATIC mp_obj_t machine_hard_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) 
     machine_hard_uart_obj_t *self = self_in;
 
     // get the character to write (might be 9 bits)
-    uint16_t data = mp_obj_get_int(char_in);
+    int data = mp_obj_get_int(char_in);
 
-    nrfx_err_t err = NRFX_SUCCESS;
-    for (int i = 0; i < 2; i++) {
-        err = uart_tx_char(self, (int)(&data)[i]);
-    }
-
+    nrfx_err_t err = uart_tx_char(self, data);
     if (err != NRFX_SUCCESS) {
         mp_hal_raise(err);
     }
