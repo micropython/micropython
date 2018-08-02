@@ -68,8 +68,7 @@ STATIC int uart_find(mp_obj_t id) {
     if (uart_id >= 0 && uart_id < MP_ARRAY_SIZE(machine_hard_uart_obj)) {
         return uart_id;
     }
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-              "UART(%d) does not exist", uart_id));
+    mp_raise_ValueError("UART does not exist");
 }
 
 void uart_irq_handler(mp_uint_t uart_id) {

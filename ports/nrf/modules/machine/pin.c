@@ -207,7 +207,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin '%s' not a valid pin identifier", mp_obj_str_get_str(user_obj)));
+    mp_raise_ValueError("not a valid pin identifier");
 }
 
 /// \method __str__()
