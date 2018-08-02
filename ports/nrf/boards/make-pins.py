@@ -90,8 +90,6 @@ class Pin(object):
         self.pin = pin
         self.alt_fn = []
         self.alt_fn_count = 0
-        self.adc_num = 0
-        self.adc_channel = 0
         self.board_pin = False
 
     def cpu_pin_name(self):
@@ -102,14 +100,6 @@ class Pin(object):
 
     def set_is_board_pin(self):
         self.board_pin = True
-
-    def parse_adc(self, adc_str):
-        if (adc_str[:3] != 'ADC'):
-            return
-        (adc,channel) = adc_str.split('_')
-        for idx in range(3, len(adc)):
-            self.adc_num = int(adc[idx])
-        self.adc_channel = int(channel[2:])
 
     def parse_af(self, af_idx, af_strs_in):
         if len(af_strs_in) == 0:
@@ -128,23 +118,10 @@ class Pin(object):
             return 'NULL'
         return 'pin_{:s}_af'.format(self.cpu_pin_name())
 
-    def adc_num_str(self):
-        str = ''
-        for adc_num in range(1,4):
-            if self.adc_num & (1 << (adc_num - 1)):
-                if len(str) > 0:
-                    str += ' | '
-                str += 'PIN_ADC'
-                str += chr(ord('0') + adc_num)
-        if len(str) == 0:
-            str = '0'
-        return str
-
     def print_const_table_entry(self):
-        print('  PIN({:d}, {:s}, {:s}, {:d}),'.format(
+        print('  PIN({:d}, {:s}),'.format(
             self.pin,
-            self.alt_fn_name(null_if_0=True),
-            self.adc_num_str(), self.adc_channel))
+            self.alt_fn_name(null_if_0=True)))
 
     def print(self):
         if self.alt_fn_count == 0:
@@ -156,10 +133,9 @@ class Pin(object):
             print("// ",  end='')
         print('};')
         print('')
-        print('const pin_obj_t pin_{:s} = PIN({:d}, {:s}, {:s}, {:d});'.format(
+        print('const pin_obj_t pin_{:s} = PIN({:d}, {:s});'.format(
             self.cpu_pin_name(), self.pin,
-            self.alt_fn_name(null_if_0=True),
-            self.adc_num_str(), self.adc_channel))
+            self.alt_fn_name(null_if_0=True)))
         print('')
 
     def print_header(self, hdr_file):
@@ -214,8 +190,6 @@ class Pins(object):
                 for af_idx in range(af_col, len(row)):
                     if af_idx < af_col_end:
                         pin.parse_af(af_idx - af_col, row[af_idx])
-                    elif af_idx == af_col_end:
-                        pin.parse_adc(row[af_idx])
                 self.cpu_pins.append(NamedPin(pin.cpu_pin_name(), pin))
 
     def parse_board_file(self, filename):
@@ -258,22 +232,6 @@ class Pins(object):
         print('')
         self.print_named('board', self.board_pins)
 
-    def print_adc(self, adc_num):
-        print('');
-        print('const pin_obj_t * const pin_adc{:d}[] = {{'.format(adc_num))
-        for channel in range(16):
-            adc_found = False
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if (pin.is_board_pin() and
-                    (pin.adc_num & (1 << (adc_num - 1))) and (pin.adc_channel == channel)):
-                    print('  &pin_{:s}, // {:d}'.format(pin.cpu_pin_name(), channel))
-                    adc_found = True
-                    break
-            if not adc_found:
-                print('  NULL,    // {:d}'.format(channel))
-        print('};')
-
 
     def print_header(self, hdr_filename):
         with open(hdr_filename, 'wt') as hdr_file:
@@ -281,9 +239,6 @@ class Pins(object):
                 pin = named_pin.pin()
                 if pin.is_board_pin():
                     pin.print_header(hdr_file)
-            hdr_file.write('extern const pin_obj_t * const pin_adc1[];\n')
-            hdr_file.write('extern const pin_obj_t * const pin_adc2[];\n')
-            hdr_file.write('extern const pin_obj_t * const pin_adc3[];\n')
 
     def print_qstr(self, qstr_filename):
         with open(qstr_filename, 'wt') as qstr_file:
