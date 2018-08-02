@@ -293,6 +293,13 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 #define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
         {{&mp_type_fun_builtin_var}, true, n_args_min, MP_OBJ_FUN_ARGS_MAX, .fun.kw = fun_name}
+#define MP_DEFINE_CONST_PROP_GET(obj_name, fun_name) \
+    const mp_obj_fun_builtin_fixed_t fun_name##_obj = {{&mp_type_fun_builtin_1}, .fun._1 = fun_name}; \
+    const mp_obj_property_t obj_name = { \
+        .base.type = &mp_type_property, \
+        .proxy = {(mp_obj_t)&fun_name##_obj, \
+                  (mp_obj_t)&mp_const_none_obj, \
+                  (mp_obj_t)&mp_const_none_obj}, }
 
 // These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
