@@ -51,6 +51,10 @@ void free_memory(supervisor_allocation* allocation) {
             break;
         }
     }
+    if (!found) {
+        // Bad!
+        // TODO(tannewt): Add a way to escape into safe mode on error.
+    }
     if (allocation->ptr == high_address) {
         high_address += allocation->length / 4;
         for (index++; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
