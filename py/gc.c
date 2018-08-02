@@ -910,7 +910,8 @@ void gc_dump_alloc_table(void) {
     GC_EXIT();
 }
 
-#if DEBUG_PRINT
+#if 0
+// For testing the GC functions
 void gc_test(void) {
     mp_uint_t len = 500;
     mp_uint_t *heap = malloc(len);
