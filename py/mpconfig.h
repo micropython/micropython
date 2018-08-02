@@ -366,6 +366,11 @@
 #define MICROPY_MEM_STATS (0)
 #endif
 
+// The mp_print_t printer used for debugging output
+#ifndef MICROPY_DEBUG_PRINTER
+#define MICROPY_DEBUG_PRINTER (&mp_plat_print)
+#endif
+
 // Whether to build functions that print debugging info:
 //   mp_bytecode_print
 //   mp_parse_node_print
