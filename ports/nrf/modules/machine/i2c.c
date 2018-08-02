@@ -58,8 +58,7 @@ STATIC int i2c_find(mp_obj_t id) {
     if (i2c_id >= 0 && i2c_id < MP_ARRAY_SIZE(machine_hard_i2c_obj)) {
         return i2c_id;
     }
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-        "I2C(%d) does not exist", i2c_id));
+    mp_raise_ValueError("I2C doesn't exist");
 }
 
 STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
