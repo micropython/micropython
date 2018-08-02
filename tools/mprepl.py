@@ -420,7 +420,7 @@ cmd_table = {
     CMD_WRITE: do_write,
 }
 
-def main_loop(console, dev):
+def main_loop(console, dev, pyfile=None):
     # TODO add option to not restart pyboard, to continue a previous session
     try:
         pyb = pyboard.Pyboard(dev)
@@ -435,6 +435,18 @@ def main_loop(console, dev):
     console.write(bytes('Connected to MicroPython at %s\r\n' % dev, 'utf8'))
     console.write(bytes('Local directory %s is mounted at /remote\r\n' % root, 'utf8'))
     console.write(bytes('Use Ctrl-X to exit this shell\r\n', 'utf8'))
+
+    try:
+        if pyfile:
+            script = Path(pyfile)
+            if not script.exists():
+                console.write(bytes('\r\nERROR: Provided script not found!\r\n', 'utf8'))
+            else :
+                pyb.enter_raw_repl()
+                pyb.exec_(script.read_bytes())
+                pyb.exit_raw_repl()
+    except:
+        script = None
 
     while True:
         if isinstance(console, ConsolePosix):
@@ -507,11 +519,13 @@ def main():
         dev = sys.argv[1]
         shortcuts = {'a0': '/dev/ttyACM0', 'a1': '/dev/ttyACM1', 'u0': '/dev/ttyUSB0', 'u1': '/dev/ttyUSB1'}
         dev = shortcuts.get(dev, dev)
+    
+    pyfile = sys.argv[2] if len(sys.argv) >= 3 else None
 
     console = Console()
     console.enter()
     try:
-        main_loop(console, dev)
+        main_loop(console, dev, pyfile)
     finally:
         console.exit()
 
