@@ -17,8 +17,15 @@ import sys
 import time
 import struct
 import select
-import termios
 import pyboard
+from pathlib import Path
+try:
+    import termios
+    import select
+except ImportError:
+    termios = None
+    select = None
+    import msvcrt
 
 CMD_STAT = 1
 CMD_ILISTDIR_START = 2
@@ -188,7 +195,7 @@ os.mount(RemoteFS(), '/remote')
 os.chdir('/remote')
 """
 
-class Console:
+class ConsolePosix:
     def __init__(self):
         self.infd = sys.stdin.fileno()
         self.infile = sys.stdin.buffer.raw
@@ -215,6 +222,86 @@ class Console:
             return None
     def write(self, buf):
         self.outfile.write(buf)
+
+
+class ConsoleWindows:
+    def enter(self):
+        pass
+
+    def exit(self):
+        pass
+
+    def inWaiting(self):
+        return 1 if msvcrt.kbhit() else 0
+    
+    def readchar(self):
+        if msvcrt.kbhit():
+            ch =  msvcrt.getch()
+            while ch in b'\x00\xe0':  # arrow or function key prefix?
+                if not msvcrt.kbhit():
+                    return None
+                ch = msvcrt.getch()  # second call returns the actual key code
+            return ch
+
+    def write(self, buf):
+        buf = buf.decode() if isinstance(buf, bytes) else buf
+        sys.stdout.write(buf)
+        sys.stdout.flush()
+        # for b in buf:
+        #     if isinstance(b, bytes):
+        #         msvcrt.putch(b)
+        #     else:
+        #         msvcrt.putwch(b)
+                
+if termios:
+    Console = ConsolePosix
+    VT_ENABLED = True
+else:
+    Console = ConsoleWindows
+
+    # Windows VT mode ( >= win10 only)
+    # https://bugs.python.org/msg291732
+    import ctypes
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+
+    ERROR_INVALID_PARAMETER = 0x0057
+    ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+
+    def _check_bool(result, func, args):
+        if not result:
+            raise ctypes.WinError(ctypes.get_last_error())
+        return args
+
+    LPDWORD = ctypes.POINTER(wintypes.DWORD)
+    kernel32.GetConsoleMode.errcheck = _check_bool
+    kernel32.GetConsoleMode.argtypes = (wintypes.HANDLE, LPDWORD)
+    kernel32.SetConsoleMode.errcheck = _check_bool
+    kernel32.SetConsoleMode.argtypes = (wintypes.HANDLE, wintypes.DWORD)
+
+    def set_conout_mode(new_mode, mask=0xffffffff):
+        # don't assume StandardOutput is a console.
+        # open CONOUT$ instead
+        fdout = os.open('CONOUT$', os.O_RDWR)
+        try:
+            hout = msvcrt.get_osfhandle(fdout)
+            old_mode = wintypes.DWORD()
+            kernel32.GetConsoleMode(hout, ctypes.byref(old_mode))
+            mode = (new_mode & mask) | (old_mode.value & ~mask)
+            kernel32.SetConsoleMode(hout, mode)
+            return old_mode.value
+        finally:
+            os.close(fdout)
+
+    # def enable_vt_mode():
+    mode = mask = ENABLE_VIRTUAL_TERMINAL_PROCESSING
+    try:
+        set_conout_mode(mode, mask)
+        VT_ENABLED=True
+    except WindowsError as e:
+        VT_ENABLED=False
+        
 
 class PyboardCommand:
     def __init__(self, fin, fout):
@@ -342,7 +429,11 @@ def main_loop(console, dev):
     console.write(bytes('Use Ctrl-X to exit this shell\r\n', 'utf8'))
 
     while True:
-        select.select([console.infd, pyb.serial.fd], [], []) # TODO pyb.serial might not have fd
+        if isinstance(console, ConsolePosix):
+            select.select([console.infd, pyb.serial.fd], [], []) # TODO pyb.serial might not have fd
+        else:
+            while not (console.inWaiting() or pyb.serial.inWaiting()):
+                time.sleep(0.1)
         c = console.readchar()
         if c:
             if c == b'\x18': # ctrl-X, quit
@@ -378,6 +469,14 @@ def main_loop(console, dev):
                 # a special command
                 c = pyb.serial.read(1)[0]
                 cmd_table[c](cmd)
+
+            elif not VT_ENABLED and c == b'\x1b':
+                # ESC code, ignore these on windows
+                esctype = pyb.serial.read(1)
+                if esctype == b'[':  # CSI
+                    while not (0x40 < pyb.serial.read(1)[0] < 0x7E):
+                        # Looking for "final byte" of escape sequence
+                        pass
             else:
                 # pass character through to the console
                 console.write(c)
