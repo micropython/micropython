@@ -1902,6 +1902,44 @@ STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
     return bytes_make_new(NULL, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
+
+STATIC mp_obj_t bytes_hex(mp_obj_t self_in) {
+    static const char *hex_digits = "0123456789abcdef";
+    GET_STR_DATA_LEN(self_in, self_data, self_len);
+    vstr_t vstr;
+    vstr_init_len(&vstr, self_len * 2);
+    for (mp_int_t i = 0; i < self_len; i++) {
+        vstr.buf[i * 2    ] = hex_digits[(self_data[i] & 0xF0) >> 4];
+        vstr.buf[i * 2 + 1] = hex_digits[(self_data[i] & 0x0F)];
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(bytes_hex_obj, bytes_hex);
+
+STATIC mp_obj_t bytes_fromhex(mp_obj_t string) {
+    GET_STR_DATA_LEN(string, string_data, string_len);
+    if (string_len % 2) {
+        mp_raise_ValueError("odd-length string");
+    }
+    vstr_t vstr;
+    vstr_init_len(&vstr, string_len / 2);
+    byte b = 0;
+    for (mp_int_t i = 0; i < string_len; i++) {
+        if (unichar_isxdigit(string_data[i])) {
+            b += unichar_xdigit_value(string_data[i]);
+        } else {
+            mp_raise_ValueError("non-hex digit found");
+        }
+        if (i & 1) {
+            vstr.buf[i / 2] = b;
+            b = 0;
+        } else {
+            b <<= 4;
+        }
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(bytes_fromhex_obj, bytes_fromhex);
 #endif
 
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
@@ -1928,6 +1966,8 @@ STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
     // methods (which should do type checking at runtime).
     { MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&bytes_hex_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fromhex), MP_ROM_PTR(&bytes_fromhex_obj) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&str_find_obj) },
     { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&str_rfind_obj) },
