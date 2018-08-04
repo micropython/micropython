@@ -271,14 +271,14 @@ STATIC mp_obj_t machine_uart_wait_tx(size_t n_args, const mp_obj_t *args)
 {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    int delay_time = 10;
+    int delay_time = 50;
 
     if (n_args == 2)
     {
         delay_time = mp_obj_get_int(args[1]);
     }
 
-    int ret = uart_wait_tx_done(self->uart_num, delay_time);
+    int ret = uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(delay_time));
 
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
