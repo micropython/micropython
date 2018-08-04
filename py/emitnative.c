@@ -310,6 +310,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         // work out size of state (locals plus stack)
         emit->n_state = scope->num_locals + scope->stack_size;
 
+        // the locals and stack start after the code_state structure
+        emit->stack_start = STATE_START;
+
         // allocate space on C-stack for code_state structure, which includes state
         ASM_ENTRY(emit->as, STATE_START + emit->n_state);
 
