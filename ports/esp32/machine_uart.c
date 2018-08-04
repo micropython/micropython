@@ -266,6 +266,13 @@ STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
+STATIC mp_obj_t machine_uart_flush(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uart_flush(self->uart_num);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_flush_obj, machine_uart_flush);
+
 
 STATIC mp_obj_t machine_uart_wait_tx(size_t n_args, const mp_obj_t *args)
 {
@@ -288,6 +295,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_uart_wait_tx_obj, 1, 2, machi
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init),     MP_ROM_PTR(&machine_uart_init_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_flush),    MP_ROM_PTR(&machine_uart_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_any),      MP_ROM_PTR(&machine_uart_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_wait_tx),  MP_ROM_PTR(&machine_uart_wait_tx_obj) },
     { MP_ROM_QSTR(MP_QSTR_read),     MP_ROM_PTR(&mp_stream_read_obj) },
