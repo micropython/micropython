@@ -56,6 +56,8 @@ Methods
 
      - *tx* specifies the TX pin to use.
      - *rx* specifies the RX pin to use.
+     - *txbuf* specifies the length in characters of the TX buffer.
+     - *rxbuf* specifies the length in characters of the RX buffer.
 
    On the WiPy only the following keyword-only parameter is supported:
 
