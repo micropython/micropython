@@ -266,14 +266,34 @@ STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
-STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+STATIC mp_obj_t machine_uart_wait_tx(size_t n_args, const mp_obj_t *args)
+{
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    int delay_time = 10;
+
+    if (n_args == 2)
+    {
+        delay_time = mp_obj_get_int(args[1]);
+    }
+
+    int ret = uart_wait_tx_done(self->uart_num, delay_time);
+
+    return MP_OBJ_NEW_SMALL_INT(ret);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_uart_wait_tx_obj, 1, 2, machine_uart_wait_tx);
+
+STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init),     MP_ROM_PTR(&machine_uart_init_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_any),      MP_ROM_PTR(&machine_uart_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wait_tx),  MP_ROM_PTR(&machine_uart_wait_tx_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read),     MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write),    MP_ROM_PTR(&mp_stream_write_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
