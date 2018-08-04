@@ -248,6 +248,10 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #error Unsupported processor
     #endif
 
+    #if defined(STM32F0)
+    adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_71CYCLES_5;
+    #endif
+
     HAL_ADC_Init(adch);
 
     #if defined(STM32H7)
@@ -284,7 +288,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     sConfig.Channel = channel;
     sConfig.Rank = 1;
 #if defined(STM32F0)
-    sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
 #elif defined(STM32F4) || defined(STM32F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(STM32H7)
@@ -301,6 +305,12 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 #else
     #error Unsupported processor
 #endif
+
+    #if defined(STM32F0)
+    // On the STM32F0 we must select only one channel at a time to sample, so clear all
+    // channels before calling HAL_ADC_ConfigChannel, which will select the desired one.
+    adc_handle->Instance->CHSELR = 0;
+    #endif
 
     HAL_ADC_ConfigChannel(adc_handle, &sConfig);
 }
