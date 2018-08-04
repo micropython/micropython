@@ -313,7 +313,7 @@ void asm_x86_sar_r32_by_imm(asm_x86_t *as, int r32, int imm) {
 #endif
 
 void asm_x86_cmp_r32_with_r32(asm_x86_t *as, int src_r32_a, int src_r32_b) {
-    asm_x86_write_byte_2(as, OPCODE_CMP_R32_WITH_RM32, MODRM_R32(src_r32_a) | MODRM_RM_REG | MODRM_RM_R32(src_r32_b));
+    asm_x86_generic_r32_r32(as, src_r32_b, src_r32_a, OPCODE_CMP_R32_WITH_RM32);
 }
 
 #if 0
