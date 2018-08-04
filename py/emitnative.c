@@ -1520,7 +1520,7 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_jump_helper(emit_t *emit, bool pop) {
+STATIC void emit_native_jump_helper(emit_t *emit, bool cond, mp_uint_t label, bool pop) {
     vtype_kind_t vtype = peek_vtype(emit, 0);
     if (vtype == VTYPE_PYOBJ) {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
@@ -1545,29 +1545,26 @@ STATIC void emit_native_jump_helper(emit_t *emit, bool pop) {
     }
     // need to commit stack because we may jump elsewhere
     need_stack_settled(emit);
+    // Emit the jump
+    if (cond) {
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+    } else {
+        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
+    }
+    if (!pop) {
+        adjust_stack(emit, -1);
+    }
+    emit_post(emit);
 }
 
 STATIC void emit_native_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label) {
     DEBUG_printf("pop_jump_if(cond=%u, label=" UINT_FMT ")\n", cond, label);
-    emit_native_jump_helper(emit, true);
-    if (cond) {
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
-    } else {
-        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
-    }
-    emit_post(emit);
+    emit_native_jump_helper(emit, cond, label, true);
 }
 
 STATIC void emit_native_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label) {
     DEBUG_printf("jump_if_or_pop(cond=%u, label=" UINT_FMT ")\n", cond, label);
-    emit_native_jump_helper(emit, false);
-    if (cond) {
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
-    } else {
-        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
-    }
-    adjust_stack(emit, -1);
-    emit_post(emit);
+    emit_native_jump_helper(emit, cond, label, false);
 }
 
 STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
