@@ -1547,9 +1547,9 @@ STATIC void emit_native_jump_helper(emit_t *emit, bool cond, mp_uint_t label, bo
     need_stack_settled(emit);
     // Emit the jump
     if (cond) {
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label, vtype == VTYPE_PYOBJ);
     } else {
-        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
+        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, vtype == VTYPE_PYOBJ);
     }
     if (!pop) {
         adjust_stack(emit, -1);
@@ -1607,7 +1607,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     need_stack_settled(emit);
     emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
     emit_call(emit, MP_F_NLR_PUSH);
-    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label, true);
 
     emit_access_stack(emit, sizeof(nlr_buf_t) / sizeof(mp_uint_t) + 1, &vtype, REG_RET); // access return value of __enter__
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // push return value of __enter__
@@ -1624,7 +1624,7 @@ STATIC void emit_native_setup_block(emit_t *emit, mp_uint_t label, int kind) {
         need_stack_settled(emit);
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
         emit_call(emit, MP_F_NLR_PUSH);
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label, true);
         emit_post(emit);
     }
 }
@@ -1688,7 +1688,7 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
         ASM_MOV_REG_REG(emit->as, REG_ARG_1, REG_RET);
     }
     emit_call(emit, MP_F_OBJ_IS_TRUE);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label + 1);
+    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label + 1, true);
 
     // replace exc with None
     emit_pre_pop_discard(emit);
@@ -1736,7 +1736,7 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_call(emit, MP_F_NATIVE_ITERNEXT);
     #ifdef NDEBUG
     MP_STATIC_ASSERT(MP_OBJ_STOP_ITERATION == 0);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
+    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, false);
     #else
     ASM_MOV_REG_IMM(emit->as, REG_TEMP1, (mp_uint_t)MP_OBJ_STOP_ITERATION);
     ASM_JUMP_IF_REG_EQ(emit->as, REG_RET, REG_TEMP1, label);

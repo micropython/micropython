@@ -73,6 +73,7 @@
 #define OPCODE_CMP_R32_WITH_RM32 (0x39)
 //#define OPCODE_CMP_RM32_WITH_R32 (0x3b)
 #define OPCODE_TEST_R8_WITH_RM8  (0x84) /* /r */
+#define OPCODE_TEST_R32_WITH_RM32 (0x85) /* /r */
 #define OPCODE_JMP_REL8          (0xeb)
 #define OPCODE_JMP_REL32         (0xe9)
 #define OPCODE_JCC_REL8          (0x70) /* | jcc type */
@@ -332,6 +333,10 @@ void asm_x86_test_r8_with_r8(asm_x86_t *as, int src_r32_a, int src_r32_b) {
     assert(src_r32_a == ASM_X86_REG_EAX);
     assert(src_r32_b == ASM_X86_REG_EAX);
     asm_x86_write_byte_2(as, OPCODE_TEST_R8_WITH_RM8, MODRM_R32(src_r32_a) | MODRM_RM_REG | MODRM_RM_R32(src_r32_b));
+}
+
+void asm_x86_test_r32_with_r32(asm_x86_t *as, int src_r32_a, int src_r32_b) {
+    asm_x86_generic_r32_r32(as, src_r32_b, src_r32_a, OPCODE_TEST_R32_WITH_RM32);
 }
 
 void asm_x86_setcc_r8(asm_x86_t *as, mp_uint_t jcc_type, int dest_r8) {
