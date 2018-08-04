@@ -10,7 +10,7 @@ include $(IDF_PATH)/make/project.mk
 include ../../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS = main/qstrdefsport.h
 
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
@@ -82,13 +82,15 @@ CFLAGS = $(INC)
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -g
-COPT = -O0
+    CFLAGS += -g
+    COPT = -O0
 else
-#CFLAGS += -fdata-sections -ffunction-sections
-COPT += -Os -DNDEBUG
-#LDFLAGS += --gc-sections
+    #CFLAGS += -fdata-sections -ffunction-sections
+    COPT += -Os -DNDEBUG
+    #LDFLAGS += --gc-sections
 endif
+
+
 
 ################################################################################
 # List of MicroPython source and object files
@@ -155,9 +157,9 @@ LIB_SRC_C = $(addprefix lib/,\
 	)
 
 ifeq ($(MICROPY_FATFS), 1)
-LIB_SRC_C += \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/option/unicode.c
+    LIB_SRC_C += \
+    	lib/oofatfs/ff.c \
+    	lib/oofatfs/option/unicode.c
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
@@ -165,8 +167,14 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 	dht/dht.c \
 	)
 
-# OBJ_MP =
+
+$(info '................')
+
+
+MAKE_HEADERS: $(HEADER_BUILD)/qstrdefs.generated.h
+
 COMPONENT_OBJS += $(PY_O)
+COMPONENT_OBJS += $(MAKE_HEADERS)
 COMPONENT_OBJS += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 COMPONENT_OBJS += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 COMPONENT_OBJS += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
