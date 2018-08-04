@@ -123,10 +123,15 @@ operations that target a given slave device.
 
    The method returns ``None``.
 
-.. method:: I2C.writeto(addr, buf, stop=True)
+.. method:: I2C.writeto(addr, data, stop=True)
 
-   Write the bytes from *buf* to the slave specified by *addr*.  If a
-   NACK is received following the write of a byte from *buf* then the
+   Write the bytes from *data* to the slave specified by *addr*.
+   *data* can be an object with the buffer protocol (eg ``bytes`` or ``bytearray``),
+   or a tuple or list of objects with the buffer protocol.  In the latter case the
+   *addr* is sent once and then the bytes from each object are written out
+   sequentially.
+
+   If a NACK is received following the write of a byte from *data* then the
    remaining bytes are not sent.  If *stop* is true then a STOP condition is
    generated at the end of the transfer, even if a NACK is received.
    The function returns the number of ACKs that were received.
