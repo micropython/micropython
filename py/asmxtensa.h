@@ -268,9 +268,9 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
 #define ASM_EXIT            asm_xtensa_exit
 
 #define ASM_JUMP            asm_xtensa_j_label
-#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     asm_xtensa_bccz_reg_label(as, ASM_XTENSA_CCZ_EQ, reg, label)
-#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label, bool_test) \
     asm_xtensa_bccz_reg_label(as, ASM_XTENSA_CCZ_NE, reg, label)
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
     asm_xtensa_bcc_reg_reg_label(as, ASM_XTENSA_CC_EQ, reg1, reg2, label)
