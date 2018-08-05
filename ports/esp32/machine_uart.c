@@ -183,6 +183,8 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
+    esp_err_t ret;
+
     // get uart id
     mp_int_t uart_num = mp_obj_get_int(args[0]);
     if (uart_num < 0 || uart_num >= UART_NUM_MAX) {
@@ -197,12 +199,12 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
      // Defaults
     uart_config_t uartcfg = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0
+        .baud_rate           = 9600,
+        .data_bits           = UART_DATA_8_BITS,
+        .parity              = UART_PARITY_DISABLE,
+        .stop_bits           = UART_STOP_BITS_1,
+        .flow_ctrl           = UART_HW_FLOWCTRL_DISABLE,
+        .rx_flow_ctrl_thresh = 40
     };
 
     // create instance
@@ -237,16 +239,25 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     // init the peripheral
     // Setup
-    uart_param_config(self->uart_num, &uartcfg);
+    ret = uart_param_config(self->uart_num, &uartcfg);
+
+    if (ret != ESP_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Failed to set UART parameters!"));
+    }
 
     // RX and TX buffers are currently hardcoded at 256 bytes each (IDF minimum).
-    uart_driver_install(uart_num, 256, 256, 0, NULL, 0);
+    ret = uart_driver_install(uart_num, 256, 256, 0, NULL, 0);
+
+    if (ret != ESP_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Failed to install driver for UART!"));
+    }
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     // Make sure pins are connected.
+    // Called in machine_uart_init_helper()
     uart_set_pin(self->uart_num, self->tx, self->rx, self->rts, self->cts);
 
     return MP_OBJ_FROM_PTR(self);
@@ -261,17 +272,34 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t rxbufsize;
-    uart_get_buffered_data_len(self->uart_num, &rxbufsize);
+    esp_err_t ret = uart_get_buffered_data_len(self->uart_num, &rxbufsize);
+    if (ret != ESP_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Error calling uart_get_buffered_data_len()!"));
+    }
     return MP_OBJ_NEW_SMALL_INT(rxbufsize);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
 STATIC mp_obj_t machine_uart_flush(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uart_flush(self->uart_num);
+    esp_err_t ret = uart_flush(self->uart_num);
+    if (ret != ESP_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Error calling uart_flush()!"));
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_flush_obj, machine_uart_flush);
+
+STATIC mp_obj_t machine_uart_get_baud(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t actual_baud;
+    esp_err_t ret = uart_get_baudrate(self->uart_num, &actual_baud);
+    if (ret != ESP_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Error calling uart_get_baudrate()!"));
+    }
+    return mp_obj_new_int(actual_baud);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_get_baud_obj, machine_uart_get_baud);
 
 
 STATIC mp_obj_t machine_uart_wait_tx(size_t n_args, const mp_obj_t *args)
@@ -302,6 +330,7 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),    MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_baud), MP_ROM_PTR(&machine_uart_get_baud_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
