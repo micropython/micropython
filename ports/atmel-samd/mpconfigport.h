@@ -340,6 +340,6 @@ void run_background_tasks(void);
 
 // TODO(tannewt): Make this 6k+ for any non-express M4 boards because they cache sectors on the
 // stack.
-#define CIRCUITPY_DEFAULT_STACK_SIZE 2048
+#define CIRCUITPY_DEFAULT_STACK_SIZE 4096
 
 #endif  // __INCLUDED_MPCONFIGPORT_H
