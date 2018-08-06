@@ -17,7 +17,10 @@ import sys
 import time
 import struct
 import select
+import argparse
 from pathlib import Path
+import serial
+import serial.tools.list_ports
 try:
     import termios
     import select
@@ -43,7 +46,7 @@ CMD_WRITE = 7
 CMD_SEEK = 8
 
 fs_hook_code = """\
-import os, io, select, ustruct as struct, micropython
+import os, io, select, ustruct as struct, micropython, pyb, sys
 CMD_STAT = 1
 CMD_ILISTDIR_START = 2
 CMD_ILISTDIR_NEXT = 3
@@ -53,11 +56,14 @@ CMD_READ = 6
 CMD_WRITE = 7
 CMD_SEEK = 8
 class RemoteCommand:
+    use_second_port = False
     def __init__(self):
         try:
-            import pyb
             self.fout = pyb.USB_VCP()
-            self.fin = pyb.USB_VCP()
+            if self.use_second_port:
+                self.fin = pyb.USB_VCP(1)
+            else:
+                self.fin = pyb.USB_VCP()
             self.can_poll = True
         except:
             import sys
@@ -210,8 +216,11 @@ class RemoteFS:
             raise OSError(-fd)
         return RemoteFile(self.cmd, fd, mode.find('b') == -1)
 
-os.mount(RemoteFS(), '/remote')
-os.chdir('/remote')
+def __mount(use_second_port):
+    print(use_second_port)
+    RemoteCommand.use_second_port = use_second_port
+    os.mount(RemoteFS(), '/remote')
+    os.chdir('/remote')
 """
 
 class ConsolePosix:
@@ -442,18 +451,37 @@ cmd_table = {
     CMD_SEEK: do_seek,
 }
 
-def main_loop(console, dev, pyfile=None):
+def main_loop(console, dev_in, dev_out, pyfiles):
     # TODO add option to not restart pyboard, to continue a previous session
     try:
-        pyb = pyboard.Pyboard(dev)
+        pyb = pyboard.Pyboard(dev_in)
     except pyboard.PyboardError as er:
         print(er)
         return
+
+    fout = pyb.serial
+    if dev_out is not None:
+        try:
+            fout = serial.Serial(dev_out)
+        except serial.SerialException:
+            port = list(serial.tools.list_ports.grep(dev_out))
+            if not port:
+                raise
+            for p in port:
+                try:
+                    fout = serial.Serial(p.device)
+                    break
+                except serial.SerialException:
+                    pass
+
+    pyb.serial.timeout = 5.0
+
     pyb.enter_raw_repl()
     pyb.exec_(fs_hook_code)
-    cmd = PyboardCommand(pyb.serial, pyb.serial)
+    pyb.exec_('__mount(%s)' % (dev_out is not None))
+    cmd = PyboardCommand(pyb.serial, fout)
 
-    console.write(bytes('Connected to MicroPython at %s\r\n' % dev, 'utf8'))
+    console.write(bytes('Connected to MicroPython at %s\r\n' % dev_in, 'utf8'))
     console.write(bytes('Local directory %s is mounted at /remote\r\n' % root, 'utf8'))
     console.write(bytes('Use Ctrl-X to exit this shell\r\n', 'utf8'))
 
@@ -521,9 +549,19 @@ def main_loop(console, dev, pyfile=None):
                 console.write(c)
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="This script gives you a MicroPython REPL prompt and"
+                    " provides a hook on the target board so that the current"
+                    " directory on the host is mounted on the board, at /remote.")
+    parser.add_argument('port', nargs='?', default='auto', help='micropython repl serial port')
+    parser.add_argument('--port2', default=None, help='if provided, use second serial port for binary data')
+    parser.add_argument('--scripts', nargs='*', help='Any provided scripts are run sequentially at startup')
+
+    args = parser.parse_args()
+
     # get serial device
-    if len(sys.argv) == 1:
-        dev = None
+    dev = args.port
+    if dev == 'auto':
         for d in ('/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyUSB0', '/dev/ttyUSB1'):
             try:
                 os.stat(d)
@@ -531,20 +569,17 @@ def main():
                 continue
             dev = d
             break
-        if dev is None:
+        if dev == 'auto':
             print('no device found')
             sys.exit(1)
     else:
-        dev = sys.argv[1]
         shortcuts = {'a0': '/dev/ttyACM0', 'a1': '/dev/ttyACM1', 'u0': '/dev/ttyUSB0', 'u1': '/dev/ttyUSB1'}
         dev = shortcuts.get(dev, dev)
     
-    pyfile = sys.argv[2] if len(sys.argv) >= 3 else None
-
     console = Console()
     console.enter()
     try:
-        main_loop(console, dev, pyfile)
+        main_loop(console, dev, args.port2, args.scripts)
     finally:
         console.exit()
 
