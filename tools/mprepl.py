@@ -36,6 +36,7 @@ if tools not in sys.path:
 import pyboard
 
 
+CMD_EXIT = 0
 CMD_STAT = 1
 CMD_ILISTDIR_START = 2
 CMD_ILISTDIR_NEXT = 3
@@ -47,6 +48,7 @@ CMD_SEEK = 8
 
 fs_hook_code = """\
 import os, io, select, ustruct as struct, micropython, pyb, sys
+CMD_EXIT = 0
 CMD_STAT = 1
 CMD_ILISTDIR_START = 2
 CMD_ILISTDIR_NEXT = 3
@@ -55,6 +57,13 @@ CMD_CLOSE = 5
 CMD_READ = 6
 CMD_WRITE = 7
 CMD_SEEK = 8
+
+def exit(code=0):
+    cmd = RemoteCommand()
+    cmd.begin(CMD_EXIT)
+    cmd.wr_int32(code)
+    cmd.end()
+
 class RemoteCommand:
     use_second_port = False
     def __init__(self):
@@ -380,6 +389,10 @@ root = './'
 data_ilistdir = []
 data_files = []
 
+def do_exit(cmd):
+    exitcode = cmd.rd_int32()
+    return exitcode
+
 def do_stat(cmd):
     path = root + cmd.rd_str()
     try:
@@ -452,6 +465,7 @@ def do_write(cmd):
     cmd.wr_int32(n)
 
 cmd_table = {
+    CMD_EXIT: do_exit,
     CMD_STAT: do_stat,
     CMD_ILISTDIR_START: do_ilistdir_start,
     CMD_ILISTDIR_NEXT: do_ilistdir_next,
@@ -494,24 +508,31 @@ def main_loop(console, dev_in, dev_out, pyfiles):
 
     console.write(bytes('Connected to MicroPython at %s\r\n' % dev_in, 'utf8'))
     console.write(bytes('Local directory %s is mounted at /remote\r\n' % root, 'utf8'))
-    console.write(bytes('Use Ctrl-X to exit this shell\r\n', 'utf8'))
-
+    repl = True
     if pyfiles:
         for pyfile in pyfiles:
             script = Path(pyfile)
             if not script.exists():
                 console.write(bytes('\r\nERROR: Provided script not found!\r\n', 'utf8'))
             else:
-                pyb.exec_(script.read_bytes())
+                ret = pyb.exec_(script.read_bytes())
+                print(ret.strip(b'\x18\x00\r\n').decode())
+                if ret.strip(b'\x00\r\n').endswith(b'\x18'):
+                    # Script ends with exit(), don't start repl.
+                    repl = False
 
     pyb.exit_raw_repl()
 
-    while True:
+    if repl:
+        console.write(bytes('Use Ctrl-X to exit this shell\r\n', 'utf8'))
+
+
+    while repl:
         if isinstance(console, ConsolePosix):
             select.select([console.infd, pyb.serial.fd], [], []) # TODO pyb.serial might not have fd
         else:
             while not (console.inWaiting() or pyb.serial.inWaiting()):
-                time.sleep(0.1)
+                time.sleep(0.01)
         c = console.readchar()
         if c:
             if c == b'\x18': # ctrl-X, quit
@@ -546,7 +567,9 @@ def main_loop(console, dev_in, dev_out, pyfiles):
             if c == b'\x18':
                 # a special command
                 c = pyb.serial.read(1)[0]
-                cmd_table[c](cmd)
+                exitcode = cmd_table[c](cmd)
+                if exitcode is not None:
+                    return exitcode
 
             elif not VT_ENABLED and c == b'\x1b':
                 # ESC code, ignore these on windows
@@ -590,9 +613,10 @@ def main():
     console = Console()
     console.enter()
     try:
-        main_loop(console, dev, args.port2, args.scripts)
+        ret = main_loop(console, dev, args.port2, args.scripts)
     finally:
         console.exit()
+    return ret
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main() or 0)
