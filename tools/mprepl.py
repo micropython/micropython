@@ -34,6 +34,7 @@ CMD_OPEN = 4
 CMD_CLOSE = 5
 CMD_READ = 6
 CMD_WRITE = 7
+CMD_SEEK = 8
 
 fs_hook_code = """\
 import os, io, select, ustruct as struct, micropython
@@ -44,6 +45,7 @@ CMD_OPEN = 4
 CMD_CLOSE = 5
 CMD_READ = 6
 CMD_WRITE = 7
+CMD_SEEK = 8
 class RemoteCommand:
     def __init__(self):
         try:
@@ -144,6 +146,13 @@ class RemoteFile(io.IOBase):
         self.cmd.begin(CMD_WRITE)
         self.cmd.wr_int32(self.fd)
         self.cmd.wr_bytes(buf)
+        n = self.cmd.rd_int32()
+        self.cmd.end()
+        return n
+    def seek(self, n):
+        self.cmd.begin(CMD_SEEK)
+        self.cmd.wr_int32(self.fd)
+        self.cmd.wr_int32(n)
         n = self.cmd.rd_int32()
         self.cmd.end()
         return n
@@ -402,6 +411,12 @@ def do_read(cmd):
         buf = bytes(buf, 'utf8')
     cmd.wr_bytes(buf)
 
+def do_seek(cmd):
+    fd = cmd.rd_int32()
+    n = cmd.rd_int32()
+    data_files[fd][0].seek(n)
+    cmd.wr_int32(n)
+
 def do_write(cmd):
     fd = cmd.rd_int32()
     buf = cmd.rd_bytes()
@@ -418,6 +433,7 @@ cmd_table = {
     CMD_CLOSE: do_close,
     CMD_READ: do_read,
     CMD_WRITE: do_write,
+    CMD_SEEK: do_seek,
 }
 
 def main_loop(console, dev, pyfile=None):
