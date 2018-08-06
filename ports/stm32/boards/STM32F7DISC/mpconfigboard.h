@@ -103,10 +103,8 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_SDRAM_RBURST             (1)
 #define MICROPY_HW_SDRAM_WRITE_PROTECTION   (0)
 
-#define MICROPY_HW_FMC_SDCKE1   (pin_B5)
-//#define MICROPY_HW_FMC_SDCKE0   (pin_C3)
-#define MICROPY_HW_FMC_SDNE1    (pin_B6)
-//#define MICROPY_HW_FMC_SDNE0    (pin_H3)
+#define MICROPY_HW_FMC_SDCKE0   (pin_C3)
+#define MICROPY_HW_FMC_SDNE0    (pin_H3)
 #define MICROPY_HW_FMC_SDCLK    (pin_G8)
 #define MICROPY_HW_FMC_SDNCAS   (pin_G15)
 #define MICROPY_HW_FMC_SDNRAS   (pin_F11)
