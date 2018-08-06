@@ -445,24 +445,21 @@ def main_loop(console, dev, pyfile=None):
         return
     pyb.enter_raw_repl()
     pyb.exec_(fs_hook_code)
-    pyb.exit_raw_repl()
     cmd = PyboardCommand(pyb.serial, pyb.serial)
 
     console.write(bytes('Connected to MicroPython at %s\r\n' % dev, 'utf8'))
     console.write(bytes('Local directory %s is mounted at /remote\r\n' % root, 'utf8'))
     console.write(bytes('Use Ctrl-X to exit this shell\r\n', 'utf8'))
 
-    try:
-        if pyfile:
+    if pyfiles:
+        for pyfile in pyfiles:
             script = Path(pyfile)
             if not script.exists():
                 console.write(bytes('\r\nERROR: Provided script not found!\r\n', 'utf8'))
-            else :
-                pyb.enter_raw_repl()
+            else:
                 pyb.exec_(script.read_bytes())
-                pyb.exit_raw_repl()
-    except:
-        script = None
+
+    pyb.exit_raw_repl()
 
     while True:
         if isinstance(console, ConsolePosix):
