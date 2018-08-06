@@ -2205,18 +2205,14 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {
-    // This instruction follows an nlr_pop, so the stack counter is back to zero, when really
+    // This instruction follows a pop_block call, so the stack counter is up by one when really
     // it should be up by a whole nlr_buf_t.  We then want to pop the nlr_buf_t here, but save
     // the first 2 elements, so we can get the thrown value.
     adjust_stack(emit, 1);
-    vtype_kind_t vtype_nlr;
-    emit_pre_pop_reg(emit, &vtype_nlr, REG_ARG_1); // get the thrown value
-    emit_pre_pop_discard(emit); // discard the linked-list pointer in the nlr_buf
-    emit_post_push_reg_reg_reg(emit, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1); // push the 3 exception items
 }
 
 STATIC void emit_native_end_except_handler(emit_t *emit) {
-    adjust_stack(emit, -1);
+    (void)emit;
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
