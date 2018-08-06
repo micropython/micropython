@@ -86,6 +86,8 @@ class RemoteCommand:
         return self.fin.readinto(buf)
     def begin(self, type):
         micropython.kbd_intr(-1)
+        while(self.fin.any()):
+            self.fin.read(1)
         self.fout.write(bytearray([0x18, type]))
     def end(self):
         micropython.kbd_intr(3)
@@ -103,10 +105,19 @@ class RemoteCommand:
         self.fout.write(struct.pack('<i', i))
     def rd_bytes(self):
         n = struct.unpack('<H', self.rd(2))[0]
-        return self.rd(n)
+        buf = bytearray(n)
+        mv = memoryview(buf)
+        r = 0
+        while r<n:
+            r += self.rdinto(mv[r:])
+        return buf
     def rd_bytes_into(self, buf):
         n = struct.unpack('<H', self.rd(2))[0]
-        return self.rdinto(memoryview(buf)[:n])
+        mv = memoryview(buf)
+        r = 0
+        while r < n:
+            r += self.rdinto(mv[r:])
+        return r
     def wr_bytes(self, b):
         self.fout.write(struct.pack('<H', len(b)))
         self.fout.write(b)
