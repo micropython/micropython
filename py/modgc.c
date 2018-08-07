@@ -32,7 +32,9 @@
 
 // collect(): run a garbage collection
 STATIC mp_obj_t py_gc_collect(void) {
+    GC_ENTER();
     gc_collect();
+    GC_EXIT();
 #if MICROPY_PY_GC_COLLECT_RETVAL
     return MP_OBJ_NEW_SMALL_INT(MP_STATE_MEM(gc_collected));
 #else

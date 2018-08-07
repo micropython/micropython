@@ -67,4 +67,12 @@ void gc_info(gc_info_t *info);
 void gc_dump_info(void);
 void gc_dump_alloc_table(void);
 
+#if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
+#define GC_ENTER() mp_thread_mutex_lock(&MP_STATE_MEM(gc_mutex), 1)
+#define GC_EXIT() mp_thread_mutex_unlock(&MP_STATE_MEM(gc_mutex))
+#else
+#define GC_ENTER()
+#define GC_EXIT()
+#endif
+
 #endif // MICROPY_INCLUDED_PY_GC_H

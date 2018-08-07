@@ -96,14 +96,6 @@
 #define FTB_CLEAR(block) do { MP_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
 #endif
 
-#if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
-#define GC_ENTER() mp_thread_mutex_lock(&MP_STATE_MEM(gc_mutex), 1)
-#define GC_EXIT() mp_thread_mutex_unlock(&MP_STATE_MEM(gc_mutex))
-#else
-#define GC_ENTER()
-#define GC_EXIT()
-#endif
-
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
@@ -317,7 +309,6 @@ STATIC void gc_sweep(void) {
 }
 
 void gc_collect_start(void) {
-    GC_ENTER();
     MP_STATE_MEM(gc_lock_depth)++;
     #if MICROPY_GC_ALLOC_THRESHOLD
     MP_STATE_MEM(gc_alloc_amount) = 0;
@@ -359,7 +350,6 @@ void gc_collect_end(void) {
     gc_sweep();
     MP_STATE_MEM(gc_last_free_atb_index) = 0;
     MP_STATE_MEM(gc_lock_depth)--;
-    GC_EXIT();
 }
 
 void gc_sweep_all(void) {
@@ -367,6 +357,7 @@ void gc_sweep_all(void) {
     MP_STATE_MEM(gc_lock_depth)++;
     MP_STATE_MEM(gc_stack_overflow) = 0;
     gc_collect_end();
+    GC_EXIT();
 }
 
 void gc_info(gc_info_t *info) {
@@ -458,10 +449,8 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
 
     #if MICROPY_GC_ALLOC_THRESHOLD
     if (!collected && MP_STATE_MEM(gc_alloc_amount) >= MP_STATE_MEM(gc_alloc_threshold)) {
-        GC_EXIT();
         gc_collect();
         collected = 1;
-        GC_ENTER();
     }
     #endif
 
@@ -476,15 +465,14 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
             if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
         }
 
-        GC_EXIT();
         // nothing found!
         if (collected) {
+            GC_EXIT();
             return NULL;
         }
         DEBUG_printf("gc_alloc(" UINT_FMT "): no free mem, triggering GC\n", n_bytes);
         gc_collect();
         collected = 1;
-        GC_ENTER();
     }
 
     // found, ending at block i inclusive
@@ -520,6 +508,17 @@ found:
     MP_STATE_MEM(gc_alloc_amount) += n_blocks;
     #endif
 
+    #if MICROPY_ENABLE_FINALISER
+    if (has_finaliser) {
+        // clear type pointer in case it is never set
+        ((mp_obj_base_t*)ret_ptr)->type = NULL;
+        // set mp_obj flag only if it has a finaliser
+        FTB_SET(start_block);
+    }
+    #else
+    (void)has_finaliser;
+    #endif
+
     GC_EXIT();
 
     #if MICROPY_GC_CONSERVATIVE_CLEAR
@@ -534,18 +533,6 @@ found:
     memset((byte*)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
     #endif
 
-    #if MICROPY_ENABLE_FINALISER
-    if (has_finaliser) {
-        // clear type pointer in case it is never set
-        ((mp_obj_base_t*)ret_ptr)->type = NULL;
-        // set mp_obj flag only if it has a finaliser
-        GC_ENTER();
-        FTB_SET(start_block);
-        GC_EXIT();
-    }
-    #else
-    (void)has_finaliser;
-    #endif
 
     #if EXTENSIVE_HEAP_PROFILING
     gc_dump_alloc_table();
