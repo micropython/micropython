@@ -267,12 +267,12 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
 #define ASM_EXIT            asm_thumb_exit
 
 #define ASM_JUMP            asm_thumb_b_label
-#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
         asm_thumb_cmp_rlo_i8(as, reg, 0); \
         asm_thumb_bcc_label(as, ASM_THUMB_CC_EQ, label); \
     } while (0)
-#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label, bool_test) \
     do { \
         asm_thumb_cmp_rlo_i8(as, reg, 0); \
         asm_thumb_bcc_label(as, ASM_THUMB_CC_NE, label); \

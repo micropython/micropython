@@ -73,6 +73,7 @@
 #define OPCODE_CMP_R64_WITH_RM64 (0x39) /* /r */
 //#define OPCODE_CMP_RM32_WITH_R32 (0x3b)
 #define OPCODE_TEST_R8_WITH_RM8  (0x84) /* /r */
+#define OPCODE_TEST_R64_WITH_RM64 (0x85) /* /r */
 #define OPCODE_JMP_REL8          (0xeb)
 #define OPCODE_JMP_REL32         (0xe9)
 #define OPCODE_JCC_REL8          (0x70) /* | jcc type */
@@ -469,6 +470,10 @@ void asm_x64_test_r8_with_r8(asm_x64_t *as, int src_r64_a, int src_r64_b) {
     assert(src_r64_a == ASM_X64_REG_RAX);
     assert(src_r64_b == ASM_X64_REG_RAX);
     asm_x64_write_byte_2(as, OPCODE_TEST_R8_WITH_RM8, MODRM_R64(src_r64_a) | MODRM_RM_REG | MODRM_RM_R64(src_r64_b));
+}
+
+void asm_x64_test_r64_with_r64(asm_x64_t *as, int src_r64_a, int src_r64_b) {
+    asm_x64_generic_r64_r64(as, src_r64_b, src_r64_a, OPCODE_TEST_R64_WITH_RM64);
 }
 
 void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8) {

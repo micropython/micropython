@@ -82,7 +82,7 @@ void machine_init(void) {
         reset_cause = PYB_RESET_LPCOMP;
     } else if (state & POWER_RESETREAS_DIF_Msk) {
         reset_cause = PYB_RESET_DIF;
-#if NRF52
+#if defined(NRF52_SERIES)
     } else if (state & POWER_RESETREAS_NFC_Msk) {
         reset_cause = PYB_RESET_NFC;
 #endif
@@ -232,7 +232,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),        MP_ROM_INT(PYB_RESET_POWER_ON) },
     { MP_ROM_QSTR(MP_QSTR_LPCOMP_RESET),       MP_ROM_INT(PYB_RESET_LPCOMP) },
     { MP_ROM_QSTR(MP_QSTR_DEBUG_IF_RESET),     MP_ROM_INT(PYB_RESET_DIF) },
-#if NRF52
+#if defined(NRF52_SERIES)
     { MP_ROM_QSTR(MP_QSTR_NFC_RESET),          MP_ROM_INT(PYB_RESET_NFC) },
 #endif
 };

@@ -45,8 +45,8 @@
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
+#define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)
 #define MICROPY_DEBUG_PRINTERS      (1)
-#define MICROPY_DEBUG_PRINTER_DEST  mp_stderr_print
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)

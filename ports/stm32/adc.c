@@ -248,6 +248,10 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #error Unsupported processor
     #endif
 
+    #if defined(STM32F0)
+    adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_71CYCLES_5;
+    #endif
+
     HAL_ADC_Init(adch);
 
     #if defined(STM32H7)
@@ -284,7 +288,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     sConfig.Channel = channel;
     sConfig.Rank = 1;
 #if defined(STM32F0)
-    sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
 #elif defined(STM32F4) || defined(STM32F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(STM32H7)
@@ -302,6 +306,12 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     #error Unsupported processor
 #endif
 
+    #if defined(STM32F0)
+    // On the STM32F0 we must select only one channel at a time to sample, so clear all
+    // channels before calling HAL_ADC_ConfigChannel, which will select the desired one.
+    adc_handle->Instance->CHSELR = 0;
+    #endif
+
     HAL_ADC_ConfigChannel(adc_handle, &sConfig);
 }
 
@@ -315,7 +325,20 @@ STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
 
 STATIC uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
     adc_config_channel(adcHandle, channel);
-    return adc_read_channel(adcHandle);
+    uint32_t raw_value = adc_read_channel(adcHandle);
+
+    #if defined(STM32F4) || defined(STM32F7)
+    // ST docs say that (at least on STM32F42x and STM32F43x), VBATE must
+    // be disabled when TSVREFE is enabled for TEMPSENSOR and VREFINT
+    // conversions to work.  VBATE is enabled by the above call to read
+    // the channel, and here we disable VBATE so a subsequent call for
+    // TEMPSENSOR or VREFINT works correctly.
+    if (channel == ADC_CHANNEL_VBAT) {
+        ADC->CCR &= ~ADC_CCR_VBATE;
+    }
+    #endif
+
+    return raw_value;
 }
 
 /******************************************************************************/
@@ -691,15 +714,6 @@ float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     // Note: constants assume 12-bit resolution, so we scale the raw value to
     //       be 12-bits.
     raw_value <<= (12 - adc_get_resolution(adcHandle));
-
-    #if defined(STM32F4) || defined(STM32F7)
-    // ST docs say that (at least on STM32F42x and STM32F43x), VBATE must
-    // be disabled when TSVREFE is enabled for TEMPSENSOR and VREFINT
-    // conversions to work.  VBATE is enabled by the above call to read
-    // the channel, and here we disable VBATE so a subsequent call for
-    // TEMPSENSOR or VREFINT works correctly.
-    ADC->CCR &= ~ADC_CCR_VBATE;
-    #endif
 
     return raw_value * VBAT_DIV * ADC_SCALE * adc_refcor;
 }

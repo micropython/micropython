@@ -13,8 +13,8 @@
 #define MICROPY_EMIT_XTENSA         (1)
 #define MICROPY_EMIT_INLINE_XTENSA  (1)
 #define MICROPY_MEM_STATS           (0)
+#define MICROPY_DEBUG_PRINTER       (&mp_debug_print)
 #define MICROPY_DEBUG_PRINTERS      (1)
-#define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
@@ -144,6 +144,9 @@ typedef uint32_t sys_prot_t; // for modlwip
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 void *esp_native_code_commit(void*, size_t);
 #define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
+
+// printer for debugging output, goes to UART only
+extern const struct _mp_print_t mp_debug_print;
 
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio

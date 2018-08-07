@@ -63,12 +63,13 @@ typedef struct _machine_hard_pwm_obj_t {
 } machine_hard_pwm_obj_t;
 
 STATIC const nrfx_pwm_t machine_hard_pwm_instances[] = {
-#if NRF52
+#if defined(NRF52_SERIES)
     NRFX_PWM_INSTANCE(0),
     NRFX_PWM_INSTANCE(1),
     NRFX_PWM_INSTANCE(2),
-#elif NRF52840
+#if NRF52840
     NRFX_PWM_INSTANCE(3),
+#endif
 #else
     NULL
 #endif
@@ -77,13 +78,13 @@ STATIC const nrfx_pwm_t machine_hard_pwm_instances[] = {
 STATIC machine_pwm_config_t hard_configs[MP_ARRAY_SIZE(machine_hard_pwm_instances)];
 
 STATIC const machine_hard_pwm_obj_t machine_hard_pwm_obj[] = {
-#if NRF52
+#if defined(NRF52_SERIES)
     {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[0], .p_config = &hard_configs[0]},
-
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[1], .p_config = &hard_configs[0]},
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[2], .p_config = &hard_configs[0]},
-#elif NRF52840
-    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[3], .p_config = &hard_configs[0]},
+    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[1], .p_config = &hard_configs[1]},
+    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[2], .p_config = &hard_configs[2]},
+#if NRF52840
+    {{&machine_hard_pwm_type}, .p_pwm = &machine_hard_pwm_instances[3], .p_config = &hard_configs[3]},
+#endif
 #endif
 };
 
@@ -95,7 +96,7 @@ STATIC int hard_pwm_find(mp_obj_t id) {
     if (MP_OBJ_IS_INT(id)) {
         // given an integer id
         int pwm_id = mp_obj_get_int(id);
-        if (pwm_id >= 0 && pwm_id <= MP_ARRAY_SIZE(machine_hard_pwm_obj)) {
+        if (pwm_id >= 0 && pwm_id < MP_ARRAY_SIZE(machine_hard_pwm_obj)) {
             return pwm_id;
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,

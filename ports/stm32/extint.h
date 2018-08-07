@@ -38,7 +38,7 @@
 #define EXTI_USB_OTG_FS_WAKEUP  (18)
 #define EXTI_ETH_WAKEUP         (19)
 #define EXTI_USB_OTG_HS_WAKEUP  (20)
-#if defined(STM32F0)
+#if defined(STM32F0) || defined(STM32L4)
 #define EXTI_RTC_TIMESTAMP      (19)
 #define EXTI_RTC_WAKEUP         (20)
 #else

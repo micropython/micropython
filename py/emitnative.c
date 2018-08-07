@@ -310,6 +310,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         // work out size of state (locals plus stack)
         emit->n_state = scope->num_locals + scope->stack_size;
 
+        // the locals and stack start after the code_state structure
+        emit->stack_start = STATE_START;
+
         // allocate space on C-stack for code_state structure, which includes state
         ASM_ENTRY(emit->as, STATE_START + emit->n_state);
 
@@ -1520,7 +1523,7 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_jump_helper(emit_t *emit, bool pop) {
+STATIC void emit_native_jump_helper(emit_t *emit, bool cond, mp_uint_t label, bool pop) {
     vtype_kind_t vtype = peek_vtype(emit, 0);
     if (vtype == VTYPE_PYOBJ) {
         emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
@@ -1545,29 +1548,26 @@ STATIC void emit_native_jump_helper(emit_t *emit, bool pop) {
     }
     // need to commit stack because we may jump elsewhere
     need_stack_settled(emit);
+    // Emit the jump
+    if (cond) {
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label, vtype == VTYPE_PYOBJ);
+    } else {
+        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, vtype == VTYPE_PYOBJ);
+    }
+    if (!pop) {
+        adjust_stack(emit, -1);
+    }
+    emit_post(emit);
 }
 
 STATIC void emit_native_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label) {
     DEBUG_printf("pop_jump_if(cond=%u, label=" UINT_FMT ")\n", cond, label);
-    emit_native_jump_helper(emit, true);
-    if (cond) {
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
-    } else {
-        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
-    }
-    emit_post(emit);
+    emit_native_jump_helper(emit, cond, label, true);
 }
 
 STATIC void emit_native_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label) {
     DEBUG_printf("jump_if_or_pop(cond=%u, label=" UINT_FMT ")\n", cond, label);
-    emit_native_jump_helper(emit, false);
-    if (cond) {
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
-    } else {
-        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
-    }
-    adjust_stack(emit, -1);
-    emit_post(emit);
+    emit_native_jump_helper(emit, cond, label, false);
 }
 
 STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
@@ -1610,7 +1610,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     need_stack_settled(emit);
     emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
     emit_call(emit, MP_F_NLR_PUSH);
-    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label, true);
 
     emit_access_stack(emit, sizeof(nlr_buf_t) / sizeof(mp_uint_t) + 1, &vtype, REG_RET); // access return value of __enter__
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // push return value of __enter__
@@ -1627,7 +1627,7 @@ STATIC void emit_native_setup_block(emit_t *emit, mp_uint_t label, int kind) {
         need_stack_settled(emit);
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
         emit_call(emit, MP_F_NLR_PUSH);
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label, true);
         emit_post(emit);
     }
 }
@@ -1691,7 +1691,7 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
         ASM_MOV_REG_REG(emit->as, REG_ARG_1, REG_RET);
     }
     emit_call(emit, MP_F_OBJ_IS_TRUE);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label + 1);
+    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label + 1, true);
 
     // replace exc with None
     emit_pre_pop_discard(emit);
@@ -1739,7 +1739,7 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_call(emit, MP_F_NATIVE_ITERNEXT);
     #ifdef NDEBUG
     MP_STATIC_ASSERT(MP_OBJ_STOP_ITERATION == 0);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
+    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, false);
     #else
     ASM_MOV_REG_IMM(emit->as, REG_TEMP1, (mp_uint_t)MP_OBJ_STOP_ITERATION);
     ASM_JUMP_IF_REG_EQ(emit->as, REG_RET, REG_TEMP1, label);
@@ -2205,18 +2205,14 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {
-    // This instruction follows an nlr_pop, so the stack counter is back to zero, when really
+    // This instruction follows a pop_block call, so the stack counter is up by one when really
     // it should be up by a whole nlr_buf_t.  We then want to pop the nlr_buf_t here, but save
     // the first 2 elements, so we can get the thrown value.
     adjust_stack(emit, 1);
-    vtype_kind_t vtype_nlr;
-    emit_pre_pop_reg(emit, &vtype_nlr, REG_ARG_1); // get the thrown value
-    emit_pre_pop_discard(emit); // discard the linked-list pointer in the nlr_buf
-    emit_post_push_reg_reg_reg(emit, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1, VTYPE_PYOBJ, REG_ARG_1); // push the 3 exception items
 }
 
 STATIC void emit_native_end_except_handler(emit_t *emit) {
-    adjust_stack(emit, -1);
+    (void)emit;
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
