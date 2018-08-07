@@ -149,7 +149,7 @@ static const DMA_InitTypeDef dma_init_struct_dac = {
 
 #define DMA_SUB_INSTANCE_AS_UINT8(dma_channel) (dma_channel)
 
-#define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponfing to DMA1 (7 channels)
+#define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponding to DMA1 (7 channels)
 #define DMA2_ENABLE_MASK (0x0f80) // Bits in dma_enable_mask corresponding to DMA2 (only 5 channels)
 
 // DMA1 streams
@@ -280,7 +280,7 @@ static const uint8_t dma_irqn[NSTREAM] = {
 
 #define DMA_SUB_INSTANCE_AS_UINT8(dma_request) (dma_request)
 
-#define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponfing to DMA1
+#define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponding to DMA1
 #define DMA2_ENABLE_MASK (0x3f80) // Bits in dma_enable_mask corresponding to DMA2
 
 // These descriptors are ordered by DMAx_Channel number, and within a channel by request
