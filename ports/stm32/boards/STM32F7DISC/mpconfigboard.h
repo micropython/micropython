@@ -12,9 +12,9 @@
 void STM32F7DISC_board_early_init(void);
 
 // HSE is 25MHz
-// VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
-// SYSCLK = VCOClock / PLLP = 432 MHz / 2 = 216 MHz
-// USB/SDMMC/RNG Clock = VCOClock / PLLQ = 432 MHz / 9 = 48 MHz
+// VCOClock = HSE * PLLN / PLLM = 25 MHz * 384 / 25 = 384 MHz
+// SYSCLK = VCOClock / PLLP = 384 MHz / 2 = 192 MHz
+// USB/SDMMC/RNG Clock = VCOClock / PLLQ = 384 MHz / 8 = 48 MHz
 #define MICROPY_HW_CLK_PLLM (25)
 #define MICROPY_HW_CLK_PLLN (384)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
@@ -24,7 +24,7 @@ void STM32F7DISC_board_early_init(void);
 // 151-180 MHz => 5 wait states
 // 181-210 MHz => 6 wait states
 // 211-216 MHz => 7 wait states
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
+#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_6 // 181-210 MHz => 6 wait states
 
 // UART config
 #define MICROPY_HW_UART1_TX         (pin_A9)
@@ -102,6 +102,9 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_SDRAM_RPIPE_DELAY        0
 #define MICROPY_HW_SDRAM_RBURST             (1)
 #define MICROPY_HW_SDRAM_WRITE_PROTECTION   (0)
+#define MICROPY_HW_SDRAM_AUTOREFRESH_NUM        (8)
+#define MICROPY_HW_SDRAM_MODEREG_BURST_LENGTH   (0x0000)    // SDRAM_MODEREG_BURST_LENGTH_1
+#define MICROPY_HW_SDRAM_MODEREG_CAS_LATENCY    (0x0020)    // SDRAM_MODEREG_CAS_LATENCY_2
 
 #define MICROPY_HW_FMC_SDCKE0   (pin_C3)
 #define MICROPY_HW_FMC_SDNE0    (pin_H3)
