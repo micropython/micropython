@@ -14,6 +14,7 @@ env:
   - TRAVIS_BOARD=pca10056
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=feather_m4_express
+  - TRAVIS_BOARD=feather_radiofruit_zigbee
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express_crickit
   - TRAVIS_BOARD=feather_m0_basic
@@ -50,7 +51,7 @@ notifications:
 before_script:
   - sudo dpkg --add-architecture i386
 
-  - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
+  - ([[ -z "$TRAVIS_BOARD" || $TRAVIS_BOARD = "feather_huzzah" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
   # For nrf builds
   - ([[ $TRAVIS_BOARD != "feather52832" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
@@ -62,7 +63,7 @@ before_script:
   - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
   - ([[ $TRAVIS_TEST != "translations" ]] || sudo pip3 install polib)
   - gcc --version
-  - ([[ -z "$TRAVIS_BOARD" ]] || arm-none-eabi-gcc --version)
+  - ([[ -z "$TRAVIS_BOARD" || $TRAVIS_BOARD = "feather_huzzah" ]] || arm-none-eabi-gcc --version)
   - python3 --version
 
 script:

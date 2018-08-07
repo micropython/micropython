@@ -53,6 +53,22 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t mosi_pad = 0;
     uint8_t miso_pad = 0;
     uint8_t dopo = 255;
+    #ifdef PIN_PC19
+    if (miso == &pin_PC19) {
+        if (mosi == &pin_PB30 && clock == &pin_PC18) {
+            sercom = SERCOM4;
+            sercom_index = 4;
+            clock_pinmux = MUX_F;
+            mosi_pinmux = MUX_F;
+            miso_pinmux = MUX_F;
+            clock_pad = 3;
+            mosi_pad = 2;
+            miso_pad = 0;
+            dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
+        }
+        // Error, leave SERCOM unset to throw an exception later.
+    } else {
+    #endif
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
         sercom_index = clock->sercom[i].index; // 2 for SERCOM2, etc.
         if (sercom_index >= SERCOM_INST_NUM) {
@@ -109,6 +125,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             break;
         }
     }
+    #ifdef PIN_PC19
+    }
+    #endif
     if (sercom == NULL) {
         mp_raise_ValueError("Invalid pins");
     }
