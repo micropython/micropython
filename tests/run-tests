@@ -394,8 +394,8 @@ def run_tests(pyb, tests, args, base_path="."):
             if verdict == "exclude":
                 continue
 
-        test_basename = os.path.basename(test_file)
-        test_name = os.path.splitext(test_basename)[0]
+        test_basename = test_file.replace('..', '_').replace('./', '').replace('/', '_')
+        test_name = os.path.splitext(os.path.basename(test_file))[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
