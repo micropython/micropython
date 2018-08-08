@@ -47,22 +47,22 @@
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #  if __GLIBC_PREREQ(2, 25)
 #    include <sys/random.h>
-#  else
-#    define _USE_DEV_URANDOM	"/dev/urandom"
+#    define _HAVE_GETRANDOM
 #  endif 
 #endif
+
 
 STATIC mp_obj_t mod_os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
     vstr_init_len(&vstr, n);
-#ifdef _USE_DEV_URANDOM
+#ifdef _HAVE_GETRANDOM
+    RAISE_ERRNO(getrandom(vstr.buf, n, 0), errno);
+#else
     int fd = open(_USE_DEV_URANDOM, O_RDONLY);
     RAISE_ERRNO(fd, errno);
     RAISE_ERRNO(read(fd, vstr.buf, n), errno);
     close(fd);
-#else
-    RAISE_ERRNO(getrandom(vstr.buf, n, 0), errno);
 #endif
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
