@@ -138,7 +138,9 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
 
         #if MICROPY_ENABLE_GC
         // run collection and print GC info
+        GC_ENTER();
         gc_collect();
+        GC_EXIT();
         gc_dump_info();
         #endif
     }
