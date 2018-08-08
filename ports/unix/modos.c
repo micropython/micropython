@@ -51,7 +51,6 @@
 #    define _USE_DEV_URANDOM	"/dev/urandom"
 #  endif 
 #endif
-#    define _USE_DEV_URANDOM	"/dev/urandom"
 
 STATIC mp_obj_t mod_os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
