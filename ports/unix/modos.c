@@ -69,7 +69,6 @@ STATIC mp_obj_t mod_os_urandom(mp_obj_t num) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_urandom_obj, mod_os_urandom);
 
-
 STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     struct stat sb;
     const char *path = mp_obj_str_get_str(path_in);
