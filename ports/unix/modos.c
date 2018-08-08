@@ -62,7 +62,7 @@ STATIC mp_obj_t mod_os_urandom(mp_obj_t num) {
     RAISE_ERRNO(read(fd, vstr.buf, n), errno);
     close(fd);
 #else
-    getrandom(vstr.buf, n, 0);
+    RAISE_ERRNO(getrandom(vstr.buf, n, 0), errno);
 #endif
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
