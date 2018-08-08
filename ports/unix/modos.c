@@ -59,7 +59,7 @@ STATIC mp_obj_t mod_os_urandom(mp_obj_t num) {
 #ifdef _HAVE_GETRANDOM
     RAISE_ERRNO(getrandom(vstr.buf, n, 0), errno);
 #else
-    int fd = open(_USE_DEV_URANDOM, O_RDONLY);
+    int fd = open("/dev/urandom", O_RDONLY);
     RAISE_ERRNO(fd, errno);
     RAISE_ERRNO(read(fd, vstr.buf, n), errno);
     close(fd);
