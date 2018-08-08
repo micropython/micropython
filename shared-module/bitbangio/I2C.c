@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-module/bitbangio/types.h"
-
+#include "supervisor/shared/translate.h"
 
 STATIC void delay(bitbangio_i2c_obj_t *self) {
     // We need to use an accurate delay to get acceptable I2C
@@ -55,7 +55,7 @@ STATIC void scl_release(bitbangio_i2c_obj_t *self) {
     }
     // raise exception on timeout
     if (count == 0) {
-        mp_raise_msg(&mp_type_TimeoutError, "Clock stretch too long");
+        mp_raise_msg(&mp_type_TimeoutError, translate("Clock stretch too long"));
     }
 }
 

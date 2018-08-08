@@ -34,6 +34,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audiobusio
 //|
@@ -120,11 +121,11 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     uint32_t sample_rate = args[ARG_sample_rate].u_int;
     uint8_t bit_depth = args[ARG_bit_depth].u_int;
     if (bit_depth % 8 != 0) {
-        mp_raise_ValueError("Bit depth must be multiple of 8.");
+        mp_raise_ValueError(translate("Bit depth must be multiple of 8."));
     }
     uint8_t oversample = args[ARG_oversample].u_int;
     if (oversample % 8 != 0) {
-        mp_raise_ValueError("Oversample must be multiple of 8.");
+        mp_raise_ValueError(translate("Oversample must be multiple of 8."));
     }
     bool mono = args[ARG_mono].u_bool;
 
@@ -132,7 +133,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
         ? STARTUP_DELAY_DEFAULT
         : mp_obj_get_float(args[ARG_startup_delay].u_obj);
     if (startup_delay < 0.0 || startup_delay > 1.0) {
-        mp_raise_ValueError("Microphone startup delay must be in range 0.0 to 1.0");
+        mp_raise_ValueError(translate("Microphone startup delay must be in range 0.0 to 1.0"));
     }
 
     common_hal_audiobusio_pdmin_construct(self, clock_pin, data_pin, sample_rate,
@@ -189,7 +190,7 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     raise_error_if_deinited(common_hal_audiobusio_pdmin_deinited(self));
     if (!MP_OBJ_IS_SMALL_INT(destination_length) || MP_OBJ_SMALL_INT_VALUE(destination_length) < 0) {
-        mp_raise_TypeError("destination_length must be an int >= 0");
+        mp_raise_TypeError(translate("destination_length must be an int >= 0"));
     }
     uint32_t length = MP_OBJ_SMALL_INT_VALUE(destination_length);
 
@@ -198,13 +199,13 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
         mp_raise_NotImplementedError("");
     } else if (mp_get_buffer(destination, &bufinfo, MP_BUFFER_WRITE)) {
         if (bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL) < length) {
-            mp_raise_ValueError("Destination capacity is smaller than destination_length.");
+            mp_raise_ValueError(translate("Destination capacity is smaller than destination_length."));
         }
         uint8_t bit_depth = common_hal_audiobusio_pdmin_get_bit_depth(self);
         if (bufinfo.typecode != 'H' && bit_depth == 16) {
-            mp_raise_ValueError("destination buffer must be an array of type 'H' for bit_depth = 16");
+            mp_raise_ValueError(translate("destination buffer must be an array of type 'H' for bit_depth = 16"));
         } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE && bit_depth == 8) {
-            mp_raise_ValueError("destination buffer must be a bytearray or array of type 'B' for bit_depth = 8");
+            mp_raise_ValueError(translate("destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"));
         }
         // length is the buffer length in slots, not bytes.
         uint32_t length_written =

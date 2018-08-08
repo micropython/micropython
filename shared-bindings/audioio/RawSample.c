@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audioio
 //|
@@ -94,13 +95,13 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
         if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
             bytes_per_sample = 2;
         } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-            mp_raise_ValueError("sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'");
+            mp_raise_ValueError(translate("sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"));
         }
         common_hal_audioio_rawsample_construct(self, ((uint8_t*)bufinfo.buf), bufinfo.len,
                                                bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
                                                args[ARG_sample_rate].u_int);
     } else {
-        mp_raise_TypeError("buffer must be a bytes-like object");
+        mp_raise_TypeError(translate("buffer must be a bytes-like object"));
     }
 
     return MP_OBJ_FROM_PTR(self);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_SUPERVISOR_MESSAGES_EN_US_H
-#define MICROPY_SUPERVISOR_MESSAGES_EN_US_H
+#include "supervisor/shared/translate.h"
 
-// Place override messages here.
+#include <string.h>
 
-// Leave this at the bottom.
-#include "supervisor/messages/default.h"
-
-#endif // MICROPY_SUPERVISOR_MESSAGES_EN_US_H
+inline __attribute__((always_inline)) const char* translate(const char* c) {
+    #ifndef NO_QSTR
+    #define QDEF(id, str)
+    #define TRANSLATION(id, str) if (strcmp(c, id) == 0) { return str; } else
+    #include "genhdr/qstrdefs.generated.h"
+    #undef TRANSLATION
+    #undef QDEF
+    #endif
+    {
+        return "";
+    }
+}

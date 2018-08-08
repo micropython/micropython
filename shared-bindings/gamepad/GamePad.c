@@ -32,6 +32,7 @@
 #include "shared-module/gamepad/GamePad.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 #include "GamePad.h"
 
 
@@ -96,11 +97,11 @@
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         size_t n_kw, const mp_obj_t *args) {
     if (n_args > 8) {
-        mp_raise_TypeError("too many arguments");
+        mp_raise_TypeError(translate("too many arguments"));
     }
     for (size_t i = 0; i < n_args; ++i) {
         if (!MP_OBJ_IS_TYPE(args[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError("expected a DigitalInOut");
+            mp_raise_TypeError(translate("expected a DigitalInOut"));
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(args[i]);
         raise_error_if_deinited(
@@ -157,4 +158,3 @@ const mp_obj_type_t gamepad_type = {
     .make_new = gamepad_make_new,
     .locals_dict = (mp_obj_dict_t*)&gamepad_locals_dict,
 };
-

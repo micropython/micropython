@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "shared-bindings/util.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: pulseio
 //|
@@ -160,7 +161,7 @@ STATIC mp_obj_t pulseio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t dut
     raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
     mp_int_t duty = mp_obj_get_int(duty_cycle);
     if (duty < 0 || duty > 0xffff) {
-        mp_raise_ValueError("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)");
+        mp_raise_ValueError(translate("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"));
     }
    common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
    return mp_const_none;
@@ -190,9 +191,9 @@ STATIC mp_obj_t pulseio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freq
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
     if (!common_hal_pulseio_pwmout_get_variable_frequency(self)) {
-        mp_raise_AttributeError(
+        mp_raise_AttributeError(translate(
             "PWM frequency not writeable when variable_frequency is False on "
-            "construction.");
+            "construction."));
     }
    common_hal_pulseio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
    return mp_const_none;

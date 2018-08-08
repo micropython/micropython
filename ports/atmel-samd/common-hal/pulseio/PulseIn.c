@@ -39,6 +39,7 @@
 #include "samd/pins.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
+#include "supervisor/shared/translate.h"
 
 #include "tick.h"
 
@@ -106,15 +107,15 @@ void pulsein_interrupt_handler(uint8_t channel) {
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state) {
     if (!pin->has_extint) {
-        mp_raise_RuntimeError("No hardware support on pin");
+        mp_raise_RuntimeError(translate("No hardware support on pin"));
     }
     if (eic_get_enable() && !eic_channel_free(pin->extint_channel)) {
-        mp_raise_RuntimeError("EXTINT channel already in use");
+        mp_raise_RuntimeError(translate("EXTINT channel already in use"));
     }
 
     self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, "Failed to allocate RX buffer of %d bytes", maxlen * sizeof(uint16_t));
+        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
     }
     self->channel = pin->extint_channel;
     self->pin = pin->number;
@@ -199,7 +200,7 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     if (self->len == 0) {
-        mp_raise_IndexError("pop from an empty PulseIn");
+        mp_raise_IndexError(translate("pop from an empty PulseIn"));
     }
     common_hal_mcu_disable_interrupts();
     uint16_t value = self->buffer[self->start];
@@ -231,7 +232,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self,
     }
     if (index < 0 || index >= self->len) {
         common_hal_mcu_enable_interrupts();
-        mp_raise_IndexError("index out of range");
+        mp_raise_IndexError(translate("index out of range"));
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     common_hal_mcu_enable_interrupts();

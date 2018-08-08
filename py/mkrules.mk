@@ -71,22 +71,22 @@ $(BUILD)/%.pp: %.c
 # the right .o's to get recompiled if the generated.h file changes. Adding
 # an order-only dependency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
-$(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
+$(OBJ): | $(HEADER_BUILD)/qstrdefs.enum.h $(HEADER_BUILD)/mpversion.h
 
 # The logic for qstr regeneration is:
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
 # - else, if list of newer prerequisites ($?) is not empty, then process just these ($?)
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
 $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(SRC_QSTR_PREPROCESSOR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
-	$(ECHO) "GEN $@"
+	$(STEPECHO) "GEN $@"
 	$(Q)grep -lE "(MP_QSTR|i18n)" $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) | xargs $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(SRC_QSTR_PREPROCESSOR) >$(HEADER_BUILD)/qstr.i.last;
 
-$(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
+$(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last $(PY_SRC)/makeqstrdefs.py
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 	$(Q)touch $@
 
-$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
+$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split $(PY_SRC)/makeqstrdefs.py
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 

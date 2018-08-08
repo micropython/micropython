@@ -3,7 +3,8 @@ SRC_SUPERVISOR = \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
 	supervisor/shared/rgb_led_status.c \
-	supervisor/shared/stack.c
+	supervisor/shared/stack.c \
+	supervisor/shared/translate.c
 
 ifeq ($(wildcard atmel-samd/supervisor/filesystem.c),)
 	SRC_SUPERVISOR += supervisor/filesystem.c
@@ -18,3 +19,5 @@ else
 endif
 
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))
+
+$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h

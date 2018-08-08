@@ -1,0 +1,673 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-08-03 17:20-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: main.c:137
+msgid " output:\n"
+msgstr ""
+
+#: main.c:148 main.c:221
+msgid ""
+"Auto-reload is on. Simply save files over USB to run them or enter REPL to "
+"disable.\n"
+msgstr ""
+
+#: main.c:150
+msgid "Running in safe mode! Auto-reload is off.\n"
+msgstr ""
+
+#: main.c:152 main.c:223
+msgid "Auto-reload is off.\n"
+msgstr ""
+
+#: main.c:166
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr ""
+
+#: main.c:182
+msgid "WARNING: Your code filename has two extensions\n"
+msgstr ""
+
+#: main.c:230
+msgid "You requested starting safe mode by "
+msgstr ""
+
+#: main.c:233
+msgid "To exit, please reset the board without "
+msgstr ""
+
+#: main.c:240
+msgid ""
+"You are running in safe mode which means something really bad happened.\n"
+msgstr ""
+
+#: main.c:242
+msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+msgstr ""
+
+#: main.c:243
+msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+msgstr ""
+
+#: main.c:246
+msgid ""
+"The microcontroller's power dipped. Please make sure your power supply "
+"provides\n"
+msgstr ""
+
+#: main.c:247
+msgid ""
+"enough power for the whole circuit and press reset (after ejecting "
+"CIRCUITPY).\n"
+msgstr ""
+
+#: main.c:251
+msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgstr ""
+
+#: main.c:406
+msgid "soft reboot\n"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
+msgid "Pin does not have ADC capabilities"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/analogio/AnalogOut.c:53
+msgid "AnalogOut not supported on given pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
+msgid "Invalid bit clock pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
+msgid "Bit clock and word select must share a clock unit"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
+msgid "Invalid data pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:169
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:174
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:145
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:150
+msgid "Serializer in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:230
+msgid "Clock unit in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
+msgid "Unable to find free GCLK"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:254
+msgid "Too many channels in sample."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:322
+msgid "No DMA channel found"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:324
+msgid "Unable to allocate buffers for signed conversion"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:109
+msgid "Invalid clock pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
+msgid "Only 8 or 16 bit mono with "
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
+msgid "sampling rate out of range"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
+msgid "DAC already in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
+msgid "Right channel unsupported"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
+msgid "Invalid pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
+msgid "Invalid pin for left channel"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
+msgid "Invalid pin for right channel"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
+msgid "Cannot output both channels on the same pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
+msgid "All timers in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/I2C.c:45
+msgid "Not enough pins available"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/I2C.c:76
+#: ports/atmel-samd/common-hal/busio/UART.c:121
+msgid "Invalid pins"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/I2C.c:99
+msgid "SDA or SCL needs a pull up"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/I2C.c:119
+msgid "Unsupported baudrate"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c:66
+msgid "bytes > 8 bits not supported"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c:73
+msgid "tx and rx cannot both be None"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c:142
+msgid "Failed to allocate RX buffer"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c:151
+msgid "Could not initialize UART"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c:239
+msgid "No RX pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c:289
+msgid "No TX pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
+msgid "Cannot get pull while in output mode"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
+msgid "Cannot reset into bootloader because no bootloader is present."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
+msgid "Invalid PWM frequency"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
+msgid "All timers for this pin are in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
+msgid "No hardware support on pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
+msgid "EXTINT channel already in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
+#, c-format
+msgid "Failed to allocate RX buffer of %d bytes"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
+msgid "pop from an empty PulseIn"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:235
+msgid "index out of range"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c:178
+msgid "Another send is already active"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
+msgid "Both pins must support hardware interrupts"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:46
+msgid "A hardware interrupt channel is already in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/rtc/RTC.c:101
+msgid "calibration value out of range +/-127"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/storage/__init__.c:48
+msgid "Cannot remount '/' when USB is active."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
+msgid "No free GCLKs"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/usb_hid/Device.c:78
+#, c-format
+msgid "Buffer incorrect size. Should be %d bytes."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
+msgid "USB Busy"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
+msgid "USB Error"
+msgstr ""
+
+#: py/modbuiltins.c:162
+msgid "chr() arg not in range(0x110000)"
+msgstr ""
+
+#: py/modbuiltins.c:171
+msgid "chr() arg not in range(256)"
+msgstr ""
+
+#: py/modbuiltins.c:285
+msgid "arg is an empty sequence"
+msgstr ""
+
+#: py/modbuiltins.c:350
+msgid "ord expects a character"
+msgstr ""
+
+#: py/modbuiltins.c:353
+#, c-format
+msgid "ord() expected a character, but string of length %d found"
+msgstr ""
+
+#: py/modbuiltins.c:363
+msgid "3-arg pow() not supported"
+msgstr ""
+
+#: py/modbuiltins.c:517
+msgid "must use keyword argument for key function"
+msgstr ""
+
+#: py/modstruct.c:145 py/modstruct.c:153 py/modstruct.c:234 py/modstruct.c:244
+#: shared-bindings/struct/__init__.c:103 shared-bindings/struct/__init__.c:145
+#: shared-module/struct/__init__.c:91 shared-module/struct/__init__.c:175
+msgid "buffer too small"
+msgstr ""
+
+#: shared-bindings/_stage/Layer.c:71
+msgid "graphic must be 2048 bytes long"
+msgstr ""
+
+#: shared-bindings/_stage/Layer.c:77 shared-bindings/_stage/Text.c:75
+msgid "palette must be 32 bytes long"
+msgstr ""
+
+#: shared-bindings/_stage/Layer.c:84
+msgid "map buffer too small"
+msgstr ""
+
+#: shared-bindings/_stage/Text.c:69
+msgid "font must be 2048 bytes long"
+msgstr ""
+
+#: shared-bindings/_stage/Text.c:81
+msgid "chars buffer too small"
+msgstr ""
+
+#: shared-bindings/analogio/AnalogOut.c:118
+msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+msgstr ""
+
+#: shared-bindings/audiobusio/I2SOut.c:225
+#: shared-bindings/audioio/AudioOut.c:223
+msgid "Not playing"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c:124
+msgid "Bit depth must be multiple of 8."
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c:128
+msgid "Oversample must be multiple of 8."
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c:136
+msgid "Microphone startup delay must be in range 0.0 to 1.0"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c:193
+msgid "destination_length must be an int >= 0"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c:202
+msgid "Destination capacity is smaller than destination_length."
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c:206
+msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c:208
+msgid ""
+"destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
+msgstr ""
+
+#: shared-bindings/audioio/RawSample.c:98
+msgid ""
+"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
+"'B'"
+msgstr ""
+
+#: shared-bindings/audioio/RawSample.c:104
+msgid "buffer must be a bytes-like object"
+msgstr ""
+
+#: shared-bindings/audioio/WaveFile.c:78
+msgid "file must be a file opened in byte mode"
+msgstr ""
+
+#: shared-bindings/bitbangio/I2C.c:111 shared-bindings/bitbangio/SPI.c:121
+#: shared-bindings/busio/SPI.c:133
+msgid "Function requires lock"
+msgstr ""
+
+#: shared-bindings/bitbangio/I2C.c:195 shared-bindings/busio/I2C.c:210
+msgid "Buffer must be at least length 1"
+msgstr ""
+
+#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:168
+msgid "Invalid polarity"
+msgstr ""
+
+#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
+msgid "Invalid phase"
+msgstr ""
+
+#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
+msgid "Invalid number of bits"
+msgstr ""
+
+#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
+msgid "buffer slices must be of equal length"
+msgstr ""
+
+#: shared-bindings/busio/I2C.c:120
+msgid "Function requires lock."
+msgstr ""
+
+#: shared-bindings/busio/UART.c:98
+msgid "bits must be 7, 8 or 9"
+msgstr ""
+
+#: shared-bindings/busio/UART.c:110
+msgid "stop must be 1 or 2"
+msgstr ""
+
+#: shared-bindings/digitalio/DigitalInOut.c:211
+msgid "Invalid direction."
+msgstr ""
+
+#: shared-bindings/digitalio/DigitalInOut.c:240
+msgid "Cannot set value when direction is input."
+msgstr ""
+
+#: shared-bindings/digitalio/DigitalInOut.c:266
+#: shared-bindings/digitalio/DigitalInOut.c:281
+msgid "Drive mode not used when direction is input."
+msgstr ""
+
+#: shared-bindings/digitalio/DigitalInOut.c:314
+#: shared-bindings/digitalio/DigitalInOut.c:331
+msgid "Pull not used when direction is output."
+msgstr ""
+
+#: shared-bindings/digitalio/DigitalInOut.c:340
+msgid "Unsupported pull value."
+msgstr ""
+
+#: shared-bindings/gamepad/GamePad.c:100
+msgid "too many arguments"
+msgstr ""
+
+#: shared-bindings/gamepad/GamePad.c:104
+msgid "expected a DigitalInOut"
+msgstr ""
+
+#: shared-bindings/math/__init__.c:53
+msgid "math domain error"
+msgstr ""
+
+#: shared-bindings/math/__init__.c:346
+msgid "division by zero"
+msgstr ""
+
+#: shared-bindings/microcontroller/Pin.c:89
+#: shared-bindings/neopixel_write/__init__.c:67
+#: shared-bindings/pulseio/PulseOut.c:75
+msgid "Expected a %q"
+msgstr ""
+
+#: shared-bindings/microcontroller/__init__.c:126
+msgid "Invalid run mode."
+msgstr ""
+
+#: shared-bindings/multiterminal/__init__.c:68
+msgid "Stream missing readinto() or write() method."
+msgstr ""
+
+#: shared-bindings/nvm/ByteArray.c:85
+msgid "only slices with step=1 (aka None) are supported"
+msgstr ""
+
+#: shared-bindings/nvm/ByteArray.c:99
+msgid "Slice and value different lengths."
+msgstr ""
+
+#: shared-bindings/nvm/ByteArray.c:104
+msgid "Array values should be single bytes."
+msgstr ""
+
+#: shared-bindings/nvm/ByteArray.c:107
+msgid "array/bytes required on right side"
+msgstr ""
+
+#: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
+msgid "Unable to write to nvm."
+msgstr ""
+
+#: shared-bindings/nvm/ByteArray.c:137
+msgid "Bytes must be between 0 and 255."
+msgstr ""
+
+#: shared-bindings/pulseio/PWMOut.c:164
+msgid ""
+"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+msgstr ""
+
+#: shared-bindings/pulseio/PWMOut.c:195
+msgid ""
+"PWM frequency not writeable when variable_frequency is False on construction."
+msgstr ""
+
+#: shared-bindings/pulseio/PulseIn.c:275
+msgid "Cannot delete values"
+msgstr ""
+
+#: shared-bindings/pulseio/PulseIn.c:281
+msgid "Slices not supported"
+msgstr ""
+
+#: shared-bindings/pulseio/PulseIn.c:287
+msgid "index must be int"
+msgstr ""
+
+#: shared-bindings/pulseio/PulseIn.c:293
+msgid "Read-only"
+msgstr ""
+
+#: shared-bindings/pulseio/PulseOut.c:134
+msgid "Array must contain halfwords (type 'H')"
+msgstr ""
+
+#: shared-bindings/random/__init__.c:92 shared-bindings/random/__init__.c:100
+msgid "stop not reachable from start"
+msgstr ""
+
+#: shared-bindings/random/__init__.c:111
+msgid "step must be non-zero"
+msgstr ""
+
+#: shared-bindings/random/__init__.c:114
+msgid "invalid step"
+msgstr ""
+
+#: shared-bindings/random/__init__.c:146
+msgid "empty sequence"
+msgstr ""
+
+#: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
+#: shared-bindings/time/__init__.c:192
+msgid "RTC is not supported on this board"
+msgstr ""
+
+#: shared-bindings/rtc/RTC.c:52
+msgid "RTC calibration is not supported on this board"
+msgstr ""
+
+#: shared-bindings/storage/__init__.c:77
+msgid "filesystem must provide mount method"
+msgstr ""
+
+#: shared-bindings/supervisor/__init__.c:93
+msgid "Brightness must be between 0 and 255"
+msgstr ""
+
+#: shared-bindings/supervisor/__init__.c:119
+msgid "Stack size must be at least 256"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:80
+msgid "sleep length must be non-negative"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:90
+msgid "time.struct_time() takes exactly 1 argument"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:93
+msgid "time.struct_time() takes a 9-sequence"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:171 shared-bindings/time/__init__.c:252
+msgid "Tuple or struct_time argument required"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:176 shared-bindings/time/__init__.c:257
+msgid "function takes exactly 9 arguments"
+msgstr ""
+
+#: shared-bindings/time/__init__.c:228 shared-bindings/time/__init__.c:261
+msgid "timestamp out of range for platform time_t"
+msgstr ""
+
+#: shared-bindings/touchio/TouchIn.c:173
+msgid "threshold must be in the range 0-65536"
+msgstr ""
+
+#: shared-bindings/util.c:38
+msgid ""
+"Object has been deinitialized and can no longer be used. Create a new object."
+msgstr ""
+
+#: shared-module/audioio/WaveFile.c:61
+msgid "Invalid wave file"
+msgstr ""
+
+#: shared-module/audioio/WaveFile.c:69
+msgid "Invalid format chunk size"
+msgstr ""
+
+#: shared-module/audioio/WaveFile.c:83
+msgid "Unsupported format"
+msgstr ""
+
+#: shared-module/audioio/WaveFile.c:99
+msgid "Data chunk must follow fmt chunk"
+msgstr ""
+
+#: shared-module/audioio/WaveFile.c:107
+msgid "Invalid file"
+msgstr ""
+
+#: shared-module/bitbangio/I2C.c:58
+msgid "Clock stretch too long"
+msgstr ""
+
+#: shared-module/bitbangio/SPI.c:45
+msgid "Clock pin init failed."
+msgstr ""
+
+#: shared-module/bitbangio/SPI.c:51
+msgid "MOSI pin init failed."
+msgstr ""
+
+#: shared-module/bitbangio/SPI.c:62
+msgid "MISO pin init failed."
+msgstr ""
+
+#: shared-module/bitbangio/SPI.c:122
+msgid "Cannot write without MOSI pin."
+msgstr ""
+
+#: shared-module/bitbangio/SPI.c:177
+msgid "Cannot read without MISO pin."
+msgstr ""
+
+#: shared-module/bitbangio/SPI.c:241
+msgid "Cannot transfer without MOSI and MISO pins."
+msgstr ""
+
+#: shared-module/struct/__init__.c:39
+msgid "'S' and 'O' are not supported format types"
+msgstr ""
+
+#: shared-module/struct/__init__.c:83
+msgid "too many arguments provided with the given format"
+msgstr ""

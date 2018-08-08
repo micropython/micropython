@@ -6,9 +6,15 @@ compiler:
 git:
   depth: 1
 env:
+  - TRAVIS_TEST=unix
+  - TRAVIS_TEST=docs
+  - TRAVIS_TEST=translations
   - TRAVIS_BOARD=feather_huzzah
-  - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express
+  - TRAVIS_BOARD=pca10056
+  - TRAVIS_BOARD=trinket_m0
+  - TRAVIS_BOARD=feather_m4_express
+  - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express_crickit
   - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_adalogger
@@ -16,19 +22,14 @@ env:
   - TRAVIS_BOARD=feather_m0_rfm9x
   - TRAVIS_BOARD=feather_m0_express
   - TRAVIS_BOARD=feather_m0_express_crickit
-  - TRAVIS_BOARD=feather_m4_express
   - TRAVIS_BOARD=itsybitsy_m0_express
   - TRAVIS_BOARD=itsybitsy_m4_express
   - TRAVIS_BOARD=metro_m0_express
   - TRAVIS_BOARD=metro_m4_express
   - TRAVIS_BOARD=pirkey_m0
-  - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=gemma_m0
   - TRAVIS_BOARD=hallowing_m0_express
   - TRAVIS_BOARD=feather52832
-  - TRAVIS_BOARD=pca10056
-  - TRAVIS_TEST=unix
-  - TRAVIS_TEST=docs
 
 addons:
   artifacts:
@@ -56,8 +57,10 @@ before_script:
   # For huzzah builds
   - if [[ $TRAVIS_BOARD = "feather_huzzah" ]]; then wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar xavf xtensa-lx106-elf-standalone.tar.gz; PATH=$(readlink -f xtensa-lx106-elf/bin):$PATH; fi
   # For coverage testing (upgrade is used to get latest urllib3 version)
+  - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y python3-pip)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
   - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
+  - ([[ $TRAVIS_TEST != "translations" ]] || sudo pip3 install polib)
   - gcc --version
   - ([[ -z "$TRAVIS_BOARD" ]] || arm-none-eabi-gcc --version)
   - python3 --version
@@ -103,6 +106,9 @@ script:
   - ([[ $TRAVIS_TEST != "docs" ]] || sphinx-build -E -W -b html . _build/html)
   - echo -en 'travis_fold:end:build_docs\\r'
 
+  - (echo 'Building translations' && echo -en 'travis_fold:start:build_translations\\r')
+  - ([[ $TRAVIS_TEST != "translations" ]] || make check-translate)
+  - echo -en 'travis_fold:end:build_translations\\r'
 
   # run coveralls coverage analysis (try to, even if some builds/tests failed)
   #- (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)

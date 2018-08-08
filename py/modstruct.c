@@ -33,6 +33,7 @@
 #include "py/objtuple.h"
 #include "py/binary.h"
 #include "py/parsenum.h"
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_STRUCT
 
@@ -141,7 +142,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             // negative offsets are relative to the end of the buffer
             offset = bufinfo.len + offset;
             if (offset < 0) {
-                mp_raise_ValueError("buffer too small");
+                mp_raise_ValueError(translate("buffer too small"));
             }
         }
         p += offset;
@@ -149,7 +150,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
 
     // Check that the input buffer is big enough to unpack all the values
     if (p + total_sz > end_p) {
-        mp_raise_ValueError("buffer too small");
+        mp_raise_ValueError(translate("buffer too small"));
     }
 
     for (size_t i = 0; i < num_items;) {
@@ -230,7 +231,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
         // negative offsets are relative to the end of the buffer
         offset = (mp_int_t)bufinfo.len + offset;
         if (offset < 0) {
-            mp_raise_ValueError("buffer too small");
+            mp_raise_ValueError(translate("buffer too small"));
         }
     }
     byte *p = (byte *)bufinfo.buf;
@@ -240,7 +241,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
     // Check that the output buffer is big enough to hold all the values
     mp_int_t sz = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     if (p + sz > end_p) {
-        mp_raise_ValueError("buffer too small");
+        mp_raise_ValueError(translate("buffer too small"));
     }
 
     struct_pack_into_internal(args[0], p, n_args - 3, &args[3]);

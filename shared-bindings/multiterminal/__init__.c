@@ -23,12 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "shared-bindings/multiterminal/__init__.h"
 
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
-
-#include "shared-bindings/multiterminal/__init__.h"
+#include "supervisor/shared/translate.h"
 
 //| :mod:`multiterminal` --- Manage additional terminal sources
 //| ===========================================================
@@ -65,7 +65,7 @@ STATIC mp_obj_t multiterminal_obj_set_secondary_terminal(mp_obj_t secondary_term
     mp_obj_t readinto_m[3];
     mp_load_method_maybe(secondary_terminal, MP_QSTR_readinto, readinto_m);
     if (write_m[0] == MP_OBJ_NULL || readinto_m[0] == MP_OBJ_NULL) {
-        mp_raise_ValueError("Stream missing readinto() or write() method.");
+        mp_raise_ValueError(translate("Stream missing readinto() or write() method."));
         return mp_const_none;
     }
     common_hal_multiterminal_set_secondary_terminal(secondary_terminal);

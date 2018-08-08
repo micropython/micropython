@@ -36,6 +36,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "supervisor/shared/translate.h"
 
 
 //| .. currentmodule:: busio
@@ -94,7 +95,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     uint8_t bits = args[ARG_bits].u_int;
     if (bits < 7 || bits > 9) {
-        mp_raise_ValueError("bits must be 7, 8 or 9");
+        mp_raise_ValueError(translate("bits must be 7, 8 or 9"));
     }
 
     uart_parity_t parity = PARITY_NONE;
@@ -106,7 +107,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     uint8_t stop = args[ARG_stop].u_int;
     if (stop != 1 && stop != 2) {
-        mp_raise_ValueError("stop must be 1 or 2");
+        mp_raise_ValueError(translate("stop must be 1 or 2"));
     }
 
     common_hal_busio_uart_construct(self, tx, rx,
@@ -304,7 +305,7 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&busio_uart_baudrate_obj) },
-    
+
     // Nested Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_Parity),       MP_ROM_PTR(&busio_uart_parity_type) },
 };

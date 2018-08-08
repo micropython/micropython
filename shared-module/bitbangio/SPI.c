@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-module/bitbangio/types.h"
+#include "supervisor/shared/translate.h"
 
 #define MAX_BAUDRATE (common_hal_mcu_get_clock_frequency() / 48)
 
@@ -41,13 +42,13 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
         const mcu_pin_obj_t * miso) {
     digitalinout_result_t result = common_hal_digitalio_digitalinout_construct(&self->clock, clock);
     if (result != DIGITALINOUT_OK) {
-        mp_raise_ValueError("Clock pin init failed.");
+        mp_raise_ValueError(translate("Clock pin init failed."));
     }
     if (mosi != mp_const_none) {
         result = common_hal_digitalio_digitalinout_construct(&self->mosi, mosi);
         if (result != DIGITALINOUT_OK) {
             common_hal_digitalio_digitalinout_deinit(&self->clock);
-            mp_raise_ValueError("MOSI pin init failed.");
+            mp_raise_ValueError(translate("MOSI pin init failed."));
         }
         self->has_mosi = true;
     }
@@ -58,7 +59,7 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
             if (mosi != mp_const_none) {
                 common_hal_digitalio_digitalinout_deinit(&self->mosi);
             }
-            mp_raise_ValueError("MISO pin init failed.");
+            mp_raise_ValueError(translate("MISO pin init failed."));
         }
         self->has_miso = true;
     }
@@ -118,7 +119,7 @@ void shared_module_bitbangio_spi_unlock(bitbangio_spi_obj_t *self) {
 // Writes out the given data.
 bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t *data, size_t len) {
     if (len > 0 && !self->has_mosi) {
-        mp_raise_ValueError("Cannot write without MOSI pin.");
+        mp_raise_ValueError(translate("Cannot write without MOSI pin."));
     }
     uint32_t delay_half = self->delay_half;
 
@@ -173,7 +174,7 @@ bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t 
 // Reads in len bytes while outputting zeroes.
 bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len) {
     if (len > 0 && !self->has_miso) {
-        mp_raise_ValueError("Cannot read without MISO pin.");
+        mp_raise_ValueError(translate("Cannot read without MISO pin."));
     }
 
     uint32_t delay_half = self->delay_half;
@@ -237,7 +238,7 @@ bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, 
 // transfer
 bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8_t *dout, uint8_t *din, size_t len) {
     if (len > 0 && (!self->has_mosi || !self->has_miso) ) {
-        mp_raise_ValueError("Cannot transfer without MOSI and MISO pins.");
+        mp_raise_ValueError(translate("Cannot transfer without MOSI and MISO pins."));
     }
     uint32_t delay_half = self->delay_half;
 

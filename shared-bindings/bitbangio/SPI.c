@@ -37,6 +37,7 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: bitbangio
 //|
@@ -117,7 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_obj___exit___obj, 4, 4,
 
 static void check_lock(bitbangio_spi_obj_t *self) {
     if (!shared_module_bitbangio_spi_has_lock(self)) {
-        mp_raise_RuntimeError("Function requires lock");
+        mp_raise_RuntimeError(translate("Function requires lock"));
     }
 }
 
@@ -147,15 +148,15 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
 
     uint8_t polarity = args[ARG_polarity].u_int;
     if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError("Invalid polarity");
+        mp_raise_ValueError(translate("Invalid polarity"));
     }
     uint8_t phase = args[ARG_phase].u_int;
     if (phase != 0 && phase != 1) {
-        mp_raise_ValueError("Invalid phase");
+        mp_raise_ValueError(translate("Invalid phase"));
     }
     uint8_t bits = args[ARG_bits].u_int;
     if (bits != 8 && bits != 9) {
-        mp_raise_ValueError("Invalid number of bits");
+        mp_raise_ValueError(translate("Invalid number of bits"));
     }
 
     shared_module_bitbangio_spi_configure(self, args[ARG_baudrate].u_int, polarity, phase, bits);
@@ -280,7 +281,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
 
     if (out_length != in_length) {
-        mp_raise_ValueError("buffer slices must be of equal length");
+        mp_raise_ValueError(translate("buffer slices must be of equal length"));
     }
 
     if (out_length == 0) {

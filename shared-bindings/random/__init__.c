@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/random/__init__.h"
+#include "supervisor/shared/translate.h"
 
 //| :mod:`random` --- psuedo-random numbers and choices
 //| ========================================================
@@ -88,7 +89,7 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // range(stop)
         if (stop <= 0) {
-            mp_raise_ValueError("stop not reachable from start");
+            mp_raise_ValueError(translate("stop not reachable from start"));
         }
     } else {
         start = stop;
@@ -96,7 +97,7 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
         if (n_args == 2) {
             // range(start, stop)
             if (start >= stop) {
-                mp_raise_ValueError("stop not reachable from start");
+                mp_raise_ValueError(translate("stop not reachable from start"));
             }
         } else {
             // range(start, stop, step)
@@ -107,10 +108,10 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
             } else if (step < 0) {
                 n = (stop - start + step + 1) / step;
             } else {
-                mp_raise_ValueError("step must be non-zero");
+                mp_raise_ValueError(translate("step must be non-zero"));
             }
             if (n <= 0) {
-                mp_raise_ValueError("invalid step");
+                mp_raise_ValueError(translate("invalid step"));
             }
         }
     }
@@ -142,7 +143,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(random_randint_obj, random_randint);
 STATIC mp_obj_t random_choice(mp_obj_t seq) {
     mp_int_t len = mp_obj_get_int(mp_obj_len(seq));
     if (len == 0) {
-        mp_raise_IndexError("empty sequence");
+        mp_raise_IndexError(translate("empty sequence"));
     }
     return mp_obj_subscr(seq, mp_obj_new_int(shared_modules_random_randrange(0, len, 1)), MP_OBJ_SENTINEL);
 }

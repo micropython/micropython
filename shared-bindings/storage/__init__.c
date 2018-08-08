@@ -33,6 +33,7 @@
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
+#include "supervisor/shared/translate.h"
 
 //| :mod:`storage` --- storage management
 //| ========================================================
@@ -73,7 +74,7 @@ mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
     mp_obj_t dest[2];
     mp_load_method_maybe(vfs_obj, MP_QSTR_mount, dest);
     if (dest[0] == MP_OBJ_NULL) {
-        mp_raise_ValueError("filesystem must provide mount method");
+        mp_raise_ValueError(translate("filesystem must provide mount method"));
     }
 
     common_hal_storage_mount(vfs_obj, mnt_str, mp_obj_is_true(args[ARG_readonly].u_obj));

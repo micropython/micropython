@@ -36,6 +36,7 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
+#include "supervisor/shared/translate.h"
 
 // This timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
@@ -106,7 +107,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
             }
         }
         if (tc == NULL) {
-            mp_raise_RuntimeError("All timers in use");
+            mp_raise_RuntimeError(translate("All timers in use"));
         }
 
         pulseout_tc_index = index;
@@ -174,7 +175,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
     if (active_pincfg != NULL) {
-        mp_raise_RuntimeError("Another send is already active");
+        mp_raise_RuntimeError(translate("Another send is already active"));
     }
     active_pincfg = self->pincfg;
     pulse_buffer = pulses;

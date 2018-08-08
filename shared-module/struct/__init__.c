@@ -31,11 +31,12 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/parsenum.h"
+#include "supervisor/shared/translate.h"
 
 void struct_validate_format(char fmt) {
 #if MICROPY_NONSTANDARD_TYPECODES
     if( fmt == 'S' || fmt == 'O') {
-        mp_raise_RuntimeError("'S' and 'O' are not supported format types");
+        mp_raise_RuntimeError(translate("'S' and 'O' are not supported format types"));
     }
 #endif
 }
@@ -70,7 +71,6 @@ mp_uint_t get_fmt_num(const char **p) {
     return val;
 }
 
-
 void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte* end_p, size_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
@@ -80,7 +80,7 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte* end_p, size
         mp_uint_t sz = 1;
         if (*fmt == '\0') {
             // more arguments given than used by format string; CPython raises struct.error here
-            mp_raise_RuntimeError("too many arguments provided with the given format");
+            mp_raise_RuntimeError(translate("too many arguments provided with the given format"));
         }
         struct_validate_format(*fmt);
 
@@ -88,7 +88,7 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte* end_p, size
             sz = get_fmt_num(&fmt);
         }
         if (p + sz > end_p) {
-            mp_raise_RuntimeError("buffer too small");
+            mp_raise_RuntimeError(translate("buffer too small"));
         }
 
         if (*fmt == 's') {
@@ -172,7 +172,7 @@ mp_obj_tuple_t * shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byt
           sz = get_fmt_num(&fmt);
       }
       if (p + sz > end_p) {
-          mp_raise_RuntimeError("buffer too small");
+          mp_raise_RuntimeError(translate("buffer too small"));
       }
       mp_obj_t item;
       if (*fmt == 's') {

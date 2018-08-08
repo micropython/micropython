@@ -36,6 +36,7 @@
 #include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
+#include "supervisor/shared/translate.h"
 
 static struct calendar_descriptor calendar;
 
@@ -97,7 +98,7 @@ int common_hal_rtc_get_calibration(void) {
 
 void common_hal_rtc_set_calibration(int calibration) {
     if (calibration > 127 || calibration < -127)
-        mp_raise_ValueError("calibration value out of range +/-127");
+        mp_raise_ValueError(translate("calibration value out of range +/-127"));
 
     hri_rtcmode0_write_FREQCORR_SIGN_bit(calendar.device.hw, calibration < 0 ? 0 : 1);
     hri_rtcmode0_write_FREQCORR_VALUE_bf(calendar.device.hw, abs(calibration));
