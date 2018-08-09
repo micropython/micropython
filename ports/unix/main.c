@@ -647,6 +647,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     #endif
 
+    #if MICROPY_PY_THREAD
+    mp_thread_deinit();
+    #endif
+
     #if defined(MICROPY_UNIX_COVERAGE)
     gc_sweep_all();
     #endif
