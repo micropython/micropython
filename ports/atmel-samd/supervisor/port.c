@@ -239,7 +239,7 @@ void reset_port(void) {
         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
     }
 
-#ifdef EXPRESS_BOARD
+#if defined(EXPRESS_BOARD) && !defined(__SAMR21G18A__)
     audioout_reset();
     #if !defined(__SAMD51G19A__) && !defined(__SAMD51G18A__)
     i2sout_reset();

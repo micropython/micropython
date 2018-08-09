@@ -269,6 +269,7 @@ axtls: $(BUILD)/libaxtls.a
 
 $(BUILD)/libaxtls.a:
 	cd $(TOP)/lib/axtls; cp config/upyconfig config/.config
+	cd $(TOP)/lib/axtls; $(MAKE) ssl/version.h
 	cd $(TOP)/lib/axtls; $(MAKE) oldconfig -B
 	cd $(TOP)/lib/axtls; $(MAKE) clean
 	cd $(TOP)/lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096"

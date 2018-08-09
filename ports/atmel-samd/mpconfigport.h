@@ -213,15 +213,21 @@ extern const struct _mp_obj_module_t usb_hid_module;
     // Scan gamepad every 32ms
     #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
-    #if defined(__SAMD51G19A__) || defined(__SAMD51G18A__)
+    #if defined(__SAMD51G19A__) || defined(__SAMD51G18A__) || defined(__SAMR21G18A__)
         #define AUDIOBUSIO_MODULE
     #else
         #define AUDIOBUSIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
     #endif
 
+    #if defined(__SAMR21G18A__)
+        #define AUDIOIO_MODULE
+    #else
+        #define AUDIOIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
+    #endif
+
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
+        AUDIOIO_MODULE \
         AUDIOBUSIO_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \

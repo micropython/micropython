@@ -336,8 +336,6 @@ SRC_COMMON_HAL = \
 	pulseio/PWMOut.c \
 	usb_hid/__init__.c \
 	usb_hid/Device.c \
-	audioio/__init__.c \
-	audioio/AudioOut.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
 
@@ -378,13 +376,8 @@ SRC_BINDINGS_ENUMS = \
 	supervisor/__init__.c \
 	util.c
 
-SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE = \
-	audioio/RawSample.c \
-	audioio/WaveFile.c \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
@@ -402,16 +395,32 @@ SRC_SHARED_MODULE = \
 	uheap/__init__.c \
 	ustack/__init__.c
 
+# SAMRs don't have a DAC
+ifneq ($(CHIP_VARIANT),SAMR21G18A)
+	SRC_COMMON_HAL += \
+		audioio/__init__.c \
+		audioio/AudioOut.c
+	SRC_SHARED_MODULE += \
+		audioio/RawSample.c \
+		audioio/WaveFile.c
+endif
+
 # The smallest SAMD51 packages don't have I2S. Everything else does.
 ifneq ($(CHIP_VARIANT),SAMD51G18A)
 	ifneq ($(CHIP_VARIANT),SAMD51G19A)
-		SRC_COMMON_HAL += \
-			audiobusio/__init__.c \
-			audiobusio/I2SOut.c \
-			audiobusio/PDMIn.c
-		SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
+		ifneq ($(CHIP_VARIANT),SAMR21G18A)
+			SRC_COMMON_HAL += \
+				audiobusio/__init__.c \
+				audiobusio/I2SOut.c \
+				audiobusio/PDMIn.c
+			SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
+		endif
 	endif
 endif
+
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
