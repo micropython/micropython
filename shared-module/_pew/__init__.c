@@ -34,39 +34,44 @@
 
 
 void pew_tick(void) {
+    static uint8_t col = 0;
+    static uint8_t turn = 0;
     digitalio_digitalinout_obj_t *pin;
+
     pew_obj_t* pew = MP_STATE_VM(pew_singleton);
     if (!pew) { return; }
 
-    pin = MP_OBJ_TO_PTR(pew->cols[pew->col]);
-    common_hal_digitalio_digitalinout_set_value(pin, true);
-    pew->col += 1;
-    if (pew->col >= pew->cols_size) {
-        pew->col = 0;
-        pew->turn += 1;
-        if (pew->turn >= 4) {
-            pew->turn = 0;
+    pin = MP_OBJ_TO_PTR(pew->cols[col]);
+    ++col;
+    if (col >= pew->cols_size) {
+        col = 0;
+        ++turn;
+        if (turn >= 8) {
+            turn = 0;
         }
     }
+    common_hal_digitalio_digitalinout_set_value(pin, true);
     for (size_t x = 0; x < pew->rows_size; ++x) {
         pin = MP_OBJ_TO_PTR(pew->rows[x]);
-        uint8_t color = pew->buffer[(pew->col) * (pew->rows_size) + x];
-        bool value = true;
-        switch (pew->turn) {
-            case 0:
-                if (color & 0x03) { value = true; }
+        uint8_t color = pew->buffer[col * (pew->rows_size) + x];
+        bool value = false;
+        switch (color & 0x03) {
+            case 3:
+                value = true;
                 break;
-            case 1:
             case 2:
-                if (color & 0x02) { value = true; }
+                if (turn == 2 || turn == 4 || turn == 6) {
+                    value = true;
+                }
+            case 1:
+                if (turn == 0) {
+                    value = true;
+                }
+            case 0:
                 break;
         }
         common_hal_digitalio_digitalinout_set_value(pin, value);
     }
-    pin = MP_OBJ_TO_PTR(pew->cols[pew->col]);
+    pin = MP_OBJ_TO_PTR(pew->cols[col]);
     common_hal_digitalio_digitalinout_set_value(pin, false);
-}
-
-void pew_reset(void) {
-    MP_STATE_VM(pew_singleton) = NULL;
 }

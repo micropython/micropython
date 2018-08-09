@@ -29,19 +29,17 @@
 
 #include <stdint.h>
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
-
 typedef struct {
     mp_obj_base_t base;
     uint8_t* buffer;
     mp_obj_t* rows;
     mp_obj_t* cols;
-    size_t rows_size;
-    size_t cols_size;
-    volatile uint8_t col;
-    volatile uint8_t turn;
+    uint8_t rows_size;
+    uint8_t cols_size;
 } pew_obj_t;
 
 void pew_init(void);
+void pewpew_interrupt_handler(uint8_t index);
+void pew_reset(void);
 
 #endif  // MICROPY_INCLUDED_PEW_PEWPEW_H

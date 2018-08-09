@@ -55,11 +55,6 @@ void SysTick_Handler(void) {
         gamepad_tick();
     }
     #endif
-    #ifdef CIRCUITPY_PEWPEW_TICKS
-    if (!(ticks_ms & CIRCUITPY_PEWPEW_TICKS)) {
-        pew_tick();
-    }
-    #endif
 }
 
 void tick_init() {

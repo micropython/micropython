@@ -28,6 +28,5 @@
 #define MICROPY_INCLUDED_PEW_H
 
 void pew_tick(void);
-void pew_reset(void);
 
 #endif  // MICROPY_INCLUDED_PEW_H

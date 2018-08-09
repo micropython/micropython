@@ -110,8 +110,6 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
     pew->rows_size = rows_size;
     pew->cols = cols;
     pew->cols_size = cols_size;
-    pew->col = 0;
-    pew->turn = 0;
     pew_init();
 
     return MP_OBJ_FROM_PTR(pew);

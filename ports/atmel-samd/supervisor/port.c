@@ -72,7 +72,7 @@
 #include "shared-module/gamepad/__init__.h"
 #endif
 #ifdef CIRCUITPY_PEWPEW_TICKS
-#include "shared-module/_pew/__init__.h"
+#include "shared-module/_pew/PewPew.h"
 #endif
 
 extern volatile bool mp_msc_enabled;
