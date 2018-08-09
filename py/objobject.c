@@ -29,6 +29,8 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 typedef struct _mp_obj_object_t {
     mp_obj_base_t base;
 } mp_obj_object_t;
@@ -50,7 +52,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
 
 STATIC mp_obj_t object___new__(mp_obj_t cls) {
     if (!MP_OBJ_IS_TYPE(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t*)MP_OBJ_TO_PTR(cls))) {
-        mp_raise_TypeError("__new__ arg must be a user-type");
+        mp_raise_TypeError(translate("__new__ arg must be a user-type"));
     }
     // This executes only "__new__" part of instance creation.
     // TODO: This won't work well for classes with native bases.

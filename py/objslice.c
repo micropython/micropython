@@ -31,6 +31,8 @@
 #include "py/runtime.h"
 #include "py/runtime0.h"
 
+#include "supervisor/shared/translate.h"
+
 /******************************************************************************/
 /* slice object                                                               */
 
@@ -61,12 +63,12 @@ STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 STATIC mp_obj_t slice_indices(mp_obj_t self_in, mp_obj_t length_obj) {
     mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
     if (!MP_OBJ_IS_SMALL_INT(length_obj)) {
-        mp_raise_TypeError("Length must be an int");
+        mp_raise_TypeError(translate("Length must be an int"));
     }
 
     int length = MP_OBJ_SMALL_INT_VALUE(length_obj);
     if (length < 0) {
-        mp_raise_ValueError("Length must be non-negative");
+        mp_raise_ValueError(translate("Length must be non-negative"));
     }
 
     mp_obj_t indices[3] = {MP_OBJ_NEW_SMALL_INT(0), length_obj, MP_OBJ_NEW_SMALL_INT(1)};
@@ -81,7 +83,7 @@ STATIC mp_obj_t slice_indices(mp_obj_t self_in, mp_obj_t length_obj) {
             indices[1] = MP_OBJ_NEW_SMALL_INT(-1);
         }
         if (step == 0) {
-            mp_raise_ValueError("slice step cannot be zero");
+            mp_raise_ValueError(translate("slice step cannot be zero"));
         }
     }
     for (int i = 0; i < 2; i++) {
@@ -154,7 +156,7 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
 STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
         size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (type != &mp_type_slice) {
-        mp_raise_NotImplementedError("Cannot subclass slice");
+        mp_raise_NotImplementedError(translate("Cannot subclass slice"));
     }
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 3, false);

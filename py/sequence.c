@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
 // Helpers for sequence types
 
@@ -53,7 +54,7 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
     if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
         indexes->step = mp_obj_get_int(ostep);
         if (indexes->step == 0) {
-            mp_raise_ValueError("slice step cannot be zero");
+            mp_raise_ValueError(translate("slice step cannot be zero"));
         }
     } else {
         indexes->step = 1;
@@ -260,7 +261,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, cons
         }
     }
 
-    mp_raise_ValueError("object not in sequence");
+    mp_raise_ValueError(translate("object not in sequence"));
 }
 
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, size_t len, mp_obj_t value) {

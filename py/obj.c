@@ -37,6 +37,8 @@
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
+#include "supervisor/shared/translate.h"
+
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         return (mp_obj_type_t*)&mp_type_int;
@@ -84,19 +86,19 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
             assert(n % 3 == 0);
-            mp_print_str(print, "Traceback (most recent call last):\n");
+            mp_print_str(print, translate("Traceback (most recent call last):\n"));
             for (int i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
-                mp_printf(print, "  File \"%q\", line %d", values[i], (int)values[i + 1]);
+                mp_printf(print, translate("  File \"%q\", line %d"), values[i], (int)values[i + 1]);
 #else
-                mp_printf(print, "  File \"%q\"", values[i]);
+                mp_printf(print, translate("  File \"%q\""), values[i]);
 #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTR_NULL) {
                     mp_print_str(print, "\n");
                 } else {
-                    mp_printf(print, ", in %q\n", block);
+                    mp_printf(print, translate(", in %q\n"), block);
                 }
             }
         }
@@ -236,10 +238,10 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
         return mp_obj_int_get_checked(arg);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("can't convert to int");
+            mp_raise_TypeError(translate("can't convert to int"));
         } else {
             mp_raise_TypeError_varg(
-                "can't convert %s to int", mp_obj_get_type_str(arg));
+                translate("can't convert %s to int"), mp_obj_get_type_str(arg));
         }
     }
 }
@@ -299,10 +301,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("can't convert to float");
+            mp_raise_TypeError(translate("can't convert to float"));
         } else {
             mp_raise_TypeError_varg(
-                "can't convert %s to float", mp_obj_get_type_str(arg));
+                translate("can't convert %s to float"), mp_obj_get_type_str(arg));
         }
     }
 
@@ -332,10 +334,10 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         mp_obj_complex_get(arg, real, imag);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("can't convert to complex");
+            mp_raise_TypeError(translate("can't convert to complex"));
         } else {
             mp_raise_TypeError_varg(
-                "can't convert %s to complex", mp_obj_get_type_str(arg));
+                translate("can't convert %s to complex"), mp_obj_get_type_str(arg));
         }
     }
 }
@@ -350,10 +352,10 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
         mp_obj_list_get(o, len, items);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("expected tuple/list");
+            mp_raise_TypeError(translate("expected tuple/list"));
         } else {
             mp_raise_TypeError_varg(
-                "object '%s' is not a tuple or list", mp_obj_get_type_str(o));
+                translate("object '%s' is not a tuple or list"), mp_obj_get_type_str(o));
         }
     }
 }
@@ -364,9 +366,9 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     mp_obj_get_array(o, &seq_len, items);
     if (seq_len != len) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_ValueError("tuple/list has wrong length");
+            mp_raise_ValueError(translate("tuple/list has wrong length"));
         } else {
-            mp_raise_ValueError_varg("requested length %d but object has length %d",
+            mp_raise_ValueError_varg(translate("requested length %d but object has length %d"),
                 (int)len, (int)seq_len);
         }
     }
@@ -379,10 +381,10 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("indices must be integers");
+            mp_raise_TypeError(translate("indices must be integers"));
         } else {
             mp_raise_TypeError_varg(
-                "%q indices must be integers, not %s",
+                translate("%q indices must be integers, not %s"),
                 type->name, mp_obj_get_type_str(index));
         }
     }
@@ -399,10 +401,10 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     } else {
         if (i < 0 || (mp_uint_t)i >= len) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                mp_raise_IndexError("index out of range");
+                mp_raise_IndexError(translate("index out of range"));
             } else {
                 mp_raise_msg_varg(&mp_type_IndexError,
-                    "%q index out of range", type->name);
+                    translate("%q index out of range"), type->name);
             }
         }
     }
@@ -434,10 +436,10 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
     if (len == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object has no len");
+            mp_raise_TypeError(translate("object has no len"));
         } else {
             mp_raise_TypeError_varg(
-                "object of type '%s' has no len()", mp_obj_get_type_str(o_in));
+                translate("object of type '%s' has no len()"), mp_obj_get_type_str(o_in));
         }
     } else {
         return len;
@@ -475,24 +477,24 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     }
     if (value == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object does not support item deletion");
+            mp_raise_TypeError(translate("object does not support item deletion"));
         } else {
             mp_raise_TypeError_varg(
-                "'%s' object does not support item deletion", mp_obj_get_type_str(base));
+                translate("'%s' object does not support item deletion"), mp_obj_get_type_str(base));
         }
     } else if (value == MP_OBJ_SENTINEL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object is not subscriptable");
+            mp_raise_TypeError(translate("object is not subscriptable"));
         } else {
             mp_raise_TypeError_varg(
-                "'%s' object is not subscriptable", mp_obj_get_type_str(base));
+                translate("'%s' object is not subscriptable"), mp_obj_get_type_str(base));
         }
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object does not support item assignment");
+            mp_raise_TypeError(translate("object does not support item assignment"));
         } else {
             mp_raise_TypeError_varg(
-                "'%s' object does not support item assignment", mp_obj_get_type_str(base));
+                translate("'%s' object does not support item assignment"), mp_obj_get_type_str(base));
         }
     }
 }
@@ -523,7 +525,7 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
 
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     if (!mp_get_buffer(obj, bufinfo, flags)) {
-        mp_raise_TypeError("object with buffer protocol required");
+        mp_raise_TypeError(translate("object with buffer protocol required"));
     }
 }
 

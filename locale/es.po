@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-03 17:20-0700\n"
+"POT-Creation-Date: 2018-08-08 15:15-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -185,7 +185,7 @@ msgid "Not enough pins available"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:76
-#: ports/atmel-samd/common-hal/busio/UART.c:121
+#: ports/atmel-samd/common-hal/busio/UART.c:119
 msgid "Invalid pins"
 msgstr ""
 
@@ -201,23 +201,23 @@ msgstr ""
 msgid "bytes > 8 bits not supported"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:73
+#: ports/atmel-samd/common-hal/busio/UART.c:72
 msgid "tx and rx cannot both be None"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:142
+#: ports/atmel-samd/common-hal/busio/UART.c:139
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:151
+#: ports/atmel-samd/common-hal/busio/UART.c:147
 msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:239
+#: ports/atmel-samd/common-hal/busio/UART.c:234
 msgid "No RX pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:289
+#: ports/atmel-samd/common-hal/busio/UART.c:284
 msgid "No TX pin"
 msgstr ""
 
@@ -296,6 +296,151 @@ msgstr ""
 msgid "USB Error"
 msgstr ""
 
+#: py/compile.c:397 py/compile.c:542
+msgid "can't assign to expression"
+msgstr ""
+
+#: py/compile.c:416
+msgid "multiple *x in assignment"
+msgstr ""
+
+#: py/compile.c:642
+msgid "non-default argument follows default argument"
+msgstr ""
+
+#: py/compile.c:771 py/compile.c:789
+msgid "invalid micropython decorator"
+msgstr ""
+
+#: py/compile.c:943
+msgid "can't delete expression"
+msgstr ""
+
+#: py/compile.c:955
+msgid "'break' outside loop"
+msgstr ""
+
+#: py/compile.c:958
+msgid "'continue' outside loop"
+msgstr ""
+
+#: py/compile.c:969
+msgid "'return' outside function"
+msgstr ""
+
+#: py/compile.c:1169
+msgid "identifier redefined as global"
+msgstr ""
+
+#: py/compile.c:1185
+msgid "no binding for nonlocal found"
+msgstr ""
+
+#: py/compile.c:1188
+msgid "identifier redefined as nonlocal"
+msgstr ""
+
+#: py/compile.c:1197
+msgid "can't declare nonlocal in outer code"
+msgstr ""
+
+#: py/compile.c:1542
+msgid "default 'except' must be last"
+msgstr ""
+
+#: py/compile.c:2095
+msgid "*x must be assignment target"
+msgstr ""
+
+#: py/compile.c:2193
+msgid "super() can't find self"
+msgstr ""
+
+#: py/compile.c:2256
+msgid "can't have multiple *x"
+msgstr ""
+
+#: py/compile.c:2263
+msgid "can't have multiple **x"
+msgstr ""
+
+#: py/compile.c:2271
+msgid "LHS of keyword arg must be an id"
+msgstr ""
+
+#: py/compile.c:2287
+msgid "non-keyword arg after */**"
+msgstr ""
+
+#: py/compile.c:2291
+msgid "non-keyword arg after keyword arg"
+msgstr ""
+
+#: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
+#: py/parse.c:1176
+msgid "invalid syntax"
+msgstr ""
+
+#: py/compile.c:2465
+msgid "expecting key:value for dict"
+msgstr ""
+
+#: py/compile.c:2475
+msgid "expecting just a value for set"
+msgstr ""
+
+#: py/compile.c:2600
+msgid "'yield' outside function"
+msgstr ""
+
+#: py/compile.c:2619
+msgid "'await' outside function"
+msgstr ""
+
+#: py/compile.c:2774
+msgid "name reused for argument"
+msgstr ""
+
+#: py/compile.c:2827
+msgid "parameter annotation must be an identifier"
+msgstr ""
+
+#: py/compile.c:2969 py/compile.c:3137
+msgid "return annotation must be an identifier"
+msgstr ""
+
+#: py/compile.c:3097
+msgid "inline assembler must be a function"
+msgstr ""
+
+#: py/compile.c:3134
+msgid "unknown type"
+msgstr ""
+
+#: py/compile.c:3154
+msgid "expecting an assembler instruction"
+msgstr ""
+
+#: py/compile.c:3184
+msgid "'label' requires 1 argument"
+msgstr ""
+
+#: py/compile.c:3190
+msgid "label redefined"
+msgstr ""
+
+#: py/compile.c:3196
+msgid "'align' requires 1 argument"
+msgstr ""
+
+#: py/compile.c:3205
+msgid "'data' requires at least 2 arguments"
+msgstr ""
+
+#: py/compile.c:3212
+msgid "'data' requires integer arguments"
+msgstr ""
+
 #: py/modbuiltins.c:162
 msgid "chr() arg not in range(0x110000)"
 msgstr ""
@@ -329,6 +474,462 @@ msgstr ""
 #: shared-bindings/struct/__init__.c:103 shared-bindings/struct/__init__.c:145
 #: shared-module/struct/__init__.c:91 shared-module/struct/__init__.c:175
 msgid "buffer too small"
+msgstr ""
+
+#: py/obj.c:89
+msgid "Traceback (most recent call last):\n"
+msgstr ""
+
+#: py/obj.c:92
+msgid "  File \"%q\", line %d"
+msgstr ""
+
+#: py/obj.c:94
+msgid "  File \"%q\""
+msgstr ""
+
+#: py/obj.c:101
+msgid ", in %q\n"
+msgstr ""
+
+#: py/objint_mpz.c:230 py/runtime.c:619 shared-bindings/math/__init__.c:346
+msgid "division by zero"
+msgstr ""
+
+#: py/objint_mpz.c:267 py/runtime.c:396 py/runtime.c:411
+msgid "negative shift count"
+msgstr ""
+
+#: py/objint_mpz.c:283 py/runtime.c:486
+msgid "negative power with no float support"
+msgstr ""
+
+#: py/objint_mpz.c:336
+msgid "pow() with 3 arguments requires integers"
+msgstr ""
+
+#: py/objint_mpz.c:347
+msgid "pow() 3rd argument cannot be 0"
+msgstr ""
+
+#: py/objint_mpz.c:415
+msgid "overflow converting long int to machine word"
+msgstr ""
+
+#: py/objlist.c:273
+msgid "pop from empty list"
+msgstr ""
+
+#: py/objnamedtuple.c:92
+msgid "can't set attribute"
+msgstr ""
+
+#: py/objnamedtuple.c:104
+#, c-format
+msgid "function takes %d positional arguments but %d were given"
+msgstr ""
+
+#: py/objnamedtuple.c:108
+msgid "%q() takes %d positional arguments but %d were given"
+msgstr ""
+
+#: py/objnamedtuple.c:130
+msgid "unexpected keyword argument '%q'"
+msgstr ""
+
+#: py/objnamedtuple.c:138
+msgid "function got multiple values for argument '%q'"
+msgstr ""
+
+#: py/objobject.c:55
+msgid "__new__ arg must be a user-type"
+msgstr ""
+
+#: py/objrange.c:110
+msgid "zero step"
+msgstr ""
+
+#: py/objset.c:371
+msgid "pop from an empty set"
+msgstr ""
+
+#: py/objslice.c:66
+msgid "Length must be an int"
+msgstr ""
+
+#: py/objslice.c:71
+msgid "Length must be non-negative"
+msgstr ""
+
+#: py/objslice.c:86 py/sequence.c:57
+msgid "slice step cannot be zero"
+msgstr ""
+
+#: py/objslice.c:159
+msgid "Cannot subclass slice"
+msgstr ""
+
+#: py/objstr.c:261
+msgid "bytes value out of range"
+msgstr ""
+
+#: py/objstr.c:270
+msgid "wrong number of arguments"
+msgstr ""
+
+#: py/objstr.c:427 py/objstrunicode.c:191 py/objtuple.c:187
+#: shared-bindings/nvm/ByteArray.c:85
+msgid "only slices with step=1 (aka None) are supported"
+msgstr ""
+
+#: py/objstr.c:467
+msgid "join expects a list of str/bytes objects consistent with self object"
+msgstr ""
+
+#: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
+msgid "empty separator"
+msgstr ""
+
+#: py/objstr.c:641
+msgid "rsplit(None,n)"
+msgstr ""
+
+#: py/objstr.c:713
+msgid "substring not found"
+msgstr ""
+
+#: py/objstr.c:770
+msgid "start/end indices"
+msgstr ""
+
+#: py/objstr.c:931
+msgid "bad format string"
+msgstr ""
+
+#: py/objstr.c:953
+msgid "single '}' encountered in format string"
+msgstr ""
+
+#: py/objstr.c:992
+msgid "bad conversion specifier"
+msgstr ""
+
+#: py/objstr.c:996
+msgid "end of format while looking for conversion specifier"
+msgstr ""
+
+#: py/objstr.c:998
+#, c-format
+msgid "unknown conversion specifier %c"
+msgstr ""
+
+#: py/objstr.c:1029
+msgid "unmatched '{' in format"
+msgstr ""
+
+#: py/objstr.c:1036
+msgid "expected ':' after format specifier"
+msgstr ""
+
+#: py/objstr.c:1050
+msgid ""
+"can't switch from automatic field numbering to manual field specification"
+msgstr ""
+
+#: py/objstr.c:1055 py/objstr.c:1083
+msgid "tuple index out of range"
+msgstr ""
+
+#: py/objstr.c:1071
+msgid "attributes not supported yet"
+msgstr ""
+
+#: py/objstr.c:1079
+msgid ""
+"can't switch from manual field specification to automatic field numbering"
+msgstr ""
+
+#: py/objstr.c:1171
+msgid "invalid format specifier"
+msgstr ""
+
+#: py/objstr.c:1192
+msgid "sign not allowed in string format specifier"
+msgstr ""
+
+#: py/objstr.c:1200
+msgid "sign not allowed with integer format specifier 'c'"
+msgstr ""
+
+#: py/objstr.c:1259
+#, c-format
+msgid "unknown format code '%c' for object of type '%s'"
+msgstr ""
+
+#: py/objstr.c:1331
+#, c-format
+msgid "unknown format code '%c' for object of type 'float'"
+msgstr ""
+
+#: py/objstr.c:1343
+msgid "'=' alignment not allowed in string format specifier"
+msgstr ""
+
+#: py/objstr.c:1367
+#, c-format
+msgid "unknown format code '%c' for object of type 'str'"
+msgstr ""
+
+#: py/objstr.c:1415
+msgid "format requires a dict"
+msgstr ""
+
+#: py/objstr.c:1424
+msgid "incomplete format key"
+msgstr ""
+
+#: py/objstr.c:1482
+msgid "incomplete format"
+msgstr ""
+
+#: py/objstr.c:1490
+msgid "not enough arguments for format string"
+msgstr ""
+
+#: py/objstr.c:1500
+#, c-format
+msgid "%%c requires int or char"
+msgstr ""
+
+#: py/objstr.c:1507
+msgid "integer required"
+msgstr ""
+
+#: py/objstr.c:1570
+#, c-format
+msgid "unsupported format character '%c' (0x%x) at index %d"
+msgstr ""
+
+#: py/objstr.c:1577
+msgid "not all arguments converted during string formatting"
+msgstr ""
+
+#: py/objstr.c:2102
+msgid "can't convert to str implicitly"
+msgstr ""
+
+#: py/objstr.c:2106
+msgid "can't convert '%q' object to %q implicitly"
+msgstr ""
+
+#: py/objstringio.c:43
+msgid "I/O operation on closed file"
+msgstr ""
+
+#: py/objstrunicode.c:134
+#, c-format
+msgid "string indices must be integers, not %s"
+msgstr ""
+
+#: py/objstrunicode.c:145 py/objstrunicode.c:164
+msgid "string index out of range"
+msgstr ""
+
+#: py/objtype.c:358
+msgid "__init__() should return None"
+msgstr ""
+
+#: py/objtype.c:360
+#, c-format
+msgid "__init__() should return None, not '%s'"
+msgstr ""
+
+#: py/objtype.c:623 py/objtype.c:1275 py/runtime.c:1065
+msgid "unreadable attribute"
+msgstr ""
+
+#: py/objtype.c:868 py/runtime.c:653
+msgid "object not callable"
+msgstr ""
+
+#: py/objtype.c:870 py/runtime.c:655
+#, c-format
+msgid "'%s' object is not callable"
+msgstr ""
+
+#: py/objtype.c:978
+msgid "type takes 1 or 3 arguments"
+msgstr ""
+
+#: py/objtype.c:989
+msgid "cannot create instance"
+msgstr ""
+
+#: py/objtype.c:991
+msgid "cannot create '%q' instances"
+msgstr ""
+
+#: py/objtype.c:1047
+msgid "can't add special method to already-subclassed class"
+msgstr ""
+
+#: py/objtype.c:1091 py/objtype.c:1097
+msgid "type is not an acceptable base type"
+msgstr ""
+
+#: py/objtype.c:1100
+msgid "type '%q' is not an acceptable base type"
+msgstr ""
+
+#: py/objtype.c:1137
+msgid "multiple inheritance not supported"
+msgstr ""
+
+#: py/objtype.c:1164
+msgid "multiple bases have instance lay-out conflict"
+msgstr ""
+
+#: py/objtype.c:1205
+msgid "first argument to super() must be type"
+msgstr ""
+
+#: py/objtype.c:1370
+msgid "issubclass() arg 2 must be a class or a tuple of classes"
+msgstr ""
+
+#: py/objtype.c:1384
+msgid "issubclass() arg 1 must be a class"
+msgstr ""
+
+#: py/parse.c:726
+msgid "constant must be an integer"
+msgstr ""
+
+#: py/parse.c:868
+msgid "Unable to init parser"
+msgstr ""
+
+#: py/parse.c:1170
+msgid "unexpected indent"
+msgstr ""
+
+#: py/parse.c:1173
+msgid "unindent does not match any outer indentation level"
+msgstr ""
+
+#: py/parsenum.c:60
+msgid "int() arg 2 must be >= 2 and <= 36"
+msgstr ""
+
+#: py/persistentcode.c:223
+msgid ""
+"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
+"mpy-update for more info."
+msgstr ""
+
+#: py/persistentcode.c:326
+msgid "can only save bytecode"
+msgstr ""
+
+#: py/runtime.c:206
+msgid "name not defined"
+msgstr ""
+
+#: py/runtime.c:209
+msgid "name '%q' is not defined"
+msgstr ""
+
+#: py/runtime.c:304 py/runtime.c:611
+msgid "unsupported type for operator"
+msgstr ""
+
+#: py/runtime.c:307
+msgid "unsupported type for %q: '%s'"
+msgstr ""
+
+#: py/runtime.c:614
+msgid "unsupported types for %q: '%s', '%s'"
+msgstr ""
+
+#: py/runtime.c:881 py/runtime.c:888 py/runtime.c:945
+msgid "wrong number of values to unpack"
+msgstr ""
+
+#: py/runtime.c:883 py/runtime.c:947
+#, c-format
+msgid "need more than %d values to unpack"
+msgstr ""
+
+#: py/runtime.c:890
+#, c-format
+msgid "too many values to unpack (expected %d)"
+msgstr ""
+
+#: py/runtime.c:984
+msgid "argument has wrong type"
+msgstr ""
+
+#: py/runtime.c:986
+msgid "argument should be a '%q' not a '%q'"
+msgstr ""
+
+#: py/runtime.c:1123 py/runtime.c:1197
+msgid "no such attribute"
+msgstr ""
+
+#: py/runtime.c:1128
+msgid "type object '%q' has no attribute '%q'"
+msgstr ""
+
+#: py/runtime.c:1132 py/runtime.c:1200
+msgid "'%s' object has no attribute '%q'"
+msgstr ""
+
+#: py/runtime.c:1238
+msgid "object not iterable"
+msgstr ""
+
+#: py/runtime.c:1241
+#, c-format
+msgid "'%s' object is not iterable"
+msgstr ""
+
+#: py/runtime.c:1260 py/runtime.c:1296
+msgid "object not an iterator"
+msgstr ""
+
+#: py/runtime.c:1262 py/runtime.c:1298
+#, c-format
+msgid "'%s' object is not an iterator"
+msgstr ""
+
+#: py/runtime.c:1401
+msgid "exceptions must derive from BaseException"
+msgstr ""
+
+#: py/runtime.c:1430
+msgid "cannot import name %q"
+msgstr ""
+
+#: py/runtime.c:1535
+msgid "memory allocation failed, heap is locked"
+msgstr ""
+
+#: py/runtime.c:1539
+#, c-format
+msgid "memory allocation failed, allocating %u bytes"
+msgstr ""
+
+#: py/runtime.c:1609
+msgid "maximum recursion depth exceeded"
+msgstr ""
+
+#: py/sequence.c:264
+msgid "object not in sequence"
+msgstr ""
+
+#: py/stream.c:96
+msgid "stream operation not supported"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c:71
@@ -474,14 +1075,14 @@ msgstr ""
 msgid "math domain error"
 msgstr ""
 
-#: shared-bindings/math/__init__.c:346
-msgid "division by zero"
-msgstr ""
-
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:75
 msgid "Expected a %q"
+msgstr ""
+
+#: shared-bindings/microcontroller/Pin.c:100
+msgid "%q in use"
 msgstr ""
 
 #: shared-bindings/microcontroller/__init__.c:126
@@ -490,10 +1091,6 @@ msgstr ""
 
 #: shared-bindings/multiterminal/__init__.c:68
 msgid "Stream missing readinto() or write() method."
-msgstr ""
-
-#: shared-bindings/nvm/ByteArray.c:85
-msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:99

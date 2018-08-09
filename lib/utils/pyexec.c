@@ -94,7 +94,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             // Clear the parse tree because it has a heap pointer we don't need anymore.
             *((uint32_t volatile*) &parse_tree.chunk) = 0;
             #else
-            mp_raise_msg(&mp_type_RuntimeError, "script compilation not supported");
+            mp_raise_msg(&mp_type_RuntimeError, translate("script compilation not supported"));
             #endif
         }
 

@@ -30,6 +30,8 @@
 #include "py/obj.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/translate.h"
+
 // This list can be defined per port in mpconfigport.h to tailor it to a
 // specific port's needs.  If it's not defined then we provide a default.
 #ifndef MICROPY_PY_UERRNO_LIST
@@ -99,18 +101,18 @@ const mp_obj_module_t mp_module_uerrno = {
     .globals = (mp_obj_dict_t*)&mp_module_uerrno_globals,
 };
 
-qstr mp_errno_to_str(mp_obj_t errno_val) {
+const char* mp_errno_to_str(mp_obj_t errno_val) {
     // For commonly encountered errors, return human readable strings
     if (MP_OBJ_IS_SMALL_INT(errno_val)) {
         switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
-            case EPERM:  return MP_QSTR_Permission_space_denied;
-            case ENOENT: return MP_QSTR_No_space_such_space_file_slash_directory;
-            case EIO:    return MP_QSTR_Input_slash_output_space_error;
-            case EACCES: return MP_QSTR_Permission_space_denied;
-            case EEXIST: return MP_QSTR_File_space_exists;
-            case ENODEV: return MP_QSTR_Unsupported_space_operation;
-            case EINVAL: return MP_QSTR_Invalid_space_argument;
-            case EROFS:  return MP_QSTR_Read_hyphen_only_space_filesystem;
+            case EPERM:  return translate("Permission denied");
+            case ENOENT: return translate("No such file/directory");
+            case EIO:    return translate("Input/output error");
+            case EACCES: return translate("Permission denied");
+            case EEXIST: return translate("File exists");
+            case ENODEV: return translate("Unsupported operation");
+            case EINVAL: return translate("Invalid argument");
+            case EROFS:  return translate("Read-only filesystem");
         }
     }
 
@@ -119,30 +121,30 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
     // We have the errorcode dict so can do a lookup using the hash map
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t*)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
     if (elem == NULL) {
-        return MP_QSTR_NULL;
+        return "";
     } else {
-        return MP_OBJ_QSTR_VALUE(elem->value);
+        return qstr_str(MP_OBJ_QSTR_VALUE(elem->value));
     }
     #else
     // We don't have the errorcode dict so do a simple search in the modules dict
     for (size_t i = 0; i < MP_ARRAY_SIZE(mp_module_uerrno_globals_table); ++i) {
         if (errno_val == mp_module_uerrno_globals_table[i].value) {
-            return MP_OBJ_QSTR_VALUE(mp_module_uerrno_globals_table[i].key);
+            return qstr_str(MP_OBJ_QSTR_VALUE(mp_module_uerrno_globals_table[i].key));
         }
     }
-    return MP_QSTR_NULL;
+    return "";
     #endif
 }
 
 #else //MICROPY_PY_UERRNO
 
-qstr mp_errno_to_str(mp_obj_t errno_val) {
+const char* mp_errno_to_str(mp_obj_t errno_val) {
     int v = MP_OBJ_SMALL_INT_VALUE(errno_val);
-    #define X(e) if (v == e) return (MP_QSTR_ ## e);
+    #define X(e) if (v == e) return qstr_str(MP_QSTR_ ## e);
     MICROPY_PY_UERRNO_LIST
     #undef X
 
-    return MP_QSTR_;
+    return "";
 }
 
 #endif //MICROPY_PY_UERRNO

@@ -140,6 +140,6 @@
 
 #endif
 
-qstr mp_errno_to_str(mp_obj_t errno_val);
+const char* mp_errno_to_str(mp_obj_t errno_val);
 
 #endif // MICROPY_INCLUDED_PY_MPERRNO_H

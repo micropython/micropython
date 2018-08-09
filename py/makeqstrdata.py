@@ -66,7 +66,7 @@ def translate(translation_file, i18ns):
     with open(translation_file, "rb") as f:
         table = gettext.GNUTranslations(f)
 
-        return [(x, table.gettext(x)) for x in i18ns]
+        return [(x, table.gettext(x.decode('string_escape'))) for x in i18ns]
 
 def qstr_escape(qst):
     def esc_char(m):
@@ -181,6 +181,8 @@ def print_qstr_data(qcfgs, qstrs, i18ns):
 
     total_text_size = 0
     for original, translation in i18ns:
+        # Add in carriage returns to work in terminals
+        translation = translation.replace("\n", "\\r\\n")
         print("TRANSLATION(\"{}\", \"{}\")".format(original, translation))
         total_text_size += len(translation)
 

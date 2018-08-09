@@ -35,6 +35,8 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 // Helpers to work with binary-encoded data
 
 #ifndef alignof
@@ -107,7 +109,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
     }
 
     if (size == 0) {
-        mp_raise_ValueError("bad typecode");
+        mp_raise_ValueError(translate("bad typecode"));
     }
 
     if (palign != NULL) {
