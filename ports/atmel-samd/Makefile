@@ -1,7 +1,3 @@
-# Set default python interpreters
-PYTHON2 ?= $(which python2 || which python2.7)
-PYTHON3 ?= python3
-
 # Select the board to build for.
 ifeq ($(BOARD),)
   $(error You must provide a BOARD parameter)

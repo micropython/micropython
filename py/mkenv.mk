@@ -49,6 +49,9 @@ CP = cp
 FIND = find
 MKDIR = mkdir
 PYTHON = python
+# Set default python interpreters
+PYTHON2 ?= $(which python2 || which python2.7)
+PYTHON3 ?= python3
 RM = rm
 RSYNC = rsync
 SED = sed

@@ -89,6 +89,7 @@ SECTIONS
         *common-hal/*.o*(.literal* .text*)
         *shared-bindings/*.o*(.literal* .text*)
         *shared-module/*.o*(.literal* .text*)
+        *supervisor/*.o*(.literal* .text*)
 
         *py/argcheck.o*(.literal* .text*)
         *py/asm*.o*(.literal* .text*)
