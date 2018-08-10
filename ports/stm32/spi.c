@@ -214,7 +214,7 @@ STATIC void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baud
                 spi_clock = HAL_RCC_GetPCLK2Freq();
             }
             #endif
-            prescale = spi_clock / baudrate;
+            prescale = (spi_clock + baudrate - 1) / baudrate;
         }
         if (prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
         else if (prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
