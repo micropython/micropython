@@ -40,6 +40,8 @@
 #include "extmod/vfs_fat.h"
 #include "lib/timeutils/timeutils.h"
 
+#include "supervisor/shared/translate.h"
+
 #if _MAX_SS == _MIN_SS
 #define SECSIZE(fs) (_MIN_SS)
 #else
@@ -421,7 +423,7 @@ STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
     FRESULT res = f_setlabel(&self->fatfs, label_str);
     if (res != FR_OK) {
         if(res == FR_WRITE_PROTECTED) {
-            mp_raise_msg(&mp_type_OSError, "Read-only filesystem");
+            mp_raise_msg(&mp_type_OSError, translate("Read-only filesystem"));
         }
         mp_raise_OSError(fresult_to_errno_table[res]);
     }

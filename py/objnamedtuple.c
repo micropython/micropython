@@ -32,6 +32,8 @@
 #include "py/objstr.h"
 #include "py/objnamedtuple.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_COLLECTIONS
 
 size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name) {
@@ -87,7 +89,7 @@ void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
         // provide more detailed error message than we'd get by just returning
-        mp_raise_AttributeError("can't set attribute");
+        mp_raise_AttributeError(translate("can't set attribute"));
     }
 }
 
@@ -99,11 +101,11 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
             mp_arg_error_terse_mismatch();
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
             mp_raise_TypeError_varg(
-                "function takes %d positional arguments but %d were given",
+                translate("function takes %d positional arguments but %d were given"),
                 num_fields, n_args + n_kw);
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
             mp_raise_TypeError_varg(
-                "%q() takes %d positional arguments but %d were given",
+                translate("%q() takes %d positional arguments but %d were given"),
                 type->base.name, num_fields, n_args + n_kw);
         }
     }
@@ -125,7 +127,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
                 mp_arg_error_terse_mismatch();
             } else {
                 mp_raise_TypeError_varg(
-                    "unexpected keyword argument '%q'", kw);
+                    translate("unexpected keyword argument '%q'"), kw);
             }
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
@@ -133,7 +135,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
                 mp_arg_error_terse_mismatch();
             } else {
                 mp_raise_TypeError_varg(
-                    "function got multiple values for argument '%q'", kw);
+                    translate("function got multiple values for argument '%q'"), kw);
             }
         }
         tuple->items[id] = args[i + 1];

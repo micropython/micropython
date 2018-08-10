@@ -32,6 +32,8 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
+#include "supervisor/shared/translate.h"
+
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
 
@@ -150,7 +152,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd
 #if MICROPY_ENABLE_SCHEDULER
 STATIC mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
     if (!mp_sched_schedule(function, arg)) {
-        mp_raise_msg(&mp_type_RuntimeError, "schedule stack full");
+        mp_raise_msg(&mp_type_RuntimeError, translate("schedule stack full"));
     }
     return mp_const_none;
 }

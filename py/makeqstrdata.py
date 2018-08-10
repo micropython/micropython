@@ -54,6 +54,18 @@ codepoint2name[ord('^')] = 'caret'
 codepoint2name[ord('|')] = 'pipe'
 codepoint2name[ord('~')] = 'tilde'
 
+C_ESCAPES = {
+    "\a": "\\a",
+    "\b": "\\b",
+    "\f": "\\f",
+    "\n": "\\r",
+    "\r": "\\r",
+    "\t": "\\t",
+    "\v": "\\v",
+    "\'": "\\'",
+    "\"": "\\\""
+}
+
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
     hash = 5381
@@ -66,7 +78,13 @@ def translate(translation_file, i18ns):
     with open(translation_file, "rb") as f:
         table = gettext.GNUTranslations(f)
 
-        return [(x, table.gettext(x)) for x in i18ns]
+        translations = []
+        for original in i18ns:
+            unescaped = original
+            for s in C_ESCAPES:
+                unescaped = unescaped.replace(C_ESCAPES[s], s)
+            translations.append((original, table.gettext(unescaped)))
+        return translations
 
 def qstr_escape(qst):
     def esc_char(m):
@@ -181,6 +199,10 @@ def print_qstr_data(qcfgs, qstrs, i18ns):
 
     total_text_size = 0
     for original, translation in i18ns:
+        # Add in carriage returns to work in terminals
+        translation = translation.replace("\n", "\r\n")
+        for s in C_ESCAPES:
+            translation = translation.replace(s, C_ESCAPES[s])
         print("TRANSLATION(\"{}\", \"{}\")".format(original, translation))
         total_text_size += len(translation)
 

@@ -36,6 +36,8 @@
 #include "py/runtime.h"
 #include "py/asmbase.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_ENABLE_COMPILER
 
 // TODO need to mangle __attr names
@@ -392,7 +394,7 @@ STATIC void c_assign_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns, as
         }
     }
 
-    compile_syntax_error(comp, (mp_parse_node_t)pns, "can't assign to expression");
+    compile_syntax_error(comp, (mp_parse_node_t)pns, translate("can't assign to expression"));
 }
 
 // we need to allow for a caller passing in 1 initial node (node_head) followed by an array of nodes (nodes_tail)
@@ -411,7 +413,7 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
                 EMIT_ARG(unpack_ex, num_head + i, num_tail - i - 1);
                 have_star_index = num_head + i;
             } else {
-                compile_syntax_error(comp, nodes_tail[i], "multiple *x in assignment");
+                compile_syntax_error(comp, nodes_tail[i], translate("multiple *x in assignment"));
                 return;
             }
         }
@@ -537,7 +539,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
     return;
 
     cannot_assign:
-    compile_syntax_error(comp, pn, "can't assign to expression");
+    compile_syntax_error(comp, pn, translate("can't assign to expression"));
 }
 
 // stuff for lambda and comprehensions and generators:
@@ -637,7 +639,7 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
 
             // check for non-default parameters given after default parameters (allowed by parser, but not syntactically valid)
             if (!comp->have_star && comp->num_default_params != 0) {
-                compile_syntax_error(comp, pn, "non-default argument follows default argument");
+                compile_syntax_error(comp, pn, translate("non-default argument follows default argument"));
                 return;
             }
 
@@ -766,7 +768,7 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
     }
 
     if (name_len != 2) {
-        compile_syntax_error(comp, name_nodes[0], "invalid micropython decorator");
+        compile_syntax_error(comp, name_nodes[0], translate("invalid micropython decorator"));
         return true;
     }
 
@@ -784,7 +786,7 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
         *emit_options = MP_EMIT_OPT_ASM;
     #endif
     } else {
-        compile_syntax_error(comp, name_nodes[1], "invalid micropython decorator");
+        compile_syntax_error(comp, name_nodes[1], translate("invalid micropython decorator"));
     }
 
     return true;
@@ -938,7 +940,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
     return;
 
 cannot_delete:
-    compile_syntax_error(comp, (mp_parse_node_t)pn, "can't delete expression");
+    compile_syntax_error(comp, (mp_parse_node_t)pn, translate("can't delete expression"));
 }
 
 STATIC void compile_del_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -950,10 +952,10 @@ STATIC void compile_break_cont_stmt(compiler_t *comp, mp_parse_node_struct_t *pn
     const char *error_msg;
     if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_break_stmt) {
         label = comp->break_label;
-        error_msg = "'break' outside loop";
+        error_msg = translate("'break' outside loop");
     } else {
         label = comp->continue_label;
-        error_msg = "'continue' outside loop";
+        error_msg = translate("'continue' outside loop");
     }
     if (label == INVALID_LABEL) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, error_msg);
@@ -964,7 +966,7 @@ STATIC void compile_break_cont_stmt(compiler_t *comp, mp_parse_node_struct_t *pn
 
 STATIC void compile_return_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->scope_cur->kind != SCOPE_FUNCTION) {
-        compile_syntax_error(comp, (mp_parse_node_t)pns, "'return' outside function");
+        compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'return' outside function"));
         return;
     }
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
@@ -1164,7 +1166,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qst, bool added, id_info_t *id_info) {
     if (!added && id_info->kind != ID_INFO_KIND_GLOBAL_EXPLICIT) {
-        compile_syntax_error(comp, pn, "identifier redefined as global");
+        compile_syntax_error(comp, pn, translate("identifier redefined as global"));
         return;
     }
     id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
@@ -1180,10 +1182,10 @@ STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr 
     if (added) {
         scope_find_local_and_close_over(comp->scope_cur, id_info, qst);
         if (id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
-            compile_syntax_error(comp, pn, "no binding for nonlocal found");
+            compile_syntax_error(comp, pn, translate("no binding for nonlocal found"));
         }
     } else if (id_info->kind != ID_INFO_KIND_FREE) {
-        compile_syntax_error(comp, pn, "identifier redefined as nonlocal");
+        compile_syntax_error(comp, pn, translate("identifier redefined as nonlocal"));
     }
 }
 
@@ -1192,7 +1194,7 @@ STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_
         bool is_global = MP_PARSE_NODE_STRUCT_KIND(pns) == PN_global_stmt;
 
         if (!is_global && comp->scope_cur->kind == SCOPE_MODULE) {
-            compile_syntax_error(comp, (mp_parse_node_t)pns, "can't declare nonlocal in outer code");
+            compile_syntax_error(comp, (mp_parse_node_t)pns, translate("can't declare nonlocal in outer code"));
             return;
         }
 
@@ -1537,7 +1539,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
         if (MP_PARSE_NODE_IS_NULL(pns_except->nodes[0])) {
             // this is a catch all exception handler
             if (i + 1 != n_except) {
-                compile_syntax_error(comp, pn_excepts[i], "default 'except' must be last");
+                compile_syntax_error(comp, pn_excepts[i], translate("default 'except' must be last"));
                 compile_decrease_except_level(comp);
                 return;
             }
@@ -2090,7 +2092,7 @@ STATIC void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_star_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    compile_syntax_error(comp, (mp_parse_node_t)pns, "*x must be assignment target");
+    compile_syntax_error(comp, (mp_parse_node_t)pns, translate("*x must be assignment target"));
 }
 
 STATIC void compile_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2188,7 +2190,7 @@ STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *p
         }
         if (!found) {
             compile_syntax_error(comp, (mp_parse_node_t)pns_trail[0],
-                "super() can't find self"); // really a TypeError
+                translate("super() can't find self")); // really a TypeError
             return;
         }
 
@@ -2251,14 +2253,14 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             mp_parse_node_struct_t *pns_arg = (mp_parse_node_struct_t*)args[i];
             if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_star) {
                 if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
-                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "can't have multiple *x");
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, translate("can't have multiple *x"));
                     return;
                 }
                 star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
                 star_args_node = pns_arg;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_dbl_star) {
                 if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
-                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "can't have multiple **x");
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, translate("can't have multiple **x"));
                     return;
                 }
                 star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
@@ -2266,7 +2268,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_argument) {
                 if (!MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_comp_for)) {
                     if (!MP_PARSE_NODE_IS_ID(pns_arg->nodes[0])) {
-                        compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "LHS of keyword arg must be an id");
+                        compile_syntax_error(comp, (mp_parse_node_t)pns_arg, translate("LHS of keyword arg must be an id"));
                         return;
                     }
                     EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]));
@@ -2282,11 +2284,11 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         } else {
             normal_argument:
             if (star_flags) {
-                compile_syntax_error(comp, args[i], "non-keyword arg after */**");
+                compile_syntax_error(comp, args[i], translate("non-keyword arg after */**"));
                 return;
             }
             if (n_keyword > 0) {
-                compile_syntax_error(comp, args[i], "non-keyword arg after keyword arg");
+                compile_syntax_error(comp, args[i], translate("non-keyword arg after keyword arg"));
                 return;
             }
             compile_node(comp, args[i]);
@@ -2458,9 +2460,9 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     if (is_dict) {
                         if (!is_key_value) {
                             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                                compile_syntax_error(comp, (mp_parse_node_t)pns, "invalid syntax");
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, translate("invalid syntax"));
                             } else {
-                                compile_syntax_error(comp, (mp_parse_node_t)pns, "expecting key:value for dict");
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, translate("expecting key:value for dict"));
                             }
                             return;
                         }
@@ -2468,9 +2470,9 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     } else {
                         if (is_key_value) {
                             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                                compile_syntax_error(comp, (mp_parse_node_t)pns, "invalid syntax");
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, translate("invalid syntax"));
                             } else {
-                                compile_syntax_error(comp, (mp_parse_node_t)pns, "expecting just a value for set");
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, translate("expecting just a value for set"));
                             }
                             return;
                         }
@@ -2595,7 +2597,7 @@ STATIC void compile_classdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->scope_cur->kind != SCOPE_FUNCTION && comp->scope_cur->kind != SCOPE_LAMBDA) {
-        compile_syntax_error(comp, (mp_parse_node_t)pns, "'yield' outside function");
+        compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'yield' outside function"));
         return;
     }
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
@@ -2614,7 +2616,7 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->scope_cur->kind != SCOPE_FUNCTION && comp->scope_cur->kind != SCOPE_LAMBDA) {
-        compile_syntax_error(comp, (mp_parse_node_t)pns, "'await' outside function");
+        compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'await' outside function"));
         return;
     }
     compile_atom_expr_normal(comp, pns);
@@ -2707,7 +2709,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
 STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star) {
     // check that **kw is last
     if ((comp->scope_cur->scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
-        compile_syntax_error(comp, pn, "invalid syntax");
+        compile_syntax_error(comp, pn, translate("invalid syntax"));
         return;
     }
 
@@ -2737,7 +2739,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
             if (comp->have_star) {
                 // more than one star
-                compile_syntax_error(comp, pn, "invalid syntax");
+                compile_syntax_error(comp, pn, translate("invalid syntax"));
                 return;
             }
             comp->have_star = true;
@@ -2769,7 +2771,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         bool added;
         id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, &added);
         if (!added) {
-            compile_syntax_error(comp, pn, "name reused for argument");
+            compile_syntax_error(comp, pn, translate("name reused for argument"));
             return;
         }
         id_info->kind = ID_INFO_KIND_LOCAL;
@@ -2822,7 +2824,7 @@ STATIC void compile_scope_func_annotations(compiler_t *comp, mp_parse_node_t pn)
             qstr arg_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
             EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ARG, id_info->local_num, arg_type);
         } else {
-            compile_syntax_error(comp, pn_annotation, "parameter annotation must be an identifier");
+            compile_syntax_error(comp, pn_annotation, translate("parameter annotation must be an identifier"));
         }
     }
 }
@@ -2964,7 +2966,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
                     qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
                     EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_RETURN, 0, ret_type);
                 } else {
-                    compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
+                    compile_syntax_error(comp, pn_annotation, translate("return annotation must be an identifier"));
                 }
             }
         }
@@ -3092,7 +3094,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     comp->next_label = 0;
 
     if (scope->kind != SCOPE_FUNCTION) {
-        compile_syntax_error(comp, MP_PARSE_NODE_NULL, "inline assembler must be a function");
+        compile_syntax_error(comp, MP_PARSE_NODE_NULL, translate("inline assembler must be a function"));
         return;
     }
 
@@ -3129,10 +3131,10 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
                 case MP_QSTR_bool: type_sig = MP_NATIVE_TYPE_BOOL; break;
                 case MP_QSTR_int: type_sig = MP_NATIVE_TYPE_INT; break;
                 case MP_QSTR_uint: type_sig = MP_NATIVE_TYPE_UINT; break;
-                default: compile_syntax_error(comp, pn_annotation, "unknown type"); return;
+                default: compile_syntax_error(comp, pn_annotation, translate("unknown type")); return;
             }
         } else {
-            compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
+            compile_syntax_error(comp, pn_annotation, translate("return annotation must be an identifier"));
         }
     }
 
@@ -3149,7 +3151,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) != PN_expr_stmt) {
             // not an instruction; error
         not_an_instruction:
-            compile_syntax_error(comp, nodes[i], "expecting an assembler instruction");
+            compile_syntax_error(comp, nodes[i], translate("expecting an assembler instruction"));
             return;
         }
 
@@ -3179,19 +3181,19 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         // emit instructions
         if (op == MP_QSTR_label) {
             if (!(n_args == 1 && MP_PARSE_NODE_IS_ID(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "'label' requires 1 argument");
+                compile_syntax_error(comp, nodes[i], translate("'label' requires 1 argument"));
                 return;
             }
             uint lab = comp_next_label(comp);
             if (pass > MP_PASS_SCOPE) {
                 if (!EMIT_INLINE_ASM_ARG(label, lab, MP_PARSE_NODE_LEAF_ARG(pn_arg[0]))) {
-                    compile_syntax_error(comp, nodes[i], "label redefined");
+                    compile_syntax_error(comp, nodes[i], translate("label redefined"));
                     return;
                 }
             }
         } else if (op == MP_QSTR_align) {
             if (!(n_args == 1 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "'align' requires 1 argument");
+                compile_syntax_error(comp, nodes[i], translate("'align' requires 1 argument"));
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
@@ -3200,14 +3202,14 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             }
         } else if (op == MP_QSTR_data) {
             if (!(n_args >= 2 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "'data' requires at least 2 arguments");
+                compile_syntax_error(comp, nodes[i], translate("'data' requires at least 2 arguments"));
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
                 mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
                 for (uint j = 1; j < n_args; j++) {
                     if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
-                        compile_syntax_error(comp, nodes[i], "'data' requires integer arguments");
+                        compile_syntax_error(comp, nodes[i], translate("'data' requires integer arguments"));
                         return;
                     }
                     mp_asm_base_data((mp_asm_base_t*)comp->emit_inline_asm,

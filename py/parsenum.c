@@ -32,6 +32,8 @@
 #include "py/parsenum.h"
 #include "py/smallint.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
@@ -55,7 +57,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     // check radix base
     if ((base != 0 && base < 2) || base > 36) {
         // this won't be reached if lex!=NULL
-        mp_raise_ValueError("int() arg 2 must be >= 2 and <= 36");
+        mp_raise_ValueError(translate("int() arg 2 must be >= 2 and <= 36"));
     }
 
     // skip leading space

@@ -27,6 +27,8 @@
 #include "py/builtin.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
 #include <math.h>
@@ -36,7 +38,7 @@
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
 
 STATIC NORETURN void math_error(void) {
-    mp_raise_ValueError("math domain error");
+    mp_raise_ValueError(translate("math domain error"));
 }
 
 STATIC mp_obj_t math_generic_1(mp_obj_t x_obj, mp_float_t (*f)(mp_float_t)) {
@@ -191,7 +193,7 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
 #pragma GCC diagnostic ignored "-Wfloat-equal"
         } else if (base == (mp_float_t)1.0) {
 #pragma GCC diagnostic pop
-            mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+            mp_raise_msg(&mp_type_ZeroDivisionError, translate("division by zero"));
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }

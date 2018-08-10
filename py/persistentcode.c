@@ -34,6 +34,8 @@
 #include "py/persistentcode.h"
 #include "py/bc.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #include "py/smallint.h"
@@ -218,9 +220,7 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || header[1] != MPY_VERSION
         || header[2] != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()) {
-        // TODO(tannewt): Restore the generic error after we move folks to 2.0.0.
-        // mp_raise_ValueError("incompatible .mpy file");
-        mp_raise_ValueError("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info.");
+        mp_raise_ValueError(translate("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
     }
     mp_raw_code_t *rc = load_raw_code(reader);
     reader->close(reader->data);
@@ -323,7 +323,7 @@ STATIC void save_bytecode_qstrs(mp_print_t *print, const byte *ip, const byte *i
 
 STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
     if (rc->kind != MP_CODE_BYTECODE) {
-        mp_raise_ValueError("can only save bytecode");
+        mp_raise_ValueError(translate("can only save bytecode"));
     }
 
     // save bytecode

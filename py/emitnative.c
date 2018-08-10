@@ -49,6 +49,8 @@
 #include "py/emit.h"
 #include "py/bc.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -737,7 +739,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
                     break;
                 default:
                     // not handled
-                    mp_raise_NotImplementedError("conversion to object");
+                    mp_raise_NotImplementedError(translate("conversion to object"));
             }
         }
 
@@ -2121,7 +2123,7 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
                 break;
             default:
                 // this can happen when casting a cast: int(int)
-                mp_raise_NotImplementedError("casting");
+                mp_raise_NotImplementedError(translate("casting"));
         }
     } else {
         assert(vtype_fun == VTYPE_PYOBJ);
@@ -2196,7 +2198,7 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
     // not supported (for now)
     (void)emit;
     (void)kind;
-    mp_raise_NotImplementedError("native yield");
+    mp_raise_NotImplementedError(translate("native yield"));
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {

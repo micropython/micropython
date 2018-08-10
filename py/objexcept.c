@@ -37,6 +37,8 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/translate.h"
+
 // Number of items per traceback entry (file, line, block)
 #define TRACEBACK_ENTRY_LEN (3)
 
@@ -112,9 +114,9 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
         } else if (o->args->len == 1) {
             // try to provide a nice OSError error message
             if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
-                qstr qst = mp_errno_to_str(o->args->items[0]);
-                if (qst != MP_QSTR_NULL) {
-                    mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                const char* msg = mp_errno_to_str(o->args->items[0]);
+                if (msg[0] != '\0') {
+                    mp_printf(print, "[Errno " INT_FMT "] %s", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), msg);
                     return;
                 }
             }

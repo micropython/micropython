@@ -31,6 +31,8 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_BUILTINS_COMPILE
 
 typedef struct _mp_obj_code_t {
@@ -94,7 +96,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
         case MP_QSTR_exec: parse_input_kind = MP_PARSE_FILE_INPUT; break;
         case MP_QSTR_eval: parse_input_kind = MP_PARSE_EVAL_INPUT; break;
         default:
-            mp_raise_ValueError("bad compile mode");
+            mp_raise_ValueError(translate("bad compile mode"));
     }
 
     mp_obj_code_t *code = m_new_obj(mp_obj_code_t);

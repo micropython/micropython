@@ -29,6 +29,8 @@
 
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
     // NOTE(tannewt): This prevents this function from being optimized away.
     // Without it, functions can crash when reading invalid args.
@@ -39,7 +41,7 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
         #else
-            mp_raise_TypeError("function does not take keyword arguments");
+            mp_raise_TypeError(translate("function does not take keyword arguments"));
         #endif
     }
 
@@ -49,7 +51,7 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
                 mp_arg_error_terse_mismatch();
             #else
                 mp_raise_TypeError_varg(
-                    "function takes %d positional arguments but %d were given",
+                    translate("function takes %d positional arguments but %d were given"),
                     n_args_min, n_args);
             #endif
         }
@@ -59,7 +61,7 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
                 mp_arg_error_terse_mismatch();
             #else
                 mp_raise_TypeError_varg(
-                    "function missing %d required positional arguments",
+                    translate("function missing %d required positional arguments"),
                     n_args_min - n_args);
             #endif
         } else if (n_args > n_args_max) {
@@ -67,7 +69,7 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
                 mp_arg_error_terse_mismatch();
             #else
                 mp_raise_TypeError_varg(
-                    "function expected at most %d arguments, got %d",
+                    translate("function expected at most %d arguments, got %d"),
                     n_args_max, n_args);
             #endif
         }
@@ -92,7 +94,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
                         mp_arg_error_terse_mismatch();
                     } else {
                         mp_raise_TypeError_varg(
-                            "'%q' argument required", allowed[i].qst);
+                            translate("'%q' argument required"), allowed[i].qst);
                     }
                 }
                 out_vals[i] = allowed[i].defval;
@@ -117,7 +119,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             mp_arg_error_terse_mismatch();
         } else {
             // TODO better error message
-            mp_raise_TypeError("extra positional arguments given");
+            mp_raise_TypeError(translate("extra positional arguments given"));
         }
     }
     if (kws_found < kws->used) {
@@ -125,7 +127,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             mp_arg_error_terse_mismatch();
         } else {
             // TODO better error message
-            mp_raise_TypeError("extra keyword arguments given");
+            mp_raise_TypeError(translate("extra keyword arguments given"));
         }
     }
 }
@@ -137,11 +139,11 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 }
 
 NORETURN void mp_arg_error_terse_mismatch(void) {
-    mp_raise_TypeError("argument num/types mismatch");
+    mp_raise_TypeError(translate("argument num/types mismatch"));
 }
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
-    mp_raise_NotImplementedError("keyword argument(s) not yet implemented - use normal args instead");
+    mp_raise_NotImplementedError(translate("keyword argument(s) not yet implemented - use normal args instead"));
 }
 #endif

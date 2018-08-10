@@ -79,16 +79,16 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.enum.h $(HEADER_BUILD)/mpversion.h
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
 $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(SRC_QSTR_PREPROCESSOR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
 	$(STEPECHO) "GEN $@"
-	$(Q)grep -lE "(MP_QSTR|i18n)" $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) | xargs $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(SRC_QSTR_PREPROCESSOR) >$(HEADER_BUILD)/qstr.i.last;
+	$(Q)grep -lE "(MP_QSTR|translate)" $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) | xargs $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(SRC_QSTR_PREPROCESSOR) >$(HEADER_BUILD)/qstr.i.last;
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last $(PY_SRC)/makeqstrdefs.py
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 	$(Q)touch $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split $(PY_SRC)/makeqstrdefs.py
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 
 # $(sort $(var)) removes duplicates
 #

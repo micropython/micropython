@@ -97,6 +97,6 @@ void assert_pin_free(const mcu_pin_obj_t* pin) {
         qstr name;
 
         get_pin_name(pin, &package, &module, &name);
-        mp_raise_ValueError_varg("%q in use", name);
+        mp_raise_ValueError_varg(translate("%q in use"), name);
     }
 }
