@@ -25,6 +25,12 @@ class NeoPixel:
         return tuple(self.buf[offset + self.ORDER[i]]
                      for i in range(self.bpp))
 
+    def __len__(self):
+        return self.n
+
+    def __str__(self):
+        return str([self[i] for i in range(self.n)])
+
     def fill(self, color):
         for i in range(self.n):
             self[i] = color
