@@ -52,6 +52,7 @@ typedef struct _machine_uart_obj_t {
 
 STATIC const char *_parity_name[] = {"None", "1", "0"};
 
+
 /******************************************************************************/
 // MicroPython bindings for UART
 
@@ -65,18 +66,31 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_timeout, ARG_timeout_char };
+    enum {
+        ARG_baudrate,
+        ARG_bits,
+        ARG_parity,
+        ARG_stop,
+        ARG_tx,
+        ARG_rx,
+        ARG_rts,
+        ARG_cts,
+        ARG_timeout,
+        ARG_timeout_char,
+        ARG_mode
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_baudrate,     MP_ARG_INT,                  {.u_int = 0                 } },
+        { MP_QSTR_bits,         MP_ARG_INT,                  {.u_int = 0                 } },
+        { MP_QSTR_parity,       MP_ARG_OBJ,                  {.u_obj = MP_OBJ_NULL       } },
+        { MP_QSTR_stop,         MP_ARG_INT,                  {.u_int = 0                 } },
+        { MP_QSTR_tx,           MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_rx,           MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_rts,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_cts,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0                 } },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0                 } },
+        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_MODE_UART    } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -170,6 +184,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     // set timeout
     self->timeout = args[ARG_timeout].u_int;
+
+
+    // Set tx mode.
+    uart_set_mode(self->uart_num, args[ARG_mode].u_int);
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
