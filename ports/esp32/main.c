@@ -129,8 +129,13 @@ soft_reset:
     goto soft_reset;
 }
 
+#include "soc/rtc.h"
+#include "user_bpibit.h"
+
 void app_main(void) {
     nvs_flash_init();
+    rtc_clk_cpu_freq_set(RTC_CPU_FREQ_80M);
+    bpibit_init(); //vTaskDelay(50 / portTICK_PERIOD_MS);
     mp_main_task_handle = xTaskCreateStaticPinnedToCore(mp_task, "mp_task", MP_TASK_STACK_LEN, NULL, MP_TASK_PRIORITY,
                                                         &mp_task_stack[0], &mp_task_tcb, 0);
 }

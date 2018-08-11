@@ -93,7 +93,11 @@ INC_ESPCOMP += -I$(ESPCOMP)/ethernet/include
 INC_ESPCOMP += -I$(ESPCOMP)/app_trace/include
 INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 INC_ESPCOMP += -I$(ESPCOMP)/pthread/include
+INC_ESPCOMP += -I$(ESPCOMP)/spiffs/include
+INC_ESPCOMP += -I$(ESPCOMP)/spiffs/spiffs/src
 INC_ESPCOMP += -I$(ESPCOMP)/smartconfig_ack/include
+INC_ESPCOMP += -I$(ESPCOMP)/mdns/include
+INC_ESPCOMP += -I$(ESPCOMP)/mdns/private_include
 
 # these flags are common to C and C++ compilation
 CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields \
@@ -147,6 +151,11 @@ endif
 
 SRC_C = \
 	main.c \
+	mongoose.c \
+	user_bpibit.c \
+	user_smartconfig.c \
+	user_mongoose.c \
+	modmongoose.c \
 	uart.c \
 	gccollect.c \
 	mphalport.c \
@@ -612,7 +621,24 @@ ESPIDF_WPA_SUPPLICANT_O = $(addprefix $(ESPCOMP)/wpa_supplicant/,\
 	port/os_xtensa.o \
 	)
 
+ESPIDF_SPIFFS_O = $(addprefix $(ESPCOMP)/spiffs/,\
+	esp_spiffs.o \
+	spiffs_api.o \
+	spiffs/src/spiffs_cache.o \
+	spiffs/src/spiffs_nucleus.o \
+	spiffs/src/spiffs_hydrogen.o \
+	spiffs/src/spiffs_gc.o \
+	spiffs/src/spiffs_check.o \
+	)
+
+ESPIDF_MDNS_O = $(addprefix $(ESPCOMP)/mdns/,\
+	mdns.o \
+	mdns_networking.o \
+	)
+
 OBJ_ESPIDF =
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_MDNS_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPIFFS_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NEWLIB_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_DRIVER_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ESP32_O))
