@@ -150,6 +150,26 @@ STATIC mp_obj_t mp_esp_ota_get_boot_partition (void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_ota_get_boot_partition_obj, mp_esp_ota_get_boot_partition);
 
+STATIC mp_obj_t mp_esp_ota_get_running_partition (void) {
+    const esp_partition_t* part = esp_ota_get_running_partition();
+    void* partptr = &part;
+    return mp_obj_new_bytes(partptr, sizeof(partptr));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_ota_get_running_partition_obj, mp_esp_ota_get_running_partition);
+
+STATIC mp_obj_t mp_esp_ota_get_next_update_partition (mp_uint_t n_args, const mp_obj_t *args) {
+    esp_partition_t* start_from = NULL;
+    if (n_args == 1) {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+        memcpy(&start_from, bufinfo.buf, bufinfo.len);
+    }
+    const esp_partition_t* part = esp_ota_get_next_update_partition(start_from);
+    void* partptr = &part;
+    return mp_obj_new_bytes(partptr, sizeof(partptr));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ota_get_next_update_partition_obj, 0, 1, mp_esp_ota_get_next_update_partition);
+
 STATIC mp_obj_t esp_gpio_matrix_in(mp_obj_t pin, mp_obj_t sig, mp_obj_t inv) {
     gpio_matrix_in(mp_obj_get_int(pin), mp_obj_get_int(sig), mp_obj_get_int(inv));
     return mp_const_none;
@@ -186,6 +206,8 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_partition_find_first), MP_ROM_PTR(&esp_partition_find_first_obj) },
     { MP_ROM_QSTR(MP_QSTR_ota_set_boot_partition), MP_ROM_PTR(&esp_ota_set_boot_partition_obj) },
     { MP_ROM_QSTR(MP_QSTR_ota_get_boot_partition), MP_ROM_PTR(&esp_ota_get_boot_partition_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ota_get_running_partition), MP_ROM_PTR(&esp_ota_get_running_partition_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ota_get_next_update_partition), MP_ROM_PTR(&esp_ota_get_next_update_partition_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_in), MP_ROM_PTR(&esp_gpio_matrix_in_obj) },
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_out), MP_ROM_PTR(&esp_gpio_matrix_out_obj) },
