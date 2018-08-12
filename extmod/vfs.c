@@ -38,6 +38,10 @@
 #include "extmod/vfs_fat.h"
 #endif
 
+#if MICROPY_VFS_POSIX
+#include "extmod/vfs_posix.h"
+#endif
+
 // For mp_vfs_proxy_call, the maximum number of additional args that can be passed.
 // A fixed maximum size is used to avoid the need for a costly variable array.
 #define PROXY_MAX_ARGS (2)
@@ -124,21 +128,39 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     if (vfs == MP_VFS_NONE || vfs == MP_VFS_ROOT) {
         return MP_IMPORT_STAT_NO_EXIST;
     }
-    #if MICROPY_VFS_FAT
-    // fast paths for known VFS types
-    if (mp_obj_get_type(vfs->obj) == &mp_fat_vfs_type) {
-        return fat_vfs_import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
+
+    // If the mounted object has the VFS protocol, call its import_stat helper
+    const mp_vfs_proto_t *proto = mp_obj_get_type(vfs->obj)->protocol;
+    if (proto != NULL) {
+        return proto->import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
-    #endif
-    // TODO delegate to vfs.stat() method
-    return MP_IMPORT_STAT_NO_EXIST;
+
+    // delegate to vfs.stat() method
+    mp_obj_t path_o = mp_obj_new_str(path_out, strlen(path_out));
+    mp_obj_t stat;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        stat = mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_o);
+        nlr_pop();
+    } else {
+        // assume an exception means that the path is not found
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+    mp_obj_t *items;
+    mp_obj_get_array_fixed_n(stat, 10, &items);
+    mp_int_t st_mode = mp_obj_get_int(items[0]);
+    if (st_mode & MP_S_IFDIR) {
+        return MP_IMPORT_STAT_DIR;
+    } else {
+        return MP_IMPORT_STAT_FILE;
+    }
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_readonly, ARG_mkfs };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_false} },
-        { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_false} },
+        { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_false_obj)} },
+        { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_false_obj)} },
     };
 
     // parse args
@@ -246,7 +268,14 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_vfs_mount_t *vfs = lookup_path((mp_obj_t)args[ARG_file].u_rom_obj, &args[ARG_file].u_obj);
+    #if MICROPY_VFS_POSIX
+    // If the file is an integer then delegate straight to the POSIX handler
+    if (MP_OBJ_IS_SMALL_INT(args[ARG_file].u_obj)) {
+        return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
+    }
+    #endif
+
+    mp_vfs_mount_t *vfs = lookup_path(args[ARG_file].u_obj, &args[ARG_file].u_obj);
     return mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t*)&args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_open_obj, 0, mp_vfs_open);

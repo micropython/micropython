@@ -1,10 +1,5 @@
-import uerrno
 try:
-    try:
-        import uos_vfs as uos
-        open = uos.vfs_open
-    except ImportError:
-        import uos
+    import uos
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -114,3 +109,11 @@ uos.umount('/')
 print(uos.getcwd())
 print(uos.listdir())
 print(uos.listdir('sys'))
+
+# test importing a file from a mounted FS
+import sys
+sys.path.clear()
+sys.path.append('/sys')
+with open('sys/test_module.py', 'w') as f:
+    f.write('print("test_module!")')
+import test_module

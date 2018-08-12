@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2018 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
+#include "lwip/init.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
@@ -54,6 +55,7 @@
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
+#include "sdram.h"
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"
@@ -100,7 +102,7 @@ void NORETURN __fatal_error(const char *msg) {
 
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught exception %p\n", val);
-    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)val);
+    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
     __fatal_error("");
 }
 
@@ -129,6 +131,7 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
+#if MICROPY_HW_ENABLE_STORAGE
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"
 "# can run arbitrary Python, but best to keep it minimal\r\n"
@@ -136,8 +139,10 @@ static const char fresh_boot_py[] =
 "import machine\r\n"
 "import pyb\r\n"
 "#pyb.main('main.py') # main script to run after this one\r\n"
+#if MICROPY_HW_ENABLE_USB
 "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
 "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
+#endif
 ;
 
 static const char fresh_main_py[] =
@@ -190,7 +195,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         }
 
         // set label
-        f_setlabel(&vfs_fat->fatfs, "pybflash");
+        f_setlabel(&vfs_fat->fatfs, MICROPY_HW_FLASH_FS_LABEL);
 
         // create empty main.py
         FIL fp;
@@ -261,6 +266,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     return true;
 }
+#endif
 
 #if MICROPY_HW_HAS_SDCARD
 STATIC bool init_sdcard_fs(void) {
@@ -338,13 +344,14 @@ STATIC bool init_sdcard_fs(void) {
 }
 #endif
 
+#if !MICROPY_HW_USES_BOOTLOADER
 STATIC uint update_reset_mode(uint reset_mode) {
-#if MICROPY_HW_HAS_SWITCH
+    #if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
 
         // The original method used on the pyboard is appropriate if you have 2
         // or more LEDs.
-#if defined(MICROPY_HW_LED2)
+        #if defined(MICROPY_HW_LED2)
         for (uint i = 0; i < 3000; i++) {
             if (!switch_get()) {
                 break;
@@ -372,7 +379,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
         }
         mp_hal_delay_ms(400);
 
-#elif defined(MICROPY_HW_LED1)
+        #elif defined(MICROPY_HW_LED1)
 
         // For boards with only a single LED, we'll flash that LED the
         // appropriate number of times, with a pause between each one
@@ -405,24 +412,60 @@ STATIC uint update_reset_mode(uint reset_mode) {
             }
             mp_hal_delay_ms(400);
         }
-#else
-#error Need a reset mode update method
-#endif
+        #else
+        #error Need a reset mode update method
+        #endif
     }
-#endif
+    #endif
     return reset_mode;
 }
+#endif
 
-int main(void) {
-    // TODO disable JTAG
+void stm32_main(uint32_t reset_mode) {
+    // Enable caches and prefetch buffers
 
-    /* STM32F4xx HAL library initialization:
-         - Configure the Flash prefetch, instruction and Data caches
-         - Configure the Systick to generate an interrupt each 1 msec
-         - Set NVIC Group Priority to 4
-         - Global MSP (MCU Support Package) initialization
-       */
-    HAL_Init();
+    #if defined(STM32F4)
+
+    #if INSTRUCTION_CACHE_ENABLE
+    __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
+    #endif
+    #if DATA_CACHE_ENABLE
+    __HAL_FLASH_DATA_CACHE_ENABLE();
+    #endif
+    #if PREFETCH_ENABLE
+    __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+    #endif
+
+    #elif defined(STM32F7) || defined(STM32H7)
+
+    #if ART_ACCLERATOR_ENABLE
+    __HAL_FLASH_ART_ENABLE();
+    #endif
+
+    SCB_EnableICache();
+    SCB_EnableDCache();
+
+    #elif defined(STM32L4)
+
+    #if !INSTRUCTION_CACHE_ENABLE
+    __HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
+    #endif
+    #if !DATA_CACHE_ENABLE
+    __HAL_FLASH_DATA_CACHE_DISABLE();
+    #endif
+    #if PREFETCH_ENABLE
+    __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+    #endif
+
+    #endif
+
+    #if __CORTEX_M >= 0x03
+    // Set the priority grouping
+    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+    #endif
+
+    // SysTick is needed by HAL_RCC_ClockConfig (called in SystemClock_Config)
+    HAL_InitTick(TICK_INT_PRIORITY);
 
     // set the system clock to be HSE
     SystemClock_Config();
@@ -468,27 +511,38 @@ int main(void) {
     rtc_init_start(false);
     #endif
     spi_init0();
-    #if MICROPY_HW_ENABLE_HW_I2C
+    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
     #endif
     #if MICROPY_HW_HAS_SDCARD
     sdcard_init();
     #endif
+    #if MICROPY_HW_ENABLE_STORAGE
     storage_init();
+    #endif
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #endif
 
 soft_reset:
 
-    // check if user switch held to select the reset mode
-#if defined(MICROPY_HW_LED2)
+    #if defined(MICROPY_HW_LED2)
     led_state(1, 0);
     led_state(2, 1);
-#else
+    #else
     led_state(1, 1);
     led_state(2, 0);
-#endif
+    #endif
     led_state(3, 0);
     led_state(4, 0);
-    uint reset_mode = update_reset_mode(1);
+
+    #if !MICROPY_HW_USES_BOOTLOADER
+    // check if user switch held to select the reset mode
+    reset_mode = update_reset_mode(1);
+    #endif
 
     // Python threading init
     #if MICROPY_PY_THREAD
@@ -502,7 +556,16 @@ soft_reset:
     mp_stack_set_limit((char*)&_estack - (char*)&_heap_end - 1024);
 
     // GC init
+    #if MICROPY_HW_SDRAM_SIZE
+    sdram_init();
+    #if MICROPY_HW_SDRAM_STARTUP_TEST
+    sdram_test(true);
+    #endif
+
+    gc_init(sdram_start(), sdram_end());
+    #else
     gc_init(&_heap_start, &_heap_end);
+    #endif
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];
@@ -511,9 +574,9 @@ soft_reset:
 
     // MicroPython init
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_init(mp_sys_argv, 0);
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
     // Initialise low-level sub-systems.  Here we need to very basic things like
     // zeroing out memory and resetting any of the sub-systems.  Following this
@@ -529,21 +592,22 @@ soft_reset:
     // Define MICROPY_HW_UART_REPL to be PYB_UART_6 and define
     // MICROPY_HW_UART_REPL_BAUD in your mpconfigboard.h file if you want a
     // REPL on a hardware UART as well as on USB VCP
-#if defined(MICROPY_HW_UART_REPL)
+    #if defined(MICROPY_HW_UART_REPL)
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
             MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL_BAUD),
         };
         MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        uart_attach_to_repl(MP_STATE_PORT(pyb_stdio_uart), true);
     }
-#else
+    #else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
-#endif
+    #endif
 
-#if MICROPY_HW_ENABLE_CAN
+    #if MICROPY_HW_ENABLE_CAN
     can_init0();
-#endif
+    #endif
 
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
@@ -551,10 +615,13 @@ soft_reset:
 
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
-    bool mounted_flash = init_flash_fs(reset_mode);
+    bool mounted_flash = false;
+    #if MICROPY_HW_ENABLE_STORAGE
+    mounted_flash = init_flash_fs(reset_mode);
+    #endif
 
     bool mounted_sdcard = false;
-#if MICROPY_HW_HAS_SDCARD
+    #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
@@ -562,7 +629,7 @@ soft_reset:
             mounted_sdcard = init_sdcard_fs();
         }
     }
-#endif
+    #endif
 
     #if MICROPY_HW_ENABLE_USB
     // if the SD card isn't used as the USB MSC medium then use the internal flash
@@ -601,12 +668,12 @@ soft_reset:
     }
 
     // turn boot-up LEDs off
-#if !defined(MICROPY_HW_LED2)
+    #if !defined(MICROPY_HW_LED2)
     // If there is only one LED on the board then it's used to signal boot-up
     // and so we turn it off here.  Otherwise LED(1) is used to indicate dirty
     // flash cache and so we shouldn't change its state.
     led_state(1, 0);
-#endif
+    #endif
     led_state(2, 0);
     led_state(3, 0);
     led_state(4, 0);
@@ -622,24 +689,22 @@ soft_reset:
     }
     #endif
 
-#if MICROPY_HW_HAS_MMA7660
+    #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset
     accel_init();
-#endif
+    #endif
 
-#if MICROPY_HW_ENABLE_SERVO
-    // servo
+    #if MICROPY_HW_ENABLE_SERVO
     servo_init();
-#endif
+    #endif
 
-#if MICROPY_HW_ENABLE_DAC
-    // DAC
+    #if MICROPY_HW_ENABLE_DAC
     dac_init();
-#endif
+    #endif
 
-#if MICROPY_PY_NETWORK
+    #if MICROPY_PY_NETWORK
     mod_network_init();
-#endif
+    #endif
 
     // At this point everything is fully configured and initialised.
 
@@ -681,20 +746,27 @@ soft_reset_exit:
 
     // soft reset
 
+    #if MICROPY_HW_ENABLE_STORAGE
     printf("PYB: sync filesystems\n");
     storage_flush();
+    #endif
 
     printf("PYB: soft reboot\n");
+    #if MICROPY_PY_NETWORK
+    mod_network_deinit();
+    #endif
     timer_deinit();
     uart_deinit();
-#if MICROPY_HW_ENABLE_CAN
+    #if MICROPY_HW_ENABLE_CAN
     can_deinit();
-#endif
+    #endif
     machine_deinit();
 
     #if MICROPY_PY_THREAD
     pyb_thread_deinit();
     #endif
+
+    gc_sweep_all();
 
     goto soft_reset;
 }

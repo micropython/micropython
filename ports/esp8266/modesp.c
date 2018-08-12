@@ -34,6 +34,7 @@
 #include "uart.h"
 #include "user_interface.h"
 #include "mem.h"
+#include "ets_alt_task.h"
 #include "espneopixel.h"
 #include "espapa102.h"
 #include "modmachine.h"
@@ -120,7 +121,9 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     if (bufinfo.len & 0x3) {
         mp_raise_ValueError("len must be multiple of 4");
     }
+    ets_loop_iter(); // flash access takes time so run any pending tasks
     SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
+    ets_loop_iter();
     if (res == SPI_FLASH_RESULT_OK) {
         return mp_const_none;
     }
@@ -130,7 +133,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
 
 STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     mp_int_t sector = mp_obj_get_int(sector_in);
+    ets_loop_iter(); // flash access takes time so run any pending tasks
     SpiFlashOpResult res = spi_flash_erase_sector(sector);
+    ets_loop_iter();
     if (res == SPI_FLASH_RESULT_OK) {
         return mp_const_none;
     }
@@ -305,14 +310,17 @@ void *esp_native_code_commit(void *buf, size_t len) {
     } else {
         SpiFlashOpResult res;
         while (esp_native_code_erased < esp_native_code_cur + len) {
+            ets_loop_iter(); // flash access takes time so run any pending tasks
             res = spi_flash_erase_sector(esp_native_code_erased / FLASH_SEC_SIZE);
             if (res != SPI_FLASH_RESULT_OK) {
                 break;
             }
             esp_native_code_erased += FLASH_SEC_SIZE;
         }
+        ets_loop_iter();
         if (res == SPI_FLASH_RESULT_OK) {
             res = spi_flash_write(esp_native_code_cur, buf, len);
+            ets_loop_iter();
         }
         if (res != SPI_FLASH_RESULT_OK) {
             mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);

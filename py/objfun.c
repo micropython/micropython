@@ -204,10 +204,11 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
         n_state_out_var = mp_decode_uint_value(bytecode);                         \
         size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(bytecode)); \
                                                                                   \
-        n_state += VM_DETECT_STACK_OVERFLOW;                                      \
+        n_state_out_var += VM_DETECT_STACK_OVERFLOW;                              \
                                                                                   \
         /* state size in bytes */                                                 \
-        state_size_out_var = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t); \
+        state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
+                           + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
 #define INIT_CODESTATE(code_state, _fun_bc, n_args, n_kw, args) \
@@ -256,8 +257,8 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     dump_args(args, n_args);
     DEBUG_printf("Input kw args: ");
     dump_args(args + n_args, n_kw * 2);
+
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-    DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
     size_t n_state, state_size;
     DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
@@ -337,7 +338,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
-STATIC void fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
         return;
@@ -357,7 +358,7 @@ const mp_obj_type_t mp_type_fun_bc = {
     .call = fun_bc_call,
     .unary_op = mp_generic_unary_op,
 #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = fun_bc_attr,
+    .attr = mp_obj_fun_bc_attr,
 #endif
 };
 

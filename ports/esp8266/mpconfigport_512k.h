@@ -5,6 +5,9 @@
 #undef MICROPY_EMIT_INLINE_XTENSA
 #define MICROPY_EMIT_INLINE_XTENSA      (0)
 
+#undef MICROPY_DEBUG_PRINTERS
+#define MICROPY_DEBUG_PRINTERS          (0)
+
 #undef MICROPY_ERROR_REPORTING
 #define MICROPY_ERROR_REPORTING         (MICROPY_ERROR_REPORTING_TERSE)
 
@@ -28,6 +31,12 @@
 
 #undef MICROPY_PY_FRAMEBUF
 #define MICROPY_PY_FRAMEBUF             (0)
+
+#undef MICROPY_PY_URE_SUB
+#define MICROPY_PY_URE_SUB              (0)
+
+#undef MICROPY_PY_UCRYPTOLIB
+#define MICROPY_PY_UCRYPTOLIB           (0)
 
 #undef mp_import_stat
 #undef mp_builtin_open

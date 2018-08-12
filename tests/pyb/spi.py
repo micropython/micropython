@@ -29,3 +29,5 @@ spi.init(SPI.MASTER)
 spi.send(1, timeout=100)
 print(spi.recv(1, timeout=100))
 print(spi.send_recv(1, timeout=100))
+
+spi.deinit()

@@ -43,21 +43,27 @@ Constructors
 Methods
 -------
 
-.. only:: port_wipy
+.. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, \*, ...)
 
-    .. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
-    
-       Initialise the UART bus with the given parameters:
-    
-         - ``baudrate`` is the clock rate.
-         - ``bits`` is the number of bits per character, 7, 8 or 9.
-         - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
-         - ``stop`` is the number of stop bits, 1 or 2.
-         - ``pins`` is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).
-           Any of the pins can be None if one wants the UART to operate with limited functionality.
-           If the RTS pin is given the the RX pin must be given as well. The same applies to CTS. 
-           When no pins are given, then the default set of TX and RX pins is taken, and hardware 
-           flow control will be disabled. If pins=None, no pin assignment will be made.
+   Initialise the UART bus with the given parameters:
+
+     - *baudrate* is the clock rate.
+     - *bits* is the number of bits per character, 7, 8 or 9.
+     - *parity* is the parity, ``None``, 0 (even) or 1 (odd).
+     - *stop* is the number of stop bits, 1 or 2.
+
+   Additional keyword-only parameters that may be supported by a port are:
+
+     - *tx* specifies the TX pin to use.
+     - *rx* specifies the RX pin to use.
+
+   On the WiPy only the following keyword-only parameter is supported:
+
+     - *pins* is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).
+       Any of the pins can be None if one wants the UART to operate with limited functionality.
+       If the RTS pin is given the the RX pin must be given as well. The same applies to CTS.
+       When no pins are given, then the default set of TX and RX pins is taken, and hardware
+       flow control will be disabled. If *pins* is ``None``, no pin assignment will be made.
 
 .. method:: UART.deinit()
 
@@ -109,34 +115,36 @@ Methods
    Send a break condition on the bus. This drives the bus low for a duration
    longer than required for a normal transmission of a character.
 
-.. only:: port_wipy
+.. method:: UART.irq(trigger, priority=1, handler=None, wake=machine.IDLE)
 
-    .. method:: UART.irq(trigger, priority=1, handler=None, wake=machine.IDLE)
+   Create a callback to be triggered when data is received on the UART.
 
-       Create a callback to be triggered when data is received on the UART.
+       - *trigger* can only be ``UART.RX_ANY``
+       - *priority* level of the interrupt. Can take values in the range 1-7.
+         Higher values represent higher priorities.
+       - *handler* an optional function to be called when new characters arrive.
+       - *wake* can only be ``machine.IDLE``.
 
-           - ``trigger`` can only be ``UART.RX_ANY``
-           - ``priority`` level of the interrupt. Can take values in the range 1-7.
-             Higher values represent higher priorities.
-           - ``handler`` an optional function to be called when new characters arrive.
-           - ``wake`` can only be ``machine.IDLE``.
+   .. note::
 
-       .. note::
+      The handler will be called whenever any of the following two conditions are met:
 
-          The handler will be called whenever any of the following two conditions are met:
+          - 8 new characters have been received.
+          - At least 1 new character is waiting in the Rx buffer and the Rx line has been
+            silent for the duration of 1 complete frame.
 
-              - 8 new characters have been received.
-              - At least 1 new character is waiting in the Rx buffer and the Rx line has been
-                silent for the duration of 1 complete frame.
+      This means that when the handler function is called there will be between 1 to 8
+      characters waiting.
 
-          This means that when the handler function is called there will be between 1 to 8 
-          characters waiting.
+   Returns an irq object.
 
-       Returns an irq object.
+   Availability: WiPy.
 
-    Constants
-    ---------
+Constants
+---------
 
-    .. data:: UART.RX_ANY
+.. data:: UART.RX_ANY
 
-        IRQ trigger sources
+    IRQ trigger sources
+
+    Availability: WiPy.

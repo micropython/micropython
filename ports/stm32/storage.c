@@ -34,6 +34,8 @@
 #include "storage.h"
 #include "irq.h"
 
+#if MICROPY_HW_ENABLE_STORAGE
+
 #define FLASH_PART1_START_BLOCK (0x100)
 
 #if defined(MICROPY_HW_BDEV2_IOCTL)
@@ -55,7 +57,7 @@ void storage_init(void) {
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
         // It needs to go at a higher priority than all those components that rely on
         // the flash storage (eg higher than USB MSC).
-        HAL_NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH, IRQ_SUBPRI_FLASH);
+        NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH);
         HAL_NVIC_EnableIRQ(FLASH_IRQn);
     }
 }
@@ -223,7 +225,7 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // return singleton object
-    return (mp_obj_t)&pyb_flash_obj;
+    return MP_OBJ_FROM_PTR(&pyb_flash_obj);
 }
 
 STATIC mp_obj_t pyb_flash_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
@@ -275,12 +277,14 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
     vfs->fatfs.part = 1; // flash filesystem lives on first partition
-    vfs->readblocks[0] = (mp_obj_t)&pyb_flash_readblocks_obj;
-    vfs->readblocks[1] = (mp_obj_t)&pyb_flash_obj;
-    vfs->readblocks[2] = (mp_obj_t)storage_read_blocks; // native version
-    vfs->writeblocks[0] = (mp_obj_t)&pyb_flash_writeblocks_obj;
-    vfs->writeblocks[1] = (mp_obj_t)&pyb_flash_obj;
-    vfs->writeblocks[2] = (mp_obj_t)storage_write_blocks; // native version
-    vfs->u.ioctl[0] = (mp_obj_t)&pyb_flash_ioctl_obj;
-    vfs->u.ioctl[1] = (mp_obj_t)&pyb_flash_obj;
+    vfs->readblocks[0] = MP_OBJ_FROM_PTR(&pyb_flash_readblocks_obj);
+    vfs->readblocks[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
+    vfs->readblocks[2] = MP_OBJ_FROM_PTR(storage_read_blocks); // native version
+    vfs->writeblocks[0] = MP_OBJ_FROM_PTR(&pyb_flash_writeblocks_obj);
+    vfs->writeblocks[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
+    vfs->writeblocks[2] = MP_OBJ_FROM_PTR(storage_write_blocks); // native version
+    vfs->u.ioctl[0] = MP_OBJ_FROM_PTR(&pyb_flash_ioctl_obj);
+    vfs->u.ioctl[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
 }
+
+#endif

@@ -133,6 +133,12 @@ STATIC mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
 #endif
 
 STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
+    #if defined(STM32F0)
+    EXTI0_1_IRQn,  EXTI0_1_IRQn,  EXTI2_3_IRQn,  EXTI2_3_IRQn,
+    EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn,
+    EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn,
+    EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn,
+    #else
     EXTI0_IRQn,     EXTI1_IRQn,     EXTI2_IRQn,     EXTI3_IRQn,     EXTI4_IRQn,
     EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,
     EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,
@@ -148,6 +154,7 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     OTG_HS_WKUP_IRQn,
     TAMP_STAMP_IRQn,
     RTC_WKUP_IRQn,
+    #endif
 };
 
 // Set override_callback_obj to true if you want to unconditionally set the
@@ -214,7 +221,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         // Calling HAL_GPIO_Init does an implicit extint_enable
 
         /* Enable and set NVIC Interrupt to the lowest priority */
-        HAL_NVIC_SetPriority(nvic_irq_channel[v_line], IRQ_PRI_EXTINT, IRQ_SUBPRI_EXTINT);
+        NVIC_SetPriority(IRQn_NONNEG(nvic_irq_channel[v_line]), IRQ_PRI_EXTINT);
         HAL_NVIC_EnableIRQ(nvic_irq_channel[v_line]);
     }
     return v_line;
@@ -231,7 +238,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                 "ExtInt vector %d is already in use", line));
         } else {
-            const pin_obj_t *other_pin = (const pin_obj_t*)pyb_extint_callback_arg[line];
+            const pin_obj_t *other_pin = MP_OBJ_TO_PTR(pyb_extint_callback_arg[line]);
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                 "IRQ resource already taken by Pin('%q')", other_pin->name));
         }
@@ -270,7 +277,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
         }
 
         // Configure the NVIC
-        HAL_NVIC_SetPriority(nvic_irq_channel[line], IRQ_PRI_EXTINT, IRQ_SUBPRI_EXTINT);
+        NVIC_SetPriority(IRQn_NONNEG(nvic_irq_channel[line]), IRQ_PRI_EXTINT);
         HAL_NVIC_EnableIRQ(nvic_irq_channel[line]);
 
         // Enable the interrupt
@@ -282,7 +289,7 @@ void extint_enable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
-    #if defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32F7) || defined(STM32H7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
@@ -312,7 +319,7 @@ void extint_disable(uint line) {
         return;
     }
 
-    #if defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32F7) || defined(STM32H7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     #if defined(STM32H7)
@@ -349,7 +356,7 @@ void extint_swint(uint line) {
 /// \method line()
 /// Return the line number that the pin is mapped to.
 STATIC mp_obj_t extint_obj_line(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->line);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj, extint_obj_line);
@@ -357,7 +364,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj, extint_obj_line);
 /// \method enable()
 /// Enable a disabled interrupt.
 STATIC mp_obj_t extint_obj_enable(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     extint_enable(self->line);
     return mp_const_none;
 }
@@ -367,7 +374,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_enable_obj, extint_obj_enable);
 /// Disable the interrupt associated with the ExtInt object.
 /// This could be useful for debouncing.
 STATIC mp_obj_t extint_obj_disable(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     extint_disable(self->line);
     return mp_const_none;
 }
@@ -376,7 +383,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_disable_obj, extint_obj_disable);
 /// \method swint()
 /// Trigger the callback from software.
 STATIC mp_obj_t extint_obj_swint(mp_obj_t self_in) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     extint_swint(self->line);
     return mp_const_none;
 }
@@ -387,49 +394,49 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 /// Dump the values of the EXTI registers.
 STATIC mp_obj_t extint_regs(void) {
     #if defined(STM32L4)
-    printf("EXTI_IMR1   %08lx\n", EXTI->IMR1);
-    printf("EXTI_IMR2   %08lx\n", EXTI->IMR2);
-    printf("EXTI_EMR1   %08lx\n", EXTI->EMR1);
-    printf("EXTI_EMR2   %08lx\n", EXTI->EMR2);
-    printf("EXTI_RTSR1  %08lx\n", EXTI->RTSR1);
-    printf("EXTI_RTSR2  %08lx\n", EXTI->RTSR2);
-    printf("EXTI_FTSR1  %08lx\n", EXTI->FTSR1);
-    printf("EXTI_FTSR2  %08lx\n", EXTI->FTSR2);
-    printf("EXTI_SWIER1 %08lx\n", EXTI->SWIER1);
-    printf("EXTI_SWIER2 %08lx\n", EXTI->SWIER2);
-    printf("EXTI_PR1    %08lx\n", EXTI->PR1);
-    printf("EXTI_PR2    %08lx\n", EXTI->PR2);
+    printf("EXTI_IMR1   %08x\n", (unsigned int)EXTI->IMR1);
+    printf("EXTI_IMR2   %08x\n", (unsigned int)EXTI->IMR2);
+    printf("EXTI_EMR1   %08x\n", (unsigned int)EXTI->EMR1);
+    printf("EXTI_EMR2   %08x\n", (unsigned int)EXTI->EMR2);
+    printf("EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
+    printf("EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
+    printf("EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
+    printf("EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
+    printf("EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
+    printf("EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
+    printf("EXTI_PR1    %08x\n", (unsigned int)EXTI->PR1);
+    printf("EXTI_PR2    %08x\n", (unsigned int)EXTI->PR2);
     #elif defined(STM32H7)
-    printf("EXTI_IMR1   %08lx\n", EXTI_D1->IMR1);
-    printf("EXTI_IMR2   %08lx\n", EXTI_D1->IMR2);
-    printf("EXTI_IMR3   %08lx\n", EXTI_D1->IMR3);
-    printf("EXTI_EMR1   %08lx\n", EXTI_D1->EMR1);
-    printf("EXTI_EMR2   %08lx\n", EXTI_D1->EMR2);
-    printf("EXTI_EMR3   %08lx\n", EXTI_D1->EMR3);
-    printf("EXTI_RTSR1  %08lx\n", EXTI->RTSR1);
-    printf("EXTI_RTSR2  %08lx\n", EXTI->RTSR2);
-    printf("EXTI_RTSR3  %08lx\n", EXTI->RTSR3);
-    printf("EXTI_FTSR1  %08lx\n", EXTI->FTSR1);
-    printf("EXTI_FTSR2  %08lx\n", EXTI->FTSR2);
-    printf("EXTI_FTSR3  %08lx\n", EXTI->FTSR3);
-    printf("EXTI_SWIER1 %08lx\n", EXTI->SWIER1);
-    printf("EXTI_SWIER2 %08lx\n", EXTI->SWIER2);
-    printf("EXTI_SWIER3 %08lx\n", EXTI->SWIER3);
-    printf("EXTI_PR1    %08lx\n", EXTI_D1->PR1);
-    printf("EXTI_PR2    %08lx\n", EXTI_D1->PR2);
-    printf("EXTI_PR3    %08lx\n", EXTI_D1->PR3);
+    printf("EXTI_IMR1   %08x\n", (unsigned int)EXTI_D1->IMR1);
+    printf("EXTI_IMR2   %08x\n", (unsigned int)EXTI_D1->IMR2);
+    printf("EXTI_IMR3   %08x\n", (unsigned int)EXTI_D1->IMR3);
+    printf("EXTI_EMR1   %08x\n", (unsigned int)EXTI_D1->EMR1);
+    printf("EXTI_EMR2   %08x\n", (unsigned int)EXTI_D1->EMR2);
+    printf("EXTI_EMR3   %08x\n", (unsigned int)EXTI_D1->EMR3);
+    printf("EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
+    printf("EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
+    printf("EXTI_RTSR3  %08x\n", (unsigned int)EXTI->RTSR3);
+    printf("EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
+    printf("EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
+    printf("EXTI_FTSR3  %08x\n", (unsigned int)EXTI->FTSR3);
+    printf("EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
+    printf("EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
+    printf("EXTI_SWIER3 %08x\n", (unsigned int)EXTI->SWIER3);
+    printf("EXTI_PR1    %08x\n", (unsigned int)EXTI_D1->PR1);
+    printf("EXTI_PR2    %08x\n", (unsigned int)EXTI_D1->PR2);
+    printf("EXTI_PR3    %08x\n", (unsigned int)EXTI_D1->PR3);
     #else
-    printf("EXTI_IMR   %08lx\n", EXTI->IMR);
-    printf("EXTI_EMR   %08lx\n", EXTI->EMR);
-    printf("EXTI_RTSR  %08lx\n", EXTI->RTSR);
-    printf("EXTI_FTSR  %08lx\n", EXTI->FTSR);
-    printf("EXTI_SWIER %08lx\n", EXTI->SWIER);
-    printf("EXTI_PR    %08lx\n", EXTI->PR);
+    printf("EXTI_IMR   %08x\n", (unsigned int)EXTI->IMR);
+    printf("EXTI_EMR   %08x\n", (unsigned int)EXTI->EMR);
+    printf("EXTI_RTSR  %08x\n", (unsigned int)EXTI->RTSR);
+    printf("EXTI_FTSR  %08x\n", (unsigned int)EXTI->FTSR);
+    printf("EXTI_SWIER %08x\n", (unsigned int)EXTI->SWIER);
+    printf("EXTI_PR    %08x\n", (unsigned int)EXTI->PR);
     #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(extint_regs_fun_obj, extint_regs);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(extint_regs_obj, (mp_obj_t)&extint_regs_fun_obj);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(extint_regs_obj, MP_ROM_PTR(&extint_regs_fun_obj));
 
 /// \classmethod \constructor(pin, mode, pull, callback)
 /// Create an ExtInt object:
@@ -465,11 +472,11 @@ STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     self->base.type = type;
     self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false);
 
-    return self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC void extint_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    extint_obj_t *self = self_in;
+    extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<ExtInt line=%u>", self->line);
 }
 
@@ -534,8 +541,8 @@ void Handle_EXTI_Irq(uint32_t line) {
                     // Uncaught exception; disable the callback so it doesn't run again.
                     *cb = mp_const_none;
                     extint_disable(line);
-                    printf("Uncaught exception in ExtInt interrupt handler line %lu\n", line);
-                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                    printf("Uncaught exception in ExtInt interrupt handler line %u\n", (unsigned int)line);
+                    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
                 }
                 gc_unlock();
                 mp_sched_unlock();

@@ -35,6 +35,7 @@
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
 
+#if MICROPY_ENABLE_COMPILER
 STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(MP_STATE_VM(mp_optimise_value));
@@ -44,6 +45,7 @@ STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_opt_level_obj, 0, 1, mp_micropython_opt_level);
+#endif
 
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 
@@ -158,7 +160,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_sch
 STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
     { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
+    #if MICROPY_ENABLE_COMPILER
     { MP_ROM_QSTR(MP_QSTR_opt_level), MP_ROM_PTR(&mp_micropython_opt_level_obj) },
+    #endif
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 #if MICROPY_MEM_STATS
     { MP_ROM_QSTR(MP_QSTR_mem_total), MP_ROM_PTR(&mp_micropython_mem_total_obj) },

@@ -33,6 +33,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "mphalport.h"
 #include "modmachine.h"
 #include "extmod/virtpin.h"
 #include "machine_rtc.h"
@@ -115,6 +116,7 @@ STATIC void IRAM_ATTR machine_pin_isr_handler(void *arg) {
     machine_pin_obj_t *self = arg;
     mp_obj_t handler = MP_STATE_PORT(machine_pin_irq_handler)[self->id];
     mp_sched_schedule(handler, MP_OBJ_FROM_PTR(self));
+    mp_hal_wake_main_task_from_isr();
 }
 
 gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
