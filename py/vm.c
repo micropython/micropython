@@ -260,7 +260,6 @@ FRAME_SETUP();
 
     // outer exception handling loop
     for (;;) {
-outer_dispatch_loop:
         {
             // local variables that are not visible to the exception handler
             const byte *ip = code_state->ip;
@@ -864,7 +863,13 @@ unwind_jump:;
                         ip += ulab; // jump to after for-block
                     } else if (value == MP_OBJ_NULL) {
                         // raised an exception
-                        RAISE_IT();
+                        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+                            MP_STATE_THREAD(cur_exc) = NULL;
+                            sp -= MP_OBJ_ITER_BUF_NSLOTS; // pop the exhausted iterator
+                            ip += ulab; // jump to after for-block
+                        } else {
+                            RAISE_IT();
+                        }
                     } else {
                         PUSH(value); // push the next iteration value
                         #if MICROPY_PY_SYS_SETTRACE
@@ -1290,7 +1295,6 @@ yield:
                     mp_obj_t send_value = POP();
                     mp_obj_t t_exc = MP_OBJ_NULL;
                     mp_obj_t ret_value;
-                    code_state->sp = sp; // Save sp because it's needed if mp_resume raises StopIteration
                     if (inject_exc != MP_OBJ_NULL) {
                         t_exc = inject_exc;
                         inject_exc = MP_OBJ_NULL;
@@ -1320,9 +1324,14 @@ yield:
                         DISPATCH();
                     } else {
                         assert(ret_kind == MP_VM_RETURN_EXCEPTION);
-                        assert(!EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration)));
                         // Pop exhausted gen
                         sp--;
+                        if (EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+                            // StopIteration inside yield from call means return a value of
+                            // yield from, so inject exception's value as yield from's result
+                            PUSH(mp_obj_exception_get_value(MP_OBJ_FROM_PTR(ret_value)));
+                            DISPATCH();
+                        }
                         RAISE(ret_value);
                     }
                 }
@@ -1490,26 +1499,6 @@ exception_handler:
             // with selective ip, we store the ip 1 byte past the opcode, so move ptr back
             code_state->ip -= 1;
             #endif
-
-            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)the_exc)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                if (code_state->ip) {
-                    // check if it's a StopIteration within a for block
-                    if (*code_state->ip == MP_BC_FOR_ITER) {
-                        const byte *ip = code_state->ip + 1;
-                        DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                        code_state->ip = ip + ulab; // jump to after for-block
-                        code_state->sp -= MP_OBJ_ITER_BUF_NSLOTS; // pop the exhausted iterator
-                        goto outer_dispatch_loop; // continue with dispatch loop
-                    } else if (*code_state->ip == MP_BC_YIELD_FROM) {
-                        // StopIteration inside yield from call means return a value of
-                        // yield from, so inject exception's value as yield from's result
-                        // (Instead of stack pop then push we just replace exhausted gen with value)
-                        *code_state->sp = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(the_exc));
-                        code_state->ip++; // yield from is over, move to next instruction
-                        goto outer_dispatch_loop; // continue with dispatch loop
-                    }
-                }
-            }
 
             #if MICROPY_PY_SYS_SETTRACE
             // Exceptions are traced here
