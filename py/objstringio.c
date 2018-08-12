@@ -36,13 +36,15 @@
 #if MICROPY_PY_IO
 
 #if MICROPY_CPYTHON_COMPAT
-STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
+STATIC int check_stringio_is_open(const mp_obj_stringio_t *o) {
     if (o->vstr == NULL) {
-        mp_raise_ValueError("I/O operation on closed file");
+        mp_raise_ValueError_o("I/O operation on closed file");
+        return 1;
     }
+    return 0;
 }
 #else
-#define check_stringio_is_open(o)
+#define check_stringio_is_open(o) 0
 #endif
 
 STATIC void stringio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -54,7 +56,9 @@ STATIC void stringio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
-    check_stringio_is_open(o);
+    if (check_stringio_is_open(o)) {
+        return MP_STREAM_ERROR;
+    }
     if (o->vstr->len <= o->pos) {  // read to EOF, or seeked to EOF or beyond
         return 0;
     }
@@ -78,7 +82,9 @@ STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
-    check_stringio_is_open(o);
+    if (check_stringio_is_open(o)) {
+        return MP_STREAM_ERROR;
+    }
 
     if (o->vstr->fixed_buf) {
         stringio_copy_on_write(o);
@@ -164,7 +170,9 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
 
 STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
     mp_obj_stringio_t *self = MP_OBJ_TO_PTR(self_in);
-    check_stringio_is_open(self);
+    if (check_stringio_is_open(self)) {
+        return MP_OBJ_NULL;
+    }
     // TODO: Try to avoid copying string
     return mp_obj_new_str_of_type(STREAM_TO_CONTENT_TYPE(self), (byte*)self->vstr->buf, self->vstr->len);
 }

@@ -95,6 +95,9 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
+    if (typecode_size == 0) {
+        return NULL;
+    }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
     o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
@@ -145,12 +148,15 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     mp_obj_t iterable = mp_getiter(initializer, NULL);
     mp_obj_t item;
     size_t i = 0;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+    while ((item = mp_iternext2(iterable)) != MP_OBJ_NULL) {
         if (len == 0) {
             array_append(MP_OBJ_FROM_PTR(array), item);
         } else {
             mp_binary_set_val_array(typecode, array->items, i++, item);
         }
+    }
+    if (mp_iternext_had_exc()) {
+        return MP_OBJ_NULL;
     }
 
     return MP_OBJ_FROM_PTR(array);
@@ -263,7 +269,9 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
             mp_buffer_info_t lhs_bufinfo;
             mp_buffer_info_t rhs_bufinfo;
             array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
-            mp_get_buffer_raise(rhs_in, &rhs_bufinfo, MP_BUFFER_READ);
+            if (!mp_get_buffer_raise(rhs_in, &rhs_bufinfo, MP_BUFFER_READ)) {
+                return MP_OBJ_NULL;
+            }
 
             size_t sz = mp_binary_get_size('@', lhs_bufinfo.typecode, NULL);
 
@@ -303,7 +311,7 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 
             // Otherwise, can only look for a scalar numeric value in an array
             if (mp_obj_is_int(rhs_in) || mp_obj_is_float(rhs_in)) {
-                mp_raise_NotImplementedError(NULL);
+                return mp_raise_NotImplementedError_o(NULL);
             }
 
             return mp_const_false;
@@ -339,6 +347,9 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
         mp_seq_clear(self->items, self->len + 1, self->len + self->free, item_sz);
     }
     mp_binary_set_val_array(self->typecode, self->items, self->len, arg);
+    if (MP_STATE_THREAD(cur_exc) != NULL) {
+        return MP_OBJ_NULL;
+    }
     // only update length/free if set succeeded
     self->len++;
     self->free--;
@@ -392,7 +403,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
-                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
+                return mp_raise_NotImplementedError_o("only slices with step=1 (aka None) are supported");
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -405,7 +416,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        mp_raise_ValueError("lhs and rhs should be compatible");
+                        return mp_raise_ValueError_o("lhs and rhs should be compatible");
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;
@@ -423,7 +434,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                 } else {
-                    mp_raise_NotImplementedError("array/bytes required on right side");
+                    return mp_raise_NotImplementedError_o("array/bytes required on right side");
                 }
 
                 // TODO: check src/dst compat
@@ -486,6 +497,9 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
 #endif
         {
             size_t index = mp_get_index(o->base.type, o->len, index_in, false);
+            if (index == (size_t)-1) {
+                return MP_OBJ_NULL;
+            }
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
             if (o->base.type == &mp_type_memoryview) {
                 index += o->memview_offset;

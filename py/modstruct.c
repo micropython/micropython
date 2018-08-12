@@ -99,6 +99,9 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
             total_cnt += cnt;
             size_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
+            if (sz == 0) {
+                return (size_t)-1;
+            }
             while (cnt--) {
                 // Apply alignment
                 size = (size + align - 1) & ~(align - 1);
@@ -112,8 +115,13 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
 
 STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
+    if (fmt == NULL) {
+        return MP_OBJ_NULL;
+    }
     size_t size;
-    calc_size_items(fmt, &size);
+    if (calc_size_items(fmt, &size) == (size_t)-1) {
+        return MP_OBJ_NULL;
+    }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
@@ -126,6 +134,9 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(args[0]);
     size_t total_sz;
     size_t num_items = calc_size_items(fmt, &total_sz);
+    if (num_items == (size_t)-1) {
+        return MP_OBJ_NULL;
+    }
     char fmt_type = get_fmt_type(&fmt);
     mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_items, NULL));
     mp_buffer_info_t bufinfo;
@@ -141,7 +152,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             // negative offsets are relative to the end of the buffer
             offset = bufinfo.len + offset;
             if (offset < 0) {
-                mp_raise_ValueError("buffer too small");
+                return mp_raise_ValueError_o("buffer too small");
             }
         }
         p += offset;
@@ -150,7 +161,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
 
     // Check that the input buffer is big enough to unpack all the values
     if (p + total_sz > end_p) {
-        mp_raise_ValueError("buffer too small");
+        return mp_raise_ValueError_o("buffer too small");
     }
 
     for (size_t i = 0; i < num_items;) {
@@ -214,7 +225,11 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
 
 STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     // TODO: "The arguments must match the values required by the format exactly."
-    mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
+    mp_obj_t size_obj = struct_calcsize(args[0]);
+    if (size_obj == MP_OBJ_NULL) {
+        return MP_OBJ_NULL;
+    }
+    mp_int_t size = MP_OBJ_SMALL_INT_VALUE(size_obj);
     vstr_t vstr;
     vstr_init_len(&vstr, size);
     byte *p = (byte*)vstr.buf;
@@ -232,7 +247,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
         // negative offsets are relative to the end of the buffer
         offset = (mp_int_t)bufinfo.len + offset;
         if (offset < 0) {
-            mp_raise_ValueError("buffer too small");
+            return mp_raise_ValueError_o("buffer too small");
         }
     }
     byte *p = (byte *)bufinfo.buf;
@@ -240,9 +255,13 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
     p += offset;
 
     // Check that the output buffer is big enough to hold all the values
-    mp_int_t sz = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
+    mp_obj_t sz_obj = struct_calcsize(args[0]);
+    if (sz_obj == MP_OBJ_NULL) {
+        return MP_OBJ_NULL;
+    }
+    mp_int_t sz = MP_OBJ_SMALL_INT_VALUE(sz_obj);
     if (p + sz > end_p) {
-        mp_raise_ValueError("buffer too small");
+        return mp_raise_ValueError_o("buffer too small");
     }
 
     struct_pack_into_internal(args[0], p, n_args - 3, &args[3]);

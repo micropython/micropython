@@ -77,14 +77,14 @@ bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 // extra printing method specifically for mp_obj_t's which are integral type
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 
-void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig);
-static inline void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
-    mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
+int mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig);
+static inline int mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
+    return mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
 }
-void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
-void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
-NORETURN void mp_arg_error_terse_mismatch(void);
-NORETURN void mp_arg_error_unimpl_kw(void);
+int mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
+int mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
+void mp_arg_error_terse_mismatch(void);
+void mp_arg_error_unimpl_kw(void);
 
 static inline mp_obj_dict_t *mp_locals_get(void) { return MP_STATE_THREAD(dict_locals); }
 static inline void mp_locals_set(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_locals) = d; }
@@ -96,8 +96,8 @@ mp_obj_t mp_load_global(qstr qst);
 mp_obj_t mp_load_build_class(void);
 void mp_store_name(qstr qst, mp_obj_t obj);
 void mp_store_global(qstr qst, mp_obj_t obj);
-void mp_delete_name(qstr qst);
-void mp_delete_global(qstr qst);
+int mp_delete_name(qstr qst);
+int mp_delete_global(qstr qst);
 
 mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg);
 mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs);
@@ -128,20 +128,22 @@ typedef struct _mp_call_args_t {
 void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args);
 #endif
 
-void mp_unpack_sequence(mp_obj_t seq, size_t num, mp_obj_t *items);
-void mp_unpack_ex(mp_obj_t seq, size_t num, mp_obj_t *items);
+int mp_unpack_sequence(mp_obj_t seq, size_t num, mp_obj_t *items);
+int mp_unpack_ex(mp_obj_t seq, size_t num, mp_obj_t *items);
 mp_obj_t mp_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr);
 void mp_convert_member_lookup(mp_obj_t obj, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest);
-void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
-void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
-void mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc);
+int mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
+int mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
+int mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc);
 void mp_load_super_method(qstr attr, mp_obj_t *dest);
-void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
+int mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
 
 mp_obj_t mp_getiter(mp_obj_t o, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATION instead of raising StopIteration()
 mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
+mp_obj_t mp_iternext2(mp_obj_t o);
+bool mp_iternext_had_exc(void);
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
 mp_obj_t mp_make_raise_obj(mp_obj_t o);
@@ -156,6 +158,13 @@ NORETURN void mp_raise_TypeError(const char *msg);
 NORETURN void mp_raise_NotImplementedError(const char *msg);
 NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_recursion_depth(void);
+
+mp_obj_t mp_raise_o(mp_obj_t exc);
+mp_obj_t mp_raise_msg_o(const mp_obj_type_t *exc_type, const char *msg);
+mp_obj_t mp_raise_ValueError_o(const char *msg);
+mp_obj_t mp_raise_TypeError_o(const char *msg);
+mp_obj_t mp_raise_NotImplementedError_o(const char *msg);
+mp_obj_t mp_raise_OSError_o(int errno_);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
 #undef mp_check_self

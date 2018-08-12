@@ -58,19 +58,10 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     }
 
     // execute code
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t ret = mp_call_function_0(self->module_fun);
-        nlr_pop();
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        return ret;
-    } else {
-        // exception; restore context and re-raise same exception
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        nlr_jump(nlr.ret_val);
-    }
+    mp_obj_t ret = mp_call_function_0(self->module_fun);
+    mp_globals_set(old_globals);
+    mp_locals_set(old_locals);
+    return ret;
 }
 
 STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
@@ -94,12 +85,15 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
         case MP_QSTR_exec: parse_input_kind = MP_PARSE_FILE_INPUT; break;
         case MP_QSTR_eval: parse_input_kind = MP_PARSE_EVAL_INPUT; break;
         default:
-            mp_raise_ValueError("bad compile mode");
+            return mp_raise_ValueError_o("bad compile mode");
     }
 
     mp_obj_code_t *code = m_new_obj(mp_obj_code_t);
     code->base.type = &mp_type_code;
     code->module_fun = mp_parse_compile_execute(lex, parse_input_kind, NULL, NULL);
+    if (code->module_fun == MP_OBJ_NULL) {
+        return MP_OBJ_NULL;
+    }
     return MP_OBJ_FROM_PTR(code);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_compile_obj, 3, 6, mp_builtin_compile);
@@ -115,7 +109,7 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     for (size_t i = 1; i < 3 && i < n_args; ++i) {
         if (args[i] != mp_const_none) {
             if (!mp_obj_is_type(args[i], &mp_type_dict)) {
-                mp_raise_TypeError(NULL);
+                return mp_raise_TypeError_o(NULL);
             }
             locals = MP_OBJ_TO_PTR(args[i]);
             if (i == 1) {

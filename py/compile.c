@@ -3587,14 +3587,22 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     }
 
     if (comp->compile_error != MP_OBJ_NULL) {
-        nlr_raise(comp->compile_error);
+        mp_raise_o(comp->compile_error);
+        return NULL;
     } else {
         return outer_raw_code;
     }
 }
 
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
+    if (MP_STATE_THREAD(cur_exc) != NULL) {
+        // parser had an exception
+        return MP_OBJ_NULL;
+    }
     mp_raw_code_t *rc = mp_compile_to_raw_code(parse_tree, source_file, is_repl);
+    if (rc == NULL) {
+        return MP_OBJ_NULL;
+    }
     // return function that executes the outer module
     return mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
 }

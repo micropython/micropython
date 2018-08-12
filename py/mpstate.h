@@ -257,6 +257,8 @@ typedef struct _mp_state_thread_t {
     mp_obj_dict_t *dict_locals;
     mp_obj_dict_t *dict_globals;
 
+    mp_obj_base_t *cur_exc;
+
     nlr_buf_t *nlr_top;
 
     #if MICROPY_PY_SYS_SETTRACE

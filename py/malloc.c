@@ -85,7 +85,7 @@ STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
 void *m_malloc(size_t num_bytes) {
     void *ptr = malloc(num_bytes);
     if (ptr == NULL && num_bytes != 0) {
-        m_malloc_fail(num_bytes);
+        return m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
@@ -111,7 +111,7 @@ void *m_malloc_maybe(size_t num_bytes) {
 void *m_malloc_with_finaliser(size_t num_bytes) {
     void *ptr = malloc_with_finaliser(num_bytes);
     if (ptr == NULL && num_bytes != 0) {
-        m_malloc_fail(num_bytes);
+        return m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
@@ -139,7 +139,7 @@ void *m_realloc(void *ptr, size_t new_num_bytes) {
 #endif
     void *new_ptr = realloc(ptr, new_num_bytes);
     if (new_ptr == NULL && new_num_bytes != 0) {
-        m_malloc_fail(new_num_bytes);
+        return m_malloc_fail(new_num_bytes);
     }
 #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,

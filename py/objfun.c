@@ -52,7 +52,9 @@ STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
     (void)args;
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_0));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    if (mp_arg_check_num(n_args, n_kw, 0, 0, false)) {
+        return MP_OBJ_NULL;
+    }
     return self->fun._0();
 }
 
@@ -66,7 +68,9 @@ const mp_obj_type_t mp_type_fun_builtin_0 = {
 STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_1));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    if (mp_arg_check_num(n_args, n_kw, 1, 1, false)) {
+        return MP_OBJ_NULL;
+    }
     return self->fun._1(args[0]);
 }
 
@@ -80,7 +84,9 @@ const mp_obj_type_t mp_type_fun_builtin_1 = {
 STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_2));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+    if (mp_arg_check_num(n_args, n_kw, 2, 2, false)) {
+        return MP_OBJ_NULL;
+    }
     return self->fun._2(args[0], args[1]);
 }
 
@@ -94,7 +100,9 @@ const mp_obj_type_t mp_type_fun_builtin_2 = {
 STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_3));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 3, 3, false);
+    if (mp_arg_check_num(n_args, n_kw, 3, 3, false)) {
+        return MP_OBJ_NULL;
+    }
     return self->fun._3(args[0], args[1], args[2]);
 }
 
@@ -110,7 +118,9 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
     // check number of arguments
-    mp_arg_check_num_sig(n_args, n_kw, self->sig);
+    if (mp_arg_check_num_sig(n_args, n_kw, self->sig)) {
+        return MP_OBJ_NULL;
+    }
 
     if (self->sig & 1) {
         // function allows keywords
@@ -201,12 +211,14 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
                            + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
-#define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
+static inline int INIT_CODESTATE(mp_code_state_t *code_state, mp_obj_fun_bc_t *_fun_bc, size_t _n_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     code_state->fun_bc = _fun_bc; \
     code_state->ip = 0; \
     code_state->n_state = _n_state; \
-    mp_setup_code_state(code_state, n_args, n_kw, args); \
+    int ret = mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
+    return ret;
+}
 
 #if MICROPY_STACKLESS
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -276,7 +288,18 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     }
     #endif
 
-    INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
+    if (INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args)) {
+        // exception
+        #if MICROPY_ENABLE_PYSTACK
+        mp_pystack_free(code_state);
+        #else
+        // free the state if it was allocated on the heap
+        if (state_size != 0) {
+            m_del_var(mp_code_state_t, byte, state_size, code_state);
+        }
+        #endif
+        return MP_OBJ_NULL;
+    }
 
     // execute the byte code with the correct globals context
     mp_globals_set(self->globals);
@@ -337,7 +360,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         return result;
     } else { // MP_VM_RETURN_EXCEPTION
-        nlr_raise(result);
+        return mp_raise_o(result);
     }
 }
 

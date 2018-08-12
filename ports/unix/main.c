@@ -103,8 +103,7 @@ STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
 STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
     mp_hal_set_interrupt_char(CHAR_CTRL_C);
 
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
+    {
         // create lexer based on source kind
         mp_lexer_t *lex;
         if (source_kind == LEX_SRC_STR) {
@@ -142,23 +141,22 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
         if (!compile_only) {
             // execute it
-            mp_call_function_0(module_fun);
+            mp_obj_t ret = mp_call_function_0(module_fun);
             // check for pending exception
-            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+            if (ret != MP_OBJ_NULL && MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
                 mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
                 MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                nlr_raise(obj);
+                mp_raise_o(obj);
+            }
+            if (MP_STATE_THREAD(cur_exc) != NULL) {
+                // uncaught exception
+                mp_hal_set_interrupt_char(-1);
+                return handle_uncaught_exception(MP_STATE_THREAD(cur_exc));
             }
         }
 
         mp_hal_set_interrupt_char(-1);
-        nlr_pop();
         return 0;
-
-    } else {
-        // uncaught exception
-        mp_hal_set_interrupt_char(-1);
-        return handle_uncaught_exception(nlr.ret_val);
     }
 }
 

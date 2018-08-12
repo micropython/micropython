@@ -129,7 +129,8 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
+        mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
+        return NULL;
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0)
@@ -140,7 +141,8 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return self_data;
                 }
-                mp_raise_msg(&mp_type_IndexError, "string index out of range");
+                mp_raise_msg_o(&mp_type_IndexError, "string index out of range");
+                return NULL;
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -159,7 +161,8 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                mp_raise_msg(&mp_type_IndexError, "string index out of range");
+                mp_raise_msg_o(&mp_type_IndexError, "string index out of range");
+                return NULL;
             }
             // Then check completion
             if (i-- == 0) {
@@ -209,6 +212,9 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         }
 #endif
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
+        if (s == NULL) {
+            return MP_OBJ_NULL;
+        }
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
             // Count the number of 1 bits (after the first)

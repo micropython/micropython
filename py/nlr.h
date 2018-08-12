@@ -115,6 +115,7 @@ struct _nlr_buf_t {
 
 // Helper macro to use at the start of a specific nlr_jump implementation
 #define MP_NLR_JUMP_HEAD(val, top) \
+    nlr_jump_fail(val); \
     nlr_buf_t **_top_ptr = &MP_STATE_THREAD(nlr_top); \
     nlr_buf_t *top = *_top_ptr; \
     if (top == NULL) { \

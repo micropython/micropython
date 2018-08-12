@@ -86,12 +86,15 @@ STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
 
             mp_obj_t iterable = mp_getiter(args[0], NULL);
             mp_obj_t item;
-            while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            while ((item = mp_iternext2(iterable)) != MP_OBJ_NULL) {
                 if (len >= alloc) {
                     items = m_renew(mp_obj_t, items, alloc, alloc * 2);
                     alloc *= 2;
                 }
                 items[len++] = item;
+            }
+            if (mp_iternext_had_exc()) {
+                return MP_OBJ_NULL;
             }
 
             mp_obj_t tuple = mp_obj_new_tuple(len, items);
@@ -185,7 +188,8 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError_o("only slices with step=1 (aka None) are supported");
+                return MP_OBJ_NULL;
             }
             mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice.stop - slice.start, NULL));
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);
@@ -193,6 +197,10 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         }
 #endif
         size_t index_value = mp_get_index(self->base.type, self->len, index, false);
+        if (index_value == (size_t)-1) {
+            // exception
+            return MP_OBJ_NULL;
+        }
         return self->items[index_value];
     } else {
         return MP_OBJ_NULL; // op not supported

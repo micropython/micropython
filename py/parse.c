@@ -600,7 +600,7 @@ STATIC bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *nu
     return false;
 }
 
-STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
+STATIC int fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     // this code does folding of arbitrary integer expressions, eg 1 + 2 * 3 + 4
     // it does not do partial folding, eg 1 + 2 + x -> 3 + x
 
@@ -706,7 +706,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                         "constant must be an integer");
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
                         ((mp_parse_node_struct_t*)pn1)->source_line, MP_QSTRnull);
-                    nlr_raise(exc);
+                    mp_raise_o(exc);
+                    return -1;
                 }
 
                 // store the value in the table of dynamic constants
@@ -1103,6 +1104,10 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 break;
             }
         }
+
+        if (MP_STATE_THREAD(cur_exc) != NULL) {
+            return parser.tree;
+        }
     }
 
     #if MICROPY_COMP_CONST
@@ -1139,7 +1144,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this
         mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTRnull);
-        nlr_raise(exc);
+        mp_raise_o(exc);
+        return parser.tree;
     }
 
     // get the root parse node that we created
