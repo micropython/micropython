@@ -37,20 +37,20 @@ msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Auto-chargement activé. Copier simplement les fichiers par l'USB pour les"
-"lancer ou entrer sur REPL pour le désactiver.\n"
+"Auto-chargement activé. Copiez simplement les fichiers en USB pour les"
+"lancer ou entrez sur REPL pour le désactiver.\n"
 
 #: main.c:150
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Mode sans-échec. Auto-chargement désactivé.\n"
+msgstr "Mode sans-échec. Auto-rechargement désactivé.\n"
 
 #: main.c:152 main.c:223
 msgid "Auto-reload is off.\n"
-msgstr "Auto-chargement désactivé.\n"
+msgstr "Auto-rechargement désactivé.\n"
 
 #: main.c:166
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Mode sans-échec! Le code sauvegarder ne tourne pas.\n"
+msgstr "Mode sans-échec! Le code sauvegardé ne tourne pas.\n"
 
 #: main.c:182
 msgid "WARNING: Your code filename has two extensions\n"
@@ -91,8 +91,8 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"suffisamment de puissance pour l'ensemble du circuit et appuyez sur "
-"'reset' (après avoir éjecter CIRCUITPY).\n"
+"assez de puissance pour l'ensemble du circuit et appuyez sur 'reset' "
+"(après avoir éjecter CIRCUITPY).\n"
 
 #: main.c:251
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -100,11 +100,11 @@ msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
 #: main.c:406
 msgid "soft reboot\n"
-msgstr "Redémarrage logiciel\n"
+msgstr "redémarrage logiciel\n"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 msgid "Pin does not have ADC capabilities"
-msgstr "l'entrée ne peut être utilisé pour l'ADP"
+msgstr "l'entrée ne peut être utilisé pour l'ADC"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:53
 msgid "AnalogOut not supported on given pin"
@@ -122,7 +122,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
 msgid "Invalid data pin"
-msgstr "Entrée/sortie de données invalide"
+msgstr "E/S de données invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:169
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:174
