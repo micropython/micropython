@@ -2685,7 +2685,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
         #if MICROPY_DYNAMIC_COMPILER
-        mp_uint_t sign_mask = -(1 << (mp_dynamic_compiler.small_int_bits - 1));
+        mp_uint_t sign_mask = -((mp_uint_t)1 << (mp_dynamic_compiler.small_int_bits - 1));
         if ((arg & sign_mask) == 0 || (arg & sign_mask) == sign_mask) {
             // integer fits in target runtime's small-int
             EMIT_ARG(load_const_small_int, arg);
