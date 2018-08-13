@@ -171,7 +171,7 @@ STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node
     }
     uint32_t i = mp_obj_get_int_truncated(o);
     if (min != max && ((int)i < min || (int)i > max)) {
-        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer %d is not within range %d..%d", op, i, min, max));
+        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer %d isn't within range %d..%d", op, i, min, max));
         return 0;
     }
     return i;
@@ -324,7 +324,7 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
     return;
 
 unknown_op:
-    emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Xtensa instruction '%s' with %d arguments", op_str, n_args));
+    emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Xtensa instruction '%s' with %d args", op_str, n_args));
     return;
 
     /*

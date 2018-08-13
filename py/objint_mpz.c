@@ -225,7 +225,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                     zero_division_error:
-                    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
                 }
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
@@ -331,7 +331,7 @@ STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
 
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
     if (!MP_OBJ_IS_INT(base) || !MP_OBJ_IS_INT(exponent) || !MP_OBJ_IS_INT(modulus)) {
-        mp_raise_TypeError("pow() with 3 arguments requires integers");
+        mp_raise_TypeError("pow() with 3 args requires integers");
     } else {
         mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
         mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
