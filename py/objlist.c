@@ -318,7 +318,10 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
 }
 
 STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj_t binop_less_result) {
-    MP_STACK_CHECK();
+    if (MP_STACK_CHECK()) {
+        // TODO propagate exception
+        return;
+    }
     while (head < tail) {
         mp_obj_t *h = head - 1;
         mp_obj_t *t = tail;

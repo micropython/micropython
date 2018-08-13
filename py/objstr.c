@@ -1163,7 +1163,10 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             // type        ::=  "b" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "s" | "x" | "X" | "%"
 
             // recursively call the formatter to format any nested specifiers
-            MP_STACK_CHECK();
+            if (MP_STACK_CHECK()) {
+                vstr.buf = NULL;
+                return vstr;
+            }
             vstr_t format_spec_vstr = mp_obj_str_format_helper(format_spec, str, arg_i, n_args, args, kwargs);
             if (format_spec_vstr.buf == NULL) {
                 return format_spec_vstr;

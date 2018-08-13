@@ -146,7 +146,11 @@ STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
-    MP_STACK_CHECK();
+    if (MP_STACK_CHECK()) {
+        *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc));
+        MP_STATE_THREAD(cur_exc) = NULL;
+        return MP_VM_RETURN_EXCEPTION;
+    }
     mp_check_self(mp_obj_is_type(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {

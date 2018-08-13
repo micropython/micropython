@@ -1257,7 +1257,9 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
 // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration() (or any subclass thereof)
 // may raise other exceptions
 mp_obj_t mp_iternext(mp_obj_t o_in) {
-    MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
+    if (MP_STACK_CHECK()) { // enumerate, filter, map and zip can recursively call mp_iternext
+        return MP_OBJ_NULL;
+    }
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->iternext != NULL) {
         return type->iternext(o_in);
@@ -1579,8 +1581,8 @@ NORETURN void mp_raise_NotImplementedError(const char *msg) {
 }
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
-NORETURN void mp_raise_recursion_depth(void) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
+void mp_raise_recursion_depth(void) {
+    mp_raise_o(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
         MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));
 }
 #endif

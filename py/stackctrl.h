@@ -35,13 +35,15 @@ mp_uint_t mp_stack_usage(void);
 #if MICROPY_STACK_CHECK
 
 void mp_stack_set_limit(mp_uint_t limit);
-void mp_stack_check(void);
+int mp_stack_check(void);
 #define MP_STACK_CHECK() mp_stack_check()
 
 #else
 
 #define mp_stack_set_limit(limit)
-#define MP_STACK_CHECK()
+static inline int MP_STACK_CHECK(void) {
+    return 0;
+}
 
 #endif
 

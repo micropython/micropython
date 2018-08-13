@@ -157,7 +157,7 @@ NORETURN void mp_raise_ValueError(const char *msg);
 NORETURN void mp_raise_TypeError(const char *msg);
 NORETURN void mp_raise_NotImplementedError(const char *msg);
 NORETURN void mp_raise_OSError(int errno_);
-NORETURN void mp_raise_recursion_depth(void);
+void mp_raise_recursion_depth(void);
 
 mp_obj_t mp_raise_o(mp_obj_t exc);
 mp_obj_t mp_raise_msg_o(const mp_obj_type_t *exc_type, const char *msg);
