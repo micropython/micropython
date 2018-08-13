@@ -153,7 +153,6 @@ SRC_C = \
 	main.c \
 	mongoose.c \
 	user_bpibit.c \
-	user_smartconfig.c \
 	user_mongoose.c \
 	modmongoose.c \
 	uart.c \

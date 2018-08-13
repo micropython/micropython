@@ -137,7 +137,7 @@ void smartconfig_task(void *parm)
 #include "esp_spiffs.h"
 #include "esp_wifi_types.h"
 
-bool wifi_config_file_init()
+static bool wifi_config_file_init()
 {
     esp_vfs_spiffs_conf_t conf = {
         .base_path = "/spiffs",
@@ -149,12 +149,12 @@ bool wifi_config_file_init()
     return false;
 }
 
-void wifi_config_file_exit()
+static void wifi_config_file_exit()
 {
     esp_vfs_spiffs_unregister(NULL);
 }
 
-bool wifi_config_file_read(wifi_config_t *config)
+static bool wifi_config_file_read(wifi_config_t *config)
 {
     bool res = false;
     FILE *f = fopen(SMART_CONFIG_FILE, "rb");
@@ -171,7 +171,7 @@ bool wifi_config_file_read(wifi_config_t *config)
     return res;
 }
 
-bool wifi_config_file_write(wifi_config_t *config)
+static bool wifi_config_file_write(wifi_config_t *config)
 {
     bool res = false;
     FILE *f = fopen(SMART_CONFIG_FILE, "wb");
@@ -292,3 +292,4 @@ bool config_default_wifi(void)
     gpio_reset_pin(SMART_CONFIG_LED);
     return result;
 }
+

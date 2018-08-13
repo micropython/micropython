@@ -84,11 +84,9 @@ inline void BitRunView(uint8_t data[])
     // BitLedExit();
 }
 
-#include "user_smartconfig.h"
+// #include "user_smartconfig.h"
 
 #include "esp_log.h"
-
-#include "mdns.h"
 
 static const char *TAG = "user_bpibit";
 
@@ -109,19 +107,11 @@ void bpibit_init()
         return;
     }
     
-    config_default_wifi();
+    // config_default_wifi();
 
     uint8_t result[4] = { mac[5] >> 4, mac[5] & 15, mac[4] >> 4, mac[4] & 15,  };
     
     BitRunView(result);
 
-    // mdns need sleep 3 - 5s.
-
-    //initialize mDNS
-    while(ESP_OK != mdns_init());
-    //set mDNS hostname (required if you want to advertise services)
-    while(ESP_OK != mdns_hostname_set(WIFI_AP_SSID));
-    //initialize service
-    while(ESP_OK != mdns_service_add(WIFI_AP_SSID, "_http", "_tcp", 80, NULL, 0));
 }
    
