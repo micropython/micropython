@@ -5,7 +5,6 @@ SD ?= s140
 SOFTDEV_VERSION ?= 6.0.0
 
 BOOT_SETTING_ADDR = 0xFF000
-BOOT_FILE = boards/$(BOARD)/bootloader/$(SOFTDEV_VERSION)/$(BOARD)_bootloader_$(SOFTDEV_VERSION)_s140
 
 ifeq ($(SD),)
 	LD_FILE = boards/nrf52840_1M_256k.ld
