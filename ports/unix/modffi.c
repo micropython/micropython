@@ -135,7 +135,8 @@ STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
     }
     // TODO: Support actual libffi type objects
 
-    mp_raise_TypeError("Unknown type");
+    mp_raise_TypeError_o("Unknown type");
+    return NULL;
 }
 
 STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
@@ -200,11 +201,14 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         o->params[i++] = get_ffi_type(item);
+        if (o->params[i - 1] == NULL) {
+            return MP_OBJ_NULL;
+        }
     }
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError("Error in ffi_prep_cif");
+        return mp_raise_ValueError_o("Error in ffi_prep_cif");
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -217,7 +221,7 @@ STATIC mp_obj_t ffimod_func(size_t n_args, const mp_obj_t *args) {
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        mp_raise_OSError(MP_ENOENT);
+        return mp_raise_OSError_o(MP_ENOENT);
     }
     return make_func(args[1], sym, args[3]);
 }
@@ -258,16 +262,19 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         o->params[i++] = get_ffi_type(item);
+        if (o->params[i - 1] == NULL) {
+            return MP_OBJ_NULL;
+        }
     }
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError("Error in ffi_prep_cif");
+        return mp_raise_ValueError_o("Error in ffi_prep_cif");
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, MP_OBJ_TO_PTR(func_in), o->func);
     if (res != FFI_OK) {
-        mp_raise_ValueError("ffi_prep_closure_loc");
+        return mp_raise_ValueError_o("ffi_prep_closure_loc");
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -281,7 +288,7 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        mp_raise_OSError(MP_ENOENT);
+        return mp_raise_OSError_o(MP_ENOENT);
     }
     mp_obj_ffivar_t *o = m_new_obj(mp_obj_ffivar_t);
     o->base.type = &ffivar_type;
@@ -298,7 +305,7 @@ STATIC mp_obj_t ffimod_addr(mp_obj_t self_in, mp_obj_t symname_in) {
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        mp_raise_OSError(MP_ENOENT);
+        return mp_raise_OSError_o(MP_ENOENT);
     }
     return mp_obj_new_int((uintptr_t)sym);
 }
@@ -315,7 +322,7 @@ STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
     if (mod == NULL) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
     o->base.type = type;
@@ -411,7 +418,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     }
 
 error:
-    mp_raise_TypeError("Don't know how to pass object to native function");
+    return mp_raise_TypeError_o("Don't know how to pass object to native function");
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {
