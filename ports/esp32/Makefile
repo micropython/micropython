@@ -21,7 +21,7 @@ FLASH_FREQ ?= 40m
 FLASH_SIZE ?= 4MB
 CROSS_COMPILE ?= xtensa-esp32-elf-
 
-ESPIDF_SUPHASH := 9a55b42f0841b3d38a61089b1dda4bf28135decd
+ESPIDF_SUPHASH := 30545f4cccec7460634b656d278782dd7151098e
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
@@ -59,6 +59,7 @@ INC += -I$(TOP)/lib/timeutils
 INC += -I$(BUILD)
 
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include
+INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
@@ -67,12 +68,13 @@ INC_ESPCOMP += -I$(ESPCOMP)/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/ethernet/include
-INC_ESPCOMP += -I$(ESPCOMP)/expat/include/expat
+INC_ESPCOMP += -I$(ESPCOMP)/expat/expat/expat/lib
 INC_ESPCOMP += -I$(ESPCOMP)/expat/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/heap/include
 INC_ESPCOMP += -I$(ESPCOMP)/json/include
 INC_ESPCOMP += -I$(ESPCOMP)/json/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/log/include
+INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
 INC_ESPCOMP += -I$(ESPCOMP)/newlib/include
 INC_ESPCOMP += -I$(ESPCOMP)/nvs_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/freertos/include
@@ -85,7 +87,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa-debug-module/include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/port/include
@@ -286,13 +287,16 @@ ESPIDF_HEAP_O = $(addprefix $(ESPCOMP)/heap/,\
 
 ESPIDF_SOC_O = $(addprefix $(ESPCOMP)/soc/,\
 	esp32/cpu_util.o \
+	esp32/gpio_periph.o \
 	esp32/rtc_clk.o \
 	esp32/rtc_init.o \
+	esp32/rtc_periph.o \
 	esp32/rtc_pm.o \
 	esp32/rtc_sleep.o \
 	esp32/rtc_time.o \
 	esp32/soc_memory_layout.o \
 	esp32/spi_periph.o \
+	src/memory_layout_utils.o \
 	)
 
 ESPIDF_CXX_O = $(addprefix $(ESPCOMP)/cxx/,\
@@ -307,16 +311,13 @@ ESPIDF_ETHERNET_O = $(addprefix $(ESPCOMP)/ethernet/,\
 	eth_phy/phy_common.o \
 	)
 
-$(BUILD)/$(ESPCOMP)/expat/%.o: CFLAGS += -Wno-unused-function
+$(BUILD)/$(ESPCOMP)/expat/%.o: CFLAGS += -DHAVE_EXPAT_CONFIG_H -DHAVE_GETRANDOM
 ESPIDF_EXPAT_O = $(addprefix $(ESPCOMP)/expat/,\
-	library/xmltok_ns.o \
-	library/xmltok.o \
-	library/xmlparse.o \
-	library/xmlrole.o \
-	library/xmltok_impl.o \
-	port/minicheck.o \
-	port/expat_element.o \
-	port/chardata.o \
+	expat/expat/lib/xmltok_ns.o \
+	expat/expat/lib/xmltok.o \
+	expat/expat/lib/xmlparse.o \
+	expat/expat/lib/xmlrole.o \
+	expat/expat/lib/xmltok_impl.o \
 	)
 
 ESPIDF_PTHREAD_O = $(addprefix $(ESPCOMP)/pthread/,\
@@ -572,6 +573,7 @@ ESPIDF_MBEDTLS_O = $(addprefix $(ESPCOMP)/mbedtls/,\
 	mbedtls/library/des.o \
 	mbedtls/library/x509write_csr.o \
 	mbedtls/library/platform.o \
+	mbedtls/library/platform_util.o \
 	mbedtls/library/ctr_drbg.o \
 	mbedtls/library/x509write_crt.o \
 	mbedtls/library/pk_wrap.o \
@@ -708,8 +710,14 @@ $(BUILD)/%.o: %.cpp
 ################################################################################
 # Declarations to build the bootloader
 
+BOOTLOADER_LIB_DIR = $(BUILD)/bootloader
+BOOTLOADER_LIB_ALL =
+
 $(BUILD)/bootloader/$(ESPCOMP)/%.o: CFLAGS += -DBOOTLOADER_BUILD=1 -I$(ESPCOMP)/bootloader_support/include_priv -I$(ESPCOMP)/bootloader_support/include -I$(ESPCOMP)/micro-ecc/micro-ecc -I$(ESPCOMP)/esp32 -Wno-error=format
-BOOTLOADER_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
+
+# libbootloader_support.a
+BOOTLOADER_LIB_ALL += bootloader_support
+BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	bootloader_support/src/bootloader_clock.o \
 	bootloader_support/src/bootloader_common.o \
 	bootloader_support/src/bootloader_flash.o \
@@ -724,18 +732,58 @@ BOOTLOADER_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	bootloader_support/src/esp_image_format.o \
 	bootloader_support/src/flash_encrypt.o \
 	bootloader_support/src/flash_partitions.o \
+	)
+$(BOOTLOADER_LIB_DIR)/libbootloader_support.a: $(BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ)
+	$(ECHO) "AR $@"
+	$(Q)$(AR) cr $@ $^
+
+# liblog.a
+BOOTLOADER_LIB_ALL += log
+BOOTLOADER_LIB_LOG_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	log/log.o \
+	)
+$(BOOTLOADER_LIB_DIR)/liblog.a: $(BOOTLOADER_LIB_LOG_OBJ)
+	$(ECHO) "AR $@"
+	$(Q)$(AR) cr $@ $^
+
+# libspi_flash.a
+BOOTLOADER_LIB_ALL += spi_flash
+BOOTLOADER_LIB_SPI_FLASH_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	spi_flash/spi_flash_rom_patch.o \
+	)
+$(BOOTLOADER_LIB_DIR)/libspi_flash.a: $(BOOTLOADER_LIB_SPI_FLASH_OBJ)
+	$(ECHO) "AR $@"
+	$(Q)$(AR) cr $@ $^
+
+# libmicro-ecc.a
+BOOTLOADER_LIB_ALL += micro-ecc
+BOOTLOADER_LIB_MICRO_ECC_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
+	micro-ecc/micro-ecc/uECC.o \
+	)
+$(BOOTLOADER_LIB_DIR)/libmicro-ecc.a: $(BOOTLOADER_LIB_MICRO_ECC_OBJ)
+	$(ECHO) "AR $@"
+	$(Q)$(AR) cr $@ $^
+
+# remaining object files
+BOOTLOADER_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	soc/esp32/rtc_clk.o \
 	soc/esp32/rtc_time.o \
 	soc/esp32/cpu_util.o \
-	micro-ecc/micro-ecc/uECC.o \
 	bootloader/subproject/main/bootloader_start.o \
 	)
+
+# all objects files
+BOOTLOADER_OBJ_ALL = \
+	$(BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ) \
+	$(BOOTLOADER_LIB_LOG_OBJ) \
+	$(BOOTLOADER_LIB_SPI_FLASH_OBJ) \
+	$(BOOTLOADER_LIB_MICRO_ECC_OBJ) \
+	$(BOOTLOADER_OBJ)
 
 BOOTLOADER_LIBS =
 BOOTLOADER_LIBS += -Wl,--start-group
 BOOTLOADER_LIBS += $(BOOTLOADER_OBJ)
+BOOTLOADER_LIBS += -L$(BUILD)/bootloader $(addprefix -l,$(BOOTLOADER_LIB_ALL))
 BOOTLOADER_LIBS += -L$(ESPCOMP)/esp32/lib -lrtc
 BOOTLOADER_LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 BOOTLOADER_LIBS += -Wl,--end-group
@@ -755,8 +803,8 @@ BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.rom.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.rom.spiram_incompatible_fns.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.peripherals.ld
 
-BOOTLOADER_OBJ_DIRS = $(sort $(dir $(BOOTLOADER_OBJ)))
-$(BOOTLOADER_OBJ): | $(BOOTLOADER_OBJ_DIRS)
+BOOTLOADER_OBJ_DIRS = $(sort $(dir $(BOOTLOADER_OBJ_ALL)))
+$(BOOTLOADER_OBJ_ALL): | $(BOOTLOADER_OBJ_DIRS)
 $(BOOTLOADER_OBJ_DIRS):
 	$(MKDIR) -p $@
 
@@ -767,7 +815,7 @@ $(BUILD)/bootloader.bin: $(BUILD)/bootloader.elf
 	$(ECHO) "Create $@"
 	$(Q)$(ESPTOOL) --chip esp32 elf2image --flash_mode $(FLASH_MODE) --flash_freq $(FLASH_FREQ) --flash_size $(FLASH_SIZE) $<
 
-$(BUILD)/bootloader.elf: $(BOOTLOADER_OBJ)
+$(BUILD)/bootloader.elf: $(BOOTLOADER_OBJ) $(addprefix $(BOOTLOADER_LIB_DIR)/lib,$(addsuffix .a,$(BOOTLOADER_LIB_ALL)))
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) $(BOOTLOADER_LDFLAGS) -o $@ $(BOOTLOADER_LIBS)
 
