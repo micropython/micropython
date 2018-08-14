@@ -117,7 +117,7 @@ msgstr "Broche invalide pour le bit d'horloge"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
-msgstr ""
+msgstr "Le bit d'horloge et 'word select' doivent partagé une horloge"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
@@ -448,7 +448,7 @@ msgstr "identifiant redéfini comme global"
 
 #: py/compile.c:1185
 msgid "no binding for nonlocal found"
-msgstr ""
+msgstr "pas de lien trouvé pour nonlocal"
 
 #: py/compile.c:1188
 msgid "identifier redefined as nonlocal"
@@ -456,7 +456,7 @@ msgstr "identifiant redéfini comme global"
 
 #: py/compile.c:1197
 msgid "can't declare nonlocal in outer code"
-msgstr ""
+msgstr "ne peut déclarer de nonlocal dans un code externe"
 
 #: py/compile.c:1542
 msgid "default 'except' must be last"
@@ -525,7 +525,7 @@ msgstr "l'annotation de return doit être un identifiant"
 
 #: py/compile.c:3097
 msgid "inline assembler must be a function"
-msgstr ""
+msgstr "l'assembleur en ligne doit être une fonction"
 
 #: py/compile.c:3134
 msgid "unknown type"
@@ -565,11 +565,11 @@ msgstr ""
 
 #: py/emitnative.c:2201
 msgid "native yield"
-msgstr ""
+msgstr "native yield"
 
 #: py/lexer.c:345
 msgid "unicode name escapes"
-msgstr ""
+msgstr "échappement pour nom unicode"
 
 #: py/modbuiltins.c:162
 msgid "chr() arg not in range(0x110000)"
@@ -852,7 +852,7 @@ msgstr "ulonglong trop grand"
 
 #: py/objint_mpz.c:267 py/runtime.c:396 py/runtime.c:411
 msgid "negative shift count"
-msgstr ""
+msgstr "compte de décalage négatif"
 
 #: py/objint_mpz.c:336
 msgid "pow() with 3 arguments requires integers"
@@ -920,7 +920,7 @@ msgstr "separateur vide"
 
 #: py/objstr.c:641
 msgid "rsplit(None,n)"
-msgstr ""
+msgstr "rsplit(None,n)"
 
 #: py/objstr.c:713
 msgid "substring not found"
@@ -1117,7 +1117,7 @@ msgstr "héritage multiple non supporté"
 
 #: py/objtype.c:1164
 msgid "multiple bases have instance lay-out conflict"
-msgstr ""
+msgstr "de multiple bases ont un conflit de lay-out d'instance"
 
 #: py/objtype.c:1205
 msgid "first argument to super() must be type"
@@ -1274,7 +1274,7 @@ msgstr "la palette doit être longue de 32 octets"
 
 #: shared-bindings/_stage/Layer.c:84
 msgid "map buffer too small"
-msgstr ""
+msgstr "tampon trop petit"
 
 #: shared-bindings/_stage/Text.c:69
 msgid "font must be 2048 bytes long"
@@ -1362,7 +1362,7 @@ msgstr "Nombre de bits invalide"
 
 #: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
 msgid "buffer slices must be of equal length"
-msgstr ""
+msgstr "les slices de tampon doivent être de longueurs égales"
 
 #: shared-bindings/busio/I2C.c:120
 msgid "Function requires lock."
@@ -1387,16 +1387,16 @@ msgstr "Impossible d'affecter une valeur quand la direction est input."
 #: shared-bindings/digitalio/DigitalInOut.c:266
 #: shared-bindings/digitalio/DigitalInOut.c:281
 msgid "Drive mode not used when direction is input."
-msgstr ""
+msgstr "Le mode Drive n'est pas utilisé quand la direction est 'input'"
 
 #: shared-bindings/digitalio/DigitalInOut.c:314
 #: shared-bindings/digitalio/DigitalInOut.c:331
 msgid "Pull not used when direction is output."
-msgstr ""
+msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'"
 
 #: shared-bindings/digitalio/DigitalInOut.c:340
 msgid "Unsupported pull value."
-msgstr ""
+msgstr "Valeur de 'pull' non supportée"
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
