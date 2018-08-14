@@ -112,11 +112,11 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
     assert(n_args <= PROXY_MAX_ARGS);
     if (vfs == MP_VFS_NONE) {
         // mount point not found
-        mp_raise_OSError(MP_ENODEV);
+        return mp_raise_OSError_o(MP_ENODEV);
     }
     if (vfs == MP_VFS_ROOT) {
         // can't do operation on root dir
-        mp_raise_OSError(MP_EPERM);
+        return mp_raise_OSError_o(MP_EPERM);
     }
     mp_obj_t meth[2 + PROXY_MAX_ARGS];
     mp_load_method(vfs->obj, meth_name, meth);
@@ -141,13 +141,10 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
 
     // delegate to vfs.stat() method
     mp_obj_t path_o = mp_obj_new_str(path_out, strlen(path_out));
-    mp_obj_t stat;
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        stat = mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_o);
-        nlr_pop();
-    } else {
+    mp_obj_t stat = mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_o);
+    if (stat == MP_OBJ_NULL) {
         // assume an exception means that the path is not found
+        MP_STATE_THREAD(cur_exc) = NULL;
         return MP_IMPORT_STAT_NO_EXIST;
     }
     mp_obj_t *items;
@@ -241,7 +238,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
             // if root dir is mounted, still allow to mount something within a subdir of root
         } else {
             // mount point in use
-            mp_raise_OSError(MP_EPERM);
+            return mp_raise_OSError_o(MP_EPERM);
         }
     }
 
@@ -278,7 +275,7 @@ mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
     }
 
     if (vfs == NULL) {
-        mp_raise_OSError(MP_EINVAL);
+        return mp_raise_OSError_o(MP_EINVAL);
     }
 
     // if we unmounted the current device then set current to root
@@ -444,7 +441,7 @@ mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     if (vfs == MP_VFS_ROOT || (vfs != MP_VFS_NONE && !strcmp(mp_obj_str_get_str(path_out), "/"))) {
-        mp_raise_OSError(MP_EEXIST);
+        return mp_raise_OSError_o(MP_EEXIST);
     }
     return mp_vfs_proxy_call(vfs, MP_QSTR_mkdir, 1, &path_out);
 }
@@ -463,7 +460,7 @@ mp_obj_t mp_vfs_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
     mp_vfs_mount_t *new_vfs = lookup_path(new_path_in, &args[1]);
     if (old_vfs != new_vfs) {
         // can't rename across filesystems
-        mp_raise_OSError(MP_EPERM);
+        return mp_raise_OSError_o(MP_EPERM);
     }
     return mp_vfs_proxy_call(old_vfs, MP_QSTR_rename, 2, args);
 }

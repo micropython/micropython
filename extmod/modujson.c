@@ -35,7 +35,9 @@
 #if MICROPY_PY_UJSON
 
 STATIC mp_obj_t mod_ujson_dump(mp_obj_t obj, mp_obj_t stream) {
-    mp_get_stream_raise(stream, MP_STREAM_OP_WRITE);
+    if (mp_get_stream_raise(stream, MP_STREAM_OP_WRITE) == NULL) {
+        return MP_OBJ_NULL;
+    }
     mp_print_t print = {MP_OBJ_TO_PTR(stream), mp_stream_write_adaptor};
     mp_obj_print_helper(&print, obj, PRINT_JSON);
     return mp_const_none;
@@ -276,7 +278,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     return stack_top;
 
     fail:
-    mp_raise_ValueError("syntax error in JSON");
+    return mp_raise_ValueError_o("syntax error in JSON");
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 

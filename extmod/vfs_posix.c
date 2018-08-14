@@ -67,7 +67,7 @@ STATIC mp_obj_t vfs_posix_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = f(vfs_posix_get_path_str(self, path_in));
     if (ret != 0) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     return mp_const_none;
 }
@@ -112,7 +112,7 @@ STATIC mp_obj_t vfs_posix_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mk
         self->readonly = true;
     }
     if (mp_obj_is_true(mkfs)) {
-        mp_raise_OSError(MP_EPERM);
+        return mp_raise_OSError_o(MP_EPERM);
     }
     return mp_const_none;
 }
@@ -129,7 +129,7 @@ STATIC mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
     const char *mode = mp_obj_str_get_str(mode_in);
     if (self->readonly
         && (strchr(mode, 'w') != NULL || strchr(mode, 'a') != NULL || strchr(mode, '+') != NULL)) {
-        mp_raise_OSError(MP_EROFS);
+        return mp_raise_OSError_o(MP_EROFS);
     }
     if (!mp_obj_is_small_int(path_in)) {
         path_in = vfs_posix_get_path_obj(self, path_in);
@@ -148,7 +148,7 @@ STATIC mp_obj_t vfs_posix_getcwd(mp_obj_t self_in) {
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
     const char *ret = getcwd(buf, sizeof(buf));
     if (ret == NULL) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     ret += self->root_len;
     return mp_obj_new_str(ret, strlen(ret));
@@ -231,7 +231,7 @@ STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     }
     iter->dir = opendir(path);
     if (iter->dir == NULL) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     return MP_OBJ_FROM_PTR(iter);
 }
@@ -247,7 +247,7 @@ STATIC mp_obj_t vfs_posix_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = mkdir(vfs_posix_get_path_str(self, path_in), 0777);
     if (ret != 0) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     return mp_const_none;
 }
@@ -264,7 +264,7 @@ STATIC mp_obj_t vfs_posix_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_
     const char *new_path = vfs_posix_get_path_str(self, new_path_in);
     int ret = rename(old_path, new_path);
     if (ret != 0) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     return mp_const_none;
 }
@@ -280,7 +280,7 @@ STATIC mp_obj_t vfs_posix_stat(mp_obj_t self_in, mp_obj_t path_in) {
     struct stat sb;
     int ret = stat(vfs_posix_get_path_str(self, path_in), &sb);
     if (ret != 0) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.st_mode);
@@ -323,7 +323,7 @@ STATIC mp_obj_t vfs_posix_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     const char *path = vfs_posix_get_path_str(self, path_in);
     int ret = STATVFS(path, &sb);
     if (ret != 0) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.f_bsize);

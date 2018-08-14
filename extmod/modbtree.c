@@ -58,7 +58,7 @@ STATIC const mp_obj_type_t btree_type;
 
 #define CHECK_ERROR(res) \
         if (res == RET_ERROR) { \
-            mp_raise_OSError(errno); \
+            return mp_raise_OSError_o(errno); \
         }
 
 void __dbpanic(DB *db) {
@@ -256,7 +256,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         key.data = (void*)mp_obj_str_get_data(index, &key.size);
         int res = __bt_delete(self->db, &key, 0);
         if (res == RET_SPECIAL) {
-            nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
+            return mp_raise_o(mp_obj_new_exception(&mp_type_KeyError));
         }
         CHECK_ERROR(res);
         return mp_const_none;
@@ -266,7 +266,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         key.data = (void*)mp_obj_str_get_data(index, &key.size);
         int res = __bt_get(self->db, &key, &val, 0);
         if (res == RET_SPECIAL) {
-            nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
+            return mp_raise_o(mp_obj_new_exception(&mp_type_KeyError));
         }
         CHECK_ERROR(res);
         return mp_obj_new_bytes(val.data, val.size);
@@ -359,7 +359,7 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     DB *db = __bt_open(MP_OBJ_TO_PTR(pos_args[0]), &btree_stream_fvtable, &openinfo, /*dflags*/0);
     if (db == NULL) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     return MP_OBJ_FROM_PTR(btree_new(db));
 }

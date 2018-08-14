@@ -75,7 +75,7 @@ STATIC uint32_t yasmarang_randbelow(uint32_t n) {
 STATIC mp_obj_t mod_urandom_getrandbits(mp_obj_t num_in) {
     int n = mp_obj_get_int(num_in);
     if (n > 32 || n == 0) {
-        mp_raise_ValueError(NULL);
+        return mp_raise_ValueError_o(NULL);
     }
     uint32_t mask = ~0;
     // Beware of C undefined behavior when shifting by >= than bit size
@@ -134,7 +134,7 @@ STATIC mp_obj_t mod_urandom_randrange(size_t n_args, const mp_obj_t *args) {
     }
 
 error:
-    mp_raise_ValueError(NULL);
+    return mp_raise_ValueError_o(NULL);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_urandom_randrange_obj, 1, 3, mod_urandom_randrange);
 
@@ -144,7 +144,7 @@ STATIC mp_obj_t mod_urandom_randint(mp_obj_t a_in, mp_obj_t b_in) {
     if (a <= b) {
         return mp_obj_new_int(a + yasmarang_randbelow(b - a + 1));
     } else {
-        mp_raise_ValueError(NULL);
+        return mp_raise_ValueError_o(NULL);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_urandom_randint_obj, mod_urandom_randint);
@@ -154,7 +154,7 @@ STATIC mp_obj_t mod_urandom_choice(mp_obj_t seq) {
     if (len > 0) {
         return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow(len)), MP_OBJ_SENTINEL);
     } else {
-        nlr_raise(mp_obj_new_exception(&mp_type_IndexError));
+        return mp_raise_o(mp_obj_new_exception(&mp_type_IndexError));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_choice_obj, mod_urandom_choice);

@@ -54,7 +54,7 @@ struct ssl_args {
 
 STATIC const mp_obj_type_t ussl_socket_type;
 
-STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args) {
+STATIC mp_obj_t ussl_socket_new(mp_obj_t sock, struct ssl_args *args) {
 #if MICROPY_PY_USSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
 #else
@@ -74,7 +74,7 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
         options |= SSL_NO_DEFAULT_KEY;
     }
     if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL) {
-        mp_raise_OSError(MP_EINVAL);
+        return mp_raise_OSError_o(MP_EINVAL);
     }
 
     if (args->key.u_obj != mp_const_none) {
@@ -82,13 +82,13 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
         const byte *data = (const byte*)mp_obj_str_get_data(args->key.u_obj, &len);
         int res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_RSA_KEY, data, len, NULL);
         if (res != SSL_OK) {
-            mp_raise_ValueError("invalid key");
+            return mp_raise_ValueError_o("invalid key");
         }
 
         data = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &len);
         res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_X509_CERT, data, len, NULL);
         if (res != SSL_OK) {
-            mp_raise_ValueError("invalid cert");
+            return mp_raise_ValueError_o("invalid cert");
         }
     }
 
@@ -109,13 +109,13 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
             if (res != SSL_OK) {
                 printf("ssl_handshake_status: %d\n", res);
                 ssl_display_error(res);
-                mp_raise_OSError(MP_EIO);
+                return mp_raise_OSError_o(MP_EIO);
             }
         }
 
     }
 
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC void ussl_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -260,7 +260,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
-    return MP_OBJ_FROM_PTR(ussl_socket_new(sock, &args));
+    return ussl_socket_new(sock, &args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 

@@ -42,7 +42,7 @@
 STATIC uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_int_get_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
+        mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
     }
     return addr;
 }
@@ -69,6 +69,9 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_READ_ADDR(index, self->elem_size);
+        if (MP_STATE_THREAD(cur_exc) != NULL) {
+            return MP_OBJ_NULL;
+        }
         uint32_t val;
         switch (self->elem_size) {
             case 1: val = (*(uint8_t*)addr); break;
@@ -79,6 +82,9 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else {
         // store
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_WRITE_ADDR(index, self->elem_size);
+        if (MP_STATE_THREAD(cur_exc) != NULL) {
+            return MP_OBJ_NULL;
+        }
         uint32_t val = mp_obj_get_int_truncated(value);
         switch (self->elem_size) {
             case 1: (*(uint8_t*)addr) = val; break;

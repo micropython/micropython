@@ -42,13 +42,15 @@ typedef struct _mp_obj_vfs_posix_file_t {
 } mp_obj_vfs_posix_file_t;
 
 #ifdef MICROPY_CPYTHON_COMPAT
-STATIC void check_fd_is_open(const mp_obj_vfs_posix_file_t *o) {
+STATIC int check_fd_is_open(const mp_obj_vfs_posix_file_t *o) {
     if (o->fd < 0) {
-        mp_raise_msg(&mp_type_ValueError, "I/O operation on closed file");
+        mp_raise_msg_o(&mp_type_ValueError, "I/O operation on closed file");
+        return 1;
     }
+    return 0;
 }
 #else
-#define check_fd_is_open(o)
+#define check_fd_is_open(o) 0
 #endif
 
 STATIC void vfs_posix_file_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -102,7 +104,7 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
     const char *fname = mp_obj_str_get_str(fid);
     int fd = open(fname, mode_x | mode_rw, 0644);
     if (fd == -1) {
-        mp_raise_OSError(errno);
+        return mp_raise_OSError_o(errno);
     }
     o->fd = fd;
     return MP_OBJ_FROM_PTR(o);
@@ -121,7 +123,9 @@ STATIC mp_obj_t vfs_posix_file_make_new(const mp_obj_type_t *type, size_t n_args
 
 STATIC mp_obj_t vfs_posix_file_fileno(mp_obj_t self_in) {
     mp_obj_vfs_posix_file_t *self = MP_OBJ_TO_PTR(self_in);
-    check_fd_is_open(self);
+    if (check_fd_is_open(self)) {
+        return MP_OBJ_NULL;
+    }
     return MP_OBJ_NEW_SMALL_INT(self->fd);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_file_fileno_obj, vfs_posix_file_fileno);
@@ -134,7 +138,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vfs_posix_file___exit___obj, 4, 4, vf
 
 STATIC mp_uint_t vfs_posix_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
-    check_fd_is_open(o);
+    if (check_fd_is_open(o)) {
+        return MP_STREAM_ERROR;
+    }
     mp_int_t r = read(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
@@ -145,7 +151,9 @@ STATIC mp_uint_t vfs_posix_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, i
 
 STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
-    check_fd_is_open(o);
+    if (check_fd_is_open(o)) {
+        return MP_STREAM_ERROR;
+    }
     #if MICROPY_PY_OS_DUPTERM
     if (o->fd <= STDERR_FILENO) {
         mp_hal_stdout_tx_strn(buf, size);
@@ -157,7 +165,8 @@ STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t 
         if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
             mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
             MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-            nlr_raise(obj);
+            mp_raise_o(obj);
+            return MP_STREAM_ERROR;
         }
         r = write(o->fd, buf, size);
     }
@@ -170,7 +179,9 @@ STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t 
 
 STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
-    check_fd_is_open(o);
+    if (check_fd_is_open(o)) {
+        return MP_STREAM_ERROR;
+    }
     switch (request) {
         case MP_STREAM_FLUSH:
             if (fsync(o->fd) < 0) {

@@ -193,6 +193,9 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     }
 
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
+    if (o == NULL) {
+        return MP_OBJ_NULL;
+    }
     o->base.type = type;
 
     const char *fname = mp_obj_str_get_str(args[0].u_obj);
@@ -200,7 +203,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        return mp_raise_OSError_o(fresult_to_errno_table[res]);
     }
 
     // for 'a' mode, we must begin at the end of the file
