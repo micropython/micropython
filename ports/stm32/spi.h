@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_SPI_H
 #define MICROPY_INCLUDED_STM32_SPI_H
 
+#include "drivers/bus/spi.h"
 #include "dma.h"
 
 typedef struct _spi_t {
@@ -33,6 +34,15 @@ typedef struct _spi_t {
     const dma_descr_t *tx_dma_descr;
     const dma_descr_t *rx_dma_descr;
 } spi_t;
+
+typedef struct _spi_proto_cfg_t {
+    const spi_t *spi;
+    uint32_t baudrate;
+    uint8_t polarity;
+    uint8_t phase;
+    uint8_t bits;
+    uint8_t firstbit;
+} spi_proto_cfg_t;
 
 typedef struct _pyb_spi_obj_t {
     mp_obj_base_t base;
@@ -53,6 +63,7 @@ extern SPI_HandleTypeDef SPIHandle6;
 
 extern const spi_t spi_obj[6];
 
+extern const mp_spi_proto_t spi_proto;
 extern const mp_obj_type_t pyb_spi_type;
 extern const mp_obj_type_t machine_soft_spi_type;
 extern const mp_obj_type_t machine_hard_spi_type;

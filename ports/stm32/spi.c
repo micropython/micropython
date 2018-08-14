@@ -563,3 +563,34 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
         mp_raise_TypeError("expecting an SPI object");
     }
 }
+
+/******************************************************************************/
+// Implementation of low-level SPI C protocol
+
+STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
+    spi_proto_cfg_t *self = (spi_proto_cfg_t*)self_in;
+
+    switch (cmd) {
+        case MP_SPI_IOCTL_INIT:
+            spi_set_params(self->spi, 0xffffffff, self->baudrate,
+                self->polarity, self->phase, self->bits, self->firstbit);
+            spi_init(self->spi, false);
+            break;
+
+        case MP_SPI_IOCTL_DEINIT:
+            spi_deinit(self->spi);
+            break;
+    }
+
+    return 0;
+}
+
+STATIC void spi_proto_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+    spi_proto_cfg_t *self = (spi_proto_cfg_t*)self_in;
+    spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
+}
+
+const mp_spi_proto_t spi_proto = {
+    .ioctl = spi_proto_ioctl,
+    .transfer = spi_proto_transfer,
+};
