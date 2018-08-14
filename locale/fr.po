@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-12 11:01+0200\n"
-"PO-Revision-Date: 2018-08-12 11:01+0200\n"
+"PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -104,16 +104,16 @@ msgstr "redémarrage logiciel\n"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 msgid "Pin does not have ADC capabilities"
-msgstr "l'entrée ne peut être utilisé pour l'ADC"
+msgstr "la broche ne peut être utilisé pour l'ADC"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:53
 msgid "AnalogOut not supported on given pin"
-msgstr "AnalogOut n'est pas supporté sur cette sortie"
+msgstr "AnalogOut n'est pas supporté sur cette broche"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
-msgstr ""
+msgstr "Broche invalide pour le bit d'horloge"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
@@ -122,7 +122,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
 msgid "Invalid data pin"
-msgstr "E/S de données invalide"
+msgstr "Broche de données invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:169
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:174
@@ -156,7 +156,7 @@ msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:109
 msgid "Invalid clock pin"
-msgstr "Entrée/sortie d'horloge invalide"
+msgstr "Broche d'horloge invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
@@ -178,19 +178,19 @@ msgstr "Canal droit non supporté"
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
-msgstr "Entrée/sortie invalide"
+msgstr "Broche invalide"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
 msgid "Invalid pin for left channel"
-msgstr "Entrée/sortie invalide pour le canal gauche"
+msgstr "Broche invalide pour le canal gauche"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
 msgid "Invalid pin for right channel"
-msgstr "Entrée/sortie invalide pour le canal droit"
+msgstr "Broche invalide pour le canal droit"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
 msgid "Cannot output both channels on the same pin"
-msgstr "On ne peut mettre les deux canaux sur la même E/S"
+msgstr "On ne peut mettre les deux canaux sur la même broche"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
@@ -200,12 +200,12 @@ msgstr "Tous les timers sont utilisés"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:45
 msgid "Not enough pins available"
-msgstr "Pas assez d'E/S disponibles"
+msgstr "Pas assez de broches disponibles"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:76
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 msgid "Invalid pins"
-msgstr "Entrée/sortie invalide"
+msgstr "Broche invalide"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:99
 msgid "SDA or SCL needs a pull up"
@@ -233,15 +233,15 @@ msgstr "L'UART n'a pu être initialisé"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:234
 msgid "No RX pin"
-msgstr "Pas d'entrée RX"
+msgstr "Pas de broche RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:284
 msgid "No TX pin"
-msgstr "Pas de sortie TX"
+msgstr "Pas de broche TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
 msgid "Cannot get pull while in output mode"
-msgstr "Ne peux être tirer en mode 'sortie'"
+msgstr "Ne peux être tirer en mode 'output'"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 msgid "Cannot reset into bootloader because no bootloader is present."
@@ -254,11 +254,11 @@ msgstr "Fréquence de PWM invalide"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
 msgid "All timers for this pin are in use"
-msgstr "Tous les timers pour cette E/S sont utilisés"
+msgstr "Tous les timers pour cette broche sont utilisés"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
-msgstr "Pas de support matériel pour cette E/S"
+msgstr "Pas de support matériel pour cette broche"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
@@ -271,7 +271,7 @@ msgstr "Echec de l'allocation de %d octets du tampon RX"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
 msgid "pop from an empty PulseIn"
-msgstr ""
+msgstr "'pop' d'une entrée PulseIn vide"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:235 py/obj.c:404
 msgid "index out of range"
@@ -283,7 +283,7 @@ msgstr "Un autre envoi est déjà actif"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
-msgstr "Les deux entrées doivent supporté les interruptions"
+msgstr "Les deux entrées doivent supporter les interruptions"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:46
 msgid "A hardware interrupt channel is already in use"
@@ -1418,37 +1418,39 @@ msgstr "%q utilisé"
 
 #: shared-bindings/microcontroller/__init__.c:126
 msgid "Invalid run mode."
-msgstr ""
+msgstr "Mode de lancement invalide"
 
 #: shared-bindings/multiterminal/__init__.c:68
 msgid "Stream missing readinto() or write() method."
-msgstr ""
+msgstr "Il manque une méthode readinto() ou write() au flux."
 
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
-msgstr ""
+msgstr "Tranche et valeur de taille différentes"
 
 #: shared-bindings/nvm/ByteArray.c:104
 msgid "Array values should be single bytes."
-msgstr ""
+msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'"
 
 #: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
 msgid "Unable to write to nvm."
-msgstr ""
+msgstr "Impossible d'écrire sur nvm"
 
 #: shared-bindings/nvm/ByteArray.c:137
 msgid "Bytes must be between 0 and 255."
-msgstr ""
+msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 
 #: shared-bindings/pulseio/PWMOut.c:164
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
+"La valeur de cycle PWM doit être entre 0 et 65535 inclus (résolution de 16 bits)"
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
 "PWM frequency not writeable when variable_frequency is False on construction."
-msgstr ""
+msgstr "La fréquence de PWM n'est pas modifiable quand variable_frequency est False à la"
+"construction."
 
 #: shared-bindings/pulseio/PulseIn.c:275
 msgid "Cannot delete values"
@@ -1456,11 +1458,11 @@ msgstr "Impossible de supprimer les valeurs"
 
 #: shared-bindings/pulseio/PulseIn.c:281
 msgid "Slices not supported"
-msgstr ""
+msgstr "Slice non supportée"
 
 #: shared-bindings/pulseio/PulseIn.c:287
 msgid "index must be int"
-msgstr ""
+msgstr "l'index doit être un entier"
 
 #: shared-bindings/pulseio/PulseIn.c:293
 msgid "Read-only"
@@ -1468,15 +1470,15 @@ msgstr "Lecture seule"
 
 #: shared-bindings/pulseio/PulseOut.c:134
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "Le tableau doit contenir des halfwords (type 'H')"
 
 #: shared-bindings/random/__init__.c:92 shared-bindings/random/__init__.c:100
 msgid "stop not reachable from start"
-msgstr ""
+msgstr "stop n'est pas accessible de start"
 
 #: shared-bindings/random/__init__.c:111
 msgid "step must be non-zero"
-msgstr ""
+msgstr "le pas 'step' doit être non nul"
 
 #: shared-bindings/random/__init__.c:114
 msgid "invalid step"
@@ -1497,48 +1499,49 @@ msgstr "calibration de la RTC non supportée sur cette carte"
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
-msgstr ""
+msgstr "le system de fichier doit fournir une méthode 'mount'"
 
 #: shared-bindings/supervisor/__init__.c:93
 msgid "Brightness must be between 0 and 255"
-msgstr ""
+msgstr "La luminosité doit être entre 0 et 255"
 
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
-msgstr ""
+msgstr "La pile doit être au moins de 256"
 
 #: shared-bindings/time/__init__.c:80
 msgid "sleep length must be non-negative"
-msgstr ""
+msgstr "la longueur de sleep ne doit pas être négative"
 
 #: shared-bindings/time/__init__.c:90
 msgid "time.struct_time() takes exactly 1 argument"
-msgstr ""
+msgstr "time.struct_time() prend exactement 1 argument"
 
 #: shared-bindings/time/__init__.c:93
 msgid "time.struct_time() takes a 9-sequence"
-msgstr ""
+msgstr "time.struct_time() prend une séquence de longueur 9"
 
 #: shared-bindings/time/__init__.c:171 shared-bindings/time/__init__.c:252
 msgid "Tuple or struct_time argument required"
-msgstr ""
+msgstr "Argument de type tuple ou struct_time nécessaire"
 
 #: shared-bindings/time/__init__.c:176 shared-bindings/time/__init__.c:257
 msgid "function takes exactly 9 arguments"
-msgstr ""
+msgstr "la fonction prend exactement 9 arguments"
 
 #: shared-bindings/time/__init__.c:228 shared-bindings/time/__init__.c:261
 msgid "timestamp out of range for platform time_t"
-msgstr ""
+msgstr "timestamp hors gamme pour la plateforme time_t"
 
 #: shared-bindings/touchio/TouchIn.c:173
 msgid "threshold must be in the range 0-65536"
-msgstr ""
+msgstr "le seuil doit être dans la gamme 0-65536"
 
 #: shared-bindings/util.c:38
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
+"L'objet a été désinitialisé et ne peut plus être utilisé. Créez un nouvel objet."
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
@@ -1546,7 +1549,7 @@ msgstr "Fichier WAVE invalide"
 
 #: shared-module/audioio/WaveFile.c:69
 msgid "Invalid format chunk size"
-msgstr ""
+msgstr "Taille de bloc de formatage invalide"
 
 #: shared-module/audioio/WaveFile.c:83
 msgid "Unsupported format"
@@ -1554,7 +1557,7 @@ msgstr "Format non supporté"
 
 #: shared-module/audioio/WaveFile.c:99
 msgid "Data chunk must follow fmt chunk"
-msgstr ""
+msgstr "Un bloc de données doit suivre un bloc de format"
 
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
@@ -1562,36 +1565,36 @@ msgstr "Fichier invalide"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
-msgstr ""
+msgstr "Période de l'horloge trop longue"
 
 #: shared-module/bitbangio/SPI.c:45
 msgid "Clock pin init failed."
-msgstr ""
+msgstr "Echec de l'init. de la broche d'horloge"
 
 #: shared-module/bitbangio/SPI.c:51
 msgid "MOSI pin init failed."
-msgstr ""
+msgstr "Echec de l'init. de la broche MOSI"
 
 #: shared-module/bitbangio/SPI.c:62
 msgid "MISO pin init failed."
-msgstr ""
+msgstr "Echec de l'init. de la broche MISO"
 
 #: shared-module/bitbangio/SPI.c:122
 msgid "Cannot write without MOSI pin."
-msgstr ""
+msgstr "Impossible d'écrire sans broche MOSI."
 
 #: shared-module/bitbangio/SPI.c:177
 msgid "Cannot read without MISO pin."
-msgstr ""
+msgstr "Ipossible de lire sans broche MISO."
 
 #: shared-module/bitbangio/SPI.c:241
 msgid "Cannot transfer without MOSI and MISO pins."
-msgstr ""
+msgstr "Pas de transfert sans broches MOSI et MISO"
 
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
-msgstr ""
+msgstr "'S' et 'O' ne sont pas des types de format supportés"
 
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
-msgstr ""
+msgstr "trop d'argument fournit avec ce format"
