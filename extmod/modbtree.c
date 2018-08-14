@@ -352,7 +352,7 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     openinfo.psize = args.pagesize.u_int;
     openinfo.minkeypage = args.minkeypage.u_int;
 
-    DB *db = __bt_open(pos_args[0], &btree_stream_fvtable, &openinfo, /*dflags*/0);
+    DB *db = __bt_open(MP_OBJ_TO_PTR(pos_args[0]), &btree_stream_fvtable, &openinfo, /*dflags*/0);
     if (db == NULL) {
         mp_raise_OSError(errno);
     }
