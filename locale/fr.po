@@ -37,7 +37,7 @@ msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Auto-chargement activé. Copiez simplement les fichiers en USB pour les"
+"Auto-chargement activé. Copiez simplement les fichiers en USB pour les "
 "lancer ou entrez sur REPL pour le désactiver.\n"
 
 #: main.c:150
