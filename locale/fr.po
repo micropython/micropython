@@ -763,7 +763,7 @@ msgstr "un objet avec un protocol de tampon est nécessaire"
 #: py/objarray.c:413 py/objstr.c:427 py/objstrunicode.c:191 py/objtuple.c:187
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
-msgstr "seul les slice avec step=1 (cad None) sont supportés"
+msgstr "seuls les slices avec 'step=1' (cad None) sont supportées"
 
 #: py/objarray.c:426
 msgid "lhs and rhs should be compatible"
@@ -879,7 +879,7 @@ msgstr "l'argument __new__ doit être d'un type défini par l'utilisateur"
 
 #: py/objrange.c:110
 msgid "zero step"
-msgstr "zéro étape"
+msgstr "'step' nul"
 
 #: py/objset.c:371
 msgid "pop from an empty set"
@@ -895,7 +895,7 @@ msgstr "La longueur ne doit pas être négative"
 
 #: py/objslice.c:86 py/sequence.c:57
 msgid "slice step cannot be zero"
-msgstr "le pas step de slice ne peut être zéro"
+msgstr "le pas 'step' de slice ne peut être zéro"
 
 #: py/objslice.c:159
 msgid "Cannot subclass slice"
@@ -1425,7 +1425,7 @@ msgstr "Il manque une méthode readinto() ou write() au flux."
 
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
-msgstr "Tranche et valeur de taille différentes"
+msgstr "Slice et valeur de tailles différentes"
 
 #: shared-bindings/nvm/ByteArray.c:104
 msgid "Array values should be single bytes."
@@ -1457,7 +1457,7 @@ msgstr "Impossible de supprimer les valeurs"
 
 #: shared-bindings/pulseio/PulseIn.c:281
 msgid "Slices not supported"
-msgstr "Slice non supportée"
+msgstr "Slices non supportées"
 
 #: shared-bindings/pulseio/PulseIn.c:287
 msgid "index must be int"
