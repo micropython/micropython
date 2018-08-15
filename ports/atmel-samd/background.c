@@ -30,11 +30,16 @@
 #include "usb.h"
 #include "usb_mass_storage.h"
 
+#include "shared-module/displayio/__init__.h"
+
 volatile uint64_t last_finished_tick = 0;
 
 void run_background_tasks(void) {
     #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
     audio_dma_background();
+    #endif
+    #ifdef CIRCUITPY_DISPLAYIO
+    displayio_refresh_display();
     #endif
     usb_msc_background();
     usb_cdc_background();

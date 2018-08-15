@@ -2051,6 +2051,80 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'"
 msgid "Unsupported pull value."
 msgstr "Valeur de 'pull' non supportée"
 
+#: shared-bindings/displayio/Bitmap.c:66
+#, fuzzy
+msgid "value_size must be power of two"
+msgstr "'len' doit être un multiple de 4"
+
+#: shared-bindings/displayio/Bitmap.c:85
+#, fuzzy
+msgid "y should be an int"
+msgstr "La longueur doit être entière"
+
+#: shared-bindings/displayio/Bitmap.c:90
+#, fuzzy
+msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+"le tampon de sample_source doit être un bytearray ou un tableau de type "
+"'h','H', 'b' ou 'B'"
+
+#: shared-bindings/displayio/Bitmap.c:95
+#, fuzzy
+msgid "row data must be a buffer"
+msgstr "les constantes doivent être des entiers"
+
+#: shared-bindings/displayio/FourWire.c:55
+#: shared-bindings/displayio/FourWire.c:64
+msgid "displayio is a work in progress"
+msgstr ""
+
+#: shared-bindings/displayio/Group.c:65
+#, fuzzy
+msgid "Group must have size at least 1"
+msgstr "Le tampon doit être de longueur au moins 1"
+
+#: shared-bindings/displayio/Palette.c:94
+#, fuzzy
+msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+"le tampon de sample_source doit être un bytearray ou un tableau de type "
+"'h','H', 'b' ou 'B'"
+
+#: shared-bindings/displayio/Palette.c:100
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGBA)"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:104
+#, fuzzy
+msgid "color must be between 0x000000 and 0xffffff"
+msgstr "Les octets 'bytes' doivent être entre 0 et 255"
+
+#: shared-bindings/displayio/Palette.c:108
+#, fuzzy
+msgid "color buffer must be a buffer or int"
+msgstr "le tampon doit être un objet bytes-like"
+
+#: shared-bindings/displayio/Palette.c:124
+#: shared-bindings/displayio/Palette.c:138
+#, fuzzy
+msgid "value should be an int"
+msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'"
+
+#: shared-bindings/displayio/Sprite.c:44
+#, fuzzy
+msgid "position must be 2-tuple"
+msgstr "stop doit être 1 ou 2"
+
+#: shared-bindings/displayio/Sprite.c:86
+#, fuzzy
+msgid "unsupported bitmap type"
+msgstr "Débit non supporté"
+
+#: shared-bindings/displayio/Sprite.c:151
+#, fuzzy
+msgid "palette must be displayio.Palette"
+msgstr "la palette doit être longue de 32 octets"
+
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
 msgstr "trop d'arguments"
@@ -2271,6 +2345,14 @@ msgstr "Impossible de lire sans broche MISO."
 #: shared-module/bitbangio/SPI.c:241
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Pas de transfert sans broches MOSI et MISO"
+
+#: shared-module/displayio/Bitmap.c:60
+msgid "row must be packed and word aligned"
+msgstr ""
+
+#: shared-module/displayio/Group.c:39
+msgid "Group full"
+msgstr ""
 
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"

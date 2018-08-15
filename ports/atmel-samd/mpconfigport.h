@@ -171,6 +171,7 @@ extern const struct _mp_obj_module_t audioio_module;
 extern const struct _mp_obj_module_t audiobusio_module;
 extern const struct _mp_obj_module_t analogio_module;
 extern const struct _mp_obj_module_t digitalio_module;
+extern const struct _mp_obj_module_t displayio_module;
 extern const struct _mp_obj_module_t pulseio_module;
 extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
@@ -232,11 +233,20 @@ extern const struct _mp_obj_module_t usb_hid_module;
         #define I2CSLAVE_MODULE
     #endif
 
+    #ifdef CIRCUITPY_DISPLAYIO
+        #define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
+    #else
+        #define DISPLAYIO_MODULE
+    #endif
+
+
+
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
         AUDIOIO_MODULE \
         AUDIOBUSIO_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
+        DISPLAYIO_MODULE \
         I2CSLAVE_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
