@@ -480,7 +480,7 @@ msgstr "il ne peut y avoir de **x multiples"
 
 #: py/compile.c:2271
 msgid "LHS of keyword arg must be an id"
-msgstr ""
+msgstr "La partie gauche de l'argument nommé doit être un identifiant"
 
 #: py/compile.c:2287
 msgid "non-keyword arg after */**"
@@ -561,7 +561,7 @@ msgstr "conversion en objet"
 
 #: py/emitnative.c:2126
 msgid "casting"
-msgstr ""
+msgstr "typage"
 
 #: py/emitnative.c:2201
 msgid "native yield"
@@ -1321,7 +1321,7 @@ msgstr "le tampon de destination doit être un tableau de type 'H' pour bit_dept
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
-"lle tampon de destination doit être un tableau de type 'B' pour bit_depth = 8"
+"le tampon de destination doit être un tableau de type 'B' pour bit_depth = 8"
 
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
