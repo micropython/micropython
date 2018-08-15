@@ -59,6 +59,9 @@
 // wrapper around everything in this file
 #if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA
 
+// number of arguments to viper functions are limited to this value
+#define REG_ARG_NUM (4)
+
 // define additional generic helper macros
 #define ASM_MOV_LOCAL_IMM_VIA(as, local_num, imm, reg_temp) \
     do { \
@@ -144,6 +147,9 @@ struct _emit_t {
 
     ASM_T *as;
 };
+
+STATIC const uint8_t reg_arg_table[REG_ARG_NUM] = {REG_ARG_1, REG_ARG_2, REG_ARG_3, REG_ARG_4};
+STATIC const uint8_t reg_local_table[REG_LOCAL_NUM] = {REG_LOCAL_1, REG_LOCAL_2, REG_LOCAL_3};
 
 emit_t *EXPORT_FUN(new)(mp_obj_t *error_slot, mp_uint_t max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
@@ -248,7 +254,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     if (emit->do_viper_types) {
 
         // right now we have a restriction of maximum of 4 arguments
-        if (scope->num_pos_args >= 5) {
+        if (scope->num_pos_args > REG_ARG_NUM) {
             EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "Viper functions don't currently support more than 4 arguments");
             return;
         }
@@ -274,12 +280,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         #if N_X86
         for (int i = 0; i < scope->num_pos_args; i++) {
-            if (i == 0) {
-                asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_1);
-            } else if (i == 1) {
-                asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_2);
-            } else if (i == 2) {
-                asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_3);
+            if (i < REG_LOCAL_NUM) {
+                asm_x86_mov_arg_to_r32(emit->as, i, reg_local_table[i]);
             } else {
                 asm_x86_mov_arg_to_r32(emit->as, i, REG_TEMP0);
                 asm_x86_mov_r32_to_local(emit->as, REG_TEMP0, i - REG_LOCAL_NUM);
@@ -287,15 +289,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
         #else
         for (int i = 0; i < scope->num_pos_args; i++) {
-            if (i == 0) {
-                ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
-            } else if (i == 1) {
-                ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
-            } else if (i == 2) {
-                ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
+            if (i < REG_LOCAL_NUM) {
+                ASM_MOV_REG_REG(emit->as, reg_local_table[i], reg_arg_table[i]);
             } else {
-                assert(i == 3); // should be true; max 4 args is checked above
-                ASM_MOV_LOCAL_REG(emit->as, i - REG_LOCAL_NUM, REG_ARG_4);
+                assert(i < REG_ARG_NUM); // should be true; max args is checked above
+                ASM_MOV_LOCAL_REG(emit->as, i - REG_LOCAL_NUM, reg_arg_table[i]);
             }
         }
         #endif
@@ -346,14 +344,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         #endif
 
         // cache some locals in registers
-        if (scope->num_locals > 0) {
-            ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_1, STATE_START + emit->n_state - 1 - 0);
-            if (scope->num_locals > 1) {
-                ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_2, STATE_START + emit->n_state - 1 - 1);
-                if (scope->num_locals > 2) {
-                    ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_3, STATE_START + emit->n_state - 1 - 2);
-                }
-            }
+        for (int i = 0; i < REG_LOCAL_NUM && i < scope->num_locals; ++i) {
+            ASM_MOV_REG_LOCAL(emit->as, reg_local_table[i], STATE_START + emit->n_state - 1 - i);
         }
 
         // set the type of closed over variables
@@ -931,12 +923,8 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "local '%q' used before type known", qst);
     }
     emit_native_pre(emit);
-    if (local_num == 0) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
+    if (local_num < REG_LOCAL_NUM) {
+        emit_post_push_reg(emit, vtype, reg_local_table[local_num]);
     } else {
         need_reg_single(emit, REG_TEMP0, 0);
         if (emit->do_viper_types) {
@@ -1172,12 +1160,8 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
 
 STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     vtype_kind_t vtype;
-    if (local_num == 0) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
+    if (local_num < REG_LOCAL_NUM) {
+        emit_pre_pop_reg(emit, &vtype, reg_local_table[local_num]);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
         if (emit->do_viper_types) {
