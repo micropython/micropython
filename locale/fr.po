@@ -1341,7 +1341,7 @@ msgstr "le fichier doit être un fichier ouvert en mode byte"
 #: shared-bindings/bitbangio/I2C.c:111 shared-bindings/bitbangio/SPI.c:121
 #: shared-bindings/busio/SPI.c:133
 msgid "Function requires lock"
-msgstr "La fonction nécessité un verrou"
+msgstr "La fonction nécessite un verrou"
 
 #: shared-bindings/bitbangio/I2C.c:195 shared-bindings/busio/I2C.c:210
 msgid "Buffer must be at least length 1"
