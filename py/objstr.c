@@ -34,7 +34,9 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
+#if MICROPY_PY_BUILTINS_STR_OP_MODULO
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
+#endif
 
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
@@ -301,6 +303,7 @@ const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle,
 mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // check for modulo
     if (op == MP_BINARY_OP_MODULO) {
+        #if MICROPY_PY_BUILTINS_STR_OP_MODULO
         mp_obj_t *args = &rhs_in;
         size_t n_args = 1;
         mp_obj_t dict = MP_OBJ_NULL;
@@ -311,6 +314,9 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             dict = rhs_in;
         }
         return str_modulo_format(lhs_in, n_args, args, dict);
+        #else
+        return MP_OBJ_NULL;
+        #endif
     }
 
     // from now on we need lhs type and data, so extract them
@@ -915,6 +921,7 @@ STATIC bool arg_looks_numeric(mp_obj_t arg) {
     ;
 }
 
+#if MICROPY_PY_BUILTINS_STR_OP_MODULO
 STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
 #if MICROPY_PY_BUILTINS_FLOAT
     if (mp_obj_is_float(arg)) {
@@ -923,6 +930,7 @@ STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
 #endif
     return arg;
 }
+#endif
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
 STATIC NORETURN void terse_str_format_value_error(void) {
@@ -1383,6 +1391,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
 
+#if MICROPY_PY_BUILTINS_STR_OP_MODULO
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict) {
     mp_check_self(MP_OBJ_IS_STR_OR_BYTES(pattern));
 
@@ -1578,6 +1587,7 @@ not_enough_args:
 
     return mp_obj_new_str_from_vstr(is_bytes ? &mp_type_bytes : &mp_type_str, &vstr);
 }
+#endif
 
 // The implementation is optimized, returning the original string if there's
 // nothing to replace.
