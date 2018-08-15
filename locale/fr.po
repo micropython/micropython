@@ -209,7 +209,7 @@ msgstr "Broche invalide"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:99
 msgid "SDA or SCL needs a pull up"
-msgstr "SDA ou SCL a besoin d'une résistance de tirage"
+msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:119
 msgid "Unsupported baudrate"
@@ -241,7 +241,7 @@ msgstr "Pas de broche TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
 msgid "Cannot get pull while in output mode"
-msgstr "Ne peux être tirer en mode 'output'"
+msgstr "Ne peux être tirer ('pull') en mode 'output'"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 msgid "Cannot reset into bootloader because no bootloader is present."
@@ -767,7 +767,7 @@ msgstr "seul les slice avec step=1 (cad None) sont supportés"
 
 #: py/objarray.c:426
 msgid "lhs and rhs should be compatible"
-msgstr "lhs et rhs devraient être compatible"
+msgstr "Les parties gauches et droites doivent être compatibles"
 
 #: py/objarray.c:444 shared-bindings/nvm/ByteArray.c:107
 msgid "array/bytes required on right side"
@@ -807,8 +807,7 @@ msgstr "valeurs complexes non supportées"
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
-msgstr "on ne peut envoyé une valeur différente de None à un générateur"
-"fraîchement démarré"
+msgstr "on ne peut envoyé une valeur différente de None à un générateur fraîchement démarré"
 
 #: py/objgenerator.c:126
 msgid "generator already executing"
@@ -949,7 +948,7 @@ msgstr "fin de format en cherchant une spécification de conversion"
 #: py/objstr.c:998
 #, c-format
 msgid "unknown conversion specifier %c"
-msgstr "spécification de conversion inconnue"
+msgstr "spécification %c de conversion inconnue"
 
 #: py/objstr.c:1029
 msgid "unmatched '{' in format"
@@ -1434,7 +1433,7 @@ msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'"
 
 #: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
 msgid "Unable to write to nvm."
-msgstr "Impossible d'écrire sur nvm"
+msgstr "Impossible d'écrire sur la nvm"
 
 #: shared-bindings/nvm/ByteArray.c:137
 msgid "Bytes must be between 0 and 255."
