@@ -5,6 +5,8 @@ ifneq ($(findstring undefine,$(.FEATURES)),)
 override undefine COPT
 override undefine CFLAGS_EXTRA
 override undefine LDFLAGS_EXTRA
+override undefine MICROPY_FORCE_32BIT
+override undefine CROSS_COMPILE
 override undefine FROZEN_DIR
 override undefine FROZEN_MPY_DIR
 override undefine BUILD
