@@ -104,6 +104,7 @@ void asm_x64_sub_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
 void asm_x64_mul_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
 void asm_x64_cmp_r64_with_r64(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_test_r8_with_r8(asm_x64_t* as, int src_r64_a, int src_r64_b);
+void asm_x64_test_r64_with_r64(asm_x64_t *as, int src_r64_a, int src_r64_b);
 void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8);
 void asm_x64_jmp_label(asm_x64_t* as, mp_uint_t label);
 void asm_x64_jcc_label(asm_x64_t* as, int jcc_type, mp_uint_t label);
@@ -145,14 +146,22 @@ void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
 #define ASM_EXIT            asm_x64_exit
 
 #define ASM_JUMP            asm_x64_jmp_label
-#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
-        asm_x64_test_r8_with_r8(as, reg, reg); \
+        if (bool_test) { \
+            asm_x64_test_r8_with_r8((as), (reg), (reg)); \
+        } else { \
+            asm_x64_test_r64_with_r64((as), (reg), (reg)); \
+        } \
         asm_x64_jcc_label(as, ASM_X64_CC_JZ, label); \
     } while (0)
-#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label, bool_test) \
     do { \
-        asm_x64_test_r8_with_r8(as, reg, reg); \
+        if (bool_test) { \
+            asm_x64_test_r8_with_r8((as), (reg), (reg)); \
+        } else { \
+            asm_x64_test_r64_with_r64((as), (reg), (reg)); \
+        } \
         asm_x64_jcc_label(as, ASM_X64_CC_JNZ, label); \
     } while (0)
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \

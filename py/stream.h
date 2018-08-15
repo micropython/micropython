@@ -116,10 +116,11 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
 
 #if MICROPY_STREAMS_POSIX_API
 // Functions with POSIX-compatible signatures
-ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len);
-ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len);
-off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence);
-int mp_stream_posix_fsync(mp_obj_t stream);
+// "stream" is assumed to be a pointer to a concrete object with the stream protocol
+ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len);
+ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len);
+off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence);
+int mp_stream_posix_fsync(void *stream);
 #endif
 
 #if MICROPY_STREAMS_NON_BLOCK

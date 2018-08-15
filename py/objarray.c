@@ -270,10 +270,10 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
         }
 
         case MP_BINARY_OP_CONTAINS: {
+            #if MICROPY_PY_BUILTINS_BYTEARRAY
+            // Can search string only in bytearray
             mp_buffer_info_t lhs_bufinfo;
             mp_buffer_info_t rhs_bufinfo;
-
-            // Can search string only in bytearray
             if (mp_get_buffer(rhs_in, &rhs_bufinfo, MP_BUFFER_READ)) {
                 if (!MP_OBJ_IS_TYPE(lhs_in, &mp_type_bytearray)) {
                     return mp_const_false;
@@ -282,6 +282,7 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
                 return mp_obj_new_bool(
                     find_subbytes(lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len, 1) != NULL);
             }
+            #endif
 
             // Otherwise, can only look for a scalar numeric value in an array
             if (MP_OBJ_IS_INT(rhs_in) || mp_obj_is_float(rhs_in)) {

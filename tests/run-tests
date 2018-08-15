@@ -277,8 +277,12 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('thread/stress_recurse.py') # has reliability issues
 
     if upy_float_precision == 0:
+        skip_tests.add('extmod/uctypes_le_float.py')
+        skip_tests.add('extmod/uctypes_native_float.py')
+        skip_tests.add('extmod/uctypes_sizeof_float.py')
         skip_tests.add('extmod/ujson_dumps_float.py')
         skip_tests.add('extmod/ujson_loads_float.py')
+        skip_tests.add('extmod/urandom_extra_float.py')
         skip_tests.add('misc/rge_sm.py')
     if upy_float_precision < 32:
         skip_tests.add('float/float2int_intbig.py') # requires fp32, there's float2int_fp30_intbig.py instead
@@ -355,7 +359,6 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
         skip_tests.update({'basics/%s.py' % t for t in 'with_break with_continue with_return'.split()}) # require complete with support
         skip_tests.add('basics/array_construct2.py') # requires generators
-        skip_tests.add('basics/bool1.py') # seems to randomly fail
         skip_tests.add('basics/builtin_hash_gen.py') # requires yield
         skip_tests.add('basics/class_bind_self.py') # requires yield
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
@@ -391,8 +394,8 @@ def run_tests(pyb, tests, args, base_path="."):
             if verdict == "exclude":
                 continue
 
-        test_basename = os.path.basename(test_file)
-        test_name = os.path.splitext(test_basename)[0]
+        test_basename = test_file.replace('..', '_').replace('./', '').replace('/', '_')
+        test_name = os.path.splitext(os.path.basename(test_file))[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")

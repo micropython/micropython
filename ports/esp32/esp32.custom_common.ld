@@ -52,6 +52,7 @@ SECTIONS
   /* Send .iram0 code to iram */
   .iram0.vectors :
   {
+    _iram_start = ABSOLUTE(.);
     /* Vectors go to IRAM */
     _init_start = ABSOLUTE(.);
     /* Vectors according to builds/RF-2015.2-win32/esp108_v1_2_s5_512int_2/config.html */
@@ -85,10 +86,6 @@ SECTIONS
     *(.init.literal)
     *(.init)
     _init_end = ABSOLUTE(.);
-
-    /* This goes here, not at top of linker script, so addr2line finds it last,
-       and uses it in preference to the first symbol in IRAM */
-    _iram_start = ABSOLUTE(0);
   } > iram0_0_seg
 
   .iram0.text :
@@ -104,7 +101,8 @@ SECTIONS
     *app_trace/*(.literal .text .literal.* .text.*)
     *xtensa-debug-module/eri.o(.literal .text .literal.* .text.*)
     *librtc.a:(.literal .text .literal.* .text.*)
-    *soc/esp32/*(.literal .text .literal.* .text.*)
+    *soc/esp32/rtc_*.o(.literal .text .literal.* .text.*)
+    *soc/esp32/cpu_util.o(.literal .text .literal.* .text.*)
     *libhal.a:(.literal .text .literal.* .text.*)
     *libgcc.a:lib2funcs.o(.literal .text .literal.* .text.*)
     *spi_flash/spi_flash_rom_patch.o(.literal .text .literal.* .text.*)
@@ -112,11 +110,20 @@ SECTIONS
     INCLUDE esp32.spiram.rom-functions-iram.ld
     *py/scheduler.o*(.literal .text .literal.* .text.*)
     _iram_text_end = ABSOLUTE(.);
+    _iram_end = ABSOLUTE(.);
   } > iram0_0_seg
-  
+
   .dram0.data :
   {
     _data_start = ABSOLUTE(.);
+    _bt_data_start = ABSOLUTE(.);
+    *libbt.a:(.data .data.*)
+    . = ALIGN (4);
+    _bt_data_end = ABSOLUTE(.);
+    _btdm_data_start = ABSOLUTE(.);
+    *libbtdm_app.a:(.data .data.*)
+    . = ALIGN (4);
+    _btdm_data_end = ABSOLUTE(.);
     *(.data)
     *(.data.*)
     *(.gnu.linkonce.d.*)
@@ -160,6 +167,14 @@ SECTIONS
   {
     . = ALIGN (8);
     _bss_start = ABSOLUTE(.);
+    _bt_bss_start = ABSOLUTE(.);
+    *libbt.a:(.bss .bss.* COMMON)
+    . = ALIGN (4);
+    _bt_bss_end = ABSOLUTE(.);
+    _btdm_bss_start = ABSOLUTE(.);
+    *libbtdm_app.a:(.bss .bss.* COMMON)
+    . = ALIGN (4);
+    _btdm_bss_end = ABSOLUTE(.);
     *(.dynsbss)
     *(.sbss)
     *(.sbss.*)
@@ -216,6 +231,11 @@ SECTIONS
     *(.xt_except_desc_end)
     *(.dynamic)
     *(.gnu.version_d)
+    /* Addresses of memory regions reserved via
+       SOC_RESERVE_MEMORY_REGION() */
+    soc_reserved_memory_region_start = ABSOLUTE(.);
+    KEEP (*(.reserved_memory_address))
+    soc_reserved_memory_region_end = ABSOLUTE(.);
     _rodata_end = ABSOLUTE(.);
     /* Literals are also RO data. */
     _lit4_start = ABSOLUTE(.);

@@ -150,12 +150,12 @@ void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);
 #define ASM_EXIT            asm_arm_exit
 
 #define ASM_JUMP            asm_arm_b_label
-#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label, bool_test) \
     do { \
         asm_arm_cmp_reg_i8(as, reg, 0); \
         asm_arm_bcc_label(as, ASM_ARM_CC_EQ, label); \
     } while (0)
-#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label, bool_test) \
     do { \
         asm_arm_cmp_reg_i8(as, reg, 0); \
         asm_arm_bcc_label(as, ASM_ARM_CC_NE, label); \

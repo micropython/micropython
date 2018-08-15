@@ -15,6 +15,8 @@
     <QstrDefsCollected>$(DestDir)qstrdefscollected.h</QstrDefsCollected>
     <QstrGen>$(DestDir)qstrdefs.generated.h</QstrGen>
     <PyPython Condition="'$(PyPython)' == ''">python</PyPython>
+    <CLToolExe Condition="'$(CLToolExe)' == ''">cl.exe</CLToolExe>
+    <PyClTool>$([System.IO.Path]::Combine(`$(CLToolPath)`, `$(CLToolExe)`))</PyClTool>
   </PropertyGroup>
 
   <Target Name="MakeDestDir">
@@ -73,7 +75,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     </PropertyGroup>
 
     <MakeDir Directories="@(PyQstrSourceFiles->'%(OutDir)')"/>
-    <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /Fi%(PyQstrSourceFiles.OutFile) /P %(PyQstrSourceFiles.Identity)"
+    <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /Fi%(PyQstrSourceFiles.OutFile) /P %(PyQstrSourceFiles.Identity)"
           Condition="'%(PyQstrSourceFiles.Changed)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <ConcatPreProcFiles InputFiles="@(PyQstrSourceFiles->'%(OutFile)')" OutputFile="$(DestDir)qstr.i.last"
                         Condition="'$(RunPreProcConcat)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
@@ -85,7 +87,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <PropertyGroup>
       <TmpFile>$(QstrGen).tmp</TmpFile>
     </PropertyGroup>
-    <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /E $(PyQstrDefs) $(QstrDefs) > $(DestDir)qstrdefspreprocessed.h"/>
+    <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /E $(PyQstrDefs) $(QstrDefs) > $(DestDir)qstrdefspreprocessed.h"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(DestDir)qstrdefspreprocessed.h $(QstrDefsCollected) > $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(QstrGen)"/>
   </Target>
