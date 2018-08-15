@@ -13,7 +13,7 @@ msgstr ""
 "Language-Team: fr\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: extmod/vfs_fat.c:426 py/moduerrno.c:115
@@ -50,7 +50,7 @@ msgstr "Auto-rechargement désactivé.\n"
 
 #: main.c:166
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Mode sans-échec! Le code sauvegardé ne tourne pas.\n"
+msgstr "Mode sans-échec! Le code sauvegardé ne s'éxecute pas.\n"
 
 #: main.c:182
 msgid "WARNING: Your code filename has two extensions\n"
@@ -113,11 +113,11 @@ msgstr "AnalogOut n'est pas supporté sur cette broche"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
-msgstr "Broche invalide pour le bit d'horloge"
+msgstr "Broche invalide pour 'bit clock'"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
-msgstr "Le bit d'horloge et 'word select' doivent partagé une horloge"
+msgstr "'bit clock' et 'word select' doivent partagé une horloge"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
@@ -213,7 +213,7 @@ msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:119
 msgid "Unsupported baudrate"
-msgstr "Débit en bauds non supporté"
+msgstr "Débit non supporté"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
@@ -412,7 +412,7 @@ msgstr "import relatif"
 
 #: py/compile.c:397 py/compile.c:542
 msgid "can't assign to expression"
-msgstr "ne peut pas assigné à l'expression"
+msgstr "ne peut pas assigner à l'expression"
 
 #: py/compile.c:416
 msgid "multiple *x in assignment"
@@ -452,7 +452,7 @@ msgstr "pas de lien trouvé pour nonlocal"
 
 #: py/compile.c:1188
 msgid "identifier redefined as nonlocal"
-msgstr "identifiant redéfini comme global"
+msgstr "identifiant redéfini comme nonlocal"
 
 #: py/compile.c:1197
 msgid "can't declare nonlocal in outer code"
@@ -468,7 +468,7 @@ msgstr "*x doit être la cible de l'assignement"
 
 #: py/compile.c:2193
 msgid "super() can't find self"
-msgstr "super() ne peut pas trouvé self"
+msgstr "super() ne peut pas trouver self"
 
 #: py/compile.c:2256
 msgid "can't have multiple *x"
@@ -649,7 +649,7 @@ msgstr "Argument invalide"
 
 #: py/obj.c:89
 msgid "Traceback (most recent call last):\n"
-msgstr "Trace (appel les plus récents en dernier):\n"
+msgstr "Trace (appels les plus récents en dernier):\n"
 
 #: py/obj.c:92
 msgid "  File \"%q\", line %d"
@@ -740,12 +740,12 @@ msgstr "l'objet '%s' ne supporte pas la suppression d'éléments"
 
 #: py/obj.c:487
 msgid "object is not subscriptable"
-msgstr "l'objet n'est souscrivable"
+msgstr "l'objet n'est pas sous-scriptable"
 
 #: py/obj.c:490
 #, c-format
 msgid "'%s' object is not subscriptable"
-msgstr "l'objet '%s' n'est souscrivable"
+msgstr "l'objet '%s' n'est pas sous-scriptable"
 
 #: py/obj.c:494
 msgid "object does not support item assignment"
@@ -807,7 +807,7 @@ msgstr "valeurs complexes non supportées"
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
-msgstr "on ne peut envoyé une valeur différente de None à un générateur fraîchement démarré"
+msgstr "on ne peut envoyer une valeur différente de None à un générateur fraîchement démarré"
 
 #: py/objgenerator.c:126
 msgid "generator already executing"
@@ -871,7 +871,7 @@ msgstr "pop d'une liste vide"
 
 #: py/objnamedtuple.c:92
 msgid "can't set attribute"
-msgstr "ne peut modifié un attribut"
+msgstr "attribut non modifiable"
 
 #: py/objobject.c:55
 msgid "__new__ arg must be a user-type"
@@ -1244,12 +1244,12 @@ msgstr "ne peut pas importer le nom %q"
 
 #: py/runtime.c:1535
 msgid "memory allocation failed, heap is locked"
-msgstr "l'allocation de mémoire a échouée, la pile est vérrouillé"
+msgstr "l'allocation de mémoire a échoué, la pile est vérrouillé"
 
 #: py/runtime.c:1539
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
-msgstr "l'allocation de mémoire a échouée en allouant %u octects"
+msgstr "l'allocation de mémoire a échoué en allouant %u octets"
 
 #: py/runtime.c:1609
 msgid "maximum recursion depth exceeded"
@@ -1365,11 +1365,11 @@ msgstr "les slices de tampon doivent être de longueurs égales"
 
 #: shared-bindings/busio/I2C.c:120
 msgid "Function requires lock."
-msgstr "La fonction nécessité un verrou."
+msgstr "La fonction nécessite un verrou."
 
 #: shared-bindings/busio/UART.c:98
 msgid "bits must be 7, 8 or 9"
-msgstr "les bits doivent être 7, 8 ou 9"
+msgstr "bits doivent être 7, 8 ou 9"
 
 #: shared-bindings/busio/UART.c:110
 msgid "stop must be 1 or 2"
@@ -1584,7 +1584,7 @@ msgstr "Impossible d'écrire sans broche MOSI."
 
 #: shared-module/bitbangio/SPI.c:177
 msgid "Cannot read without MISO pin."
-msgstr "Ipossible de lire sans broche MISO."
+msgstr "Impossible de lire sans broche MISO."
 
 #: shared-module/bitbangio/SPI.c:241
 msgid "Cannot transfer without MOSI and MISO pins."
