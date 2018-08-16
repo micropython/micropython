@@ -178,11 +178,11 @@ extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops;
 
 emit_t *emit_bc_new(void);
-emit_t *emit_native_x64_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_x86_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_thumb_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_arm_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_x64_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_x86_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_thumb_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_arm_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 
 void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels);
 

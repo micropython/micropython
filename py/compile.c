@@ -170,6 +170,16 @@ STATIC uint comp_next_label(compiler_t *comp) {
     return comp->next_label++;
 }
 
+#if MICROPY_EMIT_NATIVE
+STATIC void reserve_labels_for_native(compiler_t *comp, int n) {
+    if (comp->scope_cur->emit_options != MP_EMIT_OPT_BYTECODE) {
+        comp->next_label += n;
+    }
+}
+#else
+#define reserve_labels_for_native(comp, n)
+#endif
+
 STATIC void compile_increase_except_level(compiler_t *comp) {
     comp->cur_except_level += 1;
     if (comp->cur_except_level > comp->scope_cur->exc_stack_size) {
@@ -1656,11 +1666,6 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
         compile_node(comp, body);
     } else {
         uint l_end = comp_next_label(comp);
-        if (MICROPY_EMIT_NATIVE && comp->scope_cur->emit_options != MP_EMIT_OPT_BYTECODE) {
-            // we need to allocate an extra label for the native emitter
-            // it will use l_end+1 as an auxiliary label
-            comp_next_label(comp);
-        }
         if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes[0], PN_with_item)) {
             // this pre-bit is of the form "a as b"
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)nodes[0];
@@ -1678,6 +1683,7 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
         compile_with_stmt_helper(comp, n - 1, nodes + 1, body);
         // finish this with block
         EMIT_ARG(with_cleanup, l_end);
+        reserve_labels_for_native(comp, 2); // used by native's with_cleanup
         compile_decrease_except_level(comp);
         EMIT(end_finally);
     }
@@ -2947,6 +2953,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->scope_cur = scope;
     comp->next_label = 0;
     EMIT_ARG(start_pass, pass, scope);
+    reserve_labels_for_native(comp, 4); // used by native's start_pass
 
     if (comp->pass == MP_PASS_SCOPE) {
         // reset maximum stack sizes in scope
@@ -3443,7 +3450,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
                 case MP_EMIT_OPT_NATIVE_PYTHON:
                 case MP_EMIT_OPT_VIPER:
                     if (emit_native == NULL) {
-                        emit_native = NATIVE_EMITTER(new)(&comp->compile_error, max_num_labels);
+                        emit_native = NATIVE_EMITTER(new)(&comp->compile_error, &comp->next_label, max_num_labels);
                     }
                     comp->emit_method_table = &NATIVE_EMITTER(method_table);
                     comp->emit = emit_native;
