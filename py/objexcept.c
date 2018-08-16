@@ -116,8 +116,8 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
             if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
                 const compressed_string_t* common = mp_common_errno_to_str(o->args->items[0]);
                 const char* msg;
-                if (common != NULL) {
-                    char decompressed[common->length];
+                char decompressed[50];
+                if (common != NULL && common->length <= 50) {
                     decompress(common, decompressed);
                     msg = decompressed;
                 } else {
