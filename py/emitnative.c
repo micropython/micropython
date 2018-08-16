@@ -148,6 +148,8 @@ struct _emit_t {
 emit_t *EXPORT_FUN(new)(mp_obj_t *error_slot, mp_uint_t max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
     emit->error_slot = error_slot;
+    emit->stack_info_alloc = 8;
+    emit->stack_info = m_new(stack_info_t, emit->stack_info_alloc);
     emit->as = m_new0(ASM_T, 1);
     mp_asm_base_init(&emit->as->base, max_num_labels);
     return emit;
@@ -211,14 +213,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     if (emit->local_vtype_alloc < scope->num_locals) {
         emit->local_vtype = m_renew(vtype_kind_t, emit->local_vtype, emit->local_vtype_alloc, scope->num_locals);
         emit->local_vtype_alloc = scope->num_locals;
-    }
-
-    // allocate memory for keeping track of the objects on the stack
-    // XXX don't know stack size on entry, and it should be maximum over all scopes
-    // XXX this is such a big hack and really needs to be fixed
-    if (emit->stack_info == NULL) {
-        emit->stack_info_alloc = scope->stack_size + 200;
-        emit->stack_info = m_new(stack_info_t, emit->stack_info_alloc);
     }
 
     // set default type for return
@@ -455,8 +449,17 @@ STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {
     return emit->last_emit_was_return_value;
 }
 
+STATIC void ensure_extra_stack(emit_t *emit, size_t delta) {
+    if (emit->stack_size + delta > emit->stack_info_alloc) {
+        size_t new_alloc = (emit->stack_size + delta + 8) & ~3;
+        emit->stack_info = m_renew(stack_info_t, emit->stack_info, emit->stack_info_alloc, new_alloc);
+        emit->stack_info_alloc = new_alloc;
+    }
+}
+
 STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
     assert((mp_int_t)emit->stack_size + stack_size_delta >= 0);
+    assert((mp_int_t)emit->stack_size + stack_size_delta <= (mp_int_t)emit->stack_info_alloc);
     emit->stack_size += stack_size_delta;
     if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
@@ -473,6 +476,9 @@ STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
 
 STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
     DEBUG_printf("adjust_stack_size(" INT_FMT ")\n", delta);
+    if (delta > 0) {
+        ensure_extra_stack(emit, delta);
+    }
     // If we are adjusting the stack in a positive direction (pushing) then we
     // need to fill in values for the stack kind and vtype of the newly-pushed
     // entries.  These should be set to "value" (ie not reg or imm) because we
@@ -640,6 +646,7 @@ STATIC void emit_post_top_set_vtype(emit_t *emit, vtype_kind_t new_vtype) {
 }
 
 STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
+    ensure_extra_stack(emit, 1);
     stack_info_t *si = &emit->stack_info[emit->stack_size];
     si->vtype = vtype;
     si->kind = STACK_REG;
@@ -648,6 +655,7 @@ STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg) {
 }
 
 STATIC void emit_post_push_imm(emit_t *emit, vtype_kind_t vtype, mp_int_t imm) {
+    ensure_extra_stack(emit, 1);
     stack_info_t *si = &emit->stack_info[emit->stack_size];
     si->vtype = vtype;
     si->kind = STACK_IMM;
@@ -769,6 +777,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
 // vtype of all n_push objects is VTYPE_PYOBJ
 STATIC void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, mp_uint_t reg_dest, mp_uint_t n_push) {
     need_reg_all(emit);
+    ensure_extra_stack(emit, n_push);
     for (mp_uint_t i = 0; i < n_push; i++) {
         emit->stack_info[emit->stack_size + i].kind = STACK_VALUE;
         emit->stack_info[emit->stack_size + i].vtype = VTYPE_PYOBJ;

@@ -229,6 +229,7 @@ SRC_C = \
 	i2c.c \
 	pyb_i2c.c \
 	spi.c \
+	pyb_spi.c \
 	qspi.c \
 	uart.c \
 	can.c \
@@ -237,6 +238,7 @@ SRC_C = \
 	gccollect.c \
 	help.c \
 	machine_i2c.c \
+	machine_spi.c \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
