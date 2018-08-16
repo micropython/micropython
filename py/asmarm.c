@@ -273,6 +273,21 @@ void asm_arm_mov_reg_local_addr(asm_arm_t *as, uint rd, int local_num) {
     emit_al(as, asm_arm_op_add_imm(rd, ASM_ARM_REG_SP, local_num << 2));
 }
 
+void asm_arm_mov_reg_pcrel(asm_arm_t *as, uint reg_dest, uint label) {
+    assert(label < as->base.max_num_labels);
+    mp_uint_t dest = as->base.label_offsets[label];
+    mp_int_t rel = dest - as->base.code_offset;
+    rel -= 12 + 8; // adjust for load of rel, and then PC+8 prefetch of add_reg_reg_reg
+
+    // To load rel int reg_dest, insert immediate into code and jump over it
+    emit_al(as, 0x59f0000 | (reg_dest << 12)); // ldr rd, [pc]
+    emit_al(as, 0xa000000); // b pc
+    emit(as, rel);
+
+    // Do reg_dest += PC
+    asm_arm_add_reg_reg_reg(as, reg_dest, reg_dest, ASM_ARM_REG_PC);
+}
+
 void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     // mov rd, rd, lsl rs
     emit_al(as, 0x1a00010 | (rd << 12) | (rs << 8) | rd);
@@ -360,6 +375,10 @@ void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
     emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_LR, ASM_ARM_REG_PC, 4)); // add lr, pc, #4
     emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_PC, reg_temp)); // mov pc, reg_temp
     emit(as, (uint) fun_ptr);
+}
+
+void asm_arm_bx_reg(asm_arm_t *as, uint reg_src) {
+    emit_al(as, 0x012fff10 | reg_src);
 }
 
 #endif // MICROPY_EMIT_ARM

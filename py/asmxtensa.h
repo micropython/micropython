@@ -133,6 +133,10 @@ static inline void asm_xtensa_op_bccz(asm_xtensa_t *as, uint cond, uint reg_src,
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_BRI12(6, reg_src, cond, 1, rel12 & 0xfff));
 }
 
+static inline void asm_xtensa_op_call0(asm_xtensa_t *as, int32_t rel18) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_CALL(5, 0, rel18 & 0x3ffff));
+}
+
 static inline void asm_xtensa_op_callx0(asm_xtensa_t *as, uint reg) {
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_CALLX(0, 0, 0, 0, reg, 3, 0));
 }
@@ -238,6 +242,7 @@ void asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32);
 void asm_xtensa_mov_local_reg(asm_xtensa_t *as, int local_num, uint reg_src);
 void asm_xtensa_mov_reg_local(asm_xtensa_t *as, uint reg_dest, int local_num);
 void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_num);
+void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label);
 
 #if GENERIC_ASM_API
 
@@ -274,6 +279,7 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
     asm_xtensa_bccz_reg_label(as, ASM_XTENSA_CCZ_NE, reg, label)
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
     asm_xtensa_bcc_reg_reg_label(as, ASM_XTENSA_CC_EQ, reg1, reg2, label)
+#define ASM_JUMP_REG(as, reg) asm_xtensa_op_jx((as), (reg))
 #define ASM_CALL_IND(as, ptr, idx) \
     do { \
         asm_xtensa_mov_reg_i32(as, ASM_XTENSA_REG_A0, (uint32_t)ptr); \
@@ -286,6 +292,7 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_xtensa_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_mov_n((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_xtensa_mov_reg_local_addr((as), (reg_dest), (local_num))
+#define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_xtensa_mov_reg_pcrel((as), (reg_dest), (label))
 
 #define ASM_LSL_REG_REG(as, reg_dest, reg_shift) \
     do { \

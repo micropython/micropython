@@ -76,6 +76,7 @@
 #define OPCODE_TEST_R32_WITH_RM32 (0x85) /* /r */
 #define OPCODE_JMP_REL8          (0xeb)
 #define OPCODE_JMP_REL32         (0xe9)
+#define OPCODE_JMP_RM32          (0xff) /* /4 */
 #define OPCODE_JCC_REL8          (0x70) /* | jcc type */
 #define OPCODE_JCC_REL32_A       (0x0f)
 #define OPCODE_JCC_REL32_B       (0x80) /* | jcc type */
@@ -343,6 +344,10 @@ void asm_x86_setcc_r8(asm_x86_t *as, mp_uint_t jcc_type, int dest_r8) {
     asm_x86_write_byte_3(as, OPCODE_SETCC_RM8_A, OPCODE_SETCC_RM8_B | jcc_type, MODRM_R32(0) | MODRM_RM_REG | MODRM_RM_R32(dest_r8));
 }
 
+void asm_x86_jmp_reg(asm_x86_t *as, int src_r32) {
+    asm_x86_write_byte_2(as, OPCODE_JMP_RM32, MODRM_R32(4) | MODRM_RM_REG | MODRM_RM_R32(src_r32));
+}
+
 STATIC mp_uint_t get_label_dest(asm_x86_t *as, mp_uint_t label) {
     assert(label < as->base.max_num_labels);
     return as->base.label_offsets[label];
@@ -460,6 +465,17 @@ void asm_x86_mov_local_addr_to_r32(asm_x86_t *as, int local_num, int dest_r32) {
     } else {
         asm_x86_lea_disp_to_r32(as, ASM_X86_REG_EBP, offset, dest_r32);
     }
+}
+
+void asm_x86_mov_reg_pcrel(asm_x86_t *as, int dest_r32, mp_uint_t label) {
+    asm_x86_write_byte_1(as, OPCODE_CALL_REL32);
+    asm_x86_write_word32(as, 0);
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->base.code_offset;
+    asm_x86_pop_r32(as, dest_r32);
+    // PC rel is usually a forward reference, so need to assume it's large
+    asm_x86_write_byte_2(as, OPCODE_ADD_I32_TO_RM32, MODRM_R32(0) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
+    asm_x86_write_word32(as, rel);
 }
 
 #if 0

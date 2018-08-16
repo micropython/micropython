@@ -76,6 +76,7 @@
 #define OPCODE_TEST_R64_WITH_RM64 (0x85) /* /r */
 #define OPCODE_JMP_REL8          (0xeb)
 #define OPCODE_JMP_REL32         (0xe9)
+#define OPCODE_JMP_RM64          (0xff) /* /4 */
 #define OPCODE_JCC_REL8          (0x70) /* | jcc type */
 #define OPCODE_JCC_REL32_A       (0x0f)
 #define OPCODE_JCC_REL32_B       (0x80) /* | jcc type */
@@ -481,6 +482,11 @@ void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8) {
     asm_x64_write_byte_3(as, OPCODE_SETCC_RM8_A, OPCODE_SETCC_RM8_B | jcc_type, MODRM_R64(0) | MODRM_RM_REG | MODRM_RM_R64(dest_r8));
 }
 
+void asm_x64_jmp_reg(asm_x64_t *as, int src_r64) {
+    assert(src_r64 < 8);
+    asm_x64_write_byte_2(as, OPCODE_JMP_RM64, MODRM_R64(4) | MODRM_RM_REG | MODRM_RM_R64(src_r64));
+}
+
 STATIC mp_uint_t get_label_dest(asm_x64_t *as, mp_uint_t label) {
     assert(label < as->base.max_num_labels);
     return as->base.label_offsets[label];
@@ -580,6 +586,14 @@ void asm_x64_mov_local_addr_to_r64(asm_x64_t *as, int local_num, int dest_r64) {
     } else {
         asm_x64_lea_disp_to_r64(as, ASM_X64_REG_RBP, offset, dest_r64);
     }
+}
+
+void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label) {
+    assert(dest_r64 < 8);
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - (as->base.code_offset + 7);
+    asm_x64_write_byte_3(as, REX_PREFIX | REX_W, OPCODE_LEA_MEM_TO_R64, MODRM_R64(dest_r64) | MODRM_RM_R64(5));
+    asm_x64_write_word32(as, rel);
 }
 
 /*

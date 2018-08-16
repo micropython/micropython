@@ -182,4 +182,26 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
     asm_xtensa_op_addi(as, reg_dest, reg_dest, (4 + local_num) * WORD_SIZE);
 }
 
+void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label) {
+    // Get relative offset from PC
+    uint32_t dest = get_label_dest(as, label);
+    int32_t rel = dest - as->base.code_offset;
+    rel -= 3 + 3; // account for 3 bytes of movi instruction, 3 bytes call0 adjustment
+    asm_xtensa_op_movi(as, reg_dest, rel); // imm has 12-bit range
+
+    // Use call0 to get PC+3 into a0
+    // call0 destination must be aligned on 4 bytes:
+    //  - code_offset&3=0: off=0, pad=1
+    //  - code_offset&3=1: off=0, pad=0
+    //  - code_offset&3=2: off=1, pad=3
+    //  - code_offset&3=3: off=1, pad=2
+    uint32_t off = as->base.code_offset >> 1 & 1;
+    uint32_t pad = (5 - as->base.code_offset) & 3;
+    asm_xtensa_op_call0(as, off);
+    mp_asm_base_get_cur_to_write_bytes(&as->base, pad);
+
+    // Add PC to relative offset
+    asm_xtensa_op_add(as, reg_dest, reg_dest, ASM_XTENSA_REG_A0);
+}
+
 #endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
