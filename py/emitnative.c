@@ -1472,10 +1472,6 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                         }
                         #endif
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
-                        #if N_ARM
-                        asm_arm_strh_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
-                        return;
-                        #endif
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
                     }
@@ -1492,11 +1488,12 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                             break;
                         }
                         #endif
-                        ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         #if N_ARM
+                        ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         asm_arm_str_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
                         return;
                         #endif
+                        ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
                         reg_base = reg_index;
                     }
