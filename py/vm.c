@@ -252,7 +252,7 @@ dispatch_loop:
                     if (obj_shared == MP_OBJ_NULL) {
                         local_name_error: {
                             MARK_EXC_IP_SELECTIVE();
-                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
+                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, translate("local variable referenced before assignment"));
                             RAISE(obj);
                         }
                     }
@@ -1139,7 +1139,7 @@ unwind_return:
                             }
                         }
                         if (obj == MP_OBJ_NULL) {
-                            obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "no active exception to reraise");
+                            obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, translate("no active exception to reraise"));
                             RAISE(obj);
                         }
                     } else {
@@ -1281,7 +1281,7 @@ yield:
                     } else
 #endif
                 {
-                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, translate("byte code not implemented"));
                     nlr_pop();
                     fastn[0] = obj;
                     return MP_VM_RETURN_EXCEPTION;

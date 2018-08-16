@@ -27,6 +27,15 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
 #define MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
 
-const char* translate(const char* c);
+#include <stdint.h>
+
+typedef struct {
+    uint16_t length;
+    const uint8_t data[];
+} compressed_string_t;
+
+const compressed_string_t* translate(const char* c);
+
+char* decompress(const compressed_string_t* compressed, char* decompressed);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H

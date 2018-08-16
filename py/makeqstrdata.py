@@ -12,6 +12,10 @@ import sys
 import collections
 import gettext
 
+sys.path.append("../../tools/huffman")
+
+import huffman
+
 # Python 2/3 compatibility:
 #   - iterating through bytes is different
 #   - codepoint2name lives in a different module
@@ -83,8 +87,143 @@ def translate(translation_file, i18ns):
             unescaped = original
             for s in C_ESCAPES:
                 unescaped = unescaped.replace(C_ESCAPES[s], s)
-            translations.append((original, table.gettext(unescaped)))
+            translation = table.gettext(unescaped)
+            # Add in carriage returns to work in terminals
+            translation = translation.replace("\n", "\r\n")
+            translations.append((original, translation))
         return translations
+
+def compute_huffman_coding(translations, qstrs, compression_filename):
+    all_strings = [x[1] for x in translations]
+
+    # go through each qstr and print it out
+    for _, _, qstr in qstrs.values():
+        all_strings.append(qstr)
+    all_strings_concat = "".join(all_strings).encode("utf-8")
+    counts = collections.Counter(all_strings_concat)
+    # add other values
+    for i in range(256):
+        if i not in counts:
+            counts[i] = 0
+    cb = huffman.codebook(counts.items())
+    values = bytearray()
+    length_count = {}
+    renumbered = 0
+    last_l = None
+    canonical = {}
+    for ch, code in sorted(cb.items(), key=lambda x: (len(x[1]), x[0])):
+        values.append(ch)
+        l = len(code)
+        if l not in length_count:
+            length_count[l] = 0
+        length_count[l] += 1
+        if last_l:
+            renumbered <<= (l - last_l)
+        canonical[ch] = '{0:0{width}b}'.format(renumbered, width=l)
+        if chr(ch) in C_ESCAPES:
+            s = C_ESCAPES[chr(ch)]
+        else:
+            s = chr(ch)
+        print("//", ch, s, counts[ch], canonical[ch], renumbered)
+        renumbered += 1
+        last_l = l
+    lengths = bytearray()
+    for i in range(1, max(length_count) + 1):
+        lengths.append(length_count.get(i, 0))
+    print("//", values, lengths)
+    with open(compression_filename, "w") as f:
+        f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
+        f.write("const uint8_t values[256] = {{ {} }};\n".format(", ".join(map(str, values))))
+    return values, lengths
+
+def decompress(encoding_table, length, encoded):
+    values, lengths = encoding_table
+    #print(l, encoded)
+    dec = bytearray(length)
+    this_byte = 0
+    this_bit = 7
+    b = encoded[this_byte]
+    for i in range(length):
+        bits = 0
+        bit_length = 0
+        max_code = lengths[0]
+        searched_length = lengths[0]
+        while True:
+            bits <<= 1
+            if 0x80 & b:
+                bits |= 1
+
+            b <<= 1
+            bit_length += 1
+            if this_bit == 0:
+                this_bit = 7
+                this_byte += 1
+                if this_byte < len(encoded):
+                    b = encoded[this_byte]
+            else:
+                this_bit -= 1
+            if max_code > 0 and bits < max_code:
+                #print('{0:0{width}b}'.format(bits, width=bit_length))
+                break
+            max_code = (max_code << 1) + lengths[bit_length]
+            searched_length += lengths[bit_length]
+
+        v = values[searched_length + bits - max_code]
+        dec[i] = v
+    return dec
+
+def compress(encoding_table, decompressed):
+    if not isinstance(decompressed, bytes):
+        raise TypeError()
+    values, lengths = encoding_table
+    enc = bytearray(len(decompressed))
+    #print(decompressed)
+    #print(lengths)
+    current_bit = 7
+    current_byte = 0
+    for c in decompressed:
+        #print()
+        #print("char", c, values.index(c))
+        start = 0
+        end = lengths[0]
+        bits = 1
+        compressed = None
+        code = 0
+        while compressed is None:
+            s = start
+            e = end
+            #print("{0:0{width}b}".format(code, width=bits))
+            # Binary search!
+            while e > s:
+                midpoint = (s + e) // 2
+                #print(s, e, midpoint)
+                if values[midpoint] == c:
+                    compressed = code + (midpoint - start)
+                    #print("found {0:0{width}b}".format(compressed, width=bits))
+                    break
+                elif c < values[midpoint]:
+                    e = midpoint
+                else:
+                    s = midpoint + 1
+            code += end - start
+            code <<= 1
+            start = end
+            end += lengths[bits]
+            bits += 1
+            #print("next bit", bits)
+
+        for i in range(bits - 1, 0, -1):
+            if compressed & (1 << (i - 1)):
+                enc[current_byte] |= 1 << current_bit
+            if current_bit == 0:
+                current_bit = 7
+                #print("packed {0:0{width}b}".format(enc[current_byte], width=8))
+                current_byte += 1
+            else:
+                current_bit -= 1
+    if current_bit != 7:
+        current_byte += 1
+    return enc[:current_byte]
 
 def qstr_escape(qst):
     def esc_char(m):
@@ -178,7 +317,7 @@ def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     qhash_str = ('\\x%02x' * cfg_bytes_hash) % tuple(((qhash >> (8 * i)) & 0xff) for i in range(cfg_bytes_hash))
     return '(const byte*)"%s%s" "%s"' % (qhash_str, qlen_str, qdata)
 
-def print_qstr_data(qcfgs, qstrs, i18ns):
+def print_qstr_data(encoding_table, qcfgs, qstrs, i18ns):
     # get config variables
     cfg_bytes_len = int(qcfgs['BYTES_IN_LEN'])
     cfg_bytes_hash = int(qcfgs['BYTES_IN_HASH'])
@@ -191,6 +330,7 @@ def print_qstr_data(qcfgs, qstrs, i18ns):
     print('QDEF(MP_QSTR_NULL, (const byte*)"%s%s" "")' % ('\\x00' * cfg_bytes_hash, '\\x00' * cfg_bytes_len))
 
     total_qstr_size = 0
+    total_qstr_compressed_size = 0
     # go through each qstr and print it out
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
         qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
@@ -198,17 +338,23 @@ def print_qstr_data(qcfgs, qstrs, i18ns):
         total_qstr_size += len(qstr)
 
     total_text_size = 0
+    total_text_compressed_size = 0
     for original, translation in i18ns:
-        # Add in carriage returns to work in terminals
-        translation = translation.replace("\n", "\r\n")
-        for s in C_ESCAPES:
-            translation = translation.replace(s, C_ESCAPES[s])
-        print("TRANSLATION(\"{}\", \"{}\")".format(original, translation))
-        total_text_size += len(translation)
+        translation_encoded = translation.encode("utf-8")
+        compressed = compress(encoding_table, translation_encoded)
+        total_text_compressed_size += len(compressed)
+        decompressed = decompress(encoding_table, len(translation_encoded), compressed).decode("utf-8")
+        for c in C_ESCAPES:
+            decompressed.replace(c, C_ESCAPES[c])
+        #print("// \"{}\"".format(translation))
+        print("TRANSLATION(\"{}\", {}, {{ {} }}) // {}".format(original, len(translation_encoded)+1, ", ".join(["0x{:02x}".format(x) for x in compressed]), decompressed))
+        total_text_size += len(translation.encode("utf-8"))
 
     print()
     print("// {} bytes worth of qstr".format(total_qstr_size))
     print("// {} bytes worth of translations".format(total_text_size))
+    print("// {} bytes worth of translations compressed".format(total_text_compressed_size))
+    print("// {} bytes saved".format(total_text_size - total_text_compressed_size))
 
 def print_qstr_enums(qstrs):
     # print out the starter of the generated C header file
@@ -230,12 +376,15 @@ if __name__ == "__main__":
                         help='an integer for the accumulator')
     parser.add_argument('--translation', default=None, type=str,
                         help='translations for i18n() items')
+    parser.add_argument('--compression_filename', default=None, type=str,
+                        help='header for compression info')
 
     args = parser.parse_args()
 
     qcfgs, qstrs, i18ns = parse_input_headers(args.infiles)
     if args.translation:
         translations = translate(args.translation, i18ns)
-        print_qstr_data(qcfgs, qstrs, translations)
+        encoding_table = compute_huffman_coding(translations, qstrs, args.compression_filename)
+        print_qstr_data(encoding_table, qcfgs, qstrs, translations)
     else:
         print_qstr_enums(qstrs)
