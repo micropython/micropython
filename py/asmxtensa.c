@@ -178,8 +178,13 @@ void asm_xtensa_mov_reg_local(asm_xtensa_t *as, uint reg_dest, int local_num) {
 }
 
 void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_num) {
-    asm_xtensa_op_mov_n(as, reg_dest, ASM_XTENSA_REG_A1);
-    asm_xtensa_op_addi(as, reg_dest, reg_dest, (4 + local_num) * WORD_SIZE);
+    uint off = (4 + local_num) * WORD_SIZE;
+    if (SIGNED_FIT8(off)) {
+        asm_xtensa_op_addi(as, reg_dest, ASM_XTENSA_REG_A1, off);
+    } else {
+        asm_xtensa_op_movi(as, reg_dest, off);
+        asm_xtensa_op_add(as, reg_dest, reg_dest, ASM_XTENSA_REG_A1);
+    }
 }
 
 void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label) {
