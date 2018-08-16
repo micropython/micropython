@@ -103,6 +103,7 @@ void asm_x86_cmp_r32_with_r32(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_test_r8_with_r8(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_test_r32_with_r32(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_setcc_r8(asm_x86_t* as, mp_uint_t jcc_type, int dest_r8);
+void asm_x86_jmp_reg(asm_x86_t *as, int src_r86);
 void asm_x86_jmp_label(asm_x86_t* as, mp_uint_t label);
 void asm_x86_jcc_label(asm_x86_t* as, mp_uint_t jcc_type, mp_uint_t label);
 void asm_x86_entry(asm_x86_t* as, int num_locals);
@@ -111,6 +112,7 @@ void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32);
 void asm_x86_mov_local_to_r32(asm_x86_t* as, int src_local_num, int dest_r32);
 void asm_x86_mov_r32_to_local(asm_x86_t* as, int src_r32, int dest_local_num);
 void asm_x86_mov_local_addr_to_r32(asm_x86_t* as, int local_num, int dest_r32);
+void asm_x86_mov_reg_pcrel(asm_x86_t *as, int dest_r64, mp_uint_t label);
 void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
 
 #if GENERIC_ASM_API
@@ -167,6 +169,7 @@ void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
         asm_x86_cmp_r32_with_r32(as, reg1, reg2); \
         asm_x86_jcc_label(as, ASM_X86_CC_JE, label); \
     } while (0)
+#define ASM_JUMP_REG(as, reg) asm_x86_jmp_reg((as), (reg))
 #define ASM_CALL_IND(as, ptr, idx) asm_x86_call_ind(as, ptr, mp_f_n_args[idx], ASM_X86_REG_EAX)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x86_mov_r32_to_local((as), (reg_src), (local_num))
@@ -175,6 +178,7 @@ void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_x86_mov_local_to_r32((as), (local_num), (reg_dest))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x86_mov_r32_r32((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_x86_mov_local_addr_to_r32((as), (local_num), (reg_dest))
+#define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_x86_mov_reg_pcrel((as), (reg_dest), (label))
 
 #define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))
