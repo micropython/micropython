@@ -69,7 +69,12 @@ void asm_xtensa_entry(asm_xtensa_t *as, int num_locals) {
 
     // adjust the stack-pointer to store a0, a12, a13, a14 and locals, 16-byte aligned
     as->stack_adjust = (((4 + num_locals) * WORD_SIZE) + 15) & ~15;
-    asm_xtensa_op_addi(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, -as->stack_adjust);
+    if (SIGNED_FIT8(-as->stack_adjust)) {
+        asm_xtensa_op_addi(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, -as->stack_adjust);
+    } else {
+        asm_xtensa_op_movi(as, ASM_XTENSA_REG_A9, as->stack_adjust);
+        asm_xtensa_op_sub(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A9);
+    }
 
     // save return value (a0) and callee-save registers (a12, a13, a14)
     asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
@@ -86,7 +91,13 @@ void asm_xtensa_exit(asm_xtensa_t *as) {
     asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
 
     // restore stack-pointer and return
-    asm_xtensa_op_addi(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, as->stack_adjust);
+    if (SIGNED_FIT8(as->stack_adjust)) {
+        asm_xtensa_op_addi(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, as->stack_adjust);
+    } else {
+        asm_xtensa_op_movi(as, ASM_XTENSA_REG_A9, as->stack_adjust);
+        asm_xtensa_op_add(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A9);
+    }
+
     asm_xtensa_op_ret_n(as);
 }
 
