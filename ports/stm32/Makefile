@@ -264,6 +264,13 @@ SRC_C = \
 	adc.c \
 	$(wildcard boards/$(BOARD)/*.c)
 
+ifneq ($(FLASH_TARBALL),)
+# To populate the initial filesystem, build a tarball with the filesystem
+# contents and invoke make with FLASH_TARBALL=tarball.tar.gz
+CFLAGS += -DMICROPY_FLASH_TARBALL
+SRC_C += flash_tarball.c
+endif
+
 ifeq ($(MCU_SERIES),f0)
 SRC_O = \
 	$(STARTUP_FILE) \
@@ -535,11 +542,13 @@ GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
 FILE2H = $(TOP)/tools/file2h.py
+BIN2H = $(TOP)/tools/bin2h.py
 
 USB_IDS_FILE = usb.h
 CDCINF_TEMPLATE = pybcdc.inf_template
 GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
 GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
+GEN_TARBALL_HEADER = $(HEADER_BUILD)/flash_tarball.h
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(EXTMOD_SRC_C)
@@ -560,6 +569,9 @@ $(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
 
 # main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
 main.c: $(GEN_CDCINF_HEADER)
+
+# flash_tarball.c requires $(GEN_TARBALL_HEADER) for preprocessing
+flash_tarball.c: $(GEN_TARBALL_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
@@ -596,5 +608,9 @@ $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 $(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
+
+$(GEN_TARBALL_HEADER): $(FLASH_TARBALL)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(BIN2H) $< > $@
 
 include $(TOP)/py/mkrules.mk

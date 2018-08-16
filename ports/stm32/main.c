@@ -215,6 +215,11 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
+        // unpack a tarball for any extra files
+#if MICROPY_FLASH_TARBALL
+        pyb_flash_untar_vfs(vfs_fat);
+#endif
+
         // keep LED on for at least 200ms
         sys_tick_wait_at_least(start_tick, 200);
         led_state(PYB_LED_GREEN, 0);
