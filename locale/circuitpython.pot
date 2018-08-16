@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-16 13:33-0700\n"
+"POT-Creation-Date: 2018-08-16 14:36-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 msgid "I2C operation not supported"
 msgstr ""
 
-#: extmod/machine_mem.c:45
+#: extmod/machine_mem.c:45 ports/unix/modmachine.c:53
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
 msgstr ""
@@ -135,6 +135,10 @@ msgstr ""
 msgid "Read-only filesystem"
 msgstr ""
 
+#: extmod/vfs_posix_file.c:48 ports/unix/file.c:50 py/objstringio.c:43
+msgid "I/O operation on closed file"
+msgstr ""
+
 #: lib/embed/abort_.c:8
 msgid "abort() called"
 msgstr ""
@@ -240,6 +244,7 @@ msgid "No default UART bus"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
+#: ports/nrf/common-hal/analogio/AnalogIn.c:39
 msgid "Pin does not have ADC capabilities"
 msgstr ""
 
@@ -350,6 +355,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/I2C.c:76
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/nrf/common-hal/busio/I2C.c:58
 msgid "Invalid pins"
 msgstr ""
 
@@ -386,6 +392,7 @@ msgid "No TX pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:158
 msgid "Cannot get pull while in output mode"
 msgstr ""
 
@@ -396,6 +403,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
+#: ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
 msgstr ""
 
@@ -452,15 +460,18 @@ msgid "No free GCLKs"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:78
+#: ports/nrf/common-hal/usb_hid/Device.c:45
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
+#: ports/nrf/common-hal/usb_hid/Device.c:53
 msgid "USB Busy"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
+#: ports/nrf/common-hal/usb_hid/Device.c:59
 msgid "USB Error"
 msgstr ""
 
@@ -669,12 +680,33 @@ msgstr ""
 msgid "unknown config param"
 msgstr ""
 
+#: ports/nrf/common-hal/analogio/AnalogOut.c:37
+msgid "AnalogOut functionality not supported"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:45 ports/nrf/common-hal/busio/UART.c:49
+#: ports/nrf/common-hal/busio/UART.c:53 ports/nrf/common-hal/busio/UART.c:62
+#: ports/nrf/common-hal/busio/UART.c:68 ports/nrf/common-hal/busio/UART.c:73
+#: ports/nrf/common-hal/busio/UART.c:78 ports/nrf/common-hal/busio/UART.c:83
+#: ports/nrf/common-hal/busio/UART.c:88
+msgid "busio.UART not yet implemented"
+msgstr ""
+
+#: ports/nrf/common-hal/microcontroller/Processor.c:49
+#, c-format
+msgid "Can not get temperature. status: 0x%02x"
+msgstr ""
+
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:213
 msgid "Cannot set PPCP parameters."
+msgstr ""
+
+#: ports/nrf/drivers/bluetooth/ble_drv.c:245
+msgid "Can not query for the device address."
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
@@ -749,6 +781,42 @@ msgstr ""
 #: ports/nrf/drivers/bluetooth/ble_drv.c:829
 #, c-format
 msgid "Can not connect. status: 0x%02x"
+msgstr ""
+
+#: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
+#: ports/nrf/modules/ubluepy/ubluepy_service.c:80
+#: ports/nrf/modules/ubluepy/ubluepy_service.c:132
+#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
+msgid "Invalid UUID parameter"
+msgstr ""
+
+#: ports/nrf/modules/ubluepy/ubluepy_service.c:73
+msgid "Invalid Service type"
+msgstr ""
+
+#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
+msgid "Invalid UUID string length"
+msgstr ""
+
+#: ports/unix/modffi.c:138
+msgid "Unknown type"
+msgstr ""
+
+#: ports/unix/modffi.c:207 ports/unix/modffi.c:265
+msgid "Error in ffi_prep_cif"
+msgstr ""
+
+#: ports/unix/modffi.c:270
+msgid "ffi_prep_closure_loc"
+msgstr ""
+
+#: ports/unix/modffi.c:413
+msgid "Don't know how to pass object to native function"
+msgstr ""
+
+#: ports/unix/modusocket.c:474
+#, c-format
+msgid "[addrinfo error %d]"
 msgstr ""
 
 #: py/argcheck.c:44
@@ -1581,10 +1649,6 @@ msgstr ""
 
 #: py/objstr.c:2106
 msgid "can't convert '%q' object to %q implicitly"
-msgstr ""
-
-#: py/objstringio.c:43
-msgid "I/O operation on closed file"
 msgstr ""
 
 #: py/objstrunicode.c:134
