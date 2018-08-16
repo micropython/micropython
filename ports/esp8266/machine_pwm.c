@@ -31,6 +31,7 @@
 
 #include "py/runtime.h"
 #include "modmachine.h"
+#include "supervisor/shared/translate.h"
 
 typedef struct _pyb_pwm_obj_t {
     mp_obj_base_t base;
@@ -66,7 +67,7 @@ STATIC void pyb_pwm_init_helper(pyb_pwm_obj_t *self, size_t n_args, const mp_obj
     int channel = pwm_add(self->pin->phys_port, self->pin->periph, self->pin->func);
     if (channel == -1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "PWM not supported on pin %d", self->pin->phys_port));
+            translate("PWM not supported on pin %d"), self->pin->phys_port));
     }
 
     self->channel = channel;

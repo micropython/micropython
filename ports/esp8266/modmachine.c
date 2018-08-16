@@ -35,6 +35,7 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
+#include "supervisor/shared/translate.h"
 
 #include "xtirq.h"
 #include "os_type.h"
@@ -59,7 +60,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
         if (freq != 80 && freq != 160) {
-            mp_raise_ValueError("frequency can only be either 80Mhz or 160MHz");
+            mp_raise_ValueError(translate("frequency can only be either 80Mhz or 160MHz"));
         }
         system_update_cpu_freq(freq);
         return mp_const_none;

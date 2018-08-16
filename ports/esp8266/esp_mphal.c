@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
+#include "supervisor/shared/translate.h"
 
 STATIC byte input_buf_array[256];
 ringbuf_t stdin_ringbuf = {input_buf_array, sizeof(input_buf_array)};
@@ -150,7 +151,7 @@ void ets_event_poll(void) {
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
     printf("assert:%s:%d:%s: %s\n", file, line, func, expr);
     nlr_raise(mp_obj_new_exception_msg(&mp_type_AssertionError,
-        "C-level assert"));
+        translate("C-level assert")));
 }
 
 void mp_hal_signal_input(void) {

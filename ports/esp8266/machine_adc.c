@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 #include "user_interface.h"
 
 const mp_obj_type_t pyb_adc_type;
@@ -53,7 +54,7 @@ STATIC mp_obj_t pyb_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, si
         return &pyb_adc_vdd3;
     default:
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "not a valid ADC Channel: %d", chn));
+            translate("not a valid ADC Channel: %d"), chn));
     }
 }
 

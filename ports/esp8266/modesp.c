@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "supervisor/shared/translate.h"
 #include "uart.h"
 #include "user_interface.h"
 #include "mem.h"
@@ -37,7 +38,7 @@
 
 #define MODESP_INCLUDE_CONSTANTS (1)
 
-void error_check(bool status, const char *msg) {
+void error_check(bool status, const compressed_string_t *msg) {
     if (!status) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, msg));
     }
@@ -115,7 +116,7 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len & 0x3) {
-        mp_raise_ValueError("len must be multiple of 4");
+        mp_raise_ValueError(translate("len must be multiple of 4"));
     }
     SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
     if (res == SPI_FLASH_RESULT_OK) {
@@ -270,7 +271,7 @@ void *esp_native_code_commit(void *buf, size_t len) {
     len = (len + 3) & ~3;
     if (esp_native_code_cur + len > esp_native_code_end) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError,
-            "memory allocation failed, allocating %u bytes for native code", (uint)len));
+            translate("memory allocation failed, allocating %u bytes for native code"), (uint)len));
     }
 
     void *dest;
@@ -313,7 +314,7 @@ STATIC mp_obj_t esp_set_native_code_location(mp_obj_t start_in, mp_obj_t len_in)
         esp_native_code_erased = esp_native_code_start;
         // memory-mapped flash is limited in extents to 1MByte
         if (esp_native_code_end > FLASH_END - FLASH_START) {
-            mp_raise_ValueError("flash location must be below 1MByte");
+            mp_raise_ValueError(translate("flash location must be below 1MByte"));
         }
     }
     return mp_const_none;

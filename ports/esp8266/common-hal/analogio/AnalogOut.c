@@ -24,18 +24,19 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/analogio/AnalogOut.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "py/runtime.h"
-
-#include "shared-bindings/analogio/AnalogOut.h"
+#include "supervisor/shared/translate.h"
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-        "No hardware support for analog out."));
+        translate("No hardware support for analog out.")));
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {

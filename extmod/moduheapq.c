@@ -27,13 +27,15 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_UHEAPQ
 
 // the algorithm here is modelled on CPython's heapq.py
 
 STATIC mp_obj_list_t *get_heap(mp_obj_t heap_in) {
     if (!MP_OBJ_IS_TYPE(heap_in, &mp_type_list)) {
-        mp_raise_TypeError("heap must be a list");
+        mp_raise_TypeError(translate("heap must be a list"));
     }
     return MP_OBJ_TO_PTR(heap_in);
 }
@@ -81,7 +83,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_uheapq_heappush_obj, mod_uheapq_heappush);
 STATIC mp_obj_t mod_uheapq_heappop(mp_obj_t heap_in) {
     mp_obj_list_t *heap = get_heap(heap_in);
     if (heap->len == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "empty heap"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, translate("empty heap")));
     }
     mp_obj_t item = heap->items[0];
     heap->len -= 1;

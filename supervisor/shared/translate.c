@@ -74,7 +74,7 @@ char* decompress(const compressed_string_t* compressed, char* decompressed) {
 inline __attribute__((always_inline)) const compressed_string_t* translate(const char* original) {
     #ifndef NO_QSTR
     #define QDEF(id, str)
-    #define TRANSLATION(id, len, compressed...) if (strcmp(original, id) == 0) { static compressed_string_t v = {.length = len, .data = compressed}; return &v; } else
+    #define TRANSLATION(id, len, compressed...) if (strcmp(original, id) == 0) { static const compressed_string_t v = {.length = len, .data = compressed}; return &v; } else
     #include "genhdr/qstrdefs.generated.h"
     #undef TRANSLATION
     #undef QDEF

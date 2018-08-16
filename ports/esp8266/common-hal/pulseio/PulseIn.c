@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
+#include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/__init__.h"
 
 static void pulsein_set_interrupt(pulseio_pulsein_obj_t *self, bool rising, bool falling) {
@@ -74,7 +75,7 @@ void pulseio_pulsein_interrupt_handler(void *data) {
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state) {
     if (pin->gpio_number == NO_GPIO || pin->gpio_function == SPECIAL_CASE) {
-        mp_raise_msg_varg(&mp_type_ValueError, "No PulseIn support for %q", pin->name );
+        mp_raise_msg_varg(&mp_type_ValueError, translate("No PulseIn support for %q"), pin->name );
     }
     PIN_FUNC_SELECT(pin->peripheral, pin->gpio_function);
     PIN_PULLUP_DIS(pin->peripheral);
@@ -82,7 +83,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 
     self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, "Failed to allocate RX buffer of %d bytes", maxlen * sizeof(uint16_t));
+        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
     }
 
     self->maxlen = maxlen;
@@ -147,7 +148,7 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     if (self->len == 0) {
-        mp_raise_IndexError("pop from an empty PulseIn");
+        mp_raise_IndexError(translate("pop from an empty PulseIn"));
     }
     common_hal_mcu_disable_interrupts();
     uint16_t value = self->buffer[self->start];
@@ -178,7 +179,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self,
     }
     if (index < 0 || index >= self->len) {
         common_hal_mcu_enable_interrupts();
-        mp_raise_IndexError("index out of range");
+        mp_raise_IndexError(translate("index out of range"));
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     common_hal_mcu_enable_interrupts();

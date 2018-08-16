@@ -31,6 +31,8 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_UZLIB
 
 #include "../../lib/uzlib/src/tinf.h"
@@ -92,7 +94,7 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
         dict_opt = uzlib_zlib_parse_header(&o->decomp);
         if (dict_opt < 0) {
 header_error:
-            mp_raise_ValueError("compression header");
+            mp_raise_ValueError(translate("compression header"));
         }
         dict_sz = 1 << dict_opt;
     } else {
