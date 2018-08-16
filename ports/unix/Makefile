@@ -222,7 +222,7 @@ nanbox:
 	BUILD=build-nanbox \
 	PROG=micropython_nanbox \
 	MICROPY_FORCE_32BIT=1 \
-	MICROPY_PY_USSL=0
+	axtls all
 
 freedos:
 	$(MAKE) \
@@ -249,7 +249,7 @@ coverage:
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
 	    FROZEN_DIR=coverage-frzstr FROZEN_MPY_DIR=coverage-frzmpy \
-	    BUILD=build-coverage PROG=micropython_coverage
+	    BUILD=build-coverage PROG=micropython_coverage axtls all
 
 coverage_test: coverage
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))

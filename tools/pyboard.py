@@ -81,7 +81,7 @@ def stdout_write_bytes(b):
     stdout.write(b)
     stdout.flush()
 
-class PyboardError(BaseException):
+class PyboardError(Exception):
     pass
 
 class TelnetToSerial:
