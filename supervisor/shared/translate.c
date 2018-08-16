@@ -71,8 +71,6 @@ char* decompress(const compressed_string_t* compressed, char* decompressed) {
     return decompressed;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-local-addr"
 inline __attribute__((always_inline)) const compressed_string_t* translate(const char* original) {
     #ifndef NO_QSTR
     #define QDEF(id, str)
@@ -83,4 +81,3 @@ inline __attribute__((always_inline)) const compressed_string_t* translate(const
     #endif
     return NULL;
 }
-#pragma GCC diagnostic pop

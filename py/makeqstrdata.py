@@ -11,8 +11,12 @@ import sys
 
 import collections
 import gettext
+import os.path
 
-sys.path.append("../../tools/huffman")
+py = os.path.dirname(sys.argv[0])
+top = os.path.dirname(py)
+
+sys.path.append(os.path.join(top, "tools/huffman"))
 
 import huffman
 
