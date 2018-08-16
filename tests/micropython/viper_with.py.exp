@@ -1,0 +1,9 @@
+__init__
+__enter__
+1
+__exit__ None None None
+__init__
+__enter__
+1
+__exit__ <class 'NameError'> name 'fail' is not defined None
+NameError
