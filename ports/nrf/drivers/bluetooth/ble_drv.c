@@ -242,7 +242,7 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr) {
 
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not query for the device address."));
+                  translate("Can not query for the device address.")));
     }
 
     BLE_DRIVER_LOG("ble address, type: " HEX2_FMT ", " \

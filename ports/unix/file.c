@@ -35,6 +35,7 @@
 #include "py/stream.h"
 #include "py/builtin.h"
 #include "py/mphal.h"
+#include "supervisor/shared/translate.h"
 #include "fdfile.h"
 
 #if MICROPY_PY_IO && !MICROPY_VFS
@@ -46,7 +47,7 @@
 #ifdef MICROPY_CPYTHON_COMPAT
 STATIC void check_fd_is_open(const mp_obj_fdfile_t *o) {
     if (o->fd < 0) {
-        mp_raise_ValueError("I/O operation on closed file");
+        mp_raise_ValueError(translate("I/O operation on closed file"));
     }
 }
 #else
