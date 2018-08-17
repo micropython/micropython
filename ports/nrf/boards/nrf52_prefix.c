@@ -17,13 +17,11 @@
     .af_fn = (af_ptr) \
 }
 
-#define PIN(p_pin, p_af, p_adc_num, p_adc_channel) \
+#define PIN(p_pin, p_af) \
 { \
     { &pin_type }, \
     .name = MP_QSTR_P ## p_pin, \
     .pin = (p_pin), \
     .num_af = (sizeof(p_af) / sizeof(pin_af_obj_t)), \
     .af = p_af, \
-    .adc_num = p_adc_num, \
-    .adc_channel = p_adc_channel, \
 }
