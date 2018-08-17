@@ -59,7 +59,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_DELETE_GLOBAL] = 1,
     [MP_F_NEW_CELL] = 1,
     [MP_F_MAKE_CLOSURE_FROM_RAW_CODE] = 3,
-    [MP_F_SETUP_CODE_STATE] = 5,
+    [MP_F_SETUP_CODE_STATE] = 4,
     [MP_F_SMALL_INT_FLOOR_DIVIDE] = 2,
     [MP_F_SMALL_INT_MODULO] = 2,
 };
