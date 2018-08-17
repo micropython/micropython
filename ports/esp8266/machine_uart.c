@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "supervisor/shared/translate.h"
 #include "modmachine.h"
 
 // UartDev is defined and initialized in rom code.
@@ -104,7 +105,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
             self->bits = 8;
             break;
         default:
-            mp_raise_ValueError("invalid data bits");
+            mp_raise_ValueError(translate("invalid data bits"));
             break;
     }
 
@@ -140,7 +141,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
             self->stop = 2;
             break;
         default:
-            mp_raise_ValueError("invalid stop bits");
+            mp_raise_ValueError(translate("invalid stop bits"));
             break;
     }
 
@@ -165,7 +166,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     // get uart id
     mp_int_t uart_id = mp_obj_get_int(args[0]);
     if (uart_id != 0 && uart_id != 1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, translate("UART(%d) does not exist"), uart_id));
     }
 
     // create instance
@@ -215,7 +216,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->uart_id == 1) {
-        mp_raise_msg(&mp_type_OSError, "UART(1) can't read");
+        mp_raise_msg(&mp_type_OSError, translate("UART(1) can't read"));
     }
 
     // make sure we want at least 1 char

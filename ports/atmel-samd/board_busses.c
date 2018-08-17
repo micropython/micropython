@@ -29,13 +29,14 @@
 #include "shared-bindings/busio/UART.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/translate.h"
 #include "mpconfigboard.h"
 #include "samd/pins.h"
 #include "py/runtime.h"
 
 #if !defined(DEFAULT_I2C_BUS_SDA) || !defined(DEFAULT_I2C_BUS_SCL)
     STATIC mp_obj_t board_i2c(void) {
-        mp_raise_NotImplementedError("No default I2C bus");
+        mp_raise_NotImplementedError(translate("No default I2C bus"));
         return NULL;
     }
 #else
@@ -60,7 +61,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 #if !defined(DEFAULT_SPI_BUS_SCK) || !defined(DEFAULT_SPI_BUS_MISO) || !defined(DEFAULT_SPI_BUS_MOSI)
     STATIC mp_obj_t board_spi(void) {
-        mp_raise_NotImplementedError("No default SPI bus");
+        mp_raise_NotImplementedError(translate("No default SPI bus"));
         return NULL;
     }
 #else
@@ -87,7 +88,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
 
 #if !defined(DEFAULT_UART_BUS_RX) || !defined(DEFAULT_UART_BUS_TX)
     STATIC mp_obj_t board_uart(void) {
-        mp_raise_NotImplementedError("No default UART bus");
+        mp_raise_NotImplementedError(translate("No default UART bus"));
         return NULL;
     }
 #else

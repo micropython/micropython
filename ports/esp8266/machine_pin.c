@@ -39,6 +39,8 @@
 #include "extmod/virtpin.h"
 #include "modmachine.h"
 
+#include "supervisor/shared/translate.h"
+
 #define GET_TRIGGER(phys_port) \
     GPIO_PIN_INT_TYPE_GET(GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)))
 #define SET_TRIGGER(phys_port, trig) \
@@ -124,7 +126,7 @@ void pin_intr_handler(uint32_t status) {
 
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
     if (mp_obj_get_type(pin_in) != &pyb_pin_type) {
-        mp_raise_ValueError("expecting a pin");
+        mp_raise_ValueError(translate("expecting a pin"));
     }
     pyb_pin_obj_t *self = pin_in;
     return self;
@@ -279,7 +281,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, size_t n_args, cons
         // only pull-down seems to be supported by the hardware, and
         // we only expose pull-up behaviour in software
         if (pull != GPIO_PULL_NONE) {
-            mp_raise_ValueError("Pin(16) doesn't support pull");
+            mp_raise_ValueError(translate("Pin(16) doesn't support pull"));
         }
     } else {
         PIN_FUNC_SELECT(self->periph, self->func);
@@ -318,7 +320,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
         pin = (pyb_pin_obj_t*)&pyb_pin_obj[wanted_pin];
     }
     if (pin == NULL || pin->base.type == NULL) {
-        mp_raise_ValueError("invalid pin");
+        mp_raise_ValueError(translate("invalid pin"));
     }
 
     if (n_args > 1 || n_kw > 0) {
@@ -384,7 +386,7 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (self->phys_port >= 16) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "pin does not have IRQ capabilities"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("pin does not have IRQ capabilities")));
     }
 
     if (n_args > 1 || kw_args->used != 0) {

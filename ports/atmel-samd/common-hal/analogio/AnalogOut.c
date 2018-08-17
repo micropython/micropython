@@ -46,7 +46,7 @@
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
     #if defined(SAMD21) && !defined(PIN_PA02)
-    mp_raise_NotImplementedError("No DAC on chip");
+    mp_raise_NotImplementedError(translate("No DAC on chip"));
     #else
     if (pin->number != PIN_PA02
     #ifdef SAMD51

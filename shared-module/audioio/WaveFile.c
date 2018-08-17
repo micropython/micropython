@@ -84,7 +84,7 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
     }
     // Get the sample_rate
     self->sample_rate = format.sample_rate;
-    self->len = 512;
+    self->len = 256;
     self->channel_count = format.num_channels;
     self->bits_per_sample = format.bits_per_sample;
 
@@ -114,13 +114,13 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
     self->buffer = m_malloc(self->len, false);
     if (self->buffer == NULL) {
         common_hal_audioio_wavefile_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
+        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate first buffer"));
     }
 
     self->second_buffer = m_malloc(self->len, false);
     if (self->second_buffer == NULL) {
         common_hal_audioio_wavefile_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
+        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate second buffer"));
     }
 }
 

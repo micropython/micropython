@@ -33,13 +33,14 @@
 #include "py/mphal.h"
 #include "common-hal/microcontroller/__init__.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "supervisor/shared/translate.h"
 
 #include "user_interface.h"
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (pin != &pin_TOUT) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin %q does not have ADC capabilities", pin->name));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, translate("Pin %q does not have ADC capabilities"), pin->name));
     }
     claim_pin(pin);
 }

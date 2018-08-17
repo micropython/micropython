@@ -27,6 +27,7 @@
 #include "common-hal/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/busio/UART.h"
+#include "supervisor/shared/translate.h"
 
 #include "ets_sys.h"
 #include "uart.h"
@@ -41,7 +42,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
         uint8_t receiver_buffer_size) {
     if (rx != mp_const_none || tx != &pin_GPIO2) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Only tx supported on UART1 (GPIO2)."));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("Only tx supported on UART1 (GPIO2).")));
     }
 
     // set baudrate
@@ -63,7 +64,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             UartDev.data_bits = UART_EIGHT_BITS;
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid data bits"));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, translate("invalid data bits")));
             break;
     }
 
@@ -87,7 +88,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             UartDev.stop_bits = UART_TWO_STOP_BIT;
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid stop bits"));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, translate("invalid stop bits")));
             break;
     }
 

@@ -35,7 +35,7 @@
 static void check_not_unicode(const mp_obj_t arg) {
 #if MICROPY_CPYTHON_COMPAT
     if (MP_OBJ_IS_STR(arg)) {
-        mp_raise_TypeError("a bytes-like object is required");
+        mp_raise_TypeError(translate("a bytes-like object is required"));
     }
 #endif
 }
@@ -87,7 +87,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     if ((bufinfo.len & 1) != 0) {
-        mp_raise_ValueError("odd-length string");
+        mp_raise_ValueError(translate("odd-length string"));
     }
     vstr_t vstr;
     vstr_init_len(&vstr, bufinfo.len / 2);
@@ -98,7 +98,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
         if (unichar_isxdigit(hex_ch)) {
             hex_byte += unichar_xdigit_value(hex_ch);
         } else {
-            mp_raise_ValueError("non-hex digit found");
+            mp_raise_ValueError(translate("non-hex digit found"));
         }
         if (i & 1) {
             hex_byte <<= 4;
@@ -166,7 +166,7 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
     }
 
     if (nbits) {
-        mp_raise_ValueError("incorrect padding");
+        mp_raise_ValueError(translate("incorrect padding"));
     }
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);

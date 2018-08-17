@@ -24,17 +24,17 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/analogio/AnalogOut.h"
+
 #include <stdint.h>
 #include <string.h>
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
-
-#include "shared-bindings/analogio/AnalogOut.h"
-
+#include "supervisor/shared/translate.h"
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self, const mcu_pin_obj_t *pin) {
-    mp_raise_RuntimeError("AnalogOut functionality not supported");
+    mp_raise_RuntimeError(translate("AnalogOut functionality not supported"));
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
