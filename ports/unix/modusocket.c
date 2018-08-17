@@ -45,6 +45,8 @@
 #include "py/builtin.h"
 #include "py/mphal.h"
 
+#include "supervisor/shared/translate.h"
+
 /*
   The idea of this module is to implement reasonable minimum of
   socket-related functions to write typical clients and servers.
@@ -469,7 +471,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 
     if (res != 0) {
         // CPython: socket.gaierror
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, translate("[addrinfo error %d]"), res));
     }
     assert(addr_list);
 

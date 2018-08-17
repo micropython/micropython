@@ -102,20 +102,6 @@ const mp_obj_module_t mp_module_uerrno = {
 };
 
 const char* mp_errno_to_str(mp_obj_t errno_val) {
-    // For commonly encountered errors, return human readable strings
-    if (MP_OBJ_IS_SMALL_INT(errno_val)) {
-        switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
-            case EPERM:  return translate("Permission denied");
-            case ENOENT: return translate("No such file/directory");
-            case EIO:    return translate("Input/output error");
-            case EACCES: return translate("Permission denied");
-            case EEXIST: return translate("File exists");
-            case ENODEV: return translate("Unsupported operation");
-            case EINVAL: return translate("Invalid argument");
-            case EROFS:  return translate("Read-only filesystem");
-        }
-    }
-
     // Otherwise, return the Exxxx string for that error code
     #if MICROPY_PY_UERRNO_ERRORCODE
     // We have the errorcode dict so can do a lookup using the hash map
@@ -148,3 +134,21 @@ const char* mp_errno_to_str(mp_obj_t errno_val) {
 }
 
 #endif //MICROPY_PY_UERRNO
+
+
+// For commonly encountered errors, return human readable strings
+const compressed_string_t* mp_common_errno_to_str(mp_obj_t errno_val) {
+    if (MP_OBJ_IS_SMALL_INT(errno_val)) {
+        switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
+            case EPERM:  return translate("Permission denied");
+            case ENOENT: return translate("No such file/directory");
+            case EIO:    return translate("Input/output error");
+            case EACCES: return translate("Permission denied");
+            case EEXIST: return translate("File exists");
+            case ENODEV: return translate("Unsupported operation");
+            case EINVAL: return translate("Invalid argument");
+            case EROFS:  return translate("Read-only filesystem");
+        }
+    }
+    return NULL;
+}

@@ -148,11 +148,11 @@ overflow:
 value_error:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_ValueError,
-            "invalid syntax for integer");
+            translate("invalid syntax for integer"));
         raise_exc(exc, lex);
     } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
         mp_obj_t exc = mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "invalid syntax for integer with base %d", base);
+            translate("invalid syntax for integer with base %d"), base);
         raise_exc(exc, lex);
     } else {
         vstr_t vstr;
@@ -328,7 +328,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
     }
 #else
     if (imag || force_complex) {
-        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "complex values not supported"), lex);
+        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, translate("complex values not supported")), lex);
     }
 #endif
     else {
@@ -336,9 +336,9 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
     }
 
 value_error:
-    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid syntax for number"), lex);
+    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, translate("invalid syntax for number")), lex);
 
 #else
-    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "decimal numbers not supported"), lex);
+    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, translate("decimal numbers not supported")), lex);
 #endif
 }

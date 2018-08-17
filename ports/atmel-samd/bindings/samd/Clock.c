@@ -132,9 +132,9 @@ STATIC mp_obj_t samd_clock_set_calibration(mp_obj_t self_in, mp_obj_t calibratio
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = clock_set_calibration(self->type, self->index, mp_obj_get_int(calibration));
     if (ret == -2)
-        mp_raise_AttributeError("calibration is read only");
+        mp_raise_AttributeError(translate("calibration is read only"));
     if (ret == -1)
-        mp_raise_ValueError("calibration is out of range");
+        mp_raise_ValueError(translate("calibration is out of range"));
     return mp_const_none;
 }
 

@@ -31,6 +31,7 @@
 
 #if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
 
+#include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>

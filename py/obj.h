@@ -34,6 +34,8 @@
 #include "py/mpprint.h"
 #include "py/runtime0.h"
 
+#include "supervisor/shared/translate.h"
+
 // This is the definition of the opaque MicroPython object type.
 // All concrete objects have an encoding within this type and the
 // particular encoding is specified by MICROPY_OBJ_REPR.
@@ -639,9 +641,9 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
-mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
-mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const char *fmt, va_list ap); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list ap); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_viper(size_t n_args, void *fun_data, mp_uint_t type_sig);

@@ -29,6 +29,8 @@
 
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_UHASHLIB
 
 #if MICROPY_PY_UHASHLIB_SHA256
@@ -97,7 +99,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 static void check_not_unicode(const mp_obj_t arg) {
 #if MICROPY_CPYTHON_COMPAT
     if (MP_OBJ_IS_STR(arg)) {
-        mp_raise_TypeError("a bytes-like object is required");
+        mp_raise_TypeError(translate("a bytes-like object is required"));
     }
 #endif
 }

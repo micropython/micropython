@@ -80,3 +80,6 @@
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb.git
 	branch = develop
+[submodule "tools/huffman"]
+	path = tools/huffman
+	url = https://github.com/tannewt/huffman.git

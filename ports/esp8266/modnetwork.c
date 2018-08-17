@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
+#include "supervisor/shared/translate.h"
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"
@@ -46,7 +47,7 @@ typedef struct _wlan_if_obj_t {
     int if_id;
 } wlan_if_obj_t;
 
-void error_check(bool status, const char *msg);
+void error_check(bool status, const compressed_string_t *msg);
 const mp_obj_type_t wlan_if_type;
 
 STATIC const wlan_if_obj_t wlan_objs[] = {
@@ -57,7 +58,7 @@ STATIC const wlan_if_obj_t wlan_objs[] = {
 STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(wlan_if);
     if (self->if_id != if_no) {
-        error_check(false, if_no == STATION_IF ? "STA required" : "AP required");
+        error_check(false, if_no == STATION_IF ? translate("STA required") : translate("AP required"));
     }
 }
 
@@ -83,7 +84,7 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
         } else {
             mode &= ~mask;
         }
-        error_check(wifi_set_opmode(mode), "Cannot update i/f status");
+        error_check(wifi_set_opmode(mode), translate("Cannot update i/f status"));
         return mp_const_none;
     }
 
@@ -138,9 +139,9 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     }
 
     if (set_config) {
-        error_check(wifi_station_set_config(&config), "Cannot set STA config");
+        error_check(wifi_station_set_config(&config), translate("Cannot set STA config"));
     }
-    error_check(wifi_station_connect(), "Cannot connect to AP");
+    error_check(wifi_station_connect(), translate("Cannot connect to AP"));
 
     return mp_const_none;
 }
@@ -148,7 +149,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
-    error_check(wifi_station_disconnect(), "Cannot disconnect from AP");
+    error_check(wifi_station_disconnect(), translate("Cannot disconnect from AP"));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
@@ -169,7 +170,7 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
                     return MP_OBJ_NEW_SMALL_INT(wifi_station_get_rssi());
                 }
         }
-        mp_raise_ValueError("unknown status param");
+        mp_raise_ValueError(translate("unknown status param"));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
@@ -218,7 +219,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
     if ((wifi_get_opmode() & STATION_MODE) == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "STA must be active"));
+            translate("STA must be active")));
     }
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
@@ -235,7 +236,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
         ets_loop_iter();
     }
     if (list == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "scan failed"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("scan failed")));
     }
     return list;
 }
@@ -302,7 +303,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         }
         if (!wifi_set_ip_info(self->if_id, &info)) {
           nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "wifi_set_ip_info() failed"));
+            translate("wifi_set_ip_info() failed")));
         }
         dns_setserver(0, &dns_addr);
         if (restart_dhcp_server) {
@@ -315,7 +316,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig)
 
 STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
-        mp_raise_TypeError("either pos or kw args are allowed");
+        mp_raise_TypeError(translate("either pos or kw args are allowed"));
     }
 
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -325,9 +326,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     } cfg;
 
     if (self->if_id == STATION_IF) {
-        error_check(wifi_station_get_config(&cfg.sta), "can't get STA config");
+        error_check(wifi_station_get_config(&cfg.sta), translate("can't get STA config"));
     } else {
-        error_check(wifi_softap_get_config(&cfg.ap), "can't get AP config");
+        error_check(wifi_softap_get_config(&cfg.ap), translate("can't get AP config"));
     }
 
     int req_if = -1;
@@ -342,7 +343,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
                         if (bufinfo.len != 6) {
-                            mp_raise_ValueError("invalid buffer length");
+                            mp_raise_ValueError(translate("invalid buffer length"));
                         }
                         wifi_set_macaddr(self->if_id, bufinfo.buf);
                         break;
@@ -401,9 +402,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
 
         if (self->if_id == STATION_IF) {
-            error_check(wifi_station_set_config(&cfg.sta), "can't set STA config");
+            error_check(wifi_station_set_config(&cfg.sta), translate("can't set STA config"));
         } else {
-            error_check(wifi_softap_set_config(&cfg.ap), "can't set AP config");
+            error_check(wifi_softap_set_config(&cfg.ap), translate("can't set AP config"));
         }
 
         return mp_const_none;
@@ -412,7 +413,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     // Get config
 
     if (n_args != 2) {
-        mp_raise_TypeError("can query only one param");
+        mp_raise_TypeError(translate("can query only one param"));
     }
 
     mp_obj_t val;
@@ -465,7 +466,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     return val;
 
 unknown:
-    mp_raise_ValueError("unknown config param");
+    mp_raise_ValueError(translate("unknown config param"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 

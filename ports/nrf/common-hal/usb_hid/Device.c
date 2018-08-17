@@ -29,6 +29,7 @@
 #include "common-hal/usb_hid/Device.h"
 #include "py/runtime.h"
 #include "shared-bindings/usb_hid/Device.h"
+#include "supervisor/shared/translate.h"
 #include "tusb.h"
 
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
@@ -41,7 +42,7 @@ uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
 
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
     if (len != self->report_length) {
-        mp_raise_ValueError_varg("Buffer incorrect size. Should be %d bytes.", self->report_length);
+        mp_raise_ValueError_varg(translate("Buffer incorrect size. Should be %d bytes."), self->report_length);
     }
 
     // Wait until interface is ready, timeout = 2 seconds
@@ -49,13 +50,13 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* 
     while ( (ticks_ms < end_ticks) && !tud_hid_generic_ready() ) { }
 
     if ( !tud_hid_generic_ready() ) {
-        mp_raise_msg(&mp_type_OSError,  "USB Busy");
+        mp_raise_msg(&mp_type_OSError,  translate("USB Busy"));
     }
 
     memcpy(self->report_buffer, report, len);
 
     if ( !tud_hid_generic_report(self->report_id, self->report_buffer, len) ) {
-        mp_raise_msg(&mp_type_OSError, "USB Error");
+        mp_raise_msg(&mp_type_OSError, translate("USB Error"));
     }
 }
 
@@ -85,4 +86,3 @@ void tud_hid_generic_set_report_cb(uint8_t report_id, hid_report_type_t report_t
         }
     }
 }
-
