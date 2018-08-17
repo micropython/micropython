@@ -9,7 +9,7 @@ def f():
     print(sys.exc_info()[0:2])
 
 try:
-    1/0
+    raise ValueError('value', 123)
 except:
     print(sys.exc_info()[0:2])
     f()
