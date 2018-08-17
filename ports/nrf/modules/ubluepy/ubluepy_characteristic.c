@@ -26,6 +26,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
 
@@ -64,7 +65,7 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
         // (void)sd_characterstic_add(s);
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Invalid UUID parameter"));
+                  translate("Invalid UUID parameter")));
     }
 
     if (args[1].u_int > 0) {

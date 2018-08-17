@@ -1539,7 +1539,7 @@ NORETURN void m_malloc_fail(size_t num_bytes) {
         translate("memory allocation failed, allocating %u bytes"), (uint)num_bytes);
 }
 
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
     } else {
@@ -1547,7 +1547,7 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
     }
 }
 
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
@@ -1555,27 +1555,27 @@ NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, 
     nlr_raise(exception);
 }
 
-NORETURN void mp_raise_AttributeError(const char *msg) {
+NORETURN void mp_raise_AttributeError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_AttributeError, msg);
 }
 
-NORETURN void mp_raise_RuntimeError(const char *msg) {
+NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_RuntimeError, msg);
 }
 
-NORETURN void mp_raise_ImportError(const char *msg) {
+NORETURN void mp_raise_ImportError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_ImportError, msg);
 }
 
-NORETURN void mp_raise_IndexError(const char *msg) {
+NORETURN void mp_raise_IndexError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_IndexError, msg);
 }
 
-NORETURN void mp_raise_ValueError(const char *msg) {
+NORETURN void mp_raise_ValueError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_ValueError, msg);
 }
 
-NORETURN void mp_raise_ValueError_varg(const char *fmt, ...) {
+NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_ValueError, fmt, argptr);
@@ -1583,11 +1583,11 @@ NORETURN void mp_raise_ValueError_varg(const char *fmt, ...) {
     nlr_raise(exception);
 }
 
-NORETURN void mp_raise_TypeError(const char *msg) {
+NORETURN void mp_raise_TypeError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_TypeError, msg);
 }
 
-NORETURN void mp_raise_TypeError_varg(const char *fmt, ...) {
+NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_TypeError, fmt, argptr);
@@ -1600,7 +1600,7 @@ NORETURN void mp_raise_OSError(int errno_) {
 }
 
 
-NORETURN void mp_raise_NotImplementedError(const char *msg) {
+NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 

@@ -156,7 +156,7 @@ STATIC void compile_error_set_line(compiler_t *comp, mp_parse_node_t pn) {
     }
 }
 
-STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
+STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const compressed_string_t *msg) {
     // only register the error if there has been no other error
     if (comp->compile_error == MP_OBJ_NULL) {
         comp->compile_error = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
@@ -949,7 +949,7 @@ STATIC void compile_del_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC void compile_break_cont_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint16_t label;
-    const char *error_msg;
+    const compressed_string_t *error_msg;
     if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_break_stmt) {
         label = comp->break_label;
         error_msg = translate("'break' outside loop");

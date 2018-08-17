@@ -316,7 +316,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_min_obj, 1, mp_builtin_min);
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        mp_raise_msg(&mp_type_StopIteration, "");
+        mp_raise_msg(&mp_type_StopIteration, NULL);
     } else {
         return ret;
     }

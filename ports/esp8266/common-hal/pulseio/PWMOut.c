@@ -31,6 +31,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PWMOut.h"
+#include "supervisor/shared/translate.h"
 
 #include "eagle_soc.h"
 #include "c_types.h"
@@ -50,10 +51,10 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self, const mcu_p
         bool variable_frequency) {
     if (frequency > PWM_FREQ_MAX) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Maximum PWM frequency is %dhz.", PWM_FREQ_MAX));
+            translate("Maximum PWM frequency is %dhz."), PWM_FREQ_MAX));
     } else if (frequency < 1) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "Minimum PWM frequency is 1hz."));
+            translate("Minimum PWM frequency is 1hz.")));
     }
 
     // start the PWM subsystem if it's not already running
@@ -64,7 +65,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self, const mcu_p
         first_channel_variable = variable_frequency;
     } else if (first_channel_variable || pwm_get_freq(0) != frequency) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Multiple PWM frequencies not supported. PWM already set to %dhz.", pwm_get_freq(0)));
+            translate("Multiple PWM frequencies not supported. PWM already set to %dhz."), pwm_get_freq(0)));
     }
 
     self->channel = pwm_add(pin->gpio_number,
@@ -73,7 +74,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self, const mcu_p
     self->pin = pin;
     if (self->channel == -1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "PWM not supported on pin %d", pin->gpio_number));
+            translate("PWM not supported on pin %d"), pin->gpio_number));
     }
 }
 
@@ -109,10 +110,10 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
     if (frequency > PWM_FREQ_MAX) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Maximum PWM frequency is %dhz.", PWM_FREQ_MAX));
+            translate("Maximum PWM frequency is %dhz."), PWM_FREQ_MAX));
     } else if (frequency < 1) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "Minimum PWM frequency is 1hz."));
+            translate("Minimum PWM frequency is 1hz.")));
     }
     pwm_set_freq(frequency, 0);
 }

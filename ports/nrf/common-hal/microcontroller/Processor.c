@@ -26,6 +26,7 @@
 
 #include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
@@ -45,7 +46,7 @@ float common_hal_mcu_processor_get_temperature(void) {
         uint32_t err_code = sd_temp_get(&temp);
         if (err_code != NRF_SUCCESS) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      "Can not get temperature. status: 0x" HEX2_FMT, (uint16_t)err_code));
+                      translate("Can not get temperature. status: 0x%02x"), (uint16_t)err_code));
 
             return 0;
         }

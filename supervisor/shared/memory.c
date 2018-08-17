@@ -43,7 +43,7 @@ void memory_init(void) {
 }
 
 void free_memory(supervisor_allocation* allocation) {
-    uint8_t index = 0;
+    int32_t index = 0;
     bool found = false;
     for (index = 0; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
         found = allocation == &allocations[index];

@@ -197,7 +197,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
     uint8_t tmp[size];
     if (!common_hal_os_urandom(tmp, size)) {
-        mp_raise_NotImplementedError("");
+        mp_raise_NotImplementedError(translate("No hardware random available"));
     }
     return mp_obj_new_bytes(tmp, size);
 }
