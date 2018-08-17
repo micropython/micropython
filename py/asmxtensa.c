@@ -95,7 +95,7 @@ void asm_xtensa_exit(asm_xtensa_t *as) {
         asm_xtensa_op_addi(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, as->stack_adjust);
     } else {
         asm_xtensa_op_movi(as, ASM_XTENSA_REG_A9, as->stack_adjust);
-        asm_xtensa_op_add(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A9);
+        asm_xtensa_op_add_n(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A9);
     }
 
     asm_xtensa_op_ret_n(as);
@@ -183,7 +183,7 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
         asm_xtensa_op_addi(as, reg_dest, ASM_XTENSA_REG_A1, off);
     } else {
         asm_xtensa_op_movi(as, reg_dest, off);
-        asm_xtensa_op_add(as, reg_dest, reg_dest, ASM_XTENSA_REG_A1);
+        asm_xtensa_op_add_n(as, reg_dest, reg_dest, ASM_XTENSA_REG_A1);
     }
 }
 
@@ -206,7 +206,7 @@ void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label) {
     mp_asm_base_get_cur_to_write_bytes(&as->base, pad);
 
     // Add PC to relative offset
-    asm_xtensa_op_add(as, reg_dest, reg_dest, ASM_XTENSA_REG_A0);
+    asm_xtensa_op_add_n(as, reg_dest, reg_dest, ASM_XTENSA_REG_A0);
 }
 
 #endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA

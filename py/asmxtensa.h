@@ -113,8 +113,8 @@ void asm_xtensa_op24(asm_xtensa_t *as, uint32_t op);
 
 // raw instructions
 
-static inline void asm_xtensa_op_add(asm_xtensa_t *as, uint reg_dest, uint reg_src_a, uint reg_src_b) {
-    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 0, 8, reg_dest, reg_src_a, reg_src_b));
+static inline void asm_xtensa_op_add_n(asm_xtensa_t *as, uint reg_dest, uint reg_src_a, uint reg_src_b) {
+    asm_xtensa_op16(as, ASM_XTENSA_ENCODE_RRRN(10, reg_dest, reg_src_a, reg_src_b));
 }
 
 static inline void asm_xtensa_op_addi(asm_xtensa_t *as, uint reg_dest, uint reg_src, int imm8) {
@@ -307,7 +307,7 @@ void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label);
 #define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_or((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_xor((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_and((as), (reg_dest), (reg_dest), (reg_src))
-#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_add((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_add_n((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_sub((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_MUL_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_mull((as), (reg_dest), (reg_dest), (reg_src))
 
