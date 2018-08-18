@@ -15,6 +15,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
 #: extmod/machine_i2c.c:299
 msgid "invalid I2C peripheral"
 msgstr "périphérique I2C invalide"
@@ -75,7 +76,7 @@ msgstr "erreur de syntaxe dans le descripteur d'uctypes"
 
 #: extmod/moductypes.c:219
 msgid "Cannot unambiguously get sizeof scalar"
-msgstr "la taille du scalaire est ambigüe"
+msgstr "Impossible d'obtenir la taille du scalaire sans ambigüité"
 
 #: extmod/moductypes.c:397
 msgid "struct: no fields"
@@ -119,7 +120,7 @@ msgstr "certificat invalide"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr "dépassement de queue"
+msgstr "dépassement de file"
 
 #: extmod/moduzlib.c:97
 msgid "compression header"
@@ -494,7 +495,7 @@ msgstr "Broche invalide pour le SPI"
 
 #: ports/esp8266/common-hal/busio/UART.c:45
 msgid "Only tx supported on UART1 (GPIO2)."
-msgstr "Seul le TX est support sur l'UART1 (GPIO2)."
+msgstr "Seul le TX est supporté sur l'UART1 (GPIO2)."
 
 #: ports/esp8266/common-hal/busio/UART.c:67 ports/esp8266/machine_uart.c:108
 msgid "invalid data bits"
@@ -530,7 +531,7 @@ msgstr "La fréquence de PWM minimale est 1Hz"
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr "Les fréquences de PWM multiples ne sont pas supportées. Déjà réglé à %dHz"
+msgstr "Les fréquences multiples de PWM ne sont pas supportées. Déjà réglé à %dHz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
@@ -635,7 +636,7 @@ msgstr "Impossible de se connecter à 'AP'"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr "Impossible de se connecter à 'AP'"
+msgstr "Impossible de se déconnecter de 'AP'"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
@@ -659,11 +660,11 @@ msgstr "seuls les arguments 'pos' ou 'kw' sont autorisés"
 
 #: ports/esp8266/modnetwork.c:329
 msgid "can't get STA config"
-msgstr "ne peut récupérer de la config de 'STA'"
+msgstr "impossible de récupérer de la config de 'STA'"
 
 #: ports/esp8266/modnetwork.c:331
 msgid "can't get AP config"
-msgstr "ne peut récupérer de la config de 'AP'"
+msgstr "impossible de récupérer de la config de 'AP'"
 
 #: ports/esp8266/modnetwork.c:346
 msgid "invalid buffer length"
@@ -671,15 +672,15 @@ msgstr "longueur de tampon invalide"
 
 #: ports/esp8266/modnetwork.c:405
 msgid "can't set STA config"
-msgstr "ne peut régler la config de 'STA'"
+msgstr "impossible de régler la config de 'STA'"
 
 #: ports/esp8266/modnetwork.c:407
 msgid "can't set AP config"
-msgstr "ne peut régler la config de 'AP'"
+msgstr "impossible de régler la config de 'AP'"
 
 #: ports/esp8266/modnetwork.c:416
 msgid "can query only one param"
-msgstr "ne peut demander qu'un paramètre"
+msgstr "ne peut demander qu'un seul paramètre"
 
 #: ports/esp8266/modnetwork.c:469
 msgid "unknown config param"
@@ -1885,7 +1886,7 @@ msgstr "opération de flux non supportée"
 
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
-msgstr "variable locale référée avant d'être assignée"
+msgstr "variable locale référencée avant d'être assignée"
 
 #: py/vm.c:1142
 msgid "no active exception to reraise"
@@ -2077,7 +2078,7 @@ msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 
 #: shared-bindings/os/__init__.c:200
 msgid "No hardware random available"
-msgstr "Pas de générateur aléatoire matériel disponible"
+msgstr "Pas de source matérielle d'aléa disponible"
 
 #: shared-bindings/pulseio/PWMOut.c:164
 msgid ""
@@ -2244,4 +2245,4 @@ msgstr "'S' et 'O' ne sont pas des types de format supportés"
 
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
-msgstr "trop d'argument fournit avec ce format"
+msgstr "trop d'arguments fournis avec ce format"
