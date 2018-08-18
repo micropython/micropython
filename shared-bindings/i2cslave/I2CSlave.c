@@ -95,16 +95,16 @@ STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         mp_int_t value;
         if (!mp_obj_get_int_maybe(item, &value)) {
-            mp_raise_TypeError("can't convert address to int");
+            mp_raise_TypeError(translate("can't convert address to int"));
         }
         if (value < 0x00 || value > 0x7f) {
-            mp_raise_ValueError("address out of bounds");
+            mp_raise_ValueError(translate("address out of bounds"));
         }
         addresses = m_renew(uint8_t, addresses, i, i + 1);
         addresses[i++] = value;
     }
     if (i == 0) {
-        mp_raise_ValueError("addresses is empty");
+        mp_raise_ValueError(translate("addresses is empty"));
     }
 
     common_hal_i2cslave_i2c_slave_construct(self, scl, sda, addresses, i, args[ARG_smbus].u_bool);

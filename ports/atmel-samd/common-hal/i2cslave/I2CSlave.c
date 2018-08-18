@@ -42,7 +42,7 @@ void common_hal_i2cslave_i2c_slave_construct(i2cslave_i2c_slave_obj_t *self,
     uint32_t sda_pinmux, scl_pinmux;
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
     if (sercom == NULL) {
-        mp_raise_ValueError("Invalid pins");
+        mp_raise_ValueError(translate("Invalid pins"));
     }
     self->sercom = sercom;
 
