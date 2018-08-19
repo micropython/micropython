@@ -126,6 +126,7 @@
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #if MICROPY_PY_USSL
+#define MICROPY_PY_UHASHLIB_MD5     (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #define MICROPY_PY_UCRYPTOLIB       (1)
 #endif
