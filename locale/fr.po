@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-12 11:01+0200\n"
+"POT-Creation-Date: 2018-08-20 09:37-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -189,8 +189,9 @@ msgstr "Pour quitter, redémarrez la carte SVP sans "
 #: main.c:249
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
-msgstr "Vous êtes en mode sans-échec ce qui signifie que quelque chose de"
-"mauvais est arrivé.\n"
+msgstr ""
+"Vous êtes en mode sans-échec ce qui signifie que quelque chose demauvais est "
+"arrivé.\n"
 
 #: main.c:251
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
@@ -213,8 +214,8 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"assez de puissance pour l'ensemble du circuit et appuyez sur 'reset' "
-"(après avoir éjecter CIRCUITPY).\n"
+"assez de puissance pour l'ensemble du circuit et appuyez sur 'reset' (après "
+"avoir éjecter CIRCUITPY).\n"
 
 #: main.c:260
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -297,12 +298,12 @@ msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:322
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:324
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
@@ -354,22 +355,23 @@ msgstr "Tous les timers sont utilisés"
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:45
+#: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
 msgstr "Pas assez de broches disponibles"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:76
+#: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:58
 msgid "Invalid pins"
 msgstr "Broche invalide"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:99
+#: ports/atmel-samd/common-hal/busio/I2C.c:101
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:119
+#: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
 msgstr "Débit non supporté"
 
@@ -405,7 +407,8 @@ msgstr "Ne peux être tirer ('pull') en mode 'output'"
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
+msgstr ""
+"Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
@@ -531,7 +534,8 @@ msgstr "La fréquence de PWM minimale est 1Hz"
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr "Les fréquences multiples de PWM ne sont pas supportées. Déjà réglé à %dHz"
+msgstr ""
+"Les fréquences multiples de PWM ne sont pas supportées. Déjà réglé à %dHz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
@@ -548,7 +552,8 @@ msgstr "Impossible de remonter le système de fichiers"
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr "Utilisez 'esptool' pour effacer la flash et rechargez Python à la place"
+msgstr ""
+"Utilisez 'esptool' pour effacer la flash et rechargez Python à la place"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -604,7 +609,8 @@ msgstr "'len' doit être un multiple de 4"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr "l'allocation de mémoire a échoué en allouant %u octets pour un code natif"
+msgstr ""
+"l'allocation de mémoire a échoué en allouant %u octets pour un code natif"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
@@ -862,7 +868,8 @@ msgstr "argument num/types ne correspond pas"
 
 #: py/argcheck.c:147
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr "argument(s) nommé(s) pas encore implémenté - utilisez les arguments normaux"
+msgstr ""
+"argument(s) nommé(s) pas encore implémenté - utilisez les arguments normaux"
 
 #: py/bc.c:88 py/objnamedtuple.c:108
 msgid "%q() takes %d positional arguments but %d were given"
@@ -1415,7 +1422,9 @@ msgstr "valeurs complexes non supportées"
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
-msgstr "on ne peut envoyer une valeur différente de None à un générateur fraîchement démarré"
+msgstr ""
+"on ne peut envoyer une valeur différente de None à un générateur fraîchement "
+"démarré"
 
 #: py/objgenerator.c:126
 msgid "generator already executing"
@@ -1570,7 +1579,8 @@ msgstr "':' attendu après la spécification de format"
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
-"impossible de passer d'une énumération auto des champs à une spécification manuelle"
+"impossible de passer d'une énumération auto des champs à une spécification "
+"manuelle"
 
 #: py/objstr.c:1055 py/objstr.c:1083
 msgid "tuple index out of range"
@@ -1584,7 +1594,8 @@ msgstr "attribut pas encore supporté"
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
-"impossible de passer d'une spécification manuelle des champs à une énumération auto"
+"impossible de passer d'une spécification manuelle des champs à une "
+"énumération auto"
 
 #: py/objstr.c:1171
 msgid "invalid format specifier"
@@ -1649,7 +1660,8 @@ msgstr "caractère de format '%c' (0x%x) non supporté à l'index %d"
 
 #: py/objstr.c:1577
 msgid "not all arguments converted during string formatting"
-msgstr "tous les arguments n'ont pas été convertis pendant le formatage de la chaîne"
+msgstr ""
+"tous les arguments n'ont pas été convertis pendant le formatage de la chaîne"
 
 #: py/objstr.c:2102
 msgid "can't convert to str implicitly"
@@ -1704,7 +1716,8 @@ msgstr "ne peut pas créer une instance de '%q'"
 
 #: py/objtype.c:1047
 msgid "can't add special method to already-subclassed class"
-msgstr "impossible d'ajouter une méthode spécial à une classe déjà sous-classée"
+msgstr ""
+"impossible d'ajouter une méthode spécial à une classe déjà sous-classée"
 
 #: py/objtype.c:1091 py/objtype.c:1097
 msgid "type is not an acceptable base type"
@@ -1728,7 +1741,8 @@ msgstr "le premier argument de super() doit être un type"
 
 #: py/objtype.c:1370
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
-msgstr "l'argument 2 de issubclass() doit être une classe ou un tuple de classes"
+msgstr ""
+"l'argument 2 de issubclass() doit être une classe ou un tuple de classes"
 
 #: py/objtype.c:1384
 msgid "issubclass() arg 1 must be a class"
@@ -1776,8 +1790,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Fichier .mpy incompatible. Merci de mettre à jour tous les .mpy. Voir http://adafru.it/"
-"mpy-update pour plus d'informations."
+"Fichier .mpy incompatible. Merci de mettre à jour tous les .mpy. Voir http://"
+"adafru.it/mpy-update pour plus d'informations."
 
 #: py/persistentcode.c:326
 msgid "can only save bytecode"
@@ -1918,7 +1932,9 @@ msgstr "tampon de caractères trop petit"
 
 #: shared-bindings/analogio/AnalogOut.c:118
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut est seulement 16 bits. Les valeurs doivent être inférieures à 65536."
+msgstr ""
+"AnalogOut est seulement 16 bits. Les valeurs doivent être inférieures à "
+"65536."
 
 #: shared-bindings/audiobusio/I2SOut.c:225
 #: shared-bindings/audioio/AudioOut.c:223
@@ -1951,7 +1967,8 @@ msgstr "La capacité de la cible est plus petite que destination_length."
 
 #: shared-bindings/audiobusio/PDMIn.c:206
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr "le tampon de destination doit être un tableau de type 'H' pour bit_depth = 16"
+msgstr ""
+"le tampon de destination doit être un tableau de type 'H' pour bit_depth = 16"
 
 #: shared-bindings/audiobusio/PDMIn.c:208
 msgid ""
@@ -1964,8 +1981,8 @@ msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
-"le tampon de sample_source doit être un bytearray ou un tableau de type 'h',"
-"'H', 'b' ou 'B'"
+"le tampon de sample_source doit être un bytearray ou un tableau de type "
+"'h','H', 'b' ou 'B'"
 
 #: shared-bindings/audioio/RawSample.c:104
 msgid "buffer must be a bytes-like object"
@@ -2042,6 +2059,19 @@ msgstr "trop d'arguments"
 msgid "expected a DigitalInOut"
 msgstr "un objet DigitalInOut attendu"
 
+#: shared-bindings/i2cslave/I2CSlave.c:98
+#, fuzzy
+msgid "can't convert address to int"
+msgstr "ne peut convertir %s en entier int"
+
+#: shared-bindings/i2cslave/I2CSlave.c:101
+msgid "address out of bounds"
+msgstr ""
+
+#: shared-bindings/i2cslave/I2CSlave.c:107
+msgid "addresses is empty"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:75
@@ -2084,13 +2114,15 @@ msgstr "Pas de source matérielle d'aléa disponible"
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
-"La valeur de cycle PWM doit être entre 0 et 65535 inclus (résolution de 16 bits)"
+"La valeur de cycle PWM doit être entre 0 et 65535 inclus (résolution de 16 "
+"bits)"
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
 "PWM frequency not writeable when variable_frequency is False on construction."
-msgstr "La fréquence de PWM n'est pas modifiable quand variable_frequency est False à la"
-"construction."
+msgstr ""
+"La fréquence de PWM n'est pas modifiable quand variable_frequency est False "
+"à laconstruction."
 
 #: shared-bindings/pulseio/PulseIn.c:275
 msgid "Cannot delete values"
@@ -2181,7 +2213,8 @@ msgstr "le seuil doit être dans la gamme 0-65536"
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"L'objet a été désinitialisé et ne peut plus être utilisé. Créez un nouvel objet."
+"L'objet a été désinitialisé et ne peut plus être utilisé. Créez un nouvel "
+"objet."
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"

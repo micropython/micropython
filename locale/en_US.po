@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-16 14:36-0700\n"
+"POT-Creation-Date: 2018-08-20 09:37-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -348,22 +348,23 @@ msgstr ""
 msgid "All event channels in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:45
+#: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:76
+#: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:58
 msgid "Invalid pins"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:99
+#: ports/atmel-samd/common-hal/busio/I2C.c:101
 msgid "SDA or SCL needs a pull up"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:119
+#: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
 msgstr ""
 
@@ -2027,6 +2028,18 @@ msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:104
 msgid "expected a DigitalInOut"
+msgstr ""
+
+#: shared-bindings/i2cslave/I2CSlave.c:98
+msgid "can't convert address to int"
+msgstr ""
+
+#: shared-bindings/i2cslave/I2CSlave.c:101
+msgid "address out of bounds"
+msgstr ""
+
+#: shared-bindings/i2cslave/I2CSlave.c:107
+msgid "addresses is empty"
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
