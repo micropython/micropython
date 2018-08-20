@@ -61,7 +61,6 @@ INC += -I$(BUILD)
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_priv
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
->>>>>>> upstream/master
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
