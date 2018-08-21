@@ -9,7 +9,7 @@ BOOT_SETTING_ADDR = 0xFF000
 ifeq ($(SD),)
 	LD_FILE = boards/nrf52840_1M_256k.ld
 else
-	LD_FILE = boards/bluefruit_$(MCU_SUB_VARIANT)_$(SD_LOWER)_$(SOFTDEV_VERSION).ld
+	LD_FILE = boards/adafruit_$(MCU_SUB_VARIANT)_$(SD_LOWER)_v$(firstword $(subst ., ,$(SOFTDEV_VERSION))).ld
 endif
 
 NRF_DEFINES += -DNRF52840_XXAA
