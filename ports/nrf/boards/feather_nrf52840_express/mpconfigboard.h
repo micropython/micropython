@@ -31,18 +31,18 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "Feather52840"
 
-#define MICROPY_HW_NEOPIXEL         NRF_GPIO_PIN_MAP(0, 13)
+// #define MICROPY_HW_NEOPIXEL         NRF_GPIO_PIN_MAP(0, 13)
 
-#define MICROPY_QSPI_DATA0          NRF_GPIO_PIN_MAP(1, 9)
-#define MICROPY_QSPI_DATA1          NRF_GPIO_PIN_MAP(0, 11)
-#define MICROPY_QSPI_DATA2          NRF_GPIO_PIN_MAP(0, 12)
-#define MICROPY_QSPI_DATA3          NRF_GPIO_PIN_MAP(0, 14)
-#define MICROPY_QSPI_SCK            NRF_GPIO_PIN_MAP(0, 8)
-#define MICROPY_QSPI_CS             NRF_GPIO_PIN_MAP(1, 8)
+// #define MICROPY_QSPI_DATA0          NRF_GPIO_PIN_MAP(1, 9)
+// #define MICROPY_QSPI_DATA1          NRF_GPIO_PIN_MAP(0, 11)
+// #define MICROPY_QSPI_DATA2          NRF_GPIO_PIN_MAP(0, 12)
+// #define MICROPY_QSPI_DATA3          NRF_GPIO_PIN_MAP(0, 14)
+// #define MICROPY_QSPI_SCK            NRF_GPIO_PIN_MAP(0, 8)
+// #define MICROPY_QSPI_CS             NRF_GPIO_PIN_MAP(1, 8)
 
-#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
-#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
-#define MICROPY_HW_UART_HWFC        (0)
+// #define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
+// #define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
+// #define MICROPY_HW_UART_HWFC        (0)
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
