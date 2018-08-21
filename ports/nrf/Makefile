@@ -314,10 +314,12 @@ endif
 #####################
 .phony: dfu-gen dfu-flash dfu-bootloader
 
-ifeq ($(OS),Windows_NT)
-   NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
+NRFUTIL = adafruit-nrfutil
+
+ifeq ($(MCU_SUB_VARIANT),nrf52840)
+	DFU_TOUCH = --touch 1200
 else
-   NRFUTIL = nrfutil
+	DFU_TOUCH =
 endif
 
 check_defined = \
@@ -332,7 +334,7 @@ dfu-gen: $(BUILD)/$(OUTPUT_FILENAME).hex
 
 dfu-flash: $(BUILD)/dfu-package.zip
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank
+	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
 
 dfu-bootloader:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)

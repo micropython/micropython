@@ -94,9 +94,12 @@ void usb_init(void) {
 //--------------------------------------------------------------------+
 // tinyusb callbacks
 //--------------------------------------------------------------------+
+
+// Invoked when device is mounted
 void tud_mount_cb(void) {
 }
 
+// Invoked when device is unmounted
 void tud_umount_cb(void) {
 }
 
@@ -105,6 +108,28 @@ uint32_t tusb_hal_millis(void) {
     uint32_t us;
     current_tick(&ms, &us);
     return (uint32_t) ms;
+}
+
+
+// Invoked when cdc when line state changed e.g connected/disconnected
+// Use to reset to DFU when disconnect with 1200 bps
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
+    (void) itf; // interface ID, not used
+
+    // disconnected event
+    if ( !dtr && !rts )
+    {
+        cdc_line_coding_t coding;
+        tud_cdc_get_line_coding(&coding);
+
+        if ( coding.bit_rate == 1200 )
+        {
+            enum { DFU_MAGIC_SERIAL = 0x4e };
+
+            NRF_POWER->GPREGRET = DFU_MAGIC_SERIAL;
+            NVIC_SystemReset();
+        }
+    }
 }
 
 #if MICROPY_KBD_EXCEPTION
