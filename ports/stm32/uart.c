@@ -215,7 +215,11 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
         case PYB_UART_3:
             uart_unit = 3;
             UARTx = USART3;
+            #if !defined(STM32F0)
             irqn = USART3_IRQn;
+            #else
+            irqn = USART3_8_IRQn;
+            #endif
             pins[0] = MICROPY_HW_UART3_TX;
             pins[1] = MICROPY_HW_UART3_RX;
             #if defined(MICROPY_HW_UART3_RTS)
@@ -806,6 +810,14 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         } else if (strcmp(port, MICROPY_HW_UART6_NAME) == 0) {
             uart_id = PYB_UART_6;
         #endif
+        #ifdef MICROPY_HW_UART7_NAME
+        } else if (strcmp(port, MICROPY_HW_UART7_NAME) == 0) {
+            uart_id = PYB_UART_7;
+        #endif
+        #ifdef MICROPY_HW_UART8_NAME
+        } else if (strcmp(port, MICROPY_HW_UART8_NAME) == 0) {
+            uart_id = PYB_UART_8;
+        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
         }
@@ -864,6 +876,8 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     } else if (uart->Instance == USART3) {
         #if !defined(STM32F0)
         HAL_NVIC_DisableIRQ(USART3_IRQn);
+        #else
+        HAL_NVIC_DisableIRQ(USART3_8_IRQn);
         #endif
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
@@ -898,11 +912,19 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         __HAL_RCC_UART7_CLK_DISABLE();
     #endif
     #if defined(UART8)
+    #if !defined(STM32F0)
     } else if (uart->Instance == UART8) {
         HAL_NVIC_DisableIRQ(UART8_IRQn);
         __HAL_RCC_UART8_FORCE_RESET();
         __HAL_RCC_UART8_RELEASE_RESET();
         __HAL_RCC_UART8_CLK_DISABLE();
+    #else
+    } else if (uart->Instance == USART8) {
+    HAL_NVIC_DisableIRQ(UART3_8_IRQn);
+    __HAL_RCC_USART8_FORCE_RESET();
+    __HAL_RCC_USART8_RELEASE_RESET();
+    __HAL_RCC_USART8_CLK_DISABLE();
+    #endif
     #endif
     }
     return mp_const_none;
