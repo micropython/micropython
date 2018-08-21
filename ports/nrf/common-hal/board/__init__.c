@@ -25,4 +25,4 @@
  */
 
 // Pins aren't actually defined here. They are in the board specific directory
-// such as boards/feather52832/pins.csv
+// such as boards/feather_nrf52832/pins.csv
