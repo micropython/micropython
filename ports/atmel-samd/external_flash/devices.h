@@ -89,6 +89,22 @@ typedef struct {
     .supports_qspi_writes = true, \
 }
 
+// Settings for the Gigadevice GD25Q64C 8MiB SPI flash.
+// Datasheet: http://www.elm-tech.com/en/products/spi-flash-memory/gd25q64/gd25q64.pdf
+#define GD25Q64C {\
+    .total_size = (1 << 23), /* 8 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xc8, \
+    .memory_type = 0x40, \
+    .capacity = 0x17, \
+    .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .has_quad_enable = true, \
+    .supports_qspi_writes = true, \
+}
+
 // Settings for the Cypress (was Spansion) S25FL064L 8MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/316661/download
 #define S25FL064L {\
@@ -185,6 +201,38 @@ typedef struct {
     .supports_qspi_writes = false, \
 }
 
+// Settings for the Winbond W25Q64JV-IM 8MiB SPI flash. Note that JV-IQ has a different .memory_type (0x40)
+// Datasheet: http://www.winbond.com/resource-files/w25q64jv%20revj%2003272018%20plus.pdf
+#define W25Q64JV_IM {\
+    .total_size = (1 << 23), /* 8 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x70, \
+    .capacity = 0x17, \
+    .max_clock_speed_mhz = 133, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .has_quad_enable = true, \
+    .supports_qspi_writes = true, \
+}
+
+// Settings for the Winbond W25Q64JV-IQ 8MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
+// Datasheet: http://www.winbond.com/resource-files/w25q64jv%20revj%2003272018%20plus.pdf
+#define W25Q64JV_IQ {\
+    .total_size = (1 << 23), /* 8 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x40, \
+    .capacity = 0x17, \
+    .max_clock_speed_mhz = 133, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .has_quad_enable = true, \
+    .supports_qspi_writes = true, \
+}
+
 // Settings for the Winbond W25Q80DL 1MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q80dv%20dl_revh_10022015.pdf
 #define W25Q80DL {\
@@ -200,5 +248,7 @@ typedef struct {
     .has_quad_enable = true, \
     .supports_qspi_writes = false, \
 }
+
+
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H
