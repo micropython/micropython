@@ -129,7 +129,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
     #endif
     if (sercom == NULL) {
-        mp_raise_ValueError("Invalid pins");
+        mp_raise_ValueError(translate("Invalid pins"));
     }
 
     // Set up SPI clocks on SERCOM.

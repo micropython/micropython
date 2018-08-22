@@ -308,6 +308,8 @@ SRC_COMMON_HAL = \
 	busio/UART.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
+	i2cslave/__init__.c \
+	i2cslave/I2CSlave.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \

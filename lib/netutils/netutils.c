@@ -31,6 +31,7 @@
 
 #include "py/runtime.h"
 #include "lib/netutils/netutils.h"
+#include "supervisor/shared/translate.h"
 
 // Takes an array with a raw IPv4 address and returns something like '192.168.0.1'.
 mp_obj_t netutils_format_ipv4_addr(uint8_t *ip, netutils_endian_t endian) {
@@ -79,7 +80,7 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
         } else if (i > 0 && s < s_top && *s == '.') {
             s++;
         } else {
-            mp_raise_ValueError("invalid arguments");
+            mp_raise_ValueError(translate("invalid arguments"));
         }
     }
 }

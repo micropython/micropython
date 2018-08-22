@@ -21,6 +21,7 @@ with open(sys.argv[3], 'wb') as fout:
     with open(sys.argv[2], 'rb') as f:
         data_rom = f.read()
 
+    print(SEGS_MAX_SIZE, len(data_flash))
     pad = b'\xff' * (SEGS_MAX_SIZE - len(data_flash))
     assert len(pad) >= 4
     fout.write(pad[:-4])

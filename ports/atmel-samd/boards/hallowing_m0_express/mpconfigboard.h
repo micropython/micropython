@@ -43,7 +43,7 @@
 
 #define EXTERNAL_FLASH_DEVICE_COUNT 2
 
-#define EXTERNAL_FLASH_DEVICES W25Q64JV_IM, \
+#define EXTERNAL_FLASH_DEVICES W25Q64JV_IQ, \
                                GD25Q64C
 
 #include "external_flash/external_flash.h"

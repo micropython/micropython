@@ -32,6 +32,8 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_UJSON
 
 STATIC mp_obj_t mod_ujson_dump(mp_obj_t obj, mp_obj_t stream) {
@@ -276,7 +278,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     return stack_top;
 
     fail:
-    mp_raise_ValueError("syntax error in JSON");
+    mp_raise_ValueError(translate("syntax error in JSON"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 

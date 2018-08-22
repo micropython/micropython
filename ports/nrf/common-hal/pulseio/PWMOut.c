@@ -32,6 +32,7 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "nrf_gpio.h"
 #include "shared-bindings/pulseio/PWMOut.h"
+#include "supervisor/shared/translate.h"
 
 #define PWM_MAX_MODULE    3
 #define PWM_MAX_CHANNEL   4
@@ -145,7 +146,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
   // check if mapped to PWM channel already
   for(int i=0; i<PWM_MAX_MODULE; i++)
   {
-    int ch = pin2channel(pwm_arr[i], pin->pin);
+    int ch = pin2channel(pwm_arr[i], NRF_GPIO_PIN_MAP(pin->port, pin->pin));
     if ( ch >= 0 )
     {
       self->pwm = pwm_arr[i];
@@ -167,7 +168,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     // disable before mapping pin channel
     self->pwm->ENABLE = 0;
 
-    self->pwm->PSEL.OUT[self->channel] = pin->pin;
+    self->pwm->PSEL.OUT[self->channel] = NRF_GPIO_PIN_MAP(pin->port, pin->pin);
 
     self->pwm->COUNTERTOP = (PWM_MAX_FREQ/frequency);
     self->freq = frequency;
@@ -223,7 +224,7 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
   if (frequency == 0 || frequency > 16000000) {
-    mp_raise_ValueError("Invalid PWM frequency");
+    mp_raise_ValueError(translate("Invalid PWM frequency"));
   }
 
   self->freq = frequency;
@@ -238,4 +239,3 @@ uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
 bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
   return self->variable_freq;
 }
-

@@ -211,6 +211,10 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     // Find a free event channel. We start at the highest channels because we only need and async
     // path.
     uint8_t channel = find_async_event_channel();
+    if (channel >= EVSYS_CHANNELS) {
+        mp_raise_RuntimeError(translate("All event channels in use"));
+    }
+
     #ifdef SAMD51
     connect_event_user_to_channel(EVSYS_ID_USER_DAC_START_1, channel);
     #define EVSYS_ID_USER_DAC_START EVSYS_ID_USER_DAC_START_0

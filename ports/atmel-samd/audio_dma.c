@@ -33,6 +33,7 @@
 #include "shared-bindings/audioio/WaveFile.h"
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
 
 static audio_dma_t* audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
 
@@ -279,6 +280,10 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         // We're likely double buffering so set up the block interrupts.
         turn_on_event_system();
         dma->event_channel = find_sync_event_channel();
+
+        if (dma->event_channel >= EVSYS_SYNCH_NUM) {
+            mp_raise_RuntimeError(translate("All sync event channels in use"));
+        }
         init_event_channel_interrupt(dma->event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
 
         // We keep the audio_dma_t for internal use and the sample as a root pointer because it

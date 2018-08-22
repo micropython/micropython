@@ -34,6 +34,8 @@
 #include "py/mpprint.h"
 #include "py/runtime0.h"
 
+#include "supervisor/shared/translate.h"
+
 // This is the definition of the opaque MicroPython object type.
 // All concrete objects have an encoding within this type and the
 // particular encoding is specified by MICROPY_OBJ_REPR.
@@ -293,6 +295,13 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 #define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
         {{&mp_type_fun_builtin_var}, true, n_args_min, MP_OBJ_FUN_ARGS_MAX, .fun.kw = fun_name}
+#define MP_DEFINE_CONST_PROP_GET(obj_name, fun_name) \
+    const mp_obj_fun_builtin_fixed_t fun_name##_obj = {{&mp_type_fun_builtin_1}, .fun._1 = fun_name}; \
+    const mp_obj_property_t obj_name = { \
+        .base.type = &mp_type_property, \
+        .proxy = {(mp_obj_t)&fun_name##_obj, \
+                  (mp_obj_t)&mp_const_none_obj, \
+                  (mp_obj_t)&mp_const_none_obj}, }
 
 // These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
@@ -639,9 +648,9 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
-mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
-mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const char *fmt, va_list ap); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list ap); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_viper(size_t n_args, void *fun_data, mp_uint_t type_sig);

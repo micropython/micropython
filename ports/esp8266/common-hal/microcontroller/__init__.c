@@ -32,6 +32,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "supervisor/shared/translate.h"
 
 #include "eagle_soc.h"
 #include "ets_alt_task.h"
@@ -60,9 +61,9 @@ void common_hal_mcu_enable_interrupts() {
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     if (runmode == RUNMODE_BOOTLOADER) {
-        mp_raise_ValueError("Cannot reset into bootloader because no bootloader is present.");
+        mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present."));
     } else if (runmode == RUNMODE_SAFE_MODE) {
-        mp_raise_ValueError("ESP8226 does not support safe mode.");
+        mp_raise_ValueError(translate("ESP8226 does not support safe mode."));
     }
 }
 
