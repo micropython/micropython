@@ -161,7 +161,7 @@ BUTTON1 still pressed as you come out of reset).
 This will give you a **fast blinky DFU pattern** to indicate you are in DFU
 mode.
 
-you can **build and flash** a CircuitPython binary via the following command:
+You can **build and flash** a CircuitPython binary via the following command:
 
 ```
 $ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all dfu-gen dfu-flash
@@ -188,7 +188,7 @@ Device programmed.
 
 ### Flashing CircuitPython with MSC UF2
 
-uf2 file is generated at the end of `all` target
+uf2 file is generated last by `all` target
 
 ```
 $ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all
@@ -199,9 +199,3 @@ Wrote 392192 bytes to build-feather52840-s140/firmware.uf2.
 ```
 
 Simply drag and drop firmware.uf2 to the MSC, the nrf52840 will blink fast and reset after done.
-
-**Note**: you need to update `tools/uf2` for uf2conv.py to support hex file input, current circuitpython's master use older verion of uf2conv.py which only support bin file input. To update, change directory to top folder of circuitpython and run. The size of uf2 should be ~400KB, if using the old uf2conv.py the output file would be 1 MB which is not correct.
-
-```
-git submodule update --init
-```

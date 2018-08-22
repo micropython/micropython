@@ -27,9 +27,9 @@ The Adafruit Bluefruit nRF52 Feather ships with a serial and OTA BLE bootloader
 that can be used to flash firmware images over a simple serial connection,
 using the on-board USB serial converter.
 
-run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
+run following command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
 
-    $ pip3 install adafruit-nrfutil --user
+    $ pip3 install --user adafruit-nrfutil
 
 # Building and flashing firmware images
 

@@ -101,7 +101,7 @@ note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrf
 
 run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
 
-    $ pip3 install adafruit-nrfutil --user
+    $ pip3 install --user adafruit-nrfutil
 
 **make flash** and **make sd** will not work with DFU targets. Hence, **dfu-gen** and **dfu-flash** must be used instead.
 * dfu-gen: Generates a Firmware zip to be used by the DFU flash application.
