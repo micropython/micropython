@@ -30,7 +30,19 @@
 #include "nrf_pin.h"
 #include "py/mphal.h"
 
+#ifdef MICROPY_HW_NEOPIXEL
+extern bool neopixel_in_use;
+#endif
+#ifdef MICROPY_HW_APA102_MOSI
+extern bool apa102_sck_in_use;
+extern bool apa102_mosi_in_use;
+#endif
+
 #define mcu_pin_obj_t pin_obj_t
 void reset_all_pins(void);
+// reset_pin takes the pin number instead of the pointer so that objects don't
+// need to store a full pointer.
+void reset_pin(uint8_t pin);
+void claim_pin(const mcu_pin_obj_t* pin);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
