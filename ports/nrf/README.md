@@ -79,6 +79,7 @@ Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Flash 
 pca10040             | s132                    | Peripheral and Scanner | [Segger](#segger-targets)
 feather52832         | s132                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
 pca10056             | s140                    | Peripheral and Scanner | [Segger](#segger-targets)
+feather52840         | s140                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
 
 ## Segger Targets
 
@@ -98,11 +99,9 @@ note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrf
 
 ## DFU Targets
 
-    sudo apt-get install build-essential libffi-dev pkg-config gcc-arm-none-eabi git python python-pip
-    git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git
-    cd Adafruit_nRF52_Arduino/tools/nrfutil-0.5.2/
-    sudo pip install -r requirements.txt
-    sudo python setup.py install
+run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
+
+    $ pip3 install adafruit-nrfutil --user
 
 **make flash** and **make sd** will not work with DFU targets. Hence, **dfu-gen** and **dfu-flash** must be used instead.
 * dfu-gen: Generates a Firmware zip to be used by the DFU flash application.
@@ -111,8 +110,7 @@ note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrf
 Example on how to generate and flash feather52832 target:
 
     make BOARD=feather52832 SD=s132
-    make BOARD=feather52832 SD=s132 dfu-gen
-    make BOARD=feather52832 SD=s132 dfu-flash
+    make BOARD=feather52832 SD=s132 dfu-gen dfu-flash
 
 ## Bluetooth LE REPL
 
