@@ -43,7 +43,7 @@ update the core CircuitPython firmware and internal file system contents
 using only a serial connection.
 
 On empty devices, the serial bootloader will need to be flashed once using a
-HW debugger such as a Segger J-Link before the serial updater (`nrfutil`) can
+HW debugger such as a Segger J-Link before the serial updater (`adafruit-nrfutil`) can
 be used.
 
 ### Install `nrfjprog`
@@ -79,20 +79,27 @@ JLinkARM.dll version: 6.20f
 > This operation only needs to be done once, and only on boards that don't
   already have the serial bootloader installed.
 
+Firstly clone the [Adafruit_nRF52_Bootloader](https://github.com/adafruit/Adafruit_nRF52_Bootloader.git) and enter its directory
+
+```
+$ git clone https://github.com/adafruit/Adafruit_nRF52_Bootloader.git
+$ cd Adafruit_nRF52_Bootloader
+```
+
 Once `nrfjprog` is installed and available in `PATH` you can flash your
 board with the serial bootloader via the following command:
 
 ```
-make SD=s140 BOARD=feather52840 bootloader
+make BOARD=feather_nrf52840_express VERSION=latest flash
 ```
 
 This should give you the following (or very similar) output, and you will see
 a DFU blinky pattern on one of the board LEDs:
 
 ```
-$ make SD=s140 BOARD=feather52840 bootloader
-Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.
-nrfjprog --program boards/feather52840/bootloader/feather52840_bootloader_6.0.0_s140_single.hex -f nrf52 --chiperase --reset
+$ make BOARD=pca10056 VERSION=latest flash
+Flashing: bin/pca10056/6.0.0r0/pca10056_bootloader_s140_6.0.0r0.hex
+nrfjprog  --program bin/pca10056/6.0.0r0/pca10056_bootloader_s140_6.0.0r0.hex --chiperase -f nrf52 --reset
 Parsing hex file.
 Erasing user available code and UICR flash areas.
 Applying system reset.
@@ -104,6 +111,8 @@ Run.
 
 From this point onward, you can now use a simple serial port for firmware
 updates.
+
+Note: You can specify other version that are available in the directory `Adafruit_nRF52_Bootloader/bin/feather_nrf52840_express/` . The `VERSION=latest` will use the latest bootloader available.
 
 ### IMPORTANT: Disable Mass Storage on PCA10056 J-Link
 
@@ -135,30 +144,13 @@ J-Link>exit
 
 ## Building and Flashing CircuitPython
 
-### Installing `nrfutil`
+### Installing `adafruit-nrfutil`
 
-If you haven't installed the required command-line tool yet, go to the
-`/libs/nrfutil` folder (where nrfutil 0.5.2b is installed as a sub-module)
-and run the following commands:
-
-> If you get a 'sudo: pip: command not found' error running 'sudo pip install',
-you can install pip via 'sudo easy_install pip'
+run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
 
 ```
-$ cd ../../lib/nrfutil
-$ sudo pip install -r requirements.txt
-$ sudo python setup.py install
+$ pip3 install adafruit-nrfutil --user
 ```
-
-#### Changes to `nrfutil` in 0.5.2d
-
-**IMPORTANT**: Make sure that you have version **0.5.2d**, since a small
-change was required to `dfu_transport_serial.py` to account for the
-increased minimum flash erase time on the nRF52840 compared to the earlier
-nRF52832!
-
-You can also manually change the file with the following new values (lines
-67-68), and reinstall the utility via `sudo python setup.py install`:
 
 ### Flashing CircuitPython with USB CDC
 
@@ -169,8 +161,7 @@ BUTTON1 still pressed as you come out of reset).
 This will give you a **fast blinky DFU pattern** to indicate you are in DFU
 mode.
 
-At this point, you can **build and flash** a CircuitPython binary via the following
-command:
+You can **build and flash** a CircuitPython binary via the following command:
 
 ```
 $ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all dfu-gen dfu-flash
@@ -197,20 +188,14 @@ Device programmed.
 
 ### Flashing CircuitPython with MSC UF2
 
-Make `uf2` target to generate the uf2
+uf2 file is generated last by `all` target
 
 ```
-$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all uf2
+$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all
 Create firmware.uf2
-../../tools/uf2/utils/uf2conv.py -c -o "build-feather52840-s140/firmware.uf2" "build-feather52840-s140/firmware.hex"
+../../tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "build-feather52840-s140/firmware.uf2" "build-feather52840-s140/firmware.hex"
 Converting to uf2, output size: 392192, start address: 0x26000
 Wrote 392192 bytes to build-feather52840-s140/firmware.uf2.
 ```
 
 Simply drag and drop firmware.uf2 to the MSC, the nrf52840 will blink fast and reset after done.
-
-**Note**: you need to update `tools/uf2` for uf2conv.py to support hex file input, current circuitpython's master use older verion of uf2conv.py which only support biin file input. To update, change directory to top folder of circuitpython and run. The size of uf2 should be ~400KB, if using the old uf2conv.py the output file would be 1 MB which is not correct.
-
-```
-git submodule update --init
-```

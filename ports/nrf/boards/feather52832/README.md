@@ -21,24 +21,15 @@ $ cd ports/nrf
 $ ./drivers/bluetooth/download_ble_stack.sh
 ```
 
-## Installing `nrfutil`
+## Installing `adafruit-nrfutil`
 
 The Adafruit Bluefruit nRF52 Feather ships with a serial and OTA BLE bootloader
 that can be used to flash firmware images over a simple serial connection,
 using the on-board USB serial converter.
 
-If you haven't installed this command-line tool yet, go to the `/libs/nrfutil`
-folder (where nrfutil 0.5.2 is installed as a sub-module) and run the following
-commands:
+run following command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
 
-> If you get a 'sudo: pip: command not found' error running 'sudo pip install',
-you can install pip via 'sudo easy_install pip'
-
-```
-$ cd ../../lib/nrfutil
-$ sudo pip install -r requirements.txt
-$ sudo python setup.py install
-```
+    $ pip3 install --user adafruit-nrfutil
 
 # Building and flashing firmware images
 
@@ -75,7 +66,7 @@ You can then connect over BLE UART using an application like Bluefruit LE
 Connect, available for Android, iOS and OS X, or any other application that
 supports the NUS service and allows you to send the corrent EOL sequence.
 
-## Flashing binaries with `nrfutil`
+## Flashing binaries with `adafruit-nrfutil`
 
 ### 1. **Update bootloader** to single-bank version
 
@@ -90,20 +81,25 @@ Due to the size of CircuitPython, we must migrate this bootloader to a
 bootloader from the dual-bank version that ships on Arduino-based Adafruit
 Feather52 boards to a single-bank CircuitPython compatible version:
 
+Firstly clone the [Adafruit_nRF52_Bootloader](https://github.com/adafruit/Adafruit_nRF52_Bootloader.git) and enter its directory
+
+	$ git clone https://github.com/adafruit/Adafruit_nRF52_Bootloader.git
+    $ cd Adafruit_nRF52_Bootloader
+
 #### S132 v2.0.1 single-bank (recommended):
 
-By default s132 v2.0.1 is used when no `SOFTDEV_VERSION` field is passed in:
+To flash bootloader with s132 v2.0.1
 
 ```
-$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART boot-flash
+$ make BOARD=feather_nrf52832 VERSION=2.0.1 SERIAL=/dev/tty.SLAB_USBtoUART dfu-flash
 ```
 
 #### S132 v5.0.0 (BLE5, experimental):
 
-To enable BLE5 support and the latest S132 release, flash the v5.0.0 bootloader via:
+To flash bootloader with s132 v5.0.0
 
 ```
-$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART SOFTDEV_VERSION=5.0.0 boot-flash
+$ make BOARD=feather52832 VERSION=5.0.0 SERIAL=/dev/tty.SLAB_USBtoUART dfu-flash
 ```
 
 ### 2. Generate and flash a CircuitPython DFU .zip package over serial
