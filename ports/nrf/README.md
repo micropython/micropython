@@ -37,7 +37,7 @@ the following links:
   generic board-neutral documentation further down.
 
 * Adafruit [Feather nRF52](boards/feather_nrf52832/README.md): 512KB Flash, 64KB SRAM
-* Adafruit [Feather nRF52840](boards/feather_nrf_52840_express/README.md): 1MB Flash, 256KB SRAM
+* Adafruit [Feather nRF52840](boards/feather_nrf52840_express/README.md): 1MB Flash, 256KB SRAM
 * Nordic PCA10056 see [Feather nRF52840](boards/pca10056/README.md)
 
 For all other board targets, see the generic notes below.
