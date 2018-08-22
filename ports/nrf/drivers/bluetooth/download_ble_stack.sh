@@ -91,7 +91,9 @@ if [ $# -eq 0 ]; then
     echo "No Bluetooth LE stack defined, downloading all."
     download_s132_nrf52_2_0_1 "${SCRIPT_DIR}"
     download_s132_nrf52_5_0_0 "${SCRIPT_DIR}"
+    download_s132_nrf52_6_1_0 "${SCRIPT_DIR}"
     download_s140_nrf52_6_0_0 "${SCRIPT_DIR}"
+    download_s140_nrf52_6_1_0 "${SCRIPT_DIR}"
 else
     case $1 in
         "s132_nrf52_2_0_1" )
