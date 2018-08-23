@@ -58,7 +58,7 @@ void usb_init(void) {
 
         sd_power_usbregstatus_get(&usb_reg);
     }else
-#else
+#endif
     {
         // Power module init
         const nrfx_power_config_t pwr_cfg = { 0 };
@@ -72,7 +72,6 @@ void usb_init(void) {
 
         usb_reg = NRF_POWER->USBREGSTATUS;
     }
-#endif
 
     if ( usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk ) {
         tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
@@ -80,6 +79,21 @@ void usb_init(void) {
 
     if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk ) {
         tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
+    }
+
+    // create serial number based on device unique id
+    extern uint16_t usb_desc_str_serial[1 + 16];
+
+    char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 8; j++) {
+            uint8_t nibble = (NRF_FICR->DEVICEID[i] >> j * 4) & 0xf;
+
+            // Invert order since it is LE, +1 for skipping descriptor header
+            uint8_t  const idx = (15 - (i * 8 + j)) + 1;
+            usb_desc_str_serial[idx] = nibble_to_hex[nibble];
+        }
     }
 
     tusb_init();
