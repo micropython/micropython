@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_PEW_PEWPEW_H
-#define MICROPY_INCLUDED_PEW_PEWPEW_H
+#include "boards/board.h"
 
-#include <stdint.h>
-#include "shared-bindings/digitalio/DigitalInOut.h"
+void board_init(void)
+{
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t* buffer;
-    mp_obj_t* rows;
-    mp_obj_t* cols;
-    digitalio_digitalinout_obj_t *buttons;
-    uint8_t rows_size;
-    uint8_t cols_size;
-    uint8_t pressed;
-} pew_obj_t;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-void pew_init(void);
-void pewpew_interrupt_handler(uint8_t index);
-void pew_reset(void);
-
-#endif  // MICROPY_INCLUDED_PEW_PEWPEW_H
+void reset_board(void) {
+}

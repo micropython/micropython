@@ -36,6 +36,8 @@
 void pew_tick(void) {
     static uint8_t col = 0;
     static uint8_t turn = 0;
+    static uint8_t pressed = 0;
+    static uint8_t last_pressed = 0;
     digitalio_digitalinout_obj_t *pin;
 
     pew_obj_t* pew = MP_STATE_VM(pew_singleton);
@@ -44,11 +46,17 @@ void pew_tick(void) {
     pin = MP_OBJ_TO_PTR(pew->cols[col]);
     ++col;
     if (col >= pew->cols_size) {
+        pew->pressed |= last_pressed & pressed;
+        last_pressed = pressed;
+        pressed = 0;
         col = 0;
         ++turn;
         if (turn >= 8) {
             turn = 0;
         }
+    }
+    if (!common_hal_digitalio_digitalinout_get_value(pew->buttons)) {
+        pressed |= 1 << col;
     }
     common_hal_digitalio_digitalinout_set_value(pin, true);
     for (size_t x = 0; x < pew->rows_size; ++x) {

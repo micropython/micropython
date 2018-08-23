@@ -52,16 +52,17 @@ void pewpew_interrupt_handler(uint8_t index) {
 }
 
 void pew_init() {
-    pew_obj_t* pew_singleton = MP_STATE_VM(pew_singleton);
-    for (size_t i = 0; i < pew_singleton->rows_size; ++i) {
-        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(
-            pew_singleton->rows[i]);
+    pew_obj_t* pew = MP_STATE_VM(pew_singleton);
+
+    common_hal_digitalio_digitalinout_switch_to_input(pew->buttons, PULL_UP);
+
+    for (size_t i = 0; i < pew->rows_size; ++i) {
+        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(pew->rows[i]);
         common_hal_digitalio_digitalinout_switch_to_output(pin, false,
             DRIVE_MODE_PUSH_PULL);
     }
-    for (size_t i = 0; i < pew_singleton->cols_size; ++i) {
-        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(
-            pew_singleton->cols[i]);
+    for (size_t i = 0; i < pew->cols_size; ++i) {
+        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(pew->cols[i]);
         common_hal_digitalio_digitalinout_switch_to_output(pin, true,
             DRIVE_MODE_OPEN_DRAIN);
     }

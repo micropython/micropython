@@ -50,14 +50,15 @@
 //|
 STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
         size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 3, 3, true);
+    mp_arg_check_num(n_args, n_kw, 4, 4, true);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-    enum { ARG_buffer, ARG_rows, ARG_cols };
+    enum { ARG_buffer, ARG_rows, ARG_cols, ARG_buttons };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_rows, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_cols, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_buttons, MP_ARG_OBJ | MP_ARG_REQUIRED },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args),
@@ -96,6 +97,14 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
             common_hal_digitalio_digitalinout_deinited(pin));
     }
 
+    if (!MP_OBJ_IS_TYPE(args[ARG_buttons].u_obj,
+                        &digitalio_digitalinout_type)) {
+        mp_raise_TypeError("expected a DigitalInOut");
+    }
+    digitalio_digitalinout_obj_t *buttons = MP_OBJ_TO_PTR(
+            args[ARG_buttons].u_obj);
+    raise_error_if_deinited(
+        common_hal_digitalio_digitalinout_deinited(buttons));
 
     pew_obj_t *pew = MP_STATE_VM(pew_singleton);
     if (!pew) {
@@ -110,6 +119,8 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
     pew->rows_size = rows_size;
     pew->cols = cols;
     pew->cols_size = cols_size;
+    pew->buttons = buttons;
+    pew->pressed = 0;
     pew_init();
 
     return MP_OBJ_FROM_PTR(pew);
