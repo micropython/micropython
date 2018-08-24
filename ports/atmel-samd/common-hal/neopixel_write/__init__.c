@@ -109,7 +109,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
         asm("nop; nop;");
         #endif
         #ifdef SAMD51
-        delay_cycles(1);
+        delay_cycles(2);
         #endif
         if((p & bitMask) != 0) {
             // This is the high delay unique to a one bit.
@@ -129,7 +129,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             asm("nop; nop;");
             #endif
             #ifdef SAMD51
-            delay_cycles(1);
+            delay_cycles(2);
             #endif
         }
         if((bitMask >>= 1) != 0) {
