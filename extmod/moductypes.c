@@ -269,7 +269,8 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
     return total_size;
 }
 
-STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
+STATIC mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t obj_in = args[0];
     mp_uint_t max_field_size = 0;
     if (MP_OBJ_IS_TYPE(obj_in, &mp_type_bytearray)) {
         return mp_obj_len(obj_in);
@@ -278,15 +279,22 @@ STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
     // We can apply sizeof either to structure definition (a dict)
     // or to instantiated structure
     if (MP_OBJ_IS_TYPE(obj_in, &uctypes_struct_type)) {
+        if (n_args != 1) {
+            mp_raise_TypeError(NULL);
+        }
         // Extract structure definition
         mp_obj_uctypes_struct_t *obj = MP_OBJ_TO_PTR(obj_in);
         obj_in = obj->desc;
         layout_type = obj->flags;
+    } else {
+        if (n_args == 2) {
+            layout_type = mp_obj_get_int(args[1]);
+        }
     }
     mp_uint_t size = uctypes_struct_size(obj_in, layout_type, &max_field_size);
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_sizeof_obj, uctypes_struct_sizeof);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
 static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
