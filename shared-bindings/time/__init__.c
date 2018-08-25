@@ -36,8 +36,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/translate.h"
 
-#define EPOCH1970_EPOCH2000_DIFF_SECS    946684800
-
 //| :mod:`time` --- time and timing related functions
 //| ========================================================
 //|
@@ -142,9 +140,9 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
 
 mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
     timeutils_struct_time_t tmp;
-    mp_uint_t secs = timeutils_seconds_since_2000(tm->tm_year, tm->tm_mon, tm->tm_mday,
+    mp_uint_t secs = timeutils_seconds_since_epoch(tm->tm_year, tm->tm_mon, tm->tm_mday,
                                                   tm->tm_hour, tm->tm_min, tm->tm_sec);
-    timeutils_seconds_since_2000_to_struct_time(secs, &tmp);
+    timeutils_seconds_since_epoch_to_struct_time(secs, &tmp);
     tm->tm_wday = tmp.tm_wday;
     tm->tm_yday = tmp.tm_yday;
 
@@ -202,9 +200,9 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 STATIC mp_obj_t time_time(void) {
     timeutils_struct_time_t tm;
     struct_time_to_tm(rtc_get_time_source_time(), &tm);
-    mp_uint_t secs = timeutils_seconds_since_2000(tm.tm_year, tm.tm_mon, tm.tm_mday,
+    mp_uint_t secs = timeutils_seconds_since_epoch(tm.tm_year, tm.tm_mon, tm.tm_mday,
                                                   tm.tm_hour, tm.tm_min, tm.tm_sec);
-    return mp_obj_new_int_from_uint(secs + EPOCH1970_EPOCH2000_DIFF_SECS);
+    return mp_obj_new_int_from_uint(secs);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
@@ -228,7 +226,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
 
     timeutils_struct_time_t tm;
-    timeutils_seconds_since_2000_to_struct_time(secs - EPOCH1970_EPOCH2000_DIFF_SECS, &tm);
+    timeutils_seconds_since_epoch_to_struct_time(secs, &tm);
 
     return struct_time_from_tm(&tm);
 }
@@ -262,7 +260,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
                                       mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));
-    return mp_obj_new_int_from_uint(secs + EPOCH1970_EPOCH2000_DIFF_SECS);
+    return mp_obj_new_int_from_uint(secs);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 #endif // MICROPY_LONGINT_IMPL
