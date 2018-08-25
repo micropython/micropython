@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-03 17:20-0700\n"
-"PO-Revision-Date: 2018-08-20 22:19-0500\n"
+"PO-Revision-Date: 2018-08-23 22:37-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_US\n"
@@ -157,14 +157,12 @@ msgstr " salida:\n"
 
 #: main.c:148 main.c:221
 #, fuzzy
-msgid ""
-"Auto-reload is on. Simply save files over USB to run them or enter REPL to "
-"disable.\n"
+msgid "Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"
 msgstr ""
 
 #: main.c:159
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr ""
+msgstr "Ejecutando en modo seguro! Auto-recarga esta deshabilitado.\n"
 
 #: main.c:161 main.c:232
 msgid "Auto-reload is off.\n"
@@ -172,7 +170,7 @@ msgstr ""
 
 #: main.c:175
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr ""
+msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
 #: main.c:191
 msgid "WARNING: Your code filename has two extensions\n"
@@ -187,8 +185,7 @@ msgid "To exit, please reset the board without "
 msgstr ""
 
 #: main.c:249
-msgid ""
-"You are running in safe mode which means something really bad happened.\n"
+msgid "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 
 #: main.c:251
@@ -200,15 +197,11 @@ msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 
 #: main.c:255
-msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
+msgid "The microcontroller's power dipped. Please make sure your power supply provides\n"
 msgstr ""
 
 #: main.c:256
-msgid ""
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+msgid "enough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"
 msgstr ""
 
 #: main.c:260
@@ -885,50 +878,44 @@ msgstr ""
 msgid "function missing required positional argument #%d"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/bc.c:260
 msgid "function missing required keyword argument '%q'"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:53
 msgid "AnalogOut not supported on given pin"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:53
 msgid "AnalogOut not supported on given pin"
 msgstr "AnalogOut no es soportado por el pin dado"
->>>>>>> Update es.po strings, still a lot of review to do
 
-<<<<<<< HEAD
 #: py/bc.c:269
 msgid "function missing keyword-only argument"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
 msgstr "Pin bit clock inválido"
->>>>>>> Update es.po strings, still a lot of review to do
 
-<<<<<<< HEAD
 #: py/binary.c:112
 msgid "bad typecode"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 #, fuzzy
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock y Word select deben compartir la unidad de reloj"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/builtinevex.c:99
 msgid "bad compile mode"
@@ -942,21 +929,19 @@ msgstr ""
 msgid "module not found"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/builtinimport.c:425 py/builtinimport.c:537
 msgid "no module named '%q'"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
 msgid "Unable to find free GCLK"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
 msgid "Unable to find free GCLK"
 msgstr "No se pudo encontrar un GCLK libre"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/builtinimport.c:512
 msgid "relative import"
@@ -966,71 +951,63 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:416
 msgid "multiple *x in assignment"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:324
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:324
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:642
 msgid "non-default argument follows default argument"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:771 py/compile.c:789
 msgid "invalid micropython decorator"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
 msgstr "Solo mono de 8 o 16 bit con"
->>>>>>> Update es.po strings, still a lot of review to do
 
-<<<<<<< HEAD
 #: py/compile.c:943
 msgid "can't delete expression"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
 msgid "sampling rate out of range"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
 msgid "sampling rate out of range"
 msgstr "Velocidad de muestreo fuera de rango"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:955
 msgid "'break' outside loop"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:958
 msgid "'continue' outside loop"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
 msgid "Right channel unsupported"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
 msgid "Right channel unsupported"
 msgstr "El canal derecho no tiene soporte"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:969
 msgid "'return' outside function"
@@ -1044,37 +1021,33 @@ msgstr ""
 msgid "no binding for nonlocal found"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:1188
 msgid "identifier redefined as nonlocal"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
 msgid "Cannot output both channels on the same pin"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
 msgid "Cannot output both channels on the same pin"
 msgstr "No es posible utilizar el mismo pin para ambos canales"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:1197
 msgid "can't declare nonlocal in outer code"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:1542
 msgid "default 'except' must be last"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/busio/I2C.c:45
 msgid "Not enough pins available"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/busio/I2C.c:45
 msgid "Not enough pins available"
 msgstr "No hay suficientes pines disponibles"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:2095
 msgid "*x must be assignment target"
@@ -1088,47 +1061,41 @@ msgstr ""
 msgid "can't have multiple *x"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:2263
 msgid "can't have multiple **x"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits no son soportados"
->>>>>>> Update es.po strings, still a lot of review to do
 
-<<<<<<< HEAD
 #: py/compile.c:2271
 msgid "LHS of keyword arg must be an id"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/busio/UART.c:73
 msgid "tx and rx cannot both be None"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/busio/UART.c:73
 msgid "tx and rx cannot both be None"
 msgstr "tx y rx no pueden ser ambos None"
->>>>>>> Update es.po strings, still a lot of review to do
 
-<<<<<<< HEAD
 #: py/compile.c:2287
 msgid "non-keyword arg after */**"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/busio/UART.c:142
 msgid "Failed to allocate RX buffer"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/busio/UART.c:142
 msgid "Failed to allocate RX buffer"
 msgstr "Fallo la asignación del buffer RX"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:2291
 msgid "non-keyword arg after keyword arg"
@@ -1149,60 +1116,53 @@ msgstr ""
 
 #: py/compile.c:2600
 msgid "'yield' outside function"
-msgstr ""
-"No es posible reiniciar en modo bootloader porque no hay bootloader presente."
+msgstr "No es posible reiniciar en modo bootloader porque no hay bootloader presente."
 
 #: py/compile.c:2619
 msgid "'await' outside function"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:2774
 msgid "name reused for argument"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
 msgid "All timers for this pin are in use"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
 msgid "All timers for this pin are in use"
 msgstr "Todos los timers para este pin están siendo utilizado"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:2827
 msgid "parameter annotation must be an identifier"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:2969 py/compile.c:3137
 msgid "return annotation must be an identifier"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
 msgstr "El canal EXTINT ya esta siendo usado"
->>>>>>> Update es.po strings, still a lot of review to do
 
-<<<<<<< HEAD
 #: py/compile.c:3097
 msgid "inline assembler must be a function"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Fallo la asignación del buffer RX de %d bytes"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:3134
 msgid "unknown type"
@@ -1216,37 +1176,33 @@ msgstr ""
 msgid "'label' requires 1 argument"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:3190
 msgid "label redefined"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
 msgstr "Ambos pines deben soportar interrupciones por hardware"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:3196
 msgid "'align' requires 1 argument"
 msgstr ""
 
-<<<<<<< HEAD
 #: py/compile.c:3205
 msgid "'data' requires at least 2 arguments"
 msgstr ""
-||||||| merged common ancestors
+
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
 msgstr ""
-=======
+
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
 msgstr "Valor de calibración fuera de rango +/-127"
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/compile.c:3212
 msgid "'data' requires integer arguments"
@@ -1262,16 +1218,14 @@ msgstr ""
 
 #: py/emitinlinextensa.c:162
 #, c-format
-<<<<<<< HEAD
 msgid "'%s' expects a register"
 msgstr ""
-||||||| merged common ancestors
+
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr ""
-=======
+
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tamaño de buffer incorrecto. Debe ser de %d bytes."
->>>>>>> Update es.po strings, still a lot of review to do
 
 #: py/emitinlinextensa.c:169
 #, c-format
@@ -1479,14 +1433,11 @@ msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:208
-msgid ""
-"destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
+msgid "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
 
 #: shared-bindings/audioio/RawSample.c:98
-msgid ""
-"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
-"'B'"
+msgid "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"
 msgstr ""
 
 #: shared-bindings/audioio/RawSample.c:104
@@ -1569,9 +1520,6 @@ msgstr ""
 msgid "math domain error"
 msgstr ""
 
-#: shared-bindings/math/__init__.c:346
-msgstr ""
-
 #: shared-bindings/i2cslave/I2CSlave.c:107
 msgid "addresses is empty"
 msgstr ""
@@ -1615,13 +1563,11 @@ msgid "No hardware random available"
 msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:164
-msgid ""
-"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+msgid "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
-msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+msgid "PWM frequency not writeable when variable_frequency is False on construction."
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275
@@ -1711,8 +1657,7 @@ msgid "threshold must be in the range 0-65536"
 msgstr ""
 
 #: shared-bindings/util.c:38
-msgid ""
-"Object has been deinitialized and can no longer be used. Create a new object."
+msgid "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
 
 #: shared-module/audioio/WaveFile.c:61
@@ -1778,3 +1723,4 @@ msgstr ""
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
 msgstr ""
+
