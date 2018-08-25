@@ -28,8 +28,13 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"        /* FatFs lower layer API */
 #include "lib/oofatfs/diskio.h"    /* FatFs lower layer API */
+#include "lib/timeutils/timeutils.h"
+#include "shared-bindings/rtc/RTC.h"
 
 DWORD get_fattime(void) {
-    // TODO(tannewt): Support the RTC.
-    return ((2016 - 1980) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
+    timeutils_struct_time_t tm;
+    common_hal_rtc_get_time(&tm);
+
+    return ((tm.tm_year - 1980) << 25) | (tm.tm_mon << 21) | (tm.tm_mday << 16) |
+           (tm.tm_hour << 11)          | (tm.tm_min << 5)  | (tm.tm_sec >> 1);
 }
