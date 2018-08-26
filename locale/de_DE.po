@@ -24,333 +24,337 @@ msgstr "ungültige I2C Schnittstelle"
 #: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
 #: extmod/machine_i2c.c:392
 msgid "I2C operation not supported"
-msgstr ""
+msgstr "I2C-operation nicht unterstützt"
 
 #: extmod/machine_mem.c:45 ports/unix/modmachine.c:53
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
-msgstr ""
+msgstr "Addresse %08x ist nicht an %d bytes ausgerichtet"
 
 #: extmod/machine_spi.c:57
 msgid "invalid SPI peripheral"
-msgstr ""
+msgstr "ungültige SPI Schnittstelle"
 
 #: extmod/machine_spi.c:124
 msgid "buffers must be the same length"
-msgstr ""
+msgstr "Buffer müssen gleich lang sein"
 
 #: extmod/machine_spi.c:207
 msgid "bits must be 8"
-msgstr ""
+msgstr "bits müssen 8 sein"
 
 #: extmod/machine_spi.c:210
 msgid "firstbit must be MSB"
-msgstr ""
+msgstr "das erste Bit muss MSB sein"
 
 #: extmod/machine_spi.c:215
 msgid "must specify all of sck/mosi/miso"
-msgstr ""
+msgstr "sck/mosi/miso müssen alle spezifiziert sein"
 
 #: extmod/modframebuf.c:299
 msgid "invalid format"
-msgstr ""
+msgstr "ungültiges Format"
 
 #: extmod/modubinascii.c:38 extmod/moduhashlib.c:102
 msgid "a bytes-like object is required"
-msgstr ""
+msgstr "ein Byte-ähnliches Objekt ist erforderlich"
 
 #: extmod/modubinascii.c:90
 msgid "odd-length string"
-msgstr ""
+msgstr "String mit ungerader Länge"
 
 #: extmod/modubinascii.c:101
 msgid "non-hex digit found"
-msgstr ""
+msgstr "eine nicht-hex zahl wurde gefunden"
 
 #: extmod/modubinascii.c:169
 msgid "incorrect padding"
-msgstr ""
+msgstr "falsches padding"
 
 #: extmod/moductypes.c:122
 msgid "syntax error in uctypes descriptor"
-msgstr ""
+msgstr "Syntaxfehler in uctypes Definition"
 
 #: extmod/moductypes.c:219
 msgid "Cannot unambiguously get sizeof scalar"
-msgstr ""
+msgstr "sizeof scalar kann nicht eindeutig bestimmt werden"
 
 #: extmod/moductypes.c:397
 msgid "struct: no fields"
-msgstr ""
+msgstr "struct: keine Felder"
 
 #: extmod/moductypes.c:530
 msgid "struct: cannot index"
-msgstr ""
+msgstr "struct: kann nicht indexieren"
 
 #: extmod/moductypes.c:544
 msgid "struct: index out of range"
-msgstr ""
+msgstr "struct: index außerhalb gültigen Bereichs"
 
 #: extmod/moduheapq.c:38
 msgid "heap must be a list"
-msgstr ""
+msgstr "heap muss eine list sein"
 
 #: extmod/moduheapq.c:86 extmod/modutimeq.c:147 extmod/modutimeq.c:172
 msgid "empty heap"
-msgstr ""
+msgstr "leerer heap"
 
 #: extmod/modujson.c:281
 msgid "syntax error in JSON"
-msgstr ""
+msgstr "Syntaxfehler in JSON"
 
 #: extmod/modure.c:161
 msgid "Splitting with sub-captures"
-msgstr ""
+msgstr "Teilen mit unter-captures"
 
 #: extmod/modure.c:207
 msgid "Error in regex"
-msgstr ""
+msgstr "Fehler in regex"
 
 #: extmod/modussl_axtls.c:81
 msgid "invalid key"
-msgstr ""
+msgstr "ungültiger Schlüssel"
 
 #: extmod/modussl_axtls.c:87
 msgid "invalid cert"
-msgstr ""
+msgstr "ungültiges cert"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr ""
+msgstr "Warteschlangenüberlauf"
 
 #: extmod/moduzlib.c:97
 msgid "compression header"
-msgstr ""
+msgstr "kompression header"
 
 #: extmod/uos_dupterm.c:120
 msgid "invalid dupterm index"
-msgstr ""
+msgstr "ungültiger dupterm index"
 
 #: extmod/vfs_fat.c:426 py/moduerrno.c:150
 msgid "Read-only filesystem"
-msgstr ""
+msgstr "Schreibgeschützte Dateisystem"
 
 #: extmod/vfs_posix_file.c:48 ports/unix/file.c:50 py/objstringio.c:43
 msgid "I/O operation on closed file"
-msgstr ""
+msgstr "Lese/Schreibe-operation an geschlossener Datei"
 
 #: lib/embed/abort_.c:8
 msgid "abort() called"
-msgstr ""
+msgstr "abort() wurde aufgerufen"
 
 #: lib/netutils/netutils.c:83
 msgid "invalid arguments"
-msgstr ""
+msgstr "ungültige argumente"
 
 #: lib/utils/pyexec.c:97 py/builtinimport.c:253
 msgid "script compilation not supported"
-msgstr ""
+msgstr "kompilieren von Skripten ist nicht unterstützt"
 
 #: main.c:143
 msgid " output:\n"
-msgstr ""
+msgstr " Ausgabe:\n"
 
 #: main.c:157 main.c:230
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr ""
+msgstr "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
+"auszuführen oder verbinde dich mit der REPL um zu deaktivieren.\n"
 
 #: main.c:159
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr ""
+msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 
 #: main.c:161 main.c:232
 msgid "Auto-reload is off.\n"
-msgstr ""
+msgstr "Automatisches Neuladen ist deaktiviert.\n"
 
 #: main.c:175
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr ""
+msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
 #: main.c:191
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr ""
+msgstr "WARNUNG: Der Dateiname deines codes hat zwei Dateityperweiterungen\n"
 
 #: main.c:239
 msgid "You requested starting safe mode by "
-msgstr ""
+msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
 
 #: main.c:242
 msgid "To exit, please reset the board without "
-msgstr ""
+msgstr "Zum beenden bitte resete das board ohne "
 
 #: main.c:249
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
-msgstr ""
+msgstr "Sicherheitsmodus aktive, etwas wirklich schlechtes ist passiert.\n"
 
 #: main.c:251
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr ""
+msgstr "CircuitPython ist abgestürzt. Ups!"
 
 #: main.c:252
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-msgstr ""
+msgstr "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
 
 #: main.c:255
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
-msgstr ""
+msgstr "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
+"dass deine Stromversorgung\n"
 
 #: main.c:256
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
-msgstr ""
+msgstr "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem"
+"sicheren Auswerfen von CIRCUITPY.)"
 
 #: main.c:260
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-msgstr ""
+msgstr "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu"
+" laden"
 
 #: main.c:415
 msgid "soft reboot\n"
-msgstr ""
+msgstr "weicher reboot"
 
 #: ports/atmel-samd/audio_dma.c:285
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
-msgstr ""
+msgstr "Alle sync event Kanäle werden benutzt"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:135
 msgid "calibration is read only"
-msgstr ""
+msgstr "Kalibrierung ist Schreibgeschützt"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:137
 msgid "calibration is out of range"
-msgstr ""
+msgstr "Kalibrierung ist außerhalb der Reichweite"
 
 #: ports/atmel-samd/board_busses.c:39
 msgid "No default I2C bus"
-msgstr ""
+msgstr "Kein Standard I2C Bus"
 
 #: ports/atmel-samd/board_busses.c:64
 msgid "No default SPI bus"
-msgstr ""
+msgstr "Kein Standard SPI Bus"
 
 #: ports/atmel-samd/board_busses.c:91
 msgid "No default UART bus"
-msgstr ""
+msgstr "Kein Standard UART Bus"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 #: ports/nrf/common-hal/analogio/AnalogIn.c:39
 msgid "Pin does not have ADC capabilities"
-msgstr ""
+msgstr "Pin hat keine ADC Funktionalität"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:49
 msgid "No DAC on chip"
-msgstr ""
+msgstr "Kein DAC vorhanden"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:56
 msgid "AnalogOut not supported on given pin"
-msgstr ""
+msgstr "AnalogOut ist an diesem Pin nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
-msgstr ""
+msgstr "Ungülgites bit clock pin"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
-msgstr ""
+msgstr "Bit clock und word select müssen eine clock unit teilen"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
 msgid "Invalid data pin"
-msgstr ""
+msgstr "Ungültiger data pin"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:169
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:174
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:145
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:150
 msgid "Serializer in use"
-msgstr ""
+msgstr "Serilaizer wird benutzt"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:230
 msgid "Clock unit in use"
-msgstr ""
+msgstr "Clock unit wird benutzt"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
 msgid "Unable to find free GCLK"
-msgstr ""
+msgstr "Konnte keinen freien GCLK finden"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:254
 msgid "Too many channels in sample."
-msgstr ""
+msgstr "Zu viele Kanäle im sample"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
 msgid "No DMA channel found"
-msgstr ""
+msgstr "Kein DMA Kanal gefunden"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
 msgid "Unable to allocate buffers for signed conversion"
-msgstr ""
+msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:109
 msgid "Invalid clock pin"
-msgstr ""
+msgstr "Ungültiger clock pin"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
-msgstr ""
+msgstr "Nur 8 oder 16 bit mono mit "
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
 msgid "sampling rate out of range"
-msgstr ""
+msgstr "Abtastrate außerhalb der Reichweite"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
 msgid "DAC already in use"
-msgstr ""
+msgstr "DAC wird schon benutzt"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
 msgid "Right channel unsupported"
-msgstr ""
+msgstr "Rechter Kanal wird nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
-msgstr ""
+msgstr "Ungültiger Pin"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
 msgid "Invalid pin for left channel"
-msgstr ""
+msgstr "Ungültiger Pin für linken Kanal"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
 msgid "Invalid pin for right channel"
-msgstr ""
+msgstr "Ungültiger Pin für rechten Kanal"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
 msgid "Cannot output both channels on the same pin"
-msgstr ""
+msgstr "Kann nicht beite Kanäle auf dem gleichen Pin ausgeben"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
-msgstr ""
+msgstr "Alle timer werden benutzt"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:215
 msgid "All event channels in use"
-msgstr ""
+msgstr "Alle event Kanälre werden benutzt"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
-msgstr ""
+msgstr "Nicht genug Pins vorhanden"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
@@ -358,170 +362,170 @@ msgstr ""
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:58
 msgid "Invalid pins"
-msgstr ""
+msgstr "Ungültige Pins"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:101
 msgid "SDA or SCL needs a pull up"
-msgstr ""
+msgstr "SDA oder SCL brauchen pull up"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
-msgstr ""
+msgstr "Baudrate wird nicht unterstütz"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
-msgstr ""
+msgstr "bytes mit merh als 8 bits werden nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
 msgid "tx and rx cannot both be None"
-msgstr ""
+msgstr "tx und rx können nicht beide None sein"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:139
 msgid "Failed to allocate RX buffer"
-msgstr ""
+msgstr "Konnte keinen RX Buffer allozieren"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:147
 msgid "Could not initialize UART"
-msgstr ""
+msgstr "Konnte UART nicht initialisieren"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:234
 msgid "No RX pin"
-msgstr ""
+msgstr "Kein RX Pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:284
 msgid "No TX pin"
-msgstr ""
+msgstr "Kein TX Pin"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c:158
 msgid "Cannot get pull while in output mode"
-msgstr ""
+msgstr "Pull up im Ausgabemodus nicht möglich"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr ""
+msgstr "Reset zum bootloader nicht möglich da bootloader nicht vorhanden"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
 #: ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
-msgstr ""
+msgstr "Ungültige PWM Frequenz"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
 msgid "All timers for this pin are in use"
-msgstr ""
+msgstr "Alle timer für diesen Pin werden benutzt"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
-msgstr ""
+msgstr "Keine Hardwareunterstützung an diesem Pin"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
-msgstr ""
+msgstr "EXTINT Kanal wird benutzt"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
-msgstr ""
+msgstr "Konnte keine RX Buffer mit %d allozieren"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
-msgstr ""
+msgstr "pop von einem leeren PulseIn"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:235
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
 msgid "index out of range"
-msgstr ""
+msgstr "index außerhalb der Reichweite"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:178
 msgid "Another send is already active"
-msgstr ""
+msgstr "Ein anderer Sendevorgang ist schon aktiv"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
-msgstr ""
+msgstr "Beide pins müssen Hardware Interrupts unterstützen"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:46
 msgid "A hardware interrupt channel is already in use"
-msgstr ""
+msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
-msgstr ""
+msgstr "Kalibrierwert nicht im Bereich von +/-127"
 
 #: ports/atmel-samd/common-hal/storage/__init__.c:48
 msgid "Cannot remount '/' when USB is active."
-msgstr ""
+msgstr "Kann '/' nicht remounten when USB aktiv ist"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
-msgstr ""
+msgstr "Keine freien GCLKs"
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:78
 #: ports/nrf/common-hal/usb_hid/Device.c:45
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
-msgstr ""
+msgstr "Buffergröße falsch, sollte %d bytes sein."
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
 #: ports/nrf/common-hal/usb_hid/Device.c:53
 msgid "USB Busy"
-msgstr ""
+msgstr "USB beschäftigt"
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
 #: ports/nrf/common-hal/usb_hid/Device.c:59
 msgid "USB Error"
-msgstr ""
+msgstr "USB Fehler"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
-msgstr ""
+msgstr "Pin %q hat keine ADC Funktion"
 
 #: ports/esp8266/common-hal/analogio/AnalogOut.c:39
 msgid "No hardware support for analog out."
-msgstr ""
+msgstr "Keine Hardwareunterstützung für analog out"
 
 #: ports/esp8266/common-hal/busio/SPI.c:72
 msgid "Pins not valid for SPI"
-msgstr ""
+msgstr "Pins nicht gültig für SPI"
 
 #: ports/esp8266/common-hal/busio/UART.c:45
 msgid "Only tx supported on UART1 (GPIO2)."
-msgstr ""
+msgstr "UART1 (GPIO2) unterstützt nur tx"
 
 #: ports/esp8266/common-hal/busio/UART.c:67 ports/esp8266/machine_uart.c:108
 msgid "invalid data bits"
-msgstr ""
+msgstr "Ungültige Datenbits"
 
 #: ports/esp8266/common-hal/busio/UART.c:91 ports/esp8266/machine_uart.c:144
 msgid "invalid stop bits"
-msgstr ""
+msgstr "Ungültige Stopbits"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
 msgid "ESP8266 does not support pull down."
-msgstr ""
+msgstr "ESP8266 unterstützt pull down nicht"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr ""
+msgstr "GPIO16 unterstützt pull up nicht"
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr ""
+msgstr "ESP8226 hat keinen Sicherheitsmodus"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:54
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:113
 #, c-format
 msgid "Maximum PWM frequency is %dhz."
-msgstr ""
+msgstr "Maximale PWM Frequenz ist %dHz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:57
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:116
 msgid "Minimum PWM frequency is 1hz."
-msgstr ""
+msgstr "Minimale PWM Frequenz ist %dHz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
