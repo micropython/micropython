@@ -27,6 +27,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "common-hal/busio/SPI.h"
 #include "py/nlr.h"
+#include "supervisor/shared/translate.h"
 
 #include "eagle_soc.h"
 #include "ets_alt_task.h"
@@ -68,7 +69,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                                 (mosi == MP_OBJ_TO_PTR(mp_const_none) && miso == &pin_MTDI) ||
                                 (mosi == &pin_MTCK && miso == &pin_MTDI))) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Pins not valid for SPI"));
+            translate("Pins not valid for SPI")));
     }
 
     busio_spi_init_gpio(SPI_CLK_USE_DIV, clock, mosi, miso);

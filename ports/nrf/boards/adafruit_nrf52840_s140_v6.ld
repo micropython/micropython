@@ -1,5 +1,5 @@
 /*
-    GNU linker script for NRF52840 w/S140 6.0.0 SoftDevice
+    GNU linker script for NRF52840 w/S140 6.x.x SoftDevice
 
     MEMORY MAP
     ------------------------------------------------------------------------
@@ -17,7 +17,7 @@
     0x00000000..0x00000FFF   (4KB) Master Boot Record
 */
 
-/* Specify the memory areas (S140 6.0.0) */
+/* Specify the memory areas (S140 6.x.x) */
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x100000

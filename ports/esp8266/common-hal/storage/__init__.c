@@ -28,11 +28,12 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
+#include "supervisor/shared/translate.h"
 
 void common_hal_storage_remount(const char* mount_path, bool readonly) {
-    mp_raise_NotImplementedError("");
+    mp_raise_NotImplementedError(translate("Unable to remount filesystem"));
 }
 
 void common_hal_storage_erase_filesystem() {
-    mp_raise_NotImplementedError("Use esptool to erase flash and re-upload Python instead");
+    mp_raise_NotImplementedError(translate("Use esptool to erase flash and re-upload Python instead"));
 }

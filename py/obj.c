@@ -86,19 +86,35 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
             assert(n % 3 == 0);
-            mp_print_str(print, translate("Traceback (most recent call last):\n"));
+            // Decompress the format strings
+            const compressed_string_t* traceback = translate("Traceback (most recent call last):\n");
+            char decompressed[traceback->length];
+            decompress(traceback, decompressed);
+#if MICROPY_ENABLE_SOURCE_LINE
+            const compressed_string_t* frame = translate("  File \"%q\", line %d");
+#else
+            const compressed_string_t* frame = translate("  File \"%q\"");
+#endif
+            char decompressed_frame[frame->length];
+            decompress(frame, decompressed_frame);
+            const compressed_string_t* block_fmt = translate(", in %q\n");
+            char decompressed_block[block_fmt->length];
+            decompress(block_fmt, decompressed_block);
+
+            // Print the traceback
+            mp_print_str(print, decompressed);
             for (int i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
-                mp_printf(print, translate("  File \"%q\", line %d"), values[i], (int)values[i + 1]);
+                mp_printf(print, decompressed_frame, values[i], (int)values[i + 1]);
 #else
-                mp_printf(print, translate("  File \"%q\""), values[i]);
+                mp_printf(print, decompressed_frame, values[i]);
 #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTR_NULL) {
                     mp_print_str(print, "\n");
                 } else {
-                    mp_printf(print, translate(", in %q\n"), block);
+                    mp_printf(print, decompressed_block, block);
                 }
             }
         }

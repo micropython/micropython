@@ -33,6 +33,7 @@
 #include "py/mphal.h"
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
 extern volatile bool gpio16_in_use;
@@ -45,9 +46,9 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
         WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);	//mux configuration for out enable
         WRITE_PERI_REG(RTC_GPIO_ENABLE, READ_PERI_REG(RTC_GPIO_ENABLE) & ~1);	//out disable
         claim_pin(pin);
-    } else {    
+    } else {
         PIN_FUNC_SELECT(self->pin->peripheral, self->pin->gpio_function);
-    }    
+    }
     return DIGITALINOUT_OK;
 }
 
@@ -196,7 +197,7 @@ void common_hal_digitalio_digitalinout_set_pull(
         digitalio_digitalinout_obj_t* self, digitalio_pull_t pull) {
     if (pull == PULL_DOWN) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "ESP8266 does not support pull down."));
+            translate("ESP8266 does not support pull down.")));
         return;
     }
     if (self->pin->gpio_number == 16) {
@@ -206,7 +207,7 @@ void common_hal_digitalio_digitalinout_set_pull(
         // raise the exception so the user knows PULL_UP is not available
         if (pull != PULL_NONE){
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "GPIO16 does not support pull up."));
+            translate("GPIO16 does not support pull up.")));
         }
         return;
     }

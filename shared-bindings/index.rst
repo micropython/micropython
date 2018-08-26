@@ -34,6 +34,7 @@ Module             Supported Ports
 `digitalio`        **All Supported**
 `gamepad`          **SAMD Express, nRF**
 `hashlib`          **ESP8266**
+`i2cslave`         **SAMD Express**
 `math`             **All Supported**
 `microcontroller`  **All Supported**
 `multiterminal`    **ESP8266**

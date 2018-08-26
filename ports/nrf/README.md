@@ -36,9 +36,9 @@ the following links:
 > **NOTE**: These board specific readmes may be more up to date than the
   generic board-neutral documentation further down.
 
-* Adafruit [Feather nRF52](boards/feather52/README.md): 512KB Flash, 64KB SRAM
-* Adafruit [Feather nRF52840](boards/feather52840/README.md): 1MB Flash, 256KB SRAM
-* Nordic PCA10056 see [Feather nRF52840](boards/feather52840/README.md)
+* Adafruit [Feather nRF52](boards/feather_nrf52832/README.md): 512KB Flash, 64KB SRAM
+* Adafruit [Feather nRF52840](boards/feather_nrf52840_express/README.md): 1MB Flash, 256KB SRAM
+* Nordic PCA10056 see [Feather nRF52840](boards/pca10056/README.md)
 
 For all other board targets, see the generic notes below.
 
@@ -74,11 +74,12 @@ Note: further tuning of features to include in bluetooth or even setting up the 
 
 ## Target Boards and Make Flags
 
-Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Flash Util
----------------------|-------------------------|------------------------|-------------------------------
-pca10040             | s132                    | Peripheral and Scanner | [Segger](#segger-targets)
-feather52832         | s132                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
-pca10056             | s140                    | Peripheral and Scanner | [Segger](#segger-targets)
+Target Board (BOARD)     | Bluetooth Stack (SD)    | Bluetooth Support      | Flash Util
+-------------------------|-------------------------|------------------------|-------------------------------
+pca10040                 | s132                    | Peripheral and Scanner | [Segger](#segger-targets)
+pca10056                 | s140                    | Peripheral and Scanner | [Segger](#segger-targets)
+feather_nrf52832         | s132                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
+feather_nrf52840_express | s140                    | Peripheral and Scanner | UF2 bootloader
 
 ## Segger Targets
 
@@ -98,21 +99,18 @@ note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrf
 
 ## DFU Targets
 
-    sudo apt-get install build-essential libffi-dev pkg-config gcc-arm-none-eabi git python python-pip
-    git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git
-    cd Adafruit_nRF52_Arduino/tools/nrfutil-0.5.2/
-    sudo pip install -r requirements.txt
-    sudo python setup.py install
+run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
+
+    $ pip3 install --user adafruit-nrfutil
 
 **make flash** and **make sd** will not work with DFU targets. Hence, **dfu-gen** and **dfu-flash** must be used instead.
 * dfu-gen: Generates a Firmware zip to be used by the DFU flash application.
 * dfu-flash: Triggers the DFU flash application to upload the firmware from the generated Firmware zip file.
 
-Example on how to generate and flash feather52832 target:
+Example on how to generate and flash feather_nrf52832 target:
 
-    make BOARD=feather52832 SD=s132
-    make BOARD=feather52832 SD=s132 dfu-gen
-    make BOARD=feather52832 SD=s132 dfu-flash
+    make BOARD=feather_nrf52832 SD=s132
+    make BOARD=feather52832 SD=s132 dfu-gen dfu-flash
 
 ## Bluetooth LE REPL
 

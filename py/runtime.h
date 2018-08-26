@@ -147,18 +147,18 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg);
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...);
-NORETURN void mp_raise_ValueError(const char *msg);
-NORETURN void mp_raise_ValueError_varg(const char *fmt, ...);
-NORETURN void mp_raise_TypeError(const char *msg);
-NORETURN void mp_raise_TypeError_varg(const char *fmt, ...);
-NORETURN void mp_raise_AttributeError(const char *msg);
-NORETURN void mp_raise_RuntimeError(const char *msg);
-NORETURN void mp_raise_ImportError(const char *msg);
-NORETURN void mp_raise_IndexError(const char *msg);
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_ValueError(const compressed_string_t *msg);
+NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
+NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_AttributeError(const compressed_string_t *msg);
+NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
+NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
+NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_OSError(int errno_);
-NORETURN void mp_raise_NotImplementedError(const char *msg);
+NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);
 NORETURN void mp_raise_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG

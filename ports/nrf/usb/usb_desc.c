@@ -78,6 +78,8 @@ enum {
 // STRING DESCRIPTORS
 //--------------------------------------------------------------------+
 
+uint16_t usb_desc_str_serial[1+16] = { TUD_DESC_STR_HEADER(16) };
+
 // array of pointer to string descriptors
 uint16_t const * const string_desc_arr [] =
 {
@@ -91,7 +93,7 @@ uint16_t const * const string_desc_arr [] =
     TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','y',' ','n','R','F','5','2'),
 
     // 3 Serials TODO use chip ID
-    TUD_DESC_STRCONV('1', '2', '3', '4', '5'),
+    usb_desc_str_serial,
 
     // 4 CDC Interface
     TUD_DESC_STRCONV('C','i','r','c','u','i','t','P','y',' ','S','e','r','i','a','l'),

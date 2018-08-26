@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Noralf Trønnes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,22 @@
  * THE SOFTWARE.
  */
 
-#define FEATHER52840
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_SLAVE_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_SLAVE_H
 
-#define MICROPY_HW_BOARD_NAME       "Feather52840"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "Feather52840"
+#include "common-hal/microcontroller/Pin.h"
+#include "py/obj.h"
 
-#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
-#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
-#define MICROPY_HW_UART_HWFC        (0)
+typedef struct {
+    mp_obj_base_t base;
 
-#define PORT_HEAP_SIZE              (128 * 1024)
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+    uint8_t *addresses;
+    unsigned int num_addresses;
+
+    Sercom *sercom;
+    uint8_t scl_pin;
+    uint8_t sda_pin;
+    bool writing;
+} i2cslave_i2c_slave_obj_t;
+
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_SLAVE_H

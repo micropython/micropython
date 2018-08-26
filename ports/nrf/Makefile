@@ -248,7 +248,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-.phony: all flash sd binary hex bootloader
+.phony: all flash sd binary hex
 
 all: binary hex uf2
 
@@ -265,6 +265,11 @@ hex: $(BUILD)/$(OUTPUT_FILENAME).hex
 
 $(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O ihex $< $@
+
+## Create uf2 file
+uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
+	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
 
 #####################
 # Flash with debugger
@@ -286,9 +291,6 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
-bootloader:
-	nrfjprog --program $(BOOT_FILE).hex -f nrf52 --chiperase --reset
-
 else ifeq ($(FLASHER), pyocd)
 
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
@@ -303,21 +305,19 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
 	pyocd-tool -t $(MCU_SUB_VARIANT) reset $(BOOT_SETTING_ADDR)
 
-bootloader:
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $(BOOT_FILE).hex --chip_erase
-	pyocd-tool -t $(MCU_SUB_VARIANT) reset
-
 endif
 
 #####################
 # Flash with DFU
 #####################
-.phony: dfu-gen dfu-flash dfu-bootloader
+.phony: dfu-gen dfu-flash
 
-ifeq ($(OS),Windows_NT)
-   NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
+NRFUTIL = adafruit-nrfutil
+
+ifeq ($(MCU_SUB_VARIANT),nrf52840)
+	DFU_TOUCH = --touch 1200
 else
-   NRFUTIL = nrfutil
+	DFU_TOUCH =
 endif
 
 check_defined = \
@@ -327,22 +327,16 @@ __check_defined = \
     $(if $(value $1),, \
     $(error Undefined make flag: $1$(if $2, ($2))))
 
-dfu-gen: $(BUILD)/$(OUTPUT_FILENAME).hex
-	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
-
+## Flash with DFU serial
 dfu-flash: $(BUILD)/dfu-package.zip
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank
+	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
 
-dfu-bootloader:
-	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
-	$(NRFUTIL) --verbose dfu serial --package $(BOOT_FILE).zip -p $(SERIAL) -b 115200
+## Create DFU package file
+dfu-gen: $(BUILD)/dfu-package.zip 
 
-uf2: $(BUILD)/$(OUTPUT_FILENAME).hex
-	$(ECHO) "Create $(OUTPUT_FILENAME).uf2"
-	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/$(OUTPUT_FILENAME).uf2" $^
-
-$(BUILD)/dfu-package.zip: dfu-gen
+$(BUILD)/dfu-package.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
