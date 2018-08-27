@@ -121,6 +121,9 @@ typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_t            notif_handler;
     mp_obj_t            conn_handler;
     mp_obj_t            service_list;
+    volatile bool       encrypted;
+    volatile bool       bonded;
+    volatile bool       bonding_requested;
 } ubluepy_peripheral_obj_t;
 
 typedef struct _ubluepy_service_obj_t {

@@ -114,6 +114,16 @@ void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt
 
 void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type);
 
+#if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+void ble_drv_encrypt(uint16_t conn_handle);
+
+void ble_drv_auth(uint16_t conn_handle);
+
+bool ble_drv_bond_info_get(uint8_t * p_buffer_own, uint16_t * len_own, uint8_t * p_buffer_peer, uint16_t * len_peer);
+
+bool ble_drv_bond_info_set(uint8_t * p_buffer_own, uint16_t len_own, uint8_t * p_buffer_peer, uint16_t len_peer);
+#endif // (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+
 bool ble_drv_discover_services(mp_obj_t obj, uint16_t conn_handle, uint16_t start_handle, ble_drv_disc_add_service_callback_t cb);
 
 bool ble_drv_discover_characteristic(mp_obj_t obj,

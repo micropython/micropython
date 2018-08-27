@@ -91,6 +91,18 @@ static volatile bool m_primary_service_found;
 static volatile bool m_characteristic_found;
 static volatile bool m_write_done;
 
+static ble_gap_sec_keyset_t   m_bond_keys;
+
+static ble_gap_enc_key_t      m_peer_enc_key;
+static ble_gap_id_key_t       m_peer_id_key;
+static ble_gap_sign_info_t    m_peer_sign_key;
+static ble_gap_lesc_p256_pk_t m_peer_pk;
+
+static ble_gap_enc_key_t      m_own_enc_key;
+static ble_gap_id_key_t       m_own_id_key;
+static ble_gap_sign_info_t    m_own_sign_key;
+static ble_gap_lesc_p256_pk_t m_own_pk;
+
 static volatile ble_drv_adv_evt_callback_t          adv_event_handler;
 static volatile ble_drv_gattc_evt_callback_t        gattc_event_handler;
 static volatile ble_drv_disc_add_service_callback_t disc_add_service_handler;
@@ -126,6 +138,18 @@ void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
 #endif
 
 uint32_t ble_drv_stack_enable(void) {
+#if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+    m_bond_keys.keys_peer.p_enc_key  = &m_peer_enc_key;
+    m_bond_keys.keys_peer.p_id_key   = &m_peer_id_key;
+    m_bond_keys.keys_peer.p_sign_key = &m_peer_sign_key;
+    m_bond_keys.keys_peer.p_pk       = &m_peer_pk;
+
+    m_bond_keys.keys_own.p_enc_key   = &m_own_enc_key;
+    m_bond_keys.keys_own.p_id_key    = &m_own_id_key;
+    m_bond_keys.keys_own.p_sign_key  = &m_own_sign_key;
+    m_bond_keys.keys_own.p_pk        = &m_own_pk;
+#endif // (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+
     m_adv_in_progress = false;
     m_tx_in_progress  = 0;
 
@@ -185,7 +209,11 @@ uint32_t ble_drv_stack_enable(void) {
 
     ble_conf.gap_cfg.role_count_cfg.periph_role_count   = 1;
     ble_conf.gap_cfg.role_count_cfg.central_role_count  = 1;
+#if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+    ble_conf.gap_cfg.role_count_cfg.central_sec_count   = 1;
+#else
     ble_conf.gap_cfg.role_count_cfg.central_sec_count   = 0;
+#endif // (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
     err_code = sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &ble_conf, app_ram_start_cfg);
 
     BLE_DRIVER_LOG("BLE_GAP_CFG_ROLE_COUNT status: " UINT_FMT "\n", (uint16_t)err_code);
@@ -736,6 +764,126 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t 
 
 #if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
 
+bool ble_drv_bond_info_get(uint8_t * p_buffer_own, uint16_t * len_own, uint8_t * p_buffer_peer, uint16_t * len_peer) {
+    uint16_t size_enc_key  = sizeof(ble_gap_enc_key_t);
+    uint16_t size_id_key   = sizeof(ble_gap_id_key_t);
+
+    uint16_t byte_pos = 4;
+
+    if ((p_buffer_peer != NULL) && (*len_peer > 0)) {
+        memset(p_buffer_peer, 0, *len_peer);
+
+        if (m_bond_keys.keys_peer.p_enc_key != NULL) {
+            if (byte_pos + size_enc_key <= *len_peer) {
+                memcpy(&p_buffer_peer[byte_pos], m_bond_keys.keys_peer.p_enc_key, size_enc_key);
+                BLE_DRIVER_LOG("\n");
+                for (int i = 0; i < size_enc_key; i++) {
+                    BLE_DRIVER_LOG("%d, ", *(uint8_t *)&m_bond_keys.keys_peer.p_enc_key[i]);
+                }
+                BLE_DRIVER_LOG("\n");
+                byte_pos += size_enc_key;
+                p_buffer_peer[0] = 1;
+            } else {
+                *len_peer = byte_pos + size_enc_key;
+                return false;
+            }
+        }
+
+        if (m_bond_keys.keys_peer.p_id_key != NULL) {
+            if (byte_pos + size_id_key <= *len_peer) {
+                memcpy(&p_buffer_peer[byte_pos], m_bond_keys.keys_peer.p_id_key, size_id_key);
+                byte_pos += size_id_key;
+                p_buffer_peer[1] = 1;
+            } else {
+                *len_peer = byte_pos + size_id_key;
+                return false;
+            }
+        }
+
+        *len_peer = byte_pos;
+    }
+
+    return true;
+}
+
+bool ble_drv_bond_info_set(uint8_t * p_buffer_own, uint16_t len_own, uint8_t * p_buffer_peer, uint16_t len_peer) {
+    uint16_t size_enc_key  = sizeof(ble_gap_enc_key_t);
+    uint16_t size_id_key   = sizeof(ble_gap_id_key_t);
+
+    uint16_t byte_pos = 4;
+
+    if ((p_buffer_peer != NULL) && (len_peer > 0)) {
+        // There is a valid destination, and its supplied in the buffer.
+        if ((m_bond_keys.keys_peer.p_enc_key != NULL) && (p_buffer_peer[0] == 1)) {
+            // Clear the destination memory
+            memset(m_bond_keys.keys_peer.p_enc_key, 0, len_peer);
+
+            // Make sure we have passed the full enc key.
+            if (byte_pos + size_enc_key <= len_peer) {
+                memcpy(m_bond_keys.keys_peer.p_enc_key, &p_buffer_peer[byte_pos],  size_enc_key);
+                byte_pos += size_enc_key;
+            } else {
+                return false;
+            }
+        }
+
+        if ((m_bond_keys.keys_peer.p_id_key != NULL) && (p_buffer_peer[1] == 1)) {
+            // Clear the destination memory
+            memset(m_bond_keys.keys_peer.p_id_key, 0, len_peer);
+
+            // Make sure we have passed the full id key.
+            if (byte_pos + size_id_key <= len_peer) {
+                memcpy(m_bond_keys.keys_peer.p_id_key, &p_buffer_peer[byte_pos],  size_id_key);
+                byte_pos += size_enc_key;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void ble_drv_encrypt(uint16_t conn_handle) {
+    BLE_DRIVER_LOG("Request enryption\n");
+
+    uint32_t err_code;
+    if ((err_code = sd_ble_gap_encrypt(conn_handle,
+                                       &m_bond_keys.keys_peer.p_enc_key->master_id,
+                                       &m_bond_keys.keys_peer.p_enc_key->enc_info) != 0)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not initiate encryption, conn_handle %u. status: 0x" HEX2_FMT, conn_handle, (uint16_t)err_code));
+    }
+}
+
+void ble_drv_auth(uint16_t conn_handle) {
+    BLE_DRIVER_LOG("Request authenticate\n");
+    ble_gap_sec_params_t sec_params;
+    memset(&sec_params, 0, sizeof(ble_gap_sec_params_t));
+
+    sec_params.bond     = 1;
+    sec_params.mitm     = 1;
+    sec_params.io_caps  = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+    sec_params.min_key_size = 7;
+    sec_params.max_key_size = 16;
+
+    sec_params.kdist_own.enc   = 1;
+    sec_params.kdist_own.id    = 1;
+    sec_params.kdist_own.sign  = 0;
+    sec_params.kdist_own.link  = 0;
+
+    sec_params.kdist_peer.enc  = 1;
+    sec_params.kdist_peer.id   = 1;
+    sec_params.kdist_peer.sign = 0;
+    sec_params.kdist_peer.link = 0;
+
+    uint32_t err_code;
+    if ((err_code = sd_ble_gap_authenticate(conn_handle, &sec_params)) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not initiate authentication of peer, conn_handle %u. status: 0x" HEX2_FMT, conn_handle, (uint16_t)err_code));
+    }
+}
+
 void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t evt_handler) {
     mp_gattc_observer = obj;
     gattc_event_handler = evt_handler;
@@ -770,7 +918,7 @@ void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, u
     ble_gattc_write_params_t write_params;
 
     if (w_response) {
-            write_params.write_op = BLE_GATT_OP_WRITE_REQ;
+        write_params.write_op = BLE_GATT_OP_WRITE_REQ;
     } else {
         write_params.write_op = BLE_GATT_OP_WRITE_CMD;
     }
@@ -787,7 +935,7 @@ void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, u
 
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Can not write attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+                  "Can not write attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
 
     while (m_write_done != true) {
@@ -835,7 +983,7 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
     scan_params.active   = 1;
     scan_params.interval = MSEC_TO_UNITS(100, UNIT_0_625_MS);
     scan_params.window   = MSEC_TO_UNITS(100, UNIT_0_625_MS);
-    scan_params.timeout  = 0; // infinite
+    scan_params.timeout  = MSEC_TO_UNITS(10000, UNIT_0_625_MS);
 
     ble_gap_addr_t addr;
     memset(&addr, 0, sizeof(addr));
@@ -961,6 +1109,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // GATTC  0x30 -> 0x4F
 // GATTS  0x50 -> 0x6F
 // L2CAP  0x70 -> 0x8F
+    BLE_DRIVER_LOG("BLE event %u\n", p_ble_evt->header.evt_id);
     switch (p_ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
             BLE_DRIVER_LOG("GAP CONNECT\n");
@@ -993,6 +1142,10 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE:
             BLE_DRIVER_LOG("GAP CONN PARAM UPDATE\n");
+            BLE_DRIVER_LOG("- min_conn_interval: %u\n", p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params.min_conn_interval);
+            BLE_DRIVER_LOG("- max_conn_interval: %u\n", p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params.max_conn_interval);
+            BLE_DRIVER_LOG("- slave_latency: %u\n", p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params.slave_latency);
+            BLE_DRIVER_LOG("- conn_sup_timeout: %u\n", p_ble_evt->evt.gap_evt.params.conn_param_update.conn_params.conn_sup_timeout);
             break;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
@@ -1019,13 +1172,97 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
             BLE_DRIVER_LOG("BLE EVT SEC PARAMS REQUEST\n");
-            // pairing not supported
-            (void)sd_ble_gap_sec_params_reply(p_ble_evt->evt.gatts_evt.conn_handle,
+#if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+            BLE_DRIVER_LOG("- bond: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.bond);
+            BLE_DRIVER_LOG("- mitm: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.mitm);
+            BLE_DRIVER_LOG("- lesc: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.lesc);
+            BLE_DRIVER_LOG("- keypress: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.keypress);
+            BLE_DRIVER_LOG("- io_caps: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.io_caps);
+            BLE_DRIVER_LOG("- oob: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.oob);
+            BLE_DRIVER_LOG("- min_key_size: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.min_key_size);
+            BLE_DRIVER_LOG("- max_key_size: %u\n", p_ble_evt->evt.gap_evt.params.sec_params_request.peer_params.max_key_size);
+
+            (void)sd_ble_gap_sec_params_reply(p_ble_evt->evt.gap_evt.conn_handle,
+                                              BLE_GAP_SEC_STATUS_SUCCESS,
+                                              NULL,
+                                              &m_bond_keys);
+#else
+            (void)sd_ble_gap_sec_params_reply(p_ble_evt->evt.gap_evt.conn_handle,
                                               BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP,
-                                              NULL, NULL);
+                                              NULL,
+                                              NULL);
+#endif // (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
             break;
 
 #if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+
+        case BLE_GAP_EVT_SEC_REQUEST:
+            BLE_DRIVER_LOG("BLE_GAP_EVT_SEC_REQUEST\n");
+            gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+
+            break;
+
+        case BLE_GAP_EVT_AUTH_STATUS:
+            BLE_DRIVER_LOG("BLE EVT AUTH STATUS\n");
+            BLE_DRIVER_LOG("- auth_status: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.auth_status);
+            BLE_DRIVER_LOG("- error_src: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.error_src);
+            BLE_DRIVER_LOG("- bonded: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.bonded);
+            BLE_DRIVER_LOG("- sm1_levels:\n");
+            BLE_DRIVER_LOG("  - lv1: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm1_levels.lv1);
+            BLE_DRIVER_LOG("  - lv2: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm1_levels.lv2);
+            BLE_DRIVER_LOG("  - lv3: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm1_levels.lv3);
+            BLE_DRIVER_LOG("  - lv4: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm1_levels.lv4);
+            BLE_DRIVER_LOG("- sm2_levels:\n");
+            BLE_DRIVER_LOG("  - lv1: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm2_levels.lv1);
+            BLE_DRIVER_LOG("  - lv2: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm2_levels.lv2);
+            BLE_DRIVER_LOG("  - lv3: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm2_levels.lv3);
+            BLE_DRIVER_LOG("  - lv4: %u\n", p_ble_evt->evt.gap_evt.params.auth_status.sm2_levels.lv4);
+
+            BLE_DRIVER_LOG("- dist_key-own:\n");
+            BLE_DRIVER_LOG(" - enc: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_own.enc);
+            BLE_DRIVER_LOG(" - id: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_own.id);
+            BLE_DRIVER_LOG(" - sign: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_own.sign);
+            BLE_DRIVER_LOG(" - link: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_own.link);
+
+            BLE_DRIVER_LOG("- dist_key-peer:\n");
+            BLE_DRIVER_LOG(" - enc: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_peer.enc);
+            BLE_DRIVER_LOG(" - id: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_peer.id);
+            BLE_DRIVER_LOG(" - sign: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_peer.sign);
+            BLE_DRIVER_LOG(" - link: %u\n", (uint8_t)p_ble_evt->evt.gap_evt.params.auth_status.kdist_peer.link);
+
+            if (p_ble_evt->evt.gap_evt.params.auth_status.bonded) {
+                gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            }
+
+	    break;
+
+        case BLE_GAP_EVT_CONN_SEC_UPDATE:
+            BLE_DRIVER_LOG("BLE EVT CONN SEC UPDATE\n");
+
+            BLE_DRIVER_LOG("- sm: %u\n", p_ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec.sec_mode.sm);
+            BLE_DRIVER_LOG("- lv: %u\n", p_ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec.sec_mode.lv);
+            BLE_DRIVER_LOG("- encr_key_size: %u\n", p_ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec.encr_key_size);
+
+            // If encyrpted and authenticated
+            if ((p_ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec.sec_mode.sm == 1) &&
+                (p_ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec.sec_mode.lv == 3)) {
+                gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            }
+
+            break;
+
+        case BLE_GAP_EVT_PASSKEY_DISPLAY: {
+            BLE_DRIVER_LOG("BLE GAP EVT PASSKEY DISPLAY\n");
+            for (int i = 0; i < BLE_GAP_PASSKEY_LEN; i++) {
+                BLE_DRIVER_LOG("%c", p_ble_evt->evt.gap_evt.params.passkey_display.passkey[i]);
+            }
+
+            BLE_DRIVER_LOG("\n- match_request: %u\n", p_ble_evt->evt.gap_evt.params.passkey_display.match_request);
+            gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, BLE_GAP_PASSKEY_LEN, &p_ble_evt->evt.gap_evt.params.passkey_display.passkey[0]);
+
+            break;
+        }
+
         case BLE_GAP_EVT_ADV_REPORT:
             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
             ble_drv_adv_data_t adv_data = {
@@ -1170,9 +1407,11 @@ void SWI2_EGU2_IRQHandler(void) {
             //    not happen.
             // In all cases, it's best to simply stop now.
             if (err_code == NRF_ERROR_DATA_SIZE) {
-                BLE_DRIVER_LOG("NRF_ERROR_DATA_SIZE\n");
+                BLE_DRIVER_LOG("NRF_ERROR_DATA_SIZE, current: %u, current: %u\n", sizeof(m_ble_evt_buf), evt_len);
             }
-            break;
+	    if (err_code == NRF_ERROR_NOT_FOUND) {
+                break;
+	    }
         }
         ble_evt_handler((ble_evt_t *)m_ble_evt_buf);
     }

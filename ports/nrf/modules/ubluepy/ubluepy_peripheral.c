@@ -23,7 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #include <string.h>
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -31,7 +30,7 @@
 #include "py/objlist.h"
 
 #if MICROPY_PY_UBLUEPY
-
+#include "mphalport.h"
 #include "ble_drv.h"
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -48,6 +47,13 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
         self->conn_handle = conn_handle;
     } else if (event_id == 17) {         // disconnect event
         self->conn_handle = 0xFFFF;      // invalid connection handle
+    } else if (event_id == 21) {         // passkey display
+    } else if (event_id == 25) {         // bonded
+        self->bonded = true;
+    } else if (event_id == 26) {         // connection security update
+        self->encrypted = true;
+    } else if (event_id == 30) {         // sec request
+        self->bonding_requested = true;
     }
 
     if (self->conn_handler != mp_const_none) {
@@ -90,12 +96,23 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
-static volatile bool m_disc_evt_received;
-
 STATIC void gattc_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-    m_disc_evt_received = true;
+
+    if (self->conn_handler != mp_const_none) {
+        mp_obj_t args[3];
+        mp_uint_t num_of_args = 3;
+        args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
+        args[1] = MP_OBJ_NEW_SMALL_INT(attr_handle);
+        if (data != NULL) {
+            args[2] = mp_obj_new_bytearray_by_ref(length, data);
+        } else {
+            args[2] = mp_const_none;
+        }
+
+        // for now hard-code all events to conn_handler
+        mp_call_function_n_kw(self->conn_handler, num_of_args, 0, args);
+    }
 }
 #endif
 
@@ -121,6 +138,9 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     s->conn_handler  = mp_const_none;
     s->notif_handler = mp_const_none;
     s->conn_handle   = 0xFFFF;
+    s->bonded        = false;
+    s->bonding_requested = false;
+    s->encrypted     = false;
 
     s->service_list = mp_obj_new_list(0, NULL);
 
@@ -312,7 +332,7 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
     peripheral_add_service(self, MP_OBJ_FROM_PTR(p_service));
 }
 
-void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
+void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_char_data) {
     ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
     ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
     p_char->base.type = &ubluepy_characteristic_type;
@@ -322,13 +342,13 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
 
     p_char->p_uuid = p_uuid;
 
-    p_uuid->type = p_desc_data->uuid_type;
-    p_uuid->value[0] = p_desc_data->uuid & 0xFF;
-    p_uuid->value[1] = p_desc_data->uuid >> 8;
+    p_uuid->type = p_char_data->uuid_type;
+    p_uuid->value[0] = p_char_data->uuid & 0xFF;
+    p_uuid->value[1] = p_char_data->uuid >> 8;
 
     // add characteristic specific data from discovery
-    p_char->props  = p_desc_data->props;
-    p_char->handle = p_desc_data->value_handle;
+    p_char->props  = p_char_data->props;
+    p_char->handle = p_char_data->value_handle;
 
     // equivalent to ubluepy_service.c - service_add_characteristic()
     // except the registration of the characteristic towards the bluetooth stack
@@ -338,7 +358,7 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
     mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
 }
 
-/// \method connect(device_address [, addr_type=ADDR_TYPE_PUBLIC])
+/// \method connect(device_address [, addr_type=ADDR_TYPE_PUBLIC, [, pair=bool, bond_data=[]]])
 /// Connect to device peripheral with the given device address.
 /// addr_type can be either ADDR_TYPE_PUBLIC (default) or
 /// ADDR_TYPE_RANDOM_STATIC.
@@ -350,14 +370,35 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
     self->role = UBLUEPY_ROLE_CENTRAL;
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_ADDR_TYPE_PUBLIC } },
+        { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int  = UBLUEPY_ADDR_TYPE_PUBLIC } },
+        { MP_QSTR_pair,      MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false } },
+        { MP_QSTR_bond_data, MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj  = mp_const_none } },
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    uint8_t addr_type = args[0].u_int;
+    uint8_t  addr_type      = args[0].u_int;
+    bool     pairing_wanted = args[1].u_bool;
+    mp_obj_t bond_data_obj  = args[2].u_obj;
+
+    uint8_t * p_bond_data   = NULL;
+    uint8_t   bond_data_len = 0;
+
+    if (bond_data_obj != mp_const_none) {
+        mp_buffer_info_t bufinfo_bond_data;
+        mp_get_buffer_raise(bond_data_obj, &bufinfo_bond_data, MP_BUFFER_READ);
+
+        if (bufinfo_bond_data.len > 0) {
+            p_bond_data   = bufinfo_bond_data.buf;
+            bond_data_len = bufinfo_bond_data.len;
+	    if (bond_data_len == 0) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                          "Invalid bond_data parameter, length invalid."));
+	    }
+        }
+    }
 
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
 
@@ -391,6 +432,47 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
         ;
     }
 
+    mp_obj_t peer_keys = mp_const_none;
+
+    while (pairing_wanted && !self->bonding_requested) {
+        ;
+    }
+
+    mp_hal_delay_ms(500);
+
+    bool bond = false;
+
+    if (p_bond_data != NULL && bond_data_len > 0) {
+        // If we are already bonded, issue encrypt()
+	ble_drv_bond_info_set(NULL, 0, p_bond_data, bond_data_len);
+        ble_drv_encrypt(self->conn_handle);
+	bond = true;
+    } else {
+	// If we want to pair first time, issue auth()
+        ble_drv_auth(self->conn_handle);
+    }
+
+    // If we need to wait for SEC PARAM UPDATE
+    while (pairing_wanted && !self->encrypted) {
+        ;
+    }
+
+    // If we need to wait for AUTH STATUS (bonding using existing keys)
+    while (pairing_wanted && !self->bonded && !bond) {
+        ;
+    }
+
+    // If this is first time bonding, capture the keys
+    if (pairing_wanted && !bond) {
+        // Pair instead
+        uint16_t size_peer = 55;
+        uint8_t * p_peer_buffer = m_new(uint8_t, size_peer);
+
+        ble_drv_bond_info_get(NULL, NULL, p_peer_buffer, &size_peer);
+
+        peer_keys = mp_obj_new_bytearray(size_peer, p_peer_buffer);
+    }
+
     ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(self), gattc_event_handler);
 
     bool service_disc_retval = ble_drv_discover_services(self, self->conn_handle, 0x0001, disc_add_service);
@@ -422,6 +504,7 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
                                                                 p_service->start_handle,
                                                                 p_service->end_handle,
                                                                 disc_add_char);
+
         // continue discovery of characteristics ...
         while (char_disc_retval) {
             mp_obj_t * characteristics = NULL;
@@ -440,13 +523,14 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
                 break;
             }
         }
+
     }
 
-    return mp_const_none;
+    return peer_keys;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_connect_obj, 2, peripheral_connect);
 
-#endif
+#endif // MICROPY_PY_UBLUEPY_CENTRAL
 
 STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_withDelegate),           MP_ROM_PTR(&ubluepy_peripheral_with_delegate_obj) },
