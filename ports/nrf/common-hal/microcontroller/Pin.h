@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
 
-#include "pin.h"
+#include "nrf_pin.h"
 #include "py/mphal.h"
 
 #define mcu_pin_obj_t pin_obj_t
