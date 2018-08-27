@@ -30,7 +30,7 @@
 #include "ble_uart.h"
 #else
 #include "nrf_gpio.h"
-#include "pin.h"
+#include "nrf_pin.h"
 #endif
 
 #if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )

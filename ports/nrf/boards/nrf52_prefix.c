@@ -4,7 +4,7 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
-#include "pin.h"
+#include "nrf_pin.h"
 
 #define PIN(p_name, p_port, p_pin, p_adc_channel) \
 { \
