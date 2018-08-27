@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
 #define MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
 
+#define EPOCH1970_EPOCH2000_DIFF_SECS    946684800
+
 typedef struct _timeutils_struct_time_t {
     uint16_t    tm_year;    // i.e. 2014
     uint8_t     tm_mon;     // 1..12
@@ -47,6 +49,11 @@ void timeutils_seconds_since_2000_to_struct_time(mp_uint_t t,
 
 mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
     mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second);
+
+void timeutils_seconds_since_epoch_to_struct_time(mp_uint_t t, timeutils_struct_time_t *tm);
+
+mp_uint_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month, mp_uint_t date,
+                                       mp_uint_t hour, mp_uint_t minute, mp_uint_t second);
 
 mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds);
