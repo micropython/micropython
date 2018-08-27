@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2016 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,12 +64,19 @@ typedef struct {
     uint16_t value_handle;
 } ble_drv_char_data_t;
 
+typedef struct {
+    uint16_t uuid;
+    uint8_t  uuid_type;
+    uint16_t handle;
+} ble_drv_desc_data_t;
+
 typedef void (*ble_drv_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gattc_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_adv_evt_callback_t)(mp_obj_t self, uint16_t event_id, ble_drv_adv_data_t * data);
 typedef void (*ble_drv_disc_add_service_callback_t)(mp_obj_t self, ble_drv_service_data_t * p_service_data);
-typedef void (*ble_drv_disc_add_char_callback_t)(mp_obj_t self, ble_drv_char_data_t * p_desc_data);
+typedef void (*ble_drv_disc_add_char_callback_t)(mp_obj_t self, ble_drv_char_data_t * p_char_data);
+typedef void (*ble_drv_disc_add_desc_callback_t)(mp_obj_t self, ble_drv_desc_data_t * p_desc_data);
 typedef void (*ble_drv_gattc_char_data_callback_t)(mp_obj_t self, uint16_t length, uint8_t * p_data);
 
 uint32_t ble_drv_stack_enable(void);
@@ -122,7 +129,11 @@ bool ble_drv_discover_characteristic(mp_obj_t obj,
                                      uint16_t end_handle,
                                      ble_drv_disc_add_char_callback_t cb);
 
-void ble_drv_discover_descriptors(void);
+bool ble_drv_discover_descriptor(mp_obj_t obj,
+                                 uint16_t conn_handle,
+                                 uint16_t start_handle,
+                                 uint16_t end_handle,
+                                 ble_drv_disc_add_desc_callback_t cb);
 
 #endif // BLUETOOTH_SD
 

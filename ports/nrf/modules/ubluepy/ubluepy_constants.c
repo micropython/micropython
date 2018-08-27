@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2017 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,6 +79,10 @@ STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
     // GAP events
     { MP_ROM_QSTR(MP_QSTR_EVT_GAP_CONNECTED),       MP_ROM_INT(16) },
     { MP_ROM_QSTR(MP_QSTR_EVT_GAP_DISCONNECTED),    MP_ROM_INT(17) },
+#if MICROPY_PY_UBLUEPY_CENTRAL
+    { MP_ROM_QSTR(MP_QSTR_EVT_GATTC_HVX),           MP_ROM_INT(57) },
+    { MP_ROM_QSTR(MP_QSTR_EVT_GATTC_WRITE_CMD_TX_COMPLETE), MP_ROM_INT(60) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_EVT_GATTS_WRITE),         MP_ROM_INT(80) },
     { MP_ROM_QSTR(MP_QSTR_UUID_CCCD),               MP_ROM_INT(0x2902) },
 

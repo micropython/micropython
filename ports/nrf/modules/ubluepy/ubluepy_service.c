@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2017 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,6 +99,8 @@ STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteri
         p_char->p_service = self;
     }
 
+    p_char->desc_list = mp_obj_new_list(0, NULL);
+
     mp_obj_list_append(self->char_list, characteristic);
 
     // return mp_obj_new_bool(retval);
@@ -157,6 +159,16 @@ STATIC mp_obj_t service_uuid(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_service_get_uuid_obj, service_uuid);
 
+/// \method getHandle()
+/// Get handle of the service.
+///
+STATIC mp_obj_t service_handle(mp_obj_t self_in) {
+    ubluepy_service_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->handle);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_service_get_handle_obj, service_handle);
+
+
 STATIC const mp_rom_map_elem_t ubluepy_service_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getCharacteristic),  MP_ROM_PTR(&ubluepy_service_get_char_obj) },
     { MP_ROM_QSTR(MP_QSTR_addCharacteristic),  MP_ROM_PTR(&ubluepy_service_add_char_obj) },
@@ -166,6 +178,7 @@ STATIC const mp_rom_map_elem_t ubluepy_service_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_peripheral), MP_ROM_PTR(&ubluepy_service_get_peripheral_obj) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_uuid),       MP_ROM_PTR(&ubluepy_service_get_uuid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getHandle),  MP_ROM_PTR(&ubluepy_service_get_handle_obj) },
     { MP_ROM_QSTR(MP_QSTR_PRIMARY),    MP_ROM_INT(UBLUEPY_SERVICE_PRIMARY) },
     { MP_ROM_QSTR(MP_QSTR_SECONDARY),  MP_ROM_INT(UBLUEPY_SERVICE_SECONDARY) },
 };

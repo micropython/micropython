@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2017 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -176,14 +176,33 @@ STATIC mp_obj_t char_uuid(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_uuid_obj, char_uuid);
 
+/// \method getDescriptors()
+/// Return list with all descriptors registered in the Characteristic.
+///
+STATIC mp_obj_t characteristic_get_descs(mp_obj_t self_in) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+
+    return self->desc_list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_descs_obj, characteristic_get_descs);
+
+/// \method getHandle()
+/// Get handle of the characteristic.
+///
+STATIC mp_obj_t char_handle(mp_obj_t self_in) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->handle);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_handle_obj, char_handle);
 
 STATIC const mp_rom_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read),                MP_ROM_PTR(&ubluepy_characteristic_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),               MP_ROM_PTR(&ubluepy_characteristic_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getDescriptors),      MP_ROM_PTR(&ubluepy_characteristic_get_descs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getHandle),           MP_ROM_PTR(&ubluepy_characteristic_get_handle_obj) },
 #if 0
     { MP_ROM_QSTR(MP_QSTR_supportsRead),        MP_ROM_PTR(&ubluepy_characteristic_supports_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_propertiesToString),  MP_ROM_PTR(&ubluepy_characteristic_properties_to_str_obj) },
-    { MP_ROM_QSTR(MP_QSTR_getHandle),           MP_ROM_PTR(&ubluepy_characteristic_get_handle_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_peripheral),          MP_ROM_PTR(&ubluepy_characteristic_get_peripheral_obj) },

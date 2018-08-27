@@ -89,18 +89,21 @@ static mp_obj_t mp_gatts_observer;
 #if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
 static volatile bool m_primary_service_found;
 static volatile bool m_characteristic_found;
+static volatile bool m_descriptor_found;
 static volatile bool m_write_done;
 
 static volatile ble_drv_adv_evt_callback_t          adv_event_handler;
 static volatile ble_drv_gattc_evt_callback_t        gattc_event_handler;
 static volatile ble_drv_disc_add_service_callback_t disc_add_service_handler;
 static volatile ble_drv_disc_add_char_callback_t    disc_add_char_handler;
+static volatile ble_drv_disc_add_desc_callback_t    disc_add_desc_handler;
 static volatile ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
 
 static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
+static mp_obj_t mp_gattc_disc_desc_observer;
 static mp_obj_t mp_gattc_char_data_observer;
 #endif
 
@@ -902,7 +905,7 @@ bool ble_drv_discover_characteristic(mp_obj_t obj,
                                      uint16_t start_handle,
                                      uint16_t end_handle,
                                      ble_drv_disc_add_char_callback_t cb) {
-    BLE_DRIVER_LOG("Discover characteristicts. Conn handle: 0x" HEX2_FMT "\n",
+    BLE_DRIVER_LOG("Discover characteristics. Conn handle: 0x" HEX2_FMT "\n",
                    conn_handle);
 
     mp_gattc_disc_char_observer = obj;
@@ -932,8 +935,39 @@ bool ble_drv_discover_characteristic(mp_obj_t obj,
     }
 }
 
-void ble_drv_discover_descriptors(void) {
+bool ble_drv_discover_descriptor(mp_obj_t obj,
+                                 uint16_t conn_handle,
+                                 uint16_t start_handle,
+                                 uint16_t end_handle,
+                                 ble_drv_disc_add_desc_callback_t cb) {
+    BLE_DRIVER_LOG("Discover descriptors. Conn handle: 0x" HEX2_FMT ", start: 0x" HEX2_FMT ", end: 0x" HEX2_FMT "\n",
+                   conn_handle, start_handle, end_handle);
 
+    mp_gattc_disc_desc_observer = obj;
+    disc_add_desc_handler = cb;
+
+    ble_gattc_handle_range_t handle_range;
+    handle_range.start_handle = start_handle;
+    handle_range.end_handle   = end_handle;
+
+    m_descriptor_found = false;
+
+    uint32_t err_code;
+    err_code = sd_ble_gattc_descriptors_discover(conn_handle, &handle_range);
+    if (err_code != 0) {
+        return false;
+    }
+
+    // busy loop until last service has been iterated
+    while (disc_add_desc_handler != NULL) {
+        ;
+    }
+
+    if (m_descriptor_found) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 #endif // (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
@@ -1026,6 +1060,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             break;
 
 #if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
+
         case BLE_GAP_EVT_ADV_REPORT:
             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
             ble_drv_adv_data_t adv_data = {
@@ -1110,6 +1145,30 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
             break;
 
+        case BLE_GATTC_EVT_DESC_DISC_RSP:
+            BLE_DRIVER_LOG("BLE EVT DESC DISCOVERY RESPONSE\n");
+            BLE_DRIVER_LOG(">>> descriptor count: %d\n", p_ble_evt->evt.gattc_evt.params.desc_disc_rsp.count);
+
+            for (uint16_t i = 0; i < p_ble_evt->evt.gattc_evt.params.desc_disc_rsp.count; i++) {
+                ble_gattc_desc_t * p_desc = &p_ble_evt->evt.gattc_evt.params.desc_disc_rsp.descs[i];
+
+                ble_drv_desc_data_t desc_data;
+                desc_data.uuid_type = p_desc->uuid.type;
+                desc_data.uuid      = p_desc->uuid.uuid;
+                desc_data.handle    = p_desc->handle;
+
+                disc_add_desc_handler(mp_gattc_disc_desc_observer, &desc_data);
+            }
+
+            if (p_ble_evt->evt.gattc_evt.params.desc_disc_rsp.count > 0) {
+                m_characteristic_found = true;
+            }
+
+            // mark end of descriptor discovery
+            disc_add_desc_handler = NULL;
+
+	    break;
+
         case BLE_GATTC_EVT_READ_RSP:
             BLE_DRIVER_LOG("BLE EVT READ RESPONSE, offset: 0x"HEX2_FMT", length: 0x"HEX2_FMT"\n",
                            p_ble_evt->evt.gattc_evt.params.read_rsp.offset,
@@ -1131,6 +1190,17 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GATTC_EVT_HVX:
             BLE_DRIVER_LOG("BLE EVT HVX RESPONSE\n");
+            gattc_event_handler(mp_gattc_observer,
+                                p_ble_evt->header.evt_id,
+                                p_ble_evt->evt.gattc_evt.params.hvx.handle,
+                                p_ble_evt->evt.gattc_evt.params.hvx.len,
+                                &p_ble_evt->evt.gattc_evt.params.hvx.data[0]);
+
+            if (p_ble_evt->evt.gattc_evt.params.hvx.type == BLE_GATT_HVX_INDICATION) {
+                BLE_DRIVER_LOG("BLE EVT HVX CONFIRMING\n");
+                sd_ble_gattc_hv_confirm(p_ble_evt->evt.gattc_evt.conn_handle,
+                                        p_ble_evt->evt.gattc_evt.params.hvx.handle);
+            }
             break;
 
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:

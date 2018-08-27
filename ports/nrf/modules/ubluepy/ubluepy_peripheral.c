@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2017 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #include <string.h>
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -31,7 +30,7 @@
 #include "py/objlist.h"
 
 #if MICROPY_PY_UBLUEPY
-
+#include "mphalport.h"
 #include "ble_drv.h"
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -90,12 +89,23 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
-static volatile bool m_disc_evt_received;
-
 STATIC void gattc_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-    m_disc_evt_received = true;
+
+    if (self->conn_handler != mp_const_none) {
+        mp_obj_t args[3];
+        mp_uint_t num_of_args = 3;
+        args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
+        args[1] = MP_OBJ_NEW_SMALL_INT(attr_handle);
+        if (data != NULL) {
+            args[2] = mp_obj_new_bytearray_by_ref(length, data);
+        } else {
+            args[2] = mp_const_none;
+        }
+
+        // for now hard-code all events to conn_handler
+        mp_call_function_n_kw(self->conn_handler, num_of_args, 0, args);
+    }
 }
 #endif
 
@@ -312,7 +322,7 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
     peripheral_add_service(self, MP_OBJ_FROM_PTR(p_service));
 }
 
-void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
+void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_char_data) {
     ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
     ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
     p_char->base.type = &ubluepy_characteristic_type;
@@ -322,20 +332,46 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
 
     p_char->p_uuid = p_uuid;
 
-    p_uuid->type = p_desc_data->uuid_type;
-    p_uuid->value[0] = p_desc_data->uuid & 0xFF;
-    p_uuid->value[1] = p_desc_data->uuid >> 8;
+    p_uuid->type = p_char_data->uuid_type;
+    p_uuid->value[0] = p_char_data->uuid & 0xFF;
+    p_uuid->value[1] = p_char_data->uuid >> 8;
 
     // add characteristic specific data from discovery
-    p_char->props  = p_desc_data->props;
-    p_char->handle = p_desc_data->value_handle;
+    p_char->props  = p_char_data->props;
+    p_char->handle = p_char_data->value_handle;
 
     // equivalent to ubluepy_service.c - service_add_characteristic()
     // except the registration of the characteristic towards the bluetooth stack
     p_char->service_handle = p_service->handle;
     p_char->p_service      = p_service;
 
+    p_char->desc_list = mp_obj_new_list(0, NULL);
+
     mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
+}
+
+void static disc_add_desc(mp_obj_t char_in, ble_drv_desc_data_t * p_desc_data) {
+    ubluepy_characteristic_obj_t        * p_char = MP_OBJ_TO_PTR(char_in);
+    ubluepy_descriptor_obj_t * p_desc = m_new_obj(ubluepy_descriptor_obj_t);
+    p_desc->base.type = &ubluepy_descriptor_type;
+
+    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
+    p_uuid->base.type = &ubluepy_uuid_type;
+
+    p_desc->p_uuid = p_uuid;
+
+    p_uuid->type = p_desc_data->uuid_type;
+    p_uuid->value[0] = p_desc_data->uuid & 0xFF;
+    p_uuid->value[1] = p_desc_data->uuid >> 8;
+
+    // add characteristic specific data from discovery
+    p_desc->handle = p_desc_data->handle;
+    // equivalent to ubluepy_service.c - service_add_characteristic()
+    // except the registration of the characteristic towards the bluetooth stack
+    p_desc->char_handle = p_char->handle;
+    p_desc->p_char      = p_char;
+
+    mp_obj_list_append(p_char->desc_list, MP_OBJ_FROM_PTR(p_desc));
 }
 
 /// \method connect(device_address [, addr_type=ADDR_TYPE_PUBLIC])
@@ -422,6 +458,7 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
                                                                 p_service->start_handle,
                                                                 p_service->end_handle,
                                                                 disc_add_char);
+
         // continue discovery of characteristics ...
         while (char_disc_retval) {
             mp_obj_t * characteristics = NULL;
@@ -439,6 +476,38 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
             } else {
                 break;
             }
+        }
+
+    }
+
+
+    for (uint16_t s = 0; s < num_services; s++) {
+
+        ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[s];
+
+        mp_obj_t * characteristics = NULL;
+        mp_uint_t  num_chars;
+        mp_obj_get_array(p_service->char_list, &num_chars, &characteristics);
+        for (uint16_t c = 0; c < num_chars; c++) {
+            ubluepy_characteristic_obj_t * p_char = (ubluepy_characteristic_obj_t *)characteristics[c];
+
+            uint16_t end_handle = 0xFFFF;
+
+            if ((c + 1) < num_chars) {
+                ubluepy_characteristic_obj_t * p_char_next = (ubluepy_characteristic_obj_t *)characteristics[c + 1];
+                end_handle = p_char_next->handle - 1;
+            } else if ((s + 1) < num_services) {
+                ubluepy_service_obj_t * p_service_next = (ubluepy_service_obj_t *)services[s + 1];
+                end_handle = p_service_next->handle - 1;
+            }
+
+            // continue discovery descriptors
+            bool desc_disc_retval = ble_drv_discover_descriptor(p_char,
+                                                                self->conn_handle,
+                                                                p_char->handle,
+                                                                end_handle,
+                                                                disc_add_desc);
+            (void)desc_disc_retval;
         }
     }
 
