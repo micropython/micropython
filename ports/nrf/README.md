@@ -110,7 +110,7 @@ run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Ada
 Example on how to generate and flash feather_nrf52832 target:
 
     make BOARD=feather_nrf52832 SD=s132
-    make BOARD=feather52832 SD=s132 dfu-gen dfu-flash
+    make BOARD=feather_nrf52832 SD=s132 dfu-gen dfu-flash
 
 ## Bluetooth LE REPL
 
