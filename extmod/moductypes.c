@@ -79,6 +79,12 @@
 #error Invalid encoding field length
 #endif
 
+#ifndef alignof
+#define alignof(type) offsetof(struct { char c; type t; }, t)
+#endif
+
+#define UINT_ALIGN(val, alignment) (((val) + ((alignment) - 1)) & ~((alignment) - 1))
+
 enum {
     UINT8, INT8, UINT16, INT16,
     UINT32, INT32, UINT64, INT64,
@@ -87,6 +93,19 @@ enum {
     BFUINT32, BFINT32,
 
     FLOAT32, FLOAT64,
+};
+
+const uint8_t val_types_align[] = {
+    alignof(uint8_t), alignof(int8_t),
+    alignof(uint16_t), alignof(int16_t),
+    alignof(uint32_t), alignof(int32_t),
+    alignof(uint64_t), alignof(int64_t),
+
+    alignof(uint8_t), alignof(int8_t),
+    alignof(uint16_t), alignof(int16_t),
+    alignof(uint32_t), alignof(int32_t),
+
+    alignof(float), alignof(double),
 };
 
 #define AGG_TYPE_BITS 2
@@ -158,7 +177,7 @@ STATIC void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 // Get size of any type descriptor
-STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
+STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_align, mp_uint_t *offset_to_set);
 
 // Get size of scalar type descriptor
 static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
@@ -170,20 +189,23 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
 }
 
 // Get size of aggregate type descriptor
-STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_uint_t *max_field_size) {
-    mp_uint_t total_size = 0;
-
+STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_uint_t *max_align, mp_uint_t *offset_to_set) {
     mp_int_t offset_ = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
     mp_uint_t agg_type = GET_TYPE(offset_, AGG_TYPE_BITS);
+    mp_uint_t sz;
+    mp_uint_t align = 0;
 
     switch (agg_type) {
-        case STRUCT:
-            return uctypes_struct_size(t->items[1], layout_type, max_field_size);
+        case STRUCT: {
+            mp_uint_t offset = 0;
+            mp_uint_t *poffset = offset_to_set == NULL ? NULL: &offset;
+            sz = uctypes_struct_size(t->items[1], layout_type, &align, poffset);
+            break;
+        }
         case PTR:
-            if (sizeof(void*) > *max_field_size) {
-                *max_field_size = sizeof(void*);
-            }
-            return sizeof(void*);
+            sz = sizeof(void*);
+            align = alignof(void*);
+            break;
         case ARRAY: {
             mp_int_t arr_sz = MP_OBJ_SMALL_INT_VALUE(t->items[1]);
             uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
@@ -192,31 +214,49 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
             if (t->len == 2) {
                 // Elements of array are scalar
                 item_s = GET_SCALAR_SIZE(val_type);
-                if (item_s > *max_field_size) {
-                    *max_field_size = item_s;
-                }
+                align = val_types_align[val_type];
             } else {
                 // Elements of array are aggregates
-                item_s = uctypes_struct_size(t->items[2], layout_type, max_field_size);
+                mp_uint_t offset = 0;
+                mp_uint_t *poffset = offset_to_set == NULL ? NULL: &offset;
+                item_s = uctypes_struct_size(t->items[2], layout_type, &align, poffset);
             }
 
-            return item_s * arr_sz;
+            sz = item_s * arr_sz;
+            break;
         }
         default:
             assert(0);
+            return 0;
     }
 
-    return total_size;
+    if (offset_to_set != NULL) {
+        mp_uint_t off = *offset_to_set;
+        if (layout_type == LAYOUT_NATIVE) {
+            off = UINT_ALIGN(off, align);
+        }
+        offset_ &= ~VALUE_MASK(AGG_TYPE_BITS);
+        offset_ |= off;
+        t->items[0] = MP_OBJ_NEW_SMALL_INT(offset_);
+        off += sz;
+        *offset_to_set = off;
+    }
+
+    if (align > *max_align) {
+        *max_align = align;
+    }
+
+    return sz;
 }
 
-STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size) {
+STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_align, mp_uint_t *offset_to_set) {
     if (!mp_obj_is_type(desc_in, &mp_type_dict)
       #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
         && !mp_obj_is_type(desc_in, &mp_type_ordereddict)
       #endif
       ) {
         if (mp_obj_is_type(desc_in, &mp_type_tuple)) {
-            return uctypes_struct_agg_size((mp_obj_tuple_t*)MP_OBJ_TO_PTR(desc_in), layout_type, max_field_size);
+            return uctypes_struct_agg_size((mp_obj_tuple_t*)MP_OBJ_TO_PTR(desc_in), layout_type, max_align, offset_to_set);
         } else if (mp_obj_is_small_int(desc_in)) {
             // We allow sizeof on both type definitions and structures/structure fields,
             // but scalar structure field is lowered into native Python int, so all
@@ -236,13 +276,27 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
             if (mp_obj_is_small_int(v)) {
                 mp_uint_t offset = MP_OBJ_SMALL_INT_VALUE(v);
                 mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
+                mp_uint_t s = uctypes_struct_scalar_size(val_type);
+                mp_uint_t align = val_types_align[val_type];
+
+                if (offset_to_set != NULL) {
+                    mp_uint_t off = *offset_to_set;
+                    if (layout_type == LAYOUT_NATIVE) {
+                        off = UINT_ALIGN(off, align);
+                    }
+                    offset &= ~((1 << OFFSET_BITS) - 1);
+                    offset |= off;
+                    d->map.table[i].value = MP_OBJ_NEW_SMALL_INT(offset);
+                    off += s;
+                    *offset_to_set = off;
+                }
+
                 offset &= VALUE_MASK(VAL_TYPE_BITS);
                 if (val_type >= BFUINT8 && val_type <= BFINT32) {
                     offset &= (1 << OFFSET_BITS) - 1;
                 }
-                mp_uint_t s = uctypes_struct_scalar_size(val_type);
-                if (s > *max_field_size) {
-                    *max_field_size = s;
+                if (align > *max_align) {
+                    *max_align = align;
                 }
                 if (offset + s > total_size) {
                     total_size = offset + s;
@@ -252,9 +306,9 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
                     syntax_error();
                 }
                 mp_obj_tuple_t *t = MP_OBJ_TO_PTR(v);
+                mp_uint_t s = uctypes_struct_agg_size(t, layout_type, max_align, offset_to_set);
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
                 offset &= VALUE_MASK(AGG_TYPE_BITS);
-                mp_uint_t s = uctypes_struct_agg_size(t, layout_type, max_field_size);
                 if (offset + s > total_size) {
                     total_size = offset + s;
                 }
@@ -264,14 +318,14 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
 
     // Round size up to alignment of biggest field
     if (layout_type == LAYOUT_NATIVE) {
-        total_size = (total_size + *max_field_size - 1) & ~(*max_field_size - 1);
+        total_size = UINT_ALIGN(total_size, *max_align);
     }
     return total_size;
 }
 
 STATIC mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
     mp_obj_t obj_in = args[0];
-    mp_uint_t max_field_size = 0;
+    mp_uint_t max_align = 0;
     if (mp_obj_is_type(obj_in, &mp_type_bytearray)) {
         return mp_obj_len(obj_in);
     }
@@ -291,10 +345,31 @@ STATIC mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
             layout_type = mp_obj_get_int(args[1]);
         }
     }
-    mp_uint_t size = uctypes_struct_size(obj_in, layout_type, &max_field_size);
+    mp_uint_t size = uctypes_struct_size(obj_in, layout_type, &max_align, NULL);
     return MP_OBJ_NEW_SMALL_INT(size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
+
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+STATIC mp_obj_t uctypes_struct_calc_offsets(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t desc_in = args[0];
+    if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_ordereddict)) {
+        mp_raise_TypeError(NULL);
+    }
+
+    int layout_type = LAYOUT_NATIVE;
+    if (n_args > 1) {
+        layout_type = mp_obj_get_int(args[1]);
+    }
+
+    mp_uint_t max_align = 0;
+    mp_uint_t offset = 0;
+    mp_uint_t size = uctypes_struct_size(desc_in, layout_type, &max_align, &offset);
+
+    return MP_OBJ_NEW_SMALL_INT(size);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_calc_offsets_obj, 1, 2, uctypes_struct_calc_offsets);
+#endif
 
 static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
@@ -511,7 +586,7 @@ set_ptr:
         case ARRAY: {
             mp_uint_t dummy;
             if (IS_SCALAR_ARRAY(sub) && IS_SCALAR_ARRAY_OF_BYTES(sub)) {
-                return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, self->flags, &dummy), self->addr + offset);
+                return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, self->flags, &dummy, NULL), self->addr + offset);
             }
             // Fall thru to return uctypes struct object
         }
@@ -589,7 +664,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
                 }
             } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
-                mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
+                mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy, NULL);
                 mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
                 o->base.type = &uctypes_struct_type;
                 o->desc = t->items[2];
@@ -607,7 +682,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
                 return get_aligned(val_type, p, index);
             } else {
                 mp_uint_t dummy = 0;
-                mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
+                mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy, NULL);
                 mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
                 o->base.type = &uctypes_struct_type;
                 o->desc = t->items[1];
@@ -661,8 +736,8 @@ STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, 
     }
 
     if (agg_type != PTR) {
-        mp_uint_t max_field_size = 0;
-        size = uctypes_struct_size(self->desc, self->flags, &max_field_size);
+        mp_uint_t max_align = 0;
+        size = uctypes_struct_size(self->desc, self->flags, &max_align, NULL);
         addr = self->addr;
     }
 
@@ -716,6 +791,9 @@ STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uctypes) },
     { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&uctypes_struct_type) },
     { MP_ROM_QSTR(MP_QSTR_sizeof), MP_ROM_PTR(&uctypes_struct_sizeof_obj) },
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    { MP_ROM_QSTR(MP_QSTR_calc_offsets), MP_ROM_PTR(&uctypes_struct_calc_offsets_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_addressof), MP_ROM_PTR(&uctypes_struct_addressof_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytes_at), MP_ROM_PTR(&uctypes_struct_bytes_at_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytearray_at), MP_ROM_PTR(&uctypes_struct_bytearray_at_obj) },
