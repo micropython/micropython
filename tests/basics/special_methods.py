@@ -93,6 +93,9 @@ class Cud():
         print("__isub__ called")
         return self
 
+    def __int__(self):
+        return 42
+
 cud1 = Cud()
 cud2 = Cud()
 
@@ -104,5 +107,16 @@ cud1 >= cud2
 cud1 > cud2
 cud1 + cud2
 cud1 - cud2
+print(int(cud1))
+
+class BadInt:
+    def __int__(self):
+        print("__int__ called")
+        return None
+
+try:
+    int(BadInt())
+except TypeError:
+    print("TypeError")
 
 # more in special_methods2.py
