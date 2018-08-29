@@ -22,6 +22,9 @@ buf = addr.to_bytes(uctypes.sizeof(desc), "little")
 
 S = uctypes.struct(uctypes.addressof(buf), desc, uctypes.LITTLE_ENDIAN)
 
+print(addr == int(S.ptr))
+print(addr == int(S.ptr2))
+
 print(S.ptr[0])
 assert S.ptr[0] == ord("0")
 print(S.ptr[1])
