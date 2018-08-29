@@ -2,7 +2,7 @@ rm -rf ports/atmel-samd/build*
 rm -rf ports/esp8266/build*
 rm -rf ports/nrf/build*
 
-ATMEL_BOARDS="\
+HW_BOARDS="\
 arduino_zero \
 circuitplayground_express \
 circuitplayground_express_crickit \
@@ -15,7 +15,8 @@ feather_m0_rfm69 \
 feather_m0_rfm9x \
 feather_m4_express \
 feather_nrf52832 \
-feather_nrf52840 \
+feather_nrf52840_express \
+pca10056 \
 feather_radiofruit_zigbee \
 gemma_m0 \
 hallowing_m0_express \
@@ -34,7 +35,7 @@ if [ "$TRAVIS" == "true" ]; then
 fi
 
 if [ -z "$TRAVIS_BOARD" ]; then
-    boards=$ATMEL_BOARDS
+    boards=$HW_BOARDS
 else
     boards=$TRAVIS_BOARD
 fi
@@ -72,13 +73,13 @@ for board in $boards; do
         elif [ $board == "feather_nrf52840_express" ]; then
             make $PARALLEL -C ports/nrf TRANSLATION=$language BOARD=feather_nrf52840_express SD=s140
             (( exit_status = exit_status || $? ))
-            temp_filename=ports/nrf/build-$board-s140/firmware.bin
-            extension=bin
+            temp_filename=ports/nrf/build-$board-s140/firmware.uf2
+            extension=uf2
         elif [ $board == "pca10056" ]; then
             make $PARALLEL -C ports/nrf TRANSLATION=$language BOARD=pca10056 SD=s140
             (( exit_status = exit_status || $? ))
-            temp_filename=ports/nrf/build-$board-s140/firmware.bin
-            extension=bin
+            temp_filename=ports/nrf/build-$board-s140/firmware.uf2
+            extension=uf2
         else
             time make $PARALLEL -C ports/atmel-samd TRANSLATION=$language BOARD=$board
             (( exit_status = exit_status || $? ))
