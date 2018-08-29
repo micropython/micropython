@@ -644,10 +644,29 @@ STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t max_field_size = 0;
-    mp_uint_t size = uctypes_struct_size(self->desc, self->flags, &max_field_size);
 
-    bufinfo->buf = self->addr;
+    void *addr;
+    mp_uint_t size;
+
+    int agg_type = 0;
+    if (MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
+        mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
+        agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
+        if (agg_type == PTR) {
+            addr = *(void**)self->addr;
+            // TODO: Consider using sizeof(*ptr)
+            size = 1;
+        }
+    }
+
+    if (agg_type != PTR) {
+        mp_uint_t max_field_size = 0;
+        size = uctypes_struct_size(self->desc, self->flags, &max_field_size);
+        addr = self->addr;
+    }
+
+    bufinfo->buf = addr;
     bufinfo->len = size;
     bufinfo->typecode = BYTEARRAY_TYPECODE;
     return 0;
