@@ -414,10 +414,12 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             mp_raise_TypeError("struct: no fields");
     }
 
+    mp_uint_t val_type;
+    mp_int_t offset;
     mp_obj_t deref = mp_obj_dict_get(self->desc, MP_OBJ_NEW_QSTR(attr));
     if (mp_obj_is_small_int(deref)) {
-        mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(deref);
-        mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
+        offset = MP_OBJ_SMALL_INT_VALUE(deref);
+        val_type = GET_TYPE(offset, VAL_TYPE_BITS);
         offset &= VALUE_MASK(VAL_TYPE_BITS);
 //printf("scalar type=%d offset=%x\n", val_type, offset);
 
@@ -427,6 +429,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
                 if (set_val == MP_OBJ_NULL) {
                     return get_aligned(val_type, self->addr + offset, 0);
                 } else {
+set_ptr:
                     set_aligned(val_type, self->addr + offset, 0, set_val);
                     return set_val; // just !MP_OBJ_NULL
                 }
@@ -480,16 +483,21 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         syntax_error();
     }
 
-    if (set_val != MP_OBJ_NULL) {
-        // Cannot assign to aggregate
-        syntax_error();
-    }
-
     mp_obj_tuple_t *sub = MP_OBJ_TO_PTR(deref);
-    mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(sub->items[0]);
+    offset = MP_OBJ_SMALL_INT_VALUE(sub->items[0]);
     mp_uint_t agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
     offset &= VALUE_MASK(AGG_TYPE_BITS);
 //printf("agg type=%d offset=%x\n", agg_type, offset);
+
+    if (set_val != MP_OBJ_NULL) {
+        if (agg_type == PTR) {
+            val_type = sizeof(void*) == 4 ? UINT32 : UINT64;
+            goto set_ptr;
+        }
+
+        // Cannot assign to aggregate
+        mp_raise_TypeError(NULL);
+    }
 
     switch (agg_type) {
         case STRUCT: {
