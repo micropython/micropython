@@ -158,6 +158,17 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
         + (year - 2000) * 31536000;
 }
 
+void timeutils_seconds_since_epoch_to_struct_time(mp_uint_t t, timeutils_struct_time_t *tm) {
+    t -= EPOCH1970_EPOCH2000_DIFF_SECS;
+    timeutils_seconds_since_2000_to_struct_time(t, tm);
+}
+
+mp_uint_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month, mp_uint_t date,
+                                        mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
+    mp_uint_t t = timeutils_seconds_since_2000(year, month, date, hour, minute, second);
+    return t + EPOCH1970_EPOCH2000_DIFF_SECS;
+}
+
 mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
 
@@ -211,5 +222,5 @@ mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
             year++;
         }
     }
-    return timeutils_seconds_since_2000(year, month, mday, hours, minutes, seconds);
+    return timeutils_seconds_since_epoch(year, month, mday, hours, minutes, seconds);
 }

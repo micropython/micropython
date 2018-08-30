@@ -38,12 +38,12 @@ run following command to install [adafruit-nrfutil](https://github.com/adafruit/
 #### REPL over UART (default settings)
 
 To build a CircuitPython binary with default settings for the
-`feather52832` target enter:
+`feather_nrf52832` target enter:
 
-> **NOTE:** `BOARD=feather52832` is the default option and isn't stricly required.
+> **NOTE:** `BOARD=feather_nrf52832` is the default option and isn't stricly required.
 
 ```
-$ make BOARD=feather52832 V=1
+$ make BOARD=feather_nrf52832 V=1
 ```
 
 #### REPL over BLE UART (AKA 'NUS')
@@ -113,7 +113,7 @@ image, as described earlier in this readme.
 > The name of the serial port target will vary, depending on your OS.
 
 ```
-$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART dfu-gen dfu-flash
+$ make BOARD=feather_nrf52832 SERIAL=/dev/tty.SLAB_USBtoUART dfu-gen dfu-flash
 ```
 
 By default, CircuitPython will build with **BLE** support enabled using
@@ -121,7 +121,7 @@ By default, CircuitPython will build with **BLE** support enabled using
 SD family or version you can enter the optional fields as shown below:
 
 ```
-$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART SD=s132 SOFTDEV_VERSION=5.0.0 dfu-gen dfu-flash
+$ make BOARD=feather_nrf52832 SERIAL=/dev/tty.SLAB_USBtoUART SD=s132 SOFTDEV_VERSION=5.0.0 dfu-gen dfu-flash
 ```
 
 ## Working with CircuitPython
