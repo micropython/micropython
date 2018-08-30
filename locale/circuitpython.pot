@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-20 09:37-0700\n"
+"POT-Creation-Date: 2018-08-30 16:06-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -610,11 +610,11 @@ msgid "frequency can only be either 80Mhz or 160MHz"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:61
-msgid "STA required"
+msgid "AP required"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:61
-msgid "AP required"
+msgid "STA required"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:87

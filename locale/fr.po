@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-20 09:37-0700\n"
+"POT-Creation-Date: 2018-08-30 16:04-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -621,12 +621,12 @@ msgid "frequency can only be either 80Mhz or 160MHz"
 msgstr "la fréquence doit être soit 80MHz soit 160MHz"
 
 #: ports/esp8266/modnetwork.c:61
-msgid "STA required"
-msgstr "'STA' requis"
-
-#: ports/esp8266/modnetwork.c:61
 msgid "AP required"
 msgstr "'AP' requis"
+
+#: ports/esp8266/modnetwork.c:61
+msgid "STA required"
+msgstr "'STA' requis"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
