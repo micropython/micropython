@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-30 16:04-0700\n"
+"POT-Creation-Date: 2018-08-30 16:12-0700\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2174,7 +2174,7 @@ msgid "empty sequence"
 msgstr ""
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
-#: shared-bindings/time/__init__.c:192
+#: shared-bindings/time/__init__.c:190
 msgid "RTC is not supported on this board"
 msgstr ""
 
@@ -2194,27 +2194,27 @@ msgstr ""
 msgid "Stack size must be at least 256"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:80
+#: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:90
+#: shared-bindings/time/__init__.c:88
 msgid "time.struct_time() takes exactly 1 argument"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:93
+#: shared-bindings/time/__init__.c:91
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:171 shared-bindings/time/__init__.c:252
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:176 shared-bindings/time/__init__.c:257
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:228 shared-bindings/time/__init__.c:261
+#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
