@@ -1,14 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
+# Spanish translation.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Carlos Diaz <carlos.santiago.diaz@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-20 09:37-0700\n"
-"PO-Revision-Date: 2018-07-27 11:55-0700\n"
+"POT-Creation-Date: 2018-08-30 16:12-0700\n"
+"PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_US\n"
@@ -19,184 +19,196 @@ msgstr ""
 
 #: extmod/machine_i2c.c:299
 msgid "invalid I2C peripheral"
-msgstr ""
+msgstr "periférico I2C inválido"
 
 #: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
 #: extmod/machine_i2c.c:392
 msgid "I2C operation not supported"
-msgstr ""
+msgstr "operación I2C no soportada"
 
 #: extmod/machine_mem.c:45 ports/unix/modmachine.c:53
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
-msgstr ""
+msgstr "la dirección %08x no esta alineada a %d bytes"
 
 #: extmod/machine_spi.c:57
 msgid "invalid SPI peripheral"
-msgstr ""
+msgstr "periférico SPI inválido"
 
 #: extmod/machine_spi.c:124
 msgid "buffers must be the same length"
-msgstr ""
+msgstr "los buffers deben de tener la misma longitud"
 
 #: extmod/machine_spi.c:207
 msgid "bits must be 8"
-msgstr ""
+msgstr "bits debe ser 8"
 
 #: extmod/machine_spi.c:210
 msgid "firstbit must be MSB"
-msgstr ""
+msgstr "firstbit debe ser MSB"
 
 #: extmod/machine_spi.c:215
 msgid "must specify all of sck/mosi/miso"
-msgstr ""
+msgstr "se deben de especificar sck/mosi/miso"
 
 #: extmod/modframebuf.c:299
 msgid "invalid format"
-msgstr ""
+msgstr "formato inválido"
 
 #: extmod/modubinascii.c:38 extmod/moduhashlib.c:102
 msgid "a bytes-like object is required"
-msgstr ""
+msgstr "se requiere un objeto bytes-like"
 
 #: extmod/modubinascii.c:90
 msgid "odd-length string"
-msgstr ""
+msgstr "string de longitud impar"
 
 #: extmod/modubinascii.c:101
 msgid "non-hex digit found"
-msgstr ""
+msgstr "se encontró un digito no hexadecimal"
 
 #: extmod/modubinascii.c:169
 msgid "incorrect padding"
-msgstr ""
+msgstr "padding incorrecto"
 
 #: extmod/moductypes.c:122
 msgid "syntax error in uctypes descriptor"
-msgstr ""
+msgstr "error de sintaxis en el descriptor uctypes"
 
 #: extmod/moductypes.c:219
 msgid "Cannot unambiguously get sizeof scalar"
-msgstr ""
+msgstr "No se puede obtener inequívocamente sizeof escalar"
 
 #: extmod/moductypes.c:397
 msgid "struct: no fields"
-msgstr ""
+msgstr "struct: no fields"
 
 #: extmod/moductypes.c:530
 msgid "struct: cannot index"
-msgstr ""
+msgstr "struct: no se puede indexar"
 
 #: extmod/moductypes.c:544
 msgid "struct: index out of range"
-msgstr ""
+msgstr "struct: index fuera de rango"
 
 #: extmod/moduheapq.c:38
 msgid "heap must be a list"
-msgstr ""
+msgstr "heap debe ser una lista"
 
 #: extmod/moduheapq.c:86 extmod/modutimeq.c:147 extmod/modutimeq.c:172
 msgid "empty heap"
-msgstr ""
+msgstr "heap vacío"
 
 #: extmod/modujson.c:281
 msgid "syntax error in JSON"
-msgstr ""
+msgstr "error de sintaxis en JSON"
 
 #: extmod/modure.c:161
 msgid "Splitting with sub-captures"
-msgstr ""
+msgstr "Dividiendo con sub-capturas"
 
 #: extmod/modure.c:207
 msgid "Error in regex"
-msgstr ""
+msgstr "Error en regex"
 
 #: extmod/modussl_axtls.c:81
 msgid "invalid key"
-msgstr ""
+msgstr "llave inválida"
 
 #: extmod/modussl_axtls.c:87
 msgid "invalid cert"
-msgstr ""
+msgstr "certificado inválido"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr ""
+msgstr "desborde de queue"
 
 #: extmod/moduzlib.c:97
 msgid "compression header"
-msgstr ""
+msgstr "encabezado de compresión"
 
 #: extmod/uos_dupterm.c:120
 msgid "invalid dupterm index"
-msgstr ""
+msgstr "index dupterm inválido"
 
 #: extmod/vfs_fat.c:426 py/moduerrno.c:150
+#, fuzzy
 msgid "Read-only filesystem"
-msgstr ""
+msgstr "sistema de archivos de Solo-Lectura"
 
 #: extmod/vfs_posix_file.c:48 ports/unix/file.c:50 py/objstringio.c:43
 msgid "I/O operation on closed file"
-msgstr ""
+msgstr "Operación I/O en archivo cerrado"
 
 #: lib/embed/abort_.c:8
+#, fuzzy
 msgid "abort() called"
-msgstr ""
+msgstr "se llamó abort()"
 
 #: lib/netutils/netutils.c:83
 msgid "invalid arguments"
-msgstr ""
+msgstr "argumentos inválidos"
 
 #: lib/utils/pyexec.c:97 py/builtinimport.c:253
 msgid "script compilation not supported"
-msgstr ""
+msgstr "script de compilación no soportado"
 
 #: main.c:143
 msgid " output:\n"
-msgstr ""
+msgstr " salida:\n"
 
 #: main.c:157 main.c:230
+#, fuzzy
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
+"Auto-reload habilitado. Simplemente guarda los archivos via USB para "
+"ejecutarlos o entra REPL para desabilitarlos.\n"
 
 #: main.c:159
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr ""
+msgstr "Ejecutando en modo seguro! Auto-recarga esta deshabilitado.\n"
 
 #: main.c:161 main.c:232
 msgid "Auto-reload is off.\n"
-msgstr ""
+msgstr "Auto-reload deshabilitado.\n"
 
 #: main.c:175
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr ""
+msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
 #: main.c:191
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr ""
+msgstr "ADVERTENCIA: El nombre de archivo de tu código tiene dos extensiones\n"
 
 #: main.c:239
 msgid "You requested starting safe mode by "
-msgstr ""
+msgstr "Solicitaste iniciar en modo seguro con "
 
 #: main.c:242
 msgid "To exit, please reset the board without "
-msgstr ""
+msgstr "Para salir, por favor reinicia la tarjeta sin "
 
 #: main.c:249
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
+"Estás ejecutando en modo seguro, lo cual significa que algo realmente malo "
+"ha sucedido.\n"
 
 #: main.c:251
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr ""
+"Parece que nuestro código del núcleo CircuitPython dejó de funcionar. "
+"Whoops!\n"
 
 #: main.c:252
+#, fuzzy
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
+"Por favor registra un problema aquí con los contenidos de tu unidad de "
+"almacenamiento CIRCUITPY:\n"
 
 #: main.c:255
 msgid ""
@@ -209,14 +221,17 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
+"suficiente poder para todo el circuito y pulsa reset (después de expulsar "
+"CIRCUITPY).\n"
 
 #: main.c:260
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
+"Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
 
 #: main.c:415
 msgid "soft reboot\n"
-msgstr ""
+msgstr "reinicio suave\n"
 
 #: ports/atmel-samd/audio_dma.c:285
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
@@ -254,16 +269,17 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:56
 msgid "AnalogOut not supported on given pin"
-msgstr ""
+msgstr "AnalogOut no es soportado por el pin dado"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
-msgstr ""
+msgstr "Pin bit clock inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
+#, fuzzy
 msgid "Bit clock and word select must share a clock unit"
-msgstr ""
+msgstr "Bit clock y Word select deben compartir la unidad de reloj"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
@@ -284,7 +300,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
 msgid "Unable to find free GCLK"
-msgstr ""
+msgstr "No se pudo encontrar un GCLK disponible"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:254
 msgid "Too many channels in sample."
@@ -298,19 +314,19 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
 msgid "Unable to allocate buffers for signed conversion"
-msgstr ""
+msgstr "No se pudieron asignar buffers para la conversión con signo"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:109
 msgid "Invalid clock pin"
-msgstr ""
+msgstr "pin clock inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
-msgstr ""
+msgstr "Solo mono de 8 o 16 bit con"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
 msgid "sampling rate out of range"
-msgstr ""
+msgstr "velocidad de muestreo fuera de rango"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
 msgid "DAC already in use"
@@ -318,13 +334,13 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
 msgid "Right channel unsupported"
-msgstr ""
+msgstr "El canal derecho no tiene soporte"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
-msgstr ""
+msgstr "pin inválido"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
 msgid "Invalid pin for left channel"
@@ -336,21 +352,21 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
 msgid "Cannot output both channels on the same pin"
-msgstr ""
+msgstr "No es posible utilizar el mismo pin para ambos canales"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
-msgstr ""
+msgstr "Todos los timers estan siendo utilizados"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:215
 msgid "All event channels in use"
-msgstr ""
+msgstr "Todos los canales de eventos estan siendo utilizados"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
-msgstr ""
+msgstr "No hay suficientes pines disponibles"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
@@ -358,7 +374,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:58
 msgid "Invalid pins"
-msgstr ""
+msgstr "pines inválidos"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:101
 msgid "SDA or SCL needs a pull up"
@@ -370,15 +386,15 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
-msgstr ""
+msgstr "bytes > 8 bits no son soportados"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
 msgid "tx and rx cannot both be None"
-msgstr ""
+msgstr "tx y rx no pueden ser ambos None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:139
 msgid "Failed to allocate RX buffer"
-msgstr ""
+msgstr "Fallo la asignación del buffer RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:147
 msgid "Could not initialize UART"
@@ -410,7 +426,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
 msgid "All timers for this pin are in use"
-msgstr ""
+msgstr "Todos los timers para este pin están siendo utilizado"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
@@ -418,13 +434,13 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
-msgstr ""
+msgstr "El canal EXTINT ya esta siendo usado"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
-msgstr ""
+msgstr "Fallo la asignación del buffer RX de %d bytes"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
@@ -442,15 +458,16 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
-msgstr ""
+msgstr "Ambos pines deben soportar interrupciones por hardware"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:46
+#, fuzzy
 msgid "A hardware interrupt channel is already in use"
-msgstr ""
+msgstr "El canal EXTINT ya esta siendo usado"
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
-msgstr ""
+msgstr "Valor de calibración fuera de rango +/-127"
 
 #: ports/atmel-samd/common-hal/storage/__init__.c:48
 msgid "Cannot remount '/' when USB is active."
@@ -464,7 +481,7 @@ msgstr ""
 #: ports/nrf/common-hal/usb_hid/Device.c:45
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
-msgstr ""
+msgstr "Tamaño de buffer incorrecto. Debe ser de %d bytes."
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
 #: ports/nrf/common-hal/usb_hid/Device.c:53
@@ -506,40 +523,41 @@ msgstr ""
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr ""
+msgstr "GPIO16 no soporta pull up."
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr ""
+msgstr "ESP8226 no soporta modo seguro"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:54
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:113
 #, c-format
 msgid "Maximum PWM frequency is %dhz."
-msgstr ""
+msgstr "La frecuencia máxima del PWM es %dhz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:57
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:116
 msgid "Minimum PWM frequency is 1hz."
-msgstr ""
+msgstr "La frecuencia mínima del PWM es 1hz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
 msgstr ""
+"PWM de múltiples frecuencias no tiene soporte. El PWM ya se estableció a %dhz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
 msgid "PWM not supported on pin %d"
-msgstr ""
+msgstr "El pin %d no soporta PWM"
 
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:78
 msgid "No PulseIn support for %q"
-msgstr ""
+msgstr "%q no tiene soporte para PulseIn"
 
 #: ports/esp8266/common-hal/storage/__init__.c:34
 msgid "Unable to remount filesystem"
-msgstr ""
+msgstr "No se pudo montar de nuevo el sistema de archivos"
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
@@ -610,11 +628,11 @@ msgid "frequency can only be either 80Mhz or 160MHz"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:61
-msgid "STA required"
+msgid "AP required"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:61
-msgid "AP required"
+msgid "STA required"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:87
@@ -906,15 +924,15 @@ msgstr ""
 
 #: py/builtinimport.c:422 py/builtinimport.c:534
 msgid "module not found"
-msgstr ""
+msgstr "módulo no encontrado"
 
 #: py/builtinimport.c:425 py/builtinimport.c:537
 msgid "no module named '%q'"
-msgstr ""
+msgstr "ningún módulo se llama '%q'"
 
 #: py/builtinimport.c:512
 msgid "relative import"
-msgstr ""
+msgstr "import relativo"
 
 #: py/compile.c:397 py/compile.c:542
 msgid "can't assign to expression"
@@ -938,15 +956,15 @@ msgstr ""
 
 #: py/compile.c:955
 msgid "'break' outside loop"
-msgstr ""
+msgstr "'break' fuera de un bucle"
 
 #: py/compile.c:958
 msgid "'continue' outside loop"
-msgstr ""
+msgstr "'continue' fuera de un bucle"
 
 #: py/compile.c:969
 msgid "'return' outside function"
-msgstr ""
+msgstr "'return' fuera de una función"
 
 #: py/compile.c:1169
 msgid "identifier redefined as global"
@@ -1012,6 +1030,7 @@ msgstr ""
 #: py/compile.c:2600
 msgid "'yield' outside function"
 msgstr ""
+"No es posible reiniciar en modo bootloader porque no hay bootloader presente."
 
 #: py/compile.c:2619
 msgid "'await' outside function"
@@ -1176,11 +1195,11 @@ msgstr ""
 
 #: py/modbuiltins.c:162
 msgid "chr() arg not in range(0x110000)"
-msgstr ""
+msgstr "El argumento de chr() esta fuera de rango(0x110000)"
 
 #: py/modbuiltins.c:171
 msgid "chr() arg not in range(256)"
-msgstr ""
+msgstr "El argumento de chr() no esta en el rango(256)"
 
 #: py/modbuiltins.c:285
 msgid "arg is an empty sequence"
@@ -1188,12 +1207,12 @@ msgstr ""
 
 #: py/modbuiltins.c:350
 msgid "ord expects a character"
-msgstr ""
+msgstr "ord espera un carácter"
 
 #: py/modbuiltins.c:353
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
-msgstr ""
+msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 
 #: py/modbuiltins.c:363
 msgid "3-arg pow() not supported"
@@ -1220,7 +1239,7 @@ msgstr ""
 #: shared-bindings/struct/__init__.c:103 shared-bindings/struct/__init__.c:145
 #: shared-module/struct/__init__.c:91 shared-module/struct/__init__.c:175
 msgid "buffer too small"
-msgstr ""
+msgstr "buffer demasiado pequeño"
 
 #: py/modthread.c:240
 msgid "expecting a dict for keyword args"
@@ -1243,12 +1262,14 @@ msgid "File exists"
 msgstr ""
 
 #: py/moduerrno.c:148
+#, fuzzy
 msgid "Unsupported operation"
-msgstr ""
+msgstr "El pin %d no soporta PWM"
 
 #: py/moduerrno.c:149
+#, fuzzy
 msgid "Invalid argument"
-msgstr ""
+msgstr "argumentos inválidos"
 
 #: py/obj.c:90
 msgid "Traceback (most recent call last):\n"
@@ -1320,8 +1341,9 @@ msgid "%q indices must be integers, not %s"
 msgstr ""
 
 #: py/obj.c:423
+#, fuzzy
 msgid "%q index out of range"
-msgstr ""
+msgstr "struct: index fuera de rango"
 
 #: py/obj.c:455
 msgid "object has no len"
@@ -1333,8 +1355,9 @@ msgid "object of type '%s' has no len()"
 msgstr ""
 
 #: py/obj.c:496
+#, fuzzy
 msgid "object does not support item deletion"
-msgstr ""
+msgstr "ESP8226 no soporta modo seguro"
 
 #: py/obj.c:499
 #, c-format
@@ -1393,8 +1416,9 @@ msgid "full"
 msgstr ""
 
 #: py/objdeque.c:127
+#, fuzzy
 msgid "empty"
-msgstr ""
+msgstr "heap vacío"
 
 #: py/objdict.c:314
 msgid "popitem(): dictionary is empty"
@@ -1405,8 +1429,9 @@ msgid "dict update sequence has wrong length"
 msgstr ""
 
 #: py/objfloat.c:308 py/parsenum.c:331
+#, fuzzy
 msgid "complex values not supported"
-msgstr ""
+msgstr "script de compilación no soportado"
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
@@ -1437,8 +1462,9 @@ msgid "float too big"
 msgstr ""
 
 #: py/objint.c:328
+#, fuzzy
 msgid "long int not supported in this build"
-msgstr ""
+msgstr "AnalogOut no es soportado por el pin dado"
 
 #: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
 msgid "small int overflow"
@@ -1477,8 +1503,9 @@ msgid "can't set attribute"
 msgstr ""
 
 #: py/objobject.c:55
+#, fuzzy
 msgid "__new__ arg must be a user-type"
-msgstr ""
+msgstr "heap debe ser una lista"
 
 #: py/objrange.c:110
 msgid "zero step"
@@ -1489,8 +1516,9 @@ msgid "pop from an empty set"
 msgstr ""
 
 #: py/objslice.c:66
+#, fuzzy
 msgid "Length must be an int"
-msgstr ""
+msgstr "heap debe ser una lista"
 
 #: py/objslice.c:71
 msgid "Length must be non-negative"
@@ -1505,8 +1533,9 @@ msgid "Cannot subclass slice"
 msgstr ""
 
 #: py/objstr.c:261
+#, fuzzy
 msgid "bytes value out of range"
-msgstr ""
+msgstr "Valor de calibración fuera de rango +/-127"
 
 #: py/objstr.c:270
 msgid "wrong number of arguments"
@@ -1517,16 +1546,18 @@ msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 
 #: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
+#, fuzzy
 msgid "empty separator"
-msgstr ""
+msgstr "heap vacío"
 
 #: py/objstr.c:641
 msgid "rsplit(None,n)"
 msgstr ""
 
 #: py/objstr.c:713
+#, fuzzy
 msgid "substring not found"
-msgstr ""
+msgstr "módulo no encontrado"
 
 #: py/objstr.c:770
 msgid "start/end indices"
@@ -1567,12 +1598,14 @@ msgid ""
 msgstr ""
 
 #: py/objstr.c:1055 py/objstr.c:1083
+#, fuzzy
 msgid "tuple index out of range"
-msgstr ""
+msgstr "struct: index fuera de rango"
 
 #: py/objstr.c:1071
+#, fuzzy
 msgid "attributes not supported yet"
-msgstr ""
+msgstr "bytes > 8 bits no son soportados"
 
 #: py/objstr.c:1079
 msgid ""
@@ -1580,8 +1613,9 @@ msgid ""
 msgstr ""
 
 #: py/objstr.c:1171
+#, fuzzy
 msgid "invalid format specifier"
-msgstr ""
+msgstr "formato inválido"
 
 #: py/objstr.c:1192
 msgid "sign not allowed in string format specifier"
@@ -1619,8 +1653,9 @@ msgid "incomplete format key"
 msgstr ""
 
 #: py/objstr.c:1482
+#, fuzzy
 msgid "incomplete format"
-msgstr ""
+msgstr "formato inválido"
 
 #: py/objstr.c:1490
 msgid "not enough arguments for format string"
@@ -1658,8 +1693,9 @@ msgid "string indices must be integers, not %s"
 msgstr ""
 
 #: py/objstrunicode.c:145 py/objstrunicode.c:164
+#, fuzzy
 msgid "string index out of range"
-msgstr ""
+msgstr "struct: index fuera de rango"
 
 #: py/objtype.c:358
 msgid "__init__() should return None"
@@ -1708,8 +1744,9 @@ msgid "type '%q' is not an acceptable base type"
 msgstr ""
 
 #: py/objtype.c:1137
+#, fuzzy
 msgid "multiple inheritance not supported"
-msgstr ""
+msgstr "operación I2C no soportada"
 
 #: py/objtype.c:1164
 msgid "multiple bases have instance lay-out conflict"
@@ -1728,12 +1765,14 @@ msgid "issubclass() arg 1 must be a class"
 msgstr ""
 
 #: py/parse.c:726
+#, fuzzy
 msgid "constant must be an integer"
-msgstr ""
+msgstr "heap debe ser una lista"
 
 #: py/parse.c:868
+#, fuzzy
 msgid "Unable to init parser"
-msgstr ""
+msgstr "No se pudo encontrar un GCLK disponible"
 
 #: py/parse.c:1170
 msgid "unexpected indent"
@@ -1748,8 +1787,9 @@ msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr ""
 
 #: py/parsenum.c:151
+#, fuzzy
 msgid "invalid syntax for integer"
-msgstr ""
+msgstr "formato inválido"
 
 #: py/parsenum.c:155
 #, c-format
@@ -1757,12 +1797,14 @@ msgid "invalid syntax for integer with base %d"
 msgstr ""
 
 #: py/parsenum.c:339
+#, fuzzy
 msgid "invalid syntax for number"
-msgstr ""
+msgstr "argumentos inválidos"
 
 #: py/parsenum.c:342
+#, fuzzy
 msgid "decimal numbers not supported"
-msgstr ""
+msgstr "bytes > 8 bits no son soportados"
 
 #: py/persistentcode.c:223
 msgid ""
@@ -1775,8 +1817,9 @@ msgid "can only save bytecode"
 msgstr ""
 
 #: py/runtime.c:206
+#, fuzzy
 msgid "name not defined"
-msgstr ""
+msgstr "módulo no encontrado"
 
 #: py/runtime.c:209
 msgid "name '%q' is not defined"
@@ -1851,8 +1894,9 @@ msgid "exceptions must derive from BaseException"
 msgstr ""
 
 #: py/runtime.c:1430
+#, fuzzy
 msgid "cannot import name %q"
-msgstr ""
+msgstr "ningún módulo se llama '%q'"
 
 #: py/runtime.c:1535
 msgid "memory allocation failed, heap is locked"
@@ -1872,8 +1916,9 @@ msgid "object not in sequence"
 msgstr ""
 
 #: py/stream.c:96
+#, fuzzy
 msgid "stream operation not supported"
-msgstr ""
+msgstr "operación I2C no soportada"
 
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
@@ -2001,8 +2046,9 @@ msgid "stop must be 1 or 2"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
+#, fuzzy
 msgid "Invalid direction."
-msgstr ""
+msgstr "Dirección inválida."
 
 #: shared-bindings/digitalio/DigitalInOut.c:240
 msgid "Cannot set value when direction is input."
@@ -2103,8 +2149,9 @@ msgid "index must be int"
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:293
+#, fuzzy
 msgid "Read-only"
-msgstr ""
+msgstr "Solo lectura"
 
 #: shared-bindings/pulseio/PulseOut.c:134
 msgid "Array must contain halfwords (type 'H')"
@@ -2127,7 +2174,7 @@ msgid "empty sequence"
 msgstr ""
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
-#: shared-bindings/time/__init__.c:192
+#: shared-bindings/time/__init__.c:190
 msgid "RTC is not supported on this board"
 msgstr ""
 
@@ -2147,27 +2194,27 @@ msgstr ""
 msgid "Stack size must be at least 256"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:80
+#: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:90
+#: shared-bindings/time/__init__.c:88
 msgid "time.struct_time() takes exactly 1 argument"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:93
+#: shared-bindings/time/__init__.c:91
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:171 shared-bindings/time/__init__.c:252
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:176 shared-bindings/time/__init__.c:257
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:228 shared-bindings/time/__init__.c:261
+#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 

@@ -62,3 +62,7 @@ TAGS
 *~
 
 *.DS_Store
+
+# POEdit mo files
+####################
+*.mo

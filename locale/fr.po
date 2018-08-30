@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-20 09:37-0700\n"
+"POT-Creation-Date: 2018-08-30 16:12-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -621,12 +621,12 @@ msgid "frequency can only be either 80Mhz or 160MHz"
 msgstr "la fréquence doit être soit 80MHz soit 160MHz"
 
 #: ports/esp8266/modnetwork.c:61
-msgid "STA required"
-msgstr "'STA' requis"
-
-#: ports/esp8266/modnetwork.c:61
 msgid "AP required"
 msgstr "'AP' requis"
+
+#: ports/esp8266/modnetwork.c:61
+msgid "STA required"
+msgstr "'STA' requis"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
@@ -2161,7 +2161,7 @@ msgid "empty sequence"
 msgstr "séquence vide"
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
-#: shared-bindings/time/__init__.c:192
+#: shared-bindings/time/__init__.c:190
 msgid "RTC is not supported on this board"
 msgstr "RTC non supportée sur cette carte"
 
@@ -2181,27 +2181,27 @@ msgstr "La luminosité doit être entre 0 et 255"
 msgid "Stack size must be at least 256"
 msgstr "La pile doit être au moins de 256"
 
-#: shared-bindings/time/__init__.c:80
+#: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
 msgstr "la longueur de sleep ne doit pas être négative"
 
-#: shared-bindings/time/__init__.c:90
+#: shared-bindings/time/__init__.c:88
 msgid "time.struct_time() takes exactly 1 argument"
 msgstr "time.struct_time() prend exactement 1 argument"
 
-#: shared-bindings/time/__init__.c:93
+#: shared-bindings/time/__init__.c:91
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
 
-#: shared-bindings/time/__init__.c:171 shared-bindings/time/__init__.c:252
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
 msgid "Tuple or struct_time argument required"
 msgstr "Argument de type tuple ou struct_time nécessaire"
 
-#: shared-bindings/time/__init__.c:176 shared-bindings/time/__init__.c:257
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
 msgid "function takes exactly 9 arguments"
 msgstr "la fonction prend exactement 9 arguments"
 
-#: shared-bindings/time/__init__.c:228 shared-bindings/time/__init__.c:261
+#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
 msgid "timestamp out of range for platform time_t"
 msgstr "timestamp hors gamme pour la plateforme time_t"
 
