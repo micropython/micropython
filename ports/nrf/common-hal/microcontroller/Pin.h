@@ -27,8 +27,9 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
 
-#include "nrf_pin.h"
 #include "py/mphal.h"
+
+#include "peripherals/nrf/pins.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 extern bool neopixel_in_use;
@@ -38,11 +39,21 @@ extern bool apa102_sck_in_use;
 extern bool apa102_mosi_in_use;
 #endif
 
-#define mcu_pin_obj_t pin_obj_t
 void reset_all_pins(void);
 // reset_pin takes the pin number instead of the pointer so that objects don't
 // need to store a full pointer.
 void reset_pin(uint8_t pin);
 void claim_pin(const mcu_pin_obj_t* pin);
+
+// Lower 5 bits of a pin number are the pin number in a port.
+// upper bits (just one bit for current chips) is port number.
+
+static inline uint8_t nrf_pin_port(uint8_t absolute_pin) {
+    return absolute_pin >> 5;
+}
+
+static inline uint8_t nrf_relative_pin_number(uint8_t absolute_pin) {
+    return absolute_pin & 0x1f;
+}
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H

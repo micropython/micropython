@@ -24,9 +24,6 @@ ifneq ($(SD), )
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
-
 FROZEN_MPY_DIR = freeze
 
 # include py core make definitions
@@ -53,6 +50,7 @@ INC += -I./nrfx/drivers/include
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
+INC += -I./peripherals
 INC += -I../../lib/tinyusb/src
 INC += -I./usb
 
@@ -105,6 +103,7 @@ SRC_C += \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	nrfx/hal/nrf_nvmc.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
@@ -119,6 +118,7 @@ SRC_C += \
 	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
+	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	supervisor/shared/memory.c
 
 DRIVERS_SRC_C += $(addprefix modules/,\
@@ -150,6 +150,7 @@ SRC_COMMON_HAL += \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
+	neopixel_write/__init__.c \
 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
@@ -238,7 +239,6 @@ FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
 OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
@@ -333,7 +333,7 @@ dfu-flash: $(BUILD)/dfu-package.zip
 	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
 
 ## Create DFU package file
-dfu-gen: $(BUILD)/dfu-package.zip 
+dfu-gen: $(BUILD)/dfu-package.zip
 
 $(BUILD)/dfu-package.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
@@ -350,29 +350,8 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(DRIVERS_SRC_C) $(SRC_COMMON_
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
-# has the side effect of making the pins.h file before we actually compile
-# any of the objects. The normal dependency generation will deal with the
-# case when pins.h is modified. But when it doesn't exist, we don't know
-# which source files might need it.
-$(OBJ): | $(HEADER_BUILD)/pins.h
-
-# Use a pattern rule here so that make will only call make-pins.py once to make
-# both pins_g.c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
-
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
-	$(call compile_c)
-
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = boards/$(BOARD)/pins.csv
 AF_FILE = $(MCU_VARIANT)_af.csv
 PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_gen.c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 
 ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)

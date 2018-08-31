@@ -28,6 +28,7 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "nRF52840-DK"
 
+// See legend on bottom of board
 #define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
 #define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
 #define MICROPY_HW_UART_HWFC        (0)
@@ -37,4 +38,3 @@
 
 // Temp (could be removed) 0: usb cdc (default), 1 : hwuart (jlink)
 #define CFG_HWUART_FOR_SERIAL        0
-

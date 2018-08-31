@@ -54,15 +54,15 @@ static uint8_t twi_error_to_mp(const nrfx_err_t err) {
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
-    if (scl->pin == sda->pin)
+    if (scl->number == sda->number)
         mp_raise_ValueError(translate("Invalid pins"));
 
     const nrfx_twim_t instance = NRFX_TWIM_INSTANCE(INST_NO);
     self->twim = instance;
 
     nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
-    config.scl = NRF_GPIO_PIN_MAP(scl->port, scl->pin);
-    config.sda = NRF_GPIO_PIN_MAP(sda->port, sda->pin);
+    config.scl = scl->number;
+    config.sda = sda->number;
 
     // change freq. only if it's less than the default 400K
     if (frequency < 100000) {

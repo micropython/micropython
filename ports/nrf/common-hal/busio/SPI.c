@@ -77,13 +77,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG;
     config.frequency = NRF_SPIM_FREQ_8M;
 
-    config.sck_pin = NRF_GPIO_PIN_MAP(clock->port, clock->pin);
+    config.sck_pin = clock->number;
 
     if (mosi != (mcu_pin_obj_t*)&mp_const_none_obj)
-        config.mosi_pin = NRF_GPIO_PIN_MAP(mosi->port, mosi->pin);
+        config.mosi_pin = mosi->number;
 
     if (miso != (mcu_pin_obj_t*)&mp_const_none_obj)
-        config.miso_pin = NRF_GPIO_PIN_MAP(miso->port, miso->pin);
+        config.miso_pin = miso->number;
 
     nrfx_err_t err = nrfx_spim_init(&self->spim, &config, NULL, NULL);
 

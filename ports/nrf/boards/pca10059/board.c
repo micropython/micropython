@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_NRF5_PIN_H__
-#define __MICROPY_INCLUDED_NRF5_PIN_H__
+#include <string.h>
+#include <stdbool.h>
+#include "boards/board.h"
+#include "nrfx.h"
+#include "usb.h"
 
-#include "py/obj.h"
+void board_init(void) {
 
-typedef struct {
-    mp_obj_base_t base;
-    qstr name;
+    // Clock
+    NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
+    NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
 
-    uint32_t port        : 1;
-    uint32_t pin         : 5; // Some ARM processors use 32 bits/PORT
-    uint32_t adc_channel : 4; // 0 is no ADC, ADC channel from 1 to 8
-} pin_obj_t;
+    usb_init();
+}
 
-extern const mp_obj_type_t mcu_pin_type;
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-#endif // __MICROPY_INCLUDED_NRF5_PIN_H__
+void reset_board(void) {
+
+}
+
+
+
+
+
