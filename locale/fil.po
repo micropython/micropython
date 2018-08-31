@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-30 18:29-0700\n"
-"PO-Revision-Date: 2018-08-30 16:35-0700\n"
-"Last-Translator: Timothy Garcia <me@timothygarcia.ca>\n"
+"PO-Revision-Date: 2018-08-30 23:04-0700\n"
+"Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
 "Language: fil\n"
 "MIME-Version: 1.0\n"
@@ -177,7 +177,7 @@ msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
 #: main.c:191
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr "BABALA: Ang pangalang ng file ay may dalawang extension\n"
+msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 
 #: main.c:239
 msgid "You requested starting safe mode by "
@@ -1443,7 +1443,6 @@ msgid "generator ignored GeneratorExit"
 msgstr "hindi pinansin ng generator ang GeneratorExit"
 
 #: py/objgenerator.c:251
-#, fuzzy
 msgid "can't pend throw to just-started generator"
 msgstr "hindi mapadala ang send throw sa isang kaka umpisang generator"
 
