@@ -36,7 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     struct i2c_m_sync_desc i2c_desc;
-    volatile bool has_lock;
+    bool has_lock;
     uint8_t scl_pin;
     uint8_t sda_pin;
 } busio_i2c_obj_t;

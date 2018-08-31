@@ -27,8 +27,6 @@
 #ifndef MICROPY_INCLUDED_NRF_PERIPHERALS_NRF52840_PINS_H
 #define MICROPY_INCLUDED_NRF_PERIPHERALS_NRF52840_PINS_H
 
-void reset_pin(uint8_t pin);
-
 extern const mcu_pin_obj_t pin_P0_00;
 extern const mcu_pin_obj_t pin_P0_01;
 extern const mcu_pin_obj_t pin_P0_02;

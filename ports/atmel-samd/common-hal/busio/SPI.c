@@ -196,9 +196,9 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     }
     spi_m_sync_disable(&self->spi_desc);
     spi_m_sync_deinit(&self->spi_desc);
-    reset_pin(self->clock_pin);
-    reset_pin(self->MOSI_pin);
-    reset_pin(self->MISO_pin);
+    reset_pin_number(self->clock_pin);
+    reset_pin_number(self->MOSI_pin);
+    reset_pin_number(self->MISO_pin);
     self->clock_pin = NO_PIN;
 }
 

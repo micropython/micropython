@@ -96,8 +96,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     common_hal_mcu_delay_us(3);
 
     if (!gpio_get_pin_level(sda->number) || !gpio_get_pin_level(scl->number)) {
-        reset_pin(sda->number);
-        reset_pin(scl->number);
+        reset_pin_number(sda->number);
+        reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
     }
     gpio_set_pin_function(sda->number, sda_pinmux);
@@ -107,8 +107,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
     if (i2c_m_sync_init(&self->i2c_desc, sercom) != ERR_NONE) {
-        reset_pin(sda->number);
-        reset_pin(scl->number);
+        reset_pin_number(sda->number);
+        reset_pin_number(scl->number);
         mp_raise_OSError(MP_EIO);
     }
 
@@ -116,8 +116,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     // Frequency must be set before the I2C device is enabled.
     if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
-        reset_pin(sda->number);
-        reset_pin(scl->number);
+        reset_pin_number(sda->number);
+        reset_pin_number(scl->number);
         mp_raise_ValueError(translate("Unsupported baudrate"));
     }
 
@@ -144,8 +144,8 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     i2c_m_sync_disable(&self->i2c_desc);
     i2c_m_sync_deinit(&self->i2c_desc);
 
-    reset_pin(self->sda_pin);
-    reset_pin(self->scl_pin);
+    reset_pin_number(self->sda_pin);
+    reset_pin_number(self->scl_pin);
     self->sda_pin = NO_PIN;
     self->scl_pin = NO_PIN;
 }

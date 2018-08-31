@@ -40,6 +40,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const
 
     nrf_gpio_cfg_default(pin->number);
 
+    claim_pin(pin);
     self->pin = pin;
 }
 
@@ -53,6 +54,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
 
     nrf_gpio_cfg_default(self->pin->number);
 
+    reset_pin_number(self->pin->number);
     self->pin = mp_const_none;
 }
 

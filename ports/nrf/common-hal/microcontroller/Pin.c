@@ -44,7 +44,7 @@ bool speaker_enable_in_use;
 #endif
 
 // Bit mask of claimed pins on each of up to two ports. nrf52832 has one port; nrf52840 has two.
-STATIC bool claimed_pins[2];
+STATIC uint32_t claimed_pins[2];
 
 void reset_all_pins(void) {
     claimed_pins[0] = 0;
@@ -70,17 +70,16 @@ void reset_all_pins(void) {
 }
 
 // Mark pin as free and return it to a quiescent state.
-void reset_pin(uint8_t pin) {
-    // Ignore out-of-bound pin numbers. NUMBER_OF_PINS is from nrf_gpio.h.
-    if (pin >= NUMBER_OF_PINS) {
+void reset_pin_number(uint8_t pin_number) {
+    if (pin_number == NO_PIN) {
         return;
     }
 
     // Clear claimed bit.
-    claimed_pins[nrf_pin_port(pin)] &= ~(1 << nrf_relative_pin_number(pin));
+    claimed_pins[nrf_pin_port(pin_number)] &= ~(1 << nrf_relative_pin_number(pin_number));
 
     #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL->number) {
+    if (pin_number == MICROPY_HW_NEOPIXEL->number) {
         neopixel_in_use = false;
         rgb_led_status_init();
         return;
@@ -89,8 +88,8 @@ void reset_pin(uint8_t pin) {
     #ifdef MICROPY_HW_APA102_MOSI
     if (pin == MICROPY_HW_APA102_MOSI->number ||
         pin == MICROPY_HW_APA102_SCK->number) {
-        apa102_mosi_in_use = apa102_mosi_in_use && pin != MICROPY_HW_APA102_MOSI->number;
-        apa102_sck_in_use = apa102_sck_in_use && pin != MICROPY_HW_APA102_SCK->number;
+        apa102_mosi_in_use = apa102_mosi_in_use && pin_number != MICROPY_HW_APA102_MOSI->number;
+        apa102_sck_in_use = apa102_sck_in_use && pin_number != MICROPY_HW_APA102_SCK->number;
         if (!apa102_sck_in_use && !apa102_mosi_in_use) {
             rgb_led_status_init();
         }
@@ -99,11 +98,11 @@ void reset_pin(uint8_t pin) {
     #endif
 
     #ifdef SPEAKER_ENABLE_PIN
-    if (pin == SPEAKER_ENABLE_PIN->number) {
+    if (pin_number == SPEAKER_ENABLE_PIN->number) {
         speaker_enable_in_use = false;
         common_hal_digitalio_digitalinout_switch_to_output(
-        nrf_gpio_pin_dir_set(pin, NRF_GPIO_PIN_DIR_OUTPUT);
-        nrf_gpio_pin_write(pin, false);
+        nrf_gpio_pin_dir_set(pin_number, NRF_GPIO_PIN_DIR_OUTPUT);
+        nrf_gpio_pin_write(pin_number, false);
     }
     #endif
 }
@@ -154,5 +153,5 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     }
     #endif
 
-    return !(claimed_pins[nrf_pin_port(pin->number)] & (nrf_relative_pin_number(pin->number)));
+    return !(claimed_pins[nrf_pin_port(pin->number)] & (1 << nrf_relative_pin_number(pin->number)));
 }

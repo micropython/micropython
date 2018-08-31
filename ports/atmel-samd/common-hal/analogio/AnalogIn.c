@@ -80,7 +80,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
     if (common_hal_analogio_analogin_deinited(self)) {
         return;
     }
-    reset_pin(self->pin->number);
+    reset_pin_number(self->pin->number);
     self->pin = mp_const_none;
 }
 

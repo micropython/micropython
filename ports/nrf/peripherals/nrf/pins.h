@@ -55,6 +55,9 @@ extern const mp_obj_type_t mcu_pin_type;
     .adc_channel = (p_adc_channel), \
 }
 
+// Use illegal pin value to mark unassigned pins.
+#define NO_PIN 0xff
+
 // Choose based on chip, but not specifically revision (e.g., not NRF52832_XXAA)
 #ifdef NRF52832
 #include "nrf52832/pins.h"

@@ -105,8 +105,8 @@ void common_hal_i2cslave_i2c_slave_deinit(i2cslave_i2c_slave_obj_t *self) {
 
     self->sercom->I2CS.CTRLA.bit.ENABLE = 0;
 
-    reset_pin(self->sda_pin);
-    reset_pin(self->scl_pin);
+    reset_pin_number(self->sda_pin);
+    reset_pin_number(self->scl_pin);
     self->sda_pin = NO_PIN;
     self->scl_pin = NO_PIN;
 }

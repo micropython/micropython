@@ -71,6 +71,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
       config.frequency = NRF_TWIM_FREQ_250K;
     }
 
+    self->scl_pin_number = scl->number;
+    self->sda_pin_number = sda->number;
+    claim_pin(sda);
+    claim_pin(scl);
+
     nrfx_err_t err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
 
     // A soft reset doesn't uninit the driver so we might end up with a invalid state
@@ -79,14 +84,15 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
     }
 
-    if (err != NRFX_SUCCESS)
+    if (err != NRFX_SUCCESS) {
+        common_hal_busio_i2c_deinit(self);
         mp_raise_OSError(MP_EIO);
+    }
 
-    self->inited = true;
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
-  return !self->inited;
+    return self->sda_pin_number == NO_PIN;
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
@@ -95,7 +101,10 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 
     nrfx_twim_uninit(&self->twim);
 
-    self->inited = false;
+    reset_pin_number(self->sda_pin_number);
+    reset_pin_number(self->scl_pin_number);
+    self->sda_pin_number = NO_PIN;
+    self->scl_pin_number = NO_PIN;
 }
 
 // nrfx_twim_tx doesn't support 0-length data so we fall back to the hal API

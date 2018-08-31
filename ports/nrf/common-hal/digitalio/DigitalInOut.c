@@ -32,7 +32,10 @@
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
         digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
+    claim_pin(pin);
     self->pin = pin;
+    self->output = false;
+    self->open_drain = false;
 
     nrf_gpio_cfg_input(pin->number, NRF_GPIO_PIN_NOPULL);
 
@@ -49,11 +52,13 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     }
     nrf_gpio_cfg_default(self->pin->number);
 
+    reset_pin_number(self->pin->number);
     self->pin = mp_const_none;
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(
         digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
+    self->output = false;
     nrf_gpio_cfg_input(self->pin->number, NRF_GPIO_PIN_NOPULL);
     common_hal_digitalio_digitalinout_set_pull(self, pull);
 }
@@ -61,6 +66,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
 void common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t *self, bool value,
         digitalio_drive_mode_t drive_mode) {
+    self->output = true;
     self->open_drain = (drive_mode == DRIVE_MODE_OPEN_DRAIN);
 
     nrf_gpio_cfg_input(self->pin->number, NRF_GPIO_PIN_NOPULL);
@@ -70,8 +76,7 @@ void common_hal_digitalio_digitalinout_switch_to_output(
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
         digitalio_digitalinout_obj_t *self) {
-    return (nrf_gpio_pin_dir_get(self->pin->number) == NRF_GPIO_PIN_DIR_OUTPUT)
-        ? DIRECTION_OUTPUT : DIRECTION_INPUT;
+    return self->output ? DIRECTION_OUTPUT : DIRECTION_INPUT;
 }
 
 void common_hal_digitalio_digitalinout_set_value(
@@ -87,8 +92,9 @@ void common_hal_digitalio_digitalinout_set_value(
 bool common_hal_digitalio_digitalinout_get_value(
         digitalio_digitalinout_obj_t *self) {
     if (nrf_gpio_pin_dir_get(self->pin->number) == NRF_GPIO_PIN_DIR_INPUT) {
-        if (self->open_drain)
+        if (self->open_drain) {
             return true;
+        }
 
         return nrf_gpio_pin_read(self->pin->number);
     }
@@ -104,14 +110,16 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
 
     // True is implemented differently between modes so reset the value to make
     // sure its correct for the new mode.
-    if (value)
+    if (value) {
         common_hal_digitalio_digitalinout_set_value(self, value);
+    }
 }
 
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
         digitalio_digitalinout_obj_t *self) {
-    if (self->open_drain)
+    if (self->open_drain) {
         return DRIVE_MODE_OPEN_DRAIN;
+    }
 
     return DRIVE_MODE_PUSH_PULL;
 }
@@ -141,7 +149,7 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     // Changes pin to be a relative pin number in port.
     NRF_GPIO_Type *reg = nrf_gpio_pin_port_decode(&pin);
 
-    if (nrf_gpio_pin_dir_get(pin) == NRF_GPIO_PIN_DIR_OUTPUT) {
+    if (nrf_gpio_pin_dir_get(self->pin->number) == NRF_GPIO_PIN_DIR_OUTPUT) {
         mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
         return PULL_NONE;
     }
