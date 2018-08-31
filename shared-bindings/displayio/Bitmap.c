@@ -45,30 +45,29 @@
 //|
 //| .. warning:: This will likely be changed before 4.0.0. Consider it very experimental.
 //|
-//| .. class:: Bitmap(width, height, value_size)
+//| .. class:: Bitmap(width, height, value_count)
 //|
-//|   Create a Bitmap object with the given fixed size.
+//|   Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to
+//|   index into a corresponding palette. This enables differently colored sprites to share the
+//|   underlying Bitmap. value_count is used to minimize the memory used to store the Bitmap.
 //|
 //|   :param int width: The number of values wide
 //|   :param int height: The number of values high
-//|   :param int value_size: The value size in bits. Must be power of 2.
+//|   :param int value_count: The number of possible pixel values.
 //|
 STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
     uint32_t width = mp_obj_get_int(pos_args[0]);
     uint32_t height = mp_obj_get_int(pos_args[1]);
-    uint32_t value_size = mp_obj_get_int(pos_args[2]);
+    uint32_t value_count = mp_obj_get_int(pos_args[2]);
     uint32_t power_of_two = 1;
-    while (value_size > power_of_two) {
+    while (value_count > (1U << power_of_two)) {
         power_of_two <<= 1;
-    }
-    if (value_size != power_of_two) {
-        mp_raise_ValueError(translate("value_size must be power of two"));
     }
 
     displayio_bitmap_t *self = m_new_obj(displayio_bitmap_t);
     self->base.type = &displayio_bitmap_type;
-    common_hal_displayio_bitmap_construct(self, width, height, value_size);
+    common_hal_displayio_bitmap_construct(self, width, height, power_of_two);
 
     return MP_OBJ_FROM_PTR(self);
 }

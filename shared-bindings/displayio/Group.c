@@ -74,7 +74,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 
 //|   .. method:: append(layer)
 //|
-//|     Switches do displaying the given group of elements.
+//|     Append a layer to the group. It will be drawn above other layers.
 //|
 STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
     displayio_group_t *self = MP_OBJ_TO_PTR(self_in);

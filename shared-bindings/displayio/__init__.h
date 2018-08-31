@@ -31,8 +31,4 @@
 
 // Nothing now.
 
-// typedef enum {
-//     PIXEL_
-// } displayio_pixel_format;
-
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H

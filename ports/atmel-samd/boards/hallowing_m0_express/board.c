@@ -84,7 +84,7 @@ void board_init(void) {
         } else if (*cmd == 0x11) {
             uint64_t start = ticks_ms;
             while (ticks_ms - start < 500) {}
-        } {
+        } else {
             uint64_t start = ticks_ms;
             while (ticks_ms - start < 10) {}
         }

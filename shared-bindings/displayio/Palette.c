@@ -41,8 +41,8 @@
 //| :class:`Palette` -- Stores a mapping from bitmap pixel values to display colors
 //| ===============================================================================
 //|
-//| Manage updating a display over SPI four wire protocol in the background while Python code runs.
-//| It doesn't handle display initialization.
+//| Map a pixel value to a full color. Colors are transformed to the display's format internally to
+//| save memory.
 //|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
 //|
@@ -76,42 +76,41 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     if (value == MP_OBJ_NULL) {
         // delete item
         return MP_OBJ_NULL; // op not supported
-    } else {
-        displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
-        if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
-            return MP_OBJ_NULL; // Slicing not supported. Use a duplicate Palette to swap multiple colors atomically.
-        } else {
-            if (value == MP_OBJ_SENTINEL) {
-                return MP_OBJ_NULL; // index read is not supported
-            } else {
-                size_t index = mp_get_index(&displayio_palette_type, self->max_value, index_in, false);
-
-                uint32_t color;
-                mp_int_t int_value;
-                mp_buffer_info_t bufinfo;
-                if (mp_get_buffer(value, &bufinfo, MP_BUFFER_READ)) {
-                    if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-                        mp_raise_ValueError(translate("color buffer must be a bytearray or array of type 'b' or 'B'"));
-                    }
-                    uint8_t* buf = bufinfo.buf;
-                    if (bufinfo.len == 3 || bufinfo.len == 4) {
-                        color = buf[0] << 16 | buf[1] << 8 | buf[2];
-                    } else {
-                        mp_raise_ValueError(translate("color buffer must be 3 bytes (RGB) or 4 bytes (RGBA)"));
-                    }
-                } else if (mp_obj_get_int_maybe(value, &int_value)) {
-                    if (int_value < 0 || int_value > 0xffffff) {
-                        mp_raise_TypeError(translate("color must be between 0x000000 and 0xffffff"));
-                    }
-                    color = int_value;
-                } else {
-                    mp_raise_TypeError(translate("color buffer must be a buffer or int"));
-                }
-                common_hal_displayio_palette_set_color(self, index, color);
-                return mp_const_none;
-            }
-        }
     }
+    // Slicing not supported. Use a duplicate Palette to swap multiple colors atomically.
+    if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
+        return MP_OBJ_NULL;
+    }
+    // index read is not supported
+    if (value == MP_OBJ_SENTINEL) {
+        return MP_OBJ_NULL;
+    }
+    displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
+    size_t index = mp_get_index(&displayio_palette_type, self->max_value, index_in, false);
+
+    uint32_t color;
+    mp_int_t int_value;
+    mp_buffer_info_t bufinfo;
+    if (mp_get_buffer(value, &bufinfo, MP_BUFFER_READ)) {
+        if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
+            mp_raise_ValueError(translate("color buffer must be a bytearray or array of type 'b' or 'B'"));
+        }
+        uint8_t* buf = bufinfo.buf;
+        if (bufinfo.len == 3 || bufinfo.len == 4) {
+            color = buf[0] << 16 | buf[1] << 8 | buf[2];
+        } else {
+            mp_raise_ValueError(translate("color buffer must be 3 bytes (RGB) or 4 bytes (RGBA)"));
+        }
+    } else if (mp_obj_get_int_maybe(value, &int_value)) {
+        if (int_value < 0 || int_value > 0xffffff) {
+            mp_raise_TypeError(translate("color must be between 0x000000 and 0xffffff"));
+        }
+        color = int_value;
+    } else {
+        mp_raise_TypeError(translate("color buffer must be a buffer or int"));
+    }
+    common_hal_displayio_palette_set_color(self, index, color);
+    return mp_const_none;
 }
 
 //|   .. method:: make_transparent(value)

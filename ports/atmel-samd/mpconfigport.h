@@ -239,8 +239,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
         #define DISPLAYIO_MODULE
     #endif
 
-
-
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
         AUDIOIO_MODULE \

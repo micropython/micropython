@@ -63,21 +63,16 @@ bool common_hal_displayio_fourwire_begin_transaction(displayio_fourwire_obj_t* s
     if (!common_hal_busio_spi_try_lock(&self->bus)) {
         return false;
     }
+    // TODO(tannewt): Stop hardcoding SPI frequency, polarity and phase.
     common_hal_busio_spi_configure(&self->bus, 12000000, 0, 0, 8);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
     return true;
 }
 
-void common_hal_displayio_fourwire_wait_for_send(displayio_fourwire_obj_t* self) {
-}
-
 void common_hal_displayio_fourwire_send(displayio_fourwire_obj_t* self, bool command, uint8_t *data, uint32_t data_length) {
-    common_hal_displayio_fourwire_wait_for_send(self);
     common_hal_digitalio_digitalinout_set_value(&self->command, !command);
     common_hal_busio_spi_write(&self->bus, data, data_length);
-
 }
-
 
 void common_hal_displayio_fourwire_end_transaction(displayio_fourwire_obj_t* self) {
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
@@ -106,6 +101,7 @@ static uint16_t swap(uint16_t x) {
 }
 
 void displayio_fourwire_start_region_update(displayio_fourwire_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+    // TODO(tannewt): Handle displays with single byte bounds.
     common_hal_displayio_fourwire_begin_transaction(self);
     uint16_t data[2];
     common_hal_displayio_fourwire_send(self, true, &self->set_column_command, 1);

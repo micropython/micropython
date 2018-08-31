@@ -56,7 +56,7 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
 }
 
 void common_hal_displayio_bitmap_load_row(displayio_bitmap_t *self, uint16_t y, uint8_t* data, uint16_t len) {
-    if (len != self->stride * 4) {
+    if (len != self->stride * sizeof(uint32_t)) {
         mp_raise_ValueError(translate("row must be packed and word aligned"));
     }
     uint32_t* row_value = self->data + (y * self->stride);
@@ -77,6 +77,9 @@ void common_hal_displayio_bitmap_load_row(displayio_bitmap_t *self, uint16_t y, 
     }
 }
 uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t x, int16_t y) {
+    if (x >= self->width || x < 0 || y >= self->height || y < 0) {
+        return 0;
+    }
     int32_t row_start = y * self->stride;
     if (self->bits_per_value < 8) {
         uint32_t word = self->data[row_start + (x >> self->x_shift)];
