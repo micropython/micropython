@@ -177,7 +177,7 @@ STATIC mp_obj_t scanentry_get_name(mp_obj_t self_in) {
         return mp_const_none;
     }
 
-    return mp_obj_new_str((const char*)name, name_len - 1, false);
+    return mp_obj_new_str((const char*)name, name_len - 1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluepy_scanentry_get_name_obj, scanentry_get_name);
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-09 20:51-0400\n"
+"POT-Creation-Date: 2018-10-21 17:15+0200\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -291,12 +291,12 @@ msgid "Too many channels in sample."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
 msgid "No DMA channel found"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 
@@ -312,43 +312,44 @@ msgstr ""
 msgid "sampling rate out of range"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
 msgid "DAC already in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
 msgid "Right channel unsupported"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
 msgid "Invalid pin for left channel"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
 msgid "Invalid pin for right channel"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
 msgid "Cannot output both channels on the same pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
+#: ports/nrf/common-hal/pulseio/PulseOut.c:107
 msgid "All timers in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
@@ -361,7 +362,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:81
+#: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
 msgstr ""
 
@@ -413,8 +414,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:120
-#: ports/nrf/common-hal/pulseio/PWMOut.c:232
+#: ports/nrf/common-hal/pulseio/PWMOut.c:119
+#: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr ""
 
@@ -695,7 +696,130 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:95
+#: ports/nrf/common-hal/bleio/Adapter.c:41
+#, c-format
+msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:125
+#, c-format
+msgid "Failed to change softdevice state, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:135
+#, c-format
+msgid "Failed to get softdevice state, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:155
+#, c-format
+msgid "Failed to get local address, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:52
+#, c-format
+msgid "Failed to write gatts value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:76
+#, c-format
+msgid "Failed to notify attribute value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:91
+#, c-format
+msgid "Failed to read attribute value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:119
+#: ports/nrf/common-hal/bleio/Device.c:272
+#: ports/nrf/common-hal/bleio/Device.c:307
+#, c-format
+msgid "Failed to acquire mutex, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:126
+#, c-format
+msgid "Failed to write attribute value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:138
+#: ports/nrf/common-hal/bleio/Device.c:284
+#: ports/nrf/common-hal/bleio/Device.c:319
+#: ports/nrf/common-hal/bleio/Device.c:354
+#: ports/nrf/common-hal/bleio/Device.c:391
+#, c-format
+msgid "Failed to release mutex, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:81
+#: ports/nrf/common-hal/bleio/Device.c:114
+msgid "Can not fit data into the advertisment packet"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:266
+#, c-format
+msgid "Failed to discover serivices, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:403
+#: ports/nrf/common-hal/bleio/Scanner.c:76
+#, c-format
+msgid "Failed to continue scanning, status: 0x%0xlX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:436
+#, c-format
+msgid "Failed to connect, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:513
+#, c-format
+msgid "Failed to add service, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:531
+#, c-format
+msgid "Failed to start advertisment, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:549
+#, c-format
+msgid "Failed to stop advertisment, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:575
+#: ports/nrf/common-hal/bleio/Scanner.c:103
+#, c-format
+msgid "Failed to start scanning, status: 0x%0xlX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:592
+#, c-format
+msgid "Failed to create mutex, status: 0x%0xlX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Service.c:83
+#, c-format
+msgid "Failed to add characteristic, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:97
+#, c-format
+msgid "Failed to add Vendor Specific UUID, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:102
+msgid "Invalid UUID string length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:109
+#: shared-bindings/bleio/Characteristic.c:125
+#: shared-bindings/bleio/Service.c:105
+msgid "Invalid UUID parameter"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/I2C.c:96
 msgid "All I2C peripherals are in use"
 msgstr ""
 
@@ -729,109 +853,8 @@ msgstr ""
 msgid "Can not get temperature. status: 0x%02x"
 msgstr ""
 
-#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#: ports/nrf/common-hal/pulseio/PWMOut.c:161
 msgid "All PWM peripherals are in use"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:199
-msgid "Cannot apply GAP parameters."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:213
-msgid "Cannot set PPCP parameters."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:245
-msgid "Can not query for the device address."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:264
-msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:284
-#: ports/nrf/drivers/bluetooth/ble_drv.c:298
-msgid "Can not add Service."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:373
-msgid "Can not add Characteristic."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:400
-msgid "Can not apply device name in the stack."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:464
-#: ports/nrf/drivers/bluetooth/ble_drv.c:514
-msgid "Can not encode UUID, to check length."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:470
-#: ports/nrf/drivers/bluetooth/ble_drv.c:520
-msgid "Can encode UUID into the advertisement packet."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:545
-msgid "Can not fit data into the advertisement packet."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:558
-#: ports/nrf/drivers/bluetooth/ble_drv.c:604
-#, c-format
-msgid "Can not apply advertisement data. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:614
-#, c-format
-msgid "Can not start advertisement. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:631
-#, c-format
-msgid "Can not stop advertisement. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:650
-#: ports/nrf/drivers/bluetooth/ble_drv.c:726
-#, c-format
-msgid "Can not read attribute value. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:667
-#: ports/nrf/drivers/bluetooth/ble_drv.c:756
-#, c-format
-msgid "Can not write attribute value. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:691
-#, c-format
-msgid "Can not notify attribute value. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:784
-#, c-format
-msgid "Can not start scanning. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:829
-#, c-format
-msgid "Can not connect. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:80
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:132
-#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
-msgid "Invalid UUID parameter"
-msgstr ""
-
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:73
-msgid "Invalid Service type"
-msgstr ""
-
-#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
-msgid "Invalid UUID string length"
 msgstr ""
 
 #: ports/unix/modffi.c:138
@@ -1994,7 +2017,7 @@ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:223
+#: shared-bindings/audioio/AudioOut.c:226
 msgid "Not playing"
 msgstr ""
 
@@ -2085,6 +2108,30 @@ msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
+msgstr ""
+
+#: shared-bindings/bleio/Address.c:101
+msgid "Wrong address length"
+msgstr ""
+
+#: shared-bindings/bleio/Address.c:107
+msgid "Wrong number of bytes provided"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:210
+msgid "Can't add services in Central mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:226
+msgid "Can't connect in Peripheral mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:256
+msgid "Can't change the name in Central mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
+msgid "Can't advertise in Central mode"
 msgstr ""
 
 #: shared-bindings/busio/I2C.c:120
@@ -2201,7 +2248,7 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
-#: shared-bindings/pulseio/PulseOut.c:75
+#: shared-bindings/pulseio/PulseOut.c:76
 msgid "Expected a %q"
 msgstr ""
 
@@ -2263,7 +2310,7 @@ msgstr ""
 msgid "Read-only"
 msgstr ""
 
-#: shared-bindings/pulseio/PulseOut.c:134
+#: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
 msgstr ""
 

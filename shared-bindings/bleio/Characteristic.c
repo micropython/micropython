@@ -122,7 +122,7 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
         self->uuid = MP_OBJ_TO_PTR(uuid);
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Invalid UUID parameter"));
+                  translate("Invalid UUID parameter")));
     }
 
     common_hal_bleio_characteristic_construct(self);

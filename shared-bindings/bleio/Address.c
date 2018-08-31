@@ -98,13 +98,13 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
                 i -= is_long ? 3 : 2;
             }
         } else {
-            mp_raise_ValueError("Wrong address length");
+            mp_raise_ValueError(translate("Wrong address length"));
         }
     } else if (MP_OBJ_IS_TYPE(address, &mp_type_bytearray) || MP_OBJ_IS_TYPE(address, &mp_type_bytes)) {
             mp_buffer_info_t buf_info;
             mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
             if (buf_info.len != BLEIO_ADDRESS_BYTES) {
-                mp_raise_ValueError("Wrong number of bytes provided");
+                mp_raise_ValueError(translate("Wrong number of bytes provided"));
             }
 
             for (size_t b = 0; b < BLEIO_ADDRESS_BYTES; ++b) {

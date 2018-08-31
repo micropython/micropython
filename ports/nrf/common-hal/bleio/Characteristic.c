@@ -49,7 +49,7 @@ STATIC void gatts_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
     const uint32_t err_code = sd_ble_gatts_value_set(conn_handle, characteristic->handle, &gatts_value);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-             "Failed to write gatts value, status: 0x%08lX", err_code));
+             translate("Failed to write gatts value, status: 0x%08lX"), err_code));
     }
 }
 
@@ -73,7 +73,7 @@ STATIC void gatts_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_i
     const uint32_t err_code = sd_ble_gatts_hvx(device->conn_handle, &hvx_params);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to notify attribute value, status: 0x%08lX", err_code));
+            translate("Failed to notify attribute value, status: 0x%08lX"), err_code));
     }
 
     m_tx_in_progress += 1;
@@ -88,7 +88,7 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
     const uint32_t err_code = sd_ble_gattc_read(device->conn_handle, characteristic->handle, 0);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to read attribute value, status: 0x%08lX", err_code));
+                  translate("Failed to read attribute value, status: 0x%08lX"), err_code));
     }
 
     while (m_read_characteristic != NULL) {
@@ -116,14 +116,14 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
         err_code = sd_mutex_acquire(m_write_mutex);
         if (err_code != NRF_SUCCESS) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      "Failed to acquire mutex, status: 0x%08lX", err_code));
+                      translate("Failed to acquire mutex, status: 0x%08lX"), err_code));
         }
     }
 
     err_code = sd_ble_gattc_write(device->conn_handle, &write_params);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to write attribute value, status: 0x%08lX", err_code));
+            translate("Failed to write attribute value, status: 0x%08lX"), err_code));
     }
 
     while (sd_mutex_acquire(m_write_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
@@ -135,7 +135,7 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
     err_code = sd_mutex_release(m_write_mutex);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to release mutex, status: 0x%08lX", err_code));
+                  translate("Failed to release mutex, status: 0x%08lX"), err_code));
     }
 }
 

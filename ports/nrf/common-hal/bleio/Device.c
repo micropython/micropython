@@ -78,7 +78,7 @@ STATIC uint32_t set_advertisement_data(bleio_device_obj_t *device, bool connecta
     do { \
         if (byte_pos + (len) > BLE_GAP_ADV_MAX_SIZE) { \
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, \
-                "Can not fit data into the advertisment packet")); \
+                translate("Can not fit data into the advertisment packet"))); \
         } \
         adv_data[byte_pos] = (field); \
         byte_pos += (len); \
@@ -111,7 +111,7 @@ STATIC uint32_t set_advertisement_data(bleio_device_obj_t *device, bool connecta
     } else  {
         if (byte_pos + raw_data->len > BLE_GAP_ADV_MAX_SIZE) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                "Can not fit data into the advertisment packet"));
+                translate("Can not fit data into the advertisment packet")));
         }
 
         memcpy(&adv_data[byte_pos], raw_data->buf, raw_data->len);
@@ -263,13 +263,13 @@ STATIC bool discover_services(bleio_device_obj_t *device, uint16_t start_handle)
     uint32_t err_code = sd_ble_gattc_primary_services_discover(device->conn_handle, start_handle, NULL);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to discover serivices, status: 0x%08lX", err_code));
+                  translate("Failed to discover serivices, status: 0x%08lX"), err_code));
     }
 
     err_code = sd_mutex_acquire(m_discovery_mutex);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to acquire mutex, status: 0x%08lX", err_code));
+                  translate("Failed to acquire mutex, status: 0x%08lX"), err_code));
     }
 
     while (sd_mutex_acquire(m_discovery_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
@@ -281,7 +281,7 @@ STATIC bool discover_services(bleio_device_obj_t *device, uint16_t start_handle)
     err_code = sd_mutex_release(m_discovery_mutex);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to release mutex, status: 0x%08lX", err_code));
+                  translate("Failed to release mutex, status: 0x%08lX"), err_code));
     }
 
     return m_discovery_successful;
@@ -304,7 +304,7 @@ STATIC bool discover_characteristics(bleio_device_obj_t *device, bleio_service_o
     err_code = sd_mutex_acquire(m_discovery_mutex);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to acquire mutex, status: 0x%08lX", err_code));
+                  translate("Failed to acquire mutex, status: 0x%08lX"), err_code));
     }
 
     while (sd_mutex_acquire(m_discovery_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
@@ -316,7 +316,7 @@ STATIC bool discover_characteristics(bleio_device_obj_t *device, bleio_service_o
     err_code = sd_mutex_release(m_discovery_mutex);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to release mutex, status: 0x%08lX", err_code));
+                  translate("Failed to release mutex, status: 0x%08lX"), err_code));
     }
 
     return m_discovery_successful;
@@ -351,7 +351,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
     const uint32_t err_code = sd_mutex_release(m_discovery_mutex);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to release mutex, status: 0x%08lX", err_code));
+                  translate("Failed to release mutex, status: 0x%08lX"), err_code));
     }
 }
 
@@ -388,7 +388,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
     const uint32_t err_code = sd_mutex_release(m_discovery_mutex);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Failed to release mutex, status: 0x%08lX", err_code));
+                  translate("Failed to release mutex, status: 0x%08lX"), err_code));
     }
 }
 
@@ -400,7 +400,7 @@ STATIC void on_adv_report(ble_gap_evt_adv_report_t *report, bleio_device_obj_t *
         err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer);
         if (err_code != NRF_SUCCESS) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                "Failed to continue scanning, status: 0x%0xlX", err_code));
+                translate("Failed to continue scanning, status: 0x%0xlX"), err_code));
         }
 #endif
         return;
@@ -433,7 +433,7 @@ STATIC void on_adv_report(ble_gap_evt_adv_report_t *report, bleio_device_obj_t *
 
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to connect, status: 0x%08lX", err_code));
+            translate("Failed to connect, status: 0x%08lX"), err_code));
     }
 }
 
@@ -510,7 +510,7 @@ void common_hal_bleio_device_add_service(bleio_device_obj_t *device, bleio_servi
     const uint32_t err_code = sd_ble_gatts_service_add(service_type, &uuid, &service->handle);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-             "Failed to add service, status: 0x%08lX", err_code));
+             translate("Failed to add service, status: 0x%08lX"), err_code));
     }
 
     const mp_obj_list_t *char_list = MP_OBJ_TO_PTR(service->char_list);
@@ -528,7 +528,7 @@ void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bool 
     const uint32_t err_code = set_advertisement_data(device, connectable, raw_data);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to start advertisment, status: 0x%08lX", err_code));
+            translate("Failed to start advertisment, status: 0x%08lX"), err_code));
     }
 }
 
@@ -546,7 +546,7 @@ void common_hal_bleio_device_stop_advertising(bleio_device_obj_t *device) {
 
     if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_INVALID_STATE)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to stop advertisment, status: 0x%08lX", err_code));
+            translate("Failed to stop advertisment, status: 0x%08lX"), err_code));
     }
 }
 
@@ -572,7 +572,7 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
 
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to start scanning, status: 0x%0xlX", err_code));
+            translate("Failed to start scanning, status: 0x%0xlX"), err_code));
     }
 
     while (device->conn_handle == BLE_CONN_HANDLE_INVALID) {
@@ -589,7 +589,7 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
         err_code = sd_mutex_new(m_discovery_mutex);
         if (err_code != NRF_SUCCESS) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                "Failed to create mutex, status: 0x%0xlX", err_code));
+                translate("Failed to create mutex, status: 0x%0xlX"), err_code));
         }
     }
 

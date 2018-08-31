@@ -73,7 +73,7 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
     const uint32_t err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to continue scanning, status: 0x%0xlX", err_code));
+            translate("Failed to continue scanning, status: 0x%0xlX"), err_code));
     }
 #endif
 }
@@ -100,7 +100,7 @@ void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_int_t timeout) 
 
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to start scanning, status: 0x%0xlX", err_code));
+            translate("Failed to start scanning, status: 0x%0xlX"), err_code));
     }
 
     if (timeout > 0) {

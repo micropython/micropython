@@ -38,7 +38,7 @@
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AssertionError,
-         "Soft device assert, id: 0x%08lX, pc: 0x%08lX", id, pc));
+         translate("Soft device assert, id: 0x%08lX, pc: 0x%08lX"), id, pc));
 }
 
 STATIC uint32_t ble_stack_enable(void) {
@@ -122,7 +122,7 @@ void common_hal_bleio_adapter_set_enabled(bool enabled) {
 
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-             "Failed to change softdevice state, error: 0x%08lX", err_code));
+             translate("Failed to change softdevice state, error: 0x%08lX"), err_code));
     }
 }
 
@@ -132,7 +132,7 @@ bool common_hal_bleio_adapter_get_enabled(void) {
     const uint32_t err_code = sd_softdevice_is_enabled(&is_enabled);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to get softdevice state, error: 0x%08lX", err_code));
+            translate("Failed to get softdevice state, error: 0x%08lX"), err_code));
     }
 
     return is_enabled;
@@ -152,7 +152,7 @@ void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address) {
 
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to get local address, error: 0x%08lX", err_code));
+            translate("Failed to get local address, error: 0x%08lX"), err_code));
     }
 
     address->type = local_address.addr_type;

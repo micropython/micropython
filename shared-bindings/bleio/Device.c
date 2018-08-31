@@ -194,7 +194,7 @@ STATIC mp_obj_t bleio_device_make_new(const mp_obj_type_t *type, size_t n_args, 
         self->address.type = scan_entry->address.type;
         memcpy(self->address.value, scan_entry->address.value, BLEIO_ADDRESS_BYTES);
     } else {
-        self->name = mp_obj_new_str(default_name, strlen(default_name), false);
+        self->name = mp_obj_new_str(default_name, strlen(default_name));
         common_hal_bleio_adapter_get_address(&self->address);
     }
 
@@ -207,7 +207,7 @@ STATIC mp_obj_t bleio_device_add_service(mp_obj_t self_in, mp_obj_t service_in) 
 
     if (!self->is_peripheral) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Can't add services in Central mode"));
+                  translate("Can't add services in Central mode")));
     }
 
     service->device = self;
@@ -223,7 +223,7 @@ STATIC mp_obj_t bleio_device_connect(mp_obj_t self_in) {
 
     if (self->is_peripheral) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Can't connect in Peripheral mode"));
+                  translate("Can't connect in Peripheral mode")));
     }
 
     common_hal_bleio_device_connect(self);
@@ -253,7 +253,7 @@ static mp_obj_t bleio_device_set_name(mp_obj_t self_in, mp_obj_t value) {
 
     if (!self->is_peripheral) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Can't change the name in Central mode"));
+                  translate("Can't change the name in Central mode")));
     }
 
     self->name = value;
@@ -274,7 +274,7 @@ STATIC mp_obj_t bleio_device_start_advertising(mp_uint_t n_args, const mp_obj_t 
 
     if (!self->is_peripheral) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Can't advertise in Central mode"));
+                  translate("Can't advertise in Central mode")));
     }
 
     enum { ARG_connectable, ARG_data };
@@ -310,7 +310,7 @@ STATIC mp_obj_t bleio_device_stop_advertising(mp_obj_t self_in) {
 
     if (!self->is_peripheral) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Can't advertise in Central mode"));
+                  translate("Can't advertise in Central mode")));
     }
 
     common_hal_bleio_device_stop_advertising(self);

@@ -94,19 +94,19 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, const mp_obj_t *uui
             const uint32_t err_code = sd_ble_uuid_vs_add(&vs_uuid, &self->uuid_vs_idx);
             if (err_code != NRF_SUCCESS) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                    "Failed to add Vendor Specific UUID, status: 0x%08lX", err_code));
+                    translate("Failed to add Vendor Specific UUID, status: 0x%08lX"), err_code));
             }
 
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "Invalid UUID string length"));
+                translate("Invalid UUID string length")));
         }
 
         return;
     }
 
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-              "Invalid UUID parameter"));
+              translate("Invalid UUID parameter")));
 }
 
 void common_hal_bleio_uuid_print(bleio_uuid_obj_t *self, const mp_print_t *print) {

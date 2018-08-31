@@ -80,7 +80,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &attr_char_value, &handles);
     if (err_code != NRF_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Failed to add characteristic, status: 0x%08lX", err_code));
+            translate("Failed to add characteristic, status: 0x%08lX"), err_code));
     }
 
     characteristic->user_desc_handle = handles.user_desc_handle;
