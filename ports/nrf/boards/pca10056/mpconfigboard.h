@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "PCA10056"
+#define MICROPY_HW_BOARD_NAME       "PCA10056 nRF52840-DK"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "nRF52840-DK"
 
@@ -38,3 +38,13 @@
 
 // Temp (could be removed) 0: usb cdc (default), 1 : hwuart (jlink)
 #define CFG_HWUART_FOR_SERIAL        0
+
+#define DEFAULT_I2C_BUS_SCL         (&pin_P0_27)
+#define DEFAULT_I2C_BUS_SDA         (&pin_P0_26)
+
+#define DEFAULT_SPI_BUS_SCK         (&pin_P1_15)
+#define DEFAULT_SPI_BUS_MOSI        (&pin_P1_13)
+#define DEFAULT_SPI_BUS_MISO        (&pin_P1_14)
+
+#define DEFAULT_UART_BUS_RX         (&pin_P1_01)
+#define DEFAULT_UART_BUS_TX         (&pin_P1_02)

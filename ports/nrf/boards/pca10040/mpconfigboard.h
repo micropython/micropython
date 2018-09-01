@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +29,8 @@
 #define MICROPY_HW_MCU_NAME         "nRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nRF52-DK"
 
-#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 11)
-#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 12)
+#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
+#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
 #define MICROPY_HW_UART_HWFC        (0)
 
 #define PORT_HEAP_SIZE              (32 * 1024)

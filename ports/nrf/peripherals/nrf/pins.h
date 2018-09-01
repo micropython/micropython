@@ -67,6 +67,4 @@ extern const mp_obj_type_t mcu_pin_type;
 #include "nrf52840/pins.h"
 #endif
 
-//**************extern const mp_obj_type_t mcu_pin_type;
-
 #endif // __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
