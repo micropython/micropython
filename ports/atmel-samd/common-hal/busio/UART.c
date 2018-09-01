@@ -254,7 +254,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     uint64_t start_ticks = ticks_ms;
 
     // Busy-wait until timeout or until we've read enough chars.
-    while (ticks_ms - start_ticks < self->timeout_ms) {
+    while (ticks_ms - start_ticks <= self->timeout_ms) {
         // Read as many chars as we can right now, up to len.
         size_t num_read = io_read(io, data, len);
 
@@ -273,6 +273,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
+       // If we are zero timeout, make sure we don't loop again (in the event 
+       // we read in under 1ms)
+       if (self->timeout_ms == 0)
+            break;
     }
 
     if (total_read == 0) {
