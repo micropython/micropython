@@ -69,3 +69,16 @@ try:  # top-level catch-all except to not fail script
 except:
     print("catch-all except")
 print()
+
+# case where a try-except within a finally cancels the exception
+print("exc-finally-subexcept")
+try:
+    print("try1")
+finally:
+    try:
+        print("try2")
+        foo
+    except:
+        print("except2")
+    print("finally1")
+print()
