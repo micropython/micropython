@@ -1892,7 +1892,9 @@ STATIC void emit_native_pop_block(emit_t *emit) {
 }
 
 STATIC void emit_native_pop_except(emit_t *emit) {
-    (void)emit;
+    // Cancel any active exception so subsequent handlers don't see it
+    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)mp_const_none);
+    ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
 }
 
 STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
