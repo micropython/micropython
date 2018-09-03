@@ -368,6 +368,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('basics/try_finally_loops.py') # requires proper try finally code
         skip_tests.add('basics/try_finally_return.py') # requires proper try finally code
         skip_tests.add('basics/try_finally_return2.py') # requires proper try finally code
+        skip_tests.add('basics/try_finally_return3.py') # requires proper try finally code
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
         skip_tests.add('import/gen_context.py') # requires yield_value
         skip_tests.add('misc/features.py') # requires raise_varargs
