@@ -180,7 +180,8 @@ STATIC void reserve_labels_for_native(compiler_t *comp, int n) {
 #define reserve_labels_for_native(comp, n)
 #endif
 
-STATIC void compile_increase_except_level(compiler_t *comp) {
+STATIC void compile_increase_except_level(compiler_t *comp, uint label, int kind) {
+    EMIT_ARG(setup_block, label, kind);
     comp->cur_except_level += 1;
     if (comp->cur_except_level > comp->scope_cur->exc_stack_size) {
         comp->scope_cur->exc_stack_size = comp->cur_except_level;
@@ -190,6 +191,8 @@ STATIC void compile_increase_except_level(compiler_t *comp) {
 STATIC void compile_decrease_except_level(compiler_t *comp) {
     assert(comp->cur_except_level > 0);
     comp->cur_except_level -= 1;
+    EMIT(end_finally);
+    reserve_labels_for_native(comp, 1);
 }
 
 STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
@@ -1523,8 +1526,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
     uint l1 = comp_next_label(comp);
     uint success_label = comp_next_label(comp);
 
-    EMIT_ARG(setup_block, l1, MP_EMIT_SETUP_BLOCK_EXCEPT);
-    compile_increase_except_level(comp);
+    compile_increase_except_level(comp, l1, MP_EMIT_SETUP_BLOCK_EXCEPT);
 
     compile_node(comp, pn_body); // body
     EMIT(pop_block);
@@ -1578,8 +1580,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
         uint l3 = 0;
         if (qstr_exception_local != 0) {
             l3 = comp_next_label(comp);
-            EMIT_ARG(setup_block, l3, MP_EMIT_SETUP_BLOCK_FINALLY);
-            compile_increase_except_level(comp);
+            compile_increase_except_level(comp, l3, MP_EMIT_SETUP_BLOCK_FINALLY);
         }
         compile_node(comp, pns_except->nodes[1]);
         if (qstr_exception_local != 0) {
@@ -1594,8 +1595,6 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
             compile_delete_id(comp, qstr_exception_local);
 
             compile_decrease_except_level(comp);
-            EMIT(end_finally);
-            reserve_labels_for_native(comp, 1);
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
@@ -1603,8 +1602,6 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
     }
 
     compile_decrease_except_level(comp);
-    EMIT(end_finally);
-    reserve_labels_for_native(comp, 1);
     EMIT(end_except_handler);
 
     EMIT_ARG(label_assign, success_label);
@@ -1615,8 +1612,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
 STATIC void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_except, mp_parse_node_t pn_else, mp_parse_node_t pn_finally) {
     uint l_finally_block = comp_next_label(comp);
 
-    EMIT_ARG(setup_block, l_finally_block, MP_EMIT_SETUP_BLOCK_FINALLY);
-    compile_increase_except_level(comp);
+    compile_increase_except_level(comp, l_finally_block, MP_EMIT_SETUP_BLOCK_FINALLY);
 
     if (n_except == 0) {
         assert(MP_PARSE_NODE_IS_NULL(pn_else));
@@ -1632,8 +1628,6 @@ STATIC void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n
     compile_node(comp, pn_finally);
 
     compile_decrease_except_level(comp);
-    EMIT(end_finally);
-    reserve_labels_for_native(comp, 1);
 }
 
 STATIC void compile_try_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -1673,23 +1667,20 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
             // this pre-bit is of the form "a as b"
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)nodes[0];
             compile_node(comp, pns->nodes[0]);
-            EMIT_ARG(setup_block, l_end, MP_EMIT_SETUP_BLOCK_WITH);
+            compile_increase_except_level(comp, l_end, MP_EMIT_SETUP_BLOCK_WITH);
             c_assign(comp, pns->nodes[1], ASSIGN_STORE);
         } else {
             // this pre-bit is just an expression
             compile_node(comp, nodes[0]);
-            EMIT_ARG(setup_block, l_end, MP_EMIT_SETUP_BLOCK_WITH);
+            compile_increase_except_level(comp, l_end, MP_EMIT_SETUP_BLOCK_WITH);
             EMIT(pop_top);
         }
-        compile_increase_except_level(comp);
         // compile additional pre-bits and the body
         compile_with_stmt_helper(comp, n - 1, nodes + 1, body);
         // finish this with block
         EMIT_ARG(with_cleanup, l_end);
         reserve_labels_for_native(comp, 3); // used by native's with_cleanup
         compile_decrease_except_level(comp);
-        EMIT(end_finally);
-        reserve_labels_for_native(comp, 1);
     }
 }
 
@@ -1733,8 +1724,7 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
 
     EMIT_ARG(label_assign, continue_label);
 
-    EMIT_ARG(setup_block, try_exception_label, MP_EMIT_SETUP_BLOCK_EXCEPT);
-    compile_increase_except_level(comp);
+    compile_increase_except_level(comp, try_exception_label, MP_EMIT_SETUP_BLOCK_EXCEPT);
 
     compile_load_id(comp, context);
     compile_await_object_method(comp, MP_QSTR___anext__);
@@ -1755,8 +1745,6 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     EMIT_ARG(label_assign, try_finally_label);
     EMIT_ARG(adjust_stack_size, 1); // if we jump here, the exc is on the stack
     compile_decrease_except_level(comp);
-    EMIT(end_finally);
-    reserve_labels_for_native(comp, 1);
     EMIT(end_except_handler);
 
     EMIT_ARG(label_assign, try_else_label);
@@ -1802,8 +1790,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         // __aexit__ (as per normal with) but rather wait until we need it below.
 
         // Start the try-finally statement
-        EMIT_ARG(setup_block, l_finally_block, MP_EMIT_SETUP_BLOCK_FINALLY);
-        compile_increase_except_level(comp);
+        compile_increase_except_level(comp, l_finally_block, MP_EMIT_SETUP_BLOCK_FINALLY);
 
         // Compile any additional pre-bits of the "async with", and also the body
         EMIT_ARG(adjust_stack_size, 3); // stack adjust for possible UNWIND_JUMP state
@@ -1883,8 +1870,6 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         // c. (..., X, INT) - from case 3
         EMIT_ARG(label_assign, l_end);
         compile_decrease_except_level(comp);
-        EMIT(end_finally);
-        reserve_labels_for_native(comp, 1);
     }
 }
 
