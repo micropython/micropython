@@ -193,7 +193,7 @@ msgstr "Sicherheitsmodus aktive, etwas wirklich schlechtes ist passiert.\n"
 
 #: main.c:251
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr "CircuitPython ist abgestürzt. Ups!"
+msgstr "CircuitPython ist abgestürzt. Ups!\n"
 
 #: main.c:252
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
@@ -211,7 +211,7 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem"
-"sicheren Auswerfen von CIRCUITPY.)"
+"sicheren Auswerfen von CIRCUITPY.)\n"
 
 #: main.c:260
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -220,7 +220,7 @@ msgstr "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum
 
 #: main.c:415
 msgid "soft reboot\n"
-msgstr "weicher reboot"
+msgstr "weicher reboot\n"
 
 #: ports/atmel-samd/audio_dma.c:285
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
