@@ -1595,6 +1595,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
 
             compile_decrease_except_level(comp);
             EMIT(end_finally);
+            reserve_labels_for_native(comp, 1);
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
@@ -1603,6 +1604,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
 
     compile_decrease_except_level(comp);
     EMIT(end_finally);
+    reserve_labels_for_native(comp, 1);
     EMIT(end_except_handler);
 
     EMIT_ARG(label_assign, success_label);
@@ -1631,6 +1633,7 @@ STATIC void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n
 
     compile_decrease_except_level(comp);
     EMIT(end_finally);
+    reserve_labels_for_native(comp, 1);
 }
 
 STATIC void compile_try_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -1683,9 +1686,10 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
         compile_with_stmt_helper(comp, n - 1, nodes + 1, body);
         // finish this with block
         EMIT_ARG(with_cleanup, l_end);
-        reserve_labels_for_native(comp, 2); // used by native's with_cleanup
+        reserve_labels_for_native(comp, 3); // used by native's with_cleanup
         compile_decrease_except_level(comp);
         EMIT(end_finally);
+        reserve_labels_for_native(comp, 1);
     }
 }
 
@@ -1752,6 +1756,7 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     EMIT_ARG(adjust_stack_size, 1); // if we jump here, the exc is on the stack
     compile_decrease_except_level(comp);
     EMIT(end_finally);
+    reserve_labels_for_native(comp, 1);
     EMIT(end_except_handler);
 
     EMIT_ARG(label_assign, try_else_label);
@@ -1879,6 +1884,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         EMIT_ARG(label_assign, l_end);
         compile_decrease_except_level(comp);
         EMIT(end_finally);
+        reserve_labels_for_native(comp, 1);
     }
 }
 

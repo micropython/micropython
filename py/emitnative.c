@@ -85,6 +85,8 @@
 // Indices within the local C stack for various variables
 #define LOCAL_IDX_EXC_VAL(emit) ((emit)->stack_start + NLR_BUF_IDX_RET_VAL)
 #define LOCAL_IDX_EXC_HANDLER_PC(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_1)
+#define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_2)
+#define LOCAL_IDX_RET_VAL(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_3)
 #define LOCAL_IDX_LOCAL_VAR(emit, local_num) ((emit)->stack_start + (emit)->n_state - 1 - (local_num))
 
 // number of arguments to viper functions are limited to this value
@@ -148,9 +150,14 @@ typedef struct _stack_info_t {
     } data;
 } stack_info_t;
 
+#define UNWIND_LABEL_UNUSED (0x7fff)
+#define UNWIND_LABEL_DO_FINAL_UNWIND (0x7ffe)
+
 typedef struct _exc_stack_entry_t {
     uint16_t label : 15;
     uint16_t is_finally : 1;
+    uint16_t unwind_label : 15;
+    uint16_t is_active : 1;
 } exc_stack_entry_t;
 
 struct _emit_t {
@@ -843,27 +850,44 @@ STATIC void emit_native_push_exc_stack(emit_t *emit, uint label, bool is_finally
     exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size++];
     e->label = label;
     e->is_finally = is_finally;
+    e->unwind_label = UNWIND_LABEL_UNUSED;
+    e->is_active = true;
 
     ASM_MOV_REG_PCREL(emit->as, REG_RET, label);
     ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_RET);
 }
 
-STATIC void emit_native_pop_exc_stack(emit_t *emit, bool do_pop) {
+STATIC void emit_native_leave_exc_stack(emit_t *emit, bool start_of_handler) {
     assert(emit->exc_stack_size > 0);
-    if (emit->exc_stack_size == 1) {
-        if (do_pop) {
-            --emit->exc_stack_size;
+
+    // Get current exception handler and deactivate it
+    exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size - 1];
+    e->is_active = false;
+
+    // Find next innermost active exception handler, to restore as current handler
+    for (--e; e >= emit->exc_stack && !e->is_active; --e) {
+    }
+
+    // Update the PC of the new exception handler
+    if (e < emit->exc_stack) {
+        // No active handler, clear handler PC to zero
+        if (start_of_handler) {
+            // Optimisation: PC is already cleared by global exc handler
             return;
         }
         ASM_XOR_REG_REG(emit->as, REG_RET, REG_RET);
     } else {
-        uint label = emit->exc_stack[emit->exc_stack_size - 2].label;
-        ASM_MOV_REG_PCREL(emit->as, REG_RET, label);
+        // Found new active handler, get its PC
+        ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
     }
     ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_RET);
-    if (do_pop) {
-        --emit->exc_stack_size;
-    }
+}
+
+STATIC exc_stack_entry_t *emit_native_pop_exc_stack(emit_t *emit) {
+    assert(emit->exc_stack_size > 0);
+    exc_stack_entry_t *e = &emit->exc_stack[--emit->exc_stack_size];
+    assert(e->is_active == false);
+    return e;
 }
 
 STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
@@ -890,7 +914,7 @@ STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
 
     if (is_finally) {
         // Label is at start of finally handler: pop exception stack
-        emit_native_pop_exc_stack(emit, true);
+        emit_native_leave_exc_stack(emit, true);
     }
 }
 
@@ -904,13 +928,19 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
         mp_uint_t start_label = *emit->label_slot + 2;
         mp_uint_t global_except_label = *emit->label_slot + 3;
 
+        // Clear the unwind state
+        ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_TEMP0);
+
         // Put PC of start code block into REG_LOCAL_1
         ASM_MOV_REG_PCREL(emit->as, REG_LOCAL_1, start_label);
 
         // Wrap everything in an nlr context
         emit_native_label_assign(emit, nlr_label);
+        ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_2, LOCAL_IDX_EXC_HANDLER_UNWIND(emit));
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(uintptr_t));
         emit_call(emit, MP_F_NLR_PUSH);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_LOCAL_2);
         ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
 
         // Clear PC of current code block, and jump there to resume execution
@@ -937,15 +967,12 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
     emit_native_label_assign(emit, emit->exit_label);
 
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
-        // Save return value
-        ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_RET);
-
         // Pop the nlr context
         emit_call(emit, MP_F_NLR_POP);
         adjust_stack(emit, -(mp_int_t)(sizeof(nlr_buf_t) / sizeof(uintptr_t)));
 
-        // Restore return value
-        ASM_MOV_REG_REG(emit->as, REG_RET, REG_LOCAL_1);
+        // Load return value
+        ASM_MOV_REG_LOCAL(emit->as, REG_RET, LOCAL_IDX_RET_VAL(emit));
     }
 
     ASM_EXIT(emit->as);
@@ -1717,8 +1744,46 @@ STATIC void emit_native_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label)
 }
 
 STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
-    (void)except_depth;
-    emit_native_jump(emit, label & ~MP_EMIT_BREAK_FROM_FOR); // TODO properly
+    if (except_depth > 0) {
+        exc_stack_entry_t *first_finally = NULL;
+        exc_stack_entry_t *prev_finally = NULL;
+        exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size - 1];
+        for (; except_depth > 0; --except_depth, --e) {
+            if (e->is_finally && e->is_active) {
+                // Found an active finally handler
+                if (first_finally == NULL) {
+                    first_finally = e;
+                }
+                if (prev_finally != NULL) {
+                    // Mark prev finally as needed to unwind a jump
+                    prev_finally->unwind_label = e->label;
+                }
+                prev_finally = e;
+            }
+        }
+        if (prev_finally == NULL) {
+            // No finally, handle the jump ourselves
+            // First, restore the exception handler address for the jump
+            if (e < emit->exc_stack) {
+                ASM_XOR_REG_REG(emit->as, REG_RET, REG_RET);
+            } else {
+                ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
+            }
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_RET);
+        } else {
+            // Last finally should do our jump for us
+            // Mark finally as needing to decide the type of jump
+            prev_finally->unwind_label = UNWIND_LABEL_DO_FINAL_UNWIND;
+            ASM_MOV_REG_PCREL(emit->as, REG_RET, label & ~MP_EMIT_BREAK_FROM_FOR);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_RET);
+            // Cancel any active exception (see also emit_native_pop_except)
+            ASM_MOV_REG_IMM(emit->as, REG_RET, (mp_uint_t)mp_const_none);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_RET);
+            // Jump to the innermost active finally
+            label = first_finally->label;
+        }
+    }
+    emit_native_jump(emit, label & ~MP_EMIT_BREAK_FROM_FOR);
 }
 
 STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
@@ -1754,7 +1819,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
 
     // need to commit stack because we may jump elsewhere
     need_stack_settled(emit);
-    emit_native_push_exc_stack(emit, label, false);
+    emit_native_push_exc_stack(emit, label, true);
 
     emit_native_dup_top(emit);
     // stack: (..., __exit__, self, as_value, as_value)
@@ -1773,13 +1838,16 @@ STATIC void emit_native_setup_block(emit_t *emit, mp_uint_t label, int kind) {
 }
 
 STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
-    // Note: 2 labels are reserved for this function, starting at *emit->label_slot
+    // Note: 3 labels are reserved for this function, starting at *emit->label_slot
 
     // stack: (..., __exit__, self, as_value)
     emit_native_pre(emit);
-    emit_native_pop_exc_stack(emit, false);
+    emit_native_leave_exc_stack(emit, false);
     adjust_stack(emit, -1);
     // stack: (..., __exit__, self)
+
+    // Label for case where __exit__ is called from an unwind jump
+    emit_native_label_assign(emit, *emit->label_slot + 2);
 
     // call __exit__
     emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)mp_const_none);
@@ -1792,16 +1860,22 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     emit_native_jump(emit, *emit->label_slot);
 
     // nlr_catch
-    emit_native_label_assign(emit, label);
+    // Don't use emit_native_label_assign because this isn't a real finally label
+    mp_asm_base_label_assign(&emit->as->base, label);
 
-    // Pop with's exception handler
-    emit_native_pop_exc_stack(emit, true);
+    // Leave with's exception handler
+    emit_native_leave_exc_stack(emit, true);
 
     // Adjust stack counter for: __exit__, self (implicitly discard as_value which is above self)
     emit_native_adjust_stack_size(emit, 2);
     // stack: (..., __exit__, self)
 
     ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit)); // get exc
+
+    // Check if exc is None and jump to non-exc handler if it is
+    ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)mp_const_none);
+    ASM_JUMP_IF_REG_EQ(emit->as, REG_ARG_1, REG_ARG_2, *emit->label_slot + 2);
+
     ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_2, REG_ARG_1, 0); // get type(exc)
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_2); // push type(exc)
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_1); // push exc value
@@ -1840,6 +1914,20 @@ STATIC void emit_native_end_finally(emit_t *emit) {
     emit_native_pre(emit);
     ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
     emit_call(emit, MP_F_NATIVE_RAISE);
+
+    // Get state for this finally and see if we need to unwind
+    exc_stack_entry_t *e = emit_native_pop_exc_stack(emit);
+    if (e->unwind_label != UNWIND_LABEL_UNUSED) {
+        ASM_MOV_REG_LOCAL(emit->as, REG_RET, LOCAL_IDX_EXC_HANDLER_UNWIND(emit));
+        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, *emit->label_slot, false);
+        if (e->unwind_label == UNWIND_LABEL_DO_FINAL_UNWIND) {
+            ASM_JUMP_REG(emit->as, REG_RET);
+        } else {
+            emit_native_jump(emit, e->unwind_label);
+        }
+        emit_native_label_assign(emit, *emit->label_slot);
+    }
+
     emit_post(emit);
 }
 
@@ -1886,7 +1974,7 @@ STATIC void emit_native_for_iter_end(emit_t *emit) {
 STATIC void emit_native_pop_block(emit_t *emit) {
     emit_native_pre(emit);
     if (!emit->exc_stack[emit->exc_stack_size - 1].is_finally) {
-        emit_native_pop_exc_stack(emit, false);
+        emit_native_leave_exc_stack(emit, false);
     }
     emit_post(emit);
 }
@@ -2314,8 +2402,12 @@ STATIC void emit_native_return_value(emit_t *emit) {
         emit_pre_pop_reg(emit, &vtype, REG_RET);
         assert(vtype == VTYPE_PYOBJ);
     }
+    if (NEED_GLOBAL_EXC_HANDLER(emit)) {
+        // Save return value for the global exception handler to use
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_RET_VAL(emit), REG_RET);
+    }
+    emit_native_unwind_jump(emit, emit->exit_label, emit->exc_stack_size);
     emit->last_emit_was_return_value = true;
-    ASM_JUMP(emit->as, emit->exit_label);
 }
 
 STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
@@ -2337,8 +2429,8 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {
-    // Protected block has finished so pop the exception stack
-    emit_native_pop_exc_stack(emit, true);
+    // Protected block has finished so leave the current exception handler
+    emit_native_leave_exc_stack(emit, true);
 
     // Get and push nlr_buf.ret_val
     ASM_MOV_REG_LOCAL(emit->as, REG_TEMP0, LOCAL_IDX_EXC_VAL(emit));
