@@ -37,7 +37,6 @@
 
 typedef struct {
     mp_obj_base_t base;
-    qstr name;
     // These could be squeezed to fewer bits if more fields are needed.
     uint8_t number;      // port << 5 | pin number in port (0-31): 6 bits needed
     uint8_t adc_channel; // 0 is no ADC, ADC channel from 1 to 8:
@@ -50,7 +49,6 @@ extern const mp_obj_type_t mcu_pin_type;
 #define PIN(p_name, p_port, p_pin, p_adc_channel)       \
 { \
     { &mcu_pin_type }, \
-    .name = MP_QSTR_ ## p_name, \
     .number = NRF_GPIO_PIN_MAP(p_port, p_pin),      \
     .adc_channel = (p_adc_channel), \
 }
