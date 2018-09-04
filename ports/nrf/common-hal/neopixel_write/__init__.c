@@ -206,7 +206,11 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         // the LEDs and if you are not using the EasyDMA feature.
         __disable_irq();
 
+#ifdef NRF52840_XXAA
         NRF_GPIO_Type* port = ( digitalinout->pin->port ? NRF_P1 : NRF_P0 );
+#else
+        NRF_GPIO_Type* port = NRF_P0;
+#endif
         uint32_t pinMask = ( 1UL << digitalinout->pin->pin );
 
         uint32_t CYCLES_X00 = CYCLES_800;
