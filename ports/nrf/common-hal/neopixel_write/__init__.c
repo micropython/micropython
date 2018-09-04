@@ -179,9 +179,9 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
         // But we have to wait for the flag to be set.
         while ( !pwm->EVENTS_SEQEND[0] ) {
-//#ifdef MICROPY_VM_HOOK_LOOP
-//            MICROPY_VM_HOOK_LOOP
-//#endif
+#ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+#endif
         }
 
         // Before leave we clear the flag for the event.
