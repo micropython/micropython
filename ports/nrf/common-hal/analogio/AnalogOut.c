@@ -42,9 +42,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self, uint16_t value) {
-
 }

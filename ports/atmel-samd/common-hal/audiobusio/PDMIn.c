@@ -235,8 +235,8 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
     disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
     disable_clock_generator(self->gclk);
 
-    reset_pin(self->clock_pin->number);
-    reset_pin(self->data_pin->number);
+    reset_pin_number(self->clock_pin->number);
+    reset_pin_number(self->data_pin->number);
     self->clock_pin = mp_const_none;
     self->data_pin = mp_const_none;
 }

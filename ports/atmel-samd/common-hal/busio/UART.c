@@ -222,8 +222,8 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
     usart_async_disable(usart_desc_p);
     usart_async_deinit(usart_desc_p);
-    reset_pin(self->rx_pin);
-    reset_pin(self->tx_pin);
+    reset_pin_number(self->rx_pin);
+    reset_pin_number(self->tx_pin);
     self->rx_pin = NO_PIN;
     self->tx_pin = NO_PIN;
 }

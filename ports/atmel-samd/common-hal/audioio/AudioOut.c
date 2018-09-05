@@ -248,10 +248,10 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
 
     tc_set_enable(tc_insts[self->tc_index], false);
 
-    reset_pin(self->left_channel->number);
+    reset_pin_number(self->left_channel->number);
     self->left_channel = mp_const_none;
     #ifdef SAMD51
-    reset_pin(self->right_channel->number);
+    reset_pin_number(self->right_channel->number);
     self->right_channel = mp_const_none;
     #endif
 }

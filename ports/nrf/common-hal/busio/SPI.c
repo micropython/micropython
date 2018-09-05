@@ -77,13 +77,25 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG;
     config.frequency = NRF_SPIM_FREQ_8M;
 
-    config.sck_pin = NRF_GPIO_PIN_MAP(clock->port, clock->pin);
+    config.sck_pin = clock->number;
+    self->clock_pin_number = clock->number;
+    claim_pin(clock);
 
-    if (mosi != (mcu_pin_obj_t*)&mp_const_none_obj)
-        config.mosi_pin = NRF_GPIO_PIN_MAP(mosi->port, mosi->pin);
+    if (mosi != (mcu_pin_obj_t*)&mp_const_none_obj) {
+        config.mosi_pin = mosi->number;
+        self->MOSI_pin_number = mosi->number;
+        claim_pin(mosi);
+    } else {
+        self->MOSI_pin_number = NO_PIN;
+    }
 
-    if (miso != (mcu_pin_obj_t*)&mp_const_none_obj)
-        config.miso_pin = NRF_GPIO_PIN_MAP(miso->port, miso->pin);
+    if (miso != (mcu_pin_obj_t*)&mp_const_none_obj) {
+        config.miso_pin = miso->number;
+        self->MISO_pin_number = mosi->number;
+        claim_pin(miso);
+    } else {
+        self->MISO_pin_number = NO_PIN;
+    }
 
     nrfx_err_t err = nrfx_spim_init(&self->spim, &config, NULL, NULL);
 
@@ -93,14 +105,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         err = nrfx_spim_init(&self->spim, &config, NULL, NULL);
     }
 
-    if (err != NRFX_SUCCESS)
+    if (err != NRFX_SUCCESS) {
+        common_hal_busio_spi_deinit(self);
         mp_raise_OSError(MP_EIO);
-
-    self->inited = true;
+    }
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
-    return !self->inited;
+    return self->clock_pin_number == NO_PIN;
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
@@ -109,7 +121,9 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
     nrfx_spim_uninit(&self->spim);
 
-    self->inited = false;
+    reset_pin_number(self->clock_pin_number);
+    reset_pin_number(self->MOSI_pin_number);
+    reset_pin_number(self->MISO_pin_number);
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self, uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {

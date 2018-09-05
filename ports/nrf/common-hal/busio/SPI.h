@@ -33,8 +33,10 @@
 typedef struct {
     mp_obj_base_t base;
     nrfx_spim_t spim;
-    bool inited;
     bool has_lock;
+    uint8_t clock_pin_number;
+    uint8_t MOSI_pin_number;
+    uint8_t MISO_pin_number;
 } busio_spi_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H

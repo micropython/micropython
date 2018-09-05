@@ -166,7 +166,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         //    pwm->INTEN |= (PWM_INTEN_SEQEND0_Enabled<<PWM_INTEN_SEQEND0_Pos);
 
         // PSEL must be configured before enabling PWM
-        nrf_pwm_pins_set(pwm, (uint32_t[]) {digitalinout->pin->port*32 + digitalinout->pin->pin, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
+        nrf_pwm_pins_set(pwm, (uint32_t[]) {digitalinout->pin->number, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
 
         // Enable the PWM
         nrf_pwm_enable(pwm);
@@ -205,12 +205,10 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         // the LEDs and if you are not using the EasyDMA feature.
         __disable_irq();
 
-#ifdef NRF_P1
-        NRF_GPIO_Type* port = ( digitalinout->pin->port ? NRF_P1 : NRF_P0 );
-#else
-        NRF_GPIO_Type* port = NRF_P0;
-#endif
-        uint32_t pinMask = ( 1UL << digitalinout->pin->pin );
+        uint32_t decoded_pin = digitalinout->pin->number;
+        NRF_GPIO_Type* port = nrf_gpio_pin_port_decode(&decoded_pin);
+
+        uint32_t pinMask = ( 1UL << decoded_pin );
 
         uint32_t CYCLES_X00 = CYCLES_800;
         uint32_t CYCLES_X00_T1H = CYCLES_800_T1H;

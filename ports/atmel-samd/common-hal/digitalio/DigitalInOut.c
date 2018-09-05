@@ -40,6 +40,8 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
         digitalio_digitalinout_obj_t* self, const mcu_pin_obj_t* pin) {
     claim_pin(pin);
     self->pin = pin;
+    self->output = false;
+    self->open_drain = false;
 
     // Must set pull after setting direction.
     gpio_set_pin_direction(pin->number, GPIO_DIRECTION_IN);
@@ -55,7 +57,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         return;
     }
-    reset_pin(self->pin->number);
+    reset_pin_number(self->pin->number);
     self->pin = mp_const_none;
 }
 
@@ -83,7 +85,7 @@ void common_hal_digitalio_digitalinout_switch_to_output(
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
         digitalio_digitalinout_obj_t* self) {
-    return self->output? DIRECTION_OUTPUT : DIRECTION_INPUT;
+    return self->output ? DIRECTION_OUTPUT : DIRECTION_INPUT;
 }
 
 void common_hal_digitalio_digitalinout_set_value(

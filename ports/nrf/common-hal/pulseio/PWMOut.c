@@ -146,7 +146,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
   // check if mapped to PWM channel already
   for(int i=0; i<PWM_MAX_MODULE; i++)
   {
-    int ch = pin2channel(pwm_arr[i], NRF_GPIO_PIN_MAP(pin->port, pin->pin));
+    int ch = pin2channel(pwm_arr[i], pin->number);
     if ( ch >= 0 )
     {
       self->pwm = pwm_arr[i];
@@ -163,12 +163,12 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
   if (self->pwm)
   {
-    nrf_gpio_cfg_output(NRF_GPIO_PIN_MAP(pin->port, pin->pin));
+    nrf_gpio_cfg_output(pin->number);
 
     // disable before mapping pin channel
     self->pwm->ENABLE = 0;
 
-    self->pwm->PSEL.OUT[self->channel] = NRF_GPIO_PIN_MAP(pin->port, pin->pin);
+    self->pwm->PSEL.OUT[self->channel] = pin->number;
 
     self->pwm->COUNTERTOP = (PWM_MAX_FREQ/frequency);
     self->freq = frequency;
@@ -203,7 +203,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     }
   }
 
-  nrf_gpio_cfg_default(NRF_GPIO_PIN_MAP(self->pin->port, self->pin->pin));
+  nrf_gpio_cfg_default(self->pin->number);
 
   self->pwm = NULL;
   self->pin = mp_const_none;

@@ -34,8 +34,9 @@
 typedef struct {
     mp_obj_base_t base;
     nrfx_twim_t twim;
-    bool inited;
     bool has_lock;
+    uint8_t scl_pin_number;
+    uint8_t sda_pin_number;
 } busio_i2c_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H

@@ -24,9 +24,6 @@ ifneq ($(SD), )
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
-# qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
-
 FROZEN_MPY_DIR = freeze
 
 # include py core make definitions
@@ -53,6 +50,7 @@ INC += -I./nrfx/drivers/include
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
+INC += -I./peripherals
 INC += -I../../lib/tinyusb/src
 INC += -I./usb
 
@@ -97,28 +95,30 @@ SRC_NRFX = $(addprefix nrfx/,\
 	)
 
 SRC_C += \
-	mphalport.c \
-	fatfs_port.c \
-	tick.c \
 	background.c \
+	fatfs_port.c \
 	internal_flash.c \
+	mphalport.c \
+	tick.c \
+	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
+	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
-	boards/$(BOARD)/board.c \
-	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
-	nrfx/hal/nrf_nvmc.c \
-	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
+	lib/libc/string0.c \
+	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
-	lib/utils/pyexec.c \
 	lib/utils/interrupt_char.c \
+	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
+	nrfx/hal/nrf_nvmc.c \
+	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
+	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	supervisor/shared/memory.c
 
 DRIVERS_SRC_C += $(addprefix modules/,\
@@ -135,29 +135,29 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	)
 
 SRC_COMMON_HAL += \
-	board/__init__.c \
-	digitalio/__init__.c \
-	digitalio/DigitalInOut.c \
-	microcontroller/__init__.c \
-	microcontroller/Pin.c \
-	microcontroller/Processor.c \
-	neopixel_write/__init__.c \
-	os/__init__.c \
-	time/__init__.c \
-	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
-	busio/__init__.c\
+	analogio/__init__.c \
+	board/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
-	pulseio/__init__.c \
+	busio/__init__.c\
+	digitalio/DigitalInOut.c \
+	digitalio/__init__.c \
+	microcontroller/Pin.c \
+	microcontroller/Processor.c \
+	microcontroller/__init__.c \
+	neopixel_write/__init__.c \
+	os/__init__.c \
+	pulseio/PWMOut.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
-	pulseio/PWMOut.c \
+	pulseio/__init__.c \
 	storage/__init__.c \
-	supervisor/__init__.c \
 	supervisor/Runtime.c \
+	supervisor/__init__.c \
+	time/__init__.c \
 
 ifneq ($(SD), )
 SRC_COMMON_HAL += \
@@ -239,7 +239,6 @@ FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
 OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
@@ -334,7 +333,7 @@ dfu-flash: $(BUILD)/dfu-package.zip
 	$(NRFUTIL) --verbose dfu serial --package $^ -p $(SERIAL) -b 115200 --singlebank $(DFU_TOUCH)
 
 ## Create DFU package file
-dfu-gen: $(BUILD)/dfu-package.zip 
+dfu-gen: $(BUILD)/dfu-package.zip
 
 $(BUILD)/dfu-package.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
@@ -351,29 +350,8 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(DRIVERS_SRC_C) $(SRC_COMMON_
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
-# has the side effect of making the pins.h file before we actually compile
-# any of the objects. The normal dependency generation will deal with the
-# case when pins.h is modified. But when it doesn't exist, we don't know
-# which source files might need it.
-$(OBJ): | $(HEADER_BUILD)/pins.h
-
-# Use a pattern rule here so that make will only call make-pins.py once to make
-# both pins_g.c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
-
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
-	$(call compile_c)
-
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = boards/$(BOARD)/pins.csv
 AF_FILE = $(MCU_VARIANT)_af.csv
 PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_gen.c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 
 ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)

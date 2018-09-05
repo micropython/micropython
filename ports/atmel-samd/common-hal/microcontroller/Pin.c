@@ -91,23 +91,23 @@ void reset_all_pins(void) {
     #endif
 }
 
-void reset_pin(uint8_t pin) {
-    if (pin >= PORT_BITS) {
+void reset_pin_number(uint8_t pin_number) {
+    if (pin_number >= PORT_BITS) {
         return;
     }
 
     #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL->number) {
+    if (pin_number == MICROPY_HW_NEOPIXEL->number) {
         neopixel_in_use = false;
         rgb_led_status_init();
         return;
     }
     #endif
     #ifdef MICROPY_HW_APA102_MOSI
-    if (pin == MICROPY_HW_APA102_MOSI->number ||
-        pin == MICROPY_HW_APA102_SCK->number) {
-        apa102_mosi_in_use = apa102_mosi_in_use && pin != MICROPY_HW_APA102_MOSI->number;
-        apa102_sck_in_use = apa102_sck_in_use && pin != MICROPY_HW_APA102_SCK->number;
+    if (pin_number == MICROPY_HW_APA102_MOSI->number ||
+        pin_number == MICROPY_HW_APA102_SCK->number) {
+        apa102_mosi_in_use = apa102_mosi_in_use && pin_number != MICROPY_HW_APA102_MOSI->number;
+        apa102_sck_in_use = apa102_sck_in_use && pin_number != MICROPY_HW_APA102_SCK->number;
         if (!apa102_sck_in_use && !apa102_mosi_in_use) {
             rgb_led_status_init();
         }
@@ -115,24 +115,24 @@ void reset_pin(uint8_t pin) {
     }
     #endif
 
-    if (pin == PIN_PA30
+    if (pin_number == PIN_PA30
         #ifdef SAMD51
         ) {
-        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_H);
+        gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_H);
         #endif
         #ifdef SAMD21
-        || pin == PIN_PA31) {
-        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_G);
+        || pin_number == PIN_PA31) {
+        gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_G);
         #endif
     } else {
-        gpio_set_pin_direction(pin, GPIO_DIRECTION_OFF);
-        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_OFF);
+        gpio_set_pin_direction(pin_number, GPIO_DIRECTION_OFF);
+        gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_OFF);
     }
 
     #ifdef SPEAKER_ENABLE_PIN
-    if (pin == SPEAKER_ENABLE_PIN->number) {
+    if (pin_number == SPEAKER_ENABLE_PIN->number) {
         speaker_enable_in_use = false;
-        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_OFF);
+        gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_OFF);
         gpio_set_pin_direction(SPEAKER_ENABLE_PIN->number, GPIO_DIRECTION_OUT);
         gpio_set_pin_level(SPEAKER_ENABLE_PIN->number, false);
     }

@@ -110,7 +110,7 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
     }
     // We leave the clocks running because they may be in use by others.
 
-    reset_pin(self->config.pin);
+    reset_pin_number(self->config.pin);
     self->config.pin = NO_PIN;
 }
 

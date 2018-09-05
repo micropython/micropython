@@ -24,20 +24,45 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_NRF5_PIN_H__
-#define __MICROPY_INCLUDED_NRF5_PIN_H__
+// DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
+// that all necessary includes are already included.
 
-#include "py/obj.h"
+#ifndef __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
+#define __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "nrf_gpio.h"
 
 typedef struct {
     mp_obj_base_t base;
-    qstr name;
-
-    uint32_t port        : 1;
-    uint32_t pin         : 5; // Some ARM processors use 32 bits/PORT
-    uint32_t adc_channel : 4; // 0 is no ADC, ADC channel from 1 to 8
-} pin_obj_t;
+    // These could be squeezed to fewer bits if more fields are needed.
+    uint8_t number;      // port << 5 | pin number in port (0-31): 6 bits needed
+    uint8_t adc_channel; // 0 is no ADC, ADC channel from 1 to 8:
+                         // 4 bits needed here; 5 bits used in periph registers
+} mcu_pin_obj_t;
 
 extern const mp_obj_type_t mcu_pin_type;
 
-#endif // __MICROPY_INCLUDED_NRF5_PIN_H__
+// Used in device-specific pins.c
+#define PIN(p_name, p_port, p_pin, p_adc_channel)       \
+{ \
+    { &mcu_pin_type }, \
+    .number = NRF_GPIO_PIN_MAP(p_port, p_pin),      \
+    .adc_channel = (p_adc_channel), \
+}
+
+// Use illegal pin value to mark unassigned pins.
+#define NO_PIN 0xff
+
+// Choose based on chip, but not specifically revision (e.g., not NRF52832_XXAA)
+#ifdef NRF52832
+#include "nrf52832/pins.h"
+#endif
+
+#ifdef NRF52840
+#include "nrf52840/pins.h"
+#endif
+
+#endif // __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__

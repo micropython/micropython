@@ -48,8 +48,8 @@ bool board_requests_safe_mode(void) {
     gpio_set_pin_pull_mode(PIN_PA28, GPIO_PULL_DOWN);
     bool safe_mode = gpio_get_pin_level(PIN_PA14) &&
         gpio_get_pin_level(PIN_PA28);
-    reset_pin(PIN_PA14);
-    reset_pin(PIN_PA28);
+    reset_pin_number(PIN_PA14);
+    reset_pin_number(PIN_PA28);
     return safe_mode;
 }
 
