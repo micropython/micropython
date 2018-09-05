@@ -56,6 +56,11 @@ else
 all: $(BUILD)/firmware.elf
 endif
 
+# Update frozentest.mpy
+frozentest.mpy:frozentest.py
+	$(ECHO) "Compile frozentest.py"
+	$(TOP)/mpy-cross/mpy-cross frozentest.py
+
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
 	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
