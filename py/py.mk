@@ -25,8 +25,24 @@ CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
 ifeq ($(MICROPY_PY_USSL),1)
 CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
-CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/lib/axtls/config
-LDFLAGS_MOD += -L$(BUILD) -laxtls
+CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/extmod/axtls-include
+AXTLS_DIR = lib/axtls
+$(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-unused-parameter -Wno-unused-variable -Wno-unused-const-variable -Wno-unused-but-set-variable -Wno-array-bounds -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition $(AXTLS_DEFS_EXTRA)
+SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
+	ssl/asn1.c \
+	ssl/loader.c \
+	ssl/tls1.c \
+	ssl/tls1_svr.c \
+	ssl/tls1_clnt.c \
+	ssl/x509.c \
+	crypto/aes.c \
+	crypto/bigint.c \
+	crypto/crypto_misc.c \
+	crypto/hmac.c \
+	crypto/md5.c \
+	crypto/rsa.c \
+	crypto/sha1.c \
+	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 # Can be overridden by ports which have "builtin" mbedTLS
 MICROPY_SSL_MBEDTLS_INCLUDE ?= $(TOP)/lib/mbedtls/include
