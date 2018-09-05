@@ -180,6 +180,7 @@ extern const struct _mp_obj_module_t struct_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
+extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t usb_hid_module;
 extern const struct _mp_obj_module_t bleio_module;
 
@@ -210,6 +211,7 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
     { MP_OBJ_NEW_QSTR (MP_QSTR_digitalio       ), (mp_obj_t)&digitalio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_pulseio         ), (mp_obj_t)&pulseio_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_microcontroller ), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_neopixel_write  ), (mp_obj_t)&neopixel_write_module  }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_bitbangio       ), (mp_obj_t)&bitbangio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_os              ), (mp_obj_t)&os_module              }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_random          ), (mp_obj_t)&random_module          }, \
