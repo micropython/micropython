@@ -141,6 +141,7 @@ SRC_COMMON_HAL += \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
+	neopixel_write/__init__.c \
 	os/__init__.c \
 	time/__init__.c \
 	analogio/__init__.c \
