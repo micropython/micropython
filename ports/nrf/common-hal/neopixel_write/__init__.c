@@ -26,6 +26,7 @@
 
 #include "py/mphal.h"
 #include "shared-bindings/neopixel_write/__init__.h"
+#include "nrf_pwm.h"
 
 // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
 // [[[Begin of the Neopixel NRF52 EasyDMA implementation
@@ -76,13 +77,17 @@
 
 // find a free PWM device, which is not enabled and has no connected pins
 static NRF_PWM_Type* find_free_pwm (void) {
-    NRF_PWM_Type* PWM[3] = { NRF_PWM0, NRF_PWM1, NRF_PWM2 };
+    NRF_PWM_Type* PWM[] = {
+            NRF_PWM0, NRF_PWM1, NRF_PWM2
+#ifdef NRF_PWM3
+            , NRF_PWM3
+#endif
+    };
 
-    for ( int device = 0; device < 3; device++ ) {
-        if ( (PWM[device]->ENABLE == 0) && (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk)
-                && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk)
-                && (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk)
-                && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk) ) {
+    for ( int device = 0; device < ARRAY_SIZE(PWM); device++ ) {
+        if ( (PWM[device]->ENABLE == 0) &&
+             (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
+             (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk) ) {
             return PWM[device];
         }
     }
@@ -130,34 +135,28 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         pixels_pattern[++pos] = 0 | (0x8000);  // Seq end
 
         // Set the wave mode to count UP
-        pwm->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
-
         // Set the PWM to use the 16MHz clock
-        pwm->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_1 << PWM_PRESCALER_PRESCALER_Pos);
-
         // Setting of the maximum count
         // but keeping it on 16Mhz allows for more granularity just
         // in case someone wants to do more fine-tuning of the timing.
-        pwm->COUNTERTOP = (CTOPVAL << PWM_COUNTERTOP_COUNTERTOP_Pos);
+        nrf_pwm_configure(pwm, NRF_PWM_CLK_16MHz, NRF_PWM_MODE_UP, CTOPVAL);
 
         // Disable loops, we want the sequence to repeat only once
-        pwm->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
+        nrf_pwm_loop_set(pwm, 0);
 
         // On the "Common" setting the PWM uses the same pattern for the
-        // for supported sequences. The pattern is stored on half-word
-        // of 16bits
-        pwm->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos)
-                | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
+        // for supported sequences. The pattern is stored on half-word of 16bits
+        nrf_pwm_decoder_set(pwm, PWM_DECODER_LOAD_Common, PWM_DECODER_MODE_RefreshCount);
 
-        // Pointer to the memory storing the patter
-        pwm->SEQ[0].PTR = (uint32_t) (pixels_pattern) << PWM_SEQ_PTR_PTR_Pos;
+        // Pointer to the memory storing the pattern
+        nrf_pwm_seq_ptr_set(pwm, 0, pixels_pattern);
 
         // Calculation of the number of steps loaded from memory.
-        pwm->SEQ[0].CNT = (pattern_size / sizeof(uint16_t)) << PWM_SEQ_CNT_CNT_Pos;
+        nrf_pwm_seq_cnt_set(pwm, 0, pattern_size / sizeof(uint16_t));
 
         // The following settings are ignored with the current config.
-        pwm->SEQ[0].REFRESH = 0;
-        pwm->SEQ[0].ENDDELAY = 0;
+        nrf_pwm_seq_refresh_set(pwm, 0, 0);
+        nrf_pwm_seq_end_delay_set(pwm, 0, 0);
 
         // The Neopixel implementation is a blocking algorithm. DMA
         // allows for non-blocking operation. To "simulate" a blocking
@@ -167,32 +166,32 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         //    pwm->INTEN |= (PWM_INTEN_SEQEND0_Enabled<<PWM_INTEN_SEQEND0_Pos);
 
         // PSEL must be configured before enabling PWM
-        pwm->PSEL.OUT[0] = ( digitalinout->pin->port*32 + digitalinout->pin->pin );
+        nrf_pwm_pins_set(pwm, (uint32_t[]) {digitalinout->pin->port*32 + digitalinout->pin->pin, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
 
         // Enable the PWM
-        pwm->ENABLE = 1;
+        nrf_pwm_enable(pwm);
 
         // After all of this and many hours of reading the documentation
         // we are ready to start the sequence...
-        pwm->EVENTS_SEQEND[0] = 0;
-        pwm->TASKS_SEQSTART[0] = 1;
+        nrf_pwm_event_clear(pwm, NRF_PWM_EVENT_SEQEND0);
+        nrf_pwm_task_trigger(pwm, NRF_PWM_TASK_SEQSTART0);
 
         // But we have to wait for the flag to be set.
-        while ( !pwm->EVENTS_SEQEND[0] ) {
+        while ( !nrf_pwm_event_check(pwm, NRF_PWM_EVENT_SEQEND0) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
 #endif
         }
 
         // Before leave we clear the flag for the event.
-        pwm->EVENTS_SEQEND[0] = 0;
+        nrf_pwm_event_clear(pwm, NRF_PWM_EVENT_SEQEND0);
 
         // We need to disable the device and disconnect
         // all the outputs before leave or the device will not
         // be selected on the next call.
         // TODO: Check if disabling the device causes performance issues.
-        pwm->ENABLE = 0;
-        pwm->PSEL.OUT[0] = 0xFFFFFFFFUL;
+        nrf_pwm_disable(pwm);
+        nrf_pwm_pins_set(pwm, (uint32_t[]) {0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
 
         m_free(pixels_pattern);
     } // End of DMA implementation
