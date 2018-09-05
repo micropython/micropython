@@ -354,7 +354,7 @@ static const flash_layout_t flash_layout[] = {
     #endif
 };
 
-#elif defined(STM32F767xx)
+#elif defined(STM32F765xx) || defined(STM32F767xx)
 
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 

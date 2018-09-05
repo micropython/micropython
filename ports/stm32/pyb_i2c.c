@@ -149,7 +149,8 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 #elif defined(STM32F722xx) || defined(STM32F723xx) \
     || defined(STM32F732xx) || defined(STM32F733xx) \
-    || defined(STM32F767xx) || defined(STM32F769xx)
+    || defined(STM32F765xx) || defined(STM32F767xx) \
+    || defined(STM32F769xx)
 
 // These timing values are for f_I2CCLK=54MHz and are only approximate
 #define MICROPY_HW_I2C_BAUDRATE_TIMING { \
