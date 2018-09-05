@@ -139,7 +139,6 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
     else:
         # run on pyboard
-        import pyboard
         pyb.enter_raw_repl()
         try:
             output_mupy = pyb.execfile(test_file)
@@ -533,6 +532,8 @@ the last matching regex is used:
     if args.target == 'unix' or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
+        global pyboard
+        sys.path.append('../tools')
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
