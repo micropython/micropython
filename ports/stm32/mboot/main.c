@@ -760,7 +760,8 @@ static int dfu_process_dnload(void) {
         }
     } else if (dfu_state.wBlockNum > 1) {
         // write data to memory
-        ret = do_write(dfu_state.addr, dfu_state.buf, dfu_state.wLength);
+        uint32_t addr = (dfu_state.wBlockNum - 2) * DFU_XFER_SIZE + dfu_state.addr;
+        ret = do_write(addr, dfu_state.buf, dfu_state.wLength);
     }
     if (ret == 0) {
         return DFU_STATUS_DNLOAD_IDLE;
