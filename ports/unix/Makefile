@@ -221,8 +221,7 @@ nanbox:
 	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_nanbox.h>"' \
 	BUILD=build-nanbox \
 	PROG=micropython_nanbox \
-	MICROPY_FORCE_32BIT=1 \
-	axtls all
+	MICROPY_FORCE_32BIT=1
 
 freedos:
 	$(MAKE) \
@@ -249,7 +248,7 @@ coverage:
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
 	    FROZEN_DIR=coverage-frzstr FROZEN_MPY_DIR=coverage-frzmpy \
-	    BUILD=build-coverage PROG=micropython_coverage axtls all
+	    BUILD=build-coverage PROG=micropython_coverage
 
 coverage_test: coverage
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
@@ -280,14 +279,7 @@ libffi:
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
-axtls: $(BUILD)/libaxtls.a
-
-$(BUILD)/libaxtls.a: $(TOP)/lib/axtls/README | $(OBJ_DIRS)
-	cd $(TOP)/lib/axtls; cp config/upyconfig config/.config
-	cd $(TOP)/lib/axtls; $(MAKE) oldconfig -B
-	cd $(TOP)/lib/axtls; $(MAKE) clean
-	cd $(TOP)/lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)"
-	cp $(TOP)/lib/axtls/_stage/libaxtls.a $@
+axtls: $(TOP)/lib/axtls/README
 
 $(TOP)/lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."
