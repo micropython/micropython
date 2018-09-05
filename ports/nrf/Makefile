@@ -95,29 +95,29 @@ SRC_NRFX = $(addprefix nrfx/,\
 	)
 
 SRC_C += \
-	mphalport.c \
-	fatfs_port.c \
-	tick.c \
 	background.c \
+	fatfs_port.c \
 	internal_flash.c \
-	drivers/bluetooth/ble_drv.c \
-	drivers/bluetooth/ble_uart.c \
+	mphalport.c \
+	tick.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
-	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
-	nrfx/hal/nrf_nvmc.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
+	drivers/bluetooth/ble_drv.c \
+	drivers/bluetooth/ble_uart.c \
+	lib/libc/string0.c \
+	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
-	lib/utils/pyexec.c \
 	lib/utils/interrupt_char.c \
+	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
+	nrfx/hal/nrf_nvmc.c \
+	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	supervisor/shared/memory.c
 
@@ -135,30 +135,29 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	)
 
 SRC_COMMON_HAL += \
-	board/__init__.c \
-	digitalio/__init__.c \
-	digitalio/DigitalInOut.c \
-	microcontroller/__init__.c \
-	microcontroller/Pin.c \
-	microcontroller/Processor.c \
-	neopixel_write/__init__.c \
-	os/__init__.c \
-	time/__init__.c \
-	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
-	busio/__init__.c\
+	analogio/__init__.c \
+	board/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
+	busio/__init__.c\
+	digitalio/DigitalInOut.c \
+	digitalio/__init__.c \
+	microcontroller/Pin.c \
+	microcontroller/Processor.c \
+	microcontroller/__init__.c \
 	neopixel_write/__init__.c \
-	pulseio/__init__.c \
+	os/__init__.c \
+	pulseio/PWMOut.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
-	pulseio/PWMOut.c \
+	pulseio/__init__.c \
 	storage/__init__.c \
-	supervisor/__init__.c \
 	supervisor/Runtime.c \
+	supervisor/__init__.c \
+	time/__init__.c \
 
 ifneq ($(SD), )
 SRC_COMMON_HAL += \
