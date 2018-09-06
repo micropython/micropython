@@ -139,6 +139,8 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 
     turn_on_cpu_interrupt(self->channel);
 
+    claim_pin(pin);
+
     // Set config will enable the EIC.
     pulsein_set_config(self, true);
 }
@@ -152,7 +154,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
         return;
     }
     turn_off_eic_channel(self->channel);
-    reset_pin(self->pin);
+    reset_pin_number(self->pin);
     self->pin = NO_PIN;
 }
 

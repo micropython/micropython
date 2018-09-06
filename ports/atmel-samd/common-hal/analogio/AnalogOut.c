@@ -113,7 +113,7 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
         return;
     }
     dac_sync_disable_channel(&self->descriptor, self->channel);
-    reset_pin(PIN_PA02);
+    reset_pin_number(PIN_PA02);
     // Only deinit the DAC on the SAMD51 if both outputs are free.
     #ifdef SAMD51
     if (common_hal_mcu_pin_is_free(&pin_PA02) && common_hal_mcu_pin_is_free(&pin_PA05)) {

@@ -54,15 +54,15 @@ static uint8_t twi_error_to_mp(const nrfx_err_t err) {
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
-    if (scl->pin == sda->pin)
+    if (scl->number == sda->number)
         mp_raise_ValueError(translate("Invalid pins"));
 
     const nrfx_twim_t instance = NRFX_TWIM_INSTANCE(INST_NO);
     self->twim = instance;
 
     nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
-    config.scl = NRF_GPIO_PIN_MAP(scl->port, scl->pin);
-    config.sda = NRF_GPIO_PIN_MAP(sda->port, sda->pin);
+    config.scl = scl->number;
+    config.sda = sda->number;
 
     // change freq. only if it's less than the default 400K
     if (frequency < 100000) {
@@ -70,6 +70,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     } else if (frequency < 250000) {
       config.frequency = NRF_TWIM_FREQ_250K;
     }
+
+    self->scl_pin_number = scl->number;
+    self->sda_pin_number = sda->number;
+    claim_pin(sda);
+    claim_pin(scl);
 
     nrfx_err_t err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
 
@@ -79,14 +84,15 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
     }
 
-    if (err != NRFX_SUCCESS)
+    if (err != NRFX_SUCCESS) {
+        common_hal_busio_i2c_deinit(self);
         mp_raise_OSError(MP_EIO);
+    }
 
-    self->inited = true;
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
-  return !self->inited;
+    return self->sda_pin_number == NO_PIN;
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
@@ -95,7 +101,10 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 
     nrfx_twim_uninit(&self->twim);
 
-    self->inited = false;
+    reset_pin_number(self->sda_pin_number);
+    reset_pin_number(self->scl_pin_number);
+    self->sda_pin_number = NO_PIN;
+    self->scl_pin_number = NO_PIN;
 }
 
 // nrfx_twim_tx doesn't support 0-length data so we fall back to the hal API

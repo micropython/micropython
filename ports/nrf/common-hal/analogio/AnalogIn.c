@@ -38,8 +38,9 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const
     if (pin->adc_channel == 0)
         mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
 
-    nrf_gpio_cfg_default(NRF_GPIO_PIN_MAP(pin->port, pin->pin));
+    nrf_gpio_cfg_default(pin->number);
 
+    claim_pin(pin);
     self->pin = pin;
 }
 
@@ -51,8 +52,9 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
     if (common_hal_analogio_analogin_deinited(self))
         return;
 
-    nrf_gpio_cfg_default(NRF_GPIO_PIN_MAP(self->pin->port, self->pin->pin));
+    nrf_gpio_cfg_default(self->pin->number);
 
+    reset_pin_number(self->pin->number);
     self->pin = mp_const_none;
 }
 

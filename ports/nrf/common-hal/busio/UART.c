@@ -36,8 +36,6 @@
 
 #include "tick.h"
 
-#include "pins.h"
-
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
         uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,

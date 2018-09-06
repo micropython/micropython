@@ -73,6 +73,9 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         ((uint8_t) gpio_get_pin_level(self->pin_a) << 1) |
         (uint8_t) gpio_get_pin_level(self->pin_b);
 
+    claim_pin(pin_a);
+    claim_pin(pin_b);
+
     turn_on_eic_channel(self->eic_channel_a, EIC_CONFIG_SENSE0_BOTH_Val, EIC_HANDLER_INCREMENTAL_ENCODER);
     turn_on_eic_channel(self->eic_channel_b, EIC_CONFIG_SENSE0_BOTH_Val, EIC_HANDLER_INCREMENTAL_ENCODER);
 }
@@ -87,9 +90,9 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     }
     turn_off_eic_channel(self->eic_channel_a);
     turn_off_eic_channel(self->eic_channel_b);
-    reset_pin(self->pin_a);
+    reset_pin_number(self->pin_a);
     self->pin_a = NO_PIN;
-    reset_pin(self->pin_b);
+    reset_pin_number(self->pin_b);
     self->pin_b = NO_PIN;
 }
 

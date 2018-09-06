@@ -212,11 +212,11 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
         return;
     }
 
-    reset_pin(self->bit_clock->number);
+    reset_pin_number(self->bit_clock->number);
     self->bit_clock = mp_const_none;
-    reset_pin(self->word_select->number);
+    reset_pin_number(self->word_select->number);
     self->word_select = mp_const_none;
-    reset_pin(self->data->number);
+    reset_pin_number(self->data->number);
     self->data = mp_const_none;
 }
 

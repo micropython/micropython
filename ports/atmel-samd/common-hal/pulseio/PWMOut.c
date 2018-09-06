@@ -285,7 +285,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
             }
         }
     }
-    reset_pin(self->pin->number);
+    reset_pin_number(self->pin->number);
     self->pin = mp_const_none;
 }
 

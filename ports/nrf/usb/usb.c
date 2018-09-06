@@ -130,8 +130,8 @@ uint32_t tusb_hal_millis(void) {
 void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
     (void) itf; // interface ID, not used
 
-    // disconnected event
-    if ( !dtr && !rts )
+    // DTR = false is counted as disconnected
+    if ( !dtr )
     {
         cdc_line_coding_t coding;
         tud_cdc_get_line_coding(&coding);

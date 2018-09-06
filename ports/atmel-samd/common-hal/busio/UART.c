@@ -222,8 +222,8 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
     usart_async_disable(usart_desc_p);
     usart_async_deinit(usart_desc_p);
-    reset_pin(self->rx_pin);
-    reset_pin(self->tx_pin);
+    reset_pin_number(self->rx_pin);
+    reset_pin_number(self->tx_pin);
     self->rx_pin = NO_PIN;
     self->tx_pin = NO_PIN;
 }
@@ -249,7 +249,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     uint64_t start_ticks = ticks_ms;
 
     // Busy-wait until timeout or until we've read enough chars.
-    while (ticks_ms - start_ticks < self->timeout_ms) {
+    while (ticks_ms - start_ticks <= self->timeout_ms) {
         // Read as many chars as we can right now, up to len.
         size_t num_read = io_read(io, data, len);
 
@@ -268,6 +268,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
+       // If we are zero timeout, make sure we don't loop again (in the event 
+       // we read in under 1ms)
+       if (self->timeout_ms == 0)
+            break;
     }
 
     if (total_read == 0) {

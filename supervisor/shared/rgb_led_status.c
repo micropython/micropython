@@ -71,7 +71,7 @@ void rgb_led_status_init() {
         #else
         if (!common_hal_busio_spi_deinited(&status_apa102)) {
             // Don't use spi_deinit because that leads to infinite
-            // recursion because reset_pin may call
+            // recursion because reset_pin_number may call
             // rgb_led_status_init.
             spi_m_sync_disable(&status_apa102.spi_desc);
         }
@@ -103,11 +103,11 @@ void rgb_led_status_init() {
 
 void reset_status_led() {
     #ifdef MICROPY_HW_NEOPIXEL
-        reset_pin(MICROPY_HW_NEOPIXEL->number);
+        reset_pin_number(MICROPY_HW_NEOPIXEL->number);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        reset_pin(MICROPY_HW_APA102_MOSI->number);
-        reset_pin(MICROPY_HW_APA102_SCK->number);
+        reset_pin_number(MICROPY_HW_APA102_MOSI->number);
+        reset_pin_number(MICROPY_HW_APA102_SCK->number);
     #endif
 }
 
