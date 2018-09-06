@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-06 14:49-0700\n"
+"POT-Creation-Date: 2018-09-06 14:55-0700\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -243,15 +243,15 @@ msgstr "pagkakalibrate ay basahin lamang"
 msgid "calibration is out of range"
 msgstr "kalibrasion ay wala sa sakop"
 
-#: ports/atmel-samd/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
 msgstr "Walang default na I2C bus"
 
-#: ports/atmel-samd/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
 msgstr "Walang default SPI bus"
 
-#: ports/atmel-samd/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
 msgstr "Walang default UART bus"
 
@@ -400,12 +400,12 @@ msgstr "Hindi ma-initialize ang UART"
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:284
+#: ports/atmel-samd/common-hal/busio/UART.c:288
 msgid "No TX pin"
 msgstr "Walang TX pin"
 
-#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:158
+#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
 msgid "Cannot get pull while in output mode"
 msgstr "Hindi makakakuha ng pull habang nasa output mode"
 
@@ -438,12 +438,12 @@ msgstr "Ginagamit na ang EXTINT channel"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
 msgstr "pop mula sa walang laman na PulseIn"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:235
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
 msgid "index out of range"
 msgstr "index wala sa sakop"
@@ -700,11 +700,11 @@ msgstr "hindi alam na config param"
 msgid "AnalogOut functionality not supported"
 msgstr "Hindi supportado ang AnalogOut"
 
-#: ports/nrf/common-hal/busio/UART.c:45 ports/nrf/common-hal/busio/UART.c:49
-#: ports/nrf/common-hal/busio/UART.c:53 ports/nrf/common-hal/busio/UART.c:62
-#: ports/nrf/common-hal/busio/UART.c:68 ports/nrf/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:78 ports/nrf/common-hal/busio/UART.c:83
-#: ports/nrf/common-hal/busio/UART.c:88
+#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
+#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
+#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
+#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
+#: ports/nrf/common-hal/busio/UART.c:86
 msgid "busio.UART not yet implemented"
 msgstr "hindi pa implemented ang busio.UART"
 

@@ -39,7 +39,7 @@
 //| .. currentmodule:: displayio
 //|
 //| :class:`Palette` -- Stores a mapping from bitmap pixel palette_indexes to display colors
-//| ===============================================================================
+//| =========================================================================================
 //|
 //| Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
 //| save memory.

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-06 14:49-0700\n"
+"POT-Creation-Date: 2018-09-06 14:55-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -238,15 +238,15 @@ msgstr "la calibration est en lecture seule"
 msgid "calibration is out of range"
 msgstr "la calibration est hors gamme"
 
-#: ports/atmel-samd/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
 msgstr "Pas de bus I2C par défaut"
 
-#: ports/atmel-samd/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
 msgstr "Pas de bus SPI par défaut"
 
-#: ports/atmel-samd/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
 msgstr "Pas de bus UART par défaut"
 
@@ -395,12 +395,12 @@ msgstr "L'UART n'a pu être initialisé"
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:284
+#: ports/atmel-samd/common-hal/busio/UART.c:288
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
-#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:158
+#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
 msgid "Cannot get pull while in output mode"
 msgstr "Ne peux être tirer ('pull') en mode 'output'"
 
@@ -434,12 +434,12 @@ msgstr "Canal EXTINT déjà utilisé"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
 msgstr "'pop' d'une entrée PulseIn vide"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:235
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
 msgid "index out of range"
 msgstr "index hors gamme"
@@ -696,11 +696,11 @@ msgstr "paramètre de config. inconnu"
 msgid "AnalogOut functionality not supported"
 msgstr "AnalogOut non supporté"
 
-#: ports/nrf/common-hal/busio/UART.c:45 ports/nrf/common-hal/busio/UART.c:49
-#: ports/nrf/common-hal/busio/UART.c:53 ports/nrf/common-hal/busio/UART.c:62
-#: ports/nrf/common-hal/busio/UART.c:68 ports/nrf/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:78 ports/nrf/common-hal/busio/UART.c:83
-#: ports/nrf/common-hal/busio/UART.c:88
+#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
+#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
+#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
+#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
+#: ports/nrf/common-hal/busio/UART.c:86
 msgid "busio.UART not yet implemented"
 msgstr "busio.UART pas encore implémenté"
 
