@@ -38,10 +38,10 @@
 
 //| .. currentmodule:: displayio
 //|
-//| :class:`Palette` -- Stores a mapping from bitmap pixel values to display colors
+//| :class:`Palette` -- Stores a mapping from bitmap pixel palette_indexes to display colors
 //| ===============================================================================
 //|
-//| Map a pixel value to a full color. Colors are transformed to the display's format internally to
+//| Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
 //| save memory.
 //|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
@@ -86,7 +86,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         return MP_OBJ_NULL;
     }
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
-    size_t index = mp_get_index(&displayio_palette_type, self->max_value, index_in, false);
+    size_t index = mp_get_index(&displayio_palette_type, self->color_count, index_in, false);
 
     uint32_t color;
     mp_int_t int_value;
@@ -99,7 +99,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         if (bufinfo.len == 3 || bufinfo.len == 4) {
             color = buf[0] << 16 | buf[1] << 8 | buf[2];
         } else {
-            mp_raise_ValueError(translate("color buffer must be 3 bytes (RGB) or 4 bytes (RGBA)"));
+            mp_raise_ValueError(translate("color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"));
         }
     } else if (mp_obj_get_int_maybe(value, &int_value)) {
         if (int_value < 0 || int_value > 0xffffff) {
@@ -113,30 +113,30 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     return mp_const_none;
 }
 
-//|   .. method:: make_transparent(value)
+//|   .. method:: make_transparent(palette_index)
 //|
-STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_t value_obj) {
+STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t value;
-    if (!mp_obj_get_int_maybe(value_obj, &value)) {
-        mp_raise_ValueError(translate("value should be an int"));
+    mp_int_t palette_index;
+    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
+        mp_raise_ValueError(translate("palette_index should be an int"));
     }
-    common_hal_displayio_palette_make_transparent(self, value);
+    common_hal_displayio_palette_make_transparent(self, palette_index);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_transparent_obj, displayio_palette_obj_make_transparent);
 
-//|   .. method:: make_opaque(value)
+//|   .. method:: make_opaque(palette_index)
 //|
-STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t value_obj) {
+STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t value;
-    if (!mp_obj_get_int_maybe(value_obj, &value)) {
-        mp_raise_ValueError(translate("value should be an int"));
+    mp_int_t palette_index;
+    if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
+        mp_raise_ValueError(translate("palette_index should be an int"));
     }
-    common_hal_displayio_palette_make_opaque(self, value);
+    common_hal_displayio_palette_make_opaque(self, palette_index);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_opaque_obj, displayio_palette_obj_make_opaque);

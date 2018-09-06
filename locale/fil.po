@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-30 18:29-0700\n"
+"POT-Creation-Date: 2018-09-06 14:49-0700\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -2060,6 +2060,74 @@ msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
 msgid "Unsupported pull value."
 msgstr "Hindi suportado ang pull value."
 
+#: shared-bindings/displayio/Bitmap.c:84
+#, fuzzy
+msgid "y should be an int"
+msgstr "Haba ay dapat int"
+
+#: shared-bindings/displayio/Bitmap.c:89
+#, fuzzy
+msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+"ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', "
+"'H', 'b' o'B'"
+
+#: shared-bindings/displayio/Bitmap.c:94
+#, fuzzy
+msgid "row data must be a buffer"
+msgstr "constant ay dapat na integer"
+
+#: shared-bindings/displayio/FourWire.c:55
+#: shared-bindings/displayio/FourWire.c:64
+msgid "displayio is a work in progress"
+msgstr ""
+
+#: shared-bindings/displayio/Group.c:65
+#, fuzzy
+msgid "Group must have size at least 1"
+msgstr "Buffer dapat ay hindi baba sa 1 na haba"
+
+#: shared-bindings/displayio/Palette.c:96
+#, fuzzy
+msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+"ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', "
+"'H', 'b' o'B'"
+
+#: shared-bindings/displayio/Palette.c:102
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:106
+#, fuzzy
+msgid "color must be between 0x000000 and 0xffffff"
+msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
+
+#: shared-bindings/displayio/Palette.c:110
+#, fuzzy
+msgid "color buffer must be a buffer or int"
+msgstr "buffer ay dapat bytes-like object"
+
+#: shared-bindings/displayio/Palette.c:123
+#: shared-bindings/displayio/Palette.c:137
+msgid "palette_index should be an int"
+msgstr ""
+
+#: shared-bindings/displayio/Sprite.c:45
+#, fuzzy
+msgid "position must be 2-tuple"
+msgstr "stop dapat 1 o 2"
+
+#: shared-bindings/displayio/Sprite.c:87
+#, fuzzy
+msgid "unsupported bitmap type"
+msgstr "Hindi supportadong baudrate"
+
+#: shared-bindings/displayio/Sprite.c:152
+#, fuzzy
+msgid "palette must be displayio.Palette"
+msgstr "ang palette ay dapat 32 bytes ang haba"
+
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
 msgstr "masyadong maraming argumento"
@@ -2276,6 +2344,18 @@ msgstr "Hindi maaring mabasa kapag walang MISO pin."
 #: shared-module/bitbangio/SPI.c:241
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
+
+#: shared-module/displayio/Bitmap.c:49
+msgid "Only bit maps of 8 bit color or less are supported"
+msgstr ""
+
+#: shared-module/displayio/Bitmap.c:69
+msgid "row must be packed and word aligned"
+msgstr ""
+
+#: shared-module/displayio/Group.c:39
+msgid "Group full"
+msgstr ""
 
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"

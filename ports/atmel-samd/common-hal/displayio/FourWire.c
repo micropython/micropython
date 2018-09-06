@@ -96,21 +96,17 @@ int32_t common_hal_displayio_fourwire_wait_for_frame(displayio_fourwire_obj_t* s
     return 0;
 }
 
-static uint16_t swap(uint16_t x) {
-    return (x & 0x00ff) << 8 | x >> 8;
-}
-
 void displayio_fourwire_start_region_update(displayio_fourwire_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     // TODO(tannewt): Handle displays with single byte bounds.
     common_hal_displayio_fourwire_begin_transaction(self);
     uint16_t data[2];
     common_hal_displayio_fourwire_send(self, true, &self->set_column_command, 1);
-    data[0] = swap(x0 + self->colstart);
-    data[1] = swap(x1-1 + self->colstart);
+    data[0] = __builtin_bswap16(x0 + self->colstart);
+    data[1] = __builtin_bswap16(x1-1 + self->colstart);
     common_hal_displayio_fourwire_send(self, false, (uint8_t*) data, 4);
     common_hal_displayio_fourwire_send(self, true, &self->set_row_command, 1);
-    data[0] = swap(y0 + 1 + self->rowstart);
-    data[1] = swap(y1 + self->rowstart);
+    data[0] = __builtin_bswap16(y0 + 1 + self->rowstart);
+    data[1] = __builtin_bswap16(y1 + self->rowstart);
     common_hal_displayio_fourwire_send(self, false, (uint8_t*) data, 4);
     common_hal_displayio_fourwire_send(self, true, &self->write_ram_command, 1);
 }

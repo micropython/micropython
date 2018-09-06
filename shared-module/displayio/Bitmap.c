@@ -31,8 +31,8 @@
 #include "py/runtime.h"
 
 void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t width,
-    uint32_t height, uint32_t value_size) {
-    uint32_t row_width = width * value_size;
+    uint32_t height, uint32_t bits_per_value) {
+    uint32_t row_width = width * bits_per_value;
     // word align
     if (row_width % 32 != 0) {
         self->stride = (row_width / 32 + 1);
@@ -43,16 +43,25 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
     self->height = height;
     self->data = m_malloc(self->stride * height * sizeof(uint32_t), false);
 
-    self->bits_per_value = value_size;
+    self->bits_per_value = bits_per_value;
 
-    self->x_shift = 0;
+    if (bits_per_value > 8) {
+        mp_raise_NotImplementedError(translate("Only bit maps of 8 bit color or less are supported"));
+    }
+
+    // Division and modulus can be slow because it has to handle any integer. We know bits_per_value
+    // is a power of two. We divide and mod by bits_per_value to compute the offset into the byte
+    // array. So, we can the offset computation to simplify to a shift for division and mask for mod.
+
+    self->x_shift = 0; // Used to divide the index by the number of pixels per word. Its used in a
+                       // shift which effectively divides by 2 ** x_shift.
     uint32_t power_of_two = 1;
-    while (power_of_two < 32 / value_size ) {
+    while (power_of_two < 32 / bits_per_value ) {
         self->x_shift++;
         power_of_two <<= 1;
     }
     self->x_mask = (1 << self->x_shift) - 1; // Used as a modulus on the x value
-    self->bitmask = (1 << value_size) - 1;
+    self->bitmask = (1 << bits_per_value) - 1;
 }
 
 void common_hal_displayio_bitmap_load_row(displayio_bitmap_t *self, uint16_t y, uint8_t* data, uint16_t len) {

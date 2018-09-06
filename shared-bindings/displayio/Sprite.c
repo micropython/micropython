@@ -35,7 +35,8 @@
 #include "shared-bindings/displayio/Bitmap.h"
 #include "supervisor/shared/translate.h"
 
-void parse_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
+void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
+    // TODO(tannewt): Support any value sequence such as bytearray or bytes.
     mp_obj_tuple_t *position = MP_OBJ_TO_PTR(position_obj);
     if (MP_OBJ_IS_TYPE(position_obj, &mp_type_tuple) && position->len == 2) {
         *x = mp_obj_get_int(position->items[0]);
@@ -88,7 +89,7 @@ STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_ar
     int16_t x = 0;
     int16_t y = 0;
     mp_obj_t position_obj = args[ARG_position].u_obj;
-    parse_position(position_obj, &x, &y);
+    unpack_position(position_obj, &x, &y);
 
     displayio_sprite_t *self = m_new_obj(displayio_sprite_t);
     self->base.type = &displayio_sprite_type;
@@ -120,7 +121,7 @@ STATIC mp_obj_t displayio_sprite_obj_set_position(mp_obj_t self_in, mp_obj_t val
 
     int16_t x = 0;
     int16_t y = 0;
-    parse_position(value, &x, &y);
+    unpack_position(value, &x, &y);
 
     common_hal_displayio_sprite_set_position(self, x, y);
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-30 16:12-0700\n"
+"POT-Creation-Date: 2018-09-06 14:49-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -2051,24 +2051,19 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'"
 msgid "Unsupported pull value."
 msgstr "Valeur de 'pull' non supportée"
 
-#: shared-bindings/displayio/Bitmap.c:66
-#, fuzzy
-msgid "value_size must be power of two"
-msgstr "'len' doit être un multiple de 4"
-
-#: shared-bindings/displayio/Bitmap.c:85
+#: shared-bindings/displayio/Bitmap.c:84
 #, fuzzy
 msgid "y should be an int"
 msgstr "La longueur doit être entière"
 
-#: shared-bindings/displayio/Bitmap.c:90
+#: shared-bindings/displayio/Bitmap.c:89
 #, fuzzy
 msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 "le tampon de sample_source doit être un bytearray ou un tableau de type "
 "'h','H', 'b' ou 'B'"
 
-#: shared-bindings/displayio/Bitmap.c:95
+#: shared-bindings/displayio/Bitmap.c:94
 #, fuzzy
 msgid "row data must be a buffer"
 msgstr "les constantes doivent être des entiers"
@@ -2083,44 +2078,44 @@ msgstr ""
 msgid "Group must have size at least 1"
 msgstr "Le tampon doit être de longueur au moins 1"
 
-#: shared-bindings/displayio/Palette.c:94
+#: shared-bindings/displayio/Palette.c:96
 #, fuzzy
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 "le tampon de sample_source doit être un bytearray ou un tableau de type "
 "'h','H', 'b' ou 'B'"
 
-#: shared-bindings/displayio/Palette.c:100
-msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGBA)"
+#: shared-bindings/displayio/Palette.c:102
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:104
+#: shared-bindings/displayio/Palette.c:106
 #, fuzzy
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 
-#: shared-bindings/displayio/Palette.c:108
+#: shared-bindings/displayio/Palette.c:110
 #, fuzzy
 msgid "color buffer must be a buffer or int"
 msgstr "le tampon doit être un objet bytes-like"
 
-#: shared-bindings/displayio/Palette.c:124
-#: shared-bindings/displayio/Palette.c:138
+#: shared-bindings/displayio/Palette.c:123
+#: shared-bindings/displayio/Palette.c:137
 #, fuzzy
-msgid "value should be an int"
+msgid "palette_index should be an int"
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'"
 
-#: shared-bindings/displayio/Sprite.c:44
+#: shared-bindings/displayio/Sprite.c:45
 #, fuzzy
 msgid "position must be 2-tuple"
 msgstr "stop doit être 1 ou 2"
 
-#: shared-bindings/displayio/Sprite.c:86
+#: shared-bindings/displayio/Sprite.c:87
 #, fuzzy
 msgid "unsupported bitmap type"
 msgstr "Débit non supporté"
 
-#: shared-bindings/displayio/Sprite.c:151
+#: shared-bindings/displayio/Sprite.c:152
 #, fuzzy
 msgid "palette must be displayio.Palette"
 msgstr "la palette doit être longue de 32 octets"
@@ -2346,7 +2341,11 @@ msgstr "Impossible de lire sans broche MISO."
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Pas de transfert sans broches MOSI et MISO"
 
-#: shared-module/displayio/Bitmap.c:60
+#: shared-module/displayio/Bitmap.c:49
+msgid "Only bit maps of 8 bit color or less are supported"
+msgstr ""
+
+#: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
 msgstr ""
 
@@ -2361,3 +2360,7 @@ msgstr "'S' et 'O' ne sont pas des types de format supportés"
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
+
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "'len' doit être un multiple de 4"

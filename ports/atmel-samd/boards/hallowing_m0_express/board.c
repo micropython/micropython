@@ -27,14 +27,17 @@
 #include "boards/board.h"
 
 #include "shared-bindings/displayio/FourWire.h"
+#include "shared-module/displayio/mipi_constants.h"
 
 #include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
+#define DELAY 0x80
+
 uint8_t display_init_sequence[] = {
-    0x01, 0, // SWRESET
-    0x11, 0, // SLPOUT
+    0x01, 0 | DELAY, 150, // SWRESET
+    0x11, 0 | DELAY, 255, // SLPOUT
     0xb1, 3, 0x01, 0x2C, 0x2D, // _FRMCTR1
     0xb2, 3, 0x01, 0x2C, 0x2D, //
     0xb3, 6, 0x01, 0x2C, 0x2D, 0x01, 0x2C, 0x2D,
@@ -60,36 +63,50 @@ uint8_t display_init_sequence[] = {
               0x00, 0x00, 0x02, 0x10,
     0x2a, 3, 0x02, 0x00, 0x81, // _CASET XSTART = 2, XEND = 129
     0x2b, 3, 0x02, 0x00, 0x81, // _RASET XSTART = 2, XEND = 129
-    0x13, 0, // _NORON
-    0x29, 0, // _DISPON
+    0x13, 0 | DELAY, 10, // _NORON
+    0x29, 0 | DELAY, 100, // _DISPON
 };
 
 void board_init(void) {
     board_display_obj.base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(&board_display_obj,
-        &pin_PB23, &pin_PB22, &pin_PA28, &pin_PA01, &pin_PA27,
-        128, 128, 2, 0, 16, 0x2a, 0x2b, 0x2c);
+        &pin_PB23, // Clock
+        &pin_PB22, // Data
+        &pin_PA28, // Command or data
+        &pin_PA01, // Chip select
+        &pin_PA27, // Reset
+        128, // Width
+        128, // Height
+        2, // column start
+        0, // row start
+        16, // Color depth
+        MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
+        MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
+        MIPI_COMMAND_WRITE_MEMORY_START); // Write memory command
 
     uint32_t i = 0;
     common_hal_displayio_fourwire_begin_transaction(&board_display_obj);
     while (i < sizeof(display_init_sequence)) {
         uint8_t *cmd = display_init_sequence + i;
         uint8_t data_size = *(cmd + 1);
+        bool delay = (data_size & DELAY) != 0;
+        data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
         common_hal_displayio_fourwire_send(&board_display_obj, true, cmd, 1);
         common_hal_displayio_fourwire_send(&board_display_obj, false, data, data_size);
-        if (*cmd == 0x01) {
+        if (delay) {
+            data_size++;
+            uint16_t delay_length_ms = *(cmd + 1 + data_size);
+            if (delay_length_ms == 255) {
+                delay_length_ms = 500;
+            }
             uint64_t start = ticks_ms;
-            while (ticks_ms - start < 120) {}
-        } else if (*cmd == 0x11) {
-            uint64_t start = ticks_ms;
-            while (ticks_ms - start < 500) {}
+            while (ticks_ms - start < delay_length_ms) {}
         } else {
             uint64_t start = ticks_ms;
             while (ticks_ms - start < 10) {}
         }
         i += 2 + data_size;
-
     }
     common_hal_displayio_fourwire_end_transaction(&board_display_obj);
 }

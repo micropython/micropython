@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-30 23:06-0700\n"
+"POT-Creation-Date: 2018-09-06 14:49-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2022,19 +2022,15 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:66
-msgid "value_size must be power of two"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c:85
+#: shared-bindings/displayio/Bitmap.c:84
 msgid "y should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:90
+#: shared-bindings/displayio/Bitmap.c:89
 msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:95
+#: shared-bindings/displayio/Bitmap.c:94
 msgid "row data must be a buffer"
 msgstr ""
 
@@ -2047,36 +2043,36 @@ msgstr ""
 msgid "Group must have size at least 1"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:94
+#: shared-bindings/displayio/Palette.c:96
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:100
-msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGBA)"
+#: shared-bindings/displayio/Palette.c:102
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:104
+#: shared-bindings/displayio/Palette.c:106
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:108
+#: shared-bindings/displayio/Palette.c:110
 msgid "color buffer must be a buffer or int"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:124
-#: shared-bindings/displayio/Palette.c:138
-msgid "value should be an int"
+#: shared-bindings/displayio/Palette.c:123
+#: shared-bindings/displayio/Palette.c:137
+msgid "palette_index should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:44
+#: shared-bindings/displayio/Sprite.c:45
 msgid "position must be 2-tuple"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:86
+#: shared-bindings/displayio/Sprite.c:87
 msgid "unsupported bitmap type"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:151
+#: shared-bindings/displayio/Sprite.c:152
 msgid "palette must be displayio.Palette"
 msgstr ""
 
@@ -2294,7 +2290,11 @@ msgstr ""
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
 
-#: shared-module/displayio/Bitmap.c:60
+#: shared-module/displayio/Bitmap.c:49
+msgid "Only bit maps of 8 bit color or less are supported"
+msgstr ""
+
+#: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
 msgstr ""
 

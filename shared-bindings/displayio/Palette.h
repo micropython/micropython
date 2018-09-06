@@ -32,9 +32,9 @@
 extern const mp_obj_type_t displayio_palette_type;
 
 void common_hal_displayio_palette_construct(displayio_palette_t* self, uint16_t color_count);
-void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t value, uint32_t color);
+void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t palette_index, uint32_t color);
 
-void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t value);
-void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t value);
+void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t palette_index);
+void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t palette_index);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_PALETTE_H

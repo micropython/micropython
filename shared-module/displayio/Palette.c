@@ -27,7 +27,7 @@
 #include "shared-bindings/displayio/Palette.h"
 
 void common_hal_displayio_palette_construct(displayio_palette_t* self, uint16_t color_count) {
-    self->max_value = color_count;
+    self->color_count = color_count;
     self->colors = (uint32_t *) m_malloc(color_count * sizeof(uint16_t), false);
     uint32_t opaque_byte_count = color_count / 8;
     if (color_count % 8 > 0) {
@@ -36,35 +36,35 @@ void common_hal_displayio_palette_construct(displayio_palette_t* self, uint16_t 
     self->opaque = (uint32_t *) m_malloc(opaque_byte_count, false);
 }
 
-void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t value) {
-    self->opaque[value / 32] &= ~(0x1 << (value % 32));
+void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t palette_index) {
+    self->opaque[palette_index / 32] &= ~(0x1 << (palette_index % 32));
 }
 
-void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t value) {
-    self->opaque[value / 32] |= (0x1 << (value % 32));
+void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t palette_index) {
+    self->opaque[palette_index / 32] |= (0x1 << (palette_index % 32));
 }
 
-void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t value, uint32_t color) {
-    uint32_t shift = (value % 2) * 16;
-    uint32_t masked = self->colors[value / 2] & ~(0xffff << shift);
+void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t palette_index, uint32_t color) {
+    uint32_t shift = (palette_index % 2) * 16;
+    uint32_t masked = self->colors[palette_index / 2] & ~(0xffff << shift);
     uint32_t b5 = (color >> 19);
     uint32_t g6 = (color >> 10) & 0x3f;
     uint32_t r5 = (color >> 3) & 0x1f;
     uint32_t packed = r5 << 11 | g6 << 5 | b5;
     // swap bytes
-    packed = ((packed >> 8) & 0xff) | ((packed & 0xff) << 8);
-    self->colors[value / 2] = masked | packed << shift;
+    packed = __builtin_bswap16(packed);
+    self->colors[palette_index / 2] = masked | packed << shift;
     self->needs_refresh = true;
 }
 
-bool displayio_palette_get_color(displayio_palette_t *self, uint32_t value, uint16_t* color) {
-    if (value > self->max_value) {
+bool displayio_palette_get_color(displayio_palette_t *self, uint32_t palette_index, uint16_t* color) {
+    if (palette_index > self->color_count) {
         return false;
     }
-    if ((self->opaque[value / 32] & (0x1 << (value % 32))) != 0) {
+    if ((self->opaque[palette_index / 32] & (0x1 << (palette_index % 32))) != 0) {
         return false;
     }
-    *color = (self->colors[value / 2] >> (16 * (value % 2))) & 0xffff;
+    *color = (self->colors[palette_index / 2] >> (16 * (palette_index % 2))) & 0xffff;
 
     return true;
 }

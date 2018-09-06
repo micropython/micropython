@@ -24,24 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALETTE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALETTE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_MIPI_CONSTANTS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_MIPI_CONSTANTS_H
 
-#include <stdbool.h>
-#include <stdint.h>
+// More info here: https://www.tonylabs.com/wp-content/uploads/MIPI_DCS_specification_v1.02.00.pdf
+enum mipi_command {
+    MIPI_COMMAND_SET_COLUMN_ADDRESS = 0x2a,
+    MIPI_COMMAND_SET_PAGE_ADDRESS = 0x2b,
+    MIPI_COMMAND_WRITE_MEMORY_START = 0x2c,
+};
 
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    uint32_t* opaque;
-    uint32_t* colors;
-    uint8_t color_count;
-    bool needs_refresh;
-} displayio_palette_t;
-
-bool displayio_palette_get_color(displayio_palette_t *palette, uint32_t palette_index, uint16_t* color);
-bool displayio_palette_needs_refresh(displayio_palette_t *self);
-void displayio_palette_finish_refresh(displayio_palette_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALLETE_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_MIPI_CONSTANTS_H
