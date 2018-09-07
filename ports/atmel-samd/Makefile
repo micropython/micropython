@@ -308,6 +308,7 @@ SRC_COMMON_HAL = \
 	busio/UART.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
+	displayio/FourWire.c \
 	i2cslave/__init__.c \
 	i2cslave/I2CSlave.c \
 	microcontroller/__init__.c \
@@ -381,6 +382,11 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
+	displayio/__init__.c \
+	displayio/Bitmap.c \
+	displayio/Group.c \
+	displayio/Palette.c \
+	displayio/Sprite.c \
 	gamepad/__init__.c \
 	gamepad/GamePad.c \
 	_stage/__init__.c \

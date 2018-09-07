@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-30 16:12-0700\n"
+"POT-Creation-Date: 2018-09-06 14:55-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -238,15 +238,15 @@ msgstr "la calibration est en lecture seule"
 msgid "calibration is out of range"
 msgstr "la calibration est hors gamme"
 
-#: ports/atmel-samd/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
 msgstr "Pas de bus I2C par défaut"
 
-#: ports/atmel-samd/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
 msgstr "Pas de bus SPI par défaut"
 
-#: ports/atmel-samd/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
 msgstr "Pas de bus UART par défaut"
 
@@ -395,12 +395,12 @@ msgstr "L'UART n'a pu être initialisé"
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:284
+#: ports/atmel-samd/common-hal/busio/UART.c:288
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
-#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:158
+#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
 msgid "Cannot get pull while in output mode"
 msgstr "Ne peux être tirer ('pull') en mode 'output'"
 
@@ -434,12 +434,12 @@ msgstr "Canal EXTINT déjà utilisé"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
 msgstr "'pop' d'une entrée PulseIn vide"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:235
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
 msgid "index out of range"
 msgstr "index hors gamme"
@@ -696,11 +696,11 @@ msgstr "paramètre de config. inconnu"
 msgid "AnalogOut functionality not supported"
 msgstr "AnalogOut non supporté"
 
-#: ports/nrf/common-hal/busio/UART.c:45 ports/nrf/common-hal/busio/UART.c:49
-#: ports/nrf/common-hal/busio/UART.c:53 ports/nrf/common-hal/busio/UART.c:62
-#: ports/nrf/common-hal/busio/UART.c:68 ports/nrf/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:78 ports/nrf/common-hal/busio/UART.c:83
-#: ports/nrf/common-hal/busio/UART.c:88
+#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
+#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
+#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
+#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
+#: ports/nrf/common-hal/busio/UART.c:86
 msgid "busio.UART not yet implemented"
 msgstr "busio.UART pas encore implémenté"
 
@@ -2051,6 +2051,75 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'"
 msgid "Unsupported pull value."
 msgstr "Valeur de 'pull' non supportée"
 
+#: shared-bindings/displayio/Bitmap.c:84
+#, fuzzy
+msgid "y should be an int"
+msgstr "La longueur doit être entière"
+
+#: shared-bindings/displayio/Bitmap.c:89
+#, fuzzy
+msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+"le tampon de sample_source doit être un bytearray ou un tableau de type "
+"'h','H', 'b' ou 'B'"
+
+#: shared-bindings/displayio/Bitmap.c:94
+#, fuzzy
+msgid "row data must be a buffer"
+msgstr "les constantes doivent être des entiers"
+
+#: shared-bindings/displayio/FourWire.c:55
+#: shared-bindings/displayio/FourWire.c:64
+msgid "displayio is a work in progress"
+msgstr ""
+
+#: shared-bindings/displayio/Group.c:65
+#, fuzzy
+msgid "Group must have size at least 1"
+msgstr "Le tampon doit être de longueur au moins 1"
+
+#: shared-bindings/displayio/Palette.c:96
+#, fuzzy
+msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+"le tampon de sample_source doit être un bytearray ou un tableau de type "
+"'h','H', 'b' ou 'B'"
+
+#: shared-bindings/displayio/Palette.c:102
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:106
+#, fuzzy
+msgid "color must be between 0x000000 and 0xffffff"
+msgstr "Les octets 'bytes' doivent être entre 0 et 255"
+
+#: shared-bindings/displayio/Palette.c:110
+#, fuzzy
+msgid "color buffer must be a buffer or int"
+msgstr "le tampon doit être un objet bytes-like"
+
+#: shared-bindings/displayio/Palette.c:123
+#: shared-bindings/displayio/Palette.c:137
+#, fuzzy
+msgid "palette_index should be an int"
+msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'"
+
+#: shared-bindings/displayio/Sprite.c:45
+#, fuzzy
+msgid "position must be 2-tuple"
+msgstr "stop doit être 1 ou 2"
+
+#: shared-bindings/displayio/Sprite.c:87
+#, fuzzy
+msgid "unsupported bitmap type"
+msgstr "Débit non supporté"
+
+#: shared-bindings/displayio/Sprite.c:152
+#, fuzzy
+msgid "palette must be displayio.Palette"
+msgstr "la palette doit être longue de 32 octets"
+
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
 msgstr "trop d'arguments"
@@ -2272,6 +2341,18 @@ msgstr "Impossible de lire sans broche MISO."
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Pas de transfert sans broches MOSI et MISO"
 
+#: shared-module/displayio/Bitmap.c:49
+msgid "Only bit maps of 8 bit color or less are supported"
+msgstr ""
+
+#: shared-module/displayio/Bitmap.c:69
+msgid "row must be packed and word aligned"
+msgstr ""
+
+#: shared-module/displayio/Group.c:39
+msgid "Group full"
+msgstr ""
+
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
 msgstr "'S' et 'O' ne sont pas des types de format supportés"
@@ -2279,3 +2360,7 @@ msgstr "'S' et 'O' ne sont pas des types de format supportés"
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
+
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "'len' doit être un multiple de 4"

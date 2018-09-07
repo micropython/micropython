@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,30 @@
  * THE SOFTWARE.
  */
 
-// This file defines board specific functions.
-
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_GROUP_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_GROUP_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "py/mpconfig.h"
+#include "py/obj.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
-#include "common-hal/displayio/FourWire.h"
+typedef struct {
+    mp_obj_base_t base;
+    int16_t x;
+    int16_t y;
+    uint16_t size;
+    uint16_t max_size;
+    mp_obj_t* children;
+} displayio_group_t;
 
-extern displayio_fourwire_obj_t board_display_obj;
-#endif
 
-// Initializes board related state once on start up.
-void board_init(void);
+void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size);
+void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer);
 
-// Returns true if the user initiates safe mode in a board specific way.
-// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
-// way.
-bool board_requests_safe_mode(void);
+void displayio_group_construct(displayio_group_t* self, mp_obj_t* child_array, uint32_t max_size);
+bool displayio_group_get_pixel(displayio_group_t *group, int16_t x, int16_t y, uint16_t *pixel);
+bool displayio_group_needs_refresh(displayio_group_t *self);
+void displayio_group_finish_refresh(displayio_group_t *self);
 
-// Reset the state of off MCU components such as neopixels.
-void reset_board(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_GROUP_H

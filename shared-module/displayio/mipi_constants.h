@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,14 @@
  * THE SOFTWARE.
  */
 
-// This file defines board specific functions.
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_MIPI_CONSTANTS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_MIPI_CONSTANTS_H
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+// More info here: https://www.tonylabs.com/wp-content/uploads/MIPI_DCS_specification_v1.02.00.pdf
+enum mipi_command {
+    MIPI_COMMAND_SET_COLUMN_ADDRESS = 0x2a,
+    MIPI_COMMAND_SET_PAGE_ADDRESS = 0x2b,
+    MIPI_COMMAND_WRITE_MEMORY_START = 0x2c,
+};
 
-#include <stdbool.h>
-
-#include "py/mpconfig.h"
-
-#ifdef CIRCUITPY_DISPLAYIO
-#include "common-hal/displayio/FourWire.h"
-
-extern displayio_fourwire_obj_t board_display_obj;
-#endif
-
-// Initializes board related state once on start up.
-void board_init(void);
-
-// Returns true if the user initiates safe mode in a board specific way.
-// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
-// way.
-bool board_requests_safe_mode(void);
-
-// Reset the state of off MCU components such as neopixels.
-void reset_board(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_MIPI_CONSTANTS_H

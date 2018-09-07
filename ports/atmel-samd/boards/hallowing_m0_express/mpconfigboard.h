@@ -3,7 +3,7 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA12)
 
-// Clock rates are off: Salae reads 12MHz which is the limit even though we set it to the safer 8MHz.
+// Clock rates are off: Saleae reads 12MHz which is the limit even though we set it to the safer 8MHz.
 #define SPI_FLASH_BAUDRATE  (8000000)
 
 #define SPI_FLASH_MOSI_PIN          PIN_PB10
@@ -27,8 +27,8 @@
 #define SPI_FLASH_DIPO              1   // same as MISO pad
 
 // These are pins not to reset.
-#define MICROPY_PORT_A        (PORT_PA07 | PORT_PA12 | PORT_PA13 | PORT_PA24 | PORT_PA25)
-#define MICROPY_PORT_B        ( PORT_PB10 | PORT_PB11 )
+#define MICROPY_PORT_A        ( PORT_PA01 | PORT_PA07 | PORT_PA12 | PORT_PA13 | PORT_PA24 | PORT_PA25 | PORT_PA27 | PORT_PA28)
+#define MICROPY_PORT_B        ( PORT_PB10 | PORT_PB11 | PORT_PB22 | PORT_PB23 )
 #define MICROPY_PORT_C        ( 0 )
 
 #include "external_flash/external_flash.h"
@@ -61,3 +61,5 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+#define CIRCUITPY_DISPLAYIO

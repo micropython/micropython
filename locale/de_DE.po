@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-20 09:37-0700\n"
+"POT-Creation-Date: 2018-09-06 14:55-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -159,7 +159,8 @@ msgstr " Ausgabe:\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
+msgstr ""
+"Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
 "auszuführen oder verbinde dich mit der REPL um zu deaktivieren.\n"
 
 #: main.c:159
@@ -197,26 +198,30 @@ msgstr "CircuitPython ist abgestürzt. Ups!\n"
 
 #: main.c:252
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-msgstr "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
+msgstr ""
+"Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
 
 #: main.c:255
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
-msgstr "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
+msgstr ""
+"Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
 "dass deine Stromversorgung\n"
 
 #: main.c:256
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
-msgstr "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem"
-"sicheren Auswerfen von CIRCUITPY.)\n"
+msgstr ""
+"genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach "
+"demsicheren Auswerfen von CIRCUITPY.)\n"
 
 #: main.c:260
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-msgstr "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu"
-" laden"
+msgstr ""
+"Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
+"laden"
 
 #: main.c:415
 msgid "soft reboot\n"
@@ -235,15 +240,15 @@ msgstr "Kalibrierung ist Schreibgeschützt"
 msgid "calibration is out of range"
 msgstr "Kalibrierung ist außerhalb der Reichweite"
 
-#: ports/atmel-samd/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
 msgstr "Kein Standard I2C Bus"
 
-#: ports/atmel-samd/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
 msgstr "Kein Standard SPI Bus"
 
-#: ports/atmel-samd/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
 msgstr "Kein Standard UART Bus"
 
@@ -392,12 +397,12 @@ msgstr "Konnte UART nicht initialisieren"
 msgid "No RX pin"
 msgstr "Kein RX Pin"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:284
+#: ports/atmel-samd/common-hal/busio/UART.c:288
 msgid "No TX pin"
 msgstr "Kein TX Pin"
 
-#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:168
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:158
+#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
 msgid "Cannot get pull while in output mode"
 msgstr "Pull up im Ausgabemodus nicht möglich"
 
@@ -430,12 +435,12 @@ msgstr "EXTINT Kanal wird benutzt"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Konnte keine RX Buffer mit %d allozieren"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:203
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
 msgstr "pop von einem leeren PulseIn"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:235
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
 msgid "index out of range"
 msgstr "index außerhalb der Reichweite"
@@ -614,11 +619,11 @@ msgid "frequency can only be either 80Mhz or 160MHz"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:61
-msgid "STA required"
+msgid "AP required"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:61
-msgid "AP required"
+msgid "STA required"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c:87
@@ -689,11 +694,11 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:45 ports/nrf/common-hal/busio/UART.c:49
-#: ports/nrf/common-hal/busio/UART.c:53 ports/nrf/common-hal/busio/UART.c:62
-#: ports/nrf/common-hal/busio/UART.c:68 ports/nrf/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:78 ports/nrf/common-hal/busio/UART.c:83
-#: ports/nrf/common-hal/busio/UART.c:88
+#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
+#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
+#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
+#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
+#: ports/nrf/common-hal/busio/UART.c:86
 msgid "busio.UART not yet implemented"
 msgstr ""
 
@@ -2026,6 +2031,61 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr ""
 
+#: shared-bindings/displayio/Bitmap.c:84
+msgid "y should be an int"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c:89
+msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c:94
+msgid "row data must be a buffer"
+msgstr ""
+
+#: shared-bindings/displayio/FourWire.c:55
+#: shared-bindings/displayio/FourWire.c:64
+msgid "displayio is a work in progress"
+msgstr ""
+
+#: shared-bindings/displayio/Group.c:65
+msgid "Group must have size at least 1"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:96
+msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:102
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:106
+msgid "color must be between 0x000000 and 0xffffff"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:110
+msgid "color buffer must be a buffer or int"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c:123
+#: shared-bindings/displayio/Palette.c:137
+msgid "palette_index should be an int"
+msgstr ""
+
+#: shared-bindings/displayio/Sprite.c:45
+msgid "position must be 2-tuple"
+msgstr ""
+
+#: shared-bindings/displayio/Sprite.c:87
+#, fuzzy
+msgid "unsupported bitmap type"
+msgstr "Baudrate wird nicht unterstütz"
+
+#: shared-bindings/displayio/Sprite.c:152
+msgid "palette must be displayio.Palette"
+msgstr ""
+
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
 msgstr ""
@@ -2131,7 +2191,7 @@ msgid "empty sequence"
 msgstr ""
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
-#: shared-bindings/time/__init__.c:192
+#: shared-bindings/time/__init__.c:190
 msgid "RTC is not supported on this board"
 msgstr ""
 
@@ -2151,27 +2211,27 @@ msgstr ""
 msgid "Stack size must be at least 256"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:80
+#: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:90
+#: shared-bindings/time/__init__.c:88
 msgid "time.struct_time() takes exactly 1 argument"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:93
+#: shared-bindings/time/__init__.c:91
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:171 shared-bindings/time/__init__.c:252
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:176 shared-bindings/time/__init__.c:257
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:228 shared-bindings/time/__init__.c:261
+#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
@@ -2238,6 +2298,18 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c:241
 msgid "Cannot transfer without MOSI and MISO pins."
+msgstr ""
+
+#: shared-module/displayio/Bitmap.c:49
+msgid "Only bit maps of 8 bit color or less are supported"
+msgstr ""
+
+#: shared-module/displayio/Bitmap.c:69
+msgid "row must be packed and word aligned"
+msgstr ""
+
+#: shared-module/displayio/Group.c:39
+msgid "Group full"
 msgstr ""
 
 #: shared-module/struct/__init__.c:39

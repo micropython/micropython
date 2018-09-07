@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,20 @@
  * THE SOFTWARE.
  */
 
-// This file defines board specific functions.
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+#include "shared-module/displayio/Sprite.h"
 
-#include <stdbool.h>
+extern const mp_obj_type_t displayio_sprite_type;
 
-#include "py/mpconfig.h"
+void common_hal_displayio_sprite_construct(displayio_sprite_t *self, mp_obj_t bitmap,
+        mp_obj_t palette, uint16_t width, uint16_t height, uint16_t x, uint16_t y);
 
-#ifdef CIRCUITPY_DISPLAYIO
-#include "common-hal/displayio/FourWire.h"
+void common_hal_displayio_sprite_get_position(displayio_sprite_t *self, int16_t* x, int16_t* y);
+void common_hal_displayio_sprite_set_position(displayio_sprite_t *self, int16_t x, int16_t y);
 
-extern displayio_fourwire_obj_t board_display_obj;
-#endif
+displayio_palette_t* common_hal_displayio_sprite_get_palette(displayio_sprite_t *self);
+void common_hal_displayio_sprite_set_palette(displayio_sprite_t *self, displayio_palette_t* palette);
 
-// Initializes board related state once on start up.
-void board_init(void);
-
-// Returns true if the user initiates safe mode in a board specific way.
-// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
-// way.
-bool board_requests_safe_mode(void);
-
-// Reset the state of off MCU components such as neopixels.
-void reset_board(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
