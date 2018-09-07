@@ -14,6 +14,7 @@ env:
   - TRAVIS_BOARD=pca10056
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=feather_m4_express
+  - TRAVIS_BOARD=grandcentral_m4_express
   - TRAVIS_BOARD=feather_radiofruit_zigbee
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express_crickit
