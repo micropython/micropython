@@ -55,10 +55,10 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D18), (mp_obj_t)&pin_PB12 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX1), (mp_obj_t)&pin_PB13 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D19), (mp_obj_t)&pin_PB13 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D20), (mp_obj_t)&pin_PB02 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D21), (mp_obj_t)&pin_PB03 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), (mp_obj_t)&pin_PB02 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), (mp_obj_t)&pin_PB03 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D20), (mp_obj_t)&pin_PB20 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D21), (mp_obj_t)&pin_PB21 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), (mp_obj_t)&pin_PB20 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), (mp_obj_t)&pin_PB21 },
 
     // Not connected but probably should be.
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_D22), (mp_obj_t)&pin_PB01 },
