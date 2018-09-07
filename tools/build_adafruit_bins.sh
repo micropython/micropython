@@ -16,6 +16,7 @@ feather_m0_rfm9x \
 feather_m4_express \
 feather_nrf52832 \
 feather_nrf52840_express \
+grandcentral_m4_express \
 pca10056 \
 feather_radiofruit_zigbee \
 gemma_m0 \

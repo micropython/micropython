@@ -325,7 +325,6 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        stack_init();
         // TODO(tannewt): Allocate temporary space to hold custom usb descriptors.
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
@@ -380,6 +379,8 @@ int __attribute__((used)) main(void) {
     safe_mode_t safe_mode = port_init();
 
     rgb_led_status_init();
+
+    stack_init();
 
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's

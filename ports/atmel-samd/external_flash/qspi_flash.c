@@ -231,8 +231,12 @@ void spi_flash_init_device(const external_flash_device* device) {
 
     // Bit 1 is Quad Enable
     if ((status & 0x2) == 0) {
-        uint8_t full_status[2] = { 0x0, 0x2};
+        uint8_t full_status[2] = {0x0, 0x2};
         spi_flash_command(CMD_ENABLE_WRITE);
-        spi_flash_write_command(CMD_WRITE_STATUS_BYTE1, full_status, 2);
+        if (device->write_status_register_split) {
+            spi_flash_write_command(CMD_WRITE_STATUS_BYTE2, full_status + 1, 1);
+        } else {
+            spi_flash_write_command(CMD_WRITE_STATUS_BYTE1, full_status, 2);
+        }
     }
 }
