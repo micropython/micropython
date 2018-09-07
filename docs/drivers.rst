@@ -66,6 +66,8 @@ These libraries build on top of the low level APIs to simplify common tasks.
     AVR programming <https://circuitpython.readthedocs.io/projects/avrprog/en/latest/>
     DC Motor and Servo <https://circuitpython.readthedocs.io/projects/motor/en/latest/>
     SD Card <https://circuitpython.readthedocs.io/projects/sd/en/latest/>
+    Image Load <https://circuitpython.readthedocs.io/projects/imageload/en/latest/>
+    LED Animation <https://circuitpython.readthedocs.io/projects/led-animation/en/latest/>
 
 Blinky
 --------
@@ -77,6 +79,7 @@ Multi-color led drivers.
     NeoPixel <https://circuitpython.readthedocs.io/projects/neopixel/en/latest/>
     DotStar <https://circuitpython.readthedocs.io/projects/dotstar/en/latest/>
     WS2801 <https://circuitpython.readthedocs.io/projects/ws2801/en/latest/>
+    Pixie <https://circuitpython.readthedocs.io/projects/pixie/en/latest/>
 
 Displays
 -------------
@@ -91,6 +94,7 @@ Drivers used to display information. Either pixel or segment based.
     IS31FL3731 Charlieplexed LED Matrix <https://circuitpython.readthedocs.io/projects/is31fl3731/en/latest/>
     MAX7219 LED Matrix <https://circuitpython.readthedocs.io/projects/max7219/en/latest/>
     SSD1306 OLED Driver <https://circuitpython.readthedocs.io/projects/ssd1306/en/latest/>
+    E-Paper Display <https://circuitpython.readthedocs.io/projects/epd/en/latest/>
 
 Real-time clocks
 -----------------
@@ -120,6 +124,7 @@ Motion relating sensing including ``acceleration``, ``magnetic``, ``gyro``, and 
     LSM9DS0 Accelerometer, Magnetometer, Gyroscope and Temperature <https://circuitpython.readthedocs.io/projects/lsm9ds0/en/latest/>
     LSM9DS1 Accelerometer, Magnetometer, Gyroscope and Temperature <https://circuitpython.readthedocs.io/projects/lsm9ds1/en/latest/>
     MMA8451 3 axis accelerometer <https://circuitpython.readthedocs.io/projects/mma8451/en/latest/>
+    L3GD20 Gyroscope <https://circuitpython.readthedocs.io/projects/l3gd20/en/latest/>
 
 Environmental Sensors
 ----------------------
@@ -145,6 +150,8 @@ equivalent carbon dioxide (``eco2`` / ``eCO2``), and total volatile organic comp
     SHT31-D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/sht31d/en/latest/>
     Si7021 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/si7021/en/latest/>
     Thermistor Temperature <https://circuitpython.readthedocs.io/projects/thermistor/en/latest/>
+    TMP007 Contactless Temperature <https://circuitpython.readthedocs.io/projects/tmp007/en/latest/>
+    MLX90614 Contactless Temperature <https://circuitpython.readthedocs.io/projects/mlx90614/en/latest/>
 
 Light Sensors
 ---------------
@@ -171,6 +178,7 @@ These sensors measure the ``distance`` to another object and may also measure li
 
     VL6180x 5 - 100 mm <https://circuitpython.readthedocs.io/projects/vl6180x/en/latest/>
     VL53L0x ~30 - 1000 mm <https://circuitpython.readthedocs.io/projects/vl53l0x/en/latest/>
+    HC-SR04 ultrasonic range sensors <https://circuitpython.readthedocs.io/projects/hcsr04/en/latest/>
 
 Radio
 --------
@@ -181,6 +189,7 @@ These chips communicate to other's over radio.
 
     RFM9x LoRa <https://circuitpython.readthedocs.io/projects/rfm9x/en/latest/>
     RFM69 Packet Radio <https://circuitpython.readthedocs.io/projects/rfm69/en/latest/>
+    PN532 NFC/RFID <https://circuitpython.readthedocs.io/projects/pn532/en/latest/>
 
 IO Expansion
 --------------
@@ -200,6 +209,8 @@ These provide functionality similar to `analogio`, `digitalio`, `pulseio`, and `
     TLC5947 24 x 12-bit PWM Driver <https://circuitpython.readthedocs.io/projects/tlc5947/en/latest/>
     TLC59711 12 x 16-bit PWM Driver <https://circuitpython.readthedocs.io/projects/tlc59711/en/latest/>
     MPR121 Capacitive Touch Sensor <https://circuitpython.readthedocs.io/projects/mpr121/en/latest/>
+    TCA9548 I2C Multiplexer <https://circuitpython.readthedocs.io/projects/tca9548a/en/latest/>
+    MCP3xxx SPI ADC <https://circuitpython.readthedocs.io/projects/mcp3xxx/en/latest/>
 
 Miscellaneous
 ----------------
@@ -216,3 +227,5 @@ Miscellaneous
     VC0706 TTL Camera <https://circuitpython.readthedocs.io/projects/vc0706/en/latest/>
     INA219 High Side Current <https://circuitpython.readthedocs.io/projects/ina219/en/latest/>
     Fingerprint <https://circuitpython.readthedocs.io/projects/fingerprint/en/latest/>
+    STMPE610 Resistive Touchscreen <https://circuitpython.readthedocs.io/projects/stmpe610/en/latest/>
+    Matrix Keypad <https://circuitpython.readthedocs.io/projects/matrixkeypad/en/latest/>
