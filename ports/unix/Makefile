@@ -76,6 +76,9 @@ LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
+# Flags to link with pthread library
+LIBPTHREAD = -lpthread
+
 ifeq ($(MICROPY_FORCE_32BIT),1)
 # Note: you may need to install i386 versions of dependency packages,
 # starting with linux-libc-dev:i386
@@ -101,7 +104,7 @@ SRC_MOD += modusocket.c
 endif
 ifeq ($(MICROPY_PY_THREAD),1)
 CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
-LDFLAGS_MOD += -lpthread
+LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
