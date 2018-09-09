@@ -24,18 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdbool.h>
 #include "boards/board.h"
-#include "nrfx.h"
 #include "usb.h"
 
 void board_init(void) {
-
-    // Clock
-    NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
-    NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
-
     usb_init();
 }
 
@@ -46,8 +38,3 @@ bool board_requests_safe_mode(void) {
 void reset_board(void) {
 
 }
-
-
-
-
-

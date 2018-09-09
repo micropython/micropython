@@ -24,15 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdbool.h>
-
-#include "nrf.h"
-
 #include "boards/board.h"
+#include "usb.h"
 
 void board_init(void) {
-
+    usb_init();
 }
 
 bool board_requests_safe_mode(void) {

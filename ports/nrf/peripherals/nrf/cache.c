@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdbool.h>
+#include "nrfx.h"
 
-#include "nrf.h"
-
-#include "boards/board.h"
-
-void board_init(void) {
+// Turn off cache and invalidate all data in it.
+void nrf_peripherals_disable_and_clear_cache(void) {
+    // Disabling cache also invalidates all cache entries.
+    NRF_NVMC->ICACHECNF &= ~(1 << NVMC_ICACHECNF_CACHEEN_Pos);
 }
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
+// Enable cache
+void nrf_peripherals_enable_cache(void) {
+    NRF_NVMC->ICACHECNF |= 1 << NVMC_ICACHECNF_CACHEEN_Pos;
 }
