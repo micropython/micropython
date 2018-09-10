@@ -53,7 +53,7 @@
 
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
-NORETURN void _esp_network_exceptions(esp_err_t e) {
+NORETURN void _esp_exceptions(esp_err_t e) {
    switch (e) {
       case ESP_ERR_WIFI_NOT_INIT: 
         mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
@@ -100,18 +100,18 @@ NORETURN void _esp_network_exceptions(esp_err_t e) {
    }
 }
 
-static inline void esp_network_exceptions(esp_err_t e) {
-    if (e != ESP_OK) _esp_network_exceptions(e);
+static inline void esp_exceptions(esp_err_t e) {
+    if (e != ESP_OK) _esp_exceptions(e);
 }
 
-#define ESP_EXCEPTIONS(x) do { esp_network_exceptions(x); } while (0);
+#define ESP_EXCEPTIONS(x) do { esp_exceptions(x); } while (0);
 
 const mp_obj_type_t wlan_if_type;
 STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
 STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
 // Set to "true" if esp_wifi_start() was called
-static bool wifi_started = false;
+bool wifi_started = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
@@ -528,9 +528,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         break;
                     }
                     case QS(MP_QSTR_protocol): {
-			esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value));
-			break;
-		    }
+                        ESP_EXCEPTIONS(esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
+                        break;
+                    }
                     case QS(MP_QSTR_essid): {
                         req_if = WIFI_IF_AP;
                         mp_uint_t len;
@@ -601,6 +601,12 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             uint8_t mac[6];
             ESP_EXCEPTIONS(esp_wifi_get_mac(self->if_id, mac));
             return mp_obj_new_bytes(mac, sizeof(mac));
+        }
+        case QS(MP_QSTR_protocol): {
+            uint8_t protocol_bitmap;
+            ESP_EXCEPTIONS(esp_wifi_get_protocol(self->if_id, &protocol_bitmap));
+            val = MP_OBJ_NEW_SMALL_INT(protocol_bitmap);
+            break;
         }
         case QS(MP_QSTR_essid):
             if (self->if_id == WIFI_IF_STA) {
@@ -685,6 +691,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
     { MP_ROM_QSTR(MP_QSTR_MODE_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
+
     { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(WIFI_AUTH_WPA_PSK) },
