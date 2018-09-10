@@ -118,7 +118,10 @@ SRC_C += \
 	lib/utils/sys_stdio_mphal.c \
 	nrfx/hal/nrf_nvmc.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
+	peripherals/nrf/cache.c \
+	peripherals/nrf/clocks.c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
+	peripherals/nrf/$(MCU_CHIP)/power.c \
 	supervisor/shared/memory.c
 
 DRIVERS_SRC_C += $(addprefix modules/,\
