@@ -1,13 +1,12 @@
 include ../../py/mkenv.mk
-CONFIG_SPIRAM_SUPPORT = 0
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
 MICROPY_PY_USSL = 0
-MICROPY_SSL_AXTLS = 1
+MICROPY_SSL_AXTLS = 0
 MICROPY_FATFS = 1
-MICROPY_PY_BTREE = 0
+MICROPY_PY_BTREE = 1
 
 #FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
@@ -15,7 +14,7 @@ FROZEN_MPY_DIR = modules
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-PORT ?= COM6
+PORT ?= /dev/ttyUSB0
 BAUD ?= 460800
 FLASH_MODE ?= dio
 FLASH_FREQ ?= 40m
@@ -170,7 +169,6 @@ SRC_C = \
 	modesp.c \
 	esp32_ulp.c \
 	modesp32.c \
-	esp_espnow.c \
 	espneopixel.c \
 	machine_hw_spi.c \
 	machine_wdt.c \
@@ -677,7 +675,7 @@ APP_LD_ARGS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 APP_LD_ARGS += -L$(dir $(LIBSTDCXX_FILE_NAME)) -lstdc++
 APP_LD_ARGS += $(LIBC_LIBM)
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
-APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2 -lespnow
+APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2
 APP_LD_ARGS += $(OBJ)
 APP_LD_ARGS += --end-group
 
