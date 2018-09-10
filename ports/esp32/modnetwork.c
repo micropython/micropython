@@ -486,31 +486,12 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
                 ESP_EXCEPTIONS(tcpip_adapter_dhcps_start(WIFI_IF_AP));
             }
         } else {
-<<<<<<< HEAD
             // check for the correct string
             const char *mode = mp_obj_str_get_str(args[1]);
             if ((self->if_id != WIFI_IF_STA && self->if_id != ESP_IF_ETH) || strcmp("dhcp", mode)) {
                 mp_raise_ValueError("invalid arguments");
             }
             ESP_EXCEPTIONS(tcpip_adapter_dhcpc_start(self->if_id));
-=======
-            netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
-        }
-        netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[3], (void*)&dns_info.ip, NETUTILS_BIG);
-        // To set a static IP we have to disable DHCP first
-        if (self->if_id == WIFI_IF_STA) {
-            esp_err_t e = tcpip_adapter_dhcpc_stop(WIFI_IF_STA);
-            if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_network_exceptions(e);
-            ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_STA, &info));
-            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
-        } else if (self->if_id == WIFI_IF_AP) {
-            esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
-            if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_network_exceptions(e);
-            ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_AP, &info));
-            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_AP, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
-            ESP_EXCEPTIONS(tcpip_adapter_dhcps_start(WIFI_IF_AP));
->>>>>>> 6177511a5... ... start on espnow
         }
         return mp_const_none;
     }
@@ -697,14 +678,13 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
-<<<<<<< HEAD
     { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
     { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
 
     { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
-
+    { MP_ROM_QSTR(MP_QSTR_MODE_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(WIFI_AUTH_WPA_PSK) },
@@ -724,39 +704,6 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
     { MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
     { MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
-=======
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STA_IF),
-        MP_OBJ_NEW_SMALL_INT(WIFI_IF_STA)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AP_IF),
-        MP_OBJ_NEW_SMALL_INT(WIFI_IF_AP)},
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11G) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11N) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_LR),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_LR) },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_OPEN),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_OPEN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WEP),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WEP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA2_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_WPA2_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_MAX),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_MAX) },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_LAN8720),
-        MP_OBJ_NEW_SMALL_INT(PHY_LAN8720) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_TLK110),
-        MP_OBJ_NEW_SMALL_INT(PHY_TLK110) },
->>>>>>> 00b709d2c... Add protocol to network.WLAN.config and LR constant.
 #endif
 };
 

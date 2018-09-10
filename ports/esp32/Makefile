@@ -1,12 +1,13 @@
 include ../../py/mkenv.mk
+CONFIG_SPIRAM_SUPPORT = 0
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
 MICROPY_PY_USSL = 0
-MICROPY_SSL_AXTLS = 0
+MICROPY_SSL_AXTLS = 1
 MICROPY_FATFS = 1
-MICROPY_PY_BTREE = 1
+MICROPY_PY_BTREE = 0
 
 #FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
@@ -14,7 +15,7 @@ FROZEN_MPY_DIR = modules
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-PORT ?= /dev/ttyUSB0
+PORT ?= COM6
 BAUD ?= 460800
 FLASH_MODE ?= dio
 FLASH_FREQ ?= 40m
@@ -38,14 +39,6 @@ ESPCOMP = $(ESPIDF)/components
 ESPTOOL ?= $(ESPCOMP)/esptool_py/esptool/esptool.py
 
 # verify the ESP IDF version
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-ESPIDF_SUPHASH := e6afe28bafe5db5ab79fae213f2e8e1ccd9f937c
->>>>>>> 00b709d2c... Add protocol to network.WLAN.config and LR constant.
-=======
-ESPIDF_SUPHASH := 2c95a77cf93781f296883d5dbafcdc18e4389656
->>>>>>> 0918f0516... use freertos queue for esp now
 ESPIDF_CURHASH := $(shell git -C $(ESPIDF) show -s --pretty=format:'%H')
 ifneq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH))
 $(info ** WARNING **)
@@ -175,13 +168,9 @@ SRC_C = \
 	network_lan.c \
 	modsocket.c \
 	modesp.c \
-<<<<<<< HEAD
 	esp32_ulp.c \
 	modesp32.c \
-=======
 	esp_espnow.c \
-	moduhashlib.c \
->>>>>>> 6177511a5... ... start on espnow
 	espneopixel.c \
 	machine_hw_spi.c \
 	machine_wdt.c \
@@ -688,11 +677,7 @@ APP_LD_ARGS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 APP_LD_ARGS += -L$(dir $(LIBSTDCXX_FILE_NAME)) -lstdc++
 APP_LD_ARGS += $(LIBC_LIBM)
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
-<<<<<<< HEAD
-APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2
-=======
-APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2 -lespnow
->>>>>>> 6177511a5... ... start on espnow
+APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2 -lespnow
 APP_LD_ARGS += $(OBJ)
 APP_LD_ARGS += --end-group
 
