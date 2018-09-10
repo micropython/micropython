@@ -265,6 +265,21 @@ typedef struct {
     .write_status_register_split = false, \
 }
 
-
+// Settings for the ISSI IS25LP016D-JULE-TR 2MiB SPI flash.
+// Datasheet: http://www.issi.com/WW/pdf/25LP-WP016D.pdf
+#define IS25LP016D {\
+    .total_size = (1 << 21), /* 2 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0x9d, \
+    .memory_type = 0x60, \
+    .capacity = 0x15, \
+    .max_clock_speed_mhz = 133, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .has_quad_enable = true, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+}
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H
