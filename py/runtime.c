@@ -133,7 +133,7 @@ void mp_deinit(void) {
     //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
 
     // call port specific deinitialization if any
-#ifdef MICROPY_PORT_INIT_FUNC
+#ifdef MICROPY_PORT_DEINIT_FUNC
     MICROPY_PORT_DEINIT_FUNC;
 #endif
 }
