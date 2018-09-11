@@ -371,6 +371,13 @@ void SystemInit(void)
   */
 void SystemClock_Config(void)
 {
+    #if defined(STM32F7)
+    // The DFU bootloader changes the clocksource register from its default power
+    // on reset value, so we set it back here, so the clocksources are the same
+    // whether we were started from DFU or from a power on reset.
+    RCC->DCKCFGR2 = 0;
+    #endif
+
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
     #if defined(STM32H7)
@@ -506,6 +513,28 @@ void SystemClock_Config(void)
       __fatal_error("HAL_RCC_OscConfig");
     }
 
+    #if defined(STM32F7)
+    uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (HSE_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
+    bool need_pllsai = vco_out % 48 != 0;
+    if (need_pllsai) {
+        // Configure PLLSAI at 48MHz for those peripherals that need this freq
+        const uint32_t pllsain = 192;
+        const uint32_t pllsaip = 4;
+        const uint32_t pllsaiq = 2;
+        RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
+            | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
+            | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
+        RCC->CR |= RCC_CR_PLLSAION;
+        uint32_t ticks = mp_hal_ticks_ms();
+        while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
+            if (mp_hal_ticks_ms() - ticks > 200) {
+                __fatal_error("PLLSAIRDY timeout");
+            }
+        }
+        RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
+    }
+    #endif
+
 #if defined(STM32H7)
     /* PLL3 for USB Clock */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
@@ -554,13 +583,6 @@ void SystemClock_Config(void)
   HAL_PWREx_EnableUSBVoltageDetector();
 #endif
 
-#if defined(STM32F7)
-  // The DFU bootloader changes the clocksource register from its default power
-  // on reset value, so we set it back here, so the clocksources are the same
-  // whether we were started from DFU or from a power on reset.
-
-  RCC->DCKCFGR2 = 0;
-#endif
 #if defined(STM32L4)
     // Enable MSI-Hardware auto calibration mode with LSE
     HAL_RCCEx_EnableMSIPLLMode();
