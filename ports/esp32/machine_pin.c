@@ -137,11 +137,14 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 
 // pin.init(mode, pull=None, *, value)
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_pull, ARG_value };
+    enum { ARG_mode, ARG_pull, ARG_value, ARG_drive, ARG_alt, ARG_hold };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = mp_const_none}},
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = mp_const_none}},
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        { MP_QSTR_drive, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        { MP_QSTR_alt, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        { MP_QSTR_hold, MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     // parse args
@@ -169,6 +172,29 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // configure pull
     if (args[ARG_pull].u_obj != mp_const_none) {
         gpio_set_pull_mode(self->id, mp_obj_get_int(args[ARG_pull].u_obj));
+    }
+
+    // configure drive capacity
+    if (args[ARG_drive].u_obj != mp_const_none) {
+        gpio_drive_cap_t cap = mp_obj_get_int(args[ARG_drive].u_obj);
+        if (cap < GPIO_DRIVE_CAP_MAX) {
+            gpio_set_drive_capability(self->id, cap);
+        } else {
+            mp_raise_ValueError("invalid drive capacity");
+        }
+    }
+
+    // configure hold
+    if (args[ARG_hold].u_obj != mp_const_none) {
+        esp_err_t e;
+        if (mp_obj_is_true(args[ARG_hold].u_obj)) {
+            e = gpio_hold_en(self->id);
+        } else {
+            e = gpio_hold_dis(self->id);
+        }
+        if (e != ESP_OK) {
+            mp_raise_ValueError("pin does not support hold");
+        }
     }
 
     return mp_const_none;
@@ -289,98 +315,11 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
-static const uint32_t GPIO_HOLD_MASK[34] = {
-    0,
-    GPIO_SEL_1,
-    0,
-    GPIO_SEL_0,
-    0,
-    GPIO_SEL_8,
-    GPIO_SEL_2,
-    GPIO_SEL_3,
-    GPIO_SEL_4,
-    GPIO_SEL_5,
-    GPIO_SEL_6,
-    GPIO_SEL_7,
-    0,
-    0,
-    0,
-    0,
-    GPIO_SEL_9,
-    GPIO_SEL_10,
-    GPIO_SEL_11,
-    GPIO_SEL_12,
-    0,
-    GPIO_SEL_14,
-    GPIO_SEL_15,
-    GPIO_SEL_16,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-};
-
-// pin.hold([True|False])
-STATIC mp_obj_t machine_pin_hold(size_t n_args, const mp_obj_t *args) {
-    machine_pin_obj_t *self = args[0];
-    esp_err_t e = ESP_ERR_NOT_SUPPORTED;
-    if (n_args == 1) {
-        // get
-        if (GPIO_IS_VALID_OUTPUT_GPIO(self->id) && GPIO_HOLD_MASK[self->id]) {
-            return (GET_PERI_REG_MASK(RTC_IO_DIG_PAD_HOLD_REG, GPIO_HOLD_MASK[self->id])) ? 
-                    mp_const_true : 
-                    mp_const_false;
-        }
-    } else {
-        // set
-        if (mp_obj_is_true(args[1])) {
-            e = gpio_hold_en(self->id);
-        } else {
-            e = gpio_hold_dis(self->id);
-        }
-    }
-
-    if (e != ESP_OK) {
-        mp_raise_ValueError("pin not supported");
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_hold_obj, 1, 2, machine_pin_hold);
-
-// pin.capacity([cap])
-STATIC mp_obj_t machine_pin_capacity(size_t n_args, const mp_obj_t *args) {
-    machine_pin_obj_t *self = args[0];
-    esp_err_t e = ESP_ERR_INVALID_ARG;
-    if (n_args == 1) {
-        // get
-        gpio_drive_cap_t cap;
-        if (gpio_get_drive_capability(self->id, &cap) == ESP_OK) {
-            return MP_OBJ_NEW_SMALL_INT(cap);
-        }
-    } else {
-        // set
-        gpio_drive_cap_t cap = mp_obj_get_int(args[1]);
-        if (gpio_set_drive_capability(self->id, cap) != ESP_OK) {
-            mp_raise_ValueError("invalid argument");
-        }
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_capacity_obj, 1, 2, machine_pin_capacity);
-
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_hold), MP_ROM_PTR(&machine_pin_hold_obj) },
-    { MP_ROM_QSTR(MP_QSTR_capacity), MP_ROM_PTR(&machine_pin_capacity_obj) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_INPUT) },
