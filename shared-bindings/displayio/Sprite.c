@@ -33,6 +33,9 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/ColorConverter.h"
+#include "shared-bindings/displayio/OnDiskBitmap.h"
+#include "shared-bindings/displayio/Palette.h"
 #include "supervisor/shared/translate.h"
 
 void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
@@ -51,23 +54,26 @@ void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
 //| :class:`Sprite` -- A particular copy of an image to display
 //| ==========================================================================
 //|
-//| Position a particular image and palette combination.
+//| Position a particular image and pixel_shader combination. Multiple sprites can share bitmaps
+//| pixel shaders.
 //|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
 //|
-//| .. class:: Sprite(bitmap, *, palette, position, width, height)
+//| .. class:: Sprite(bitmap, *, pixel_shader, position, width, height)
 //|
-//|   Create a Sprite object
+//|   Create a Sprite object. The bitmap is source for 2d pixels. The pixel_shader is used to
+//|   convert the value and its location to a display native pixel color. This may be a simple color
+//|   palette lookup, a gradient, a pattern or a color transformer.
 //|
 //|
 STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, 4, true);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-    enum { ARG_bitmap, ARG_palette, ARG_position, ARG_width, ARG_height };
+    enum { ARG_bitmap, ARG_pixel_shader, ARG_position, ARG_width, ARG_height };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_palette, MP_ARG_OBJ | MP_ARG_KW_ONLY },
+        { MP_QSTR_pixel_shader, MP_ARG_OBJ | MP_ARG_KW_ONLY },
         { MP_QSTR_position, MP_ARG_OBJ | MP_ARG_KW_ONLY },
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
@@ -83,6 +89,10 @@ STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_ar
         displayio_bitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
         width = bmp->width;
         height = bmp->height;
+    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_ondiskbitmap_type)) {
+        displayio_ondiskbitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        width = bmp->width;
+        height = bmp->height;
     } else {
         mp_raise_TypeError(translate("unsupported bitmap type"));
     }
@@ -93,7 +103,7 @@ STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_ar
 
     displayio_sprite_t *self = m_new_obj(displayio_sprite_t);
     self->base.type = &displayio_sprite_type;
-    common_hal_displayio_sprite_construct(self, bitmap, args[ARG_palette].u_obj,
+    common_hal_displayio_sprite_construct(self, bitmap, args[ARG_pixel_shader].u_obj,
             width, height, x, y);
     return MP_OBJ_FROM_PTR(self);
 }
@@ -136,40 +146,39 @@ const mp_obj_property_t displayio_sprite_position_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: palette
+//|   .. attribute:: pixel_shader
 //|
-//|     The color palette of the sprite.
+//|     The pixel shader of the sprite.
 //|
-STATIC mp_obj_t displayio_sprite_obj_get_palette(mp_obj_t self_in) {
+STATIC mp_obj_t displayio_sprite_obj_get_pixel_shader(mp_obj_t self_in) {
     displayio_sprite_t *self = MP_OBJ_TO_PTR(self_in);
-    return common_hal_displayio_sprite_get_palette(self);
+    return common_hal_displayio_sprite_get_pixel_shader(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_sprite_get_palette_obj, displayio_sprite_obj_get_palette);
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_sprite_get_pixel_shader_obj, displayio_sprite_obj_get_pixel_shader);
 
-STATIC mp_obj_t displayio_sprite_obj_set_palette(mp_obj_t self_in, mp_obj_t palette_in) {
+STATIC mp_obj_t displayio_sprite_obj_set_pixel_shader(mp_obj_t self_in, mp_obj_t pixel_shader) {
     displayio_sprite_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!MP_OBJ_IS_TYPE(palette_in, &displayio_palette_type)) {
-        mp_raise_TypeError(translate("palette must be displayio.Palette"));
+    if (!MP_OBJ_IS_TYPE(pixel_shader, &displayio_palette_type) && !MP_OBJ_IS_TYPE(pixel_shader, &displayio_colorconverter_type)) {
+        mp_raise_TypeError(translate("pixel_shader must be displayio.Palette or displayio.ColorConverter"));
     }
-    displayio_palette_t *palette = MP_OBJ_TO_PTR(palette_in);
 
-    common_hal_displayio_sprite_set_palette(self, palette);
+    common_hal_displayio_sprite_set_pixel_shader(self, pixel_shader);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_sprite_set_palette_obj, displayio_sprite_obj_set_palette);
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_sprite_set_pixel_shader_obj, displayio_sprite_obj_set_pixel_shader);
 
-const mp_obj_property_t displayio_sprite_palette_obj = {
+const mp_obj_property_t displayio_sprite_pixel_shader_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_sprite_get_palette_obj,
-              (mp_obj_t)&displayio_sprite_set_palette_obj,
+    .proxy = {(mp_obj_t)&displayio_sprite_get_pixel_shader_obj,
+              (mp_obj_t)&displayio_sprite_set_pixel_shader_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
 STATIC const mp_rom_map_elem_t displayio_sprite_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_position),          MP_ROM_PTR(&displayio_sprite_position_obj) },
-    { MP_ROM_QSTR(MP_QSTR_palette),          MP_ROM_PTR(&displayio_sprite_palette_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pixel_shader),          MP_ROM_PTR(&displayio_sprite_pixel_shader_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_sprite_locals_dict, displayio_sprite_locals_dict_table);
 

@@ -384,7 +384,9 @@ SRC_SHARED_MODULE = \
 	busio/OneWire.c \
 	displayio/__init__.c \
 	displayio/Bitmap.c \
+	displayio/ColorConverter.c \
 	displayio/Group.c \
+	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Sprite.c \
 	gamepad/__init__.c \

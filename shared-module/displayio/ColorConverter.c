@@ -24,20 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
+#include "shared-bindings/displayio/ColorConverter.h"
 
-#include "shared-module/displayio/Sprite.h"
+void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self) {
+}
 
-extern const mp_obj_type_t displayio_sprite_type;
-
-void common_hal_displayio_sprite_construct(displayio_sprite_t *self, mp_obj_t bitmap,
-        mp_obj_t pixel_shader, uint16_t width, uint16_t height, uint16_t x, uint16_t y);
-
-void common_hal_displayio_sprite_get_position(displayio_sprite_t *self, int16_t* x, int16_t* y);
-void common_hal_displayio_sprite_set_position(displayio_sprite_t *self, int16_t x, int16_t y);
-
-mp_obj_t common_hal_displayio_sprite_get_pixel_shader(displayio_sprite_t *self);
-void common_hal_displayio_sprite_set_pixel_shader(displayio_sprite_t *self, mp_obj_t pixel_shader);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
+bool common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *self, uint32_t input_color, uint16_t* output_color) {
+    // TODO(tannewt): Validate the color input against the input format.
+    uint32_t r5 = (input_color >> 19);
+    uint32_t g6 = (input_color >> 10) & 0x3f;
+    uint32_t b5 = (input_color >> 3) & 0x1f;
+    uint32_t packed = r5 << 11 | g6 << 5 | b5;
+    // swap bytes
+    *output_color = __builtin_bswap16(packed);
+    return true;
+}

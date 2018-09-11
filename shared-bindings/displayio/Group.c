@@ -83,8 +83,19 @@ STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append);
 
+//|   .. method:: pop()
+//|
+//|     Remove the last item and return it.
+//|
+STATIC mp_obj_t displayio_group_obj_pop(mp_obj_t self_in) {
+    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_displayio_group_pop(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_group_pop_obj, displayio_group_obj_pop);
+
 STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&displayio_group_append_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&displayio_group_pop_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_dict_table);
 

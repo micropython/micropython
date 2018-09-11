@@ -34,5 +34,6 @@ extern const mp_obj_type_t displayio_group_type;
 
 void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size);
 void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer);
+mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_GROUP_H

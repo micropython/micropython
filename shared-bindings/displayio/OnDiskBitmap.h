@@ -24,20 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKBITMAP_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKBITMAP_H
 
-#include "shared-module/displayio/Sprite.h"
+#include "shared-module/displayio/OnDiskBitmap.h"
+#include "extmod/vfs_fat.h"
 
-extern const mp_obj_type_t displayio_sprite_type;
+extern const mp_obj_type_t displayio_ondiskbitmap_type;
 
-void common_hal_displayio_sprite_construct(displayio_sprite_t *self, mp_obj_t bitmap,
-        mp_obj_t pixel_shader, uint16_t width, uint16_t height, uint16_t x, uint16_t y);
+void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self, pyb_file_obj_t* file);
 
-void common_hal_displayio_sprite_get_position(displayio_sprite_t *self, int16_t* x, int16_t* y);
-void common_hal_displayio_sprite_set_position(displayio_sprite_t *self, int16_t x, int16_t y);
+uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *bitmap,
+    int16_t x, int16_t y);
 
-mp_obj_t common_hal_displayio_sprite_get_pixel_shader(displayio_sprite_t *self);
-void common_hal_displayio_sprite_set_pixel_shader(displayio_sprite_t *self, mp_obj_t pixel_shader);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_ONDISKBITMAP_H
