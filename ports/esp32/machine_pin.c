@@ -40,6 +40,8 @@
 #include "machine_rtc.h"
 #include "modesp32.h"
 
+#define MACHINE_PIN_INCLUDE_CONSTANTS (1)
+
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     gpio_num_t id;
@@ -390,10 +392,13 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
     { MP_ROM_QSTR(MP_QSTR_WAKE_LOW), MP_ROM_INT(GPIO_PIN_INTR_LOLEVEL) },
     { MP_ROM_QSTR(MP_QSTR_WAKE_HIGH), MP_ROM_INT(GPIO_PIN_INTR_HILEVEL) },
+
+    #if MACHINE_PIN_INCLUDE_CONSTANTS
     { MP_ROM_QSTR(MP_QSTR_DRIVE_CAP_WEAK), MP_ROM_INT(GPIO_DRIVE_CAP_0) },
     { MP_ROM_QSTR(MP_QSTR_DRIVE_CAP_STRONGER), MP_ROM_INT(GPIO_DRIVE_CAP_1) },
     { MP_ROM_QSTR(MP_QSTR_DRIVE_CAP_DEFAULT), MP_ROM_INT(GPIO_DRIVE_CAP_2) },
     { MP_ROM_QSTR(MP_QSTR_DRIVE_CAP_STRONGEST), MP_ROM_INT(GPIO_DRIVE_CAP_3) },
+    #endif
 };
 
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
