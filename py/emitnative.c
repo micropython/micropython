@@ -914,7 +914,7 @@ STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
 
     if (is_finally) {
         // Label is at start of finally handler: pop exception stack
-        emit_native_leave_exc_stack(emit, true);
+        emit_native_leave_exc_stack(emit, false);
     }
 }
 

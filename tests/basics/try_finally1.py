@@ -82,3 +82,15 @@ finally:
         print("except2")
     print("finally1")
 print()
+
+# case where exception is raised after a finally has finished (tests that the finally doesn't run again)
+def func():
+    try:
+        print("try")
+    finally:
+        print("finally")
+    foo
+try:
+    func()
+except:
+    print("except")
