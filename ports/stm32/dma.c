@@ -551,9 +551,9 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
         HAL_DMA_Init(dma);
         NVIC_SetPriority(IRQn_NONNEG(dma_irqn[dma_id]), IRQ_PRI_DMA);
         #else
-        // if this stream was previously configured for this channel/request then we
+        // if this stream was previously configured for this channel/request and direction then we
         // can skip most of the initialisation
-        uint8_t sub_inst = DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance);
+        uint8_t sub_inst = DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance) | (dir == DMA_PERIPH_TO_MEMORY) << 7;
         if (dma_last_sub_instance[dma_id] != sub_inst) {
             dma_last_sub_instance[dma_id] = sub_inst;
 
@@ -596,7 +596,8 @@ void dma_deinit(const dma_descr_t *dma_descr) {
 void dma_invalidate_channel(const dma_descr_t *dma_descr) {
     if (dma_descr != NULL) {
         dma_id_t dma_id = dma_descr->id;
-        if (dma_last_sub_instance[dma_id] == DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance) ) {
+        // Only compare the sub-instance, not the direction bit (MSB)
+        if ((dma_last_sub_instance[dma_id] & 0x7f) == DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance) ) {
             dma_last_sub_instance[dma_id] = DMA_INVALID_CHANNEL;
         }
     }
