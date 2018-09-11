@@ -324,6 +324,9 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // default PLL parameters that give 48MHz on PLL48CK
         uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
         uint32_t sysclk_source;
+        #if defined(STM32F7)
+        bool need_pllsai = false;
+        #endif
 
         // search for a valid PLL configuration that keeps USB at 48MHz
         for (const uint16_t *pll = &pll_freq_table[MP_ARRAY_SIZE(pll_freq_table) - 1]; pll >= &pll_freq_table[0]; --pll) {
@@ -345,6 +348,9 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
                     uint32_t vco_out = sys * p;
                     n = vco_out * m / (HSE_VALUE / 1000000);
                     q = vco_out / 48;
+                    #if defined(STM32F7)
+                    need_pllsai = vco_out % 48 != 0;
+                    #endif
                     goto set_clk;
                 }
             }
@@ -394,6 +400,11 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             goto fail;
         }
 
+        #if defined(STM32F7)
+        // Turn PLLSAI off because we are changing PLLM (which drives PLLSAI)
+        RCC->CR &= ~RCC_CR_PLLSAION;
+        #endif
+
         // re-configure PLL
         // even if we don't use the PLL for the system clock, we still need it for USB, RNG and SDIO
         RCC_OscInitTypeDef RCC_OscInitStruct;
@@ -408,6 +419,28 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
             goto fail;
         }
+
+        #if defined(STM32F7)
+        if (need_pllsai) {
+            // Configure PLLSAI at 48MHz for those peripherals that need this freq
+            const uint32_t pllsain = 192;
+            const uint32_t pllsaip = 4;
+            const uint32_t pllsaiq = 2;
+            RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
+                | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
+                | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
+            RCC->CR |= RCC_CR_PLLSAION;
+            uint32_t ticks = mp_hal_ticks_ms();
+            while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
+                if (mp_hal_ticks_ms() - ticks > 200) {
+                    goto fail;
+                }
+            }
+            RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
+        } else {
+            RCC->DCKCFGR2 &= ~RCC_DCKCFGR2_CK48MSEL;
+        }
+        #endif
 
         // set PLL as system clock source if wanted
         if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
