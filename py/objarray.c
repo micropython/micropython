@@ -175,7 +175,8 @@ STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, size
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    // Can take 2nd/3rd arg if constructs from str
+    mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
     if (n_args == 0) {
         // no args: construct an empty bytearray
