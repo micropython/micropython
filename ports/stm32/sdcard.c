@@ -51,15 +51,13 @@
 #define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC2_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC2_CLK_DISABLE()
 #define SDMMC_IRQn SDMMC2_IRQn
-#define SDMMC_TX_DMA dma_SDMMC_2_TX
-#define SDMMC_RX_DMA dma_SDMMC_2_RX
+#define SDMMC_DMA dma_SDMMC_2
 #else
 #define SDIO SDMMC1
 #define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC1_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC1_CLK_DISABLE()
 #define SDMMC_IRQn SDMMC1_IRQn
-#define SDMMC_TX_DMA dma_SDIO_0_TX
-#define SDMMC_RX_DMA dma_SDIO_0_RX
+#define SDMMC_DMA dma_SDIO_0
 #define STATIC_AF_SDMMC_CK STATIC_AF_SDMMC1_CK
 #define STATIC_AF_SDMMC_CMD STATIC_AF_SDMMC1_CMD
 #define STATIC_AF_SDMMC_D0 STATIC_AF_SDMMC1_D0
@@ -104,8 +102,7 @@
 #define SDMMC_CLK_ENABLE() __SDIO_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __SDIO_CLK_DISABLE()
 #define SDMMC_IRQn SDIO_IRQn
-#define SDMMC_TX_DMA dma_SDIO_0_TX
-#define SDMMC_RX_DMA dma_SDIO_0_RX
+#define SDMMC_DMA dma_SDIO_0
 #define SDIO_USE_GPDMA 1
 #define STATIC_AF_SDMMC_CK STATIC_AF_SDIO_CK
 #define STATIC_AF_SDMMC_CMD STATIC_AF_SDIO_CMD
@@ -127,12 +124,6 @@
 #define MICROPY_HW_SDMMC_CMD (pin_D2)
 
 #endif
-
-// TODO: Since SDIO is fundamentally half-duplex, we really only need to
-//       tie up one DMA channel. However, the HAL DMA API doesn't
-// seem to provide a convenient way to change the direction. I believe that
-// its as simple as changing the CR register and the Init.Direction field
-// and make DMA_SetConfig public.
 
 // TODO: I think that as an optimization, we can allocate these dynamically
 //       if an sd card is detected. This will save approx 260 bytes of RAM
@@ -343,7 +334,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
         #if SDIO_USE_GPDMA
-        dma_init(&sd_rx_dma, &SDMMC_RX_DMA, DMA_PERIPH_TO_MEMORY, &sd_handle);
+        dma_init(&sd_rx_dma, &SDMMC_DMA, DMA_PERIPH_TO_MEMORY, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
         #endif
 
@@ -357,7 +348,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         }
 
         #if SDIO_USE_GPDMA
-        dma_deinit(&SDMMC_RX_DMA);
+        dma_deinit(&SDMMC_DMA);
         sd_handle.hdmarx = NULL;
         #endif
 
@@ -409,7 +400,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
         #if SDIO_USE_GPDMA
-        dma_init(&sd_tx_dma, &SDMMC_TX_DMA, DMA_MEMORY_TO_PERIPH, &sd_handle);
+        dma_init(&sd_tx_dma, &SDMMC_DMA, DMA_MEMORY_TO_PERIPH, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
         #endif
 
@@ -422,7 +413,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         }
 
         #if SDIO_USE_GPDMA
-        dma_deinit(&SDMMC_TX_DMA);
+        dma_deinit(&SDMMC_DMA);
         sd_handle.hdmatx = NULL;
         #endif
 
