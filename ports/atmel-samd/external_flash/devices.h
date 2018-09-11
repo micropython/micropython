@@ -278,7 +278,7 @@ typedef struct {
     .supports_fast_read = true, \
     .supports_qspi = true, \
     .has_quad_enable = true, \
-    .supports_qspi_writes = false, \
+    .supports_qspi_writes = true, \
     .write_status_register_split = false, \
 }
 
