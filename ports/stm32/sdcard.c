@@ -129,9 +129,6 @@
 //       if an sd card is detected. This will save approx 260 bytes of RAM
 //       when no sdcard was being used.
 static SD_HandleTypeDef sd_handle;
-#if SDIO_USE_GPDMA
-static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
-#endif
 
 void sdcard_init(void) {
     // invalidate the sd_handle
@@ -334,8 +331,9 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
         #if SDIO_USE_GPDMA
-        dma_init(&sd_rx_dma, &SDMMC_DMA, DMA_PERIPH_TO_MEMORY, &sd_handle);
-        sd_handle.hdmarx = &sd_rx_dma;
+        DMA_HandleTypeDef sd_dma;
+        dma_init(&sd_dma, &SDMMC_DMA, DMA_PERIPH_TO_MEMORY, &sd_handle);
+        sd_handle.hdmarx = &sd_dma;
         #endif
 
         // make sure cache is flushed and invalidated so when DMA updates the RAM
@@ -400,8 +398,9 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
         #if SDIO_USE_GPDMA
-        dma_init(&sd_tx_dma, &SDMMC_DMA, DMA_MEMORY_TO_PERIPH, &sd_handle);
-        sd_handle.hdmatx = &sd_tx_dma;
+        DMA_HandleTypeDef sd_dma;
+        dma_init(&sd_dma, &SDMMC_DMA, DMA_MEMORY_TO_PERIPH, &sd_handle);
+        sd_handle.hdmatx = &sd_dma;
         #endif
 
         // make sure cache is flushed to RAM so the DMA can read the correct data
