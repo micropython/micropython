@@ -343,7 +343,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
         #if SDIO_USE_GPDMA
-        dma_init(&sd_rx_dma, &SDMMC_RX_DMA, &sd_handle);
+        dma_init(&sd_rx_dma, &SDMMC_RX_DMA, DMA_PERIPH_TO_MEMORY, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
         #endif
 
@@ -409,7 +409,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
         #if SDIO_USE_GPDMA
-        dma_init(&sd_tx_dma, &SDMMC_TX_DMA, &sd_handle);
+        dma_init(&sd_tx_dma, &SDMMC_TX_DMA, DMA_MEMORY_TO_PERIPH, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
         #endif
 

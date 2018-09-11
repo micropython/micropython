@@ -406,7 +406,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             status = HAL_SPI_Transmit(self->spi, (uint8_t*)src, len, timeout);
         } else {
             DMA_HandleTypeDef tx_dma;
-            dma_init(&tx_dma, self->tx_dma_descr, self->spi);
+            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
             self->spi->hdmatx = &tx_dma;
             self->spi->hdmarx = NULL;
             MP_HAL_CLEAN_DCACHE(src, len);
@@ -434,12 +434,12 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             DMA_HandleTypeDef tx_dma, rx_dma;
             if (self->spi->Init.Mode == SPI_MODE_MASTER) {
                 // in master mode the HAL actually does a TransmitReceive call
-                dma_init(&tx_dma, self->tx_dma_descr, self->spi);
+                dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
                 self->spi->hdmatx = &tx_dma;
             } else {
                 self->spi->hdmatx = NULL;
             }
-            dma_init(&rx_dma, self->rx_dma_descr, self->spi);
+            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
             uint32_t t_start = HAL_GetTick();
@@ -467,9 +467,9 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             status = HAL_SPI_TransmitReceive(self->spi, (uint8_t*)src, dest, len, timeout);
         } else {
             DMA_HandleTypeDef tx_dma, rx_dma;
-            dma_init(&tx_dma, self->tx_dma_descr, self->spi);
+            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
             self->spi->hdmatx = &tx_dma;
-            dma_init(&rx_dma, self->rx_dma_descr, self->spi);
+            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
             MP_HAL_CLEAN_DCACHE(src, len);
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
