@@ -572,6 +572,11 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
 
     switch (cmd) {
         case MP_SPI_IOCTL_INIT:
+            self->spi->spi->Init.Mode = SPI_MODE_MASTER;
+            self->spi->spi->Init.Direction = SPI_DIRECTION_2LINES;
+            self->spi->spi->Init.NSS = SPI_NSS_SOFT;
+            self->spi->spi->Init.TIMode = SPI_TIMODE_DISABLE;
+            self->spi->spi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
             spi_set_params(self->spi, 0xffffffff, self->baudrate,
                 self->polarity, self->phase, self->bits, self->firstbit);
             spi_init(self->spi, false);
