@@ -94,8 +94,8 @@ extern volatile dma_idle_count_t dma_idle;
 #define DMA_IDLE_TICK(tick)         (((tick) & DMA_SYSTICK_MASK) == 0)
 
 
-void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data);
-void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data);
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
+void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
 void dma_idle_handler(int controller);
