@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "driver/gpio.h"
+#include "soc/gpio_periph.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -286,11 +287,76 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
+static const uint32_t GPIO_HOLD_MASK[34] = {
+    0,
+    GPIO_SEL_1,
+    0,
+    GPIO_SEL_0,
+    0,
+    GPIO_SEL_8,
+    GPIO_SEL_2,
+    GPIO_SEL_3,
+    GPIO_SEL_4,
+    GPIO_SEL_5,
+    GPIO_SEL_6,
+    GPIO_SEL_7,
+    0,
+    0,
+    0,
+    0,
+    GPIO_SEL_9,
+    GPIO_SEL_10,
+    GPIO_SEL_11,
+    GPIO_SEL_12,
+    0,
+    GPIO_SEL_14,
+    GPIO_SEL_15,
+    GPIO_SEL_16,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+};
+
+// pin.hold([True|False])
+STATIC mp_obj_t machine_pin_hold(size_t n_args, const mp_obj_t *args) {
+    machine_pin_obj_t *self = args[0];
+    esp_err_t e = ESP_ERR_NOT_SUPPORTED;
+    if (n_args == 1) {
+        // get
+        if (GPIO_IS_VALID_OUTPUT_GPIO(self->id) && GPIO_HOLD_MASK[self->id]) {
+            return (GET_PERI_REG_MASK(RTC_IO_DIG_PAD_HOLD_REG, GPIO_HOLD_MASK[self->id])) ? 
+                    mp_const_true : 
+                    mp_const_false;
+        }
+    } else {
+        // set
+        if (mp_obj_is_true(args[1])) {
+            e = gpio_hold_en(self->id);
+        } else {
+            e = gpio_hold_dis(self->id);
+        }
+    }
+
+    if (e != ESP_OK) {
+        mp_raise_ValueError("pin not supported");
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_hold_obj, 1, 2, machine_pin_hold);
+
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hold), MP_ROM_PTR(&machine_pin_hold_obj) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_INPUT) },
