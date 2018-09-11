@@ -89,7 +89,7 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
     mp_int_t expiry = args[ARG_sleep_ms].u_int;
 
     if (expiry != 0) {
-        esp_sleep_enable_timer_wakeup(expiry * 1000);
+        esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
