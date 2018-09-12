@@ -482,7 +482,10 @@ def cli_progress(addr, offset, size):
     print("\r0x{:08x} {:7d} [{}{}] {:3d}% "
           .format(addr, size, '=' * done, ' ' * (width - done),
                   offset * 100 // size), end="")
-    sys.stdout.flush()
+    try:
+        sys.stdout.flush()
+    except OSError:
+        pass # Windows CLI error on python 3.6
     if offset == size:
         print("")
 
