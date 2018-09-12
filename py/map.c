@@ -118,12 +118,15 @@ void mp_map_clear(mp_map_t *map) {
     map->table = NULL;
 }
 
-STATIC void mp_map_rehash(mp_map_t *map) {
+STATIC int mp_map_rehash(mp_map_t *map) {
     size_t old_alloc = map->alloc;
     size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
     DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, old_alloc, new_alloc);
     mp_map_elem_t *old_table = map->table;
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
+    if (new_table == NULL) {
+        return -1;
+    }
     // If we reach this point, table resizing succeeded, now we can edit the old map.
     map->alloc = new_alloc;
     map->used = 0;
@@ -135,6 +138,7 @@ STATIC void mp_map_rehash(mp_map_t *map) {
         }
     }
     m_del(mp_map_elem_t, old_table, old_alloc);
+    return 0; // success
 }
 
 // MP_MAP_LOOKUP behaviour:
@@ -211,7 +215,10 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 
     if (map->alloc == 0) {
         if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
-            mp_map_rehash(map);
+            if (mp_map_rehash(map)) {
+                // exception
+                return NULL;
+            }
         } else {
             return NULL;
         }
@@ -289,7 +296,10 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     return avail_slot;
                 } else {
                     // not enough room in table, rehash it
-                    mp_map_rehash(map);
+                    if (mp_map_rehash(map)) {
+                        // exception
+                        return NULL;
+                    }
                     // restart the search for the new element
                     start_pos = pos = hash % map->alloc;
                 }

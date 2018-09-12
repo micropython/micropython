@@ -457,6 +457,10 @@ STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map
     #else
     mp_print_strn(&mp_plat_print, end_data, u.len[1], 0, 0, 0);
     #endif
+    if (MP_STATE_THREAD(cur_exc) != NULL) {
+        // some printing function above had an exception
+        return MP_OBJ_NULL;
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);

@@ -47,7 +47,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_filter));
     mp_obj_filter_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t next;
-    while ((next = mp_iternext(self->iter)) != MP_OBJ_STOP_ITERATION) {
+    while ((next = mp_iternext2(self->iter)) != MP_OBJ_NULL) {
         mp_obj_t val;
         if (self->fun != mp_const_none) {
             val = mp_call_function_n_kw(self->fun, 1, 0, &next);
@@ -57,6 +57,9 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
         if (mp_obj_is_true(val)) {
             return next;
         }
+    }
+    if (mp_iternext_had_exc()) {
+        return MP_OBJ_NULL;
     }
     return MP_OBJ_STOP_ITERATION;
 }

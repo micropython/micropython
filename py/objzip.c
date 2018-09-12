@@ -58,6 +58,10 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
 
     for (size_t i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
+        if (next == MP_OBJ_NULL) {
+            // exception
+            return MP_OBJ_NULL;
+        }
         if (next == MP_OBJ_STOP_ITERATION) {
             mp_obj_tuple_del(MP_OBJ_FROM_PTR(tuple));
             return MP_OBJ_STOP_ITERATION;

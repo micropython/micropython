@@ -675,6 +675,9 @@ dispatch_loop:
                     mp_load_method(obj, MP_QSTR___exit__, sp);
                     mp_load_method(obj, MP_QSTR___enter__, sp + 2);
                     mp_obj_t ret = mp_call_method_n_kw(0, 0, sp + 2);
+                    if (ret == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     sp += 1;
                     PUSH_EXC_BLOCK(1);
                     PUSH(ret);
@@ -695,7 +698,9 @@ dispatch_loop:
                         sp[1] = mp_const_none;
                         sp[2] = mp_const_none;
                         sp -= 2;
-                        mp_call_method_n_kw(3, 0, sp);
+                        if (mp_call_method_n_kw(3, 0, sp) == MP_OBJ_NULL) {
+                            RAISE_IT();
+                        }
                         SET_TOP(mp_const_none);
                     } else if (mp_obj_is_small_int(TOP())) {
                         // Getting here there are two distinct cases:
