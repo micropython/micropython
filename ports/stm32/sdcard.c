@@ -266,6 +266,16 @@ void SDMMC2_IRQHandler(void) {
 }
 #endif
 
+STATIC void sdcard_reset_periph(void) {
+    // Fully reset the SDMMC peripheral before calling HAL SD DMA functions.
+    // (There could be an outstanding DTIMEOUT event from a previous call and the
+    // HAL function enables IRQs before fully configuring the SDMMC peripheral.)
+    sd_handle.Instance->DTIMER = 0;
+    sd_handle.Instance->DLEN = 0;
+    sd_handle.Instance->DCTRL = 0;
+    sd_handle.Instance->ICR = SDMMC_STATIC_FLAGS;
+}
+
 STATIC HAL_StatusTypeDef sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t timeout) {
     // Wait for HAL driver to be ready (eg for DMA to finish)
     uint32_t start = HAL_GetTick();
@@ -340,6 +350,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         // from reading the peripheral the CPU then reads the new data
         MP_HAL_CLEANINVALIDATE_DCACHE(dest, num_blocks * SDCARD_BLOCK_SIZE);
 
+        sdcard_reset_periph();
         err = HAL_SD_ReadBlocks_DMA(&sd_handle, dest, block_num, num_blocks);
         if (err == HAL_OK) {
             err = sdcard_wait_finished(&sd_handle, 60000);
@@ -406,6 +417,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         // make sure cache is flushed to RAM so the DMA can read the correct data
         MP_HAL_CLEAN_DCACHE(src, num_blocks * SDCARD_BLOCK_SIZE);
 
+        sdcard_reset_periph();
         err = HAL_SD_WriteBlocks_DMA(&sd_handle, (uint8_t*)src, block_num, num_blocks);
         if (err == HAL_OK) {
             err = sdcard_wait_finished(&sd_handle, 60000);
