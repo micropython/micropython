@@ -288,7 +288,7 @@ void usb_write(const char* buffer, uint32_t len) {
         return;
     }
     uint8_t * output_buffer;
-    uint8_t output_len;
+    uint32_t output_len;
     while (len > 0) {
         while (usb_transmitting) {}
         output_buffer = (uint8_t *) buffer;
