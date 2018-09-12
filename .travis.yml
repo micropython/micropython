@@ -53,8 +53,8 @@ before_script:
     sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system
 
   - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y qemu-system)
-  - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
-  - ([[ $TRAVIS_TEST != "qemu" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
+  - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
+  - ([[ $TRAVIS_TEST != "qemu" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
   # For teensy build
   - sudo apt-get install realpath
