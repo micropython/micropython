@@ -254,7 +254,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     uint64_t start_ticks = ticks_ms;
 
     // Busy-wait until timeout or until we've read enough chars.
-    while (ticks_ms - start_ticks < self->timeout_ms) {
+    while (ticks_ms - start_ticks <= self->timeout_ms) {
         // Read as many chars as we can right now, up to len.
         size_t num_read = io_read(io, data, len);
 
@@ -273,6 +273,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
+       // If we are zero timeout, make sure we don't loop again (in the event
+       // we read in under 1ms)
+       if (self->timeout_ms == 0)
+            break;
     }
 
     if (total_read == 0) {
@@ -345,7 +349,18 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return self->buffer_size;
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_status async_status;
+    usart_async_get_status(usart_desc_p, &async_status);
+    return async_status.rxcnt;
+}
+
+void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    usart_async_flush_rx_buffer(usart_desc_p);
+
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
