@@ -52,6 +52,7 @@
 #endif
 
 #if MICROPY_SSL_MBEDTLS
+#include "mbedtls/md5.h"
 #include "mbedtls/sha1.h"
 #endif
 
@@ -267,6 +268,44 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif // MICROPY_SSL_AXTLS
+
+#if MICROPY_SSL_MBEDTLS
+
+#if MBEDTLS_VERSION_NUMBER < 0x02070000
+#define mbedtls_md5_starts_ret mbedtls_md5_starts
+#define mbedtls_md5_update_ret mbedtls_md5_update
+#define mbedtls_md5_finish_ret mbedtls_md5_finish
+#endif
+
+STATIC mp_obj_t uhashlib_md5_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_md5_context));
+    o->base.type = type;
+    mbedtls_md5_init((mbedtls_md5_context*)o->state);
+    mbedtls_md5_starts_ret((mbedtls_md5_context*)o->state);
+    if (n_args == 1) {
+        uhashlib_md5_update(MP_OBJ_FROM_PTR(o), args[0]);
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_obj_t uhashlib_md5_update(mp_obj_t self_in, mp_obj_t arg) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    mbedtls_md5_update_ret((mbedtls_md5_context*)self->state, bufinfo.buf, bufinfo.len);
+    return mp_const_none;
+}
+
+STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    vstr_t vstr;
+    vstr_init_len(&vstr, 16);
+    mbedtls_md5_finish_ret((mbedtls_md5_context*)self->state, (byte*)vstr.buf);
+    mbedtls_md5_free((mbedtls_md5_context*)self->state);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+#endif // MICROPY_SSL_MBEDTLS
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_md5_update_obj, uhashlib_md5_update);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_md5_digest_obj, uhashlib_md5_digest);
