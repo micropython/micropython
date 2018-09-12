@@ -194,6 +194,10 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
     memset((char*)match->caps, 0, caps_num * sizeof(char*));
     int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, is_anchored);
+    if (res == -1) {
+        // exception
+        return MP_OBJ_NULL;
+    }
     if (res == 0) {
         m_del_var(mp_obj_match_t, char*, caps_num, match);
         return mp_const_none;
@@ -235,6 +239,10 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
         memset((char**)caps, 0, caps_num * sizeof(char*));
         int res = re1_5_recursiveloopprog(&self->re, &subj, caps, caps_num, false);
+        if (res == -1) {
+            // exception
+            return MP_OBJ_NULL;
+        }
 
         // if we didn't have a match, or had an empty match, it's time to stop
         if (!res || caps[0] == caps[1]) {
@@ -290,6 +298,10 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *a
         // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
         memset((char*)match->caps, 0, caps_num * sizeof(char*));
         int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, false);
+        if (res == -1) {
+            // exception
+            return MP_OBJ_NULL;
+        }
 
         // If we didn't have a match, or had an empty match, it's time to stop
         if (!res || match->caps[0] == match->caps[1]) {
