@@ -52,6 +52,7 @@
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_PY_FRAMEBUF            (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
+#define MICROPY_PY_UHASHLIB_MD5        (1)
 #define MICROPY_PY_UCRYPTOLIB          (1)
 
 // TODO these should be generic, not bound to fatfs
