@@ -1,9 +1,12 @@
-// LEDs
-//#define MICROPY_HW_LED_MSC              PIN_PA15 // red
-
+// Board Name / MCU Type
 #define MICROPY_HW_BOARD_NAME "Mini Sam M0"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
+// LED
+#define MICROPY_HW_NEOPIXEL   (&pin_PA27)
+//#define MICROPY_HW_LED_MSC  PIN_PA15 // red
+
+// Do not reset these pins.
 #define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
@@ -13,6 +16,8 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
+
+#define BOARD_HAS_CRYSTAL   1
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
