@@ -31,6 +31,10 @@
 
 #if MICROPY_PY_UHASHLIB
 
+#if MICROPY_SSL_MBEDTLS
+#include "mbedtls/version.h"
+#endif
+
 #if MICROPY_PY_UHASHLIB_SHA256
 
 #if MICROPY_SSL_MBEDTLS
@@ -63,12 +67,18 @@ STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_MBEDTLS
 
+#if MBEDTLS_VERSION_NUMBER < 0x02070000
+#define mbedtls_sha256_starts_ret mbedtls_sha256_starts
+#define mbedtls_sha256_update_ret mbedtls_sha256_update
+#define mbedtls_sha256_finish_ret mbedtls_sha256_finish
+#endif
+
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_sha256_context));
     o->base.type = type;
     mbedtls_sha256_init((mbedtls_sha256_context*)&o->state);
-    mbedtls_sha256_starts((mbedtls_sha256_context*)&o->state, 0);
+    mbedtls_sha256_starts_ret((mbedtls_sha256_context*)&o->state, 0);
     if (n_args == 1) {
         uhashlib_sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
@@ -79,7 +89,7 @@ STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    mbedtls_sha256_update((mbedtls_sha256_context*)&self->state, bufinfo.buf, bufinfo.len);
+    mbedtls_sha256_update_ret((mbedtls_sha256_context*)&self->state, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 
@@ -87,7 +97,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, 32);
-    mbedtls_sha256_finish((mbedtls_sha256_context*)&self->state, (unsigned char *)vstr.buf);
+    mbedtls_sha256_finish_ret((mbedtls_sha256_context*)&self->state, (unsigned char *)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
@@ -172,12 +182,19 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
 #endif
 
 #if MICROPY_SSL_MBEDTLS
+
+#if MBEDTLS_VERSION_NUMBER < 0x02070000
+#define mbedtls_sha1_starts_ret mbedtls_sha1_starts
+#define mbedtls_sha1_update_ret mbedtls_sha1_update
+#define mbedtls_sha1_finish_ret mbedtls_sha1_finish
+#endif
+
 STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_sha1_context));
     o->base.type = type;
     mbedtls_sha1_init((mbedtls_sha1_context*)o->state);
-    mbedtls_sha1_starts((mbedtls_sha1_context*)o->state);
+    mbedtls_sha1_starts_ret((mbedtls_sha1_context*)o->state);
     if (n_args == 1) {
         uhashlib_sha1_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
@@ -188,7 +205,7 @@ STATIC mp_obj_t uhashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    mbedtls_sha1_update((mbedtls_sha1_context*)self->state, bufinfo.buf, bufinfo.len);
+    mbedtls_sha1_update_ret((mbedtls_sha1_context*)self->state, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 
@@ -196,7 +213,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, 20);
-    mbedtls_sha1_finish((mbedtls_sha1_context*)self->state, (byte*)vstr.buf);
+    mbedtls_sha1_finish_ret((mbedtls_sha1_context*)self->state, (byte*)vstr.buf);
     mbedtls_sha1_free((mbedtls_sha1_context*)self->state);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
