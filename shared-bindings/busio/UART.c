@@ -252,6 +252,36 @@ const mp_obj_property_t busio_uart_baudrate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: in_waiting
+//|
+//|     The number of bytes in the input buffer, available to be read
+//|
+STATIC mp_obj_t busio_uart_obj_get_in_waiting(mp_obj_t self_in) {
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_busio_uart_rx_characters_available(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_get_in_waiting_obj, busio_uart_obj_get_in_waiting);
+
+const mp_obj_property_t busio_uart_in_waiting_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&busio_uart_get_in_waiting_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. method:: reset_input_buffer()
+//|
+//|     Discard any unread characters in the input buffer.
+//|
+STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    common_hal_busio_uart_clear_rx_buffer(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_obj_reset_input_buffer);
+
 //| .. class:: busio.UART.Parity
 //|
 //|     Enum-like class to define the parity used to verify correct data transfer.
@@ -306,9 +336,12 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),    MP_ROM_PTR(&mp_stream_write_obj) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset_input_buffer), MP_ROM_PTR(&busio_uart_reset_input_buffer_obj) },
+
     // Properties
     { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&busio_uart_baudrate_obj) },
-    
+    { MP_ROM_QSTR(MP_QSTR_in_waiting), MP_ROM_PTR(&busio_uart_in_waiting_obj) },
+
     // Nested Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_Parity),       MP_ROM_PTR(&busio_uart_parity_type) },
 };

@@ -115,7 +115,7 @@ else
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
   ifdef INTERNAL_FLASH_FILESYSTEM
-    CFLAGS += -finline-limit=55
+    CFLAGS += -finline-limit=50
   endif
   ifdef CFLAGS_INLINE_LIMIT
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)

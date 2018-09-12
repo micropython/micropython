@@ -36,4 +36,6 @@ extern mp_obj_fun_builtin_fixed_t board_spi_obj;
 void board_uart(void);
 extern mp_obj_fun_builtin_fixed_t board_uart_obj;
 
+void reset_board_busses(void);
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
