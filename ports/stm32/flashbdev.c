@@ -265,8 +265,10 @@ bool flash_bdev_writeblock(const uint8_t *src, uint32_t block) {
         // bad block number
         return false;
     }
+    uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
     uint8_t *dest = flash_cache_get_addr_for_write(flash_addr);
     memcpy(dest, src, FLASH_BLOCK_SIZE);
+    restore_irq_pri(basepri);
     return true;
 }
 
