@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-06 14:55-0700\n"
+"POT-Creation-Date: 2018-09-12 16:24-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -123,7 +123,7 @@ msgstr "ungültiges cert"
 msgid "queue overflow"
 msgstr "Warteschlangenüberlauf"
 
-#: extmod/moduzlib.c:97
+#: extmod/moduzlib.c:98
 msgid "compression header"
 msgstr "kompression header"
 
@@ -223,7 +223,7 @@ msgstr ""
 "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
 "laden"
 
-#: main.c:415
+#: main.c:416
 msgid "soft reboot\n"
 msgstr "weicher reboot\n"
 
@@ -402,7 +402,7 @@ msgid "No TX pin"
 msgstr "Kein TX Pin"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
 msgstr "Pull up im Ausgabemodus nicht möglich"
 
@@ -1969,6 +1969,7 @@ msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -2043,6 +2044,10 @@ msgstr ""
 msgid "row data must be a buffer"
 msgstr ""
 
+#: shared-bindings/displayio/ColorConverter.c:72
+msgid "color should be an int"
+msgstr ""
+
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
@@ -2073,17 +2078,17 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:45
+#: shared-bindings/displayio/Sprite.c:48
 msgid "position must be 2-tuple"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:87
+#: shared-bindings/displayio/Sprite.c:97
 #, fuzzy
 msgid "unsupported bitmap type"
 msgstr "Baudrate wird nicht unterstütz"
 
-#: shared-bindings/displayio/Sprite.c:152
-msgid "palette must be displayio.Palette"
+#: shared-bindings/displayio/Sprite.c:162
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
@@ -2310,6 +2315,25 @@ msgstr ""
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
+msgstr ""
+
+#: shared-module/displayio/Group.c:48
+msgid "Group empty"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:49
+#, fuzzy
+msgid "Invalid BMP file"
+msgstr "Ungültiger Pin"
+
+#: shared-module/displayio/OnDiskBitmap.c:59
+#, c-format
+msgid "Only Windows format, uncompressed BMP supported %d"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:64
+#, c-format
+msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr ""
 
 #: shared-module/struct/__init__.c:39

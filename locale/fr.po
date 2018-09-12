@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-06 14:55-0700\n"
+"POT-Creation-Date: 2018-09-12 16:24-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -122,7 +122,7 @@ msgstr "certificat invalide"
 msgid "queue overflow"
 msgstr "dépassement de file"
 
-#: extmod/moduzlib.c:97
+#: extmod/moduzlib.c:98
 msgid "compression header"
 msgstr "entête de compression"
 
@@ -221,7 +221,7 @@ msgstr ""
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
-#: main.c:415
+#: main.c:416
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
@@ -400,7 +400,7 @@ msgid "No TX pin"
 msgstr "Pas de broche TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
 msgstr "Ne peux être tirer ('pull') en mode 'output'"
 
@@ -1989,6 +1989,7 @@ msgid "buffer must be a bytes-like object"
 msgstr "le tampon doit être un objet bytes-like"
 
 #: shared-bindings/audioio/WaveFile.c:78
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode byte"
 
@@ -2068,6 +2069,11 @@ msgstr ""
 msgid "row data must be a buffer"
 msgstr "les constantes doivent être des entiers"
 
+#: shared-bindings/displayio/ColorConverter.c:72
+#, fuzzy
+msgid "color should be an int"
+msgstr "La longueur doit être entière"
+
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
@@ -2105,20 +2111,19 @@ msgstr "le tampon doit être un objet bytes-like"
 msgid "palette_index should be an int"
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'"
 
-#: shared-bindings/displayio/Sprite.c:45
+#: shared-bindings/displayio/Sprite.c:48
 #, fuzzy
 msgid "position must be 2-tuple"
 msgstr "stop doit être 1 ou 2"
 
-#: shared-bindings/displayio/Sprite.c:87
+#: shared-bindings/displayio/Sprite.c:97
 #, fuzzy
 msgid "unsupported bitmap type"
 msgstr "Débit non supporté"
 
-#: shared-bindings/displayio/Sprite.c:152
-#, fuzzy
-msgid "palette must be displayio.Palette"
-msgstr "la palette doit être longue de 32 octets"
+#: shared-bindings/displayio/Sprite.c:162
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
@@ -2353,6 +2358,26 @@ msgstr ""
 msgid "Group full"
 msgstr ""
 
+#: shared-module/displayio/Group.c:48
+#, fuzzy
+msgid "Group empty"
+msgstr "vide"
+
+#: shared-module/displayio/OnDiskBitmap.c:49
+#, fuzzy
+msgid "Invalid BMP file"
+msgstr "Fichier invalide"
+
+#: shared-module/displayio/OnDiskBitmap.c:59
+#, c-format
+msgid "Only Windows format, uncompressed BMP supported %d"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:64
+#, c-format
+msgid "Only true color (24 bpp or higher) BMP supported %x"
+msgstr ""
+
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
 msgstr "'S' et 'O' ne sont pas des types de format supportés"
@@ -2364,3 +2389,7 @@ msgstr "trop d'arguments fournis avec ce format"
 #, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "'len' doit être un multiple de 4"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être longue de 32 octets"
