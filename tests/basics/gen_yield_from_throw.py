@@ -25,6 +25,20 @@ def gen3():
 g3 = gen3()
 print(next(g3))
 try:
-    g3.throw(StopIteration)
+    g3.throw(KeyError)
+except KeyError:
+    print('got KeyError from downstream!')
+
+# case where a thrown exception is caught and stops the generator
+def gen4():
+    try:
+        yield 1
+        yield 2
+    except:
+        pass
+g4 = gen4()
+print(next(g4))
+try:
+    g4.throw(ValueError)
 except StopIteration:
-    print('got StopIteration from downstream!')
+    print('got StopIteration')
