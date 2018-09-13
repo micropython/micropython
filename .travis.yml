@@ -62,7 +62,7 @@ before_script:
   # For coverage testing (upgrade is used to get latest urllib3 version)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y python3-pip)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
-  - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
+  - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install 'Sphinx<1.8.0' sphinx-rtd-theme recommonmark)
   - ([[ $TRAVIS_TEST != "translations" ]] || sudo pip3 install polib)
   - gcc --version
   - ([[ -z "$TRAVIS_BOARD" || $TRAVIS_BOARD = "feather_huzzah" ]] || arm-none-eabi-gcc --version)

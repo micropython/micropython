@@ -40,13 +40,26 @@ void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer) 
     }
     self->children[self->size] = layer;
     self->size++;
+    self->needs_refresh = true;
+}
+
+mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self) {
+    if (self->size == 0) {
+        mp_raise_IndexError(translate("Group empty"));
+    }
+    self->size--;
+    mp_obj_t item = self->children[self->size];
+    self->children[self->size] = NULL;
+    self->needs_refresh = true;
+    return item;
 }
 
 void displayio_group_construct(displayio_group_t* self, mp_obj_t* child_array, uint32_t max_size) {
     self->x = 0;
-    self->y = 1;
+    self->y = 0;
     self->children = child_array;
     self->max_size = max_size;
+    self->needs_refresh = false;
 }
 
 bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, uint16_t* pixel) {
@@ -65,6 +78,9 @@ bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, ui
 }
 
 bool displayio_group_needs_refresh(displayio_group_t *self) {
+    if (self->needs_refresh) {
+        return true;
+    }
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i];
         if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
@@ -78,6 +94,7 @@ bool displayio_group_needs_refresh(displayio_group_t *self) {
 }
 
 void displayio_group_finish_refresh(displayio_group_t *self) {
+    self->needs_refresh = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i];
         if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {

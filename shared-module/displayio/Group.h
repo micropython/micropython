@@ -39,6 +39,7 @@ typedef struct {
     uint16_t size;
     uint16_t max_size;
     mp_obj_t* children;
+    bool needs_refresh;
 } displayio_group_t;
 
 
