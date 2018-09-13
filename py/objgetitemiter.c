@@ -44,6 +44,7 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
         mp_obj_type_t *t = (mp_obj_type_t*)MP_STATE_THREAD(cur_exc)->type;
         if (t == &mp_type_StopIteration || t == &mp_type_IndexError) {
             // return MP_OBJ_STOP_ITERATION instead of raising
+            MP_STATE_THREAD(cur_exc) = NULL;
             return MP_OBJ_STOP_ITERATION;
         } else {
             // re-raise exception

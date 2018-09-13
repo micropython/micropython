@@ -518,7 +518,7 @@ STATIC mp_obj_list_t *list_new(size_t n) {
 
 mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items) {
     mp_obj_list_t *o = list_new(n);
-    if (items != NULL) {
+    if (o != NULL && items != NULL) {
         for (size_t i = 0; i < n; i++) {
             o->items[i] = items[i];
         }

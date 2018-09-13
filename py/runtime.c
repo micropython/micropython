@@ -1299,14 +1299,14 @@ mp_obj_t mp_iternext2(mp_obj_t o) {
     }
     o = mp_iternext(o);
     if (o == MP_OBJ_STOP_ITERATION) {
-        MP_STATE_THREAD(cur_exc) = MP_OBJ_STOP_ITERATION;
+        MP_STATE_THREAD(cur_exc) = (void*)1;
         return MP_OBJ_NULL;
     }
     return o;
 }
 
 bool mp_iternext_had_exc(void) {
-    if (MP_STATE_THREAD(cur_exc) == MP_OBJ_STOP_ITERATION) {
+    if (MP_STATE_THREAD(cur_exc) == (void*)1) {
         MP_STATE_THREAD(cur_exc) = NULL;
         return false;
     }

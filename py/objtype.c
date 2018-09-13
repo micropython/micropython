@@ -1063,7 +1063,8 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                     if (check_for_special_accessors(MP_OBJ_NEW_QSTR(attr), dest[1])) {
                         if (self->flags & TYPE_FLAG_IS_SUBCLASSED) {
                             // This class is already subclassed so can't have special accessors added
-                            mp_raise_msg(&mp_type_AttributeError, "can't add special method to already-subclassed class");
+                            mp_raise_msg_o(&mp_type_AttributeError, "can't add special method to already-subclassed class");
+                            return;
                         }
                         self->flags |= TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
                     }

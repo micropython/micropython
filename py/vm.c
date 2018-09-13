@@ -908,6 +908,9 @@ unwind_jump:;
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_list(unum, sp));
+                    if (TOP() == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     DISPATCH();
                 }
 

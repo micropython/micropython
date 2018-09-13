@@ -342,7 +342,8 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                             // 3MB of text; even gzip-compressed and with minimal structure, it'll take
                             // roughly half a meg of storage. This form of Unicode escape may be added
                             // later on, but it's definitely not a priority right now. -- CJA 20140607
-                            mp_raise_NotImplementedError("unicode name escapes");
+                            mp_raise_NotImplementedError_o("unicode name escapes");
+                            // TODO can we just safely break and expect caller to handle exception?
                             break;
                         default:
                             if (c >= '0' && c <= '7') {

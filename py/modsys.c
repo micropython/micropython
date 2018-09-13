@@ -124,7 +124,9 @@ STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     void *stream_obj = &mp_sys_stdout_obj;
     if (n_args > 1) {
-        mp_get_stream_raise(args[1], MP_STREAM_OP_WRITE);
+        if (mp_get_stream_raise(args[1], MP_STREAM_OP_WRITE) == NULL) {
+            return MP_OBJ_NULL;
+        }
         stream_obj = MP_OBJ_TO_PTR(args[1]);
     }
 

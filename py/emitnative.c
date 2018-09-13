@@ -2626,7 +2626,9 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
                 break;
             default:
                 // this can happen when casting a cast: int(int)
-                mp_raise_NotImplementedError("casting");
+                adjust_stack(emit, -1);
+                *emit->error_slot = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "casting");
+                break;
         }
     } else {
         assert(vtype_fun == VTYPE_PYOBJ);
@@ -2729,7 +2731,8 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
     // Note: 1 (yield) or 3 (yield from) labels are reserved for this function, starting at *emit->label_slot
 
     if (emit->do_viper_types) {
-        mp_raise_NotImplementedError("native yield");
+        *emit->error_slot = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "native yield");
+        return;
     }
     emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
 
