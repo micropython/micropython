@@ -56,9 +56,10 @@ mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self) {
 
 void displayio_group_construct(displayio_group_t* self, mp_obj_t* child_array, uint32_t max_size) {
     self->x = 0;
-    self->y = 1;
+    self->y = 0;
     self->children = child_array;
     self->max_size = max_size;
+    self->needs_refresh = false;
 }
 
 bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, uint16_t* pixel) {
