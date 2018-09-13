@@ -175,14 +175,20 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
 
 // DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
 // SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
+// EXACT_POWER_OF_10 is the largest value of x so that 10^x can be stored exactly in a float
+//   Note: EXACT_POWER_OF_10 is at least floor(log_5(2^mantissa_length)). Indeed, 10^n = 2^n * 5^n
+//   so we only have to store the 5^n part in the mantissa (the 2^n part will go into the float's
+//   exponent).
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define DEC_VAL_MAX 1e20F
 #define SMALL_NORMAL_VAL (1e-37F)
 #define SMALL_NORMAL_EXP (-37)
+#define EXACT_POWER_OF_10 (9)
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define DEC_VAL_MAX 1e200
 #define SMALL_NORMAL_VAL (1e-307)
 #define SMALL_NORMAL_EXP (-307)
+#define EXACT_POWER_OF_10 (22)
 #endif
 
     const char *top = str + len;
@@ -295,7 +301,17 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
             exp_val -= SMALL_NORMAL_EXP;
             dec_val *= SMALL_NORMAL_VAL;
         }
-        dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
+
+        // At this point, we need to multiply the mantissa by its base 10 exponent. If possible,
+        // we would rather manipulate numbers that have an exact representation in IEEE754. It
+        // turns out small positive powers of 10 do, whereas small negative powers of 10 don't.
+        // So in that case, we'll yield a division of exact values rather than a multiplication
+        // of slightly erroneous values.
+        if (exp_val < 0 && exp_val >= -EXACT_POWER_OF_10) {
+            dec_val /= MICROPY_FLOAT_C_FUN(pow)(10, -exp_val);
+        } else {
+            dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
+        }
     }
 
     // negate value if needed
