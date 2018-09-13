@@ -376,7 +376,6 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
         skip_tests.add('stress/gc_trace.py') # requires yield
         skip_tests.add('stress/recursive_gen.py') # requires yield
-        skip_tests.add('extmod/vfs_userfs.py') # because native doesn't properly handle globals across different modules
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')

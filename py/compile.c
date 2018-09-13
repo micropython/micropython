@@ -567,6 +567,11 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
     }
     this_scope->num_def_pos_args = n_pos_defaults;
 
+    #if MICROPY_EMIT_NATIVE
+    // When creating a function/closure it will take a reference to the current globals
+    comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_REFGLOBALS;
+    #endif
+
     // make closed over variables, if any
     // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
     int nfree = 0;
@@ -3304,6 +3309,12 @@ STATIC void scope_compute_things(scope_t *scope) {
         if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         }
+        #if MICROPY_EMIT_NATIVE
+        if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
+            // This function makes a reference to a global variable
+            scope->scope_flags |= MP_SCOPE_FLAG_REFGLOBALS;
+        }
+        #endif
         // params always count for 1 local, even if they are a cell
         if (id->kind == ID_INFO_KIND_LOCAL || (id->flags & ID_FLAG_IS_PARAM)) {
             id->local_num = scope->num_locals++;

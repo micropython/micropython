@@ -75,7 +75,8 @@
 #define NLR_BUF_IDX_RET_VAL (1)
 
 // Whether the native/viper function needs to be wrapped in an exception handler
-#define NEED_GLOBAL_EXC_HANDLER(emit) ((emit)->scope->exc_stack_size > 0)
+#define NEED_GLOBAL_EXC_HANDLER(emit) ((emit)->scope->exc_stack_size > 0 \
+    || (!(emit)->do_viper_types && ((emit)->scope->scope_flags & MP_SCOPE_FLAG_REFGLOBALS)))
 
 // Whether registers can be used to store locals (only true if there are no
 // exception handlers, because otherwise an nlr_jump will restore registers to
@@ -928,30 +929,56 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
         mp_uint_t start_label = *emit->label_slot + 2;
         mp_uint_t global_except_label = *emit->label_slot + 3;
 
-        // Clear the unwind state
-        ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_TEMP0);
+        if (!emit->do_viper_types) {
+            // Set new globals
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t));
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, offsetof(mp_obj_fun_bc_t, globals) / sizeof(uintptr_t));
+            emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
 
-        // Put PC of start code block into REG_LOCAL_1
-        ASM_MOV_REG_PCREL(emit->as, REG_LOCAL_1, start_label);
+            // Save old globals (or NULL if globals didn't change)
+            ASM_MOV_LOCAL_REG(emit->as, offsetof(mp_code_state_t, old_globals) / sizeof(uintptr_t), REG_RET);
+        }
 
-        // Wrap everything in an nlr context
-        emit_native_label_assign(emit, nlr_label);
-        ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_2, LOCAL_IDX_EXC_HANDLER_UNWIND(emit));
-        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(uintptr_t));
-        emit_call(emit, MP_F_NLR_PUSH);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_LOCAL_2);
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
+        if (emit->scope->exc_stack_size == 0) {
+            // Optimisation: if globals didn't change don't push the nlr context
+            ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, false);
 
-        // Clear PC of current code block, and jump there to resume execution
-        ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_TEMP0);
-        ASM_JUMP_REG(emit->as, REG_LOCAL_1);
+            // Wrap everything in an nlr context
+            emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(uintptr_t));
+            emit_call(emit, MP_F_NLR_PUSH);
+            ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, true);
+        } else {
+            // Clear the unwind state
+            ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_TEMP0);
 
-        // Global exception handler: check for valid exception handler
-        emit_native_label_assign(emit, global_except_label);
-        ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_1, LOCAL_IDX_EXC_HANDLER_PC(emit));
-        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_LOCAL_1, nlr_label, false);
+            // Put PC of start code block into REG_LOCAL_1
+            ASM_MOV_REG_PCREL(emit->as, REG_LOCAL_1, start_label);
+
+            // Wrap everything in an nlr context
+            emit_native_label_assign(emit, nlr_label);
+            ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_2, LOCAL_IDX_EXC_HANDLER_UNWIND(emit));
+            emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(uintptr_t));
+            emit_call(emit, MP_F_NLR_PUSH);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_LOCAL_2);
+            ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
+
+            // Clear PC of current code block, and jump there to resume execution
+            ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_TEMP0);
+            ASM_JUMP_REG(emit->as, REG_LOCAL_1);
+
+            // Global exception handler: check for valid exception handler
+            emit_native_label_assign(emit, global_except_label);
+            ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_1, LOCAL_IDX_EXC_HANDLER_PC(emit));
+            ASM_JUMP_IF_REG_NONZERO(emit->as, REG_LOCAL_1, nlr_label, false);
+        }
+
+        if (!emit->do_viper_types) {
+            // Restore old globals
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, offsetof(mp_code_state_t, old_globals) / sizeof(uintptr_t));
+            emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
+        }
 
         // Re-raise exception out to caller
         ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
@@ -967,9 +994,27 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
     emit_native_label_assign(emit, emit->exit_label);
 
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
+        if (!emit->do_viper_types) {
+            // Get old globals
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, offsetof(mp_code_state_t, old_globals) / sizeof(uintptr_t));
+
+            if (emit->scope->exc_stack_size == 0) {
+                // Optimisation: if globals didn't change then don't restore them and don't do nlr_pop
+                ASM_JUMP_IF_REG_ZERO(emit->as, REG_ARG_1, emit->exit_label + 1, false);
+            }
+
+            // Restore old globals
+            emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
+        }
+
         // Pop the nlr context
         emit_call(emit, MP_F_NLR_POP);
         adjust_stack(emit, -(mp_int_t)(sizeof(nlr_buf_t) / sizeof(uintptr_t)));
+
+        if (emit->scope->exc_stack_size == 0) {
+            // Destination label for above optimisation
+            emit_native_label_assign(emit, emit->exit_label + 1);
+        }
 
         // Load return value
         ASM_MOV_REG_LOCAL(emit->as, REG_RET, LOCAL_IDX_RET_VAL(emit));
