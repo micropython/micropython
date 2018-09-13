@@ -83,6 +83,20 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #if MICROPY_EMIT_NATIVE
 
+mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
+    if (new_globals == NULL) {
+        // Globals were the originally the same so don't restore them
+        return NULL;
+    }
+    mp_obj_dict_t *old_globals = mp_globals_get();
+    if (old_globals == new_globals) {
+        // Don't set globals if they are the same, and return NULL to indicate this
+        return NULL;
+    }
+    mp_globals_set(new_globals);
+    return old_globals;
+}
+
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)
 mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
@@ -127,6 +141,7 @@ STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_convert_obj_to_native,
     mp_convert_native_to_obj,
+    mp_native_swap_globals,
     mp_load_name,
     mp_load_global,
     mp_load_build_class,

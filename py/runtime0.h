@@ -31,6 +31,7 @@
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
 #define MP_SCOPE_FLAG_GENERATOR    (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
+#define MP_SCOPE_FLAG_REFGLOBALS   (0x10) // used only if native emitter enabled
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)
@@ -145,6 +146,7 @@ typedef enum {
 typedef enum {
     MP_F_CONVERT_OBJ_TO_NATIVE = 0,
     MP_F_CONVERT_NATIVE_TO_OBJ,
+    MP_F_NATIVE_SWAP_GLOBALS,
     MP_F_LOAD_NAME,
     MP_F_LOAD_GLOBAL,
     MP_F_LOAD_BUILD_CLASS,
