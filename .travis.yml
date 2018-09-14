@@ -33,6 +33,7 @@ env:
   - TRAVIS_BOARD=hallowing_m0_express
   - TRAVIS_BOARD=feather_nrf52832
   - TRAVIS_BOARD=feather_nrf52840_express
+  - TRAVIS_BOARD=trellis_m4_express
 
 addons:
   artifacts:

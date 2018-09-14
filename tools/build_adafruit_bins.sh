@@ -27,6 +27,7 @@ metro_m0_express \
 metro_m4_express \
 pirkey_m0 \
 trinket_m0 \
+trellis_m4_express \
 "
 ROSIE_SETUPS="rosie-ci"
 
