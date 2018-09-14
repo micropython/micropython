@@ -192,7 +192,7 @@ STATIC void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int dis
         return;
     }
 
-    if (disp_offset == 0 && disp_r64 != ASM_X64_REG_RBP) {
+    if (disp_offset == 0 && disp_r64 != ASM_X64_REG_RBP && disp_r64 != ASM_X64_REG_R13) {
         asm_x64_write_byte_1(as, MODRM_R64(r64) | MODRM_RM_DISP0 | MODRM_RM_R64(disp_r64));
     } else if (SIGNED_FIT8(disp_offset)) {
         asm_x64_write_byte_2(as, MODRM_R64(r64) | MODRM_RM_DISP8 | MODRM_RM_R64(disp_r64), IMM32_L0(disp_offset));
