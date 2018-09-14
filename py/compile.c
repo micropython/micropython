@@ -2938,7 +2938,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->scope_cur = scope;
     comp->next_label = 0;
     EMIT_ARG(start_pass, pass, scope);
-    reserve_labels_for_native(comp, 4); // used by native's start_pass
+    reserve_labels_for_native(comp, 6); // used by native's start_pass
 
     if (comp->pass == MP_PASS_SCOPE) {
         // reset maximum stack sizes in scope
