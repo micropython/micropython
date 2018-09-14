@@ -10,8 +10,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_A1),  MP_ROM_PTR(&pin_PA05) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A2),  MP_ROM_PTR(&pin_PA04) }, // INT pin
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA12) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA13) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PB08) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PB09) },
 
     // Key Grid columns
     { MP_OBJ_NEW_QSTR(MP_QSTR_COL0),  MP_ROM_PTR(&pin_PA14) },
@@ -31,11 +31,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // IRQ/GPIO pin
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT), MP_ROM_PTR(&pin_PA04) },
 
-    // Built in LED
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_PA27) },
-
     // NeoPixels
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PA07) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PA27) },
 
     { MP_ROM_QSTR(MP_QSTR_APA102_MOSI), MP_ROM_PTR(&pin_PA01) },
     { MP_ROM_QSTR(MP_QSTR_APA102_SCK), MP_ROM_PTR(&pin_PA00) },

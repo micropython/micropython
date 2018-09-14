@@ -32,8 +32,8 @@
 
 #include "external_flash/external_flash.h"
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PA13)
-#define DEFAULT_I2C_BUS_SDA (&pin_PA12)
+#define DEFAULT_I2C_BUS_SCL (&pin_PB08)
+#define DEFAULT_I2C_BUS_SDA (&pin_PB09)
 
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
