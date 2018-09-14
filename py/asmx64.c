@@ -467,9 +467,8 @@ void asm_x64_cmp_i32_with_r32(asm_x64_t *as, int src_i32, int src_r32) {
 */
 
 void asm_x64_test_r8_with_r8(asm_x64_t *as, int src_r64_a, int src_r64_b) {
-    // TODO implement for other registers
-    assert(src_r64_a == ASM_X64_REG_RAX);
-    assert(src_r64_b == ASM_X64_REG_RAX);
+    assert(src_r64_a < 8);
+    assert(src_r64_b < 8);
     asm_x64_write_byte_2(as, OPCODE_TEST_R8_WITH_RM8, MODRM_R64(src_r64_a) | MODRM_RM_REG | MODRM_RM_R64(src_r64_b));
 }
 

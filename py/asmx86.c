@@ -330,9 +330,6 @@ void asm_x86_cmp_i32_with_r32(asm_x86_t *as, int src_i32, int src_r32) {
 #endif
 
 void asm_x86_test_r8_with_r8(asm_x86_t *as, int src_r32_a, int src_r32_b) {
-    // TODO implement for other registers
-    assert(src_r32_a == ASM_X86_REG_EAX);
-    assert(src_r32_b == ASM_X86_REG_EAX);
     asm_x86_write_byte_2(as, OPCODE_TEST_R8_WITH_RM8, MODRM_R32(src_r32_a) | MODRM_RM_REG | MODRM_RM_R32(src_r32_b));
 }
 
