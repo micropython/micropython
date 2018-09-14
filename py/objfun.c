@@ -110,9 +110,9 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
     // check number of arguments
-    mp_arg_check_num(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
+    mp_arg_check_num_sig(n_args, n_kw, self->sig);
 
-    if (self->is_kw) {
+    if (self->sig & 1) {
         // function allows keywords
 
         // we create a map directly from the given args array
