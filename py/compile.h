@@ -30,15 +30,6 @@
 #include "py/parse.h"
 #include "py/emitglue.h"
 
-// These must fit in 8 bits; see scope.h
-enum {
-    MP_EMIT_OPT_NONE,
-    MP_EMIT_OPT_BYTECODE,
-    MP_EMIT_OPT_NATIVE_PYTHON,
-    MP_EMIT_OPT_VIPER,
-    MP_EMIT_OPT_ASM,
-};
-
 // the compiler will raise an exception if an error occurred
 // the compiler will clear the parse tree before it returns
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl);
