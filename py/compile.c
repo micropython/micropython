@@ -3456,7 +3456,6 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
                     }
                     comp->emit_method_table = &NATIVE_EMITTER(method_table);
                     comp->emit = emit_native;
-                    EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ENABLE, s->emit_options == MP_EMIT_OPT_VIPER, 0);
                     break;
 #endif // MICROPY_EMIT_NATIVE
 

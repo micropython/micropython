@@ -224,12 +224,7 @@ void EXPORT_FUN(free)(emit_t *emit) {
 }
 
 STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
-    switch (op) {
-        case MP_EMIT_NATIVE_TYPE_ENABLE:
-            emit->do_viper_types = arg1;
-            break;
-
-        default: {
+    {
             vtype_kind_t type;
             switch (arg2) {
                 case MP_QSTR_object: type = VTYPE_PYOBJ; break;
@@ -248,8 +243,6 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
                 assert(arg1 < emit->local_vtype_alloc);
                 emit->local_vtype[arg1] = type;
             }
-            break;
-        }
     }
 }
 
@@ -262,6 +255,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
 
     emit->pass = pass;
+    emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
     emit->stack_start = 0;
     emit->stack_size = 0;
     emit->last_emit_was_return_value = false;
