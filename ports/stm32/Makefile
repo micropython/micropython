@@ -521,7 +521,8 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(file > lnkcmd.log,$^ $(LIBS))
+	$(Q)$(LD) $(LDFLAGS) -o $@ @lnkcmd.log
 	$(Q)$(SIZE) $@
 
 PLLVALUES = boards/pllvalues.py
