@@ -51,7 +51,6 @@ typedef enum {
 
 #define MP_EMIT_BREAK_FROM_FOR (0x8000)
 
-#define MP_EMIT_NATIVE_TYPE_ENABLE (0)
 #define MP_EMIT_NATIVE_TYPE_RETURN (1)
 #define MP_EMIT_NATIVE_TYPE_ARG    (2)
 
