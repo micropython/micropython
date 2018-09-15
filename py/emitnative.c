@@ -66,7 +66,8 @@
 //                          locals (reversed, L0 at end)    |
 //
 // C stack layout for viper functions:
-//  0 = emit->stack_start:  nlr_buf_t [optional]            |
+//  0                       fun_obj, old_globals [optional]
+//  emit->stack_start:      nlr_buf_t [optional]            |
 //                          Python object stack             | emit->n_state
 //                          locals (reversed, L0 at end)    |
 //                          (L0-L2 may be in regs instead)
@@ -76,7 +77,7 @@
 
 // Whether the native/viper function needs to be wrapped in an exception handler
 #define NEED_GLOBAL_EXC_HANDLER(emit) ((emit)->scope->exc_stack_size > 0 \
-    || (!(emit)->do_viper_types && ((emit)->scope->scope_flags & MP_SCOPE_FLAG_REFGLOBALS)))
+    || ((emit)->scope->scope_flags & MP_SCOPE_FLAG_REFGLOBALS))
 
 // Whether registers can be used to store locals (only true if there are no
 // exception handlers, because otherwise an nlr_jump will restore registers to
@@ -312,8 +313,13 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             }
         }
 
-        // The locals and stack start at the beginning of the C stack
-        emit->stack_start = 0;
+        // Work out where the locals and Python stack start within the C stack
+        if (NEED_GLOBAL_EXC_HANDLER(emit)) {
+            // Reserve 2 words for function object and old globals
+            emit->stack_start = 2;
+        } else {
+            emit->stack_start = 0;
+        }
 
         // Entry to function
         ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs);
@@ -324,6 +330,14 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         #elif N_ARM
         asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
         #endif
+
+        // Store function object (passed as first arg) to stack if needed
+        if (NEED_GLOBAL_EXC_HANDLER(emit)) {
+            #if N_X86
+            asm_x86_mov_arg_to_r32(emit->as, 0, REG_ARG_1);
+            #endif
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_ARG_1);
+        }
 
         // Put n_args in REG_ARG_1, n_kw in REG_ARG_2, args array in REG_LOCAL_3
         #if N_X86
@@ -931,15 +945,13 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
         mp_uint_t start_label = *emit->label_slot + 2;
         mp_uint_t global_except_label = *emit->label_slot + 3;
 
-        if (!emit->do_viper_types) {
-            // Set new globals
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_FUN_OBJ(emit));
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, offsetof(mp_obj_fun_bc_t, globals) / sizeof(uintptr_t));
-            emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
+        // Set new globals
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_FUN_OBJ(emit));
+        ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, offsetof(mp_obj_fun_bc_t, globals) / sizeof(uintptr_t));
+        emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
 
-            // Save old globals (or NULL if globals didn't change)
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_OLD_GLOBALS(emit), REG_RET);
-        }
+        // Save old globals (or NULL if globals didn't change)
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_OLD_GLOBALS(emit), REG_RET);
 
         if (emit->scope->exc_stack_size == 0) {
             // Optimisation: if globals didn't change don't push the nlr context
@@ -976,11 +988,9 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_LOCAL_1, nlr_label, false);
         }
 
-        if (!emit->do_viper_types) {
-            // Restore old globals
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
-            emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
-        }
+        // Restore old globals
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
+        emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
 
         // Re-raise exception out to caller
         ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
@@ -996,18 +1006,16 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
     emit_native_label_assign(emit, emit->exit_label);
 
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
-        if (!emit->do_viper_types) {
-            // Get old globals
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
+        // Get old globals
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
 
-            if (emit->scope->exc_stack_size == 0) {
-                // Optimisation: if globals didn't change then don't restore them and don't do nlr_pop
-                ASM_JUMP_IF_REG_ZERO(emit->as, REG_ARG_1, emit->exit_label + 1, false);
-            }
-
-            // Restore old globals
-            emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
+        if (emit->scope->exc_stack_size == 0) {
+            // Optimisation: if globals didn't change then don't restore them and don't do nlr_pop
+            ASM_JUMP_IF_REG_ZERO(emit->as, REG_ARG_1, emit->exit_label + 1, false);
         }
+
+        // Restore old globals
+        emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
 
         // Pop the nlr context
         emit_call(emit, MP_F_NLR_POP);
