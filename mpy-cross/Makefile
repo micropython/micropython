@@ -68,6 +68,7 @@ SRC_C = \
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 	SRC_C += ports/windows/fmode.c
+	PROG := $(PROG).exe
 endif
 
 OBJ = $(PY_CORE_O)
