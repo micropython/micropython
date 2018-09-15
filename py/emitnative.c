@@ -235,21 +235,6 @@ void EXPORT_FUN(free)(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
-STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
-    (void)op;
-    {
-            int type = mp_native_type_from_qstr(arg2);
-            if (type < 0) {
-                EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "unknown type '%q'", arg2);
-                return;
-            }
-            {
-                assert(arg1 < emit->local_vtype_alloc);
-                emit->local_vtype[arg1] = type;
-            }
-    }
-}
-
 STATIC void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest);
 STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg);
 STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
@@ -281,6 +266,17 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     }
     for (mp_uint_t i = 0; i < num_args; i++) {
         emit->local_vtype[i] = VTYPE_PYOBJ;
+    }
+
+    // Set viper type for arguments
+    if (emit->do_viper_types) {
+        for (int i = 0; i < emit->scope->id_info_len; ++i) {
+            id_info_t *id = &emit->scope->id_info[i];
+            if (id->flags & ID_FLAG_IS_PARAM) {
+                assert(id->local_num < emit->local_vtype_alloc);
+                emit->local_vtype[id->local_num] = id->flags >> ID_FLAG_VIPER_TYPE_POS;
+            }
+        }
     }
 
     // local variables begin unbound, and have unknown type
@@ -2483,7 +2479,6 @@ STATIC void emit_native_end_except_handler(emit_t *emit) {
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
-    emit_native_set_native_type,
     emit_native_start_pass,
     emit_native_end_pass,
     emit_native_last_emit_was_return_value,

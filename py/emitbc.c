@@ -910,7 +910,6 @@ void mp_emit_bc_end_except_handler(emit_t *emit) {
 
 #if MICROPY_EMIT_NATIVE
 const emit_method_table_t emit_bc_method_table = {
-    NULL, // set_native_type is never called when emitting bytecode
     mp_emit_bc_start_pass,
     mp_emit_bc_end_pass,
     mp_emit_bc_last_emit_was_return_value,
