@@ -2996,7 +2996,12 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
                 // nodes[2] can be null or a test-expr
                 if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
                     qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
-                    EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_RETURN, 0, ret_type);
+                    int native_type = mp_native_type_from_qstr(ret_type);
+                    if (native_type < 0) {
+                        comp->compile_error = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, "unknown type '%q'", ret_type);
+                    } else {
+                        scope->scope_flags |= native_type << MP_SCOPE_FLAG_VIPERRET_POS;
+                    }
                 } else {
                     compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
                 }
