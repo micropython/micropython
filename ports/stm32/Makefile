@@ -519,11 +519,23 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "GEN $@"
 	$(Q)$(OBJCOPY) -O ihex $< $@
 
+# Work-around command line limitations on Windows host
+ifeq ($(OS),Windows_NT)
+
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(file > $(BUILD)/lnkcmd.log,$^ $(LIBS))
 	$(Q)$(LD) $(LDFLAGS) -o $@ @$(BUILD)/lnkcmd.log
 	$(Q)$(SIZE) $@
+
+else
+
+$(BUILD)/firmware.elf: $(OBJ)
+	$(ECHO) "LINK $@"
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(SIZE) $@
+
+endif
 
 PLLVALUES = boards/pllvalues.py
 MAKE_PINS = boards/make-pins.py
