@@ -128,6 +128,20 @@ typedef enum {
     VTYPE_BUILTIN_CAST = 0x70 | MP_NATIVE_TYPE_OBJ,
 } vtype_kind_t;
 
+int mp_native_type_from_qstr(qstr qst) {
+    switch (qst) {
+        case MP_QSTR_object: return MP_NATIVE_TYPE_OBJ;
+        case MP_QSTR_bool: return MP_NATIVE_TYPE_BOOL;
+        case MP_QSTR_int: return MP_NATIVE_TYPE_INT;
+        case MP_QSTR_uint: return MP_NATIVE_TYPE_UINT;
+        case MP_QSTR_ptr: return MP_NATIVE_TYPE_PTR;
+        case MP_QSTR_ptr8: return MP_NATIVE_TYPE_PTR8;
+        case MP_QSTR_ptr16: return MP_NATIVE_TYPE_PTR16;
+        case MP_QSTR_ptr32: return MP_NATIVE_TYPE_PTR32;
+        default: return -1;
+    }
+}
+
 STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
     switch (vtype) {
         case VTYPE_PYOBJ: return MP_QSTR_object;
@@ -168,8 +182,6 @@ struct _emit_t {
     int pass;
 
     bool do_viper_types;
-
-    vtype_kind_t return_vtype;
 
     mp_uint_t local_vtype_alloc;
     vtype_kind_t *local_vtype;
@@ -224,22 +236,14 @@ void EXPORT_FUN(free)(emit_t *emit) {
 }
 
 STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
+    (void)op;
     {
-            vtype_kind_t type;
-            switch (arg2) {
-                case MP_QSTR_object: type = VTYPE_PYOBJ; break;
-                case MP_QSTR_bool: type = VTYPE_BOOL; break;
-                case MP_QSTR_int: type = VTYPE_INT; break;
-                case MP_QSTR_uint: type = VTYPE_UINT; break;
-                case MP_QSTR_ptr: type = VTYPE_PTR; break;
-                case MP_QSTR_ptr8: type = VTYPE_PTR8; break;
-                case MP_QSTR_ptr16: type = VTYPE_PTR16; break;
-                case MP_QSTR_ptr32: type = VTYPE_PTR32; break;
-                default: EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "unknown type '%q'", arg2); return;
+            int type = mp_native_type_from_qstr(arg2);
+            if (type < 0) {
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "unknown type '%q'", arg2);
+                return;
             }
-            if (op == MP_EMIT_NATIVE_TYPE_RETURN) {
-                emit->return_vtype = type;
-            } else {
+            {
                 assert(arg1 < emit->local_vtype_alloc);
                 emit->local_vtype[arg1] = type;
             }
@@ -266,9 +270,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->local_vtype = m_renew(vtype_kind_t, emit->local_vtype, emit->local_vtype_alloc, scope->num_locals);
         emit->local_vtype_alloc = scope->num_locals;
     }
-
-    // set default type for return
-    emit->return_vtype = VTYPE_PYOBJ;
 
     // set default type for arguments
     mp_uint_t num_args = emit->scope->num_pos_args + emit->scope->num_kwonly_args;
@@ -482,7 +483,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
 
         // compute type signature
         // note that the lower 4 bits of a vtype are tho correct MP_NATIVE_TYPE_xxx
-        mp_uint_t type_sig = emit->return_vtype & 0xf;
+        mp_uint_t type_sig = emit->scope->scope_flags >> MP_SCOPE_FLAG_VIPERRET_POS;
         for (mp_uint_t i = 0; i < emit->scope->num_pos_args; i++) {
             type_sig |= (emit->local_vtype[i] & 0xf) << (i * 4 + 4);
         }
@@ -2420,9 +2421,10 @@ STATIC void emit_native_call_method(emit_t *emit, mp_uint_t n_positional, mp_uin
 STATIC void emit_native_return_value(emit_t *emit) {
     DEBUG_printf("return_value\n");
     if (emit->do_viper_types) {
+        vtype_kind_t return_vtype = emit->scope->scope_flags >> MP_SCOPE_FLAG_VIPERRET_POS;
         if (peek_vtype(emit, 0) == VTYPE_PTR_NONE) {
             emit_pre_pop_discard(emit);
-            if (emit->return_vtype == VTYPE_PYOBJ) {
+            if (return_vtype == VTYPE_PYOBJ) {
                 ASM_MOV_REG_IMM(emit->as, REG_RET, (mp_uint_t)mp_const_none);
             } else {
                 ASM_MOV_REG_IMM(emit->as, REG_RET, 0);
@@ -2430,10 +2432,10 @@ STATIC void emit_native_return_value(emit_t *emit) {
         } else {
             vtype_kind_t vtype;
             emit_pre_pop_reg(emit, &vtype, REG_RET);
-            if (vtype != emit->return_vtype) {
+            if (vtype != return_vtype) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
                     "return expected '%q' but got '%q'",
-                    vtype_to_qstr(emit->return_vtype), vtype_to_qstr(vtype));
+                    vtype_to_qstr(return_vtype), vtype_to_qstr(vtype));
             }
         }
     } else {

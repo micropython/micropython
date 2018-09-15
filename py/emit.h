@@ -51,7 +51,6 @@ typedef enum {
 
 #define MP_EMIT_BREAK_FROM_FOR (0x8000)
 
-#define MP_EMIT_NATIVE_TYPE_RETURN (1)
 #define MP_EMIT_NATIVE_TYPE_ARG    (2)
 
 // Kind for emit_id_ops->local()
@@ -160,6 +159,8 @@ typedef struct _emit_method_table_t {
     void (*start_except_handler)(emit_t *emit);
     void (*end_except_handler)(emit_t *emit);
 } emit_method_table_t;
+
+int mp_native_type_from_qstr(qstr qst);
 
 void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst);
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst);

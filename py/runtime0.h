@@ -32,6 +32,7 @@
 #define MP_SCOPE_FLAG_GENERATOR    (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
 #define MP_SCOPE_FLAG_REFGLOBALS   (0x10) // used only if native emitter enabled
+#define MP_SCOPE_FLAG_VIPERRET_POS    (5) // top 3 bits used for viper return type
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)
