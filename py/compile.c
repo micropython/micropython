@@ -2737,6 +2737,25 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     }
 }
 
+#if MICROPY_EMIT_NATIVE
+STATIC int compile_viper_type_annotation(compiler_t *comp, mp_parse_node_t pn_annotation) {
+    int native_type = MP_NATIVE_TYPE_OBJ;
+    if (MP_PARSE_NODE_IS_NULL(pn_annotation)) {
+        // No annotation, type defaults to object
+    } else if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
+        qstr type_name = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
+        native_type = mp_native_type_from_qstr(type_name);
+        if (native_type < 0) {
+            comp->compile_error = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, "unknown type '%q'", type_name);
+            native_type = 0;
+        }
+    } else {
+        compile_syntax_error(comp, pn_annotation, "annotation must be an identifier");
+    }
+    return native_type;
+}
+#endif
+
 STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star) {
     // check that **kw is last
     if ((comp->scope_cur->scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
@@ -2815,20 +2834,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
 
         #if MICROPY_EMIT_NATIVE
         if (comp->scope_cur->emit_options == MP_EMIT_OPT_VIPER && pn_name == PN_typedargslist_name && pns != NULL) {
-            mp_parse_node_t pn_annotation = pns->nodes[1];
-            if (MP_PARSE_NODE_IS_NULL(pn_annotation)) {
-                // No annotation
-            } else if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
-                qstr arg_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
-                int native_type = mp_native_type_from_qstr(arg_type);
-                if (native_type < 0) {
-                    comp->compile_error = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, "unknown type '%q'", arg_type);
-                } else {
-                    id_info->flags |= native_type << ID_FLAG_VIPER_TYPE_POS;
-                }
-            } else {
-                compile_syntax_error(comp, pn_annotation, "parameter annotation must be an identifier");
-            }
+            id_info->flags |= compile_viper_type_annotation(comp, pns->nodes[1]) << ID_FLAG_VIPER_TYPE_POS;
         }
         #else
         (void)pns;
@@ -2964,29 +2970,14 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         if (comp->pass == MP_PASS_SCOPE) {
             comp->have_star = false;
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
-        }
-        #if MICROPY_EMIT_NATIVE
-        if (comp->pass == MP_PASS_SCOPE && scope->emit_options == MP_EMIT_OPT_VIPER) {
-            // compile annotations; only needed for viper emitter
 
-            // pns->nodes[2] is return/whole function annotation
-            mp_parse_node_t pn_annotation = pns->nodes[2];
-            if (!MP_PARSE_NODE_IS_NULL(pn_annotation)) {
-                // nodes[2] can be null or a test-expr
-                if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
-                    qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
-                    int native_type = mp_native_type_from_qstr(ret_type);
-                    if (native_type < 0) {
-                        comp->compile_error = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, "unknown type '%q'", ret_type);
-                    } else {
-                        scope->scope_flags |= native_type << MP_SCOPE_FLAG_VIPERRET_POS;
-                    }
-                } else {
-                    compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
-                }
+            #if MICROPY_EMIT_NATIVE
+            if (scope->emit_options == MP_EMIT_OPT_VIPER) {
+                // Compile return type; pns->nodes[2] is return/whole function annotation
+                scope->scope_flags |= compile_viper_type_annotation(comp, pns->nodes[2]) << MP_SCOPE_FLAG_VIPERRET_POS;
             }
+            #endif // MICROPY_EMIT_NATIVE
         }
-        #endif // MICROPY_EMIT_NATIVE
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
         // emit return if it wasn't the last opcode

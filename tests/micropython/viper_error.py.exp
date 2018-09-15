@@ -1,5 +1,5 @@
-SyntaxError('parameter annotation must be an identifier',)
-SyntaxError('return annotation must be an identifier',)
+SyntaxError('annotation must be an identifier',)
+SyntaxError('annotation must be an identifier',)
 ViperTypeError("unknown type 'unknown_type'",)
 ViperTypeError("Viper functions don't currently support more than 4 arguments",)
 ViperTypeError("local 'x' used before type known",)
