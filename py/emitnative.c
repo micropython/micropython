@@ -1189,23 +1189,9 @@ STATIC void emit_native_load_global(emit_t *emit, qstr qst, int kind) {
         DEBUG_printf("load_global(%s)\n", qstr_str(qst));
         if (emit->do_viper_types) {
             // check for builtin casting operators
-            if (qst == MP_QSTR_int) {
-                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_INT);
-                return;
-            } else if (qst == MP_QSTR_uint) {
-                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_UINT);
-                return;
-            } else if (qst == MP_QSTR_ptr) {
-                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR);
-                return;
-            } else if (qst == MP_QSTR_ptr8) {
-                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR8);
-                return;
-            } else if (qst == MP_QSTR_ptr16) {
-                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR16);
-                return;
-            } else if (qst == MP_QSTR_ptr32) {
-                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR32);
+            int native_type = mp_native_type_from_qstr(qst);
+            if (native_type >= MP_NATIVE_TYPE_INT) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, native_type);
                 return;
             }
         }
