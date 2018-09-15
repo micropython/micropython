@@ -2853,7 +2853,12 @@ STATIC void compile_scope_func_annotations(compiler_t *comp, mp_parse_node_t pn)
 
         if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
             qstr arg_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
-            EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ARG, id_info->local_num, arg_type);
+            int native_type = mp_native_type_from_qstr(arg_type);
+            if (native_type < 0) {
+                comp->compile_error = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, "unknown type '%q'", arg_type);
+            } else {
+                id_info->flags |= native_type << ID_FLAG_VIPER_TYPE_POS;
+            }
         } else {
             compile_syntax_error(comp, pn_annotation, "parameter annotation must be an identifier");
         }
@@ -2983,9 +2988,8 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
         }
         #if MICROPY_EMIT_NATIVE
-        else if (scope->emit_options == MP_EMIT_OPT_VIPER) {
-            // compile annotations; only needed on latter compiler passes
-            // only needed for viper emitter
+        if (comp->pass == MP_PASS_SCOPE && scope->emit_options == MP_EMIT_OPT_VIPER) {
+            // compile annotations; only needed for viper emitter
 
             // argument annotations
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_annotations);

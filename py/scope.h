@@ -41,6 +41,7 @@ enum {
     ID_FLAG_IS_PARAM = 0x01,
     ID_FLAG_IS_STAR_PARAM = 0x02,
     ID_FLAG_IS_DBL_STAR_PARAM = 0x04,
+    ID_FLAG_VIPER_TYPE_POS = 4,
 };
 
 typedef struct _id_info_t {
