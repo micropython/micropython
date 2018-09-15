@@ -51,7 +51,7 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
     (void)as;
     // could check labels are resolved...
 
-    #if defined(MCU_SERIES_F7)
+    #if __ICACHE_PRESENT == 1
     if (as->base.pass == MP_ASM_PASS_EMIT) {
         // flush D-cache, so the code emitted is stored in memory
         MP_HAL_CLEAN_DCACHE(as->base.code_base, as->base.code_size);
