@@ -37,6 +37,7 @@
 #define WORD_SIZE (4)
 #define SIGNED_FIT8(x) ((((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80))
 #define SIGNED_FIT12(x) ((((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800))
+#define NUM_REGS_SAVED (5)
 
 void asm_xtensa_end_pass(asm_xtensa_t *as) {
     as->num_const = as->cur_const;
@@ -67,8 +68,8 @@ void asm_xtensa_entry(asm_xtensa_t *as, int num_locals) {
     mp_asm_base_get_cur_to_write_bytes(&as->base, 1); // padding/alignment byte
     as->const_table = (uint32_t*)mp_asm_base_get_cur_to_write_bytes(&as->base, as->num_const * 4);
 
-    // adjust the stack-pointer to store a0, a12, a13, a14 and locals, 16-byte aligned
-    as->stack_adjust = (((4 + num_locals) * WORD_SIZE) + 15) & ~15;
+    // adjust the stack-pointer to store a0, a12, a13, a14, a15 and locals, 16-byte aligned
+    as->stack_adjust = (((NUM_REGS_SAVED + num_locals) * WORD_SIZE) + 15) & ~15;
     if (SIGNED_FIT8(-as->stack_adjust)) {
         asm_xtensa_op_addi(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, -as->stack_adjust);
     } else {
@@ -76,18 +77,18 @@ void asm_xtensa_entry(asm_xtensa_t *as, int num_locals) {
         asm_xtensa_op_sub(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A9);
     }
 
-    // save return value (a0) and callee-save registers (a12, a13, a14)
+    // save return value (a0) and callee-save registers (a12, a13, a14, a15)
     asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
-    asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A12, ASM_XTENSA_REG_A1, 1);
-    asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A13, ASM_XTENSA_REG_A1, 2);
-    asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A14, ASM_XTENSA_REG_A1, 3);
+    for (int i = 1; i < NUM_REGS_SAVED; ++i) {
+        asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A11 + i, ASM_XTENSA_REG_A1, i);
+    }
 }
 
 void asm_xtensa_exit(asm_xtensa_t *as) {
     // restore registers
-    asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A14, ASM_XTENSA_REG_A1, 3);
-    asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A13, ASM_XTENSA_REG_A1, 2);
-    asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A12, ASM_XTENSA_REG_A1, 1);
+    for (int i = NUM_REGS_SAVED - 1; i >= 1; --i) {
+        asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A11 + i, ASM_XTENSA_REG_A1, i);
+    }
     asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
 
     // restore stack-pointer and return
@@ -170,15 +171,15 @@ void asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
 }
 
 void asm_xtensa_mov_local_reg(asm_xtensa_t *as, int local_num, uint reg_src) {
-    asm_xtensa_op_s32i(as, reg_src, ASM_XTENSA_REG_A1, 4 + local_num);
+    asm_xtensa_op_s32i(as, reg_src, ASM_XTENSA_REG_A1, NUM_REGS_SAVED + local_num);
 }
 
 void asm_xtensa_mov_reg_local(asm_xtensa_t *as, uint reg_dest, int local_num) {
-    asm_xtensa_op_l32i(as, reg_dest, ASM_XTENSA_REG_A1, 4 + local_num);
+    asm_xtensa_op_l32i(as, reg_dest, ASM_XTENSA_REG_A1, NUM_REGS_SAVED + local_num);
 }
 
 void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_num) {
-    uint off = (4 + local_num) * WORD_SIZE;
+    uint off = (NUM_REGS_SAVED + local_num) * WORD_SIZE;
     if (SIGNED_FIT8(off)) {
         asm_xtensa_op_addi(as, reg_dest, ASM_XTENSA_REG_A1, off);
     } else {
@@ -207,6 +208,15 @@ void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label) {
 
     // Add PC to relative offset
     asm_xtensa_op_add_n(as, reg_dest, reg_dest, ASM_XTENSA_REG_A0);
+}
+
+void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx) {
+    if (idx < 16) {
+        asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A15, idx);
+    } else {
+        asm_xtensa_op_l32i(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A15, idx);
+    }
+    asm_xtensa_op_callx0(as, ASM_XTENSA_REG_A0);
 }
 
 #endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
