@@ -3287,7 +3287,12 @@ STATIC void scope_compute_things(scope_t *scope) {
         #if MICROPY_EMIT_NATIVE
         if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
             // This function makes a reference to a global variable
-            scope->scope_flags |= MP_SCOPE_FLAG_REFGLOBALS;
+            if (scope->emit_options == MP_EMIT_OPT_VIPER
+                && mp_native_type_from_qstr(id->qst) >= MP_NATIVE_TYPE_INT) {
+                // A casting operator in viper mode, not a real global reference
+            } else {
+                scope->scope_flags |= MP_SCOPE_FLAG_REFGLOBALS;
+            }
         }
         #endif
         // params always count for 1 local, even if they are a cell
