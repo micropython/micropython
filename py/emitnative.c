@@ -84,6 +84,8 @@
 #define CAN_USE_REGS_FOR_LOCALS(emit) ((emit)->scope->exc_stack_size == 0)
 
 // Indices within the local C stack for various variables
+#define LOCAL_IDX_FUN_OBJ(emit) (offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t))
+#define LOCAL_IDX_OLD_GLOBALS(emit) (offsetof(mp_code_state_t, ip) / sizeof(uintptr_t))
 #define LOCAL_IDX_EXC_VAL(emit) ((emit)->stack_start + NLR_BUF_IDX_RET_VAL)
 #define LOCAL_IDX_EXC_HANDLER_PC(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_1)
 #define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_2)
@@ -392,7 +394,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         #endif
 
         // set code_state.fun_bc
-        ASM_MOV_LOCAL_REG(emit->as, offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t), REG_ARG_1);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_ARG_1);
 
         // set code_state.ip (offset from start of this function to prelude info)
         // XXX this encoding may change size
@@ -931,12 +933,12 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
 
         if (!emit->do_viper_types) {
             // Set new globals
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t));
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_FUN_OBJ(emit));
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, offsetof(mp_obj_fun_bc_t, globals) / sizeof(uintptr_t));
             emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
 
             // Save old globals (or NULL if globals didn't change)
-            ASM_MOV_LOCAL_REG(emit->as, offsetof(mp_code_state_t, old_globals) / sizeof(uintptr_t), REG_RET);
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_OLD_GLOBALS(emit), REG_RET);
         }
 
         if (emit->scope->exc_stack_size == 0) {
@@ -976,7 +978,7 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
 
         if (!emit->do_viper_types) {
             // Restore old globals
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, offsetof(mp_code_state_t, old_globals) / sizeof(uintptr_t));
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
             emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
         }
 
@@ -996,7 +998,7 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
         if (!emit->do_viper_types) {
             // Get old globals
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, offsetof(mp_code_state_t, old_globals) / sizeof(uintptr_t));
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
 
             if (emit->scope->exc_stack_size == 0) {
                 // Optimisation: if globals didn't change then don't restore them and don't do nlr_pop
