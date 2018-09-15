@@ -295,13 +295,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     // generate code for entry to function
 
     if (emit->do_viper_types) {
-
-        // right now we have a restriction of maximum of 4 arguments
-        if (scope->num_pos_args > REG_ARG_NUM) {
-            EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "Viper functions don't currently support more than 4 arguments");
-            return;
-        }
-
         // Work out size of state (locals plus stack)
         // n_state counts all stack and locals, even those in registers
         emit->n_state = scope->num_locals + scope->stack_size;

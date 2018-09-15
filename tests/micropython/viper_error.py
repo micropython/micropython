@@ -13,9 +13,6 @@ test("@micropython.viper\ndef f() -> 1: pass")
 # unknown type
 test("@micropython.viper\ndef f(x:unknown_type): pass")
 
-# too many arguments
-test("@micropython.viper\ndef f(a, b, c, d, e): pass")
-
 # local used before type known
 test("""
 @micropython.viper
