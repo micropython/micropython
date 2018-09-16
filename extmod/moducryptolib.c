@@ -204,9 +204,11 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1sign(size_t n_args, const mp_obj_t *args, bo
     mp_buffer_info_t msg_bufinfo;
     mp_get_buffer_raise(msg_buf, &msg_bufinfo, MP_BUFFER_READ);
 
+    int ret;
+    unsigned char hash[32];
     if( ( ret = mbedtls_md(
                     mbedtls_md_info_from_type( MBEDTLS_MD_SHA256 ),
-                    msg_buf.buf, msg_buf.len, hash ) ) != 0 )
+                    msg_bufinfo.buf, msg_bufinfo.len, hash ) ) != 0 )
     {
         mp_raise_ValueError("Unable to hash message");
     }
@@ -224,7 +226,7 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1sign(size_t n_args, const mp_obj_t *args, bo
     if (out_buf != MP_OBJ_NULL) {
         return out_buf;
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &signature);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1sign_obj, 2, 3, ucryptolib_rsa_PKCS1sign);
 
