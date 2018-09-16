@@ -54,6 +54,9 @@ enum {
 #endif
 
 #if MICROPY_SSL_MBEDTLS
+#include "mbedtls/platform.h"
+#include "mbedtls/pk.h"
+#include "mbedtls/rsa.h" 
 #include <mbedtls/aes.h>
 
 // we can't run mbedtls AES key schedule until we know whether we're used for encrypt or decrypt.
@@ -155,6 +158,44 @@ STATIC void aes_process_ecb_impl(AES_CTX_IMPL *ctx, const uint8_t in[16], uint8_
 STATIC void aes_process_cbc_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *out, size_t in_len, bool encrypt) {
     mbedtls_aes_crypt_cbc(&ctx->u.mbedtls_ctx, encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT, in_len, ctx->iv, in, out);
 }
+
+//------------------
+typedef struct _mp_obj_rsa_t {
+    mp_obj_base_t base;
+    mbedtls_rsa_context *rsa;
+} mp_obj_rsa_t;
+
+STATIC mp_obj_t aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 2, false); //peut etre 1, 1
+    mp_obj_rsa_t *o = m_new_obj(mp_obj_rsa_t);
+    o->base.type = type;
+
+    mp_buffer_info_t bufkey;
+    mp_get_buffer_raise(args[0], &bufkey, MP_BUFFER_READ);
+
+    int ret;
+    mbedtls_pk_context pk;
+    mbedtls_pk_init( &pk );
+    ret = mbedtls_pk_parse_key(&pk, bufkey.buf, bufkey.len + 1, NULL, 0);
+    if ( ret != 0 ) {
+	    mbedtls_pk_free( &pk );
+        mp_raise_ValueError("Unable to parse key");
+    }
+
+    if( !mbedtls_pk_can_do( &pk, MBEDTLS_PK_RSA ) )
+    {
+	    mbedtls_pk_free( &pk );
+        mp_raise_ValueError("Not an RSA key");
+    }
+
+    rsa = mbedtls_pk_rsa( pk );
+
+    return MP_OBJ_FROM_PTR(o);
+
+}
+
+//------------------
+
 #endif
 
 STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
