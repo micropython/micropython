@@ -192,7 +192,53 @@ STATIC mp_obj_t rsa_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     return MP_OBJ_FROM_PTR(o);
 
 }
+STATIC mp_obj_t ucryptolib_rsa_PKCS1sign(size_t n_args, const mp_obj_t *args, bool encrypt) {
+    mp_obj_rsa_t *self = MP_OBJ_TO_PTR(args[0]);
 
+    mp_obj_t msg_buf = args[1];
+    mp_obj_t out_buf = MP_OBJ_NULL;
+    if (n_args > 2) {
+        out_buf = args[2];
+    }
+
+    mp_buffer_info_t msg_bufinfo;
+    mp_get_buffer_raise(msg_buf, &msg_bufinfo, MP_BUFFER_READ);
+
+    if( ( ret = mbedtls_md(
+                    mbedtls_md_info_from_type( MBEDTLS_MD_SHA256 ),
+                    msg_buf.buf, msg_buf.len, hash ) ) != 0 )
+    {
+        mp_raise_ValueError("Unable to hash message");
+    }
+
+    vstr_t signature;
+    vstr_init_len(&signature, (self->rsa)->len);
+
+    if( ( ret = mbedtls_rsa_pkcs1_sign(self->rsa , NULL, NULL, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256,
+                                0, hash, (byte*)signature.buf ) ) != 0 )
+    {
+        mp_raise_ValueError("Unable to sign message");
+    }
+
+    
+    if (out_buf != MP_OBJ_NULL) {
+        return out_buf;
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1sign_obj, 2, 3, ucryptolib_rsa_PKCS1sign);
+
+/*
+STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args, bool encrypt) {
+    mp_obj_rsa_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (out_buf != MP_OBJ_NULL) {
+        return out_buf;
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 2, ucryptolib_rsa_PKCS1verify);
+*/
 //------------------
 
 #endif
@@ -313,9 +359,35 @@ STATIC const mp_obj_type_t ucryptolib_aes_type = {
     .locals_dict = (void*)&ucryptolib_aes_locals_dict,
 };
 
+/*
+STATIC mp_obj_t ucryptolib_rsa_PKCS1signature(size_t n_args, const mp_obj_t *args) {
+    return xxx(n_args, args, true);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1signature_obj, 2, 3, ucryptolib_rsa_PKCS1signature);
+
+STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) {
+    return xxx(n_args, args, false);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 3, ucryptolib_rsa_PKCS1verify);
+*/
+STATIC const mp_rom_map_elem_t ucryptolib_rsa_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_PKCS1sign), MP_ROM_PTR(&ucryptolib_rsa_PKCS1sign_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_PKCS1verify), MP_ROM_PTR(&ucryptolib_rsa_PKCS1verify_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(ucryptolib_rsa_locals_dict, ucryptolib_rsa_locals_dict_table);
+
+STATIC const mp_obj_type_t ucryptolib_rsa_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_rsa,
+    .make_new = ucryptolib_rsa_make_new,
+    .locals_dict = (void*)&ucryptolib_rsa_locals_dict,
+};
+
+
 STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib) },
     { MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&ucryptolib_aes_type) },
+    { MP_ROM_QSTR(MP_QSTR_rsa), MP_ROM_PTR(&ucryptolib_rsa_type) },
 #if MICROPY_PY_UCRYPTOLIB_CONSTS
     { MP_ROM_QSTR(MP_QSTR_MODE_ECB), MP_ROM_INT(UCRYPTOLIB_MODE_ECB) },
     { MP_ROM_QSTR(MP_QSTR_MODE_CBC), MP_ROM_INT(UCRYPTOLIB_MODE_CBC) },
