@@ -89,6 +89,7 @@ STATIC mp_obj_t mod_crypto_rsa_sign(mp_obj_t key, mp_obj_t message) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_crypto_rsa_sign_obj, mod_crypto_rsa_sign);
 //20180505 MHE-end--------------------------------------------------------------------------------------
 
+
 STATIC const mp_rom_map_elem_t mp_module_crypto_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucrypto) },
     { MP_ROM_QSTR(MP_QSTR_rsa_sign), MP_ROM_PTR(&mod_crypto_rsa_sign_obj) }, //20180505 MHE
