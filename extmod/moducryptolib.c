@@ -192,7 +192,7 @@ STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(o);
 
 }
-STATIC mp_obj_t ucryptolib_rsa_PKCS1sign(size_t n_args, const mp_obj_t *args, bool encrypt) {
+STATIC mp_obj_t ucryptolib_rsa_PKCS1sign(size_t n_args, const mp_obj_t *args) {
     mp_obj_rsa_t *self = MP_OBJ_TO_PTR(args[0]);
 
     mp_obj_t msg_buf = args[1];
@@ -231,10 +231,10 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1sign(size_t n_args, const mp_obj_t *args, bo
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1sign_obj, 2, 3, ucryptolib_rsa_PKCS1sign);
 
 
-STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args, bool encrypt) {
+STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) {
     mp_obj_rsa_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    return mp_obj_new_bool(mp_const_false);
+    return mp_obj_new_bool(&mp_const_false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 2, ucryptolib_rsa_PKCS1verify);
 
