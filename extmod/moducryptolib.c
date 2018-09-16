@@ -234,9 +234,29 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1sign_obj, 2, 3, u
 STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) {
     mp_obj_rsa_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    return mp_obj_new_bool(0);
+    mp_obj_t msg_buf = args[1];
+    mp_buffer_info_t msg_bufinfo;
+    mp_get_buffer_raise(msg_buf, &msg_bufinfo, MP_BUFFER_READ);
+
+    mp_obj_t sign_buf = args[2];
+    mp_buffer_info_t sign_bufinfo;
+    mp_get_buffer_raise(sign_buf, &sign_bufinfo, MP_BUFFER_READ);
+    
+    int ret;
+    unsigned char hash[32];
+    if( ( ret = mbedtls_md(
+                    mbedtls_md_info_from_type( MBEDTLS_MD_SHA256 ),
+                    msg_bufinfo.buf, msg_bufinfo.len, hash ) ) != 0 )
+    {
+        mp_raise_ValueError("Unable to hash message");
+    }
+
+    ret = mbedtls_rsa_pkcs1_verify(self->rsa , NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA256,
+                                0, hash, sign_bufinfo.buf )  
+
+    return mp_obj_new_bool(ret);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 2, ucryptolib_rsa_PKCS1verify);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 3, 3, ucryptolib_rsa_PKCS1verify);
 
 //------------------
 
