@@ -230,17 +230,14 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1sign(size_t n_args, const mp_obj_t *args, bo
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1sign_obj, 2, 3, ucryptolib_rsa_PKCS1sign);
 
-/*
+
 STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args, bool encrypt) {
     mp_obj_rsa_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    if (out_buf != MP_OBJ_NULL) {
-        return out_buf;
-    }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bool(mp_const_false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 2, ucryptolib_rsa_PKCS1verify);
-*/
+
 //------------------
 
 #endif
@@ -374,7 +371,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 3,
 */
 STATIC const mp_rom_map_elem_t ucryptolib_rsa_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PKCS1sign), MP_ROM_PTR(&ucryptolib_rsa_PKCS1sign_obj) },
-//    { MP_ROM_QSTR(MP_QSTR_PKCS1verify), MP_ROM_PTR(&ucryptolib_rsa_PKCS1verify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_PKCS1verify), MP_ROM_PTR(&ucryptolib_rsa_PKCS1verify_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(ucryptolib_rsa_locals_dict, ucryptolib_rsa_locals_dict_table);
 
