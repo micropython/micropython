@@ -188,6 +188,7 @@ STATIC mp_obj_t aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         mp_raise_ValueError("Not an RSA key");
     }
 
+    mbedtls_rsa_context *rsa;
     rsa = mbedtls_pk_rsa( pk );
 
     return MP_OBJ_FROM_PTR(o);
