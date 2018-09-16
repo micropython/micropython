@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/stream.h"
+#include "py/obj.h" /* For get_int */
 
 #include "supervisor/shared/translate.h"
 
@@ -233,10 +234,41 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hex_obj, mp_builtin_hex);
 #define mp_hal_readline readline
 #endif
 
+#include "usb.h"
+
 STATIC mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 1) {
+    if (n_args >= 1) {
         mp_obj_print(args[0], PRINT_STR);
     }
+    if (n_args == 2)
+      {
+	if (!mp_obj_is_true(args[1]))
+	  { /* If they pass 0 or False, return immediately if there's no text available */
+	    if (!usb_bytes_available())
+	      {
+		return mp_const_none;
+	      }
+	  }
+	else if (MP_OBJ_IS_INT(args[1]))
+	  {
+	    /* Timeout has been sent... check for USB input for that # of millis */
+	    mp_uint_t target = mp_hal_ticks_ms() + mp_obj_get_int(args[1]);
+	    bool bytesAvaliable = false;
+	    
+	    while (mp_hal_ticks_ms() < target)
+	      {
+		if (usb_bytes_available())
+		  {
+		    bytesAvaliable = true;
+		    break;
+		  }
+	      }
+	    if (!bytesAvaliable)
+	      return mp_const_none;
+	  }
+      }
+
+    
     vstr_t line;
     vstr_init(&line, 16);
     int ret = mp_hal_readline(&line, "");
@@ -248,7 +280,7 @@ STATIC mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_str_from_vstr(&mp_type_str, &line);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj, 0, 1, mp_builtin_input);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj, 0, 2, mp_builtin_input);
 
 #endif
 
