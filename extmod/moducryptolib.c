@@ -234,7 +234,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1sign_obj, 2, 3, u
 STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) {
     mp_obj_rsa_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    return mp_obj_new_bool(&mp_const_false);
+    return mp_obj_new_bool(0);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 2, ucryptolib_rsa_PKCS1verify);
 
