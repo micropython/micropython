@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include "mpconfigport.h"
 #if MICROPY_PY_UCRYPTOLIB
 
 #include <assert.h>
@@ -39,7 +39,7 @@
 // needed boilerplate.
 
 #if MICROPY_SSL_AXTLS
-#include "lib/axtls/crypto/crypto.h"
+#include "../../lib/axtls/crypto/crypto.h"
 #endif
 
 #if MICROPY_SSL_MBEDTLS
