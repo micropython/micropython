@@ -146,20 +146,20 @@ static const DMA_InitTypeDef dma_init_struct_dac = {
 #define NSTREAMS_PER_CONTROLLER (7)
 #define NSTREAM                 (NCONTROLLERS * NSTREAMS_PER_CONTROLLER)
 
-#define DMA_SUB_INSTANCE_AS_UINT8(dma_channel) (dma_channel)
+#define DMA_SUB_INSTANCE_AS_UINT8(dma_channel) ((dma_channel) >> ((dma_channel >> 28) * 4))
 
 #define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponding to DMA1 (7 channels)
 #define DMA2_ENABLE_MASK (0x0f80) // Bits in dma_enable_mask corresponding to DMA2 (only 5 channels)
 
 // DMA1 streams
 #if MICROPY_HW_ENABLE_DAC
-const dma_descr_t dma_DAC_1_TX = { DMA1_Channel3, HAL_DMA1_CH3_DAC_CH1, dma_id_3, &dma_init_struct_dac };
-const dma_descr_t dma_DAC_2_TX = { DMA1_Channel4, HAL_DMA1_CH4_DAC_CH2, dma_id_4, &dma_init_struct_dac };
+const dma_descr_t dma_DAC_1_TX = { DMA1_Channel3, HAL_DMA1_CH3_DAC_CH1, dma_id_2, &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { DMA1_Channel4, HAL_DMA1_CH4_DAC_CH2, dma_id_3, &dma_init_struct_dac };
 #endif
-const dma_descr_t dma_SPI_2_TX = { DMA1_Channel5, HAL_DMA1_CH5_SPI2_TX, dma_id_5, &dma_init_struct_spi_i2c};
-const dma_descr_t dma_SPI_2_RX = { DMA1_Channel6, HAL_DMA1_CH6_SPI2_RX, dma_id_6, &dma_init_struct_spi_i2c};
-const dma_descr_t dma_SPI_1_RX = { DMA2_Channel3, HAL_DMA2_CH3_SPI1_RX, dma_id_3, &dma_init_struct_spi_i2c};
-const dma_descr_t dma_SPI_1_TX = { DMA2_Channel4, HAL_DMA2_CH4_SPI1_TX, dma_id_4, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_2_TX = { DMA1_Channel5, HAL_DMA1_CH5_SPI2_TX, dma_id_4, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_2_RX = { DMA1_Channel6, HAL_DMA1_CH6_SPI2_RX, dma_id_5, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_1_RX = { DMA2_Channel3, HAL_DMA2_CH3_SPI1_RX, dma_id_9, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_1_TX = { DMA2_Channel4, HAL_DMA2_CH4_SPI1_TX, dma_id_10, &dma_init_struct_spi_i2c};
 
 static const uint8_t dma_irqn[NSTREAM] = {
     DMA1_Ch1_IRQn,
@@ -425,7 +425,47 @@ volatile dma_idle_count_t dma_idle;
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA2EN) != 0)
 #endif
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#if defined(STM32F0)
+
+void DMA1_Ch1_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Ch1_IRQn);
+    if (dma_handle[dma_id_0] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_0]);
+    }
+}
+
+void DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Ch2_3_DMA2_Ch1_2_IRQn);
+    if (dma_handle[dma_id_1] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_1]);
+    }
+    if (dma_handle[dma_id_2] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_2]);
+    }
+    if (dma_handle[dma_id_7] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_7]);
+    }
+    if (dma_handle[dma_id_8] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_8]);
+    }
+    IRQ_EXIT(DMA1_Ch2_3_DMA2_Ch1_2_IRQn);
+}
+
+void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Ch4_7_DMA2_Ch3_5_IRQn);
+    for (unsigned int i = 0; i < 4; ++i) {
+        if (dma_handle[dma_id_3 + i] != NULL) {
+            HAL_DMA_IRQHandler(dma_handle[dma_id_3 + i]);
+        }
+        // When i==3 this will check an invalid handle, but it will always be NULL
+        if (dma_handle[dma_id_9 + i] != NULL) {
+            HAL_DMA_IRQHandler(dma_handle[dma_id_9 + i]);
+        }
+    }
+    IRQ_EXIT(DMA1_Ch4_7_DMA2_Ch3_5_IRQn);
+}
+
+#elif defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
 void DMA1_Stream0_IRQHandler(void) { IRQ_ENTER(DMA1_Stream0_IRQn); if (dma_handle[dma_id_0] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_0]); } IRQ_EXIT(DMA1_Stream0_IRQn); }
 void DMA1_Stream1_IRQHandler(void) { IRQ_ENTER(DMA1_Stream1_IRQn); if (dma_handle[dma_id_1] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_1]); } IRQ_EXIT(DMA1_Stream1_IRQn); }
@@ -570,11 +610,20 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
         } else {
             // only necessary initialization
             dma->State = HAL_DMA_STATE_READY;
-#if defined(STM32F4) || defined(STM32F7)
+            #if defined(STM32F0)
+            // These variables are used to access the relevant 4 bits in ISR and IFCR
+            if (dma_id < NSTREAMS_PER_CONTROLLER) {
+                dma->DmaBaseAddress = DMA1;
+                dma->ChannelIndex = dma_id * 4;
+            } else {
+                dma->DmaBaseAddress = DMA2;
+                dma->ChannelIndex = (dma_id - NSTREAMS_PER_CONTROLLER) * 4;
+            }
+            #elif defined(STM32F4) || defined(STM32F7)
             // calculate DMA base address and bitshift to be used in IRQ handler
             extern uint32_t DMA_CalcBaseAndBitshift(DMA_HandleTypeDef *hdma);
             DMA_CalcBaseAndBitshift(dma);
-#endif
+            #endif
         }
         #endif
 
@@ -584,7 +633,9 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
 
 void dma_deinit(const dma_descr_t *dma_descr) {
     if (dma_descr != NULL) {
+        #if !defined(STM32F0)
         HAL_NVIC_DisableIRQ(dma_irqn[dma_descr->id]);
+        #endif
         dma_handle[dma_descr->id] = NULL;
 
         dma_disable_clock(dma_descr->id);
