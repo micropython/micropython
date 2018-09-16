@@ -165,10 +165,9 @@ typedef struct _mp_obj_rsa_t {
     mbedtls_rsa_context *rsa;
 } mp_obj_rsa_t;
 
-STATIC mp_obj_t aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t rsa_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false); //peut etre 1, 1
     mp_obj_rsa_t *o = m_new_obj(mp_obj_rsa_t);
-    o->base.type = type;
 
     mp_buffer_info_t bufkey;
     mp_get_buffer_raise(args[0], &bufkey, MP_BUFFER_READ);
@@ -188,8 +187,7 @@ STATIC mp_obj_t aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         mp_raise_ValueError("Not an RSA key");
     }
 
-    mbedtls_rsa_context *rsa;
-    rsa = mbedtls_pk_rsa( pk );
+    o.rsa = mbedtls_pk_rsa( pk );
 
     return MP_OBJ_FROM_PTR(o);
 
