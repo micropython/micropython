@@ -22,7 +22,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * THE SOFTWARE. 
  */
 
 #include "py/mpconfig.h"
@@ -168,6 +168,7 @@ typedef struct _mp_obj_rsa_t {
 STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false); //peut etre 1, 1
     mp_obj_rsa_t *o = m_new_obj(mp_obj_rsa_t);
+    o->base.type = type;
 
     mp_buffer_info_t bufkey;
     mp_get_buffer_raise(args[0], &bufkey, MP_BUFFER_READ);
