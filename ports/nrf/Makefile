@@ -300,16 +300,16 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 else ifeq ($(FLASHER), pyocd)
 
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
-	pyocd-tool -t $(MCU_SUB_VARIANT) erase $(BOOT_SETTING_ADDR)
-	pyocd-tool -t $(MCU_SUB_VARIANT) write32 $(BOOT_SETTING_ADDR) 0x00000001
-	pyocd-tool -t $(MCU_SUB_VARIANT) reset
+	pyocd-flashtool -t nrf52 $< # --sector_erase
+	#pyocd-tool -t nrf52 erase $(BOOT_SETTING_ADDR)
+	#pyocd-tool -t nrf52 write32 $(BOOT_SETTING_ADDR) 0x00000001
+	#pyocd-tool -t nrf52 reset
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) --chip_erase
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $(SOFTDEV_HEX)
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
-	pyocd-tool -t $(MCU_SUB_VARIANT) reset $(BOOT_SETTING_ADDR)
+	pyocd-flashtool -t nrf52 --chip_erase
+	pyocd-flashtool -t nrf52 $(SOFTDEV_HEX)
+	pyocd-flashtool -t nrf52 $< --sector_erase
+	pyocd-tool -t nrf52 reset $(BOOT_SETTING_ADDR)
 
 endif
 
