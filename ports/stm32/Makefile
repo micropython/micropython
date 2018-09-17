@@ -320,6 +320,8 @@ endif
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
 SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_sdram.c \
+	hal_dma_ex.c \
+	hal_dcmi.c \
 	)
 endif
 

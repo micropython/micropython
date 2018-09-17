@@ -140,6 +140,27 @@ static const DMA_InitTypeDef dma_init_struct_dac = {
 };
 #endif
 
+#if MICROPY_HW_ENABLE_DCMI
+static const DMA_InitTypeDef dma_init_struct_dcmi = {
+    #if defined(STM32H7)
+    .Request             = DMA_REQUEST_DCMI,
+    #else
+    .Channel             = DMA_CHANNEL_1,
+    #endif
+    .Direction           = DMA_PERIPH_TO_MEMORY,
+    .PeriphInc           = DMA_PINC_DISABLE,
+    .MemInc              = DMA_MINC_ENABLE,
+    .PeriphDataAlignment = DMA_PDATAALIGN_WORD,
+    .MemDataAlignment    = DMA_MDATAALIGN_WORD,
+    .Mode                = DMA_NORMAL,
+    .Priority            = DMA_PRIORITY_HIGH,
+    .FIFOMode            = DMA_FIFOMODE_ENABLE,
+    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
+    .MemBurst            = DMA_MBURST_INC4,
+    .PeriphBurst         = DMA_PBURST_SINGLE
+};
+#endif
+
 #if defined(STM32F0)
 
 #define NCONTROLLERS            (2)
@@ -225,6 +246,9 @@ const dma_descr_t dma_I2C_1_TX = { DMA1_Stream6, DMA_CHANNEL_1, dma_id_6,   &dma
 // DMA2 streams
 #if defined(STM32F7) && defined(SDMMC2) && MICROPY_HW_HAS_SDCARD
 const dma_descr_t dma_SDMMC_2 = { DMA2_Stream0, DMA_CHANNEL_11, dma_id_8,  &dma_init_struct_sdio };
+#endif
+#if MICROPY_HW_ENABLE_DCMI
+const dma_descr_t dma_DCMI_0 = { DMA2_Stream1, DMA_CHANNEL_1, dma_id_9,  &dma_init_struct_dcmi };
 #endif
 const dma_descr_t dma_SPI_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_5_RX = { DMA2_Stream3, DMA_CHANNEL_2, dma_id_11,  &dma_init_struct_spi_i2c };
@@ -380,6 +404,9 @@ const dma_descr_t dma_I2C_1_TX = { DMA1_Stream7, DMA_REQUEST_I2C1_TX, dma_id_7, 
 const dma_descr_t dma_I2C_2_TX = { DMA1_Stream7, DMA_REQUEST_I2C2_TX, dma_id_7,   &dma_init_struct_spi_i2c };
 
 // DMA2 streams
+#if MICROPY_HW_ENABLE_DCMI
+const dma_descr_t dma_DCMI_0 = { DMA2_Stream1, DMA_REQUEST_DCMI, dma_id_9,  &dma_init_struct_dcmi };
+#endif
 const dma_descr_t dma_SPI_1_RX = { DMA2_Stream2, DMA_REQUEST_SPI1_RX, dma_id_10,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_5_RX = { DMA2_Stream3, DMA_REQUEST_SPI5_RX, dma_id_11,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_4_RX = { DMA2_Stream3, DMA_REQUEST_SPI4_RX, dma_id_11,  &dma_init_struct_spi_i2c };

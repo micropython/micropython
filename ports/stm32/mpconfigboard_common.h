@@ -67,6 +67,11 @@
 #define MICROPY_HW_ENABLE_DAC (0)
 #endif
 
+// Whether to enable the DCMI peripheral
+#ifndef MICROPY_HW_ENABLE_DCMI
+#define MICROPY_HW_ENABLE_DCMI (0)
+#endif
+
 // Whether to enable USB support
 #ifndef MICROPY_HW_ENABLE_USB
 #define MICROPY_HW_ENABLE_USB (0)
