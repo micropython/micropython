@@ -274,6 +274,5 @@ class SDCard:
             self.write_token(_TOKEN_STOP_TRAN)
 
     def ioctl(self, op, arg):
-        print('ioctl', op, arg)
         if op == 4: # get number of blocks
             return self.sectors
