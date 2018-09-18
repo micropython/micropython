@@ -2,6 +2,7 @@ rm -rf ports/atmel-samd/build*
 rm -rf ports/esp8266/build*
 rm -rf ports/nrf/build*
 
+# Alphabetical.
 HW_BOARDS="\
 arduino_zero \
 circuitplayground_express \
@@ -16,18 +17,19 @@ feather_m0_rfm9x \
 feather_m4_express \
 feather_nrf52832 \
 feather_nrf52840_express \
-grandcentral_m4_express \
-pca10056 \
 feather_radiofruit_zigbee \
 gemma_m0 \
+grandcentral_m4_express \
 hallowing_m0_express \
 itsybitsy_m0_express \
 itsybitsy_m4_express \
 metro_m0_express \
 metro_m4_express \
+pca10056 \
+pca10059 \
 pirkey_m0 \
-trinket_m0 \
 trellis_m4_express \
+trinket_m0 \
 "
 ROSIE_SETUPS="rosie-ci"
 

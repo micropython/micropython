@@ -5,6 +5,9 @@ compiler:
   - gcc
 git:
   depth: 1
+
+# Put a representative board from each port or sub-port near the top
+# to determine more quickly whether that port is going to build or not.
 env:
   - TRAVIS_TEST=unix
   - TRAVIS_TEST=docs
@@ -15,24 +18,25 @@ env:
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=feather_m4_express
   - TRAVIS_BOARD=grandcentral_m4_express
-  - TRAVIS_BOARD=feather_radiofruit_zigbee
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express_crickit
-  - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_adalogger
-  - TRAVIS_BOARD=feather_m0_rfm69
-  - TRAVIS_BOARD=feather_m0_rfm9x
+  - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_express
   - TRAVIS_BOARD=feather_m0_express_crickit
+  - TRAVIS_BOARD=feather_m0_rfm69
+  - TRAVIS_BOARD=feather_m0_rfm9x
+  - TRAVIS_BOARD=feather_nrf52832
+  - TRAVIS_BOARD=feather_nrf52840_express
+  - TRAVIS_BOARD=feather_radiofruit_zigbee
+  - TRAVIS_BOARD=gemma_m0
+  - TRAVIS_BOARD=hallowing_m0_express
   - TRAVIS_BOARD=itsybitsy_m0_express
   - TRAVIS_BOARD=itsybitsy_m4_express
   - TRAVIS_BOARD=metro_m0_express
   - TRAVIS_BOARD=metro_m4_express
+  - TRAVIS_BOARD=pca10059
   - TRAVIS_BOARD=pirkey_m0
-  - TRAVIS_BOARD=gemma_m0
-  - TRAVIS_BOARD=hallowing_m0_express
-  - TRAVIS_BOARD=feather_nrf52832
-  - TRAVIS_BOARD=feather_nrf52840_express
   - TRAVIS_BOARD=trellis_m4_express
 
 addons:
