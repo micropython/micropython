@@ -32,7 +32,7 @@
 #include "nrf_gpio.h"
 #endif
 
-#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
+#if !defined( NRF52840_XXAA)
 
 #define INST_NO 0
 

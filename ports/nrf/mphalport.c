@@ -33,7 +33,7 @@
 
 #if (MICROPY_PY_BLE_NUS == 0)
 
-#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
+#if !defined( NRF52840_XXAA)
 int mp_hal_stdin_rx_chr(void) {
     uint8_t data = 0;
 
