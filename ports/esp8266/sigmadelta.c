@@ -24,7 +24,7 @@ sigmadelta_setup(uint8_t prescaler, uint8_t target)
     // no interpretation is given.
     //
     
-    reg &= ~0xFFFF;
+    reg &= ~((0xFF << SIGMA_DELTA_PRESCALAR) | (0xFF << SIGMA_DELTA_TARGET));
     reg |= (prescaler << SIGMA_DELTA_PRESCALAR) | (target << SIGMA_DELTA_TARGET);
 
     WRITE_PERI_REG(GPIO_SIGMA_DELTA, reg);
