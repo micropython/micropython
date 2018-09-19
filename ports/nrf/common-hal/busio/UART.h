@@ -33,9 +33,6 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t rx_pin;
-    uint8_t tx_pin;
-    uint8_t character_bits;
     bool rx_error;
     uint32_t baudrate;
     uint32_t timeout_ms;
@@ -45,6 +42,8 @@ typedef struct {
     uint32_t buffer_size;
     uint32_t buffer_length;
     uint8_t* buffer;
+
+    volatile int32_t xferred_bytes;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
