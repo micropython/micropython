@@ -184,7 +184,7 @@ STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args
     if ( ret == 0 ) {
         o->rsa_key_type = RSA_KEYTYPE_PRIVATE;
     } else {
-        ret = mbedtls_pk_parse_public_key(&pk, bufkey.buf, bufkey.len + 1, NULL, 0);
+        ret = mbedtls_pk_parse_public_key(&pk, bufkey.buf, bufkey.len + 1);
         if (ret != 0) {
             mbedtls_pk_free( &pk );
             mp_raise_ValueError("Unable to parse key");
