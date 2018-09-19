@@ -265,7 +265,7 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) 
     ret = mbedtls_rsa_pkcs1_verify(self->rsa , NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA256,
                                 0, hash, sign_bufinfo.buf ); 
 
-    return mp_obj_new_bool(ret);
+    return mp_obj_new_bool(ret == 0);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 3, 3, ucryptolib_rsa_PKCS1verify);
 
