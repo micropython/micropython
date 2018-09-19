@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-18 15:38-0400\n"
+"POT-Creation-Date: 2018-09-18 22:20-0400\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -700,7 +700,7 @@ msgstr "AnalogOut non supporté"
 #: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
 #: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
 #: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
 msgid "busio.UART not yet implemented"
 msgstr "busio.UART pas encore implémenté"
 
@@ -2387,9 +2387,9 @@ msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être longue de 32 octets"
-
-#, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "'len' doit être un multiple de 4"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être longue de 32 octets"
