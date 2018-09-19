@@ -30,20 +30,17 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
+#include "py/ringbuf.h"
 
 typedef struct {
     mp_obj_base_t base;
-    bool rx_error;
     uint32_t baudrate;
     uint32_t timeout_ms;
-    // Index of the oldest received character.
-    uint32_t buffer_start;
-    // Index of the next available spot to store a character.
-    uint32_t buffer_size;
-    uint32_t buffer_length;
-    uint8_t* buffer;
-
     volatile int32_t xferred_bytes;
+
+    uint8_t* buffer;
+    uint32_t bufsize;
+    volatile uint32_t rx_count;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
