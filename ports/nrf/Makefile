@@ -100,6 +100,7 @@ SRC_C += \
 	internal_flash.c \
 	mphalport.c \
 	tick.c \
+	board_busses.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
