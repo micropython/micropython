@@ -81,6 +81,7 @@ SRC_C = \
 	machine_uart.c \
 	machine_wdt.c \
 	machine_hspi.c \
+	machine_sigmadelta.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
@@ -89,6 +90,7 @@ SRC_C = \
 	fatfs_port.c \
 	posix_helpers.c \
 	hspi.c \
+	sigmadelta.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
