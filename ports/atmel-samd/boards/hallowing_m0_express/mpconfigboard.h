@@ -62,4 +62,4 @@
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
 
-#define CIRCUITPY_DISPLAYIO
+#define CIRCUITPY_DISPLAYIO    (1)

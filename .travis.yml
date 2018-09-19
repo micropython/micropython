@@ -5,6 +5,9 @@ compiler:
   - gcc
 git:
   depth: 1
+
+# Put a representative board from each port or sub-port near the top
+# to determine more quickly whether that port is going to build or not.
 env:
   - TRAVIS_TEST=unix
   - TRAVIS_TEST=docs
@@ -12,27 +15,29 @@ env:
   - TRAVIS_BOARD=feather_huzzah
   - TRAVIS_BOARD=circuitplayground_express
   - TRAVIS_BOARD=pca10056
+  # The rest of the boards, in alphabetical order.
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=feather_m4_express
   - TRAVIS_BOARD=grandcentral_m4_express
-  - TRAVIS_BOARD=feather_radiofruit_zigbee
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express_crickit
-  - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_adalogger
-  - TRAVIS_BOARD=feather_m0_rfm69
-  - TRAVIS_BOARD=feather_m0_rfm9x
+  - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_express
   - TRAVIS_BOARD=feather_m0_express_crickit
+  - TRAVIS_BOARD=feather_m0_rfm69
+  - TRAVIS_BOARD=feather_m0_rfm9x
+  - TRAVIS_BOARD=feather_nrf52832
+  - TRAVIS_BOARD=feather_nrf52840_express
+  - TRAVIS_BOARD=feather_radiofruit_zigbee
+  - TRAVIS_BOARD=gemma_m0
+  - TRAVIS_BOARD=hallowing_m0_express
   - TRAVIS_BOARD=itsybitsy_m0_express
   - TRAVIS_BOARD=itsybitsy_m4_express
   - TRAVIS_BOARD=metro_m0_express
   - TRAVIS_BOARD=metro_m4_express
+  - TRAVIS_BOARD=pca10059
   - TRAVIS_BOARD=pirkey_m0
-  - TRAVIS_BOARD=gemma_m0
-  - TRAVIS_BOARD=hallowing_m0_express
-  - TRAVIS_BOARD=feather_nrf52832
-  - TRAVIS_BOARD=feather_nrf52840_express
   - TRAVIS_BOARD=trellis_m4_express
 
 addons:
@@ -57,7 +62,7 @@ before_script:
   - ([[ -z "$TRAVIS_BOARD" || $TRAVIS_BOARD = "feather_huzzah" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
   # For nrf builds
-  - ([[ $TRAVIS_BOARD != "feather_nrf52832" && $TRAVIS_BOARD != "feather_nrf52840_express" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
+  - ([[ $TRAVIS_BOARD != "feather_nrf52832" && $TRAVIS_BOARD != "feather_nrf52840_express" && $TRAVIS_BOARD != "pca10056" && $TRAVIS_BOARD != "pca10059" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For huzzah builds
   - if [[ $TRAVIS_BOARD = "feather_huzzah" ]]; then wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar xavf xtensa-lx106-elf-standalone.tar.gz; PATH=$(readlink -f xtensa-lx106-elf/bin):$PATH; fi
   # For coverage testing (upgrade is used to get latest urllib3 version)

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-12 16:24-0700\n"
+"POT-Creation-Date: 2018-09-18 22:20-0400\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -238,15 +238,15 @@ msgstr "la calibration est en lecture seule"
 msgid "calibration is out of range"
 msgstr "la calibration est hors gamme"
 
-#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:59 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
 msgstr "Pas de bus I2C par défaut"
 
-#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:85 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
 msgstr "Pas de bus SPI par défaut"
 
-#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:112 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
 msgstr "Pas de bus UART par défaut"
 
@@ -346,7 +346,7 @@ msgid "Cannot output both channels on the same pin"
 msgstr "On ne peut mettre les deux canaux sur la même broche"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
 msgstr "Tous les timers sont utilisés"
@@ -383,19 +383,19 @@ msgstr "octets > 8 bits non supporté"
 msgid "tx and rx cannot both be None"
 msgstr "TX et RX ne peuvent être None tous les deux"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:139
+#: ports/atmel-samd/common-hal/busio/UART.c:145
 msgid "Failed to allocate RX buffer"
 msgstr "Echec de l'allocation du tampon RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:147
+#: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
 msgstr "L'UART n'a pu être initialisé"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:234
+#: ports/atmel-samd/common-hal/busio/UART.c:240
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:288
+#: ports/atmel-samd/common-hal/busio/UART.c:294
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
@@ -411,12 +411,12 @@ msgstr ""
 "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
 #: ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 msgid "All timers for this pin are in use"
 msgstr "Tous les timers pour cette broche sont utilisés"
 
@@ -700,7 +700,7 @@ msgstr "AnalogOut non supporté"
 #: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
 #: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
 #: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
 msgid "busio.UART not yet implemented"
 msgstr "busio.UART pas encore implémenté"
 
@@ -2022,11 +2022,11 @@ msgstr "les slices de tampon doivent être de longueurs égales"
 msgid "Function requires lock."
 msgstr "La fonction nécessite un verrou."
 
-#: shared-bindings/busio/UART.c:98
+#: shared-bindings/busio/UART.c:102
 msgid "bits must be 7, 8 or 9"
 msgstr "bits doivent être 7, 8 ou 9"
 
-#: shared-bindings/busio/UART.c:110
+#: shared-bindings/busio/UART.c:114
 msgid "stop must be 1 or 2"
 msgstr "stop doit être 1 ou 2"
 
