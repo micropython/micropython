@@ -20,7 +20,7 @@ sigmadelta_setup(uint8_t prescaler, uint8_t target)
 
     //
     // NOTE:
-    // In techref, target is noted as signed byte, though
+    // In techref, target is noted as a signed byte, though
     // no interpretation is given.
     //
     
@@ -38,7 +38,8 @@ sigmadelta_attach(uint8_t pin_id)
 
     if (pin_id < 16) {
         // set SIGMA_AS_PIN_SOURCE bit
-        SET_PERI_REG_MASK(GPIO_PIN_ADDR(pin_id), GPIO_PIN_SOURCE_MASK);
+        SET_PERI_REG_MASK(PERIPHS_GPIO_BASEADDR + GPIO_PIN_ADDR(pin_id),
+                          GPIO_PIN_SOURCE_MASK);
     }
 }
 
@@ -46,6 +47,7 @@ void ICACHE_FLASH_ATTR
 sigmadelta_detach(uint8_t pin_id)
 {
     if (pin_id < 16) {
-        CLEAR_PERI_REG_MASK(GPIO_PIN_ADDR(pin_id), GPIO_PIN_SOURCE_MASK);
+        CLEAR_PERI_REG_MASK(PERIPHS_GPIO_BASEADDR + GPIO_PIN_ADDR(pin_id),
+                            GPIO_PIN_SOURCE_MASK);
     }
 }
