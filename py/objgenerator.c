@@ -255,6 +255,19 @@ STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
 
+#if MICROPY_PY_GENERATOR_ATTRS
+STATIC void gen_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+	mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+	if (dest[0] != MP_OBJ_NULL) {
+		// not load attribute
+		return;
+	}
+	if (attr == MP_QSTR___name__) {
+		dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)));
+	}
+}
+#endif
+
 const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
@@ -263,4 +276,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
+#if MICROPY_PY_GENERATOR_ATTRS
+	.attr = gen_attr,
+#endif
 };
