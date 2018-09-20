@@ -63,6 +63,7 @@
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1ffff7ba)
 #define ADC_CAL1                ((uint16_t*)0x1ffff7b8)
 #define ADC_CAL2                ((uint16_t*)0x1ffff7c2)
@@ -71,6 +72,7 @@
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1fff7a2a)
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
@@ -79,6 +81,7 @@
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_SCALE_V             (3.3f)
 #if defined(STM32F722xx) || defined(STM32F723xx) || \
     defined(STM32F732xx) || defined(STM32F733xx)
 #define ADC_CAL_ADDRESS         (0x1ff07a2a)
@@ -93,6 +96,7 @@
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (16)
+#define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1FF1E860)
 #define ADC_CAL1                ((uint16_t*)(0x1FF1E820))
 #define ADC_CAL2                ((uint16_t*)(0x1FF1E840))
@@ -102,6 +106,7 @@
 
 #define ADC_FIRST_GPIO_CHANNEL  (1)
 #define ADC_LAST_GPIO_CHANNEL   (16)
+#define ADC_SCALE_V             (3.0f)
 #define ADC_CAL_ADDRESS         (0x1fff75aa)
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS - 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 0x20))
@@ -144,7 +149,7 @@
 #define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
 
 // scale and calibration values for VBAT and VREF
-#define ADC_SCALE (3.3f / 4095)
+#define ADC_SCALE (ADC_SCALE_V / 4095)
 #define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
 typedef struct _pyb_obj_adc_t {
@@ -791,7 +796,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_v
 STATIC mp_obj_t adc_all_read_vref(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = MP_OBJ_TO_PTR(self_in);
     adc_read_core_vref(&self->handle);
-    return mp_obj_new_float(3.3 * adc_refcor);
+    return mp_obj_new_float(ADC_SCALE_V * adc_refcor);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_vref_obj, adc_all_read_vref);
 #endif
