@@ -325,6 +325,11 @@
 #define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC MICROPY_PY_BUILTINS_STR_UNICODE
 #endif
 
+// Whether math.factorial is fast and large or small and slow
+#ifndef MICROPY_OPT_FAST_FACTORIAL
+#define MICROPY_OPT_FAST_FACTORIAL (0)
+#endif
+
 // Whether to enable constant folding; eg 1+2 rewritten as 3
 #ifndef MICROPY_COMP_CONST_FOLDING
 #define MICROPY_COMP_CONST_FOLDING (1)
@@ -981,6 +986,11 @@ typedef double mp_float_t;
 // Whether to provide special math functions: math.{erf,erfc,gamma,lgamma}
 #ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (0)
+#endif
+
+// Whether to provide math.factorial function
+#ifndef MICROPY_PY_MATH_FACTORIAL
+#define MICROPY_PY_MATH_FACTORIAL (0)
 #endif
 
 // Whether to provide "cmath" module
