@@ -145,6 +145,10 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             size_t n_state = mp_decode_uint_value(self->code_state.fun_bc->bytecode);
             self->code_state.ip = 0;
             *ret_val = self->code_state.state[n_state - 1];
+            // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(*ret_val)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+                *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator raised StopIteration");
+            }
             break;
         }
     }
@@ -168,15 +172,6 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             return ret;
 
         case MP_VM_RETURN_EXCEPTION:
-            // TODO: Optimization of returning MP_OBJ_STOP_ITERATION is really part
-            // of mp_iternext() protocol, but this function is called by other methods
-            // too, which may not handled MP_OBJ_STOP_ITERATION.
-            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                mp_obj_t val = mp_obj_exception_get_value(ret);
-                if (val == mp_const_none) {
-                    return MP_OBJ_STOP_ITERATION;
-                }
-            }
             nlr_raise(ret);
     }
 }
@@ -216,11 +211,10 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
         case MP_VM_RETURN_YIELD:
             mp_raise_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit");
 
-        // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
+        // Swallow GeneratorExit (== successful close), and re-raise any other
         case MP_VM_RETURN_EXCEPTION:
             // ret should always be an instance of an exception class
-            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit)) ||
-                mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
                 return mp_const_none;
             }
             nlr_raise(ret);
