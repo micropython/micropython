@@ -183,6 +183,7 @@ STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args
     ret = mbedtls_pk_parse_key(&pk, bufkey.buf, bufkey.len + 1, NULL, 0);
     if ( ret == 0 ) {
         o->rsa_key_type = RSA_KEYTYPE_PRIVATE;
+        printf("Private key\n"); //debug
     } else {
         ret = mbedtls_pk_parse_public_key(&pk, bufkey.buf, bufkey.len + 1);
         if (ret != 0) {
@@ -190,6 +191,7 @@ STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args
             mp_raise_ValueError("Unable to parse key");
         }
         o->rsa_key_type = RSA_KEYTYPE_PUBLIC;
+        printf("Public key\n"); //debug
     }
 
     if( !mbedtls_pk_can_do( &pk, MBEDTLS_PK_RSA ) )
@@ -252,6 +254,8 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) 
     mp_obj_t sign_buf = args[2];
     mp_buffer_info_t sign_bufinfo;
     mp_get_buffer_raise(sign_buf, &sign_bufinfo, MP_BUFFER_READ);
+    
+    if (mbedtls_rsa_check_pubkey(self->rsa)) : printf("Public key capable\n"); //debug
     
     int ret;
     unsigned char hash[32];
