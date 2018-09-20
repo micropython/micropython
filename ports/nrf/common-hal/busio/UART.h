@@ -36,7 +36,7 @@ typedef struct {
     mp_obj_base_t base;
     uint32_t baudrate;
     uint32_t timeout_ms;
-    volatile int32_t xferred_bytes;
+    volatile int32_t tx_count;
 
     uint8_t* buffer;
     uint32_t bufsize;

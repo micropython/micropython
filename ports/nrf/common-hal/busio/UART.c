@@ -56,7 +56,7 @@ static void uart_callback_irq (const nrfx_uart_event_t * event, void * context) 
 
     switch ( event->type ) {
         case NRFX_UART_EVT_TX_DONE:
-            self->xferred_bytes = event->data.rxtx.bytes;
+            self->tx_count = event->data.rxtx.bytes;
         break;
 
         case NRFX_UART_EVT_RX_DONE:
@@ -225,25 +225,20 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
     return 0;
 #else
-    self->xferred_bytes = 0;
+    self->tx_count = 0;
 
     (*errcode) = nrfx_uart_tx(&_uart, data, len);
     _VERIFY_ERR(*errcode);
     (*errcode) = 0;
 
     uint64_t start_ticks = ticks_ms;
-    while ( (0 == self->xferred_bytes) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    while ( (0 == self->tx_count) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
-        // break if zero timeout
-        if ( self->timeout_ms == 0 ) {
-            break;
-        }
     }
 
-    if ( self->xferred_bytes <= 0 ) {
-        mp_raise_msg_varg(&mp_type_AssertionError, translate("failed"));
+    if ( self->tx_count <= 0 ) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
