@@ -51,6 +51,12 @@ static nrfx_uart_t _uart = NRFX_UART_INSTANCE(0);
 
 static uint32_t get_nrf_baud (uint32_t baudrate);
 
+static inline bool is_receiving (busio_uart_obj_t *self) {
+    (void) self;
+    return nrf_uart_int_enable_check(_uart.p_reg, NRF_UART_INT_MASK_RXDRDY);
+}
+
+
 static uint32_t rd_error = 0;
 
 static void uart_callback_irq (const nrfx_uart_event_t * event, void * context) {
@@ -62,24 +68,17 @@ static void uart_callback_irq (const nrfx_uart_event_t * event, void * context) 
         break;
 
         case NRFX_UART_EVT_RX_DONE:
-            //            mp_raise_msg_varg(&mp_type_AssertionError, translate("error = 0x%08lX "), event->data.rxtx.bytes);
-//            for ( int i = 0; i < event->data.rxtx.bytes; i++ ) {
-//                if ( 0 > ringbuf_put(&self->rx_rbuf, self->rx_xact_buf[i]) ) {
-//                    // buffer is full, overwrite old data
-//                    ringbuf_get(&self->rx_rbuf);
-//                    ringbuf_put(&self->rx_rbuf, self->rx_xact_buf[i]);
-//                }
-//            }
-//
-//            nrfx_uart_rx(&_uart, self->rx_xact_buf, sizeof(self->rx_xact_buf));
-//            nrfx_uart_rx_enable(&_uart);
-
-            self->rx_count = event->data.rxtx.bytes;
+            self->rx_count += event->data.rxtx.bytes;
         break;
 
         default:
             rd_error = event->data.error.error_mask;
-            self->xferred_bytes = -(event->data.error.rxtx.bytes);
+
+            // Walkaround for first 2 error after nrfx_uart_rx_enable()
+            // queue RX if there is no data and no on-going rx
+//            if ( !self->rx_count && !is_receiving(self) ) {
+//                nrfx_uart_rx(&_uart, self->buffer, self->bufsize);
+//            }
         break;
     }
 }
@@ -92,16 +91,16 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 #ifndef NRF52840_XXAA
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
 #else
-    if ( parity == PARITY_ODD ) {
-        mp_raise_ValueError(translate("busio.UART odd parity is not supported"));
-    }
-
     if ( (tx == mp_const_none) || (rx == mp_const_none) ) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
 
     if ( receiver_buffer_size == 0 ) {
         mp_raise_ValueError(translate("Invalid buffer size"));
+    }
+
+    if ( parity == PARITY_ODD ) {
+        mp_raise_ValueError(translate("busio.UART odd parity is not supported"));
     }
 
     nrfx_uart_config_t config = {
@@ -112,14 +111,14 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         .p_context = self,
         .hwfc = NRF_UART_HWFC_DISABLED,
         .parity = (parity == PARITY_NONE) ? NRF_UART_PARITY_EXCLUDED : NRF_UART_PARITY_INCLUDED,
-        .baudrate = NRF_UART_BAUDRATE_9600,    // get_nrf_baud(baudrate),
+        .baudrate = get_nrf_baud(baudrate),
         .interrupt_priority = 7
     };
 
     nrfx_uart_uninit(&_uart);
     _VERIFY_ERR(nrfx_uart_init(&_uart, &config, uart_callback_irq));
 
-    // Init ring buffer for rx
+    // Init buffer for rx
     self->buffer = (uint8_t *) gc_alloc(receiver_buffer_size, false, false);
     if ( !self->buffer ) {
         nrfx_uart_uninit(&_uart);
@@ -130,8 +129,11 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     self->baudrate = baudrate;
     self->timeout_ms = timeout;
 
-    _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, self->bufsize));
     nrfx_uart_rx_enable(&_uart);
+
+    // Somehow the first 2 calls of nrfx_uart_rx  will (probably) cause Frame, then Break error
+    // effectively cancel the rx preps --> Walkaround: keep calling nrfx_uart_rx in error handler if needed
+    _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, self->bufsize));
 #endif
 }
 
@@ -167,44 +169,41 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         rd_error = 0;
     }
 
+    printf("rx count = 0x%08lX\n", self->rx_count);
+
     size_t remain = len;
+
 //    uint64_t start_ticks = ticks_ms;
+//
 //    while ( remain && (ticks_ms - start_ticks < self->timeout_ms) ) {
-//        if ( self->rx_count ) {
-//            size_t cnt = MIN(self->rx_count, remain);
+//        // have enough or buffer is full
+//        if ( (self->rx_count >= remain) || (self->rx_count == self->bufsize) ) {
+//            if ( is_receiving(self) ) {
+//                nrfx_uart_rx_abort(&_uart);
+//            }
+//
+//            const size_t cnt = MIN(self->rx_count, remain);
+//
 //            memcpy(data, self->buffer, cnt);
 //            data += cnt;
 //            remain -= cnt;
 //
-//            _VERIFY_ERR(nrfx_uart_rx(&_uart, self->rx_xact_buf, sizeof(self->rx_xact_buf)));
-//            nrfx_uart_rx_enable(&_uart);
-//        }
-//#if 0
-//        uint32_t received = common_hal_busio_uart_rx_characters_available(self);
+//            self->rx_count -= cnt;
 //
-//        // enough bytes received or ringbuffer is full
-//        if ( (received >= remain) || (received == self->rx_rbuf.size - 1) ) {
-//            nrfx_uart_rx_abort(&_uart);
-//
-//            while ( !_ringbuf_is_empty(&self->rx_rbuf) ) {
-//                *data++ = ringbuf_get(&self->rx_rbuf);
-//                remain--;
+//            // shift buffer if we didn't consume it all
+//            if ( self->rx_count ) {
+//                memmove(self->buffer, self->buffer + cnt, self->rx_count);
 //            }
-//
-//            _VERIFY_ERR(nrfx_uart_rx(&_uart, self->rx_xact_buf, sizeof(self->rx_xact_buf)));
-//            nrfx_uart_rx_enable(&_uart);
 //        }
-//#endif
+//
+////        _VERIFY_ERR(nrfx_uart_rx(&_uart, self->rx_xact_buf, sizeof(self->rx_xact_buf)));
 //
 //#ifdef MICROPY_VM_HOOK_LOOP
 //        MICROPY_VM_HOOK_LOOP
 //#endif
 //    }
 
-    printf("rx count = 0x%08lX\n", self->rx_count);
-
     _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, self->bufsize));
-    nrfx_uart_rx_enable(&_uart);
 
     return len - remain;
 #endif
@@ -259,13 +258,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 #ifndef NRF52840_XXAA
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
 #else
-//    int count = ((volatile uint16_t) self->rx_rbuf.iput) - ((volatile uint16_t) self->rx_rbuf.iget);
-//    if ( count < 0 ) {
-//        count += self->rx_rbuf.size;
-//    }
-//
-//    return count;
-    return self->rx_count;
+return self->rx_count + (nrfx_uart_rx_ready(&_uart) ? 1 : 0);
 #endif
 }
 
