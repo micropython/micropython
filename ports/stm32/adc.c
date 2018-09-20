@@ -124,7 +124,8 @@
       defined(STM32F722xx) || defined(STM32F723xx) || \
       defined(STM32F732xx) || defined(STM32F733xx) || \
       defined(STM32F746xx) || defined(STM32F767xx) || \
-      defined(STM32F769xx) || defined(STM32F446xx)
+      defined(STM32F769xx) || defined(STM32F446xx) || \
+      defined(STM32F765xx)
 #define VBAT_DIV (4)
 #elif defined(STM32H743xx)
 #define VBAT_DIV (4)
