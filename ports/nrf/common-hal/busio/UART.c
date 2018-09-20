@@ -36,7 +36,7 @@
 
 #include "tick.h"
 #include "nrfx_uart.h"
-#include <stdio.h>
+#include <string.h>
 
 static nrfx_uart_t _uart = NRFX_UART_INSTANCE(0);
 
@@ -51,14 +51,6 @@ static nrfx_uart_t _uart = NRFX_UART_INSTANCE(0);
 
 static uint32_t get_nrf_baud (uint32_t baudrate);
 
-static inline bool is_receiving (busio_uart_obj_t *self) {
-    (void) self;
-    return nrf_uart_int_enable_check(_uart.p_reg, NRF_UART_INT_MASK_RXDRDY);
-}
-
-
-static uint32_t rd_error = 0;
-
 static void uart_callback_irq (const nrfx_uart_event_t * event, void * context) {
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
 
@@ -69,16 +61,10 @@ static void uart_callback_irq (const nrfx_uart_event_t * event, void * context) 
 
         case NRFX_UART_EVT_RX_DONE:
             self->rx_count += event->data.rxtx.bytes;
+            self->receiving = false;
         break;
 
         default:
-            rd_error = event->data.error.error_mask;
-
-            // Walkaround for first 2 error after nrfx_uart_rx_enable()
-            // queue RX if there is no data and no on-going rx
-//            if ( !self->rx_count && !is_receiving(self) ) {
-//                nrfx_uart_rx(&_uart, self->buffer, self->bufsize);
-//            }
         break;
     }
 }
@@ -105,7 +91,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 
     nrfx_uart_config_t config = {
         .pseltxd = tx->number,
-        .pseltxd = rx->number,
+        .pselrxd = rx->number,
         .pselcts = NRF_UART_PSEL_DISCONNECTED,
         .pselrts = NRF_UART_PSEL_DISCONNECTED,
         .p_context = self,
@@ -131,8 +117,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 
     nrfx_uart_rx_enable(&_uart);
 
-    // Somehow the first 2 calls of nrfx_uart_rx  will (probably) cause Frame, then Break error
-    // effectively cancel the rx preps --> Walkaround: keep calling nrfx_uart_rx in error handler if needed
+    self->receiving = true;
     _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, self->bufsize));
 #endif
 }
@@ -157,6 +142,21 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 #endif
 }
 
+static size_t get_rx_data (busio_uart_obj_t *self, uint8_t *data, size_t len) {
+    // up to max received
+    const size_t cnt = MIN(self->rx_count, len);
+
+    memcpy(data, self->buffer, cnt);
+    self->rx_count -= cnt;
+
+    // shift buffer if we didn't consume it all
+    if ( self->rx_count ) {
+        memmove(self->buffer, self->buffer + cnt, self->rx_count);
+    }
+
+    return cnt;
+}
+
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
 #ifndef NRF52840_XXAA
@@ -164,46 +164,56 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     return 0;
 #else
 
-    if ( rd_error ) {
-        printf("error = 0x%08lX\n", rd_error);
-        rd_error = 0;
+    size_t remain = len;
+    uint64_t start_ticks = ticks_ms;
+
+    // nrfx_uart doesn't provide API to check number of bytes received so far for the on going reception.
+    // we have to abort the current transfer to get rx_count updated !!!
+    if ( self->receiving ) {
+        nrfx_uart_rx_abort(&_uart);
+        while ( self->receiving ) {
+        }
     }
 
-    printf("rx count = 0x%08lX\n", self->rx_count);
+    size_t cnt = get_rx_data(self, data, remain);
+    data += cnt;
+    remain -= cnt;
 
-    size_t remain = len;
+    if ( self->timeout_ms ) {
+        do {
+            if ( remain == 0 ) {
+                break;
+            }
 
-//    uint64_t start_ticks = ticks_ms;
-//
-//    while ( remain && (ticks_ms - start_ticks < self->timeout_ms) ) {
-//        // have enough or buffer is full
-//        if ( (self->rx_count >= remain) || (self->rx_count == self->bufsize) ) {
-//            if ( is_receiving(self) ) {
-//                nrfx_uart_rx_abort(&_uart);
-//            }
-//
-//            const size_t cnt = MIN(self->rx_count, remain);
-//
-//            memcpy(data, self->buffer, cnt);
-//            data += cnt;
-//            remain -= cnt;
-//
-//            self->rx_count -= cnt;
-//
-//            // shift buffer if we didn't consume it all
-//            if ( self->rx_count ) {
-//                memmove(self->buffer, self->buffer + cnt, self->rx_count);
-//            }
-//        }
-//
-////        _VERIFY_ERR(nrfx_uart_rx(&_uart, self->rx_xact_buf, sizeof(self->rx_xact_buf)));
-//
-//#ifdef MICROPY_VM_HOOK_LOOP
-//        MICROPY_VM_HOOK_LOOP
-//#endif
-//    }
+            // no data, no transfer, start with only 1 byte each so that we could know when data is available
+            if ( !self->rx_count && !self->receiving ) {
+                self->receiving = true;
+                _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, 1));
+            }
 
-    _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, self->bufsize));
+            if ( self->rx_count ) {
+                *data++ = self->buffer[0];
+                remain--;
+                self->rx_count--;
+            }
+
+#ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+#endif
+
+        } while ( ticks_ms - start_ticks < self->timeout_ms );
+    }
+
+    // abort oon-going 1 byte transfer
+    if ( self->receiving ) {
+        nrfx_uart_rx_abort(&_uart);
+        while ( self->receiving ) {
+        }
+    }
+
+    // queue full buffer transfer
+    self->receiving = true;
+    _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer + self->rx_count, self->bufsize - self->rx_count));
 
     return len - remain;
 #endif
@@ -226,6 +236,10 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
+        // break if zero timeout
+        if ( self->timeout_ms == 0 ) {
+            break;
+        }
     }
 
     if ( self->xferred_bytes <= 0 ) {
