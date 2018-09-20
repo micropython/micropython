@@ -460,8 +460,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     // MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
     [MP_BINARY_OP_CONTAINS] = MP_QSTR___contains__,
 
-    // All inplace methods are optional, and normal methods will be used
-    // as a fallback.
+    // If an inplace method is not found a normal method will be used as a fallback
     [MP_BINARY_OP_INPLACE_ADD] = MP_QSTR___iadd__,
     [MP_BINARY_OP_INPLACE_SUBTRACT] = MP_QSTR___isub__,
     #if MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
