@@ -69,6 +69,10 @@ bool sdram_init(void) {
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_BA1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_BA1);
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_NBL0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_NBL0);
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_NBL1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_NBL1);
+    #ifdef MICROPY_HW_FMC_NBL2
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_NBL2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_NBL2);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_NBL3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_NBL3);
+    #endif
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_A0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_A0);
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_A1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_A1);
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_A2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_A2);
@@ -100,6 +104,24 @@ bool sdram_init(void) {
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D13, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D13);
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D14, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D14);
     mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D15, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D15);
+    #ifdef MICROPY_HW_FMC_D16
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D16, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D16);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D17, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D17);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D18, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D18);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D19, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D19);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D20, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D20);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D21, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D21);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D22, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D22);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D23, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D23);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D24, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D24);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D25, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D25);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D26, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D26);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D27, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D27);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D28, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D28);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D29, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D29);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D30, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D30);
+    mp_hal_pin_config_alt_static(MICROPY_HW_FMC_D31, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_FMC_D31);
+    #endif
 
     /* SDRAM device configuration */
     hsdram.Instance = FMC_SDRAM_DEVICE;
@@ -225,7 +247,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     /* Configure the MPU attributes as Write-Through for External SDRAM */
     MPU_InitStruct.Enable = MPU_REGION_ENABLE;
     MPU_InitStruct.BaseAddress = SDRAM_START_ADDRESS;
-    MPU_InitStruct.Size = MPU_REGION_SIZE_8MB;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_256MB;
     MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
     MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
     MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
