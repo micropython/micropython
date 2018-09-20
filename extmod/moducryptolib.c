@@ -159,7 +159,6 @@ STATIC void aes_process_cbc_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *
     mbedtls_aes_crypt_cbc(&ctx->u.mbedtls_ctx, encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT, in_len, ctx->iv, in, out);
 }
 
-//------------------
 typedef struct _mp_obj_rsa_t {
     mp_obj_base_t base;
     mbedtls_rsa_context *rsa;
@@ -183,7 +182,6 @@ STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args
     ret = mbedtls_pk_parse_key(&pk, bufkey.buf, bufkey.len + 1, NULL, 0);
     if ( ret == 0 ) {
         o->rsa_key_type = RSA_KEYTYPE_PRIVATE;
-        printf("Private key\n"); //debug
     } else {
         ret = mbedtls_pk_parse_public_key(&pk, bufkey.buf, bufkey.len + 1);
         if (ret != 0) {
@@ -191,7 +189,6 @@ STATIC mp_obj_t ucryptolib_rsa_make_new(const mp_obj_type_t *type, size_t n_args
             mp_raise_ValueError("Unable to parse key");
         }
         o->rsa_key_type = RSA_KEYTYPE_PUBLIC;
-        printf("Public key\n"); //debug
     }
 
     if( !mbedtls_pk_can_do( &pk, MBEDTLS_PK_RSA ) )
@@ -254,9 +251,7 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) 
     mp_obj_t sign_buf = args[2];
     mp_buffer_info_t sign_bufinfo;
     mp_get_buffer_raise(sign_buf, &sign_bufinfo, MP_BUFFER_READ);
-    
-    if (mbedtls_rsa_check_pubkey(self->rsa))  printf("Public key capable\n"); //debug
-    
+        
     int ret;
     unsigned char hash[32];
     if( ( ret = mbedtls_md(
@@ -285,8 +280,6 @@ STATIC const mp_obj_type_t ucryptolib_rsa_type = {
     .make_new = ucryptolib_rsa_make_new,
     .locals_dict = (void*)&ucryptolib_rsa_locals_dict,
 };
-
-//------------------
 
 #endif
 
@@ -405,19 +398,6 @@ STATIC const mp_obj_type_t ucryptolib_aes_type = {
     .make_new = ucryptolib_aes_make_new,
     .locals_dict = (void*)&ucryptolib_aes_locals_dict,
 };
-
-/*
-STATIC mp_obj_t ucryptolib_rsa_PKCS1signature(size_t n_args, const mp_obj_t *args) {
-    return xxx(n_args, args, true);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1signature_obj, 2, 3, ucryptolib_rsa_PKCS1signature);
-
-STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) {
-    return xxx(n_args, args, false);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_rsa_PKCS1verify_obj, 2, 3, ucryptolib_rsa_PKCS1verify);
-*/
-
 
 STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib) },
