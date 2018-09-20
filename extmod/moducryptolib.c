@@ -255,7 +255,7 @@ STATIC mp_obj_t ucryptolib_rsa_PKCS1verify(size_t n_args, const mp_obj_t *args) 
     mp_buffer_info_t sign_bufinfo;
     mp_get_buffer_raise(sign_buf, &sign_bufinfo, MP_BUFFER_READ);
     
-    if (mbedtls_rsa_check_pubkey(self->rsa)) : printf("Public key capable\n"); //debug
+    if (mbedtls_rsa_check_pubkey(self->rsa))  printf("Public key capable\n"); //debug
     
     int ret;
     unsigned char hash[32];
