@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-20 21:52-0400\n"
+"POT-Creation-Date: 2018-09-21 12:23-0400\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -298,12 +298,12 @@ msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
@@ -345,15 +345,20 @@ msgstr "Broche invalide pour le canal droit"
 msgid "Cannot output both channels on the same pin"
 msgstr "On ne peut mettre les deux canaux sur la même broche"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
 msgstr "Tous les timers sont utilisés"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:215
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -2401,9 +2406,9 @@ msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être longue de 32 octets"
-
-#, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "'len' doit être un multiple de 4"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être longue de 32 octets"

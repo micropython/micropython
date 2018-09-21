@@ -294,7 +294,7 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
     uint32_t max_sample_rate = 1000000;
     #endif
     if (sample_rate > max_sample_rate) {
-        mp_raise_ValueError_varg("Sample rate too high. It must be less than %d", max_sample_rate);
+        mp_raise_ValueError_varg(translate("Sample rate too high. It must be less than %d"), max_sample_rate);
     }
     #ifdef SAMD21
     result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
