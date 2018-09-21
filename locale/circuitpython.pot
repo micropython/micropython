@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-18 22:20-0400\n"
+"POT-Creation-Date: 2018-09-20 21:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -356,7 +356,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:58
+#: ports/nrf/common-hal/busio/I2C.c:77
 msgid "Invalid pins"
 msgstr ""
 
@@ -683,6 +683,18 @@ msgstr ""
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/I2C.c:91
+msgid "All I2C peripherals are in use"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/SPI.c:109
+msgid "All SPI peripherals are in use"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/SPI.c:170
+msgid "Baud rate too high for this SPI peripheral"
 msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
