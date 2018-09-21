@@ -215,7 +215,11 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
         case PYB_UART_3:
             uart_unit = 3;
             UARTx = USART3;
+            #if defined(STM32F0)
+            irqn = USART3_8_IRQn;
+            #else
             irqn = USART3_IRQn;
+            #endif
             pins[0] = MICROPY_HW_UART3_TX;
             pins[1] = MICROPY_HW_UART3_RX;
             #if defined(MICROPY_HW_UART3_RTS)
@@ -235,22 +239,34 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
         #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
         case PYB_UART_4:
             uart_unit = 4;
+            #if defined(STM32F0)
+            UARTx = USART4;
+            irqn = USART3_8_IRQn;
+            __HAL_RCC_USART4_CLK_ENABLE();
+            #else
             UARTx = UART4;
             irqn = UART4_IRQn;
+            __HAL_RCC_UART4_CLK_ENABLE();
+            #endif
             pins[0] = MICROPY_HW_UART4_TX;
             pins[1] = MICROPY_HW_UART4_RX;
-            __HAL_RCC_UART4_CLK_ENABLE();
             break;
         #endif
 
         #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
         case PYB_UART_5:
             uart_unit = 5;
+            #if defined(STM32F0)
+            UARTx = USART5;
+            irqn = USART3_8_IRQn;
+            __HAL_RCC_USART5_CLK_ENABLE();
+            #else
             UARTx = UART5;
             irqn = UART5_IRQn;
+            __HAL_RCC_UART5_CLK_ENABLE();
+            #endif
             pins[0] = MICROPY_HW_UART5_TX;
             pins[1] = MICROPY_HW_UART5_RX;
-            __HAL_RCC_UART5_CLK_ENABLE();
             break;
         #endif
 
@@ -258,7 +274,11 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
         case PYB_UART_6:
             uart_unit = 6;
             UARTx = USART6;
+            #if defined(STM32F0)
+            irqn = USART3_8_IRQn;
+            #else
             irqn = USART6_IRQn;
+            #endif
             pins[0] = MICROPY_HW_UART6_TX;
             pins[1] = MICROPY_HW_UART6_RX;
             #if defined(MICROPY_HW_UART6_RTS)
@@ -278,11 +298,17 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
         #if defined(MICROPY_HW_UART7_TX) && defined(MICROPY_HW_UART7_RX)
         case PYB_UART_7:
             uart_unit = 7;
+            #if defined(STM32F0)
+            UARTx = USART7;
+            irqn = USART3_8_IRQn;
+            __HAL_RCC_USART7_CLK_ENABLE();
+            #else
             UARTx = UART7;
             irqn = UART7_IRQn;
+            __HAL_RCC_UART7_CLK_ENABLE();
+            #endif
             pins[0] = MICROPY_HW_UART7_TX;
             pins[1] = MICROPY_HW_UART7_RX;
-            __HAL_RCC_UART7_CLK_ENABLE();
             break;
         #endif
 
@@ -806,6 +832,14 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         } else if (strcmp(port, MICROPY_HW_UART6_NAME) == 0) {
             uart_id = PYB_UART_6;
         #endif
+        #ifdef MICROPY_HW_UART7_NAME
+        } else if (strcmp(port, MICROPY_HW_UART7_NAME) == 0) {
+            uart_id = PYB_UART_7;
+        #endif
+        #ifdef MICROPY_HW_UART8_NAME
+        } else if (strcmp(port, MICROPY_HW_UART8_NAME) == 0) {
+            uart_id = PYB_UART_8;
+        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
         }
@@ -876,12 +910,24 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         __HAL_RCC_UART4_RELEASE_RESET();
         __HAL_RCC_UART4_CLK_DISABLE();
     #endif
+    #if defined(USART4)
+    } else if (uart->Instance == USART4) {
+        __HAL_RCC_USART4_FORCE_RESET();
+        __HAL_RCC_USART4_RELEASE_RESET();
+        __HAL_RCC_USART4_CLK_DISABLE();
+    #endif
     #if defined(UART5)
     } else if (uart->Instance == UART5) {
         HAL_NVIC_DisableIRQ(UART5_IRQn);
         __HAL_RCC_UART5_FORCE_RESET();
         __HAL_RCC_UART5_RELEASE_RESET();
         __HAL_RCC_UART5_CLK_DISABLE();
+    #endif
+    #if defined(USART5)
+    } else if (uart->Instance == USART5) {
+        __HAL_RCC_USART5_FORCE_RESET();
+        __HAL_RCC_USART5_RELEASE_RESET();
+        __HAL_RCC_USART5_CLK_DISABLE();
     #endif
     #if defined(UART6)
     } else if (uart->Instance == USART6) {
@@ -897,12 +943,24 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         __HAL_RCC_UART7_RELEASE_RESET();
         __HAL_RCC_UART7_CLK_DISABLE();
     #endif
+    #if defined(USART7)
+    } else if (uart->Instance == USART7) {
+        __HAL_RCC_USART7_FORCE_RESET();
+        __HAL_RCC_USART7_RELEASE_RESET();
+        __HAL_RCC_USART7_CLK_DISABLE();
+    #endif
     #if defined(UART8)
     } else if (uart->Instance == UART8) {
         HAL_NVIC_DisableIRQ(UART8_IRQn);
         __HAL_RCC_UART8_FORCE_RESET();
         __HAL_RCC_UART8_RELEASE_RESET();
         __HAL_RCC_UART8_CLK_DISABLE();
+    #endif
+    #if defined(USART8)
+    } else if (uart->Instance == USART8) {
+        __HAL_RCC_USART8_FORCE_RESET();
+        __HAL_RCC_USART8_RELEASE_RESET();
+        __HAL_RCC_USART8_CLK_DISABLE();
     #endif
     }
     return mp_const_none;
