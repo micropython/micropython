@@ -186,12 +186,12 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self, uint32_t baudrate, ui
 
 bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
     bool grabbed_lock = false;
-//    CRITICAL_SECTION_ENTER()
-//        if (!self->has_lock) {
-            grabbed_lock = true;
-            self->has_lock = true;
-//        }
-//    CRITICAL_SECTION_LEAVE();
+    // NRFX_CRITICAL_SECTION_ENTER();
+    if (!self->has_lock) {
+        grabbed_lock = true;
+        self->has_lock = true;
+    }
+    // NRFX_CRITICAL_SECTION_EXIT();
     return grabbed_lock;
 }
 
