@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-20 21:52-0400\n"
+"POT-Creation-Date: 2018-09-21 12:23-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -291,12 +291,12 @@ msgid "Too many channels in sample."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
 msgid "No DMA channel found"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 
@@ -338,14 +338,19 @@ msgstr ""
 msgid "Cannot output both channels on the same pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:215
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
 msgid "All event channels in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
