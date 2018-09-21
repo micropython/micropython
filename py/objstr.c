@@ -1387,7 +1387,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     GET_STR_DATA_LEN(args[0], str, len);
     int arg_i = 0;
     vstr_t vstr = mp_obj_str_format_helper((const char*)str, (const char*)str + len, &arg_i, n_args, args, kwargs);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_vstr(mp_obj_get_type(args[0]), &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
 
