@@ -110,13 +110,14 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     _pm_enable_bus_clock(PM_BUS_APBC, DAC);
     #endif
 
-    // SAMD21: This clock should be <= 12 MHz, per datasheet section 47.6.3.
-    // SAMD51: This clock should be <= 350kHz, per datasheet table 37-6.
+    // SAMD51: This clock should be <= 12 MHz, per datasheet section 47.6.3.
+    // SAMD21: This clock is 48mhz despite the datasheet saying it must only be <= 350kHz, per
+    // datasheet table 37-6. It's incorrect because the max output rate is 350ksps and is only
+    // achieved when the GCLK is more than 8mhz.
     _gclk_enable_channel(DAC_GCLK_ID, CONF_GCLK_DAC_SRC);
 
-
-        DAC->CTRLA.bit.SWRST = 1;
-        while (DAC->CTRLA.bit.SWRST == 1) {}
+    DAC->CTRLA.bit.SWRST = 1;
+    while (DAC->CTRLA.bit.SWRST == 1) {}
 
     bool channel0_enabled = true;
     #ifdef SAMD51
@@ -127,9 +128,11 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     if (channel0_enabled) {
         #ifdef SAMD21
         DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI;
+        // We disable the voltage pump because we always run at 3.3v.
         DAC->CTRLB.reg = DAC_CTRLB_REFSEL_AVCC |
                          DAC_CTRLB_LEFTADJ |
-                         DAC_CTRLB_EOEN;
+                         DAC_CTRLB_EOEN |
+                         DAC_CTRLB_VPD;
         #endif
         #ifdef SAMD51
         DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI0;
@@ -283,6 +286,16 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
         common_hal_audioio_audioout_stop(self);
     }
     audio_dma_result result = AUDIO_DMA_OK;
+    uint32_t sample_rate = audiosample_sample_rate(sample);
+    #ifdef SAMD21
+    uint32_t max_sample_rate = 350000;
+    #endif
+    #ifdef SAMD51
+    uint32_t max_sample_rate = 1000000;
+    #endif
+    if (sample_rate > max_sample_rate) {
+        mp_raise_ValueError_varg("Sample rate too high. It must be less than %d", max_sample_rate);
+    }
     #ifdef SAMD21
     result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
                                       false /* output unsigned */,
