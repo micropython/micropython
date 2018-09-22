@@ -106,7 +106,7 @@ static mp_obj_t mp_gattc_char_data_observer;
 
 #if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
 #include "nrf_nvic.h"
-#define BLE_GAP_ADV_MAX_SIZE BLE_GATT_ATT_MTU_DEFAULT
+#define BLE_GAP_ADV_MAX_SIZE 31
 #define BLE_DRV_CONN_CONFIG_TAG 1
 
 static uint8_t m_adv_handle;
