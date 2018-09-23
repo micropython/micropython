@@ -325,11 +325,6 @@
 #define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC MICROPY_PY_BUILTINS_STR_UNICODE
 #endif
 
-// Whether math.factorial is fast and large or small and slow
-#ifndef MICROPY_OPT_FAST_FACTORIAL
-#define MICROPY_OPT_FAST_FACTORIAL (0)
-#endif
-
 // Whether to enable constant folding; eg 1+2 rewritten as 3
 #ifndef MICROPY_COMP_CONST_FOLDING
 #define MICROPY_COMP_CONST_FOLDING (1)
@@ -410,6 +405,13 @@
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE
 #define MICROPY_OPT_MPZ_BITWISE (0)
+#endif
+
+
+// Whether math.factorial is fast and large (1) or small and slow (0).
+// Increases Thumb code by about 64 bytes (from 70 bytes to 134).
+#ifndef MICROPY_OPT_MATH_FACTORIAL
+#define MICROPY_OPT_MATH_FACTORIAL (0)
 #endif
 
 /*****************************************************************************/

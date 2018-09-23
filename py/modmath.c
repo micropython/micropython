@@ -234,8 +234,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);
 
 
 // factorial(x)
-#ifdef MICROPY_PY_MATH_FACTORIAL
-#if MICROPY_OPT_FAST_FACTORIAL
+#if MICROPY_PY_MATH_FACTORIAL
+#if MICROPY_OPT_MATH_FACTORIAL
 // slightly efficient recursive factorial
 STATIC mp_obj_t mp_math_factorial_inner(mp_uint_t start, mp_uint_t end) {
     if (start == end) {
@@ -264,7 +264,6 @@ STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
     }
     return mp_math_factorial_inner(1, max);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_factorial_obj, mp_math_factorial);
 
 #else
 // squared difference factorial
@@ -289,8 +288,8 @@ STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
     }
     return prod;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_factorial_obj, mp_math_factorial);
 #endif
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_factorial_obj, mp_math_factorial);
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
@@ -335,7 +334,7 @@ STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_trunc), MP_ROM_PTR(&mp_math_trunc_obj) },
     { MP_ROM_QSTR(MP_QSTR_radians), MP_ROM_PTR(&mp_math_radians_obj) },
     { MP_ROM_QSTR(MP_QSTR_degrees), MP_ROM_PTR(&mp_math_degrees_obj) },
-    #ifdef MICROPY_PY_MATH_FACTORIAL
+    #if MICROPY_PY_MATH_FACTORIAL
     { MP_ROM_QSTR(MP_QSTR_factorial), MP_ROM_PTR(&mp_math_factorial_obj) },
     #endif
     #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
