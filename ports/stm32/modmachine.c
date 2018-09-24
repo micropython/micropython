@@ -568,6 +568,22 @@ STATIC mp_obj_t machine_sleep(void) {
     #endif
     }
 
+    #if defined(STM32F7)
+    if (RCC->DCKCFGR2 & RCC_DCKCFGR2_CK48MSEL) {
+        // Enable PLLSAI if it is selected as 48MHz source
+        RCC->CR |= RCC_CR_PLLSAION;
+        while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
+        }
+    }
+    #endif
+
+    #if defined(STM32L4)
+    // Enable PLLSAI1 for peripherals that use it
+    RCC->CR |= RCC_CR_PLLSAI1ON;
+    while (!(RCC->CR & RCC_CR_PLLSAI1RDY)) {
+    }
+    #endif
+
     #endif
 
     return mp_const_none;
