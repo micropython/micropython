@@ -221,6 +221,7 @@ SRC_C = \
 	irq.c \
 	pendsv.c \
 	systick.c  \
+	powerctrl.c \
 	pybthread.c \
 	timer.c \
 	led.c \
