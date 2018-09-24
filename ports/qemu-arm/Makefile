@@ -7,6 +7,27 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+BOARD ?= netduino2
+
+ifeq ($(BOARD),netduino2)
+CFLAGS += -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
+CFLAGS += -DQEMU_SOC_STM32
+LDSCRIPT = stm32.ld
+endif
+
+ifeq ($(BOARD),microbit)
+CFLAGS += -mthumb -mcpu=cortex-m0 -mfloat-abi=soft
+CFLAGS += -DQEMU_SOC_NRF51
+LDSCRIPT = nrf51.ld
+QEMU_EXTRA = -global nrf51-soc.flash-size=1048576 -global nrf51-soc.sram-size=262144
+endif
+
+ifeq ($(BOARD),mps2-an385)
+CFLAGS += -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
+CFLAGS += -DQEMU_SOC_MPS2
+LDSCRIPT = mps2.ld
+endif
+
 CROSS_COMPILE = arm-none-eabi-
 
 TINYTEST = $(TOP)/lib/tinytest
@@ -16,8 +37,7 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TINYTEST)
 
-CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(COPT) \
 	 -ffunction-sections -fdata-sections
 
 #Debugging/Optimization
@@ -34,9 +54,12 @@ endif
 ## else instead and according to the following files, this is what we need to pass to `$(CC).
 ## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/makefile.conf
 ## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/qemu/Makefile
-LDFLAGS= --specs=nano.specs --specs=rdimon.specs -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
+LDFLAGS= -T $(LDSCRIPT) --gc-sections -Map=$(@:.elf=.map)
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 SRC_COMMON_C = \
+	startup.c \
+	uart.c \
 	moduos.c \
 	modmachine.c \
 
@@ -47,6 +70,7 @@ SRC_TEST_C = \
 	test_main.c \
 
 LIB_SRC_C += $(addprefix lib/,\
+	libc/string0.c \
 	libm/math.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \
@@ -89,11 +113,11 @@ SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(LIB_SRC_C)
 all: run
 
 run: $(BUILD)/firmware.elf
-	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware.elf
+	qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -kernel $<
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(OBJ_COMMON) $(OBJ_RUN)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 include $(TOP)/py/mkrules.mk

@@ -15,10 +15,10 @@ $(BUILD)/tinytest.o:
 	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TINYTEST)/tinytest.c
 
 $(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 test: $(BUILD)/firmware-test.elf
-	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware-test.elf > $(BUILD)/console.out
+	qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -kernel $< > $(BUILD)/console.out
 	$(Q)tail -n2 $(BUILD)/console.out
 	$(Q)tail -n1 $(BUILD)/console.out | grep -q "status: 0"
