@@ -59,8 +59,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
         break;
 
         case NRFX_UART_EVT_RX_DONE:
-            self->rx_count += event->data.rxtx.bytes;
-            self->receiving = false;
+            self->rx_count = event->data.rxtx.bytes;
         break;
 
         default:
@@ -113,11 +112,6 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 
     self->baudrate = baudrate;
     self->timeout_ms = timeout;
-
-//    nrfx_uart_rx_enable(&_uart);
-//
-//    self->receiving = true;
-//    _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, self->bufsize));
 #endif
 }
 
@@ -125,8 +119,8 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 #ifndef NRF52840_XXAA
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
 #else
-    return (nrf_uart_rx_pin_get(_uart.p_reg) == NRF_UART_PSEL_DISCONNECTED) ||
-           (nrf_uart_tx_pin_get(_uart.p_reg) == NRF_UART_PSEL_DISCONNECTED);
+    return (nrf_uarte_rx_pin_get(_uart.p_reg) == NRF_UART_PSEL_DISCONNECTED) ||
+           (nrf_uarte_tx_pin_get(_uart.p_reg) == NRF_UART_PSEL_DISCONNECTED);
 #endif
 }
 
@@ -141,21 +135,6 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 #endif
 }
 
-static size_t get_rx_data (busio_uart_obj_t *self, uint8_t *data, size_t len) {
-    // up to max received
-    const size_t cnt = MIN(self->rx_count, len);
-
-    memcpy(data, self->buffer, cnt);
-    self->rx_count -= cnt;
-
-    // shift buffer if we didn't consume it all
-    if ( self->rx_count ) {
-        memmove(self->buffer, self->buffer + cnt, self->rx_count);
-    }
-
-    return cnt;
-}
-
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
 #ifndef NRF52840_XXAA
@@ -164,59 +143,35 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 #else
 
     size_t remain = len;
-#if 0
     uint64_t start_ticks = ticks_ms;
 
-    // nrfx_uart doesn't provide API to check number of bytes received so far for the on going reception.
-    // we have to abort the current transfer to get rx_count updated !!!
-    if ( self->receiving ) {
-        nrfx_uart_rx_abort(&_uart);
-        while ( self->receiving ) {
-        }
-    }
+    while ( remain && (ticks_ms - start_ticks < self->timeout_ms) ) {
+        const size_t cnt = MIN(self->bufsize, len);
 
-    size_t cnt = get_rx_data(self, data, remain);
-    data += cnt;
-    remain -= cnt;
+        self->rx_count = -1;
+        _VERIFY_ERR(nrfx_uarte_rx(&_uart, self->buffer, cnt));
 
-    if ( self->timeout_ms ) {
-        do {
-            if ( remain == 0 ) {
-                break;
-            }
-
-            // no data, no transfer, start with only 1 byte each so that we could know when data is available
-            if ( !self->rx_count && !self->receiving ) {
-                self->receiving = true;
-                _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer, 1));
-            }
-
-            if ( self->rx_count ) {
-                *data++ = self->buffer[0];
-                remain--;
-                self->rx_count--;
-            }
-
+        while ( (self->rx_count == -1) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
 #endif
+        }
 
-        } while ( ticks_ms - start_ticks < self->timeout_ms );
-    }
+        // Time up, abort rx use received so far
+        if ( self->rx_count == -1 ) {
+            nrfx_uarte_rx_abort(&_uart);
+            while ( self->rx_count == -1 ) {
+            }
+        }
 
-    // abort oon-going 1 byte transfer
-    if ( self->receiving ) {
-        nrfx_uart_rx_abort(&_uart);
-        while ( self->receiving ) {
+        if ( self->rx_count > 0 ) {
+            memcpy(data, self->buffer, self->rx_count);
+            data += self->rx_count;
+            remain -= self->rx_count;
         }
     }
-
-    // queue full buffer transfer
-    self->receiving = true;
-    _VERIFY_ERR(nrfx_uart_rx(&_uart, self->buffer + self->rx_count, self->bufsize - self->rx_count));
-#endif
+    
     return len - remain;
-
 #endif
 }
 
@@ -227,6 +182,10 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     return 0;
 #else
     if ( len == 0 ) return 0;
+
+    if ( !nrfx_uarte_tx_in_progress(&_uart) ) {
+        nrfx_uarte_tx_abort(&_uart);
+    }
 
     (*errcode) = nrfx_uarte_tx(&_uart, data, len);
     _VERIFY_ERR(*errcode);
@@ -255,7 +214,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
 #else
     self->baudrate = baudrate;
-    nrf_uart_baudrate_set(_uart.p_reg, get_nrf_baud(baudrate));
+    nrf_uarte_baudrate_set(_uart.p_reg, get_nrf_baud(baudrate));
 #endif
 }
 
@@ -263,8 +222,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 #ifndef NRF52840_XXAA
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
 #else
-//return self->rx_count + (nrfx_uart_rx_ready(&_uart) ? 1 : 0);
-    return false;
+    return 1;    // nrf_uart_event_check(_uart.p_reg, NRF_UART_EVENT_RXDRDY) ? 1 : 0;
 #endif
 }
 
@@ -277,8 +235,7 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
     return false;
 #else
-//    return !nrfx_uart_tx_in_progress(&_uart);
-    return true;
+    return !nrfx_uarte_tx_in_progress(&_uart);
 #endif
 }
 
