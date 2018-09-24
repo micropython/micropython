@@ -28,12 +28,16 @@
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
 
 #include "common-hal/microcontroller/Pin.h"
+#include "nrfx_uarte.h"
 
 #include "py/obj.h"
 #include "py/ringbuf.h"
 
 typedef struct {
     mp_obj_base_t base;
+
+    nrfx_uarte_t uarte;
+
     uint32_t baudrate;
     uint32_t timeout_ms;
 
