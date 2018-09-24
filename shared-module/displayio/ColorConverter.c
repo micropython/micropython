@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,18 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#include "shared-bindings/displayio/ColorConverter.h"
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self) {
+}
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
-
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
-
-void reset_board_busses(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+bool common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *self, uint32_t input_color, uint16_t* output_color) {
+    // TODO(tannewt): Validate the color input against the input format.
+    uint32_t r5 = (input_color >> 19);
+    uint32_t g6 = (input_color >> 10) & 0x3f;
+    uint32_t b5 = (input_color >> 3) & 0x1f;
+    uint32_t packed = r5 << 11 | g6 << 5 | b5;
+    // swap bytes
+    *output_color = __builtin_bswap16(packed);
+    return true;
+}

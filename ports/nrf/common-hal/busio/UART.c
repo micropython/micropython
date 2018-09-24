@@ -271,6 +271,10 @@ return self->rx_count + (nrfx_uart_rx_ready(&_uart) ? 1 : 0);
 #endif
 }
 
+void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+}
+
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
 #ifndef NRF52840_XXAA
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));

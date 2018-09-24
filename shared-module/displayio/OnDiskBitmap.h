@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,18 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+#include <stdbool.h>
+#include <stdint.h>
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
+#include "py/obj.h"
 
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
+#include "extmod/vfs_fat.h"
 
-void reset_board_busses(void);
+typedef struct {
+    mp_obj_base_t base;
+    uint16_t width;
+    uint16_t height;
+    uint16_t data_offset;
+    uint16_t stride;
+    pyb_file_obj_t* file;
+    uint8_t bytes_per_pixel;
+} displayio_ondiskbitmap_t;
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_ONDISKBITMAP_H

@@ -31,8 +31,10 @@
 
 #include "shared-bindings/displayio/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
+#include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/Sprite.h"
 
@@ -57,8 +59,10 @@
 //|     :maxdepth: 3
 //|
 //|     Bitmap
+//|     ColorConverter
 //|     FourWire
 //|     Group
+//|     OnDiskBitmap
 //|     Palette
 //|     Sprite
 //|
@@ -68,7 +72,9 @@
 STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_displayio) },
     { MP_ROM_QSTR(MP_QSTR_Bitmap), MP_ROM_PTR(&displayio_bitmap_type) },
+    { MP_ROM_QSTR(MP_QSTR_ColorConverter), MP_ROM_PTR(&displayio_colorconverter_type) },
     { MP_ROM_QSTR(MP_QSTR_Group), MP_ROM_PTR(&displayio_group_type) },
+    { MP_ROM_QSTR(MP_QSTR_OnDiskBitmap), MP_ROM_PTR(&displayio_ondiskbitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
     { MP_ROM_QSTR(MP_QSTR_Sprite), MP_ROM_PTR(&displayio_sprite_type) },
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,18 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+#include "shared-module/displayio/ColorConverter.h"
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
+extern const mp_obj_type_t displayio_colorconverter_type;
 
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
+void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self);
+bool common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *colorconverter, uint32_t input_color, uint16_t* output_color);
 
-void reset_board_busses(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H

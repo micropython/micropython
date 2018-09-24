@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-06 14:55-0700\n"
+"POT-Creation-Date: 2018-09-21 12:23-0400\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -122,7 +122,7 @@ msgstr "certificat invalide"
 msgid "queue overflow"
 msgstr "dépassement de file"
 
-#: extmod/moduzlib.c:97
+#: extmod/moduzlib.c:98
 msgid "compression header"
 msgstr "entête de compression"
 
@@ -221,7 +221,7 @@ msgstr ""
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
-#: main.c:415
+#: main.c:416
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
@@ -238,15 +238,15 @@ msgstr "la calibration est en lecture seule"
 msgid "calibration is out of range"
 msgstr "la calibration est hors gamme"
 
-#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:59 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
 msgstr "Pas de bus I2C par défaut"
 
-#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:85 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
 msgstr "Pas de bus SPI par défaut"
 
-#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:112 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
 msgstr "Pas de bus UART par défaut"
 
@@ -298,12 +298,12 @@ msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
@@ -345,15 +345,20 @@ msgstr "Broche invalide pour le canal droit"
 msgid "Cannot output both channels on the same pin"
 msgstr "On ne peut mettre les deux canaux sur la même broche"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
 msgstr "Tous les timers sont utilisés"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:215
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -363,7 +368,7 @@ msgstr "Pas assez de broches disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:58
+#: ports/nrf/common-hal/busio/I2C.c:77
 msgid "Invalid pins"
 msgstr "Broche invalide"
 
@@ -383,24 +388,24 @@ msgstr "octets > 8 bits non supporté"
 msgid "tx and rx cannot both be None"
 msgstr "TX et RX ne peuvent être None tous les deux"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:139
+#: ports/atmel-samd/common-hal/busio/UART.c:145
 msgid "Failed to allocate RX buffer"
 msgstr "Echec de l'allocation du tampon RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:147
+#: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
 msgstr "L'UART n'a pu être initialisé"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:234
+#: ports/atmel-samd/common-hal/busio/UART.c:240
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:288
+#: ports/atmel-samd/common-hal/busio/UART.c:294
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
 msgstr "Ne peux être tirer ('pull') en mode 'output'"
 
@@ -411,12 +416,12 @@ msgstr ""
 "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
 #: ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 msgid "All timers for this pin are in use"
 msgstr "Tous les timers pour cette broche sont utilisés"
 
@@ -696,11 +701,25 @@ msgstr "paramètre de config. inconnu"
 msgid "AnalogOut functionality not supported"
 msgstr "AnalogOut non supporté"
 
+#: ports/nrf/common-hal/busio/I2C.c:91
+#, fuzzy
+msgid "All I2C peripherals are in use"
+msgstr "Tous les timers sont utilisés"
+
+#: ports/nrf/common-hal/busio/SPI.c:109
+#, fuzzy
+msgid "All SPI peripherals are in use"
+msgstr "Tous les timers sont utilisés"
+
+#: ports/nrf/common-hal/busio/SPI.c:170
+msgid "Baud rate too high for this SPI peripheral"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
 #: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
 #: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
 #: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
 msgid "busio.UART not yet implemented"
 msgstr "busio.UART pas encore implémenté"
 
@@ -1989,6 +2008,7 @@ msgid "buffer must be a bytes-like object"
 msgstr "le tampon doit être un objet bytes-like"
 
 #: shared-bindings/audioio/WaveFile.c:78
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode byte"
 
@@ -2021,11 +2041,11 @@ msgstr "les slices de tampon doivent être de longueurs égales"
 msgid "Function requires lock."
 msgstr "La fonction nécessite un verrou."
 
-#: shared-bindings/busio/UART.c:98
+#: shared-bindings/busio/UART.c:102
 msgid "bits must be 7, 8 or 9"
 msgstr "bits doivent être 7, 8 ou 9"
 
-#: shared-bindings/busio/UART.c:110
+#: shared-bindings/busio/UART.c:114
 msgid "stop must be 1 or 2"
 msgstr "stop doit être 1 ou 2"
 
@@ -2068,6 +2088,11 @@ msgstr ""
 msgid "row data must be a buffer"
 msgstr "les constantes doivent être des entiers"
 
+#: shared-bindings/displayio/ColorConverter.c:72
+#, fuzzy
+msgid "color should be an int"
+msgstr "La longueur doit être entière"
+
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
@@ -2105,20 +2130,19 @@ msgstr "le tampon doit être un objet bytes-like"
 msgid "palette_index should be an int"
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'"
 
-#: shared-bindings/displayio/Sprite.c:45
+#: shared-bindings/displayio/Sprite.c:48
 #, fuzzy
 msgid "position must be 2-tuple"
 msgstr "stop doit être 1 ou 2"
 
-#: shared-bindings/displayio/Sprite.c:87
+#: shared-bindings/displayio/Sprite.c:97
 #, fuzzy
 msgid "unsupported bitmap type"
 msgstr "Débit non supporté"
 
-#: shared-bindings/displayio/Sprite.c:152
-#, fuzzy
-msgid "palette must be displayio.Palette"
-msgstr "la palette doit être longue de 32 octets"
+#: shared-bindings/displayio/Sprite.c:162
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
@@ -2353,6 +2377,26 @@ msgstr ""
 msgid "Group full"
 msgstr ""
 
+#: shared-module/displayio/Group.c:48
+#, fuzzy
+msgid "Group empty"
+msgstr "vide"
+
+#: shared-module/displayio/OnDiskBitmap.c:49
+#, fuzzy
+msgid "Invalid BMP file"
+msgstr "Fichier invalide"
+
+#: shared-module/displayio/OnDiskBitmap.c:59
+#, c-format
+msgid "Only Windows format, uncompressed BMP supported %d"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:64
+#, c-format
+msgid "Only true color (24 bpp or higher) BMP supported %x"
+msgstr ""
+
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
 msgstr "'S' et 'O' ne sont pas des types de format supportés"
@@ -2364,3 +2408,7 @@ msgstr "trop d'arguments fournis avec ce format"
 #, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "'len' doit être un multiple de 4"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être longue de 32 octets"

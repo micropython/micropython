@@ -133,7 +133,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (rx && receiver_buffer_size > 0) {
         self->buffer_length = receiver_buffer_size;
-        self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, false);
+        // Initially allocate the UART's buffer in the long-lived part of the
+        // heap.  UARTs are generally long-lived objects, but the "make long-
+        // lived" machinery is incapable of moving internal pointers like
+        // self->buffer, so do it manually.  (However, as long as internal
+        // pointers like this are NOT moved, allocating the buffer
+        // in the long-lived pool is not strictly necessary)
+        self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
         if (self->buffer == NULL) {
             common_hal_busio_uart_deinit(self);
             mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
@@ -268,7 +274,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
-       // If we are zero timeout, make sure we don't loop again (in the event 
+       // If we are zero timeout, make sure we don't loop again (in the event
        // we read in under 1ms)
        if (self->timeout_ms == 0)
             break;
@@ -344,7 +350,18 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return self->buffer_size;
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_status async_status;
+    usart_async_get_status(usart_desc_p, &async_status);
+    return async_status.rxcnt;
+}
+
+void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    usart_async_flush_rx_buffer(usart_desc_p);
+
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {

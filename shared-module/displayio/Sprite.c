@@ -26,15 +26,17 @@
 
 #include "shared-bindings/displayio/Sprite.h"
 
-
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/ColorConverter.h"
+#include "shared-bindings/displayio/OnDiskBitmap.h"
+#include "shared-bindings/displayio/Palette.h"
 
 void common_hal_displayio_sprite_construct(displayio_sprite_t *self, mp_obj_t bitmap,
-        mp_obj_t palette, uint16_t width, uint16_t height, uint16_t x, uint16_t y) {
+        mp_obj_t pixel_shader, uint16_t width, uint16_t height, uint16_t x, uint16_t y) {
     self->width = width;
     self->height = height;
     self->bitmap = bitmap;
-    self->palette = palette;
+    self->pixel_shader = pixel_shader;
     self->x = x;
     self->y = y;
 }
@@ -51,12 +53,12 @@ void common_hal_displayio_sprite_set_position(displayio_sprite_t *self, int16_t 
 }
 
 
-displayio_palette_t* common_hal_displayio_sprite_get_palette(displayio_sprite_t *self) {
-    return self->palette;
+mp_obj_t common_hal_displayio_sprite_get_pixel_shader(displayio_sprite_t *self) {
+    return self->pixel_shader;
 }
 
-void common_hal_displayio_sprite_set_palette(displayio_sprite_t *self, displayio_palette_t* palette) {
-    self->palette = palette;
+void common_hal_displayio_sprite_set_pixel_shader(displayio_sprite_t *self, mp_obj_t pixel_shader) {
+    self->pixel_shader = pixel_shader;
     self->needs_refresh = true;
 }
 
@@ -66,12 +68,19 @@ bool displayio_sprite_get_pixel(displayio_sprite_t *self, int16_t x, int16_t y, 
     if (y < 0 || y >= self->height || x >= self->width || x < 0) {
         return false;
     }
+    uint32_t value;
+    if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
+        value = common_hal_displayio_bitmap_get_pixel(self->bitmap, x, y);
+    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
+        value = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, x, y);
+    }
 
-    uint32_t value = common_hal_displayio_bitmap_get_pixel(self->bitmap, x, y);
-    if (self->palette == mp_const_none) {
+    if (self->pixel_shader == mp_const_none) {
         *pixel = value;
         return true;
-    } else if (MP_OBJ_IS_TYPE(self->palette, &displayio_palette_type) && displayio_palette_get_color(self->palette, value, pixel)) {
+    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) && displayio_palette_get_color(self->pixel_shader, value, pixel)) {
+        return true;
+    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) && common_hal_displayio_colorconverter_convert(self->pixel_shader, value, pixel)) {
         return true;
     }
 
@@ -79,12 +88,12 @@ bool displayio_sprite_get_pixel(displayio_sprite_t *self, int16_t x, int16_t y, 
 }
 
 bool displayio_sprite_needs_refresh(displayio_sprite_t *self) {
-    return self->needs_refresh || displayio_palette_needs_refresh(self->palette);
+    return self->needs_refresh || displayio_palette_needs_refresh(self->pixel_shader);
 }
 
 void displayio_sprite_finish_refresh(displayio_sprite_t *self) {
     self->needs_refresh = false;
-    displayio_palette_finish_refresh(self->palette);
+    displayio_palette_finish_refresh(self->pixel_shader);
     // TODO(tannewt): We could double buffer changes to position and move them over here.
     // That way they won't change during a refresh and tear.
 }

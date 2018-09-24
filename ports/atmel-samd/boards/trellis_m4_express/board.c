@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+void board_init(void) {
+}
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
-
-void reset_board_busses(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+void reset_board(void) {
+}

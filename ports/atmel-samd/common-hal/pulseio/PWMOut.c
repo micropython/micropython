@@ -52,10 +52,10 @@ uint8_t tcc_refcount[TCC_INST_NUM];
 
 // This bitmask keeps track of which channels of a TCC are currently claimed.
 #ifdef SAMD21
-uint8_t tcc_channels[3] = {0xf0, 0xfc, 0xfc};
+uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initially.
 #endif
 #ifdef SAMD51
-uint8_t tcc_channels[5] = {0xc0, 0xf0, 0xf8, 0xfc, 0xfc};
+uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
 #endif
 
 void pwmout_reset(void) {
@@ -76,7 +76,7 @@ void pwmout_reset(void) {
         for (uint8_t j = 0; j < tcc_cc_num[i]; j++) {
             mask <<= 1;
         }
-        tcc_channels[i] = 0xf0;
+        tcc_channels[i] = mask;
         tccs[i]->CTRLA.bit.SWRST = 1;
     }
     Tc *tcs[TC_INST_NUM] = TC_INSTS;
@@ -123,7 +123,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     // Figure out which timer we are using.
 
     // First see if a tcc is already going with the frequency we want and our
-    // channel is unused. tc's don't have neough channels to share.
+    // channel is unused. tc's don't have enough channels to share.
     const pin_timer_t* timer = NULL;
     uint8_t mux_position = 0;
     if (!variable_frequency) {
@@ -140,6 +140,9 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 if (tcc->CTRLA.bit.ENABLE == 1 && channel_ok(t)) {
                     timer = t;
                     mux_position = j;
+                    // Claim channel.
+                    tcc_channels[timer->index] |= (1 << tcc_channel(timer));
+
                 }
             }
         }
