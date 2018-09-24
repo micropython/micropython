@@ -32,10 +32,30 @@
 #if !defined(STM32F0)
 
 // Assumes that PLL is used as the SYSCLK source
-int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz) {
+int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai) {
     uint32_t flash_latency;
 
     #if defined(STM32F7)
+
+    if (need_pllsai) {
+        // Configure PLLSAI at 48MHz for those peripherals that need this freq
+        const uint32_t pllsain = 192;
+        const uint32_t pllsaip = 4;
+        const uint32_t pllsaiq = 2;
+        RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
+            | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
+            | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
+        RCC->CR |= RCC_CR_PLLSAION;
+        uint32_t ticks = mp_hal_ticks_ms();
+        while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
+            if (mp_hal_ticks_ms() - ticks > 200) {
+                return -MP_ETIMEDOUT;
+            }
+        }
+        RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
+    } else {
+        RCC->DCKCFGR2 &= ~RCC_DCKCFGR2_CK48MSEL;
+    }
 
     // If possible, scale down the internal voltage regulator to save power
     uint32_t volt_scale;
@@ -111,9 +131,7 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     // Default PLL parameters that give 48MHz on PLL48CK
     uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
     uint32_t sysclk_source;
-    #if defined(STM32F7)
     bool need_pllsai = false;
-    #endif
 
     // Search for a valid PLL configuration that keeps USB at 48MHz
     uint32_t sysclk_mhz = sysclk / 1000000;
@@ -212,32 +230,10 @@ set_clk:
         return -MP_EIO;
     }
 
-    #if defined(STM32F7)
-    if (need_pllsai) {
-        // Configure PLLSAI at 48MHz for those peripherals that need this freq
-        const uint32_t pllsain = 192;
-        const uint32_t pllsaip = 4;
-        const uint32_t pllsaiq = 2;
-        RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
-            | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
-            | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
-        RCC->CR |= RCC_CR_PLLSAION;
-        uint32_t ticks = mp_hal_ticks_ms();
-        while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
-            if (mp_hal_ticks_ms() - ticks > 200) {
-                return -MP_ETIMEDOUT;
-            }
-        }
-        RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
-    } else {
-        RCC->DCKCFGR2 &= ~RCC_DCKCFGR2_CK48MSEL;
-    }
-    #endif
-
     // Set PLL as system clock source if wanted
     if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
         RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-        int ret = powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz);
+        int ret = powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai);
         if (ret != 0) {
             return ret;
         }
