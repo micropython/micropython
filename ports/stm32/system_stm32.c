@@ -88,6 +88,7 @@
   */
 
 #include "py/mphal.h"
+#include "powerctrl.h"
 
 void __fatal_error(const char *msg);
 
@@ -432,7 +433,6 @@ void SystemClock_Config(void)
     #if defined(STM32H7)
     RCC_ClkInitStruct.ClockType |= (RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1);
     #endif
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 
 #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     #if defined(STM32F7)
@@ -560,14 +560,10 @@ void SystemClock_Config(void)
   }
 #endif
 
-#if !defined(MICROPY_HW_FLASH_LATENCY)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
-#endif
-
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK)
-  {
-    __fatal_error("HAL_RCC_ClockConfig");
-  }
+    uint32_t sysclk_mhz = RCC_OscInitStruct.PLL.PLLN * (HSE_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM / RCC_OscInitStruct.PLL.PLLP;
+    if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz) != 0) {
+        __fatal_error("HAL_RCC_ClockConfig");
+    }
 
 #if defined(STM32H7)
   /* Activate CSI clock mandatory for I/O Compensation Cell*/
