@@ -29,6 +29,62 @@
 #include "powerctrl.h"
 #include "genhdr/pllfreqtable.h"
 
+#if !defined(STM32F0)
+
+// Assumes that PLL is used as the SYSCLK source
+int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz) {
+    uint32_t flash_latency;
+
+    #if defined(STM32F7)
+
+    // If possible, scale down the internal voltage regulator to save power
+    uint32_t volt_scale;
+    if (sysclk_mhz <= 151) {
+        volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+    } else if (sysclk_mhz <= 180) {
+        volt_scale = PWR_REGULATOR_VOLTAGE_SCALE2;
+    } else {
+        volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+    }
+    if (HAL_PWREx_ControlVoltageScaling(volt_scale) != HAL_OK) {
+        return -MP_EIO;
+    }
+
+    // These flash_latency values assume a supply voltage between 2.7V and 3.6V
+    if (sysclk_mhz <= 30) {
+        flash_latency = FLASH_LATENCY_0;
+    } else if (sysclk_mhz <= 60) {
+        flash_latency = FLASH_LATENCY_1;
+    } else if (sysclk_mhz <= 90) {
+        flash_latency = FLASH_LATENCY_2;
+    } else if (sysclk_mhz <= 120) {
+        flash_latency = FLASH_LATENCY_3;
+    } else if (sysclk_mhz <= 150) {
+        flash_latency = FLASH_LATENCY_4;
+    } else if (sysclk_mhz <= 180) {
+        flash_latency = FLASH_LATENCY_5;
+    } else if (sysclk_mhz <= 210) {
+        flash_latency = FLASH_LATENCY_6;
+    } else {
+        flash_latency = FLASH_LATENCY_7;
+    }
+
+    #elif defined(MICROPY_HW_FLASH_LATENCY)
+    flash_latency = MICROPY_HW_FLASH_LATENCY;
+    #else
+    flash_latency = FLASH_LATENCY_5;
+    #endif
+
+    rcc_init->SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    if (HAL_RCC_ClockConfig(rcc_init, flash_latency) != HAL_OK) {
+        return -MP_EIO;
+    }
+
+    return 0;
+}
+
+#endif
+
 #if !(defined(STM32F0) || defined(STM32L4))
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
@@ -180,45 +236,10 @@ set_clk:
 
     // Set PLL as system clock source if wanted
     if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
-        uint32_t flash_latency;
-        #if defined(STM32F7)
-        // If possible, scale down the internal voltage regulator to save power
-        // The flash_latency values assume a supply voltage between 2.7V and 3.6V
-        uint32_t volt_scale;
-        if (sysclk <= 90000000) {
-            volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
-            flash_latency = FLASH_LATENCY_2;
-        } else if (sysclk <= 120000000) {
-            volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
-            flash_latency = FLASH_LATENCY_3;
-        } else if (sysclk <= 144000000) {
-            volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
-            flash_latency = FLASH_LATENCY_4;
-        } else if (sysclk <= 180000000) {
-            volt_scale = PWR_REGULATOR_VOLTAGE_SCALE2;
-            flash_latency = FLASH_LATENCY_5;
-        } else if (sysclk <= 210000000) {
-            volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
-            flash_latency = FLASH_LATENCY_6;
-        } else {
-            volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
-            flash_latency = FLASH_LATENCY_7;
-        }
-        if (HAL_PWREx_ControlVoltageScaling(volt_scale) != HAL_OK) {
-            return -MP_EIO;
-        }
-        #endif
-
-        #if !defined(STM32F7)
-        #if !defined(MICROPY_HW_FLASH_LATENCY)
-        #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
-        #endif
-        flash_latency = MICROPY_HW_FLASH_LATENCY;
-        #endif
         RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-        RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-        if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, flash_latency) != HAL_OK) {
-            return -MP_EIO;
+        int ret = powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz);
+        if (ret != 0) {
+            return ret;
         }
     }
 
