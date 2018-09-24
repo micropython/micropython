@@ -203,7 +203,14 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         nrfx_uarte_tx_abort(&self->uarte);
     }
 
-    (*errcode) = nrfx_uarte_tx(&self->uarte, data, len);
+    // EasyDMA can only access SRAM
+    uint8_t * tx_buf = (uint8_t*) data;
+    if ( !nrfx_is_in_ram(data) ) {
+        tx_buf = (uint8_t *) gc_alloc(len, false, false);
+        memcpy(tx_buf, data, len);
+    }
+
+    (*errcode) = nrfx_uarte_tx(&self->uarte, tx_buf, len);
     _VERIFY_ERR(*errcode);
     (*errcode) = 0;
 
@@ -212,6 +219,10 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
+    }
+
+    if ( !nrfx_is_in_ram(data) ) {
+        gc_free(tx_buf);
     }
 
     return len;
