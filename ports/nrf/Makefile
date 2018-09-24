@@ -91,7 +91,7 @@ SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_power.c \
 	drivers/src/nrfx_spim.c \
 	drivers/src/nrfx_twim.c \
-	drivers/src/nrfx_uart.c \
+	drivers/src/nrfx_uarte.c \
 	)
 
 SRC_C += \
