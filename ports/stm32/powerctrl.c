@@ -110,13 +110,16 @@ set_clk:
     } else {
         RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     }
+    #if !defined(STM32H7)
+    ahb = sysclk >> AHBPrescTable[RCC_ClkInitStruct.AHBCLKDivider >> RCC_CFGR_HPRE_Pos];
+    #endif
     if (apb1 != 0) {
-        RCC_ClkInitStruct.APB1CLKDivider = calc_apb_div(sysclk / apb1);
+        RCC_ClkInitStruct.APB1CLKDivider = calc_apb_div(ahb / apb1);
     } else {
         RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     }
     if (apb2 != 0) {
-        RCC_ClkInitStruct.APB2CLKDivider = calc_apb_div(sysclk / apb2);
+        RCC_ClkInitStruct.APB2CLKDivider = calc_apb_div(ahb / apb2);
     } else {
         RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
     }
