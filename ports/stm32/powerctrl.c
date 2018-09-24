@@ -128,6 +128,14 @@ STATIC uint32_t calc_apb_div(uint32_t wanted_div) {
 }
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
+    // Return straightaway if the clocks are already at the desired frequency
+    if (sysclk == HAL_RCC_GetSysClockFreq()
+        && ahb == HAL_RCC_GetHCLKFreq()
+        && apb1 == HAL_RCC_GetPCLK1Freq()
+        && apb2 == HAL_RCC_GetPCLK2Freq()) {
+        return 0;
+    }
+
     // Default PLL parameters that give 48MHz on PLL48CK
     uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
     uint32_t sysclk_source;
