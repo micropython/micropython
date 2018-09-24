@@ -298,9 +298,9 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         mp_raise_NotImplementedError("machine.freq set not supported yet");
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
-        mp_int_t ahb = 0;
-        mp_int_t apb1 = 0;
-        mp_int_t apb2 = 0;
+        mp_int_t ahb = sysclk;
+        mp_int_t apb1 = ahb / 4;
+        mp_int_t apb2 = ahb / 2;
         if (n_args > 1) {
             ahb = mp_obj_get_int(args[1]);
             if (n_args > 2) {
