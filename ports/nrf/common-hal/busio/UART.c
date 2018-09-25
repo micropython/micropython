@@ -37,6 +37,7 @@
 #include "tick.h"
 #include "nrfx_uarte.h"
 #include <string.h>
+#include <stdio.h>
 
 // expression to examine, and return value in case of failing
 #define _VERIFY_ERR(_exp) \
@@ -47,17 +48,38 @@
       }\
     }while(0)
 
+#define UARTE_DEBUG 0
+
+#if UARTE_DEBUG
+#define PRINT_INT(x)          printf("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
+#else
+#define PRINT_INT(x)
+#endif
+
 static uint32_t get_nrf_baud (uint32_t baudrate);
+
+static uint32_t _err = 0;
+static uint32_t _err_count = 0;
+
 
 static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context) {
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
 
     switch ( event->type ) {
+        case NRFX_UART_EVT_RX_DONE:
+            self->rx_count = event->data.rxtx.bytes;
+        break;
+
         case NRFX_UART_EVT_TX_DONE:
         break;
 
-        case NRFX_UART_EVT_RX_DONE:
-            self->rx_count = event->data.rxtx.bytes;
+        case NRFX_UART_EVT_ERROR:
+            // Abort too fast will cause error occasionally
+            if ( self->rx_count == -1 ) {
+                self->rx_count = 0;    // event->data.error.rxtx.bytes;
+            }
+            _err_count = event->data.error.rxtx.bytes;
+            _err = event->data.error.error_mask;
         break;
 
         default:
@@ -120,6 +142,10 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 
     self->baudrate = baudrate;
     self->timeout_ms = timeout;
+
+    // queue 1-byte transfer for rx_characters_available()
+    self->rx_count = -1;
+    _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, 1));
 #endif
 }
 
@@ -157,32 +183,40 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     size_t remain = len;
     uint64_t start_ticks = ticks_ms;
 
-    while ( remain && (ticks_ms - start_ticks < self->timeout_ms) ) {
-        const size_t cnt = MIN(self->bufsize, len);
-
-        self->rx_count = -1;
-        _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, cnt));
-
+    while ( 1 ) {
+        // Wait for on-going reception to complete
         while ( (self->rx_count == -1) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
 #endif
         }
 
-        // Time up, abort rx use received so far
-        if ( self->rx_count == -1 ) {
-            nrfx_uarte_rx_abort(&self->uarte);
-            while ( self->rx_count == -1 ) {
-            }
-        }
-
+        // copy received data
         if ( self->rx_count > 0 ) {
             memcpy(data, self->buffer, self->rx_count);
             data += self->rx_count;
             remain -= self->rx_count;
+
+            self->rx_count = 0;
         }
+
+        // exit if complete or time up
+        if ( !remain || !(ticks_ms - start_ticks < self->timeout_ms) ) {
+            break;
+        }
+
+        // prepare next receiving
+        const size_t cnt = MIN(self->bufsize, remain);
+        self->rx_count = -1;
+        _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, cnt));
     }
     
+    // queue 1-byte transfer for rx_characters_available()
+    if ( self->rx_count == 0 ) {
+        self->rx_count = -1;
+        _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, 1));
+    }
+
     return len - remain;
 #endif
 }
@@ -249,7 +283,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 #ifndef NRF52840_XXAA
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
 #else
-    return 1;    // nrf_uart_event_check(self->uarte.p_reg, NRF_UART_EVENT_RXDRDY) ? 1 : 0;
+    return (self->rx_count > 0) ? 1 : 0;
 #endif
 }
 
