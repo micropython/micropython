@@ -42,6 +42,7 @@
 #include "lwip/timeouts.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
+#include "pollfunctions.h"
 
 u32_t sys_now(void) {
     return mp_hal_ticks_ms();
@@ -59,6 +60,8 @@ void pyb_lwip_poll(void) {
     sys_check_timeouts();
 }
 
+DEFINE_POLL_FUNCTION(pyb_lwip_poll);
+
 #endif
 
 /// \module network - network configuration
@@ -66,6 +69,9 @@ void pyb_lwip_poll(void) {
 /// This module provides network drivers and routing configuration.
 
 void mod_network_init(void) {
+    #if MICROPY_PY_LWIP
+    register_poll_function(pyb_lwip_poll);
+    #endif
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 
