@@ -241,12 +241,8 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-#else
     self->baudrate = baudrate;
     nrf_uarte_baudrate_set(self->uarte.p_reg, get_nrf_baud(baudrate));
-#endif
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
