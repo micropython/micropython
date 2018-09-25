@@ -45,7 +45,7 @@
     do {\
       uint32_t _err = (_exp);\
       if (NRFX_SUCCESS != _err ) {\
-        mp_raise_msg_varg(&mp_type_RuntimeError, translate("error = 0x%08lX "), _err);\
+        mp_raise_msg_varg(&mp_type_RuntimeError, translate("error = 0x%08lX"), _err);\
       }\
     }while(0)
 
