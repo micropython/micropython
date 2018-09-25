@@ -48,19 +48,7 @@
       }\
     }while(0)
 
-#define UARTE_DEBUG 0
-
-#if UARTE_DEBUG
-#define PRINT_INT(x)          printf("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
-#else
-#define PRINT_INT(x)
-#endif
-
 static uint32_t get_nrf_baud (uint32_t baudrate);
-
-static uint32_t _err = 0;
-static uint32_t _err_count = 0;
-
 
 static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context) {
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
@@ -74,12 +62,9 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
         break;
 
         case NRFX_UART_EVT_ERROR:
-            // Abort too fast will cause error occasionally
             if ( self->rx_count == -1 ) {
-                self->rx_count = 0;    // event->data.error.rxtx.bytes;
+                self->rx_count = 0;
             }
-            _err_count = event->data.error.rxtx.bytes;
-            _err = event->data.error.error_mask;
         break;
 
         default:
@@ -184,7 +169,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     uint64_t start_ticks = ticks_ms;
 
     while ( 1 ) {
-        // Wait for on-going reception to complete
+        // Wait for on-going transfer to complete
         while ( (self->rx_count == -1) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
@@ -233,8 +218,19 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
 
     if ( len == 0 ) return 0;
 
-    if ( !nrfx_uarte_tx_in_progress(&self->uarte) ) {
-        nrfx_uarte_tx_abort(&self->uarte);
+    uint64_t start_ticks = ticks_ms;
+
+    // Wait for on-going transfer to complete
+    while ( nrfx_uarte_tx_in_progress(&self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP
+#endif
+    }
+
+    // Time up
+    if ( !(ticks_ms - start_ticks < self->timeout_ms) ) {
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
     }
 
     // EasyDMA can only access SRAM
@@ -248,7 +244,6 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     _VERIFY_ERR(*errcode);
     (*errcode) = 0;
 
-    uint64_t start_ticks = ticks_ms;
     while ( nrfx_uarte_tx_in_progress(&self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
@@ -283,7 +278,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 #ifndef NRF52840_XXAA
     mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
 #else
-    return (self->rx_count > 0) ? 1 : 0;
+    return (self->rx_count > 0) ? self->rx_count : 0;
 #endif
 }
 
