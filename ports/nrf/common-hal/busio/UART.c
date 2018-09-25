@@ -37,7 +37,6 @@
 #include "tick.h"
 #include "nrfx_uarte.h"
 #include <string.h>
-#include <stdio.h>
 
 // expression to examine, and return value in case of failing
 #define _VERIFY_ERR(_exp) \
