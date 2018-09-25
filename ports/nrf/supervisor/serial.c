@@ -24,19 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include "mphalport.h"
+#include "py/mphal.h"
 
 #if MICROPY_PY_BLE_NUS
 #include "ble_uart.h"
 #else
 #include "nrf_gpio.h"
+#include "nrfx_uarte.h"
 #endif
 
-#if !defined( NRF52840_XXAA)
+#if !defined(NRF52840_XXAA)
 
-#define INST_NO 0
-
-nrfx_uart_t serial_instance = NRFX_UART_INSTANCE(INST_NO);
+uint8_t serial_received_char;
+nrfx_uarte_t serial_instance = NRFX_UARTE_INSTANCE(0);
 
 void serial_init(void) {
 #if MICROPY_PY_BLE_NUS
@@ -45,22 +45,27 @@ void serial_init(void) {
         ;
     }
 #else
-    nrfx_uart_config_t config = NRFX_UART_DEFAULT_CONFIG;
-    config.pseltxd = MICROPY_HW_UART_TX;
-    config.pselrxd = MICROPY_HW_UART_RX;
-    config.hwfc = MICROPY_HW_UART_HWFC ? NRF_UART_HWFC_ENABLED : NRF_UART_HWFC_DISABLED;
-#ifdef MICROPY_HW_UART_CTS
-    config.pselcts = MICROPY_HW_UART_CTS;
-#endif
-#ifdef MICROPY_HW_UART_RTS
-    config.pselrts = MICROPY_HW_UART_RTS;
-#endif
+    nrfx_uarte_config_t config = {
+        .pseltxd = MICROPY_HW_UART_TX,
+        .pselrxd = MICROPY_HW_UART_RX,
+        .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
+        .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
+        .p_context = NULL,
+        .hwfc = NRF_UARTE_HWFC_DISABLED,
+        .parity = NRF_UARTE_PARITY_EXCLUDED,
+        .baudrate = NRF_UARTE_BAUDRATE_115200,
+        .interrupt_priority = 7
+    };
 
-    const nrfx_err_t err = nrfx_uart_init(&serial_instance, &config, NULL);
-    if (err == NRFX_SUCCESS)
+    nrfx_uarte_uninit(&serial_instance);
+    const nrfx_err_t err = nrfx_uarte_init(&serial_instance, &config, NULL);    // no callback for blocking mode
+
+    if (err != NRFX_SUCCESS) {
         NRFX_ASSERT(err);
+    }
 
-    nrfx_uart_rx_enable(&serial_instance);
+    // enabled receiving
+    nrf_uarte_task_trigger(serial_instance.p_reg, NRF_UARTE_TASK_STARTRX);
 #endif
 }
 

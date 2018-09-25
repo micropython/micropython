@@ -91,13 +91,13 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     }
 
     nrfx_uarte_config_t config = {
-        .pseltxd = (tx == mp_const_none) ? NRF_UART_PSEL_DISCONNECTED : tx->number,
-        .pselrxd = (rx == mp_const_none) ? NRF_UART_PSEL_DISCONNECTED : rx->number,
-        .pselcts = NRF_UART_PSEL_DISCONNECTED,
-        .pselrts = NRF_UART_PSEL_DISCONNECTED,
+        .pseltxd = (tx == mp_const_none) ? NRF_UARTE_PSEL_DISCONNECTED : tx->number,
+        .pselrxd = (rx == mp_const_none) ? NRF_UARTE_PSEL_DISCONNECTED : rx->number,
+        .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
+        .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
         .p_context = self,
-        .hwfc = NRF_UART_HWFC_DISABLED,
-        .parity = (parity == PARITY_NONE) ? NRF_UART_PARITY_EXCLUDED : NRF_UART_PARITY_INCLUDED,
+        .hwfc = NRF_UARTE_HWFC_DISABLED,
+        .parity = (parity == PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED,
         .baudrate = get_nrf_baud(baudrate),
         .interrupt_priority = 7
     };
@@ -132,8 +132,8 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return (nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED) &&
-           (nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED);
+    return (nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED) &&
+           (nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED);
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -145,7 +145,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    if ( nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED ) {
+    if ( nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
         mp_raise_ValueError(translate("No RX pin"));
     }
 
@@ -191,7 +191,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    if ( nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED ) {
+    if ( nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
         mp_raise_ValueError(translate("No TX pin"));
     }
 
