@@ -38,6 +38,8 @@
 #include "nrfx_uarte.h"
 #include <string.h>
 
+#ifdef NRF52840_XXAA
+
 // expression to examine, and return value in case of failing
 #define _VERIFY_ERR(_exp) \
     do {\
@@ -53,14 +55,14 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
 
     switch ( event->type ) {
-        case NRFX_UART_EVT_RX_DONE:
+        case NRFX_UARTE_EVT_RX_DONE:
             self->rx_count = event->data.rxtx.bytes;
         break;
 
-        case NRFX_UART_EVT_TX_DONE:
+        case NRFX_UARTE_EVT_TX_DONE:
         break;
 
-        case NRFX_UART_EVT_ERROR:
+        case NRFX_UARTE_EVT_ERROR:
             if ( self->rx_count == -1 ) {
                 self->rx_count = 0;
             }
@@ -76,9 +78,6 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
                                       const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
                                       uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
                                       uint8_t receiver_buffer_size) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-#else
     if ( (tx == mp_const_none) && (rx == mp_const_none) ) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -130,36 +129,22 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     // queue 1-byte transfer for rx_characters_available()
     self->rx_count = -1;
     _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, 1));
-#endif
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-#else
     return (nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED) &&
            (nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED);
-#endif
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-#else
     if ( !common_hal_busio_uart_deinited(self) ) {
         nrfx_uarte_uninit(&self->uarte);
         gc_free(self->buffer);
     }
-#endif
 }
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-    return 0;
-#else
-
     if ( nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED ) {
         mp_raise_ValueError(translate("No RX pin"));
     }
@@ -202,15 +187,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     return len - remain;
-#endif
 }
 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-    return 0;
-#else
     if ( nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UART_PSEL_DISCONNECTED ) {
         mp_raise_ValueError(translate("No TX pin"));
     }
@@ -254,13 +234,9 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     }
 
     return len;
-#endif
 }
 
 uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-#endif
     return self->baudrate;
 }
 
@@ -274,11 +250,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-#else
     return (self->rx_count > 0) ? self->rx_count : 0;
-#endif
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
@@ -286,12 +258,7 @@ void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
-#ifndef NRF52840_XXAA
-    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
-    return false;
-#else
     return !nrfx_uarte_tx_in_progress(&self->uarte);
-#endif
 }
 
 static uint32_t get_nrf_baud (uint32_t baudrate)
@@ -345,3 +312,56 @@ static uint32_t get_nrf_baud (uint32_t baudrate)
         return NRF_UART_BAUDRATE_1000000;
     }
 }
+
+#else
+
+void common_hal_busio_uart_construct (busio_uart_obj_t *self,
+                                      const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
+                                      uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
+                                      uint8_t receiver_buffer_size) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+}
+
+bool common_hal_busio_uart_deinited (busio_uart_obj_t *self) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+    return true;
+}
+
+void common_hal_busio_uart_deinit (busio_uart_obj_t *self) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+}
+
+// Read characters.
+size_t common_hal_busio_uart_read (busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+    return 0;
+}
+
+// Write characters.
+size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+    return 0;
+}
+
+uint32_t common_hal_busio_uart_get_baudrate (busio_uart_obj_t *self) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+    return self->baudrate;
+}
+
+void common_hal_busio_uart_set_baudrate (busio_uart_obj_t *self, uint32_t baudrate) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+}
+
+uint32_t common_hal_busio_uart_rx_characters_available (busio_uart_obj_t *self) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+}
+
+void common_hal_busio_uart_clear_rx_buffer (busio_uart_obj_t *self) {
+
+}
+
+bool common_hal_busio_uart_ready_to_tx (busio_uart_obj_t *self) {
+    mp_raise_NotImplementedError(translate("busio.UART not yet implemented"));
+    return false;
+}
+#endif
