@@ -87,7 +87,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     }
 
     if ( parity == PARITY_ODD ) {
-        mp_raise_ValueError(translate("busio.UART odd parity is not supported"));
+        mp_raise_ValueError(translate("Odd parity is not supported"));
     }
 
     nrfx_uarte_config_t config = {

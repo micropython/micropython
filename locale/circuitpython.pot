@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-21 12:23-0400\n"
+"POT-Creation-Date: 2018-09-26 02:09+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -378,10 +378,12 @@ msgid "bytes > 8 bits not supported"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
+#: ports/nrf/common-hal/busio/UART.c:82
 msgid "tx and rx cannot both be None"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:145
+#: ports/nrf/common-hal/busio/UART.c:115
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
@@ -390,10 +392,12 @@ msgid "Could not initialize UART"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "No RX pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:294
+#: ports/nrf/common-hal/busio/UART.c:195
 msgid "No TX pin"
 msgstr ""
 
@@ -702,11 +706,24 @@ msgstr ""
 msgid "Baud rate too high for this SPI peripheral"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
-#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
-#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
-#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:48
+#, c-format
+msgid "error = 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:86
+msgid "Invalid buffer size"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:90
+msgid "Odd parity is not supported"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:245 ports/nrf/common-hal/busio/UART.c:322
+#: ports/nrf/common-hal/busio/UART.c:326 ports/nrf/common-hal/busio/UART.c:331
+#: ports/nrf/common-hal/busio/UART.c:336 ports/nrf/common-hal/busio/UART.c:342
+#: ports/nrf/common-hal/busio/UART.c:347 ports/nrf/common-hal/busio/UART.c:352
+#: ports/nrf/common-hal/busio/UART.c:356 ports/nrf/common-hal/busio/UART.c:364
 msgid "busio.UART not yet implemented"
 msgstr ""
 
