@@ -264,52 +264,52 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
 static uint32_t get_nrf_baud (uint32_t baudrate)
 {
     if ( baudrate <= 1200 ) {
-        return NRF_UART_BAUDRATE_1200;
+        return NRF_UARTE_BAUDRATE_1200;
     }
     else if ( baudrate <= 2400 ) {
-        return NRF_UART_BAUDRATE_2400;
+        return NRF_UARTE_BAUDRATE_2400;
     }
     else if ( baudrate <= 4800 ) {
-        return NRF_UART_BAUDRATE_4800;
+        return NRF_UARTE_BAUDRATE_4800;
     }
     else if ( baudrate <= 9600 ) {
-        return NRF_UART_BAUDRATE_9600;
+        return NRF_UARTE_BAUDRATE_9600;
     }
     else if ( baudrate <= 14400 ) {
-        return NRF_UART_BAUDRATE_14400;
+        return NRF_UARTE_BAUDRATE_14400;
     }
     else if ( baudrate <= 19200 ) {
-        return NRF_UART_BAUDRATE_19200;
+        return NRF_UARTE_BAUDRATE_19200;
     }
     else if ( baudrate <= 28800 ) {
-        return NRF_UART_BAUDRATE_28800;
+        return NRF_UARTE_BAUDRATE_28800;
     }
     else if ( baudrate <= 38400 ) {
-        return NRF_UART_BAUDRATE_38400;
+        return NRF_UARTE_BAUDRATE_38400;
     }
     else if ( baudrate <= 57600 ) {
-        return NRF_UART_BAUDRATE_57600;
+        return NRF_UARTE_BAUDRATE_57600;
     }
     else if ( baudrate <= 76800 ) {
-        return NRF_UART_BAUDRATE_76800;
+        return NRF_UARTE_BAUDRATE_76800;
     }
     else if ( baudrate <= 115200 ) {
-        return NRF_UART_BAUDRATE_115200;
+        return NRF_UARTE_BAUDRATE_115200;
     }
     else if ( baudrate <= 230400 ) {
-        return NRF_UART_BAUDRATE_230400;
+        return NRF_UARTE_BAUDRATE_230400;
     }
     else if ( baudrate <= 250000 ) {
-        return NRF_UART_BAUDRATE_250000;
+        return NRF_UARTE_BAUDRATE_250000;
     }
     else if ( baudrate <= 460800 ) {
-        return NRF_UART_BAUDRATE_460800;
+        return NRF_UARTE_BAUDRATE_460800;
     }
     else if ( baudrate <= 921600 ) {
-        return NRF_UART_BAUDRATE_921600;
+        return NRF_UARTE_BAUDRATE_921600;
     }
     else {
-        return NRF_UART_BAUDRATE_1000000;
+        return NRF_UARTE_BAUDRATE_1000000;
     }
 }
 
