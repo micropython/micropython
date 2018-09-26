@@ -50,7 +50,7 @@ Instantiate a network interface object. Parameters are network interface
 dependent. If there are more than one interface of the same type, the first
 parameter should be `id`.
 
-    .. method:: active([is_active])
+.. method:: AbstractNIC.active([is_active])
 
         Activate ("up") or deactivate ("down") the network interface, if
         a boolean argument is passed. Otherwise, query current state if
@@ -58,7 +58,7 @@ parameter should be `id`.
         interface (behavior of calling them on inactive interface is
         undefined).
 
-    .. method:: connect([service_id, key=None, \*, ...])
+.. method:: AbstractNIC.connect([service_id, key=None, \*, ...])
 
        Connect the interface to a network. This method is optional, and
        available only for interfaces which are not "always connected".
@@ -74,15 +74,15 @@ parameter should be `id`.
 
        * WiFi: *bssid* keyword to connect to a specific BSSID (MAC address)
 
-    .. method:: disconnect()
+.. method:: AbstractNIC.disconnect()
 
        Disconnect from network.
 
-    .. method:: isconnected()
+.. method:: AbstractNIC.isconnected()
 
        Returns ``True`` if connected to network, otherwise returns ``False``.
 
-    .. method:: scan(\*, ...)
+.. method:: AbstractNIC.scan(\*, ...)
 
        Scan for the available network services/connections. Returns a
        list of tuples with discovered service parameters. For various
@@ -98,7 +98,7 @@ parameter should be `id`.
        duration and other parameters. Where possible, parameter names
        should match those in connect().
 
-    .. method:: status([param])
+.. method:: AbstractNIC.status([param])
 
        Query dynamic status information of the interface.  When called with no
        argument the return value describes the network link status.  Otherwise
@@ -113,7 +113,7 @@ parameter should be `id`.
          connected to the AP.  The list contains tuples of the form
          (MAC, RSSI).
 
-    .. method:: ifconfig([(ip, subnet, gateway, dns)])
+.. method:: AbstractNIC.ifconfig([(ip, subnet, gateway, dns)])
 
        Get/set IP-level network interface parameters: IP address, subnet mask,
        gateway and DNS server. When called with no arguments, this method returns
@@ -122,8 +122,8 @@ parameter should be `id`.
 
         nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
 
-    .. method:: config('param')
-                config(param=value, ...)
+.. method:: AbstractNIC.config('param')
+            AbstractNIC.config(param=value, ...)
 
        Get or set general network interface parameters. These methods allow to work
        with additional parameters beyond standard IP configuration (as dealt with by
