@@ -52,6 +52,7 @@
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 #define MICROPY_OPT_MPZ_BITWISE     (1)
+#define MICROPY_OPT_MATH_FACTORIAL  (1)
 
 // Python internal features
 #define MICROPY_READER_VFS          (1)
@@ -106,6 +107,7 @@
 #define MICROPY_PY_COLLECTIONS_DEQUE (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
+#define MICROPY_PY_MATH_FACTORIAL   (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_IOBASE        (1)
