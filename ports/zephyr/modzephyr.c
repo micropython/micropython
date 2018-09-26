@@ -27,6 +27,7 @@
 #include "py/mpconfig.h"
 #if MICROPY_PY_ZEPHYR
 
+#include <stdio.h>
 #include <zephyr.h>
 #include <misc/stack.h>
 
@@ -42,11 +43,29 @@ STATIC mp_obj_t mod_current_tid(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 
+#ifdef CONFIG_THREAD_STACK_INFO
+extern k_tid_t const _main_thread;
+extern k_tid_t const _idle_thread;
+
+static void thread_stack_dump(const struct k_thread *thread, void *user_data)
+{
+    const char *th_name = k_thread_name_get((k_tid_t)thread);
+
+    if (th_name == NULL) {
+        static char tid[9];
+        snprintf(tid, sizeof(tid), "%08x", (int)thread);
+        th_name = tid;
+    }
+
+    stack_analyze(th_name, (char*)thread->stack_info.start, thread->stack_info.size);
+}
+
 STATIC mp_obj_t mod_stacks_analyze(void) {
-    k_call_stacks_analyze();
+    k_thread_foreach(thread_stack_dump, NULL);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_stacks_analyze_obj, mod_stacks_analyze);
+#endif
 
 #ifdef CONFIG_NET_SHELL
 
@@ -64,7 +83,9 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zephyr) },
     { MP_ROM_QSTR(MP_QSTR_is_preempt_thread), MP_ROM_PTR(&mod_is_preempt_thread_obj) },
     { MP_ROM_QSTR(MP_QSTR_current_tid), MP_ROM_PTR(&mod_current_tid_obj) },
+    #ifdef CONFIG_THREAD_STACK_INFO
     { MP_ROM_QSTR(MP_QSTR_stacks_analyze), MP_ROM_PTR(&mod_stacks_analyze_obj) },
+    #endif
 
     #ifdef CONFIG_NET_SHELL
     { MP_ROM_QSTR(MP_QSTR_shell_net_iface), MP_ROM_PTR(&mod_shell_net_iface_obj) },
