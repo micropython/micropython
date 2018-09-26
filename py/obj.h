@@ -278,7 +278,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 #define MP_DECLARE_CONST_FUN_OBJ_KW(obj_name) extern const mp_obj_fun_builtin_var_t obj_name
 
 #define MP_OBJ_FUN_ARGS_MAX (0xffff) // to set maximum value in n_args_max below
-#define MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw) (((n_args_min) << 17) | ((n_args_max) << 1) | (takes_kw))
+#define MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw) (((n_args_min) << 17) | ((n_args_max) << 1) | ((takes_kw) ? 1 : 0))
 
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
