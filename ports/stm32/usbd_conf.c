@@ -456,13 +456,13 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         HAL_PCD_Init(&pcd_hs_handle);
 
         // We have 1024 32-bit words in total to use here
-        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 512);
+        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 464);
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 32); // EP0
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 256); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 32); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 64); // CDC DATA
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 4, 32); // CDC2 CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 5, 64); // CDC2 DATA
+        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 8); // CDC CMD
+        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 128); // CDC DATA
+        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 4, 8); // CDC2 CMD
+        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 5, 128); // CDC2 DATA
 
         #else // !MICROPY_HW_USB_HS_IN_FS
 
