@@ -231,15 +231,6 @@ void asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32) {
     asm_x86_write_word32(as, src_i32);
 }
 
-// src_i32 is stored as a full word in the code, and aligned to machine-word boundary
-void asm_x86_mov_i32_to_r32_aligned(asm_x86_t *as, int32_t src_i32, int dest_r32) {
-    // mov instruction uses 1 byte for the instruction, before the i32
-    while (((as->base.code_offset + 1) & (WORD_SIZE - 1)) != 0) {
-        asm_x86_nop(as);
-    }
-    asm_x86_mov_i32_to_r32(as, src_i32, dest_r32);
-}
-
 void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_AND_R32_TO_RM32);
 }

@@ -249,7 +249,6 @@ bool asm_thumb_bl_label(asm_thumb_t *as, uint label);
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32_src); // convenience
 void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32_src); // convenience
-void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32); // convenience
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num_dest, uint rlo_src); // convenience
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
@@ -308,7 +307,6 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg) asm_thumb_mov_local_reg((as), (local_num), (reg))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_thumb_mov_reg_i32_optimised((as), (reg_dest), (imm))
-#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_thumb_mov_reg_i32_aligned((as), (reg_dest), (imm))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_thumb_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_thumb_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_thumb_mov_reg_local_addr((as), (reg_dest), (local_num))

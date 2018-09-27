@@ -363,15 +363,6 @@ void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r
     }
 }
 
-// src_i64 is stored as a full word in the code, and aligned to machine-word boundary
-void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64) {
-    // mov instruction uses 2 bytes for the instruction, before the i64
-    while (((as->base.code_offset + 2) & (WORD_SIZE - 1)) != 0) {
-        asm_x64_nop(as);
-    }
-    asm_x64_mov_i64_to_r64(as, src_i64, dest_r64);
-}
-
 void asm_x64_and_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
     asm_x64_generic_r64_r64(as, dest_r64, src_r64, OPCODE_AND_R64_TO_RM64);
 }
