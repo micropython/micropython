@@ -36,6 +36,11 @@ typedef union {
     };
 } float_s_t;
 
+int __signbitf(float f) {
+    float_s_t u = {.f = f};
+    return u.s;
+}
+
 #ifndef NDEBUG
 float copysignf(float x, float y) {
     float_s_t fx={.f = x};
