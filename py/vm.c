@@ -817,17 +817,14 @@ unwind_jump:;
 #if MICROPY_PY_BUILTINS_SLICE
                 ENTRY(MP_BC_BUILD_SLICE): {
                     MARK_EXC_IP_SELECTIVE();
-                    DECODE_UINT;
-                    if (unum == 2) {
-                        mp_obj_t stop = POP();
-                        mp_obj_t start = TOP();
-                        SET_TOP(mp_obj_new_slice(start, stop, mp_const_none));
-                    } else {
-                        mp_obj_t step = POP();
-                        mp_obj_t stop = POP();
-                        mp_obj_t start = TOP();
-                        SET_TOP(mp_obj_new_slice(start, stop, step));
+                    mp_obj_t step = mp_const_none;
+                    if (*ip++ == 3) {
+                        // 3-argument slice includes step
+                        step = POP();
                     }
+                    mp_obj_t stop = POP();
+                    mp_obj_t start = TOP();
+                    SET_TOP(mp_obj_new_slice(start, stop, step));
                     DISPATCH();
                 }
 #endif
