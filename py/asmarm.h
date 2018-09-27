@@ -172,7 +172,6 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_arm_mov_local_reg((as), (local_num), (reg_src))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_arm_mov_reg_i32((as), (reg_dest), (imm))
-#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_arm_mov_reg_i32((as), (reg_dest), (imm))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_arm_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_arm_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_arm_mov_reg_local_addr((as), (reg_dest), (local_num))

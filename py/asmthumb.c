@@ -269,21 +269,6 @@ void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
     }
 }
 
-// i32 is stored as a full word in the code, and aligned to machine-word boundary
-// TODO this is very inefficient, improve it!
-void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32) {
-    // align on machine-word + 2
-    if ((as->base.code_offset & 3) == 0) {
-        asm_thumb_op16(as, ASM_THUMB_OP_NOP);
-    }
-    // jump over the i32 value (instruction prefetch adds 2 to PC)
-    asm_thumb_op16(as, OP_B_N(2));
-    // store i32 on machine-word aligned boundary
-    mp_asm_base_data(&as->base, 4, i32);
-    // do the actual load of the i32 value
-    asm_thumb_mov_reg_i32_optimised(as, reg_dest, i32);
-}
-
 #define OP_STR_TO_SP_OFFSET(rlo_dest, word_offset) (0x9000 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
 #define OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset) (0x9800 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
 
