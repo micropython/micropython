@@ -30,9 +30,9 @@ typedef float float_t;
 typedef union {
     float f;
     struct {
-        uint64_t m : 23;
-        uint64_t e : 8;
-        uint64_t s : 1;
+        uint32_t m : 23;
+        uint32_t e : 8;
+        uint32_t s : 1;
     };
 } float_s_t;
 
