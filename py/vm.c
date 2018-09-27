@@ -1467,7 +1467,7 @@ unwind_loop:
             #endif
             } else {
                 // propagate exception to higher level
-                // TODO what to do about ip and sp? they don't really make sense at this point
+                // Note: ip and sp don't have usable values at this point
                 fastn[0] = MP_OBJ_FROM_PTR(nlr.ret_val); // must put exception here because sp is invalid
                 return MP_VM_RETURN_EXCEPTION;
             }
