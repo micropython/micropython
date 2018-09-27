@@ -209,7 +209,7 @@ struct _emit_t {
     uint16_t const_table_cur_obj;
     uint16_t const_table_num_obj;
     uint16_t const_table_cur_raw_code;
-    uintptr_t *const_table;
+    mp_uint_t *const_table;
 
     bool last_emit_was_return_value;
 
@@ -529,7 +529,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             // Add room for qstr names of arguments
             const_table_alloc += emit->scope->num_pos_args + emit->scope->num_kwonly_args;
         }
-        emit->const_table = m_new(uintptr_t, const_table_alloc);
+        emit->const_table = m_new(mp_uint_t, const_table_alloc);
     }
 
     if (emit->pass == MP_PASS_EMIT) {
@@ -918,7 +918,7 @@ STATIC exc_stack_entry_t *emit_native_pop_exc_stack(emit_t *emit) {
     return e;
 }
 
-STATIC void emit_load_reg_with_ptr(emit_t *emit, int reg, uintptr_t ptr, size_t table_off) {
+STATIC void emit_load_reg_with_ptr(emit_t *emit, int reg, mp_uint_t ptr, size_t table_off) {
     if (!emit->do_viper_types) {
         // Skip qstr names of arguments
         table_off += emit->scope->num_pos_args + emit->scope->num_kwonly_args;
@@ -933,12 +933,12 @@ STATIC void emit_load_reg_with_ptr(emit_t *emit, int reg, uintptr_t ptr, size_t 
 
 STATIC void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
     size_t table_off = emit->const_table_cur_obj++;
-    emit_load_reg_with_ptr(emit, reg, (uintptr_t)obj, table_off);
+    emit_load_reg_with_ptr(emit, reg, (mp_uint_t)obj, table_off);
 }
 
 STATIC void emit_load_reg_with_raw_code(emit_t *emit, int reg, mp_raw_code_t *rc) {
     size_t table_off = emit->const_table_num_obj + emit->const_table_cur_raw_code++;
-    emit_load_reg_with_ptr(emit, reg, (uintptr_t)rc, table_off);
+    emit_load_reg_with_ptr(emit, reg, (mp_uint_t)rc, table_off);
 }
 
 STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
