@@ -34,8 +34,6 @@
 
 #if MICROPY_PY_BUILTINS_SLICE
 
-// TODO: This implements only variant of slice with 2 integer args only.
-// CPython supports 3rd arg (step), plus args can be arbitrary Python objects.
 typedef struct _mp_obj_slice_t {
     mp_obj_base_t base;
     mp_obj_t start;
