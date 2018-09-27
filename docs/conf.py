@@ -50,9 +50,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx_selective_exclude.modindex_exclude',
-    'sphinx_selective_exclude.eager_only',
-    'sphinx_selective_exclude.search_auto_exclude',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
