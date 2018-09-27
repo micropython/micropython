@@ -1,4 +1,4 @@
-.. _quickref:
+.. _pyboard_quickref:
 
 Quick reference for the pyboard
 ===============================
@@ -19,6 +19,15 @@ or `PYBLITEv1.0 <http://micropython.org/resources/pyblitev10-pinout.jpg>`__.
 
    .. image:: http://micropython.org/resources/pybv10-pinout-800px.jpg
       :alt: PYBv1.0 pinout
+
+Below is a quick reference for the pyboard.  If it is your first time working with
+this board please consider reading the following sections first:
+
+.. toctree::
+   :maxdepth: 1
+
+   general.rst
+   tutorial/index.rst
 
 General board control
 ---------------------

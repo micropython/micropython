@@ -1,3 +1,5 @@
+.. _wipy_general:
+
 General information about the WiPy
 ==================================
 
