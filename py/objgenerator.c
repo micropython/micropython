@@ -128,8 +128,6 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             // Explicitly mark generator as completed. If we don't do this,
             // subsequent next() may re-execute statements after last yield
             // again and again, leading to side effects.
-            // TODO: check how return with value behaves under such conditions
-            // in CPython.
             self->code_state.ip = 0;
             *ret_val = *self->code_state.sp;
             break;
