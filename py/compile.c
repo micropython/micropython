@@ -569,7 +569,7 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
 
     #if MICROPY_EMIT_NATIVE
     // When creating a function/closure it will take a reference to the current globals
-    comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_REFGLOBALS;
+    comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_REFGLOBALS | MP_SCOPE_FLAG_HASCONSTS;
     #endif
 
     // make closed over variables, if any
@@ -2665,6 +2665,9 @@ STATIC mp_obj_t get_const_object(mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_const_object(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    #if MICROPY_EMIT_NATIVE
+    comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
+    #endif
     EMIT_ARG(load_const_obj, get_const_object(pns));
 }
 
@@ -2699,6 +2702,9 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
             } else {
                 EMIT_ARG(load_const_obj, mp_obj_new_int_from_ll(arg));
             }
+            #if MICROPY_EMIT_NATIVE
+            comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
+            #endif
         }
         #else
         EMIT_ARG(load_const_small_int, arg);
@@ -2717,6 +2723,9 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
                     const byte *data = qstr_data(arg, &len);
                     EMIT_ARG(load_const_obj, mp_obj_new_bytes(data, len));
                 }
+                #if MICROPY_EMIT_NATIVE
+                comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
+                #endif
                 break;
             case MP_PARSE_NODE_TOKEN: default:
                 if (arg == MP_TOKEN_NEWLINE) {
