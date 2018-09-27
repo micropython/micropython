@@ -1,4 +1,4 @@
-.. _quickref_:
+.. _wipy_quickref:
 
 Quick reference for the WiPy
 ============================
@@ -6,6 +6,15 @@ Quick reference for the WiPy
 .. image:: https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png
     :alt: WiPy pinout and alternate functions table
     :width: 800px
+
+Below is a quick reference for CC3200/WiPy.  If it is your first time
+working with this board please consider reading the following sections first:
+
+.. toctree::
+   :maxdepth: 1
+
+   general.rst
+   tutorial/index.rst
 
 General board control (including sleep modes)
 ---------------------------------------------
