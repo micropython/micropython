@@ -797,36 +797,29 @@ STATIC void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t member[2] = {MP_OBJ_NULL};
+    mp_obj_t member[4] = {MP_OBJ_NULL, MP_OBJ_NULL, index, value};
     struct class_lookup_data lookup = {
         .obj = self,
         .meth_offset = offsetof(mp_obj_type_t, subscr),
         .dest = member,
         .is_type = false,
     };
-    size_t meth_args;
     if (value == MP_OBJ_NULL) {
         // delete item
         lookup.attr = MP_QSTR___delitem__;
-        mp_obj_class_lookup(&lookup, self->base.type);
-        meth_args = 2;
     } else if (value == MP_OBJ_SENTINEL) {
         // load item
         lookup.attr = MP_QSTR___getitem__;
-        mp_obj_class_lookup(&lookup, self->base.type);
-        meth_args = 2;
     } else {
         // store item
         lookup.attr = MP_QSTR___setitem__;
-        mp_obj_class_lookup(&lookup, self->base.type);
-        meth_args = 3;
     }
+    mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
         return mp_obj_subscr(self->subobj[0], index, value);
     } else if (member[0] != MP_OBJ_NULL) {
-        mp_obj_t args[3] = {self_in, index, value};
-        // TODO probably need to call mp_convert_member_lookup, and use mp_call_method_n_kw
-        mp_obj_t ret = mp_call_function_n_kw(member[0], meth_args, 0, args);
+        size_t n_args = value == MP_OBJ_NULL || value == MP_OBJ_SENTINEL ? 1 : 2;
+        mp_obj_t ret = mp_call_method_n_kw(n_args, 0, member);
         if (value == MP_OBJ_SENTINEL) {
             return ret;
         } else {
