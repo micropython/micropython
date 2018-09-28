@@ -1018,8 +1018,6 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
 
-        // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
-
         if (self->locals_dict != NULL) {
             assert(self->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
             mp_map_t *locals_map = &self->locals_dict->map;
