@@ -266,6 +266,7 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
+	pollfunctions.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 ifeq ($(MCU_SERIES),f0)
