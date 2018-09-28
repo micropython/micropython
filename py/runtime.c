@@ -1248,15 +1248,8 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     if (send_value == mp_const_none) {
         mp_load_method_maybe(self_in, MP_QSTR___next__, dest);
         if (dest[0] != MP_OBJ_NULL) {
-            nlr_buf_t nlr;
-            if (nlr_push(&nlr) == 0) {
-                *ret_val = mp_call_method_n_kw(0, 0, dest);
-                nlr_pop();
-                return MP_VM_RETURN_YIELD;
-            } else {
-                *ret_val = MP_OBJ_FROM_PTR(nlr.ret_val);
-                return MP_VM_RETURN_EXCEPTION;
-            }
+            *ret_val = mp_call_method_n_kw(0, 0, dest);
+            return MP_VM_RETURN_YIELD;
         }
     }
 
@@ -1265,10 +1258,6 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     if (send_value != MP_OBJ_NULL) {
         mp_load_method(self_in, MP_QSTR_send, dest);
         dest[2] = send_value;
-        // TODO: This should have exception wrapping like __next__ case
-        // above. Not done right away to think how to optimize native
-        // generators better, see:
-        // https://github.com/micropython/micropython/issues/2628
         *ret_val = mp_call_method_n_kw(1, 0, dest);
         return MP_VM_RETURN_YIELD;
     }
