@@ -1468,7 +1468,7 @@ unwind_loop:
             } else {
                 // propagate exception to higher level
                 // Note: ip and sp don't have usable values at this point
-                fastn[0] = MP_OBJ_FROM_PTR(nlr.ret_val); // must put exception here because sp is invalid
+                code_state->state[0] = MP_OBJ_FROM_PTR(nlr.ret_val); // put exception here because sp is invalid
                 return MP_VM_RETURN_EXCEPTION;
             }
         }

@@ -140,9 +140,8 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             break;
 
         case MP_VM_RETURN_EXCEPTION: {
-            size_t n_state = mp_decode_uint_value(self->code_state.fun_bc->bytecode);
             self->code_state.ip = 0;
-            *ret_val = self->code_state.state[n_state - 1];
+            *ret_val = self->code_state.state[0];
             // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
             if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(*ret_val)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
                 *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator raised StopIteration");
