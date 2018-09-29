@@ -92,7 +92,7 @@ enum {
 #define AGG_TYPE_BITS 2
 
 enum {
-    STRUCT, PTR, ARRAY, BITFIELD,
+    STRUCT, PTR, ARRAY,
 };
 
 // Here we need to set sign bit right
