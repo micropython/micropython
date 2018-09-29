@@ -117,6 +117,7 @@ void pew_init() {
 }
 
 void pew_reset(void) {
-    MP_STATE_VM(pew_singleton) = NULL;
+    tc_insts[pewpew_tc_index]->COUNT16.CTRLA.bit.ENABLE = 0;
     pewpew_tc_index = 0xff;
+    MP_STATE_VM(pew_singleton) = NULL;
 }
