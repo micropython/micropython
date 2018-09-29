@@ -318,7 +318,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         // must be an exception because normal functions can't yield
         assert(vm_return_kind == MP_VM_RETURN_EXCEPTION);
         // return value is in fastn[0]==state[n_state - 1]
-        result = code_state->state[n_state - 1];
+        result = code_state->state[0];
     }
 
     #if MICROPY_ENABLE_PYSTACK
