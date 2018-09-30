@@ -36,12 +36,16 @@
 #include "py/mphal.h"
 #include "py/asmthumb.h"
 
+#define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
 #define UNSIGNED_FIT16(x) (((x) & 0xffff0000) == 0)
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 #define SIGNED_FIT9(x) (((x) & 0xffffff00) == 0) || (((x) & 0xffffff00) == 0xffffff00)
 #define SIGNED_FIT12(x) (((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800)
 #define SIGNED_FIT23(x) (((x) & 0xffc00000) == 0) || (((x) & 0xffc00000) == 0xffc00000)
+
+#define OP_LDR_W_HI(reg_base) (0xf8d0 | (reg_base))
+#define OP_LDR_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
 
 static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
     return mp_asm_base_get_cur_to_write_bytes(&as->base, n);
@@ -304,6 +308,18 @@ void asm_thumb_mov_reg_pcrel(asm_thumb_t *as, uint rlo_dest, uint label) {
     asm_thumb_add_reg_reg(as, rlo_dest, ASM_THUMB_REG_R15); // 2 bytes
 }
 
+static inline void asm_thumb_ldr_reg_reg_i12(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset) {
+    asm_thumb_op32(as, OP_LDR_W_HI(reg_base), OP_LDR_W_LO(reg_dest, word_offset * 4));
+}
+
+void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset) {
+    if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8 && UNSIGNED_FIT5(word_offset)) {
+        asm_thumb_ldr_rlo_rlo_i5(as, reg_dest, reg_base, word_offset);
+    } else {
+        asm_thumb_ldr_reg_reg_i12(as, reg_dest, reg_base, word_offset);
+    }
+}
+
 // this could be wrong, because it should have a range of +/- 16MiB...
 #define OP_BW_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))
@@ -347,8 +363,6 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
 }
 
 #define OP_BLX(reg) (0x4780 | ((reg) << 3))
-#define OP_LDR_W_HI(reg_base) (0xf8d0 | (reg_base))
-#define OP_LDR_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
 #define OP_SVC(arg) (0xdf00 | (arg))
 
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
