@@ -1,0 +1,11 @@
+LD_FILE = boards/samd51x19-bootloader-external-flash.ld
+USB_VID = 0x1209
+USB_PID = 0x2017
+USB_PRODUCT = "Mini SAM M4"
+USB_MANUFACTURER = "Benjamin Shockley"
+
+QSPI_FLASH_FILESYSTEM = 1
+LONGINT_IMPL = MPZ
+
+CHIP_VARIANT = SAMD51G19A
+CHIP_FAMILY = samd51
