@@ -37,12 +37,19 @@
 #include "py/asmthumb.h"
 
 #define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
+#define UNSIGNED_FIT7(x) ((uint32_t)(x) < 128)
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
 #define UNSIGNED_FIT16(x) (((x) & 0xffff0000) == 0)
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 #define SIGNED_FIT9(x) (((x) & 0xffffff00) == 0) || (((x) & 0xffffff00) == 0xffffff00)
 #define SIGNED_FIT12(x) (((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800)
 #define SIGNED_FIT23(x) (((x) & 0xffc00000) == 0) || (((x) & 0xffc00000) == 0xffc00000)
+
+// Note: these actually take an imm12 but the high-bit is not encoded here
+#define OP_ADD_W_RRI_HI(reg_src) (0xf200 | (reg_src))
+#define OP_ADD_W_RRI_LO(reg_dest, imm11) ((imm11 << 4 & 0x7000) | reg_dest << 8 | (imm11 & 0xff))
+#define OP_SUB_W_RRI_HI(reg_src) (0xf2a0 | (reg_src))
+#define OP_SUB_W_RRI_LO(reg_dest, imm11) ((imm11 << 4 & 0x7000) | reg_dest << 8 | (imm11 & 0xff))
 
 #define OP_LDR_W_HI(reg_base) (0xf8d0 | (reg_base))
 #define OP_LDR_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
@@ -93,6 +100,7 @@ STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
 #define OP_POP_RLIST(rlolist)       (0xbc00 | (rlolist))
 #define OP_POP_RLIST_PC(rlolist)    (0xbc00 | 0x0100 | (rlolist))
 
+// The number of words must fit in 7 unsigned bits
 #define OP_ADD_SP(num_words) (0xb000 | (num_words))
 #define OP_SUB_SP(num_words) (0xb080 | (num_words))
 
@@ -146,7 +154,11 @@ void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
     }
     asm_thumb_op16(as, OP_PUSH_RLIST_LR(reglist));
     if (stack_adjust > 0) {
-        asm_thumb_op16(as, OP_SUB_SP(stack_adjust));
+        if (UNSIGNED_FIT7(stack_adjust)) {
+            asm_thumb_op16(as, OP_SUB_SP(stack_adjust));
+        } else {
+            asm_thumb_op32(as, OP_SUB_W_RRI_HI(ASM_THUMB_REG_SP), OP_SUB_W_RRI_LO(ASM_THUMB_REG_SP, stack_adjust * 4));
+        }
     }
     as->push_reglist = reglist;
     as->stack_adjust = stack_adjust;
@@ -154,7 +166,11 @@ void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
 
 void asm_thumb_exit(asm_thumb_t *as) {
     if (as->stack_adjust > 0) {
-        asm_thumb_op16(as, OP_ADD_SP(as->stack_adjust));
+        if (UNSIGNED_FIT7(as->stack_adjust)) {
+            asm_thumb_op16(as, OP_ADD_SP(as->stack_adjust));
+        } else {
+            asm_thumb_op32(as, OP_ADD_W_RRI_HI(ASM_THUMB_REG_SP), OP_ADD_W_RRI_LO(ASM_THUMB_REG_SP, as->stack_adjust * 4));
+        }
     }
     asm_thumb_op16(as, OP_POP_RLIST_PC(as->push_reglist));
 }

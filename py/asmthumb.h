@@ -46,6 +46,7 @@
 #define ASM_THUMB_REG_R13 (13)
 #define ASM_THUMB_REG_R14 (14)
 #define ASM_THUMB_REG_R15 (15)
+#define ASM_THUMB_REG_SP  (ASM_THUMB_REG_R13)
 #define ASM_THUMB_REG_LR  (REG_R14)
 
 #define ASM_THUMB_CC_EQ (0x0)
