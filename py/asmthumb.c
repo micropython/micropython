@@ -366,24 +366,9 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
 #define OP_SVC(arg) (0xdf00 | (arg))
 
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
-    /* TODO make this use less bytes
-    uint rlo_base = ASM_THUMB_REG_R3;
-    uint rlo_dest = ASM_THUMB_REG_R7;
-    uint word_offset = 4;
-    asm_thumb_op16(as, 0x0000);
-    asm_thumb_op16(as, 0x6800 | (word_offset << 6) | (rlo_base << 3) | rlo_dest); // ldr rlo_dest, [rlo_base, #offset]
-    asm_thumb_op16(as, 0x4780 | (ASM_THUMB_REG_R9 << 3)); // blx reg
-    */
-
-    if (fun_id < 32) {
-        // load ptr to function from table, indexed by fun_id (must be in range 0-31); 4 bytes
-        asm_thumb_op16(as, ASM_THUMB_FORMAT_9_10_ENCODE(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER, reg_temp, ASM_THUMB_REG_R7, fun_id));
-        asm_thumb_op16(as, OP_BLX(reg_temp));
-    } else {
-        // load ptr to function from table, indexed by fun_id using wide load; 6 bytes
-        asm_thumb_op32(as, OP_LDR_W_HI(ASM_THUMB_REG_R7), OP_LDR_W_LO(reg_temp, fun_id << 2));
-        asm_thumb_op16(as, OP_BLX(reg_temp));
-    }
+    // Load ptr to function from table, indexed by fun_id, then call it
+    asm_thumb_ldr_reg_reg_i12_optimised(as, reg_temp, ASM_THUMB_REG_R7, fun_id);
+    asm_thumb_op16(as, OP_BLX(reg_temp));
 }
 
 #endif // MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
