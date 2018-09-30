@@ -154,7 +154,7 @@ STATIC const mp_obj_type_t mp_type_fun_native;
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
     #if MICROPY_EMIT_NATIVE
-    if (fun->base.type == &mp_type_fun_native) {
+    if (fun->base.type == &mp_type_fun_native || fun->base.type == &mp_type_native_gen_wrap) {
         // TODO native functions don't have name stored
         return MP_QSTR_;
     }

@@ -579,10 +579,9 @@ void asm_x64_mov_local_addr_to_r64(asm_x64_t *as, int local_num, int dest_r64) {
 }
 
 void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label) {
-    assert(dest_r64 < 8);
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - (as->base.code_offset + 7);
-    asm_x64_write_byte_3(as, REX_PREFIX | REX_W, OPCODE_LEA_MEM_TO_R64, MODRM_R64(dest_r64) | MODRM_RM_R64(5));
+    asm_x64_write_byte_3(as, REX_PREFIX | REX_W | REX_R_FROM_R64(dest_r64), OPCODE_LEA_MEM_TO_R64, MODRM_R64(dest_r64) | MODRM_RM_R64(5));
     asm_x64_write_word32(as, rel);
 }
 
