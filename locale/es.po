@@ -620,87 +620,87 @@ msgstr "len debe de ser múltiple de 4"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
+msgstr "la asignación de memoria ha fallado, asignando %u bytes para código nativo"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr ""
+msgstr "la ubicación de la flash debe estar debajo de 1MByte"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr ""
+msgstr "la frecuencia solo puede ser 80MHz o 160MHz"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr ""
+msgstr "AP necesario"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr ""
+msgstr "STA necesario"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
-msgstr ""
+msgstr "No se puede actualizar i/f status"
 
 #: ports/esp8266/modnetwork.c:142
 msgid "Cannot set STA config"
-msgstr ""
+msgstr "No se puede establecer STA config"
 
 #: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
-msgstr ""
+msgstr "No se puede conectar a AP"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr ""
+msgstr "No se puede desconectar de AP"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
-msgstr ""
+msgstr "status param desconocido"
 
 #: ports/esp8266/modnetwork.c:222
 msgid "STA must be active"
-msgstr ""
+msgstr "STA debe estar activo"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr ""
+msgstr "scan ha fallado"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
-msgstr ""
+msgstr "wifi_set_ip_info() ha fallado"
 
 #: ports/esp8266/modnetwork.c:319
 msgid "either pos or kw args are allowed"
-msgstr ""
+msgstr "ya sea pos o kw args son permitidos"
 
 #: ports/esp8266/modnetwork.c:329
 msgid "can't get STA config"
-msgstr ""
+msgstr "no se puede obtener STA config"
 
 #: ports/esp8266/modnetwork.c:331
 msgid "can't get AP config"
-msgstr ""
+msgstr "no se puede obtener AP config"
 
 #: ports/esp8266/modnetwork.c:346
 msgid "invalid buffer length"
-msgstr ""
+msgstr "longitud de buffer inválida"
 
 #: ports/esp8266/modnetwork.c:405
 msgid "can't set STA config"
-msgstr ""
+msgstr "no se puede establecer STA config"
 
 #: ports/esp8266/modnetwork.c:407
 msgid "can't set AP config"
-msgstr ""
+msgstr "no se puede establecer AP config"
 
 #: ports/esp8266/modnetwork.c:416
 msgid "can query only one param"
-msgstr ""
+msgstr "puede consultar solo un param"
 
 #: ports/esp8266/modnetwork.c:469
 msgid "unknown config param"
-msgstr ""
+msgstr "parámetro config desconocido"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
