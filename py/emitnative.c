@@ -65,6 +65,13 @@
 //  emit->stack_start:          Python object stack             | emit->n_state
 //                              locals (reversed, L0 at end)    |
 //
+// C stack layout for native generator functions:
+//  0=emit->stack_start:        nlr_buf_t
+//  REG_GENERATOR_STATE points to:
+//  0=emit->code_state_start:   mp_code_state_t
+//  emit->stack_start:          Python object stack             | emit->n_state
+//                              locals (reversed, L0 at end)    |
+//
 // C stack layout for viper functions:
 //  0:                          nlr_buf_t [optional]
 //  emit->code_state_start:     fun_obj, old_globals [optional]
@@ -81,12 +88,12 @@
 
 // Whether the native/viper function needs to be wrapped in an exception handler
 #define NEED_GLOBAL_EXC_HANDLER(emit) ((emit)->scope->exc_stack_size > 0 \
-    || ((emit)->scope->scope_flags & MP_SCOPE_FLAG_REFGLOBALS))
+    || ((emit)->scope->scope_flags & (MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_REFGLOBALS)))
 
 // Whether registers can be used to store locals (only true if there are no
 // exception handlers, because otherwise an nlr_jump will restore registers to
 // their state at the start of the function and updates to locals will be lost)
-#define CAN_USE_REGS_FOR_LOCALS(emit) ((emit)->scope->exc_stack_size == 0)
+#define CAN_USE_REGS_FOR_LOCALS(emit) ((emit)->scope->exc_stack_size == 0 && !(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR))
 
 // Indices within the local C stack for various variables
 #define LOCAL_IDX_EXC_VAL(emit) (NLR_BUF_IDX_RET_VAL)
@@ -95,17 +102,13 @@
 #define LOCAL_IDX_RET_VAL(emit) (NLR_BUF_IDX_LOCAL_3)
 #define LOCAL_IDX_FUN_OBJ(emit) ((emit)->code_state_start + offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t))
 #define LOCAL_IDX_OLD_GLOBALS(emit) ((emit)->code_state_start + offsetof(mp_code_state_t, ip) / sizeof(uintptr_t))
+#define LOCAL_IDX_GEN_PC(emit) ((emit)->code_state_start + offsetof(mp_code_state_t, ip) / sizeof(uintptr_t))
 #define LOCAL_IDX_LOCAL_VAR(emit, local_num) ((emit)->stack_start + (emit)->n_state - 1 - (local_num))
+
+#define REG_GENERATOR_STATE (REG_LOCAL_3)
 
 // number of arguments to viper functions are limited to this value
 #define REG_ARG_NUM (4)
-
-// define additional generic helper macros
-#define ASM_MOV_LOCAL_IMM_VIA(as, local_num, imm, reg_temp) \
-    do { \
-        ASM_MOV_REG_IMM((as), (reg_temp), (imm)); \
-        ASM_MOV_LOCAL_REG((as), (local_num), (reg_temp)); \
-    } while (false)
 
 #define EMIT_NATIVE_VIPER_TYPE_ERROR(emit, ...) do { \
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
@@ -201,6 +204,7 @@ struct _emit_t {
     size_t exc_stack_size;
     exc_stack_entry_t *exc_stack;
 
+    int start_offset;
     int prelude_offset;
     int n_state;
     uint16_t code_state_start;
@@ -251,6 +255,37 @@ STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg);
 STATIC void emit_call_with_imm_arg(emit_t *emit, mp_fun_kind_t fun_kind, mp_int_t arg_val, int arg_reg);
 STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
+
+STATIC void emit_native_mov_state_reg(emit_t *emit, int local_num, int reg_src) {
+    if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        ASM_STORE_REG_REG_OFFSET(emit->as, reg_src, REG_GENERATOR_STATE, local_num);
+    } else {
+        ASM_MOV_LOCAL_REG(emit->as, local_num, reg_src);
+    }
+}
+
+STATIC void emit_native_mov_reg_state(emit_t *emit, int reg_dest, int local_num) {
+    if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        ASM_LOAD_REG_REG_OFFSET(emit->as, reg_dest, REG_GENERATOR_STATE, local_num);
+    } else {
+        ASM_MOV_REG_LOCAL(emit->as, reg_dest, local_num);
+    }
+}
+
+STATIC void emit_native_mov_reg_state_addr(emit_t *emit, int reg_dest, int local_num) {
+    if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        ASM_MOV_REG_IMM(emit->as, reg_dest, local_num * ASM_WORD_SIZE);
+        ASM_ADD_REG_REG(emit->as, reg_dest, REG_GENERATOR_STATE);
+    } else {
+        ASM_MOV_REG_LOCAL_ADDR(emit->as, reg_dest, local_num);
+    }
+}
+
+#define emit_native_mov_local_imm_via(emit, local_num, imm, reg_temp) \
+    do { \
+        ASM_MOV_REG_IMM((emit)->as, (reg_temp), (imm)); \
+        emit_native_mov_state_reg((emit), (local_num), (reg_temp)); \
+    } while (false)
 
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
@@ -392,7 +427,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             if (i < REG_LOCAL_NUM && CAN_USE_REGS_FOR_LOCALS(emit) && (i != 2 || emit->scope->num_pos_args == 3)) {
                 ASM_MOV_REG_REG(emit->as, reg_local_table[i], r);
             } else {
-                ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_LOCAL_VAR(emit, i), r);
+                emit_native_mov_state_reg(emit, LOCAL_IDX_LOCAL_VAR(emit, i), r);
             }
         }
         // Get 3rd local from the stack back into REG_LOCAL_3 if this reg couldn't be written to above
@@ -406,11 +441,34 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         // work out size of state (locals plus stack)
         emit->n_state = scope->num_locals + scope->stack_size;
 
+        if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+            emit->code_state_start = 0;
+            emit->stack_start = sizeof(mp_code_state_t) / sizeof(mp_uint_t);
+            mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_offset);
+            mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
+            ASM_ENTRY(emit->as, sizeof(nlr_buf_t) / sizeof(uintptr_t));
+
+            // Put address of code_state into REG_GENERATOR_STATE
+            #if N_X86
+            asm_x86_mov_arg_to_r32(emit->as, 0, REG_GENERATOR_STATE);
+            #else
+            ASM_MOV_REG_REG(emit->as, REG_GENERATOR_STATE, REG_ARG_1);
+            #endif
+
+            // Put throw value into LOCAL_IDX_EXC_VAL slot, for yield/yield-from
+            #if N_X86
+            asm_x86_mov_arg_to_r32(emit->as, 1, REG_ARG_2);
+            #endif
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_ARG_2);
+
+        } else {
+
         // the locals and stack start after the code_state structure
         emit->stack_start = emit->code_state_start + sizeof(mp_code_state_t) / sizeof(mp_uint_t);
 
         // allocate space on C-stack for code_state structure, which includes state
         ASM_ENTRY(emit->as, emit->stack_start + emit->n_state);
+        }
 
         // TODO don't load r7 if we don't need it
         #if N_THUMB
@@ -421,6 +479,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         ASM_MOV_REG_IMM(emit->as, ASM_XTENSA_REG_A15, (uint32_t)mp_fun_table);
         #endif
 
+        if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
         // prepare incoming arguments for call to mp_setup_code_state
 
         #if N_X86
@@ -435,7 +494,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         // set code_state.ip (offset from start of this function to prelude info)
         // XXX this encoding may change size
-        ASM_MOV_LOCAL_IMM_VIA(emit->as, emit->code_state_start + offsetof(mp_code_state_t, ip) / sizeof(uintptr_t), emit->prelude_offset, REG_ARG_1);
+        emit_native_mov_local_imm_via(emit, emit->code_state_start + offsetof(mp_code_state_t, ip) / sizeof(uintptr_t), emit->prelude_offset, REG_ARG_1);
 
         // put address of code_state into first arg
         ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, emit->code_state_start);
@@ -448,6 +507,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         #else
         ASM_CALL_IND(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE);
         #endif
+        }
 
         emit_native_global_exc_entry(emit);
 
@@ -631,7 +691,7 @@ STATIC void need_reg_single(emit_t *emit, int reg_needed, int skip_stack_pos) {
             stack_info_t *si = &emit->stack_info[i];
             if (si->kind == STACK_REG && si->data.u_reg == reg_needed) {
                 si->kind = STACK_VALUE;
-                ASM_MOV_LOCAL_REG(emit->as, emit->stack_start + i, si->data.u_reg);
+                emit_native_mov_state_reg(emit, emit->stack_start + i, si->data.u_reg);
             }
         }
     }
@@ -642,7 +702,7 @@ STATIC void need_reg_all(emit_t *emit) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_REG) {
             si->kind = STACK_VALUE;
-            ASM_MOV_LOCAL_REG(emit->as, emit->stack_start + i, si->data.u_reg);
+            emit_native_mov_state_reg(emit, emit->stack_start + i, si->data.u_reg);
         }
     }
 }
@@ -654,7 +714,7 @@ STATIC void need_stack_settled(emit_t *emit) {
         if (si->kind == STACK_REG) {
             DEBUG_printf("    reg(%u) to local(%u)\n", si->data.u_reg, emit->stack_start + i);
             si->kind = STACK_VALUE;
-            ASM_MOV_LOCAL_REG(emit->as, emit->stack_start + i, si->data.u_reg);
+            emit_native_mov_state_reg(emit, emit->stack_start + i, si->data.u_reg);
         }
     }
     for (int i = 0; i < emit->stack_size; i++) {
@@ -662,7 +722,7 @@ STATIC void need_stack_settled(emit_t *emit) {
         if (si->kind == STACK_IMM) {
             DEBUG_printf("    imm(" INT_FMT ") to local(%u)\n", si->data.u_imm, emit->stack_start + i);
             si->kind = STACK_VALUE;
-            ASM_MOV_LOCAL_IMM_VIA(emit->as, emit->stack_start + i, si->data.u_imm, REG_TEMP0);
+            emit_native_mov_local_imm_via(emit, emit->stack_start + i, si->data.u_imm, REG_TEMP0);
         }
     }
 }
@@ -674,7 +734,7 @@ STATIC void emit_access_stack(emit_t *emit, int pos, vtype_kind_t *vtype, int re
     *vtype = si->vtype;
     switch (si->kind) {
         case STACK_VALUE:
-            ASM_MOV_REG_LOCAL(emit->as, reg_dest, emit->stack_start + emit->stack_size - pos);
+            emit_native_mov_reg_state(emit, reg_dest, emit->stack_start + emit->stack_size - pos);
             break;
 
         case STACK_REG:
@@ -696,7 +756,7 @@ STATIC void emit_fold_stack_top(emit_t *emit, int reg_dest) {
     si[0] = si[1];
     if (si->kind == STACK_VALUE) {
         // if folded element was on the stack we need to put it in a register
-        ASM_MOV_REG_LOCAL(emit->as, reg_dest, emit->stack_start + emit->stack_size - 1);
+        emit_native_mov_reg_state(emit, reg_dest, emit->stack_start + emit->stack_size - 1);
         si->kind = STACK_REG;
         si->data.u_reg = reg_dest;
     }
@@ -819,19 +879,19 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
             si->kind = STACK_VALUE;
             switch (si->vtype) {
                 case VTYPE_PYOBJ:
-                    ASM_MOV_LOCAL_IMM_VIA(emit->as, emit->stack_start + emit->stack_size - 1 - i, si->data.u_imm, reg_dest);
+                    emit_native_mov_local_imm_via(emit, emit->stack_start + emit->stack_size - 1 - i, si->data.u_imm, reg_dest);
                     break;
                 case VTYPE_BOOL:
                     if (si->data.u_imm == 0) {
-                        ASM_MOV_LOCAL_IMM_VIA(emit->as, emit->stack_start + emit->stack_size - 1 - i, (mp_uint_t)mp_const_false, reg_dest);
+                        emit_native_mov_local_imm_via(emit, emit->stack_start + emit->stack_size - 1 - i, (mp_uint_t)mp_const_false, reg_dest);
                     } else {
-                        ASM_MOV_LOCAL_IMM_VIA(emit->as, emit->stack_start + emit->stack_size - 1 - i, (mp_uint_t)mp_const_true, reg_dest);
+                        emit_native_mov_local_imm_via(emit, emit->stack_start + emit->stack_size - 1 - i, (mp_uint_t)mp_const_true, reg_dest);
                     }
                     si->vtype = VTYPE_PYOBJ;
                     break;
                 case VTYPE_INT:
                 case VTYPE_UINT:
-                    ASM_MOV_LOCAL_IMM_VIA(emit->as, emit->stack_start + emit->stack_size - 1 - i, (uintptr_t)MP_OBJ_NEW_SMALL_INT(si->data.u_imm), reg_dest);
+                    emit_native_mov_local_imm_via(emit, emit->stack_start + emit->stack_size - 1 - i, (uintptr_t)MP_OBJ_NEW_SMALL_INT(si->data.u_imm), reg_dest);
                     si->vtype = VTYPE_PYOBJ;
                     break;
                 default:
@@ -849,9 +909,9 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
         stack_info_t *si = &emit->stack_info[emit->stack_size - 1 - i];
         if (si->vtype != VTYPE_PYOBJ) {
             mp_uint_t local_num = emit->stack_start + emit->stack_size - 1 - i;
-            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, local_num);
+            emit_native_mov_reg_state(emit, REG_ARG_1, local_num);
             emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, si->vtype, REG_ARG_2); // arg2 = type
-            ASM_MOV_LOCAL_REG(emit->as, local_num, REG_RET);
+            emit_native_mov_state_reg(emit, local_num, REG_RET);
             si->vtype = VTYPE_PYOBJ;
             DEBUG_printf("  convert_native_to_obj(local_num=" UINT_FMT ")\n", local_num);
         }
@@ -859,7 +919,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
 
     // Adujust the stack for a pop of n_pop items, and load the stack pointer into reg_dest.
     adjust_stack(emit, -n_pop);
-    ASM_MOV_REG_LOCAL_ADDR(emit->as, reg_dest, emit->stack_start + emit->stack_size);
+    emit_native_mov_reg_state_addr(emit, reg_dest, emit->stack_start + emit->stack_size);
 }
 
 // vtype of all n_push objects is VTYPE_PYOBJ
@@ -870,7 +930,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, mp_uint_t reg_d
         emit->stack_info[emit->stack_size + i].kind = STACK_VALUE;
         emit->stack_info[emit->stack_size + i].vtype = VTYPE_PYOBJ;
     }
-    ASM_MOV_REG_LOCAL_ADDR(emit->as, reg_dest, emit->stack_start + emit->stack_size);
+    emit_native_mov_reg_state_addr(emit, reg_dest, emit->stack_start + emit->stack_size);
     adjust_stack(emit, n_push);
 }
 
@@ -932,7 +992,7 @@ STATIC void emit_load_reg_with_ptr(emit_t *emit, int reg, mp_uint_t ptr, size_t 
     if (emit->pass == MP_PASS_EMIT) {
         emit->const_table[table_off] = ptr;
     }
-    ASM_MOV_REG_LOCAL(emit->as, REG_TEMP0, LOCAL_IDX_FUN_OBJ(emit));
+    emit_native_mov_reg_state(emit, REG_TEMP0, LOCAL_IDX_FUN_OBJ(emit));
     ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, offsetof(mp_obj_fun_bc_t, const_table) / sizeof(uintptr_t));
     ASM_LOAD_REG_REG_OFFSET(emit->as, reg, REG_TEMP0, table_off);
 }
@@ -985,17 +1045,21 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
         mp_uint_t start_label = *emit->label_slot + 2;
         mp_uint_t global_except_label = *emit->label_slot + 3;
 
+        if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
         // Set new globals
-        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_FUN_OBJ(emit));
+        emit_native_mov_reg_state(emit, REG_ARG_1, LOCAL_IDX_FUN_OBJ(emit));
         ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_1, REG_ARG_1, offsetof(mp_obj_fun_bc_t, globals) / sizeof(uintptr_t));
         emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
 
         // Save old globals (or NULL if globals didn't change)
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_OLD_GLOBALS(emit), REG_RET);
+        emit_native_mov_state_reg(emit, LOCAL_IDX_OLD_GLOBALS(emit), REG_RET);
+        }
 
         if (emit->scope->exc_stack_size == 0) {
             // Optimisation: if globals didn't change don't push the nlr context
+            if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, false);
+            }
 
             // Wrap everything in an nlr context
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
@@ -1028,16 +1092,41 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_LOCAL_1, nlr_label, false);
         }
 
+        if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
         // Restore old globals
-        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
+        emit_native_mov_reg_state(emit, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
         emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
+        }
 
+        if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+            // Store return value in state[0]
+            ASM_MOV_REG_LOCAL(emit->as, REG_TEMP0, LOCAL_IDX_EXC_VAL(emit));
+            ASM_STORE_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_GENERATOR_STATE, offsetof(mp_code_state_t, state) / sizeof(uintptr_t));
+
+            // Load return kind
+            ASM_MOV_REG_IMM(emit->as, REG_RET, MP_VM_RETURN_EXCEPTION);
+
+            ASM_EXIT(emit->as);
+        } else {
         // Re-raise exception out to caller
         ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
         emit_call(emit, MP_F_NATIVE_RAISE);
+        }
 
         // Label for start of function
         emit_native_label_assign(emit, start_label);
+
+        if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+            emit_native_mov_reg_state(emit, REG_TEMP0, LOCAL_IDX_GEN_PC(emit));
+            ASM_JUMP_REG(emit->as, REG_TEMP0);
+            emit->start_offset = mp_asm_base_get_code_pos(&emit->as->base);
+
+            // This is the first entry of the generator
+
+            // Check LOCAL_IDX_EXC_VAL for any injected value
+            ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
+            emit_call(emit, MP_F_NATIVE_RAISE);
+        }
     }
 }
 
@@ -1047,8 +1136,11 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
 
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
         // Get old globals
-        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
+        if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
+        emit_native_mov_reg_state(emit, REG_ARG_1, LOCAL_IDX_OLD_GLOBALS(emit));
 
+        if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        } else
         if (emit->scope->exc_stack_size == 0) {
             // Optimisation: if globals didn't change then don't restore them and don't do nlr_pop
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_ARG_1, emit->exit_label + 1, false);
@@ -1056,10 +1148,13 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
 
         // Restore old globals
         emit_call(emit, MP_F_NATIVE_SWAP_GLOBALS);
+        }
 
         // Pop the nlr context
         emit_call(emit, MP_F_NLR_POP);
 
+        if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        } else
         if (emit->scope->exc_stack_size == 0) {
             // Destination label for above optimisation
             emit_native_label_assign(emit, emit->exit_label + 1);
@@ -1067,6 +1162,11 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
 
         // Load return value
         ASM_MOV_REG_LOCAL(emit->as, REG_RET, LOCAL_IDX_RET_VAL(emit));
+
+        if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+            // Store return kind in ip (need to do it here because LOCAL_IDX_OLD_GLOBALS uses ip)
+            //ASM_STORE_REG_REG_OFFSET(emit->as, REG_LOCAL_2, REG_LOCAL_1, offsetof(mp_code_state_t, ip) / sizeof(uintptr_t));
+        }
     }
 
     ASM_EXIT(emit->as);
@@ -1212,7 +1312,7 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
         emit_post_push_reg(emit, vtype, reg_local_table[local_num]);
     } else {
         need_reg_single(emit, REG_TEMP0, 0);
-        ASM_MOV_REG_LOCAL(emit->as, REG_TEMP0, LOCAL_IDX_LOCAL_VAR(emit, local_num));
+        emit_native_mov_reg_state(emit, REG_TEMP0, LOCAL_IDX_LOCAL_VAR(emit, local_num));
         emit_post_push_reg(emit, vtype, REG_TEMP0);
     }
 }
@@ -1431,7 +1531,7 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
         emit_pre_pop_reg(emit, &vtype, reg_local_table[local_num]);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
-        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_LOCAL_VAR(emit, local_num), REG_TEMP0);
+        emit_native_mov_state_reg(emit, LOCAL_IDX_LOCAL_VAR(emit, local_num), REG_TEMP0);
     }
     emit_post(emit);
 
@@ -2464,6 +2564,20 @@ STATIC void emit_native_call_method(emit_t *emit, mp_uint_t n_positional, mp_uin
 
 STATIC void emit_native_return_value(emit_t *emit) {
     DEBUG_printf("return_value\n");
+    if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        // Save pointer to current stack position for caller to access return value
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_TEMP0, 1);
+        emit_native_mov_state_reg(emit, offsetof(mp_code_state_t, sp) / sizeof(uintptr_t), REG_TEMP0);
+
+        // Put return type in return value slot
+        ASM_MOV_REG_IMM(emit->as, REG_TEMP0, MP_VM_RETURN_NORMAL);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_RET_VAL(emit), REG_TEMP0);
+
+        // Do the unwinding jump to get to the return handler
+        emit_native_unwind_jump(emit, emit->exit_label, emit->exc_stack_size);
+        emit->last_emit_was_return_value = true;
+        return;
+    }
     if (emit->do_viper_types) {
         vtype_kind_t return_vtype = emit->scope->scope_flags >> MP_SCOPE_FLAG_VIPERRET_POS;
         if (peek_vtype(emit, 0) == VTYPE_PTR_NONE) {
@@ -2510,10 +2624,87 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
 }
 
 STATIC void emit_native_yield(emit_t *emit, int kind) {
-    // not supported (for now)
-    (void)emit;
-    (void)kind;
-    mp_raise_NotImplementedError("native yield");
+    // Note: 1 (yield) or 3 (yield from) labels are reserved for this function, starting at *emit->label_slot
+
+    if (emit->do_viper_types) {
+        mp_raise_NotImplementedError("native yield");
+    }
+    emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
+
+    vtype_kind_t vtype;
+
+    if (kind == MP_EMIT_YIELD_FROM) {
+
+        // Top of yield-from loop, implementing:
+        //     for item in generator:
+        //         yield item
+
+        // Jump to start of loop
+        emit_native_jump(emit, *emit->label_slot + 2);
+
+        // Label for top of loop
+        emit_native_label_assign(emit, *emit->label_slot + 1);
+    }
+
+    // Yield the value from the delegate generator
+    need_stack_settled(emit); // TODO is this needed?
+
+    // Save return value for the global exception handler to use
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_TEMP0, 1);
+    emit_native_mov_state_reg(emit, offsetof(mp_code_state_t, sp) / sizeof(uintptr_t), REG_TEMP0);
+
+    // Put return type in REG_LOCAL_2 (to be put in ip by emit_native_global_exc_exit)
+    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, MP_VM_RETURN_YIELD);
+    ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_RET_VAL(emit), REG_TEMP0);
+
+    // Save re-entry PC
+    ASM_MOV_REG_PCREL(emit->as, REG_TEMP1, *emit->label_slot);
+    emit_native_mov_state_reg(emit, LOCAL_IDX_GEN_PC(emit), REG_TEMP1);
+
+    // Jump to exit handler
+    ASM_JUMP(emit->as, emit->exit_label);
+
+    // Label re-entry point
+    mp_asm_base_label_assign(&emit->as->base, *emit->label_slot);
+
+    // Re-open any active exception handler
+    if (emit->exc_stack_size > 0) {
+        // Find innermost active exception handler, to restore as current handler
+        exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size - 1];
+        for (; e >= emit->exc_stack; --e) {
+            if (e->is_active) {
+                // Found active handler, get its PC
+                ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
+                ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_RET);
+            }
+        }
+    }
+
+    emit_native_adjust_stack_size(emit, 1); // send value
+
+    if (kind == MP_EMIT_YIELD_VALUE) {
+        // Check LOCAL_IDX_EXC_VAL for any injected value
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
+        emit_call(emit, MP_F_NATIVE_RAISE);
+    } else {
+        // Label for loop entry
+        emit_native_label_assign(emit, *emit->label_slot + 2);
+
+        // Get the next item from the delegate generator
+        emit_pre_pop_reg(emit, &vtype, REG_ARG_2); // send_value
+        emit_access_stack(emit, 1, &vtype, REG_ARG_1); // generator
+        ASM_MOV_REG_LOCAL(emit->as, REG_ARG_3, LOCAL_IDX_EXC_VAL(emit)); // throw_value
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_3);
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, 1); // ret_value
+        emit_call(emit, MP_F_NATIVE_YIELD_FROM);
+
+        // If returned non-zero then generator continues
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, *emit->label_slot + 1, true);
+
+        // Pop exhausted gen, replace with ret_value
+        emit_native_adjust_stack_size(emit, 1); // ret_value
+        emit_fold_stack_top(emit, REG_ARG_1);
+    }
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {

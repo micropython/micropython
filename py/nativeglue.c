@@ -106,7 +106,7 @@ mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const m
 // wrapper that makes raise obj and raises it
 // END_FINALLY opcode requires that we don't raise if o==None
 void mp_native_raise(mp_obj_t o) {
-    if (o != mp_const_none) {
+    if (o != MP_OBJ_NULL && o != mp_const_none) {
         nlr_raise(mp_make_raise_obj(o));
     }
 }
@@ -135,6 +135,42 @@ STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
         obj = MP_OBJ_FROM_PTR(iter);
     }
     return mp_iternext(obj);
+}
+
+STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value) {
+    mp_vm_return_kind_t ret_kind;
+    nlr_buf_t nlr_buf;
+    mp_obj_t throw_value = *ret_value;
+    if (nlr_push(&nlr_buf) == 0) {
+        if (throw_value != MP_OBJ_NULL) {
+            send_value = MP_OBJ_NULL;
+        }
+        ret_kind = mp_resume(gen, send_value, throw_value, ret_value);
+        nlr_pop();
+    } else {
+        ret_kind = MP_VM_RETURN_EXCEPTION;
+        *ret_value = nlr_buf.ret_val;
+    }
+
+    if (ret_kind == MP_VM_RETURN_YIELD) {
+        return true;
+    } else if (ret_kind == MP_VM_RETURN_NORMAL) {
+        if (*ret_value == MP_OBJ_STOP_ITERATION) {
+            *ret_value = mp_const_none;
+        }
+    } else {
+        assert(ret_kind == MP_VM_RETURN_EXCEPTION);
+        if (!mp_obj_exception_match(*ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            nlr_raise(*ret_value);
+        }
+        *ret_value = mp_obj_exception_get_value(*ret_value);
+    }
+
+    if (throw_value != MP_OBJ_NULL && mp_obj_exception_match(throw_value, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
+        nlr_raise(mp_make_raise_obj(throw_value));
+    }
+
+    return false;
 }
 
 // these must correspond to the respective enum in runtime0.h
@@ -189,6 +225,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_setup_code_state,
     mp_small_int_floor_divide,
     mp_small_int_modulo,
+    mp_native_yield_from,
 };
 
 /*
