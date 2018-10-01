@@ -153,9 +153,11 @@ STATIC void asm_x86_generic_r32_r32(asm_x86_t *as, int dest_r32, int src_r32, in
     asm_x86_write_byte_2(as, op, MODRM_R32(src_r32) | MODRM_RM_REG | MODRM_RM_R32(dest_r32));
 }
 
+#if 0
 STATIC void asm_x86_nop(asm_x86_t *as) {
     asm_x86_write_byte_1(as, OPCODE_NOP);
 }
+#endif
 
 STATIC void asm_x86_push_r32(asm_x86_t *as, int src_r32) {
     asm_x86_write_byte_1(as, OPCODE_PUSH_R32 | src_r32);
