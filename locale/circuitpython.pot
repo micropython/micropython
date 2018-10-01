@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-06 14:55-0700\n"
+"POT-Creation-Date: 2018-09-21 12:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -123,7 +123,7 @@ msgstr ""
 msgid "queue overflow"
 msgstr ""
 
-#: extmod/moduzlib.c:97
+#: extmod/moduzlib.c:98
 msgid "compression header"
 msgstr ""
 
@@ -214,7 +214,7 @@ msgstr ""
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 
-#: main.c:415
+#: main.c:416
 msgid "soft reboot\n"
 msgstr ""
 
@@ -231,15 +231,15 @@ msgstr ""
 msgid "calibration is out of range"
 msgstr ""
 
-#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:59 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
 msgstr ""
 
-#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:85 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
 msgstr ""
 
-#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:112 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
 msgstr ""
 
@@ -291,12 +291,12 @@ msgid "Too many channels in sample."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
 msgid "No DMA channel found"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 
@@ -338,14 +338,19 @@ msgstr ""
 msgid "Cannot output both channels on the same pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:215
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
 msgid "All event channels in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
@@ -356,7 +361,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:58
+#: ports/nrf/common-hal/busio/I2C.c:77
 msgid "Invalid pins"
 msgstr ""
 
@@ -376,24 +381,24 @@ msgstr ""
 msgid "tx and rx cannot both be None"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:139
+#: ports/atmel-samd/common-hal/busio/UART.c:145
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:147
+#: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:234
+#: ports/atmel-samd/common-hal/busio/UART.c:240
 msgid "No RX pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:288
+#: ports/atmel-samd/common-hal/busio/UART.c:294
 msgid "No TX pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
 msgstr ""
 
@@ -403,12 +408,12 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
 #: ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 msgid "All timers for this pin are in use"
 msgstr ""
 
@@ -685,11 +690,23 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
+#: ports/nrf/common-hal/busio/I2C.c:91
+msgid "All I2C peripherals are in use"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/SPI.c:109
+msgid "All SPI peripherals are in use"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/SPI.c:170
+msgid "Baud rate too high for this SPI peripheral"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
 #: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
 #: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
 #: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
 msgid "busio.UART not yet implemented"
 msgstr ""
 
@@ -1960,6 +1977,7 @@ msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -1992,11 +2010,11 @@ msgstr ""
 msgid "Function requires lock."
 msgstr ""
 
-#: shared-bindings/busio/UART.c:98
+#: shared-bindings/busio/UART.c:102
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: shared-bindings/busio/UART.c:110
+#: shared-bindings/busio/UART.c:114
 msgid "stop must be 1 or 2"
 msgstr ""
 
@@ -2034,6 +2052,10 @@ msgstr ""
 msgid "row data must be a buffer"
 msgstr ""
 
+#: shared-bindings/displayio/ColorConverter.c:72
+msgid "color should be an int"
+msgstr ""
+
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
@@ -2064,16 +2086,16 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:45
+#: shared-bindings/displayio/Sprite.c:48
 msgid "position must be 2-tuple"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:87
+#: shared-bindings/displayio/Sprite.c:97
 msgid "unsupported bitmap type"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:152
-msgid "palette must be displayio.Palette"
+#: shared-bindings/displayio/Sprite.c:162
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
@@ -2300,6 +2322,24 @@ msgstr ""
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
+msgstr ""
+
+#: shared-module/displayio/Group.c:48
+msgid "Group empty"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:49
+msgid "Invalid BMP file"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:59
+#, c-format
+msgid "Only Windows format, uncompressed BMP supported %d"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:64
+#, c-format
+msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr ""
 
 #: shared-module/struct/__init__.c:39

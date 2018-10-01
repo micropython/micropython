@@ -31,12 +31,20 @@
 #include "py/obj.h"
 
 typedef struct {
-    mp_obj_base_t base;
     nrfx_spim_t spim;
+    uint8_t max_frequency_MHz;
+    uint8_t max_xfer_size;
+} spim_peripheral_t;
+
+typedef struct {
+    mp_obj_base_t base;
+    spim_peripheral_t* spim_peripheral;
     bool has_lock;
     uint8_t clock_pin_number;
     uint8_t MOSI_pin_number;
     uint8_t MISO_pin_number;
 } busio_spi_obj_t;
+
+void spi_reset(void);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H

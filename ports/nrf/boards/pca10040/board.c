@@ -32,7 +32,6 @@
 #include "boards/board.h"
 
 void board_init(void) {
-
 }
 
 bool board_requests_safe_mode(void) {

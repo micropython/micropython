@@ -113,7 +113,7 @@ else
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
   ifdef INTERNAL_FLASH_FILESYSTEM
-    CFLAGS += -finline-limit=55
+    CFLAGS += -finline-limit=50
   endif
   ifdef CFLAGS_INLINE_LIMIT
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
@@ -384,7 +384,9 @@ SRC_SHARED_MODULE = \
 	busio/OneWire.c \
 	displayio/__init__.c \
 	displayio/Bitmap.c \
+	displayio/ColorConverter.c \
 	displayio/Group.c \
+	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Sprite.c \
 	gamepad/__init__.c \

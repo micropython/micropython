@@ -31,12 +31,11 @@
 #include <stdint.h>
 
 #include "py/obj.h"
-#include "shared-bindings/displayio/Palette.h"
 
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t bitmap;
-    displayio_palette_t* palette;
+    mp_obj_t pixel_shader;
     uint16_t x;
     uint16_t y;
     uint16_t width;

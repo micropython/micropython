@@ -42,10 +42,6 @@ typedef struct {
     bool rx_error;
     uint32_t baudrate;
     uint32_t timeout_ms;
-    // Index of the oldest received character.
-    uint32_t buffer_start;
-    // Index of the next available spot to store a character.
-    uint32_t buffer_size;
     uint32_t buffer_length;
     uint8_t* buffer;
 } busio_uart_obj_t;

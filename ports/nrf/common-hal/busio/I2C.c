@@ -34,8 +34,31 @@
 #include "nrfx_twim.h"
 #include "nrf_gpio.h"
 
-#define INST_NO 0
-#define MAX_XFER_SIZE ((1U << NRFX_CONCAT_3(TWIM, INST_NO, _EASYDMA_MAXCNT_SIZE)) - 1)
+#include "nrfx_spim.h"
+#include "nrf_gpio.h"
+
+STATIC twim_peripheral_t twim_peripherals[] = {
+#if NRFX_CHECK(NRFX_TWIM0_ENABLED)
+    // SPIM0 and TWIM0 share an address.
+    { .twim = NRFX_TWIM_INSTANCE(0),
+      .in_use = false,
+      .max_xfer_size = TWIM0_EASYDMA_MAXCNT_SIZE,
+    },
+#endif
+#if NRFX_CHECK(NRFX_TWIM1_ENABLED)
+    // SPIM1 and TWIM1 share an address.
+    { .twim = NRFX_TWIM_INSTANCE(1),
+      .in_use = false,
+      .max_xfer_size = TWIM1_EASYDMA_MAXCNT_SIZE,
+    },
+#endif
+};
+
+void i2c_reset(void) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
+        twim_peripherals[i].in_use = false;
+    }
+}
 
 static uint8_t twi_error_to_mp(const nrfx_err_t err) {
     switch (err) {
@@ -54,11 +77,23 @@ static uint8_t twi_error_to_mp(const nrfx_err_t err) {
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
-    if (scl->number == sda->number)
+    if (scl->number == sda->number) {
         mp_raise_ValueError(translate("Invalid pins"));
+    }
 
-    const nrfx_twim_t instance = NRFX_TWIM_INSTANCE(INST_NO);
-    self->twim = instance;
+    // Find a free instance.
+    self->twim_peripheral = NULL;
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
+        if (!twim_peripherals[i].in_use) {
+            self->twim_peripheral = &twim_peripherals[i];
+            self->twim_peripheral->in_use = true;
+            break;
+        }
+    }
+
+    if (self->twim_peripheral == NULL) {
+        mp_raise_ValueError(translate("All I2C peripherals are in use"));
+    }
 
     nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
     config.scl = scl->number;
@@ -76,12 +111,12 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     claim_pin(sda);
     claim_pin(scl);
 
-    nrfx_err_t err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
+    nrfx_err_t err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
 
     // A soft reset doesn't uninit the driver so we might end up with a invalid state
     if (err == NRFX_ERROR_INVALID_STATE) {
-        nrfx_twim_uninit(&self->twim);
-        err = nrfx_twim_init(&self->twim, &config, NULL, NULL);
+        nrfx_twim_uninit(&self->twim_peripheral->twim);
+        err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
     }
 
     if (err != NRFX_SUCCESS) {
@@ -99,20 +134,22 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     if (common_hal_busio_i2c_deinited(self))
         return;
 
-    nrfx_twim_uninit(&self->twim);
+    nrfx_twim_uninit(&self->twim_peripheral->twim);
 
     reset_pin_number(self->sda_pin_number);
     reset_pin_number(self->scl_pin_number);
     self->sda_pin_number = NO_PIN;
     self->scl_pin_number = NO_PIN;
+
+    self->twim_peripheral->in_use = false;
 }
 
 // nrfx_twim_tx doesn't support 0-length data so we fall back to the hal API
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    NRF_TWIM_Type *reg = self->twim.p_twim;
+    NRF_TWIM_Type *reg = self->twim_peripheral->twim.p_twim;
     bool found = true;
 
-    nrfx_twim_enable(&self->twim);
+    nrfx_twim_enable(&self->twim_peripheral->twim);
 
     nrf_twim_address_set(reg, addr);
     nrf_twim_tx_buffer_set(reg, NULL, 0);
@@ -135,19 +172,19 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
         found = false;
     }
 
-    nrfx_twim_disable(&self->twim);
+    nrfx_twim_disable(&self->twim_peripheral->twim);
 
     return found;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
     bool grabbed_lock = false;
-//    CRITICAL_SECTION_ENTER()
-        if (!self->has_lock) {
-            grabbed_lock = true;
-            self->has_lock = true;
-        }
-//    CRITICAL_SECTION_LEAVE();
+    // NRFX_CRITICAL_SECTION_ENTER();
+    if (!self->has_lock) {
+        grabbed_lock = true;
+        self->has_lock = true;
+    }
+    // NRFX_CRITICAL_SECTION_EXIT();
     return grabbed_lock;
 }
 
@@ -163,22 +200,23 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const u
     if(len == 0)
         return common_hal_busio_i2c_probe(self, addr) ? 0 : MP_ENODEV;
 
-    const uint32_t parts = len / MAX_XFER_SIZE;
-    const uint32_t remainder = len % MAX_XFER_SIZE;
+    const uint32_t max_xfer_size = self->twim_peripheral->max_xfer_size;
+    const uint32_t parts = len / max_xfer_size;
+    const uint32_t remainder = len % max_xfer_size;
     nrfx_err_t err = NRFX_SUCCESS;
 
-    nrfx_twim_enable(&self->twim);
+    nrfx_twim_enable(&self->twim_peripheral->twim);
 
     for (uint32_t i = 0; i < parts; ++i) {
-        err = nrfx_twim_tx(&self->twim, addr, data + i * MAX_XFER_SIZE, MAX_XFER_SIZE, !stopBit);
+        err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data + i * max_xfer_size, max_xfer_size, !stopBit);
         if (err != NRFX_SUCCESS)
             break;
     }
 
     if ((remainder > 0) && (err == NRFX_SUCCESS))
-        err = nrfx_twim_tx(&self->twim, addr, data + parts * MAX_XFER_SIZE, remainder, !stopBit);
+        err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data + parts * max_xfer_size, remainder, !stopBit);
 
-    nrfx_twim_disable(&self->twim);
+    nrfx_twim_disable(&self->twim_peripheral->twim);
 
     return twi_error_to_mp(err);
 }
@@ -187,22 +225,23 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t 
     if(len == 0)
         return 0;
 
-    const uint32_t parts = len / MAX_XFER_SIZE;
-    const uint32_t remainder = len % MAX_XFER_SIZE;
+    const uint32_t max_xfer_size = self->twim_peripheral->max_xfer_size;
+    const uint32_t parts = len / max_xfer_size;
+    const uint32_t remainder = len % max_xfer_size;
     nrfx_err_t err = NRFX_SUCCESS;
 
-    nrfx_twim_enable(&self->twim);
+    nrfx_twim_enable(&self->twim_peripheral->twim);
 
     for (uint32_t i = 0; i < parts; ++i) {
-        err = nrfx_twim_rx(&self->twim, addr, data + i * MAX_XFER_SIZE, MAX_XFER_SIZE);
+        err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data + i * max_xfer_size, max_xfer_size);
         if (err != NRFX_SUCCESS)
             break;
     }
 
     if ((remainder > 0) && (err == NRFX_SUCCESS))
-        err = nrfx_twim_rx(&self->twim, addr, data + parts * MAX_XFER_SIZE, remainder);
+        err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data + parts * max_xfer_size, remainder);
 
-    nrfx_twim_disable(&self->twim);
+    nrfx_twim_disable(&self->twim_peripheral->twim);
 
     return twi_error_to_mp(err);
 }

@@ -109,16 +109,16 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
         asm("nop; nop;");
         #endif
         #ifdef SAMD51
-        delay_cycles(3);
+        delay_cycles(2);
         #endif
-        if(p & bitMask) {
+        if((p & bitMask) != 0) {
             // This is the high delay unique to a one bit.
             // For the SK6812 its 0.3us
             #ifdef SAMD21
             asm("nop; nop; nop; nop; nop; nop; nop;");
             #endif
             #ifdef SAMD51
-            delay_cycles(11);
+            delay_cycles(3);
             #endif
             *clr = pinMask;
         } else {
@@ -129,7 +129,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             asm("nop; nop;");
             #endif
             #ifdef SAMD51
-            delay_cycles(3);
+            delay_cycles(2);
             #endif
         }
         if((bitMask >>= 1) != 0) {
@@ -140,7 +140,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             asm("nop; nop; nop; nop; nop;");
             #endif
             #ifdef SAMD51
-            delay_cycles(20);
+            delay_cycles(4);
             #endif
         } else {
             if(ptr >= end) break;
@@ -151,7 +151,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             // above operations take.
             // For the SK6812 its 0.6us +- 0.15us
             #ifdef SAMD51
-            delay_cycles(15);
+            delay_cycles(3);
             #endif
         }
     }

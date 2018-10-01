@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-06 14:55-0700\n"
+"POT-Creation-Date: 2018-09-21 12:23-0400\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -123,7 +123,7 @@ msgstr "certificado inválido"
 msgid "queue overflow"
 msgstr "desborde de queue"
 
-#: extmod/moduzlib.c:97
+#: extmod/moduzlib.c:98
 msgid "compression header"
 msgstr "encabezado de compresión"
 
@@ -229,47 +229,47 @@ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
 
-#: main.c:415
+#: main.c:416
 msgid "soft reboot\n"
 msgstr "reinicio suave\n"
 
 #: ports/atmel-samd/audio_dma.c:285
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
-msgstr ""
+msgstr "Todos los sync event channels están siendo utilizados"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:135
 msgid "calibration is read only"
-msgstr ""
+msgstr "calibration es de solo lectura"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:137
 msgid "calibration is out of range"
-msgstr ""
+msgstr "calibration esta fuera de rango"
 
-#: ports/atmel-samd/board_busses.c:39 ports/nrf/board_busses.c:39
+#: ports/atmel-samd/board_busses.c:59 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
-msgstr ""
+msgstr "Sin bus I2C por default"
 
-#: ports/atmel-samd/board_busses.c:64 ports/nrf/board_busses.c:64
+#: ports/atmel-samd/board_busses.c:85 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
-msgstr ""
+msgstr "Sin bus SPI por default"
 
-#: ports/atmel-samd/board_busses.c:91 ports/nrf/board_busses.c:91
+#: ports/atmel-samd/board_busses.c:112 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
-msgstr ""
+msgstr "Sin bus UART por default"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 #: ports/nrf/common-hal/analogio/AnalogIn.c:39
 msgid "Pin does not have ADC capabilities"
-msgstr ""
+msgstr "pin no tiene capacidades ADC"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:49
 msgid "No DAC on chip"
-msgstr ""
+msgstr "El chip no tiene DAC"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:56
 msgid "AnalogOut not supported on given pin"
-msgstr "AnalogOut no es soportado por el pin dado"
+msgstr "El pin proporcionado no soporta AnalogOut"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
@@ -277,25 +277,24 @@ msgid "Invalid bit clock pin"
 msgstr "Pin bit clock inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
-#, fuzzy
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock y Word select deben compartir la unidad de reloj"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
 msgid "Invalid data pin"
-msgstr ""
+msgstr "Pin de datos inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:169
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:174
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:145
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:150
 msgid "Serializer in use"
-msgstr ""
+msgstr "Serializer está siendo utilizado"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:230
 msgid "Clock unit in use"
-msgstr ""
+msgstr "Clock unit está siendo utilizado"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
@@ -304,21 +303,21 @@ msgstr "No se pudo encontrar un GCLK disponible"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:254
 msgid "Too many channels in sample."
-msgstr ""
+msgstr "Demasiados canales en sample"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:326
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
 msgid "No DMA channel found"
-msgstr ""
+msgstr "No se encontró el canal DMA"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:328
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:109
 msgid "Invalid clock pin"
-msgstr "pin clock inválido"
+msgstr "Pin clock inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
@@ -330,7 +329,7 @@ msgstr "velocidad de muestreo fuera de rango"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
 msgid "DAC already in use"
-msgstr ""
+msgstr "DAC ya está siendo utilizado"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
 msgid "Right channel unsupported"
@@ -354,15 +353,20 @@ msgstr ""
 msgid "Cannot output both channels on the same pin"
 msgstr "No es posible utilizar el mismo pin para ambos canales"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:173
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:186
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 msgid "All timers in use"
-msgstr "Todos los timers estan siendo utilizados"
+msgstr "Todos los timers están siendo utilizados"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:215
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
 msgid "All event channels in use"
-msgstr "Todos los canales de eventos estan siendo utilizados"
+msgstr "Todos los canales de eventos están siendo utilizados"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -372,7 +376,7 @@ msgstr "No hay suficientes pines disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:58
+#: ports/nrf/common-hal/busio/I2C.c:77
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
@@ -392,24 +396,24 @@ msgstr "bytes > 8 bits no son soportados"
 msgid "tx and rx cannot both be None"
 msgstr "tx y rx no pueden ser ambos None"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:139
+#: ports/atmel-samd/common-hal/busio/UART.c:145
 msgid "Failed to allocate RX buffer"
 msgstr "Fallo la asignación del buffer RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:147
+#: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:234
+#: ports/atmel-samd/common-hal/busio/UART.c:240
 msgid "No RX pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:288
+#: ports/atmel-samd/common-hal/busio/UART.c:294
 msgid "No TX pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:153
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
 msgstr ""
 
@@ -419,14 +423,14 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:366
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
 #: ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:184
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 msgid "All timers for this pin are in use"
-msgstr "Todos los timers para este pin están siendo utilizado"
+msgstr "Todos los timers para este pin están siendo utilizados"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
@@ -434,7 +438,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
-msgstr "El canal EXTINT ya esta siendo usado"
+msgstr "El canal EXTINT ya está siendo utilizado"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
@@ -461,9 +465,8 @@ msgid "Both pins must support hardware interrupts"
 msgstr "Ambos pines deben soportar interrupciones por hardware"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:46
-#, fuzzy
 msgid "A hardware interrupt channel is already in use"
-msgstr "El canal EXTINT ya esta siendo usado"
+msgstr "El canal EXTINT ya está siendo utilizado"
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
@@ -703,11 +706,23 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
+#: ports/nrf/common-hal/busio/I2C.c:91
+msgid "All I2C peripherals are in use"
+msgstr "Todos los timers están siendo utilizados"
+
+#: ports/nrf/common-hal/busio/SPI.c:109
+msgid "All SPI peripherals are in use"
+msgstr "Todos los timers están siendo utilizados"
+
+#: ports/nrf/common-hal/busio/SPI.c:170
+msgid "Baud rate too high for this SPI peripheral"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
 #: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
 #: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
 #: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
 msgid "busio.UART not yet implemented"
 msgstr ""
 
@@ -2005,6 +2020,7 @@ msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -2037,11 +2053,11 @@ msgstr ""
 msgid "Function requires lock."
 msgstr ""
 
-#: shared-bindings/busio/UART.c:98
+#: shared-bindings/busio/UART.c:102
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: shared-bindings/busio/UART.c:110
+#: shared-bindings/busio/UART.c:114
 msgid "stop must be 1 or 2"
 msgstr ""
 
@@ -2080,6 +2096,10 @@ msgstr ""
 msgid "row data must be a buffer"
 msgstr ""
 
+#: shared-bindings/displayio/ColorConverter.c:72
+msgid "color should be an int"
+msgstr ""
+
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
@@ -2110,16 +2130,16 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:45
+#: shared-bindings/displayio/Sprite.c:48
 msgid "position must be 2-tuple"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:87
+#: shared-bindings/displayio/Sprite.c:97
 msgid "unsupported bitmap type"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:152
-msgid "palette must be displayio.Palette"
+#: shared-bindings/displayio/Sprite.c:162
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
@@ -2150,7 +2170,7 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:100
 msgid "%q in use"
-msgstr ""
+msgstr "%q está siendo utilizado"
 
 #: shared-bindings/microcontroller/__init__.c:126
 msgid "Invalid run mode."
@@ -2347,6 +2367,26 @@ msgstr ""
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
+msgstr ""
+
+#: shared-module/displayio/Group.c:48
+#, fuzzy
+msgid "Group empty"
+msgstr "heap vacío"
+
+#: shared-module/displayio/OnDiskBitmap.c:49
+#, fuzzy
+msgid "Invalid BMP file"
+msgstr "pin inválido"
+
+#: shared-module/displayio/OnDiskBitmap.c:59
+#, c-format
+msgid "Only Windows format, uncompressed BMP supported %d"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c:64
+#, c-format
+msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr ""
 
 #: shared-module/struct/__init__.c:39

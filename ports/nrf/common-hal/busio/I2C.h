@@ -32,11 +32,19 @@
 #include "py/obj.h"
 
 typedef struct {
-    mp_obj_base_t base;
     nrfx_twim_t twim;
+    bool in_use;
+    uint8_t max_xfer_size;
+} twim_peripheral_t;
+
+typedef struct {
+    mp_obj_base_t base;
+    twim_peripheral_t* twim_peripheral;
     bool has_lock;
     uint8_t scl_pin_number;
     uint8_t sda_pin_number;
 } busio_i2c_obj_t;
+
+void i2c_reset(void);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H

@@ -28,13 +28,26 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 
+#include "nrf/cache.h"
+#include "nrf/clocks.h"
+#include "nrf/power.h"
+
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/busio/I2C.h"
+#include "common-hal/busio/SPI.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "tick.h"
 
 safe_mode_t port_init(void) {
-    board_init();
+
+    nrf_peripherals_clocks_init();
+
+    // If GPIO voltage is set wrong in UICR, this will fix it, and
+    // will also do a reset to make the change take effect.
+    nrf_peripherals_power_init();
+
+    nrf_peripherals_enable_cache();
 
     // Configure millisecond timer initialization.
     tick_init();
@@ -46,7 +59,12 @@ safe_mode_t port_init(void) {
         return HARD_CRASH;
     }
     #endif
+#endif
 
+    // Will do usb_init() if chip supports USB.
+    board_init();
+
+#if 0
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
     }
@@ -56,11 +74,14 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
- #ifdef CIRCUITPY_GAMEPAD_TICKS
-     gamepad_reset();
- #endif
+#ifdef CIRCUITPY_GAMEPAD_TICKS
+    gamepad_reset();
+#endif
 
+    i2c_reset();
+    spi_reset();
     pwmout_reset();
+
     reset_all_pins();
 }
 
@@ -80,4 +101,3 @@ void HardFault_Handler(void)
 //		(void)bfar;
 //	}
 }
-
