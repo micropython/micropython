@@ -59,6 +59,12 @@ STATIC spim_peripheral_t spim_peripherals[] = {
 #endif
 };
 
+void spi_reset(void) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
+        nrfx_spim_uninit(&spim_peripherals[i].spim);
+    }
+}
+
 // Convert frequency to clock-speed-dependent value
 static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) {
     if (baudrate <= 125000) {

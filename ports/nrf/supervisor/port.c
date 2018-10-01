@@ -34,6 +34,8 @@
 
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/busio/I2C.h"
+#include "common-hal/busio/SPI.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "tick.h"
 
@@ -72,11 +74,14 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
- #ifdef CIRCUITPY_GAMEPAD_TICKS
-     gamepad_reset();
- #endif
+#ifdef CIRCUITPY_GAMEPAD_TICKS
+    gamepad_reset();
+#endif
 
+    i2c_reset();
+    spi_reset();
     pwmout_reset();
+
     reset_all_pins();
 }
 
