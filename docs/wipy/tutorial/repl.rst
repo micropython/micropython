@@ -18,7 +18,7 @@ do::
    >>> uart = UART(0, 115200)
    >>> os.dupterm(uart)
 
-Place this piece of code inside your `boot.py` so that it's done automatically after
+Place this piece of code inside your ``boot.py`` so that it's done automatically after
 reset.
 
 Windows
