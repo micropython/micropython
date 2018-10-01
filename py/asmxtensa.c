@@ -161,7 +161,8 @@ void asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
         asm_xtensa_op_movi(as, reg_dest, i32);
     } else {
         // load the constant
-        asm_xtensa_op_l32r(as, reg_dest, as->base.code_offset, 4 + as->cur_const * WORD_SIZE);
+        uint32_t const_table_offset = (uint8_t*)as->const_table - as->base.code_base;
+        asm_xtensa_op_l32r(as, reg_dest, as->base.code_offset, const_table_offset + as->cur_const * WORD_SIZE);
         // store the constant in the table
         if (as->const_table != NULL) {
             as->const_table[as->cur_const] = i32;
