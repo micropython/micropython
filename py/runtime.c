@@ -1361,15 +1361,8 @@ import_error:
     qstr dot_name_q = qstr_from_strn(dot_name, dot_name_len);
     mp_local_free(dot_name);
 
-    mp_obj_t args[5];
-    args[0] = MP_OBJ_NEW_QSTR(dot_name_q);
-    args[1] = mp_const_none; // TODO should be globals
-    args[2] = mp_const_none; // TODO should be locals
-    args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
-    args[4] = MP_OBJ_NEW_SMALL_INT(0);
-
-    // TODO lookup __import__ and call that instead of going straight to builtin implementation
-    return mp_builtin___import__(5, args);
+    // For fromlist, pass sentinel "non empty" value to force returning of leaf module
+    return mp_import_name(dot_name_q, mp_const_true, MP_OBJ_NEW_SMALL_INT(0));
 
     #else
 
