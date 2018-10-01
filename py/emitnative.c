@@ -60,17 +60,17 @@
 #if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA
 
 // C stack layout for native functions:
-//  0:                      mp_code_state_t
-//  emit->stack_start:      nlr_buf_t [optional]            |
-//                          Python object stack             | emit->n_state
-//                          locals (reversed, L0 at end)    |
+//  0:                          nlr_buf_t [optional]
+//  emit->code_state_start:     mp_code_state_t
+//  emit->stack_start:          Python object stack             | emit->n_state
+//                              locals (reversed, L0 at end)    |
 //
 // C stack layout for viper functions:
-//  0                       fun_obj, old_globals [optional]
-//  emit->stack_start:      nlr_buf_t [optional]            |
-//                          Python object stack             | emit->n_state
-//                          locals (reversed, L0 at end)    |
-//                          (L0-L2 may be in regs instead)
+//  0:                          nlr_buf_t [optional]
+//  emit->code_state_start:     fun_obj, old_globals [optional]
+//  emit->stack_start:          Python object stack             | emit->n_state
+//                              locals (reversed, L0 at end)    |
+//                              (L0-L2 may be in regs instead)
 
 // Word index of nlr_buf_t.ret_val
 #define NLR_BUF_IDX_RET_VAL (1)
@@ -89,12 +89,12 @@
 #define CAN_USE_REGS_FOR_LOCALS(emit) ((emit)->scope->exc_stack_size == 0)
 
 // Indices within the local C stack for various variables
-#define LOCAL_IDX_FUN_OBJ(emit) (offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t))
-#define LOCAL_IDX_OLD_GLOBALS(emit) (offsetof(mp_code_state_t, ip) / sizeof(uintptr_t))
-#define LOCAL_IDX_EXC_VAL(emit) ((emit)->stack_start + NLR_BUF_IDX_RET_VAL)
-#define LOCAL_IDX_EXC_HANDLER_PC(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_1)
-#define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_2)
-#define LOCAL_IDX_RET_VAL(emit) ((emit)->stack_start + NLR_BUF_IDX_LOCAL_3)
+#define LOCAL_IDX_EXC_VAL(emit) (NLR_BUF_IDX_RET_VAL)
+#define LOCAL_IDX_EXC_HANDLER_PC(emit) (NLR_BUF_IDX_LOCAL_1)
+#define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) (NLR_BUF_IDX_LOCAL_2)
+#define LOCAL_IDX_RET_VAL(emit) (NLR_BUF_IDX_LOCAL_3)
+#define LOCAL_IDX_FUN_OBJ(emit) ((emit)->code_state_start + offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t))
+#define LOCAL_IDX_OLD_GLOBALS(emit) ((emit)->code_state_start + offsetof(mp_code_state_t, ip) / sizeof(uintptr_t))
 #define LOCAL_IDX_LOCAL_VAR(emit, local_num) ((emit)->stack_start + (emit)->n_state - 1 - (local_num))
 
 // number of arguments to viper functions are limited to this value
@@ -203,7 +203,8 @@ struct _emit_t {
 
     int prelude_offset;
     int n_state;
-    int stack_start;
+    uint16_t code_state_start;
+    uint16_t stack_start;
     int stack_size;
 
     uint16_t const_table_cur_obj;
@@ -256,7 +257,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     emit->pass = pass;
     emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
-    emit->stack_start = 0;
     emit->stack_size = 0;
     emit->const_table_cur_obj = 0;
     emit->const_table_cur_raw_code = 0;
@@ -307,6 +307,12 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // generate code for entry to function
 
+    // Work out start of code state (mp_code_state_t or reduced version for viper)
+    emit->code_state_start = 0;
+    if (NEED_GLOBAL_EXC_HANDLER(emit)) {
+        emit->code_state_start = sizeof(nlr_buf_t) / sizeof(uintptr_t);
+    }
+
     if (emit->do_viper_types) {
         // Work out size of state (locals plus stack)
         // n_state counts all stack and locals, even those in registers
@@ -326,12 +332,12 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         // Work out where the locals and Python stack start within the C stack
         if (NEED_GLOBAL_EXC_HANDLER(emit)) {
             // Reserve 2 words for function object and old globals
-            emit->stack_start = 2;
+            emit->stack_start = emit->code_state_start + 2;
         } else if (scope->scope_flags & MP_SCOPE_FLAG_HASCONSTS) {
             // Reserve 1 word for function object, to access const table
-            emit->stack_start = 1;
+            emit->stack_start = emit->code_state_start + 1;
         } else {
-            emit->stack_start = 0;
+            emit->stack_start = emit->code_state_start + 0;
         }
 
         // Entry to function
@@ -401,7 +407,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->n_state = scope->num_locals + scope->stack_size;
 
         // the locals and stack start after the code_state structure
-        emit->stack_start = sizeof(mp_code_state_t) / sizeof(mp_uint_t);
+        emit->stack_start = emit->code_state_start + sizeof(mp_code_state_t) / sizeof(mp_uint_t);
 
         // allocate space on C-stack for code_state structure, which includes state
         ASM_ENTRY(emit->as, emit->stack_start + emit->n_state);
@@ -429,10 +435,10 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         // set code_state.ip (offset from start of this function to prelude info)
         // XXX this encoding may change size
-        ASM_MOV_LOCAL_IMM_VIA(emit->as, offsetof(mp_code_state_t, ip) / sizeof(uintptr_t), emit->prelude_offset, REG_ARG_1);
+        ASM_MOV_LOCAL_IMM_VIA(emit->as, emit->code_state_start + offsetof(mp_code_state_t, ip) / sizeof(uintptr_t), emit->prelude_offset, REG_ARG_1);
 
         // put address of code_state into first arg
-        ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
+        ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, emit->code_state_start);
 
         // call mp_setup_code_state to prepare code_state structure
         #if N_THUMB
@@ -992,7 +998,7 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, false);
 
             // Wrap everything in an nlr context
-            emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(uintptr_t));
+            ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
             emit_call(emit, MP_F_NLR_PUSH);
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, true);
         } else {
@@ -1006,7 +1012,7 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             // Wrap everything in an nlr context
             emit_native_label_assign(emit, nlr_label);
             ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_2, LOCAL_IDX_EXC_HANDLER_UNWIND(emit));
-            emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(uintptr_t));
+            ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
             emit_call(emit, MP_F_NLR_PUSH);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_LOCAL_2);
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
@@ -1053,7 +1059,6 @@ STATIC void emit_native_global_exc_exit(emit_t *emit) {
 
         // Pop the nlr context
         emit_call(emit, MP_F_NLR_POP);
-        adjust_stack(emit, -(mp_int_t)(sizeof(nlr_buf_t) / sizeof(uintptr_t)));
 
         if (emit->scope->exc_stack_size == 0) {
             // Destination label for above optimisation
