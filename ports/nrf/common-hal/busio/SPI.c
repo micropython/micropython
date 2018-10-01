@@ -65,40 +65,40 @@ void spi_reset(void) {
     }
 }
 
-// Convert frequency to clock-speed-dependent value
+// Convert frequency to clock-speed-dependent value. Choose the nearest value, lower or higher.
 static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) {
-    if (baudrate <= 125000) {
-      return NRF_SPIM_FREQ_125K;
-    }
-    if (baudrate <= 250000) {
-        return NRF_SPIM_FREQ_250K;
-    }
-    if (baudrate <= 500000) {
-        return NRF_SPIM_FREQ_500K;
-    }
-    if (baudrate <= 1000000) {
-        return NRF_SPIM_FREQ_1M;
-    }
-    if (baudrate <= 2000000) {
-        return NRF_SPIM_FREQ_2M;
-    }
-    if (baudrate <= 4000000) {
-        return NRF_SPIM_FREQ_4M;
-    }
-    if (baudrate <= 8000000) {
-        return NRF_SPIM_FREQ_8M;
-    }
-#ifdef SPIM_FREQUENCY_FREQUENCY_M16
-    if (baudrate <= 16000000) {
-        return NRF_SPIM_FREQ_16M;
-    }
-#endif
 
+    // Round requested baudrate to nearest available baudrate.
+    static const struct {
+        const uint32_t boundary;
+        nrf_spim_frequency_t spim_frequency;
+    } baudrate_map[] = {
 #ifdef SPIM_FREQUENCY_FREQUENCY_M32
-    return NRF_SPIM_FREQ_32M;
-#else
-    return NRF_SPIM_FREQ_8M;
+        { (16000000 + 32000000) / 2, NRF_SPIM_FREQ_32M },
 #endif
+#ifdef SPIM_FREQUENCY_FREQUENCY_M16
+        { ( 8000000 + 16000000) / 2, NRF_SPIM_FREQ_16M },
+#endif
+        { ( 4000000 +  8000000) / 2, NRF_SPIM_FREQ_8M },
+        { ( 2000000 +  4000000) / 2, NRF_SPIM_FREQ_4M },
+        { ( 1000000 +  2000000) / 2, NRF_SPIM_FREQ_2M },
+        { (  500000 +  1000000) / 2, NRF_SPIM_FREQ_1M },
+        { (  250000 +   500000) / 2, NRF_SPIM_FREQ_500K },
+        { (  125000 +   250000) / 2, NRF_SPIM_FREQ_250K },
+        {                         0, NRF_SPIM_FREQ_125K },
+    };
+
+    size_t i = 0;
+    uint32_t boundary;
+    do {
+        boundary = baudrate_map[i].boundary;
+        if (baudrate >= boundary) {
+            return baudrate_map[i].spim_frequency;
+        }
+        i++;
+    } while (boundary != 0);
+    // Will get here only if baudrate == 0.
+    return 0;
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi, const mcu_pin_obj_t * miso) {
@@ -172,10 +172,6 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self, uint32_t baudrate, ui
   if (bits != 8)
       return false;
 
-  if (baudrate > self->spim_peripheral->max_frequency_MHz * 1000000) {
-      mp_raise_ValueError(translate("Baud rate too high for this SPI peripheral"));
-      return false;
-  }
   nrf_spim_frequency_set(self->spim_peripheral->spim.p_reg, baudrate_to_spim_frequency(baudrate));
 
   nrf_spim_mode_t mode = NRF_SPIM_MODE_0;

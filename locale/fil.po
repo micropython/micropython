@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-21 12:23-0400\n"
+"POT-Creation-Date: 2018-10-01 18:44-0400\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -373,7 +373,7 @@ msgstr "Hindi sapat ang magagamit na pins"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:81
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -705,19 +705,15 @@ msgstr "hindi alam na config param"
 msgid "AnalogOut functionality not supported"
 msgstr "Hindi supportado ang AnalogOut"
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/busio/I2C.c:95
 #, fuzzy
 msgid "All I2C peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:115
 #, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
-
-#: ports/nrf/common-hal/busio/SPI.c:170
-msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
 #: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
@@ -2030,19 +2026,19 @@ msgstr "Function nangangailangan ng lock"
 msgid "Buffer must be at least length 1"
 msgstr "Buffer dapat ay hindi baba sa 1 na haba"
 
-#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:168
+#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
 msgid "Invalid polarity"
 msgstr "Mali ang polarity"
 
-#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
+#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
 msgid "Invalid phase"
 msgstr "Mali ang phase"
 
-#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
+#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
 msgid "Invalid number of bits"
 msgstr "Mali ang bilang ng bits"
 
-#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
+#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
 msgstr "aarehas na haba dapat ang buffer slices"
 
