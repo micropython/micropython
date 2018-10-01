@@ -352,30 +352,20 @@ def run_tests(pyb, tests, args, base_path="."):
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
-        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_executing gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 gen_yield_from_throw3 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_name generator_pend_throw generator_return generator_send generator_throw generator_pep479'.split()}) # require yield
-        skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join'.split()}) # require yield
-        skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2 with_break with_return'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from_close generator_name'.split()}) # require raise_varargs, generator name
+        skip_tests.update({'basics/async_%s.py' % t for t in 'with with2 with_break with_return'.split()}) # require async_with
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
-        skip_tests.add('basics/array_construct2.py') # requires generators
-        skip_tests.add('basics/builtin_hash_gen.py') # requires yield
-        skip_tests.add('basics/class_bind_self.py') # requires yield
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
         skip_tests.add('basics/exception_chain.py') # raise from is not supported
-        skip_tests.add('basics/for_range.py') # requires yield_value
         skip_tests.add('basics/try_finally_return2.py') # requires raise_varargs
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
-        skip_tests.add('import/gen_context.py') # requires yield_value
         skip_tests.add('misc/features.py') # requires raise_varargs
-        skip_tests.add('misc/rge_sm.py') # requires yield
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/emg_exc.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
-        skip_tests.add('micropython/heapalloc_iter.py') # requires generators
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
-        skip_tests.add('stress/gc_trace.py') # requires yield
-        skip_tests.add('stress/recursive_gen.py') # requires yield
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
