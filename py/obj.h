@@ -171,12 +171,12 @@ static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 
 static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 0xffff000000000000) == 0x0001000000000000); }
+    { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0001000000000000); }
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)((o) << 16)) >> 17)
 #define MP_OBJ_NEW_SMALL_INT(small_int) (((((uint64_t)(small_int)) & 0x7fffffffffff) << 1) | 0x0001000000000001)
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 0xffff000000000000) == 0x0002000000000000); }
+    { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0002000000000000); }
 #define MP_OBJ_QSTR_VALUE(o) ((((uint32_t)(o)) >> 1) & 0xffffffff)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 1) | 0x0002000000000001))
 
