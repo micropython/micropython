@@ -205,7 +205,7 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
 Telnet and FTP server
 ---------------------
 
-See :ref:`network.Server <network.Server>` ::
+See :class:`network.Server` ::
 
     from network import Server
 
