@@ -74,6 +74,53 @@ const mp_obj_type_t mp_type_gen_wrap = {
 };
 
 /******************************************************************************/
+// native generator wrapper
+
+#if MICROPY_EMIT_NATIVE
+
+STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // The state for a native generating function is held in the same struct as a bytecode function
+    mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
+
+    // Determine start of prelude, and extract n_state from it
+    uintptr_t prelude_offset = ((uintptr_t*)self_fun->bytecode)[0];
+    size_t n_state = mp_decode_uint_value(self_fun->bytecode + prelude_offset);
+    size_t n_exc_stack = 0;
+
+    // Allocate the generator object, with room for local stack and exception stack
+    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
+        n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
+    o->base.type = &mp_type_gen_instance;
+
+    // Parse the input arguments and set up the code state
+    o->globals = self_fun->globals;
+    o->code_state.fun_bc = self_fun;
+    o->code_state.ip = (const byte*)prelude_offset;
+    mp_setup_code_state(&o->code_state, n_args, n_kw, args);
+
+    // Indicate we are a native function, which doesn't use this variable
+    o->code_state.exc_sp = NULL;
+
+    // Prepare the generator instance for execution
+    uintptr_t start_offset = ((uintptr_t*)self_fun->bytecode)[1];
+    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void*)(self_fun->bytecode + start_offset));
+
+    return MP_OBJ_FROM_PTR(o);
+}
+
+const mp_obj_type_t mp_type_native_gen_wrap = {
+    { &mp_type_type },
+    .name = MP_QSTR_generator,
+    .call = native_gen_wrap_call,
+    .unary_op = mp_generic_unary_op,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_fun_bc_attr,
+    #endif
+};
+
+#endif // MICROPY_EMIT_NATIVE
+
+/******************************************************************************/
 /* generator instance                                                         */
 
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -118,7 +165,22 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     self->code_state.old_globals = mp_globals_get();
     mp_globals_set(self->globals);
     self->globals = NULL;
-    mp_vm_return_kind_t ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
+
+    mp_vm_return_kind_t ret_kind;
+
+    #if MICROPY_EMIT_NATIVE
+    if (self->code_state.exc_sp == NULL) {
+        // A native generator, with entry point 2 words into the "bytecode" pointer
+        typedef uintptr_t (*mp_fun_native_gen_t)(void*, mp_obj_t);
+        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void*)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
+        ret_kind = fun((void*)&self->code_state, throw_value);
+    } else
+    #endif
+    {
+        // A bytecode generator
+        ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
+    }
+
     self->globals = mp_globals_get();
     mp_globals_set(self->code_state.old_globals);
 

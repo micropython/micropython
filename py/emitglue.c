@@ -136,6 +136,10 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
         case MP_CODE_NATIVE_PY:
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->data.u_native.fun_data, rc->data.u_native.const_table);
+            // Check for a generator function, and if so change the type of the object
+            if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
+                ((mp_obj_base_t*)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
+            }
             break;
         #endif
         #if MICROPY_EMIT_INLINE_ASM

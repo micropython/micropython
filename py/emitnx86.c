@@ -66,6 +66,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_SETUP_CODE_STATE] = 4,
     [MP_F_SMALL_INT_FLOOR_DIVIDE] = 2,
     [MP_F_SMALL_INT_MODULO] = 2,
+    [MP_F_NATIVE_YIELD_FROM] = 3,
 };
 
 #define N_X86 (1)
