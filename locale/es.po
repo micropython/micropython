@@ -343,11 +343,11 @@ msgstr "pin inválido"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
 msgid "Invalid pin for left channel"
-msgstr ""
+msgstr "Pin inválido para canal izquierdo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
 msgid "Invalid pin for right channel"
-msgstr ""
+msgstr "Pin inválido para canal derecho"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
 msgid "Cannot output both channels on the same pin"
@@ -366,7 +366,7 @@ msgstr "Todos los canales de eventos están siendo utilizados"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr ""
+msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor que %d"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -382,11 +382,11 @@ msgstr "pines inválidos"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:101
 msgid "SDA or SCL needs a pull up"
-msgstr ""
+msgstr "SDA o SCL necesitan una pull up"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
-msgstr ""
+msgstr "Baudrate sin soporte"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
@@ -402,31 +402,31 @@ msgstr "Fallo la asignación del buffer RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
-msgstr ""
+msgstr "No se pudo inicializar la UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
 msgid "No RX pin"
-msgstr ""
+msgstr "Sin pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:294
 msgid "No TX pin"
-msgstr ""
+msgstr "Sin pin TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
-msgstr ""
+msgstr "No se puede obtener pull mientras en modo de salida"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr ""
+msgstr "No se puede reiniciar en bootloader porque no hay bootloader presente."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
 #: ports/nrf/common-hal/pulseio/PWMOut.c:227
 msgid "Invalid PWM frequency"
-msgstr ""
+msgstr "Frecuencia PWM inválida"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 msgid "All timers for this pin are in use"
@@ -434,7 +434,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
-msgstr ""
+msgstr "pin no tiene soporte en hardware"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
@@ -449,16 +449,16 @@ msgstr "Fallo la asignación del buffer RX de %d bytes"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
-msgstr ""
+msgstr "pop en un PulseIn vacío"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
 msgid "index out of range"
-msgstr ""
+msgstr "index fuera de rango"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:178
 msgid "Another send is already active"
-msgstr ""
+msgstr "Otro envío ya está activo"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
@@ -474,11 +474,11 @@ msgstr "Valor de calibración fuera de rango +/-127"
 
 #: ports/atmel-samd/common-hal/storage/__init__.c:48
 msgid "Cannot remount '/' when USB is active."
-msgstr ""
+msgstr "No se puede volver a montar '/' cuando el USB esta activo."
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
-msgstr ""
+msgstr "Sin GCLKs libres"
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:78
 #: ports/nrf/common-hal/usb_hid/Device.c:45
@@ -489,48 +489,48 @@ msgstr "Tamaño de buffer incorrecto. Debe ser de %d bytes."
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
 #: ports/nrf/common-hal/usb_hid/Device.c:53
 msgid "USB Busy"
-msgstr ""
+msgstr "USB ocupado"
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
 #: ports/nrf/common-hal/usb_hid/Device.c:59
 msgid "USB Error"
-msgstr ""
+msgstr "Error USB"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
-msgstr ""
+msgstr "Pin %q no tiene capacidades ADC"
 
 #: ports/esp8266/common-hal/analogio/AnalogOut.c:39
 msgid "No hardware support for analog out."
-msgstr ""
+msgstr "Sin soporte de hardware para salida análoga"
 
 #: ports/esp8266/common-hal/busio/SPI.c:72
 msgid "Pins not valid for SPI"
-msgstr ""
+msgstr "Pines no válidos para SPI"
 
 #: ports/esp8266/common-hal/busio/UART.c:45
 msgid "Only tx supported on UART1 (GPIO2)."
-msgstr ""
+msgstr "Solo tx soportada en UART1 (GPIO2)"
 
 #: ports/esp8266/common-hal/busio/UART.c:67 ports/esp8266/machine_uart.c:108
 msgid "invalid data bits"
-msgstr ""
+msgstr "data bits inválidos"
 
 #: ports/esp8266/common-hal/busio/UART.c:91 ports/esp8266/machine_uart.c:144
 msgid "invalid stop bits"
-msgstr ""
+msgstr "stop bits inválidos"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
 msgid "ESP8266 does not support pull down."
-msgstr ""
+msgstr "ESP8266 no tiene soporte para pull down"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr "GPIO16 no soporta pull up."
+msgstr "GPIO16 no tiene soporte para pull up."
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr "ESP8226 no soporta modo seguro"
+msgstr "ESP8226 no tiene soporte para modo seguro"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:54
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:113
@@ -564,143 +564,143 @@ msgstr "No se pudo montar de nuevo el sistema de archivos"
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
+msgstr "Usa esptool para borrar la flash y vuelve a cargar Python en su lugar"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
-msgstr ""
+msgstr "C-level assert"
 
 #: ports/esp8266/machine_adc.c:57
 #, c-format
 msgid "not a valid ADC Channel: %d"
-msgstr ""
+msgstr "no es un canal ADC válido: %d"
 
 #: ports/esp8266/machine_hspi.c:131 ports/esp8266/machine_hspi.c:137
 msgid "impossible baudrate"
-msgstr ""
+msgstr "baudrate imposible"
 
 #: ports/esp8266/machine_pin.c:129
 msgid "expecting a pin"
-msgstr ""
+msgstr "esperando un pin"
 
 #: ports/esp8266/machine_pin.c:284
 msgid "Pin(16) doesn't support pull"
-msgstr ""
+msgstr "Pin(16) no tiene soporte para pull"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
-msgstr ""
+msgstr "pin inválido"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr ""
+msgstr "pin no tiene capacidades IRQ"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
-msgstr ""
+msgstr "buffer demasiado largo"
 
 #: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
 #: ports/esp8266/machine_rtc.c:246
 msgid "invalid alarm"
-msgstr ""
+msgstr "alarma inválida"
 
 #: ports/esp8266/machine_uart.c:169
 #, c-format
 msgid "UART(%d) does not exist"
-msgstr ""
+msgstr "UART(%d) no existe"
 
 #: ports/esp8266/machine_uart.c:219
 msgid "UART(1) can't read"
-msgstr ""
+msgstr "UART(1) no puede leer"
 
 #: ports/esp8266/modesp.c:119
 msgid "len must be multiple of 4"
-msgstr ""
+msgstr "len debe de ser múltiple de 4"
 
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
+msgstr "la asignación de memoria ha fallado, asignando %u bytes para código nativo"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr ""
+msgstr "la ubicación de la flash debe estar debajo de 1MByte"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr ""
+msgstr "la frecuencia solo puede ser 80MHz o 160MHz"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr ""
+msgstr "AP necesario"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr ""
+msgstr "STA necesario"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
-msgstr ""
+msgstr "No se puede actualizar i/f status"
 
 #: ports/esp8266/modnetwork.c:142
 msgid "Cannot set STA config"
-msgstr ""
+msgstr "No se puede establecer STA config"
 
 #: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
-msgstr ""
+msgstr "No se puede conectar a AP"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr ""
+msgstr "No se puede desconectar de AP"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
-msgstr ""
+msgstr "status param desconocido"
 
 #: ports/esp8266/modnetwork.c:222
 msgid "STA must be active"
-msgstr ""
+msgstr "STA debe estar activo"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr ""
+msgstr "scan ha fallado"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
-msgstr ""
+msgstr "wifi_set_ip_info() ha fallado"
 
 #: ports/esp8266/modnetwork.c:319
 msgid "either pos or kw args are allowed"
-msgstr ""
+msgstr "ya sea pos o kw args son permitidos"
 
 #: ports/esp8266/modnetwork.c:329
 msgid "can't get STA config"
-msgstr ""
+msgstr "no se puede obtener STA config"
 
 #: ports/esp8266/modnetwork.c:331
 msgid "can't get AP config"
-msgstr ""
+msgstr "no se puede obtener AP config"
 
 #: ports/esp8266/modnetwork.c:346
 msgid "invalid buffer length"
-msgstr ""
+msgstr "longitud de buffer inválida"
 
 #: ports/esp8266/modnetwork.c:405
 msgid "can't set STA config"
-msgstr ""
+msgstr "no se puede establecer STA config"
 
 #: ports/esp8266/modnetwork.c:407
 msgid "can't set AP config"
-msgstr ""
+msgstr "no se puede establecer AP config"
 
 #: ports/esp8266/modnetwork.c:416
 msgid "can query only one param"
-msgstr ""
+msgstr "puede consultar solo un param"
 
 #: ports/esp8266/modnetwork.c:469
 msgid "unknown config param"
-msgstr ""
+msgstr "parámetro config desconocido"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
