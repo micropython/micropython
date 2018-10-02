@@ -8,52 +8,52 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-21 12:23-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2018-10-02 01:19-0300\n"
+"PO-Revision-Date: 2018-10-02 01:19-0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: extmod/machine_i2c.c:299
 msgid "invalid I2C peripheral"
-msgstr ""
+msgstr "periférico I2C inválido"
 
 #: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
 #: extmod/machine_i2c.c:392
 msgid "I2C operation not supported"
-msgstr ""
+msgstr "I2C operação não suportada"
 
 #: extmod/machine_mem.c:45 ports/unix/modmachine.c:53
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
-msgstr ""
+msgstr "endereço %08x não está alinhado com %d bytes"
 
 #: extmod/machine_spi.c:57
 msgid "invalid SPI peripheral"
-msgstr ""
+msgstr "periférico SPI inválido"
 
 #: extmod/machine_spi.c:124
 msgid "buffers must be the same length"
-msgstr ""
+msgstr "buffers devem ser o mesmo tamanho"
 
 #: extmod/machine_spi.c:207
 msgid "bits must be 8"
-msgstr ""
+msgstr "bits devem ser 8"
 
 #: extmod/machine_spi.c:210
 msgid "firstbit must be MSB"
-msgstr ""
+msgstr "firstbit devem ser MSB"
 
 #: extmod/machine_spi.c:215
 msgid "must specify all of sck/mosi/miso"
-msgstr ""
+msgstr "deve especificar todos sck/mosi/miso"
 
 #: extmod/modframebuf.c:299
 msgid "invalid format"
-msgstr ""
+msgstr "formato inválido"
 
 #: extmod/modubinascii.c:38 extmod/moduhashlib.c:102
 msgid "a bytes-like object is required"
@@ -69,7 +69,7 @@ msgstr ""
 
 #: extmod/modubinascii.c:169
 msgid "incorrect padding"
-msgstr ""
+msgstr "preenchimento incorreto"
 
 #: extmod/moductypes.c:122
 msgid "syntax error in uctypes descriptor"
@@ -81,27 +81,27 @@ msgstr ""
 
 #: extmod/moductypes.c:397
 msgid "struct: no fields"
-msgstr ""
+msgstr "struct: sem campos"
 
 #: extmod/moductypes.c:530
 msgid "struct: cannot index"
-msgstr ""
+msgstr "struct: não pode indexar"
 
 #: extmod/moductypes.c:544
 msgid "struct: index out of range"
-msgstr ""
+msgstr "struct: índice fora do intervalo"
 
 #: extmod/moduheapq.c:38
 msgid "heap must be a list"
-msgstr ""
+msgstr "heap deve ser uma lista"
 
 #: extmod/moduheapq.c:86 extmod/modutimeq.c:147 extmod/modutimeq.c:172
 msgid "empty heap"
-msgstr ""
+msgstr "heap vazia"
 
 #: extmod/modujson.c:281
 msgid "syntax error in JSON"
-msgstr ""
+msgstr "erro de sintaxe no JSON"
 
 #: extmod/modure.c:161
 msgid "Splitting with sub-captures"
@@ -109,19 +109,19 @@ msgstr ""
 
 #: extmod/modure.c:207
 msgid "Error in regex"
-msgstr ""
+msgstr "Erro no regex"
 
 #: extmod/modussl_axtls.c:81
 msgid "invalid key"
-msgstr ""
+msgstr "chave inválida"
 
 #: extmod/modussl_axtls.c:87
 msgid "invalid cert"
-msgstr ""
+msgstr "certificado inválido"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr ""
+msgstr "estouro de fila"
 
 #: extmod/moduzlib.c:98
 msgid "compression header"
@@ -133,27 +133,27 @@ msgstr ""
 
 #: extmod/vfs_fat.c:426 py/moduerrno.c:150
 msgid "Read-only filesystem"
-msgstr ""
+msgstr "Sistema de arquivos somente leitura"
 
 #: extmod/vfs_posix_file.c:48 ports/unix/file.c:50 py/objstringio.c:43
 msgid "I/O operation on closed file"
-msgstr ""
+msgstr "Operação I/O no arquivo fechado"
 
 #: lib/embed/abort_.c:8
 msgid "abort() called"
-msgstr ""
+msgstr "abort() chamado"
 
 #: lib/netutils/netutils.c:83
 msgid "invalid arguments"
-msgstr ""
+msgstr "argumentos inválidos"
 
 #: lib/utils/pyexec.c:97 py/builtinimport.c:253
 msgid "script compilation not supported"
-msgstr ""
+msgstr "compilação de script não suportada"
 
 #: main.c:143
 msgid " output:\n"
-msgstr ""
+msgstr " saída:\n"
 
 #: main.c:157 main.c:230
 msgid ""
@@ -163,15 +163,15 @@ msgstr ""
 
 #: main.c:159
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr ""
+msgstr "Rodando em modo seguro! Atualização automática está desligada.\n"
 
 #: main.c:161 main.c:232
 msgid "Auto-reload is off.\n"
-msgstr ""
+msgstr "A atualização automática está desligada.\n"
 
 #: main.c:175
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr ""
+msgstr "Rodando em modo seguro! Não está executando o código salvo."
 
 #: main.c:191
 msgid "WARNING: Your code filename has two extensions\n"
