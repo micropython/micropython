@@ -108,9 +108,6 @@
 
 #define REG_GENERATOR_STATE (REG_LOCAL_3)
 
-// number of arguments to viper functions are limited to this value
-#define REG_ARG_NUM (4)
-
 #define EMIT_NATIVE_VIPER_TYPE_ERROR(emit, ...) do { \
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
     } while (0)
@@ -251,11 +248,7 @@ void EXPORT_FUN(free)(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
-STATIC void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest);
-STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg);
 STATIC void emit_call_with_imm_arg(emit_t *emit, mp_fun_kind_t fun_kind, mp_int_t arg_val, int arg_reg);
-STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
-STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 
 STATIC void emit_native_mov_state_reg(emit_t *emit, int local_num, int reg_src) {
     if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
