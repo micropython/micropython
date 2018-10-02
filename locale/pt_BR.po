@@ -14,7 +14,7 @@ msgstr ""
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: extmod/machine_i2c.c:299
@@ -171,7 +171,7 @@ msgstr "A atualização automática está desligada.\n"
 
 #: main.c:175
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Rodando em modo seguro! Não está executando o código salvo."
+msgstr "Rodando em modo seguro! Não está executando o código salvo.\n"
 
 #: main.c:191
 msgid "WARNING: Your code filename has two extensions\n"
