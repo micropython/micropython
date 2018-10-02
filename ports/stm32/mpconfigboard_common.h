@@ -221,3 +221,11 @@
 #endif
 
 #define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)
+
+// Heap start / end definitions
+#ifndef MICROPY_HEAP_START
+#define MICROPY_HEAP_START &_heap_start
+#endif
+#ifndef MICROPY_HEAP_END
+#define MICROPY_HEAP_END &_heap_end
+#endif

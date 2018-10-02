@@ -83,6 +83,8 @@
 // Optional SDRAM configuration; requires SYSCLK <= 200MHz
 #define MICROPY_HW_SDRAM_SIZE (128 * 1024 * 1024 / 8) // 128 Mbit
 #define MICROPY_HW_SDRAM_STARTUP_TEST (0)
+#define MICROPY_HEAP_START sdram_start()
+#define MICROPY_HEAP_END sdram_end()
 
 // Timing configuration for 90 Mhz (11.90ns) of SD clock frequency (180Mhz/2)
 #define MICROPY_HW_SDRAM_TIMING_TMRD        (2)
