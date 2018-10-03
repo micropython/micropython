@@ -2020,19 +2020,19 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:168
+#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
 msgid "Invalid polarity"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
+#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
 msgid "Invalid phase"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
+#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
 msgid "Invalid number of bits"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
+#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
 msgstr ""
 
