@@ -705,7 +705,7 @@ msgstr "parámetro config desconocido"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
-msgstr ""
+msgstr "Funcionalidad AnalogOut sin soporte"
 
 #: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
@@ -715,119 +715,123 @@ msgstr "Todos los timers están siendo utilizados"
 msgid "All SPI peripherals are in use"
 msgstr "Todos los timers están siendo utilizados"
 
+#: ports/nrf/common-hal/busio/SPI.c:170
+msgid "Baud rate too high for this SPI peripheral"
+msgstr "Baud rate demasiado alto para este periférico SPI"
+
 #: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
 #: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
 #: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
 #: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
 #: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
 msgid "busio.UART not yet implemented"
-msgstr ""
+msgstr "busio.UART aún sin implementación"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
-msgstr ""
+msgstr "No se puede obtener la temperatura. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
-msgstr ""
+msgstr "No se pueden aplicar los parámetros GAP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:213
 msgid "Cannot set PPCP parameters."
-msgstr ""
+msgstr "No se pueden establecer los parámetros PPCP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:245
 msgid "Can not query for the device address."
-msgstr ""
+msgstr "No se puede consultar la dirección del dispositivo."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
 msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr ""
+msgstr "No se puede agregar el UUID de 128-bits Especifico del Vendedor."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:284
 #: ports/nrf/drivers/bluetooth/ble_drv.c:298
 msgid "Can not add Service."
-msgstr ""
+msgstr "No se puede agregar el Servicio"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr ""
+msgstr "No se puede agregar la Caracteristica"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
-msgstr ""
+msgstr "No se puede aplicar el nombre del dispositivo en el stack."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:464
 #: ports/nrf/drivers/bluetooth/ble_drv.c:514
 msgid "Can not encode UUID, to check length."
-msgstr ""
+msgstr "No se puede codificar el UUID, para revisar la longitud."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:470
 #: ports/nrf/drivers/bluetooth/ble_drv.c:520
 msgid "Can encode UUID into the advertisement packet."
-msgstr ""
+msgstr "Se puede codificar el UUID en el paquete de anuncio."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
 msgid "Can not fit data into the advertisement packet."
-msgstr ""
+msgstr "Los datos no caben en el paquete de anuncio."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:558
 #: ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
 msgid "Can not apply advertisement data. status: 0x%02x"
-msgstr ""
+msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:614
 #, c-format
 msgid "Can not start advertisement. status: 0x%02x"
-msgstr ""
+msgstr "No se puede inicar el anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:631
 #, c-format
 msgid "Can not stop advertisement. status: 0x%02x"
-msgstr ""
+msgstr "No se puede detener el anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:650
 #: ports/nrf/drivers/bluetooth/ble_drv.c:726
 #, c-format
 msgid "Can not read attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede leer el valor del atributo. status 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:667
 #: ports/nrf/drivers/bluetooth/ble_drv.c:756
 #, c-format
 msgid "Can not write attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:691
 #, c-format
 msgid "Can not notify attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede notificar el valor del anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:784
 #, c-format
 msgid "Can not start scanning. status: 0x%02x"
-msgstr ""
+msgstr "No se puede iniciar el escaneo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:829
 #, c-format
 msgid "Can not connect. status: 0x%02x"
-msgstr ""
+msgstr "No se puede conectar. status: 0x%02x"
 
 #: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:80
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:132
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
 msgid "Invalid UUID parameter"
-msgstr ""
+msgstr "Parámetro UUID inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:73
 msgid "Invalid Service type"
-msgstr ""
+msgstr "Tipo de servicio inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
 msgid "Invalid UUID string length"
-msgstr ""
+msgstr "Longitud de string UUID inválida"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
