@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-26 02:09+0700\n"
+"POT-Creation-Date: 2018-10-03 11:28+0700\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -738,12 +738,13 @@ msgstr "mali ang buffer length"
 msgid "Odd parity is not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
-#: ports/nrf/common-hal/busio/UART.c:245 ports/nrf/common-hal/busio/UART.c:322
-#: ports/nrf/common-hal/busio/UART.c:326 ports/nrf/common-hal/busio/UART.c:331
-#: ports/nrf/common-hal/busio/UART.c:336 ports/nrf/common-hal/busio/UART.c:342
-#: ports/nrf/common-hal/busio/UART.c:347 ports/nrf/common-hal/busio/UART.c:352
-#: ports/nrf/common-hal/busio/UART.c:356 ports/nrf/common-hal/busio/UART.c:364
-msgid "busio.UART not yet implemented"
+#: ports/nrf/common-hal/busio/UART.c:318 ports/nrf/common-hal/busio/UART.c:322
+#: ports/nrf/common-hal/busio/UART.c:327 ports/nrf/common-hal/busio/UART.c:332
+#: ports/nrf/common-hal/busio/UART.c:338 ports/nrf/common-hal/busio/UART.c:343
+#: ports/nrf/common-hal/busio/UART.c:348 ports/nrf/common-hal/busio/UART.c:352
+#: ports/nrf/common-hal/busio/UART.c:360
+#, fuzzy
+msgid "busio.UART not available"
 msgstr "hindi pa implemented ang busio.UART"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
