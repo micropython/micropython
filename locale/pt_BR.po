@@ -1227,7 +1227,7 @@ msgstr ""
 #: py/modmath.c:196 py/objfloat.c:270 py/objint_longlong.c:222
 #: py/objint_mpz.c:230 py/runtime.c:619 shared-bindings/math/__init__.c:346
 msgid "division by zero"
-msgstr ""
+msgstr "divisão por zero"
 
 #: py/modmicropython.c:155
 msgid "schedule stack full"
@@ -1245,7 +1245,7 @@ msgstr ""
 
 #: py/moduerrno.c:143 py/moduerrno.c:146
 msgid "Permission denied"
-msgstr ""
+msgstr "Permissão negada"
 
 #: py/moduerrno.c:144
 msgid "No such file/directory"
@@ -1257,7 +1257,7 @@ msgstr ""
 
 #: py/moduerrno.c:147
 msgid "File exists"
-msgstr ""
+msgstr "Arquivo já existe"
 
 #: py/moduerrno.c:148
 msgid "Unsupported operation"
@@ -1265,7 +1265,7 @@ msgstr ""
 
 #: py/moduerrno.c:149
 msgid "Invalid argument"
-msgstr ""
+msgstr "Argumento inválido"
 
 #: py/obj.c:90
 msgid "Traceback (most recent call last):\n"
@@ -1273,11 +1273,11 @@ msgstr ""
 
 #: py/obj.c:94
 msgid "  File \"%q\", line %d"
-msgstr ""
+msgstr "  Arquivo \"%q\", linha %d"
 
 #: py/obj.c:96
 msgid "  File \"%q\""
-msgstr ""
+msgstr "  Arquivo \"%q\""
 
 #: py/obj.c:100
 msgid ", in %q\n"
@@ -1407,11 +1407,11 @@ msgstr ""
 
 #: py/objdeque.c:107
 msgid "full"
-msgstr ""
+msgstr "cheio"
 
 #: py/objdeque.c:127
 msgid "empty"
-msgstr ""
+msgstr "vazio"
 
 #: py/objdict.c:314
 msgid "popitem(): dictionary is empty"
@@ -1451,7 +1451,7 @@ msgstr ""
 
 #: py/objint.c:163
 msgid "float too big"
-msgstr ""
+msgstr "float muito grande"
 
 #: py/objint.c:328
 msgid "long int not supported in this build"
@@ -1499,7 +1499,7 @@ msgstr ""
 
 #: py/objrange.c:110
 msgid "zero step"
-msgstr ""
+msgstr "passo zero"
 
 #: py/objset.c:371
 msgid "pop from an empty set"
@@ -1507,7 +1507,7 @@ msgstr ""
 
 #: py/objslice.c:66
 msgid "Length must be an int"
-msgstr ""
+msgstr "Tamanho deve ser um int"
 
 #: py/objslice.c:71
 msgid "Length must be non-negative"
@@ -1589,7 +1589,7 @@ msgstr ""
 
 #: py/objstr.c:1071
 msgid "attributes not supported yet"
-msgstr ""
+msgstr "atributos ainda não suportados"
 
 #: py/objstr.c:1079
 msgid ""
@@ -1637,7 +1637,7 @@ msgstr ""
 
 #: py/objstr.c:1482
 msgid "incomplete format"
-msgstr ""
+msgstr "formato incompleto"
 
 #: py/objstr.c:1490
 msgid "not enough arguments for format string"
@@ -1646,11 +1646,11 @@ msgstr ""
 #: py/objstr.c:1500
 #, c-format
 msgid "%%c requires int or char"
-msgstr ""
+msgstr "%%c requer int ou char"
 
 #: py/objstr.c:1507
 msgid "integer required"
-msgstr ""
+msgstr "inteiro requerido"
 
 #: py/objstr.c:1570
 #, c-format
@@ -1689,7 +1689,7 @@ msgstr ""
 
 #: py/objtype.c:623 py/objtype.c:1275 py/runtime.c:1065
 msgid "unreadable attribute"
-msgstr ""
+msgstr "atributo ilegível"
 
 #: py/objtype.c:868 py/runtime.c:653
 msgid "object not callable"
@@ -1706,7 +1706,7 @@ msgstr ""
 
 #: py/objtype.c:989
 msgid "cannot create instance"
-msgstr ""
+msgstr "não é possível criar instância"
 
 #: py/objtype.c:991
 msgid "cannot create '%q' instances"
@@ -1746,7 +1746,7 @@ msgstr ""
 
 #: py/parse.c:726
 msgid "constant must be an integer"
-msgstr ""
+msgstr "constante deve ser um inteiro"
 
 #: py/parse.c:868
 msgid "Unable to init parser"
@@ -1793,7 +1793,7 @@ msgstr ""
 
 #: py/runtime.c:206
 msgid "name not defined"
-msgstr ""
+msgstr "nome não definido"
 
 #: py/runtime.c:209
 msgid "name '%q' is not defined"
@@ -1818,7 +1818,7 @@ msgstr ""
 #: py/runtime.c:883 py/runtime.c:947
 #, c-format
 msgid "need more than %d values to unpack"
-msgstr ""
+msgstr "precisa de mais de %d valores para desempacotar"
 
 #: py/runtime.c:890
 #, c-format
@@ -1827,7 +1827,7 @@ msgstr ""
 
 #: py/runtime.c:984
 msgid "argument has wrong type"
-msgstr ""
+msgstr "argumento tem tipo errado"
 
 #: py/runtime.c:986
 msgid "argument should be a '%q' not a '%q'"
@@ -1847,7 +1847,7 @@ msgstr ""
 
 #: py/runtime.c:1238
 msgid "object not iterable"
-msgstr ""
+msgstr "objeto não iterável"
 
 #: py/runtime.c:1241
 #, c-format
@@ -1869,7 +1869,7 @@ msgstr ""
 
 #: py/runtime.c:1430
 msgid "cannot import name %q"
-msgstr ""
+msgstr "não pode importar nome %q"
 
 #: py/runtime.c:1535
 msgid "memory allocation failed, heap is locked"
@@ -1886,7 +1886,7 @@ msgstr ""
 
 #: py/sequence.c:264
 msgid "object not in sequence"
-msgstr ""
+msgstr "objeto não em seqüência"
 
 #: py/stream.c:96
 msgid "stream operation not supported"
@@ -1947,11 +1947,11 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:193
 msgid "destination_length must be an int >= 0"
-msgstr ""
+msgstr "destination_length deve ser um int >= 0"
 
 #: shared-bindings/audiobusio/PDMIn.c:199
 msgid "Cannot record to a file"
-msgstr ""
+msgstr "Não é possível gravar em um arquivo"
 
 #: shared-bindings/audiobusio/PDMIn.c:202
 msgid "Destination capacity is smaller than destination_length."
@@ -1996,11 +1996,11 @@ msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
 msgid "Invalid phase"
-msgstr ""
+msgstr "Fase Inválida"
 
 #: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
 msgid "Invalid number of bits"
-msgstr ""
+msgstr "Número inválido de bits"
 
 #: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
 msgid "buffer slices must be of equal length"
@@ -2020,7 +2020,7 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
 msgid "Invalid direction."
-msgstr ""
+msgstr "Direção inválida"
 
 #: shared-bindings/digitalio/DigitalInOut.c:240
 msgid "Cannot set value when direction is input."
@@ -2042,7 +2042,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c:84
 msgid "y should be an int"
-msgstr ""
+msgstr "y deve ser um int"
 
 #: shared-bindings/displayio/Bitmap.c:89
 msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2054,7 +2054,7 @@ msgstr ""
 
 #: shared-bindings/displayio/ColorConverter.c:72
 msgid "color should be an int"
-msgstr ""
+msgstr "cor deve ser um int"
 
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
@@ -2063,7 +2063,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Group.c:65
 msgid "Group must have size at least 1"
-msgstr ""
+msgstr "Grupo deve ter tamanho pelo menos 1"
 
 #: shared-bindings/displayio/Palette.c:96
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2075,7 +2075,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c:106
 msgid "color must be between 0x000000 and 0xffffff"
-msgstr ""
+msgstr "cor deve estar entre 0x000000 e 0xffffff"
 
 #: shared-bindings/displayio/Palette.c:110
 msgid "color buffer must be a buffer or int"
@@ -2100,7 +2100,7 @@ msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
-msgstr ""
+msgstr "muitos argumentos"
 
 #: shared-bindings/gamepad/GamePad.c:104
 msgid "expected a DigitalInOut"
@@ -2122,11 +2122,11 @@ msgstr ""
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:75
 msgid "Expected a %q"
-msgstr ""
+msgstr "Esperado um"
 
 #: shared-bindings/microcontroller/Pin.c:100
 msgid "%q in use"
-msgstr ""
+msgstr "%q em uso"
 
 #: shared-bindings/microcontroller/__init__.c:126
 msgid "Invalid run mode."
@@ -2146,11 +2146,11 @@ msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
 msgid "Unable to write to nvm."
-msgstr ""
+msgstr "Não é possível gravar no nvm."
 
 #: shared-bindings/nvm/ByteArray.c:137
 msgid "Bytes must be between 0 and 255."
-msgstr ""
+msgstr "Os bytes devem estar entre 0 e 255."
 
 #: shared-bindings/os/__init__.c:200
 msgid "No hardware random available"
@@ -2168,7 +2168,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275
 msgid "Cannot delete values"
-msgstr ""
+msgstr "Não é possível excluir valores"
 
 #: shared-bindings/pulseio/PulseIn.c:281
 msgid "Slices not supported"
@@ -2176,15 +2176,15 @@ msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:287
 msgid "index must be int"
-msgstr ""
+msgstr "index deve ser int"
 
 #: shared-bindings/pulseio/PulseIn.c:293
 msgid "Read-only"
-msgstr ""
+msgstr "Somente leitura"
 
 #: shared-bindings/pulseio/PulseOut.c:134
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "Array deve conter meias palavras (tipo 'H')"
 
 #: shared-bindings/random/__init__.c:92 shared-bindings/random/__init__.c:100
 msgid "stop not reachable from start"
@@ -2192,36 +2192,36 @@ msgstr ""
 
 #: shared-bindings/random/__init__.c:111
 msgid "step must be non-zero"
-msgstr ""
+msgstr "o passo deve ser diferente de zero"
 
 #: shared-bindings/random/__init__.c:114
 msgid "invalid step"
-msgstr ""
+msgstr "passo inválido"
 
 #: shared-bindings/random/__init__.c:146
 msgid "empty sequence"
-msgstr ""
+msgstr "seqüência vazia"
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
 #: shared-bindings/time/__init__.c:190
 msgid "RTC is not supported on this board"
-msgstr ""
+msgstr "O RTC não é suportado nesta placa"
 
 #: shared-bindings/rtc/RTC.c:52
 msgid "RTC calibration is not supported on this board"
-msgstr ""
+msgstr "A calibração RTC não é suportada nesta placa"
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
-msgstr ""
+msgstr "sistema de arquivos deve fornecer método de montagem"
 
 #: shared-bindings/supervisor/__init__.c:93
 msgid "Brightness must be between 0 and 255"
-msgstr ""
+msgstr "O brilho deve estar entre 0 e 255"
 
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
-msgstr ""
+msgstr "O tamanho da pilha deve ser pelo menos 256"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2237,15 +2237,15 @@ msgstr ""
 
 #: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
 msgid "Tuple or struct_time argument required"
-msgstr ""
+msgstr "Tuple or struct_time argument required"
 
 #: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
 msgid "function takes exactly 9 arguments"
-msgstr ""
+msgstr "função leva exatamente 9 argumentos"
 
 #: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
 msgid "timestamp out of range for platform time_t"
-msgstr ""
+msgstr "timestamp fora do intervalo para a plataforma time_t"
 
 #: shared-bindings/touchio/TouchIn.c:173
 msgid "threshold must be in the range 0-65536"
