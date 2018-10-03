@@ -65,27 +65,27 @@ void spi_reset(void) {
     }
 }
 
-// Convert frequency to clock-speed-dependent value. Choose the nearest value, lower or higher.
+// Convert frequency to clock-speed-dependent value. Choose the next lower baudrate if in between
+// available baudrates.
 static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) {
 
-    // Round requested baudrate to nearest available baudrate.
     static const struct {
         const uint32_t boundary;
         nrf_spim_frequency_t spim_frequency;
     } baudrate_map[] = {
 #ifdef SPIM_FREQUENCY_FREQUENCY_M32
-        { (16000000 + 32000000) / 2, NRF_SPIM_FREQ_32M },
+        { 32000000, NRF_SPIM_FREQ_32M },
 #endif
 #ifdef SPIM_FREQUENCY_FREQUENCY_M16
-        { ( 8000000 + 16000000) / 2, NRF_SPIM_FREQ_16M },
+        { 16000000, NRF_SPIM_FREQ_16M },
 #endif
-        { ( 4000000 +  8000000) / 2, NRF_SPIM_FREQ_8M },
-        { ( 2000000 +  4000000) / 2, NRF_SPIM_FREQ_4M },
-        { ( 1000000 +  2000000) / 2, NRF_SPIM_FREQ_2M },
-        { (  500000 +  1000000) / 2, NRF_SPIM_FREQ_1M },
-        { (  250000 +   500000) / 2, NRF_SPIM_FREQ_500K },
-        { (  125000 +   250000) / 2, NRF_SPIM_FREQ_250K },
-        {                         0, NRF_SPIM_FREQ_125K },
+        {  8000000, NRF_SPIM_FREQ_8M },
+        {  4000000, NRF_SPIM_FREQ_4M },
+        {  2000000, NRF_SPIM_FREQ_2M },
+        {  1000000, NRF_SPIM_FREQ_1M },
+        {   500000, NRF_SPIM_FREQ_500K },
+        {   250000, NRF_SPIM_FREQ_250K },
+        {        0, NRF_SPIM_FREQ_125K },
     };
 
     size_t i = 0;
@@ -97,7 +97,7 @@ static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) 
         }
         i++;
     } while (boundary != 0);
-    // Will get here only if baudrate == 0.
+    // Should not get here.
     return 0;
 }
 
@@ -168,22 +168,26 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self, uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
-  // nrf52 does not support 16 bit
-  if (bits != 8)
+    // nrf52 does not support 16 bit
+    if (bits != 8) {
       return false;
+    }
 
-  nrf_spim_frequency_set(self->spim_peripheral->spim.p_reg, baudrate_to_spim_frequency(baudrate));
+    // Set desired frequency, rounding down, and don't go above available frequency for this SPIM.
+    nrf_spim_frequency_set(self->spim_peripheral->spim.p_reg,
+                           baudrate_to_spim_frequency(MIN(baudrate,
+                                                          self->spim_peripheral->max_frequency_MHz * 1000000)));
 
-  nrf_spim_mode_t mode = NRF_SPIM_MODE_0;
-  if (polarity) {
-      mode = (phase) ? NRF_SPIM_MODE_3 : NRF_SPIM_MODE_2;
-  } else {
-      mode = (phase) ? NRF_SPIM_MODE_1 : NRF_SPIM_MODE_0;
-  }
+    nrf_spim_mode_t mode = NRF_SPIM_MODE_0;
+    if (polarity) {
+        mode = (phase) ? NRF_SPIM_MODE_3 : NRF_SPIM_MODE_2;
+    } else {
+        mode = (phase) ? NRF_SPIM_MODE_1 : NRF_SPIM_MODE_0;
+    }
 
-  nrf_spim_configure(self->spim_peripheral->spim.p_reg, mode, NRF_SPIM_BIT_ORDER_MSB_FIRST);
+    nrf_spim_configure(self->spim_peripheral->spim.p_reg, mode, NRF_SPIM_BIT_ORDER_MSB_FIRST);
 
-  return true;
+    return true;
 }
 
 bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
