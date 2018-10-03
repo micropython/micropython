@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 11:28+0700\n"
+"POT-Creation-Date: 2018-10-03 23:15+0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -368,7 +368,7 @@ msgstr "Pas assez de broches disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:81
 msgid "Invalid pins"
 msgstr "Broche invalide"
 
@@ -705,17 +705,17 @@ msgstr "paramètre de config. inconnu"
 msgid "AnalogOut functionality not supported"
 msgstr "AnalogOut non supporté"
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/busio/I2C.c:95
 #, fuzzy
 msgid "All I2C peripherals are in use"
 msgstr "Tous les timers sont utilisés"
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:115
 #, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Tous les timers sont utilisés"
 
-#: ports/nrf/common-hal/busio/SPI.c:170
+#: ports/nrf/common-hal/busio/SPI.c:176
 msgid "Baud rate too high for this SPI peripheral"
 msgstr ""
 
@@ -734,11 +734,11 @@ msgstr "longueur de tampon invalide"
 msgid "Odd parity is not supported"
 msgstr "octets > 8 bits non supporté"
 
-#: ports/nrf/common-hal/busio/UART.c:318 ports/nrf/common-hal/busio/UART.c:322
-#: ports/nrf/common-hal/busio/UART.c:327 ports/nrf/common-hal/busio/UART.c:332
-#: ports/nrf/common-hal/busio/UART.c:338 ports/nrf/common-hal/busio/UART.c:343
-#: ports/nrf/common-hal/busio/UART.c:348 ports/nrf/common-hal/busio/UART.c:352
-#: ports/nrf/common-hal/busio/UART.c:360
+#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
+#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
+#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
+#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
+#: ports/nrf/common-hal/busio/UART.c:364
 #, fuzzy
 msgid "busio.UART not available"
 msgstr "busio.UART pas encore implémenté"
@@ -2426,9 +2426,9 @@ msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être longue de 32 octets"
-
-#, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "'len' doit être un multiple de 4"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être longue de 32 octets"

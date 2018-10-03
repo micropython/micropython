@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-02 01:19-0300\n"
+"POT-Creation-Date: 2018-10-03 23:15+0700\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -361,7 +361,7 @@ msgstr "Não há pinos suficientes disponíveis"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:81
 msgid "Invalid pins"
 msgstr "Pinos inválidos"
 
@@ -378,10 +378,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits não suportado"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
+#: ports/nrf/common-hal/busio/UART.c:82
 msgid "tx and rx cannot both be None"
 msgstr "TX e RX não podem ser ambos"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:145
+#: ports/nrf/common-hal/busio/UART.c:115
 msgid "Failed to allocate RX buffer"
 msgstr "Falha ao alocar buffer RX"
 
@@ -390,10 +392,12 @@ msgid "Could not initialize UART"
 msgstr "Não foi possível inicializar o UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "No RX pin"
 msgstr "Nenhum pino RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:294
+#: ports/nrf/common-hal/busio/UART.c:195
 msgid "No TX pin"
 msgstr "Nenhum pino TX"
 
@@ -690,24 +694,39 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:115
 msgid "All SPI peripherals are in use"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/SPI.c:170
+#: ports/nrf/common-hal/busio/SPI.c:176
 msgid "Baud rate too high for this SPI peripheral"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
-#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
-#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
-#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
-msgid "busio.UART not yet implemented"
+#: ports/nrf/common-hal/busio/UART.c:48
+#, c-format
+msgid "error = 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:86
+#, fuzzy
+msgid "Invalid buffer size"
+msgstr "Arquivo inválido"
+
+#: ports/nrf/common-hal/busio/UART.c:90
+#, fuzzy
+msgid "Odd parity is not supported"
+msgstr "I2C operação não suportada"
+
+#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
+#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
+#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
+#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
+#: ports/nrf/common-hal/busio/UART.c:364
+msgid "busio.UART not available"
 msgstr ""
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
@@ -2254,7 +2273,8 @@ msgstr "Limite deve estar no alcance de 0-65536"
 #: shared-bindings/util.c:38
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr "Objeto foi desinicializado e não pode ser mais usaado. Crie um novo objeto."
+msgstr ""
+"Objeto foi desinicializado e não pode ser mais usaado. Crie um novo objeto."
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"

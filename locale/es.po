@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 11:28+0700\n"
+"POT-Creation-Date: 2018-10-03 23:15+0700\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -376,7 +376,7 @@ msgstr "No hay suficientes pines disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:81
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
@@ -624,7 +624,8 @@ msgstr "len debe de ser múltiple de 4"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr "la asignación de memoria ha fallado, asignando %u bytes para código nativo"
+msgstr ""
+"la asignación de memoria ha fallado, asignando %u bytes para código nativo"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
@@ -710,15 +711,15 @@ msgstr "parámetro config desconocido"
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
 msgstr "Todos los timers están siendo utilizados"
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:115
 msgid "All SPI peripherals are in use"
 msgstr "Todos los timers están siendo utilizados"
 
-#: ports/nrf/common-hal/busio/SPI.c:170
+#: ports/nrf/common-hal/busio/SPI.c:176
 msgid "Baud rate too high for this SPI peripheral"
 msgstr ""
 
@@ -737,11 +738,11 @@ msgstr "index dupterm inválido"
 msgid "Odd parity is not supported"
 msgstr "bytes > 8 bits no son soportados"
 
-#: ports/nrf/common-hal/busio/UART.c:318 ports/nrf/common-hal/busio/UART.c:322
-#: ports/nrf/common-hal/busio/UART.c:327 ports/nrf/common-hal/busio/UART.c:332
-#: ports/nrf/common-hal/busio/UART.c:338 ports/nrf/common-hal/busio/UART.c:343
-#: ports/nrf/common-hal/busio/UART.c:348 ports/nrf/common-hal/busio/UART.c:352
-#: ports/nrf/common-hal/busio/UART.c:360
+#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
+#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
+#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
+#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
+#: ports/nrf/common-hal/busio/UART.c:364
 msgid "busio.UART not available"
 msgstr ""
 
