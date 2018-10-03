@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-21 12:23-0400\n"
+"POT-Creation-Date: 2018-10-01 18:44-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -361,7 +361,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:81
 msgid "Invalid pins"
 msgstr ""
 
@@ -690,16 +690,12 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:115
 msgid "All SPI peripherals are in use"
-msgstr ""
-
-#: ports/nrf/common-hal/busio/SPI.c:170
-msgid "Baud rate too high for this SPI peripheral"
 msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
@@ -1990,19 +1986,19 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:168
+#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
 msgid "Invalid polarity"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
+#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
 msgid "Invalid phase"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
+#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
 msgid "Invalid number of bits"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
+#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
 msgstr ""
 
