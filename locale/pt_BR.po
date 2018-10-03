@@ -2249,103 +2249,103 @@ msgstr ""
 
 #: shared-bindings/touchio/TouchIn.c:173
 msgid "threshold must be in the range 0-65536"
-msgstr ""
+msgstr "Limite deve estar no alcance de 0-65536"
 
 #: shared-bindings/util.c:38
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr ""
+msgstr "Objeto foi desinicializado e não pode ser mais usaado. Crie um novo objeto."
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
-msgstr ""
+msgstr "Aqruivo de ondas inválido"
 
 #: shared-module/audioio/WaveFile.c:69
 msgid "Invalid format chunk size"
-msgstr ""
+msgstr "Tamanho do pedaço de formato inválido"
 
 #: shared-module/audioio/WaveFile.c:83
 msgid "Unsupported format"
-msgstr ""
+msgstr "Formato não suportado"
 
 #: shared-module/audioio/WaveFile.c:99
 msgid "Data chunk must follow fmt chunk"
-msgstr ""
+msgstr "Pedaço de dados deve seguir o pedaço de cortes"
 
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
-msgstr ""
+msgstr "Arquivo inválido"
 
 #: shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
-msgstr ""
+msgstr "Não pôde alocar primeiro buffer"
 
 #: shared-module/audioio/WaveFile.c:123
 msgid "Couldn't allocate second buffer"
-msgstr ""
+msgstr "Não pôde alocar segundo buffer"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
-msgstr ""
+msgstr "Clock se estendeu por tempo demais"
 
 #: shared-module/bitbangio/SPI.c:45
 msgid "Clock pin init failed."
-msgstr ""
+msgstr "Inicialização do pino de Clock falhou."
 
 #: shared-module/bitbangio/SPI.c:51
 msgid "MOSI pin init failed."
-msgstr ""
+msgstr "Inicialização do pino MOSI falhou."
 
 #: shared-module/bitbangio/SPI.c:62
 msgid "MISO pin init failed."
-msgstr ""
+msgstr "Inicialização do pino MISO falhou"
 
 #: shared-module/bitbangio/SPI.c:122
 msgid "Cannot write without MOSI pin."
-msgstr ""
+msgstr "Não é possível ler sem um pino MOSI"
 
 #: shared-module/bitbangio/SPI.c:177
 msgid "Cannot read without MISO pin."
-msgstr ""
+msgstr "Não é possível ler sem o pino MISO."
 
 #: shared-module/bitbangio/SPI.c:241
 msgid "Cannot transfer without MOSI and MISO pins."
-msgstr ""
+msgstr "Não é possível transferir sem os pinos MOSI e MISO."
 
 #: shared-module/displayio/Bitmap.c:49
 msgid "Only bit maps of 8 bit color or less are supported"
-msgstr ""
+msgstr "Apenas bit maps de cores de 8 bit ou menos são suportados"
 
 #: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
-msgstr ""
+msgstr "Linha deve ser comprimida e com as palavras alinhadas"
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
-msgstr ""
+msgstr "Grupo cheio"
 
 #: shared-module/displayio/Group.c:48
 msgid "Group empty"
-msgstr ""
+msgstr "Grupo vazio"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
 msgid "Invalid BMP file"
-msgstr ""
+msgstr "Arquivo BMP inválido"
 
 #: shared-module/displayio/OnDiskBitmap.c:59
 #, c-format
 msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr ""
+msgstr "Apenas formato Windows, BMP descomprimido suportado"
 
 #: shared-module/displayio/OnDiskBitmap.c:64
 #, c-format
 msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr ""
+msgstr "Apenas cores verdadeiras (24 bpp ou maior) BMP suportadas"
 
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
-msgstr ""
+msgstr "'S' e 'O' não são tipos de formato suportados"
 
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
-msgstr ""
+msgstr "Muitos argumentos fornecidos com o formato dado"
