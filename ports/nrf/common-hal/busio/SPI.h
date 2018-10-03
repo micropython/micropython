@@ -45,4 +45,6 @@ typedef struct {
     uint8_t MISO_pin_number;
 } busio_spi_obj_t;
 
+void spi_reset(void);
+
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H

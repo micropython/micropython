@@ -781,27 +781,27 @@ msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:470
 #: ports/nrf/drivers/bluetooth/ble_drv.c:520
-msgid "Can encode UUID into the advertisment packet."
+msgid "Can encode UUID into the advertisement packet."
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
-msgid "Can not fit data into the advertisment packet."
+msgid "Can not fit data into the advertisement packet."
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:558
 #: ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
-msgid "Can not apply advertisment data. status: 0x%02x"
+msgid "Can not apply advertisement data. status: 0x%02x"
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:614
 #, c-format
-msgid "Can not start advertisment. status: 0x%02x"
+msgid "Can not start advertisement. status: 0x%02x"
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:631
 #, c-format
-msgid "Can not stop advertisment. status: 0x%02x"
+msgid "Can not stop advertisement. status: 0x%02x"
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:650
