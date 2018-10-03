@@ -467,7 +467,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
                 // do encoding into the adv buffer
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                              translate("Can encode UUID into the advertisment packet.")));
+                              translate("Can encode UUID into the advertisement packet.")));
                 }
 
                 BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
@@ -517,7 +517,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
                 // do encoding into the adv buffer
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                              translate("Can encode UUID into the advertisment packet.")));
+                              translate("Can encode UUID into the advertisement packet.")));
                 }
 
                 BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
@@ -542,7 +542,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     if ((p_adv_params->data_len > 0) && (p_adv_params->p_data != NULL)) {
         if (p_adv_params->data_len + byte_pos > BLE_GAP_ADV_MAX_SIZE) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      translate("Can not fit data into the advertisment packet.")));
+                      translate("Can not fit data into the advertisement packet.")));
         }
 
         memcpy(adv_data, p_adv_params->p_data, p_adv_params->data_len);
@@ -555,7 +555,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     if ((err_code = sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0)) != 0) {
 
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  translate("Can not apply advertisment data. status: 0x%02x"), (uint16_t)err_code));
+                  translate("Can not apply advertisement data. status: 0x%02x"), (uint16_t)err_code));
     }
     BLE_DRIVER_LOG("Set Adv data size: " UINT_FMT "\n", byte_pos);
 #endif
@@ -586,7 +586,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     m_adv_params.primary_phy           = BLE_GAP_PHY_1MBPS;
 #else
     m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
-    m_adv_params.timeout     = 0;                                   // infinite advertisment
+    m_adv_params.timeout     = 0;                                   // infinite advertisement
 #endif
 
     ble_drv_advertise_stop();
@@ -601,7 +601,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     if ((err_code = sd_ble_gap_adv_set_configure(&m_adv_handle, &ble_gap_adv_data, &m_adv_params)) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  translate("Can not apply advertisment data. status: 0x%02x"), (uint16_t)err_code));
+                  translate("Can not apply advertisement data. status: 0x%02x"), (uint16_t)err_code));
     }
     err_code = sd_ble_gap_adv_start(m_adv_handle, BLE_CONN_CFG_TAG_DEFAULT);
 #elif (BLUETOOTH_SD == 132 && BLE_API_VERSION == 4)
@@ -611,7 +611,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 #endif
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  translate("Can not start advertisment. status: 0x%02x"), (uint16_t)err_code));
+                  translate("Can not start advertisement. status: 0x%02x"), (uint16_t)err_code));
     }
 
     m_adv_in_progress = true;
@@ -628,7 +628,7 @@ void ble_drv_advertise_stop(void) {
         if ((err_code = sd_ble_gap_adv_stop()) != 0) {
 #endif
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      translate("Can not stop advertisment. status: 0x%02x"), (uint16_t)err_code));
+                      translate("Can not stop advertisement. status: 0x%02x"), (uint16_t)err_code));
         }
     }
     m_adv_in_progress = false;
