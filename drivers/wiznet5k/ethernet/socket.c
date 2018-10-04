@@ -286,7 +286,7 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
       if(tmp & Sn_IR_SENDOK)
       {
          setSn_IR(sn, Sn_IR_SENDOK);
-         #if _WZICHIP_ == 5200
+         #if _WIZCHIP_ == 5200
             if(getSn_TX_RD(sn) != sock_next_rd[sn])
             {
                setSn_CR(sn,Sn_CR_SEND);
@@ -525,6 +525,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
    			// read peer's IP address, port number & packet length
     			sock_remained_size[sn] = head[0];
    			sock_remained_size[sn] = (sock_remained_size[sn] <<8) + head[1];
+   			sock_remained_size[sn] -= 2; // len includes 2 len bytes
    			if(sock_remained_size[sn] > 1514) 
    			{
    			   WIZCHIP_EXPORT(close)(sn);

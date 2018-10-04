@@ -15,6 +15,7 @@
 //!         3. Remove the unused define
 //!         4. Integrated dns.h dns.c & dns_parse.h dns_parse.c into dns.h & dns.c
 //!       <2013/12/20> V1.1.0
+//!       <2018/10/04> Modified HAL_GetTick for use with CircuitPython by Nick Moore
 //!
 //! \author Eric Jung & MidnightCow
 //! \copyright
@@ -51,6 +52,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include "tick.h"
 
 //#include "Ethernet/socket.h"
 //#include "Internet/DNS/dns.h"
@@ -121,7 +123,11 @@ uint8_t* pDNSMSG;       // DNS message buffer
 uint8_t  DNS_SOCKET;    // SOCKET number for DNS
 uint16_t DNS_MSGID;     // DNS message ID
 
-extern uint32_t HAL_GetTick(void);
+
+uint32_t HAL_GetTick(void) {
+    return ticks_ms;
+}
+
 uint32_t hal_sys_tick;
 
 /* converts uint16_t from network buffer to a host byte order integer. */

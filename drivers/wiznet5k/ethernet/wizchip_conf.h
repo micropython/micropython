@@ -130,7 +130,7 @@
  */
 #define _WIZCHIP_IO_BASE_              0x00000000  // 
 
-#if _WIZCHIP_IO_MODE_ & _WIZCHIP_IO_MODE_BUS
+#if _WIZCHIP_IO_MODE_ & _WIZCHIP_IO_MODE_BUS_
    #ifndef _WIZCHIP_IO_BASE_
       #error "You should be define _WIZCHIP_IO_BASE to fit your system memory map."
    #endif
