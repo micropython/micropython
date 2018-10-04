@@ -123,7 +123,6 @@ endif
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
-
 ifeq ($(CHIP_FAMILY), samd21)
 CFLAGS += \
 	-mthumb \
@@ -287,6 +286,25 @@ SRC_C = \
 	freetouch/adafruit_ptc.c \
 	supervisor/shared/memory.c
 
+ifeq ($(MICROPY_PY_NETWORK),1)
+CFLAGS += -DMICROPY_PY_NETWORK=1
+
+SRC_MOD += lib/netutils/netutils.c
+
+ifneq ($(MICROPY_PY_WIZNET5K),0)
+WIZNET5K_DIR=drivers/wiznet5k
+INC += -I$(TOP)/$(WIZNET5K_DIR)
+CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
+SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
+        ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
+        ethernet/wizchip_conf.c \
+        ethernet/socket.c \
+        internet/dns/dns.c \
+        )
+
+endif # MICROPY_PY_WIZNET5K
+endif # MICROPY_PY_NETWORK
+
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)
@@ -362,7 +380,6 @@ SRC_LIBM = $(addprefix lib/,\
 	)
 endif
 
-
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
 SRC_BINDINGS_ENUMS = \
@@ -400,6 +417,13 @@ SRC_SHARED_MODULE = \
 	struct/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c
+
+ifeq ($(MICROPY_PY_NETWORK),1)
+SRC_SHARED_MODULE += socket/__init__.c network/__init__.c
+ifneq ($(MICROPY_PY_WIZNET5K),0)
+SRC_SHARED_MODULE += wiznet/__init__.c
+endif
+endif
 
 # SAMRs don't have a DAC
 ifneq ($(CHIP_VARIANT),SAMR21G18A)
@@ -441,6 +465,7 @@ ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 # Sources that only hold QSTRs after pre-processing.

@@ -67,6 +67,18 @@
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 
+#ifndef MICROPY_PY_NETWORK
+#define MICROPY_PY_NETWORK          (0)
+#endif
+
+#ifndef MICROPY_PY_WIZNET5K
+#define MICROPY_PY_WIZNET5K         (0)
+#endif
+
+#ifndef MICROPY_PY_CC3K
+#define MICROPY_PY_CC3K             (0)
+#endif
+
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
@@ -84,6 +96,7 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_MODULE_WEAK_LINKS   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
@@ -120,6 +133,9 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 
 typedef long mp_off_t;
+
+// XXX check we don't need this
+#define MICROPY_THREAD_YIELD()
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
@@ -194,6 +210,9 @@ extern const struct _mp_obj_module_t gamepad_module;
 extern const struct _mp_obj_module_t stage_module;
 extern const struct _mp_obj_module_t touchio_module;
 extern const struct _mp_obj_module_t usb_hid_module;
+extern const struct _mp_obj_module_t network_module;
+extern const struct _mp_obj_module_t socket_module;
+extern const struct _mp_obj_module_t wiznet_module;
 
 // Internal flash size dependent settings.
 #if BOARD_FLASH_SIZE > 192000
@@ -234,10 +253,25 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #endif
 
     #ifdef CIRCUITPY_DISPLAYIO
-        #define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
+	#define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
     #else
-        #define DISPLAYIO_MODULE
+	#define DISPLAYIO_MODULE
     #endif
+
+    #if MICROPY_PY_NETWORK
+        #define NETWORK_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module },
+        #define SOCKET_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module },
+        #if MICROPY_PY_WIZNET5K
+            #define WIZNET_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet), (mp_obj_t)&wiznet_module },
+        #else
+            #define WIZNET_MODULE
+        #endif
+    #else
+        #define NETWORK_MODULE
+        #define SOCKET_MODULE
+        #define WIZNET_MODULE
+    #endif
+
 
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
@@ -246,6 +280,9 @@ extern const struct _mp_obj_module_t usb_hid_module;
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
         DISPLAYIO_MODULE \
         I2CSLAVE_MODULE \
+        NETWORK_MODULE \
+        SOCKET_MODULE \
+        WIZNET_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
     #endif
@@ -345,6 +382,12 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 #include "peripherals/samd/dma.h"
 
+#if MICROPY_PY_NETWORK
+    #define NETWORK_ROOT_POINTERS mp_obj_list_t mod_network_nic_list;
+#else
+    #define NETWORK_ROOT_POINTERS
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
@@ -352,6 +395,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     mp_obj_t rtc_time_source; \
     FLASH_ROOT_POINTERS \
     mp_obj_t gamepad_singleton; \
+    NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);
 #define MICROPY_VM_HOOK_LOOP run_background_tasks();
