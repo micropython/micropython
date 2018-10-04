@@ -25,6 +25,7 @@
 */
 
 #include "dirent.h"
+#include "extmod/vfs.h"
 #include <errno.h>
 #include <Windows.h>
 
@@ -96,8 +97,22 @@ struct dirent *readdir(DIR *dir) {
     // first pass d_name is NULL so use result from FindFirstFile in opendir, else use FindNextFile
     if (!dir->result.d_name || FindNextFile(dir->findHandle, &dir->findData)) {
         dir->result.d_name = dir->findData.cFileName;
+        dir->result.d_type = dir->findData.dwFileAttributes;
         return &dir->result;
     }
 
     return NULL;
+}
+
+int dttoif(int d_type) {
+    if (d_type == INVALID_FILE_ATTRIBUTES) {
+        return 0;
+    }
+    // Could be a couple of things (symlink, junction, ...) and non-trivial to
+    // figure out so just report it as unknown. Should we ever want this then
+    // the proper code can be found in msvc's std::filesystem implementation.
+    if (d_type & FILE_ATTRIBUTE_REPARSE_POINT) {
+        return 0;
+    }
+    return (d_type & FILE_ATTRIBUTE_DIRECTORY) ? MP_S_IFDIR : MP_S_IFREG;
 }
