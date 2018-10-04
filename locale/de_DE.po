@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-01 18:44-0400\n"
+"POT-Creation-Date: 2018-10-03 23:15+0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -387,10 +387,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes mit merh als 8 bits werden nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
+#: ports/nrf/common-hal/busio/UART.c:82
 msgid "tx and rx cannot both be None"
 msgstr "tx und rx können nicht beide None sein"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:145
+#: ports/nrf/common-hal/busio/UART.c:115
 msgid "Failed to allocate RX buffer"
 msgstr "Konnte keinen RX Buffer allozieren"
 
@@ -399,10 +401,12 @@ msgid "Could not initialize UART"
 msgstr "Konnte UART nicht initialisieren"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "No RX pin"
 msgstr "Kein RX Pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:294
+#: ports/nrf/common-hal/busio/UART.c:195
 msgid "No TX pin"
 msgstr "Kein TX Pin"
 
@@ -709,12 +713,31 @@ msgstr "Alle timer werden benutzt"
 msgid "All SPI peripherals are in use"
 msgstr "Alle timer werden benutzt"
 
-#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
-#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
-#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
-#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
-msgid "busio.UART not yet implemented"
+#: ports/nrf/common-hal/busio/SPI.c:176
+msgid "Baud rate too high for this SPI peripheral"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:48
+#, c-format
+msgid "error = 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:86
+#, fuzzy
+msgid "Invalid buffer size"
+msgstr "ungültiger dupterm index"
+
+#: ports/nrf/common-hal/busio/UART.c:90
+#, fuzzy
+msgid "Odd parity is not supported"
+msgstr "bytes mit merh als 8 bits werden nicht unterstützt"
+
+#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
+#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
+#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
+#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
+#: ports/nrf/common-hal/busio/UART.c:364
+msgid "busio.UART not available"
 msgstr ""
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49

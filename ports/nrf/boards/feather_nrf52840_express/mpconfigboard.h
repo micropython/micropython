@@ -67,5 +67,5 @@
 #define DEFAULT_SPI_BUS_MOSI        (&pin_P0_23)
 #define DEFAULT_SPI_BUS_MISO        (&pin_P0_22)
 
-#define DEFAULT_UART_BUS_RX         (&pin_P1_0)
+#define DEFAULT_UART_BUS_RX         (&pin_P1_00)
 #define DEFAULT_UART_BUS_TX         (&pin_P0_24)

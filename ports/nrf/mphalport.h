@@ -31,21 +31,16 @@
 #include <stdint.h>
 
 #include "lib/utils/interrupt_char.h"
-#include "nrfx_uart.h"
+#include "nrfx_uarte.h"
 #include "py/mpconfig.h"
 
-extern nrfx_uart_t serial_instance;
+extern nrfx_uarte_t serial_instance;
 
 extern volatile uint64_t ticks_ms;
 
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return ticks_ms;
-}
-
-int mp_hal_stdin_rx_chr(void);
-void mp_hal_stdout_tx_str(const char *str);
-bool mp_hal_stdin_any(void);
-void mp_hal_delay_ms(mp_uint_t ms);
+#define mp_hal_ticks_ms()       ((mp_uint_t) ticks_ms)
 #define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) (us))
+
+bool mp_hal_stdin_any(void);
 
 #endif
