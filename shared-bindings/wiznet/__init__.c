@@ -34,9 +34,14 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
-#include "modnetwork.h"
-#include "pin.h"
-#include "spi.h"
+
+#include "shared-bindings/network/__init__.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/digitalio/DriveMode.h"
+#include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/random/__init__.h"
+
+#if MICROPY_PY_WIZNET5K
 
 #include "ethernet/wizchip_conf.h"
 #include "ethernet/socket.h"
@@ -47,9 +52,9 @@
 typedef struct _wiznet5k_obj_t {
     mp_obj_base_t base;
     mp_uint_t cris_state;
-    const spi_t *spi;
-    const pin_obj_t *cs;
-    const pin_obj_t *rst;
+    busio_spi_obj_t *spi;
+    digitalio_digitalinout_obj_t cs;
+    digitalio_digitalinout_obj_t rst;
     uint8_t socket_used;
 } wiznet5k_obj_t;
 
@@ -64,21 +69,19 @@ STATIC void wiz_cris_exit(void) {
 }
 
 STATIC void wiz_cs_select(void) {
-    mp_hal_pin_low(wiznet5k_obj.cs);
+    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.cs, 0);
 }
 
 STATIC void wiz_cs_deselect(void) {
-    mp_hal_pin_high(wiznet5k_obj.cs);
+    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.cs, 1);
 }
 
 STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Receive(wiznet5k_obj.spi->spi, buf, len, 5000);
-    (void)status;
+    (void)common_hal_busio_spi_read(wiznet5k_obj.spi, buf, len, 0);
 }
 
 STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t*)buf, len, 5000);
-    (void)status;
+    (void)common_hal_busio_spi_write(wiznet5k_obj.spi, buf, len);
 }
 
 STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
@@ -332,6 +335,19 @@ STATIC mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in) {
 }
 #endif
 
+void create_random_mac_address(uint8_t *mac) {
+    uint32_t rb1 = shared_modules_random_getrandbits(24);
+    uint32_t rb2 = shared_modules_random_getrandbits(24);
+    // first octet has multicast bit (0) cleared and local bit (1) set
+    // everything else is just set randomly
+    mac[0] = ((uint8_t)(rb1 >> 16) & 0xfe) | 0x02;
+    mac[1] = (uint8_t)(rb1 >> 8);
+    mac[2] = (uint8_t)(rb1);
+    mac[3] = (uint8_t)(rb2 >> 16);
+    mac[4] = (uint8_t)(rb2 >> 8);
+    mac[5] = (uint8_t)(rb2);
+}
+
 /******************************************************************************/
 // MicroPython bindings
 
@@ -344,32 +360,28 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     // init the wiznet5k object
     wiznet5k_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
-    wiznet5k_obj.spi = spi_from_mp_obj(args[0]);
-    wiznet5k_obj.cs = pin_find(args[1]);
-    wiznet5k_obj.rst = pin_find(args[2]);
+    wiznet5k_obj.spi = MP_OBJ_TO_PTR(args[0]);
+    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.cs, args[1]);
+    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, args[2]);
     wiznet5k_obj.socket_used = 0;
 
     /*!< SPI configuration */
-    SPI_InitTypeDef *init = &wiznet5k_obj.spi->spi->Init;
-    init->Mode = SPI_MODE_MASTER;
-    init->Direction = SPI_DIRECTION_2LINES;
-    init->DataSize = SPI_DATASIZE_8BIT;
-    init->CLKPolarity = SPI_POLARITY_LOW; // clock is low when idle
-    init->CLKPhase = SPI_PHASE_1EDGE; // data latched on first edge, which is rising edge for low-idle
-    init->NSS = SPI_NSS_SOFT;
-    init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // clock freq = f_PCLK / this_prescale_value; Wiz820i can do up to 80MHz
-    init->FirstBit = SPI_FIRSTBIT_MSB;
-    init->TIMode = SPI_TIMODE_DISABLED;
-    init->CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-    init->CRCPolynomial = 7; // unused
-    spi_init(wiznet5k_obj.spi, false);
+    // XXX probably should check if the provided SPI is already configured, and
+    // if so skip configuration?
 
-    mp_hal_pin_output(wiznet5k_obj.cs);
-    mp_hal_pin_output(wiznet5k_obj.rst);
+    common_hal_busio_spi_configure(wiznet5k_obj.spi,
+        10000000,  // BAUDRATE 10MHz
+        1, // HIGH POLARITY
+        1, // SECOND PHASE TRANSITION
+        8 // 8 BITS
+    );
 
-    mp_hal_pin_low(wiznet5k_obj.rst);
-    mp_hal_delay_ms(1); // datasheet says 2us
-    mp_hal_pin_high(wiznet5k_obj.rst);
+    common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.cs, 1, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.rst, 1, DRIVE_MODE_PUSH_PULL); 
+
+    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 0);
+    mp_hal_delay_us(10); // datasheet says 2us
+    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 1);
     mp_hal_delay_ms(160); // datasheet says 150ms
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
@@ -381,13 +393,13 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
 
     // set some sensible default values; they are configurable using ifconfig method
     wiz_NetInfo netinfo = {
-        .mac = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
         .ip = {192, 168, 0, 18},
         .sn = {255, 255, 255, 0},
         .gw = {192, 168, 0, 1},
         .dns = {8, 8, 8, 8}, // Google public DNS
         .dhcp = NETINFO_STATIC,
     };
+    create_random_mac_address(netinfo.mac);
     ctlnetwork(CN_SET_NETINFO, (void*)&netinfo);
 
     // seems we need a small delay after init
@@ -499,3 +511,16 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
     .settimeout = wiznet5k_socket_settimeout,
     .ioctl = wiznet5k_socket_ioctl,
 };
+
+STATIC const mp_rom_map_elem_t mp_module_wiznet_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_wiznet) },
+    { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+};
+STATIC MP_DEFINE_CONST_DICT(mp_module_wiznet_globals, mp_module_wiznet_globals_table);
+
+const mp_obj_module_t wiznet_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&mp_module_wiznet_globals,
+};
+
+#endif // MICROPY_PY_WIZNET5K
