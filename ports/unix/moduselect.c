@@ -130,7 +130,10 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 
 /// \method unregister(obj)
-STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
+STATIC mp_obj_t poll_unregister(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t self_in = args[0];
+    mp_obj_t obj_in = args[1];
+
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     struct pollfd *entries = self->entries;
     int fd = get_fd(obj_in);
@@ -140,15 +143,19 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
             if (self->obj_map) {
                 self->obj_map[entries - self->entries] = MP_OBJ_NULL;
             }
-            break;
+            return mp_const_true;
         }
         entries++;
     }
 
-    // TODO raise KeyError if obj didn't exist in map
-    return mp_const_none;
+    // If "throw" arg if False, don't raise exception.
+    if (n_args > 2 && args[2] == mp_const_false) {
+        return mp_const_false;
+    }
+
+    mp_raise_msg(&mp_type_KeyError, NULL);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_unregister_obj, 2, 3, poll_unregister);
 
 /// \method modify(obj, eventmask)
 STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
