@@ -705,7 +705,7 @@ msgstr "parámetro config desconocido"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
-msgstr "Funcionalidad AnalogOut sin soporte"
+msgstr "Funcionalidad AnalogOut no soportada"
 
 #: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
@@ -755,7 +755,7 @@ msgstr "No se puede agregar el Servicio"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr "No se puede agregar la Caracteristica"
+msgstr "No se puede agregar la Característica"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
@@ -827,7 +827,7 @@ msgstr "Parámetro UUID inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:73
 msgid "Invalid Service type"
-msgstr "Tipo de servicio inválido"
+msgstr "Tipo de Servicio inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
 msgid "Invalid UUID string length"
@@ -1621,7 +1621,7 @@ msgstr "struct: index fuera de rango"
 #: py/objstr.c:1071
 #, fuzzy
 msgid "attributes not supported yet"
-msgstr "bytes > 8 bits no son soportados"
+msgstr "bytes > 8 bits no soportados"
 
 #: py/objstr.c:1079
 msgid ""
@@ -1803,7 +1803,6 @@ msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr ""
 
 #: py/parsenum.c:151
-#, fuzzy
 msgid "invalid syntax for integer"
 msgstr "formato inválido"
 
@@ -1813,12 +1812,10 @@ msgid "invalid syntax for integer with base %d"
 msgstr ""
 
 #: py/parsenum.c:339
-#, fuzzy
 msgid "invalid syntax for number"
 msgstr "argumentos inválidos"
 
 #: py/parsenum.c:342
-#, fuzzy
 msgid "decimal numbers not supported"
 msgstr "bytes > 8 bits no son soportados"
 
@@ -1833,7 +1830,6 @@ msgid "can only save bytecode"
 msgstr ""
 
 #: py/runtime.c:206
-#, fuzzy
 msgid "name not defined"
 msgstr "módulo no encontrado"
 
