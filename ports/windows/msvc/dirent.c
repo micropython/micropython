@@ -42,8 +42,8 @@ DIR *opendir(const char *name) {
 
     DIR *dir = malloc(sizeof(DIR));
     if (!dir) {
-      errno = ENOMEM;
-      return NULL;
+        errno = ENOMEM;
+        return NULL;
     }
     dir->result.d_ino = 0;
     dir->result.d_name = NULL;
@@ -52,9 +52,9 @@ DIR *opendir(const char *name) {
     const size_t nameLen = strlen(name);
     char *path = malloc(nameLen + 3); // allocate enough for adding "/*"
     if (!path) {
-      free(dir);
-      errno = ENOMEM;
-      return NULL;
+        free(dir);
+        errno = ENOMEM;
+        return NULL;
     }
     strcpy(path, name);
 
@@ -69,9 +69,9 @@ DIR *opendir(const char *name) {
     dir->findHandle = FindFirstFile(path, &dir->findData);
     free(path);
     if (dir->findHandle == INVALID_HANDLE_VALUE) {
-      free(dir);
-      errno = ENOENT;
-      return NULL;
+        free(dir);
+        errno = ENOENT;
+        return NULL;
     }
     return dir;
 }
