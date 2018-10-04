@@ -32,3 +32,8 @@ try:
     poller.modify(s, select.POLLIN)
 except OSError as e:
     assert e.args[0] == errno.ENOENT
+
+try:
+    poller.unregister(s)
+except KeyError:
+    print("KeyError")
