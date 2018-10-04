@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_MODNETWORK_H
-#define MICROPY_INCLUDED_STM32_MODNETWORK_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_NETWORK___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_NETWORK___INIT___H
 
 #define MOD_NETWORK_IPADDR_BUF_SIZE (4)
 
@@ -77,7 +77,8 @@ extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 void mod_network_init(void);
+void mod_network_deinit(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
 
-#endif // MICROPY_INCLUDED_STM32_MODNETWORK_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_NETWORK___INIT___H

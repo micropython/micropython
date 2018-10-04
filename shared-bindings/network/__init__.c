@@ -30,7 +30,11 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
-#include "modnetwork.h"
+#include "py/mphal.h"
+#include "py/mperrno.h"
+#include "lib/netutils/netutils.h"
+
+#include "shared-bindings/network/__init__.h"
 
 #if MICROPY_PY_NETWORK
 
@@ -42,6 +46,9 @@ void mod_network_init(void) {
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 
+void mod_network_deinit(void) {
+}
+
 void mod_network_register_nic(mp_obj_t nic) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
@@ -50,7 +57,7 @@ void mod_network_register_nic(mp_obj_t nic) {
         }
     }
     // nic not registered so add to list
-    mp_obj_list_append(&MP_STATE_PORT(mod_network_nic_list), nic);
+    mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list)), nic);
 }
 
 mp_obj_t mod_network_find_nic(const uint8_t *ip) {
@@ -62,30 +69,29 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
         return nic;
     }
 
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("no available NIC")));
 }
 
+STATIC mp_obj_t network_initialize(void) {
+    mod_network_init();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_initialize_obj, network_initialize);
+
 STATIC mp_obj_t network_route(void) {
-    return &MP_STATE_PORT(mod_network_nic_list);
+    return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
-
-    #if MICROPY_PY_WIZNET5K
-    { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
-    #endif
-    #if MICROPY_PY_CC3K
-    { MP_ROM_QSTR(MP_QSTR_CC3K), MP_ROM_PTR(&mod_network_nic_type_cc3k) },
-    #endif
-
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&network_initialize_obj) },
     { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
-const mp_obj_module_t mp_module_network = {
+const mp_obj_module_t network_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_network_globals,
 };
