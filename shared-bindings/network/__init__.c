@@ -42,14 +42,14 @@
 ///
 /// This module provides network drivers and routing configuration.
 
-void mod_network_init(void) {
+void network_module_init(void) {
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 
-void mod_network_deinit(void) {
+void network_module_deinit(void) {
 }
 
-void mod_network_register_nic(mp_obj_t nic) {
+void network_module_register_nic(mp_obj_t nic) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
             // nic already registered
@@ -60,7 +60,7 @@ void mod_network_register_nic(mp_obj_t nic) {
     mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list)), nic);
 }
 
-mp_obj_t mod_network_find_nic(const uint8_t *ip) {
+mp_obj_t network_module_find_nic(const uint8_t *ip) {
     // find a NIC that is suited to given IP address
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
@@ -72,12 +72,6 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("no available NIC")));
 }
 
-STATIC mp_obj_t network_initialize(void) {
-    mod_network_init();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_initialize_obj, network_initialize);
-
 STATIC mp_obj_t network_route(void) {
     return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));
 }
@@ -85,7 +79,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
-    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&network_initialize_obj) },
     { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },
 };
 

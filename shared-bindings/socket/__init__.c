@@ -76,7 +76,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
     if (self->nic == MP_OBJ_NULL) {
         // select NIC based on IP
-        self->nic = mod_network_find_nic(ip);
+        self->nic = network_module_find_nic(ip);
         self->nic_type = (mod_network_nic_type_t*)mp_obj_get_type(self->nic);
 
         // call the NIC to open the socket

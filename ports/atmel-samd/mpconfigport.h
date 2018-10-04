@@ -96,7 +96,6 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
-#define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_MODULE_WEAK_LINKS   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HW_ENABLE_DAC       (1)

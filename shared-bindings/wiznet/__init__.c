@@ -406,7 +406,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_hal_delay_ms(250);
 
     // register with network module
-    mod_network_register_nic(&wiznet5k_obj);
+    network_module_register_nic(&wiznet5k_obj);
 
     // return wiznet5k object
     return &wiznet5k_obj;

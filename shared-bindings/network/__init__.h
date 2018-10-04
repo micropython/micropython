@@ -76,9 +76,9 @@ typedef struct _mod_network_socket_obj_t {
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 
-void mod_network_init(void);
-void mod_network_deinit(void);
-void mod_network_register_nic(mp_obj_t nic);
-mp_obj_t mod_network_find_nic(const uint8_t *ip);
+void network_module_init(void);
+void network_module_deinit(void);
+void network_module_register_nic(mp_obj_t nic);
+mp_obj_t network_module_find_nic(const uint8_t *ip);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_NETWORK___INIT___H
