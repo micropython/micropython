@@ -192,7 +192,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_stop_obj, 1, audioio_mixer_obj_stop);
 
 //|   .. attribute:: playing
 //|
-//|     True when an audio sample is being output even if `paused`. (read-only)
+//|     True when any voice is being output. (read-only)
 //|
 STATIC mp_obj_t audioio_mixer_obj_get_playing(mp_obj_t self_in) {
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
