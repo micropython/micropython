@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 23:15+0700\n"
+"POT-Creation-Date: 2018-10-05 15:17-0700\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -230,7 +230,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Lahat ng sync event channels ay ginagamit"
@@ -719,10 +719,6 @@ msgstr "Lahat ng timer ginagamit"
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c:176
-msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
-
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
 msgid "error = 0x%08lX"
@@ -743,7 +739,6 @@ msgstr "hindi sinusuportahan ang bytes > 8 bits"
 #: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
 #: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
 #: ports/nrf/common-hal/busio/UART.c:364
-#, fuzzy
 msgid "busio.UART not available"
 msgstr ""
 
@@ -2024,6 +2019,26 @@ msgstr ""
 "ang destination buffer ay dapat na isang bytearray o array ng uri na 'B' "
 "para sa bit_depth = 8"
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "Mali ang tipo ng serbisyo"
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "Maling argumento"
+
+#: shared-bindings/audioio/Mixer.c:103
+#, fuzzy
+msgid "Sample rate must be positive"
+msgstr "Dapat aktibo ang STA"
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits ay dapat 7, 8 o 9"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2333,6 +2348,34 @@ msgstr ""
 "Object ay deinitialized at hindi na magagamit. Lumikha ng isang bagong "
 "Object."
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr "Hindi ma-iallocate ang first buffer"
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr "Hindi ma-iallocate ang second buffer"
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
@@ -2352,14 +2395,6 @@ msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
 msgstr "Mali ang file"
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr "Hindi ma-iallocate ang first buffer"
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
-msgstr "Hindi ma-iallocate ang second buffer"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
