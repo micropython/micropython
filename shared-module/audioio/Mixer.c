@@ -244,30 +244,47 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
         bool voices_active = false;
         for (int32_t v = 0; v < self->voice_count; v++) {
             audioio_mixer_voice_t* voice = &self->voice[v];
-            if (voice->sample == NULL) {
-                continue;
-            }
 
             uint32_t j = 0;
+            bool voice_done = voice->sample == NULL;
             for (uint32_t i = 0; i < self->len / sizeof(uint32_t); i++) {
-                if (j >= voice->buffer_length) {
+                if (!voice_done && j >= voice->buffer_length) {
                     if (!voice->more_data) {
                         if (voice->loop) {
                             audiosample_reset_buffer(voice->sample, false, 0);
                         } else {
                             voice->sample = NULL;
-                            break;
+                            voice_done = true;
                         }
                     }
-                    // Load another buffer
-                    audioio_get_buffer_result_t result = audiosample_get_buffer(voice->sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
-                    // Track length in terms of words.
-                    voice->buffer_length /= sizeof(uint32_t);
-                    voice->more_data = result == GET_BUFFER_MORE_DATA;
-                    j = 0;
+                    if (!voice_done) {
+                        // Load another buffer
+                        audioio_get_buffer_result_t result = audiosample_get_buffer(voice->sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
+                        // Track length in terms of words.
+                        voice->buffer_length /= sizeof(uint32_t);
+                        voice->more_data = result == GET_BUFFER_MORE_DATA;
+                        j = 0;
+                    }
                 }
                 // First active voice gets copied over verbatim.
-                uint32_t sample_value = voice->remaining_buffer[j];
+                uint32_t sample_value;
+                if (voice_done) {
+                    // Exit early if another voice already set all samples once.
+                    if (voices_active) {
+                        continue;
+                    }
+                    sample_value = 0;
+                    if (!self->samples_signed) {
+                        if (self->bits_per_sample == 8) {
+                            sample_value = 0x7f7f7f7f;
+                        } else {
+                            sample_value = 0x7fff7fff;
+                        }
+                    }
+                } else {
+                    sample_value = voice->remaining_buffer[j];
+                }
+
                 if (!voices_active) {
                     word_buffer[i] = sample_value;
                 } else {
@@ -293,20 +310,6 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
             voices_active = true;
         }
 
-        // No voice is active so zero out the signal.
-        if (!voices_active) {
-            uint32_t zero = 0;
-            if (!self->samples_signed) {
-                if (self->bits_per_sample == 8) {
-                    zero = 0x7f7f7f7f;
-                } else {
-                    zero = 0x7fff7fff;
-                }
-            }
-            for (uint32_t i = 0; i < self->len / sizeof(uint32_t); i++) {
-                word_buffer[i] = zero;
-            }
-        }
         self->read_count += 1;
     } else if (!self->use_first_buffer) {
         *buffer = (uint8_t*) self->first_buffer;
