@@ -131,25 +131,28 @@ void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
     }
 }
 
+    #pragma GCC push_options
+    #pragma GCC optimize ("O0")
 uint32_t add8signed(uint32_t a, uint32_t b) {
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
     return __QADD8(a, b);
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
-        int8_t ai = a >> (sizeof(int8_t) * i);
-        int8_t bi = b >> (sizeof(int8_t) * i);
+        int8_t ai = a >> (sizeof(int8_t) * 8 * i);
+        int8_t bi = b >> (sizeof(int8_t) * 8 * i);
         int32_t intermediate = (int32_t) ai + bi;
         if (intermediate > CHAR_MAX) {
             intermediate = CHAR_MAX;
         } else if (intermediate < CHAR_MIN) {
-            intermediate = CHAR_MIN;
+            //intermediate = CHAR_MIN;
         }
-        result |= ((int8_t) intermediate) >> (sizeof(int8_t) * i);
+        result |= (((uint32_t) intermediate) & 0xff) << (sizeof(int8_t) * 8 * i);
     }
     return result;
     #endif
 }
+    #pragma GCC pop_options
 
 uint32_t add8unsigned(uint32_t a, uint32_t b) {
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
@@ -161,13 +164,13 @@ uint32_t add8unsigned(uint32_t a, uint32_t b) {
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
-        uint8_t ai = a >> (sizeof(uint8_t) * i);
-        uint8_t bi = b >> (sizeof(uint8_t) * i);
+        int8_t ai = (a >> (sizeof(uint8_t) * 8 * i)) - 128;
+        int8_t bi = (b >> (sizeof(uint8_t) * 8 * i)) - 128;
         int32_t intermediate = (int32_t) ai + bi;
         if (intermediate > UCHAR_MAX) {
             intermediate = UCHAR_MAX;
         }
-        result |= ((uint8_t) intermediate) >> (sizeof(uint8_t) * i);
+        result |= ((uint8_t) intermediate + 128) << (sizeof(uint8_t) * 8 * i);
     }
     return result;
     #endif
@@ -179,15 +182,15 @@ uint32_t add16signed(uint32_t a, uint32_t b) {
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 2; i++) {
-        int16_t ai = a >> (sizeof(int16_t) * i);
-        int16_t bi = b >> (sizeof(int16_t) * i);
+        int16_t ai = a >> (sizeof(int16_t) * 8 * i);
+        int16_t bi = b >> (sizeof(int16_t) * 8 * i);
         int32_t intermediate = (int32_t) ai + bi;
         if (intermediate > SHRT_MAX) {
             intermediate = SHRT_MAX;
         } else if (intermediate < SHRT_MIN) {
             intermediate = SHRT_MIN;
         }
-        result |= ((int16_t) intermediate) >> (sizeof(int16_t) * i);
+        result |= (((uint32_t) intermediate) & 0xffff) << (sizeof(int16_t) * 8 * i);
     }
     return result;
     #endif
@@ -203,13 +206,13 @@ uint32_t add16unsigned(uint32_t a, uint32_t b) {
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 2; i++) {
-        uint16_t ai = a >> (sizeof(uint16_t) * i);
-        uint16_t bi = b >> (sizeof(uint16_t) * i);
-        uint32_t intermediate = (uint32_t) ai + bi;
+        int16_t ai = (a >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
+        int16_t bi = (b >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
+        int32_t intermediate = (int32_t) ai + bi;
         if (intermediate > USHRT_MAX) {
             intermediate = USHRT_MAX;
         }
-        result |= ((uint16_t) intermediate) >> (sizeof(int16_t) * i);
+        result |= ((uint16_t) intermediate + 0x8000) << (sizeof(int16_t) * 8 * i);
     }
     return result;
     #endif
