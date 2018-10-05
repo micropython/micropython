@@ -197,6 +197,23 @@ typedef struct {
     .write_status_register_split = false, \
 }
 
+// Settings for the Winbond W25Q16JV_IM 2MiB SPI flash. (W25Q16JVUXIM)
+// Datasheet: https://www.winbond.com/resource-files/w25q16jv%20spi%20revf%2005092017.pdf
+#define W25Q16JV_IM {\
+    .total_size = (1 << 21), /* 2 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x70, \
+    .capacity = 0x15, \
+    .max_clock_speed_mhz = 133, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .has_quad_enable = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+}
+
 // Settings for the Winbond W25Q32BV 4MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q32bv_revi_100413_wo_automotive.pdf
 #define W25Q32BV {\
