@@ -84,6 +84,8 @@ void STM32F7DISC_board_early_init(void);
 // SDRAM
 #define MICROPY_HW_SDRAM_SIZE  (64 / 8 * 1024 * 1024)  // 64 Mbit
 #define MICROPY_HW_SDRAM_STARTUP_TEST             (1)
+#define MICROPY_HEAP_START              sdram_start()
+#define MICROPY_HEAP_END                sdram_end()
 
 // Timing configuration for 90 Mhz (11.90ns) of SD clock frequency (180Mhz/2)
 #define MICROPY_HW_SDRAM_TIMING_TMRD        (2)
