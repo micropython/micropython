@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 23:15+0700\n"
+"POT-Creation-Date: 2018-10-07 02:07+0300\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -715,10 +715,6 @@ msgstr "Tous les timers sont utilisés"
 msgid "All SPI peripherals are in use"
 msgstr "Tous les timers sont utilisés"
 
-#: ports/nrf/common-hal/busio/SPI.c:176
-msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
-
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
 msgid "error = 0x%08lX"
@@ -1112,6 +1108,74 @@ msgstr "'data' nécessite au moins 2 arguments"
 msgid "'data' requires integer arguments"
 msgstr "'data' nécessite des arguments entiers"
 
+#: py/emitinlinethumb.c:102
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+#, fuzzy
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, fuzzy, c-format
+msgid "'%s' expects at most r%d"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:211
+#, fuzzy, c-format
+msgid "'%s' expects a special register"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:239
+#, fuzzy, c-format
+msgid "'%s' expects an FPU register"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:292
+#, fuzzy, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr "'%s' attend un entier"
+
+#: py/emitinlinethumb.c:304
+#, fuzzy, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr "'%s' l'entier %d n'est pas dans la gamme %d..%d"
+
+#: py/emitinlinethumb.c:328
+#, fuzzy, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr "'%s' attend un label"
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr "label '%q' non supporté"
+
+#: py/emitinlinethumb.c:806
+#, fuzzy, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr "instruction Xtensa '%s' non supportée avec %d arguments"
+
+#: py/emitinlinethumb.c:810
+#, fuzzy
+msgid "branch not in range"
+msgstr "argument de chr() hors de la gamme range(256)"
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
@@ -1120,29 +1184,10 @@ msgstr ""
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr "'%s' attend un registre"
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr "'%s' attend un entier"
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
 msgstr "'%s' l'entier %d n'est pas dans la gamme %d..%d"
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr "'%s' attend un label"
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
-msgstr "label '%q' non supporté"
 
 #: py/emitinlinextensa.c:327
 #, c-format
@@ -2426,9 +2471,9 @@ msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "'len' doit être un multiple de 4"
-
-#, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "la palette doit être longue de 32 octets"
+
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "'len' doit être un multiple de 4"
