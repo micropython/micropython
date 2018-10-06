@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 23:15+0700\n"
+"POT-Creation-Date: 2018-10-07 02:07+0300\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -719,10 +719,6 @@ msgstr "Lahat ng timer ginagamit"
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c:176
-msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
-
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
 msgid "error = 0x%08lX"
@@ -743,7 +739,6 @@ msgstr "hindi sinusuportahan ang bytes > 8 bits"
 #: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
 #: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
 #: ports/nrf/common-hal/busio/UART.c:364
-#, fuzzy
 msgid "busio.UART not available"
 msgstr ""
 
@@ -1119,6 +1114,75 @@ msgstr "'data' kailangan ng hindi bababa sa 2 argument"
 msgid "'data' requires integer arguments"
 msgstr "'data' kailangan ng integer arguments"
 
+#: py/emitinlinethumb.c:102
+#, fuzzy
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+#, fuzzy
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, fuzzy, c-format
+msgid "'%s' expects at most r%d"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:211
+#, fuzzy, c-format
+msgid "'%s' expects a special register"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:239
+#, fuzzy, c-format
+msgid "'%s' expects an FPU register"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:292
+#, fuzzy, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr "Inaasahan ng '%s' ang isang integer"
+
+#: py/emitinlinethumb.c:304
+#, fuzzy, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
+
+#: py/emitinlinethumb.c:328
+#, fuzzy, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr "'%s' umaasa ng label"
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr "label '%d' kailangan na i-define"
+
+#: py/emitinlinethumb.c:806
+#, fuzzy, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr "hindi sinusuportahan ang instruction ng Xtensa '%s' sa %d argumento"
+
+#: py/emitinlinethumb.c:810
+#, fuzzy
+msgid "branch not in range"
+msgstr "chr() arg wala sa sakop ng range(256)"
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
@@ -1127,29 +1191,10 @@ msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr "Inaasahan ng '%s' ang isang integer"
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
 msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr "'%s' umaasa ng label"
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
-msgstr "label '%d' kailangan na i-define"
 
 #: py/emitinlinextensa.c:327
 #, c-format
