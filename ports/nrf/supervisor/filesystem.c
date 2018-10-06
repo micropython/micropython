@@ -36,7 +36,7 @@ static mp_vfs_mount_t _mp_vfs;
 static fs_user_mount_t _internal_vfs;
 
 
-void filesystem_init(bool create_allowed) {
+void filesystem_init(bool create_allowed, bool force_create) {
     // init the vfs object
     fs_user_mount_t *int_vfs = &_internal_vfs;
     int_vfs->flags = 0;
@@ -45,7 +45,7 @@ void filesystem_init(bool create_allowed) {
     // try to mount the flash
     FRESULT res = f_mount(&int_vfs->fatfs);
 
-    if (res == FR_NO_FILESYSTEM && create_allowed) {
+    if ((res == FR_NO_FILESYSTEM && create_allowed) || force_create) {
         // no filesystem so create a fresh one
         uint8_t working_buf[_MAX_SS];
         res = f_mkfs(&int_vfs->fatfs, FM_FAT | FM_SFD, 4096, working_buf, sizeof(working_buf));
