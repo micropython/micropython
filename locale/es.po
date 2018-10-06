@@ -709,7 +709,7 @@ msgstr "parámetro config desconocido"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
-msgstr ""
+msgstr "Funcionalidad AnalogOut no soportada"
 
 #: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
@@ -721,22 +721,20 @@ msgstr "Todos los timers están siendo utilizados"
 
 #: ports/nrf/common-hal/busio/SPI.c:176
 msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
+msgstr "Baud rate demasiado alto para este periférico SPI"
 
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
 msgid "error = 0x%08lX"
-msgstr ""
+msgstr "error = 0x%08lx"
 
 #: ports/nrf/common-hal/busio/UART.c:86
-#, fuzzy
 msgid "Invalid buffer size"
-msgstr "index dupterm inválido"
+msgstr "Tamaño de buffer inválido"
 
 #: ports/nrf/common-hal/busio/UART.c:90
-#, fuzzy
 msgid "Odd parity is not supported"
-msgstr "bytes > 8 bits no son soportados"
+msgstr "Paridad impar no soportada"
 
 #: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
 #: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
@@ -744,113 +742,113 @@ msgstr "bytes > 8 bits no son soportados"
 #: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
 #: ports/nrf/common-hal/busio/UART.c:364
 msgid "busio.UART not available"
-msgstr ""
+msgstr "busio.UART no disponible"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
-msgstr ""
+msgstr "No se puede obtener la temperatura. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
-msgstr ""
+msgstr "No se pueden aplicar los parámetros GAP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:213
 msgid "Cannot set PPCP parameters."
-msgstr ""
+msgstr "No se pueden establecer los parámetros PPCP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:245
 msgid "Can not query for the device address."
-msgstr ""
+msgstr "No se puede consultar la dirección del dispositivo."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
 msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr ""
+msgstr "No se puede agregar el UUID de 128-bits Especifico del Vendedor."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:284
 #: ports/nrf/drivers/bluetooth/ble_drv.c:298
 msgid "Can not add Service."
-msgstr ""
+msgstr "No se puede agregar el Servicio"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr ""
+msgstr "No se puede agregar la Característica"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
-msgstr ""
+msgstr "No se puede aplicar el nombre del dispositivo en el stack."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:464
 #: ports/nrf/drivers/bluetooth/ble_drv.c:514
 msgid "Can not encode UUID, to check length."
-msgstr ""
+msgstr "No se puede codificar el UUID, para revisar la longitud."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:470
 #: ports/nrf/drivers/bluetooth/ble_drv.c:520
 msgid "Can encode UUID into the advertisement packet."
-msgstr ""
+msgstr "Se puede codificar el UUID en el paquete de anuncio."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
 msgid "Can not fit data into the advertisement packet."
-msgstr ""
+msgstr "Los datos no caben en el paquete de anuncio."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:558
 #: ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
 msgid "Can not apply advertisement data. status: 0x%02x"
-msgstr ""
+msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:614
 #, c-format
 msgid "Can not start advertisement. status: 0x%02x"
-msgstr ""
+msgstr "No se puede inicar el anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:631
 #, c-format
 msgid "Can not stop advertisement. status: 0x%02x"
-msgstr ""
+msgstr "No se puede detener el anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:650
 #: ports/nrf/drivers/bluetooth/ble_drv.c:726
 #, c-format
 msgid "Can not read attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede leer el valor del atributo. status 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:667
 #: ports/nrf/drivers/bluetooth/ble_drv.c:756
 #, c-format
 msgid "Can not write attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:691
 #, c-format
 msgid "Can not notify attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede notificar el valor del anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:784
 #, c-format
 msgid "Can not start scanning. status: 0x%02x"
-msgstr ""
+msgstr "No se puede iniciar el escaneo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:829
 #, c-format
 msgid "Can not connect. status: 0x%02x"
-msgstr ""
+msgstr "No se puede conectar. status: 0x%02x"
 
 #: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:80
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:132
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
 msgid "Invalid UUID parameter"
-msgstr ""
+msgstr "Parámetro UUID inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:73
 msgid "Invalid Service type"
-msgstr ""
+msgstr "Tipo de Servicio inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
 msgid "Invalid UUID string length"
-msgstr ""
+msgstr "Longitud de string UUID inválida"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -1640,7 +1638,7 @@ msgstr "struct: index fuera de rango"
 #: py/objstr.c:1071
 #, fuzzy
 msgid "attributes not supported yet"
-msgstr "bytes > 8 bits no son soportados"
+msgstr "bytes > 8 bits no soportados"
 
 #: py/objstr.c:1079
 msgid ""
@@ -1822,7 +1820,6 @@ msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr ""
 
 #: py/parsenum.c:151
-#, fuzzy
 msgid "invalid syntax for integer"
 msgstr "formato inválido"
 
@@ -1832,12 +1829,10 @@ msgid "invalid syntax for integer with base %d"
 msgstr ""
 
 #: py/parsenum.c:339
-#, fuzzy
 msgid "invalid syntax for number"
 msgstr "argumentos inválidos"
 
 #: py/parsenum.c:342
-#, fuzzy
 msgid "decimal numbers not supported"
 msgstr "bytes > 8 bits no son soportados"
 
@@ -1852,7 +1847,6 @@ msgid "can only save bytecode"
 msgstr ""
 
 #: py/runtime.c:206
-#, fuzzy
 msgid "name not defined"
 msgstr "módulo no encontrado"
 
