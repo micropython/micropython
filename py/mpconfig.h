@@ -1170,6 +1170,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_UCTYPES (0)
 #endif
 
+// Whether to provide SHORT, INT, LONG, etc. types in addition to
+// exact-bitness types like INT16, INT32, etc.
+#ifndef MICROPY_PY_UCTYPES_NATIVE_C_TYPES
+#define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
+#endif
+
 #ifndef MICROPY_PY_UZLIB
 #define MICROPY_PY_UZLIB (0)
 #endif
