@@ -139,6 +139,7 @@ typedef long mp_off_t;
 #define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define PORT_HEAP_SIZE                              (16384 + 4096)
+#define CIRCUITPY_DEFAULT_STACK_SIZE                4096
 #define MICROPY_CPYTHON_COMPAT                      (0)
 #define MICROPY_MODULE_WEAK_LINKS                   (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
@@ -153,6 +154,7 @@ typedef long mp_off_t;
 #define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
 #define PORT_HEAP_SIZE                              (0x20000) // 128KiB
+#define CIRCUITPY_DEFAULT_STACK_SIZE                8192
 #define MICROPY_CPYTHON_COMPAT                      (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
@@ -399,9 +401,5 @@ void run_background_tasks(void);
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
-
-// TODO(tannewt): Make this 6k+ for any non-express M4 boards because they cache sectors on the
-// stack.
-#define CIRCUITPY_DEFAULT_STACK_SIZE 4096
 
 #endif  // __INCLUDED_MPCONFIGPORT_H
