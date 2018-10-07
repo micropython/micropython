@@ -84,7 +84,6 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
-#define MICROPY_MODULE_WEAK_LINKS   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_ENABLE_FINALISER    (1)
@@ -140,15 +139,17 @@ typedef long mp_off_t;
 #include "include/sam.h"
 
 #ifdef SAMD21
-#define CIRCUITPY_MCU_FAMILY samd21
+#define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
-#define PORT_HEAP_SIZE (16384 + 4096)
+#define PORT_HEAP_SIZE                              (16384 + 4096)
+#define MICROPY_MODULE_WEAK_LINKS                   (0)
 #endif
 
 #ifdef SAMD51
-#define CIRCUITPY_MCU_FAMILY samd51
+#define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
-#define PORT_HEAP_SIZE (0x20000) // 128KiB
+#define PORT_HEAP_SIZE                              (0x20000) // 128KiB
+#define MICROPY_MODULE_WEAK_LINKS                   (1)
 #endif
 
 #ifdef LONGINT_IMPL_NONE
@@ -290,6 +291,33 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
+#elif MICROPY_MODULE_WEAK_LINKS
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&os_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rtc), (mp_obj_t)&rtc_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
+    TOUCHIO_MODULE \
+    EXTRA_BUILTIN_MODULES
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
+    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&os_module) }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+
 #else
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
