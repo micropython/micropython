@@ -20,8 +20,6 @@
 #define MICROPY_COMP_CONST          (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
-// Turn off for consistency
-#define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
@@ -57,7 +55,6 @@
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_IO               (0)
 #define MICROPY_PY_URANDOM          (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
 #define MICROPY_PY_STRUCT           (0)
@@ -142,14 +139,28 @@ typedef long mp_off_t;
 #define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define PORT_HEAP_SIZE                              (16384 + 4096)
+#define MICROPY_CPYTHON_COMPAT                      (0)
 #define MICROPY_MODULE_WEAK_LINKS                   (0)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
+#define MICROPY_PY_FUNCTION_ATTRS                   (0)
+#define MICROPY_PY_IO                               (0)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
+#define MICROPY_PY_SYS_EXC_INFO                     (0)
 #endif
 
 #ifdef SAMD51
 #define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
 #define PORT_HEAP_SIZE                              (0x20000) // 128KiB
+#define MICROPY_CPYTHON_COMPAT                      (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
+#define MICROPY_PY_FUNCTION_ATTRS                   (1)
+#define MICROPY_PY_IO                               (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
+#define MICROPY_PY_SYS_EXC_INFO                     (1)
 #endif
 
 #ifdef LONGINT_IMPL_NONE
@@ -315,6 +326,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
+    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
     { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&os_module) }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
 
