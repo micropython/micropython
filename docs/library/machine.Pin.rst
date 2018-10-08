@@ -191,7 +191,8 @@ Methods
    The arguments are:
 
      - ``handler`` is an optional function to be called when the interrupt
-       triggers.
+       triggers. The handler must take exactly one argument which is the
+       ``Pin`` instance.
 
      - ``trigger`` configures the event which can generate an interrupt.
        Possible values are:
