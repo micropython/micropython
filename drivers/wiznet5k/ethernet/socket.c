@@ -6,6 +6,7 @@
 //! \version 1.0.3
 //! \date 2013/10/21
 //! \par  Revision history
+//!       <2018/10/09> Nick Moore fixes for CircuitPython
 //!       <2014/05/01> V1.0.3. Refer to M20140501
 //!         1. Implicit type casting -> Explicit type casting.
 //!         2. replace 0x01 with PACK_REMAINED in recvfrom()
@@ -393,15 +394,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
    CHECK_SOCKDATA();
    //M20140501 : For avoiding fatal error on memory align mismatched
    //if(*((uint32_t*)addr) == 0) return SOCKERR_IPINVALID;
-   {
-      uint32_t taddr;
-      taddr = ((uint32_t)addr[0]) & 0x000000FF;
-      taddr = (taddr << 8) + ((uint32_t)addr[1] & 0x000000FF);
-      taddr = (taddr << 8) + ((uint32_t)addr[2] & 0x000000FF);
-      taddr = (taddr << 8) + ((uint32_t)addr[3] & 0x000000FF);
-      if (taddr == 0xFFFFFFFF || taddr == 0) return SOCKERR_IPINVALID;
-   }
-   //
+   if ((addr[0] | addr[1] | addr[2] | addr[3]) == 0) return SOCKERR_IPINVALID;
    if(port == 0)               return SOCKERR_PORTZERO;
    tmp = getSn_SR(sn);
    if(tmp != SOCK_MACRAW && tmp != SOCK_UDP) return SOCKERR_SOCKSTATUS;

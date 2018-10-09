@@ -6,6 +6,7 @@
 //! \version 1.1.0
 //! \date 2013/11/18
 //! \par  Revision history
+//!       <2018/10/09> Modified by Nick Moore for CircuitPython
 //!       <2013/11/18> 1st Release
 //!       <2012/12/20> V1.1.0
 //!         1. Optimize code
@@ -51,7 +52,7 @@
 
 //#include "Ethernet/socket.h"
 //#include "Internet/DHCP/dhcp.h"
-#include "../../Ethernet/socket.h"
+#include "../../ethernet/socket.h"
 #include "dhcp.h"
 
 /* If you want to display debug & processing message, Define _DHCP_DEBUG_ in dhcp.h */
@@ -408,7 +409,7 @@ void send_DHCP_DISCOVER(void)
 	printf("> Send DHCP_DISCOVER\r\n");
 #endif
 
-	sendto(DHCP_SOCKET, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
+	WIZCHIP_EXPORT(sendto)(DHCP_SOCKET, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
 }
 
 /* SEND DHCP REQUEST */
@@ -503,7 +504,7 @@ void send_DHCP_REQUEST(void)
 	printf("> Send DHCP_REQUEST\r\n");
 #endif
 	
-	sendto(DHCP_SOCKET, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
+	WIZCHIP_EXPORT(sendto)(DHCP_SOCKET, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
 
 }
 
@@ -564,7 +565,7 @@ void send_DHCP_DECLINE(void)
 	printf("\r\n> Send DHCP_DECLINE\r\n");
 #endif
 
-	sendto(DHCP_SOCKET, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
+	WIZCHIP_EXPORT(sendto)(DHCP_SOCKET, (uint8_t *)pDHCPMSG, RIP_MSG_SIZE, ip, DHCP_SERVER_PORT);
 }
 
 /* PARSE REPLY pDHCPMSG */
@@ -581,13 +582,13 @@ int8_t parseDHCPMSG(void)
    
    if((len = getSn_RX_RSR(DHCP_SOCKET)) > 0)
    {
-   	len = recvfrom(DHCP_SOCKET, (uint8_t *)pDHCPMSG, len, svr_addr, &svr_port);
+   	len = WIZCHIP_EXPORT(recvfrom)(DHCP_SOCKET, (uint8_t *)pDHCPMSG, len, svr_addr, &svr_port);
    #ifdef _DHCP_DEBUG_   
       printf("DHCP message : %d.%d.%d.%d(%d) %d received. \r\n",svr_addr[0],svr_addr[1],svr_addr[2], svr_addr[3],svr_port, len);
    #endif   
    }
    else return 0;
-	if (svr_port == DHCP_SERVER_PORT) {
+   if (svr_port == DHCP_SERVER_PORT) {
       // compare mac address
 		if ( (pDHCPMSG->chaddr[0] != DHCP_CHADDR[0]) || (pDHCPMSG->chaddr[1] != DHCP_CHADDR[1]) ||
 		     (pDHCPMSG->chaddr[2] != DHCP_CHADDR[2]) || (pDHCPMSG->chaddr[3] != DHCP_CHADDR[3]) ||
@@ -677,7 +678,7 @@ uint8_t DHCP_run(void)
 	if(dhcp_state == STATE_DHCP_STOP) return DHCP_STOPPED;
 
 	if(getSn_SR(DHCP_SOCKET) != SOCK_UDP)
-	   socket(DHCP_SOCKET, Sn_MR_UDP, DHCP_CLIENT_PORT, 0x00);
+	   WIZCHIP_EXPORT(socket)(DHCP_SOCKET, Sn_MR_UDP, DHCP_CLIENT_PORT, 0x00);
 
 	ret = DHCP_RUNNING;
 	type = parseDHCPMSG();
@@ -801,7 +802,7 @@ uint8_t DHCP_run(void)
 
 void    DHCP_stop(void)
 {
-   close(DHCP_SOCKET);
+   WIZCHIP_EXPORT(close)(DHCP_SOCKET);
    dhcp_state = STATE_DHCP_STOP;
 }
 
@@ -869,7 +870,7 @@ int8_t check_DHCP_leasedIP(void)
 
 	// IP conflict detection : ARP request - ARP reply
 	// Broadcasting ARP Request for check the IP conflict using UDP sendto() function
-	ret = sendto(DHCP_SOCKET, (uint8_t *)"CHECK_IP_CONFLICT", 17, DHCP_allocated_ip, 5000);
+	ret = WIZCHIP_EXPORT(sendto)(DHCP_SOCKET, (uint8_t *)"CHECK_IP_CONFLICT", 17, DHCP_allocated_ip, 5000);
 
 	// RCR value restore
 	setRCR(tmp);
@@ -893,7 +894,7 @@ int8_t check_DHCP_leasedIP(void)
 	}
 }	
 
-void DHCP_init(uint8_t s, uint8_t * buf)
+void DHCP_init(uint8_t s, DHCP_INIT_BUFFER_TYPE* buf)
 {
    uint8_t zeroip[4] = {0,0,0,0};
    getSHAR(DHCP_CHADDR);

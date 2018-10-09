@@ -300,6 +300,7 @@ SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
         ethernet/wizchip_conf.c \
         ethernet/socket.c \
         internet/dns/dns.c \
+        internet/dhcp/dhcp.c \
         )
 
 endif # MICROPY_PY_WIZNET5K

@@ -55,7 +55,7 @@
 
 /* Retry to processing DHCP */
 #define	MAX_DHCP_RETRY          2        ///< Maximum retry count
-#define	DHCP_WAIT_TIME          10       ///< Wait Time 10s
+#define	DHCP_WAIT_TIME          3       ///< Wait Time 3s (was 10s)
 
 /* UDP port numbers for DHCP */
 #define DHCP_SERVER_PORT      		67	      ///< DHCP server port number
@@ -78,12 +78,14 @@ enum
    DHCP_STOPPED      ///< Stop processing DHCP protocol
 };
 
+#define DHCP_INIT_BUFFER_TYPE uint32_t
+#define DHCP_INIT_BUFFER_SIZE (137)
 /*
  * @brief DHCP client initialization (outside of the main loop)
  * @param s   - socket number
  * @param buf - buffer for processing DHCP message
  */
-void DHCP_init(uint8_t s, uint8_t * buf);
+void DHCP_init(uint8_t s, DHCP_INIT_BUFFER_TYPE* buf);
 
 /*
  * @brief DHCP 1s Tick Timer handler

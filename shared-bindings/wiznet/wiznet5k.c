@@ -48,6 +48,7 @@
 #include "ethernet/wizchip_conf.h"
 #include "ethernet/socket.h"
 #include "internet/dns/dns.h"
+#include "internet/dhcp/dhcp.h"
 
 /// \moduleref network
 
@@ -337,6 +338,24 @@ STATIC mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in) {
 }
 #endif
 
+static void wiznet5k_try_dhcp(void) {
+    DHCP_INIT_BUFFER_TYPE dhcp_buf[DHCP_INIT_BUFFER_SIZE];
+
+    // Set up the socket to listen on UDP 68 before calling DHCP_init
+    WIZCHIP_EXPORT(socket)(0, MOD_NETWORK_SOCK_DGRAM, DHCP_CLIENT_PORT, 0);
+    DHCP_init(0, dhcp_buf);
+
+    // try a few times for DHCP ... XXX this should be asynchronous.
+    for (int i=0; i<10; i++) {
+        DHCP_time_handler();
+        int dhcp_state = DHCP_run();
+        if (dhcp_state == DHCP_IP_LEASED || dhcp_state == DHCP_IP_CHANGED) break;
+        mp_hal_delay_ms(1000);
+    }
+    DHCP_stop();
+    WIZCHIP_EXPORT(close)(0);
+}
+
 /******************************************************************************/
 // MicroPython bindings
 
@@ -377,22 +396,20 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
     reg_wizchip_spi_cbfunc(wiz_spi_read, wiz_spi_write);
 
-    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}; // 2k buffer for each socket
+    // 2k buffer for each socket
+    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
     ctlwizchip(CW_INIT_WIZCHIP, sn_size);
 
-    // set some sensible default values; they are configurable using ifconfig method
     wiz_NetInfo netinfo = {
-        .ip = {192, 168, 0, 18},
-        .sn = {255, 255, 255, 0},
-        .gw = {192, 168, 0, 1},
-        .dns = {8, 8, 8, 8}, // Google public DNS
-        .dhcp = NETINFO_STATIC,
+        .dhcp = NETINFO_DHCP,
     };
     network_module_create_random_mac_address(netinfo.mac);
     ctlnetwork(CN_SET_NETINFO, (void*)&netinfo);
 
     // seems we need a small delay after init
     mp_hal_delay_ms(250);
+
+    wiznet5k_try_dhcp();
 
     // register with network module
     network_module_register_nic(&wiznet5k_obj);
