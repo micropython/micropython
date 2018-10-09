@@ -36,6 +36,13 @@
 
 #include "shared-bindings/network/__init__.h"
 
+//| :mod:`network` --- Network Interface Management
+//| ===============================================
+//|
+//| .. module:: network
+//|   :synopsis: Network Interface Management
+//|   :platform: SAMD
+
 #if MICROPY_PY_NETWORK
 
 /// \module network - network configuration

@@ -35,6 +35,23 @@
 
 #include "shared-bindings/network/__init__.h"
 
+//| :mod:`wiznet` --- Support for WizNet hardware
+//| =============================================
+//|
+//| .. module:: wiznet
+//|   :synopsis: Support for WizNet hardware
+//|   :platform: SAMD
+//|
+//| Doc content goes here
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|   :maxdepth: 3
+//|
+//|   wiznet5k
+//|
+
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 
 STATIC const mp_rom_map_elem_t mp_module_wiznet_globals_table[] = {
