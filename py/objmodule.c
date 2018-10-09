@@ -61,7 +61,20 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+        #ifndef MICROPY_CPYTHON_COMPAT
         }
+        #else
+        } else {
+            if (attr != MP_QSTR___getattr__){
+                mp_obj_t dest2[3];
+                mp_load_method_maybe(self_in, MP_QSTR___getattr__, dest2);
+                if (dest2[0] != MP_OBJ_NULL) {
+                    dest2[2] = MP_OBJ_NEW_QSTR(attr);
+                    dest[0] = mp_call_method_n_kw(1, 0, dest2);
+                }
+            }
+        }
+        #endif
     } else {
         // delete/store attribute
         mp_obj_dict_t *dict = self->globals;
