@@ -421,7 +421,7 @@ SRC_SHARED_MODULE = \
 ifeq ($(MICROPY_PY_NETWORK),1)
 SRC_SHARED_MODULE += socket/__init__.c network/__init__.c
 ifneq ($(MICROPY_PY_WIZNET5K),0)
-SRC_SHARED_MODULE += wiznet/__init__.c
+SRC_SHARED_MODULE += wiznet/__init__.c wiznet/wiznet5k.c
 endif
 endif
 
