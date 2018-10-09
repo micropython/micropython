@@ -40,7 +40,8 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/random/__init__.h"
+
+#include "shared-module/network/__init__.h"
 
 #if MICROPY_PY_WIZNET5K
 
@@ -336,19 +337,6 @@ STATIC mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in) {
 }
 #endif
 
-void create_random_mac_address(uint8_t *mac) {
-    uint32_t rb1 = shared_modules_random_getrandbits(24);
-    uint32_t rb2 = shared_modules_random_getrandbits(24);
-    // first octet has multicast bit (0) cleared and local bit (1) set
-    // everything else is just set randomly
-    mac[0] = ((uint8_t)(rb1 >> 16) & 0xfe) | 0x02;
-    mac[1] = (uint8_t)(rb1 >> 8);
-    mac[2] = (uint8_t)(rb1);
-    mac[3] = (uint8_t)(rb2 >> 16);
-    mac[4] = (uint8_t)(rb2 >> 8);
-    mac[5] = (uint8_t)(rb2);
-}
-
 /******************************************************************************/
 // MicroPython bindings
 
@@ -400,7 +388,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
         .dns = {8, 8, 8, 8}, // Google public DNS
         .dhcp = NETINFO_STATIC,
     };
-    create_random_mac_address(netinfo.mac);
+    network_module_create_random_mac_address(netinfo.mac);
     ctlnetwork(CN_SET_NETINFO, (void*)&netinfo);
 
     // seems we need a small delay after init
