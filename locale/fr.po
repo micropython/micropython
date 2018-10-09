@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-07 02:07+0300\n"
+"POT-Creation-Date: 2018-10-09 13:56-0700\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -225,7 +225,7 @@ msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Tous les canaux d'événements de synchro sont utilisés"
@@ -2060,6 +2060,26 @@ msgid ""
 msgstr ""
 "le tampon de destination doit être un tableau de type 'B' pour bit_depth = 8"
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "Type de service invalide"
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "Argument invalide"
+
+#: shared-bindings/audioio/Mixer.c:103
+#, fuzzy
+msgid "Sample rate must be positive"
+msgstr "'STA' doit être actif"
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits doivent être 7, 8 ou 9"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2374,6 +2394,34 @@ msgstr ""
 "L'objet a été désinitialisé et ne peut plus être utilisé. Créez un nouvel "
 "objet."
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr "Impossible d'allouer le 1er tampon"
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr "Impossible d'allouer le 2e tampon"
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr "Fichier WAVE invalide"
@@ -2393,14 +2441,6 @@ msgstr "Un bloc de données doit suivre un bloc de format"
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
 msgstr "Fichier invalide"
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr "Impossible d'allouer le 1er tampon"
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
-msgstr "Impossible d'allouer le 2e tampon"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
@@ -2471,9 +2511,9 @@ msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être longue de 32 octets"
-
-#, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "'len' doit être un multiple de 4"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être longue de 32 octets"

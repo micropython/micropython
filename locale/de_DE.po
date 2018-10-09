@@ -227,7 +227,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr "weicher reboot\n"
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Alle sync event Kanäle werden benutzt"
@@ -2040,6 +2040,25 @@ msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "Ungültiger clock pin"
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "Ungültiger clock pin"
+
+#: shared-bindings/audioio/Mixer.c:103
+msgid "Sample rate must be positive"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits müssen 8 sein"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2331,6 +2350,34 @@ msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr ""
@@ -2349,14 +2396,6 @@ msgstr ""
 
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
 msgstr ""
 
 #: shared-module/bitbangio/I2C.c:58

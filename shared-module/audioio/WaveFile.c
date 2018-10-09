@@ -200,13 +200,29 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* 
         if (f_read(&self->file->fp, *buffer, num_bytes_to_load, &length_read) != FR_OK) {
             return GET_BUFFER_ERROR;
         }
+        self->bytes_remaining -= length_read;
+        // Pad the last buffer to word align it.
+        if (self->bytes_remaining == 0 && length_read % sizeof(uint32_t) != 0) {
+            uint32_t pad = length_read % sizeof(uint32_t);
+            length_read += pad;
+            if (self->bits_per_sample == 8) {
+                for (uint32_t i = 0; i < pad; i++) {
+                    ((uint8_t*) (*buffer))[length_read / sizeof(uint8_t) - i - 1] = 0x80;
+                }
+            } else if (self->bits_per_sample == 16) {
+                // We know the buffer is aligned because we allocated it onto the heap ourselves.
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wcast-align"
+                ((int16_t*) (*buffer))[length_read / sizeof(int16_t) - 1] = 0;
+                #pragma GCC diagnostic pop
+            }
+        }
         *buffer_length = length_read;
         if (self->buffer_index % 2 == 1) {
             self->second_buffer_length = length_read;
         } else {
             self->buffer_length = length_read;
         }
-        self->bytes_remaining -= length_read;
         self->buffer_index += 1;
         self->read_count += 1;
     }

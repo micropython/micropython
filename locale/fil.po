@@ -230,7 +230,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Lahat ng sync event channels ay ginagamit"
@@ -2069,6 +2069,26 @@ msgstr ""
 "ang destination buffer ay dapat na isang bytearray o array ng uri na 'B' "
 "para sa bit_depth = 8"
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "Mali ang tipo ng serbisyo"
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "Maling argumento"
+
+#: shared-bindings/audioio/Mixer.c:103
+#, fuzzy
+msgid "Sample rate must be positive"
+msgstr "Dapat aktibo ang STA"
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits ay dapat 7, 8 o 9"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2378,6 +2398,34 @@ msgstr ""
 "Object ay deinitialized at hindi na magagamit. Lumikha ng isang bagong "
 "Object."
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr "Hindi ma-iallocate ang first buffer"
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr "Hindi ma-iallocate ang second buffer"
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
@@ -2397,14 +2445,6 @@ msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
 msgstr "Mali ang file"
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr "Hindi ma-iallocate ang first buffer"
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
-msgstr "Hindi ma-iallocate ang second buffer"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
