@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/objlist.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
@@ -447,11 +448,22 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_regs_obj, wiznet5k_regs);
 
-STATIC mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
+STATIC mp_obj_t wiznet5k_connected_get_value(mp_obj_t self_in) {
     (void)self_in;
     return mp_obj_new_bool(wizphy_getphylink() == PHY_LINK_ON);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_isconnected_obj, wiznet5k_isconnected);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_connected_get_value_obj, wiznet5k_connected_get_value);
+
+//| attribute:: connected
+//|
+//|   is this device physically connected?
+
+const mp_obj_property_t wiznet5k_connected_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&wiznet5k_connected_get_value_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
 
 /// \method ifconfig([(ip, subnet, gateway, dns)])
 /// Get/set IP address, subnet mask, gateway and DNS.
@@ -484,7 +496,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k
 STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wiznet5k_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&wiznet5k_connected_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
