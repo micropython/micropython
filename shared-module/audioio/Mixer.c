@@ -110,7 +110,7 @@ void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, u
     voice->more_data = result == GET_BUFFER_MORE_DATA;
 }
 
-void common_hal_audioio_mixer_stop(audioio_mixer_obj_t* self, uint8_t voice) {
+void common_hal_audioio_mixer_stop_voice(audioio_mixer_obj_t* self, uint8_t voice) {
     self->voice[voice].sample = NULL;
 }
 
@@ -131,8 +131,6 @@ void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
     }
 }
 
-    #pragma GCC push_options
-    #pragma GCC optimize ("O0")
 uint32_t add8signed(uint32_t a, uint32_t b) {
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
     return __QADD8(a, b);
@@ -152,7 +150,6 @@ uint32_t add8signed(uint32_t a, uint32_t b) {
     return result;
     #endif
 }
-    #pragma GCC pop_options
 
 uint32_t add8unsigned(uint32_t a, uint32_t b) {
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
