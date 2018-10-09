@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-05 15:17-0700\n"
+"POT-Creation-Date: 2018-10-07 02:07+0300\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -1104,6 +1104,73 @@ msgstr ""
 msgid "'data' requires integer arguments"
 msgstr ""
 
+#: py/emitinlinethumb.c:102
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr ""
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, c-format
+msgid "'%s' expects at most r%d"
+msgstr ""
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr ""
+
+#: py/emitinlinethumb.c:211
+#, c-format
+msgid "'%s' expects a special register"
+msgstr ""
+
+#: py/emitinlinethumb.c:239
+#, c-format
+msgid "'%s' expects an FPU register"
+msgstr ""
+
+#: py/emitinlinethumb.c:292
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr ""
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr ""
+
+#: py/emitinlinethumb.c:304
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr ""
+
+#: py/emitinlinethumb.c:328
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr ""
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr ""
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr ""
+
+#: py/emitinlinethumb.c:806
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr ""
+
+#: py/emitinlinethumb.c:810
+#, fuzzy
+msgid "branch not in range"
+msgstr "Kalibrierung ist außerhalb der Reichweite"
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
@@ -1112,28 +1179,9 @@ msgstr ""
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr ""
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr ""
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr ""
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
 msgstr ""
 
 #: py/emitinlinextensa.c:327
