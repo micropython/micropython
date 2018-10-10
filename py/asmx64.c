@@ -73,8 +73,10 @@
 #define OPCODE_CMP_R64_WITH_RM64 (0x39) /* /r */
 //#define OPCODE_CMP_RM32_WITH_R32 (0x3b)
 #define OPCODE_TEST_R8_WITH_RM8  (0x84) /* /r */
+#define OPCODE_TEST_R64_WITH_RM64 (0x85) /* /r */
 #define OPCODE_JMP_REL8          (0xeb)
 #define OPCODE_JMP_REL32         (0xe9)
+#define OPCODE_JMP_RM64          (0xff) /* /4 */
 #define OPCODE_JCC_REL8          (0x70) /* | jcc type */
 #define OPCODE_JCC_REL32_A       (0x0f)
 #define OPCODE_JCC_REL32_B       (0x80) /* | jcc type */
@@ -190,7 +192,7 @@ STATIC void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int dis
         return;
     }
 
-    if (disp_offset == 0 && disp_r64 != ASM_X64_REG_RBP) {
+    if (disp_offset == 0 && disp_r64 != ASM_X64_REG_RBP && disp_r64 != ASM_X64_REG_R13) {
         asm_x64_write_byte_1(as, MODRM_R64(r64) | MODRM_RM_DISP0 | MODRM_RM_R64(disp_r64));
     } else if (SIGNED_FIT8(disp_offset)) {
         asm_x64_write_byte_2(as, MODRM_R64(r64) | MODRM_RM_DISP8 | MODRM_RM_R64(disp_r64), IMM32_L0(disp_offset));
@@ -361,15 +363,6 @@ void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r
     }
 }
 
-// src_i64 is stored as a full word in the code, and aligned to machine-word boundary
-void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64) {
-    // mov instruction uses 2 bytes for the instruction, before the i64
-    while (((as->base.code_offset + 2) & (WORD_SIZE - 1)) != 0) {
-        asm_x64_nop(as);
-    }
-    asm_x64_mov_i64_to_r64(as, src_i64, dest_r64);
-}
-
 void asm_x64_and_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
     asm_x64_generic_r64_r64(as, dest_r64, src_r64, OPCODE_AND_R64_TO_RM64);
 }
@@ -465,15 +458,23 @@ void asm_x64_cmp_i32_with_r32(asm_x64_t *as, int src_i32, int src_r32) {
 */
 
 void asm_x64_test_r8_with_r8(asm_x64_t *as, int src_r64_a, int src_r64_b) {
-    // TODO implement for other registers
-    assert(src_r64_a == ASM_X64_REG_RAX);
-    assert(src_r64_b == ASM_X64_REG_RAX);
+    assert(src_r64_a < 8);
+    assert(src_r64_b < 8);
     asm_x64_write_byte_2(as, OPCODE_TEST_R8_WITH_RM8, MODRM_R64(src_r64_a) | MODRM_RM_REG | MODRM_RM_R64(src_r64_b));
+}
+
+void asm_x64_test_r64_with_r64(asm_x64_t *as, int src_r64_a, int src_r64_b) {
+    asm_x64_generic_r64_r64(as, src_r64_b, src_r64_a, OPCODE_TEST_R64_WITH_RM64);
 }
 
 void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8) {
     assert(dest_r8 < 8);
     asm_x64_write_byte_3(as, OPCODE_SETCC_RM8_A, OPCODE_SETCC_RM8_B | jcc_type, MODRM_R64(0) | MODRM_RM_REG | MODRM_RM_R64(dest_r8));
+}
+
+void asm_x64_jmp_reg(asm_x64_t *as, int src_r64) {
+    assert(src_r64 < 8);
+    asm_x64_write_byte_2(as, OPCODE_JMP_RM64, MODRM_R64(4) | MODRM_RM_REG | MODRM_RM_R64(src_r64));
 }
 
 STATIC mp_uint_t get_label_dest(asm_x64_t *as, mp_uint_t label) {
@@ -575,6 +576,13 @@ void asm_x64_mov_local_addr_to_r64(asm_x64_t *as, int local_num, int dest_r64) {
     } else {
         asm_x64_lea_disp_to_r64(as, ASM_X64_REG_RBP, offset, dest_r64);
     }
+}
+
+void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label) {
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - (as->base.code_offset + 7);
+    asm_x64_write_byte_3(as, REX_PREFIX | REX_W | REX_R_FROM_R64(dest_r64), OPCODE_LEA_MEM_TO_R64, MODRM_R64(dest_r64) | MODRM_RM_R64(5));
+    asm_x64_write_word32(as, rel);
 }
 
 /*

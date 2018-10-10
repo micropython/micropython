@@ -128,7 +128,7 @@ SECTIONS
         *extmod/*.o*(.literal* .text*)
 
         *lib/oofatfs/*.o*(.literal*, .text*)
-        */libaxtls.a:(.literal*, .text*)
+        *lib/axtls/*.o(.literal*, .text*)
         *lib/berkeley-db-1.xx/*.o(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/mp-readline/*.o(.literal*, .text*)

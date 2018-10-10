@@ -1,4 +1,4 @@
-.. _quickref_:
+.. _wipy_quickref:
 
 Quick reference for the WiPy
 ============================
@@ -6,6 +6,15 @@ Quick reference for the WiPy
 .. image:: https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png
     :alt: WiPy pinout and alternate functions table
     :width: 800px
+
+Below is a quick reference for CC3200/WiPy.  If it is your first time
+working with this board please consider reading the following sections first:
+
+.. toctree::
+   :maxdepth: 1
+
+   general.rst
+   tutorial/index.rst
 
 General board control (including sleep modes)
 ---------------------------------------------
@@ -44,7 +53,7 @@ See :ref:`machine.Pin <machine.Pin>`. ::
 Timers
 ------
 
-See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`.
+See :ref:`machine.TimerWiPy <machine.TimerWiPy>` and :ref:`machine.Pin <machine.Pin>`.
 Timer ``id``'s take values from 0 to 3.::
 
     from machine import Timer
@@ -196,7 +205,7 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
 Telnet and FTP server
 ---------------------
 
-See :ref:`network.Server <network.Server>` ::
+See :class:`network.Server` ::
 
     from network import Server
 

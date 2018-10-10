@@ -67,6 +67,11 @@
 #define MICROPY_HW_ENABLE_DAC (0)
 #endif
 
+// Whether to enable the DCMI peripheral
+#ifndef MICROPY_HW_ENABLE_DCMI
+#define MICROPY_HW_ENABLE_DCMI (0)
+#endif
+
 // Whether to enable USB support
 #ifndef MICROPY_HW_ENABLE_USB
 #define MICROPY_HW_ENABLE_USB (0)
@@ -109,6 +114,14 @@
 
 /*****************************************************************************/
 // General configuration
+
+// Heap start / end definitions
+#ifndef MICROPY_HEAP_START
+#define MICROPY_HEAP_START &_heap_start
+#endif
+#ifndef MICROPY_HEAP_END
+#define MICROPY_HEAP_END &_heap_end
+#endif
 
 // Configuration for STM32F0 series
 #if defined(STM32F0)

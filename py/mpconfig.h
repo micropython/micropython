@@ -366,6 +366,11 @@
 #define MICROPY_MEM_STATS (0)
 #endif
 
+// The mp_print_t printer used for debugging output
+#ifndef MICROPY_DEBUG_PRINTER
+#define MICROPY_DEBUG_PRINTER (&mp_plat_print)
+#endif
+
 // Whether to build functions that print debugging info:
 //   mp_bytecode_print
 //   mp_parse_node_print
@@ -400,6 +405,12 @@
 // arguments are both positive.  Increases Thumb2 code size by about 250 bytes.
 #ifndef MICROPY_OPT_MPZ_BITWISE
 #define MICROPY_OPT_MPZ_BITWISE (0)
+#endif
+
+
+// Whether math.factorial is large, fast and recursive (1) or small and slow (0).
+#ifndef MICROPY_OPT_MATH_FACTORIAL
+#define MICROPY_OPT_MATH_FACTORIAL (0)
 #endif
 
 /*****************************************************************************/
@@ -754,6 +765,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_STR_CENTER (0)
 #endif
 
+// Whether str % (...) formatting operator provided
+#ifndef MICROPY_PY_BUILTINS_STR_OP_MODULO
+#define MICROPY_PY_BUILTINS_STR_OP_MODULO (1)
+#endif
+
 // Whether str.partition()/str.rpartition() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_PARTITION
 #define MICROPY_PY_BUILTINS_STR_PARTITION (0)
@@ -978,6 +994,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (0)
 #endif
 
+// Whether to provide math.factorial function
+#ifndef MICROPY_PY_MATH_FACTORIAL
+#define MICROPY_PY_MATH_FACTORIAL (0)
+#endif
+
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (0)
@@ -1165,6 +1186,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UHASHLIB
 #define MICROPY_PY_UHASHLIB (0)
+#endif
+
+#ifndef MICROPY_PY_UHASHLIB_MD5
+#define MICROPY_PY_UHASHLIB_MD5 (0)
 #endif
 
 #ifndef MICROPY_PY_UHASHLIB_SHA1

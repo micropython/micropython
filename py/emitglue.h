@@ -30,6 +30,15 @@
 
 // These variables and functions glue the code emitters to the runtime.
 
+// These must fit in 8 bits; see scope.h
+enum {
+    MP_EMIT_OPT_NONE,
+    MP_EMIT_OPT_BYTECODE,
+    MP_EMIT_OPT_NATIVE_PYTHON,
+    MP_EMIT_OPT_VIPER,
+    MP_EMIT_OPT_ASM,
+};
+
 typedef enum {
     MP_CODE_UNUSED,
     MP_CODE_RESERVED,

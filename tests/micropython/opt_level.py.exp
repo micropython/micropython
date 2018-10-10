@@ -4,4 +4,4 @@ True
 False
 Traceback (most recent call last):
   File "<string>", line 1, in <module>
-NameError: name 'xyz' is not defined
+NameError: name 'xyz' isn't defined

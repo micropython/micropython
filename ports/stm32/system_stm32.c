@@ -88,6 +88,7 @@
   */
 
 #include "py/mphal.h"
+#include "powerctrl.h"
 
 void __fatal_error(const char *msg);
 
@@ -371,6 +372,13 @@ void SystemInit(void)
   */
 void SystemClock_Config(void)
 {
+    #if defined(STM32F7)
+    // The DFU bootloader changes the clocksource register from its default power
+    // on reset value, so we set it back here, so the clocksources are the same
+    // whether we were started from DFU or from a power on reset.
+    RCC->DCKCFGR2 = 0;
+    #endif
+
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
     #if defined(STM32H7)
@@ -425,7 +433,6 @@ void SystemClock_Config(void)
     #if defined(STM32H7)
     RCC_ClkInitStruct.ClockType |= (RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1);
     #endif
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 
 #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     #if defined(STM32F7)
@@ -531,14 +538,12 @@ void SystemClock_Config(void)
   }
 #endif
 
-#if !defined(MICROPY_HW_FLASH_LATENCY)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
-#endif
-
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK)
-  {
-    __fatal_error("HAL_RCC_ClockConfig");
-  }
+    uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (HSE_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
+    uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
+    bool need_pllsai = vco_out % 48 != 0;
+    if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai) != 0) {
+        __fatal_error("HAL_RCC_ClockConfig");
+    }
 
 #if defined(STM32H7)
   /* Activate CSI clock mandatory for I/O Compensation Cell*/
@@ -554,13 +559,6 @@ void SystemClock_Config(void)
   HAL_PWREx_EnableUSBVoltageDetector();
 #endif
 
-#if defined(STM32F7)
-  // The DFU bootloader changes the clocksource register from its default power
-  // on reset value, so we set it back here, so the clocksources are the same
-  // whether we were started from DFU or from a power on reset.
-
-  RCC->DCKCFGR2 = 0;
-#endif
 #if defined(STM32L4)
     // Enable MSI-Hardware auto calibration mode with LSE
     HAL_RCCEx_EnableMSIPLLMode();

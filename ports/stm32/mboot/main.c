@@ -354,7 +354,7 @@ static const flash_layout_t flash_layout[] = {
     #endif
 };
 
-#elif defined(STM32F767xx)
+#elif defined(STM32F765xx) || defined(STM32F767xx)
 
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
@@ -760,7 +760,8 @@ static int dfu_process_dnload(void) {
         }
     } else if (dfu_state.wBlockNum > 1) {
         // write data to memory
-        ret = do_write(dfu_state.addr, dfu_state.buf, dfu_state.wLength);
+        uint32_t addr = (dfu_state.wBlockNum - 2) * DFU_XFER_SIZE + dfu_state.addr;
+        ret = do_write(addr, dfu_state.buf, dfu_state.wLength);
     }
     if (ret == 0) {
         return DFU_STATUS_DNLOAD_IDLE;

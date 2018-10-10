@@ -110,9 +110,9 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
     // check number of arguments
-    mp_arg_check_num(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
+    mp_arg_check_num_sig(n_args, n_kw, self->sig);
 
-    if (self->is_kw) {
+    if (self->sig & 1) {
         // function allows keywords
 
         // we create a map directly from the given args array
@@ -154,7 +154,7 @@ STATIC const mp_obj_type_t mp_type_fun_native;
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
     #if MICROPY_EMIT_NATIVE
-    if (fun->base.type == &mp_type_fun_native) {
+    if (fun->base.type == &mp_type_fun_native || fun->base.type == &mp_type_native_gen_wrap) {
         // TODO native functions don't have name stored
         return MP_QSTR_;
     }
@@ -257,8 +257,8 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     dump_args(args, n_args);
     DEBUG_printf("Input kw args: ");
     dump_args(args + n_args, n_kw * 2);
+
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-    DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
     size_t n_state, state_size;
     DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
@@ -318,7 +318,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         // must be an exception because normal functions can't yield
         assert(vm_return_kind == MP_VM_RETURN_EXCEPTION);
         // return value is in fastn[0]==state[n_state - 1]
-        result = code_state->state[n_state - 1];
+        result = code_state->state[0];
     }
 
     #if MICROPY_ENABLE_PYSTACK
@@ -410,72 +410,6 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table) {
     mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte*)fun_data, const_table);
     o->base.type = &mp_type_fun_native;
-    return o;
-}
-
-#endif // MICROPY_EMIT_NATIVE
-
-/******************************************************************************/
-/* viper functions                                                            */
-
-#if MICROPY_EMIT_NATIVE
-
-typedef struct _mp_obj_fun_viper_t {
-    mp_obj_base_t base;
-    size_t n_args;
-    void *fun_data; // GC must be able to trace this pointer
-    mp_uint_t type_sig;
-} mp_obj_fun_viper_t;
-
-typedef mp_uint_t (*viper_fun_0_t)(void);
-typedef mp_uint_t (*viper_fun_1_t)(mp_uint_t);
-typedef mp_uint_t (*viper_fun_2_t)(mp_uint_t, mp_uint_t);
-typedef mp_uint_t (*viper_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
-typedef mp_uint_t (*viper_fun_4_t)(mp_uint_t, mp_uint_t, mp_uint_t, mp_uint_t);
-
-STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_fun_viper_t *self = self_in;
-
-    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
-
-    void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
-
-    mp_uint_t ret;
-    if (n_args == 0) {
-        ret = ((viper_fun_0_t)fun)();
-    } else if (n_args == 1) {
-        ret = ((viper_fun_1_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 4));
-    } else if (n_args == 2) {
-        ret = ((viper_fun_2_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 4), mp_convert_obj_to_native(args[1], self->type_sig >> 8));
-    } else if (n_args == 3) {
-        ret = ((viper_fun_3_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 4), mp_convert_obj_to_native(args[1], self->type_sig >> 8), mp_convert_obj_to_native(args[2], self->type_sig >> 12));
-    } else {
-        // compiler allows at most 4 arguments
-        assert(n_args == 4);
-        ret = ((viper_fun_4_t)fun)(
-            mp_convert_obj_to_native(args[0], self->type_sig >> 4),
-            mp_convert_obj_to_native(args[1], self->type_sig >> 8),
-            mp_convert_obj_to_native(args[2], self->type_sig >> 12),
-            mp_convert_obj_to_native(args[3], self->type_sig >> 16)
-        );
-    }
-
-    return mp_convert_native_to_obj(ret, self->type_sig);
-}
-
-STATIC const mp_obj_type_t mp_type_fun_viper = {
-    { &mp_type_type },
-    .name = MP_QSTR_function,
-    .call = fun_viper_call,
-    .unary_op = mp_generic_unary_op,
-};
-
-mp_obj_t mp_obj_new_fun_viper(size_t n_args, void *fun_data, mp_uint_t type_sig) {
-    mp_obj_fun_viper_t *o = m_new_obj(mp_obj_fun_viper_t);
-    o->base.type = &mp_type_fun_viper;
-    o->n_args = n_args;
-    o->fun_data = fun_data;
-    o->type_sig = type_sig;
     return o;
 }
 

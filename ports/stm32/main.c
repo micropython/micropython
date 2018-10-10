@@ -55,6 +55,7 @@
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
+#include "sdram.h"
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"
@@ -497,6 +498,12 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     // basic sub-system init
+    #if MICROPY_HW_SDRAM_SIZE
+    sdram_init();
+    #if MICROPY_HW_SDRAM_STARTUP_TEST
+    sdram_test(true);
+    #endif
+    #endif
     #if MICROPY_PY_THREAD
     pyb_thread_init(&pyb_thread_main);
     #endif
@@ -555,7 +562,7 @@ soft_reset:
     mp_stack_set_limit((char*)&_estack - (char*)&_heap_end - 1024);
 
     // GC init
-    gc_init(&_heap_start, &_heap_end);
+    gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];

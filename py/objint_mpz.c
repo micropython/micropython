@@ -225,7 +225,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                     zero_division_error:
-                    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
                 }
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);

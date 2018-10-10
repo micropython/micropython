@@ -353,7 +353,7 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
             mp_raise_TypeError("expected tuple/list");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "object '%s' is not a tuple or list", mp_obj_get_type_str(o)));
+                "object '%s' isn't a tuple or list", mp_obj_get_type_str(o)));
         }
     }
 }
@@ -475,24 +475,24 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     }
     if (value == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object does not support item deletion");
+            mp_raise_TypeError("object doesn't support item deletion");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object does not support item deletion", mp_obj_get_type_str(base)));
+                "'%s' object doesn't support item deletion", mp_obj_get_type_str(base)));
         }
     } else if (value == MP_OBJ_SENTINEL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object is not subscriptable");
+            mp_raise_TypeError("object isn't subscriptable");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object is not subscriptable", mp_obj_get_type_str(base)));
+                "'%s' object isn't subscriptable", mp_obj_get_type_str(base)));
         }
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object does not support item assignment");
+            mp_raise_TypeError("object doesn't support item assignment");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object does not support item assignment", mp_obj_get_type_str(base)));
+                "'%s' object doesn't support item assignment", mp_obj_get_type_str(base)));
         }
     }
 }

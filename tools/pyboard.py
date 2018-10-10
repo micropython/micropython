@@ -81,7 +81,7 @@ def stdout_write_bytes(b):
     stdout.write(b)
     stdout.flush()
 
-class PyboardError(BaseException):
+class PyboardError(Exception):
     pass
 
 class TelnetToSerial:
@@ -152,7 +152,7 @@ class ProcessToSerial:
 
     def __init__(self, cmd):
         import subprocess
-        self.subp = subprocess.Popen(cmd.split(), bufsize=0, shell=True, preexec_fn=os.setsid,
+        self.subp = subprocess.Popen(cmd, bufsize=0, shell=True, preexec_fn=os.setsid,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
         # Initially was implemented with selectors, but that adds Python3

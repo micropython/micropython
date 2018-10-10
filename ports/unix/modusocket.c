@@ -123,6 +123,9 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             close(self->fd);
             return 0;
 
+        case MP_STREAM_GET_FILENO:
+            return self->fd;
+
         default:
             *errcode = MP_EINVAL;
             return MP_STREAM_ERROR;

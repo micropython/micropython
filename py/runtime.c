@@ -133,7 +133,7 @@ void mp_deinit(void) {
     //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
 
     // call port specific deinitialization if any
-#ifdef MICROPY_PORT_INIT_FUNC
+#ifdef MICROPY_PORT_DEINIT_FUNC
     MICROPY_PORT_DEINIT_FUNC;
 #endif
 }
@@ -171,7 +171,7 @@ mp_obj_t mp_load_global(qstr qst) {
                 mp_raise_msg(&mp_type_NameError, "name not defined");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError,
-                    "name '%q' is not defined", qst));
+                    "name '%q' isn't defined", qst));
             }
         }
     }
@@ -581,7 +581,7 @@ unsupported_op:
     }
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+    mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
 }
 
 mp_obj_t mp_call_function_0(mp_obj_t fun) {
@@ -618,7 +618,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
         mp_raise_TypeError("object not callable");
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
+            "'%s' object isn't callable", mp_obj_get_type_str(fun_in)));
     }
 }
 
@@ -1157,7 +1157,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
         mp_raise_TypeError("object not iterable");
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
+            "'%s' object isn't iterable", mp_obj_get_type_str(o_in)));
     }
 }
 
@@ -1179,7 +1179,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
                 mp_raise_TypeError("object not an iterator");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+                    "'%s' object isn't an iterator", mp_obj_get_type_str(o_in)));
             }
         }
     }
@@ -1215,7 +1215,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 mp_raise_TypeError("object not an iterator");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+                    "'%s' object isn't an iterator", mp_obj_get_type_str(o_in)));
             }
         }
     }
@@ -1248,15 +1248,8 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     if (send_value == mp_const_none) {
         mp_load_method_maybe(self_in, MP_QSTR___next__, dest);
         if (dest[0] != MP_OBJ_NULL) {
-            nlr_buf_t nlr;
-            if (nlr_push(&nlr) == 0) {
-                *ret_val = mp_call_method_n_kw(0, 0, dest);
-                nlr_pop();
-                return MP_VM_RETURN_YIELD;
-            } else {
-                *ret_val = MP_OBJ_FROM_PTR(nlr.ret_val);
-                return MP_VM_RETURN_EXCEPTION;
-            }
+            *ret_val = mp_call_method_n_kw(0, 0, dest);
+            return MP_VM_RETURN_YIELD;
         }
     }
 
@@ -1265,10 +1258,6 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     if (send_value != MP_OBJ_NULL) {
         mp_load_method(self_in, MP_QSTR_send, dest);
         dest[2] = send_value;
-        // TODO: This should have exception wrapping like __next__ case
-        // above. Not done right away to think how to optimize native
-        // generators better, see:
-        // https://github.com/micropython/micropython/issues/2628
         *ret_val = mp_call_method_n_kw(1, 0, dest);
         return MP_VM_RETURN_YIELD;
     }
@@ -1330,7 +1319,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     args[1] = mp_const_none; // TODO should be globals
     args[2] = mp_const_none; // TODO should be locals
     args[3] = fromlist;
-    args[4] = level; // must be 0; we don't yet support other values
+    args[4] = level;
 
     // TODO lookup __import__ and call that instead of going straight to builtin implementation
     return mp_builtin___import__(5, args);
@@ -1372,15 +1361,8 @@ import_error:
     qstr dot_name_q = qstr_from_strn(dot_name, dot_name_len);
     mp_local_free(dot_name);
 
-    mp_obj_t args[5];
-    args[0] = MP_OBJ_NEW_QSTR(dot_name_q);
-    args[1] = mp_const_none; // TODO should be globals
-    args[2] = mp_const_none; // TODO should be locals
-    args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
-    args[4] = MP_OBJ_NEW_SMALL_INT(0);
-
-    // TODO lookup __import__ and call that instead of going straight to builtin implementation
-    return mp_builtin___import__(5, args);
+    // For fromlist, pass sentinel "non empty" value to force returning of leaf module
+    return mp_import_name(dot_name_q, mp_const_true, MP_OBJ_NEW_SMALL_INT(0));
 
     #else
 

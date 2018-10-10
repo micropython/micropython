@@ -39,38 +39,49 @@ def compute_pll(hse, sys):
     return None
 
 # improved version that doesn't require N/M to be an integer
-def compute_pll2(hse, sys):
+def compute_pll2(hse, sys, relax_pll48):
     # Loop over the allowed values of P, looking for a valid PLL configuration
     # that gives the desired "sys" frequency.  We use floats for P to force
     # floating point arithmetic on Python 2.
+    fallback = None
     for P in (2.0, 4.0, 6.0, 8.0):
-        Q = sys * P / 48
-        # Q must be an integer in a set range
-        if not (close_int(Q) and 2 <= Q <= 15):
-            continue
         NbyM = sys * P / hse
         # VCO_OUT must be between 192MHz and 432MHz
         if not (192 <= hse * NbyM <= 432):
             continue
-        # compute M
-        M = 192 // NbyM # starting value
-        while hse > 2 * M or NbyM * M < 192 or not close_int(NbyM * M):
+        # scan M
+        M = int(192 // NbyM) # starting value
+        while 2 * M < hse:
             M += 1
         # VCO_IN must be between 1MHz and 2MHz (2MHz recommended)
-        if not (M <= hse):
-            continue
-        # compute N
-        N = NbyM * M
-        # N must be an integer
-        if not close_int(N):
-            continue
-        # N is restricted
-        if not (192 <= N <= 432):
-            continue
-        # found valid values
-        return (M, N, P, Q)
-    # no valid values found
-    return None
+        for M in range(M, hse + 1):
+            if NbyM * M < 191.99 or not close_int(NbyM * M):
+                continue
+            # compute N
+            N = NbyM * M
+            # N must be an integer
+            if not close_int(N):
+                continue
+            # N is restricted
+            if not (192 <= N <= 432):
+                continue
+            Q = (sys * P / 48)
+            # Q must be an integer in a set range
+            if not (2 <= Q <= 15):
+                continue
+            if not close_int(Q):
+                if int(M) == int(hse) and fallback is None:
+                    # the values don't give 48MHz on PLL48 but are otherwise OK
+                    fallback = M, N, P, int(Q)
+                continue
+            # found valid values
+            return (M, N, P, Q)
+    if relax_pll48:
+        # might have found values which don't give 48MHz on PLL48
+        return fallback
+    else:
+        # no valid values found which give 48MHz on PLL48
+        return None
 
 def compute_derived(hse, pll):
     M, N, P, Q = pll
@@ -125,9 +136,17 @@ def main():
     argv = sys.argv[1:]
 
     c_table = False
-    if argv[0] == '-c':
-        c_table = True
-        argv.pop(0)
+    relax_pll48 = False
+
+    while True:
+        if argv[0] == '-c':
+            c_table = True
+            argv.pop(0)
+        elif argv[0] == '--relax-pll48':
+            relax_pll48 = True
+            argv.pop(0)
+        else:
+            break
 
     if len(argv) != 1:
         print("usage: pllvalues.py [-c] <hse in MHz>")
@@ -150,8 +169,8 @@ def main():
         hse = int(argv[0])
 
     valid_plls = []
-    for sysclk in range(1, 217):
-        pll = compute_pll2(hse, sysclk)
+    for sysclk in range(2, 217, 2):
+        pll = compute_pll2(hse, sysclk, relax_pll48)
         if pll is not None:
             verify_pll(hse, pll)
             valid_plls.append((sysclk, pll))

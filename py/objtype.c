@@ -177,10 +177,13 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     mp_convert_member_lookup(obj_obj, type, elem->value, lookup->dest);
                 }
 #if DEBUG_PRINT
-                printf("mp_obj_class_lookup: Returning: ");
-                mp_obj_print(lookup->dest[0], PRINT_REPR); printf(" ");
-                // Don't try to repr() lookup->dest[1], as we can be called recursively
-                printf("<%s @%p>\n", mp_obj_get_type_str(lookup->dest[1]), lookup->dest[1]);
+                DEBUG_printf("mp_obj_class_lookup: Returning: ");
+                mp_obj_print_helper(MICROPY_DEBUG_PRINTER, lookup->dest[0], PRINT_REPR);
+                if (lookup->dest[1] != MP_OBJ_NULL) {
+                    // Don't try to repr() lookup->dest[1], as we can be called recursively
+                    DEBUG_printf(" <%s @%p>", mp_obj_get_type_str(lookup->dest[1]), MP_OBJ_TO_PTR(lookup->dest[1]));
+                }
+                DEBUG_printf("\n");
 #endif
                 return;
             }
@@ -457,8 +460,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     // MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
     [MP_BINARY_OP_CONTAINS] = MP_QSTR___contains__,
 
-    // All inplace methods are optional, and normal methods will be used
-    // as a fallback.
+    // If an inplace method is not found a normal method will be used as a fallback
     [MP_BINARY_OP_INPLACE_ADD] = MP_QSTR___iadd__,
     [MP_BINARY_OP_INPLACE_SUBTRACT] = MP_QSTR___isub__,
     #if MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
@@ -795,36 +797,29 @@ STATIC void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t member[2] = {MP_OBJ_NULL};
+    mp_obj_t member[4] = {MP_OBJ_NULL, MP_OBJ_NULL, index, value};
     struct class_lookup_data lookup = {
         .obj = self,
         .meth_offset = offsetof(mp_obj_type_t, subscr),
         .dest = member,
         .is_type = false,
     };
-    size_t meth_args;
     if (value == MP_OBJ_NULL) {
         // delete item
         lookup.attr = MP_QSTR___delitem__;
-        mp_obj_class_lookup(&lookup, self->base.type);
-        meth_args = 2;
     } else if (value == MP_OBJ_SENTINEL) {
         // load item
         lookup.attr = MP_QSTR___getitem__;
-        mp_obj_class_lookup(&lookup, self->base.type);
-        meth_args = 2;
     } else {
         // store item
         lookup.attr = MP_QSTR___setitem__;
-        mp_obj_class_lookup(&lookup, self->base.type);
-        meth_args = 3;
     }
+    mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
         return mp_obj_subscr(self->subobj[0], index, value);
     } else if (member[0] != MP_OBJ_NULL) {
-        mp_obj_t args[3] = {self_in, index, value};
-        // TODO probably need to call mp_convert_member_lookup, and use mp_call_method_n_kw
-        mp_obj_t ret = mp_call_function_n_kw(member[0], meth_args, 0, args);
+        size_t n_args = value == MP_OBJ_NULL || value == MP_OBJ_SENTINEL ? 1 : 2;
+        mp_obj_t ret = mp_call_method_n_kw(n_args, 0, member);
         if (value == MP_OBJ_SENTINEL) {
             return ret;
         } else {
@@ -861,7 +856,7 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
             mp_raise_TypeError("object not callable");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object is not callable", mp_obj_get_type_str(self_in)));
+                "'%s' object isn't callable", mp_obj_get_type_str(self_in)));
         }
     }
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1016,8 +1011,6 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
 
-        // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
-
         if (self->locals_dict != NULL) {
             assert(self->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
             mp_map_t *locals_map = &self->locals_dict->map;
@@ -1088,10 +1081,10 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                mp_raise_TypeError("type is not an acceptable base type");
+                mp_raise_TypeError("type isn't an acceptable base type");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "type '%q' is not an acceptable base type", t->name));
+                    "type '%q' isn't an acceptable base type", t->name));
             }
         }
         #if ENABLE_SPECIAL_ACCESSORS

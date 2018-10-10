@@ -1,20 +1,22 @@
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
 BOARD ?= PYBV10
-ifeq ($(wildcard boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
-endif
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+BOARD_DIR ?= boards/$(BOARD)
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 include ../../py/mkenv.mk
 -include mpconfigport.mk
-include boards/$(BOARD)/mpconfigboard.mk
+include $(BOARD_DIR)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
-QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h boards/$(BOARD)/mpconfigboard.h
+QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h
 
 # directory containing scripts to be frozen as bytecode
 FROZEN_MPY_DIR ?= modules
@@ -55,7 +57,7 @@ INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 CFLAGS_CORTEX_M = -mthumb
 
 # Select hardware floating-point support
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F767xx STM32F769xx STM32H743xx))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
 else
 ifeq ($(MCU_SERIES),f0)
@@ -76,7 +78,7 @@ CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
-CFLAGS += -Iboards/$(BOARD)
+CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
@@ -134,6 +136,7 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 	ceil.c \
 	cos.c \
 	cosh.c \
+	copysign.c \
 	erf.c \
 	exp.c \
 	expm1.c \
@@ -218,6 +221,7 @@ SRC_C = \
 	irq.c \
 	pendsv.c \
 	systick.c  \
+	powerctrl.c \
 	pybthread.c \
 	timer.c \
 	led.c \
@@ -229,6 +233,7 @@ SRC_C = \
 	i2c.c \
 	pyb_i2c.c \
 	spi.c \
+	pyb_spi.c \
 	qspi.c \
 	uart.c \
 	can.c \
@@ -237,6 +242,7 @@ SRC_C = \
 	gccollect.c \
 	help.c \
 	machine_i2c.c \
+	machine_spi.c \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
@@ -253,13 +259,14 @@ SRC_C = \
 	spibdev.c \
 	storage.c \
 	sdcard.c \
+	sdram.c \
 	fatfs_port.c \
 	lcd.c \
 	accel.c \
 	servo.c \
 	dac.c \
 	adc.c \
-	$(wildcard boards/$(BOARD)/*.c)
+	$(wildcard $(BOARD_DIR)/*.c)
 
 ifeq ($(MCU_SERIES),f0)
 SRC_O = \
@@ -302,10 +309,20 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	)
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l4))
+$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_sd.c \
 	ll_sdmmc.c \
+	ll_fmc.c \
 	ll_usb.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_sdram.c \
+	hal_dma_ex.c \
+	hal_dcmi.c \
 	)
 endif
 
@@ -513,12 +530,13 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 PLLVALUES = boards/pllvalues.py
 MAKE_PINS = boards/make-pins.py
-BOARD_PINS = boards/$(BOARD)/pins.csv
+BOARD_PINS = $(BOARD_DIR)/pins.csv
 PREFIX_FILE = boards/stm32f4xx_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
@@ -544,16 +562,16 @@ $(OBJ): | $(GEN_PINS_HDR)
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
-$(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
+$(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
 # main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
 main.c: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_BUILD)/%_af_defs.h $(BUILD)/%_qstr.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)
@@ -568,7 +586,7 @@ CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PLLVALUES) -c file:boards/$(BOARD)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
+	$(Q)$(PYTHON) $(PLLVALUES) -c $(if $(filter $(MCU_SERIES),f7),--relax-pll48,) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # Use a pattern rule here so that make will only call make-stmconst.py once to

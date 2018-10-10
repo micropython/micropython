@@ -29,14 +29,19 @@
 
 #include "py/runtime.h"
 
-void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
+void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
     // TODO maybe take the function name as an argument so we can print nicer error messages
+
+    // The reverse of MP_OBJ_FUN_MAKE_SIG
+    bool takes_kw = sig & 1;
+    size_t n_args_min = sig >> 17;
+    size_t n_args_max = (sig >> 1) & 0xffff;
 
     if (n_kw && !takes_kw) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
         } else {
-            mp_raise_TypeError("function does not take keyword arguments");
+            mp_raise_TypeError("function doesn't take keyword arguments");
         }
     }
 

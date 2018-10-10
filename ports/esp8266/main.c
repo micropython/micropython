@@ -43,7 +43,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
-STATIC char heap[36 * 1024];
+STATIC char heap[38 * 1024];
 
 STATIC void mp_reset(void) {
     mp_stack_set_top((void*)0x40000000);
@@ -172,7 +172,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    int ret = mp_vprintf(&MICROPY_DEBUG_PRINTER_DEST, fmt, ap);
+    int ret = mp_vprintf(MICROPY_DEBUG_PRINTER, fmt, ap);
     va_end(ap);
     return ret;
 }

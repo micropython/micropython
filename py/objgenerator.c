@@ -74,6 +74,53 @@ const mp_obj_type_t mp_type_gen_wrap = {
 };
 
 /******************************************************************************/
+// native generator wrapper
+
+#if MICROPY_EMIT_NATIVE
+
+STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // The state for a native generating function is held in the same struct as a bytecode function
+    mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
+
+    // Determine start of prelude, and extract n_state from it
+    uintptr_t prelude_offset = ((uintptr_t*)self_fun->bytecode)[0];
+    size_t n_state = mp_decode_uint_value(self_fun->bytecode + prelude_offset);
+    size_t n_exc_stack = 0;
+
+    // Allocate the generator object, with room for local stack and exception stack
+    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
+        n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
+    o->base.type = &mp_type_gen_instance;
+
+    // Parse the input arguments and set up the code state
+    o->globals = self_fun->globals;
+    o->code_state.fun_bc = self_fun;
+    o->code_state.ip = (const byte*)prelude_offset;
+    mp_setup_code_state(&o->code_state, n_args, n_kw, args);
+
+    // Indicate we are a native function, which doesn't use this variable
+    o->code_state.exc_sp = NULL;
+
+    // Prepare the generator instance for execution
+    uintptr_t start_offset = ((uintptr_t*)self_fun->bytecode)[1];
+    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void*)(self_fun->bytecode + start_offset));
+
+    return MP_OBJ_FROM_PTR(o);
+}
+
+const mp_obj_type_t mp_type_native_gen_wrap = {
+    { &mp_type_type },
+    .name = MP_QSTR_generator,
+    .call = native_gen_wrap_call,
+    .unary_op = mp_generic_unary_op,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_fun_bc_attr,
+    #endif
+};
+
+#endif // MICROPY_EMIT_NATIVE
+
+/******************************************************************************/
 /* generator instance                                                         */
 
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -118,7 +165,22 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     self->code_state.old_globals = mp_globals_get();
     mp_globals_set(self->globals);
     self->globals = NULL;
-    mp_vm_return_kind_t ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
+
+    mp_vm_return_kind_t ret_kind;
+
+    #if MICROPY_EMIT_NATIVE
+    if (self->code_state.exc_sp == NULL) {
+        // A native generator, with entry point 2 words into the "bytecode" pointer
+        typedef uintptr_t (*mp_fun_native_gen_t)(void*, mp_obj_t);
+        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void*)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
+        ret_kind = fun((void*)&self->code_state, throw_value);
+    } else
+    #endif
+    {
+        // A bytecode generator
+        ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
+    }
+
     self->globals = mp_globals_get();
     mp_globals_set(self->code_state.old_globals);
 
@@ -128,8 +190,6 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             // Explicitly mark generator as completed. If we don't do this,
             // subsequent next() may re-execute statements after last yield
             // again and again, leading to side effects.
-            // TODO: check how return with value behaves under such conditions
-            // in CPython.
             self->code_state.ip = 0;
             *ret_val = *self->code_state.sp;
             break;
@@ -142,9 +202,12 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             break;
 
         case MP_VM_RETURN_EXCEPTION: {
-            size_t n_state = mp_decode_uint_value(self->code_state.fun_bc->bytecode);
             self->code_state.ip = 0;
-            *ret_val = self->code_state.state[n_state - 1];
+            *ret_val = self->code_state.state[0];
+            // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(*ret_val)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+                *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator raised StopIteration");
+            }
             break;
         }
     }
@@ -168,15 +231,6 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             return ret;
 
         case MP_VM_RETURN_EXCEPTION:
-            // TODO: Optimization of returning MP_OBJ_STOP_ITERATION is really part
-            // of mp_iternext() protocol, but this function is called by other methods
-            // too, which may not handled MP_OBJ_STOP_ITERATION.
-            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                mp_obj_t val = mp_obj_exception_get_value(ret);
-                if (val == mp_const_none) {
-                    return MP_OBJ_STOP_ITERATION;
-                }
-            }
             nlr_raise(ret);
     }
 }
@@ -216,11 +270,10 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
         case MP_VM_RETURN_YIELD:
             mp_raise_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit");
 
-        // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
+        // Swallow GeneratorExit (== successful close), and re-raise any other
         case MP_VM_RETURN_EXCEPTION:
             // ret should always be an instance of an exception class
-            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit)) ||
-                mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
                 return mp_const_none;
             }
             nlr_raise(ret);

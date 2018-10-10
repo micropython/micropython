@@ -461,33 +461,42 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(4, tuple);
     } else {
         // set
-        mp_obj_t *items;
-        mp_obj_get_array_fixed_n(args[1], 4, &items);
-        netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
-        if (mp_obj_is_integer(items[1])) {
-            // allow numeric netmask, i.e.:
-            // 24 -> 255.255.255.0
-            // 16 -> 255.255.0.0
-            // etc...
-            uint32_t* m = (uint32_t*)&info.netmask;
-            *m = htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
+        if (MP_OBJ_IS_TYPE(args[1], &mp_type_tuple) || MP_OBJ_IS_TYPE(args[1], &mp_type_list)) {
+            mp_obj_t *items;
+            mp_obj_get_array_fixed_n(args[1], 4, &items);
+            netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
+            if (mp_obj_is_integer(items[1])) {
+                // allow numeric netmask, i.e.:
+                // 24 -> 255.255.255.0
+                // 16 -> 255.255.0.0
+                // etc...
+                uint32_t* m = (uint32_t*)&info.netmask;
+                *m = htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
+            } else {
+                netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
+            }
+            netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
+            netutils_parse_ipv4_addr(items[3], (void*)&dns_info.ip, NETUTILS_BIG);
+            // To set a static IP we have to disable DHCP first
+            if (self->if_id == WIFI_IF_STA || self->if_id == ESP_IF_ETH) {
+                esp_err_t e = tcpip_adapter_dhcpc_stop(self->if_id);
+                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
+                ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(self->if_id, &info));
+                ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
+            } else if (self->if_id == WIFI_IF_AP) {
+                esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
+                if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
+                ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_AP, &info));
+                ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_AP, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
+                ESP_EXCEPTIONS(tcpip_adapter_dhcps_start(WIFI_IF_AP));
+            }
         } else {
-            netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
-        }
-        netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[3], (void*)&dns_info.ip, NETUTILS_BIG);
-        // To set a static IP we have to disable DHCP first
-        if (self->if_id == WIFI_IF_STA || self->if_id == ESP_IF_ETH) {
-            esp_err_t e = tcpip_adapter_dhcpc_stop(self->if_id);
-            if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
-            ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(self->if_id, &info));
-            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
-        } else if (self->if_id == WIFI_IF_AP) {
-            esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
-            if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
-            ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_AP, &info));
-            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_AP, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
-            ESP_EXCEPTIONS(tcpip_adapter_dhcps_start(WIFI_IF_AP));
+            // check for the correct string
+            const char *mode = mp_obj_str_get_str(args[1]);
+            if ((self->if_id != WIFI_IF_STA && self->if_id != ESP_IF_ETH) || strcmp("dhcp", mode)) {
+                mp_raise_ValueError("invalid arguments");
+            }
+            ESP_EXCEPTIONS(tcpip_adapter_dhcpc_start(self->if_id));
         }
         return mp_const_none;
     }

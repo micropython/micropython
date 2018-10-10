@@ -51,10 +51,6 @@ typedef enum {
 
 #define MP_EMIT_BREAK_FROM_FOR (0x8000)
 
-#define MP_EMIT_NATIVE_TYPE_ENABLE (0)
-#define MP_EMIT_NATIVE_TYPE_RETURN (1)
-#define MP_EMIT_NATIVE_TYPE_ARG    (2)
-
 // Kind for emit_id_ops->local()
 #define MP_EMIT_IDOP_LOCAL_FAST (0)
 #define MP_EMIT_IDOP_LOCAL_DEREF (1)
@@ -102,7 +98,6 @@ typedef struct _mp_emit_method_table_id_ops_t {
 } mp_emit_method_table_id_ops_t;
 
 typedef struct _emit_method_table_t {
-    void (*set_native_type)(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2);
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_t *emit);
     bool (*last_emit_was_return_value)(emit_t *emit);
@@ -162,6 +157,8 @@ typedef struct _emit_method_table_t {
     void (*end_except_handler)(emit_t *emit);
 } emit_method_table_t;
 
+int mp_native_type_from_qstr(qstr qst);
+
 void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst);
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst);
 void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emit_method_table, scope_t *scope, qstr qst);
@@ -178,11 +175,11 @@ extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops;
 
 emit_t *emit_bc_new(void);
-emit_t *emit_native_x64_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_x86_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_thumb_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_arm_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_x64_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_x86_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_thumb_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_arm_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 
 void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels);
 

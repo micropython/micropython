@@ -61,8 +61,12 @@ __verbose = None
 # USB DFU interface
 __DFU_INTERFACE = 0
 
+# Python 3 deprecated getargspec in favour of getfullargspec, but
+# Python 2 doesn't have the latter, so detect which one to use
 import inspect
-if 'length' in inspect.getargspec(usb.util.get_string).args:
+getargspec = getattr(inspect, 'getfullargspec', inspect.getargspec)
+
+if 'length' in getargspec(usb.util.get_string).args:
     # PyUSB 1.0.0.b1 has the length argument
     def get_string(dev, index):
         return usb.util.get_string(dev, 255, index)
@@ -478,7 +482,10 @@ def cli_progress(addr, offset, size):
     print("\r0x{:08x} {:7d} [{}{}] {:3d}% "
           .format(addr, size, '=' * done, ' ' * (width - done),
                   offset * 100 // size), end="")
-    sys.stdout.flush()
+    try:
+        sys.stdout.flush()
+    except OSError:
+        pass # Ignore Windows CLI "WinError 87" on Python 3.6
     if offset == size:
         print("")
 

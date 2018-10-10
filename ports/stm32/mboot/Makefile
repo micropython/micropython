@@ -85,6 +85,7 @@ SRC_O = \
 	ports/stm32/boards/startup_stm32$(MCU_SERIES).o \
 	ports/stm32/resethandler.o \
 
+$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_cortex.c \
 	hal_flash.c \

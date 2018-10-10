@@ -76,7 +76,7 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_MEM_SEG2_START_ADDR (0x08140000) // sector 18
 #define FLASH_MEM_SEG2_NUM_BLOCKS (128) // sector 18: 64k(of 128k)
 
-#elif defined(STM32F746xx) || defined(STM32F767xx) || defined(STM32F769xx)
+#elif defined(STM32F746xx) || defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
 
 // The STM32F746 doesn't really have CCRAM, so we use the 64K DTCM for this.
 
@@ -95,14 +95,15 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 
 #elif defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L496xx)
 
+// The STM32L475/6 doesn't have CCRAM, so we use the 32K SRAM2 for this, although
+// actual location and size is defined by the linker script.
 extern uint8_t _flash_fs_start;
 extern uint8_t _flash_fs_end;
-extern uint32_t _ram_fs_cache_start[2048 / 4];
-extern uint32_t _ram_fs_cache_block_size;
+extern uint8_t _ram_fs_cache_start[]; // size determined by linker file
+extern uint8_t _ram_fs_cache_end[];
 
-// The STM32L475/6 doesn't have CCRAM, so we use the 32K SRAM2 for this.
-#define CACHE_MEM_START_ADDR (&_ram_fs_cache_start)       // End of SRAM2 RAM segment-2k
-#define FLASH_SECTOR_SIZE_MAX (_ram_fs_cache_block_size)  // 2k max
+#define CACHE_MEM_START_ADDR ((uintptr_t)&_ram_fs_cache_start[0])
+#define FLASH_SECTOR_SIZE_MAX (&_ram_fs_cache_end[0] - &_ram_fs_cache_start[0]) // 2k max
 #define FLASH_MEM_SEG1_START_ADDR ((long)&_flash_fs_start)
 #define FLASH_MEM_SEG1_NUM_BLOCKS ((&_flash_fs_end - &_flash_fs_start) / 512)
 
@@ -142,14 +143,17 @@ int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
             flash_bdev_irq_handler();
             return 0;
 
-        case BDEV_IOCTL_SYNC:
+        case BDEV_IOCTL_SYNC: {
+            uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
             if (flash_flags & FLASH_FLAG_DIRTY) {
                 flash_flags |= FLASH_FLAG_FORCE_WRITE;
                 while (flash_flags & FLASH_FLAG_DIRTY) {
-                   NVIC->STIR = FLASH_IRQn;
+                    flash_bdev_irq_handler();
                 }
             }
+            restore_irq_pri(basepri);
             return 0;
+        }
     }
     return -MP_EINVAL;
 }
@@ -261,8 +265,10 @@ bool flash_bdev_writeblock(const uint8_t *src, uint32_t block) {
         // bad block number
         return false;
     }
+    uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
     uint8_t *dest = flash_cache_get_addr_for_write(flash_addr);
     memcpy(dest, src, FLASH_BLOCK_SIZE);
+    restore_irq_pri(basepri);
     return true;
 }
 
