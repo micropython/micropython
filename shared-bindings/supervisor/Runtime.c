@@ -53,12 +53,6 @@
 //|
 //|         Returns the USB serial communication status (read-only).
 //|
-//|     .. attribute:: runtime.serial_bytes_available
-//|
-//|         Returns the whether any bytes are available to read
-//|         on the USB serial input.  Allows for polling to see whether
-//|         to call the built-in input() or wait. (read-only)
-//|
 //|     .. note::
 //|
 //|         SAMD: Will return ``True`` if the USB serial connection
@@ -86,7 +80,13 @@ const mp_obj_property_t supervisor_serial_connected_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-/*Added to allow for polling of USB Console*/
+
+//|     .. attribute:: runtime.serial_bytes_available
+//|
+//|         Returns the whether any bytes are available to read
+//|         on the USB serial input.  Allows for polling to see whether
+//|         to call the built-in input() or wait. (read-only)
+//|
 STATIC mp_obj_t supervisor_get_serial_bytes_available(mp_obj_t self){
     if (!common_hal_get_serial_bytes_available()) {
         return mp_const_false;
