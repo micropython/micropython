@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-07 02:07+0300\n"
+"POT-Creation-Date: 2018-10-09 20:51-0400\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -425,7 +425,8 @@ msgstr "Hindi ma-reset sa bootloader dahil walang bootloader."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:232
 msgid "Invalid PWM frequency"
 msgstr "Mali ang PWM frequency"
 
@@ -746,6 +747,11 @@ msgstr ""
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
 msgstr "Hindi makuha ang temperatura. status 0x%02x"
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#, fuzzy
+msgid "All PWM peripherals are in use"
+msgstr "Lahat ng timer ginagamit"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
@@ -2301,8 +2307,9 @@ msgid ""
 msgstr "PWM duty_cycle ay dapat sa loob ng 0 at 65535 (16 bit resolution)"
 
 #: shared-bindings/pulseio/PWMOut.c:195
+#, fuzzy
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 "PWM frequency hindi maisulat kapag variable_frequency ay False sa pag buo."
 

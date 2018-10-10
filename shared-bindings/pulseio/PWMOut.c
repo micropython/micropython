@@ -192,7 +192,7 @@ STATIC mp_obj_t pulseio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freq
     raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
     if (!common_hal_pulseio_pwmout_get_variable_frequency(self)) {
         mp_raise_AttributeError(translate(
-            "PWM frequency not writeable when variable_frequency is False on "
+            "PWM frequency not writable when variable_frequency is False on "
             "construction."));
     }
    common_hal_pulseio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
