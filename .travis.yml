@@ -9,10 +9,7 @@ git:
 # Put a representative board from each port or sub-port near the top
 # to determine more quickly whether that port is going to build or not.
 env:
-  - TRAVIS_TESTS="unix docs translations"
-  - TRAVIS_BOARDS="feather_huzzah circuitplayground_express pca10056" TRAVIS_SDK=arm:nrf:esp8266
-  # Group nrf builds together..
-  - TRAVIS_BOARDS="pca10056 pca10059 feather_nrf52832 feather_nrf52840_express" TRAVIS_SDK=arm:nrf
+  - TRAVIS_TESTS="unix docs translations" TRAVIS_BOARDS="feather_huzzah circuitplayground_express pca10056 pca10059 feather_nrf52832 feather_nrf52840_express" TRAVIS_SDK=arm:nrf:esp8266
   # The rest of the M0/M4 boards, in arbitrary order.
   - TRAVIS_BOARDS="metro_m0_express metro_m4_express pirkey_m0 trellis_m4_express trinket_m0" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_radiofruit_zigbee gemma_m0 hallowing_m0_express itsybitsy_m0_express itsybitsy_m4_express" TRAVIS_SDK=arm
