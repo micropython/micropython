@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-07 02:07+0300\n"
+"POT-Creation-Date: 2018-10-09 20:51-0400\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -413,7 +413,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:232
 msgid "Invalid PWM frequency"
 msgstr "Frequência PWM inválida"
 
@@ -729,6 +730,11 @@ msgstr "busio.UART não disponível"
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
 msgstr "Não pode obter a temperatura. status: 0x%02x"
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#, fuzzy
+msgid "All PWM peripherals are in use"
+msgstr "Todos os temporizadores em uso"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
@@ -2245,7 +2251,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-07 02:07+0300\n"
+"POT-Creation-Date: 2018-10-09 20:51-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -413,7 +413,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:232
 msgid "Invalid PWM frequency"
 msgstr ""
 
@@ -726,6 +727,10 @@ msgstr ""
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
+msgstr ""
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+msgid "All PWM peripherals are in use"
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
@@ -2239,7 +2244,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275
