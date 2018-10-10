@@ -53,6 +53,12 @@
 //|
 //|         Returns the USB serial communication status (read-only).
 //|
+//|     .. attribute:: runtime.serial_bytes_available
+//|
+//|         Returns the whether any bytes are available to read
+//|         on the USB serial input.  Allows for polling to see whether
+//|         to call the built-in input() or wait. (read-only)
+//|
 //|     .. note::
 //|
 //|         SAMD: Will return ``True`` if the USB serial connection
