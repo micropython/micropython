@@ -196,19 +196,20 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 
     nrf_gpio_cfg_default(self->pin_number);
 
-    nrf_pwm_disable(self->pwm);
+    NRF_PWM_Type* pwm = self->pwm;
+    self->pwm = NULL;
 
-    self->pwm->PSEL.OUT[self->channel] = 0xFFFFFFFF;
+    // Disconnect pin from channel.
+    pwm->PSEL.OUT[self->channel] = 0xFFFFFFFF;
 
-    // Re-enable PWM module if there is another active channel.
     for(int i=0; i < CHANNELS_PER_PWM; i++) {
         if (self->pwm->PSEL.OUT[i] != 0xFFFFFFFF) {
-            nrf_pwm_enable(self->pwm);
-            break;
+            // Some channel is still being used, so don't disable.
+            return;
         }
     }
 
-    self->pwm = NULL;
+    nrf_pwm_disable(pwm);
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {
