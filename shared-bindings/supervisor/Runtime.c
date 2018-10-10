@@ -80,8 +80,34 @@ const mp_obj_property_t supervisor_serial_connected_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+
+//|     .. attribute:: runtime.serial_bytes_available
+//|
+//|         Returns the whether any bytes are available to read
+//|         on the USB serial input.  Allows for polling to see whether
+//|         to call the built-in input() or wait. (read-only)
+//|
+STATIC mp_obj_t supervisor_get_serial_bytes_available(mp_obj_t self){
+    if (!common_hal_get_serial_bytes_available()) {
+        return mp_const_false;
+    }
+    else {
+        return mp_const_true;
+    }
+}
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_get_serial_bytes_available_obj, supervisor_get_serial_bytes_available);
+
+const mp_obj_property_t supervisor_serial_bytes_available_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&supervisor_get_serial_bytes_available_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_serial_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_serial_bytes_available), MP_ROM_PTR(&supervisor_serial_bytes_available_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);

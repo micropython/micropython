@@ -32,3 +32,7 @@ bool common_hal_get_serial_connected(void) {
     return (bool) usb_connected();
 }
 
+bool common_hal_get_serial_bytes_available(void) {
+    return (bool) usb_bytes_available();
+}
+
