@@ -34,6 +34,14 @@ run `make` in its directory to build and install the SDK locally.  Make sure
 to add toolchain bin directory to your PATH.  Read esp-open-sdk's README for
 additional important information on toolchain setup.
 
+Travis builds, including releases are actually built using a specific
+esp-open-sdk binary.  The location of the binary can be seen in the
+`.travis.yml` in the top-level directory of CircuitPython.  This may be ahead
+of or behind the pfalcon repository, depending on the specific needs of
+CircuitPython.  If your local system is binary-compatible with Travis
+(most Ubuntu and Debian based systems are), you can download the binary and
+skip building it locally.
+
 Add the external dependencies to the MicroPython repository checkout:
 ```bash
 $ git submodule update --init
