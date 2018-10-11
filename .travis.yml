@@ -6,14 +6,22 @@ compiler:
 git:
   depth: 1
 
-# Put a representative board from each port or sub-port near the top
-# to determine more quickly whether that port is going to build or not.
+# Each item under 'env' is a separate Travis job to execute.
+# They run in separate environments, so each one must take the time
+# to clone the repository and submodules; to download and install SDKs,
+# pip packages, and so forth.  By gathering activities together in optimal
+# ways, the "run time" and "total time" of the travis jobs can be minimized.
+#
+# Since at the time of writing Travis generally starts 5 or 6 jobs, the
+# builds have been organized into 5 groups of *approximately* equal durations.
+# Additionally, the jobs that need extra SDKs are also organized together.
+#
+# When adding new boards, take a look on the travis CI page
+# https://travis-ci.org/adafruit/circuitpython to which build that installs
+# that SDK is shortest and add it there.  In the case of major re-organizations,
+# just try to make the builds "about equal in run time"
 env:
-  - TRAVIS_TESTS="unix docs translations"
-  - TRAVIS_BOARDS="feather_huzzah circuitplayground_express pca10056" TRAVIS_SDK=arm:nrf:esp8266
-  # Group nrf builds together..
-  - TRAVIS_BOARDS="pca10056 pca10059 feather_nrf52832 feather_nrf52840_express" TRAVIS_SDK=arm:nrf
-  # The rest of the M0/M4 boards, in arbitrary order.
+  - TRAVIS_TESTS="unix docs translations" TRAVIS_BOARDS="feather_huzzah circuitplayground_express pca10056 pca10059 feather_nrf52832 feather_nrf52840_express" TRAVIS_SDK=arm:nrf:esp8266
   - TRAVIS_BOARDS="metro_m0_express metro_m4_express pirkey_m0 trellis_m4_express trinket_m0" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_radiofruit_zigbee gemma_m0 hallowing_m0_express itsybitsy_m0_express itsybitsy_m4_express" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_m0_express_crickit feather_m0_rfm69 feather_m0_rfm9x feather_m4_express arduino_zero" TRAVIS_SDK=arm
@@ -45,8 +53,8 @@ before_script:
   - (! var_search "${TRAVIS_SDK-}" nrf || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
 
   # For huzzah builds
-  - (! var_search "${TRAVIS_SDK-}" esp8266 || (wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar xavf xtensa-lx106-elf-standalone.tar.gz))
-  - if var_search "${TRAVIS_SDK-}" esp8266 ; then PATH=$(readlink -f xtensa-lx106-elf/bin):$PATH; fi
+  - (! var_search "${TRAVIS_SDK-}" esp8266 || (wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar -C .. -xavf xtensa-lx106-elf-standalone.tar.gz))
+  - if var_search "${TRAVIS_SDK-}" esp8266 ; then PATH=$(readlink -f ../xtensa-lx106-elf/bin):$PATH; fi
 
   # For coverage testing (upgrade is used to get latest urllib3 version)
   - ([[ -z "$TRAVIS_TESTS" ]] || sudo apt-get install -y python3-pip)
@@ -54,7 +62,7 @@ before_script:
   - (! var_search "${TRAVIS_TESTS-}" docs || sudo pip install 'Sphinx<1.8.0' sphinx-rtd-theme recommonmark)
   - (! var_search "${TRAVIS_TESTS-}" translations || sudo pip3 install polib)
 
-  # report some good version numbers to the buil
+  # report some good version numbers to the build
   - gcc --version
   - (! var_search "${TRAVIS_SDK-}" elf || arm-none-eabi-gcc --version)
   - (! var_search "${TRAVIS_SDK-}" esp8266 || xtensa-lx106-elf-gcc --version)
