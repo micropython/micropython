@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 23:15+0700\n"
+"POT-Creation-Date: 2018-10-09 23:01+1100\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -151,11 +151,11 @@ msgstr "mali ang mga argumento"
 msgid "script compilation not supported"
 msgstr "script kompilasyon hindi supportado"
 
-#: main.c:143
+#: main.c:153
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:157 main.c:230
+#: main.c:167 main.c:240
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,48 +163,48 @@ msgstr ""
 "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
 "para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
 
-#: main.c:159
+#: main.c:169
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:161 main.c:232
+#: main.c:171 main.c:242
 msgid "Auto-reload is off.\n"
 msgstr "Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:175
+#: main.c:185
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: main.c:191
+#: main.c:201
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 
-#: main.c:239
+#: main.c:249
 msgid "You requested starting safe mode by "
 msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
 
-#: main.c:242
+#: main.c:252
 msgid "To exit, please reset the board without "
 msgstr "Para lumabas, paki-reset ang board na wala ang "
 
-#: main.c:249
+#: main.c:259
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 "Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang "
 "nangyari.\n"
 
-#: main.c:251
+#: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
-#: main.c:252
+#: main.c:262
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
 "drive:\n"
 
-#: main.c:255
+#: main.c:265
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -212,7 +212,7 @@ msgstr ""
 "Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
 "supply \n"
 
-#: main.c:256
+#: main.c:266
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -220,13 +220,13 @@ msgstr ""
 "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang reset "
 "(pagkatapos i-eject ang CIRCUITPY).\n"
 
-#: main.c:260
+#: main.c:270
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Pindutin ang anumang key upang ipasok ang REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
-#: main.c:416
+#: main.c:426
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
@@ -719,10 +719,6 @@ msgstr "Lahat ng timer ginagamit"
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c:176
-msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
-
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
 msgid "error = 0x%08lX"
@@ -743,7 +739,6 @@ msgstr "hindi sinusuportahan ang bytes > 8 bits"
 #: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
 #: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
 #: ports/nrf/common-hal/busio/UART.c:364
-#, fuzzy
 msgid "busio.UART not available"
 msgstr ""
 
@@ -2209,6 +2204,10 @@ msgstr "Mali ang run mode."
 #: shared-bindings/multiterminal/__init__.c:68
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream kulang ng readinto() o write() method."
+
+#: shared-bindings/network/__init__.c:79 shared-bindings/socket/__init__.c:428
+msgid "no available NIC"
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."

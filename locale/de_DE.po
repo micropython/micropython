@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 23:15+0700\n"
+"POT-Creation-Date: 2018-10-09 23:01+1100\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -151,11 +151,11 @@ msgstr "ungültige argumente"
 msgid "script compilation not supported"
 msgstr "kompilieren von Skripten ist nicht unterstützt"
 
-#: main.c:143
+#: main.c:153
 msgid " output:\n"
 msgstr " Ausgabe:\n"
 
-#: main.c:157 main.c:230
+#: main.c:167 main.c:240
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,45 +163,45 @@ msgstr ""
 "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
 "auszuführen oder verbinde dich mit der REPL um zu deaktivieren.\n"
 
-#: main.c:159
+#: main.c:169
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:161 main.c:232
+#: main.c:171 main.c:242
 msgid "Auto-reload is off.\n"
 msgstr "Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:175
+#: main.c:185
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
-#: main.c:191
+#: main.c:201
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WARNUNG: Der Dateiname deines codes hat zwei Dateityperweiterungen\n"
 
-#: main.c:239
+#: main.c:249
 msgid "You requested starting safe mode by "
 msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
 
-#: main.c:242
+#: main.c:252
 msgid "To exit, please reset the board without "
 msgstr "Zum beenden bitte resete das board ohne "
 
-#: main.c:249
+#: main.c:259
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr "Sicherheitsmodus aktive, etwas wirklich schlechtes ist passiert.\n"
 
-#: main.c:251
+#: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "CircuitPython ist abgestürzt. Ups!\n"
 
-#: main.c:252
+#: main.c:262
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
 
-#: main.c:255
+#: main.c:265
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -209,7 +209,7 @@ msgstr ""
 "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
 "dass deine Stromversorgung\n"
 
-#: main.c:256
+#: main.c:266
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -217,13 +217,13 @@ msgstr ""
 "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach "
 "demsicheren Auswerfen von CIRCUITPY.)\n"
 
-#: main.c:260
+#: main.c:270
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
 "laden"
 
-#: main.c:416
+#: main.c:426
 msgid "soft reboot\n"
 msgstr "weicher reboot\n"
 
@@ -712,10 +712,6 @@ msgstr "Alle timer werden benutzt"
 #, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Alle timer werden benutzt"
-
-#: ports/nrf/common-hal/busio/SPI.c:176
-msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
@@ -2165,6 +2161,10 @@ msgstr ""
 
 #: shared-bindings/multiterminal/__init__.c:68
 msgid "Stream missing readinto() or write() method."
+msgstr ""
+
+#: shared-bindings/network/__init__.c:79 shared-bindings/socket/__init__.c:428
+msgid "no available NIC"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:99
