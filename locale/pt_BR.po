@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-11 14:17+1100\n"
+"POT-Creation-Date: 2018-10-11 22:08+1100\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2299,7 +2299,7 @@ msgstr "O RTC não é suportado nesta placa"
 msgid "RTC calibration is not supported on this board"
 msgstr "A calibração RTC não é suportada nesta placa"
 
-#: shared-bindings/socket/__init__.c:428 shared-module/network/__init__.c:64
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:64
 msgid "no available NIC"
 msgstr ""
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-11 14:15+1100\n"
+"POT-Creation-Date: 2018-10-11 22:08+1100\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -2344,7 +2344,7 @@ msgstr "RTC non supportato su questa scheda"
 msgid "RTC calibration is not supported on this board"
 msgstr "calibrazione RTC non supportata su questa scheda"
 
-#: shared-bindings/socket/__init__.c:428 shared-module/network/__init__.c:64
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:64
 #, fuzzy
 msgid "no available NIC"
 msgstr "busio.UART non ancora implementato"

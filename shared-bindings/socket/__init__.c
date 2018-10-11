@@ -44,11 +44,22 @@
 //|   :synopsis: TCP, UDP and RAW sockets
 //|   :platform: SAMD21, SAMD51
 //|
-//| XXX TODO Write Docs.
+//| Create TCP, UDP and RAW sockets for communicating over the Internet.
+//|   
 
 STATIC const mp_obj_type_t socket_type;
 
-// constructor socket(family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None)
+//| .. currentmodule:: socket
+//|
+//| .. class:: socket(family, type, proto, ...)
+//|   
+//|   Create a new socket
+//|
+//|   :param ~int family: AF_INET or AF_INET6
+//|   :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
+//|   :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)
+//|
+
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
@@ -87,7 +98,13 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
     }
 }
 
-// method socket.bind(address)
+//| .. method:: bind(address)
+//|
+//|   Bind a socket to an address
+//|
+//|   :param ~tuple address: tuple of (remote_address, remote_port)
+//|
+
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -108,7 +125,13 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-// method socket.listen(backlog)
+//| .. method:: listen(backlog)
+//|
+//|   Set socket to listen for incoming connections
+//|
+//|   :param ~int backlog: length of backlog queue for waiting connetions
+//|
+
 STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -127,7 +150,13 @@ STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
 
-// method socket.accept()
+//| .. method:: accept()
+//|
+//|   Accept a connection on a listening socket of type SOCK_STREAM,
+//|   creating a new socket of type SOCK_STREAM.
+//|   Returns a tuple of (new_socket, remote_address)
+//|
+
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -159,7 +188,13 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
-// method socket.connect(address)
+//| .. method:: connect(address)
+//|
+//|   Connect a socket to a remote address
+//|
+//|   :param ~tuple address: tuple of (remote_address, remote_port)
+//|
+
 STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -180,7 +215,14 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
-// method socket.send(bytes)
+//| .. method:: send(bytes)
+//|
+//|   Send some bytes to the connected remote address.
+//|   Suits sockets of type SOCK_STREAM
+//|
+//|   :param ~bytes bytes: some bytes to send
+//|
+
 STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
@@ -198,7 +240,14 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
-// method socket.recv(bufsize)
+//| .. method:: recv(bufsize)
+//|
+//|   Reads some bytes from the connected remote address.
+//|   Suits sockets of type SOCK_STREAM
+//|   Returns a bytes() of length <= bufsize
+//| 
+//|   :param ~int bufsize: maximum number of bytes to receive  
+
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
@@ -221,7 +270,15 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
-// method socket.sendto(bytes, address)
+//| .. method:: sendto(bytes, address)
+//|
+//|   Send some bytes to a specific address.
+//|   Suits sockets of type SOCK_DGRAM
+//|
+//|   :param ~bytes bytes: some bytes to send
+//|   :param ~tuple address: tuple of (remote_address, remote_port)
+//|
+
 STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -247,7 +304,18 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(socket_sendto_obj, socket_sendto);
 
-// method socket.recvfrom(bufsize)
+//| .. method:: recvfrom(bufsize)
+//|
+//|   Reads some bytes from the connected remote address.
+//|   Suits sockets of type SOCK_STREAM
+//|
+//|   Returns a tuple containing
+//|   * a bytes() of length <= bufsize
+//|   * a remote_address, which is a tuple of ip address and port number
+//|
+//|   :param ~int bufsize: maximum number of bytes to receive  
+//|
+
 STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
@@ -275,7 +343,11 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
 
-// method socket.setsockopt(level, optname, value)
+//| .. method:: setsockopt(level, optname, value)
+//|
+//|   Sets socket options
+//|
+
 STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -305,10 +377,13 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
 
-// method socket.settimeout(value)
-// timeout=0 means non-blocking
-// timeout=None means blocking
-// otherwise, timeout is in seconds
+//| .. method:: settimeout(value)
+//|
+//|   Set the timeout value for this socket.
+//|
+//|   :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely.
+//|
+
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
@@ -332,6 +407,13 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_settimeout_obj, socket_settimeout);
+
+//| .. method:: setblocking(flag)
+//|
+//|   Set the blocking behaviour of this socket.
+//|
+//|   :param ~bool flag: False means non-blocking, True means block indefinitely.
+//|
 
 // method socket.setblocking(flag)
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
@@ -386,8 +468,14 @@ STATIC const mp_obj_type_t socket_type = {
     .locals_dict = (mp_obj_dict_t*)&socket_locals_dict,
 };
 
-/******************************************************************************/
-// usocket module
+//| .. function:: getaddrinfo(host, port)
+//| 
+//|   Gets the address information for a hostname and port
+//|
+//|   Returns the appropriate family, socket type, socket protocol and 
+//|   address information to call socket.socket() and socket.connect() with,
+//|   as a tuple.
+//|
 
 STATIC mp_obj_t socket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     size_t hlen;

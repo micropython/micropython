@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-11 17:02+1100\n"
+"POT-Creation-Date: 2018-10-11 22:08+1100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2292,7 +2292,7 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
-#: shared-bindings/socket/__init__.c:428 shared-module/network/__init__.c:64
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:64
 msgid "no available NIC"
 msgstr ""
 

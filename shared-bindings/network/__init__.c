@@ -36,18 +36,23 @@
 
 #include "shared-bindings/network/__init__.h"
 
+#if MICROPY_PY_NETWORK
+
 //| :mod:`network` --- Network Interface Management
 //| ===============================================
 //|
 //| .. module:: network
 //|   :synopsis: Network Interface Management
 //|   :platform: SAMD
-
-#if MICROPY_PY_NETWORK
-
-/// \module network - network configuration
-///
-/// This module provides a registry of configured NICs.
+//|
+//| This module provides a registry of configured NICs.
+//| It is used by the 'socket' module to look up a suitable
+//| NIC when a socket is created.
+//|
+//| .. function:: route
+//|
+//|   Returns a list of all configured NICs.
+//|
 
 STATIC mp_obj_t network_route(void) {
     return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));

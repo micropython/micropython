@@ -42,7 +42,7 @@
 //|   :synopsis: Support for WizNet hardware
 //|   :platform: SAMD
 //|
-//| Doc content goes here
+//| Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor.
 //|
 //| Libraries
 //|

@@ -53,6 +53,10 @@
 //| .. class:: WIZNET5K(spi, cs, rst)
 //|
 //|   Create a new WIZNET5500 interface using the specified pins
+//|   
+//|   :param spi: spi bus to use
+//|   :param cs: pin to use for Chip Select
+//|   :param rst: pin to sue for Reset 
 //|
 
 STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -68,9 +72,10 @@ STATIC mp_obj_t wiznet5k_connected_get_value(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_connected_get_value_obj, wiznet5k_connected_get_value);
 
-//| attribute:: connected
+//| .. attribute:: connected
 //|
 //|   is this device physically connected?
+//|
 
 const mp_obj_property_t wiznet5k_connected_obj = {
     .base.type = &mp_type_property,
@@ -79,8 +84,14 @@ const mp_obj_property_t wiznet5k_connected_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-/// \method ifconfig([(ip, subnet, gateway, dns)])
-/// Get/set IP address, subnet mask, gateway and DNS.
+//| .. method:: ifconfig(...)
+//|
+//|   Called without parameters, returns a tuple of
+//|   (ip_address, subnet_mask, gateway_address, dns_server)
+//|
+//|   Or can be called with the same tuple to set those parameters.
+//|
+
 STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
     wiz_NetInfo netinfo;
     ctlnetwork(CN_GET_NETINFO, &netinfo);
