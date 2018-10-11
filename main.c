@@ -55,7 +55,7 @@
 #include "supervisor/serial.h"
 
 #ifdef MICROPY_PY_NETWORK
-#include "shared-bindings/network/__init__.h"
+#include "shared-module/network/__init__.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {

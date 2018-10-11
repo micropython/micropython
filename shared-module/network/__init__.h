@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2018 Nick Moore
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,3 +27,62 @@
 
 void network_module_create_random_mac_address(uint8_t *mac);
 
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_NETWORK___INIT___H
+#define MICROPY_INCLUDED_SHARED_MODULE_NETWORK___INIT___H
+
+#define MOD_NETWORK_IPADDR_BUF_SIZE (4)
+
+#define MOD_NETWORK_AF_INET (2)
+#define MOD_NETWORK_AF_INET6 (10)
+
+#define MOD_NETWORK_SOCK_STREAM (1)
+#define MOD_NETWORK_SOCK_DGRAM (2)
+#define MOD_NETWORK_SOCK_RAW (3)
+
+struct _mod_network_socket_obj_t;
+
+typedef struct _mod_network_nic_type_t {
+    mp_obj_type_t base;
+
+    // API for non-socket operations
+    int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
+
+    // API for socket operations; return -1 on error
+    int (*socket)(struct _mod_network_socket_obj_t *socket, int *_errno);
+    void (*close)(struct _mod_network_socket_obj_t *socket);
+    int (*bind)(struct _mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno);
+    int (*listen)(struct _mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno);
+    int (*accept)(struct _mod_network_socket_obj_t *socket, struct _mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno);
+    int (*connect)(struct _mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno);
+    mp_uint_t (*send)(struct _mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno);
+    mp_uint_t (*recv)(struct _mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno);
+    mp_uint_t (*sendto)(struct _mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno);
+    mp_uint_t (*recvfrom)(struct _mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno);
+    int (*setsockopt)(struct _mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
+    int (*settimeout)(struct _mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
+    int (*ioctl)(struct _mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
+} mod_network_nic_type_t;
+
+typedef struct _mod_network_socket_obj_t {
+    mp_obj_base_t base;
+    mp_obj_t nic;
+    mod_network_nic_type_t *nic_type;
+    union {
+        struct {
+            uint8_t domain;
+            uint8_t type;
+            int8_t fileno;
+        } u_param;
+        mp_uint_t u_state;
+    };
+} mod_network_socket_obj_t;
+
+extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
+extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
+
+void network_module_init(void);
+void network_module_deinit(void);
+void network_module_register_nic(mp_obj_t nic);
+mp_obj_t network_module_find_nic(const uint8_t *ip);
+
+#endif // MICROPY_INCLUDED_SHARED_MODULE_NETWORK___INIT___H

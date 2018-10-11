@@ -35,7 +35,7 @@
 #include "py/mperrno.h"
 #include "lib/netutils/netutils.h"
 
-#include "shared-bindings/network/__init__.h"
+#include "shared-module/network/__init__.h"
 
 //| :mod:`socket` --- TCP, UDP and RAW socket support
 //| =================================================

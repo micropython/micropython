@@ -24,9 +24,45 @@
  * THE SOFTWARE.
  */
 
+#include "py/objlist.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/mperrno.h"
 
 #include "shared-bindings/random/__init__.h"
+
+// mod_network_nic_list needs to be declared in mpconfigport.h 
+
+
+void network_module_init(void) {
+    mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
+}
+
+void network_module_deinit(void) {
+}
+
+void network_module_register_nic(mp_obj_t nic) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
+            // nic already registered
+            return;
+        }
+    }
+    // nic not registered so add to list
+    mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list)), nic);
+}
+
+mp_obj_t network_module_find_nic(const uint8_t *ip) {
+    // find a NIC that is suited to given IP address
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+        // TODO check IP suitability here
+        //mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
+        return nic;
+    }
+
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("no available NIC")));
+}
 
 void network_module_create_random_mac_address(uint8_t *mac) {
     uint32_t rb1 = shared_modules_random_getrandbits(24);
@@ -40,4 +76,3 @@ void network_module_create_random_mac_address(uint8_t *mac) {
     mac[4] = (uint8_t)(rb2 >> 8);
     mac[5] = (uint8_t)(rb2);
 }
-

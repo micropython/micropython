@@ -47,37 +47,7 @@
 
 /// \module network - network configuration
 ///
-/// This module provides network drivers and routing configuration.
-
-void network_module_init(void) {
-    mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
-}
-
-void network_module_deinit(void) {
-}
-
-void network_module_register_nic(mp_obj_t nic) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-        if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
-            // nic already registered
-            return;
-        }
-    }
-    // nic not registered so add to list
-    mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list)), nic);
-}
-
-mp_obj_t network_module_find_nic(const uint8_t *ip) {
-    // find a NIC that is suited to given IP address
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-        // TODO check IP suitability here
-        //mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
-        return nic;
-    }
-
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("no available NIC")));
-}
+/// This module provides a registry of configured NICs.
 
 STATIC mp_obj_t network_route(void) {
     return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));

@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#include "shared-bindings/network/__init__.h"
+#include "shared-module/network/__init__.h"
 
 //| :mod:`wiznet` --- Support for WizNet hardware
 //| =============================================

@@ -36,7 +36,7 @@
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
 
-#include "shared-bindings/network/__init__.h"
+#include "shared-module/network/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/busio/SPI.h"
