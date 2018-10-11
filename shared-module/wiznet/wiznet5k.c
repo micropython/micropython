@@ -50,16 +50,6 @@
 #include "internet/dns/dns.h"
 #include "internet/dhcp/dhcp.h"
 
-//| .. currentmodule:: wiznet
-//| 
-//| :class:`WIZNET5K` -- wrapper for Wiznet 5500 Ethernet interface
-//| ===============================================================
-//|
-//| .. class:: WIZNET5K(spi, cs, rst)
-//|
-//|   Create a new WIZNET5500 interface using the specified pins
-//|
-
 typedef struct _wiznet5k_obj_t {
     mp_obj_base_t base;
     mp_uint_t cris_state;

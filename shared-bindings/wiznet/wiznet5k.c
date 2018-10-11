@@ -45,9 +45,16 @@
 #include "shared-module/network/__init__.h"
 #include "shared-module/wiznet/wiznet5k.h"
 
+//| .. currentmodule:: wiznet
+//| 
+//| :class:`WIZNET5K` -- wrapper for Wiznet 5500 Ethernet interface
+//| ===============================================================
+//|
+//| .. class:: WIZNET5K(spi, cs, rst)
+//|
+//|   Create a new WIZNET5500 interface using the specified pins
+//|
 
-/// \classmethod \constructor(spi, pin_cs, pin_rst)
-/// Create and return a WIZNET5K object.
 STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
