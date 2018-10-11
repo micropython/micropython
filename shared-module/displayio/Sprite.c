@@ -68,7 +68,7 @@ bool displayio_sprite_get_pixel(displayio_sprite_t *self, int16_t x, int16_t y, 
     if (y < 0 || y >= self->height || x >= self->width || x < 0) {
         return false;
     }
-    uint32_t value;
+    uint32_t value = 0;
     if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
         value = common_hal_displayio_bitmap_get_pixel(self->bitmap, x, y);
     } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {

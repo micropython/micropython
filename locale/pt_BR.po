@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-09 23:01+1100\n"
+"POT-Creation-Date: 2018-10-11 14:17+1100\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -218,7 +218,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr ""
@@ -413,7 +413,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr "Frequência PWM inválida"
 
@@ -511,48 +512,48 @@ msgstr "Bits de parada inválidos"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
 msgid "ESP8266 does not support pull down."
-msgstr ""
+msgstr "ESP8266 não suporta pull down."
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr ""
+msgstr "GPIO16 não suporta pull up."
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr ""
+msgstr "O ESP8226 não suporta o modo de segurança."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:54
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:113
 #, c-format
 msgid "Maximum PWM frequency is %dhz."
-msgstr ""
+msgstr "A frequência máxima PWM é de %dhz."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:57
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:116
 msgid "Minimum PWM frequency is 1hz."
-msgstr ""
+msgstr "A frequência mínima PWM é de 1hz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr ""
+msgstr "Múltiplas frequências PWM não suportadas. PWM já definido para %dhz."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
 msgid "PWM not supported on pin %d"
-msgstr ""
+msgstr "PWM não suportado no pino %d"
 
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:78
 msgid "No PulseIn support for %q"
-msgstr ""
+msgstr "Não há suporte para PulseIn no pino %q"
 
 #: ports/esp8266/common-hal/storage/__init__.c:34
 msgid "Unable to remount filesystem"
-msgstr ""
+msgstr "Não é possível remontar o sistema de arquivos"
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
+msgstr "Use o esptool para apagar o flash e recarregar o Python"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -561,151 +562,151 @@ msgstr ""
 #: ports/esp8266/machine_adc.c:57
 #, c-format
 msgid "not a valid ADC Channel: %d"
-msgstr ""
+msgstr "não é um canal ADC válido: %d"
 
 #: ports/esp8266/machine_hspi.c:131 ports/esp8266/machine_hspi.c:137
 msgid "impossible baudrate"
-msgstr ""
+msgstr "taxa de transmissão impossível"
 
 #: ports/esp8266/machine_pin.c:129
 msgid "expecting a pin"
-msgstr ""
+msgstr "esperando um pino"
 
 #: ports/esp8266/machine_pin.c:284
 msgid "Pin(16) doesn't support pull"
-msgstr ""
+msgstr "Pino (16) não suporta pull"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
-msgstr ""
+msgstr "Pino inválido"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr ""
+msgstr "Pino não tem recursos de IRQ"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
-msgstr ""
+msgstr "buffer muito longo"
 
 #: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
 #: ports/esp8266/machine_rtc.c:246
 msgid "invalid alarm"
-msgstr ""
+msgstr "Alarme inválido"
 
 #: ports/esp8266/machine_uart.c:169
 #, c-format
 msgid "UART(%d) does not exist"
-msgstr ""
+msgstr "UART(%d) não existe"
 
 #: ports/esp8266/machine_uart.c:219
 msgid "UART(1) can't read"
-msgstr ""
+msgstr "UART(1) não pode ler"
 
 #: ports/esp8266/modesp.c:119
 msgid "len must be multiple of 4"
-msgstr ""
+msgstr "len deve ser múltiplo de 4"
 
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
+msgstr "alocação de memória falhou, alocando %u bytes para código nativo"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr ""
+msgstr "o local do flash deve estar abaixo de 1 MByte"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr ""
+msgstr "A frequência só pode ser 80Mhz ou 160MHz"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr ""
+msgstr "AP requerido"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr ""
+msgstr "STA requerido"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
-msgstr ""
+msgstr "Não é possível atualizar o status i/f"
 
 #: ports/esp8266/modnetwork.c:142
 msgid "Cannot set STA config"
-msgstr ""
+msgstr "Não é possível definir a configuração STA"
 
 #: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
-msgstr ""
+msgstr "Não é possível conectar-se ao AP"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr ""
+msgstr "Não é possível desconectar do AP"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
-msgstr ""
+msgstr "parâmetro de status desconhecido"
 
 #: ports/esp8266/modnetwork.c:222
 msgid "STA must be active"
-msgstr ""
+msgstr "STA deve estar ativo"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr ""
+msgstr "varredura falhou"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
-msgstr ""
+msgstr "wifi_set_ip_info() falhou"
 
 #: ports/esp8266/modnetwork.c:319
 msgid "either pos or kw args are allowed"
-msgstr ""
+msgstr "pos ou kw args são permitidos"
 
 #: ports/esp8266/modnetwork.c:329
 msgid "can't get STA config"
-msgstr ""
+msgstr "não pode obter a configuração STA"
 
 #: ports/esp8266/modnetwork.c:331
 msgid "can't get AP config"
-msgstr ""
+msgstr "não pode obter configuração de AP"
 
 #: ports/esp8266/modnetwork.c:346
 msgid "invalid buffer length"
-msgstr ""
+msgstr "comprimento de buffer inválido"
 
 #: ports/esp8266/modnetwork.c:405
 msgid "can't set STA config"
-msgstr ""
+msgstr "não é possível definir a configuração STA"
 
 #: ports/esp8266/modnetwork.c:407
 msgid "can't set AP config"
-msgstr ""
+msgstr "não é possível definir a configuração do AP"
 
 #: ports/esp8266/modnetwork.c:416
 msgid "can query only one param"
-msgstr ""
+msgstr "pode consultar apenas um parâmetro"
 
 #: ports/esp8266/modnetwork.c:469
 msgid "unknown config param"
-msgstr ""
+msgstr "parâmetro configuração desconhecido"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
-msgstr ""
+msgstr "Funcionalidade AnalogOut não suportada"
 
 #: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
-msgstr ""
+msgstr "Todos os periféricos I2C estão em uso"
 
 #: ports/nrf/common-hal/busio/SPI.c:115
 msgid "All SPI peripherals are in use"
-msgstr ""
+msgstr "Todos os periféricos SPI estão em uso"
 
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
 msgid "error = 0x%08lX"
-msgstr ""
+msgstr "erro = 0x%08lX"
 
 #: ports/nrf/common-hal/busio/UART.c:86
 #, fuzzy
@@ -723,41 +724,46 @@ msgstr "I2C operação não suportada"
 #: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
 #: ports/nrf/common-hal/busio/UART.c:364
 msgid "busio.UART not available"
-msgstr ""
+msgstr "busio.UART não disponível"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
-msgstr ""
+msgstr "Não pode obter a temperatura. status: 0x%02x"
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#, fuzzy
+msgid "All PWM peripherals are in use"
+msgstr "Todos os temporizadores em uso"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
-msgstr ""
+msgstr "Não é possível aplicar parâmetros GAP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:213
 msgid "Cannot set PPCP parameters."
-msgstr ""
+msgstr "Não é possível definir parâmetros PPCP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:245
 msgid "Can not query for the device address."
-msgstr ""
+msgstr "Não é possível consultar o endereço do dispositivo."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
 msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr ""
+msgstr "Não é possível adicionar o UUID de 128 bits específico do fornecedor."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:284
 #: ports/nrf/drivers/bluetooth/ble_drv.c:298
 msgid "Can not add Service."
-msgstr ""
+msgstr "Não é possível adicionar o serviço."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr ""
+msgstr "Não é possível adicionar Característica."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
-msgstr ""
+msgstr "Não é possível aplicar o nome do dispositivo na pilha."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:464
 #: ports/nrf/drivers/bluetooth/ble_drv.c:514
@@ -767,39 +773,39 @@ msgstr ""
 #: ports/nrf/drivers/bluetooth/ble_drv.c:470
 #: ports/nrf/drivers/bluetooth/ble_drv.c:520
 msgid "Can encode UUID into the advertisement packet."
-msgstr ""
+msgstr "Pode codificar o UUID no pacote de anúncios."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
 msgid "Can not fit data into the advertisement packet."
-msgstr ""
+msgstr "Não é possível ajustar dados no pacote de anúncios."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:558
 #: ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
 msgid "Can not apply advertisement data. status: 0x%02x"
-msgstr ""
+msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:614
 #, c-format
 msgid "Can not start advertisement. status: 0x%02x"
-msgstr ""
+msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:631
 #, c-format
 msgid "Can not stop advertisement. status: 0x%02x"
-msgstr ""
+msgstr "Não pode parar propaganda. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:650
 #: ports/nrf/drivers/bluetooth/ble_drv.c:726
 #, c-format
 msgid "Can not read attribute value. status: 0x%02x"
-msgstr ""
+msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:667
 #: ports/nrf/drivers/bluetooth/ble_drv.c:756
 #, c-format
 msgid "Can not write attribute value. status: 0x%02x"
-msgstr ""
+msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:691
 #, c-format
@@ -821,11 +827,11 @@ msgstr ""
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:132
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
 msgid "Invalid UUID parameter"
-msgstr ""
+msgstr "Parâmetro UUID inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:73
 msgid "Invalid Service type"
-msgstr ""
+msgstr "Tipo de serviço inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
 msgid "Invalid UUID string length"
@@ -833,19 +839,19 @@ msgstr ""
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
-msgstr ""
+msgstr "Tipo desconhecido"
 
 #: ports/unix/modffi.c:207 ports/unix/modffi.c:265
 msgid "Error in ffi_prep_cif"
-msgstr ""
+msgstr "Erro no ffi_prep_cif"
 
 #: ports/unix/modffi.c:270
 msgid "ffi_prep_closure_loc"
-msgstr ""
+msgstr "ffi_prep_closure_loc"
 
 #: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
-msgstr ""
+msgstr "Não sabe como passar o objeto para a função nativa"
 
 #: ports/unix/modusocket.c:474
 #, c-format
@@ -854,34 +860,34 @@ msgstr ""
 
 #: py/argcheck.c:44
 msgid "function does not take keyword arguments"
-msgstr ""
+msgstr "função não aceita argumentos de palavras-chave"
 
 #: py/argcheck.c:54 py/bc.c:85 py/objnamedtuple.c:104
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "função leva %d argumentos posicionais, mas apenas %d foram passadas"
 
 #: py/argcheck.c:64
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr ""
+msgstr "função ausente %d requer argumentos posicionais"
 
 #: py/argcheck.c:72
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr ""
+msgstr "função esperada na maioria dos %d argumentos, obteve %d"
 
 #: py/argcheck.c:97
 msgid "'%q' argument required"
-msgstr ""
+msgstr "'%q' argumento(s) requerido(s)"
 
 #: py/argcheck.c:122
 msgid "extra positional arguments given"
-msgstr ""
+msgstr "argumentos extra posicionais passados"
 
 #: py/argcheck.c:130
 msgid "extra keyword arguments given"
-msgstr ""
+msgstr "argumentos extras de palavras-chave passados"
 
 #: py/argcheck.c:142
 msgid "argument num/types mismatch"
@@ -1093,6 +1099,73 @@ msgstr ""
 msgid "'data' requires integer arguments"
 msgstr ""
 
+#: py/emitinlinethumb.c:102
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr ""
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, c-format
+msgid "'%s' expects at most r%d"
+msgstr ""
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr ""
+
+#: py/emitinlinethumb.c:211
+#, c-format
+msgid "'%s' expects a special register"
+msgstr ""
+
+#: py/emitinlinethumb.c:239
+#, c-format
+msgid "'%s' expects an FPU register"
+msgstr ""
+
+#: py/emitinlinethumb.c:292
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr ""
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr ""
+
+#: py/emitinlinethumb.c:304
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr ""
+
+#: py/emitinlinethumb.c:328
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr ""
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr ""
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr ""
+
+#: py/emitinlinethumb.c:806
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr ""
+
+#: py/emitinlinethumb.c:810
+#, fuzzy
+msgid "branch not in range"
+msgstr "Calibração está fora do intervalo"
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
@@ -1101,28 +1174,9 @@ msgstr ""
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr ""
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr ""
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr ""
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
 msgstr ""
 
 #: py/emitinlinextensa.c:327
@@ -1981,6 +2035,25 @@ msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "certificado inválido"
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "certificado inválido"
+
+#: shared-bindings/audioio/Mixer.c:103
+msgid "Sample rate must be positive"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits devem ser 8"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2151,10 +2224,6 @@ msgstr ""
 msgid "Stream missing readinto() or write() method."
 msgstr ""
 
-#: shared-bindings/network/__init__.c:79 shared-bindings/socket/__init__.c:428
-msgid "no available NIC"
-msgstr ""
-
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
 msgstr ""
@@ -2182,7 +2251,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275
@@ -2230,6 +2299,10 @@ msgstr "O RTC não é suportado nesta placa"
 msgid "RTC calibration is not supported on this board"
 msgstr "A calibração RTC não é suportada nesta placa"
 
+#: shared-bindings/socket/__init__.c:428 shared-module/network/__init__.c:64
+msgid "no available NIC"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr "sistema de arquivos deve fornecer método de montagem"
@@ -2276,6 +2349,34 @@ msgid ""
 msgstr ""
 "Objeto foi desinicializado e não pode ser mais usaado. Crie um novo objeto."
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr "Não pôde alocar primeiro buffer"
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr "Não pôde alocar segundo buffer"
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr "Aqruivo de ondas inválido"
@@ -2295,14 +2396,6 @@ msgstr "Pedaço de dados deve seguir o pedaço de cortes"
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
 msgstr "Arquivo inválido"
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr "Não pôde alocar primeiro buffer"
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
-msgstr "Não pôde alocar segundo buffer"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
@@ -2369,3 +2462,6 @@ msgstr "'S' e 'O' não são tipos de formato suportados"
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
 msgstr "Muitos argumentos fornecidos com o formato dado"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"

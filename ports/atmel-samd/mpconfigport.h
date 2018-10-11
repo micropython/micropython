@@ -225,7 +225,7 @@ extern const struct _mp_obj_module_t wiznet_module;
     #define MICROPY_PY_URE (1)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #ifndef MICROPY_PY_FRAMEBUF
-      #define MICROPY_PY_FRAMEBUF         (1)
+      #define MICROPY_PY_FRAMEBUF         (0)
     #endif
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)

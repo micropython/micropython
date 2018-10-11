@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-09 23:01+1100\n"
+"POT-Creation-Date: 2018-10-11 14:17+1100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -218,7 +218,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr ""
@@ -413,7 +413,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr ""
 
@@ -726,6 +727,10 @@ msgstr ""
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
+msgstr ""
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+msgid "All PWM peripherals are in use"
 msgstr ""
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
@@ -1091,6 +1096,72 @@ msgstr ""
 msgid "'data' requires integer arguments"
 msgstr ""
 
+#: py/emitinlinethumb.c:102
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr ""
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, c-format
+msgid "'%s' expects at most r%d"
+msgstr ""
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr ""
+
+#: py/emitinlinethumb.c:211
+#, c-format
+msgid "'%s' expects a special register"
+msgstr ""
+
+#: py/emitinlinethumb.c:239
+#, c-format
+msgid "'%s' expects an FPU register"
+msgstr ""
+
+#: py/emitinlinethumb.c:292
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr ""
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr ""
+
+#: py/emitinlinethumb.c:304
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr ""
+
+#: py/emitinlinethumb.c:328
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr ""
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr ""
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr ""
+
+#: py/emitinlinethumb.c:806
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr ""
+
+#: py/emitinlinethumb.c:810
+msgid "branch not in range"
+msgstr ""
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
@@ -1099,28 +1170,9 @@ msgstr ""
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr ""
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr ""
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr ""
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
 msgstr ""
 
 #: py/emitinlinextensa.c:327
@@ -1979,6 +2031,22 @@ msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
 
+#: shared-bindings/audioio/Mixer.c:94
+msgid "Invalid voice count"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:99
+msgid "Invalid channel count"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:103
+msgid "Sample rate must be positive"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:107
+msgid "bits_per_sample must be 8 or 16"
+msgstr ""
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2149,10 +2217,6 @@ msgstr ""
 msgid "Stream missing readinto() or write() method."
 msgstr ""
 
-#: shared-bindings/network/__init__.c:79 shared-bindings/socket/__init__.c:428
-msgid "no available NIC"
-msgstr ""
-
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
 msgstr ""
@@ -2180,7 +2244,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275
@@ -2228,6 +2292,10 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
+#: shared-bindings/socket/__init__.c:428 shared-module/network/__init__.c:64
+msgid "no available NIC"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr ""
@@ -2273,6 +2341,34 @@ msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr ""
@@ -2291,14 +2387,6 @@ msgstr ""
 
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
 msgstr ""
 
 #: shared-module/bitbangio/I2C.c:58

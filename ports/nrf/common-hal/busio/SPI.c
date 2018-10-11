@@ -61,7 +61,7 @@ STATIC spim_peripheral_t spim_peripherals[] = {
 
 void spi_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
-        nrfx_spim_uninit(&spim_peripherals[i].spim);
+        nrf_spim_disable(spim_peripherals[i].spim.p_reg);
     }
 }
 

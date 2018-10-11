@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-09 23:01+1100\n"
+"POT-Creation-Date: 2018-10-11 14:17+1100\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -225,7 +225,7 @@ msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Tous les canaux d'événements de synchro sont utilisés"
@@ -421,7 +421,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
@@ -743,6 +744,11 @@ msgstr "busio.UART n'est pas disponible"
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
 msgstr "Impossible de lire la température. status: 0x%02x"
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#, fuzzy
+msgid "All PWM peripherals are in use"
+msgstr "Tous les timers sont utilisés"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
@@ -1108,6 +1114,74 @@ msgstr "'data' nécessite au moins 2 arguments"
 msgid "'data' requires integer arguments"
 msgstr "'data' nécessite des arguments entiers"
 
+#: py/emitinlinethumb.c:102
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+#, fuzzy
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, fuzzy, c-format
+msgid "'%s' expects at most r%d"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:211
+#, fuzzy, c-format
+msgid "'%s' expects a special register"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:239
+#, fuzzy, c-format
+msgid "'%s' expects an FPU register"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:292
+#, fuzzy, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr "'%s' attend un entier"
+
+#: py/emitinlinethumb.c:304
+#, fuzzy, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr "'%s' l'entier %d n'est pas dans la gamme %d..%d"
+
+#: py/emitinlinethumb.c:328
+#, fuzzy, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr "'%s' attend un registre"
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr "'%s' attend un label"
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr "label '%q' non supporté"
+
+#: py/emitinlinethumb.c:806
+#, fuzzy, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr "instruction Xtensa '%s' non supportée avec %d arguments"
+
+#: py/emitinlinethumb.c:810
+#, fuzzy
+msgid "branch not in range"
+msgstr "argument de chr() hors de la gamme range(256)"
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
@@ -1116,29 +1190,10 @@ msgstr ""
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr "'%s' attend un registre"
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr "'%s' attend un entier"
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
 msgstr "'%s' l'entier %d n'est pas dans la gamme %d..%d"
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr "'%s' attend un label"
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
-msgstr "label '%q' non supporté"
 
 #: py/emitinlinextensa.c:327
 #, c-format
@@ -2011,6 +2066,26 @@ msgid ""
 msgstr ""
 "le tampon de destination doit être un tableau de type 'B' pour bit_depth = 8"
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "Type de service invalide"
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "Argument invalide"
+
+#: shared-bindings/audioio/Mixer.c:103
+#, fuzzy
+msgid "Sample rate must be positive"
+msgstr "'STA' doit être actif"
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits doivent être 7, 8 ou 9"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2199,11 +2274,6 @@ msgstr "Mode de lancement invalide"
 msgid "Stream missing readinto() or write() method."
 msgstr "Il manque une méthode readinto() ou write() au flux."
 
-#: shared-bindings/network/__init__.c:79 shared-bindings/socket/__init__.c:428
-#, fuzzy
-msgid "no available NIC"
-msgstr "busio.UART n'est pas disponible"
-
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
 msgstr "Slice et valeur de tailles différentes"
@@ -2232,8 +2302,9 @@ msgstr ""
 "bits)"
 
 #: shared-bindings/pulseio/PWMOut.c:195
+#, fuzzy
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 "La fréquence de PWM n'est pas modifiable quand variable_frequency est False "
 "à laconstruction."
@@ -2283,6 +2354,11 @@ msgstr "RTC non supportée sur cette carte"
 msgid "RTC calibration is not supported on this board"
 msgstr "calibration de la RTC non supportée sur cette carte"
 
+#: shared-bindings/socket/__init__.c:428 shared-module/network/__init__.c:64
+#, fuzzy
+msgid "no available NIC"
+msgstr "busio.UART n'est pas disponible"
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr "le system de fichier doit fournir une méthode 'mount'"
@@ -2330,6 +2406,34 @@ msgstr ""
 "L'objet a été désinitialisé et ne peut plus être utilisé. Créez un nouvel "
 "objet."
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr "Impossible d'allouer le 1er tampon"
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr "Impossible d'allouer le 2e tampon"
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr "Fichier WAVE invalide"
@@ -2349,14 +2453,6 @@ msgstr "Un bloc de données doit suivre un bloc de format"
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
 msgstr "Fichier invalide"
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr "Impossible d'allouer le 1er tampon"
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
-msgstr "Impossible d'allouer le 2e tampon"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
@@ -2427,9 +2523,9 @@ msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "'len' doit être un multiple de 4"
-
-#, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "la palette doit être longue de 32 octets"
+
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "'len' doit être un multiple de 4"
