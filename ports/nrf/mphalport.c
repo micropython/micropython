@@ -27,36 +27,40 @@
 
 #include <string.h>
 
-#include "mphalport.h"
+#include "py/mphal.h"
 #include "py/mpstate.h"
-
+#include "py/gc.h"
 
 #if (MICROPY_PY_BLE_NUS == 0)
 
-#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
+#if !defined( NRF52840_XXAA)
 int mp_hal_stdin_rx_chr(void) {
-    uint8_t data = 0;
-
-    while (!nrfx_uart_rx_ready(&serial_instance));
-
-    const nrfx_err_t err = nrfx_uart_rx(&serial_instance, &data, sizeof(data));
-    if (err == NRFX_SUCCESS)
-        NRFX_ASSERT(err);
-
+    uint8_t data;
+    nrfx_uarte_rx(&serial_instance, &data, 1);
     return data;
 }
 
 bool mp_hal_stdin_any(void) {
-    return nrfx_uart_rx_ready(&serial_instance);
+    return nrf_uarte_event_check(serial_instance.p_reg, NRF_UARTE_EVENT_RXDRDY);
 }
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    if (len == 0)
+    if (len == 0) {
         return;
+    }
 
-    const nrfx_err_t err = nrfx_uart_tx(&serial_instance, (uint8_t*)str, len);
-    if (err == NRFX_SUCCESS)
-        NRFX_ASSERT(err);
+    // EasyDMA can only access SRAM
+    uint8_t * tx_buf = (uint8_t*) str;
+    if ( !nrfx_is_in_ram(str) ) {
+        tx_buf = (uint8_t *) gc_alloc(len, false, false);
+        memcpy(tx_buf, str, len);
+    }
+
+    nrfx_uarte_tx(&serial_instance, tx_buf, len);
+
+    if ( !nrfx_is_in_ram(str) ) {
+        gc_free(tx_buf);
+    }
 }
 
 #else

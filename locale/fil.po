@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-21 12:23-0400\n"
+"POT-Creation-Date: 2018-10-09 20:51-0400\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -230,7 +230,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Lahat ng sync event channels ay ginagamit"
@@ -373,7 +373,7 @@ msgstr "Hindi sapat ang magagamit na pins"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:81
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -390,10 +390,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
+#: ports/nrf/common-hal/busio/UART.c:82
 msgid "tx and rx cannot both be None"
 msgstr "tx at rx hindi pwedeng parehas na None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:145
+#: ports/nrf/common-hal/busio/UART.c:115
 msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
@@ -402,10 +404,12 @@ msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:294
+#: ports/nrf/common-hal/busio/UART.c:195
 msgid "No TX pin"
 msgstr "Walang TX pin"
 
@@ -421,7 +425,8 @@ msgstr "Hindi ma-reset sa bootloader dahil walang bootloader."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:232
 msgid "Invalid PWM frequency"
 msgstr "Mali ang PWM frequency"
 
@@ -705,32 +710,48 @@ msgstr "hindi alam na config param"
 msgid "AnalogOut functionality not supported"
 msgstr "Hindi supportado ang AnalogOut"
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/busio/I2C.c:95
 #, fuzzy
 msgid "All I2C peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:115
 #, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c:170
-msgid "Baud rate too high for this SPI peripheral"
+#: ports/nrf/common-hal/busio/UART.c:48
+#, c-format
+msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
-#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
-#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
-#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
-msgid "busio.UART not yet implemented"
-msgstr "hindi pa implemented ang busio.UART"
+#: ports/nrf/common-hal/busio/UART.c:86
+#, fuzzy
+msgid "Invalid buffer size"
+msgstr "mali ang buffer length"
+
+#: ports/nrf/common-hal/busio/UART.c:90
+#, fuzzy
+msgid "Odd parity is not supported"
+msgstr "hindi sinusuportahan ang bytes > 8 bits"
+
+#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
+#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
+#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
+#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
+#: ports/nrf/common-hal/busio/UART.c:364
+msgid "busio.UART not available"
+msgstr ""
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
 msgstr "Hindi makuha ang temperatura. status 0x%02x"
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#, fuzzy
+msgid "All PWM peripherals are in use"
+msgstr "Lahat ng timer ginagamit"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
@@ -768,28 +789,28 @@ msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:470
 #: ports/nrf/drivers/bluetooth/ble_drv.c:520
-msgid "Can encode UUID into the advertisment packet."
+msgid "Can encode UUID into the advertisement packet."
 msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
-msgid "Can not fit data into the advertisment packet."
+msgid "Can not fit data into the advertisement packet."
 msgstr "Hindi makasya ang data sa loob ng advertisement packet."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:558
 #: ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
-msgid "Can not apply advertisment data. status: 0x%02x"
-msgstr "Hindi ma i-apply ang advertisment data. status: 0x%02x"
+msgid "Can not apply advertisement data. status: 0x%02x"
+msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:614
 #, c-format
-msgid "Can not start advertisment. status: 0x%02x"
+msgid "Can not start advertisement. status: 0x%02x"
 msgstr "Hindi masimulaan ang advertisement. status 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:631
 #, c-format
-msgid "Can not stop advertisment. status: 0x%02x"
-msgstr "Hindi mahinto ang advertisment. status: 0x%02x"
+msgid "Can not stop advertisement. status: 0x%02x"
+msgstr "Hindi mahinto ang advertisement. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:650
 #: ports/nrf/drivers/bluetooth/ble_drv.c:726
@@ -1099,6 +1120,75 @@ msgstr "'data' kailangan ng hindi bababa sa 2 argument"
 msgid "'data' requires integer arguments"
 msgstr "'data' kailangan ng integer arguments"
 
+#: py/emitinlinethumb.c:102
+#, fuzzy
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+#, fuzzy
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, fuzzy, c-format
+msgid "'%s' expects at most r%d"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:211
+#, fuzzy, c-format
+msgid "'%s' expects a special register"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:239
+#, fuzzy, c-format
+msgid "'%s' expects an FPU register"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:292
+#, fuzzy, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr "Inaasahan ng '%s' ang isang integer"
+
+#: py/emitinlinethumb.c:304
+#, fuzzy, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
+
+#: py/emitinlinethumb.c:328
+#, fuzzy, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr "Inaasahan ng '%s' ang isang rehistro"
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr "'%s' umaasa ng label"
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr "label '%d' kailangan na i-define"
+
+#: py/emitinlinethumb.c:806
+#, fuzzy, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr "hindi sinusuportahan ang instruction ng Xtensa '%s' sa %d argumento"
+
+#: py/emitinlinethumb.c:810
+#, fuzzy
+msgid "branch not in range"
+msgstr "chr() arg wala sa sakop ng range(256)"
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
@@ -1107,29 +1197,10 @@ msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr "Inaasahan ng '%s' ang isang integer"
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
 msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr "'%s' umaasa ng label"
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
-msgstr "label '%d' kailangan na i-define"
 
 #: py/emitinlinextensa.c:327
 #, c-format
@@ -2004,6 +2075,26 @@ msgstr ""
 "ang destination buffer ay dapat na isang bytearray o array ng uri na 'B' "
 "para sa bit_depth = 8"
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "Mali ang tipo ng serbisyo"
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "Maling argumento"
+
+#: shared-bindings/audioio/Mixer.c:103
+#, fuzzy
+msgid "Sample rate must be positive"
+msgstr "Dapat aktibo ang STA"
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits ay dapat 7, 8 o 9"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2030,19 +2121,19 @@ msgstr "Function nangangailangan ng lock"
 msgid "Buffer must be at least length 1"
 msgstr "Buffer dapat ay hindi baba sa 1 na haba"
 
-#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:168
+#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
 msgid "Invalid polarity"
 msgstr "Mali ang polarity"
 
-#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
+#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
 msgid "Invalid phase"
 msgstr "Mali ang phase"
 
-#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
+#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
 msgid "Invalid number of bits"
 msgstr "Mali ang bilang ng bits"
 
-#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
+#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
 msgstr "aarehas na haba dapat ang buffer slices"
 
@@ -2216,8 +2307,9 @@ msgid ""
 msgstr "PWM duty_cycle ay dapat sa loob ng 0 at 65535 (16 bit resolution)"
 
 #: shared-bindings/pulseio/PWMOut.c:195
+#, fuzzy
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 "PWM frequency hindi maisulat kapag variable_frequency ay False sa pag buo."
 
@@ -2313,6 +2405,34 @@ msgstr ""
 "Object ay deinitialized at hindi na magagamit. Lumikha ng isang bagong "
 "Object."
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr "Hindi ma-iallocate ang first buffer"
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr "Hindi ma-iallocate ang second buffer"
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
@@ -2332,14 +2452,6 @@ msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
 msgstr "Mali ang file"
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr "Hindi ma-iallocate ang first buffer"
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
-msgstr "Hindi ma-iallocate ang second buffer"
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"

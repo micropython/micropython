@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-21 12:23-0400\n"
+"POT-Creation-Date: 2018-10-09 20:51-0400\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -233,7 +233,7 @@ msgstr ""
 msgid "soft reboot\n"
 msgstr "reinicio suave\n"
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr "Todos los sync event channels están siendo utilizados"
@@ -343,11 +343,11 @@ msgstr "pin inválido"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
 msgid "Invalid pin for left channel"
-msgstr ""
+msgstr "Pin inválido para canal izquierdo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
 msgid "Invalid pin for right channel"
-msgstr ""
+msgstr "Pin inválido para canal derecho"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
 msgid "Cannot output both channels on the same pin"
@@ -366,7 +366,7 @@ msgstr "Todos los canales de eventos están siendo utilizados"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr ""
+msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor que %d"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -376,57 +376,62 @@ msgstr "No hay suficientes pines disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:81
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:101
 msgid "SDA or SCL needs a pull up"
-msgstr ""
+msgstr "SDA o SCL necesitan una pull up"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
-msgstr ""
+msgstr "Baudrate sin soporte"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits no son soportados"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
+#: ports/nrf/common-hal/busio/UART.c:82
 msgid "tx and rx cannot both be None"
 msgstr "tx y rx no pueden ser ambos None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:145
+#: ports/nrf/common-hal/busio/UART.c:115
 msgid "Failed to allocate RX buffer"
 msgstr "Fallo la asignación del buffer RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
-msgstr ""
+msgstr "No se pudo inicializar la UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "No RX pin"
-msgstr ""
+msgstr "Sin pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:294
+#: ports/nrf/common-hal/busio/UART.c:195
 msgid "No TX pin"
-msgstr ""
+msgstr "Sin pin TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
-msgstr ""
+msgstr "No se puede obtener pull mientras en modo de salida"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr ""
+msgstr "No se puede reiniciar en bootloader porque no hay bootloader presente."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:232
 msgid "Invalid PWM frequency"
-msgstr ""
+msgstr "Frecuencia PWM inválida"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 msgid "All timers for this pin are in use"
@@ -434,7 +439,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
-msgstr ""
+msgstr "pin no tiene soporte en hardware"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
@@ -449,16 +454,16 @@ msgstr "Fallo la asignación del buffer RX de %d bytes"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
-msgstr ""
+msgstr "pop en un PulseIn vacío"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
 msgid "index out of range"
-msgstr ""
+msgstr "index fuera de rango"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:178
 msgid "Another send is already active"
-msgstr ""
+msgstr "Otro envío ya está activo"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
@@ -474,11 +479,11 @@ msgstr "Valor de calibración fuera de rango +/-127"
 
 #: ports/atmel-samd/common-hal/storage/__init__.c:48
 msgid "Cannot remount '/' when USB is active."
-msgstr ""
+msgstr "No se puede volver a montar '/' cuando el USB esta activo."
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
-msgstr ""
+msgstr "Sin GCLKs libres"
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:78
 #: ports/nrf/common-hal/usb_hid/Device.c:45
@@ -489,48 +494,48 @@ msgstr "Tamaño de buffer incorrecto. Debe ser de %d bytes."
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
 #: ports/nrf/common-hal/usb_hid/Device.c:53
 msgid "USB Busy"
-msgstr ""
+msgstr "USB ocupado"
 
 #: ports/atmel-samd/common-hal/usb_hid/Device.c:82
 #: ports/nrf/common-hal/usb_hid/Device.c:59
 msgid "USB Error"
-msgstr ""
+msgstr "Error USB"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
-msgstr ""
+msgstr "Pin %q no tiene capacidades ADC"
 
 #: ports/esp8266/common-hal/analogio/AnalogOut.c:39
 msgid "No hardware support for analog out."
-msgstr ""
+msgstr "Sin soporte de hardware para salida análoga"
 
 #: ports/esp8266/common-hal/busio/SPI.c:72
 msgid "Pins not valid for SPI"
-msgstr ""
+msgstr "Pines no válidos para SPI"
 
 #: ports/esp8266/common-hal/busio/UART.c:45
 msgid "Only tx supported on UART1 (GPIO2)."
-msgstr ""
+msgstr "Solo tx soportada en UART1 (GPIO2)"
 
 #: ports/esp8266/common-hal/busio/UART.c:67 ports/esp8266/machine_uart.c:108
 msgid "invalid data bits"
-msgstr ""
+msgstr "data bits inválidos"
 
 #: ports/esp8266/common-hal/busio/UART.c:91 ports/esp8266/machine_uart.c:144
 msgid "invalid stop bits"
-msgstr ""
+msgstr "stop bits inválidos"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
 msgid "ESP8266 does not support pull down."
-msgstr ""
+msgstr "ESP8266 no tiene soporte para pull down"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr "GPIO16 no soporta pull up."
+msgstr "GPIO16 no tiene soporte para pull up."
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr "ESP8226 no soporta modo seguro"
+msgstr "ESP8226 no tiene soporte para modo seguro"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:54
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:113
@@ -564,273 +569,288 @@ msgstr "No se pudo montar de nuevo el sistema de archivos"
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
+msgstr "Usa esptool para borrar la flash y vuelve a cargar Python en su lugar"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
-msgstr ""
+msgstr "C-level assert"
 
 #: ports/esp8266/machine_adc.c:57
 #, c-format
 msgid "not a valid ADC Channel: %d"
-msgstr ""
+msgstr "no es un canal ADC válido: %d"
 
 #: ports/esp8266/machine_hspi.c:131 ports/esp8266/machine_hspi.c:137
 msgid "impossible baudrate"
-msgstr ""
+msgstr "baudrate imposible"
 
 #: ports/esp8266/machine_pin.c:129
 msgid "expecting a pin"
-msgstr ""
+msgstr "esperando un pin"
 
 #: ports/esp8266/machine_pin.c:284
 msgid "Pin(16) doesn't support pull"
-msgstr ""
+msgstr "Pin(16) no tiene soporte para pull"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
-msgstr ""
+msgstr "pin inválido"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr ""
+msgstr "pin no tiene capacidades IRQ"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
-msgstr ""
+msgstr "buffer demasiado largo"
 
 #: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
 #: ports/esp8266/machine_rtc.c:246
 msgid "invalid alarm"
-msgstr ""
+msgstr "alarma inválida"
 
 #: ports/esp8266/machine_uart.c:169
 #, c-format
 msgid "UART(%d) does not exist"
-msgstr ""
+msgstr "UART(%d) no existe"
 
 #: ports/esp8266/machine_uart.c:219
 msgid "UART(1) can't read"
-msgstr ""
+msgstr "UART(1) no puede leer"
 
 #: ports/esp8266/modesp.c:119
 msgid "len must be multiple of 4"
-msgstr ""
+msgstr "len debe de ser múltiple de 4"
 
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
 msgstr ""
+"la asignación de memoria ha fallado, asignando %u bytes para código nativo"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr ""
+msgstr "la ubicación de la flash debe estar debajo de 1MByte"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr ""
+msgstr "la frecuencia solo puede ser 80MHz o 160MHz"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr ""
+msgstr "AP necesario"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr ""
+msgstr "STA necesario"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
-msgstr ""
+msgstr "No se puede actualizar i/f status"
 
 #: ports/esp8266/modnetwork.c:142
 msgid "Cannot set STA config"
-msgstr ""
+msgstr "No se puede establecer STA config"
 
 #: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
-msgstr ""
+msgstr "No se puede conectar a AP"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr ""
+msgstr "No se puede desconectar de AP"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
-msgstr ""
+msgstr "status param desconocido"
 
 #: ports/esp8266/modnetwork.c:222
 msgid "STA must be active"
-msgstr ""
+msgstr "STA debe estar activo"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr ""
+msgstr "scan ha fallado"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
-msgstr ""
+msgstr "wifi_set_ip_info() ha fallado"
 
 #: ports/esp8266/modnetwork.c:319
 msgid "either pos or kw args are allowed"
-msgstr ""
+msgstr "ya sea pos o kw args son permitidos"
 
 #: ports/esp8266/modnetwork.c:329
 msgid "can't get STA config"
-msgstr ""
+msgstr "no se puede obtener STA config"
 
 #: ports/esp8266/modnetwork.c:331
 msgid "can't get AP config"
-msgstr ""
+msgstr "no se puede obtener AP config"
 
 #: ports/esp8266/modnetwork.c:346
 msgid "invalid buffer length"
-msgstr ""
+msgstr "longitud de buffer inválida"
 
 #: ports/esp8266/modnetwork.c:405
 msgid "can't set STA config"
-msgstr ""
+msgstr "no se puede establecer STA config"
 
 #: ports/esp8266/modnetwork.c:407
 msgid "can't set AP config"
-msgstr ""
+msgstr "no se puede establecer AP config"
 
 #: ports/esp8266/modnetwork.c:416
 msgid "can query only one param"
-msgstr ""
+msgstr "puede consultar solo un param"
 
 #: ports/esp8266/modnetwork.c:469
 msgid "unknown config param"
-msgstr ""
+msgstr "parámetro config desconocido"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
-msgstr ""
+msgstr "Funcionalidad AnalogOut no soportada"
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/busio/I2C.c:95
 msgid "All I2C peripherals are in use"
 msgstr "Todos los timers están siendo utilizados"
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:115
 msgid "All SPI peripherals are in use"
 msgstr "Todos los timers están siendo utilizados"
 
-#: ports/nrf/common-hal/busio/SPI.c:170
-msgid "Baud rate too high for this SPI peripheral"
-msgstr ""
+#: ports/nrf/common-hal/busio/UART.c:48
+#, c-format
+msgid "error = 0x%08lX"
+msgstr "error = 0x%08lx"
 
-#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
-#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
-#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
-#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
-msgid "busio.UART not yet implemented"
-msgstr ""
+#: ports/nrf/common-hal/busio/UART.c:86
+msgid "Invalid buffer size"
+msgstr "Tamaño de buffer inválido"
+
+#: ports/nrf/common-hal/busio/UART.c:90
+msgid "Odd parity is not supported"
+msgstr "Paridad impar no soportada"
+
+#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
+#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
+#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
+#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
+#: ports/nrf/common-hal/busio/UART.c:364
+msgid "busio.UART not available"
+msgstr "busio.UART no disponible"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
-msgstr ""
+msgstr "No se puede obtener la temperatura. status: 0x%02x"
+
+#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#, fuzzy
+msgid "All PWM peripherals are in use"
+msgstr "Todos los timers están siendo utilizados"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
-msgstr ""
+msgstr "No se pueden aplicar los parámetros GAP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:213
 msgid "Cannot set PPCP parameters."
-msgstr ""
+msgstr "No se pueden establecer los parámetros PPCP."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:245
 msgid "Can not query for the device address."
-msgstr ""
+msgstr "No se puede consultar la dirección del dispositivo."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
 msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr ""
+msgstr "No se puede agregar el UUID de 128-bits Especifico del Vendedor."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:284
 #: ports/nrf/drivers/bluetooth/ble_drv.c:298
 msgid "Can not add Service."
-msgstr ""
+msgstr "No se puede agregar el Servicio"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr ""
+msgstr "No se puede agregar la Característica"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
-msgstr ""
+msgstr "No se puede aplicar el nombre del dispositivo en el stack."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:464
 #: ports/nrf/drivers/bluetooth/ble_drv.c:514
 msgid "Can not encode UUID, to check length."
-msgstr ""
+msgstr "No se puede codificar el UUID, para revisar la longitud."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:470
 #: ports/nrf/drivers/bluetooth/ble_drv.c:520
-msgid "Can encode UUID into the advertisment packet."
-msgstr ""
+msgid "Can encode UUID into the advertisement packet."
+msgstr "Se puede codificar el UUID en el paquete de anuncio."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
-msgid "Can not fit data into the advertisment packet."
-msgstr ""
+msgid "Can not fit data into the advertisement packet."
+msgstr "Los datos no caben en el paquete de anuncio."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:558
 #: ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
-msgid "Can not apply advertisment data. status: 0x%02x"
-msgstr ""
+msgid "Can not apply advertisement data. status: 0x%02x"
+msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:614
 #, c-format
-msgid "Can not start advertisment. status: 0x%02x"
-msgstr ""
+msgid "Can not start advertisement. status: 0x%02x"
+msgstr "No se puede inicar el anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:631
 #, c-format
-msgid "Can not stop advertisment. status: 0x%02x"
-msgstr ""
+msgid "Can not stop advertisement. status: 0x%02x"
+msgstr "No se puede detener el anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:650
 #: ports/nrf/drivers/bluetooth/ble_drv.c:726
 #, c-format
 msgid "Can not read attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede leer el valor del atributo. status 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:667
 #: ports/nrf/drivers/bluetooth/ble_drv.c:756
 #, c-format
 msgid "Can not write attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:691
 #, c-format
 msgid "Can not notify attribute value. status: 0x%02x"
-msgstr ""
+msgstr "No se puede notificar el valor del anuncio. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:784
 #, c-format
 msgid "Can not start scanning. status: 0x%02x"
-msgstr ""
+msgstr "No se puede iniciar el escaneo. status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:829
 #, c-format
 msgid "Can not connect. status: 0x%02x"
-msgstr ""
+msgstr "No se puede conectar. status: 0x%02x"
 
 #: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:80
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:132
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
 msgid "Invalid UUID parameter"
-msgstr ""
+msgstr "Parámetro UUID inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:73
 msgid "Invalid Service type"
-msgstr ""
+msgstr "Tipo de Servicio inválido"
 
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
 msgid "Invalid UUID string length"
-msgstr ""
+msgstr "Longitud de string UUID inválida"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -1095,6 +1115,73 @@ msgstr ""
 msgid "'data' requires integer arguments"
 msgstr ""
 
+#: py/emitinlinethumb.c:102
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr ""
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, c-format
+msgid "'%s' expects at most r%d"
+msgstr ""
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr ""
+
+#: py/emitinlinethumb.c:211
+#, fuzzy, c-format
+msgid "'%s' expects a special register"
+msgstr "ord espera un carácter"
+
+#: py/emitinlinethumb.c:239
+#, c-format
+msgid "'%s' expects an FPU register"
+msgstr ""
+
+#: py/emitinlinethumb.c:292
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr ""
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr ""
+
+#: py/emitinlinethumb.c:304
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr ""
+
+#: py/emitinlinethumb.c:328
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr ""
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr ""
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr ""
+
+#: py/emitinlinethumb.c:806
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr ""
+
+#: py/emitinlinethumb.c:810
+#, fuzzy
+msgid "branch not in range"
+msgstr "El argumento de chr() no esta en el rango(256)"
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
@@ -1103,28 +1190,9 @@ msgstr ""
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr ""
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr ""
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr ""
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
 msgstr ""
 
 #: py/emitinlinextensa.c:327
@@ -1620,7 +1688,7 @@ msgstr "struct: index fuera de rango"
 #: py/objstr.c:1071
 #, fuzzy
 msgid "attributes not supported yet"
-msgstr "bytes > 8 bits no son soportados"
+msgstr "bytes > 8 bits no soportados"
 
 #: py/objstr.c:1079
 msgid ""
@@ -1802,7 +1870,6 @@ msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr ""
 
 #: py/parsenum.c:151
-#, fuzzy
 msgid "invalid syntax for integer"
 msgstr "formato inválido"
 
@@ -1812,12 +1879,10 @@ msgid "invalid syntax for integer with base %d"
 msgstr ""
 
 #: py/parsenum.c:339
-#, fuzzy
 msgid "invalid syntax for number"
 msgstr "argumentos inválidos"
 
 #: py/parsenum.c:342
-#, fuzzy
 msgid "decimal numbers not supported"
 msgstr "bytes > 8 bits no son soportados"
 
@@ -1832,7 +1897,6 @@ msgid "can only save bytecode"
 msgstr ""
 
 #: py/runtime.c:206
-#, fuzzy
 msgid "name not defined"
 msgstr "módulo no encontrado"
 
@@ -2009,6 +2073,26 @@ msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
 
+#: shared-bindings/audioio/Mixer.c:94
+#, fuzzy
+msgid "Invalid voice count"
+msgstr "Dirección inválida."
+
+#: shared-bindings/audioio/Mixer.c:99
+#, fuzzy
+msgid "Invalid channel count"
+msgstr "argumentos inválidos"
+
+#: shared-bindings/audioio/Mixer.c:103
+#, fuzzy
+msgid "Sample rate must be positive"
+msgstr "STA debe estar activo"
+
+#: shared-bindings/audioio/Mixer.c:107
+#, fuzzy
+msgid "bits_per_sample must be 8 or 16"
+msgstr "bits debe ser 8"
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2033,19 +2117,19 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:168
+#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
 msgid "Invalid polarity"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
+#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
 msgid "Invalid phase"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
+#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
 msgid "Invalid number of bits"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
+#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
 msgstr ""
 
@@ -2207,7 +2291,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275
@@ -2301,6 +2385,34 @@ msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
 
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
 msgstr ""
@@ -2319,14 +2431,6 @@ msgstr ""
 
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
 msgstr ""
 
 #: shared-module/bitbangio/I2C.c:58
@@ -2396,3 +2500,6 @@ msgstr ""
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
 msgstr ""
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"

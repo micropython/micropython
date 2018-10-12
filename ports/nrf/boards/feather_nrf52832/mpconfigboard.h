@@ -30,7 +30,6 @@
 
 #define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
 #define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
-#define MICROPY_HW_UART_HWFC        (0)
 
 #define PORT_HEAP_SIZE              (32 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500

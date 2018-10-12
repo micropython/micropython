@@ -15,6 +15,9 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PB08) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PB09) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_SDA), MP_ROM_PTR(&pin_PA12) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_SCL), MP_ROM_PTR(&pin_PA13) },
+
     // Key Grid columns
     { MP_OBJ_NEW_QSTR(MP_QSTR_COL0),  MP_ROM_PTR(&pin_PA14) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_COL1),  MP_ROM_PTR(&pin_PA15) },

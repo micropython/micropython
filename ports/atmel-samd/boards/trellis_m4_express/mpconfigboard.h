@@ -3,7 +3,7 @@
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
-// This is for Rev A
+// This is for Rev D
 #define MICROPY_HW_APA102_MOSI   (&pin_PA01)
 #define MICROPY_HW_APA102_SCK    (&pin_PA00)
 

@@ -407,6 +407,8 @@ ifneq ($(CHIP_VARIANT),SAMR21G18A)
 		audioio/__init__.c \
 		audioio/AudioOut.c
 	SRC_SHARED_MODULE += \
+		audioio/__init__.c \
+		audioio/Mixer.c \
 		audioio/RawSample.c \
 		audioio/WaveFile.c
 endif
