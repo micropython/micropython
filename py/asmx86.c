@@ -494,7 +494,7 @@ void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 }
 #endif
 
-void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) {
+void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r32) {
     // TODO align stack on 16-byte boundary before the call
     assert(n_args <= 5);
     if (n_args > 4) {
@@ -512,20 +512,10 @@ void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) 
     if (n_args > 0) {
         asm_x86_push_r32(as, ASM_X86_REG_ARG_1);
     }
-#ifdef __LP64__
-    // We wouldn't run x86 code on an x64 machine.  This is here to enable
-    // testing of the x86 emitter only.
-    asm_x86_mov_i32_to_r32(as, (int32_t)(int64_t)ptr, temp_r32);
-#else
-    // If we get here, sizeof(int) == sizeof(void*).
-    asm_x86_mov_i32_to_r32(as, (int32_t)ptr, temp_r32);
-#endif
+
+    // Load the pointer to the function and make the call
+    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_EBP, fun_id * WORD_SIZE, temp_r32);
     asm_x86_write_byte_2(as, OPCODE_CALL_RM32, MODRM_R32(2) | MODRM_RM_REG | MODRM_RM_R32(temp_r32));
-    // this reduces code size by 2 bytes per call, but doesn't seem to speed it up at all
-    /*
-    asm_x86_write_byte_1(as, OPCODE_CALL_REL32);
-    asm_x86_write_word32(as, ptr - (void*)(as->code_base + as->base.code_offset + 4));
-    */
 
     // the caller must clean up the stack
     if (n_args > 0) {
