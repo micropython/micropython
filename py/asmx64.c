@@ -623,7 +623,7 @@ void asm_x64_call_i1(asm_x64_t *as, void* func, int i1) {
 
 void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r64) {
     assert(temp_r64 < 8);
-    asm_x64_mov_mem64_to_r64(as, ASM_X64_REG_RBP, fun_id * WORD_SIZE, temp_r64);
+    asm_x64_mov_mem64_to_r64(as, ASM_X64_REG_FUN_TABLE, fun_id * WORD_SIZE, temp_r64);
     asm_x64_write_byte_2(as, OPCODE_CALL_RM32, MODRM_R64(2) | MODRM_RM_REG | MODRM_RM_R64(temp_r64));
 }
 

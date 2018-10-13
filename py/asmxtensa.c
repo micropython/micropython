@@ -213,9 +213,9 @@ void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label) {
 
 void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx) {
     if (idx < 16) {
-        asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A15, idx);
+        asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_FUN_TABLE, idx);
     } else {
-        asm_xtensa_op_l32i(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A15, idx);
+        asm_xtensa_op_l32i(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_FUN_TABLE, idx);
     }
     asm_xtensa_op_callx0(as, ASM_XTENSA_REG_A0);
 }

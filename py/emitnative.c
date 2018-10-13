@@ -287,7 +287,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->pass = pass;
     emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
     emit->stack_size = 0;
-    emit->const_table_cur_obj = 0;
+    emit->const_table_cur_obj = 1; // first entry is for mp_fun_table
     emit->const_table_cur_raw_code = 0;
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
@@ -372,24 +372,16 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         // Entry to function
         ASM_ENTRY(emit->as, emit->stack_start + emit->n_state - num_locals_in_regs);
 
-        // TODO don't load r7 if we don't need it
-        #if N_THUMB
-        asm_thumb_mov_reg_i32(emit->as, ASM_THUMB_REG_R7, (mp_uint_t)mp_fun_table);
-        #elif N_ARM
-        asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
-        #elif N_XTENSA
-        ASM_MOV_REG_IMM(emit->as, ASM_XTENSA_REG_A15, (uint32_t)mp_fun_table);
-        #elif N_X86
-        asm_x86_mov_i32_to_r32(emit->as, (intptr_t)mp_fun_table, ASM_X86_REG_EBP);
-        #elif N_X64
-        asm_x64_mov_i64_to_r64_optimised(emit->as, (intptr_t)mp_fun_table, ASM_X64_REG_RBP);
+        #if N_X86
+        asm_x86_mov_arg_to_r32(emit->as, 0, REG_ARG_1);
         #endif
+
+        // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
+        ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_ARG_1, offsetof(mp_obj_fun_bc_t, const_table) / sizeof(uintptr_t));
+        ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_LOCAL_3, 0);
 
         // Store function object (passed as first arg) to stack if needed
         if (NEED_FUN_OBJ(emit)) {
-            #if N_X86
-            asm_x86_mov_arg_to_r32(emit->as, 0, REG_ARG_1);
-            #endif
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_ARG_1);
         }
 
@@ -458,28 +450,18 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             asm_x86_mov_arg_to_r32(emit->as, 1, REG_ARG_2);
             #endif
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_ARG_2);
+
+            // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_GENERATOR_STATE, LOCAL_IDX_FUN_OBJ(emit));
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, offsetof(mp_obj_fun_bc_t, const_table) / sizeof(uintptr_t));
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_TEMP0, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
         } else {
             // The locals and stack start after the code_state structure
             emit->stack_start = emit->code_state_start + sizeof(mp_code_state_t) / sizeof(mp_uint_t);
 
             // Allocate space on C-stack for code_state structure, which includes state
             ASM_ENTRY(emit->as, emit->stack_start + emit->n_state);
-        }
 
-        // TODO don't load r7 if we don't need it
-        #if N_THUMB
-        asm_thumb_mov_reg_i32(emit->as, ASM_THUMB_REG_R7, (mp_uint_t)mp_fun_table);
-        #elif N_ARM
-        asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
-        #elif N_XTENSA
-        ASM_MOV_REG_IMM(emit->as, ASM_XTENSA_REG_A15, (uint32_t)mp_fun_table);
-        #elif N_X86
-        asm_x86_mov_i32_to_r32(emit->as, (intptr_t)mp_fun_table, ASM_X86_REG_EBP);
-        #elif N_X64
-        asm_x64_mov_i64_to_r64_optimised(emit->as, (intptr_t)mp_fun_table, ASM_X64_REG_RBP);
-        #endif
-
-        if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
             // Prepare incoming arguments for call to mp_setup_code_state
 
             #if N_X86
@@ -488,6 +470,10 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             asm_x86_mov_arg_to_r32(emit->as, 2, REG_ARG_3);
             asm_x86_mov_arg_to_r32(emit->as, 3, REG_ARG_4);
             #endif
+
+            // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_ARG_1, offsetof(mp_obj_fun_bc_t, const_table) / sizeof(uintptr_t));
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_LOCAL_3, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
 
             // Set code_state.fun_bc
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_ARG_1);
@@ -591,11 +577,15 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     emit->const_table_num_obj = emit->const_table_cur_obj;
     if (emit->pass == MP_PASS_CODE_SIZE) {
         size_t const_table_alloc = emit->const_table_num_obj + emit->const_table_cur_raw_code;
+        size_t nqstr = 0;
         if (!emit->do_viper_types) {
             // Add room for qstr names of arguments
-            const_table_alloc += emit->scope->num_pos_args + emit->scope->num_kwonly_args;
+            nqstr = emit->scope->num_pos_args + emit->scope->num_kwonly_args;
+            const_table_alloc += nqstr;
         }
         emit->const_table = m_new(mp_uint_t, const_table_alloc);
+        // Store mp_fun_table pointer just after qstrs
+        emit->const_table[nqstr] = (mp_uint_t)(uintptr_t)mp_fun_table;
     }
 
     if (emit->pass == MP_PASS_EMIT) {

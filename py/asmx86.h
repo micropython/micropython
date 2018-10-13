@@ -114,6 +114,9 @@ void asm_x86_mov_local_addr_to_r32(asm_x86_t* as, int local_num, int dest_r32);
 void asm_x86_mov_reg_pcrel(asm_x86_t *as, int dest_r64, mp_uint_t label);
 void asm_x86_call_ind(asm_x86_t* as, size_t fun_id, mp_uint_t n_args, int temp_r32);
 
+// Holds a pointer to mp_fun_table
+#define ASM_X86_REG_FUN_TABLE ASM_X86_REG_EBP
+
 #if GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -138,6 +141,9 @@ void asm_x86_call_ind(asm_x86_t* as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define REG_LOCAL_2 ASM_X86_REG_ESI
 #define REG_LOCAL_3 ASM_X86_REG_EDI
 #define REG_LOCAL_NUM (3)
+
+// Holds a pointer to mp_fun_table
+#define REG_FUN_TABLE ASM_X86_REG_FUN_TABLE
 
 #define ASM_T               asm_x86_t
 #define ASM_END_PASS        asm_x86_end_pass

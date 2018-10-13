@@ -245,6 +245,9 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
 void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label);
 void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 
+// Holds a pointer to mp_fun_table
+#define ASM_XTENSA_REG_FUN_TABLE ASM_XTENSA_REG_A15
+
 #if GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -267,6 +270,8 @@ void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 #define REG_LOCAL_2 ASM_XTENSA_REG_A13
 #define REG_LOCAL_3 ASM_XTENSA_REG_A14
 #define REG_LOCAL_NUM (3)
+
+#define REG_FUN_TABLE ASM_XTENSA_REG_FUN_TABLE
 
 #define ASM_T               asm_xtensa_t
 #define ASM_END_PASS        asm_xtensa_end_pass
