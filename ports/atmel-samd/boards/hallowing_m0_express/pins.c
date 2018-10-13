@@ -55,7 +55,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TFT_DC), MP_ROM_PTR(&pin_PA28) },
     { MP_ROM_QSTR(MP_QSTR_TFT_RESET), MP_ROM_PTR(&pin_PA27) },
 
-    { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_PB02) },
+    { MP_ROM_QSTR(MP_QSTR_BAT), MP_ROM_PTR(&pin_PB02) },
     { MP_ROM_QSTR(MP_QSTR_ACCELEROMETER_INTERRUPT), MP_ROM_PTR(&pin_PA14) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
