@@ -137,14 +137,22 @@ STATIC void asm_x86_write_word32(asm_x86_t *as, int w32) {
 }
 
 STATIC void asm_x86_write_r32_disp(asm_x86_t *as, int r32, int disp_r32, int disp_offset) {
-    assert(disp_r32 != ASM_X86_REG_ESP);
-
+    uint8_t rm_disp;
     if (disp_offset == 0 && disp_r32 != ASM_X86_REG_EBP) {
-        asm_x86_write_byte_1(as, MODRM_R32(r32) | MODRM_RM_DISP0 | MODRM_RM_R32(disp_r32));
+        rm_disp = MODRM_RM_DISP0;
     } else if (SIGNED_FIT8(disp_offset)) {
-        asm_x86_write_byte_2(as, MODRM_R32(r32) | MODRM_RM_DISP8 | MODRM_RM_R32(disp_r32), IMM32_L0(disp_offset));
+        rm_disp = MODRM_RM_DISP8;
     } else {
-        asm_x86_write_byte_1(as, MODRM_R32(r32) | MODRM_RM_DISP32 | MODRM_RM_R32(disp_r32));
+        rm_disp = MODRM_RM_DISP32;
+    }
+    asm_x86_write_byte_1(as, MODRM_R32(r32) | rm_disp | MODRM_RM_R32(disp_r32));
+    if (disp_r32 == ASM_X86_REG_ESP) {
+        // Special case for esp, it needs a SIB byte
+        asm_x86_write_byte_1(as, 0x24);
+    }
+    if (rm_disp == MODRM_RM_DISP8) {
+        asm_x86_write_byte_1(as, IMM32_L0(disp_offset));
+    } else if (rm_disp == MODRM_RM_DISP32) {
         asm_x86_write_word32(as, disp_offset);
     }
 }
@@ -390,70 +398,75 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
 void asm_x86_entry(asm_x86_t *as, int num_locals) {
     assert(num_locals >= 0);
     asm_x86_push_r32(as, ASM_X86_REG_EBP);
-    asm_x86_mov_r32_r32(as, ASM_X86_REG_EBP, ASM_X86_REG_ESP);
-    if (num_locals > 0) {
-        asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, num_locals * WORD_SIZE);
-    }
     asm_x86_push_r32(as, ASM_X86_REG_EBX);
     asm_x86_push_r32(as, ASM_X86_REG_ESI);
     asm_x86_push_r32(as, ASM_X86_REG_EDI);
-    // TODO align stack on 16-byte boundary
+    num_locals |= 1; // make it odd so stack is aligned on 16 byte boundary
+    asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, num_locals * WORD_SIZE);
     as->num_locals = num_locals;
 }
 
 void asm_x86_exit(asm_x86_t *as) {
+    asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, -as->num_locals * WORD_SIZE);
     asm_x86_pop_r32(as, ASM_X86_REG_EDI);
     asm_x86_pop_r32(as, ASM_X86_REG_ESI);
     asm_x86_pop_r32(as, ASM_X86_REG_EBX);
-    asm_x86_write_byte_1(as, OPCODE_LEAVE);
+    asm_x86_pop_r32(as, ASM_X86_REG_EBP);
     asm_x86_ret(as);
+}
+
+STATIC int asm_x86_arg_offset_from_esp(asm_x86_t *as, size_t arg_num) {
+    // Above esp are: locals, 4 saved registers, return eip, arguments
+    return (as->num_locals + 4 + 1 + arg_num) * WORD_SIZE;
 }
 
 #if 0
 void asm_x86_push_arg(asm_x86_t *as, int src_arg_num) {
-    asm_x86_push_disp(as, ASM_X86_REG_EBP, 2 * WORD_SIZE + src_arg_num * WORD_SIZE);
+    asm_x86_push_disp(as, ASM_X86_REG_ESP, asm_x86_arg_offset_from_esp(as, src_arg_num));
 }
 #endif
 
 void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32) {
-    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_EBP, 2 * WORD_SIZE + src_arg_num * WORD_SIZE, dest_r32);
+    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_ESP, asm_x86_arg_offset_from_esp(as, src_arg_num), dest_r32);
 }
 
 #if 0
 void asm_x86_mov_r32_to_arg(asm_x86_t *as, int src_r32, int dest_arg_num) {
-    asm_x86_mov_r32_to_mem32(as, src_r32, ASM_X86_REG_EBP, 2 * WORD_SIZE + dest_arg_num * WORD_SIZE);
+    asm_x86_mov_r32_to_mem32(as, src_r32, ASM_X86_REG_ESP, asm_x86_arg_offset_from_esp(as, dest_arg_num));
 }
 #endif
 
 // locals:
 //  - stored on the stack in ascending order
 //  - numbered 0 through as->num_locals-1
-//  - EBP points above the last local
+//  - ESP points to the first local
 //
-//                          | EBP
-//                          v
+//  | ESP
+//  v
 //  l0  l1  l2  ...  l(n-1)
 //  ^                ^
 //  | low address    | high address in RAM
 //
-STATIC int asm_x86_local_offset_from_ebp(asm_x86_t *as, int local_num) {
-    return (-as->num_locals + local_num) * WORD_SIZE;
+STATIC int asm_x86_local_offset_from_esp(asm_x86_t *as, int local_num) {
+    (void)as;
+    // Stack is full descending, ESP points to local0
+    return local_num * WORD_SIZE;
 }
 
 void asm_x86_mov_local_to_r32(asm_x86_t *as, int src_local_num, int dest_r32) {
-    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_EBP, asm_x86_local_offset_from_ebp(as, src_local_num), dest_r32);
+    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_ESP, asm_x86_local_offset_from_esp(as, src_local_num), dest_r32);
 }
 
 void asm_x86_mov_r32_to_local(asm_x86_t *as, int src_r32, int dest_local_num) {
-    asm_x86_mov_r32_to_mem32(as, src_r32, ASM_X86_REG_EBP, asm_x86_local_offset_from_ebp(as, dest_local_num));
+    asm_x86_mov_r32_to_mem32(as, src_r32, ASM_X86_REG_ESP, asm_x86_local_offset_from_esp(as, dest_local_num));
 }
 
 void asm_x86_mov_local_addr_to_r32(asm_x86_t *as, int local_num, int dest_r32) {
-    int offset = asm_x86_local_offset_from_ebp(as, local_num);
+    int offset = asm_x86_local_offset_from_esp(as, local_num);
     if (offset == 0) {
-        asm_x86_mov_r32_r32(as, dest_r32, ASM_X86_REG_EBP);
+        asm_x86_mov_r32_r32(as, dest_r32, ASM_X86_REG_ESP);
     } else {
-        asm_x86_lea_disp_to_r32(as, ASM_X86_REG_EBP, offset, dest_r32);
+        asm_x86_lea_disp_to_r32(as, ASM_X86_REG_ESP, offset, dest_r32);
     }
 }
 
@@ -470,13 +483,13 @@ void asm_x86_mov_reg_pcrel(asm_x86_t *as, int dest_r32, mp_uint_t label) {
 
 #if 0
 void asm_x86_push_local(asm_x86_t *as, int local_num) {
-    asm_x86_push_disp(as, ASM_X86_REG_EBP, asm_x86_local_offset_from_ebp(as, local_num));
+    asm_x86_push_disp(as, ASM_X86_REG_ESP, asm_x86_local_offset_from_esp(as, local_num));
 }
 
 void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 {
-    asm_x86_mov_r32_r32(as, temp_r32, ASM_X86_REG_EBP);
-    asm_x86_add_i32_to_r32(as, asm_x86_local_offset_from_ebp(as, local_num), temp_r32);
+    asm_x86_mov_r32_r32(as, temp_r32, ASM_X86_REG_ESP);
+    asm_x86_add_i32_to_r32(as, asm_x86_local_offset_from_esp(as, local_num), temp_r32);
     asm_x86_push_r32(as, temp_r32);
 }
 #endif
