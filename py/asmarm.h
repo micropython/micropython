@@ -121,7 +121,7 @@ void asm_arm_pop(asm_arm_t *as, uint reglist);
 // control flow
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label);
 void asm_arm_b_label(asm_arm_t *as, uint label);
-void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);
+void asm_arm_bl_ind(asm_arm_t *as, uint fun_id, uint reg_temp);
 void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 
 // Holds a pointer to mp_fun_table
@@ -174,7 +174,7 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
         asm_arm_bcc_label(as, ASM_ARM_CC_EQ, label); \
     } while (0)
 #define ASM_JUMP_REG(as, reg) asm_arm_bx_reg((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_arm_bl_ind(as, ptr, idx, ASM_ARM_REG_R3)
+#define ASM_CALL_IND(as, ptr, idx) asm_arm_bl_ind(as, idx, ASM_ARM_REG_R3)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_arm_mov_local_reg((as), (local_num), (reg_src))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_arm_mov_reg_i32((as), (reg_dest), (imm))
