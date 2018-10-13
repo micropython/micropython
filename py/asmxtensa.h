@@ -286,7 +286,7 @@ void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
     asm_xtensa_bcc_reg_reg_label(as, ASM_XTENSA_CC_EQ, reg1, reg2, label)
 #define ASM_JUMP_REG(as, reg) asm_xtensa_op_jx((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_xtensa_call_ind((as), (idx))
+#define ASM_CALL_IND(as, idx) asm_xtensa_call_ind((as), (idx))
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_xtensa_mov_local_reg((as), (local_num), (reg_src))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_xtensa_mov_reg_i32((as), (reg_dest), (imm))

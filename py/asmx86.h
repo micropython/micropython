@@ -175,7 +175,7 @@ void asm_x86_call_ind(asm_x86_t* as, size_t fun_id, mp_uint_t n_args, int temp_r
         asm_x86_jcc_label(as, ASM_X86_CC_JE, label); \
     } while (0)
 #define ASM_JUMP_REG(as, reg) asm_x86_jmp_reg((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_x86_call_ind(as, idx, mp_f_n_args[idx], ASM_X86_REG_EAX)
+#define ASM_CALL_IND(as, idx) asm_x86_call_ind(as, idx, mp_f_n_args[idx], ASM_X86_REG_EAX)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x86_mov_r32_to_local((as), (reg_src), (local_num))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_x86_mov_i32_to_r32((as), (imm), (reg_dest))

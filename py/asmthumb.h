@@ -311,7 +311,7 @@ void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenien
         asm_thumb_bcc_label(as, ASM_THUMB_CC_EQ, label); \
     } while (0)
 #define ASM_JUMP_REG(as, reg) asm_thumb_bx_reg((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_thumb_bl_ind(as, idx, ASM_THUMB_REG_R3)
+#define ASM_CALL_IND(as, idx) asm_thumb_bl_ind(as, idx, ASM_THUMB_REG_R3)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg) asm_thumb_mov_local_reg((as), (local_num), (reg))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_thumb_mov_reg_i32_optimised((as), (reg_dest), (imm))
