@@ -402,7 +402,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         ASM_JUMP_IF_REG_EQ(emit->as, REG_ARG_1, REG_ARG_3, *emit->label_slot + 5);
         mp_asm_base_label_assign(&emit->as->base, *emit->label_slot + 4);
         ASM_MOV_REG_IMM(emit->as, REG_ARG_3, MP_OBJ_FUN_MAKE_SIG(scope->num_pos_args, scope->num_pos_args, false));
-        ASM_CALL_IND(emit->as, mp_fun_table[MP_F_ARG_CHECK_NUM_SIG], MP_F_ARG_CHECK_NUM_SIG);
+        ASM_CALL_IND(emit->as, MP_F_ARG_CHECK_NUM_SIG);
         mp_asm_base_label_assign(&emit->as->base, *emit->label_slot + 5);
 
         // Store arguments into locals (reg or stack), converting to native if needed
@@ -491,7 +491,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             #elif N_ARM
             asm_arm_bl_ind(emit->as, MP_F_SETUP_CODE_STATE, ASM_ARM_REG_R4);
             #else
-            ASM_CALL_IND(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE);
+            ASM_CALL_IND(emit->as, MP_F_SETUP_CODE_STATE);
             #endif
         }
 
@@ -837,20 +837,20 @@ STATIC void emit_post_push_reg_reg_reg_reg(emit_t *emit, vtype_kind_t vtypea, in
 
 STATIC void emit_call(emit_t *emit, mp_fun_kind_t fun_kind) {
     need_reg_all(emit);
-    ASM_CALL_IND(emit->as, mp_fun_table[fun_kind], fun_kind);
+    ASM_CALL_IND(emit->as, fun_kind);
 }
 
 STATIC void emit_call_with_imm_arg(emit_t *emit, mp_fun_kind_t fun_kind, mp_int_t arg_val, int arg_reg) {
     need_reg_all(emit);
     ASM_MOV_REG_IMM(emit->as, arg_reg, arg_val);
-    ASM_CALL_IND(emit->as, mp_fun_table[fun_kind], fun_kind);
+    ASM_CALL_IND(emit->as, fun_kind);
 }
 
 STATIC void emit_call_with_2_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, mp_int_t arg_val1, int arg_reg1, mp_int_t arg_val2, int arg_reg2) {
     need_reg_all(emit);
     ASM_MOV_REG_IMM(emit->as, arg_reg1, arg_val1);
     ASM_MOV_REG_IMM(emit->as, arg_reg2, arg_val2);
-    ASM_CALL_IND(emit->as, mp_fun_table[fun_kind], fun_kind);
+    ASM_CALL_IND(emit->as, fun_kind);
 }
 
 // vtype of all n_pop objects is VTYPE_PYOBJ
@@ -2459,7 +2459,7 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_
         need_reg_all(emit);
     }
     emit_load_reg_with_raw_code(emit, REG_ARG_1, scope->raw_code);
-    ASM_CALL_IND(emit->as, mp_fun_table[MP_F_MAKE_FUNCTION_FROM_RAW_CODE], MP_F_MAKE_FUNCTION_FROM_RAW_CODE);
+    ASM_CALL_IND(emit->as, MP_F_MAKE_FUNCTION_FROM_RAW_CODE);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -2473,7 +2473,7 @@ STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_c
         ASM_MOV_REG_IMM(emit->as, REG_ARG_2, 0x100 | n_closed_over);
     }
     emit_load_reg_with_raw_code(emit, REG_ARG_1, scope->raw_code);
-    ASM_CALL_IND(emit->as, mp_fun_table[MP_F_MAKE_CLOSURE_FROM_RAW_CODE], MP_F_MAKE_CLOSURE_FROM_RAW_CODE);
+    ASM_CALL_IND(emit->as, MP_F_MAKE_CLOSURE_FROM_RAW_CODE);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
