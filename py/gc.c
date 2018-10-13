@@ -180,7 +180,9 @@ void gc_lock(void) {
 
 void gc_unlock(void) {
     GC_ENTER();
-    MP_STATE_MEM(gc_lock_depth)--;
+    if (MP_STATE_MEM(gc_lock_depth) > 0) {
+        MP_STATE_MEM(gc_lock_depth)--;
+    }
     GC_EXIT();
 }
 
