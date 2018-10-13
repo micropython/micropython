@@ -514,7 +514,7 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
     }
 
     // Load the pointer to the function and make the call
-    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_EBP, fun_id * WORD_SIZE, temp_r32);
+    asm_x86_mov_mem32_to_r32(as, ASM_X86_REG_FUN_TABLE, fun_id * WORD_SIZE, temp_r32);
     asm_x86_write_byte_2(as, OPCODE_CALL_RM32, MODRM_R32(2) | MODRM_RM_REG | MODRM_RM_R32(temp_r32));
 
     // the caller must clean up the stack

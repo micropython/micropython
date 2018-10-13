@@ -261,6 +261,9 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narro
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience
 
+// Holds a pointer to mp_fun_table
+#define ASM_THUMB_REG_FUN_TABLE ASM_THUMB_REG_R7
+
 #if GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -283,6 +286,8 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
 #define REG_LOCAL_2 ASM_THUMB_REG_R5
 #define REG_LOCAL_3 ASM_THUMB_REG_R6
 #define REG_LOCAL_NUM (3)
+
+#define REG_FUN_TABLE ASM_THUMB_REG_FUN_TABLE
 
 #define ASM_T               asm_thumb_t
 #define ASM_END_PASS        asm_thumb_end_pass

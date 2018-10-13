@@ -124,6 +124,9 @@ void asm_arm_b_label(asm_arm_t *as, uint label);
 void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);
 void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 
+// Holds a pointer to mp_fun_table
+#define ASM_ARM_REG_FUN_TABLE ASM_ARM_REG_R7
+
 #if GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -145,6 +148,9 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 #define REG_LOCAL_2 ASM_ARM_REG_R5
 #define REG_LOCAL_3 ASM_ARM_REG_R6
 #define REG_LOCAL_NUM (3)
+
+// Holds a pointer to mp_fun_table
+#define REG_FUN_TABLE ASM_ARM_REG_FUN_TABLE
 
 #define ASM_T               asm_arm_t
 #define ASM_END_PASS        asm_arm_end_pass

@@ -116,6 +116,9 @@ void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
 void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label);
 void asm_x64_call_ind(asm_x64_t* as, size_t fun_id, int temp_r32);
 
+// Holds a pointer to mp_fun_table
+#define ASM_X64_REG_FUN_TABLE ASM_X64_REG_RBP
+
 #if GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -140,6 +143,9 @@ void asm_x64_call_ind(asm_x64_t* as, size_t fun_id, int temp_r32);
 #define REG_LOCAL_2 ASM_X64_REG_R12
 #define REG_LOCAL_3 ASM_X64_REG_R13
 #define REG_LOCAL_NUM (3)
+
+// Holds a pointer to mp_fun_table
+#define REG_FUN_TABLE ASM_X64_REG_FUN_TABLE
 
 #define ASM_T               asm_x64_t
 #define ASM_END_PASS        asm_x64_end_pass
