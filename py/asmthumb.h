@@ -259,7 +259,7 @@ void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint re
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
-void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience
+void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenience
 
 // Holds a pointer to mp_fun_table
 #define ASM_THUMB_REG_FUN_TABLE ASM_THUMB_REG_R7
@@ -311,7 +311,7 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
         asm_thumb_bcc_label(as, ASM_THUMB_CC_EQ, label); \
     } while (0)
 #define ASM_JUMP_REG(as, reg) asm_thumb_bx_reg((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_thumb_bl_ind(as, ptr, idx, ASM_THUMB_REG_R3)
+#define ASM_CALL_IND(as, ptr, idx) asm_thumb_bl_ind(as, idx, ASM_THUMB_REG_R3)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg) asm_thumb_mov_local_reg((as), (local_num), (reg))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_thumb_mov_reg_i32_optimised((as), (reg_dest), (imm))

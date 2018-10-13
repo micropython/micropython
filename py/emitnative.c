@@ -487,7 +487,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
             // Call mp_setup_code_state to prepare code_state structure
             #if N_THUMB
-            asm_thumb_bl_ind(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE, ASM_THUMB_REG_R4);
+            asm_thumb_bl_ind(emit->as, MP_F_SETUP_CODE_STATE, ASM_THUMB_REG_R4);
             #elif N_ARM
             asm_arm_bl_ind(emit->as, MP_F_SETUP_CODE_STATE, ASM_ARM_REG_R4);
             #else
