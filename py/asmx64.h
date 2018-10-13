@@ -114,7 +114,7 @@ void asm_x64_mov_local_to_r64(asm_x64_t* as, int src_local_num, int dest_r64);
 void asm_x64_mov_r64_to_local(asm_x64_t* as, int src_r64, int dest_local_num);
 void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
 void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label);
-void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
+void asm_x64_call_ind(asm_x64_t* as, size_t fun_id, int temp_r32);
 
 #if GENERIC_ASM_API
 
@@ -171,7 +171,7 @@ void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
         asm_x64_jcc_label(as, ASM_X64_CC_JE, label); \
     } while (0)
 #define ASM_JUMP_REG(as, reg) asm_x64_jmp_reg((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_x64_call_ind(as, ptr, ASM_X64_REG_RAX)
+#define ASM_CALL_IND(as, ptr, idx) asm_x64_call_ind(as, idx, ASM_X64_REG_RAX)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x64_mov_r64_to_local((as), (reg_src), (local_num))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_x64_mov_i64_to_r64_optimised((as), (imm), (reg_dest))

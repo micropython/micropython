@@ -379,6 +379,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
         #elif N_XTENSA
         ASM_MOV_REG_IMM(emit->as, ASM_XTENSA_REG_A15, (uint32_t)mp_fun_table);
+        #elif N_X64
+        asm_x64_mov_i64_to_r64_optimised(emit->as, (intptr_t)mp_fun_table, ASM_X64_REG_RBP);
         #endif
 
         // Store function object (passed as first arg) to stack if needed
@@ -469,6 +471,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
         #elif N_XTENSA
         ASM_MOV_REG_IMM(emit->as, ASM_XTENSA_REG_A15, (uint32_t)mp_fun_table);
+        #elif N_X64
+        asm_x64_mov_i64_to_r64_optimised(emit->as, (intptr_t)mp_fun_table, ASM_X64_REG_RBP);
         #endif
 
         if (!(emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
