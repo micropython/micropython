@@ -174,7 +174,10 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
 }
 
 // these must correspond to the respective enum in runtime0.h
-void *const mp_fun_table[MP_F_NUMBER_OF] = {
+const void *const mp_fun_table[MP_F_NUMBER_OF] = {
+    &mp_const_none_obj,
+    &mp_const_false_obj,
+    &mp_const_true_obj,
     mp_convert_obj_to_native,
     mp_convert_native_to_obj,
     mp_native_swap_globals,

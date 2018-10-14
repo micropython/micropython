@@ -147,7 +147,10 @@ typedef enum {
 } mp_binary_op_t;
 
 typedef enum {
-    MP_F_CONVERT_OBJ_TO_NATIVE = 0,
+    MP_F_CONST_NONE_OBJ = 0,
+    MP_F_CONST_FALSE_OBJ,
+    MP_F_CONST_TRUE_OBJ,
+    MP_F_CONVERT_OBJ_TO_NATIVE,
     MP_F_CONVERT_NATIVE_TO_OBJ,
     MP_F_NATIVE_SWAP_GLOBALS,
     MP_F_LOAD_NAME,
@@ -201,6 +204,6 @@ typedef enum {
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 
-extern void *const mp_fun_table[MP_F_NUMBER_OF];
+extern const void *const mp_fun_table[MP_F_NUMBER_OF];
 
 #endif // MICROPY_INCLUDED_PY_RUNTIME0_H
