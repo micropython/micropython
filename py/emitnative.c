@@ -250,6 +250,10 @@ void EXPORT_FUN(free)(emit_t *emit) {
 
 STATIC void emit_call_with_imm_arg(emit_t *emit, mp_fun_kind_t fun_kind, mp_int_t arg_val, int arg_reg);
 
+STATIC void emit_native_mov_reg_const(emit_t *emit, int reg_dest, int const_val) {
+    ASM_LOAD_REG_REG_OFFSET(emit->as, reg_dest, REG_FUN_TABLE, const_val);
+}
+
 STATIC void emit_native_mov_state_reg(emit_t *emit, int local_num, int reg_src) {
     if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
         ASM_STORE_REG_REG_OFFSET(emit->as, reg_src, REG_GENERATOR_STATE, local_num);
@@ -710,15 +714,11 @@ STATIC vtype_kind_t load_reg_stack_imm(emit_t *emit, int reg_dest, const stack_i
         if (si->vtype == VTYPE_PYOBJ) {
             ASM_MOV_REG_IMM(emit->as, reg_dest, si->data.u_imm);
         } else if (si->vtype == VTYPE_BOOL) {
-            if (si->data.u_imm == 0) {
-                ASM_MOV_REG_IMM(emit->as, reg_dest, (mp_uint_t)mp_const_false);
-            } else {
-                ASM_MOV_REG_IMM(emit->as, reg_dest, (mp_uint_t)mp_const_true);
-            }
+            emit_native_mov_reg_const(emit, reg_dest, MP_F_CONST_FALSE_OBJ + si->data.u_imm);
         } else if (si->vtype == VTYPE_INT || si->vtype == VTYPE_UINT) {
             ASM_MOV_REG_IMM(emit->as, reg_dest, (uintptr_t)MP_OBJ_NEW_SMALL_INT(si->data.u_imm));
         } else if (si->vtype == VTYPE_PTR_NONE) {
-            ASM_MOV_REG_IMM(emit->as, reg_dest, (mp_uint_t)mp_const_none);
+            emit_native_mov_reg_const(emit, reg_dest, MP_F_CONST_NONE_OBJ);
         } else {
             mp_raise_NotImplementedError("conversion to object");
         }
@@ -1917,7 +1917,7 @@ STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t exc
             ASM_MOV_REG_PCREL(emit->as, REG_RET, label & ~MP_EMIT_BREAK_FROM_FOR);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_RET);
             // Cancel any active exception (see also emit_native_pop_except)
-            ASM_MOV_REG_IMM(emit->as, REG_RET, (mp_uint_t)mp_const_none);
+            emit_native_mov_reg_const(emit, REG_RET, MP_F_CONST_NONE_OBJ);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_RET);
             // Jump to the innermost active finally
             label = first_finally->label;
@@ -2013,7 +2013,7 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit)); // get exc
 
     // Check if exc is None and jump to non-exc handler if it is
-    ASM_MOV_REG_IMM(emit->as, REG_ARG_2, (mp_uint_t)mp_const_none);
+    emit_native_mov_reg_const(emit, REG_ARG_2, MP_F_CONST_NONE_OBJ);
     ASM_JUMP_IF_REG_EQ(emit->as, REG_ARG_1, REG_ARG_2, *emit->label_slot + 2);
 
     ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_2, REG_ARG_1, 0); // get type(exc)
@@ -2036,7 +2036,7 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
 
     // Replace exception with None
     emit_native_label_assign(emit, *emit->label_slot);
-    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)mp_const_none);
+    emit_native_mov_reg_const(emit, REG_TEMP0, MP_F_CONST_NONE_OBJ);
     ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
 
     // end of with cleanup nlr_catch block
@@ -2121,7 +2121,7 @@ STATIC void emit_native_pop_block(emit_t *emit) {
 
 STATIC void emit_native_pop_except(emit_t *emit) {
     // Cancel any active exception so subsequent handlers don't see it
-    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, (mp_uint_t)mp_const_none);
+    emit_native_mov_reg_const(emit, REG_TEMP0, MP_F_CONST_NONE_OBJ);
     ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
 }
 
@@ -2359,8 +2359,7 @@ STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args) {
         emit_pre_pop_reg_reg(emit, &vtype_stop, REG_ARG_2, &vtype_start, REG_ARG_1); // arg1 = start, arg2 = stop
         assert(vtype_start == VTYPE_PYOBJ);
         assert(vtype_stop == VTYPE_PYOBJ);
-        emit_call_with_imm_arg(emit, MP_F_NEW_SLICE, (mp_uint_t)mp_const_none, REG_ARG_3); // arg3 = step
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+        emit_native_mov_reg_const(emit, REG_ARG_3, MP_F_CONST_NONE_OBJ); // arg3 = step
     } else {
         assert(n_args == 3);
         vtype_kind_t vtype_start, vtype_stop, vtype_step;
@@ -2368,9 +2367,9 @@ STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args) {
         assert(vtype_start == VTYPE_PYOBJ);
         assert(vtype_stop == VTYPE_PYOBJ);
         assert(vtype_step == VTYPE_PYOBJ);
-        emit_call(emit, MP_F_NEW_SLICE);
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     }
+    emit_call(emit, MP_F_NEW_SLICE);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 #endif
 
@@ -2545,7 +2544,7 @@ STATIC void emit_native_return_value(emit_t *emit) {
         if (peek_vtype(emit, 0) == VTYPE_PTR_NONE) {
             emit_pre_pop_discard(emit);
             if (return_vtype == VTYPE_PYOBJ) {
-                ASM_MOV_REG_IMM(emit->as, REG_RET, (mp_uint_t)mp_const_none);
+                emit_native_mov_reg_const(emit, REG_RET, MP_F_CONST_NONE_OBJ);
             } else {
                 ASM_MOV_REG_IMM(emit->as, REG_ARG_1, 0);
             }
