@@ -1990,9 +1990,9 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     emit_native_label_assign(emit, *emit->label_slot + 2);
 
     // call __exit__
-    emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)mp_const_none);
-    emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)mp_const_none);
-    emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)mp_const_none);
+    emit_post_push_imm(emit, VTYPE_PTR_NONE, 0);
+    emit_post_push_imm(emit, VTYPE_PTR_NONE, 0);
+    emit_post_push_imm(emit, VTYPE_PTR_NONE, 0);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, 5);
     emit_call_with_2_imm_args(emit, MP_F_CALL_METHOD_N_KW, 3, REG_ARG_1, 0, REG_ARG_2);
 
@@ -2019,7 +2019,7 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     ASM_LOAD_REG_REG_OFFSET(emit->as, REG_ARG_2, REG_ARG_1, 0); // get type(exc)
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_2); // push type(exc)
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_1); // push exc value
-    emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)mp_const_none); // traceback info
+    emit_post_push_imm(emit, VTYPE_PTR_NONE, 0); // traceback info
     // Stack: (..., __exit__, self, type(exc), exc, traceback)
 
     // call __exit__ method
