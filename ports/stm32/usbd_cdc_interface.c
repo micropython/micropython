@@ -81,6 +81,11 @@ uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     return cdc->rx_packet_buf;
 }
 
+void usbd_cdc_deinit(usbd_cdc_state_t *cdc_in) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+    cdc->dev_is_connected = 0;
+}
+
 // Manage the CDC class requests
 // cmd: command code
 // pbuf: buffer containing command data (request parameters)
