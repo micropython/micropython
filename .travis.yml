@@ -4,7 +4,7 @@ language: c
 compiler:
   - gcc
 git:
-  depth: 1
+  depth: 6
 
 # Each item under 'env' is a separate Travis job to execute.
 # They run in separate environments, so each one must take the time
