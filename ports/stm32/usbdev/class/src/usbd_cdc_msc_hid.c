@@ -1085,10 +1085,12 @@ static uint8_t USBD_CDC_MSC_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) 
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
     if ((usbd->usbd_mode & USBD_MODE_CDC) && (epnum == (CDC_IN_EP & 0x7f) || epnum == (CDC_CMD_EP & 0x7f))) {
         usbd->cdc->tx_in_progress = 0;
+        usbd_cdc_tx_ready(usbd->cdc);
         return USBD_OK;
     #if MICROPY_HW_USB_ENABLE_CDC2
     } else if ((usbd->usbd_mode & USBD_MODE_CDC2) && (epnum == (CDC2_IN_EP & 0x7f) || epnum == (CDC2_CMD_EP & 0x7f))) {
         usbd->cdc2->tx_in_progress = 0;
+        usbd_cdc_tx_ready(usbd->cdc2);
         return USBD_OK;
     #endif
     } else if ((usbd->usbd_mode & USBD_MODE_MSC) && epnum == (MSC_IN_EP & 0x7f)) {
