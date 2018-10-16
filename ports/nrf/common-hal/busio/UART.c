@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2018 Ha Thach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -179,7 +179,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         self->rx_count = -1;
         _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, cnt));
     }
-    
+
     // queue 1-byte transfer for rx_characters_available()
     if ( self->rx_count == 0 ) {
         self->rx_count = -1;

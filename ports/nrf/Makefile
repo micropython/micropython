@@ -90,6 +90,7 @@ LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_power.c \
 	drivers/src/nrfx_spim.c \
+	drivers/src/nrfx_timer.c \
 	drivers/src/nrfx_twim.c \
 	drivers/src/nrfx_uarte.c \
 	)
@@ -123,6 +124,7 @@ SRC_C += \
 	peripherals/nrf/clocks.c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	peripherals/nrf/$(MCU_CHIP)/power.c \
+	peripherals/nrf/timers.c \
 	supervisor/shared/memory.c
 
 DRIVERS_SRC_C += $(addprefix modules/,\

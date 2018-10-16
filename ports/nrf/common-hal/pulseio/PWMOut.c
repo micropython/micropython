@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -168,6 +167,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     self->frequency = frequency;
     self->variable_frequency = variable_frequency;
 
+    // Note this is standard, not strong drive.
     nrf_gpio_cfg_output(self->pin_number);
 
     // disable before mapping pin channel

@@ -47,7 +47,7 @@
 //|
 //| .. class:: PulseOut(carrier)
 //|
-//|   Create a PulseOut object associated with the given PWM out experience.
+//|   Create a PulseOut object associated with the given PWMout object.
 //|
 //|   :param ~pulseio.PWMOut carrier: PWMOut that is set to output on the desired pin.
 //|
@@ -57,9 +57,10 @@
 //|     import pulseio
 //|     import board
 //|
-//|     pwm = pulseio.PWMOut(board.D13, duty_cycle=2 ** 15)
+//|     # 50% duty cycle at 38kHz.
+//|     pwm = pulseio.PWMOut(board.D13, frequency=38000, duty_cycle=32768)
 //|     pulse = pulseio.PulseOut(pwm)
-//|     #                             on   off     on     off   on
+//|     #                             on   off     on    off    on
 //|     pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
 //|     pulse.send(pulses)
 //|

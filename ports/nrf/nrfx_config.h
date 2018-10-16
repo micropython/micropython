@@ -27,8 +27,10 @@
 
 // Enable SPIM2 and SPIM3 (if available)
 #define NRFX_SPIM2_ENABLED 1
-#ifdef NRF52840_XXAA
+#ifdef NRF_SPIM3
     #define NRFX_SPIM3_ENABLED 1
+#else
+    #define NRFX_SPIM3_ENABLED 0
 #endif
 
 
@@ -58,5 +60,25 @@
 #else
 #define NRFX_PWM3_ENABLED 0
 #endif
+
+// TIMERS
+#define NRFX_TIMER_ENABLED 1
+// Don't enable TIMER0: it's used by the SoftDevice.
+#define NRFX_TIMER1_ENABLED 1
+#define NRFX_TIMER2_ENABLED 1
+
+#ifdef NRFX_TIMER3
+#define NRFX_TIMER3_ENABLED 1
+#else
+#define NRFX_TIMER3_ENABLED 0
+#endif
+
+#ifdef NRFX_TIMER4
+#define NRFX_TIMER4_ENABLED 1
+#else
+#define NRFX_TIMER4_ENABLED 0
+#endif
+
+#define NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY 7
 
 #endif // NRFX_CONFIG_H__
