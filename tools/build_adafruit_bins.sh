@@ -27,6 +27,7 @@ itsybitsy_m0_express \
 itsybitsy_m4_express \
 metro_m0_express \
 metro_m4_express \
+meowmeow \
 pca10056 \
 pca10059 \
 pirkey_m0 \
