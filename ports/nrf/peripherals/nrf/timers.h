@@ -24,5 +24,9 @@
  * THE SOFTWARE.
  */
 
-// Pins aren't actually defined here. They are in the board specific directory
-// such as boards/feather_nrf52832/pins.csv
+#include "nrfx.h"
+#include "nrfx_timer.h"
+
+void timers_reset(void);
+nrfx_timer_t* nrf_peripherals_allocate_timer(void);
+void nrf_peripherals_free_timer(nrfx_timer_t* timer);

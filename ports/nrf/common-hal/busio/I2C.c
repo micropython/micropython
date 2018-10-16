@@ -56,6 +56,7 @@ STATIC twim_peripheral_t twim_peripherals[] = {
 
 void i2c_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
+        nrf_twim_disable(twim_peripherals[i].twim.p_twim);
         twim_peripherals[i].in_use = false;
     }
 }
