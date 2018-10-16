@@ -111,7 +111,7 @@ class TelnetToSerial:
     def close(self):
         try:
             self.tn.close()
-        except:
+        except Exception:
             # the telnet object might not exist yet, so ignore this one
             pass
 
