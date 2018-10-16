@@ -31,6 +31,7 @@
 #include "usb_mass_storage.h"
 
 #include "shared-module/displayio/__init__.h"
+#include "shared-module/network/__init__.h"
 
 volatile uint64_t last_finished_tick = 0;
 
@@ -40,6 +41,9 @@ void run_background_tasks(void) {
     #endif
     #ifdef CIRCUITPY_DISPLAYIO
     displayio_refresh_display();
+    #endif
+    #ifdef MICROPY_PY_NETWORK
+    network_module_background();
     #endif
     usb_msc_background();
     usb_cdc_background();
