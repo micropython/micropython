@@ -2074,34 +2074,32 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/audioio/Mixer.c:94
-#, fuzzy
 msgid "Invalid voice count"
-msgstr "Dirección inválida."
+msgstr "Cuenta de voces inválida"
 
 #: shared-bindings/audioio/Mixer.c:99
-#, fuzzy
 msgid "Invalid channel count"
-msgstr "argumentos inválidos"
+msgstr "Cuenta de canales inválida"
 
 #: shared-bindings/audioio/Mixer.c:103
-#, fuzzy
 msgid "Sample rate must be positive"
-msgstr "STA debe estar activo"
+msgstr "Sample rate debe ser positivo"
 
 #: shared-bindings/audioio/Mixer.c:107
-#, fuzzy
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits debe ser 8"
+msgstr "bits_per_sample debe ser 8 o 16"
 
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
+"sample_source buffer debe ser un bytearray o un array de tipo 'h', 'H', 'b' o"
+"'B'"
 
 #: shared-bindings/audioio/RawSample.c:104
 msgid "buffer must be a bytes-like object"
-msgstr ""
+msgstr "buffer debe de ser un objeto bytes-like"
 
 #: shared-bindings/audioio/WaveFile.c:78
 #: shared-bindings/displayio/OnDiskBitmap.c:85
@@ -2387,31 +2385,31 @@ msgstr ""
 
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
-msgstr ""
+msgstr "No se pudo asignar el primer buffer"
 
 #: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
 msgid "Couldn't allocate second buffer"
-msgstr ""
+msgstr "No se pudo asignar el segundo buffer"
 
 #: shared-module/audioio/Mixer.c:82
 msgid "Voice index too high"
-msgstr ""
+msgstr "Index de voz demasiado alto"
 
 #: shared-module/audioio/Mixer.c:85
 msgid "The sample's sample rate does not match the mixer's"
-msgstr ""
+msgstr "El sample rate del sample no iguala al del mixer"
 
 #: shared-module/audioio/Mixer.c:88
 msgid "The sample's channel count does not match the mixer's"
-msgstr ""
+msgstr "La cuenta de canales del sample no iguala a las del mixer"
 
 #: shared-module/audioio/Mixer.c:91
 msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr ""
+msgstr "Los bits_per_sample del sample no igualan a los del mixer"
 
 #: shared-module/audioio/Mixer.c:100
 msgid "The sample's signedness does not match the mixer's"
-msgstr ""
+msgstr "El signo del sample no iguala al del mixer"
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
