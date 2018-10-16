@@ -39,6 +39,7 @@ typedef struct _wiznet5k_obj_t {
     digitalio_digitalinout_obj_t cs;
     digitalio_digitalinout_obj_t rst;
     uint8_t socket_used;
+    bool dhcp_active;
 } wiznet5k_obj_t;
 
 int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip);
@@ -55,6 +56,7 @@ mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, 
 int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
 int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
 int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
+void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket);
 mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in);
 mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in);
 

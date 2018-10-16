@@ -317,23 +317,33 @@ int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, m
     }
 }
 
-static void wiznet5k_try_dhcp(void) {
-    DHCP_INIT_BUFFER_TYPE dhcp_buf[DHCP_INIT_BUFFER_SIZE];
-
-    // Set up the socket to listen on UDP 68 before calling DHCP_init
-    WIZCHIP_EXPORT(socket)(0, MOD_NETWORK_SOCK_DGRAM, DHCP_CLIENT_PORT, 0);
-    DHCP_init(0, dhcp_buf);
-
-    // try a few times for DHCP ... XXX this should be asynchronous.
-    for (int i=0; i<10; i++) {
+void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket) {
+    if (wiznet5k_obj.dhcp_active) {
         DHCP_time_handler();
-        int dhcp_state = DHCP_run();
-        if (dhcp_state == DHCP_IP_LEASED || dhcp_state == DHCP_IP_CHANGED) break;
-        mp_hal_delay_ms(1000);
+        DHCP_run();
     }
-    DHCP_stop();
-    WIZCHIP_EXPORT(close)(0);
 }
+
+static void wiznet5k_start_dhcp(void) {
+    static DHCP_INIT_BUFFER_TYPE dhcp_buf[DHCP_INIT_BUFFER_SIZE];
+
+    if (!wiznet5k_obj.dhcp_active) {
+        // Set up the socket to listen on UDP 68 before calling DHCP_init
+        WIZCHIP_EXPORT(socket)(0, MOD_NETWORK_SOCK_DGRAM, DHCP_CLIENT_PORT, 0);
+        DHCP_init(0, dhcp_buf);
+        wiznet5k_obj.dhcp_active = 1;
+    }
+}
+
+#if 0
+static void wiznet5k_stop_dhcp(void) {
+    if (wiznet5k_obj.dhcp_active) {
+        wiznet5k_obj.dhcp_active = 0;
+        DHCP_stop();
+        WIZCHIP_EXPORT(close)(0);
+    }
+}
+#endif
 
 /// Create and return a WIZNET5K object.
 mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
@@ -382,7 +392,7 @@ mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
     // seems we need a small delay after init
     mp_hal_delay_ms(250);
 
-    wiznet5k_try_dhcp();
+    wiznet5k_start_dhcp();
 
     // register with network module
     network_module_register_nic(&wiznet5k_obj);
