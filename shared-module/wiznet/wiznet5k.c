@@ -50,16 +50,7 @@
 #include "internet/dns/dns.h"
 #include "internet/dhcp/dhcp.h"
 
-typedef struct _wiznet5k_obj_t {
-    mp_obj_base_t base;
-    mp_uint_t cris_state;
-    busio_spi_obj_t *spi;
-    digitalio_digitalinout_obj_t cs;
-    digitalio_digitalinout_obj_t rst;
-    uint8_t socket_used;
-} wiznet5k_obj_t;
-
-static wiznet5k_obj_t wiznet5k_obj;
+#include "shared-module/wiznet/wiznet5k.h"
 
 STATIC wiznet5k_obj_t wiznet5k_obj;
 
