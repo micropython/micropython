@@ -34,8 +34,8 @@
 // Low-level 1-Wire routines
 
 #define TIMING_RESET1 (480)
-#define TIMING_RESET2 (40)
-#define TIMING_RESET3 (420)
+#define TIMING_RESET2 (70)
+#define TIMING_RESET3 (410)
 #define TIMING_READ1 (5)
 #define TIMING_READ2 (5)
 #define TIMING_READ3 (40)
