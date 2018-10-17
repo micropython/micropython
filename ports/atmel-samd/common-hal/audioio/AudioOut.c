@@ -60,8 +60,8 @@ static void ramp_value(uint16_t start, uint16_t end) {
     int32_t step = 49;
     int32_t steps = diff / step;
     if (diff < 0) {
-        steps *= -1;
-        step *= -1;
+        steps = -steps;
+        step = -step;
     }
     for (int32_t i = 0; i < steps; i++) {
         uint32_t value = start + step * i;
@@ -81,8 +81,8 @@ static void ramp_value(uint16_t start, uint16_t end) {
     int32_t step = 49;
     int32_t steps = diff / step;
     if (diff < 0) {
-        steps *= -1;
-        step *= -1;
+        steps = -steps;
+        step = -step;
     }
 
     for (int32_t i = 0; i < steps; i++) {
@@ -119,7 +119,7 @@ void audioout_reset(void) {
 }
 
 void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
-        const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t default_value) {
+        const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
     #ifdef SAMD51
     bool dac_clock_enabled = hri_mclk_get_APBDMASK_DAC_bit(MCLK);
     #endif
@@ -299,8 +299,8 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     self->tc_to_dac_event_channel = channel;
 
     // Ramp the DAC up.
-    self->default_value = default_value;
-    ramp_value(0, default_value);
+    self->quiescent_value = quiescent_value;
+    ramp_value(0, quiescent_value);
 
     // Leave the DMA setup to playback.
 }
@@ -315,7 +315,7 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
     }
 
     // Ramp the DAC down.
-    ramp_value(self->default_value, 0);
+    ramp_value(self->quiescent_value, 0);
 
     DAC->CTRLA.bit.ENABLE = 0;
     #ifdef SAMD21
@@ -461,7 +461,7 @@ void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self) {
     #endif
     // Ramp the DAC to default. The start is ignored when the current value can be readback.
     // Otherwise, we just set it immediately.
-    ramp_value(self->default_value, self->default_value);
+    ramp_value(self->quiescent_value, self->quiescent_value);
 }
 
 bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self) {

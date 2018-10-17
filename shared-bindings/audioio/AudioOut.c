@@ -43,15 +43,15 @@
 //|
 //| AudioOut can be used to output an analog audio signal on a given pin.
 //|
-//| .. class:: AudioOut(left_channel, *, right_channel=None, default_value=0x8000)
+//| .. class:: AudioOut(left_channel, *, right_channel=None, quiescent_value=0x8000)
 //|
 //|   Create a AudioOut object associated with the given pin(s). This allows you to
 //|   play audio signals out on the given pin(s).
 //|
 //|   :param ~microcontroller.Pin left_channel: The pin to output the left channel to
 //|   :param ~microcontroller.Pin right_channel: The pin to output the right channel to
-//|   :param int default_value: The default output value. Samples should start and end with this
-//|       value to prevent popping.
+//|   :param int quiescent_value: The output value when no signal is present. Samples should start
+//|       and end with this value to prevent audible popping.
 //|
 //|   Simple 8ksps 440 Hz sin wave::
 //|
@@ -97,11 +97,11 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_check_num(n_args, n_kw, 1, 2, true);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-    enum { ARG_left_channel, ARG_right_channel, ARG_default_value };
+    enum { ARG_left_channel, ARG_right_channel, ARG_quiescent_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_left_channel, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_right_channel, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_default_value, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_int = 0x8000} },
+        { MP_QSTR_quiescent_value, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_int = 0x8000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -120,7 +120,7 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     // create AudioOut object from the given pin
     audioio_audioout_obj_t *self = m_new_obj(audioio_audioout_obj_t);
     self->base.type = &audioio_audioout_type;
-    common_hal_audioio_audioout_construct(self, left_channel_pin, right_channel_pin, args[ARG_default_value].u_int);
+    common_hal_audioio_audioout_construct(self, left_channel_pin, right_channel_pin, args[ARG_quiescent_value].u_int);
 
     return MP_OBJ_FROM_PTR(self);
 }

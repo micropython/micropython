@@ -138,4 +138,5 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
 }
 
 void analogout_reset(void) {
+    // AudioOut resets the DAC in case its been used for audio which requires special handling.
 }

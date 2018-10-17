@@ -44,7 +44,7 @@ typedef struct {
 
     uint8_t tc_to_dac_event_channel;
     bool playing;
-    uint16_t default_value;
+    uint16_t quiescent_value;
 } audioio_audioout_obj_t;
 
 void audioout_reset(void);
