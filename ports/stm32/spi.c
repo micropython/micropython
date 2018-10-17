@@ -177,6 +177,14 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
             mp_uint_t spi_clock;
             #if defined(STM32F0)
             spi_clock = HAL_RCC_GetPCLK1Freq();
+            #elif defined(STM32H7)
+            if (spi->Instance == SPI1 || spi->Instance == SPI2 || spi->Instance == SPI3) {
+                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
+            } else if (spi->Instance == SPI4 || spi->Instance == SPI5) {
+                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45);
+            } else {
+                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
+            }
             #else
             if (spi->Instance == SPI2 || spi->Instance == SPI3) {
                 // SPI2 and SPI3 are on APB1
@@ -523,6 +531,14 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
             uint spi_clock;
             #if defined(STM32F0)
             spi_clock = HAL_RCC_GetPCLK1Freq();
+            #elif defined(STM32H7)
+            if (spi->Instance == SPI1 || spi->Instance == SPI2 || spi->Instance == SPI3) {
+                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
+            } else if (spi->Instance == SPI4 || spi->Instance == SPI5) {
+                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45);
+            } else {
+                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
+            }
             #else
             if (spi->Instance == SPI2 || spi->Instance == SPI3) {
                 // SPI2 and SPI3 are on APB1
