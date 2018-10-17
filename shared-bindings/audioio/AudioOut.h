@@ -35,7 +35,7 @@ extern const mp_obj_type_t audioio_audioout_type;
 
 // left_channel will always be non-NULL but right_channel may be for mono output.
 void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
-    const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel);
+    const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t default_value);
 
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self);
 bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t* self);
