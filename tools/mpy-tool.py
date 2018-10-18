@@ -289,10 +289,12 @@ class RawCode:
         print('   ', self.simple_name.qstr_id, '& 0xff,', self.simple_name.qstr_id, '>> 8,')
         print("    // source file")
         print('   ', self.source_file.qstr_id, '& 0xff,', self.source_file.qstr_id, '>> 8,')
+        print("    // code info")
         print('   ', end='')
         for i in range(self.ip2 + 4, self.ip):
-            opcode = self.bytecode[i]
+            print(' 0x%02x,' % self.bytecode[i], end='')
         print()
+        print("    // bytecode")
         ip = self.ip
         while ip < len(self.bytecode):
             f, sz = mp_opcode_format(self.bytecode, ip)
