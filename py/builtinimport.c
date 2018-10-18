@@ -56,7 +56,7 @@ bool mp_obj_is_package(mp_obj_t module) {
 
 // Stat either frozen or normal module by a given path
 // (whatever is available, if at all).
-STATIC mp_import_stat_t mp_import_stat_any(const char *path) {
+mp_import_stat_t mp_import_stat_any(const char *path) {
     #if MICROPY_MODULE_FROZEN
     mp_import_stat_t st = mp_frozen_stat(path);
     if (st != MP_IMPORT_STAT_NO_EXIST) {

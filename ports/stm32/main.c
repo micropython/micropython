@@ -65,6 +65,9 @@
 
 void SystemClock_Config(void);
 
+// TODO Find an appropriate header file to place this prototype in.  Needed in this file in order to load boot.py and main.py from either frozen or fs
+extern mp_import_stat_t mp_import_stat_any(const char *path);
+
 pyb_thread_t pyb_thread_main;
 fs_user_mount_t fs_user_mount_flash;
 
@@ -652,7 +655,7 @@ soft_reset:
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
     if (reset_mode == 1 || reset_mode == 3) {
         const char *boot_py = "boot.py";
-        mp_import_stat_t stat = mp_import_stat(boot_py);
+        mp_import_stat_t stat = mp_import_stat_any(boot_py);
         if (stat == MP_IMPORT_STAT_FILE) {
             int ret = pyexec_file(boot_py);
             if (ret & PYEXEC_FORCED_EXIT) {
@@ -713,7 +716,7 @@ soft_reset:
         } else {
             main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
         }
-        mp_import_stat_t stat = mp_import_stat(main_py);
+        mp_import_stat_t stat = mp_import_stat_any(main_py);
         if (stat == MP_IMPORT_STAT_FILE) {
             int ret = pyexec_file(main_py);
             if (ret & PYEXEC_FORCED_EXIT) {
