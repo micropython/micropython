@@ -654,7 +654,6 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         mp_load_method_maybe(self_in, MP_QSTR___getattr__, dest2);
         if (dest2[0] != MP_OBJ_NULL) {
             // __getattr__ exists, call it and return its result
-            // XXX if this fails to load the requested attr, should we catch the attribute error and return silently?
             dest2[2] = MP_OBJ_NEW_QSTR(attr);
             dest[0] = mp_call_method_n_kw(1, 0, dest2);
             return;
