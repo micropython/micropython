@@ -17,7 +17,7 @@ All Board Pins are predefined as pyb.Pin.board.Name::
     g = pyb.Pin(pyb.Pin.board.X1, pyb.Pin.IN)
 
 CPU pins which correspond to the board pins are available
-as ``pyb.cpu.Name``. For the CPU pins, the names are the port letter
+as ``pyb.Pin.cpu.Name``. For the CPU pins, the names are the port letter
 followed by the pin number. On the PYBv1.0, ``pyb.Pin.board.X1`` and
 ``pyb.Pin.cpu.A0`` are the same pin.
 
