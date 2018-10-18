@@ -72,7 +72,7 @@ endif
 
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
-MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
+MPY_TOOL = $(PYTHON3) $(TOP)/tools/mpy-tool.py
 PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
 
 all:
