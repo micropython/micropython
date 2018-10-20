@@ -831,7 +831,7 @@ STATIC vtype_kind_t load_reg_stack_imm(emit_t *emit, int reg_dest, const stack_i
         } else if (si->vtype == VTYPE_PTR_NONE) {
             emit_native_mov_reg_const(emit, reg_dest, MP_F_CONST_NONE_OBJ);
         } else {
-            mp_raise_NotImplementedError("conversion to object");
+            *emit->error_slot = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "conversion to object");
         }
         return VTYPE_PYOBJ;
     }
