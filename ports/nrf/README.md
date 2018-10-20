@@ -61,7 +61,7 @@ To build and flash issue the following command inside the ports/nrf/ folder:
 
 First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
 
-     ./drivers/bluetooth/download_ble_stack.sh
+     ./bluetooth/download_ble_stack.sh
 
 If the Bluetooth stacks has been downloaded, compile the target with the following command:
 

@@ -89,6 +89,13 @@ void reset_port(void) {
     reset_all_pins();
 }
 
+void reset_to_bootloader(void) {
+    enum { DFU_MAGIC_SERIAL = 0x4e };
+
+    NRF_POWER->GPREGRET = DFU_MAGIC_SERIAL;
+    NVIC_SystemReset();
+}
+
 
 void HardFault_Handler(void)
 {

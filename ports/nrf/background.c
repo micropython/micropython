@@ -24,11 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "tusb.h"
+#ifdef NRF52840
+#include "supervisor/usb.h"
+#endif
 
 void run_background_tasks(void) {
-#ifdef NRF52840_XXAA
-    tusb_task();
-    tud_cdc_write_flush();
-#endif
+    #ifdef NRF52840
+        usb_background();
+    #endif
 }

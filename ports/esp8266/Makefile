@@ -119,7 +119,6 @@ SRC_COMMON_HAL = \
 	multiterminal/__init__.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
-	storage/__init__.c \
 	time/__init__.c \
 	board/__init__.c
 
@@ -147,7 +146,6 @@ SRC_SHARED_MODULE = \
 	multiterminal/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
-	storage/__init__.c \
 	struct/__init__.c
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \

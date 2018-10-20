@@ -1,15 +1,13 @@
 #define MICROPY_HW_BOARD_NAME "Arduino Zero"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-// #define MICROPY_HW_LED_MSC  PIN_PA17 // red
-#define MICROPY_HW_LED_TX   PIN_PA27
-#define MICROPY_HW_LED_RX   PIN_PB03
+// #define MICROPY_HW_LED_MSC  &pin_PA17 // red
+#define MICROPY_HW_LED_TX   &pin_PA27
+#define MICROPY_HW_LED_RX   &pin_PB03
 
 #define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25 | PORT_PA27)
 #define MICROPY_PORT_B        (PORT_PB03)
 #define MICROPY_PORT_C        (0)
-
-#include "internal_flash.h"
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 

@@ -45,16 +45,13 @@ INC += -I. \
        -Iasf4/$(CHIP_FAMILY)/hpl/tc \
        -Iasf4/$(CHIP_FAMILY)/include \
        -Iasf4/$(CHIP_FAMILY)/CMSIS/Include \
-       -Iasf4/$(CHIP_FAMILY)/usb \
-       -Iasf4/$(CHIP_FAMILY)/usb/class/cdc \
-       -Iasf4/$(CHIP_FAMILY)/usb/class/hid \
-       -Iasf4/$(CHIP_FAMILY)/usb/class/msc \
-       -Iasf4/$(CHIP_FAMILY)/usb/device \
        -Iasf4_conf/$(CHIP_FAMILY) \
        -Iboards/$(BOARD) \
        -Iboards/ \
        -Iperipherals/ \
        -Ifreetouch \
+       -I../../lib/tinyusb/src \
+       -I../../supervisor/shared/usb \
        -I$(BUILD)
 
 BASE_CFLAGS = \
@@ -90,11 +87,15 @@ BASE_CFLAGS = \
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
 ifeq ($(CHIP_FAMILY), samd21)
-CFLAGS = -Os -DNDEBUG
+CFLAGS += -Os -DNDEBUG
+# TinyUSB defines
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)
-CFLAGS = -Os -DNDEBUG
+CFLAGS += -O0 -DNDEBUG
+# TinyUSB defines
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
 
 #Debugging/Optimization
@@ -104,7 +105,7 @@ ifeq ($(DEBUG), 1)
   # You may want to disable -flto if it interferes with debugging.
   CFLAGS += -flto
   # You may want to enable these flags to make setting breakpoints easier.
-##   CFLAGS += -fno-inline -fno-ipa-sra
+  # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -204,7 +205,6 @@ SRC_ASF := \
 	hal/src/hal_spi_m_sync.c \
 	hal/src/hal_timer.c \
 	hal/src/hal_usart_async.c \
-	hal/src/hal_usb_device.c \
 	hpl/adc/hpl_adc.c \
 	hpl/core/hpl_init.c \
 	hpl/dac/hpl_dac.c \
@@ -214,12 +214,6 @@ SRC_ASF := \
 	hpl/rtc/hpl_rtc.c \
 	hpl/sercom/hpl_sercom.c \
 	hpl/systick/hpl_systick.c \
-	hpl/usb/hpl_usb.c \
-	usb/class/cdc/device/cdcdf_acm.c \
-	usb/class/hid/device/hiddf_generic.c \
-	usb/class/msc/device/mscdf.c \
-	usb/device/usbdc.c \
-	usb/usb_protocol.c \
 	hal/utils/src/utils_list.c \
 	hal/utils/src/utils_ringbuffer.c \
 
@@ -246,7 +240,6 @@ SRC_C = \
 	board_busses.c \
 	background.c \
 	fatfs_port.c \
-	flash_api.c \
 	mphalport.c \
 	reset.c \
 	peripherals/samd/clocks.c \
@@ -265,8 +258,6 @@ SRC_C = \
 	peripherals/samd/$(CHIP_FAMILY)/sercom.c \
 	peripherals/samd/$(CHIP_FAMILY)/timers.c \
 	tick.c \
-	usb.c \
-	usb_mass_storage.c \
 	bindings/samd/__init__.c \
 	bindings/samd/Clock.c \
 	boards/$(BOARD)/board.c \
@@ -274,6 +265,8 @@ SRC_C = \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
+	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/dcd.c \
+	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/hal.c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \
@@ -282,7 +275,6 @@ SRC_C = \
 	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
-	$(BUILD)/autogen_usb_descriptor.c \
 	freetouch/adafruit_ptc.c \
 	supervisor/shared/memory.c
 
@@ -306,19 +298,6 @@ SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 endif # MICROPY_PY_WIZNET5K
 endif # MICROPY_PY_NETWORK
 
-# Choose which flash filesystem impl to use.
-# (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
-# But that might not be true in the future.)
-ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
-SRC_C += internal_flash.c
-endif
-ifeq ($(SPI_FLASH_FILESYSTEM),1)
-SRC_C += external_flash/external_flash.c external_flash/spi_flash.c
-endif
-ifeq ($(QSPI_FLASH_FILESYSTEM),1)
-SRC_C += external_flash/external_flash.c external_flash/qspi_flash.c
-endif
-
 SRC_COMMON_HAL = \
 	board/__init__.c \
 	busio/__init__.c \
@@ -339,7 +318,6 @@ SRC_COMMON_HAL = \
 	rotaryio/IncrementalEncoder.c \
 	rtc/__init__.c \
 	rtc/RTC.c \
-	storage/__init__.c \
 	supervisor/__init__.c \
 	supervisor/Runtime.c \
 	time/__init__.c \
@@ -352,10 +330,8 @@ SRC_COMMON_HAL = \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
-	usb_hid/__init__.c \
-	usb_hid/Device.c \
 	touchio/__init__.c \
-	touchio/TouchIn.c \
+	touchio/TouchIn.c
 
 ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = $(addprefix lib/,\
@@ -412,12 +388,17 @@ SRC_SHARED_MODULE = \
 	_stage/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
+	storage/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
-	storage/__init__.c \
 	struct/__init__.c \
 	uheap/__init__.c \
-	ustack/__init__.c
+	ustack/__init__.c \
+	usb_hid/__init__.c \
+	usb_hid/Device.c
+
+	# usb_midi/__init__.c
+	# usb_midi/Port.c
 
 ifeq ($(MICROPY_PY_NETWORK),1)
 SRC_SHARED_MODULE += socket/__init__.c network/__init__.c
@@ -488,21 +469,6 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(STEPECHO) "Create $@"
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
-
-$(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
-
-.INTERMEDIATE: autogen_usb_descriptor.intermediate
-
-autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile | $(HEADER_BUILD)
-	$(STEPECHO) "GEN $@"
-	$(Q)install -d $(BUILD)/genhdr
-	$(Q)$(PYTHON3) tools/gen_usb_descriptor.py \
-		--manufacturer $(USB_MANUFACTURER)\
-		--product $(USB_PRODUCT)\
-		--vid $(USB_VID)\
-		--pid $(USB_PID)\
-		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
-		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"

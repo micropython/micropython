@@ -25,13 +25,6 @@
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#include "external_flash/devices.h"
-
-#define EXTERNAL_FLASH_DEVICE_COUNT 1
-#define EXTERNAL_FLASH_DEVICES GD25Q16C
-
-#include "external_flash/external_flash.h"
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA13)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA12)
 

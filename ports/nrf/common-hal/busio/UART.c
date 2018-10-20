@@ -27,7 +27,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/busio/UART.h"
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"

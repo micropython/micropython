@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfigport.h"
-
+#include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 

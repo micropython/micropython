@@ -72,12 +72,7 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
-
-    uint32_t* id_addresses[2] = {(uint32_t *) 0x060, (uint32_t *) 0x064};
-
     for (int i=0; i<2; i++) {
-        for (int k=0; k<4; k++) {
-            raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xff;
-        }
+        ((uint32_t*) raw_id)[i] = NRF_FICR->DEVICEID[i];
     }
 }

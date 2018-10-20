@@ -37,6 +37,9 @@
 #define NRFX_SPIM_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #define NRFX_SPIM_MISO_PULL_CFG 1
 
+// QSPI
+#define NRFX_QSPI_ENABLED                          1
+
 // TWI aka. I2C; enable TWIM0 and TWIM1 (no conflict with SPIM choices)
 #define NRFX_TWIM_ENABLED 1
 #define NRFX_TWIM0_ENABLED 1

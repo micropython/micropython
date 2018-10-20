@@ -31,7 +31,7 @@
 #include "nrfx.h"
 #include "nrfx_timer.h"
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "py/runtime.h"
 
 STATIC nrfx_timer_t nrfx_timers[] = {

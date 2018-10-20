@@ -57,6 +57,9 @@ void reset_port(void);
 // Reset the rest of the board.
 void reset_board(void);
 
+// Reset to the bootloader
+void reset_to_bootloader(void);
+
 #ifdef NRF52_SERIES
 void HardFault_Handler(void);
 #endif

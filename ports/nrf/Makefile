@@ -29,6 +29,10 @@ FROZEN_MPY_DIR = freeze
 # include py core make definitions
 include ../../py/py.mk
 
+ifneq ($(MCU_SUB_VARIANT),nrf52840)
+USB = FALSE
+endif
+
 include $(TOP)/supervisor/supervisor.mk
 
 FATFS_DIR = lib/oofatfs
@@ -51,7 +55,7 @@ INC += -I./bluetooth
 INC += -I./peripherals
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
-INC += -I./usb
+INC += -I../../supervisor/shared/usb
 
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
@@ -67,6 +71,9 @@ LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE) -L boards/
 LDFLAGS += -Wl,--gc-sections
+
+# TinyUSB defines
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_NRF5X -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -94,10 +101,16 @@ SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_uarte.c \
 	)
 
+ifdef EXTERNAL_FLASH_DEVICES
+	ifeq ($(QSPI_FLASH_FILESYSTEM),1)
+		SRC_NRFX += nrfx/drivers/src/nrfx_qspi.c
+	endif
+endif
+
+
 SRC_C += \
 	background.c \
 	fatfs_port.c \
-	internal_flash.c \
 	mphalport.c \
 	tick.c \
 	board_busses.c \
@@ -147,7 +160,6 @@ SRC_COMMON_HAL += \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
-	storage/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	time/__init__.c \
@@ -185,14 +197,9 @@ SRC_BINDINGS_ENUMS += \
 	bleio/UUIDType.c
 endif
 
-SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
-
 SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
-	storage/__init__.c \
 	struct/__init__.c \
 	gamepad/__init__.c \
 	gamepad/GamePad.c \
@@ -201,44 +208,36 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
+	storage/__init__.c
 
 #	uheap/__init__.c \
 	ustack/__init__.c
-
-SRC_SHARED_BINDINGS = \
-	struct/__init__.c \
-	gamepad/__init__.c \
-	gamepad/GamePad.c \
-	bitbangio/__init__.c \
-	bitbangio/I2C.c \
-	bitbangio/SPI.c \
-	bitbangio/OneWire.c \
-	random/__init__.c \
 
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
 SRC_C += \
-	usb/usb.c \
-	usb/usb_msc_flash.c \
-	usb/usb_desc.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
 	lib/tinyusb/src/common/tusb_fifo.c \
+	lib/tinyusb/src/device/control.c \
 	lib/tinyusb/src/device/usbd.c \
 	lib/tinyusb/src/class/msc/msc_device.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
 	lib/tinyusb/src/class/hid/hid_device.c \
 	lib/tinyusb/src/tusb.c \
 
-SRC_COMMON_HAL += \
+SRC_SHARED_MODULE += \
 	usb_hid/__init__.c \
 	usb_hid/Device.c \
 
 endif
 
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
-SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
+SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
 SRC_S = supervisor/cpu.s
@@ -346,9 +345,10 @@ dfu-gen: $(BUILD)/dfu-package.zip
 $(BUILD)/dfu-package.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
+# You must have $^ here because it deduplicates entries in $(OBJ)
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction

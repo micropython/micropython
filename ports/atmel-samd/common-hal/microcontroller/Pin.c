@@ -43,8 +43,12 @@ bool apa102_mosi_in_use;
 bool speaker_enable_in_use;
 #endif
 
+#define PORT_COUNT (PORT_BITS / 32 + 1)
+
+STATIC uint32_t never_reset_pins[PORT_COUNT];
+
 void reset_all_pins(void) {
-    uint32_t pin_mask[PORT_BITS / 32 + 1] = PORT_OUT_IMPLEMENTED;
+    uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB or SWD lines.
     pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30 | PORT_PA31);
@@ -52,6 +56,11 @@ void reset_all_pins(void) {
     #ifdef SAMD21
     pin_mask[0] &= ~(PORT_PA31);
     #endif
+
+    for (uint32_t i = 0; i < PORT_COUNT; i++) {
+        pin_mask[i] &= ~(PORT_PA31);
+        pin_mask[i] &= ~never_reset_pins[i];
+    }
 
     gpio_set_port_direction(GPIO_PORTA, pin_mask[0] & ~MICROPY_PORT_A, GPIO_DIRECTION_OFF);
     gpio_set_port_direction(GPIO_PORTB, pin_mask[1] & ~MICROPY_PORT_B, GPIO_DIRECTION_OFF);
@@ -89,6 +98,10 @@ void reset_all_pins(void) {
     gpio_set_pin_direction(SPEAKER_ENABLE_PIN->number, GPIO_DIRECTION_OUT);
     gpio_set_pin_level(SPEAKER_ENABLE_PIN->number, false);
     #endif
+}
+
+void never_reset_pin_number(uint8_t pin_number) {
+    never_reset_pins[GPIO_PORT(pin_number)] |= 1 << GPIO_PIN(pin_number);
 }
 
 void reset_pin_number(uint8_t pin_number) {

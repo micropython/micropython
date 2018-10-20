@@ -25,18 +25,20 @@
  * THE SOFTWARE.
  */
 
+#include "nrfx/hal/nrf_gpio.h"
+
 #define MAKERDIARYNRF52840MDK
 
 #define MICROPY_HW_BOARD_NAME       "MakerDiary nRF52840 MDK"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "MakerDiary52840MDK"
 
-#define MICROPY_QSPI_DATA0          (&pin_P1_05)
-#define MICROPY_QSPI_DATA1          (&pin_P1_04)
-#define MICROPY_QSPI_DATA2          (&pin_P1_02)
-#define MICROPY_QSPI_DATA3          (&pin_P1_01)
-#define MICROPY_QSPI_SCK            (&pin_P1_03)
-#define MICROPY_QSPI_CS             (&pin_P1_06)
+#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1, 5)
+#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(1, 4)
+#define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(1, 2)
+#define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(1, 1)
+#define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(1, 3)
+#define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(1, 8)
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
@@ -46,17 +48,6 @@
 // TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
-// TODO #include "external_flash/devices.h"
-
-#define EXTERNAL_FLASH_DEVICE_COUNT 1
-// Datasheet for when this is implemented:
-// http://www.mxic.com.tw/Lists/Datasheet/Attachments/7428/MX25R6435F,%20Wide%20Range,%2064Mb,%20v1.4.pdf
-#define EXTERNAL_FLASH_DEVICES MX25R6435F
-
-#define EXTERNAL_FLASH_QSPI_DUAL
-
-// TODO include "external_flash/external_flash.h"
 
 #define BOARD_HAS_CRYSTAL 0
 

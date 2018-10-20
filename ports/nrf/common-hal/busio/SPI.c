@@ -59,9 +59,27 @@ STATIC spim_peripheral_t spim_peripherals[] = {
 #endif
 };
 
+STATIC bool never_reset[4];
+
 void spi_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
+        if (never_reset[i]) {
+            continue;
+        }
         nrf_spim_disable(spim_peripherals[i].spim.p_reg);
+    }
+}
+
+void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
+        if (self->spim_peripheral == &spim_peripherals[i]) {
+            never_reset[i] = true;
+
+            never_reset_pin_number(self->clock_pin_number);
+            never_reset_pin_number(self->MOSI_pin_number);
+            never_reset_pin_number(self->MISO_pin_number);
+            break;
+        }
     }
 }
 

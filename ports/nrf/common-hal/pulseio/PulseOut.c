@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "nrf/pins.h"
 #include "nrf/timers.h"
 #include "py/gc.h"

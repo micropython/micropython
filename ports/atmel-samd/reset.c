@@ -34,10 +34,6 @@ void reset(void) {
     NVIC_SystemReset();
 }
 
-void reset_to_bootloader(void) {
-    _bootloader_dbl_tap = DBL_TAP_MAGIC;
-    reset();
-}
 
 extern uint32_t _srelocate;
 bool bootloader_available(void) {
