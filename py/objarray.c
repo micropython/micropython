@@ -99,6 +99,9 @@ STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
         return NULL;
     }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
+    if (o == NULL) {
+        return NULL;
+    }
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
     o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
     #elif MICROPY_PY_BUILTINS_BYTEARRAY
@@ -115,6 +118,7 @@ STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
+#include <stdio.h>
 STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     // bytearrays can be raw-initialised from anything with the buffer protocol
     // other arrays can only be raw-initialised from bytes and bytearray objects
@@ -130,6 +134,9 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         size_t sz = mp_binary_get_size('@', typecode, NULL);
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
+        if (o == NULL) {
+            return MP_OBJ_NULL;
+        }
         memcpy(o->items, bufinfo.buf, len * sz);
         return MP_OBJ_FROM_PTR(o);
     }
@@ -144,6 +151,9 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     }
 
     mp_obj_array_t *array = array_new(typecode, len);
+    if (array == NULL) {
+        return MP_OBJ_NULL;
+    }
 
     mp_obj_t iterable = mp_getiter(initializer, NULL);
     mp_obj_t item;
@@ -197,6 +207,9 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
             return MP_OBJ_NULL;
         }
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
+        if (o == NULL) {
+            return MP_OBJ_NULL;
+        }
         memset(o->items, 0, len);
         return MP_OBJ_FROM_PTR(o);
     } else {
@@ -210,6 +223,9 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 
 mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items) {
     mp_obj_array_t *self = m_new_obj(mp_obj_array_t);
+    if (self == NULL) {
+        return MP_OBJ_NULL;
+    }
     self->base.type = &mp_type_memoryview;
     self->typecode = typecode;
     self->memview_offset = 0;
@@ -283,6 +299,9 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 
             // note: lhs->len is element count of lhs, lhs_bufinfo.len is byte count
             mp_obj_array_t *res = array_new(lhs_bufinfo.typecode, lhs->len + rhs_len);
+            if (res == NULL) {
+                return MP_OBJ_NULL;
+            }
             mp_seq_cat((byte*)res->items, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_len * sz, byte);
             return MP_OBJ_FROM_PTR(res);
         }
@@ -293,7 +312,9 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
                 return MP_OBJ_NULL; // op not supported
             }
             #endif
-            array_extend(lhs_in, rhs_in);
+            if (array_extend(lhs_in, rhs_in) == MP_OBJ_NULL) {
+                return MP_OBJ_NULL;
+            }
             return lhs_in;
         }
 
@@ -345,8 +366,12 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     if (self->free == 0) {
         size_t item_sz = mp_binary_get_size('@', self->typecode, NULL);
         // TODO: alloc policy
+        byte *new_items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + 8));
+        if (new_items == NULL) {
+            return MP_OBJ_NULL;
+        }
         self->free = 8;
-        self->items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + self->free));
+        self->items = new_items;
         mp_seq_clear(self->items, self->len + 1, self->len + self->free, item_sz);
     }
     mp_binary_set_val_array(self->typecode, self->items, self->len, arg);
@@ -378,7 +403,11 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     // make sure we have enough room to extend
     // TODO: alloc policy; at the moment we go conservative
     if (self->free < len) {
-        self->items = m_renew(byte, self->items, (self->len + self->free) * sz, (self->len + len) * sz);
+        byte *new_items = m_renew(byte, self->items, (self->len + self->free) * sz, (self->len + len) * sz);
+        if (new_items == NULL) {
+            return MP_OBJ_NULL;
+        }
+        self->items = new_items;
         self->free = 0;
     } else {
         self->free -= len;
@@ -458,9 +487,12 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 if (len_adj > 0) {
                     if (len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
-                        o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
+                        dest_items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
+                        if (dest_items == NULL) {
+                            return MP_OBJ_NULL;
+                        }
+                        o->items = dest_items;
                         o->free = len_adj;
-                        dest_items = o->items;
                     }
                     mp_seq_replace_slice_grow_inplace(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, len_adj, item_sz);
@@ -486,6 +518,9 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
             if (o->base.type == &mp_type_memoryview) {
                 res = m_new_obj(mp_obj_array_t);
+                if (res == NULL) {
+                    return MP_OBJ_NULL;
+                }
                 *res = *o;
                 res->memview_offset += slice.start;
                 res->len = slice.stop - slice.start;
@@ -493,6 +528,9 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             #endif
             {
                 res = array_new(o->typecode, slice.stop - slice.start);
+                if (res == NULL) {
+                    return MP_OBJ_NULL;
+                }
                 memcpy(res->items, (uint8_t*)o->items + slice.start * sz, (slice.stop - slice.start) * sz);
             }
             return MP_OBJ_FROM_PTR(res);

@@ -199,6 +199,9 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 return mp_seq_extract_slice(self->len, self->items, &slice);
             }
             mp_obj_list_t *res = list_new(slice.stop - slice.start);
+            if (res == NULL) {
+                return MP_OBJ_NULL;
+            }
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(res);
         }
@@ -230,7 +233,11 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 if (self->len + len_adj > self->alloc) {
                     // TODO: Might optimize memory copies here by checking if block can
                     // be grown inplace or not
-                    self->items = m_renew(mp_obj_t, self->items, self->alloc, self->len + len_adj);
+                    mp_obj_t *new_items = m_renew(mp_obj_t, self->items, self->alloc, self->len + len_adj);
+                    if (new_items == NULL) {
+                        return MP_OBJ_NULL;
+                    }
+                    self->items = new_items;
                     self->alloc = self->len + len_adj;
                 }
                 mp_seq_replace_slice_grow_inplace(self->items, self->len,

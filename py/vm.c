@@ -900,6 +900,9 @@ unwind_jump:;
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_tuple(unum, sp));
+                    if (TOP() == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     DISPATCH();
                 }
 
@@ -918,6 +921,9 @@ unwind_jump:;
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     PUSH(mp_obj_new_dict(unum));
+                    if (TOP() == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     DISPATCH();
                 }
 
@@ -935,6 +941,9 @@ unwind_jump:;
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_set(unum, sp));
+                    if (TOP() == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     DISPATCH();
                 }
 #endif
@@ -950,6 +959,9 @@ unwind_jump:;
                     mp_obj_t stop = POP();
                     mp_obj_t start = TOP();
                     SET_TOP(mp_obj_new_slice(start, stop, step));
+                    if (TOP() == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     DISPATCH();
                 }
 #endif

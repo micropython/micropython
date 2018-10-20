@@ -511,6 +511,9 @@ STATIC const mp_obj_type_t dict_view_type = {
 
 STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
     mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
+    if (o == NULL) {
+        return MP_OBJ_NULL;
+    }
     o->base.type = &dict_view_type;
     o->dict = dict;
     o->kind = kind;
@@ -609,6 +612,9 @@ void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args) {
 
 mp_obj_t mp_obj_new_dict(size_t n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
+    if (o == NULL) {
+        return MP_OBJ_NULL;
+    }
     mp_obj_dict_init(o, n_args);
     return MP_OBJ_FROM_PTR(o);
 }
