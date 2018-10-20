@@ -2178,12 +2178,13 @@ STATIC void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(unary_op, op);
 }
 
-STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // compile the subject of the expression
-    compile_node(comp, pns->nodes[0]);
+STATIC void compile_atom_brace_internal(compiler_t *comp, mp_parse_node_struct_t *pns, bool is_ordered);
 
+STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // compile_atom_expr_await may call us with a NULL node
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
+        // compile the subject of the expression
+        compile_node(comp, pns->nodes[0]);
         return;
     }
 
@@ -2197,6 +2198,27 @@ STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *p
 
     // the current index into the array of trailers
     size_t i = 0;
+
+    // handle special OrderedDict({...}) constructor call, effectively representing
+    // an OrderedDict literal
+    if (MP_PARSE_NODE_IS_ID(pns->nodes[0])
+        && MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]) == MP_QSTR_OrderedDict
+        && MP_PARSE_NODE_STRUCT_KIND(pns_trail[0]) == PN_trailer_paren
+        && !MP_PARSE_NODE_IS_NULL(pns_trail[0]->nodes[0])) {
+            //printf("OD call detected!, num args: %d\n", MP_PARSE_NODE_STRUCT_NUM_NODES(pns_trail[0]));
+            mp_parse_node_t arg1 = pns_trail[0]->nodes[0];
+            //mp_parse_node_struct_t *arg1_s = (mp_parse_node_struct_t*)arg1;
+            //printf("** %d %d\n", MP_PARSE_NODE_STRUCT_KIND(arg1_s), MP_PARSE_NODE_STRUCT_KIND(arg1_s) == PN_atom_brace);
+            if (MP_PARSE_NODE_IS_STRUCT_KIND(arg1, PN_atom_brace)) {
+                //printf("+"); mp_parse_node_print(arg1, 0);
+                //printf("** %d %d\n", MP_PARSE_NODE_STRUCT_KIND(arg1), MP_PARSE_NODE_STRUCT_KIND(arg1) == PN_atom_brace);
+                compile_atom_brace_internal(comp, (mp_parse_node_struct_t*)arg1, true);
+                return;
+            }
+    }
+
+    // compile the subject of the expression
+    compile_node(comp, pns->nodes[0]);
 
     // handle special super() call
     if (comp->scope_cur->kind == SCOPE_FUNCTION
@@ -2448,16 +2470,18 @@ STATIC void compile_atom_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) 
     }
 }
 
-STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
+STATIC void compile_atom_brace_internal(compiler_t *comp, mp_parse_node_struct_t *pns, bool is_ordered) {
+    int emit_type = is_ordered ? MP_EMIT_BUILD_ORDERED_MAP : MP_EMIT_BUILD_MAP;
+
     mp_parse_node_t pn = pns->nodes[0];
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // empty dict
-        EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
+        EMIT_ARG(build, 0, emit_type);
     } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dictorsetmaker_item) {
             // dict with one element
-            EMIT_ARG(build, 1, MP_EMIT_BUILD_MAP);
+            EMIT_ARG(build, 1, emit_type);
             compile_node(comp, pn);
             EMIT(store_map);
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dictorsetmaker) {
@@ -2474,7 +2498,7 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 bool is_dict;
                 if (!MICROPY_PY_BUILTINS_SET || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
                     // a dictionary
-                    EMIT_ARG(build, 1 + n, MP_EMIT_BUILD_MAP);
+                    EMIT_ARG(build, 1 + n, emit_type);
                     compile_node(comp, pns->nodes[0]);
                     EMIT(store_map);
                     is_dict = true;
@@ -2544,7 +2568,12 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
+STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    compile_atom_brace_internal(comp, pns, false);
+}
+
 STATIC void compile_trailer_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
+//printf("*"); mp_parse_node_print((mp_parse_node_t)pns, 0);
     compile_trailer_paren_helper(comp, pns->nodes[0], false, 0);
 }
 

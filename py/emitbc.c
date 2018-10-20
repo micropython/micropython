@@ -799,7 +799,8 @@ void mp_emit_bc_build(emit_t *emit, mp_uint_t n_args, int kind) {
     MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_MAP == MP_BC_BUILD_MAP);
     MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_SET == MP_BC_BUILD_SET);
     MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_SLICE == MP_BC_BUILD_SLICE);
-    if (kind == MP_EMIT_BUILD_MAP) {
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_ORDERED_MAP == MP_BC_BUILD_ORDERED_MAP);
+    if (kind == MP_EMIT_BUILD_MAP || kind == MP_EMIT_BUILD_ORDERED_MAP) {
         emit_bc_pre(emit, 1);
     } else {
         emit_bc_pre(emit, 1 - n_args);

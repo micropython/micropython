@@ -97,6 +97,8 @@
 #define MP_BC_YIELD_VALUE        (0x5d)
 #define MP_BC_YIELD_FROM         (0x5e)
 
+#define MP_BC_BUILD_ORDERED_MAP  (0x5f) // uint
+
 #define MP_BC_MAKE_FUNCTION         (0x60) // uint
 #define MP_BC_MAKE_FUNCTION_DEFARGS (0x61) // uint
 #define MP_BC_MAKE_CLOSURE          (0x62) // uint

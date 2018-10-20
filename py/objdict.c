@@ -582,6 +582,16 @@ mp_obj_t mp_obj_new_dict(size_t n_args) {
     return MP_OBJ_FROM_PTR(o);
 }
 
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+mp_obj_t mp_obj_new_ordereddict(size_t n_args) {
+    mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
+    mp_obj_dict_init(o, n_args);
+    o->base.type = &mp_type_ordereddict;
+    o->map.is_ordered = 1;
+    return MP_OBJ_FROM_PTR(o);
+}
+#endif
+
 size_t mp_obj_dict_len(mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     return self->map.used;

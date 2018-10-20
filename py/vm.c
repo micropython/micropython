@@ -798,6 +798,15 @@ unwind_jump:;
                     DISPATCH();
                 }
 
+                #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+                ENTRY(MP_BC_BUILD_ORDERED_MAP): {
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_UINT;
+                    PUSH(mp_obj_new_ordereddict(unum));
+                    DISPATCH();
+                }
+                #endif
+
                 ENTRY(MP_BC_STORE_MAP):
                     MARK_EXC_IP_SELECTIVE();
                     sp -= 2;

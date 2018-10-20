@@ -426,6 +426,11 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("BUILD_MAP " UINT_FMT, unum);
             break;
 
+        case MP_BC_BUILD_ORDERED_MAP:
+            DECODE_UINT;
+            printf("BUILD_ORDERED_MAP " UINT_FMT, unum);
+            break;
+
         case MP_BC_STORE_MAP:
             printf("STORE_MAP");
             break;

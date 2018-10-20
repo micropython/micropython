@@ -85,6 +85,7 @@ typedef enum {
 #define MP_EMIT_BUILD_MAP (3)
 #define MP_EMIT_BUILD_SET (6)
 #define MP_EMIT_BUILD_SLICE (8)
+#define MP_EMIT_BUILD_ORDERED_MAP (0xf)
 
 // Kind for emit->yield()
 #define MP_EMIT_YIELD_VALUE (0)

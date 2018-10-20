@@ -81,6 +81,9 @@ static const void *const entry_table[256] = {
     [MP_BC_BUILD_TUPLE] = &&entry_MP_BC_BUILD_TUPLE,
     [MP_BC_BUILD_LIST] = &&entry_MP_BC_BUILD_LIST,
     [MP_BC_BUILD_MAP] = &&entry_MP_BC_BUILD_MAP,
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    [MP_BC_BUILD_ORDERED_MAP] = &&entry_MP_BC_BUILD_ORDERED_MAP,
+    #endif
     [MP_BC_STORE_MAP] = &&entry_MP_BC_STORE_MAP,
     #if MICROPY_PY_BUILTINS_SET
     [MP_BC_BUILD_SET] = &&entry_MP_BC_BUILD_SET,
