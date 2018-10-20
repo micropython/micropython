@@ -164,7 +164,7 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
     }
 
     // obj doesn't exist in poller
-    mp_raise_OSError(MP_ENOENT);
+    return mp_raise_OSError_o(MP_ENOENT);
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 
