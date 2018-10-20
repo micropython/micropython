@@ -4,10 +4,12 @@ Refer to https://github.com/makerdiary/nrf52840-mdk or
 https://wiki.makerdiary.com/nrf52840-mdk/ for more details about the device.
 
 Notably, CircuitPython does not currently support QSPI external flash on NRF
-devices, so neither does this port. Don't store anything you care to read in
-Python on that giant 64MB flash device for now - the 64MB drive that shows up on
-your computer is actually part of the MSC driver provided by the DAPLink
-debugger. You'll still have access to 256KB of the onboard flash, however, for
+devices, so neither does this port - the 64Mb flash device is not used for
+anything. Also, don't confuse this with the 64MiB drive that shows up on your
+computer - it's actually part of the MSC driver provided by the DAPLink
+debugger, and is inaccessible at all from Python land (this drive is where you
+can copy `firmware.hex` if you'd prefer to flash that way as opposed to with
+`pyocd`. You'll still have access to 256KB of the onboard flash, however, for
 storing your Python files, cat pictures, or whatever.
 
 It's also interesting to note that all three LEDs and the "user button" on this
