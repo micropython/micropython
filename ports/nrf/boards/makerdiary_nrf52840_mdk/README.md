@@ -1,4 +1,20 @@
-# Setup
+# MakerDiary NRF52840 MDK
+
+Refer to https://github.com/makerdiary/nrf52840-mdk or
+https://wiki.makerdiary.com/nrf52840-mdk/ for more details about the device.
+
+Notably, CircuitPython does not currently support QSPI external flash on NRF
+devices, so neither does this port. Don't store anything you care to read in
+Python on that giant 64MB flash device for now - the 64MB drive that shows up on
+your computer is actually part of the MSC driver provided by the DAPLink
+debugger. You'll still have access to 256KB of the onboard flash, however, for
+storing your Python files, cat pictures, or whatever.
+
+It's also interesting to note that all three LEDs and the "user button" on this
+device are wired through sinks, not sources, so flip your boolean expectations
+when dealing with `digitalio.DigitalInOut` on this device - `my_led.value =
+True` turns the LED off!  Likewise, the user button will read `False` when
+pressed.
 
 ## Installing CircuitPython submodules
 
@@ -24,158 +40,61 @@ $ ./drivers/bluetooth/download_ble_stack.sh
 ## Note about bootloaders
 
 While most Adafruit devices come with (or can easily be flashed with) an
-Adafruit-provided bootloader (supporting niceties like UF2 flashing)
+Adafruit-provided bootloader (supporting niceties like UF2 flashing), this
+board comes with DAPLink which (apparently?) handles everything from debugging
+to programming the device, as well as the boot sequence. What's particularly
+awesome about this board is that there is no physical interaction with the board
+required to flash new code (read: CircuitPython builds) - the device is _always_
+listening for new firmware uploads (via `pyocd-flashtool`), even if userspace
+code is running.
 
-### Install `nrfjprog`
+## Building and Flashing CircuitPython
 
-Before you can install the bootloader, you will first need to install the
-`nrfjprog` tool from Nordic Semiconductors for your operating system. The
-binary files can be downloaded via the following links:
+You'll need to have [pyocd](https://github.com/mbedmicro/pyOCD) installed as
+appropriate for your system.
 
-- [nRF5x toolset tar for Linux 32-bit v9.7.2](http://www.nordicsemi.com/eng/nordic/Products/nRF52832/nRF5x-Command-Line-Tools-Linux32/52619)
-- [nRF5x toolset tar for Linux 64-bit v9.7.2](http://www.nordicsemi.com/eng/nordic/Products/nRF52832/nRF5x-Command-Line-Tools-Linux64/51388)
-- [nRF5x toolset tar for OSX v9.7.2](http://www.nordicsemi.com/eng/nordic/Products/nRF52832/nRF5x-Command-Line-Tools-OSX/53406)
-- [nRF5x toolset installer for Windows v9.7.2](http://www.nordicsemi.com/eng/nordic/Products/nRF52832/nRF5x-Command-Line-Tools-Win32/48768)
-
-You will then need to add the `nrfjprog` folder to your system `PATH` variable
-so that it is available from the command line. The exact process for this is
-OS specific, but on a POSIX type system like OS X or Linux, you can
-temporarily add the location to your `PATH` environment variables as follows:
-
-```
-$ export PATH=$PATH:YOURPATHHERE/nRF5x-Command-Line-Tools_9_7_2_OSX/nrfjprog/
-```
-
-You can test this by running the following command:
-
-```
-$ nrfjprog --version
-nrfjprog version: 9.7.2
-JLinkARM.dll version: 6.20f
-```
-
-### Flash the USB CDC Bootloader with 'nrfjprog'
-
-> This operation only needs to be done once, and only on boards that don't
-  already have the serial bootloader installed.
-
-Firstly clone the [Adafruit_nRF52_Bootloader](https://github.com/adafruit/Adafruit_nRF52_Bootloader.git) and enter its directory
-
-```
-$ git clone https://github.com/adafruit/Adafruit_nRF52_Bootloader.git
-$ cd Adafruit_nRF52_Bootloader
-```
-
-Once `nrfjprog` is installed and available in `PATH` you can flash your
-board with the serial bootloader via the following command:
-
-```
-make BOARD=feather_nrf52840_express VERSION=latest flash
+```sh
+make BOARD=makerdiary_nrf52840_mdk FLASHER=pyocd SD=s140 flash
 ```
 
 This should give you the following (or very similar) output, and you will see
 a DFU blinky pattern on one of the board LEDs:
 
 ```
-$ make BOARD=pca10056 VERSION=latest flash
-Flashing: bin/pca10056/6.0.0r0/pca10056_bootloader_s140_6.0.0r0.hex
-nrfjprog  --program bin/pca10056/6.0.0r0/pca10056_bootloader_s140_6.0.0r0.hex --chiperase -f nrf52 --reset
-Parsing hex file.
-Erasing user available code and UICR flash areas.
-Applying system reset.
-Checking that the area to write is not protected.
-Programing device.
-Applying system reset.
-Run.
+$ make BOARD=makerdiary_nrf52840_mdk FLASHER=pyocd SD=s140 flash
+Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.
+pyocd-flashtool -t nrf52 build-makerdiary_nrf52840_mdk-s140/firmware.hex --sector_erase
+INFO:root:DAP SWD MODE initialised
+INFO:root:ROM table #0 @ 0xe00ff000 cidr=b105100d pidr=2002c4008
+INFO:root:[0]<e000e000:SCS-M4 cidr=b105e00d, pidr=4000bb00c, class=14>
+WARNING:root:Invalid coresight component, cidr=0x0
+INFO:root:[1]<e0001000: cidr=0, pidr=0, component invalid>
+INFO:root:[2]<e0002000:FPB cidr=b105e00d, pidr=4002bb003, class=14>
+WARNING:root:Invalid coresight component, cidr=0x1010101
+INFO:root:[3]<e0000000: cidr=1010101, pidr=101010101010101, component invalid>
+WARNING:root:Invalid coresight component, cidr=0x0
+INFO:root:[4]<e0040000: cidr=0, pidr=0, component invalid>
+INFO:root:[5]<e0041000:ETM-M4 cidr=b105900d, pidr=4000bb925, class=9, devtype=13, devid=0>
+INFO:root:CPU core is Cortex-M4
+INFO:root:FPU present
+INFO:root:6 hardware breakpoints, 4 literal comparators
+INFO:root:4 hardware watchpoints
+[====================] 100%
+INFO:root:Programmed 237568 bytes (58 pages) at 14.28 kB/s
+#pyocd-tool -t nrf52 erase 0xFF000
+pyocd-tool -t nrf52 write32 0xFF000 0x00000001
+WARNING:root:Invalid coresight component, cidr=0x0
+WARNING:root:Invalid coresight component, cidr=0x1010101
+WARNING:root:Invalid coresight component, cidr=0x0
+pyocd-tool -t nrf52 reset
+WARNING:root:Invalid coresight component, cidr=0x0
+WARNING:root:Invalid coresight component, cidr=0x1010101
+WARNING:root:Invalid coresight component, cidr=0x0
+Resetting target
 ```
 
-From this point onward, you can now use a simple serial port for firmware
-updates.
-
-Note: You can specify other version that are available in the directory `Adafruit_nRF52_Bootloader/bin/feather_nrf52840_express/` . The `VERSION=latest` will use the latest bootloader available.
-
-### IMPORTANT: Disable Mass Storage on PCA10056 J-Link
-
-The J-Link firmware on the PCA10056 implement USB Mass Storage, but this
-causes a known conflict with reliable USB CDC serial port communication. In
-order to use the serial bootloader, **you must disable MSD support on the
-Segger J-Link**!
-
-To disable mass storage support, run the `JLinkExe` (or equivalent) command,
-and send `MSDDisable`. (You can re-enable MSD support via `MSDEnable`):
-
-```
-$ JLinkExe
-SEGGER J-Link Commander V6.20f (Compiled Oct 13 2017 17:20:01)
-DLL version V6.20f, compiled Oct 13 2017 17:19:52
-
-Connecting to J-Link via USB...O.K.
-Firmware: J-Link OB-SAM3U128-V2-NordicSemi compiled Jul 24 2017 17:30:12
-Hardware version: V1.00
-S/N: 683947110
-VTref = 3.300V
-
-
-Type "connect" to establish a target connection, '?' for help
-J-Link>MSDDisable
-Probe configured successfully.
-J-Link>exit
-```
-
-## Building and Flashing CircuitPython
-
-### Installing `adafruit-nrfutil`
-
-run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) from PyPi
-
-```
-$ pip3 install adafruit-nrfutil --user
-```
-
-### Flashing CircuitPython with USB CDC
-
-With the serial bootloader present on your board, you first need to force your
-board into DFU mode by holding down BUTTON1 and RESETTING the board (with
-BUTTON1 still pressed as you come out of reset).
-
-This will give you a **fast blinky DFU pattern** to indicate you are in DFU
-mode.
-
-You can **build and flash** a CircuitPython binary via the following command:
-
-```
-$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all dfu-gen dfu-flash
-```
-
-This should give you the following results:
-
-```
-$make V=1 BOARD=feather52840 SD=s140 SERIAL=/dev/tty.usbmodem1411 dfu-gen dfu-flash
-nrfutil dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application build-feather52840-s140/firmware.hex build-feather52840-s140/dfu-package.zip
-Zip created at build-feather52840-s140/dfu-package.zip
-nrfutil --verbose dfu serial --package build-feather52840-s140/dfu-package.zip -p /dev/ttyACM1 -b 115200 --singlebank
-Upgrading target on /dev/ttyACM1 with DFU package /home/hathach/Dropbox/adafruit/circuitpython/ada_cp/ports/nrf/build-feather52840-s140/dfu-package.zip. Flow control is disabled, Single bank mode
-Starting DFU upgrade of type 4, SoftDevice size: 0, bootloader size: 0, application size: 199840
-Sending DFU start packet
-Sending DFU init packet
-Sending firmware file
-#########################################################################################################################################################################################################################################################################################################################################################################################################
-Activating new firmware
-
-DFU upgrade took 8.50606513023s
-Device programmed.
-```
-
-### Flashing CircuitPython with MSC UF2
-
-uf2 file is generated last by `all` target
-
-```
-$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all
-Create firmware.uf2
-../../tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "build-feather52840-s140/firmware.uf2" "build-feather52840-s140/firmware.hex"
-Converting to uf2, output size: 392192, start address: 0x26000
-Wrote 392192 bytes to build-feather52840-s140/firmware.uf2.
-```
-
-Simply drag and drop firmware.uf2 to the MSC, the nrf52840 will blink fast and reset after done.
+Alternatively (and untested by me), it's apparently possible to copy
+`firmware.hex` to the MSC device provided by DAPLink and flash that way. Refer
+to [the upstream
+documentation](https://wiki.makerdiary.com/nrf52840-mdk/getting-started/#drag-n-drop-programming)
+for details.
