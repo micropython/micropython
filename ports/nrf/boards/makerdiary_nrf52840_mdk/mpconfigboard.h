@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#define FEATHER52840
+#define MAKERDIARYNRF52840MDK
 
 #define MICROPY_HW_BOARD_NAME       "MakerDiary nRF52840 MDK"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
