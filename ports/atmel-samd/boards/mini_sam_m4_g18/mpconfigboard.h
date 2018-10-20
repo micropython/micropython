@@ -21,7 +21,7 @@
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code
-#define CIRCUITPY_INTERNAL_NVM_SIZE 4096
+#define CIRCUITPY_INTERNAL_NVM_SIZE 8192
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
