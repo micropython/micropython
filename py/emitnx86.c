@@ -36,6 +36,9 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_BUILD_LIST] = 2,
     [MP_F_LIST_APPEND] = 2,
     [MP_F_BUILD_MAP] = 1,
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    [MP_F_BUILD_ORDERED_MAP] = 1,
+    #endif
     [MP_F_STORE_MAP] = 3,
     #if MICROPY_PY_BUILTINS_SET
     [MP_F_BUILD_SET] = 2,

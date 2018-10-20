@@ -211,6 +211,9 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_native_iternext,
     nlr_push,
     nlr_pop,
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    mp_obj_new_ordereddict,
+#endif
     mp_native_raise,
     mp_import_name,
     mp_import_from,
