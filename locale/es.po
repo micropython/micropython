@@ -169,7 +169,7 @@ msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 
 #: main.c:161 main.c:232
 msgid "Auto-reload is off.\n"
-msgstr "Auto-recarga deshabilitado.\n"
+msgstr "Auto-recarga deshabilitada.\n"
 
 #: main.c:175
 msgid "Running in safe mode! Not running saved code.\n"
@@ -400,7 +400,7 @@ msgstr "Ha fallado la asignación del buffer RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
-msgstr "No se pudo inicializar la UART"
+msgstr "No se puede inicializar la UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
 #: ports/nrf/common-hal/busio/UART.c:149
@@ -1344,7 +1344,7 @@ msgstr "Operacion no soportada"
 
 #: py/moduerrno.c:149
 msgid "Invalid argument"
-msgstr "argumento inválido"
+msgstr "Argumento inválido"
 
 #: py/obj.c:90
 msgid "Traceback (most recent call last):\n"
