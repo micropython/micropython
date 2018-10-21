@@ -206,6 +206,20 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
+//| .. method:: monotonic_ns(clk_id)
+//|
+//|   Return the time of the specified clock clk_id in nanoseconds. Refer to
+//|   Clock ID Constants for a list of accepted values for clk_id.
+//|
+//|   :return: the current time
+//|   :rtype: int
+//|
+STATIC mp_obj_t time_monotonic_ns(void) {
+    uint64_t time64 = common_hal_time_monotonic() * 1000000llu;
+    return mp_obj_new_int_from_ll((long long) time64);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
+
 //| .. method:: localtime([secs])
 //|
 //|   Convert a time expressed in seconds since Jan 1, 1970 to a struct_time in
@@ -280,6 +294,7 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     #endif // MICROPY_PY_COLLECTIONS
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_monotonic_ns), MP_ROM_PTR(&time_monotonic_ns_obj) },
     #endif
 };
 
