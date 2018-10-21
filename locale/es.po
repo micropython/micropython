@@ -210,7 +210,7 @@ msgstr ""
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
-msgstr "La alimentación del microcontrolador cayó. Por favor asegurate de que tu fuente de alimentación provee"
+msgstr "La alimentación del microcontrolador cayó. Por favor asegurate de que tu fuente de alimentación provee\n"
 
 #: main.c:256
 msgid ""
