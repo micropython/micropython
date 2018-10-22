@@ -633,6 +633,11 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_BUILTIN_INIT (0)
 #endif
 
+// Whether to support module-level __getattr__ (see PEP 562)
+#ifndef MICROPY_MODULE_GETATTR
+#define MICROPY_MODULE_GETATTR (0)
+#endif
+
 // Whether module weak links are supported
 #ifndef MICROPY_MODULE_WEAK_LINKS
 #define MICROPY_MODULE_WEAK_LINKS (0)
