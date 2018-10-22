@@ -55,8 +55,8 @@
 #define MICROPY_PY_FRAMEBUF            (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 #define MICROPY_PY_UCRYPTOLIB          (1)
-//not yet for all of them
-#define MICROPY_MODULE_SPECIAL_METHODS (0)
+
+#define MICROPY_MODULE_SPECIAL_METHODS (1)
 #define MICROPY_MODULE_GETATTR (1)
 
 // TODO these should be generic, not bound to fatfs
