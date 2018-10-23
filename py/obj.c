@@ -33,10 +33,12 @@
 #include "py/objtype.h"
 #include "py/objint.h"
 #include "py/objstr.h"
+#include "py/qstr.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
+#include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
@@ -81,7 +83,7 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 
 // helper function to print an exception with traceback
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
-    if (mp_obj_is_exception_instance(exc)) {
+    if (mp_obj_is_exception_instance(exc) && stack_ok()) {
         size_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {

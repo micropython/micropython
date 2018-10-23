@@ -80,7 +80,7 @@ extern volatile bool mp_msc_enabled;
 #define TRACE_BUFFER_SIZE (1 << (TRACE_BUFFER_MAGNITUDE_PACKETS + 1))
 // Size in bytes. 4 bytes per uint32_t.
 #define TRACE_BUFFER_SIZE_BYTES (TRACE_BUFFER_SIZE << 2)
-__attribute__((__aligned__(TRACE_BUFFER_SIZE_BYTES))) uint32_t mtb[TRACE_BUFFER_SIZE];
+__attribute__((__aligned__(TRACE_BUFFER_SIZE_BYTES))) uint32_t mtb[TRACE_BUFFER_SIZE] = {0};
 #endif
 
 safe_mode_t port_init(void) {
@@ -285,6 +285,19 @@ void reset_to_bootloader(void) {
  */
 __attribute__((used)) void HardFault_Handler(void)
 {
+#ifdef ENABLE_MICRO_TRACE_BUFFER
+    // Turn off the micro trace buffer so we don't fill it up in the infinite
+    // loop below.
+    REG_MTB_MASTER = 0x00000000 + 6;
+#endif
+#ifdef CIRCUITPY_CANARY_WORD
+    // If the canary is intact, then kill it and reset so we have a chance to
+    // read our files.
+    if (_ezero == CIRCUITPY_CANARY_WORD) {
+        _ezero = CIRCUITPY_SAFE_RESTART_WORD;
+        NVIC_SystemReset();
+    }
+#endif
     while (true) {
         asm("");
     }

@@ -182,7 +182,7 @@ typedef long mp_off_t;
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
 #define PORT_HEAP_SIZE                              (0x20000) // 128KiB
 #define SPI_FLASH_MAX_BAUDRATE 24000000
-#define CIRCUITPY_DEFAULT_STACK_SIZE                8192
+#define CIRCUITPY_DEFAULT_STACK_SIZE                0x6000
 #define MICROPY_CPYTHON_COMPAT                      (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
@@ -432,10 +432,6 @@ extern const struct _mp_obj_module_t wiznet_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-void run_background_tasks(void);
-#define MICROPY_VM_HOOK_LOOP run_background_tasks();
-#define MICROPY_VM_HOOK_RETURN run_background_tasks();
-
 #include "peripherals/samd/dma.h"
 
 #include "supervisor/flash_root_pointers.h"
@@ -454,6 +450,11 @@ void run_background_tasks(void);
     mp_obj_t gamepad_singleton; \
     NETWORK_ROOT_POINTERS \
 
+void run_background_tasks(void);
+void run_background_vm_tasks(void);
+#define MICROPY_VM_HOOK_LOOP run_background_vm_tasks();
+#define MICROPY_VM_HOOK_RETURN run_background_vm_tasks();
+#define CIRCUITPY_SUPERVISOR_BACKGROUND run_background_tasks();
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"

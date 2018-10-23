@@ -27,6 +27,7 @@
 #include "stack.h"
 
 #include "py/mpconfig.h"
+#include "py/runtime.h"
 #include "supervisor/cpu.h"
 
 extern uint32_t _estack;
@@ -36,6 +37,8 @@ static uint32_t current_stack_size = 0;
 supervisor_allocation* stack_alloc = NULL;
 
 #define EXCEPTION_STACK_SIZE 1024
+
+#define STACK_CANARY_VALUE 0x017829ef
 
 void allocate_stack(void) {
     mp_uint_t regs[10];
@@ -50,6 +53,19 @@ void allocate_stack(void) {
     } else {
         current_stack_size = next_stack_size;
     }
+    *stack_alloc->ptr = STACK_CANARY_VALUE;
+}
+
+inline bool stack_ok(void) {
+    return *stack_alloc->ptr == STACK_CANARY_VALUE;
+}
+
+inline void assert_heap_ok(void) {
+    if (!stack_ok()) {
+        asm("nop");
+        while(true) {}
+        mp_raise_RuntimeError(translate("Stack clobbered heap."));
+    }
 }
 
 void stack_init(void) {
@@ -58,6 +74,7 @@ void stack_init(void) {
 
 void stack_resize(void) {
     if (next_stack_size == current_stack_size) {
+        *stack_alloc->ptr = STACK_CANARY_VALUE;
         return;
     }
     free_memory(stack_alloc);

@@ -37,5 +37,10 @@ void stack_init(void);
 void stack_resize(void);
 void set_next_stack_size(uint32_t size);
 uint32_t get_current_stack_size(void);
+bool stack_ok(void);
+
+// Use this after any calls into a library which may use a lot of stack. This will raise a Python
+// exception when the stack has likely overwritten a portio of the heap.
+void assert_heap_ok(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H

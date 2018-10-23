@@ -29,10 +29,14 @@
 #include "tick.h"
 #include "supervisor/usb.h"
 
+#include "py/runtime.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/network/__init__.h"
+#include "supervisor/shared/stack.h"
 
 volatile uint64_t last_finished_tick = 0;
+
+bool stack_ok_so_far = true;
 
 void run_background_tasks(void) {
     #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
@@ -41,12 +45,19 @@ void run_background_tasks(void) {
     #ifdef CIRCUITPY_DISPLAYIO
     displayio_refresh_display();
     #endif
+
     #if MICROPY_PY_NETWORK
     network_module_background();
     #endif
     usb_background();
 
     last_finished_tick = ticks_ms;
+}
+
+void run_background_vm_tasks(void) {
+    assert_heap_ok();
+    run_background_tasks();
+    assert_heap_ok();
 }
 
 bool background_tasks_ok(void) {
