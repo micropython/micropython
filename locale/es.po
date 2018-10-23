@@ -849,15 +849,15 @@ msgstr "Longitud de string UUID inválida"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
-msgstr ""
+msgstr "Tipo desconocido"
 
 #: ports/unix/modffi.c:207 ports/unix/modffi.c:265
 msgid "Error in ffi_prep_cif"
-msgstr ""
+msgstr "Error en ffi_prep_cif"
 
 #: ports/unix/modffi.c:270
 msgid "ffi_prep_closure_loc"
-msgstr ""
+msgstr "ffi_prep_closure_loc"
 
 #: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
@@ -866,30 +866,30 @@ msgstr ""
 #: ports/unix/modusocket.c:474
 #, c-format
 msgid "[addrinfo error %d]"
-msgstr ""
+msgstr "[addrinfo error %d]"
 
 #: py/argcheck.c:44
 msgid "function does not take keyword arguments"
-msgstr ""
+msgstr "la función no tiene argumentos por palabra clave"
 
 #: py/argcheck.c:54 py/bc.c:85 py/objnamedtuple.c:104
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "la función toma %d argumentos posicionales pero le fueron dados %d"
 
 #: py/argcheck.c:64
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr ""
+msgstr "a la función le hacen falta %d argumentos posicionales requeridos"
 
 #: py/argcheck.c:72
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr ""
+msgstr "la función esperaba a lo sumo %d argumentos, tiene %d"
 
 #: py/argcheck.c:97
 msgid "'%q' argument required"
-msgstr ""
+msgstr "argumento '%q' requerido"
 
 #: py/argcheck.c:122
 msgid "extra positional arguments given"
@@ -913,11 +913,11 @@ msgstr ""
 
 #: py/bc.c:197 py/bc.c:215
 msgid "unexpected keyword argument"
-msgstr ""
+msgstr "argumento por palabra clave inesperado"
 
 #: py/bc.c:199
 msgid "keywords must be strings"
-msgstr ""
+msgstr "palabras clave deben ser strings"
 
 #: py/bc.c:206 py/objnamedtuple.c:138
 msgid "function got multiple values for argument '%q'"
