@@ -27,7 +27,7 @@ CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/extmod/axtls-include
 AXTLS_DIR = lib/axtls
-$(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-unused-parameter -Wno-unused-variable -Wno-unused-const-variable -Wno-unused-but-set-variable -Wno-array-bounds -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition $(AXTLS_DEFS_EXTRA)
+$(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-all -Wno-unused-parameter -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition $(AXTLS_DEFS_EXTRA)
 SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 	ssl/asn1.c \
 	ssl/loader.c \
