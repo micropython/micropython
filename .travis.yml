@@ -21,7 +21,7 @@ git:
 # that SDK is shortest and add it there.  In the case of major re-organizations,
 # just try to make the builds "about equal in run time"
 env:
-  - TRAVIS_TESTS="unix docs translations" TRAVIS_BOARDS="feather_huzzah circuitplayground_express pca10056 pca10059 feather_nrf52832 feather_nrf52840_express" TRAVIS_SDK=arm:nrf:esp8266
+  - TRAVIS_TESTS="unix docs translations" TRAVIS_BOARDS="feather_huzzah circuitplayground_express pca10056 pca10059 feather_nrf52832 feather_nrf52840_express makerdiary_nrf52840_mdk" TRAVIS_SDK=arm:nrf:esp8266
   - TRAVIS_BOARDS="metro_m0_express metro_m4_express pirkey_m0 trellis_m4_express trinket_m0" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_radiofruit_zigbee gemma_m0 hallowing_m0_express itsybitsy_m0_express itsybitsy_m4_express meowmeow" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_m0_express_crickit feather_m0_rfm69 feather_m0_rfm9x feather_m4_express arduino_zero" TRAVIS_SDK=arm
