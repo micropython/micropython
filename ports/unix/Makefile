@@ -218,6 +218,18 @@ minimal:
 	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
 	    MICROPY_USE_READLINE=0
 
+dev:
+	$(MAKE) BUILD=build-dev PROG=micropython-dev \
+	    CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_dev.h>" -UNDEBUG' LDFLAGS_EXTRA=-rdynamic
+
+# based on coverage_test
+dev_test: dev
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython-dev ./run-tests
+#	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython-dev ./run-tests -d thread
+#	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython-dev ./run-tests --emit native
+#	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython-dev ./run-tests --via-mpy -d basics float
+
 # build interpreter with nan-boxing as object model
 nanbox:
 	$(MAKE) \
