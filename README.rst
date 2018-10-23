@@ -44,7 +44,7 @@ Designed for CircuitPython
 
 -  `Adafruit Feather M4 Express <https://www.adafruit.com/product/3857>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-feather-m4-express-atsamd51/circuitpython>`__)
 -  `Adafruit ItsyBitsy M4 Express <https://www.adafruit.com/product/3800>`__ (`CircuitPython Guide <https://learn.adafruit.com/introducing-adafruit-itsybitsy-m4/circuitpython>`__)
--  `Adafruit Metro M4 <https://www.adafruit.com/product/3382>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/circuitpython>`__)
+-  `Adafruit Metro M4 Express <https://www.adafruit.com/product/3382>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/circuitpython>`__)
 
 Other
 ~~~~~
