@@ -20,8 +20,6 @@
 #define MICROPY_COMP_CONST          (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
-// Turn off for consistency
-#define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
@@ -57,7 +55,6 @@
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_IO               (0)
 #define MICROPY_PY_URANDOM          (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
 #define MICROPY_PY_STRUCT           (0)
@@ -84,7 +81,6 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
-#define MICROPY_MODULE_WEAK_LINKS   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_ENABLE_FINALISER    (1)
@@ -140,15 +136,33 @@ typedef long mp_off_t;
 #include "include/sam.h"
 
 #ifdef SAMD21
-#define CIRCUITPY_MCU_FAMILY samd21
+#define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
-#define PORT_HEAP_SIZE (16384 + 4096)
+#define PORT_HEAP_SIZE                              (16384 + 4096)
+#define CIRCUITPY_DEFAULT_STACK_SIZE                4096
+#define MICROPY_CPYTHON_COMPAT                      (0)
+#define MICROPY_MODULE_WEAK_LINKS                   (0)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
+#define MICROPY_PY_FUNCTION_ATTRS                   (0)
+#define MICROPY_PY_IO                               (0)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
+#define MICROPY_PY_SYS_EXC_INFO                     (0)
 #endif
 
 #ifdef SAMD51
-#define CIRCUITPY_MCU_FAMILY samd51
+#define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
-#define PORT_HEAP_SIZE (0x20000) // 128KiB
+#define PORT_HEAP_SIZE                              (0x20000) // 128KiB
+#define CIRCUITPY_DEFAULT_STACK_SIZE                8192
+#define MICROPY_CPYTHON_COMPAT                      (1)
+#define MICROPY_MODULE_WEAK_LINKS                   (1)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
+#define MICROPY_PY_FUNCTION_ATTRS                   (1)
+#define MICROPY_PY_IO                               (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
+#define MICROPY_PY_SYS_EXC_INFO                     (1)
 #endif
 
 #ifdef LONGINT_IMPL_NONE
@@ -290,6 +304,34 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
+#elif MICROPY_MODULE_WEAK_LINKS
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&os_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rtc), (mp_obj_t)&rtc_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
+    TOUCHIO_MODULE \
+    EXTRA_BUILTIN_MODULES
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
+    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
+    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&os_module) }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+
 #else
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
@@ -359,9 +401,5 @@ void run_background_tasks(void);
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
-
-// TODO(tannewt): Make this 6k+ for any non-express M4 boards because they cache sectors on the
-// stack.
-#define CIRCUITPY_DEFAULT_STACK_SIZE 4096
 
 #endif  // __INCLUDED_MPCONFIGPORT_H
