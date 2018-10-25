@@ -60,6 +60,10 @@ void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket);
 mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in);
 mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in);
 
+void wiznet5k_start_dhcp(void);
+void wiznet5k_stop_dhcp(void);
+bool wiznet5k_check_dhcp(void);
+
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_WIZNET_WIZNET5K_H

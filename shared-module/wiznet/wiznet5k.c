@@ -324,7 +324,7 @@ void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket) {
     }
 }
 
-static void wiznet5k_start_dhcp(void) {
+void wiznet5k_start_dhcp(void) {
     static DHCP_INIT_BUFFER_TYPE dhcp_buf[DHCP_INIT_BUFFER_SIZE];
 
     if (!wiznet5k_obj.dhcp_active) {
@@ -335,15 +335,17 @@ static void wiznet5k_start_dhcp(void) {
     }
 }
 
-#if 0
-static void wiznet5k_stop_dhcp(void) {
+void wiznet5k_stop_dhcp(void) {
     if (wiznet5k_obj.dhcp_active) {
         wiznet5k_obj.dhcp_active = 0;
         DHCP_stop();
         WIZCHIP_EXPORT(close)(0);
     }
 }
-#endif
+
+bool wiznet5k_check_dhcp(void) {
+    return wiznet5k_obj.dhcp_active;
+}
 
 /// Create and return a WIZNET5K object.
 mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {

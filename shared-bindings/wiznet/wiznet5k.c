@@ -66,21 +66,51 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     return wiznet5k_create(args[0], args[1], args[2]);
 }
 
+//| .. attribute:: connected
+//|
+//|   is this device physically connected?
+//|
+
 STATIC mp_obj_t wiznet5k_connected_get_value(mp_obj_t self_in) {
     (void)self_in;
     return mp_obj_new_bool(wizphy_getphylink() == PHY_LINK_ON);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_connected_get_value_obj, wiznet5k_connected_get_value);
 
-//| .. attribute:: connected
-//|
-//|   is this device physically connected?
-//|
-
 const mp_obj_property_t wiznet5k_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&wiznet5k_connected_get_value_obj,
               (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//| .. attribute:: dhcp
+//|
+//|   is DHCP active on this device? (set to true to activate DHCP, false to turn it off)
+//|
+
+STATIC mp_obj_t wiznet5k_dhcp_get_value(mp_obj_t self_in) {
+    (void)self_in;
+    return mp_obj_new_bool(wiznet5k_check_dhcp());
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_dhcp_get_value_obj, wiznet5k_dhcp_get_value);
+
+STATIC mp_obj_t wiznet5k_dhcp_set_value(mp_obj_t self_in, mp_obj_t value) {
+    (void)self_in;
+    if (mp_obj_is_true(value)) {
+        wiznet5k_start_dhcp();
+    } else {
+        wiznet5k_stop_dhcp();
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(wiznet5k_dhcp_set_value_obj, wiznet5k_dhcp_set_value);
+
+const mp_obj_property_t wiznet5k_dhcp_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&wiznet5k_dhcp_get_value_obj,
+              (mp_obj_t)&wiznet5k_dhcp_set_value_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
@@ -121,6 +151,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k
 STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&wiznet5k_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dhcp), MP_ROM_PTR(&wiznet5k_dhcp_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
