@@ -24,12 +24,16 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
 
 #include "shared-bindings/random/__init__.h"
+
+#include "shared-module/network/__init__.h"
 
 // mod_network_nic_list needs to be declared in mpconfigport.h 
 
@@ -39,6 +43,19 @@ void network_module_init(void) {
 }
 
 void network_module_deinit(void) {
+}
+
+void network_module_background(void) {
+    static uint32_t next_tick = 0;
+    uint32_t this_tick = ticks_ms;
+    if (this_tick < next_tick) return;
+    next_tick = this_tick + 1000;
+
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic); 
+        if (nic_type->timer_tick != NULL) nic_type->timer_tick(nic);
+    }
 }
 
 void network_module_register_nic(mp_obj_t nic) {

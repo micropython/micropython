@@ -61,6 +61,7 @@ typedef struct _mod_network_nic_type_t {
     int (*setsockopt)(struct _mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
     int (*settimeout)(struct _mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
     int (*ioctl)(struct _mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
+    void (*timer_tick)(struct _mod_network_socket_obj_t *socket);
 } mod_network_nic_type_t;
 
 typedef struct _mod_network_socket_obj_t {
@@ -82,6 +83,7 @@ extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 void network_module_init(void);
 void network_module_deinit(void);
+void network_module_background(void);
 void network_module_register_nic(mp_obj_t nic);
 mp_obj_t network_module_find_nic(const uint8_t *ip);
 
