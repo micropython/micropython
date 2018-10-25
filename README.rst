@@ -53,6 +53,12 @@ Other
    library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
 -  `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`__
 
+"Third-party" or "non-Adafruit" boards
+~~~~~
+
+-  `Electronic Cats Meow Meow <https://electroniccats.com/gomeow/>`__
+
+
 Download
 --------
 
