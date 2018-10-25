@@ -3,7 +3,7 @@
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
-// This is for a purple prototype which is Rev C
+// This is for Rev D
 #define MICROPY_HW_APA102_MOSI   (&pin_PA01)
 #define MICROPY_HW_APA102_SCK    (&pin_PA00)
 
@@ -28,7 +28,7 @@
 #include "external_flash/devices.h"
 
 #define EXTERNAL_FLASH_DEVICE_COUNT 1
-#define EXTERNAL_FLASH_DEVICES W25Q128JV_SQ
+#define EXTERNAL_FLASH_DEVICES GD25Q64C
 
 #include "external_flash/external_flash.h"
 

@@ -30,6 +30,7 @@
 #include <stdio.h>
 
 #include "py/objlist.h"
+#include "py/objnamedtuple.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objtype.h"
@@ -531,3 +532,164 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values
         *values = self->traceback_data;
     }
 }
+
+#if MICROPY_PY_SYS_EXC_INFO
+STATIC const mp_obj_namedtuple_type_t code_type_obj = {
+    .base = {
+        .base = {
+            .type = &mp_type_type
+        },
+        .name = MP_QSTR_code,
+        .print = namedtuple_print,
+        .make_new = namedtuple_make_new,
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .attr = namedtuple_attr,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        .parent = &mp_type_tuple,
+    },
+    .n_fields = 15,
+    .fields = {
+        MP_QSTR_co_argcount,
+        MP_QSTR_co_kwonlyargcount,
+        MP_QSTR_co_nlocals,
+        MP_QSTR_co_stacksize,
+        MP_QSTR_co_flags,
+        MP_QSTR_co_code,
+        MP_QSTR_co_consts,
+        MP_QSTR_co_names,
+        MP_QSTR_co_varnames,
+        MP_QSTR_co_freevars,
+        MP_QSTR_co_cellvars,
+        MP_QSTR_co_filename,
+        MP_QSTR_co_name,
+        MP_QSTR_co_firstlineno,
+        MP_QSTR_co_lnotab,
+    },
+};
+
+STATIC mp_obj_t code_make_new(qstr file, qstr block) {
+    mp_obj_t elems[15] = {
+        mp_obj_new_int(0),             // co_argcount
+        mp_obj_new_int(0),             // co_kwonlyargcount
+        mp_obj_new_int(0),             // co_nlocals
+        mp_obj_new_int(0),             // co_stacksize
+        mp_obj_new_int(0),             // co_flags
+        mp_obj_new_bytearray(0, NULL), // co_code
+        mp_obj_new_tuple(0, NULL),     // co_consts
+        mp_obj_new_tuple(0, NULL),     // co_names
+        mp_obj_new_tuple(0, NULL),     // co_varnames
+        mp_obj_new_tuple(0, NULL),     // co_freevars
+        mp_obj_new_tuple(0, NULL),     // co_cellvars
+        MP_OBJ_NEW_QSTR(file),         // co_filename
+        MP_OBJ_NEW_QSTR(block),        // co_name
+        mp_obj_new_int(1),             // co_firstlineno
+        mp_obj_new_bytearray(0, NULL), // co_lnotab
+    };
+
+    return namedtuple_make_new((const mp_obj_type_t*)&code_type_obj, 15, 0, elems);
+}
+
+STATIC const mp_obj_namedtuple_type_t frame_type_obj = {
+    .base = {
+        .base = {
+            .type = &mp_type_type
+        },
+        .name = MP_QSTR_frame,
+        .print = namedtuple_print,
+        .make_new = namedtuple_make_new,
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .attr = namedtuple_attr,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        .parent = &mp_type_tuple,
+    },
+    .n_fields = 8,
+    .fields = {
+        MP_QSTR_f_back,
+        MP_QSTR_f_builtins,
+        MP_QSTR_f_code,
+        MP_QSTR_f_globals,
+        MP_QSTR_f_lasti,
+        MP_QSTR_f_lineno,
+        MP_QSTR_f_locals,
+        MP_QSTR_f_trace,
+    },
+};
+
+STATIC mp_obj_t frame_make_new(mp_obj_t f_code, int f_lineno) {
+    mp_obj_t elems[8] = {
+        mp_const_none,             // f_back
+        mp_obj_new_dict(0),        // f_builtins
+        f_code,                    // f_code
+        mp_obj_new_dict(0),        // f_globals
+        mp_obj_new_int(0),         // f_lasti
+        mp_obj_new_int(f_lineno),  // f_lineno
+        mp_obj_new_dict(0),        // f_locals
+        mp_const_none,             // f_trace
+    };
+
+    return namedtuple_make_new((const mp_obj_type_t*)&frame_type_obj, 8, 0, elems);
+}
+
+STATIC const mp_obj_namedtuple_type_t traceback_type_obj = {
+    .base = {
+        .base = {
+            .type = &mp_type_type
+        },
+        .name = MP_QSTR_traceback,
+        .print = namedtuple_print,
+        .make_new = namedtuple_make_new,
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .attr = namedtuple_attr,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        .parent = &mp_type_tuple,
+    },
+    .n_fields = 4,
+    .fields = {
+        MP_QSTR_tb_frame,
+        MP_QSTR_tb_lasti,
+        MP_QSTR_tb_lineno,
+        MP_QSTR_tb_next,
+    },
+};
+
+STATIC mp_obj_t traceback_from_values(size_t *values, mp_obj_t tb_next) {
+    int lineno = values[1];
+
+    mp_obj_t elems[4] = {
+        frame_make_new(code_make_new(values[0], values[2]), lineno),
+        mp_obj_new_int(0),
+        mp_obj_new_int(lineno),
+        tb_next,
+    };
+
+    return namedtuple_make_new((const mp_obj_type_t*)&traceback_type_obj, 4, 0, elems);
+};
+
+mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in) {
+    mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (!mp_obj_is_exception_instance(self)) {
+        return mp_const_none;
+    }
+
+    size_t n, *values;
+    mp_obj_exception_get_traceback(self, &n, &values);
+    if (n == 0) {
+        return mp_const_none;
+    }
+
+    mp_obj_t tb_next = mp_const_none;
+
+    for (size_t i = 0; i < n; i += 3) {
+        tb_next = traceback_from_values(&values[i], tb_next);
+    }
+
+    return tb_next;
+}
+#endif

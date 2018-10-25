@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-11 22:08+1100\n"
+"POT-Creation-Date: 2018-10-25 12:20+1100\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -93,7 +93,7 @@ msgstr "struct: index außerhalb gültigen Bereichs"
 
 #: extmod/moduheapq.c:38
 msgid "heap must be a list"
-msgstr "heap muss eine list sein"
+msgstr "heap muss eine Liste sein"
 
 #: extmod/moduheapq.c:86 extmod/modutimeq.c:147 extmod/modutimeq.c:172
 msgid "empty heap"
@@ -147,7 +147,7 @@ msgstr "abort() wurde aufgerufen"
 msgid "invalid arguments"
 msgstr "ungültige argumente"
 
-#: lib/utils/pyexec.c:97 py/builtinimport.c:253
+#: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
 msgstr "kompilieren von Skripten ist nicht unterstützt"
 
@@ -185,12 +185,12 @@ msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
 
 #: main.c:252
 msgid "To exit, please reset the board without "
-msgstr "Zum beenden bitte resete das board ohne "
+msgstr "Zum beenden bitte resette das board ohne "
 
 #: main.c:259
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
-msgstr "Sicherheitsmodus aktive, etwas wirklich schlechtes ist passiert.\n"
+msgstr "Sicherheitsmodus aktiv, etwas wirklich schlechtes ist passiert.\n"
 
 #: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
@@ -214,8 +214,8 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach "
-"demsicheren Auswerfen von CIRCUITPY.)\n"
+"genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
+"sicheren Auswerfen von CIRCUITPY.)\n"
 
 #: main.c:270
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -225,7 +225,7 @@ msgstr ""
 
 #: main.c:426
 msgid "soft reboot\n"
-msgstr "weicher reboot\n"
+msgstr "soft reboot\n"
 
 #: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
@@ -268,7 +268,7 @@ msgstr "AnalogOut ist an diesem Pin nicht unterstützt"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
-msgstr "Ungülgites bit clock pin"
+msgstr "Ungültiges bit clock pin"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
@@ -284,7 +284,7 @@ msgstr "Ungültiger data pin"
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:145
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:150
 msgid "Serializer in use"
-msgstr "Serilaizer wird benutzt"
+msgstr "Serializer wird benutzt"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:230
 msgid "Clock unit in use"
@@ -300,12 +300,12 @@ msgid "Too many channels in sample."
 msgstr "Zu viele Kanäle im sample"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
 msgid "No DMA channel found"
 msgstr "Kein DMA Kanal gefunden"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 
@@ -321,43 +321,44 @@ msgstr "Nur 8 oder 16 bit mono mit "
 msgid "sampling rate out of range"
 msgstr "Abtastrate außerhalb der Reichweite"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
 msgid "DAC already in use"
 msgstr "DAC wird schon benutzt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
 msgid "Right channel unsupported"
 msgstr "Rechter Kanal wird nicht unterstützt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
 msgstr "Ungültiger Pin"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
 msgid "Invalid pin for left channel"
 msgstr "Ungültiger Pin für linken Kanal"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
 msgid "Invalid pin for right channel"
 msgstr "Ungültiger Pin für rechten Kanal"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
 msgid "Cannot output both channels on the same pin"
 msgstr "Kann nicht beite Kanäle auf dem gleichen Pin ausgeben"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
+#: ports/nrf/common-hal/pulseio/PulseOut.c:107
 msgid "All timers in use"
 msgstr "Alle timer werden benutzt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
-msgstr "Alle event Kanälre werden benutzt"
+msgstr "Alle event Kanäle werden benutzt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
@@ -370,7 +371,7 @@ msgstr "Nicht genug Pins vorhanden"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:81
+#: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
 msgstr "Ungültige Pins"
 
@@ -380,7 +381,7 @@ msgstr "SDA oder SCL brauchen pull up"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
-msgstr "Baudrate wird nicht unterstütz"
+msgstr "Baudrate wird nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
@@ -422,7 +423,7 @@ msgstr "Reset zum bootloader nicht möglich da bootloader nicht vorhanden"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:119
 #: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr "Ungültige PWM Frequenz"
@@ -546,23 +547,25 @@ msgstr "Minimale PWM Frequenz ist %dHz"
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
 msgstr ""
+"Mehrere PWM Frequenzen nicht unterstützt. PWM bereits auf %dHz gesetzt."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
 msgid "PWM not supported on pin %d"
-msgstr ""
+msgstr "PWM nicht unterstützt an Pin %d"
 
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:78
 msgid "No PulseIn support for %q"
-msgstr ""
+msgstr "Keine PulseIn Unterstützung für %q"
 
 #: ports/esp8266/common-hal/storage/__init__.c:34
 msgid "Unable to remount filesystem"
-msgstr ""
+msgstr "Dateisystem kann nicht wieder gemounted werden."
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
 msgstr ""
+"Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -571,102 +574,103 @@ msgstr ""
 #: ports/esp8266/machine_adc.c:57
 #, c-format
 msgid "not a valid ADC Channel: %d"
-msgstr ""
+msgstr "Kein gültiger ADC Kanal: %d"
 
 #: ports/esp8266/machine_hspi.c:131 ports/esp8266/machine_hspi.c:137
 msgid "impossible baudrate"
-msgstr ""
+msgstr "Unmögliche Baudrate"
 
 #: ports/esp8266/machine_pin.c:129
 msgid "expecting a pin"
-msgstr ""
+msgstr "Ein Pin wird erwartet"
 
 #: ports/esp8266/machine_pin.c:284
 msgid "Pin(16) doesn't support pull"
-msgstr ""
+msgstr "Pin(16) unterstützt kein pull"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
-msgstr ""
+msgstr "Ungültiger Pin"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr ""
+msgstr "Pin hat keine IRQ Fähigkeiten"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
-msgstr ""
+msgstr "Buffer zu lang"
 
 #: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
 #: ports/esp8266/machine_rtc.c:246
 msgid "invalid alarm"
-msgstr ""
+msgstr "Ungültiger Alarm"
 
 #: ports/esp8266/machine_uart.c:169
 #, c-format
 msgid "UART(%d) does not exist"
-msgstr ""
+msgstr "UART(%d) existiert nicht"
 
 #: ports/esp8266/machine_uart.c:219
 msgid "UART(1) can't read"
-msgstr ""
+msgstr "UART(1) kann nicht lesen"
 
 #: ports/esp8266/modesp.c:119
 msgid "len must be multiple of 4"
-msgstr ""
+msgstr "len muss ein vielfaches von 4 sein"
 
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
 msgstr ""
+"Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr ""
+msgstr "flash location muss unter 1MByte sein"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr ""
+msgstr "Die Frequenz kann nur 80Mhz oder 160Mhz sein"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr ""
+msgstr "AP erforderlich"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr ""
+msgstr "STA erforderlich"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
-msgstr ""
+msgstr "Kann i/f Status nicht updaten"
 
 #: ports/esp8266/modnetwork.c:142
 msgid "Cannot set STA config"
-msgstr ""
+msgstr "Kann STA Konfiguration nicht setzen"
 
 #: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
-msgstr ""
+msgstr "Kann nicht zu AP verbinden"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr ""
+msgstr "Kann nicht trennen von AP"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
-msgstr ""
+msgstr "Unbekannter Statusparameter"
 
 #: ports/esp8266/modnetwork.c:222
 msgid "STA must be active"
-msgstr ""
+msgstr "STA muss aktiv sein"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr ""
+msgstr "Scan fehlgeschlagen"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
-msgstr ""
+msgstr "wifi_set_ip_info() fehlgeschlagen"
 
 #: ports/esp8266/modnetwork.c:319
 msgid "either pos or kw args are allowed"
@@ -704,7 +708,7 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:95
+#: ports/nrf/common-hal/busio/I2C.c:96
 #, fuzzy
 msgid "All I2C peripherals are in use"
 msgstr "Alle timer werden benutzt"
@@ -742,7 +746,7 @@ msgstr ""
 msgid "Can not get temperature. status: 0x%02x"
 msgstr ""
 
-#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#: ports/nrf/common-hal/pulseio/PWMOut.c:161
 #, fuzzy
 msgid "All PWM peripherals are in use"
 msgstr "Alle timer werden benutzt"
@@ -949,19 +953,19 @@ msgstr ""
 msgid "bad compile mode"
 msgstr ""
 
-#: py/builtinimport.c:338
+#: py/builtinimport.c:336
 msgid "cannot perform relative import"
 msgstr ""
 
-#: py/builtinimport.c:422 py/builtinimport.c:534
+#: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
 msgstr ""
 
-#: py/builtinimport.c:425 py/builtinimport.c:537
+#: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
 msgstr ""
 
-#: py/builtinimport.c:512
+#: py/builtinimport.c:510
 msgid "relative import"
 msgstr ""
 
@@ -2009,7 +2013,7 @@ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:223
+#: shared-bindings/audioio/AudioOut.c:226
 msgid "Not playing"
 msgstr ""
 
@@ -2220,7 +2224,7 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
-#: shared-bindings/pulseio/PulseOut.c:75
+#: shared-bindings/pulseio/PulseOut.c:76
 msgid "Expected a %q"
 msgstr ""
 
@@ -2282,7 +2286,7 @@ msgstr ""
 msgid "Read-only"
 msgstr ""
 
-#: shared-bindings/pulseio/PulseOut.c:134
+#: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
 msgstr ""
 
@@ -2311,7 +2315,7 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
-#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:64
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
 msgid "no available NIC"
 msgstr ""
 
@@ -2339,15 +2343,15 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 

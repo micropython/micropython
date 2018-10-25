@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-11 22:08+1100\n"
+"POT-Creation-Date: 2018-10-25 12:20+1100\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -65,7 +65,7 @@ msgstr "string de longitud impar"
 
 #: extmod/modubinascii.c:101
 msgid "non-hex digit found"
-msgstr "se encontró un digito no hexadecimal"
+msgstr "se encontró un digito non-hex"
 
 #: extmod/modubinascii.c:169
 msgid "incorrect padding"
@@ -81,7 +81,7 @@ msgstr "No se puede obtener inequívocamente sizeof escalar"
 
 #: extmod/moductypes.c:397
 msgid "struct: no fields"
-msgstr "struct: no fields"
+msgstr "struct: sin campos"
 
 #: extmod/moductypes.c:530
 msgid "struct: cannot index"
@@ -121,7 +121,7 @@ msgstr "certificado inválido"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr "desborde de queue"
+msgstr "desbordamiento de queue"
 
 #: extmod/moduzlib.c:98
 msgid "compression header"
@@ -132,16 +132,14 @@ msgid "invalid dupterm index"
 msgstr "index dupterm inválido"
 
 #: extmod/vfs_fat.c:426 py/moduerrno.c:150
-#, fuzzy
 msgid "Read-only filesystem"
-msgstr "sistema de archivos de Solo-Lectura"
+msgstr "Sistema de archivos de solo-Lectura"
 
 #: extmod/vfs_posix_file.c:48 ports/unix/file.c:50 py/objstringio.c:43
 msgid "I/O operation on closed file"
 msgstr "Operación I/O en archivo cerrado"
 
 #: lib/embed/abort_.c:8
-#, fuzzy
 msgid "abort() called"
 msgstr "se llamó abort()"
 
@@ -149,7 +147,7 @@ msgstr "se llamó abort()"
 msgid "invalid arguments"
 msgstr "argumentos inválidos"
 
-#: lib/utils/pyexec.c:97 py/builtinimport.c:253
+#: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
 msgstr "script de compilación no soportado"
 
@@ -158,21 +156,20 @@ msgid " output:\n"
 msgstr " salida:\n"
 
 #: main.c:167 main.c:240
-#, fuzzy
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
 "Auto-reload habilitado. Simplemente guarda los archivos via USB para "
-"ejecutarlos o entra REPL para desabilitarlos.\n"
+"ejecutarlos o entra al REPL para desabilitarlos.\n"
 
 #: main.c:169
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Ejecutando en modo seguro! Auto-recarga esta deshabilitado.\n"
+msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 
 #: main.c:171 main.c:242
 msgid "Auto-reload is off.\n"
-msgstr "Auto-reload deshabilitado.\n"
+msgstr "Auto-recarga deshabilitada.\n"
 
 #: main.c:185
 msgid "Running in safe mode! Not running saved code.\n"
@@ -184,7 +181,7 @@ msgstr "ADVERTENCIA: El nombre de archivo de tu código tiene dos extensiones\n"
 
 #: main.c:249
 msgid "You requested starting safe mode by "
-msgstr "Solicitaste iniciar en modo seguro con "
+msgstr "Solicitaste iniciar en modo seguro por "
 
 #: main.c:252
 msgid "To exit, please reset the board without "
@@ -199,29 +196,29 @@ msgstr ""
 
 #: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr ""
-"Parece que nuestro código del núcleo CircuitPython dejó de funcionar. "
-"Whoops!\n"
+msgstr "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
 #: main.c:262
 #, fuzzy
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
-"Por favor registra un problema aquí con los contenidos de tu unidad de "
-"almacenamiento CIRCUITPY:\n"
+"Por favor registra un issue en el siguiente URL con los contenidos de tu "
+"unidad de almacenamiento CIRCUITPY:\n"
 
 #: main.c:265
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
 msgstr ""
+"La alimentación del microcontrolador cayó. Por favor asegurate de que tu "
+"fuente de alimentación provee\n"
 
 #: main.c:266
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"suficiente poder para todo el circuito y pulsa reset (después de expulsar "
+"suficiente poder para todo el circuito y presiona reset (después de expulsar "
 "CIRCUITPY).\n"
 
 #: main.c:270
@@ -261,7 +258,7 @@ msgstr "Sin bus UART por default"
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 #: ports/nrf/common-hal/analogio/AnalogIn.c:39
 msgid "Pin does not have ADC capabilities"
-msgstr "pin no tiene capacidades ADC"
+msgstr "Pin no tiene capacidad ADC"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:49
 msgid "No DAC on chip"
@@ -278,7 +275,7 @@ msgstr "Pin bit clock inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
-msgstr "Bit clock y Word select deben compartir la unidad de reloj"
+msgstr "Bit clock y word select deben compartir una unidad de reloj"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
@@ -299,19 +296,19 @@ msgstr "Clock unit está siendo utilizado"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
 msgid "Unable to find free GCLK"
-msgstr "No se pudo encontrar un GCLK disponible"
+msgstr "No se pudo encontrar un GCLK libre"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:254
 msgid "Too many channels in sample."
-msgstr "Demasiados canales en sample"
+msgstr "Demasiados canales en sample."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
 msgid "No DMA channel found"
 msgstr "No se encontró el canal DMA"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
 
@@ -321,52 +318,53 @@ msgstr "Pin clock inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
-msgstr "Solo mono de 8 o 16 bit con"
+msgstr "Solo mono de 8 o 16 bit con "
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
 msgid "sampling rate out of range"
-msgstr "velocidad de muestreo fuera de rango"
+msgstr "frecuencia de muestreo fuera de rango"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
 msgid "DAC already in use"
 msgstr "DAC ya está siendo utilizado"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
 msgid "Right channel unsupported"
-msgstr "El canal derecho no tiene soporte"
+msgstr "Canal derecho no soportado"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
-msgstr "pin inválido"
+msgstr "Pin inválido"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
 msgid "Invalid pin for left channel"
 msgstr "Pin inválido para canal izquierdo"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
 msgid "Invalid pin for right channel"
 msgstr "Pin inválido para canal derecho"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
 msgid "Cannot output both channels on the same pin"
-msgstr "No es posible utilizar el mismo pin para ambos canales"
+msgstr "No se puede tener ambos canales en el mismo pin"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
+#: ports/nrf/common-hal/pulseio/PulseOut.c:107
 msgid "All timers in use"
-msgstr "Todos los timers están siendo utilizados"
+msgstr "Todos los timers en uso"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
-msgstr "Todos los canales de eventos están siendo utilizados"
+msgstr "Todos los event channels en uso"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor que %d"
+msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -376,7 +374,7 @@ msgstr "No hay suficientes pines disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:81
+#: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
@@ -386,25 +384,25 @@ msgstr "SDA o SCL necesitan una pull up"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
-msgstr "Baudrate sin soporte"
+msgstr "Baudrate no soportado"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
-msgstr "bytes > 8 bits no son soportados"
+msgstr "bytes > 8 bits no soportados"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
 #: ports/nrf/common-hal/busio/UART.c:82
 msgid "tx and rx cannot both be None"
-msgstr "tx y rx no pueden ser ambos None"
+msgstr "Ambos tx y rx no pueden ser None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:145
 #: ports/nrf/common-hal/busio/UART.c:115
 msgid "Failed to allocate RX buffer"
-msgstr "Fallo la asignación del buffer RX"
+msgstr "Ha fallado la asignación del buffer RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:153
 msgid "Could not initialize UART"
-msgstr "No se pudo inicializar la UART"
+msgstr "No se puede inicializar la UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
 #: ports/nrf/common-hal/busio/UART.c:149
@@ -419,16 +417,16 @@ msgstr "Sin pin TX"
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
 msgid "Cannot get pull while in output mode"
-msgstr "No se puede obtener pull mientras en modo de salida"
+msgstr "No puede ser pull mientras este en modo de salida"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr "No se puede reiniciar en bootloader porque no hay bootloader presente."
+msgstr "No se puede reiniciar a bootloader porque no hay bootloader presente."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:120
+#: ports/nrf/common-hal/pulseio/PWMOut.c:119
 #: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr "Frecuencia PWM inválida"
@@ -439,7 +437,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
-msgstr "pin no tiene soporte en hardware"
+msgstr "Sin soporte de hardware en pin"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
@@ -449,12 +447,12 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
-msgstr "Fallo la asignación del buffer RX de %d bytes"
+msgstr "Falló la asignación del buffer RX de %d bytes"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
-msgstr "pop en un PulseIn vacío"
+msgstr "pop de un PulseIn vacío"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
@@ -475,7 +473,7 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
-msgstr "Valor de calibración fuera de rango +/-127"
+msgstr "Valor de calibración fuera del rango +/-127"
 
 #: ports/atmel-samd/common-hal/storage/__init__.c:48
 msgid "Cannot remount '/' when USB is active."
@@ -503,11 +501,11 @@ msgstr "Error USB"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
-msgstr "Pin %q no tiene capacidades ADC"
+msgstr "Pin %q no tiene capacidades de ADC"
 
 #: ports/esp8266/common-hal/analogio/AnalogOut.c:39
 msgid "No hardware support for analog out."
-msgstr "Sin soporte de hardware para salida análoga"
+msgstr "Sin soporte de hardware para analog out"
 
 #: ports/esp8266/common-hal/busio/SPI.c:72
 msgid "Pins not valid for SPI"
@@ -527,21 +525,21 @@ msgstr "stop bits inválidos"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
 msgid "ESP8266 does not support pull down."
-msgstr "ESP8266 no tiene soporte para pull down"
+msgstr "ESP8266 no soporta pull down."
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr "GPIO16 no tiene soporte para pull up."
+msgstr "GPIO16 no soporta pull up."
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr "ESP8226 no tiene soporte para modo seguro"
+msgstr "ESP8226 no soporta modo seguro."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:54
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:113
 #, c-format
 msgid "Maximum PWM frequency is %dhz."
-msgstr "La frecuencia máxima del PWM es %dhz"
+msgstr "La frecuencia máxima del PWM es %dhz."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:57
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:116
@@ -552,7 +550,7 @@ msgstr "La frecuencia mínima del PWM es 1hz"
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
 msgstr ""
-"PWM de múltiples frecuencias no tiene soporte. El PWM ya se estableció a %dhz"
+"PWM de múltiples frecuencias no soportado. El PWM ya se estableció a %dhz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
@@ -561,11 +559,11 @@ msgstr "El pin %d no soporta PWM"
 
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:78
 msgid "No PulseIn support for %q"
-msgstr "%q no tiene soporte para PulseIn"
+msgstr "Sin soporte PulseIn para %q"
 
 #: ports/esp8266/common-hal/storage/__init__.c:34
 msgid "Unable to remount filesystem"
-msgstr "No se pudo montar de nuevo el sistema de archivos"
+msgstr "Incapaz de montar de nuevo el sistema de archivos"
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
@@ -590,7 +588,7 @@ msgstr "esperando un pin"
 
 #: ports/esp8266/machine_pin.c:284
 msgid "Pin(16) doesn't support pull"
-msgstr "Pin(16) no tiene soporte para pull"
+msgstr "Pin(16) no soporta para pull"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
@@ -598,7 +596,7 @@ msgstr "pin inválido"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr "pin no tiene capacidades IRQ"
+msgstr "pin sin capacidades IRQ"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
@@ -625,8 +623,7 @@ msgstr "len debe de ser múltiple de 4"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
-"la asignación de memoria ha fallado, asignando %u bytes para código nativo"
+msgstr "falló la asignación de memoria, asignando %u bytes para código nativo"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
@@ -638,11 +635,11 @@ msgstr "la frecuencia solo puede ser 80MHz o 160MHz"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr "AP necesario"
+msgstr "AP requerido"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr "STA necesario"
+msgstr "STA requerido"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
@@ -712,13 +709,13 @@ msgstr "parámetro config desconocido"
 msgid "AnalogOut functionality not supported"
 msgstr "Funcionalidad AnalogOut no soportada"
 
-#: ports/nrf/common-hal/busio/I2C.c:95
+#: ports/nrf/common-hal/busio/I2C.c:96
 msgid "All I2C peripherals are in use"
-msgstr "Todos los timers están siendo utilizados"
+msgstr "Todos los timers están siendo usados"
 
 #: ports/nrf/common-hal/busio/SPI.c:115
 msgid "All SPI peripherals are in use"
-msgstr "Todos los timers están siendo utilizados"
+msgstr "Todos los timers están siendo usados"
 
 #: ports/nrf/common-hal/busio/UART.c:48
 #, c-format
@@ -746,10 +743,9 @@ msgstr "busio.UART no disponible"
 msgid "Can not get temperature. status: 0x%02x"
 msgstr "No se puede obtener la temperatura. status: 0x%02x"
 
-#: ports/nrf/common-hal/pulseio/PWMOut.c:162
-#, fuzzy
+#: ports/nrf/common-hal/pulseio/PWMOut.c:161
 msgid "All PWM peripherals are in use"
-msgstr "Todos los timers están siendo utilizados"
+msgstr "Todos los periféricos PWM en uso"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
@@ -765,16 +761,16 @@ msgstr "No se puede consultar la dirección del dispositivo."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
 msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr "No se puede agregar el UUID de 128-bits Especifico del Vendedor."
+msgstr "No se puede agregar el Vendor Specific 128-bit UUID."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:284
 #: ports/nrf/drivers/bluetooth/ble_drv.c:298
 msgid "Can not add Service."
-msgstr "No se puede agregar el Servicio"
+msgstr "No se puede agregar el Servicio."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr "No se puede agregar la Característica"
+msgstr "No se puede agregar la Característica."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
@@ -854,15 +850,15 @@ msgstr "Longitud de string UUID inválida"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
-msgstr ""
+msgstr "Tipo desconocido"
 
 #: ports/unix/modffi.c:207 ports/unix/modffi.c:265
 msgid "Error in ffi_prep_cif"
-msgstr ""
+msgstr "Error en ffi_prep_cif"
 
 #: ports/unix/modffi.c:270
 msgid "ffi_prep_closure_loc"
-msgstr ""
+msgstr "ffi_prep_closure_loc"
 
 #: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
@@ -871,30 +867,30 @@ msgstr ""
 #: ports/unix/modusocket.c:474
 #, c-format
 msgid "[addrinfo error %d]"
-msgstr ""
+msgstr "[addrinfo error %d]"
 
 #: py/argcheck.c:44
 msgid "function does not take keyword arguments"
-msgstr ""
+msgstr "la función no tiene argumentos por palabra clave"
 
 #: py/argcheck.c:54 py/bc.c:85 py/objnamedtuple.c:104
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "la función toma %d argumentos posicionales pero le fueron dados %d"
 
 #: py/argcheck.c:64
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr ""
+msgstr "a la función le hacen falta %d argumentos posicionales requeridos"
 
 #: py/argcheck.c:72
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr ""
+msgstr "la función esperaba a lo sumo %d argumentos, tiene %d"
 
 #: py/argcheck.c:97
 msgid "'%q' argument required"
-msgstr ""
+msgstr "argumento '%q' requerido"
 
 #: py/argcheck.c:122
 msgid "extra positional arguments given"
@@ -918,11 +914,11 @@ msgstr ""
 
 #: py/bc.c:197 py/bc.c:215
 msgid "unexpected keyword argument"
-msgstr ""
+msgstr "argumento por palabra clave inesperado"
 
 #: py/bc.c:199
 msgid "keywords must be strings"
-msgstr ""
+msgstr "palabras clave deben ser strings"
 
 #: py/bc.c:206 py/objnamedtuple.c:138
 msgid "function got multiple values for argument '%q'"
@@ -953,19 +949,19 @@ msgstr ""
 msgid "bad compile mode"
 msgstr ""
 
-#: py/builtinimport.c:338
+#: py/builtinimport.c:336
 msgid "cannot perform relative import"
 msgstr ""
 
-#: py/builtinimport.c:422 py/builtinimport.c:534
+#: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
 msgstr "módulo no encontrado"
 
-#: py/builtinimport.c:425 py/builtinimport.c:537
+#: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
 msgstr "ningún módulo se llama '%q'"
 
-#: py/builtinimport.c:512
+#: py/builtinimport.c:510
 msgid "relative import"
 msgstr "import relativo"
 
@@ -1134,7 +1130,7 @@ msgid "'%s' expects a register"
 msgstr ""
 
 #: py/emitinlinethumb.c:211
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' expects a special register"
 msgstr "ord espera un carácter"
 
@@ -1178,7 +1174,6 @@ msgid "unsupported Thumb instruction '%s' with %d arguments"
 msgstr ""
 
 #: py/emitinlinethumb.c:810
-#, fuzzy
 msgid "branch not in range"
 msgstr "El argumento de chr() no esta en el rango(256)"
 
@@ -1345,14 +1340,12 @@ msgid "File exists"
 msgstr ""
 
 #: py/moduerrno.c:148
-#, fuzzy
 msgid "Unsupported operation"
-msgstr "El pin %d no soporta PWM"
+msgstr "Operacion no soportada"
 
 #: py/moduerrno.c:149
-#, fuzzy
 msgid "Invalid argument"
-msgstr "argumentos inválidos"
+msgstr "Argumento inválido"
 
 #: py/obj.c:90
 msgid "Traceback (most recent call last):\n"
@@ -1424,9 +1417,8 @@ msgid "%q indices must be integers, not %s"
 msgstr ""
 
 #: py/obj.c:423
-#, fuzzy
 msgid "%q index out of range"
-msgstr "struct: index fuera de rango"
+msgstr "%w index fuera de rango"
 
 #: py/obj.c:455
 msgid "object has no len"
@@ -1438,9 +1430,8 @@ msgid "object of type '%s' has no len()"
 msgstr ""
 
 #: py/obj.c:496
-#, fuzzy
 msgid "object does not support item deletion"
-msgstr "ESP8226 no soporta modo seguro"
+msgstr "object no soporta supresión de item"
 
 #: py/obj.c:499
 #, c-format
@@ -1499,9 +1490,8 @@ msgid "full"
 msgstr ""
 
 #: py/objdeque.c:127
-#, fuzzy
 msgid "empty"
-msgstr "heap vacío"
+msgstr "vacío"
 
 #: py/objdict.c:314
 msgid "popitem(): dictionary is empty"
@@ -1512,9 +1502,8 @@ msgid "dict update sequence has wrong length"
 msgstr ""
 
 #: py/objfloat.c:308 py/parsenum.c:331
-#, fuzzy
 msgid "complex values not supported"
-msgstr "script de compilación no soportado"
+msgstr "valores complejos no soportados"
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
@@ -1545,9 +1534,8 @@ msgid "float too big"
 msgstr ""
 
 #: py/objint.c:328
-#, fuzzy
 msgid "long int not supported in this build"
-msgstr "AnalogOut no es soportado por el pin dado"
+msgstr "long int no soportado en esta compilación"
 
 #: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
 msgid "small int overflow"
@@ -1586,9 +1574,8 @@ msgid "can't set attribute"
 msgstr ""
 
 #: py/objobject.c:55
-#, fuzzy
 msgid "__new__ arg must be a user-type"
-msgstr "heap debe ser una lista"
+msgstr "__new__ arg debe ser un user-type"
 
 #: py/objrange.c:110
 msgid "zero step"
@@ -1599,9 +1586,8 @@ msgid "pop from an empty set"
 msgstr ""
 
 #: py/objslice.c:66
-#, fuzzy
 msgid "Length must be an int"
-msgstr "heap debe ser una lista"
+msgstr "Length debe ser un int"
 
 #: py/objslice.c:71
 msgid "Length must be non-negative"
@@ -1616,9 +1602,8 @@ msgid "Cannot subclass slice"
 msgstr ""
 
 #: py/objstr.c:261
-#, fuzzy
 msgid "bytes value out of range"
-msgstr "Valor de calibración fuera de rango +/-127"
+msgstr "valor de bytes fuera de rango"
 
 #: py/objstr.c:270
 msgid "wrong number of arguments"
@@ -1629,18 +1614,16 @@ msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 
 #: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
-#, fuzzy
 msgid "empty separator"
-msgstr "heap vacío"
+msgstr "separator vacío"
 
 #: py/objstr.c:641
 msgid "rsplit(None,n)"
 msgstr ""
 
 #: py/objstr.c:713
-#, fuzzy
 msgid "substring not found"
-msgstr "módulo no encontrado"
+msgstr "substring no encontrado"
 
 #: py/objstr.c:770
 msgid "start/end indices"
@@ -1681,14 +1664,12 @@ msgid ""
 msgstr ""
 
 #: py/objstr.c:1055 py/objstr.c:1083
-#, fuzzy
 msgid "tuple index out of range"
-msgstr "struct: index fuera de rango"
+msgstr "tuple index fuera de rango"
 
 #: py/objstr.c:1071
-#, fuzzy
 msgid "attributes not supported yet"
-msgstr "bytes > 8 bits no soportados"
+msgstr "atributos aún no soportados"
 
 #: py/objstr.c:1079
 msgid ""
@@ -1696,9 +1677,8 @@ msgid ""
 msgstr ""
 
 #: py/objstr.c:1171
-#, fuzzy
 msgid "invalid format specifier"
-msgstr "formato inválido"
+msgstr "especificador de formato inválido"
 
 #: py/objstr.c:1192
 msgid "sign not allowed in string format specifier"
@@ -1736,9 +1716,8 @@ msgid "incomplete format key"
 msgstr ""
 
 #: py/objstr.c:1482
-#, fuzzy
 msgid "incomplete format"
-msgstr "formato inválido"
+msgstr "formato incompleto"
 
 #: py/objstr.c:1490
 msgid "not enough arguments for format string"
@@ -1776,9 +1755,8 @@ msgid "string indices must be integers, not %s"
 msgstr ""
 
 #: py/objstrunicode.c:145 py/objstrunicode.c:164
-#, fuzzy
 msgid "string index out of range"
-msgstr "struct: index fuera de rango"
+msgstr "string index fuera de rango"
 
 #: py/objtype.c:358
 msgid "__init__() should return None"
@@ -1827,9 +1805,8 @@ msgid "type '%q' is not an acceptable base type"
 msgstr ""
 
 #: py/objtype.c:1137
-#, fuzzy
 msgid "multiple inheritance not supported"
-msgstr "operación I2C no soportada"
+msgstr "herencia multiple no soportada"
 
 #: py/objtype.c:1164
 msgid "multiple bases have instance lay-out conflict"
@@ -1848,14 +1825,12 @@ msgid "issubclass() arg 1 must be a class"
 msgstr ""
 
 #: py/parse.c:726
-#, fuzzy
 msgid "constant must be an integer"
-msgstr "heap debe ser una lista"
+msgstr "constant debe ser un entero"
 
 #: py/parse.c:868
-#, fuzzy
 msgid "Unable to init parser"
-msgstr "No se pudo encontrar un GCLK disponible"
+msgstr "Incapaz de inicializar el parser"
 
 #: py/parse.c:1170
 msgid "unexpected indent"
@@ -1871,7 +1846,7 @@ msgstr ""
 
 #: py/parsenum.c:151
 msgid "invalid syntax for integer"
-msgstr "formato inválido"
+msgstr "sintaxis inválido para entero"
 
 #: py/parsenum.c:155
 #, c-format
@@ -1880,11 +1855,11 @@ msgstr ""
 
 #: py/parsenum.c:339
 msgid "invalid syntax for number"
-msgstr "argumentos inválidos"
+msgstr "sintaxis inválido para número"
 
 #: py/parsenum.c:342
 msgid "decimal numbers not supported"
-msgstr "bytes > 8 bits no son soportados"
+msgstr "números decimales no soportados"
 
 #: py/persistentcode.c:223
 msgid ""
@@ -1898,7 +1873,7 @@ msgstr ""
 
 #: py/runtime.c:206
 msgid "name not defined"
-msgstr "módulo no encontrado"
+msgstr "name no definido"
 
 #: py/runtime.c:209
 msgid "name '%q' is not defined"
@@ -1973,9 +1948,8 @@ msgid "exceptions must derive from BaseException"
 msgstr ""
 
 #: py/runtime.c:1430
-#, fuzzy
 msgid "cannot import name %q"
-msgstr "ningún módulo se llama '%q'"
+msgstr "no se puede importar name '%q'"
 
 #: py/runtime.c:1535
 msgid "memory allocation failed, heap is locked"
@@ -1995,9 +1969,8 @@ msgid "object not in sequence"
 msgstr ""
 
 #: py/stream.c:96
-#, fuzzy
 msgid "stream operation not supported"
-msgstr "operación I2C no soportada"
+msgstr "operación stream no soportada"
 
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
@@ -2036,7 +2009,7 @@ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:223
+#: shared-bindings/audioio/AudioOut.c:226
 msgid "Not playing"
 msgstr ""
 
@@ -2074,34 +2047,32 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/audioio/Mixer.c:94
-#, fuzzy
 msgid "Invalid voice count"
-msgstr "Dirección inválida."
+msgstr "Cuenta de voces inválida"
 
 #: shared-bindings/audioio/Mixer.c:99
-#, fuzzy
 msgid "Invalid channel count"
-msgstr "argumentos inválidos"
+msgstr "Cuenta de canales inválida"
 
 #: shared-bindings/audioio/Mixer.c:103
-#, fuzzy
 msgid "Sample rate must be positive"
-msgstr "STA debe estar activo"
+msgstr "Sample rate debe ser positivo"
 
 #: shared-bindings/audioio/Mixer.c:107
-#, fuzzy
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits debe ser 8"
+msgstr "bits_per_sample debe ser 8 o 16"
 
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
+"sample_source buffer debe ser un bytearray o un array de tipo 'h', 'H', 'b' "
+"o'B'"
 
 #: shared-bindings/audioio/RawSample.c:104
 msgid "buffer must be a bytes-like object"
-msgstr ""
+msgstr "buffer debe de ser un objeto bytes-like"
 
 #: shared-bindings/audioio/WaveFile.c:78
 #: shared-bindings/displayio/OnDiskBitmap.c:85
@@ -2146,7 +2117,6 @@ msgid "stop must be 1 or 2"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
-#, fuzzy
 msgid "Invalid direction."
 msgstr "Dirección inválida."
 
@@ -2248,7 +2218,7 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
-#: shared-bindings/pulseio/PulseOut.c:75
+#: shared-bindings/pulseio/PulseOut.c:76
 msgid "Expected a %q"
 msgstr ""
 
@@ -2307,11 +2277,10 @@ msgid "index must be int"
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:293
-#, fuzzy
 msgid "Read-only"
-msgstr "Solo lectura"
+msgstr "Solo-lectura"
 
-#: shared-bindings/pulseio/PulseOut.c:134
+#: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
 msgstr ""
 
@@ -2340,7 +2309,7 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
-#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:64
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
 msgid "no available NIC"
 msgstr ""
 
@@ -2368,15 +2337,15 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
@@ -2391,31 +2360,31 @@ msgstr ""
 
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
-msgstr ""
+msgstr "No se pudo asignar el primer buffer"
 
 #: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
 msgid "Couldn't allocate second buffer"
-msgstr ""
+msgstr "No se pudo asignar el segundo buffer"
 
 #: shared-module/audioio/Mixer.c:82
 msgid "Voice index too high"
-msgstr ""
+msgstr "Index de voz demasiado alto"
 
 #: shared-module/audioio/Mixer.c:85
 msgid "The sample's sample rate does not match the mixer's"
-msgstr ""
+msgstr "El sample rate del sample no iguala al del mixer"
 
 #: shared-module/audioio/Mixer.c:88
 msgid "The sample's channel count does not match the mixer's"
-msgstr ""
+msgstr "La cuenta de canales del sample no iguala a las del mixer"
 
 #: shared-module/audioio/Mixer.c:91
 msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr ""
+msgstr "Los bits_per_sample del sample no igualan a los del mixer"
 
 #: shared-module/audioio/Mixer.c:100
 msgid "The sample's signedness does not match the mixer's"
-msgstr ""
+msgstr "El signo del sample no iguala al del mixer"
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
@@ -2478,14 +2447,12 @@ msgid "Group full"
 msgstr ""
 
 #: shared-module/displayio/Group.c:48
-#, fuzzy
 msgid "Group empty"
-msgstr "heap vacío"
+msgstr "Group vacío"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
-#, fuzzy
 msgid "Invalid BMP file"
-msgstr "pin inválido"
+msgstr "Archivo BMP inválido"
 
 #: shared-module/displayio/OnDiskBitmap.c:59
 #, c-format

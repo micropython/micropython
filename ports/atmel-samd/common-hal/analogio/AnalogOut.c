@@ -138,16 +138,5 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
 }
 
 void analogout_reset(void) {
-    #if defined(SAMD21) && !defined(PIN_PA02)
-    return;
-    #endif
-    #ifdef SAMD21
-    while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
-    #endif
-    #ifdef SAMD51
-    while (DAC->SYNCBUSY.reg & DAC_SYNCBUSY_SWRST) {}
-    #endif
-    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
-
-    // TODO(tannewt): Turn off the DAC clocks to save power.
+    // AudioOut resets the DAC in case its been used for audio which requires special handling.
 }

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,5 +24,17 @@
  * THE SOFTWARE.
  */
 
-// Pins aren't actually defined here. They are in the board specific directory
-// such as boards/feather_nrf52832/pins.csv
+#include "boards/board.h"
+#include "usb.h"
+
+void board_init(void) {
+    usb_init();
+}
+
+bool board_requests_safe_mode(void) {
+  return false;
+}
+
+void reset_board(void) {
+
+}
