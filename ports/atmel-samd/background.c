@@ -42,7 +42,7 @@ void run_background_tasks(void) {
     #ifdef CIRCUITPY_DISPLAYIO
     displayio_refresh_display();
     #endif
-    #ifdef MICROPY_PY_NETWORK
+    #if MICROPY_PY_NETWORK
     network_module_background();
     #endif
     usb_msc_background();
