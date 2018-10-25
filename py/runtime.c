@@ -1379,9 +1379,13 @@ void mp_import_all(mp_obj_t module) {
     mp_map_t *map = &mp_obj_module_get_globals(module)->map;
     for (size_t i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-            qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
-            if (*qstr_str(name) != '_') {
-                mp_store_name(name, map->table[i].value);
+            // Entry in module global scope may be generated programmatically
+            // (and thus be not a qstr for longer names). Avoid turning it in
+            // qstr if it has '_' and was used exactly to save memory.
+            const char *name = mp_obj_str_get_str(map->table[i].key);
+            if (*name != '_') {
+                qstr qname = mp_obj_str_get_qstr(map->table[i].key);
+                mp_store_name(qname, map->table[i].value);
             }
         }
     }
