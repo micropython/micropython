@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "background.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_NETWORK___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_NETWORK___INIT___H
 
-#include "audio_dma.h"
-#include "tick.h"
-#include "usb.h"
-#include "usb_mass_storage.h"
+// nothing
 
-#include "shared-module/displayio/__init__.h"
-#include "shared-module/network/__init__.h"
-
-volatile uint64_t last_finished_tick = 0;
-
-void run_background_tasks(void) {
-    #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
-    audio_dma_background();
-    #endif
-    #ifdef CIRCUITPY_DISPLAYIO
-    displayio_refresh_display();
-    #endif
-    #if MICROPY_PY_NETWORK
-    network_module_background();
-    #endif
-    usb_msc_background();
-    usb_cdc_background();
-    last_finished_tick = ticks_ms;
-}
-
-bool background_tasks_ok(void) {
-    return ticks_ms - last_finished_tick < 1000;
-}
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_NETWORK___INIT___H

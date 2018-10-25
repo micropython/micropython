@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-09 20:51-0400\n"
+"POT-Creation-Date: 2018-10-25 12:20+1100\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -147,15 +147,15 @@ msgstr "abort() wurde aufgerufen"
 msgid "invalid arguments"
 msgstr "ungültige argumente"
 
-#: lib/utils/pyexec.c:97 py/builtinimport.c:253
+#: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
 msgstr "kompilieren von Skripten ist nicht unterstützt"
 
-#: main.c:143
+#: main.c:153
 msgid " output:\n"
 msgstr " Ausgabe:\n"
 
-#: main.c:157 main.c:230
+#: main.c:167 main.c:240
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,45 +163,45 @@ msgstr ""
 "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
 "auszuführen oder verbinde dich mit der REPL um zu deaktivieren.\n"
 
-#: main.c:159
+#: main.c:169
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:161 main.c:232
+#: main.c:171 main.c:242
 msgid "Auto-reload is off.\n"
 msgstr "Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:175
+#: main.c:185
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
-#: main.c:191
+#: main.c:201
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WARNUNG: Der Dateiname deines codes hat zwei Dateityperweiterungen\n"
 
-#: main.c:239
+#: main.c:249
 msgid "You requested starting safe mode by "
 msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
 
-#: main.c:242
+#: main.c:252
 msgid "To exit, please reset the board without "
 msgstr "Zum beenden bitte resette das board ohne "
 
-#: main.c:249
+#: main.c:259
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr "Sicherheitsmodus aktiv, etwas wirklich schlechtes ist passiert.\n"
 
-#: main.c:251
+#: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "CircuitPython ist abgestürzt. Ups!\n"
 
-#: main.c:252
+#: main.c:262
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
 
-#: main.c:255
+#: main.c:265
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -209,21 +209,21 @@ msgstr ""
 "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
 "dass deine Stromversorgung\n"
 
-#: main.c:256
+#: main.c:266
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach "
-"dem sicheren Auswerfen von CIRCUITPY.)\n"
+"genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
+"sicheren Auswerfen von CIRCUITPY.)\n"
 
-#: main.c:260
+#: main.c:270
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
 "laden"
 
-#: main.c:416
+#: main.c:426
 msgid "soft reboot\n"
 msgstr "soft reboot\n"
 
@@ -300,12 +300,12 @@ msgid "Too many channels in sample."
 msgstr "Zu viele Kanäle im sample"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
 msgid "No DMA channel found"
 msgstr "Kein DMA Kanal gefunden"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 
@@ -321,43 +321,44 @@ msgstr "Nur 8 oder 16 bit mono mit "
 msgid "sampling rate out of range"
 msgstr "Abtastrate außerhalb der Reichweite"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
 msgid "DAC already in use"
 msgstr "DAC wird schon benutzt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
 msgid "Right channel unsupported"
 msgstr "Rechter Kanal wird nicht unterstützt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
 msgstr "Ungültiger Pin"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
 msgid "Invalid pin for left channel"
 msgstr "Ungültiger Pin für linken Kanal"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
 msgid "Invalid pin for right channel"
 msgstr "Ungültiger Pin für rechten Kanal"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
 msgid "Cannot output both channels on the same pin"
 msgstr "Kann nicht beite Kanäle auf dem gleichen Pin ausgeben"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
+#: ports/nrf/common-hal/pulseio/PulseOut.c:107
 msgid "All timers in use"
 msgstr "Alle timer werden benutzt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
 msgstr "Alle event Kanäle werden benutzt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
@@ -370,7 +371,7 @@ msgstr "Nicht genug Pins vorhanden"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:81
+#: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
 msgstr "Ungültige Pins"
 
@@ -422,8 +423,8 @@ msgstr "Reset zum bootloader nicht möglich da bootloader nicht vorhanden"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:120
-#: ports/nrf/common-hal/pulseio/PWMOut.c:232
+#: ports/nrf/common-hal/pulseio/PWMOut.c:119
+#: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr "Ungültige PWM Frequenz"
 
@@ -545,7 +546,8 @@ msgstr "Minimale PWM Frequenz ist %dHz"
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr "Mehrere PWM Frequenzen nicht unterstützt. PWM bereits auf %dHz gesetzt."
+msgstr ""
+"Mehrere PWM Frequenzen nicht unterstützt. PWM bereits auf %dHz gesetzt."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
@@ -562,7 +564,8 @@ msgstr "Dateisystem kann nicht wieder gemounted werden."
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr "Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
+msgstr ""
+"Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -618,7 +621,8 @@ msgstr "len muss ein vielfaches von 4 sein"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr "Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
+msgstr ""
+"Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
@@ -704,7 +708,7 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:95
+#: ports/nrf/common-hal/busio/I2C.c:96
 #, fuzzy
 msgid "All I2C peripherals are in use"
 msgstr "Alle timer werden benutzt"
@@ -742,7 +746,7 @@ msgstr ""
 msgid "Can not get temperature. status: 0x%02x"
 msgstr ""
 
-#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#: ports/nrf/common-hal/pulseio/PWMOut.c:161
 #, fuzzy
 msgid "All PWM peripherals are in use"
 msgstr "Alle timer werden benutzt"
@@ -949,19 +953,19 @@ msgstr ""
 msgid "bad compile mode"
 msgstr ""
 
-#: py/builtinimport.c:338
+#: py/builtinimport.c:336
 msgid "cannot perform relative import"
 msgstr ""
 
-#: py/builtinimport.c:422 py/builtinimport.c:534
+#: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
 msgstr ""
 
-#: py/builtinimport.c:425 py/builtinimport.c:537
+#: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
 msgstr ""
 
-#: py/builtinimport.c:512
+#: py/builtinimport.c:510
 msgid "relative import"
 msgstr ""
 
@@ -2009,7 +2013,7 @@ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:223
+#: shared-bindings/audioio/AudioOut.c:226
 msgid "Not playing"
 msgstr ""
 
@@ -2220,7 +2224,7 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
-#: shared-bindings/pulseio/PulseOut.c:75
+#: shared-bindings/pulseio/PulseOut.c:76
 msgid "Expected a %q"
 msgstr ""
 
@@ -2282,7 +2286,7 @@ msgstr ""
 msgid "Read-only"
 msgstr ""
 
-#: shared-bindings/pulseio/PulseOut.c:134
+#: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
 msgstr ""
 
@@ -2311,6 +2315,10 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
+msgid "no available NIC"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr ""
@@ -2335,15 +2343,15 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 

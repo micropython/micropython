@@ -84,6 +84,7 @@ version = release = '0.0.0'
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
                     ".venv",
+                    ".direnv",
                     "docs/README.md",
                     "drivers",
                     "examples",

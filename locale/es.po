@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-09 20:51-0400\n"
+"POT-Creation-Date: 2018-10-25 12:20+1100\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -147,15 +147,15 @@ msgstr "se llamó abort()"
 msgid "invalid arguments"
 msgstr "argumentos inválidos"
 
-#: lib/utils/pyexec.c:97 py/builtinimport.c:253
+#: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
 msgstr "script de compilación no soportado"
 
-#: main.c:143
+#: main.c:153
 msgid " output:\n"
 msgstr " salida:\n"
 
-#: main.c:157 main.c:230
+#: main.c:167 main.c:240
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,56 +163,57 @@ msgstr ""
 "Auto-reload habilitado. Simplemente guarda los archivos via USB para "
 "ejecutarlos o entra al REPL para desabilitarlos.\n"
 
-#: main.c:159
+#: main.c:169
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 
-#: main.c:161 main.c:232
+#: main.c:171 main.c:242
 msgid "Auto-reload is off.\n"
 msgstr "Auto-recarga deshabilitada.\n"
 
-#: main.c:175
+#: main.c:185
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
-#: main.c:191
+#: main.c:201
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ADVERTENCIA: El nombre de archivo de tu código tiene dos extensiones\n"
 
-#: main.c:239
+#: main.c:249
 msgid "You requested starting safe mode by "
 msgstr "Solicitaste iniciar en modo seguro por "
 
-#: main.c:242
+#: main.c:252
 msgid "To exit, please reset the board without "
 msgstr "Para salir, por favor reinicia la tarjeta sin "
 
-#: main.c:249
+#: main.c:259
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 "Estás ejecutando en modo seguro, lo cual significa que algo realmente malo "
 "ha sucedido.\n"
 
-#: main.c:251
+#: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr ""
-"Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+msgstr "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
-#: main.c:252
+#: main.c:262
 #, fuzzy
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
-"Por favor registra un issue en el siguiente URL con los contenidos de tu unidad de "
-"almacenamiento CIRCUITPY:\n"
+"Por favor registra un issue en el siguiente URL con los contenidos de tu "
+"unidad de almacenamiento CIRCUITPY:\n"
 
-#: main.c:255
+#: main.c:265
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
-msgstr "La alimentación del microcontrolador cayó. Por favor asegurate de que tu fuente de alimentación provee\n"
+msgstr ""
+"La alimentación del microcontrolador cayó. Por favor asegurate de que tu "
+"fuente de alimentación provee\n"
 
-#: main.c:256
+#: main.c:266
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -220,12 +221,12 @@ msgstr ""
 "suficiente poder para todo el circuito y presiona reset (después de expulsar "
 "CIRCUITPY).\n"
 
-#: main.c:260
+#: main.c:270
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
 
-#: main.c:416
+#: main.c:426
 msgid "soft reboot\n"
 msgstr "reinicio suave\n"
 
@@ -302,12 +303,12 @@ msgid "Too many channels in sample."
 msgstr "Demasiados canales en sample."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
 msgid "No DMA channel found"
 msgstr "No se encontró el canal DMA"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
 
@@ -323,43 +324,44 @@ msgstr "Solo mono de 8 o 16 bit con "
 msgid "sampling rate out of range"
 msgstr "frecuencia de muestreo fuera de rango"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
 msgid "DAC already in use"
 msgstr "DAC ya está siendo utilizado"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
 msgid "Right channel unsupported"
 msgstr "Canal derecho no soportado"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
 msgstr "Pin inválido"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
 msgid "Invalid pin for left channel"
 msgstr "Pin inválido para canal izquierdo"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
 msgid "Invalid pin for right channel"
 msgstr "Pin inválido para canal derecho"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
 msgid "Cannot output both channels on the same pin"
 msgstr "No se puede tener ambos canales en el mismo pin"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
+#: ports/nrf/common-hal/pulseio/PulseOut.c:107
 msgid "All timers in use"
 msgstr "Todos los timers en uso"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
 msgstr "Todos los event channels en uso"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
@@ -372,7 +374,7 @@ msgstr "No hay suficientes pines disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:132
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:81
+#: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
@@ -424,8 +426,8 @@ msgstr "No se puede reiniciar a bootloader porque no hay bootloader presente."
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:120
-#: ports/nrf/common-hal/pulseio/PWMOut.c:232
+#: ports/nrf/common-hal/pulseio/PWMOut.c:119
+#: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr "Frecuencia PWM inválida"
 
@@ -621,8 +623,7 @@ msgstr "len debe de ser múltiple de 4"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
-"falló la asignación de memoria, asignando %u bytes para código nativo"
+msgstr "falló la asignación de memoria, asignando %u bytes para código nativo"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
@@ -708,7 +709,7 @@ msgstr "parámetro config desconocido"
 msgid "AnalogOut functionality not supported"
 msgstr "Funcionalidad AnalogOut no soportada"
 
-#: ports/nrf/common-hal/busio/I2C.c:95
+#: ports/nrf/common-hal/busio/I2C.c:96
 msgid "All I2C peripherals are in use"
 msgstr "Todos los timers están siendo usados"
 
@@ -742,7 +743,7 @@ msgstr "busio.UART no disponible"
 msgid "Can not get temperature. status: 0x%02x"
 msgstr "No se puede obtener la temperatura. status: 0x%02x"
 
-#: ports/nrf/common-hal/pulseio/PWMOut.c:162
+#: ports/nrf/common-hal/pulseio/PWMOut.c:161
 msgid "All PWM peripherals are in use"
 msgstr "Todos los periféricos PWM en uso"
 
@@ -948,19 +949,19 @@ msgstr ""
 msgid "bad compile mode"
 msgstr ""
 
-#: py/builtinimport.c:338
+#: py/builtinimport.c:336
 msgid "cannot perform relative import"
 msgstr ""
 
-#: py/builtinimport.c:422 py/builtinimport.c:534
+#: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
 msgstr "módulo no encontrado"
 
-#: py/builtinimport.c:425 py/builtinimport.c:537
+#: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
 msgstr "ningún módulo se llama '%q'"
 
-#: py/builtinimport.c:512
+#: py/builtinimport.c:510
 msgid "relative import"
 msgstr "import relativo"
 
@@ -2008,7 +2009,7 @@ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:223
+#: shared-bindings/audioio/AudioOut.c:226
 msgid "Not playing"
 msgstr ""
 
@@ -2066,8 +2067,8 @@ msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
-"sample_source buffer debe ser un bytearray o un array de tipo 'h', 'H', 'b' o"
-"'B'"
+"sample_source buffer debe ser un bytearray o un array de tipo 'h', 'H', 'b' "
+"o'B'"
 
 #: shared-bindings/audioio/RawSample.c:104
 msgid "buffer must be a bytes-like object"
@@ -2217,7 +2218,7 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
-#: shared-bindings/pulseio/PulseOut.c:75
+#: shared-bindings/pulseio/PulseOut.c:76
 msgid "Expected a %q"
 msgstr ""
 
@@ -2279,7 +2280,7 @@ msgstr ""
 msgid "Read-only"
 msgstr "Solo-lectura"
 
-#: shared-bindings/pulseio/PulseOut.c:134
+#: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
 msgstr ""
 
@@ -2308,6 +2309,10 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
+msgid "no available NIC"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr ""
@@ -2332,15 +2337,15 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 

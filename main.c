@@ -54,6 +54,10 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
+#ifdef MICROPY_PY_NETWORK
+#include "shared-module/network/__init__.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -108,10 +112,16 @@ void start_mp(supervisor_allocation* heap) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
 
     mp_obj_list_init(mp_sys_argv, 0);
+
+    #if MICROPY_PY_NETWORK
+    network_module_init();
+    #endif
 }
 
 void stop_mp(void) {
-
+    #if MICROPY_PY_NETWORK
+    network_module_deinit();
+    #endif
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}

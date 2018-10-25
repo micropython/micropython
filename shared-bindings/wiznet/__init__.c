@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "background.h"
 
-#include "audio_dma.h"
-#include "tick.h"
-#include "usb.h"
-#include "usb_mass_storage.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
-#include "shared-module/displayio/__init__.h"
+#include "py/objlist.h"
+#include "py/objproperty.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
+
 #include "shared-module/network/__init__.h"
 
-volatile uint64_t last_finished_tick = 0;
+//| :mod:`wiznet` --- Support for WizNet hardware
+//| =============================================
+//|
+//| .. module:: wiznet
+//|   :synopsis: Support for WizNet hardware
+//|   :platform: SAMD
+//|
+//| Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor.
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|   :maxdepth: 3
+//|
+//|   wiznet5k
+//|
 
-void run_background_tasks(void) {
-    #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
-    audio_dma_background();
-    #endif
-    #ifdef CIRCUITPY_DISPLAYIO
-    displayio_refresh_display();
-    #endif
-    #if MICROPY_PY_NETWORK
-    network_module_background();
-    #endif
-    usb_msc_background();
-    usb_cdc_background();
-    last_finished_tick = ticks_ms;
-}
+extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 
-bool background_tasks_ok(void) {
-    return ticks_ms - last_finished_tick < 1000;
-}
+STATIC const mp_rom_map_elem_t mp_module_wiznet_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_wiznet) },
+#ifdef MICROPY_PY_WIZNET5K
+    { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+#endif // MICROPY_PY_WIZNET5K
+};
+STATIC MP_DEFINE_CONST_DICT(mp_module_wiznet_globals, mp_module_wiznet_globals_table);
+
+const mp_obj_module_t wiznet_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&mp_module_wiznet_globals,
+};
+
