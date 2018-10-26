@@ -1180,7 +1180,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qst, bool added, id_info_t *id_info) {
+STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, bool added, id_info_t *id_info) {
     if (!added && id_info->kind != ID_INFO_KIND_GLOBAL_EXPLICIT) {
         compile_syntax_error(comp, pn, "identifier redefined as global");
         return;
@@ -1188,13 +1188,13 @@ STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qs
     id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
 
     // if the id exists in the global scope, set its kind to EXPLICIT_GLOBAL
-    id_info = scope_find_global(comp->scope_cur, qst);
+    id_info = scope_find_global(comp->scope_cur, id_info->qst);
     if (id_info != NULL) {
         id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
     }
 }
 
-STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst, bool added, id_info_t *id_info) {
+STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, bool added, id_info_t *id_info) {
     if (added) {
         id_info->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
         scope_check_to_close_over(comp->scope_cur, id_info);
@@ -1222,9 +1222,9 @@ STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_
             bool added;
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
             if (is_global) {
-                compile_declare_global(comp, (mp_parse_node_t)pns, qst, added, id_info);
+                compile_declare_global(comp, (mp_parse_node_t)pns, added, id_info);
             } else {
-                compile_declare_nonlocal(comp, (mp_parse_node_t)pns, qst, added, id_info);
+                compile_declare_nonlocal(comp, (mp_parse_node_t)pns, added, id_info);
             }
         }
     }
