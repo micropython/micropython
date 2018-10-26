@@ -28,7 +28,7 @@
 // <0x2=>PAD[3,1]_DO_SCK
 // <0x3=>PAD[0,3]_DO_SCK
 #define SPI_FLASH_DOPO              1
-#define SPI_FLASH_DIPO              1   // same as MISO pad
+#define SPI_FLASH_DIPO              0   // same as MISO pad
 
 // These are pins not to reset.
 #define MICROPY_PORT_A        (PORT_PA00 | PORT_PA08 | PORT_PA09 | PORT_PA10 |PORT_PA11 | PORT_PA24 | PORT_PA25)
