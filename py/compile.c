@@ -1196,7 +1196,8 @@ STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qs
 
 STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst, bool added, id_info_t *id_info) {
     if (added) {
-        scope_find_local_and_close_over(comp->scope_cur, id_info, qst);
+        id_info->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
+        scope_check_to_close_over(comp->scope_cur, id_info);
         if (id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
             compile_syntax_error(comp, pn, "no binding for nonlocal found");
         }
@@ -3391,6 +3392,14 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
         #endif
         } else {
             compile_scope(comp, s, MP_PASS_SCOPE);
+
+            // Check if any implicitly declared variables should be closed over
+            for (size_t i = 0; i < s->id_info_len; ++i) {
+                id_info_t *id = &s->id_info[i];
+                if (id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+                    scope_check_to_close_over(s, id);
+                }
+            }
         }
 
         // update maximim number of labels needed

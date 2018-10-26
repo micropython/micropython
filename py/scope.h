@@ -93,6 +93,6 @@ void scope_free(scope_t *scope);
 id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added);
 id_info_t *scope_find(scope_t *scope, qstr qstr);
 id_info_t *scope_find_global(scope_t *scope, qstr qstr);
-void scope_find_local_and_close_over(scope_t *scope, id_info_t *id, qstr qst);
+void scope_check_to_close_over(scope_t *scope, id_info_t *id);
 
 #endif // MICROPY_INCLUDED_PY_SCOPE_H

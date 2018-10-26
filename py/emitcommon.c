@@ -35,7 +35,7 @@ void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
     bool added;
     id_info_t *id = scope_find_or_add_id(scope, qst, &added);
     if (added) {
-        scope_find_local_and_close_over(scope, id, qst);
+        id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
     }
 }
 

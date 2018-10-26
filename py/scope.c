@@ -130,21 +130,19 @@ STATIC void scope_close_over_in_parents(scope_t *scope, qstr qst) {
     }
 }
 
-void scope_find_local_and_close_over(scope_t *scope, id_info_t *id, qstr qst) {
+void scope_check_to_close_over(scope_t *scope, id_info_t *id) {
     if (scope->parent != NULL) {
         for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
-            id_info_t *id2 = scope_find(s, qst);
+            id_info_t *id2 = scope_find(s, id->qst);
             if (id2 != NULL) {
                 if (id2->kind == ID_INFO_KIND_LOCAL || id2->kind == ID_INFO_KIND_CELL || id2->kind == ID_INFO_KIND_FREE) {
                     id->kind = ID_INFO_KIND_FREE;
-                    scope_close_over_in_parents(scope, qst);
-                    return;
+                    scope_close_over_in_parents(scope, id->qst);
                 }
                 break;
             }
         }
     }
-    id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
 }
 
 #endif // MICROPY_ENABLE_COMPILER
