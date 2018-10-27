@@ -1180,8 +1180,8 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, bool added, id_info_t *id_info) {
-    if (!added && id_info->kind != ID_INFO_KIND_GLOBAL_EXPLICIT) {
+STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, id_info_t *id_info) {
+    if (id_info->kind != ID_INFO_KIND_UNDECIDED && id_info->kind != ID_INFO_KIND_GLOBAL_EXPLICIT) {
         compile_syntax_error(comp, pn, "identifier redefined as global");
         return;
     }
@@ -1194,8 +1194,8 @@ STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, bool ad
     }
 }
 
-STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, bool added, id_info_t *id_info) {
-    if (added) {
+STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, id_info_t *id_info) {
+    if (id_info->kind == ID_INFO_KIND_UNDECIDED) {
         id_info->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
         scope_check_to_close_over(comp->scope_cur, id_info);
         if (id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
@@ -1219,12 +1219,11 @@ STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_
         int n = mp_parse_node_extract_list(&pns->nodes[0], PN_name_list, &nodes);
         for (int i = 0; i < n; i++) {
             qstr qst = MP_PARSE_NODE_LEAF_ARG(nodes[i]);
-            bool added;
-            id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
+            id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, ID_INFO_KIND_UNDECIDED);
             if (is_global) {
-                compile_declare_global(comp, (mp_parse_node_t)pns, added, id_info);
+                compile_declare_global(comp, (mp_parse_node_t)pns, id_info);
             } else {
-                compile_declare_nonlocal(comp, (mp_parse_node_t)pns, added, id_info);
+                compile_declare_nonlocal(comp, (mp_parse_node_t)pns, id_info);
             }
         }
     }
@@ -2836,9 +2835,8 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
     }
 
     if (param_name != MP_QSTR_NULL) {
-        bool added;
-        id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, &added);
-        if (!added) {
+        id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, ID_INFO_KIND_UNDECIDED);
+        if (id_info->kind != ID_INFO_KIND_UNDECIDED) {
             compile_syntax_error(comp, pn, "argument name reused");
             return;
         }
@@ -3034,10 +3032,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // so we use the blank qstr.
         qstr qstr_arg = MP_QSTR_;
         if (comp->pass == MP_PASS_SCOPE) {
-            bool added;
-            id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qstr_arg, &added);
-            assert(added);
-            id_info->kind = ID_INFO_KIND_LOCAL;
+            scope_find_or_add_id(comp->scope_cur, qstr_arg, ID_INFO_KIND_LOCAL);
             scope->num_pos_args = 1;
         }
 
@@ -3077,10 +3072,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_classdef);
 
         if (comp->pass == MP_PASS_SCOPE) {
-            bool added;
-            id_info_t *id_info = scope_find_or_add_id(scope, MP_QSTR___class__, &added);
-            assert(added);
-            id_info->kind = ID_INFO_KIND_LOCAL;
+            scope_find_or_add_id(scope, MP_QSTR___class__, ID_INFO_KIND_LOCAL);
         }
 
         compile_load_id(comp, MP_QSTR___name__);

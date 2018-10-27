@@ -64,10 +64,9 @@ void scope_free(scope_t *scope) {
     m_del(scope_t, scope, 1);
 }
 
-id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, bool *added) {
+id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, scope_kind_t kind) {
     id_info_t *id_info = scope_find(scope, qst);
     if (id_info != NULL) {
-        *added = false;
         return id_info;
     }
 
@@ -82,11 +81,10 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, bool *added) {
     // handled by the compiler because it adds arguments before compiling the body
     id_info = &scope->id_info[scope->id_info_len++];
 
-    id_info->kind = 0;
+    id_info->kind = kind;
     id_info->flags = 0;
     id_info->local_num = 0;
     id_info->qst = qst;
-    *added = true;
     return id_info;
 }
 
@@ -110,9 +108,8 @@ STATIC void scope_close_over_in_parents(scope_t *scope, qstr qst) {
     assert(scope->parent != NULL); // we should have at least 1 parent
     for (scope_t *s = scope->parent;; s = s->parent) {
         assert(s->parent != NULL); // we should not get to the outer scope
-        bool added;
-        id_info_t *id = scope_find_or_add_id(s, qst, &added);
-        if (added) {
+        id_info_t *id = scope_find_or_add_id(s, qst, ID_INFO_KIND_UNDECIDED);
+        if (id->kind == ID_INFO_KIND_UNDECIDED) {
             // variable not previously declared in this scope, so declare it as free and keep searching parents
             id->kind = ID_INFO_KIND_FREE;
         } else {

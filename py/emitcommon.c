@@ -30,26 +30,10 @@
 
 #if MICROPY_ENABLE_COMPILER
 
-void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
-    // name adding/lookup
-    bool added;
-    id_info_t *id = scope_find_or_add_id(scope, qst, &added);
-    if (added) {
-        id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
-    }
-}
-
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
     // name adding/lookup
-    bool added;
-    id_info_t *id = scope_find_or_add_id(scope, qst, &added);
-    if (added) {
-        if (SCOPE_IS_FUNC_LIKE(scope->kind)) {
-            id->kind = ID_INFO_KIND_LOCAL;
-        } else {
-            id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
-        }
-    } else if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+    id_info_t *id = scope_find_or_add_id(scope, qst, ID_INFO_KIND_GLOBAL_IMPLICIT);
+    if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
         // rebind as a local variable
         id->kind = ID_INFO_KIND_LOCAL;
     }
