@@ -2188,7 +2188,7 @@ msgstr "La longueur doit être entière"
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
-msgstr ""
+msgstr "displayio est en cours de développement"
 
 #: shared-bindings/displayio/Group.c:65
 #, fuzzy
@@ -2204,7 +2204,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c:102
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
+msgstr "Le tampon couleur doit avoir 3 octets (RVB) ou 4 octets (RVB + octet de padding)"
 
 #: shared-bindings/displayio/Palette.c:106
 #, fuzzy
@@ -2251,11 +2251,11 @@ msgstr "ne peut convertir %s en entier int"
 
 #: shared-bindings/i2cslave/I2CSlave.c:101
 msgid "address out of bounds"
-msgstr ""
+msgstr "Adresse hors limite"
 
 #: shared-bindings/i2cslave/I2CSlave.c:107
 msgid "addresses is empty"
-msgstr ""
+msgstr "Adresses est vide"
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
@@ -2358,7 +2358,7 @@ msgstr "calibration de la RTC non supportée sur cette carte"
 #: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
 #, fuzzy
 msgid "no available NIC"
-msgstr "busio.UART n'est pas disponible"
+msgstr "NIC non disponible"
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
@@ -2417,7 +2417,7 @@ msgstr "Impossible d'allouer le 2e tampon"
 
 #: shared-module/audioio/Mixer.c:82
 msgid "Voice index too high"
-msgstr ""
+msgstr "Index de la voix trop grand"
 
 #: shared-module/audioio/Mixer.c:85
 msgid "The sample's sample rate does not match the mixer's"
@@ -2429,11 +2429,11 @@ msgstr ""
 
 #: shared-module/audioio/Mixer.c:91
 msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr ""
+msgstr "Le bits_per_sample de l'échantillon ne correspond pas au mixer"
 
 #: shared-module/audioio/Mixer.c:100
 msgid "The sample's signedness does not match the mixer's"
-msgstr ""
+msgstr "L'échantillon non signé ne correspond pas au mixer"
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
@@ -2485,7 +2485,7 @@ msgstr "Pas de transfert sans broches MOSI et MISO"
 
 #: shared-module/displayio/Bitmap.c:49
 msgid "Only bit maps of 8 bit color or less are supported"
-msgstr ""
+msgstr "Seul les mappings en couleur 8 bits (ou moins) sont supportés"
 
 #: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
@@ -2493,12 +2493,12 @@ msgstr ""
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
-msgstr ""
+msgstr "Group complet"
 
 #: shared-module/displayio/Group.c:48
 #, fuzzy
 msgid "Group empty"
-msgstr "vide"
+msgstr "Groupe vide"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
 #, fuzzy
@@ -2508,12 +2508,12 @@ msgstr "Fichier invalide"
 #: shared-module/displayio/OnDiskBitmap.c:59
 #, c-format
 msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr ""
+msgstr "Seul le format Windows, BMP non compressé, est supporté %d"
 
 #: shared-module/displayio/OnDiskBitmap.c:64
 #, c-format
 msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr ""
+msgstr "Seul les BMP 'true color' (24 bpp ou plus) sont supportés %x"
 
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
@@ -2525,8 +2525,8 @@ msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
 #~ msgid "value_size must be power of two"
-#~ msgstr "'len' doit être un multiple de 4"
+#~ msgstr "value_size est une puissance de deux"
 
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être longue de 32 octets"
+#~ msgstr "palettre doit être displayio.Palette"
