@@ -753,112 +753,112 @@ msgstr "Alle timer werden benutzt"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:199
 msgid "Cannot apply GAP parameters."
-msgstr ""
+msgstr "Kann GAP Parameter nicht anwenden."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:213
 msgid "Cannot set PPCP parameters."
-msgstr ""
+msgstr "Kann PPCP Parameter nicht setzen."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:245
 msgid "Can not query for the device address."
-msgstr ""
+msgstr "Kann nicht nach der Geräteadresse suchen."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:264
 msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr ""
+msgstr "Kann keine herstellerspezifische 128-Bit-UUID hinzufügen."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:284
 #: ports/nrf/drivers/bluetooth/ble_drv.c:298
 msgid "Can not add Service."
-msgstr ""
+msgstr "Kann den Dienst nicht hinzufügen."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:373
 msgid "Can not add Characteristic."
-msgstr ""
+msgstr "Kann das Merkmal nicht hinzufügen."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:400
 msgid "Can not apply device name in the stack."
-msgstr ""
+msgstr "Der Gerätename kann nicht im Stack verwendet werden."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:464
 #: ports/nrf/drivers/bluetooth/ble_drv.c:514
 msgid "Can not encode UUID, to check length."
-msgstr ""
+msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:470
 #: ports/nrf/drivers/bluetooth/ble_drv.c:520
 msgid "Can encode UUID into the advertisement packet."
-msgstr ""
+msgstr "Kann UUID in das advertisement packet kodieren."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:545
 msgid "Can not fit data into the advertisement packet."
-msgstr ""
+msgstr "Daten können nicht in das advertisement packet eingefügt werden."
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:558
 #: ports/nrf/drivers/bluetooth/ble_drv.c:604
 #, c-format
 msgid "Can not apply advertisement data. status: 0x%02x"
-msgstr ""
+msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:614
 #, c-format
 msgid "Can not start advertisement. status: 0x%02x"
-msgstr ""
+msgstr "Kann advertisement nicht starten. Status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:631
 #, c-format
 msgid "Can not stop advertisement. status: 0x%02x"
-msgstr ""
+msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:650
 #: ports/nrf/drivers/bluetooth/ble_drv.c:726
 #, c-format
 msgid "Can not read attribute value. status: 0x%02x"
-msgstr ""
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:667
 #: ports/nrf/drivers/bluetooth/ble_drv.c:756
 #, c-format
 msgid "Can not write attribute value. status: 0x%02x"
-msgstr ""
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:691
 #, c-format
 msgid "Can not notify attribute value. status: 0x%02x"
-msgstr ""
+msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:784
 #, c-format
 msgid "Can not start scanning. status: 0x%02x"
-msgstr ""
+msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
 
 #: ports/nrf/drivers/bluetooth/ble_drv.c:829
 #, c-format
 msgid "Can not connect. status: 0x%02x"
-msgstr ""
+msgstr "Kann nicht verbinden. Status: 0x%02x"
 
 #: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:80
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:132
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
 msgid "Invalid UUID parameter"
-msgstr ""
+msgstr "Ungültiger UUID-Parameter"
 
 #: ports/nrf/modules/ubluepy/ubluepy_service.c:73
 msgid "Invalid Service type"
-msgstr ""
+msgstr "Ungültiger Diensttyp"
 
 #: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
 msgid "Invalid UUID string length"
-msgstr ""
+msgstr "Ungültige UUID-Stringlänge"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
-msgstr ""
+msgstr "Unbekannter Typ"
 
 #: ports/unix/modffi.c:207 ports/unix/modffi.c:265
 msgid "Error in ffi_prep_cif"
-msgstr ""
+msgstr "Fehler in ffi_prep_cif"
 
 #: ports/unix/modffi.c:270
 msgid "ffi_prep_closure_loc"
