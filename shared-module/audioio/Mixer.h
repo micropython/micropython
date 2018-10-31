@@ -37,6 +37,7 @@ typedef struct {
     bool more_data;
     uint32_t* remaining_buffer;
     uint32_t buffer_length;
+    int16_t gain;
 } audioio_mixer_voice_t;
 
 typedef struct {

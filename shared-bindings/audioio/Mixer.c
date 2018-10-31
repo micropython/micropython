@@ -190,6 +190,39 @@ STATIC mp_obj_t audioio_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *pos_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_stop_voice_obj, 1, audioio_mixer_obj_stop_voice);
 
+//|   .. method:: set_gain(voice, gain)
+//|
+//|     Set the gain of a voice.
+//|
+//|     gain must be a floating point number between 0 and 1
+//|
+STATIC mp_obj_t audioio_mixer_obj_set_gain(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_voice, ARG_gain };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_voice,    MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_gain,     MP_ARG_OBJ | MP_ARG_REQUIRED },
+    };
+    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+	#if MICROPY_PY_BUILTINS_FLOAT
+	float gain = mp_obj_get_float(args[ARG_gain].u_obj);
+	#else
+	#error "floating point not supported"
+	#endif
+
+    if (gain > 1 || gain < 0) {
+        mp_raise_ValueError(translate("gain must be between 0 and 1"));
+    }
+
+    common_hal_audioio_mixer_set_gain(self,args[ARG_voice].u_int, gain);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_set_gain_obj, 1, audioio_mixer_obj_set_gain);
+
 //|   .. attribute:: playing
 //|
 //|     True when any voice is being output. (read-only)
@@ -234,6 +267,7 @@ STATIC const mp_rom_map_elem_t audioio_mixer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audioio_mixer___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audioio_mixer_play_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_voice), MP_ROM_PTR(&audioio_mixer_stop_voice_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_set_gain), MP_ROM_PTR(&audioio_mixer_set_gain_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audioio_mixer_playing_obj) },
