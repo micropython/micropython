@@ -141,6 +141,14 @@ void common_hal_audioio_wavefile_set_sample_rate(audioio_wavefile_obj_t* self,
     self->sample_rate = sample_rate;
 }
 
+uint8_t common_hal_audioio_wavefile_get_bits_per_sample(audioio_wavefile_obj_t* self) {
+    return self->bits_per_sample;
+}
+
+uint8_t common_hal_audioio_wavefile_get_channel_count(audioio_wavefile_obj_t* self) {
+    return self->channel_count;
+}
+
 bool audioio_wavefile_samples_signed(audioio_wavefile_obj_t* self) {
     return self->bits_per_sample > 8;
 }

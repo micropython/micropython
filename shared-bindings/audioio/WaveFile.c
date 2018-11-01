@@ -138,6 +138,43 @@ const mp_obj_property_t audioio_wavefile_sample_rate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: bits_per_sample
+//|
+//|     Bits per sample. (read only)
+//|
+STATIC mp_obj_t audioio_wavefile_obj_get_bits_per_sample(mp_obj_t self_in) {
+    audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_wavefile_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_wavefile_get_bits_per_sample(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_get_bits_per_sample_obj, audioio_wavefile_obj_get_bits_per_sample);
+
+const mp_obj_property_t audioio_wavefile_bits_per_sample_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audioio_wavefile_get_bits_per_sample_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: channels
+//|
+//|     Number of audio channels. (read only)
+//|
+STATIC mp_obj_t audioio_wavefile_obj_get_channel_count(mp_obj_t self_in) {
+    audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_wavefile_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_wavefile_get_channel_count(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_get_channel_count_obj, audioio_wavefile_obj_get_channel_count);
+
+const mp_obj_property_t audioio_wavefile_channel_count_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audioio_wavefile_get_channel_count_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
 STATIC const mp_rom_map_elem_t audioio_wavefile_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_wavefile_deinit_obj) },
@@ -146,6 +183,8 @@ STATIC const mp_rom_map_elem_t audioio_wavefile_locals_dict_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audioio_wavefile_sample_rate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bits_per_sample), MP_ROM_PTR(&audioio_wavefile_bits_per_sample_obj) },
+    { MP_ROM_QSTR(MP_QSTR_channels), MP_ROM_PTR(&audioio_wavefile_channel_count_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_wavefile_locals_dict, audioio_wavefile_locals_dict_table);
 
