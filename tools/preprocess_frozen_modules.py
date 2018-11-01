@@ -33,7 +33,7 @@ def copy_and_process(in_dir, out_dir):
     for root, subdirs, files in os.walk(in_dir):
 
         # Skip library examples directories.
-        if Path(root).name in ['examples', 'docs']:
+        if Path(root).name in ['examples', 'tests', 'docs']:
             continue
 
         for file in files:
