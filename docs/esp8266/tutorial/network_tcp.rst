@@ -61,6 +61,7 @@ of the request you need to specify the page to retrieve.
 Let's define a function that can download and print a URL::
 
     def http_get(url):
+        import socket
         _, _, host, path = url.split('/', 3)
         addr = socket.getaddrinfo(host, 80)[0][-1]
         s = socket.socket()
