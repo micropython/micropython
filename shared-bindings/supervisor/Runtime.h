@@ -35,6 +35,8 @@ const mp_obj_type_t supervisor_runtime_type;
 
 bool common_hal_get_serial_connected(void);
 
+bool common_hal_get_serial_bytes_available(void);
+
 //TODO: placeholders for future functions
 //bool common_hal_get_repl_active(void);
 //bool common_hal_get_usb_enumerated(void);
