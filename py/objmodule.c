@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "genhdr/moduledefs.h"
+
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -136,9 +138,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     { MP_ROM_QSTR(MP_QSTR_builtins), MP_ROM_PTR(&mp_module_builtins) },
     { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
 
-#if MICROPY_PY_ARRAY
-    { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mp_module_array) },
-#endif
 #if MICROPY_PY_IO
     { MP_ROM_QSTR(MP_QSTR_uio), MP_ROM_PTR(&mp_module_io) },
 #endif
@@ -226,6 +225,11 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
+
+    #ifdef MICROPY_REGISTERED_MODULES
+    // builtin modules declared with MP_REGISTER_MODULE()
+    MICROPY_REGISTERED_MODULES
+    #endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
