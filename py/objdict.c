@@ -58,6 +58,10 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     }
+
+    char * const comma = (kind == PRINT_JSON)?",":", ";
+    char * const colon = (kind == PRINT_JSON)?":":": ";
+
     if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict) {
         mp_printf(print, "%q(", self->base.type->name);
     }
@@ -66,11 +70,11 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     mp_map_elem_t *next = NULL;
     while ((next = dict_iter_next(self, &cur)) != NULL) {
         if (!first) {
-            mp_print_str(print, ", ");
+            mp_print_str(print, comma);
         }
         first = false;
         mp_obj_print_helper(print, next->key, kind);
-        mp_print_str(print, ": ");
+        mp_print_str(print, colon);
         mp_obj_print_helper(print, next->value, kind);
     }
     mp_print_str(print, "}");
