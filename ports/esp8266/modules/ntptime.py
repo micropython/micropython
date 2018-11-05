@@ -32,4 +32,4 @@ def settime():
     import utime
     tm = utime.localtime(t)
     tm = tm[0:3] + (0,) + tm[3:6] + (0,)
-    machine.RTC().datetime(tm)
+    return machine.RTC().datetime(tm)
