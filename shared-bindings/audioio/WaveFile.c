@@ -156,7 +156,7 @@ const mp_obj_property_t audioio_wavefile_bits_per_sample_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: channels
+//|   .. attribute:: channel_count
 //|
 //|     Number of audio channels. (read only)
 //|
