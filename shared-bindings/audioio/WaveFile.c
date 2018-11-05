@@ -184,7 +184,7 @@ STATIC const mp_rom_map_elem_t audioio_wavefile_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audioio_wavefile_sample_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_bits_per_sample), MP_ROM_PTR(&audioio_wavefile_bits_per_sample_obj) },
-    { MP_ROM_QSTR(MP_QSTR_channels), MP_ROM_PTR(&audioio_wavefile_channel_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_channel_count), MP_ROM_PTR(&audioio_wavefile_channel_count_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_wavefile_locals_dict, audioio_wavefile_locals_dict_table);
 
