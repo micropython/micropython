@@ -130,7 +130,7 @@ xargs -n1 "$(abspath $(MPY_CROSS))" $(MPY_CROSS_FLAGS)
 # to build frozen_mpy.c from all .mpy files
 # You need to define MPY_TOOL_LONGINT_IMPL in mpconfigport.mk
 # if the default will not work (mpz is the default).
-$(BUILD)/frozen_mpy.c: $(BUILD)/frozen_mpy $(BUILD)/genhdr/qstrdefs.generated.h
+$(BUILD)/frozen_mpy.c: $(BUILD)/frozen_mpy $(BUILD)/genhdr/qstrdefs.generated.h $(TOP)/tools/mpy-tool.py
 	$(STEPECHO) "Creating $@"
 	$(Q)$(MPY_TOOL) $(MPY_TOOL_LONGINT_IMPL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(shell $(FIND) -L $(BUILD)/frozen_mpy -type f -name '*.mpy') > $@
 endif

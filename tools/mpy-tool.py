@@ -78,6 +78,18 @@ MP_BC_LOAD_GLOBAL = 0x1d
 MP_BC_LOAD_ATTR = 0x1e
 MP_BC_STORE_ATTR = 0x26
 
+# load opcode names
+opcode_names = {}
+with open("../../py/bc0.h") as f:
+    for line in f.readlines():
+        if line.startswith("#define"):
+            s = line.split(maxsplit=3)
+            if len(s) < 3:
+                continue
+            _, name, value = s[:3]
+            opcode = int(value.strip("()"), 0)
+            opcode_names[opcode] = name
+
 def make_opcode_format():
     def OC4(a, b, c, d):
         return a | (b << 2) | (c << 4) | (d << 6)
@@ -252,35 +264,50 @@ class RawCode:
             i += 1
         RawCode.escaped_names.add(self.escaped_name)
 
+        sizes = {"bytecode": 0, "strings": 0, "raw_code_overhead": 0, "const_table_overhead": 0, "string_overhead": 0, "number_overhead": 0}
         # emit children first
         for rc in self.raw_codes:
-            rc.freeze(self.escaped_name + '_')
+            subsize = rc.freeze(self.escaped_name + '_')
+            for k in sizes:
+                sizes[k] += subsize[k]
+
 
         # generate bytecode data
         print()
         print('// frozen bytecode for file %s, scope %s%s' % (self.source_file.str, parent_name, self.simple_name.str))
+        print("// bytecode size", len(self.bytecode))
         print('STATIC ', end='')
         if not config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
             print('const ', end='')
         print('byte bytecode_data_%s[%u] = {' % (self.escaped_name, len(self.bytecode)))
+        sizes["bytecode"] += len(self.bytecode)
         print('   ', end='')
         for i in range(self.ip2):
             print(' 0x%02x,' % self.bytecode[i], end='')
         print()
+        print("    // simple name")
         print('   ', self.simple_name.qstr_id, '& 0xff,', self.simple_name.qstr_id, '>> 8,')
+        print("    // source file")
         print('   ', self.source_file.qstr_id, '& 0xff,', self.source_file.qstr_id, '>> 8,')
+        print("    // code info")
         print('   ', end='')
         for i in range(self.ip2 + 4, self.ip):
             print(' 0x%02x,' % self.bytecode[i], end='')
         print()
+        print("    // bytecode")
         ip = self.ip
         while ip < len(self.bytecode):
             f, sz = mp_opcode_format(self.bytecode, ip)
+            opcode = self.bytecode[ip]
+            if opcode in opcode_names:
+                opcode = opcode_names[opcode]
+            else:
+                opcode = '0x%02x' % opcode
             if f == 1:
                 qst = self._unpack_qstr(ip + 1).qstr_id
-                print('   ', '0x%02x,' % self.bytecode[ip], qst, '& 0xff,', qst, '>> 8,')
+                print('    {}, {} & 0xff, {} >> 8,'.format(opcode, qst, qst))
             else:
-                print('   ', ''.join('0x%02x, ' % self.bytecode[ip + i] for i in range(sz)))
+                print('    {},{}'.format(opcode, ''.join(' 0x%02x,' % self.bytecode[ip + i] for i in range(1, sz))))
             ip += sz
         print('};')
 
@@ -295,9 +322,12 @@ class RawCode:
                     obj_type = 'mp_type_str'
                 else:
                     obj_type = 'mp_type_bytes'
-                print('STATIC const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
+                print('STATIC const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"}; // %s'
                     % (obj_name, obj_type, qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
-                        len(obj), ''.join(('\\x%02x' % b) for b in obj)))
+                        len(obj), ''.join(('\\x%02x' % b) for b in obj), obj))
+                sizes["strings"] += len(obj)
+                sizes["string_overhead"] += 16
+
             elif is_int_type(obj):
                 if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
                     # TODO check if we can actually fit this long-int into a small-int
@@ -321,14 +351,17 @@ class RawCode:
                     print('STATIC const mp_obj_int_t %s = {{&mp_type_int}, '
                         '{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t[]){%s}}};'
                         % (obj_name, neg, ndigs, ndigs, bits_per_dig, digs))
+                    sizes["number_overhead"] += 16
             elif type(obj) is float:
                 print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
                 print('STATIC const mp_obj_float_t %s = {{&mp_type_float}, %.16g};'
                     % (obj_name, obj))
                 print('#endif')
+                sizes["number_overhead"] += 8
             elif type(obj) is complex:
                 print('STATIC const mp_obj_complex_t %s = {{&mp_type_complex}, %.16g, %.16g};'
                     % (obj_name, obj.real, obj.imag))
+                sizes["number_overhead"] += 12
             else:
                 raise FreezeError(self, 'freezing of object %r is not implemented' % (obj,))
 
@@ -338,8 +371,10 @@ class RawCode:
             print('STATIC const mp_rom_obj_t const_table_data_%s[%u] = {'
                 % (self.escaped_name, const_table_len))
             for qst in self.qstrs:
+                sizes["const_table_overhead"] += 4
                 print('    MP_ROM_QSTR(%s),' % global_qstrs[qst].qstr_id)
             for i in range(len(self.objs)):
+                sizes["const_table_overhead"] += 4
                 if type(self.objs[i]) is float:
                     print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
                     print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
@@ -353,6 +388,7 @@ class RawCode:
                 else:
                     print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
             for rc in self.raw_codes:
+                sizes["const_table_overhead"] += 4
                 print('    MP_ROM_PTR(&raw_code_%s),' % rc.escaped_name)
             print('};')
 
@@ -376,6 +412,9 @@ class RawCode:
         print('        #endif')
         print('    },')
         print('};')
+        sizes["raw_code_overhead"] += 16
+
+        return sizes
 
 def read_uint(f):
     i = 0
@@ -467,6 +506,7 @@ def freeze_mpy(base_qstrs, raw_codes):
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str)
     new = sorted(new.values(), key=lambda x: x[0])
 
+    print('#include "py/bc0.h"')
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
     print('#include "py/objstr.h"')
@@ -523,26 +563,44 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('    %u, // allocated entries' % len(new))
     print('    %u, // used entries' % len(new))
     print('    {')
+    qstr_size = {"metadata": 0, "data": 0}
     for _, _, qstr in new:
+        qstr_size["metadata"] += config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH
+        qstr_size["data"] += len(qstr)
         print('        %s,'
             % qstrutil.make_bytes(config.MICROPY_QSTR_BYTES_IN_LEN, config.MICROPY_QSTR_BYTES_IN_HASH, qstr))
     print('    },')
     print('};')
 
+    sizes = {}
     for rc in raw_codes:
-        rc.freeze(rc.source_file.str.replace('/', '_')[:-3] + '_')
+        sizes[rc.source_file.str] = rc.freeze(rc.source_file.str.replace('/', '_')[:-3] + '_')
 
     print()
     print('const char mp_frozen_mpy_names[] = {')
+    qstr_size["filenames"] = 1
     for rc in raw_codes:
         module_name = rc.source_file.str
         print('"%s\\0"' % module_name)
+        qstr_size["filenames"] += len(module_name) + 1
     print('"\\0"};')
 
     print('const mp_raw_code_t *const mp_frozen_mpy_content[] = {')
     for rc in raw_codes:
         print('    &raw_code_%s,' % rc.escaped_name)
+        size = sizes[rc.source_file.str]
+        print('    // Total size:', sum(size.values()))
+        for k in size:
+            print("    //   {} {}".format(k, size[k]))
     print('};')
+
+    print()
+    print('// Total size:', sum([sum(x.values()) for x in sizes.values()]) + sum(qstr_size.values()))
+    for k in size:
+        total = sum([x[k] for x in sizes.values()])
+        print("//   {} {}".format(k, total))
+    for k in qstr_size:
+        print("//   qstr {} {}".format(k, qstr_size[k]))
 
 def main():
     import argparse

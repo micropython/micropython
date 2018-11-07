@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-21 17:15+0200\n"
+"POT-Creation-Date: 2018-11-07 14:10-0500\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -146,15 +146,15 @@ msgstr "abort() appelé"
 msgid "invalid arguments"
 msgstr "arguments invalides"
 
-#: lib/utils/pyexec.c:97 py/builtinimport.c:253
+#: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
 msgstr "compilation du script non supporté"
 
-#: main.c:143
+#: main.c:153
 msgid " output:\n"
 msgstr " sortie:\n"
 
-#: main.c:157 main.c:230
+#: main.c:167 main.c:240
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -162,46 +162,46 @@ msgstr ""
 "Auto-chargement activé. Copiez simplement les fichiers en USB pour les "
 "lancer ou entrez sur REPL pour le désactiver.\n"
 
-#: main.c:159
+#: main.c:169
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Mode sans-échec. Auto-rechargement désactivé.\n"
 
-#: main.c:161 main.c:232
+#: main.c:171 main.c:242
 msgid "Auto-reload is off.\n"
 msgstr "Auto-rechargement désactivé.\n"
 
-#: main.c:175
+#: main.c:185
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Mode sans-échec! Le code sauvegardé ne s'éxecute pas.\n"
 
-#: main.c:191
+#: main.c:201
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION: le nom de fichier de votre code a deux extensions\n"
 
-#: main.c:239
+#: main.c:249
 msgid "You requested starting safe mode by "
 msgstr "Vous avez demandé à démarrer en mode sans-échec par "
 
-#: main.c:242
+#: main.c:252
 msgid "To exit, please reset the board without "
 msgstr "Pour quitter, redémarrez la carte SVP sans "
 
-#: main.c:249
+#: main.c:259
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 "Vous êtes en mode sans-échec ce qui signifie que quelque chose demauvais est "
 "arrivé.\n"
 
-#: main.c:251
+#: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
-#: main.c:252
+#: main.c:262
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
 
-#: main.c:255
+#: main.c:265
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -209,7 +209,7 @@ msgstr ""
 "L'alimentation du microcontroleur a chuté. Merci de vérifier que votre "
 "alimentation fournit\n"
 
-#: main.c:256
+#: main.c:266
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -217,11 +217,11 @@ msgstr ""
 "assez de puissance pour l'ensemble du circuit et appuyez sur 'reset' (après "
 "avoir éjecter CIRCUITPY).\n"
 
-#: main.c:260
+#: main.c:270
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
-#: main.c:416
+#: main.c:426
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
@@ -976,19 +976,19 @@ msgstr "mauvais code type"
 msgid "bad compile mode"
 msgstr "mauvais mode de compilation"
 
-#: py/builtinimport.c:338
+#: py/builtinimport.c:336
 msgid "cannot perform relative import"
 msgstr "ne peut pas réaliser un import relatif"
 
-#: py/builtinimport.c:422 py/builtinimport.c:534
+#: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
 msgstr "module introuvable"
 
-#: py/builtinimport.c:425 py/builtinimport.c:537
+#: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
 msgstr "pas de module '%q'"
 
-#: py/builtinimport.c:512
+#: py/builtinimport.c:510
 msgid "relative import"
 msgstr "import relatif"
 
@@ -2235,7 +2235,7 @@ msgstr "La longueur doit être entière"
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
-msgstr ""
+msgstr "displayio est en cours de développement"
 
 #: shared-bindings/displayio/Group.c:65
 #, fuzzy
@@ -2252,6 +2252,8 @@ msgstr ""
 #: shared-bindings/displayio/Palette.c:102
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
+"Le tampon couleur doit avoir 3 octets (RVB) ou 4 octets (RVB + octet de "
+"padding)"
 
 #: shared-bindings/displayio/Palette.c:106
 #, fuzzy
@@ -2298,11 +2300,11 @@ msgstr "ne peut convertir %s en entier int"
 
 #: shared-bindings/i2cslave/I2CSlave.c:101
 msgid "address out of bounds"
-msgstr ""
+msgstr "Adresse hors limite"
 
 #: shared-bindings/i2cslave/I2CSlave.c:107
 msgid "addresses is empty"
-msgstr ""
+msgstr "Adresses est vide"
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
@@ -2402,6 +2404,11 @@ msgstr "RTC non supportée sur cette carte"
 msgid "RTC calibration is not supported on this board"
 msgstr "calibration de la RTC non supportée sur cette carte"
 
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
+#, fuzzy
+msgid "no available NIC"
+msgstr "NIC non disponible"
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr "le system de fichier doit fournir une méthode 'mount'"
@@ -2426,15 +2433,15 @@ msgstr "time.struct_time() prend exactement 1 argument"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
 msgid "Tuple or struct_time argument required"
 msgstr "Argument de type tuple ou struct_time nécessaire"
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
 msgid "function takes exactly 9 arguments"
 msgstr "la fonction prend exactement 9 arguments"
 
-#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
 msgid "timestamp out of range for platform time_t"
 msgstr "timestamp hors gamme pour la plateforme time_t"
 
@@ -2459,7 +2466,7 @@ msgstr "Impossible d'allouer le 2e tampon"
 
 #: shared-module/audioio/Mixer.c:82
 msgid "Voice index too high"
-msgstr ""
+msgstr "Index de la voix trop grand"
 
 #: shared-module/audioio/Mixer.c:85
 msgid "The sample's sample rate does not match the mixer's"
@@ -2471,11 +2478,11 @@ msgstr ""
 
 #: shared-module/audioio/Mixer.c:91
 msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr ""
+msgstr "Le bits_per_sample de l'échantillon ne correspond pas au mixer"
 
 #: shared-module/audioio/Mixer.c:100
 msgid "The sample's signedness does not match the mixer's"
-msgstr ""
+msgstr "L'échantillon non signé ne correspond pas au mixer"
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
@@ -2527,7 +2534,7 @@ msgstr "Pas de transfert sans broches MOSI et MISO"
 
 #: shared-module/displayio/Bitmap.c:49
 msgid "Only bit maps of 8 bit color or less are supported"
-msgstr ""
+msgstr "Seul les mappings en couleur 8 bits (ou moins) sont supportés"
 
 #: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
@@ -2535,12 +2542,12 @@ msgstr ""
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
-msgstr ""
+msgstr "Group complet"
 
 #: shared-module/displayio/Group.c:48
 #, fuzzy
 msgid "Group empty"
-msgstr "vide"
+msgstr "Groupe vide"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
 #, fuzzy
@@ -2550,12 +2557,12 @@ msgstr "Fichier invalide"
 #: shared-module/displayio/OnDiskBitmap.c:59
 #, c-format
 msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr ""
+msgstr "Seul le format Windows, BMP non compressé, est supporté %d"
 
 #: shared-module/displayio/OnDiskBitmap.c:64
 #, c-format
 msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr ""
+msgstr "Seul les BMP 'true color' (24 bpp ou plus) sont supportés %x"
 
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
@@ -2567,11 +2574,11 @@ msgstr "trop d'arguments fournis avec ce format"
 
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être longue de 32 octets"
+#~ msgstr "palettre doit être displayio.Palette"
 
 #, fuzzy
 #~ msgid "value_size must be power of two"
-#~ msgstr "'len' doit être un multiple de 4"
+#~ msgstr "value_size est une puissance de deux"
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Type de service invalide"

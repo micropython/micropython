@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-21 17:15+0200\n"
+"POT-Creation-Date: 2018-11-07 14:10-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -93,7 +93,7 @@ msgstr "struct: index außerhalb gültigen Bereichs"
 
 #: extmod/moduheapq.c:38
 msgid "heap must be a list"
-msgstr "heap muss eine list sein"
+msgstr "heap muss eine Liste sein"
 
 #: extmod/moduheapq.c:86 extmod/modutimeq.c:147 extmod/modutimeq.c:172
 msgid "empty heap"
@@ -147,15 +147,15 @@ msgstr "abort() wurde aufgerufen"
 msgid "invalid arguments"
 msgstr "ungültige argumente"
 
-#: lib/utils/pyexec.c:97 py/builtinimport.c:253
+#: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
 msgstr "kompilieren von Skripten ist nicht unterstützt"
 
-#: main.c:143
+#: main.c:153
 msgid " output:\n"
 msgstr " Ausgabe:\n"
 
-#: main.c:157 main.c:230
+#: main.c:167 main.c:240
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,45 +163,45 @@ msgstr ""
 "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
 "auszuführen oder verbinde dich mit der REPL um zu deaktivieren.\n"
 
-#: main.c:159
+#: main.c:169
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:161 main.c:232
+#: main.c:171 main.c:242
 msgid "Auto-reload is off.\n"
 msgstr "Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:175
+#: main.c:185
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
-#: main.c:191
+#: main.c:201
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WARNUNG: Der Dateiname deines codes hat zwei Dateityperweiterungen\n"
 
-#: main.c:239
+#: main.c:249
 msgid "You requested starting safe mode by "
 msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
 
-#: main.c:242
+#: main.c:252
 msgid "To exit, please reset the board without "
-msgstr "Zum beenden bitte resete das board ohne "
+msgstr "Zum beenden bitte resette das board ohne "
 
-#: main.c:249
+#: main.c:259
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
-msgstr "Sicherheitsmodus aktive, etwas wirklich schlechtes ist passiert.\n"
+msgstr "Sicherheitsmodus aktiv, etwas wirklich schlechtes ist passiert.\n"
 
-#: main.c:251
+#: main.c:261
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "CircuitPython ist abgestürzt. Ups!\n"
 
-#: main.c:252
+#: main.c:262
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
 
-#: main.c:255
+#: main.c:265
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -209,23 +209,23 @@ msgstr ""
 "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
 "dass deine Stromversorgung\n"
 
-#: main.c:256
+#: main.c:266
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach "
-"demsicheren Auswerfen von CIRCUITPY.)\n"
+"genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
+"sicheren Auswerfen von CIRCUITPY.)\n"
 
-#: main.c:260
+#: main.c:270
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
 "laden"
 
-#: main.c:416
+#: main.c:426
 msgid "soft reboot\n"
-msgstr "weicher reboot\n"
+msgstr "soft reboot\n"
 
 #: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
@@ -268,7 +268,7 @@ msgstr "AnalogOut ist an diesem Pin nicht unterstützt"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
-msgstr "Ungülgites bit clock pin"
+msgstr "Ungültiges bit clock pin"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
@@ -284,7 +284,7 @@ msgstr "Ungültiger data pin"
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:145
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:150
 msgid "Serializer in use"
-msgstr "Serilaizer wird benutzt"
+msgstr "Serializer wird benutzt"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:230
 msgid "Clock unit in use"
@@ -356,7 +356,7 @@ msgstr "Alle timer werden benutzt"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
-msgstr "Alle event Kanälre werden benutzt"
+msgstr "Alle event Kanäle werden benutzt"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
@@ -381,7 +381,7 @@ msgstr "SDA oder SCL brauchen pull up"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
-msgstr "Baudrate wird nicht unterstütz"
+msgstr "Baudrate wird nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:66
 msgid "bytes > 8 bits not supported"
@@ -547,23 +547,25 @@ msgstr "Minimale PWM Frequenz ist %dHz"
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
 msgstr ""
+"Mehrere PWM Frequenzen nicht unterstützt. PWM bereits auf %dHz gesetzt."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
 msgid "PWM not supported on pin %d"
-msgstr ""
+msgstr "PWM nicht unterstützt an Pin %d"
 
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:78
 msgid "No PulseIn support for %q"
-msgstr ""
+msgstr "Keine PulseIn Unterstützung für %q"
 
 #: ports/esp8266/common-hal/storage/__init__.c:34
 msgid "Unable to remount filesystem"
-msgstr ""
+msgstr "Dateisystem kann nicht wieder gemounted werden."
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
 msgstr ""
+"Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -572,102 +574,103 @@ msgstr ""
 #: ports/esp8266/machine_adc.c:57
 #, c-format
 msgid "not a valid ADC Channel: %d"
-msgstr ""
+msgstr "Kein gültiger ADC Kanal: %d"
 
 #: ports/esp8266/machine_hspi.c:131 ports/esp8266/machine_hspi.c:137
 msgid "impossible baudrate"
-msgstr ""
+msgstr "Unmögliche Baudrate"
 
 #: ports/esp8266/machine_pin.c:129
 msgid "expecting a pin"
-msgstr ""
+msgstr "Ein Pin wird erwartet"
 
 #: ports/esp8266/machine_pin.c:284
 msgid "Pin(16) doesn't support pull"
-msgstr ""
+msgstr "Pin(16) unterstützt kein pull"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
-msgstr ""
+msgstr "Ungültiger Pin"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr ""
+msgstr "Pin hat keine IRQ Fähigkeiten"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
-msgstr ""
+msgstr "Buffer zu lang"
 
 #: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
 #: ports/esp8266/machine_rtc.c:246
 msgid "invalid alarm"
-msgstr ""
+msgstr "Ungültiger Alarm"
 
 #: ports/esp8266/machine_uart.c:169
 #, c-format
 msgid "UART(%d) does not exist"
-msgstr ""
+msgstr "UART(%d) existiert nicht"
 
 #: ports/esp8266/machine_uart.c:219
 msgid "UART(1) can't read"
-msgstr ""
+msgstr "UART(1) kann nicht lesen"
 
 #: ports/esp8266/modesp.c:119
 msgid "len must be multiple of 4"
-msgstr ""
+msgstr "len muss ein vielfaches von 4 sein"
 
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
 msgstr ""
+"Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr ""
+msgstr "flash location muss unter 1MByte sein"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr ""
+msgstr "Die Frequenz kann nur 80Mhz oder 160Mhz sein"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr ""
+msgstr "AP erforderlich"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr ""
+msgstr "STA erforderlich"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
-msgstr ""
+msgstr "Kann i/f Status nicht updaten"
 
 #: ports/esp8266/modnetwork.c:142
 msgid "Cannot set STA config"
-msgstr ""
+msgstr "Kann STA Konfiguration nicht setzen"
 
 #: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
-msgstr ""
+msgstr "Kann nicht zu AP verbinden"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr ""
+msgstr "Kann nicht trennen von AP"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
-msgstr ""
+msgstr "Unbekannter Statusparameter"
 
 #: ports/esp8266/modnetwork.c:222
 msgid "STA must be active"
-msgstr ""
+msgstr "STA muss aktiv sein"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr ""
+msgstr "Scan fehlgeschlagen"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
-msgstr ""
+msgstr "wifi_set_ip_info() fehlgeschlagen"
 
 #: ports/esp8266/modnetwork.c:319
 msgid "either pos or kw args are allowed"
@@ -726,19 +729,19 @@ msgid "Failed to get local address, error: 0x%08lX"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:52
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to write gatts value, status: 0x%08lX"
-msgstr ""
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:76
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to notify attribute value, status: 0x%08lX"
-msgstr ""
+msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:91
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to read attribute value, status: 0x%08lX"
-msgstr ""
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:119
 #: ports/nrf/common-hal/bleio/Device.c:272
@@ -748,9 +751,9 @@ msgid "Failed to acquire mutex, status: 0x%08lX"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:126
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to write attribute value, status: 0x%08lX"
-msgstr ""
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:138
 #: ports/nrf/common-hal/bleio/Device.c:284
@@ -763,8 +766,9 @@ msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c:81
 #: ports/nrf/common-hal/bleio/Device.c:114
+#, fuzzy
 msgid "Can not fit data into the advertisment packet"
-msgstr ""
+msgstr "Daten können nicht in das advertisement packet eingefügt werden."
 
 #: ports/nrf/common-hal/bleio/Device.c:266
 #, c-format
@@ -773,40 +777,40 @@ msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c:403
 #: ports/nrf/common-hal/bleio/Scanner.c:76
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to continue scanning, status: 0x%0xlX"
-msgstr ""
+msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Device.c:436
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to connect, status: 0x%08lX"
-msgstr ""
+msgstr "Kann nicht verbinden. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Device.c:513
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to add service, status: 0x%08lX"
-msgstr ""
+msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Device.c:531
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to start advertisment, status: 0x%08lX"
-msgstr ""
+msgstr "Kann advertisement nicht starten. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Device.c:549
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to stop advertisment, status: 0x%08lX"
-msgstr ""
+msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Device.c:575
 #: ports/nrf/common-hal/bleio/Scanner.c:103
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to start scanning, status: 0x%0xlX"
-msgstr ""
+msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Device.c:592
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to create mutex, status: 0x%0xlX"
-msgstr ""
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Service.c:83
 #, c-format
@@ -814,19 +818,19 @@ msgid "Failed to add characteristic, status: 0x%08lX"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/UUID.c:97
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to add Vendor Specific UUID, status: 0x%08lX"
-msgstr ""
+msgstr "Kann keine herstellerspezifische 128-Bit-UUID hinzufügen."
 
 #: ports/nrf/common-hal/bleio/UUID.c:102
 msgid "Invalid UUID string length"
-msgstr ""
+msgstr "Ungültige UUID-Stringlänge"
 
 #: ports/nrf/common-hal/bleio/UUID.c:109
 #: shared-bindings/bleio/Characteristic.c:125
 #: shared-bindings/bleio/Service.c:105
 msgid "Invalid UUID parameter"
-msgstr ""
+msgstr "Ungültiger UUID-Parameter"
 
 #: ports/nrf/common-hal/busio/I2C.c:96
 #, fuzzy
@@ -873,11 +877,11 @@ msgstr "Alle timer werden benutzt"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
-msgstr ""
+msgstr "Unbekannter Typ"
 
 #: ports/unix/modffi.c:207 ports/unix/modffi.c:265
 msgid "Error in ffi_prep_cif"
-msgstr ""
+msgstr "Fehler in ffi_prep_cif"
 
 #: ports/unix/modffi.c:270
 msgid "ffi_prep_closure_loc"
@@ -972,19 +976,19 @@ msgstr ""
 msgid "bad compile mode"
 msgstr ""
 
-#: py/builtinimport.c:338
+#: py/builtinimport.c:336
 msgid "cannot perform relative import"
 msgstr ""
 
-#: py/builtinimport.c:422 py/builtinimport.c:534
+#: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
 msgstr ""
 
-#: py/builtinimport.c:425 py/builtinimport.c:537
+#: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
 msgstr ""
 
-#: py/builtinimport.c:512
+#: py/builtinimport.c:510
 msgid "relative import"
 msgstr ""
 
@@ -2358,6 +2362,10 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
+msgid "no available NIC"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr ""
@@ -2382,15 +2390,15 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
@@ -2517,3 +2525,33 @@ msgstr ""
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
 msgstr ""
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Ungültiger Diensttyp"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Kann UUID in das advertisement packet kodieren."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Kann das Merkmal nicht hinzufügen."
+
+#~ msgid "Can not add Service."
+#~ msgstr "Kann den Dienst nicht hinzufügen."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Kann nicht nach der Geräteadresse suchen."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Kann PPCP Parameter nicht setzen."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Kann GAP Parameter nicht anwenden."
