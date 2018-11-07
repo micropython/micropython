@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +25,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H
 
-#include "shared-module/bleio/Address.h"
+#include "py/obj.h"
 
-const mp_obj_type_t bleio_adapter_type;
+extern const mp_obj_type_t bleio_scanentry_type;
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H

@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Glenn Ruben Bakke
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,15 +25,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
 
-#include "shared-module/bleio/Address.h"
+#include "shared-bindings/bleio/UUIDType.h"
 
-const mp_obj_type_t bleio_adapter_type;
+typedef struct {
+    mp_obj_base_t base;
+    bleio_uuid_type_t type;
+    uint8_t uuid_vs_idx;
+    uint8_t value[2];
+} bleio_uuid_obj_t;
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H

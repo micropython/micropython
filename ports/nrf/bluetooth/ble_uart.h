@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H
+#define MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H
 
-#include "shared-module/bleio/Address.h"
+#include <stdbool.h>
 
-const mp_obj_type_t bleio_adapter_type;
+#include "ble_drv.h"
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+void ble_uart_init(void);
+bool ble_uart_connected(void);
+char ble_uart_rx_chr(void);
+bool ble_uart_stdin_any(void);
+void ble_uart_stdout_tx_str(const char *text);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_UART_H

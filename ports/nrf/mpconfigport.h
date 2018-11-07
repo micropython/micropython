@@ -129,21 +129,14 @@
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
 #if BLUETOOTH_SD
-#define MICROPY_PY_BLEIO                         (1)
-#define MICROPY_PY_BLE_NUS                       (0)
-#define MICROPY_PY_UBLUEPY                       (1)
-#define MICROPY_PY_UBLUEPY_PERIPHERAL            (1)
-#define MICROPY_PY_UBLUEPY_CENTRAL               (1)
-#define BLUETOOTH_WEBBLUETOOTH_REPL              (0)
+    #define MICROPY_PY_BLEIO                     (1)
+    #define MICROPY_PY_BLE_NUS                   (0)
+#else
+    #ifndef MICROPY_PY_BLEIO
+        #define MICROPY_PY_BLEIO                 (0)
+    #endif
 #endif
 
-#ifndef MICROPY_PY_BLEIO
-#define MICROPY_PY_BLEIO                        (0)
-#endif
-
-#ifndef MICROPY_PY_UBLUEPY
-#define MICROPY_PY_UBLUEPY                      (0)
-#endif
 
 // type definitions for the specific machine
 
@@ -184,16 +177,8 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t usb_hid_module;
 extern const struct _mp_obj_module_t bleio_module;
 
-extern const struct _mp_obj_module_t mp_module_ubluepy;
-
-#if MICROPY_PY_UBLUEPY
-#define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
-#else
-#define UBLUEPY_MODULE
-#endif
-
 #if MICROPY_PY_BLEIO
-#define BLEIO_MODULE                        { MP_ROM_QSTR(MP_QSTR_bleio), MP_ROM_PTR(&bleio_module) },
+#define BLEIO_MODULE { MP_ROM_QSTR(MP_QSTR_bleio), MP_ROM_PTR(&bleio_module) },
 #else
 #define BLEIO_MODULE
 #endif
@@ -221,8 +206,7 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
     USBHID_MODULE  \
-    BLEIO_MODULE   \
-    UBLUEPY_MODULE \
+    BLEIO_MODULE
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

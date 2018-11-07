@@ -24,15 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H
 
-#include "shared-module/bleio/Address.h"
+#include "shared-bindings/bleio/AddressType.h"
 
-const mp_obj_type_t bleio_adapter_type;
+#define BLEIO_ADDRESS_BYTES 6
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+typedef struct {
+    mp_obj_base_t base;
+    bleio_address_type_t type;
+    uint8_t value[BLEIO_ADDRESS_BYTES];
+} bleio_address_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H

@@ -79,21 +79,21 @@
   BUF.elems = (T*)calloc(BUF.size, sizeof(T))
 
 
-#define bufferDestroy(BUF) free(BUF->elems)
-#define nextStartIndex(BUF) ((BUF->start + 1) % BUF->size)
-#define nextEndIndex(BUF) ((BUF->end + 1) % BUF->size)
-#define isBufferEmpty(BUF) (BUF->end == BUF->start)
-#define isBufferFull(BUF) (nextEndIndex(BUF) == BUF->start)
+#define bufferDestroy(BUF) free((BUF)->elems)
+#define nextStartIndex(BUF) (((BUF)->start + 1) % (BUF)->size)
+#define nextEndIndex(BUF) (((BUF)->end + 1) % (BUF)->size)
+#define isBufferEmpty(BUF) ((BUF)->end == (BUF)->start)
+#define isBufferFull(BUF) (nextEndIndex(BUF) == (BUF)->start)
 
 #define bufferWrite(BUF, ELEM) \
-  BUF->elems[BUF->end] = ELEM; \
-  BUF->end = (BUF->end + 1) % BUF->size; \
+  (BUF)->elems[(BUF)->end] = ELEM; \
+  (BUF)->end = ((BUF)->end + 1) % (BUF)->size; \
   if (isBufferEmpty(BUF)) { \
-    BUF->start = nextStartIndex(BUF); \
+    (BUF)->start = nextStartIndex(BUF); \
   }
 
 #define bufferRead(BUF, ELEM) \
-    ELEM = BUF->elems[BUF->start]; \
-    BUF->start = nextStartIndex(BUF);
+    ELEM = (BUF)->elems[(BUF)->start]; \
+    (BUF)->start = nextStartIndex(BUF);
 
 #endif

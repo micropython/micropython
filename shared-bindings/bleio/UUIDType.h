@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,15 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUIDTYPE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUIDTYPE_H
 
-#include "shared-module/bleio/Address.h"
+#include "py/obj.h"
 
-const mp_obj_type_t bleio_adapter_type;
+typedef enum {
+    UUID_TYPE_16BIT,
+    UUID_TYPE_128BIT
+} bleio_uuid_type_t;
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+extern const mp_obj_type_t bleio_uuidtype_type;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+typedef struct {
+    mp_obj_base_t base;
+} bleio_uuidtype_obj_t;
+
+extern const bleio_uuidtype_obj_t bleio_uuidtype_16bit_obj;
+extern const bleio_uuidtype_obj_t bleio_uuidtype_128bit_obj;
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUIDTYPE_H

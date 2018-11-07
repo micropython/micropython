@@ -24,15 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUID_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUID_H
 
-#include "shared-module/bleio/Address.h"
+#include "common-hal/bleio/UUID.h"
+#include "shared-bindings/bleio/UUIDType.h"
 
-const mp_obj_type_t bleio_adapter_type;
+extern const mp_obj_type_t bleio_uuid_type;
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+extern void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, const mp_obj_t *uuid);
+extern void common_hal_bleio_uuid_print(bleio_uuid_obj_t *self, const mp_print_t *print);
+extern bleio_uuid_type_t common_hal_bleio_uuid_get_type(bleio_uuid_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUID_H

@@ -24,15 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
 
-#include "shared-module/bleio/Address.h"
+#include "shared-module/bleio/Characteristic.h"
+#include "shared-module/bleio/Service.h"
 
-const mp_obj_type_t bleio_adapter_type;
+const mp_obj_type_t bleio_service_type;
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+extern void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H

@@ -24,15 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H
 
-#include "shared-module/bleio/Address.h"
+#include "common-hal/bleio/Descriptor.h"
+#include "common-hal/bleio/UUID.h"
 
-const mp_obj_type_t bleio_adapter_type;
+extern const mp_obj_type_t bleio_descriptor_type;
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+extern void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid);
+extern void common_hal_bleio_descriptor_print(bleio_descriptor_obj_t *self, const mp_print_t *print);
+extern mp_int_t common_hal_bleio_descriptor_get_handle(bleio_descriptor_obj_t *self);
+extern mp_int_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H

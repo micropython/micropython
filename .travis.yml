@@ -50,7 +50,7 @@ before_script:
   - (! var_search "${TRAVIS_SDK-}" arm || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
   # For nrf builds
-  - (! var_search "${TRAVIS_SDK-}" nrf || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
+  - (! var_search "${TRAVIS_SDK-}" nrf || sudo ports/nrf/bluetooth/download_ble_stack.sh)
 
   # For huzzah builds
   - (! var_search "${TRAVIS_SDK-}" esp8266 || (wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar -C .. -xavf xtensa-lx106-elf-standalone.tar.gz))

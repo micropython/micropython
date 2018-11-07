@@ -21,7 +21,7 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 ifneq ($(SD), )
-	include drivers/bluetooth/bluetooth_common.mk
+	include bluetooth/bluetooth_common.mk
 endif
 
 FROZEN_MPY_DIR = freeze
@@ -47,10 +47,9 @@ INC += -I./nrfx
 INC += -I./nrfx/hal
 INC += -I./nrfx/mdk
 INC += -I./nrfx/drivers/include
-INC += -I../../lib/mp-readline
-INC += -I./drivers/bluetooth
-INC += -I./drivers
+INC += -I./bluetooth
 INC += -I./peripherals
+INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I./usb
 
@@ -105,8 +104,8 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
-	drivers/bluetooth/ble_drv.c \
-	drivers/bluetooth/ble_uart.c \
+	bluetooth/ble_drv.c \
+	bluetooth/ble_uart.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -127,18 +126,6 @@ SRC_C += \
 	peripherals/nrf/timers.c \
 	supervisor/shared/memory.c
 
-DRIVERS_SRC_C += $(addprefix modules/,\
-	ubluepy/modubluepy.c \
-	ubluepy/ubluepy_peripheral.c \
-	ubluepy/ubluepy_service.c \
-	ubluepy/ubluepy_characteristic.c \
-	ubluepy/ubluepy_uuid.c \
-	ubluepy/ubluepy_delegate.c \
-	ubluepy/ubluepy_constants.c \
-	ubluepy/ubluepy_descriptor.c \
-	ubluepy/ubluepy_scanner.c \
-	ubluepy/ubluepy_scan_entry.c \
-	)
 
 SRC_COMMON_HAL += \
 	analogio/AnalogIn.c \
@@ -168,7 +155,13 @@ SRC_COMMON_HAL += \
 ifneq ($(SD), )
 SRC_COMMON_HAL += \
 	bleio/__init__.c \
-	bleio/Adapter.c
+	bleio/Adapter.c \
+	bleio/Characteristic.c \
+	bleio/Descriptor.c \
+	bleio/Device.c \
+	bleio/Scanner.c \
+	bleio/Service.c \
+	bleio/UUID.c
 endif
 
 # These don't have corresponding files in each port but are still located in
@@ -182,6 +175,15 @@ SRC_BINDINGS_ENUMS = \
 	help.c \
 	math/__init__.c \
 	util.c
+
+ifneq ($(SD), )
+SRC_BINDINGS_ENUMS += \
+	bleio/Address.c \
+	bleio/AddressType.c \
+	bleio/AdvertisementData.c \
+	bleio/ScanEntry.c \
+	bleio/UUIDType.c
+endif
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

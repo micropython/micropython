@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Glenn Ruben Bakke
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,15 +25,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#include "common-hal/bleio/Descriptor.h"
 
-#include "shared-module/bleio/Address.h"
+void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid) {
+    self->uuid = uuid;
+}
 
-const mp_obj_type_t bleio_adapter_type;
+void common_hal_bleio_descriptor_print(bleio_descriptor_obj_t *self, const mp_print_t *print) {
+    mp_printf(print, "Descriptor(uuid: 0x" HEX2_FMT HEX2_FMT ")",
+              self->uuid->value[1], self->uuid->value[0]);
+}
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+mp_int_t common_hal_bleio_descriptor_get_handle(bleio_descriptor_obj_t *self) {
+    return self->handle;
+}
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+mp_int_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
+    return self->uuid->value[0] | (self->uuid->value[1] << 8);
+}

@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,15 +24,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESSTYPE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESSTYPE_H
 
-#include "shared-module/bleio/Address.h"
+#include "py/obj.h"
 
-const mp_obj_type_t bleio_adapter_type;
+typedef enum {
+    ADDRESS_PUBLIC,
+    ADDRESS_RANDOM_STATIC,
+    ADDRESS_RANDOM_PRIVATE_RESOLVABLE,
+    ADDRESS_RANDOM_PRIVATE_NON_RESOLVABLE
+} bleio_address_type_t;
 
-extern bool common_hal_bleio_adapter_get_enabled(void);
-extern void common_hal_bleio_adapter_set_enabled(bool enabled);
-extern void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address);
+extern const mp_obj_type_t bleio_addresstype_type;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H
+typedef struct {
+    mp_obj_base_t base;
+} bleio_addresstype_obj_t;
+
+extern const bleio_addresstype_obj_t bleio_addresstype_public_obj;
+extern const bleio_addresstype_obj_t bleio_addresstype_random_static_obj;
+extern const bleio_addresstype_obj_t bleio_addresstype_random_private_resolvable_obj;
+extern const bleio_addresstype_obj_t bleio_addresstype_random_private_non_resolvable_obj;
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESSTYPE_H

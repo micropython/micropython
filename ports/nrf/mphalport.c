@@ -109,8 +109,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 
 #endif // USB
 
-#endif // NUS
-
+#endif // MICROPY_PY_BLE_NUS
 
 /*------------------------------------------------------------------*/
 /* delay

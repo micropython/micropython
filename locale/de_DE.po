@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-25 12:20+1100\n"
+"POT-Creation-Date: 2018-11-07 14:10-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -708,6 +708,130 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Adapter.c:41
+#, c-format
+msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:125
+#, c-format
+msgid "Failed to change softdevice state, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:135
+#, c-format
+msgid "Failed to get softdevice state, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:155
+#, c-format
+msgid "Failed to get local address, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:52
+#, fuzzy, c-format
+msgid "Failed to write gatts value, status: 0x%08lX"
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:76
+#, fuzzy, c-format
+msgid "Failed to notify attribute value, status: 0x%08lX"
+msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:91
+#, fuzzy, c-format
+msgid "Failed to read attribute value, status: 0x%08lX"
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:119
+#: ports/nrf/common-hal/bleio/Device.c:272
+#: ports/nrf/common-hal/bleio/Device.c:307
+#, c-format
+msgid "Failed to acquire mutex, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:126
+#, fuzzy, c-format
+msgid "Failed to write attribute value, status: 0x%08lX"
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:138
+#: ports/nrf/common-hal/bleio/Device.c:284
+#: ports/nrf/common-hal/bleio/Device.c:319
+#: ports/nrf/common-hal/bleio/Device.c:354
+#: ports/nrf/common-hal/bleio/Device.c:391
+#, c-format
+msgid "Failed to release mutex, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:81
+#: ports/nrf/common-hal/bleio/Device.c:114
+#, fuzzy
+msgid "Can not fit data into the advertisment packet"
+msgstr "Daten können nicht in das advertisement packet eingefügt werden."
+
+#: ports/nrf/common-hal/bleio/Device.c:266
+#, c-format
+msgid "Failed to discover serivices, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:403
+#: ports/nrf/common-hal/bleio/Scanner.c:76
+#, fuzzy, c-format
+msgid "Failed to continue scanning, status: 0x%0xlX"
+msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:436
+#, fuzzy, c-format
+msgid "Failed to connect, status: 0x%08lX"
+msgstr "Kann nicht verbinden. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:513
+#, fuzzy, c-format
+msgid "Failed to add service, status: 0x%08lX"
+msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:531
+#, fuzzy, c-format
+msgid "Failed to start advertisment, status: 0x%08lX"
+msgstr "Kann advertisement nicht starten. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:549
+#, fuzzy, c-format
+msgid "Failed to stop advertisment, status: 0x%08lX"
+msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:575
+#: ports/nrf/common-hal/bleio/Scanner.c:103
+#, fuzzy, c-format
+msgid "Failed to start scanning, status: 0x%0xlX"
+msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:592
+#, fuzzy, c-format
+msgid "Failed to create mutex, status: 0x%0xlX"
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Service.c:83
+#, c-format
+msgid "Failed to add characteristic, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:97
+#, fuzzy, c-format
+msgid "Failed to add Vendor Specific UUID, status: 0x%08lX"
+msgstr "Kann keine herstellerspezifische 128-Bit-UUID hinzufügen."
+
+#: ports/nrf/common-hal/bleio/UUID.c:102
+msgid "Invalid UUID string length"
+msgstr "Ungültige UUID-Stringlänge"
+
+#: ports/nrf/common-hal/bleio/UUID.c:109
+#: shared-bindings/bleio/Characteristic.c:125
+#: shared-bindings/bleio/Service.c:105
+msgid "Invalid UUID parameter"
+msgstr "Ungültiger UUID-Parameter"
+
 #: ports/nrf/common-hal/busio/I2C.c:96
 #, fuzzy
 msgid "All I2C peripherals are in use"
@@ -750,107 +874,6 @@ msgstr ""
 #, fuzzy
 msgid "All PWM peripherals are in use"
 msgstr "Alle timer werden benutzt"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:199
-msgid "Cannot apply GAP parameters."
-msgstr "Kann GAP Parameter nicht anwenden."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:213
-msgid "Cannot set PPCP parameters."
-msgstr "Kann PPCP Parameter nicht setzen."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:245
-msgid "Can not query for the device address."
-msgstr "Kann nicht nach der Geräteadresse suchen."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:264
-msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr "Kann keine herstellerspezifische 128-Bit-UUID hinzufügen."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:284
-#: ports/nrf/drivers/bluetooth/ble_drv.c:298
-msgid "Can not add Service."
-msgstr "Kann den Dienst nicht hinzufügen."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:373
-msgid "Can not add Characteristic."
-msgstr "Kann das Merkmal nicht hinzufügen."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:400
-msgid "Can not apply device name in the stack."
-msgstr "Der Gerätename kann nicht im Stack verwendet werden."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:464
-#: ports/nrf/drivers/bluetooth/ble_drv.c:514
-msgid "Can not encode UUID, to check length."
-msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:470
-#: ports/nrf/drivers/bluetooth/ble_drv.c:520
-msgid "Can encode UUID into the advertisement packet."
-msgstr "Kann UUID in das advertisement packet kodieren."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:545
-msgid "Can not fit data into the advertisement packet."
-msgstr "Daten können nicht in das advertisement packet eingefügt werden."
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:558
-#: ports/nrf/drivers/bluetooth/ble_drv.c:604
-#, c-format
-msgid "Can not apply advertisement data. status: 0x%02x"
-msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:614
-#, c-format
-msgid "Can not start advertisement. status: 0x%02x"
-msgstr "Kann advertisement nicht starten. Status: 0x%02x"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:631
-#, c-format
-msgid "Can not stop advertisement. status: 0x%02x"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:650
-#: ports/nrf/drivers/bluetooth/ble_drv.c:726
-#, c-format
-msgid "Can not read attribute value. status: 0x%02x"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:667
-#: ports/nrf/drivers/bluetooth/ble_drv.c:756
-#, c-format
-msgid "Can not write attribute value. status: 0x%02x"
-msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:691
-#, c-format
-msgid "Can not notify attribute value. status: 0x%02x"
-msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%02x"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:784
-#, c-format
-msgid "Can not start scanning. status: 0x%02x"
-msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:829
-#, c-format
-msgid "Can not connect. status: 0x%02x"
-msgstr "Kann nicht verbinden. Status: 0x%02x"
-
-#: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:80
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:132
-#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
-msgid "Invalid UUID parameter"
-msgstr "Ungültiger UUID-Parameter"
-
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:73
-msgid "Invalid Service type"
-msgstr "Ungültiger Diensttyp"
-
-#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
-msgid "Invalid UUID string length"
-msgstr "Ungültige UUID-Stringlänge"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -2109,6 +2132,30 @@ msgstr ""
 msgid "buffer slices must be of equal length"
 msgstr ""
 
+#: shared-bindings/bleio/Address.c:101
+msgid "Wrong address length"
+msgstr ""
+
+#: shared-bindings/bleio/Address.c:107
+msgid "Wrong number of bytes provided"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:210
+msgid "Can't add services in Central mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:226
+msgid "Can't connect in Peripheral mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:256
+msgid "Can't change the name in Central mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
+msgid "Can't advertise in Central mode"
+msgstr ""
+
 #: shared-bindings/busio/I2C.c:120
 msgid "Function requires lock."
 msgstr ""
@@ -2478,3 +2525,33 @@ msgstr ""
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
 msgstr ""
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Ungültiger Diensttyp"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Kann UUID in das advertisement packet kodieren."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Kann das Merkmal nicht hinzufügen."
+
+#~ msgid "Can not add Service."
+#~ msgstr "Kann den Dienst nicht hinzufügen."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Kann nicht nach der Geräteadresse suchen."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Kann PPCP Parameter nicht setzen."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Kann GAP Parameter nicht anwenden."
