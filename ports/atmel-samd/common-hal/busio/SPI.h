@@ -42,4 +42,7 @@ typedef struct {
     uint8_t MISO_pin;
 } busio_spi_obj_t;
 
+void reset_sercoms(void);
+
+
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H

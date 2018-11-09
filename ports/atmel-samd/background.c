@@ -27,8 +27,7 @@
 
 #include "audio_dma.h"
 #include "tick.h"
-#include "usb.h"
-#include "usb_mass_storage.h"
+#include "supervisor/usb.h"
 
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/network/__init__.h"
@@ -45,8 +44,8 @@ void run_background_tasks(void) {
     #if MICROPY_PY_NETWORK
     network_module_background();
     #endif
-    usb_msc_background();
-    usb_cdc_background();
+    usb_background();
+
     last_finished_tick = ticks_ms;
 }
 

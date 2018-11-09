@@ -58,7 +58,7 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE              (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL                  (1)
 #define MICROPY_FATFS_RPATH                      (2)
-#define MICROPY_FATFS_MULTI_PARTITION            (0)
+#define MICROPY_FATFS_MULTI_PARTITION            (1)
 #define MICROPY_FATFS_NUM_PERSISTENT             (1)
 
 //#define MICROPY_FATFS_MAX_SS                   (4096)
@@ -216,9 +216,12 @@ extern const struct _mp_obj_module_t bleio_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#include "supervisor/flash_root_pointers.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t gamepad_singleton; \
+    FLASH_ROOT_POINTERS \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

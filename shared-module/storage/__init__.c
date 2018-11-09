@@ -32,8 +32,12 @@
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/os/__init__.h"
 #include "shared-bindings/storage/__init__.h"
+#include "supervisor/filesystem.h"
+#include "supervisor/flash.h"
+#include "supervisor/usb.h"
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
@@ -137,4 +141,26 @@ void common_hal_storage_umount_path(const char* mount_path) {
 
 mp_obj_t common_hal_storage_getmount(const char *mount_path) {
     return storage_object_from_path(mount_path);
+}
+
+void common_hal_storage_remount(const char *mount_path, bool readonly) {
+    if (strcmp(mount_path, "/") != 0) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+
+    #ifdef USB_AVAILABLE
+    // TODO(dhalbert): is this is a good enough check? It checks for
+    // CDC enabled. There is no "MSC enabled" check.
+    if (usb_enabled()) {
+        mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
+    }
+    #endif
+
+    supervisor_flash_set_usb_writable(readonly);
+}
+
+void common_hal_storage_erase_filesystem(void) {
+    filesystem_init(false, true); // Force a re-format.
+    common_hal_mcu_reset();
+    // We won't actually get here, since we're resetting.
 }

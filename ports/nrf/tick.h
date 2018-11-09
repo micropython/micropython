@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_NRF_TICK_H
 #define MICROPY_INCLUDED_NRF_TICK_H
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 
 #include <stdint.h>
 

@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+#include "nrfx/hal/nrf_gpio.h"
+
 #define FEATHER52840
 
 #define MICROPY_HW_BOARD_NAME       "Adafruit Feather nRF52840 Express"
@@ -33,12 +35,12 @@
 
 #define MICROPY_HW_NEOPIXEL         (&pin_P0_13)
 
-#define MICROPY_QSPI_DATA0          (&pin_P1_09)
-#define MICROPY_QSPI_DATA1          (&pin_P0_11)
-#define MICROPY_QSPI_DATA2          (&pin_P0_12)
-#define MICROPY_QSPI_DATA3          (&pin_P0_14)
-#define MICROPY_QSPI_SCK            (&pin_P0_08)
-#define MICROPY_QSPI_CS             (&pin_P1_08)
+#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1, 9)
+#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 11)
+#define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 12)
+#define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(0, 14)
+#define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(0, 8)
+#define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(1, 8)
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
@@ -49,14 +51,7 @@
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-// TODO #include "external_flash/devices.h"
-
-#define EXTERNAL_FLASH_DEVICE_COUNT 1
-#define EXTERNAL_FLASH_DEVICES GD25Q16C
-
-#define EXTERNAL_FLASH_QSPI_DUAL
-
-// TODO include "external_flash/external_flash.h"
+#define EXTERNAL_FLASH_QSPI_DUAL (1)
 
 #define BOARD_HAS_CRYSTAL 1
 

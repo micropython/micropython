@@ -51,6 +51,7 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
@@ -388,6 +389,8 @@ int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 
+    // Turn on LEDs
+    init_status_leds();
     rgb_led_status_init();
 
     stack_init();

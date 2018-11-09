@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_TICK_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_TICK_H
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 
 extern volatile uint64_t ticks_ms;
 
