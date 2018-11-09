@@ -53,12 +53,7 @@ void reset_all_pins(void) {
     // Do not full reset USB or SWD lines.
     pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30 | PORT_PA31);
 
-    #ifdef SAMD21
-    pin_mask[0] &= ~(PORT_PA31);
-    #endif
-
     for (uint32_t i = 0; i < PORT_COUNT; i++) {
-        pin_mask[i] &= ~(PORT_PA31);
         pin_mask[i] &= ~never_reset_pins[i];
     }
 

@@ -1,8 +1,9 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Metro M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-//#define MICROPY_HW_LED_TX   &pin_PA27
-//#define MICROPY_HW_LED_RX   &pin_PA31
+#define MICROPY_HW_LED_TX   &pin_PA27
+// Comment this out if you have trouble connecting over SWD. It's one of the SWD pins.
+#define MICROPY_HW_LED_RX   &pin_PA31
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA30)
 
@@ -15,7 +16,7 @@
 #define SPI_FLASH_CS_PIN            &pin_PA13
 
 // These are pins not to reset.
-#define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25 | PORT_PA30 | PORT_PA31)
+#define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 

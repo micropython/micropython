@@ -80,7 +80,7 @@ cdc_comm_interface = standard.InterfaceDescriptor(
     description="CDC comm",
     bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
     bInterfaceSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
-    bInterfaceProtocol=cdc.CDC_PROTOCOL_V25TER,
+    bInterfaceProtocol=cdc.CDC_PROTOCOL_NONE,
     iInterface=StringIndex.index("CircuitPython CDC control"),
     subdescriptors=[
         cdc.Header(
@@ -254,7 +254,7 @@ cdc_iad = standard.InterfaceAssociationDescriptor(
     bInterfaceCount=len(cdc_interfaces),
     bFunctionClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
     bFunctionSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
-    bFunctionProtocol=cdc.CDC_PROTOCOL_V25TER) # TODO(tannewt): can this be NONE (aka 0)?
+    bFunctionProtocol=cdc.CDC_PROTOCOL_NONE)
 
 # audio_iad = standard.InterfaceAssociationDescriptor(
 #     description="Audio IAD",

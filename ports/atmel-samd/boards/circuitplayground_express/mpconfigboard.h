@@ -14,7 +14,6 @@
 #define SPI_FLASH_CS_PIN            &pin_PB22
 
 // These are pins not to reset.
-// PA24 and PA25 are USB.
 #define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)

@@ -38,6 +38,8 @@
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
+static bool ejected[1];
+
 // The root FS is always at the end of the list.
 static fs_user_mount_t* get_vfs(int lun) {
     // TODO(tannewt): Return the mount which matches the lun where 0 is the end
@@ -60,7 +62,7 @@ static fs_user_mount_t* get_vfs(int lun) {
 // - READ10 and WRITE10 have their own callbacks
 int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, uint16_t bufsize) {
     const void* response = NULL;
-    uint16_t resplen = 0;
+    int32_t resplen = 0;
 
     switch ( scsi_cmd[0] ) {
         case SCSI_CMD_TEST_UNIT_READY:
@@ -71,6 +73,9 @@ int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, 
             } else {
                 fs_user_mount_t* current_mount = get_vfs(lun);
                 if (current_mount == NULL) {
+                    resplen = -1;
+                }
+                if (ejected[lun]) {
                     resplen = -1;
                 }
             }
@@ -95,6 +100,11 @@ int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, 
                     fs_user_mount_t* current_mount = get_vfs(lun);
                     if (current_mount == NULL) {
                         resplen = -1;
+                    }
+                    if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
+                        resplen = -1;
+                    } else {
+                        ejected[lun] = true;
                     }
                 }
             }
