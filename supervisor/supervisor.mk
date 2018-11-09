@@ -66,10 +66,14 @@ SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
 
-$(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: ../../tools/gen_usb_descriptor.py Makefile | $(HEADER_BUILD)
+$(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
+
+.INTERMEDIATE: autogen_usb_descriptor.intermediate
+
+autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
-	$(PYTHON3) ../../tools/gen_usb_descriptor.py \
+	$(Q)$(PYTHON3) ../../tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
 		--vid $(USB_VID)\

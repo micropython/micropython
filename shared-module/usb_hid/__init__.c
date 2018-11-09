@@ -58,7 +58,7 @@ static uint8_t digitizer_report_buffer[USB_HID_REPORT_LENGTH_DIGITIZER];
 #endif
 
 usb_hid_device_obj_t usb_hid_devices[] = {
-#if USB_HID_REPORT_ID_KEYBOARD
+#ifdef USB_HID_REPORT_ID_KEYBOARD
     {
         .base          = { .type = &usb_hid_device_type } ,
         .report_buffer = keyboard_report_buffer           ,
@@ -69,7 +69,7 @@ usb_hid_device_obj_t usb_hid_devices[] = {
     },
 #endif
 
-#if USB_HID_REPORT_ID_MOUSE
+#ifdef USB_HID_REPORT_ID_MOUSE
     {
         .base          = { .type = &usb_hid_device_type } ,
         .report_buffer = mouse_report_buffer              ,
@@ -80,7 +80,7 @@ usb_hid_device_obj_t usb_hid_devices[] = {
     },
 #endif
 
-#if USB_HID_REPORT_ID_CONSUMER
+#ifdef USB_HID_REPORT_ID_CONSUMER
     {
         .base          = { .type = &usb_hid_device_type } ,
         .report_buffer = consumer_report_buffer           ,
@@ -91,7 +91,7 @@ usb_hid_device_obj_t usb_hid_devices[] = {
     },
 #endif
 
-#if USB_HID_REPORT_ID_SYS_CONTROL
+#ifdef USB_HID_REPORT_ID_SYS_CONTROL
     {
         .base          = { .type = &usb_hid_device_type }  ,
         .report_buffer = sys_control_report_buffer         ,
@@ -102,7 +102,7 @@ usb_hid_device_obj_t usb_hid_devices[] = {
     },
 #endif
 
-#if USB_HID_REPORT_ID_GAMEPAD
+#ifdef USB_HID_REPORT_ID_GAMEPAD
     {
         .base          = { .type = &usb_hid_device_type } ,
         .report_buffer = gamepad_report_buffer            ,
@@ -113,7 +113,7 @@ usb_hid_device_obj_t usb_hid_devices[] = {
     },
 #endif
 
-#if USB_HID_REPORT_ID_DIGITIZER
+#ifdef USB_HID_REPORT_ID_DIGITIZER
     {
         .base          = { .type = &usb_hid_device_type } ,
         .report_buffer = digitizer_report_buffer          ,
