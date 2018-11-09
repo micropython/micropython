@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "supervisor/internal_flash.h"
+
 #include <stdint.h>
 #include <string.h>
 
