@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-07 14:10-0500\n"
+"POT-Creation-Date: 2018-11-09 16:20-0800\n"
 "PO-Revision-Date: 2018-08-14 11:01+0200\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -150,11 +150,11 @@ msgstr "arguments invalides"
 msgid "script compilation not supported"
 msgstr "compilation du script non supporté"
 
-#: main.c:153
+#: main.c:154
 msgid " output:\n"
 msgstr " sortie:\n"
 
-#: main.c:167 main.c:240
+#: main.c:168 main.c:241
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -162,46 +162,46 @@ msgstr ""
 "Auto-chargement activé. Copiez simplement les fichiers en USB pour les "
 "lancer ou entrez sur REPL pour le désactiver.\n"
 
-#: main.c:169
+#: main.c:170
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Mode sans-échec. Auto-rechargement désactivé.\n"
 
-#: main.c:171 main.c:242
+#: main.c:172 main.c:243
 msgid "Auto-reload is off.\n"
 msgstr "Auto-rechargement désactivé.\n"
 
-#: main.c:185
+#: main.c:186
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Mode sans-échec! Le code sauvegardé ne s'éxecute pas.\n"
 
-#: main.c:201
+#: main.c:202
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION: le nom de fichier de votre code a deux extensions\n"
 
-#: main.c:249
+#: main.c:250
 msgid "You requested starting safe mode by "
 msgstr "Vous avez demandé à démarrer en mode sans-échec par "
 
-#: main.c:252
+#: main.c:253
 msgid "To exit, please reset the board without "
 msgstr "Pour quitter, redémarrez la carte SVP sans "
 
-#: main.c:259
+#: main.c:260
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 "Vous êtes en mode sans-échec ce qui signifie que quelque chose demauvais est "
 "arrivé.\n"
 
-#: main.c:261
+#: main.c:262
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
-#: main.c:262
+#: main.c:263
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
 
-#: main.c:265
+#: main.c:266
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -209,7 +209,7 @@ msgstr ""
 "L'alimentation du microcontroleur a chuté. Merci de vérifier que votre "
 "alimentation fournit\n"
 
-#: main.c:266
+#: main.c:267
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -217,11 +217,11 @@ msgstr ""
 "assez de puissance pour l'ensemble du circuit et appuyez sur 'reset' (après "
 "avoir éjecter CIRCUITPY).\n"
 
-#: main.c:270
+#: main.c:271
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
-#: main.c:426
+#: main.c:429
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
@@ -366,7 +366,7 @@ msgid "Not enough pins available"
 msgstr "Pas assez de broches disponibles"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
-#: ports/atmel-samd/common-hal/busio/SPI.c:132
+#: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
@@ -410,7 +410,7 @@ msgid "No TX pin"
 msgstr "Pas de broche TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:147
 msgid "Cannot get pull while in output mode"
 msgstr "Ne peux être tirer ('pull') en mode 'output'"
 
@@ -471,29 +471,9 @@ msgstr "Un canal d'interruptions est déjà utilisé"
 msgid "calibration value out of range +/-127"
 msgstr "valeur de calibration hors gamme +/-127"
 
-#: ports/atmel-samd/common-hal/storage/__init__.c:48
-msgid "Cannot remount '/' when USB is active."
-msgstr "'/' ne peut être remonté quand l'USB est actif."
-
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
 msgstr "Pas de GCLK libre"
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:78
-#: ports/nrf/common-hal/usb_hid/Device.c:45
-#, c-format
-msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Tampon de taille incorrect. Devrait être de %d octets."
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:53
-msgid "USB Busy"
-msgstr "USB occupé"
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:59
-msgid "USB Error"
-msgstr "Erreur USB"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
@@ -835,7 +815,7 @@ msgstr "Paramètre UUID invalide"
 msgid "All I2C peripherals are in use"
 msgstr "Tous les timers sont utilisés"
 
-#: ports/nrf/common-hal/busio/SPI.c:115
+#: ports/nrf/common-hal/busio/SPI.c:133
 #, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Tous les timers sont utilisés"
@@ -975,6 +955,21 @@ msgstr "mauvais code type"
 #: py/builtinevex.c:99
 msgid "bad compile mode"
 msgstr "mauvais mode de compilation"
+
+#: py/builtinhelp.c:137
+#, fuzzy
+msgid "Plus any modules on the filesystem\n"
+msgstr "Impossible de remonter le système de fichiers"
+
+#: py/builtinhelp.c:183
+#, c-format
+msgid ""
+"Welcome to Adafruit CircuitPython %s!\n"
+"\n"
+"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"\n"
+"To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
 
 #: py/builtinimport.c:336
 msgid "cannot perform relative import"
@@ -2508,27 +2503,27 @@ msgstr "Fichier invalide"
 msgid "Clock stretch too long"
 msgstr "Période de l'horloge trop longue"
 
-#: shared-module/bitbangio/SPI.c:45
+#: shared-module/bitbangio/SPI.c:44
 msgid "Clock pin init failed."
 msgstr "Echec de l'init. de la broche d'horloge"
 
-#: shared-module/bitbangio/SPI.c:51
+#: shared-module/bitbangio/SPI.c:50
 msgid "MOSI pin init failed."
 msgstr "Echec de l'init. de la broche MOSI"
 
-#: shared-module/bitbangio/SPI.c:62
+#: shared-module/bitbangio/SPI.c:61
 msgid "MISO pin init failed."
 msgstr "Echec de l'init. de la broche MISO"
 
-#: shared-module/bitbangio/SPI.c:122
+#: shared-module/bitbangio/SPI.c:121
 msgid "Cannot write without MOSI pin."
 msgstr "Impossible d'écrire sans broche MOSI."
 
-#: shared-module/bitbangio/SPI.c:177
+#: shared-module/bitbangio/SPI.c:176
 msgid "Cannot read without MISO pin."
 msgstr "Impossible de lire sans broche MISO."
 
-#: shared-module/bitbangio/SPI.c:241
+#: shared-module/bitbangio/SPI.c:240
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Pas de transfert sans broches MOSI et MISO"
 
@@ -2564,6 +2559,10 @@ msgstr "Seul le format Windows, BMP non compressé, est supporté %d"
 msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr "Seul les BMP 'true color' (24 bpp ou plus) sont supportés %x"
 
+#: shared-module/storage/__init__.c:155
+msgid "Cannot remount '/' when USB is active."
+msgstr "'/' ne peut être remonté quand l'USB est actif."
+
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
 msgstr "'S' et 'O' ne sont pas des types de format supportés"
@@ -2572,28 +2571,22 @@ msgstr "'S' et 'O' ne sont pas des types de format supportés"
 msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
+#: shared-module/usb_hid/Device.c:45
+#, c-format
+msgid "Buffer incorrect size. Should be %d bytes."
+msgstr "Tampon de taille incorrect. Devrait être de %d octets."
+
+#: shared-module/usb_hid/Device.c:53
+msgid "USB Busy"
+msgstr "USB occupé"
+
+#: shared-module/usb_hid/Device.c:59
+msgid "USB Error"
+msgstr "Erreur USB"
+
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "palettre doit être displayio.Palette"
-
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size est une puissance de deux"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
 
 #~ msgid "Can not query for the device address."
 #~ msgstr "Impossible d'obtenir l'adresse du périphérique"
@@ -2603,3 +2596,22 @@ msgstr "trop d'arguments fournis avec ce format"
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Impossible d'appliquer les paramètres GAP"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size est une puissance de deux"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."

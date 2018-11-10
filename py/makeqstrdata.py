@@ -349,8 +349,7 @@ def print_qstr_data(encoding_table, qcfgs, qstrs, i18ns):
         total_text_compressed_size += len(compressed)
         decompressed = decompress(encoding_table, len(translation_encoded), compressed).decode("utf-8")
         for c in C_ESCAPES:
-            decompressed.replace(c, C_ESCAPES[c])
-        #print("// \"{}\"".format(translation))
+            decompressed = decompressed.replace(c, C_ESCAPES[c])
         print("TRANSLATION(\"{}\", {}, {{ {} }}) // {}".format(original, len(translation_encoded)+1, ", ".join(["0x{:02x}".format(x) for x in compressed]), decompressed))
         total_text_size += len(translation.encode("utf-8"))
 

@@ -47,10 +47,17 @@ bool serial_bytes_available(void) {
     return tud_cdc_available() > 0;
 }
 
-void serial_write(const char* text) {
-    tud_cdc_write(text, strlen(text));
+void serial_write_substring(const char* text, uint32_t length) {
+    if (!tud_cdc_connected()) {
+        return;
+    }
+    uint32_t count = 0;
+    while (count < length) {
+        count += tud_cdc_write(text + count, length - count);
+        usb_background();
+    }
 }
 
-void serial_write_substring(const char* text, uint32_t length) {
-    tud_cdc_write(text, length);
+void serial_write(const char* text) {
+    serial_write_substring(text, strlen(text));
 }

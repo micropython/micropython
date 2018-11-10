@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-07 14:10-0500\n"
+"POT-Creation-Date: 2018-11-09 16:20-0800\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -151,11 +151,11 @@ msgstr "mali ang mga argumento"
 msgid "script compilation not supported"
 msgstr "script kompilasyon hindi supportado"
 
-#: main.c:153
+#: main.c:154
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:167 main.c:240
+#: main.c:168 main.c:241
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,48 +163,48 @@ msgstr ""
 "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
 "para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
 
-#: main.c:169
+#: main.c:170
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:171 main.c:242
+#: main.c:172 main.c:243
 msgid "Auto-reload is off.\n"
 msgstr "Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:185
+#: main.c:186
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: main.c:201
+#: main.c:202
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 
-#: main.c:249
+#: main.c:250
 msgid "You requested starting safe mode by "
 msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
 
-#: main.c:252
+#: main.c:253
 msgid "To exit, please reset the board without "
 msgstr "Para lumabas, paki-reset ang board na wala ang "
 
-#: main.c:259
+#: main.c:260
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 "Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang "
 "nangyari.\n"
 
-#: main.c:261
+#: main.c:262
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
-#: main.c:262
+#: main.c:263
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
 "drive:\n"
 
-#: main.c:265
+#: main.c:266
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -212,7 +212,7 @@ msgstr ""
 "Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
 "supply \n"
 
-#: main.c:266
+#: main.c:267
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -220,13 +220,13 @@ msgstr ""
 "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang reset "
 "(pagkatapos i-eject ang CIRCUITPY).\n"
 
-#: main.c:270
+#: main.c:271
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Pindutin ang anumang key upang ipasok ang REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
-#: main.c:426
+#: main.c:429
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
@@ -371,7 +371,7 @@ msgid "Not enough pins available"
 msgstr "Hindi sapat ang magagamit na pins"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
-#: ports/atmel-samd/common-hal/busio/SPI.c:132
+#: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
@@ -415,7 +415,7 @@ msgid "No TX pin"
 msgstr "Walang TX pin"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:147
 msgid "Cannot get pull while in output mode"
 msgstr "Hindi makakakuha ng pull habang nasa output mode"
 
@@ -475,29 +475,9 @@ msgstr "Isang channel ng hardware interrupt ay ginagamit na"
 msgid "calibration value out of range +/-127"
 msgstr "ang halaga ng pagkakalibrate ay wala sa sakop +/-127"
 
-#: ports/atmel-samd/common-hal/storage/__init__.c:48
-msgid "Cannot remount '/' when USB is active."
-msgstr "Hindi ma-remount '/' kapag aktibo ang USB."
-
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
 msgstr "Walang libreng GCLKs"
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:78
-#: ports/nrf/common-hal/usb_hid/Device.c:45
-#, c-format
-msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Mali ang size ng buffer. Dapat %d bytes."
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:53
-msgid "USB Busy"
-msgstr "Busy ang USB"
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:59
-msgid "USB Error"
-msgstr "May pagkakamali ang USB"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
@@ -840,7 +820,7 @@ msgstr "Mali ang UUID parameter"
 msgid "All I2C peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c:115
+#: ports/nrf/common-hal/busio/SPI.c:133
 #, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
@@ -982,6 +962,21 @@ msgstr "masamang typecode"
 #: py/builtinevex.c:99
 msgid "bad compile mode"
 msgstr "masamang mode ng compile"
+
+#: py/builtinhelp.c:137
+#, fuzzy
+msgid "Plus any modules on the filesystem\n"
+msgstr "Hindi ma-remount ang filesystem"
+
+#: py/builtinhelp.c:183
+#, c-format
+msgid ""
+"Welcome to Adafruit CircuitPython %s!\n"
+"\n"
+"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"\n"
+"To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
 
 #: py/builtinimport.c:336
 msgid "cannot perform relative import"
@@ -2510,27 +2505,27 @@ msgstr "Mali ang file"
 msgid "Clock stretch too long"
 msgstr "Masyadong mahaba ang Clock stretch"
 
-#: shared-module/bitbangio/SPI.c:45
+#: shared-module/bitbangio/SPI.c:44
 msgid "Clock pin init failed."
 msgstr "Nabigo sa pag init ng Clock pin."
 
-#: shared-module/bitbangio/SPI.c:51
+#: shared-module/bitbangio/SPI.c:50
 msgid "MOSI pin init failed."
 msgstr "Hindi ma-initialize ang MOSI pin."
 
-#: shared-module/bitbangio/SPI.c:62
+#: shared-module/bitbangio/SPI.c:61
 msgid "MISO pin init failed."
 msgstr "Hindi ma-initialize ang MISO pin."
 
-#: shared-module/bitbangio/SPI.c:122
+#: shared-module/bitbangio/SPI.c:121
 msgid "Cannot write without MOSI pin."
 msgstr "Hindi maaring isulat kapag walang MOSI pin."
 
-#: shared-module/bitbangio/SPI.c:177
+#: shared-module/bitbangio/SPI.c:176
 msgid "Cannot read without MISO pin."
 msgstr "Hindi maaring mabasa kapag walang MISO pin."
 
-#: shared-module/bitbangio/SPI.c:241
+#: shared-module/bitbangio/SPI.c:240
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
 
@@ -2566,6 +2561,10 @@ msgstr ""
 msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr ""
 
+#: shared-module/storage/__init__.c:155
+msgid "Cannot remount '/' when USB is active."
+msgstr "Hindi ma-remount '/' kapag aktibo ang USB."
+
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
 msgstr "Ang 'S' at 'O' ay hindi suportadong uri ng format"
@@ -2574,6 +2573,19 @@ msgstr "Ang 'S' at 'O' ay hindi suportadong uri ng format"
 msgid "too many arguments provided with the given format"
 msgstr "masyadong maraming mga argumento na ibinigay sa ibinigay na format"
 
+#: shared-module/usb_hid/Device.c:45
+#, c-format
+msgid "Buffer incorrect size. Should be %d bytes."
+msgstr "Mali ang size ng buffer. Dapat %d bytes."
+
+#: shared-module/usb_hid/Device.c:53
+msgid "USB Busy"
+msgstr "Busy ang USB"
+
+#: shared-module/usb_hid/Device.c:59
+msgid "USB Error"
+msgstr "May pagkakamali ang USB"
+
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "ang palette ay dapat 32 bytes ang haba"
@@ -2581,14 +2593,17 @@ msgstr "masyadong maraming mga argumento na ibinigay sa ibinigay na format"
 #~ msgid "Invalid Service type"
 #~ msgstr "Mali ang tipo ng serbisyo"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
 
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
@@ -2596,14 +2611,11 @@ msgstr "masyadong maraming mga argumento na ibinigay sa ibinigay na format"
 #~ msgid "Can not add Characteristic."
 #~ msgstr "Hindi mabasa and Characteristic."
 
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Hindi ma-set ang PPCP parameters."
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
+#~ msgid "Can not add Service."
+#~ msgstr "Hindi maidaragdag ang serbisyo."
