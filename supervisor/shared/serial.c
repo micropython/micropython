@@ -48,6 +48,9 @@ bool serial_bytes_available(void) {
 }
 
 void serial_write_substring(const char* text, uint32_t length) {
+    if (!tud_cdc_connected()) {
+        return;
+    }
     uint32_t count = 0;
     while (count < length) {
         count += tud_cdc_write(text + count, length - count);
