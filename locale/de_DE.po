@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-07 14:10-0500\n"
+"POT-Creation-Date: 2018-11-09 16:20-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -151,11 +151,11 @@ msgstr "ungültige argumente"
 msgid "script compilation not supported"
 msgstr "kompilieren von Skripten ist nicht unterstützt"
 
-#: main.c:153
+#: main.c:154
 msgid " output:\n"
 msgstr " Ausgabe:\n"
 
-#: main.c:167 main.c:240
+#: main.c:168 main.c:241
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,45 +163,45 @@ msgstr ""
 "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
 "auszuführen oder verbinde dich mit der REPL um zu deaktivieren.\n"
 
-#: main.c:169
+#: main.c:170
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:171 main.c:242
+#: main.c:172 main.c:243
 msgid "Auto-reload is off.\n"
 msgstr "Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:185
+#: main.c:186
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
-#: main.c:201
+#: main.c:202
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WARNUNG: Der Dateiname deines codes hat zwei Dateityperweiterungen\n"
 
-#: main.c:249
+#: main.c:250
 msgid "You requested starting safe mode by "
 msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
 
-#: main.c:252
+#: main.c:253
 msgid "To exit, please reset the board without "
 msgstr "Zum beenden bitte resette das board ohne "
 
-#: main.c:259
+#: main.c:260
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr "Sicherheitsmodus aktiv, etwas wirklich schlechtes ist passiert.\n"
 
-#: main.c:261
+#: main.c:262
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "CircuitPython ist abgestürzt. Ups!\n"
 
-#: main.c:262
+#: main.c:263
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
 
-#: main.c:265
+#: main.c:266
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -209,7 +209,7 @@ msgstr ""
 "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
 "dass deine Stromversorgung\n"
 
-#: main.c:266
+#: main.c:267
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -217,13 +217,13 @@ msgstr ""
 "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
 "sicheren Auswerfen von CIRCUITPY.)\n"
 
-#: main.c:270
+#: main.c:271
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
 "laden"
 
-#: main.c:426
+#: main.c:429
 msgid "soft reboot\n"
 msgstr "soft reboot\n"
 
@@ -368,7 +368,7 @@ msgid "Not enough pins available"
 msgstr "Nicht genug Pins vorhanden"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
-#: ports/atmel-samd/common-hal/busio/SPI.c:132
+#: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
@@ -412,7 +412,7 @@ msgid "No TX pin"
 msgstr "Kein TX Pin"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:147
 msgid "Cannot get pull while in output mode"
 msgstr "Pull up im Ausgabemodus nicht möglich"
 
@@ -472,29 +472,9 @@ msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
 msgid "calibration value out of range +/-127"
 msgstr "Kalibrierwert nicht im Bereich von +/-127"
 
-#: ports/atmel-samd/common-hal/storage/__init__.c:48
-msgid "Cannot remount '/' when USB is active."
-msgstr "Kann '/' nicht remounten when USB aktiv ist"
-
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
 msgstr "Keine freien GCLKs"
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:78
-#: ports/nrf/common-hal/usb_hid/Device.c:45
-#, c-format
-msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Buffergröße falsch, sollte %d bytes sein."
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:53
-msgid "USB Busy"
-msgstr "USB beschäftigt"
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:59
-msgid "USB Error"
-msgstr "USB Fehler"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
@@ -837,7 +817,7 @@ msgstr "Ungültiger UUID-Parameter"
 msgid "All I2C peripherals are in use"
 msgstr "Alle timer werden benutzt"
 
-#: ports/nrf/common-hal/busio/SPI.c:115
+#: ports/nrf/common-hal/busio/SPI.c:133
 #, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Alle timer werden benutzt"
@@ -974,6 +954,21 @@ msgstr ""
 
 #: py/builtinevex.c:99
 msgid "bad compile mode"
+msgstr ""
+
+#: py/builtinhelp.c:137
+#, fuzzy
+msgid "Plus any modules on the filesystem\n"
+msgstr "Dateisystem kann nicht wieder gemounted werden."
+
+#: py/builtinhelp.c:183
+#, c-format
+msgid ""
+"Welcome to Adafruit CircuitPython %s!\n"
+"\n"
+"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"\n"
+"To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
 
 #: py/builtinimport.c:336
@@ -2463,27 +2458,27 @@ msgstr ""
 msgid "Clock stretch too long"
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:45
+#: shared-module/bitbangio/SPI.c:44
 msgid "Clock pin init failed."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:51
+#: shared-module/bitbangio/SPI.c:50
 msgid "MOSI pin init failed."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:62
+#: shared-module/bitbangio/SPI.c:61
 msgid "MISO pin init failed."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:122
+#: shared-module/bitbangio/SPI.c:121
 msgid "Cannot write without MOSI pin."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:177
+#: shared-module/bitbangio/SPI.c:176
 msgid "Cannot read without MISO pin."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:241
+#: shared-module/bitbangio/SPI.c:240
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
 
@@ -2518,6 +2513,10 @@ msgstr ""
 msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr ""
 
+#: shared-module/storage/__init__.c:155
+msgid "Cannot remount '/' when USB is active."
+msgstr "Kann '/' nicht remounten when USB aktiv ist"
+
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
 msgstr ""
@@ -2526,26 +2525,21 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr ""
 
+#: shared-module/usb_hid/Device.c:45
+#, c-format
+msgid "Buffer incorrect size. Should be %d bytes."
+msgstr "Buffergröße falsch, sollte %d bytes sein."
+
+#: shared-module/usb_hid/Device.c:53
+msgid "USB Busy"
+msgstr "USB beschäftigt"
+
+#: shared-module/usb_hid/Device.c:59
+msgid "USB Error"
+msgstr "USB Fehler"
+
 #~ msgid "Invalid Service type"
 #~ msgstr "Ungültiger Diensttyp"
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Kann UUID in das advertisement packet kodieren."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Kann das Merkmal nicht hinzufügen."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Kann den Dienst nicht hinzufügen."
 
 #~ msgid "Can not query for the device address."
 #~ msgstr "Kann nicht nach der Geräteadresse suchen."
@@ -2555,3 +2549,21 @@ msgstr ""
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Kann GAP Parameter nicht anwenden."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Kann UUID in das advertisement packet kodieren."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Kann den Dienst nicht hinzufügen."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Kann das Merkmal nicht hinzufügen."

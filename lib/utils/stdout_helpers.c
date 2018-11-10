@@ -12,11 +12,21 @@
 // Send "cooked" string of given length, where every occurrence of
 // LF character is replaced with CR LF.
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    while (len--) {
-        if (*str == '\n') {
+    bool last_cr = false;
+    while (len > 0) {
+        size_t i = 0;
+        if (str[0] == '\n' && !last_cr) {
             mp_hal_stdout_tx_strn("\r", 1);
+            i = 1;
         }
-        mp_hal_stdout_tx_strn(str++, 1);
+        // Lump all characters on the next line together.
+        while((last_cr || str[i] != '\n') && i < len) {
+            last_cr = str[i] == '\r';
+            i++;
+        }
+        mp_hal_stdout_tx_strn(str, i);
+        str = &str[i];
+        len -= i;
     }
 }
 

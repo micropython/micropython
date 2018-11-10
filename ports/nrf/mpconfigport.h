@@ -90,7 +90,6 @@
 #define MICROPY_PY_BUILTINS_COMPILE              (1)
 #define MICROPY_PY_BUILTINS_HELP                 (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES         (1)
-#define MICROPY_PY_BUILTINS_HELP_TEXT            circuitpython_help_text
 #define MICROPY_PY_BUILTINS_INPUT                (1)
 #define MICROPY_MODULE_BUILTIN_INIT              (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS           (0)
