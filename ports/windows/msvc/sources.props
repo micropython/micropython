@@ -6,7 +6,6 @@
     <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)extmod\machine_mem.c" />
     <ClCompile Include="$(PyBaseDir)extmod\machine_pinbase.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\machine_pulse.c" />
     <ClCompile Include="$(PyBaseDir)extmod\machine_signal.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modubinascii.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moductypes.c" />

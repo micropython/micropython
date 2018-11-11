@@ -91,6 +91,7 @@
     <ClCompile Include="$(PyBaseDir)ports\unix\modos.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\modtime.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\machine_pulse.c" />
   </ItemGroup>
   <Import Project="msvc/sources.props" />
   <Import Project="msvc/genhdr.targets" />
