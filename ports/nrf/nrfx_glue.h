@@ -27,7 +27,14 @@
 #ifndef NRFX_GLUE_H
 #define NRFX_GLUE_H
 
+#include "py/mpconfig.h"
+#include "py/misc.h"
+
 #include <soc/nrfx_irqs.h>
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE MP_ARRAY_SIZE
+#endif
 
 #define NRFX_ASSERT(expression)  do { bool res = expression; (void)res; } while (0)
 #define NRFX_DELAY_US            mp_hal_delay_us

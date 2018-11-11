@@ -42,6 +42,7 @@
 #include "spi.h"
 #include "i2c.h"
 #include "timer.h"
+#include "modnrf.h"
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
 #endif
@@ -235,6 +236,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if defined(NRF52_SERIES)
     { MP_ROM_QSTR(MP_QSTR_NFC_RESET),          MP_ROM_INT(PYB_RESET_NFC) },
 #endif
+    { MP_ROM_QSTR(MP_QSTR_nrf),                MP_ROM_PTR(&nrf_module) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
