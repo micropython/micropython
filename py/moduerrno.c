@@ -136,19 +136,28 @@ const char* mp_errno_to_str(mp_obj_t errno_val) {
 #endif //MICROPY_PY_UERRNO
 
 
-// For commonly encountered errors, return human readable strings
-const compressed_string_t* mp_common_errno_to_str(mp_obj_t errno_val) {
-    if (MP_OBJ_IS_SMALL_INT(errno_val)) {
-        switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
-            case EPERM:  return translate("Permission denied");
-            case ENOENT: return translate("No such file/directory");
-            case EIO:    return translate("Input/output error");
-            case EACCES: return translate("Permission denied");
-            case EEXIST: return translate("File exists");
-            case ENODEV: return translate("Unsupported operation");
-            case EINVAL: return translate("Invalid argument");
-            case EROFS:  return translate("Read-only filesystem");
-        }
+// For commonly encountered errors, return human readable strings, otherwise try errno name
+const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
+    if (!MP_OBJ_IS_SMALL_INT(errno_val)) {
+        return NULL;
     }
-    return NULL;
+
+    const compressed_string_t* desc = NULL;
+    switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
+        case EPERM:  desc = translate("Permission denied"); break;
+        case ENOENT: desc = translate("No such file/directory"); break;
+        case EIO:    desc = translate("Input/output error"); break;
+        case EACCES: desc = translate("Permission denied"); break;
+        case EEXIST: desc = translate("File exists"); break;
+        case ENODEV: desc = translate("Unsupported operation"); break;
+        case EINVAL: desc = translate("Invalid argument"); break;
+        case EROFS:  desc = translate("Read-only filesystem"); break;
+    }
+    if (desc != NULL && desc->length <= len) {
+        decompress(desc, buf);
+        return buf;
+    }
+
+    const char *msg = mp_errno_to_str(errno_val);
+    return msg[0] != '\0' ? msg : NULL;
 }
