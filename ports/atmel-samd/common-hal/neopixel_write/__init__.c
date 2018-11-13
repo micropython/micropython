@@ -48,6 +48,11 @@
     }
 #endif
 
+// Ensure this code is compiled with -Os. Any other optimization level may change the timing of it
+// and break neopixels.
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+
 uint64_t next_start_tick_ms = 0;
 uint32_t next_start_tick_us = 1000;
 
@@ -183,3 +188,5 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     mp_hal_enable_all_interrupts();
 
 }
+
+#pragma GCC pop_options
