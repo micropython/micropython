@@ -38,7 +38,7 @@ typedef struct {
     uint32_t* remaining_buffer;
     uint32_t buffer_length;
     int16_t gain;
-} audioio_mixer_voice_t;
+} audioio_mixer_voice_obj_t;
 
 typedef struct {
     mp_obj_base_t base;
@@ -56,7 +56,7 @@ typedef struct {
     uint32_t right_read_count;
 
     uint8_t voice_count;
-    audioio_mixer_voice_t voice[];
+    audioio_mixer_voice_obj_t voice[];
 } audioio_mixer_obj_t;
 
 

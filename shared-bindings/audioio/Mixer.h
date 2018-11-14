@@ -32,6 +32,7 @@
 #include "shared-bindings/audioio/RawSample.h"
 
 extern const mp_obj_type_t audioio_mixer_type;
+extern const mp_obj_type_t audioio_mixer_voice_type;
 
 void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
                                         uint8_t voice_count,
@@ -47,7 +48,16 @@ void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, u
 void common_hal_audioio_mixer_stop_voice(audioio_mixer_obj_t* self, uint8_t voice);
 void common_hal_audioio_mixer_set_gain(audioio_mixer_obj_t* self, uint8_t voice, float gain);
 
+
 bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self);
 uint32_t common_hal_audioio_mixer_get_sample_rate(audioio_mixer_obj_t* self);
+
+void common_hal_audioio_mixer_voice_deinit(audioio_mixer_voice_obj_t* self);
+bool common_hal_audioio_mixer_voice_deinited(audioio_mixer_voice_obj_t* self);
+void common_hal_audioio_mixer_voice_play(audioio_mixer_voice_obj_t* self, mp_obj_t sample, bool loop);
+void common_hal_audioio_mixer_voice_stop_voice(audioio_mixer_voice_obj_t* self);
+void common_hal_audioio_mixer_voice_set_gain(audioio_mixer_voice_obj_t* self, float gain);
+
+bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MIXER_H
