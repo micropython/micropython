@@ -202,7 +202,7 @@ These chips communicate to other's over radio.
     Adafruit Bluefruit LE SPI Friend <https://circuitpython.readthedocs.io/projects/bluefruitspi/en/latest/>
     RFM9x LoRa <https://circuitpython.readthedocs.io/projects/rfm9x/en/latest/>
     RFM69 Packet Radio <https://circuitpython.readthedocs.io/projects/rfm69/en/latest/>
-    PN532 NFC/RFID <https://circuitpython.readthedocs.io/projects/pn532/latest/>
+    PN532 NFC/RFID <https://circuitpython.readthedocs.io/projects/pn532/en/latest/>
 
 IO Expansion
 --------------
