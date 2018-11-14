@@ -69,7 +69,7 @@ These libraries build on top of the low level APIs to simplify common tasks.
     Image Load <https://circuitpython.readthedocs.io/projects/imageload/en/latest/>
     miniQR Non-hardware QR code generator <https://circuitpython.readthedocs.io/projects/miniqr/en/latest/>
     Slideshow <https://circuitpython.readthedocs.io/projects/slideshow/en/latest/>
-    LED Animation <https://adafruit-circuitpython-led-animation.readthedoc.io/en/latest/>
+    LED Animation <https://circuitpython.readthedocs.io/projects/led-animation/en/latest/>
 
 Blinky
 --------
