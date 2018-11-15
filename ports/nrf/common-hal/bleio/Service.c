@@ -53,7 +53,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
 
     ble_uuid_t uuid = {
         .type = BLE_UUID_TYPE_BLE,
-        .uuid = characteristic->uuid->value[0] | (characteristic->uuid->value[1] << 8),
+        .uuid = characteristic->uuid->uuid16;
     };
 
     if (characteristic->uuid->type == UUID_TYPE_128BIT)
@@ -79,8 +79,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     uint32_t err_code;
     err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &attr_char_value, &handles);
     if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            translate("Failed to add characteristic, status: 0x%08lX"), err_code));
+        mp_raise_OSError(translate("Could not add characteristic"));
     }
 
     characteristic->user_desc_handle = handles.user_desc_handle;

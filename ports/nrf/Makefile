@@ -193,8 +193,7 @@ SRC_BINDINGS_ENUMS += \
 	bleio/Address.c \
 	bleio/AddressType.c \
 	bleio/AdvertisementData.c \
-	bleio/ScanEntry.c \
-	bleio/UUIDType.c
+	bleio/ScanEntry.c
 endif
 
 SRC_SHARED_MODULE = \

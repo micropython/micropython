@@ -66,8 +66,9 @@
 STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(print, "Service(uuid: 0x"HEX2_FMT""HEX2_FMT")",
-        self->uuid->value[1], self->uuid->value[0]);
+    mp_printf(print, "Service(");
+    common_hal_bleio_uuid_print(print, self->uuid);
+    mp_print(print, ")");
 }
 
 STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
@@ -101,8 +102,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     if (MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
         self->uuid = MP_OBJ_TO_PTR(uuid);
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  translate("Invalid UUID parameter")));
+        mp_raise_ValueError(translate("Expected a UUID or None"));
     }
 
     return MP_OBJ_FROM_PTR(self);

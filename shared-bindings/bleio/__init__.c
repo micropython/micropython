@@ -36,7 +36,6 @@
 #include "shared-bindings/bleio/Scanner.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
-#include "shared-bindings/bleio/UUIDType.h"
 
 //| :mod:`bleio` --- Bluetooth Low Energy functionality
 //| ================================================================
@@ -63,7 +62,6 @@
 //|     Scanner
 //|     Service
 //|     UUID
-//|     UUIDType
 //|
 //| .. attribute:: adapter
 //|
@@ -89,7 +87,6 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
     // Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_AddressType),       MP_ROM_PTR(&bleio_addresstype_type) },
-    { MP_ROM_QSTR(MP_QSTR_UUIDType),          MP_ROM_PTR(&bleio_uuidtype_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);

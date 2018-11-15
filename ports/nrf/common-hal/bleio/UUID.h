@@ -28,13 +28,16 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H
 
-#include "shared-bindings/bleio/UUIDType.h"
+#include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    bleio_uuid_type_t type;
+    // If non-zero, `uuid_vs_idx` is an index into the SoftDevice's table of registered vendor-specific UUID's.
+    // If zero, `value` is a 16-bit Bluetooth SIG UUID, which would convert to this 128-bit UUID.
+    // 0000xxxx-0000-1000-8000-00805F9B34FB
     uint8_t uuid_vs_idx;
-    uint8_t value[2];
+    // The 16-bit part of the UUID. This replaces bytes 12 and 13 in the registered 128-bit UUID.
+    uint16_t uuid16;
 } bleio_uuid_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_UUID_H

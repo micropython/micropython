@@ -80,18 +80,19 @@
 
 //|   .. attribute:: write
 //|
-//|     A `bool` specifying if the characteristic allows writting to its value.
+//|     A `bool` specifying if the characteristic allows writing to its value.
 //|
 
 //|   .. attribute:: write_no_resp
 //|
-//|     A `bool` specifying if the characteristic allows writting to its value without response.
+//|     A `bool` specifying if the characteristic allows writing to its value without response.
 //|
 STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(print, "Characteristic(uuid: 0x"HEX2_FMT""HEX2_FMT" handle: 0x" HEX2_FMT ")",
-              self->uuid->value[1], self->uuid->value[0], self->handle);
+    mp_printf(print, "Characteristic(");
+    common_hal_bleio_uuid_print(print, self->uuid);
+    mp_printf(print, ")");
 }
 
 STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
@@ -121,8 +122,7 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     if (MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
         self->uuid = MP_OBJ_TO_PTR(uuid);
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  translate("Invalid UUID parameter")));
+        mp_raise_ValueError(translate("Expected a UUID"));
     }
 
     common_hal_bleio_characteristic_construct(self);
