@@ -100,7 +100,7 @@ void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, u
     if (samples_signed != self->samples_signed) {
         mp_raise_ValueError(translate("The sample's signedness does not match the mixer's"));
     }
-    audioio_mixer_voice_obj_t* voice = &self->voice[v];
+    audioio_mixervoice_obj_t* voice = &self->voice[v];
     voice->sample = sample;
     voice->loop = loop;
 
@@ -130,11 +130,6 @@ void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
     for (int32_t i = 0; i < self->voice_count; i++) {
         self->voice[i].sample = NULL;
     }
-}
-
-void common_hal_audioio_mixer_set_gain(audioio_mixer_obj_t* self, uint8_t voice, float gain) {
-	audioio_mixer_voice_obj_t* v = &self->voice[voice];
-	v->gain = gain * ((1 << 15)-1);
 }
 
 uint32_t add8signed(uint32_t a, uint32_t b) {
@@ -311,7 +306,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
         self->use_first_buffer = !self->use_first_buffer;
         bool voices_active = false;
         for (int32_t v = 0; v < self->voice_count; v++) {
-            audioio_mixer_voice_obj_t* voice = &self->voice[v];
+            audioio_mixervoice_obj_t* voice = &self->voice[v];
 
             uint32_t j = 0;
             bool voice_done = voice->sample == NULL;
