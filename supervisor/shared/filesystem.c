@@ -50,7 +50,7 @@ void filesystem_init(bool create_allowed, bool force_create) {
     supervisor_flash_init_vfs(vfs_fat);
 
     // try to mount the flash
-    volatile FRESULT res = f_mount(&vfs_fat->fatfs);
+    FRESULT res = f_mount(&vfs_fat->fatfs);
 
     if ((res == FR_NO_FILESYSTEM && create_allowed) || force_create) {
         // No filesystem so create a fresh one, or reformat has been requested.
@@ -59,7 +59,6 @@ void filesystem_init(bool create_allowed, bool force_create) {
         // Flush the new file system to make sure it's repaired immediately.
         supervisor_flash_flush();
         if (res != FR_OK) {
-            //asm("bkpt");
             return;
         }
 
@@ -75,7 +74,6 @@ void filesystem_init(bool create_allowed, bool force_create) {
         // and ensure everything is flushed
         supervisor_flash_flush();
     } else if (res != FR_OK) {
-        //asm("bkpt");
         return;
     }
     mp_vfs_mount_t *vfs = &_mp_vfs;

@@ -78,8 +78,8 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_NRF5X -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_C
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 #ASMFLAGS += -g -gtabs+
-CFLAGS += -Os -ggdb
-LDFLAGS += -Os
+CFLAGS += -O1 -ggdb
+LDFLAGS += -O1
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
