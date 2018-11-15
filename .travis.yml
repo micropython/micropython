@@ -24,7 +24,7 @@ env:
   - TRAVIS_BOARD=gemma_m0
   - TRAVIS_BOARD=hallowing_m0_express
   - TRAVIS_BOARD=feather52832
-  - TRAVIS_BOARD=pca10056
+#  - TRAVIS_BOARD=pca10056
   - TRAVIS_TEST=qemu
   - TRAVIS_TEST=unix
   - TRAVIS_TEST=docs
