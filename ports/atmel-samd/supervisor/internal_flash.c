@@ -70,7 +70,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return INTERNAL_FLASH_PART1_START_BLOCK + INTERNAL_FLASH_PART1_NUM_BLOCKS;
+    return INTERNAL_FLASH_PART1_NUM_BLOCKS;
 }
 
 void supervisor_flash_flush(void) {
@@ -80,46 +80,9 @@ void flash_flush(void) {
     supervisor_flash_flush();
 }
 
-static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_block, uint32_t num_blocks) {
-    buf[0] = boot;
-
-    if (num_blocks == 0) {
-        buf[1] = 0;
-        buf[2] = 0;
-        buf[3] = 0;
-    } else {
-        buf[1] = 0xff;
-        buf[2] = 0xff;
-        buf[3] = 0xff;
-    }
-
-    buf[4] = type;
-
-    if (num_blocks == 0) {
-        buf[5] = 0;
-        buf[6] = 0;
-        buf[7] = 0;
-    } else {
-        buf[5] = 0xff;
-        buf[6] = 0xff;
-        buf[7] = 0xff;
-    }
-
-    buf[8] = start_block;
-    buf[9] = start_block >> 8;
-    buf[10] = start_block >> 16;
-    buf[11] = start_block >> 24;
-
-    buf[12] = num_blocks;
-    buf[13] = num_blocks >> 8;
-    buf[14] = num_blocks >> 16;
-    buf[15] = num_blocks >> 24;
-}
-
 static int32_t convert_block_to_flash_addr(uint32_t block) {
-    if (INTERNAL_FLASH_PART1_START_BLOCK <= block && block < INTERNAL_FLASH_PART1_START_BLOCK + INTERNAL_FLASH_PART1_NUM_BLOCKS) {
+    if (0 <= block && block < INTERNAL_FLASH_PART1_NUM_BLOCKS) {
         // a block in partition 1
-        block -= INTERNAL_FLASH_PART1_START_BLOCK;
         return INTERNAL_FLASH_MEM_SEG1_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
     }
     // bad block
@@ -127,69 +90,44 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 bool supervisor_flash_read_block(uint8_t *dest, uint32_t block) {
-    if (block == 0) {
-        // fake the MBR so we can decide on our own partition table
-
-        for (int i = 0; i < 446; i++) {
-            dest[i] = 0;
-        }
-
-        build_partition(dest + 446, 0, 0x01 /* FAT12 */, INTERNAL_FLASH_PART1_START_BLOCK, INTERNAL_FLASH_PART1_NUM_BLOCKS);
-        build_partition(dest + 462, 0, 0, 0, 0);
-        build_partition(dest + 478, 0, 0, 0, 0);
-        build_partition(dest + 494, 0, 0, 0, 0);
-
-        dest[510] = 0x55;
-        dest[511] = 0xaa;
-
-        return true;
-
-    } else {
-        // non-MBR block, get data from flash memory
-        int32_t src = convert_block_to_flash_addr(block);
-        if (src == -1) {
-            // bad block number
-            return false;
-        }
-        int32_t error_code = flash_read(&supervisor_flash_desc, src, dest, FILESYSTEM_BLOCK_SIZE);
-        return error_code == ERR_NONE;
+    // non-MBR block, get data from flash memory
+    int32_t src = convert_block_to_flash_addr(block);
+    if (src == -1) {
+        // bad block number
+        return false;
     }
+    int32_t error_code = flash_read(&supervisor_flash_desc, src, dest, FILESYSTEM_BLOCK_SIZE);
+    return error_code == ERR_NONE;
 }
 
 bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
-    if (block == 0) {
-        // can't write MBR, but pretend we did
-        return true;
-
-    } else {
-        #ifdef MICROPY_HW_LED_MSC
-            port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
-        #endif
-        temp_status_color(ACTIVE_WRITE);
-        // non-MBR block, copy to cache
-        int32_t dest = convert_block_to_flash_addr(block);
-        if (dest == -1) {
-            // bad block number
-            return false;
-        }
-        int32_t error_code;
-        error_code = flash_erase(&supervisor_flash_desc,
-                                 dest,
-                                 FILESYSTEM_BLOCK_SIZE / flash_get_page_size(&supervisor_flash_desc));
-        if (error_code != ERR_NONE) {
-            return false;
-        }
-
-        error_code = flash_append(&supervisor_flash_desc, dest, src, FILESYSTEM_BLOCK_SIZE);
-        if (error_code != ERR_NONE) {
-            return false;
-        }
-        clear_temp_status();
-        #ifdef MICROPY_HW_LED_MSC
-            port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
-        #endif
-        return true;
+    #ifdef MICROPY_HW_LED_MSC
+        port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
+    #endif
+    temp_status_color(ACTIVE_WRITE);
+    // non-MBR block, copy to cache
+    int32_t dest = convert_block_to_flash_addr(block);
+    if (dest == -1) {
+        // bad block number
+        return false;
     }
+    int32_t error_code;
+    error_code = flash_erase(&supervisor_flash_desc,
+                             dest,
+                             FILESYSTEM_BLOCK_SIZE / flash_get_page_size(&supervisor_flash_desc));
+    if (error_code != ERR_NONE) {
+        return false;
+    }
+
+    error_code = flash_append(&supervisor_flash_desc, dest, src, FILESYSTEM_BLOCK_SIZE);
+    if (error_code != ERR_NONE) {
+        return false;
+    }
+    clear_temp_status();
+    #ifdef MICROPY_HW_LED_MSC
+        port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+    #endif
+    return true;
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {

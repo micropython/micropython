@@ -59,7 +59,6 @@ void filesystem_init(bool create_allowed, bool force_create) {
         // Flush the new file system to make sure it's repaired immediately.
         supervisor_flash_flush();
         if (res != FR_OK) {
-            asm("bkpt");
             return;
         }
 
@@ -75,7 +74,6 @@ void filesystem_init(bool create_allowed, bool force_create) {
         // and ensure everything is flushed
         supervisor_flash_flush();
     } else if (res != FR_OK) {
-        asm("bkpt");
         return;
     }
     mp_vfs_mount_t *vfs = &_mp_vfs;

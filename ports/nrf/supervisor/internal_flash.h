@@ -31,8 +31,6 @@
 
 #include "py/mpconfig.h"
 
-#define FLASH_ROOT_POINTERS
-
 #define FLASH_PAGE_SIZE                 0x1000
 #define CIRCUITPY_INTERNAL_NVM_SIZE     0
 

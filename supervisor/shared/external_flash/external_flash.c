@@ -40,8 +40,6 @@
 #include "supervisor/memory.h"
 #include "supervisor/shared/rgb_led_status.h"
 
-#define SPI_FLASH_PART1_START_BLOCK (0x1)
-
 #define NO_SECTOR_LOADED 0xFFFFFFFF
 
 // The currently cached sector in the cache, ram or flash based.
@@ -268,7 +266,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 uint32_t supervisor_flash_get_block_count(void) {
     // We subtract one erase sector size because we may use it as a staging area
     // for writes.
-    return SPI_FLASH_PART1_START_BLOCK + (flash_device->total_size - SPI_FLASH_ERASE_SIZE) / FILESYSTEM_BLOCK_SIZE;
+    return (flash_device->total_size - SPI_FLASH_ERASE_SIZE) / FILESYSTEM_BLOCK_SIZE;
 }
 
 // Flush the cache that was written to the scratch portion of flash. Only used
@@ -444,48 +442,9 @@ void supervisor_flash_flush(void) {
     spi_flash_flush_keep_cache(false);
 }
 
-// Builds a partition entry for the MBR.
-static void build_partition(uint8_t *buf, int boot, int type,
-                            uint32_t start_block, uint32_t num_blocks) {
-    buf[0] = boot;
-
-    if (num_blocks == 0) {
-        buf[1] = 0;
-        buf[2] = 0;
-        buf[3] = 0;
-    } else {
-        buf[1] = 0xff;
-        buf[2] = 0xff;
-        buf[3] = 0xff;
-    }
-
-    buf[4] = type;
-
-    if (num_blocks == 0) {
-        buf[5] = 0;
-        buf[6] = 0;
-        buf[7] = 0;
-    } else {
-        buf[5] = 0xff;
-        buf[6] = 0xff;
-        buf[7] = 0xff;
-    }
-
-    buf[8] = start_block;
-    buf[9] = start_block >> 8;
-    buf[10] = start_block >> 16;
-    buf[11] = start_block >> 24;
-
-    buf[12] = num_blocks;
-    buf[13] = num_blocks >> 8;
-    buf[14] = num_blocks >> 16;
-    buf[15] = num_blocks >> 24;
-}
-
 static int32_t convert_block_to_flash_addr(uint32_t block) {
-    if (SPI_FLASH_PART1_START_BLOCK <= block && block < supervisor_flash_get_block_count()) {
+    if (0 <= block && block < supervisor_flash_get_block_count()) {
         // a block in partition 1
-        block -= SPI_FLASH_PART1_START_BLOCK;
         return block * FILESYSTEM_BLOCK_SIZE;
     }
     // bad block
@@ -493,106 +452,78 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 bool external_flash_read_block(uint8_t *dest, uint32_t block) {
-    if (block == 0) {
-        // Fake the MBR so we can decide on our own partition table
-        for (int i = 0; i < 446; i++) {
-            dest[i] = 0;
-        }
-
-        build_partition(dest + 446, 0, 0x01 /* FAT12 */,
-                        SPI_FLASH_PART1_START_BLOCK,
-                        supervisor_flash_get_block_count() - SPI_FLASH_PART1_START_BLOCK);
-        build_partition(dest + 462, 0, 0, 0, 0);
-        build_partition(dest + 478, 0, 0, 0, 0);
-        build_partition(dest + 494, 0, 0, 0, 0);
-
-        dest[510] = 0x55;
-        dest[511] = 0xaa;
-
-        return true;
-    } else if (block < SPI_FLASH_PART1_START_BLOCK) {
-        memset(dest, 0, FILESYSTEM_BLOCK_SIZE);
-        return true;
-    } else {
-        // Non-MBR block, get data from flash memory.
-        int32_t address = convert_block_to_flash_addr(block);
-        if (address == -1) {
-            // bad block number
-            return false;
-        }
-
-        // Mask out the lower bits that designate the address within the sector.
-        uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
-        uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % (SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE);
-        uint8_t mask = 1 << (block_index);
-        // We're reading from the currently cached sector.
-        if (current_sector == this_sector && (mask & dirty_mask) > 0) {
-            if (MP_STATE_VM(flash_ram_cache) != NULL) {
-                uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
-                for (int i = 0; i < pages_per_block; i++) {
-                    memcpy(dest + i * SPI_FLASH_PAGE_SIZE,
-                           MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
-                           SPI_FLASH_PAGE_SIZE);
-                }
-                return true;
-            } else {
-                uint32_t scratch_address = flash_device->total_size - SPI_FLASH_ERASE_SIZE + block_index * FILESYSTEM_BLOCK_SIZE;
-                return read_flash(scratch_address, dest, FILESYSTEM_BLOCK_SIZE);
-            }
-        }
-        return read_flash(address, dest, FILESYSTEM_BLOCK_SIZE);
+    int32_t address = convert_block_to_flash_addr(block);
+    if (address == -1) {
+        // bad block number
+        return false;
     }
-}
 
-bool external_flash_write_block(const uint8_t *data, uint32_t block) {
-    if (block < SPI_FLASH_PART1_START_BLOCK) {
-        // Fake writing below the flash partition.
-        return true;
-    } else {
-        // Non-MBR block, copy to cache
-        int32_t address = convert_block_to_flash_addr(block);
-        if (address == -1) {
-            // bad block number
-            return false;
-        }
-        // Wait for any previous writes to finish.
-        wait_for_flash_ready();
-        // Mask out the lower bits that designate the address within the sector.
-        uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
-        uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % (SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE);
-        uint8_t mask = 1 << (block_index);
-        // Flush the cache if we're moving onto a sector or we're writing the
-        // same block again.
-        if (current_sector != this_sector || (mask & dirty_mask) > 0) {
-            // Check to see if we'd write to an erased page. In that case we
-            // can write directly.
-            if (page_erased(address)) {
-                return write_flash(address, data, FILESYSTEM_BLOCK_SIZE);
-            }
-            if (current_sector != NO_SECTOR_LOADED) {
-                spi_flash_flush_keep_cache(true);
-            }
-            if (MP_STATE_VM(flash_ram_cache) == NULL && !allocate_ram_cache()) {
-                erase_sector(flash_device->total_size - SPI_FLASH_ERASE_SIZE);
-                wait_for_flash_ready();
-            }
-            current_sector = this_sector;
-            dirty_mask = 0;
-        }
-        dirty_mask |= mask;
-        // Copy the block to the appropriate cache.
+    // Mask out the lower bits that designate the address within the sector.
+    uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
+    uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % (SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE);
+    uint8_t mask = 1 << (block_index);
+    // We're reading from the currently cached sector.
+    if (current_sector == this_sector && (mask & dirty_mask) > 0) {
         if (MP_STATE_VM(flash_ram_cache) != NULL) {
             uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
             for (int i = 0; i < pages_per_block; i++) {
-                memcpy(MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
-                       data + i * SPI_FLASH_PAGE_SIZE,
+                memcpy(dest + i * SPI_FLASH_PAGE_SIZE,
+                       MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
                        SPI_FLASH_PAGE_SIZE);
             }
             return true;
         } else {
             uint32_t scratch_address = flash_device->total_size - SPI_FLASH_ERASE_SIZE + block_index * FILESYSTEM_BLOCK_SIZE;
-            return write_flash(scratch_address, data, FILESYSTEM_BLOCK_SIZE);
+            return read_flash(scratch_address, dest, FILESYSTEM_BLOCK_SIZE);
         }
+    }
+    return read_flash(address, dest, FILESYSTEM_BLOCK_SIZE);
+}
+
+bool external_flash_write_block(const uint8_t *data, uint32_t block) {
+    // Non-MBR block, copy to cache
+    int32_t address = convert_block_to_flash_addr(block);
+    if (address == -1) {
+        // bad block number
+        return false;
+    }
+    // Wait for any previous writes to finish.
+    wait_for_flash_ready();
+    // Mask out the lower bits that designate the address within the sector.
+    uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
+    uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % (SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE);
+    uint8_t mask = 1 << (block_index);
+    // Flush the cache if we're moving onto a sector or we're writing the
+    // same block again.
+    if (current_sector != this_sector || (mask & dirty_mask) > 0) {
+        // Check to see if we'd write to an erased page. In that case we
+        // can write directly.
+        if (page_erased(address)) {
+            return write_flash(address, data, FILESYSTEM_BLOCK_SIZE);
+        }
+        if (current_sector != NO_SECTOR_LOADED) {
+            spi_flash_flush_keep_cache(true);
+        }
+        if (MP_STATE_VM(flash_ram_cache) == NULL && !allocate_ram_cache()) {
+            erase_sector(flash_device->total_size - SPI_FLASH_ERASE_SIZE);
+            wait_for_flash_ready();
+        }
+        current_sector = this_sector;
+        dirty_mask = 0;
+    }
+    dirty_mask |= mask;
+    // Copy the block to the appropriate cache.
+    if (MP_STATE_VM(flash_ram_cache) != NULL) {
+        uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
+        for (int i = 0; i < pages_per_block; i++) {
+            memcpy(MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
+                   data + i * SPI_FLASH_PAGE_SIZE,
+                   SPI_FLASH_PAGE_SIZE);
+        }
+        return true;
+    } else {
+        uint32_t scratch_address = flash_device->total_size - SPI_FLASH_ERASE_SIZE + block_index * FILESYSTEM_BLOCK_SIZE;
+        return write_flash(scratch_address, data, FILESYSTEM_BLOCK_SIZE);
     }
 }
 
