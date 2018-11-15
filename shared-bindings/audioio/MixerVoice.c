@@ -5,6 +5,7 @@
  *      Author: dean
  */
 #include "shared-bindings/audioio/Mixer.h"
+#include "shared-bindings/audioio/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -125,7 +126,7 @@ STATIC mp_obj_t audioio_mixervoice_obj_set_gain(size_t n_args, const mp_obj_t *p
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_gain,     MP_ARG_OBJ | MP_ARG_REQUIRED },
     };
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    audioio_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 

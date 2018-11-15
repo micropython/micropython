@@ -13,6 +13,6 @@
 #include "shared-module/audioio/__init__.h"
 #include "shared-module/audioio/RawSample.h"
 
-void common_hal_audioio_mixervoice_set_gain(audioio_mixer_obj_t* self, float gain) {
+void common_hal_audioio_mixervoice_set_gain(audioio_mixervoice_obj_t* self, float gain) {
 	self->gain = gain * ((1 << 15)-1);
 }

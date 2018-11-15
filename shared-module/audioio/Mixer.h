@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MIXER_H
 
 #include "py/obj.h"
+#include "py/objtuple.h"
 
 #include "shared-module/audioio/__init__.h"
 #include "shared-bindings/audioio/MixerVoice.h"
@@ -48,6 +49,7 @@ typedef struct {
     uint32_t right_read_count;
 
     uint8_t voice_count;
+    mp_obj_tuple_t *voice_tuple;
     mp_obj_t voice[];
 } audioio_mixer_obj_t;
 

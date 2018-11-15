@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 #include "shared-bindings/audioio/Mixer.h"
+#include "shared-module/audioio/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -109,6 +110,11 @@ STATIC mp_obj_t audioio_mixer_make_new(const mp_obj_type_t *type, size_t n_args,
     audioio_mixer_obj_t *self = m_new_obj_var(audioio_mixer_obj_t, mp_obj_t, voice_count);
     self->base.type = &audioio_mixer_type;
     common_hal_audioio_mixer_construct(self, voice_count, args[ARG_buffer_size].u_int, bits_per_sample, args[ARG_samples_signed].u_bool, channel_count, sample_rate);
+
+    for(int v=0; v<voice_count; v++){
+    	self->voice[v] = audioio_mixervoice_type.make_new(&audioio_mixervoice_type, 0, 0, NULL);
+    }
+    self->voice_tuple = mp_obj_new_tuple(self->voice_count, self->voice);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -233,7 +239,7 @@ const mp_obj_property_t audioio_mixer_sample_rate_obj = {
 STATIC mp_obj_t audioio_mixer_obj_get_voice(mp_obj_t self_in) {
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
-    return mp_obj_new_tuple(self->voice_count, self->voice);
+    return self->voice_tuple;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_voice_obj, audioio_mixer_obj_get_voice);
 

@@ -59,10 +59,12 @@ void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
     self->sample_rate = sample_rate;
     self->voice_count = voice_count;
 
+#if 0
     for (uint8_t i = 0; i < self->voice_count; i++) {
         self->voice[i].sample = NULL;
         self->voice[i].gain = ((1<<15)-1);
     }
+#endif
 }
 
 void common_hal_audioio_mixer_deinit(audioio_mixer_obj_t* self) {
@@ -100,6 +102,7 @@ void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, u
     if (samples_signed != self->samples_signed) {
         mp_raise_ValueError(translate("The sample's signedness does not match the mixer's"));
     }
+#if 0
     audioio_mixervoice_obj_t* voice = &self->voice[v];
     voice->sample = sample;
     voice->loop = loop;
@@ -109,27 +112,35 @@ void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, u
     // Track length in terms of words.
     voice->buffer_length /= sizeof(uint32_t);
     voice->more_data = result == GET_BUFFER_MORE_DATA;
+
+#endif
 }
 
 void common_hal_audioio_mixer_stop_voice(audioio_mixer_obj_t* self, uint8_t voice) {
+#if 0
     self->voice[voice].sample = NULL;
+#endif
 }
 
 bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self) {
+#if 0
     for (int32_t v = 0; v < self->voice_count; v++) {
         if (self->voice[v].sample != NULL) {
             return true;
         }
     }
+#endif
     return false;
 }
 
 void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
                                 bool single_channel,
                                 uint8_t channel) {
+#if 0
     for (int32_t i = 0; i < self->voice_count; i++) {
         self->voice[i].sample = NULL;
     }
+#endif
 }
 
 uint32_t add8signed(uint32_t a, uint32_t b) {
@@ -283,6 +294,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
                                                      uint8_t channel,
                                                      uint8_t** buffer,
                                                      uint32_t* buffer_length) {
+#if 0
     if (!single_channel) {
         channel = 0;
     }
@@ -403,6 +415,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
         self->right_read_count += 1;
         *buffer = *buffer + self->bits_per_sample / 8;
     }
+#endif
     return GET_BUFFER_MORE_DATA;
 }
 
