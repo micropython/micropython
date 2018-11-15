@@ -76,7 +76,6 @@ To build (see section below for required dependencies):
 
     $ git submodule update --init
     $ cd ports/unix
-    $ make axtls
     $ make
 
 Then to give it a try:
