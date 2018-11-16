@@ -13,6 +13,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_A4),  MP_ROM_PTR(&pin_PA05) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A5),  MP_ROM_PTR(&pin_PA06) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A6),  MP_ROM_PTR(&pin_PA07) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AREF),  MP_ROM_PTR(&pin_PA03) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_D0),  MP_ROM_PTR(&pin_PA16) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX),  MP_ROM_PTR(&pin_PA16) },
@@ -24,7 +25,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D5),  MP_ROM_PTR(&pin_PA21) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D6),  MP_ROM_PTR(&pin_PA00) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON),  MP_ROM_PTR(&pin_PA00) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D14), MP_ROM_PTR(&pin_PA15) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D7), MP_ROM_PTR(&pin_PA15) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_PA15) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA12) },
