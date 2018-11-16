@@ -263,6 +263,9 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #if defined(STM32H7)
     HAL_ADCEx_Calibration_Start(adch, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
     #endif
+    #if defined(STM32L4)
+    HAL_ADCEx_Calibration_Start(adch, ADC_SINGLE_ENDED);
+    #endif
 }
 
 STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
