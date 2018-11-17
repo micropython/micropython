@@ -26,6 +26,7 @@
 
 #include "tick.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared-module/usb_midi/__init__.h"
 #include "supervisor/port.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
@@ -71,11 +72,13 @@ void usb_init(void) {
     // This callback always got invoked regardless of mp_interrupt_char value since we only set it once here
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
 #endif
+
+    usb_midi_init();
 }
 
 void usb_background(void) {
     if (usb_enabled()) {
-        tusb_task();
+        tud_task();
         tud_cdc_write_flush();
     }
 }

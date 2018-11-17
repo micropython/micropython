@@ -237,6 +237,7 @@ extern const struct _mp_obj_module_t gamepad_module;
 extern const struct _mp_obj_module_t stage_module;
 extern const struct _mp_obj_module_t touchio_module;
 extern const struct _mp_obj_module_t usb_hid_module;
+extern const struct _mp_obj_module_t usb_midi_module;
 extern const struct _mp_obj_module_t network_module;
 extern const struct _mp_obj_module_t socket_module;
 extern const struct _mp_obj_module_t wiznet_module;
@@ -382,6 +383,7 @@ extern const struct _mp_obj_module_t wiznet_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_midi),(mp_obj_t)&usb_midi_module }, \
     TOUCHIO_MODULE \
     EXTRA_BUILTIN_MODULES
 
@@ -410,6 +412,7 @@ extern const struct _mp_obj_module_t wiznet_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_midi),(mp_obj_t)&usb_midi_module }, \
     TOUCHIO_MODULE \
     EXTRA_BUILTIN_MODULES
 #endif
