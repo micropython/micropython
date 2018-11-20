@@ -25,6 +25,7 @@
  */
 #include "shared-bindings/audioio/Mixer.h"
 #include "shared-module/audioio/MixerVoice.h"
+#include "shared-bindings/audioio/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -113,6 +114,7 @@ STATIC mp_obj_t audioio_mixer_make_new(const mp_obj_type_t *type, size_t n_args,
 
     for(int v=0; v<voice_count; v++){
     	self->voice[v] = audioio_mixervoice_type.make_new(&audioio_mixervoice_type, 0, 0, NULL);
+    	common_hal_audioio_mixervoice_set_parent(self->voice[v], self);
     }
     self->voice_tuple = mp_obj_new_tuple(self->voice_count, self->voice);
 
@@ -147,54 +149,6 @@ STATIC mp_obj_t audioio_mixer_obj___exit__(size_t n_args, const mp_obj_t *args) 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixer___exit___obj, 4, 4, audioio_mixer_obj___exit__);
-
-
-//|   .. method:: play(sample, *, voice=0, loop=False)
-//|
-//|     Plays the sample once when loop=False and continuously when loop=True.
-//|     Does not block. Use `playing` to block.
-//|
-//|     Sample must be an `audioio.WaveFile`, `audioio.Mixer` or `audioio.RawSample`.
-//|
-//|     The sample must match the Mixer's encoding settings given in the constructor.
-//|
-STATIC mp_obj_t audioio_mixer_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_sample, ARG_voice, ARG_loop };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_voice,     MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
-        { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
-    };
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_obj_t sample = args[ARG_sample].u_obj;
-    common_hal_audioio_mixer_play(self, sample, args[ARG_voice].u_int, args[ARG_loop].u_bool);
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_play_obj, 1, audioio_mixer_obj_play);
-
-//|   .. method:: stop_voice(voice=0)
-//|
-//|     Stops playback of the sample on the given voice.
-//|
-STATIC mp_obj_t audioio_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_voice };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_voice, MP_ARG_INT, {.u_int = 0} },
-    };
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    common_hal_audioio_mixer_stop_voice(self, args[ARG_voice].u_int);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_stop_voice_obj, 1, audioio_mixer_obj_stop_voice);
 
 //|   .. attribute:: playing
 //|
@@ -245,7 +199,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_voice_obj, audioio_mixer_obj_get_voi
 
 const mp_obj_property_t audioio_mixer_voice_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_mixer_obj_get_voice,
+    .proxy = {(mp_obj_t)&audioio_mixer_get_voice_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
@@ -256,8 +210,6 @@ STATIC const mp_rom_map_elem_t audioio_mixer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_mixer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audioio_mixer___exit___obj) },
-    { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audioio_mixer_play_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_voice), MP_ROM_PTR(&audioio_mixer_stop_voice_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audioio_mixer_playing_obj) },

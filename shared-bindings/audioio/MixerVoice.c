@@ -36,7 +36,8 @@
 STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
 	audioio_mixervoice_obj_t *self = m_new(audioio_mixervoice_obj_t, 1);
     self->base.type = &audioio_mixervoice_type;
-
+    self->sample = NULL;
+    self->gain = ((1 << 15)-1);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -76,41 +77,38 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixervoice___exit___obj, 4, 4
 //|     The sample must match the Mixer's encoding settings given in the constructor.
 //|
 STATIC mp_obj_t audioio_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-#if 0
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audioio_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_audioio_mixervoice_deinited(self));
+    //raise_error_if_deinited(common_hal_audioio_mixervoice_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t sample = args[ARG_sample].u_obj;
-    common_hal_audioio_mixer_play(self, sample, self->u_int, args[ARG_loop].u_ool);
-#endif
+    common_hal_audioio_mixervoice_play(self, sample, args[ARG_loop].u_bool);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_play_obj, 1, audioio_mixervoice_obj_play);
 
-//|   .. method:: stop_voice()
+//|   .. method:: stop()
 //|
 //|     Stops playback of the sample on this voice.
 //|
 STATIC mp_obj_t audioio_mixervoice_obj_stop(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-#if 0
     enum { ARG_voice };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_voice, MP_ARG_INT, {.u_int = 0} },
     };
     audioio_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
+    //raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    common_hal_audioio_mixer_stop_voice(self, args[ARG_voice].u_int);
-#endif
+    common_hal_audioio_mixervoice_stop(self);
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_stop_obj, 1, audioio_mixervoice_obj_stop);

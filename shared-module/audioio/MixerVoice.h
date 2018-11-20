@@ -11,9 +11,11 @@
 #include "py/obj.h"
 
 #include "shared-module/audioio/__init__.h"
+#include "shared-module/audioio/Mixer.h"
 
 typedef struct {
 	mp_obj_base_t base;
+	audioio_mixer_obj_t *parent;
     mp_obj_t sample;
     bool loop;
     bool more_data;

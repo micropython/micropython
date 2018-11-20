@@ -31,7 +31,6 @@
 #include "py/objtuple.h"
 
 #include "shared-module/audioio/__init__.h"
-#include "shared-bindings/audioio/MixerVoice.h"
 
 typedef struct {
     mp_obj_base_t base;
