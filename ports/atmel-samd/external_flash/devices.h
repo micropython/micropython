@@ -181,7 +181,7 @@ typedef struct {
 }
 
 // Settings for the Winbond W25Q16JV 2MiB SPI flash.
-
+// Datasheet: https://www.winbond.com/resource-files/w25q16jv%20spi%20revf%2005092017.pdf
 #define W25Q16JV {\
     .total_size = (1 << 21), /* 2 MiB */ \
     .start_up_time_us = 5000, \
