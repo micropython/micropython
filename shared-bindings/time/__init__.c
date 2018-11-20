@@ -206,10 +206,9 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
-//| .. method:: monotonic_ns(clk_id)
+//| .. method:: monotonic_ns()
 //|
-//|   Return the time of the specified clock clk_id in nanoseconds. Refer to
-//|   Clock ID Constants for a list of accepted values for clk_id.
+//|   Return the time of the specified clock clk_id in nanoseconds.
 //|
 //|   :return: the current time
 //|   :rtype: int
