@@ -122,7 +122,7 @@ Motion relating sensing including ``acceleration``, ``magnetic``, ``gyro``, and 
     FXAS21002C Gyroscope <https://circuitpython.readthedocs.io/projects/fxas21002c/en/latest/>
     FXOS8700 Accelerometer <https://circuitpython.readthedocs.io/projects/fxos8700/en/latest/>
     GPS Global Position <https://circuitpython.readthedocs.io/projects/gps/en/latest/>
-    L3GD20 Gyroscope <https://circuitpython.readthedocs.io/projects/sd/l3gd20/latest/>
+    L3GD20 Gyroscope <https://circuitpython.readthedocs.io/projects/l3gd20/latest/>
     LIS3DH Accelerometer <https://circuitpython.readthedocs.io/projects/lis3dh/en/latest/>
     LSM303 Accelerometer and Magnetometer <https://circuitpython.readthedocs.io/projects/lsm303/en/latest/>
     LSM9DS0 Accelerometer, Magnetometer, Gyroscope and Temperature <https://circuitpython.readthedocs.io/projects/lsm9ds0/en/latest/>
