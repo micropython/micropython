@@ -147,14 +147,14 @@ equivalent carbon dioxide (``eco2`` / ``eCO2``), and total volatile organic comp
     CCS811 Air Quality <https://circuitpython.readthedocs.io/projects/ccs811/en/latest/>
     DHT Temperature and Humidity <https://circuitpython.readthedocs.io/projects/dht/en/latest/>
     DS18x20 Temperature <https://circuitpython.readthedocs.io/projects/ds18x20/en/latest/>
-    HTU21D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/htu21d/en/latest>
+    HTU21D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/htu21d/en/latest/>
     MAX31865 Thermocouple Amplifier, Temperature <https://circuitpython.readthedocs.io/projects/max31865/en/latest/>
     MAX31855 Thermocouple Amplifier, Temperature <https://circuitpython.readthedocs.io/projects/max31855/en/latest/>
     MAX31856 Thermocouple Amplifier, Temperature <https://circuitpython.readthedocs.io/projects/max31856/en/latest/>
     MCP9808 Temperature <https://circuitpython.readthedocs.io/projects/mcp9808/en/latest/>
     MP115A2 Barometric Pressure, Temperature <https://circuitpython.readthedocs.io/projects/mpl115a2/en/latest/>
     MPL3115A2 Barometric Pressure, Altitude and Temperature Sensor <https://circuitpython.readthedocs.io/projects/mpl3115a2/en/latest/>
-    MPRLS Ported Absolute Pressure <https://circuitpython.readthedocs.io/projects/mprls/en/latest>
+    MPRLS Ported Absolute Pressure <https://circuitpython.readthedocs.io/projects/mprls/en/latest/>
     SGP30 Air Quality <https://circuitpython.readthedocs.io/projects/sgp30/en/latest/>
     SHT31-D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/sht31d/en/latest/>
     Si7021 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/si7021/en/latest/>
@@ -186,8 +186,8 @@ These sensors measure the ``distance`` to another object and may also measure li
 
 .. toctree::
 
-    Garmin LIDARLite I2C <https://circuitpython.readthedocs.io/projects/lidarlite/en/latest>
-    TFmini IR Time of Flight ~30cm - 12m <https://circuitpython.readthedocs.io/projects/tfmini/en/latest>
+    Garmin LIDARLite I2C <https://circuitpython.readthedocs.io/projects/lidarlite/en/latest/>
+    TFmini IR Time of Flight ~30cm - 12m <https://circuitpython.readthedocs.io/projects/tfmini/en/latest/>
     VL6180x 5 - 100 mm <https://circuitpython.readthedocs.io/projects/vl6180x/en/latest/>
     VL53L0x ~30 - 1000 mm <https://circuitpython.readthedocs.io/projects/vl53l0x/en/latest/>
     HC-SR04 Ultrasonic Range Sensors <https://circuitpython.readthedocs.io/projects/hcsr04/en/latest/>
@@ -234,7 +234,7 @@ Miscellaneous
     Si4713 Stereo FM Transmitter <https://circuitpython.readthedocs.io/projects/si4713/en/latest/>
     AMG88xx Grid-Eye IR Camera <https://circuitpython.readthedocs.io/projects/amg88xx/en/latest/>
     Trellis 4x4 Keypad <https://circuitpython.readthedocs.io/projects/trellis/en/latest/>
-    NeoTrellis 4x4 Keypad <https://circuitpython.readthedocs.io/projects/neotrellis/en/latest>
+    NeoTrellis 4x4 Keypad <https://circuitpython.readthedocs.io/projects/neotrellis/en/latest/>
     NeoTrellis M4 4x8 Keypad <https://circuitpython.readthedocs.io/projects/trellism4/en/latest/>
     DRV2605 Haptic Motor Controller <https://circuitpython.readthedocs.io/projects/drv2605/en/latest/>
     MAX9744 Audio Amplifier  <https://circuitpython.readthedocs.io/projects/max9744/en/latest/>
