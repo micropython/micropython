@@ -158,6 +158,7 @@ NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_OSError(int errno_);
+NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg);
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);
 NORETURN void mp_raise_recursion_depth(void);
 

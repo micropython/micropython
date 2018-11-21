@@ -91,7 +91,7 @@ STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_printf(print, "Characteristic(");
-    common_hal_bleio_uuid_print(print, self->uuid);
+    common_hal_bleio_uuid_print(self->uuid, print);
     mp_printf(print, ")");
 }
 
@@ -115,16 +115,11 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
 
     const mp_obj_t uuid = args[ARG_uuid].u_obj;
 
-    if (uuid == mp_const_none) {
-        return MP_OBJ_FROM_PTR(self);
-    }
-
-    if (MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
-        self->uuid = MP_OBJ_TO_PTR(uuid);
-    } else {
+    if (!MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
         mp_raise_ValueError(translate("Expected a UUID"));
     }
 
+    self->uuid = MP_OBJ_TO_PTR(uuid);
     common_hal_bleio_characteristic_construct(self);
 
     return MP_OBJ_FROM_PTR(self);

@@ -49,23 +49,45 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, uint32_t uuid16, ui
         common_hal_bleio_adapter_set_enabled(true);
         const uint32_t err_code = sd_ble_uuid_vs_add(&vs_uuid, &self->uuid_vs_idx);
         if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError(&mp_type_OSError, translate("Could not register Vendor-Specific UUID"));
+            mp_raise_OSError_msg(translate("Could not register Vendor-Specific UUID"));
+        }
     }
 }
 
 void common_hal_bleio_uuid_print(bleio_uuid_obj_t *self, const mp_print_t *print) {
     if (self->uuid_vs_idx != 0) {
-        mp_printf(print, "UUID(uuid16: 0x%04x, Vendor-Specific index: " HEX2_FMT ")",
+        mp_printf(print, "UUID(uuid16=0x%04x, uuid128_handle=" HEX2_FMT ")",
                   self->uuid16, self->uuid_vs_idx);
     } else {
-        mp_printf(print, "UUID16(0x%04x)", self->uuid16);
+        mp_printf(print, "UUID(0x%04x)", self->uuid16);
     }
 }
 
-bool common_hal_bleio_uuid_get_vendor_specific(bleio_uuid_obj_t *self) {
-    return self->uuid_vs_idx != 0;
+uint32_t common_hal_bleio_uuid_get_size(bleio_uuid_obj_t *self) {
+    return self->uuid_vs_idx != 0 ? 128 : 16;
 }
 
 uint32_t common_hal_bleio_uuid_get_uuid16(bleio_uuid_obj_t *self) {
     return self->uuid16;
+}
+
+// Returns 0 if there is no handle, otherwise returns a non-zero index.
+uint32_t common_hal_bleio_uuid_get_uuid128_handle(bleio_uuid_obj_t *self) {
+    return self->uuid_vs_idx;
+}
+
+
+void bleio_uuid_construct_from_nrf_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_uuid) {
+    if (nrf_uuid->type == BLE_UUID_TYPE_UNKNOWN) {
+        mp_raise_RuntimeError(translate("Unexpected nrfx uuid type"));
+    }
+
+    self->uuid16 = nrf_uuid->uuid;
+    self->uuid_vs_idx = nrf_uuid->type == BLE_UUID_TYPE_BLE ? 0 : nrf_uuid->type;
+}
+
+// Fill in a ble_uuid_t from my values.
+void bleio_uuid_convert_to_nrf_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_uuid) {
+    nrf_uuid->uuid = self->uuid16;
+    nrf_uuid->type = self->uuid_vs_idx == 0 ? BLE_UUID_TYPE_BLE : self->uuid_vs_idx;
 }

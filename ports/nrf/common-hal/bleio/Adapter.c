@@ -33,12 +33,12 @@
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "shared-bindings/bleio/Adapter.h"
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AssertionError,
-         translate("Soft device assert, id: 0x%08lX, pc: 0x%08lX"), id, pc));
+    mp_raise_msg_varg(&mp_type_AssertionError,
+                      translate("Soft device assert, id: 0x%08lX, pc: 0x%08lX"), id, pc);
 }
 
 STATIC uint32_t ble_stack_enable(void) {
@@ -121,8 +121,7 @@ void common_hal_bleio_adapter_set_enabled(bool enabled) {
     }
 
     if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-             translate("Failed to change softdevice state, error: 0x%08lX"), err_code));
+        mp_raise_OSError_msg(translate("Failed to change softdevice state"));
     }
 }
 
@@ -131,8 +130,7 @@ bool common_hal_bleio_adapter_get_enabled(void) {
 
     const uint32_t err_code = sd_softdevice_is_enabled(&is_enabled);
     if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            translate("Failed to get softdevice state, error: 0x%08lX"), err_code));
+        mp_raise_OSError_msg(translate("Failed to get softdevice state"));
     }
 
     return is_enabled;
@@ -151,8 +149,7 @@ void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address) {
 #endif
 
     if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            translate("Failed to get local address, error: 0x%08lX"), err_code));
+        mp_raise_OSError_msg(translate("Failed to get local address"));
     }
 
     address->type = local_address.addr_type;

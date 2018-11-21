@@ -27,6 +27,7 @@
  */
 
 #include "py/objproperty.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/bleio/UUID.h"
 
@@ -63,6 +64,9 @@ STATIC uint8_t xdigit_8b_value(byte nibble1, byte nibble2) {
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
 
+    bleio_uuid_obj_t *self = m_new_obj(bleio_uuid_obj_t);
+    self->base.type = type;
+
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
 
@@ -98,7 +102,7 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
             while (str_index >= 1 && uuid128_index < UUID128_BYTE_LEN) {
                 if (str[str_index] == '-') {
                     // Skip hyphen separators.
-                    str--;
+                    str_index--;
                     continue;
                 }
 
@@ -126,6 +130,8 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
     } else {
         mp_raise_ValueError(translate("UUID value is not int or string"));
     }
+    // Unreachable.
+    return mp_const_none;
 }
 
 STATIC void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -138,42 +144,64 @@ STATIC void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print
 //|
 //|     The 16-bit part of the UUID. (read-only)
 //|
-STATIC void bleio_uuid_get_uuid16(mp_obj_t self_in) {
+STATIC mp_obj_t bleio_uuid_get_uuid16(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_uuid_get_uuid16(self));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid16_obj, bleio_uuid_get_uuid16);
 
-const mp_obj_property_t bleio_uuid16_obj = {
+const mp_obj_property_t bleio_uuid_uuid16_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_uuid_get_uuid16_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: vendor_specific
+//|   .. attribute:: uuid128_handle
 //|
-//|     True if this UUID represents a 128-bit vendor-specific UUID.
-//|     False if this UUID represents a 16-bit Bluetooth SIG assigned UUID. (read-only)
+//|     An opaque handle representing the 128-bit UUID. (read-only)
+//|     Returns None if this is a 16-bit UUID.
 //|
-STATIC mp_obj_t bleio_uuid_get_vendor_specific(mp_obj_t self_in) {
+STATIC mp_obj_t bleio_uuid_get_uuid128_handle(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(common_hal_bleio_uuid_get_vendor_specific(self));
+    uint32_t handle = common_hal_bleio_uuid_get_uuid128_handle(self);
+    return handle == 0 ? mp_const_none : MP_OBJ_NEW_SMALL_INT(handle);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_vendor_specific_obj, bleio_uuid_get_vendor_specific);
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_handle_obj, bleio_uuid_get_uuid128_handle);
 
-const mp_obj_property_t bleio_uuid_vendor_specific_obj = {
+const mp_obj_property_t bleio_uuid_uuid128_handle_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_vendor_specific_obj,
+    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_handle_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: size
+//|
+//|     Returns 128 if this UUID represents a 128-bit vendor-specific UUID.
+//|     Returns 16 if this UUID represents a 16-bit Bluetooth SIG assigned UUID. (read-only)
+//|     32-bit UUIDs are not currently supported.
+//|
+STATIC mp_obj_t bleio_uuid_get_size(mp_obj_t self_in) {
+    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_uuid_get_size(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_size_obj, bleio_uuid_get_size);
+
+const mp_obj_property_t bleio_uuid_size_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&bleio_uuid_get_size_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
 STATIC const mp_rom_map_elem_t bleio_uuid_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_uuid16), MP_ROM_PTR(&bleio_uuid16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_vendor_specific), MP_ROM_PTR(&bleio_uuid_vendor_specific_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid16), MP_ROM_PTR(&bleio_uuid_uuid16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid128_handle), MP_ROM_PTR(&bleio_uuid_uuid128_handle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&bleio_uuid_size_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_uuid_locals_dict, bleio_uuid_locals_dict_table);

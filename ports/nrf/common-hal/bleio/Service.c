@@ -26,7 +26,7 @@
 
 #include "ble_drv.h"
 #include "ble.h"
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/Adapter.h"
 
@@ -51,13 +51,8 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
         char_md.p_cccd_md = &cccd_md;
     }
 
-    ble_uuid_t uuid = {
-        .type = BLE_UUID_TYPE_BLE,
-        .uuid = characteristic->uuid->uuid16;
-    };
-
-    if (characteristic->uuid->type == UUID_TYPE_128BIT)
-        uuid.type = characteristic->uuid->uuid_vs_idx;
+    ble_uuid_t uuid;
+    bleio_uuid_convert_to_nrf_uuid(characteristic->uuid, &uuid);
 
     ble_gatts_attr_md_t attr_md = {
         .vloc = BLE_GATTS_VLOC_STACK,
@@ -79,7 +74,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     uint32_t err_code;
     err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &attr_char_value, &handles);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError(translate("Could not add characteristic"));
+        mp_raise_OSError_msg(translate("Could not add characteristic"));
     }
 
     characteristic->user_desc_handle = handles.user_desc_handle;

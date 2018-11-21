@@ -35,6 +35,6 @@ extern const mp_obj_type_t bleio_descriptor_type;
 extern void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid);
 extern void common_hal_bleio_descriptor_print(bleio_descriptor_obj_t *self, const mp_print_t *print);
 extern mp_int_t common_hal_bleio_descriptor_get_handle(bleio_descriptor_obj_t *self);
-extern mp_int_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self);
+extern mp_obj_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H

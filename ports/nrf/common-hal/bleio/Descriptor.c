@@ -26,20 +26,23 @@
  */
 
 #include "common-hal/bleio/Descriptor.h"
+#include "shared-bindings/bleio/UUID.h"
 
 void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid) {
+    // TODO: set handle ???
     self->uuid = uuid;
 }
 
 void common_hal_bleio_descriptor_print(bleio_descriptor_obj_t *self, const mp_print_t *print) {
-    mp_printf(print, "Descriptor(uuid: 0x" HEX2_FMT HEX2_FMT ")",
-              self->uuid->value[1], self->uuid->value[0]);
+    mp_printf(print, "Descriptor(uuid=");
+    common_hal_bleio_uuid_print(self->uuid, print);
+    mp_printf(print, ", handle=%0x", self->handle);
 }
 
 mp_int_t common_hal_bleio_descriptor_get_handle(bleio_descriptor_obj_t *self) {
     return self->handle;
 }
 
-mp_int_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
-    return self->uuid->value[0] | (self->uuid->value[1] << 8);
+mp_obj_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
+    return MP_OBJ_FROM_PTR(self->uuid);
 }
