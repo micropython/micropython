@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 #include "py/mperrno.h"
+#include "irq.h"
 #include "led.h"
 #include "flash.h"
 #include "storage.h"
