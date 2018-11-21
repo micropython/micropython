@@ -32,6 +32,7 @@
 #include "led.h"
 #include "flash.h"
 #include "storage.h"
+#include "irq.h"
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
