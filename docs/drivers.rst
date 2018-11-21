@@ -247,3 +247,4 @@ Miscellaneous
     Matrix Keypad <https://circuitpython.readthedocs.io/projects/matrixkeypad/en/latest/>
     VS1053 Audio Codec <https://circuitpython.readthedocs.io/projects/vs1053/en/latest/>
     FRAM Non-Volatile Memory <https://circuitpython.readthedocs.io/projects/fram/en/latest/>
+    74HC595 Shift Register <https://circuitpython.readthedocs.io/projects/74hc595/en/latest/>
