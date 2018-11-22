@@ -32,6 +32,8 @@
 
 // Functions for external libs like axTLS, BerkeleyDB, etc.
 
+// TODO work out how to provide these now that the names are used by the SDK
+#if 0
 void *malloc(size_t size) {
     void *p = gc_alloc(size, false);
     if (p == NULL) {
@@ -54,6 +56,7 @@ void *realloc(void *ptr, size_t size) {
     }
     return p;
 }
+#endif
 
 #undef htonl
 #undef ntohl

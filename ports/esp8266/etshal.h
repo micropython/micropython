@@ -6,7 +6,6 @@
 // see http://esp8266-re.foogod.com/wiki/Random_Number_Generator
 #define WDEV_HWRNG ((volatile uint32_t*)0x3ff20e44)
 
-void ets_delay_us(uint16_t us);
 void ets_intr_lock(void);
 void ets_intr_unlock(void);
 void ets_isr_mask(uint32_t mask);
@@ -33,7 +32,6 @@ void MD5Update(MD5_CTX *context, const void *data, unsigned int len);
 void MD5Final(unsigned char digest[16], MD5_CTX *context);
 
 // These prototypes are for recent SDKs with "malloc tracking"
-void *pvPortMalloc(size_t sz, const char *fname, unsigned line);
 void *pvPortZalloc(size_t sz, const char *fname, unsigned line);
 void *pvPortRealloc(void *p, unsigned sz, const char *fname, unsigned line);
 void vPortFree(void *p, const char *fname, unsigned line);
