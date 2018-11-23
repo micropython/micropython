@@ -218,14 +218,7 @@ ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
 SRC_C += \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/control.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/class/hid/hid_device.c \
-	lib/tinyusb/src/tusb.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c
 
 SRC_SHARED_MODULE += \
 	usb_hid/__init__.c \
