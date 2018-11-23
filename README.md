@@ -111,6 +111,8 @@ Building MicroPython ports may require some dependencies installed.
 For Unix port, `libffi` library and `pkg-config` tool are required. On
 Debian/Ubuntu/Mint derivative Linux distros, install `build-essential`
 (includes toolchain and make), `libffi-dev`, and `pkg-config` packages.
+On some systems (e.g. Debian Jessie)the package `autoconf` and `libtool`
+may have to be installed in addition. 
 
 Other dependencies can be built together with MicroPython. This may
 be required to enable extra features or capabilities, and in recent
