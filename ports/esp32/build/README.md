@@ -57,3 +57,14 @@ WebREPL connected
 ### Test Safe Mode Button Behavior
 1. Connect to device via serial to observe console logging
 2. Test button press during boot to validate device skips wifi and enables AP
+
+### Test IoTanium helper functions
+```
+>>>iotanium.led('on')
+>>>iotanium.led('off')
+>>>iotanium.blink(100,10) #delay in milliseconds, duration in seconds
+>>>iotanium.hall() #hold magnet close to ESP32 chip to change reading
+>>>iotanium.temp() #value is crude, not calibrated to anything, and only changes in small increments
+>>>iotanium.touch() #capacitive touch on pin 12
+>>> iotanium.read_all() #returns {"touch": 414, "hall": 74, "temp": 126}
+```
