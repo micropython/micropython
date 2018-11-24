@@ -56,4 +56,4 @@ WebREPL connected
 
 ### Test Safe Mode Button Behavior
 1. Connect to device via serial to observe console logging
-2. Test button press to validate it skips wifi and enables AP
+2. Test button press during boot to validate device skips wifi and enables AP
