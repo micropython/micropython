@@ -45,7 +45,7 @@ ws://192.168.1.243:8266/
 
 ### Connect to your device over wifi
 1. Disconnect from the AP, and reconnect to your local WIFI
-2. *Refresh* the webrepl client in your browser, and reconnect to the target noted above, password `iotanium`
+2. **Refresh** the webrepl client in your browser, and reconnect to the target noted above, password `iotanium`
 3. You should now be connected to your device via webrepl over your wifi:
 ```
 Welcome to MicroPython!
