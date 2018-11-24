@@ -1,0 +1,9 @@
+{
+	"wlans": [{
+			"friendly_name": "office wifi",
+			"essid": "wifi_ssid",
+			"passwd": "wifi_password"
+		}
+	],
+	"timeout_seconds": 10
+}

@@ -70,6 +70,7 @@ def enable_ap_if():
     ap_if.active(True)
     essid = b"%s-%s" % (ap_prefix, ubinascii.hexlify(ap_if.config("mac")[-3:]))
     ap_if.config(essid=essid, authmode=network.AUTH_WPA_WPA2_PSK, password=ap_passwd)
+    blink(100,5) #blink  onboard LED to indicate the device has entered AP mode
 
 def temp():
     return esp32.raw_temperature()
@@ -111,7 +112,6 @@ def setup():
     if button.value():
         print('button press detected during boot')
         enable_ap_if()
-        blink(100,5) #blink  onboard LED to notify user that AP mode has been enabled by button press
     elif not connect_sta_if():
         print('wifi connection failed')
         enable_ap_if()
