@@ -41,7 +41,7 @@ connection to wlan home office/MY_WIFI successful! To continue:
 ws://192.168.1.243:8266/                               
 >>>   
 ```
-2. *Make a note of the webrepl target in your output, similar to: `ws://192.168.1.243:8266/` (your output will be the same format, but a different address)
+2. Make a note of the webrepl target in your output, similar to: `ws://192.168.1.243:8266/` (your output will be the same format, but a different address)
 
 ### Connect to your device over wifi
 1. Disconnect from the AP, and reconnect to your local WIFI
