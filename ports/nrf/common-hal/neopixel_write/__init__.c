@@ -108,12 +108,21 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     // using DWT
     uint32_t pattern_size = numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t);
     uint16_t* pixels_pattern = NULL;
+    bool pattern_on_heap = false;
+
+    // Use the stack to store 1 pixels worth of PWM data for the status led. uint32_t to ensure alignment.
+    uint32_t one_pixel[8 * sizeof(uint16_t) + 1];
 
     NRF_PWM_Type* pwm = find_free_pwm();
 
     // only malloc if there is PWM device available
     if ( pwm != NULL ) {
-        pixels_pattern = (uint16_t *) m_malloc(pattern_size, false);
+        if (numBytes == 4) {
+            pixels_pattern = (uint16_t *) one_pixel;
+        } else {
+            pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
+            pattern_on_heap = true;
+        }
     }
 
     // Use the identified device to choose the implementation
@@ -193,7 +202,10 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         nrf_pwm_disable(pwm);
         nrf_pwm_pins_set(pwm, (uint32_t[]) {0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
 
-        m_free(pixels_pattern);
+        if (pattern_on_heap) {
+            m_free(pixels_pattern);
+        }
+
     } // End of DMA implementation
     // ---------------------------------------------------------------------
     else {

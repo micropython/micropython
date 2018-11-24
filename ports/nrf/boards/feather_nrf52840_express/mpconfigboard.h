@@ -35,12 +35,21 @@
 
 #define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
 
+#ifdef QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 17)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 22)
 #define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 23)
 #define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(0, 21)
 #define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(0, 19)
 #define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(0, 20)
+#endif
+
+#ifdef SPI_FLASH_FILESYSTEM
+#define SPI_FLASH_MOSI_PIN &pin_P0_17
+#define SPI_FLASH_MISO_PIN &pin_P0_22
+#define SPI_FLASH_SCK_PIN &pin_P0_19
+#define SPI_FLASH_CS_PIN &pin_P0_20
+#endif
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
@@ -50,8 +59,6 @@
 // TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
-#define EXTERNAL_FLASH_QSPI_DUAL (1)
 
 #define BOARD_HAS_CRYSTAL 1
 
