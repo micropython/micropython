@@ -31,6 +31,7 @@ def get_wlans(config):
     matches = []
     while not matches:
         print('wifi scanning')
+        sta_if.active(True)
         foundNetworks = {n[0].decode("utf-8"):n for n in sta_if.scan()}
         matches = [x for x in config['wlans'] if x['essid'] in foundNetworks]
     for match in matches:
