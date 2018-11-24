@@ -66,5 +66,5 @@ WebREPL connected
 >>>iotanium.hall() #hold magnet close to ESP32 chip to change reading
 >>>iotanium.temp() #value is crude, not calibrated to anything, and only changes in small increments
 >>>iotanium.touch() #capacitive touch on pin 12
->>> iotanium.read_all() #returns {"touch": 414, "hall": 74, "temp": 126}
+>>>iotanium.read_all() #returns {"touch": 414, "hall": 74, "temp": 126}
 ```
