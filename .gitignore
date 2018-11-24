@@ -3,7 +3,6 @@
 *.o
 *.a
 *.elf
-*.bin
 *.map
 *.hex
 *.dis
@@ -42,6 +41,3 @@ user.props
 # Generated rst files
 ######################
 genrst/
-
-# Include bin
-!ports/esp32/build/firmware.bin
