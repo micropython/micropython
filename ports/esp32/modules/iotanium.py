@@ -25,14 +25,25 @@ def get_config():
         f.close()
     return config
 
+def get_wlans():
+    matches = []
+    while not matches:
+        print('wifi scanning')
+        foundNetworks = {n[0].decode("utf-8"):n for n in sta_if.scan()}
+        matches = [x for x in config['wlans'] if x['essid'] in foundNetworks]
+    for match in matches:
+        print("found wlan %s" % match['essid'])
+    return matches
+
 def connect_sta_if():
     try:
+        wlans = get_wlans()
         from time import time
         if test_path(config_file):
             print('config file %s found' % config_file)
             config = get_config()
             sta_if = network.WLAN(network.STA_IF)
-            for wlan in config['wlans']:
+            for wlan in wlans:
                 sta_if.active(False)
                 print('connecting to wlan %s/%s...' % (wlan['friendly_name'],wlan['essid']))
                 sta_if.active(True)
