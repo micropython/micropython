@@ -1,12 +1,14 @@
 import network
 import esp32
 import json
+import os
 from time import sleep, time
 from machine import Pin, TouchPad
 
 config_file = "./iotanium_cfg.json"
 ap_prefix = "IoTanium"
 ap_passwd = b"iotanium"
+timeout = 15 # seconds, used for wlan connection and scan timeouts
 capacative_touch = TouchPad(Pin(12))
 onboard_led = Pin(15, Pin.OUT)
 button = Pin(2, Pin.IN)
@@ -15,8 +17,7 @@ sta_if.active(True)
 
 def test_path(fname):
     try:
-        with open(fname):
-            pass
+        os.stat(fname)
         return True
     except OSError:
         return False
@@ -29,37 +30,41 @@ def get_config():
 
 def get_wlans(config):
     matches = []
-    while not matches:
+    now = time()
+    while time() < now + timeout and not matches:
         print('wifi scanning')
         sta_if.active(True)
         foundNetworks = {n[0].decode("utf-8"):n for n in sta_if.scan()}
         matches = [x for x in config['wlans'] if x['essid'] in foundNetworks]
-    for match in matches:
-        print("found wlan %s" % match['essid'])
+    if matches:
+        for match in matches:
+            print("found wlan %s" % match['essid'])
     return matches
 
 def connect_sta_if():
     from time import time
-    if test_path(config_file):
-        print('config file %s found' % config_file)
-        config = get_config()
-        wlans = get_wlans(config)
-        for wlan in wlans:
-            sta_if.active(False)
-            print('connecting to wlan %s/%s...' % (wlan['friendly_name'],wlan['essid']))
-            sta_if.active(True)
-            sta_if.connect(wlan['essid'],wlan['passwd'])
-            now = time()
-            while time() < now + config['timeout_seconds']:
-                if sta_if.isconnected():
-                    print('connection to wlan %s/%s successful! To continue: ' % (wlan['friendly_name'],wlan['essid']))
-                    print('1. reconnect your workstation to wifi network: %s' % wlan['essid'])
-                    print('2. once reconnected, connect to webrepl on: ')
-                    print('ws://%s:8266/' % sta_if.ifconfig()[0])
-                    return True
-        return False
-    else:
-        print('config file not found')
+    try:
+        if test_path(config_file):
+            print('config file %s found' % config_file)
+            config = get_config()
+            wlans = get_wlans(config)
+            sta_if.disconnect()
+            for wlan in wlans:
+                print('connecting to wlan %s/%s...' % (wlan['friendly_name'],wlan['essid']))
+                sta_if.connect(wlan['essid'],wlan['passwd'])
+                now = time()
+                while time() < now + timeout:
+                    if sta_if.isconnected():
+                        print('connection to wlan %s/%s successful! To continue: ' % (wlan['friendly_name'],wlan['essid']))
+                        print('1. reconnect your workstation to wifi network: %s' % wlan['essid'])
+                        print('2. once reconnected, connect to webrepl on: ')
+                        print('ws://%s:8266/' % sta_if.ifconfig()[0])
+                        return True
+            return False
+        else:
+            print('config file not found')
+            return False
+    except:
         return False
 
 def enable_ap_if():
