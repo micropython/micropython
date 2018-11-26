@@ -41,8 +41,7 @@ Major components in this repository:
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
 - docs/ -- user documentation in Sphinx reStructuredText format. Rendered
-  HTML documentation is available at http://docs.micropython.org (be sure
-  to select needed board/port at the bottom left corner).
+  HTML documentation is available at http://docs.micropython.org.
 
 Additional components:
 - ports/bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
