@@ -8,6 +8,7 @@ rm -rf ports/nrf/build*
 HW_BOARDS="\
 arduino_mkr1300 \
 arduino_zero \
+catwan_usbstick \
 circuitplayground_express \
 circuitplayground_express_crickit \
 feather_huzzah \
