@@ -133,17 +133,10 @@ int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, 
     return resplen;
 }
 
-bool tud_lun_capacity_cb(uint8_t lun, uint32_t* last_valid_sector, uint16_t* sector_size) {
-        fs_user_mount_t * vfs = get_vfs(lun);
-        if (vfs == NULL ||
-            disk_ioctl(vfs, GET_SECTOR_COUNT, last_valid_sector) != RES_OK ||
-            disk_ioctl(vfs, GET_SECTOR_SIZE, sector_size) != RES_OK) {
-            return false;
-        }
-        // Subtract one from the sector count to get the last valid sector.
-        (*last_valid_sector)--;
-
-        return true;
+void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size) {
+    fs_user_mount_t * vfs = get_vfs(lun);
+    disk_ioctl(vfs, GET_SECTOR_COUNT, block_count);
+    disk_ioctl(vfs, GET_SECTOR_SIZE, block_size);
 }
 
 bool tud_msc_is_writable_cb(uint8_t lun) {
