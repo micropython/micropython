@@ -32,6 +32,11 @@
 
 #include "py/runtime.h"
 
+STATIC void mp_stack_dump(const struct k_thread *thread, void *user_data) {
+	stack_analyze((char *)user_data, (char *)thread->stack_info.start,
+		      thread->stack_info.size);
+}
+
 STATIC mp_obj_t mod_is_preempt_thread(void) {
     return mp_obj_new_bool(k_is_preempt_thread());
 }
@@ -43,7 +48,7 @@ STATIC mp_obj_t mod_current_tid(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 
 STATIC mp_obj_t mod_stacks_analyze(void) {
-    k_call_stacks_analyze();
+    k_thread_foreach(mp_stack_dump, NULL);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_stacks_analyze_obj, mod_stacks_analyze);
