@@ -112,7 +112,7 @@
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS           (0)
 #define MICROPY_PY_UCTYPES                       (0)
 #define MICROPY_PY_UZLIB                         (0)
-#define MICROPY_PY_UJSON                         (0)
+#define MICROPY_PY_UJSON                         (1)
 #define MICROPY_PY_URE                           (0)
 #define MICROPY_PY_UHEAPQ                        (0)
 #define MICROPY_PY_UHASHLIB                      (1)
@@ -204,6 +204,7 @@ extern const struct _mp_obj_module_t bleio_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_json            ), (mp_obj_t)&mp_module_ujson        }, \
     USBHID_MODULE  \
     BLEIO_MODULE
 

@@ -286,6 +286,14 @@ extern const struct _mp_obj_module_t wiznet_module;
         #define WIZNET_MODULE
     #endif
 
+    // (u)json depends, perhaps erroneously, on MICROPY_PY_IO
+    #if MICROPY_PY_IO
+        #define JSON_MODULE { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+        #define MICROPY_PY_UJSON                         (1)
+    #else
+        #define JSON_MODULE
+    #endif
+
 
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
@@ -297,6 +305,7 @@ extern const struct _mp_obj_module_t wiznet_module;
         NETWORK_MODULE \
         SOCKET_MODULE \
         WIZNET_MODULE \
+        JSON_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
     #endif
