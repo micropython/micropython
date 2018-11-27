@@ -91,7 +91,7 @@ STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_printf(print, "Characteristic(");
-    common_hal_bleio_uuid_print(self->uuid, print);
+    bleio_uuid_print(print, self->uuid, kind);
     mp_printf(print, ")");
 }
 

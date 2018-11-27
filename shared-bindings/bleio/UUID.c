@@ -34,7 +34,7 @@
 // Including hyphens.
 #define UUID128_STR_LEN 36
 // Number of bytes
-#define UUID128_BYTE_LEN 32
+#define UUID128_BYTE_LEN 16
 
 STATIC uint8_t xdigit_8b_value(byte nibble1, byte nibble2) {
     return unichar_xdigit_value(nibble1) | (unichar_xdigit_value(nibble2) << 4);
@@ -43,13 +43,13 @@ STATIC uint8_t xdigit_8b_value(byte nibble1, byte nibble2) {
 
 //| .. currentmodule:: bleio
 //|
-//| :class:`UUID16` -- BLE UUID16
+//| :class:`UUID` -- BLE UUID
 //| =========================================================
 //|
 //| A 16-bit or 128-bit UUID. Can be used for services, characteristics, descriptors and more.
 //|
 
-//| .. class:: UUID(uuid)
+//| .. class:: UUID(value, *, base_uuid=None)
 //|
 //|   Create a new UUID or UUID object encapsulating the uuid value.
 //|   The value can be one of:
@@ -57,8 +57,9 @@ STATIC uint8_t xdigit_8b_value(byte nibble1, byte nibble2) {
 //|   - an `int` value in range 0 to 0xFFFF (Bluetooth SIG 16-bit UUID)
 //|   - a `str` value in the format 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', where the X's are hex digits.
 //|     (128 bit UUID)
+//|   - a buffer object (bytearray, bytes)  of 16 bytes in little-endian order (128-bit UUID)
 //|
-//|   :param int/str uuid: The uuid to encapsulate
+//|   :param int/str/buffer value: The uuid value to encapsulate
 //|
 
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
@@ -70,31 +71,45 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
 
-    enum { ARG_uuid };
+    enum { ARG_value, ARG_base_uuid };
     static const mp_arg_t allowed_args[] = {
-        { ARG_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_base_uuid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mp_obj_t uuid = args[ARG_uuid].u_obj;
+    const mp_obj_t value = args[ARG_value].u_obj;
+    const mp_obj_t base_uuid = args[ARG_base_uuid].u_obj;
+    uint8_t uuid128[16];
 
-    if (MP_OBJ_IS_INT(uuid)) {
-        mp_int_t uuid16 = mp_obj_get_int(uuid);
+    if (base_uuid != mp_const_none) {
+        if (MP_OBJ_IS_TYPE(base_uuid, &bleio_uuid_type)) {
+            if (!common_hal_bleio_uuid_get_uuid128(base_uuid, uuid128)) {
+                mp_raise_ValueError(translate("base_uuid is not 128 bits"));
+            }
+        } else {
+            mp_raise_ValueError(translate("base_uuid is not a UUID"));
+        }
+    }
+
+    if (MP_OBJ_IS_INT(value)) {
+        mp_int_t uuid16 = mp_obj_get_int(value);
         if (uuid16 < 0 || uuid16 > 0xffff) {
-            mp_raise_ValueError(translate("Integer UUID not in range 0 to 0xffff"));
+            mp_raise_ValueError(translate("UUID integer value not in range 0 to 0xffff"));
         }
 
-        // This is a 16-bit Bluetooth SIG UUID. NULL means no 128-bit value.
-        common_hal_bleio_uuid_construct(self, uuid16, NULL);
+        // If a base_uuid was supplied, merge the uuid16 into it. Otherwise
+        // it's a 16-bit Bluetooth SIG UUID. NULL means no 128-bit value.
+        common_hal_bleio_uuid_construct(self, uuid16, base_uuid == mp_const_none ? NULL : uuid128);
 
-    } else if (MP_OBJ_IS_STR(uuid)) {
+    } else if (MP_OBJ_IS_STR(value)) {
         uint8_t uuid128[UUID128_BYTE_LEN];
-        GET_STR_DATA_LEN(uuid, str, str_len);
+        GET_STR_DATA_LEN(value, str, str_len);
         if (str_len == UUID128_STR_LEN &&
             str[8] == '-' && str[13] == '-' && str[18] == '-' && str[23] == '-') {
-            size_t str_index = UUID128_STR_LEN - 1;
+            int str_index = UUID128_STR_LEN - 1;
             size_t uuid128_index = 0;
             bool error = false;
 
@@ -123,21 +138,27 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
                 uuid128[12] = 0;
                 uuid128[13] = 0;
                 common_hal_bleio_uuid_construct(self, uuid16, uuid128);
-                return MP_OBJ_FROM_PTR(self);
+            } else {
+                mp_raise_ValueError(translate("UUID string must be of the form xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
             }
         }
-        mp_raise_ValueError(translate("UUID string must be of the form xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
     } else {
         mp_raise_ValueError(translate("UUID value is not int or string"));
     }
-    // Unreachable.
-    return mp_const_none;
+
+    return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    common_hal_bleio_uuid_print(self, print);
+    if (common_hal_bleio_uuid_get_size(self) == 128) {
+        mp_printf(print, "UUID(uuid16=0x%04x, uuid128_reference=0x%02x)",
+                  common_hal_bleio_uuid_get_uuid16(self),
+                  common_hal_bleio_uuid_get_uuid128_reference(self));
+    } else {
+        mp_printf(print, "UUID(0x%04x)", common_hal_bleio_uuid_get_uuid16(self));
+    }
 }
 
 //|   .. attribute:: uuid16
@@ -158,22 +179,46 @@ const mp_obj_property_t bleio_uuid_uuid16_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: uuid128_handle
+//|   .. attribute:: uuid128
 //|
-//|     An opaque handle representing the 128-bit UUID. (read-only)
-//|     Returns None if this is a 16-bit UUID.
+//|     The 128-bit value of the UUID, return as a bytes().
+//|     Throws AttributeError if this is a 16-bit UUID. (read-only)
 //|
-STATIC mp_obj_t bleio_uuid_get_uuid128_handle(mp_obj_t self_in) {
+STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint32_t handle = common_hal_bleio_uuid_get_uuid128_handle(self);
-    return handle == 0 ? mp_const_none : MP_OBJ_NEW_SMALL_INT(handle);
+
+    uint8_t uuid128[16];
+    if (!common_hal_bleio_uuid_get_uuid128(self, uuid128)) {
+        mp_raise_AttributeError(translate("not a 128-bit UUID"));
+    }
+    return mp_obj_new_bytes(uuid128, 16);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_handle_obj, bleio_uuid_get_uuid128_handle);
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_obj, bleio_uuid_get_uuid128);
 
-const mp_obj_property_t bleio_uuid_uuid128_handle_obj = {
+const mp_obj_property_t bleio_uuid_uuid128_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_handle_obj,
+    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: uuid128_reference
+//|
+//|     An opaque reference representing the 128-bit UUID. (read-only)
+//|     Returns None if this is a 16-bit UUID.
+//|
+STATIC mp_obj_t bleio_uuid_get_uuid128_reference(mp_obj_t self_in) {
+    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t reference = common_hal_bleio_uuid_get_uuid128_reference(self);
+    return reference == 0 ? mp_const_none : MP_OBJ_NEW_SMALL_INT(reference);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_reference_obj, bleio_uuid_get_uuid128_reference);
+
+const mp_obj_property_t bleio_uuid_uuid128_reference_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_reference_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
@@ -200,16 +245,60 @@ const mp_obj_property_t bleio_uuid_size_obj = {
 
 STATIC const mp_rom_map_elem_t bleio_uuid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uuid16), MP_ROM_PTR(&bleio_uuid_uuid16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uuid128_handle), MP_ROM_PTR(&bleio_uuid_uuid128_handle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid128), MP_ROM_PTR(&bleio_uuid_uuid128_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid128_reference), MP_ROM_PTR(&bleio_uuid_uuid128_reference_obj) },
     { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&bleio_uuid_size_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_uuid_locals_dict, bleio_uuid_locals_dict_table);
+
+STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+    case MP_UNARY_OP_HASH:
+        if (common_hal_bleio_uuid_get_size(self) == 16) {
+            return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_uuid_get_uuid16(self));
+        } else {
+            union {
+                uint8_t uuid128_bytes[16];
+                uint16_t uuid128_uint16[8];
+            } uuid128;
+            common_hal_bleio_uuid_get_uuid128(self, uuid128.uuid128_bytes);
+            int hash = 0;
+            for (size_t i = 0; i < MP_ARRAY_SIZE(uuid128.uuid128_uint16); i++) {
+                hash += uuid128.uuid128_uint16[i];
+            }
+            return MP_OBJ_NEW_SMALL_INT(hash);
+        }
+    default:
+        return MP_OBJ_NULL; // op not supported
+    }
+}
+
+STATIC mp_obj_t bleio_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    switch (op) {
+        // Two UUID's are equal if their uuid16 values and uuid128 references match.
+        case MP_BINARY_OP_EQUAL:
+            if (MP_OBJ_IS_TYPE(rhs_in, &bleio_uuid_type)) {
+                return mp_obj_new_bool(
+                    common_hal_bleio_uuid_get_uuid16(lhs_in) == common_hal_bleio_uuid_get_uuid16(rhs_in) &&
+                    common_hal_bleio_uuid_get_uuid128_reference(lhs_in) ==
+                    common_hal_bleio_uuid_get_uuid128_reference(rhs_in));
+            } else {
+                return mp_const_false;
+            }
+
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
 
 const mp_obj_type_t bleio_uuid_type = {
     { &mp_type_type },
     .name = MP_QSTR_UUID,
     .print = bleio_uuid_print,
     .make_new = bleio_uuid_make_new,
+    .unary_op = bleio_uuid_unary_op,
+    .binary_op = bleio_uuid_binary_op,
     .locals_dict = (mp_obj_dict_t*)&bleio_uuid_locals_dict,
 };

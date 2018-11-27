@@ -156,7 +156,7 @@ STATIC uint32_t set_advertisement_data(bleio_device_obj_t *device, bool connecta
                 }
 
                 ble_uuid_t uuid;
-                bleio_uuid_convert_to_nrf_uuid(service->uuid, &uuid);
+                bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
 
                 err_code = sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]);
                 if (err_code != NRF_SUCCESS) {
@@ -188,7 +188,7 @@ STATIC uint32_t set_advertisement_data(bleio_device_obj_t *device, bool connecta
                 }
 
                 ble_uuid_t uuid;
-                bleio_uuid_convert_to_nrf_uuid(service->uuid, &uuid);
+                bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
 
                 err_code = sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]);
                 if (err_code != NRF_SUCCESS) {
@@ -327,7 +327,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
         service->handle = gattc_service->handle_range.start_handle;
 
         bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-        bleio_uuid_construct_from_nrf_uuid(uuid, &gattc_service->uuid);
+        bleio_uuid_construct_from_nrf_ble_uuid(uuid, &gattc_service->uuid);
         service->uuid = uuid;
 
         mp_obj_list_append(device->service_list, service);
@@ -352,7 +352,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
 
         bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
         uuid->base.type = &bleio_uuid_type;
-        bleio_uuid_construct_from_nrf_uuid(uuid, &gattc_char->uuid);
+        bleio_uuid_construct_from_nrf_ble_uuid(uuid, &gattc_char->uuid);
         characteristic->uuid = uuid;
 
         characteristic->props.broadcast = gattc_char->char_props.broadcast;
@@ -475,7 +475,7 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *device_in) {
 
 void common_hal_bleio_device_add_service(bleio_device_obj_t *device, bleio_service_obj_t *service) {
     ble_uuid_t uuid;
-    bleio_uuid_convert_to_nrf_uuid(service->uuid, &uuid);
+    bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
 
     uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
     if (service->is_secondary) {

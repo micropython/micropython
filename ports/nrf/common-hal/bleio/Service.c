@@ -52,7 +52,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     }
 
     ble_uuid_t uuid;
-    bleio_uuid_convert_to_nrf_uuid(characteristic->uuid, &uuid);
+    bleio_uuid_convert_to_nrf_ble_uuid(characteristic->uuid, &uuid);
 
     ble_gatts_attr_md_t attr_md = {
         .vloc = BLE_GATTS_VLOC_STACK,

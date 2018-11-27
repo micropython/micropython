@@ -33,12 +33,6 @@ void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_u
     self->uuid = uuid;
 }
 
-void common_hal_bleio_descriptor_print(bleio_descriptor_obj_t *self, const mp_print_t *print) {
-    mp_printf(print, "Descriptor(uuid=");
-    common_hal_bleio_uuid_print(self->uuid, print);
-    mp_printf(print, ", handle=%0x", self->handle);
-}
-
 mp_int_t common_hal_bleio_descriptor_get_handle(bleio_descriptor_obj_t *self) {
     return self->handle;
 }

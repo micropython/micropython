@@ -101,7 +101,9 @@ STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_ar
 
 STATIC void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_bleio_descriptor_print(self, print);
+    mp_printf(print, "Descriptor(uuid=");
+    bleio_uuid_print(print, self->uuid, kind);
+    mp_printf(print, ", handle=%04x", common_hal_bleio_descriptor_get_handle(self));
 }
 
 STATIC mp_obj_t bleio_descriptor_get_handle(mp_obj_t self_in) {

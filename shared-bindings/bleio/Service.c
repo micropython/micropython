@@ -67,7 +67,7 @@ STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_printf(print, "Service(");
-    common_hal_bleio_uuid_print(self->uuid, print);
+    bleio_uuid_print(print, self->uuid, kind);
     mp_printf(print, ")");
 }
 
@@ -112,8 +112,8 @@ STATIC mp_obj_t bleio_service_add_characteristic(mp_obj_t self_in, mp_obj_t char
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
     bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(characteristic_in);
 
-    if (common_hal_bleio_uuid_get_uuid128_handle(self->uuid) !=
-        common_hal_bleio_uuid_get_uuid128_handle(characteristic->uuid)) {
+    if (common_hal_bleio_uuid_get_uuid128_reference(self->uuid) !=
+        common_hal_bleio_uuid_get_uuid128_reference(characteristic->uuid)) {
         // The descriptor base UUID doesn't match the characteristic base UUID.
         mp_raise_ValueError(translate("Characteristic UUID doesn't match Descriptor UUID"));
     }

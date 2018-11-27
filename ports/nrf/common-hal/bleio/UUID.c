@@ -39,55 +39,60 @@
 // If uuid128 is not NULL, it's a 128-bit (16-byte) UUID, with bytes 12 and 13 zero'd out, where
 // the 16-bit part goes. Those 16 bits are passed in uuid16.
 void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, uint32_t uuid16, uint8_t uuid128[]) {
-    self->uuid16 = uuid16;
-    self->uuid_vs_idx = 0;
-    if (uuid128 != NULL) {
+    common_hal_bleio_adapter_set_enabled(true);
+
+    self->nrf_ble_uuid.uuid = uuid16;
+    if (uuid128 == NULL) {
+        self->nrf_ble_uuid.type = BLE_UUID_TYPE_BLE;
+    } else {
         ble_uuid128_t vs_uuid;
         memcpy(vs_uuid.uuid128, uuid128, sizeof(vs_uuid.uuid128));
 
         // Register this vendor-specific UUID. Bytes 12 and 13 will be zero.
-        common_hal_bleio_adapter_set_enabled(true);
-        const uint32_t err_code = sd_ble_uuid_vs_add(&vs_uuid, &self->uuid_vs_idx);
+        const uint32_t err_code = sd_ble_uuid_vs_add(&vs_uuid, &self->nrf_ble_uuid.type);
         if (err_code != NRF_SUCCESS) {
             mp_raise_OSError_msg(translate("Could not register Vendor-Specific UUID"));
         }
     }
 }
 
-void common_hal_bleio_uuid_print(bleio_uuid_obj_t *self, const mp_print_t *print) {
-    if (self->uuid_vs_idx != 0) {
-        mp_printf(print, "UUID(uuid16=0x%04x, uuid128_handle=" HEX2_FMT ")",
-                  self->uuid16, self->uuid_vs_idx);
-    } else {
-        mp_printf(print, "UUID(0x%04x)", self->uuid16);
-    }
-}
-
 uint32_t common_hal_bleio_uuid_get_size(bleio_uuid_obj_t *self) {
-    return self->uuid_vs_idx != 0 ? 128 : 16;
+    return self->nrf_ble_uuid.type == BLE_UUID_TYPE_BLE ? 16 : 128;
 }
 
 uint32_t common_hal_bleio_uuid_get_uuid16(bleio_uuid_obj_t *self) {
-    return self->uuid16;
+    return self->nrf_ble_uuid.uuid;
 }
 
-// Returns 0 if there is no handle, otherwise returns a non-zero index.
-uint32_t common_hal_bleio_uuid_get_uuid128_handle(bleio_uuid_obj_t *self) {
-    return self->uuid_vs_idx;
+// True if uuid128 has been successfully filled in.
+bool common_hal_bleio_uuid_get_uuid128(bleio_uuid_obj_t *self, uint8_t uuid128[16]) {
+    uint8_t length;
+    const uint32_t err_code = sd_ble_uuid_encode(&self->nrf_ble_uuid, &length, uuid128);
+
+    if (err_code != NRF_SUCCESS) {
+            mp_raise_RuntimeError(translate("Could not decode ble_uuid"));
+    }
+    // If not 16 bytes, this is not a 128-bit UUID, so return.
+    return length == 16;
+}
+
+// Returns 0 if this is a 16-bit UUID, otherwise returns a non-zero index
+// into the 128-bit uuid registration table.
+uint32_t common_hal_bleio_uuid_get_uuid128_reference(bleio_uuid_obj_t *self) {
+    return self->nrf_ble_uuid.type == BLE_UUID_TYPE_BLE ? 0 : self->nrf_ble_uuid.type;
 }
 
 
-void bleio_uuid_construct_from_nrf_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_uuid) {
-    if (nrf_uuid->type == BLE_UUID_TYPE_UNKNOWN) {
+void bleio_uuid_construct_from_nrf_ble_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_ble_uuid) {
+    if (nrf_ble_uuid->type == BLE_UUID_TYPE_UNKNOWN) {
         mp_raise_RuntimeError(translate("Unexpected nrfx uuid type"));
     }
-
-    self->uuid16 = nrf_uuid->uuid;
-    self->uuid_vs_idx = nrf_uuid->type == BLE_UUID_TYPE_BLE ? 0 : nrf_uuid->type;
+    self->nrf_ble_uuid.uuid = nrf_ble_uuid->uuid;
+    self->nrf_ble_uuid.type = nrf_ble_uuid->type;
 }
 
 // Fill in a ble_uuid_t from my values.
-void bleio_uuid_convert_to_nrf_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_uuid) {
-    nrf_uuid->uuid = self->uuid16;
-    nrf_uuid->type = self->uuid_vs_idx == 0 ? BLE_UUID_TYPE_BLE : self->uuid_vs_idx;
+void bleio_uuid_convert_to_nrf_ble_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_ble_uuid) {
+    nrf_ble_uuid->uuid = self->nrf_ble_uuid.uuid;
+    nrf_ble_uuid->type = self->nrf_ble_uuid.type;
 }
