@@ -86,7 +86,7 @@ typedef struct {
 }
 
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
-// Datasheet: http://www.gigadevice.com/wp-content/uploads/2017/12/DS-00086-GD25Q16C-Rev2.6.pdf
+// Datasheet: http://www.gigadevice.com/datasheet/gd25q16c/
 #define GD25Q16C {\
     .total_size = (1 << 21), /* 2 MiB */ \
     .start_up_time_us = 5000, \
