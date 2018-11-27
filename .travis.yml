@@ -1,5 +1,5 @@
 sudo: required
-dist: trusty
+dist: xenial
 language: c
 compiler:
   - gcc
@@ -47,7 +47,7 @@ before_script:
   - function var_search () { case "$1" in *$2*) true;; *) false;; esac; }
   - sudo dpkg --add-architecture i386
 
-  - (! var_search "${TRAVIS_SDK-}" arm || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~trusty1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
+  - (! var_search "${TRAVIS_SDK-}" arm || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~xenial1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
   # For nrf builds
   - (! var_search "${TRAVIS_SDK-}" nrf || sudo ports/nrf/bluetooth/download_ble_stack.sh)
@@ -64,7 +64,7 @@ before_script:
 
   # report some good version numbers to the build
   - gcc --version
-  - (! var_search "${TRAVIS_SDK-}" elf || arm-none-eabi-gcc --version)
+  - (! var_search "${TRAVIS_SDK-}" arm || arm-none-eabi-gcc --version)
   - (! var_search "${TRAVIS_SDK-}" esp8266 || xtensa-lx106-elf-gcc --version)
   - python3 --version
 
@@ -88,19 +88,19 @@ script:
 
   # run tests with coverage info
   - echo 'Test all' && echo -en 'travis_fold:start:test_all\\r'
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1))
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1))
   - echo -en 'travis_fold:end:test_all\\r'
 
   - echo 'Test threads' && echo -en 'travis_fold:start:test_threads\\r'
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread))
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread))
   - echo -en 'travis_fold:end:test_threads\\r'
 
   - echo 'Testing with native' && echo -en 'travis_fold:start:test_native\\r'
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native))
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native))
   - echo -en 'travis_fold:end:test_native\\r'
 
   - (echo 'Testing with mpy' && echo -en 'travis_fold:start:test_mpy\\r')
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float))
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float))
   - echo -en 'travis_fold:end:test_mpy\\r'
 
   - (echo 'Building docs' && echo -en 'travis_fold:start:build_docs\\r')
