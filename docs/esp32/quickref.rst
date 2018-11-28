@@ -21,7 +21,7 @@ working with this board please consider reading the following sections first:
 Installing MicroPython
 ----------------------
 
-See the corresponding section of tutorial: :ref:`intro`. It also includes
+See the corresponding section of tutorial: :ref:`esp32_intro`. It also includes
 a troubleshooting subsection.
 
 General board control

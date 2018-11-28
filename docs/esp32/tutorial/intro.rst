@@ -1,4 +1,4 @@
-.. _intro:
+.. _esp32_intro:
 
 Getting started with MicroPython on the ESP32
 ===============================================
