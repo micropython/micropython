@@ -163,6 +163,18 @@ typedef long mp_off_t;
 #define MICROPY_PY_IO                               (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
 #define MICROPY_PY_SYS_EXC_INFO                     (0)
+#define MICROPY_PY_UERRNO_LIST \
+    X(EPERM) \
+    X(ENOENT) \
+    X(EIO) \
+    X(EAGAIN) \
+    X(ENOMEM) \
+    X(EACCES) \
+    X(EEXIST) \
+    X(ENODEV) \
+    X(EISDIR) \
+    X(EINVAL) \
+
 #endif
 
 #ifdef SAMD51
@@ -179,6 +191,7 @@ typedef long mp_off_t;
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
 #define MICROPY_PY_SYS_EXC_INFO                     (1)
+//      MICROPY_PY_UERRNO_LIST - Use the default
 #endif
 
 #ifdef LONGINT_IMPL_NONE
@@ -404,18 +417,6 @@ extern const struct _mp_obj_module_t wiznet_module;
 #define MICROPY_PORT_BUILTIN_DEBUG_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ustack),(mp_obj_t)&ustack_module }
-
-#define MICROPY_PY_UERRNO_LIST \
-    X(EPERM) \
-    X(ENOENT) \
-    X(EIO) \
-    X(EAGAIN) \
-    X(ENOMEM) \
-    X(EACCES) \
-    X(EEXIST) \
-    X(ENODEV) \
-    X(EISDIR) \
-    X(EINVAL) \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
