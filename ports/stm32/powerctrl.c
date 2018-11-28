@@ -260,6 +260,10 @@ set_clk:
 #endif
 
 void powerctrl_enter_stop_mode(void) {
+    // Disable IRQs so that the IRQ that wakes the device from stop mode is not
+    // executed until after the clocks are reconfigured
+    uint32_t irq_state = disable_irq();
+
     #if defined(STM32L4)
     // Configure the MSI as the clock source after waking up
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
@@ -331,6 +335,9 @@ void powerctrl_enter_stop_mode(void) {
     #endif
 
     #endif
+
+    // Enable IRQs now that all clocks are reconfigured
+    enable_irq(irq_state);
 }
 
 #if !defined(STM32L4)
