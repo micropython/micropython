@@ -13,6 +13,9 @@
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
 #define MICROPY_HW_CLK_PLLQ (7)
 
+#define MICROPY_HW_UART_REPL        PYB_UART_1
+#define MICROPY_HW_UART_REPL_BAUD   115200
+
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_A9)
 #define MICROPY_HW_UART1_RX     (pin_A10)
