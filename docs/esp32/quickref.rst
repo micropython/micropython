@@ -3,7 +3,7 @@
 Quick reference for the ESP32
 ===============================
 
-.. image:: img/adafruit_products_pinoutstop.jpg
+.. image:: img/esp32.jpg
     :alt: Adafruit Feather HUZZAH board
     :width: 640px
 
