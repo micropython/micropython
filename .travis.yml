@@ -44,8 +44,10 @@ notifications:
     on_error: always
 
 before_script:
-  # Expand the git tree back to alpha 2 so we get intermediate tags
-  - git fetch --shallow-exclude=4.0.0-alpha.2
+  # Expand the git tree back to the last tag.
+  - LAST_TAG=`git ls-remote --quiet --tags --sort=version:refname | egrep -o "refs/tags/[0-9]+.*\$" | tail -n 1`
+  - git fetch --shallow-exclude=$LAST_TAG
+  - git fetch --depth 1 $LAST_TAG
   - git describe --dirty --always --tags
   - function var_search () { case "$1" in *$2*) true;; *) false;; esac; }
   - sudo dpkg --add-architecture i386
