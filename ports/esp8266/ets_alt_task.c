@@ -166,6 +166,11 @@ bool ets_loop_iter(void) {
         }
         ets_intr_unlock();
     }
+
+    if (!progress && idle_cb) {
+        idle_cb(idle_arg);
+    }
+
     return progress;
 }
 
