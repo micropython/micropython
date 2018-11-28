@@ -4,7 +4,7 @@ language: c
 compiler:
   - gcc
 git:
-  depth: 6
+  depth: 1
 
 # Each item under 'env' is a separate Travis job to execute.
 # They run in separate environments, so each one must take the time
@@ -44,6 +44,9 @@ notifications:
     on_error: always
 
 before_script:
+  # Expand the git tree back to alpha 2 so we get intermediate tags
+  - git fetch --shallow-exclude=4.0.0-alpha.2
+  - git describe --dirty --always --tags
   - function var_search () { case "$1" in *$2*) true;; *) false;; esac; }
   - sudo dpkg --add-architecture i386
 
