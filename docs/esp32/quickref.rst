@@ -1,6 +1,6 @@
-.. _esp8266_quickref:
+.. _esp32_quickref:
 
-Quick reference for the ESP8266
+Quick reference for the ESP32
 ===============================
 
 .. image:: img/adafruit_products_pinoutstop.jpg
@@ -9,7 +9,7 @@ Quick reference for the ESP8266
 
 The Adafruit Feather HUZZAH board (image attribution: Adafruit).
 
-Below is a quick reference for ESP8266-based boards.  If it is your first time
+Below is a quick reference for ESP32-based boards.  If it is your first time
 working with this board please consider reading the following sections first:
 
 .. toctree::
@@ -127,7 +127,7 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
 Available pins are: 0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16, which correspond
-to the actual GPIO pin numbers of ESP8266 chip. Note that many end-user
+to the actual GPIO pin numbers of ESP32 chip. Note that many end-user
 boards use their own adhoc pin numbering (marked e.g. D0, D1, ...). As
 MicroPython supports different boards and modules, physical pin numbering
 was chosen as the lowest common denominator. For mapping between board
@@ -356,7 +356,7 @@ WebREPL (web browser interactive prompt)
 ----------------------------------------
 
 WebREPL (REPL over WebSockets, accessible via a web browser) is an
-experimental feature available in ESP8266 port. Download web client
+experimental feature available in ESP32 port. Download web client
 from https://github.com/micropython/webrepl (hosted version available
 at http://micropython.org/webrepl), and configure it by executing::
 
@@ -369,10 +369,10 @@ run configured daemon on demand using::
     import webrepl
     webrepl.start()
 
-The supported way to use WebREPL is by connecting to ESP8266 access point,
+The supported way to use WebREPL is by connecting to ESP32 access point,
 but the daemon is also started on STA interface if it is active, so if your
 router is set up and works correctly, you may also use WebREPL while connected
-to your normal Internet access point (use the ESP8266 AP connection method
+to your normal Internet access point (use the ESP32 AP connection method
 if you face any issues).
 
 Besides terminal/command prompt access, WebREPL also has provision for file
@@ -381,4 +381,4 @@ corresponding functions, or you can use command-line client ``webrepl_cli.py``
 from the repository above.
 
 See the MicroPython forum for other community-supported alternatives
-to transfer files to ESP8266.
+to transfer files to ESP32.
