@@ -205,17 +205,27 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
 }
 
 void mp_thread_deinit(void) {
-    mp_thread_mutex_lock(&thread_mutex, 1);
-    for (thread_t *th = thread; th != NULL; th = th->next) {
-        // don't delete the current task
-        if (th->id == xTaskGetCurrentTaskHandle()) {
-            continue;
+    for (;;) {
+        // Find a task to delete
+        TaskHandle_t id = NULL;
+        mp_thread_mutex_lock(&thread_mutex, 1);
+        for (thread_t *th = thread; th != NULL; th = th->next) {
+            // Don't delete the current task
+            if (th->id != xTaskGetCurrentTaskHandle()) {
+                id = th->id;
+                break;
+            }
         }
-        vTaskDelete(th->id);
+        mp_thread_mutex_unlock(&thread_mutex);
+
+        if (id == NULL) {
+            // No tasks left to delete
+            break;
+        } else {
+            // Call FreeRTOS to delete the task (it will call vPortCleanUpTCB)
+            vTaskDelete(id);
+        }
     }
-    mp_thread_mutex_unlock(&thread_mutex);
-    // allow FreeRTOS to clean-up the threads
-    vTaskDelay(2);
 }
 
 #else
