@@ -166,6 +166,7 @@ void pyb_usb_dev_deinit(void) {
     usb_device_t *usb_dev = &usb_device;
     if (usb_dev->enabled) {
         USBD_Stop(&usb_dev->hUSBDDevice);
+        USBD_DeInit(&usb_dev->hUSBDDevice);
         usb_dev->enabled = false;
     }
 }
