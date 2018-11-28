@@ -7,7 +7,7 @@ Quick reference for the ESP32
     :alt: Adafruit Feather HUZZAH board
     :width: 640px
 
-The Adafruit Feather HUZZAH board (image attribution: Adafruit).
+The Espressif ESP32 Development Board (image attribution: Adafruit).
 
 Below is a quick reference for ESP32-based boards.  If it is your first time
 working with this board please consider reading the following sections first:
