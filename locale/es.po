@@ -2,6 +2,7 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Carlos Diaz <carlos.santiago.diaz@gmail.com>, 2018.
+# Juan Biondi <juanernestobiondi@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
@@ -65,11 +66,11 @@ msgstr "string de longitud impar"
 
 #: extmod/modubinascii.c:101
 msgid "non-hex digit found"
-msgstr "se encontró un digito non-hex"
+msgstr "digito non-hex encontrado"
 
 #: extmod/modubinascii.c:169
 msgid "incorrect padding"
-msgstr "padding incorrecto"
+msgstr "relleno (padding) incorrecto"
 
 #: extmod/moductypes.c:122
 msgid "syntax error in uctypes descriptor"
@@ -121,7 +122,7 @@ msgstr "certificado inválido"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr "desbordamiento de queue"
+msgstr "desbordamiento de cola(queue)"
 
 #: extmod/moduzlib.c:98
 msgid "compression header"
@@ -202,7 +203,7 @@ msgstr "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 #, fuzzy
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
-"Por favor registra un issue en el siguiente URL con los contenidos de tu "
+"Por favor registra un issue en la siguiente URL con el contenidos de tu "
 "unidad de almacenamiento CIRCUITPY:\n"
 
 #: main.c:266
@@ -233,7 +234,8 @@ msgstr "reinicio suave\n"
 #: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
-msgstr "Todos los sync event channels están siendo utilizados"
+msgstr "Todos los canales de eventos de sincronización(sync event channels)"
+" están siendo utilizados"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:135
 msgid "calibration is read only"
@@ -245,15 +247,15 @@ msgstr "calibration esta fuera de rango"
 
 #: ports/atmel-samd/board_busses.c:59 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
-msgstr "Sin bus I2C por default"
+msgstr "Sin bus I2C por defecto"
 
 #: ports/atmel-samd/board_busses.c:85 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
-msgstr "Sin bus SPI por default"
+msgstr "Sin bus SPI por defecto"
 
 #: ports/atmel-samd/board_busses.c:112 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
-msgstr "Sin bus UART por default"
+msgstr "Sin bus UART por defecto"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 #: ports/nrf/common-hal/analogio/AnalogIn.c:39
@@ -359,7 +361,7 @@ msgstr "Todos los timers en uso"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
-msgstr "Todos los event channels en uso"
+msgstr "Todos los canales de eventos en uso"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
@@ -697,17 +699,17 @@ msgstr ""
 #: ports/nrf/common-hal/bleio/Adapter.c:125
 #, c-format
 msgid "Failed to change softdevice state, error: 0x%08lX"
-msgstr ""
+msgstr "No se puede cambiar el estado del softdevice, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:135
 #, c-format
 msgid "Failed to get softdevice state, error: 0x%08lX"
-msgstr ""
+msgstr "No se puede obtener el estado del softdevice, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:155
 #, c-format
 msgid "Failed to get local address, error: 0x%08lX"
-msgstr ""
+msgstr "No se puede obtener la dirección local, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:52
 #, fuzzy, c-format
@@ -729,7 +731,7 @@ msgstr "No se puede leer el valor del atributo. status 0x%02x"
 #: ports/nrf/common-hal/bleio/Device.c:307
 #, c-format
 msgid "Failed to acquire mutex, status: 0x%08lX"
-msgstr ""
+msgstr "No se puede adquirir el mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:126
 #, fuzzy, c-format
@@ -743,7 +745,7 @@ msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
 #: ports/nrf/common-hal/bleio/Device.c:391
 #, c-format
 msgid "Failed to release mutex, status: 0x%08lX"
-msgstr ""
+msgstr "No se puede liberar el mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:81
 #: ports/nrf/common-hal/bleio/Device.c:114
@@ -754,7 +756,7 @@ msgstr "Los datos no caben en el paquete de anuncio."
 #: ports/nrf/common-hal/bleio/Device.c:266
 #, c-format
 msgid "Failed to discover serivices, status: 0x%08lX"
-msgstr ""
+msgstr "No se puede descubrir servicios, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:403
 #: ports/nrf/common-hal/bleio/Scanner.c:76
@@ -796,7 +798,7 @@ msgstr "No se puede leer el valor del atributo. status 0x%02x"
 #: ports/nrf/common-hal/bleio/Service.c:83
 #, c-format
 msgid "Failed to add characteristic, status: 0x%08lX"
-msgstr ""
+msgstr "No se puede añadir caracteristica, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/UUID.c:97
 #, fuzzy, c-format
@@ -865,7 +867,7 @@ msgstr "ffi_prep_closure_loc"
 
 #: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
-msgstr ""
+msgstr "No se sabe cómo pasar objeto a función nativa"
 
 #: ports/unix/modusocket.c:474
 #, c-format
@@ -889,7 +891,7 @@ msgstr "a la función le hacen falta %d argumentos posicionales requeridos"
 #: py/argcheck.c:72
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr "la función esperaba a lo sumo %d argumentos, tiene %d"
+msgstr "la función esperaba a minimo %d argumentos, tiene %d"
 
 #: py/argcheck.c:97
 msgid "'%q' argument required"
@@ -897,23 +899,24 @@ msgstr "argumento '%q' requerido"
 
 #: py/argcheck.c:122
 msgid "extra positional arguments given"
-msgstr ""
+msgstr "argumento posicional adicional dado"
 
 #: py/argcheck.c:130
 msgid "extra keyword arguments given"
-msgstr ""
+msgstr "argumento(s) por palabra clave adicionales fueron dados"
 
 #: py/argcheck.c:142
 msgid "argument num/types mismatch"
-msgstr ""
+msgstr "argumento número/tipos no coinciden"
 
 #: py/argcheck.c:147
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr ""
+msgstr "argumento(s) por palabra clave aún no implementados - usa argumentos"
+" normales en su lugar"
 
 #: py/bc.c:88 py/objnamedtuple.c:108
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "%q() toma %d argumentos posicionales pero %d fueron dados"
 
 #: py/bc.c:197 py/bc.c:215
 msgid "unexpected keyword argument"
@@ -925,32 +928,32 @@ msgstr "palabras clave deben ser strings"
 
 #: py/bc.c:206 py/objnamedtuple.c:138
 msgid "function got multiple values for argument '%q'"
-msgstr ""
+msgstr "la función tiene múltiples valores para el argumento '%q'"
 
 #: py/bc.c:218 py/objnamedtuple.c:130
 msgid "unexpected keyword argument '%q'"
-msgstr ""
+msgstr "argumento por palabra clave inesperado '%q'"
 
 #: py/bc.c:244
 #, c-format
 msgid "function missing required positional argument #%d"
-msgstr ""
+msgstr "la función requiere del argumento posicional #%d"
 
 #: py/bc.c:260
 msgid "function missing required keyword argument '%q'"
-msgstr ""
+msgstr "la función requiere del argumento por palabra clave '%q'"
 
 #: py/bc.c:269
 msgid "function missing keyword-only argument"
-msgstr ""
+msgstr "falta palabra clave para función"
 
 #: py/binary.c:112
 msgid "bad typecode"
-msgstr ""
+msgstr "typecode malo"
 
 #: py/builtinevex.c:99
 msgid "bad compile mode"
-msgstr ""
+msgstr "modo de compilación malo"
 
 #: py/builtinhelp.c:137
 #, fuzzy
@@ -966,10 +969,15 @@ msgid ""
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
+"Bienvenido a Adafruit CircuitPython %s!\n"
+"\n"
+"Visita learn.adafruit.com/category/circuitpython para obtener guías de proyectos.\n"
+"\n"
+"Para listar los módulos incorporados por favor haga `help(\"modules\")`.\n"
 
 #: py/builtinimport.c:336
 msgid "cannot perform relative import"
-msgstr ""
+msgstr "no se puedo realizar importación relativa"
 
 #: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
@@ -985,23 +993,23 @@ msgstr "import relativo"
 
 #: py/compile.c:397 py/compile.c:542
 msgid "can't assign to expression"
-msgstr ""
+msgstr "no se puede asignar a la expresión"
 
 #: py/compile.c:416
 msgid "multiple *x in assignment"
-msgstr ""
+msgstr "múltiples *x en la asignacion"
 
 #: py/compile.c:642
 msgid "non-default argument follows default argument"
-msgstr ""
+msgstr "argumento no predeterminado sigue argumento predeterminado"
 
 #: py/compile.c:771 py/compile.c:789
 msgid "invalid micropython decorator"
-msgstr ""
+msgstr "decorador de micropython inválido"
 
 #: py/compile.c:943
 msgid "can't delete expression"
-msgstr ""
+msgstr "no se puede borrar la expresión"
 
 #: py/compile.c:955
 msgid "'break' outside loop"
@@ -1017,64 +1025,65 @@ msgstr "'return' fuera de una función"
 
 #: py/compile.c:1169
 msgid "identifier redefined as global"
-msgstr ""
+msgstr "identificador redefinido como global"
 
 #: py/compile.c:1185
 msgid "no binding for nonlocal found"
-msgstr ""
+msgstr "no se ha encontrado ningún enlace para nonlocal"
 
 #: py/compile.c:1188
 msgid "identifier redefined as nonlocal"
-msgstr ""
+msgstr "identificador redefinido como nonlocal"
 
 #: py/compile.c:1197
 msgid "can't declare nonlocal in outer code"
-msgstr ""
+msgstr "no se puede declarar nonlocal"
 
 #: py/compile.c:1542
 msgid "default 'except' must be last"
-msgstr ""
+msgstr "'except' por defecto deberia estar de último"
 
 #: py/compile.c:2095
 msgid "*x must be assignment target"
-msgstr ""
+msgstr "*x debe ser objetivo de la tarea"
 
 #: py/compile.c:2193
 msgid "super() can't find self"
-msgstr ""
+msgstr "super() no puede encontrar self"
 
 #: py/compile.c:2256
 msgid "can't have multiple *x"
-msgstr ""
+msgstr "no puede tener multiples *x"
 
 #: py/compile.c:2263
 msgid "can't have multiple **x"
-msgstr ""
+msgstr "no puede tener multiples *x"
 
 #: py/compile.c:2271
 msgid "LHS of keyword arg must be an id"
-msgstr ""
+msgstr "LHS del agumento por palabra clave deberia ser un identificador"
 
 #: py/compile.c:2287
 msgid "non-keyword arg after */**"
-msgstr ""
+msgstr "no deberia estar/tener agumento por palabra clave despues de */**"
 
 #: py/compile.c:2291
 msgid "non-keyword arg after keyword arg"
-msgstr ""
+msgstr "no deberia estar/tener agumento por palabra clave despues de argumento "
+"por palabra clave"
 
 #: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
 #: py/parse.c:1176
 msgid "invalid syntax"
-msgstr ""
+msgstr "sintaxis inválida"
 
 #: py/compile.c:2465
 msgid "expecting key:value for dict"
-msgstr ""
+msgstr "esperando la clave:valor para dict"
 
 #: py/compile.c:2475
 msgid "expecting just a value for set"
-msgstr ""
+msgstr "esperando solo un valor para set"
 
 #: py/compile.c:2600
 msgid "'yield' outside function"
@@ -1083,69 +1092,69 @@ msgstr ""
 
 #: py/compile.c:2619
 msgid "'await' outside function"
-msgstr ""
+msgstr "'await' fuera de la función"
 
 #: py/compile.c:2774
 msgid "name reused for argument"
-msgstr ""
+msgstr "nombre reusado para argumento"
 
 #: py/compile.c:2827
 msgid "parameter annotation must be an identifier"
-msgstr ""
+msgstr "parámetro de anotación debe ser un identificador"
 
 #: py/compile.c:2969 py/compile.c:3137
 msgid "return annotation must be an identifier"
-msgstr ""
+msgstr "la anotación de retorno debe ser un identificador"
 
 #: py/compile.c:3097
 msgid "inline assembler must be a function"
-msgstr ""
+msgstr "ensamblador en línea debe ser una función"
 
 #: py/compile.c:3134
 msgid "unknown type"
-msgstr ""
+msgstr "tipo desconocido"
 
 #: py/compile.c:3154
 msgid "expecting an assembler instruction"
-msgstr ""
+msgstr "esperando una instrucción de ensamblador"
 
 #: py/compile.c:3184
 msgid "'label' requires 1 argument"
-msgstr ""
+msgstr "'label' requiere 1 argumento"
 
 #: py/compile.c:3190
 msgid "label redefined"
-msgstr ""
+msgstr "etiqueta redefinida"
 
 #: py/compile.c:3196
 msgid "'align' requires 1 argument"
-msgstr ""
+msgstr "'align' requiere 1 argumento"
 
 #: py/compile.c:3205
 msgid "'data' requires at least 2 arguments"
-msgstr ""
+msgstr "'data' requiere como minomo 2 argumentos"
 
 #: py/compile.c:3212
 msgid "'data' requires integer arguments"
-msgstr ""
+msgstr "'data' requiere argumentos de tipo entero"
 
 #: py/emitinlinethumb.c:102
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr ""
+msgstr "solo puede tener hasta 4 parámetros para ensamblar Thumb"
 
 #: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr ""
+msgstr "los parametros deben ser registros en secuencia del r0 al r3"
 
 #: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr ""
+msgstr "'%s' espera a lo sumo r%d"
 
 #: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s' espera un registro"
 
 #: py/emitinlinethumb.c:211
 #, c-format
@@ -1155,41 +1164,41 @@ msgstr "ord espera un carácter"
 #: py/emitinlinethumb.c:239
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr ""
+msgstr "'%s' espera un registro de FPU"
 
 #: py/emitinlinethumb.c:292
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' espera {r0, r1, ...}"
 
 #: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' espera un entero"
 
 #: py/emitinlinethumb.c:304
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' entero 0x%x no cabe en la máscara 0x%x"
 
 #: py/emitinlinethumb.c:328
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr ""
+msgstr "'%s' espera una dirección de forma [a, b]"
 
 #: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
 #, c-format
 msgid "'%s' expects a label"
-msgstr ""
+msgstr "'%s' espera una etiqueta"
 
 #: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
 msgid "label '%q' not defined"
-msgstr ""
+msgstr "etiqueta '%q' no definida"
 
 #: py/emitinlinethumb.c:806
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr ""
+msgstr "instrucción de tipo Thumb no admitida '%s' con %d argumentos"
 
 #: py/emitinlinethumb.c:810
 msgid "branch not in range"
@@ -1197,77 +1206,77 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
-msgstr ""
+msgstr "solo puede tener hasta 4 parámetros para ensamblador Xtensa"
 
 #: py/emitinlinextensa.c:91 py/emitinlinextensa.c:96
 msgid "parameters must be registers in sequence a2 to a5"
-msgstr ""
+msgstr "los parámetros deben ser registros en secuencia de a2 a a5"
 
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
+msgstr "'%s' entero %d no esta dentro del rango %d..%d"
 
 #: py/emitinlinextensa.c:327
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr ""
+msgstr "instrucción Xtensa '%s' con %d argumentos no soportada"
 
 #: py/emitnative.c:183
 msgid "unknown type '%q'"
-msgstr ""
+msgstr "tipo desconocido '%q'"
 
 #: py/emitnative.c:260
 msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
+msgstr "funciones Viper actualmente no soportan más de 4 argumentos."
 
 #: py/emitnative.c:742
 msgid "conversion to object"
-msgstr ""
+msgstr "conversión a objeto"
 
 #: py/emitnative.c:921
 msgid "local '%q' used before type known"
-msgstr ""
+msgstr "variable local '%q' usada antes del tipo conocido"
 
 #: py/emitnative.c:1118 py/emitnative.c:1156
 msgid "can't load from '%q'"
-msgstr ""
+msgstr "no se puede cargar desde '%q'"
 
 #: py/emitnative.c:1128
 msgid "can't load with '%q' index"
-msgstr ""
+msgstr "no se puede cargar con el índice '%q'"
 
 #: py/emitnative.c:1188
 msgid "local '%q' has type '%q' but source is '%q'"
-msgstr ""
+msgstr "la variable local '%q' tiene el tipo '%q' pero la fuente es '%q'"
 
 #: py/emitnative.c:1289 py/emitnative.c:1379
 msgid "can't store '%q'"
-msgstr ""
+msgstr "no se puede almacenar '%q'"
 
 #: py/emitnative.c:1358 py/emitnative.c:1419
 msgid "can't store to '%q'"
-msgstr ""
+msgstr "no se puede almacenar para '%q'"
 
 #: py/emitnative.c:1369
 msgid "can't store with '%q' index"
-msgstr ""
+msgstr "no se puede almacenar con el indice '%q'"
 
 #: py/emitnative.c:1540
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr ""
+msgstr "no se puede convertir implícitamente '%q' a 'bool'"
 
 #: py/emitnative.c:1774
 msgid "unary op %q not implemented"
-msgstr ""
+msgstr "Operación unica %q no implementada"
 
 #: py/emitnative.c:1930
 msgid "binary op %q not implemented"
-msgstr ""
+msgstr "operacion binaria %q no implementada"
 
 #: py/emitnative.c:1951
 msgid "can't do binary op between '%q' and '%q'"
-msgstr ""
+msgstr "no se puede hacer una operacion binaria entre '%q' y '%q'"
 
 #: py/emitnative.c:2126
 msgid "casting"
@@ -1275,11 +1284,11 @@ msgstr ""
 
 #: py/emitnative.c:2173
 msgid "return expected '%q' but got '%q'"
-msgstr ""
+msgstr "retorno esperado '%q' pero se obtuvo '%q'"
 
 #: py/emitnative.c:2191
 msgid "must raise an object"
-msgstr ""
+msgstr "debe hacer un raise de un objeto"
 
 #: py/emitnative.c:2201
 msgid "native yield"
@@ -1299,7 +1308,7 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 
 #: py/modbuiltins.c:285
 msgid "arg is an empty sequence"
-msgstr ""
+msgstr "argumento es una secuencia vacía"
 
 #: py/modbuiltins.c:350
 msgid "ord expects a character"
@@ -1320,12 +1329,12 @@ msgstr ""
 
 #: py/modmath.c:41 shared-bindings/math/__init__.c:53
 msgid "math domain error"
-msgstr ""
+msgstr "error de dominio matemático"
 
 #: py/modmath.c:196 py/objfloat.c:270 py/objint_longlong.c:222
 #: py/objint_mpz.c:230 py/runtime.c:619 shared-bindings/math/__init__.c:346
 msgid "division by zero"
-msgstr ""
+msgstr "división por cero"
 
 #: py/modmicropython.c:155
 msgid "schedule stack full"
@@ -1339,15 +1348,15 @@ msgstr "buffer demasiado pequeño"
 
 #: py/modthread.c:240
 msgid "expecting a dict for keyword args"
-msgstr ""
+msgstr "esperando un diccionario para argumentos por palabra clave"
 
 #: py/moduerrno.c:143 py/moduerrno.c:146
 msgid "Permission denied"
-msgstr ""
+msgstr "Permiso denegado"
 
 #: py/moduerrno.c:144
 msgid "No such file/directory"
-msgstr ""
+msgstr "No existe el archivo/directorio"
 
 #: py/moduerrno.c:145
 msgid "Input/output error"
@@ -1355,11 +1364,11 @@ msgstr ""
 
 #: py/moduerrno.c:147
 msgid "File exists"
-msgstr ""
+msgstr "El archivo ya existe"
 
 #: py/moduerrno.c:148
 msgid "Unsupported operation"
-msgstr "Operacion no soportada"
+msgstr "Operación no soportada"
 
 #: py/moduerrno.c:149
 msgid "Invalid argument"
@@ -1375,20 +1384,20 @@ msgstr ""
 
 #: py/obj.c:96
 msgid "  File \"%q\""
-msgstr ""
+msgstr "  Archivo \"%q\""
 
 #: py/obj.c:100
 msgid ", in %q\n"
-msgstr ""
+msgstr ", en %q\n"
 
 #: py/obj.c:257
 msgid "can't convert to int"
-msgstr ""
+msgstr "no se puede convertir a int"
 
 #: py/obj.c:260
 #, c-format
 msgid "can't convert %s to int"
-msgstr ""
+msgstr "no se puede convertir %s a int"
 
 #: py/obj.c:320
 msgid "can't convert to float"
@@ -1401,60 +1410,60 @@ msgstr ""
 
 #: py/obj.c:353
 msgid "can't convert to complex"
-msgstr ""
+msgstr "no se puede convertir a complejo"
 
 #: py/obj.c:356
 #, c-format
 msgid "can't convert %s to complex"
-msgstr ""
+msgstr "no se puede convertir %s a complejo"
 
 #: py/obj.c:371
 msgid "expected tuple/list"
-msgstr ""
+msgstr "tupla/lista esperada"
 
 #: py/obj.c:374
 #, c-format
 msgid "object '%s' is not a tuple or list"
-msgstr ""
+msgstr "el objeto '%s' no es una tupla o lista"
 
 #: py/obj.c:385
 msgid "tuple/list has wrong length"
-msgstr ""
+msgstr "tupla/lista tiene una longitud incorrecta"
 
 #: py/obj.c:387
 #, c-format
 msgid "requested length %d but object has length %d"
-msgstr ""
+msgstr "longitud solicitada %d pero el objeto tiene longitud %d"
 
 #: py/obj.c:400
 msgid "indices must be integers"
-msgstr ""
+msgstr "indices deben ser enteros"
 
 #: py/obj.c:403
 msgid "%q indices must be integers, not %s"
-msgstr ""
+msgstr "%q indices deben ser enteros, no %s"
 
 #: py/obj.c:423
 msgid "%q index out of range"
-msgstr "%w index fuera de rango"
+msgstr "%w indice fuera de rango"
 
 #: py/obj.c:455
 msgid "object has no len"
-msgstr ""
+msgstr "el objeto no tiene longitud"
 
 #: py/obj.c:458
 #, c-format
 msgid "object of type '%s' has no len()"
-msgstr ""
+msgstr "el objeto de tipo '%s' no tiene len()"
 
 #: py/obj.c:496
 msgid "object does not support item deletion"
-msgstr "object no soporta supresión de item"
+msgstr "object no soporta la eliminación de elementos"
 
 #: py/obj.c:499
 #, c-format
 msgid "'%s' object does not support item deletion"
-msgstr ""
+msgstr "objeto '%s' no soporta la eliminación de elementos"
 
 #: py/obj.c:503
 msgid "object is not subscriptable"
@@ -1467,25 +1476,25 @@ msgstr ""
 
 #: py/obj.c:510
 msgid "object does not support item assignment"
-msgstr ""
+msgstr "el objeto no soporta la asignación de elementos"
 
 #: py/obj.c:513
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr ""
+msgstr "el objeto '%s' no soporta la asignación de elementos"
 
 #: py/obj.c:544
 msgid "object with buffer protocol required"
-msgstr ""
+msgstr "objeto con protocolo de buffer requerido"
 
 #: py/objarray.c:413 py/objstr.c:427 py/objstrunicode.c:191 py/objtuple.c:187
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
-msgstr ""
+msgstr "solo se admiten segmentos con step=1 (alias None)"
 
 #: py/objarray.c:426
 msgid "lhs and rhs should be compatible"
-msgstr ""
+msgstr "lhs y rhs deben ser compatibles"
 
 #: py/objarray.c:444 shared-bindings/nvm/ByteArray.c:107
 msgid "array/bytes required on right side"
@@ -1493,19 +1502,19 @@ msgstr ""
 
 #: py/objcomplex.c:203
 msgid "can't do truncated division of a complex number"
-msgstr ""
+msgstr "no se puede hacer la división truncada de un número complejo"
 
 #: py/objcomplex.c:209
 msgid "complex division by zero"
-msgstr ""
+msgstr "división compleja por cero"
 
 #: py/objcomplex.c:237
 msgid "0.0 to a complex power"
-msgstr ""
+msgstr "0.0 a una potencia compleja"
 
 #: py/objdeque.c:107
 msgid "full"
-msgstr ""
+msgstr "lleno"
 
 #: py/objdeque.c:127
 msgid "empty"
@@ -1513,7 +1522,7 @@ msgstr "vacío"
 
 #: py/objdict.c:314
 msgid "popitem(): dictionary is empty"
-msgstr ""
+msgstr "popitem(): diccionario vacío"
 
 #: py/objdict.c:357
 msgid "dict update sequence has wrong length"
@@ -1525,27 +1534,28 @@ msgstr "valores complejos no soportados"
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
-msgstr ""
+msgstr "no se puede enviar un valor que no sea None a un generador recién "
+"iniciado"
 
 #: py/objgenerator.c:126
 msgid "generator already executing"
-msgstr ""
+msgstr "generador ya se esta ejecutando"
 
 #: py/objgenerator.c:229
 msgid "generator ignored GeneratorExit"
-msgstr ""
+msgstr "generador ignorado GeneratorExit"
 
 #: py/objgenerator.c:251
 msgid "can't pend throw to just-started generator"
-msgstr ""
+msgstr "no se puede colgar al generador recién iniciado"
 
 #: py/objint.c:144
 msgid "can't convert inf to int"
-msgstr ""
+msgstr "no se puede convertir inf en int"
 
 #: py/objint.c:146
 msgid "can't convert NaN to int"
-msgstr ""
+msgstr "no se puede convertir Nan a int"
 
 #: py/objint.c:163
 msgid "float too big"
@@ -1573,11 +1583,11 @@ msgstr ""
 
 #: py/objint_mpz.c:336
 msgid "pow() with 3 arguments requires integers"
-msgstr ""
+msgstr "pow() con 3 argumentos requiere enteros"
 
 #: py/objint_mpz.c:347
 msgid "pow() 3rd argument cannot be 0"
-msgstr ""
+msgstr "el 3er argumento de pow() no puede ser 0"
 
 #: py/objint_mpz.c:415
 msgid "overflow converting long int to machine word"
@@ -1589,7 +1599,7 @@ msgstr ""
 
 #: py/objnamedtuple.c:92
 msgid "can't set attribute"
-msgstr ""
+msgstr "no se puede asignar el atributo"
 
 #: py/objobject.c:55
 msgid "__new__ arg must be a user-type"
@@ -1609,7 +1619,7 @@ msgstr "Length debe ser un int"
 
 #: py/objslice.c:71
 msgid "Length must be non-negative"
-msgstr ""
+msgstr "Longitud no deberia ser negativa"
 
 #: py/objslice.c:86 py/sequence.c:57
 msgid "slice step cannot be zero"
@@ -1625,11 +1635,12 @@ msgstr "valor de bytes fuera de rango"
 
 #: py/objstr.c:270
 msgid "wrong number of arguments"
-msgstr ""
+msgstr "numero erroneo de argumentos"
 
 #: py/objstr.c:467
 msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr ""
+msgstr "join espera una lista de objetos str/bytes consistentes con el mismo"
+" objeto"
 
 #: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
 msgid "empty separator"
@@ -1649,7 +1660,7 @@ msgstr ""
 
 #: py/objstr.c:931
 msgid "bad format string"
-msgstr ""
+msgstr "formato de string malo"
 
 #: py/objstr.c:953
 msgid "single '}' encountered in format string"
@@ -1657,16 +1668,16 @@ msgstr ""
 
 #: py/objstr.c:992
 msgid "bad conversion specifier"
-msgstr ""
+msgstr "especificador de conversion malo"
 
 #: py/objstr.c:996
 msgid "end of format while looking for conversion specifier"
-msgstr ""
+msgstr "el final del formato mientras se busca el especificador de conversión"
 
 #: py/objstr.c:998
 #, c-format
 msgid "unknown conversion specifier %c"
-msgstr ""
+msgstr "especificador de conversión %c desconocido"
 
 #: py/objstr.c:1029
 msgid "unmatched '{' in format"
@@ -1674,12 +1685,14 @@ msgstr ""
 
 #: py/objstr.c:1036
 msgid "expected ':' after format specifier"
-msgstr ""
+msgstr "se espera ':' despues de un especificaro de tipo format"
 
 #: py/objstr.c:1050
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
+"no se puede cambiar de la numeración automática de campos a la especificación"
+" de campo manual"
 
 #: py/objstr.c:1055 py/objstr.c:1083
 msgid "tuple index out of range"
