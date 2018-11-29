@@ -6,7 +6,7 @@ $(error Invalid BOARD specified)
 endif
 
 # If the build directory is not given, make it reflect the board name.
-BUILD ?= build
+BUILD ?= build-$(BOARD)
 
 include ../../py/mkenv.mk
 
@@ -25,7 +25,7 @@ FROZEN_MPY_DIR ?= modules
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-FWBIN = $(BUILD)/firmware-combined.bin
+FWBIN = $(BUILD)/firmware.bin
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
@@ -232,7 +232,7 @@ FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
 .PHONY: deploy
 
-deploy: $(BUILD)/firmware-combined.bin
+deploy: $(FWBIN)
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
 
@@ -275,4 +275,4 @@ $(BUILD)/libaxtls.a:
 
 clean-modules:
 	git clean -f -d modules
-	rm -f build/frozen*.c
+	rm -f $(BUILD)/frozen*.c
