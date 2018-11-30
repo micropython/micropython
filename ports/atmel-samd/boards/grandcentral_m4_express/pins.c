@@ -60,7 +60,6 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D21), (mp_obj_t)&pin_PB21 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), (mp_obj_t)&pin_PB21 },
 
-    // Not connected but probably should be.
     { MP_OBJ_NEW_QSTR(MP_QSTR_D22), (mp_obj_t)&pin_PD12 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D23), (mp_obj_t)&pin_PA15 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D24), (mp_obj_t)&pin_PC17 },
@@ -123,7 +122,7 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS), (mp_obj_t)&pin_PB28 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_MISO), (mp_obj_t)&pin_PB29 },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CARD_DETECT), (mp_obj_t)&pin_PB21 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CARD_DETECT), (mp_obj_t)&pin_PB31 },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), (mp_obj_t)&pin_PC24 },
 
