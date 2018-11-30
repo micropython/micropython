@@ -114,17 +114,11 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
             return;
         } else if (o->args->len == 1) {
             // try to provide a nice OSError error message
-            if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
-                const compressed_string_t* common = mp_common_errno_to_str(o->args->items[0]);
-                const char* msg;
+            if (MP_OBJ_IS_SMALL_INT(o->args->items[0]) &&
+                mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(o->base.type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
                 char decompressed[50];
-                if (common != NULL && common->length <= 50) {
-                    decompress(common, decompressed);
-                    msg = decompressed;
-                } else {
-                    msg = mp_errno_to_str(o->args->items[0]);
-                }
-                if (msg[0] != '\0') {
+                const char *msg = mp_common_errno_to_str(o->args->items[0], decompressed, sizeof(decompressed));
+                if (msg != NULL) {
                     mp_printf(print, "[Errno " INT_FMT "] %s", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), msg);
                     return;
                 }
@@ -215,6 +209,31 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         dest[0] = MP_OBJ_FROM_PTR(self->args);
     } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
         dest[0] = mp_obj_exception_get_value(self_in);
+    #if MICROPY_CPYTHON_COMPAT
+    } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(self->base.type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
+        if (attr == MP_QSTR_errno) {
+            dest[0] = mp_obj_exception_get_value(self_in);
+        } else if (attr == MP_QSTR_strerror) {
+            if (self->args->len > 1) {
+                dest[0] = self->args->items[1];
+            } else if (self->args->len > 0) {
+                char decompressed[50];
+                const char *msg = mp_common_errno_to_str(self->args->items[0], decompressed, sizeof(decompressed));
+                if (msg != NULL) {
+                    dest[0] = mp_obj_new_str(msg, strlen(msg));
+                } else {
+                    dest[0] = mp_const_none;
+                }
+            } else {
+                dest[0] = mp_const_none;
+            }
+        } else if (attr == MP_QSTR_filename) {
+            dest[0] = self->args->len > 2 ? self->args->items[2] : mp_const_none;
+        // skip winerror
+        } else if (attr == MP_QSTR_filename2) {
+            dest[0] = self->args->len > 4 ? self->args->items[4] : mp_const_none;
+        }
+    #endif
     }
 }
 

@@ -43,8 +43,8 @@ ifeq ($(USB),FALSE)
 	endif
 else
 	SRC_SUPERVISOR += lib/tinyusb/src/common/tusb_fifo.c \
-					  lib/tinyusb/src/device/control.c \
 					  lib/tinyusb/src/device/usbd.c \
+					  lib/tinyusb/src/device/usbd_control.c \
 					  lib/tinyusb/src/class/msc/msc_device.c \
 					  lib/tinyusb/src/class/cdc/cdc_device.c \
 					  lib/tinyusb/src/class/hid/hid_device.c \

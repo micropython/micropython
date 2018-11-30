@@ -10,12 +10,14 @@ else
   endif
 endif
 
+CLI_SD := $(SD)
+
 include boards/$(BOARD)/mpconfigboard.mk
 
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
-# Build directory with SD
-BUILD ?= $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
+# Build directory with SD if it's different from the default.
+BUILD ?= $(if $(CLI_SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
@@ -218,14 +220,7 @@ ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
 SRC_C += \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/control.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/class/hid/hid_device.c \
-	lib/tinyusb/src/tusb.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c
 
 SRC_SHARED_MODULE += \
 	usb_hid/__init__.c \

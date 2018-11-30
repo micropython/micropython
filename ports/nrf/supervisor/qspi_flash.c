@@ -115,7 +115,7 @@ void spi_flash_init(void) {
             .dpmconfig = false
         },
         .phy_if = {
-            .sck_freq = NRF_QSPI_FREQ_32MDIV16,
+            .sck_freq = NRF_QSPI_FREQ_32MDIV16, // Start at a slow 2mhz and speed up once we know what we're talking to.
             .sck_delay = 10,    // min time CS must stay high before going low again. in unit of 62.5 ns
             .spi_mode = NRF_QSPI_MODE_0,
             .dpmen = false
@@ -132,7 +132,7 @@ void spi_flash_init(void) {
     qspi_cfg.pins.io2_pin = MICROPY_QSPI_DATA2;
     qspi_cfg.pins.io3_pin = MICROPY_QSPI_DATA3;
     qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ4IO;
-    qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4IO;
+    qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4O;
 #endif
 
     // No callback for blocking API
@@ -142,5 +142,17 @@ void spi_flash_init(void) {
 void spi_flash_init_device(const external_flash_device* device) {
     check_quad_enable(device);
 
-    // TODO(tannewt): Adjust the speed for the found device.
+    // Switch to single output line if the device doesn't support quad programs.
+    if (!device->supports_qspi_writes) {
+        NRF_QSPI->IFCONFIG0 &= ~QSPI_IFCONFIG0_WRITEOC_Msk;
+        NRF_QSPI->IFCONFIG0 |= QSPI_IFCONFIG0_WRITEOC_PP;
+    }
+
+    // Speed up as much as we can.
+    uint8_t sckfreq = 0;
+    while (32000000 / (sckfreq + 1) > device->max_clock_speed_mhz * 1000000 && sckfreq < 16) {
+        sckfreq += 1;
+    }
+    NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_SCKFREQ_Msk;
+    NRF_QSPI->IFCONFIG1 |=  sckfreq << QSPI_IFCONFIG1_SCKDELAY_Pos;
 }

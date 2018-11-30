@@ -48,7 +48,6 @@ STATIC uint32_t claimed_pins[GPIO_COUNT];
 STATIC uint32_t never_reset_pins[GPIO_COUNT];
 
 void reset_all_pins(void) {
-    return;
     for (size_t i = 0; i < GPIO_COUNT; i++) {
         claimed_pins[i] = never_reset_pins[i];
     }
@@ -77,7 +76,6 @@ void reset_all_pins(void) {
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(uint8_t pin_number) {
-    return;
     if (pin_number == NO_PIN) {
         return;
     }
