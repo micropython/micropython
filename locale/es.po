@@ -1321,7 +1321,7 @@ msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 
 #: py/modbuiltins.c:363
 msgid "3-arg pow() not supported"
-msgstr ""
+msgstr "pow() con 3 argumentos no soportado"
 
 #: py/modbuiltins.c:517
 msgid "must use keyword argument for key function"
@@ -1360,7 +1360,7 @@ msgstr "No existe el archivo/directorio"
 
 #: py/moduerrno.c:145
 msgid "Input/output error"
-msgstr ""
+msgstr "error Input/output"
 
 #: py/moduerrno.c:147
 msgid "File exists"
@@ -1380,7 +1380,7 @@ msgstr ""
 
 #: py/obj.c:94
 msgid "  File \"%q\", line %d"
-msgstr ""
+msgstr "  Archivo \"%q\", línea %d"
 
 #: py/obj.c:96
 msgid "  File \"%q\""
@@ -1401,12 +1401,12 @@ msgstr "no se puede convertir %s a int"
 
 #: py/obj.c:320
 msgid "can't convert to float"
-msgstr ""
+msgstr "no se puede convertir a float"
 
 #: py/obj.c:323
 #, c-format
 msgid "can't convert %s to float"
-msgstr ""
+msgstr "no se puede convertir %s a float"
 
 #: py/obj.c:353
 msgid "can't convert to complex"
@@ -1498,7 +1498,7 @@ msgstr "lhs y rhs deben ser compatibles"
 
 #: py/objarray.c:444 shared-bindings/nvm/ByteArray.c:107
 msgid "array/bytes required on right side"
-msgstr ""
+msgstr "array/bytes requeridos en el lado derecho"
 
 #: py/objcomplex.c:203
 msgid "can't do truncated division of a complex number"
@@ -1526,7 +1526,7 @@ msgstr "popitem(): diccionario vacío"
 
 #: py/objdict.c:357
 msgid "dict update sequence has wrong length"
-msgstr ""
+msgstr "la secuencia de actualizacion del dict tiene una longitud incorrecta"
 
 #: py/objfloat.c:308 py/parsenum.c:331
 msgid "complex values not supported"
@@ -2253,7 +2253,7 @@ msgstr "tipo de bitmap no soportado"
 
 #: shared-bindings/displayio/Sprite.c:162
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
+msgstr "pixel_shader debe ser displayio.Palette o displayio.ColorConverter"
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
@@ -2269,7 +2269,7 @@ msgstr "no se puede convertir address a int"
 
 #: shared-bindings/i2cslave/I2CSlave.c:101
 msgid "address out of bounds"
-msgstr ""
+msgstr "address fuera de límites"
 
 #: shared-bindings/i2cslave/I2CSlave.c:107
 msgid "addresses is empty"
@@ -2291,7 +2291,7 @@ msgstr "Modo de ejecución inválido."
 
 #: shared-bindings/multiterminal/__init__.c:68
 msgid "Stream missing readinto() or write() method."
-msgstr ""
+msgstr "A Stream le falta el método readinto() o write()."
 
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
@@ -2299,7 +2299,7 @@ msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:104
 msgid "Array values should be single bytes."
-msgstr ""
+msgstr "Valores del array deben ser bytes individuales."
 
 #: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
 msgid "Unable to write to nvm."
@@ -2374,7 +2374,7 @@ msgstr "NIC no disponible"
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
-msgstr ""
+msgstr "sistema de archivos debe proporcionar método de montaje"
 
 #: shared-bindings/supervisor/__init__.c:93
 msgid "Brightness must be between 0 and 255"
