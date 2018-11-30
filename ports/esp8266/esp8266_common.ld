@@ -142,7 +142,7 @@ SECTIONS
         *lib/utils/*.o*(.literal*, .text*)
         *drivers/bus/*.o(.literal* .text*)
 
-        build/main.o(.literal* .text*)
+        build*/main.o(.literal* .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
         *help.o(.literal* .text*)
@@ -178,7 +178,7 @@ SECTIONS
         */frozen.o(.rodata.mp_frozen_content) /* frozen modules */
 
         /* for -mforce-l32 */
-        build/*.o(.rodata*)
+        build*/*.o(.rodata*)
 
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr
