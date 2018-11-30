@@ -2149,7 +2149,7 @@ msgstr "Numero erroneo de bytes dados"
 
 #: shared-bindings/bleio/Device.c:210
 msgid "Can't add services in Central mode"
-msgstr "No se pueden agregar servicio in modo Central"
+msgstr "No se pueden agregar servicio en modo Central"
 
 #: shared-bindings/bleio/Device.c:226
 msgid "Can't connect in Peripheral mode"
