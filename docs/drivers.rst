@@ -67,6 +67,8 @@ These libraries build on top of the low level APIs to simplify common tasks.
     DC Motor and Servo <https://circuitpython.readthedocs.io/projects/motor/en/latest/>
     SD Card <https://circuitpython.readthedocs.io/projects/sd/en/latest/>
     Image Load <https://circuitpython.readthedocs.io/projects/imageload/en/latest/>
+    miniQR Non-hardware QR code generator <https://circuitpython.readthedocs.io/projects/miniqr/en/latest/>
+    Slideshow <https://circuitpython.readthedocs.io/projects/slideshow/en/latest/>
     LED Animation <https://circuitpython.readthedocs.io/projects/led-animation/en/latest/>
 
 Blinky
@@ -115,16 +117,18 @@ Motion relating sensing including ``acceleration``, ``magnetic``, ``gyro``, and 
 
 .. toctree::
 
+    ADXL34x 3 Axis Accelerometer <https://circuitpython.readthedocs.io/projects/adxl34x/en/latest/>
     BNO055 Accelerometer, Magnetometer, Gyroscope and Absolution Orientation <https://circuitpython.readthedocs.io/projects/bno055/en/latest/>
     FXAS21002C Gyroscope <https://circuitpython.readthedocs.io/projects/fxas21002c/en/latest/>
     FXOS8700 Accelerometer <https://circuitpython.readthedocs.io/projects/fxos8700/en/latest/>
     GPS Global Position <https://circuitpython.readthedocs.io/projects/gps/en/latest/>
+    L3GD20 Gyroscope <https://circuitpython.readthedocs.io/projects/l3gd20/latest/>
     LIS3DH Accelerometer <https://circuitpython.readthedocs.io/projects/lis3dh/en/latest/>
     LSM303 Accelerometer and Magnetometer <https://circuitpython.readthedocs.io/projects/lsm303/en/latest/>
     LSM9DS0 Accelerometer, Magnetometer, Gyroscope and Temperature <https://circuitpython.readthedocs.io/projects/lsm9ds0/en/latest/>
     LSM9DS1 Accelerometer, Magnetometer, Gyroscope and Temperature <https://circuitpython.readthedocs.io/projects/lsm9ds1/en/latest/>
+    MLX90390 3 Axis Mangetometer <https://circuitpython.readthedocs.io/projects/mlx90393/en/latest/>
     MMA8451 3 axis accelerometer <https://circuitpython.readthedocs.io/projects/mma8451/en/latest/>
-    L3GD20 Gyroscope <https://circuitpython.readthedocs.io/projects/l3gd20/en/latest/>
 
 Environmental Sensors
 ----------------------
@@ -139,13 +143,18 @@ equivalent carbon dioxide (``eco2`` / ``eCO2``), and total volatile organic comp
     BME280 Temperature, Humidity and Pressure <https://circuitpython.readthedocs.io/projects/bme280/en/latest/>
     BME680 Temperature, Humidity, Pressure and Gas <https://circuitpython.readthedocs.io/projects/bme680/en/latest/>
     BMP280 Barometric Pressure and Altitude <https://circuitpython.readthedocs.io/projects/bmp280/en/latest/>
+    BMP3xx Barometric Pressure and Altimeter <https://circuitpython.readthedocs.io/projects/bmp3xx/en/latest/>
     CCS811 Air Quality <https://circuitpython.readthedocs.io/projects/ccs811/en/latest/>
     DHT Temperature and Humidity <https://circuitpython.readthedocs.io/projects/dht/en/latest/>
     DS18x20 Temperature <https://circuitpython.readthedocs.io/projects/ds18x20/en/latest/>
+    HTU21D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/htu21d/en/latest/>
     MAX31865 Thermocouple Amplifier, Temperature <https://circuitpython.readthedocs.io/projects/max31865/en/latest/>
     MAX31855 Thermocouple Amplifier, Temperature <https://circuitpython.readthedocs.io/projects/max31855/en/latest/>
+    MAX31856 Thermocouple Amplifier, Temperature <https://circuitpython.readthedocs.io/projects/max31856/en/latest/>
     MCP9808 Temperature <https://circuitpython.readthedocs.io/projects/mcp9808/en/latest/>
+    MP115A2 Barometric Pressure, Temperature <https://circuitpython.readthedocs.io/projects/mpl115a2/en/latest/>
     MPL3115A2 Barometric Pressure, Altitude and Temperature Sensor <https://circuitpython.readthedocs.io/projects/mpl3115a2/en/latest/>
+    MPRLS Ported Absolute Pressure <https://circuitpython.readthedocs.io/projects/mprls/en/latest/>
     SGP30 Air Quality <https://circuitpython.readthedocs.io/projects/sgp30/en/latest/>
     SHT31-D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/sht31d/en/latest/>
     Si7021 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/si7021/en/latest/>
@@ -168,6 +177,7 @@ These sensors detect light related attributes such as ``color``, ``light`` (unit
     TSL2591 High Dynamic Range Light Sensor <https://circuitpython.readthedocs.io/projects/tsl2591/en/latest/>
     VCNL4010 Proximity and Light <https://circuitpython.readthedocs.io/projects/vcnl4010/en/latest/>
     VEML6070 UV Index <https://circuitpython.readthedocs.io/projects/veml6070/en/latest/>
+    VEML6075 UV Index <https://circuitpython.readthedocs.io/projects/veml6075/en/latest/>
 
 Distance Sensors
 ------------------
@@ -176,9 +186,11 @@ These sensors measure the ``distance`` to another object and may also measure li
 
 .. toctree::
 
+    Garmin LIDARLite I2C <https://circuitpython.readthedocs.io/projects/lidarlite/en/latest/>
+    TFmini IR Time of Flight ~30cm - 12m <https://circuitpython.readthedocs.io/projects/tfmini/en/latest/>
     VL6180x 5 - 100 mm <https://circuitpython.readthedocs.io/projects/vl6180x/en/latest/>
     VL53L0x ~30 - 1000 mm <https://circuitpython.readthedocs.io/projects/vl53l0x/en/latest/>
-    HC-SR04 ultrasonic range sensors <https://circuitpython.readthedocs.io/projects/hcsr04/en/latest/>
+    HC-SR04 Ultrasonic Range Sensors <https://circuitpython.readthedocs.io/projects/hcsr04/en/latest/>
 
 Radio
 --------
@@ -187,6 +199,7 @@ These chips communicate to other's over radio.
 
 .. toctree::
 
+    Adafruit Bluefruit LE SPI Friend <https://circuitpython.readthedocs.io/projects/bluefruitspi/en/latest/>
     RFM9x LoRa <https://circuitpython.readthedocs.io/projects/rfm9x/en/latest/>
     RFM69 Packet Radio <https://circuitpython.readthedocs.io/projects/rfm69/en/latest/>
     PN532 NFC/RFID <https://circuitpython.readthedocs.io/projects/pn532/en/latest/>
@@ -217,9 +230,12 @@ Miscellaneous
 
 .. toctree::
 
+    CAP1188 8-Key Capacitive Touch <https://circuitpython.readthedocs.io/projects/cap1188/en/latest/>
     Si4713 Stereo FM Transmitter <https://circuitpython.readthedocs.io/projects/si4713/en/latest/>
     AMG88xx Grid-Eye IR Camera <https://circuitpython.readthedocs.io/projects/amg88xx/en/latest/>
     Trellis 4x4 Keypad <https://circuitpython.readthedocs.io/projects/trellis/en/latest/>
+    NeoTrellis 4x4 Keypad <https://circuitpython.readthedocs.io/projects/neotrellis/en/latest/>
+    NeoTrellis M4 4x8 Keypad <https://circuitpython.readthedocs.io/projects/trellism4/en/latest/>
     DRV2605 Haptic Motor Controller <https://circuitpython.readthedocs.io/projects/drv2605/en/latest/>
     MAX9744 Audio Amplifier  <https://circuitpython.readthedocs.io/projects/max9744/en/latest/>
     Si5351 Clock Generator <https://circuitpython.readthedocs.io/projects/si5351/en/latest/>
@@ -229,3 +245,6 @@ Miscellaneous
     Fingerprint <https://circuitpython.readthedocs.io/projects/fingerprint/en/latest/>
     STMPE610 Resistive Touchscreen <https://circuitpython.readthedocs.io/projects/stmpe610/en/latest/>
     Matrix Keypad <https://circuitpython.readthedocs.io/projects/matrixkeypad/en/latest/>
+    VS1053 Audio Codec <https://circuitpython.readthedocs.io/projects/vs1053/en/latest/>
+    FRAM Non-Volatile Memory <https://circuitpython.readthedocs.io/projects/fram/en/latest/>
+    74HC595 Shift Register <https://circuitpython.readthedocs.io/projects/74hc595/en/latest/>

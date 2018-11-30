@@ -6,7 +6,9 @@ rm -rf ports/nrf/build*
 
 # Alphabetical.
 HW_BOARDS="\
+arduino_mkr1300 \
 arduino_zero \
+catwan_usbstick \
 circuitplayground_express \
 circuitplayground_express_crickit \
 feather_huzzah \
@@ -25,8 +27,10 @@ grandcentral_m4_express \
 hallowing_m0_express \
 itsybitsy_m0_express \
 itsybitsy_m4_express \
+makerdiary_nrf52840_mdk \
 metro_m0_express \
 metro_m4_express \
+meowmeow \
 pca10056 \
 pca10059 \
 pirkey_m0 \
@@ -66,8 +70,9 @@ for board in $boards; do
     for language_file in $(ls locale/*.po); do
         language=$(basename -s .po $language_file)
         echo "Building $board for $language"
+        # There is a bug in the Huzzah Makefile that causes it to fail occasionally with -j > 1.
         if [[ $board == "feather_huzzah" ]]; then
-            make $PARALLEL -C ports/esp8266 TRANSLATION=$language BOARD=$board
+            make -C ports/esp8266 TRANSLATION=$language BOARD=$board
             (( exit_status = exit_status || $? ))
             temp_filename=ports/esp8266/build/firmware-combined.bin
             extension=bin
@@ -81,6 +86,11 @@ for board in $boards; do
             (( exit_status = exit_status || $? ))
             temp_filename=ports/nrf/build-$board-s140/firmware.uf2
             extension=uf2
+        elif [[ $board == "makerdiary_nrf52840_mdk" ]]; then
+            make $PARALLEL -C ports/nrf TRANSLATION=$language BOARD=$board SD=s140
+            (( exit_status = exit_status || $? ))
+            temp_filename=ports/nrf/build-$board-s140/firmware.hex
+            extension=hex
         else
             time make $PARALLEL -C ports/atmel-samd TRANSLATION=$language BOARD=$board
             (( exit_status = exit_status || $? ))

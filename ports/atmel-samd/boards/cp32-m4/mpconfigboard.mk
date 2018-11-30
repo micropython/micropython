@@ -1,0 +1,10 @@
+LD_FILE = boards/samd51x19-bootloader-external-flash.ld
+USB_VID = 0x239A
+USB_PID = 0x8021
+USB_PRODUCT = "CP32-M4"
+USB_MANUFACTURER = "Nadda-Reel Company LLC"
+
+QSPI_FLASH_FILESYSTEM = 1
+
+CHIP_VARIANT = SAMD51G19A
+CHIP_FAMILY = samd51

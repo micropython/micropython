@@ -30,13 +30,21 @@ Supported Boards
 Designed for CircuitPython
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+**M0 Boards**
+
 -  `Adafruit CircuitPlayground Express <https://www.adafruit.com/product/3333>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-circuit-playground-express/circuitpython-quickstart>`__)
 -  `Adafruit Feather M0 Express <https://www.adafruit.com/product/3403>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/kattni-circuitpython>`__)
--  `Adafruit Metro M0 Express <https://www.adafruit.com/product/3505>`_ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m0-express-designed-for-circuitpython/circuitpython>`__)
 -  `Adafruit Gemma M0 <https://www.adafruit.com/product/3501>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-gemma-m0/circuitpython>`__)
+-  `Adafruit Hallowing M0 Express <https://www.adafruit.com/product/3900>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-hallowing/circuitpython>`__)
 -  `Adafruit ItsyBitsy M0 Express <https://www.adafruit.com/product/3727>`_ (`CircuitPython Guide <https://learn.adafruit.com/introducing-itsy-bitsy-m0/circuitpython>`__)
+-  `Adafruit Metro M0 Express <https://www.adafruit.com/product/3505>`_ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m0-express-designed-for-circuitpython/circuitpython>`__)
 -  `Adafruit Trinket M0 <https://www.adafruit.com/product/3500>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-trinket-m0-circuitpython-arduino/circuitpython>`__)
--  `Adafruit Metro M4 <https://www.adafruit.com/product/3382>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/overview>`__)
+
+**M4 Boards**
+
+-  `Adafruit Feather M4 Express <https://www.adafruit.com/product/3857>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-feather-m4-express-atsamd51/circuitpython>`__)
+-  `Adafruit ItsyBitsy M4 Express <https://www.adafruit.com/product/3800>`__ (`CircuitPython Guide <https://learn.adafruit.com/introducing-adafruit-itsybitsy-m4/circuitpython>`__)
+-  `Adafruit Metro M4 Express <https://www.adafruit.com/product/3382>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/circuitpython>`__)
 
 Other
 ~~~~~
@@ -52,6 +60,13 @@ Other
    supported using the `Adafruit CircuitPython SD
    library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
 -  `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`__
+
+"Third-party" or "non-Adafruit" boards
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-  `Electronic Cats Meow Meow <https://electroniccats.com/gomeow/>`__
+-  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__ 
+
 
 Download
 --------

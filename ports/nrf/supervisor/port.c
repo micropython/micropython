@@ -31,12 +31,14 @@
 #include "nrf/cache.h"
 #include "nrf/clocks.h"
 #include "nrf/power.h"
+#include "nrf/timers.h"
 
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pulseio/PulseOut.h"
 #include "tick.h"
 
 safe_mode_t port_init(void) {
@@ -81,23 +83,23 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     pwmout_reset();
+    pulseout_reset();
+    timers_reset();
 
     reset_all_pins();
+}
+
+void reset_to_bootloader(void) {
+    enum { DFU_MAGIC_SERIAL = 0x4e };
+
+    NRF_POWER->GPREGRET = DFU_MAGIC_SERIAL;
+    NVIC_SystemReset();
 }
 
 
 void HardFault_Handler(void)
 {
-//	static volatile uint32_t reg;
-//	static volatile uint32_t reg2;
-//	static volatile uint32_t bfar;
-//	reg = SCB->HFSR;
-//	reg2 = SCB->CFSR;
-//	bfar = SCB->BFAR;
-//	for (int i = 0; i < 0; i++)
-//	{
-//		(void)reg;
-//		(void)reg2;
-//		(void)bfar;
-//	}
+    while (true) {
+        asm("");
+    }
 }

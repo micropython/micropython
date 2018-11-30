@@ -138,16 +138,16 @@ Constants
    Note that you don't need to specify these in a call to `usocket.socket()`,
    because `SOCK_STREAM` socket type automatically selects `IPPROTO_TCP`, and
    `SOCK_DGRAM` - `IPPROTO_UDP`. Thus, the only real use of these constants
-   is as an argument to `setsockopt()`.
+   is as an argument to `usocket.socket.setsockopt()`.
 
 .. data:: usocket.SOL_*
 
-   Socket option levels (an argument to `setsockopt()`). The exact
+   Socket option levels (an argument to `usocket.socket.setsockopt()`). The exact
    inventory depends on a ``MicroPython port``.
 
 .. data:: usocket.SO_*
 
-   Socket options (an argument to `setsockopt()`). The exact
+   Socket options (an argument to `usocket.socket.setsockopt()`). The exact
    inventory depends on a ``MicroPython port``.
 
 Constants specific to WiPy:

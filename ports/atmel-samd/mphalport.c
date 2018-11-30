@@ -46,42 +46,8 @@
 #include "mphalport.h"
 #include "reset.h"
 #include "tick.h"
-#include "usb.h"
 
-extern struct usart_module usart_instance;
 extern uint32_t common_hal_mcu_processor_get_frequency(void);
-
-int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        // if (reload_requested) {
-        //     return CHAR_CTRL_D;
-        // }
-        if (usb_bytes_available()) {
-            #ifdef MICROPY_HW_LED_RX
-            gpio_toggle_pin_level(MICROPY_HW_LED_RX);
-            #endif
-            return usb_read();
-        }
-    }
-}
-
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    #ifdef MICROPY_HW_LED_TX
-    gpio_toggle_pin_level(MICROPY_HW_LED_TX);
-    #endif
-
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    if (boot_output_file != NULL) {
-        UINT bytes_written = 0;
-        f_write(boot_output_file, str, len, &bytes_written);
-    }
-    #endif
-
-    usb_write(str, len);
-}
 
 void mp_hal_delay_ms(mp_uint_t delay) {
     uint64_t start_tick = ticks_ms;

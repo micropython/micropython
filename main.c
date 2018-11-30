@@ -51,8 +51,13 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
+
+#ifdef MICROPY_PY_NETWORK
+#include "shared-module/network/__init__.h"
+#endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -103,15 +108,22 @@ void start_mp(supervisor_allocation* heap) {
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
+    // Prioritize .frozen over /lib.
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
 
     mp_obj_list_init(mp_sys_argv, 0);
+
+    #if MICROPY_PY_NETWORK
+    network_module_init();
+    #endif
 }
 
 void stop_mp(void) {
-
+    #if MICROPY_PY_NETWORK
+    network_module_deinit();
+    #endif
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
@@ -378,6 +390,8 @@ int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 
+    // Turn on LEDs
+    init_status_leds();
     rgb_led_status_init();
 
     stack_init();

@@ -45,13 +45,17 @@ bool speaker_enable_in_use;
 
 // Bit mask of claimed pins on each of up to two ports. nrf52832 has one port; nrf52840 has two.
 STATIC uint32_t claimed_pins[GPIO_COUNT];
+STATIC uint32_t never_reset_pins[GPIO_COUNT];
 
 void reset_all_pins(void) {
     for (size_t i = 0; i < GPIO_COUNT; i++) {
-        claimed_pins[i] = 0;
+        claimed_pins[i] = never_reset_pins[i];
     }
 
     for (uint32_t pin = 0; pin < NUMBER_OF_PINS; ++pin) {
+        if (!(never_reset_pins[nrf_pin_port(pin)] & (1 << nrf_relative_pin_number(pin)))) {
+            continue;
+        }
         nrf_gpio_cfg_default(pin);
     }
 
@@ -106,6 +110,11 @@ void reset_pin_number(uint8_t pin_number) {
         nrf_gpio_pin_write(pin_number, false);
     }
     #endif
+}
+
+
+void never_reset_pin_number(uint8_t pin_number) {
+    never_reset_pins[nrf_pin_port(pin_number)] |= 1 << nrf_relative_pin_number(pin_number);
 }
 
 void claim_pin(const mcu_pin_obj_t* pin) {

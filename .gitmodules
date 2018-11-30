@@ -75,10 +75,10 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Crickit
 [submodule "ports/nrf/nrfx"]
 	path = ports/nrf/nrfx
-	url = https://github.com/NordicSemiconductor/nrfx.git
+	url = https://github.com/adafruit/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = https://github.com/hathach/tinyusb.git
+	url = https://github.com/tannewt/tinyusb.git
 	branch = develop
 [submodule "tools/huffman"]
 	path = tools/huffman

@@ -5,6 +5,8 @@ USB_PRODUCT = "CircuitPlayground Express with Crickit libraries"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
 SPI_FLASH_FILESYSTEM = 1
+EXTERNAL_FLASH_DEVICE_COUNT = 2
+EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
 # Turn off longints for Crickit build to make room for additional frozen libs.
 LONGINT_IMPL = NONE
 

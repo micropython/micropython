@@ -25,6 +25,7 @@
  */
 
 #include "py/objproperty.h"
+#include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/Adapter.h"
 
 //| .. currentmodule:: bleio
@@ -57,8 +58,6 @@
 //|         MAC address of the BLE adapter. (read-only)
 //|
 
-#define BLE_ADDRESS_LEN 17
-
 STATIC mp_obj_t bleio_adapter_get_enabled(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_bleio_adapter_get_enabled());
 }
@@ -81,16 +80,12 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
 };
 
 STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
-    vstr_t vstr;
-    vstr_init(&vstr, BLE_ADDRESS_LEN);
+    mp_obj_t obj = bleio_address_type.make_new(&bleio_address_type, 1, 0, mp_const_none);
+    bleio_address_obj_t *address = MP_OBJ_TO_PTR(obj);
 
-    common_hal_bleio_adapter_get_address(&vstr);
+    common_hal_bleio_adapter_get_address(address);
 
-    const mp_obj_t mac_str = mp_obj_new_str(vstr.buf, vstr.len);
-
-    vstr_clear(&vstr);
-
-    return mac_str;
+    return obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_address_obj, bleio_adapter_get_address);
 

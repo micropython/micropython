@@ -14,5 +14,6 @@ ifeq ($(LONGINT_IMPL),LONGLONG)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
 endif
 
-
 INTERNAL_LIBM = 1
+
+USB_SERIAL_NUMBER_LENGTH = 32

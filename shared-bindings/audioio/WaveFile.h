@@ -40,5 +40,7 @@ void common_hal_audioio_wavefile_deinit(audioio_wavefile_obj_t* self);
 bool common_hal_audioio_wavefile_deinited(audioio_wavefile_obj_t* self);
 uint32_t common_hal_audioio_wavefile_get_sample_rate(audioio_wavefile_obj_t* self);
 void common_hal_audioio_wavefile_set_sample_rate(audioio_wavefile_obj_t* self, uint32_t sample_rate);
+uint8_t common_hal_audioio_wavefile_get_bits_per_sample(audioio_wavefile_obj_t* self);
+uint8_t common_hal_audioio_wavefile_get_channel_count(audioio_wavefile_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H

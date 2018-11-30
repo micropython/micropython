@@ -39,6 +39,7 @@ the following links:
 * Adafruit [Feather nRF52](boards/feather_nrf52832/README.md): 512KB Flash, 64KB SRAM
 * Adafruit [Feather nRF52840](boards/feather_nrf52840_express/README.md): 1MB Flash, 256KB SRAM
 * Nordic PCA10056 see [Feather nRF52840](boards/pca10056/README.md)
+* MakerDiary NRF52840 MDK see [its README](boards/makerdiary_nrf52840_mdk/README.md)
 
 For all other board targets, see the generic notes below.
 
@@ -60,7 +61,7 @@ To build and flash issue the following command inside the ports/nrf/ folder:
 
 First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
 
-     ./drivers/bluetooth/download_ble_stack.sh
+     ./bluetooth/download_ble_stack.sh
 
 If the Bluetooth stacks has been downloaded, compile the target with the following command:
 
@@ -80,6 +81,7 @@ pca10040                 | s132                    | Peripheral and Scanner | [S
 pca10056                 | s140                    | Peripheral and Scanner | [Segger](#segger-targets)
 feather_nrf52832         | s132                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
 feather_nrf52840_express | s140                    | Peripheral and Scanner | UF2 bootloader
+makerdiary_nrf52840_mdk  | s140                    | Peripheral and Scanner | pyocd or ARM mbed DAPLink
 
 ## Segger Targets
 

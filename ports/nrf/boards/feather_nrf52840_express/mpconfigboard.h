@@ -25,20 +25,31 @@
  * THE SOFTWARE.
  */
 
+#include "nrfx/hal/nrf_gpio.h"
+
 #define FEATHER52840
 
 #define MICROPY_HW_BOARD_NAME       "Adafruit Feather nRF52840 Express"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "Feather52840Express"
 
-#define MICROPY_HW_NEOPIXEL         (&pin_P0_13)
+#define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
 
-#define MICROPY_QSPI_DATA0          (&pin_P1_09)
-#define MICROPY_QSPI_DATA1          (&pin_P0_11)
-#define MICROPY_QSPI_DATA2          (&pin_P0_12)
-#define MICROPY_QSPI_DATA3          (&pin_P0_14)
-#define MICROPY_QSPI_SCK            (&pin_P0_08)
-#define MICROPY_QSPI_CS             (&pin_P1_08)
+#ifdef QSPI_FLASH_FILESYSTEM
+#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 17)
+#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 22)
+#define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 23)
+#define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(0, 21)
+#define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(0, 19)
+#define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(0, 20)
+#endif
+
+#ifdef SPI_FLASH_FILESYSTEM
+#define SPI_FLASH_MOSI_PIN &pin_P0_17
+#define SPI_FLASH_MISO_PIN &pin_P0_22
+#define SPI_FLASH_SCK_PIN &pin_P0_19
+#define SPI_FLASH_CS_PIN &pin_P0_20
+#endif
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
@@ -49,23 +60,14 @@
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-// TODO #include "external_flash/devices.h"
-
-#define EXTERNAL_FLASH_DEVICE_COUNT 1
-#define EXTERNAL_FLASH_DEVICES GD25Q16C
-
-#define EXTERNAL_FLASH_QSPI_DUAL
-
-// TODO include "external_flash/external_flash.h"
-
 #define BOARD_HAS_CRYSTAL 1
 
-#define DEFAULT_I2C_BUS_SCL         (&pin_P1_11)
-#define DEFAULT_I2C_BUS_SDA         (&pin_P1_12)
+#define DEFAULT_I2C_BUS_SCL         (&pin_P0_11)
+#define DEFAULT_I2C_BUS_SDA         (&pin_P0_12)
 
-#define DEFAULT_SPI_BUS_SCK         (&pin_P0_20)
-#define DEFAULT_SPI_BUS_MOSI        (&pin_P0_23)
-#define DEFAULT_SPI_BUS_MISO        (&pin_P0_22)
+#define DEFAULT_SPI_BUS_SCK         (&pin_P0_14)
+#define DEFAULT_SPI_BUS_MOSI        (&pin_P0_13)
+#define DEFAULT_SPI_BUS_MISO        (&pin_P0_15)
 
-#define DEFAULT_UART_BUS_RX         (&pin_P1_0)
-#define DEFAULT_UART_BUS_TX         (&pin_P0_24)
+#define DEFAULT_UART_BUS_RX         (&pin_P0_24)
+#define DEFAULT_UART_BUS_TX         (&pin_P0_25)

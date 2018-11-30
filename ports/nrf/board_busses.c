@@ -30,8 +30,8 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
-#include "mpconfigboard.h"
 #include "nrf/pins.h"
+#include "py/mpconfig.h"
 #include "py/runtime.h"
 
 #if !defined(DEFAULT_I2C_BUS_SDA) || !defined(DEFAULT_I2C_BUS_SCL)

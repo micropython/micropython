@@ -41,8 +41,6 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
 volatile uint8_t usb_rx_count;
 volatile bool mp_cdc_enabled;
 
-FIL* boot_output_file;
-
 int receive_usb(void);
 
 void mp_hal_set_interrupt_char(int c);

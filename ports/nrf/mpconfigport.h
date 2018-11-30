@@ -58,7 +58,7 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE              (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL                  (1)
 #define MICROPY_FATFS_RPATH                      (2)
-#define MICROPY_FATFS_MULTI_PARTITION            (0)
+#define MICROPY_FATFS_MULTI_PARTITION            (1)
 #define MICROPY_FATFS_NUM_PERSISTENT             (1)
 
 //#define MICROPY_FATFS_MAX_SS                   (4096)
@@ -90,7 +90,6 @@
 #define MICROPY_PY_BUILTINS_COMPILE              (1)
 #define MICROPY_PY_BUILTINS_HELP                 (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES         (1)
-#define MICROPY_PY_BUILTINS_HELP_TEXT            circuitpython_help_text
 #define MICROPY_PY_BUILTINS_INPUT                (1)
 #define MICROPY_MODULE_BUILTIN_INIT              (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS           (0)
@@ -113,7 +112,7 @@
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS           (0)
 #define MICROPY_PY_UCTYPES                       (0)
 #define MICROPY_PY_UZLIB                         (0)
-#define MICROPY_PY_UJSON                         (0)
+#define MICROPY_PY_UJSON                         (1)
 #define MICROPY_PY_URE                           (0)
 #define MICROPY_PY_UHEAPQ                        (0)
 #define MICROPY_PY_UHASHLIB                      (1)
@@ -129,21 +128,14 @@
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
 #if BLUETOOTH_SD
-#define MICROPY_PY_BLEIO                         (1)
-#define MICROPY_PY_BLE_NUS                       (0)
-#define MICROPY_PY_UBLUEPY                       (1)
-#define MICROPY_PY_UBLUEPY_PERIPHERAL            (1)
-#define MICROPY_PY_UBLUEPY_CENTRAL               (1)
-#define BLUETOOTH_WEBBLUETOOTH_REPL              (0)
+    #define MICROPY_PY_BLEIO                     (1)
+    #define MICROPY_PY_BLE_NUS                   (0)
+#else
+    #ifndef MICROPY_PY_BLEIO
+        #define MICROPY_PY_BLEIO                 (0)
+    #endif
 #endif
 
-#ifndef MICROPY_PY_BLEIO
-#define MICROPY_PY_BLEIO                        (0)
-#endif
-
-#ifndef MICROPY_PY_UBLUEPY
-#define MICROPY_PY_UBLUEPY                      (0)
-#endif
 
 // type definitions for the specific machine
 
@@ -184,16 +176,8 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t usb_hid_module;
 extern const struct _mp_obj_module_t bleio_module;
 
-extern const struct _mp_obj_module_t mp_module_ubluepy;
-
-#if MICROPY_PY_UBLUEPY
-#define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
-#else
-#define UBLUEPY_MODULE
-#endif
-
 #if MICROPY_PY_BLEIO
-#define BLEIO_MODULE                        { MP_ROM_QSTR(MP_QSTR_bleio), MP_ROM_PTR(&bleio_module) },
+#define BLEIO_MODULE { MP_ROM_QSTR(MP_QSTR_bleio), MP_ROM_PTR(&bleio_module) },
 #else
 #define BLEIO_MODULE
 #endif
@@ -220,9 +204,9 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_json            ), (mp_obj_t)&mp_module_ujson        }, \
     USBHID_MODULE  \
-    BLEIO_MODULE   \
-    UBLUEPY_MODULE \
+    BLEIO_MODULE
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
@@ -232,9 +216,12 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#include "supervisor/flash_root_pointers.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t gamepad_singleton; \
+    FLASH_ROOT_POINTERS \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

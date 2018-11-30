@@ -5,6 +5,8 @@ USB_PRODUCT = "CircuitPlayground Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
 SPI_FLASH_FILESYSTEM = 1
+EXTERNAL_FLASH_DEVICE_COUNT = 2
+EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
 LONGINT_IMPL = MPZ
 
 CHIP_VARIANT = SAMD21G18A
@@ -17,3 +19,6 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Thermistor
+
+#Adding per @danh to reduce memory usage and get the latest changes in
+CFLAGS_INLINE_LIMIT = 55

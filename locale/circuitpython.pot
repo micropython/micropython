@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-21 12:23-0400\n"
+"POT-Creation-Date: 2018-11-09 16:20-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -147,78 +147,78 @@ msgstr ""
 msgid "invalid arguments"
 msgstr ""
 
-#: lib/utils/pyexec.c:97 py/builtinimport.c:253
+#: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
 msgstr ""
 
-#: main.c:143
+#: main.c:154
 msgid " output:\n"
 msgstr ""
 
-#: main.c:157 main.c:230
+#: main.c:168 main.c:241
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
 
-#: main.c:159
+#: main.c:170
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr ""
 
-#: main.c:161 main.c:232
+#: main.c:172 main.c:243
 msgid "Auto-reload is off.\n"
 msgstr ""
 
-#: main.c:175
+#: main.c:186
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
 
-#: main.c:191
+#: main.c:202
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 
-#: main.c:239
+#: main.c:250
 msgid "You requested starting safe mode by "
 msgstr ""
 
-#: main.c:242
+#: main.c:253
 msgid "To exit, please reset the board without "
 msgstr ""
 
-#: main.c:249
+#: main.c:260
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 
-#: main.c:251
+#: main.c:262
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr ""
 
-#: main.c:252
+#: main.c:263
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 
-#: main.c:255
+#: main.c:266
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
 msgstr ""
 
-#: main.c:256
+#: main.c:267
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
 
-#: main.c:260
+#: main.c:271
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 
-#: main.c:416
+#: main.c:429
 msgid "soft reboot\n"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c:285
+#: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
 msgstr ""
@@ -291,12 +291,12 @@ msgid "Too many channels in sample."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:339
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
 msgid "No DMA channel found"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:341
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 
@@ -312,43 +312,44 @@ msgstr ""
 msgid "sampling rate out of range"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:69
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
 msgid "DAC already in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:73
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
 msgid "Right channel unsupported"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:76
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:84
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
 msgid "Invalid pin for left channel"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:88
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
 msgid "Invalid pin for right channel"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:91
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
 msgid "Cannot output both channels on the same pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:176
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
+#: ports/nrf/common-hal/pulseio/PulseOut.c:107
 msgid "All timers in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:218
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:297
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
@@ -358,10 +359,10 @@ msgid "Not enough pins available"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
-#: ports/atmel-samd/common-hal/busio/SPI.c:132
+#: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:119
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:77
+#: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
 msgstr ""
 
@@ -378,10 +379,12 @@ msgid "bytes > 8 bits not supported"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:72
+#: ports/nrf/common-hal/busio/UART.c:82
 msgid "tx and rx cannot both be None"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:145
+#: ports/nrf/common-hal/busio/UART.c:115
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
@@ -390,15 +393,17 @@ msgid "Could not initialize UART"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:240
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "No RX pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:294
+#: ports/nrf/common-hal/busio/UART.c:195
 msgid "No TX pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:142
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c:147
 msgid "Cannot get pull while in output mode"
 msgstr ""
 
@@ -409,7 +414,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:227
+#: ports/nrf/common-hal/pulseio/PWMOut.c:119
+#: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
 msgstr ""
 
@@ -457,28 +463,8 @@ msgstr ""
 msgid "calibration value out of range +/-127"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/storage/__init__.c:48
-msgid "Cannot remount '/' when USB is active."
-msgstr ""
-
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:78
-#: ports/nrf/common-hal/usb_hid/Device.c:45
-#, c-format
-msgid "Buffer incorrect size. Should be %d bytes."
-msgstr ""
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:53
-msgid "USB Busy"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/usb_hid/Device.c:82
-#: ports/nrf/common-hal/usb_hid/Device.c:59
-msgid "USB Error"
 msgstr ""
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
@@ -690,24 +676,156 @@ msgstr ""
 msgid "AnalogOut functionality not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:91
+#: ports/nrf/common-hal/bleio/Adapter.c:41
+#, c-format
+msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:125
+#, c-format
+msgid "Failed to change softdevice state, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:135
+#, c-format
+msgid "Failed to get softdevice state, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Adapter.c:155
+#, c-format
+msgid "Failed to get local address, error: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:52
+#, c-format
+msgid "Failed to write gatts value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:76
+#, c-format
+msgid "Failed to notify attribute value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:91
+#, c-format
+msgid "Failed to read attribute value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:119
+#: ports/nrf/common-hal/bleio/Device.c:272
+#: ports/nrf/common-hal/bleio/Device.c:307
+#, c-format
+msgid "Failed to acquire mutex, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:126
+#, c-format
+msgid "Failed to write attribute value, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:138
+#: ports/nrf/common-hal/bleio/Device.c:284
+#: ports/nrf/common-hal/bleio/Device.c:319
+#: ports/nrf/common-hal/bleio/Device.c:354
+#: ports/nrf/common-hal/bleio/Device.c:391
+#, c-format
+msgid "Failed to release mutex, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:81
+#: ports/nrf/common-hal/bleio/Device.c:114
+msgid "Can not fit data into the advertisment packet"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:266
+#, c-format
+msgid "Failed to discover serivices, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:403
+#: ports/nrf/common-hal/bleio/Scanner.c:76
+#, c-format
+msgid "Failed to continue scanning, status: 0x%0xlX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:436
+#, c-format
+msgid "Failed to connect, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:513
+#, c-format
+msgid "Failed to add service, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:531
+#, c-format
+msgid "Failed to start advertisment, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:549
+#, c-format
+msgid "Failed to stop advertisment, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:575
+#: ports/nrf/common-hal/bleio/Scanner.c:103
+#, c-format
+msgid "Failed to start scanning, status: 0x%0xlX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:592
+#, c-format
+msgid "Failed to create mutex, status: 0x%0xlX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Service.c:83
+#, c-format
+msgid "Failed to add characteristic, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:97
+#, c-format
+msgid "Failed to add Vendor Specific UUID, status: 0x%08lX"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:102
+msgid "Invalid UUID string length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:109
+#: shared-bindings/bleio/Characteristic.c:125
+#: shared-bindings/bleio/Service.c:105
+msgid "Invalid UUID parameter"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/I2C.c:96
 msgid "All I2C peripherals are in use"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/SPI.c:109
+#: ports/nrf/common-hal/busio/SPI.c:133
 msgid "All SPI peripherals are in use"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/SPI.c:170
-msgid "Baud rate too high for this SPI peripheral"
+#: ports/nrf/common-hal/busio/UART.c:48
+#, c-format
+msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:43 ports/nrf/common-hal/busio/UART.c:47
-#: ports/nrf/common-hal/busio/UART.c:51 ports/nrf/common-hal/busio/UART.c:60
-#: ports/nrf/common-hal/busio/UART.c:66 ports/nrf/common-hal/busio/UART.c:71
-#: ports/nrf/common-hal/busio/UART.c:76 ports/nrf/common-hal/busio/UART.c:81
-#: ports/nrf/common-hal/busio/UART.c:86 ports/nrf/common-hal/busio/UART.c:90
-msgid "busio.UART not yet implemented"
+#: ports/nrf/common-hal/busio/UART.c:86
+msgid "Invalid buffer size"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:90
+msgid "Odd parity is not supported"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
+#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
+#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
+#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
+#: ports/nrf/common-hal/busio/UART.c:364
+msgid "busio.UART not available"
 msgstr ""
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
@@ -715,105 +833,8 @@ msgstr ""
 msgid "Can not get temperature. status: 0x%02x"
 msgstr ""
 
-#: ports/nrf/drivers/bluetooth/ble_drv.c:199
-msgid "Cannot apply GAP parameters."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:213
-msgid "Cannot set PPCP parameters."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:245
-msgid "Can not query for the device address."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:264
-msgid "Can not add Vendor Specific 128-bit UUID."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:284
-#: ports/nrf/drivers/bluetooth/ble_drv.c:298
-msgid "Can not add Service."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:373
-msgid "Can not add Characteristic."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:400
-msgid "Can not apply device name in the stack."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:464
-#: ports/nrf/drivers/bluetooth/ble_drv.c:514
-msgid "Can not encode UUID, to check length."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:470
-#: ports/nrf/drivers/bluetooth/ble_drv.c:520
-msgid "Can encode UUID into the advertisment packet."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:545
-msgid "Can not fit data into the advertisment packet."
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:558
-#: ports/nrf/drivers/bluetooth/ble_drv.c:604
-#, c-format
-msgid "Can not apply advertisment data. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:614
-#, c-format
-msgid "Can not start advertisment. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:631
-#, c-format
-msgid "Can not stop advertisment. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:650
-#: ports/nrf/drivers/bluetooth/ble_drv.c:726
-#, c-format
-msgid "Can not read attribute value. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:667
-#: ports/nrf/drivers/bluetooth/ble_drv.c:756
-#, c-format
-msgid "Can not write attribute value. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:691
-#, c-format
-msgid "Can not notify attribute value. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:784
-#, c-format
-msgid "Can not start scanning. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/drivers/bluetooth/ble_drv.c:829
-#, c-format
-msgid "Can not connect. status: 0x%02x"
-msgstr ""
-
-#: ports/nrf/modules/ubluepy/ubluepy_characteristic.c:68
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:80
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:132
-#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:137
-msgid "Invalid UUID parameter"
-msgstr ""
-
-#: ports/nrf/modules/ubluepy/ubluepy_service.c:73
-msgid "Invalid Service type"
-msgstr ""
-
-#: ports/nrf/modules/ubluepy/ubluepy_uuid.c:127
-msgid "Invalid UUID string length"
+#: ports/nrf/common-hal/pulseio/PWMOut.c:161
+msgid "All PWM peripherals are in use"
 msgstr ""
 
 #: ports/unix/modffi.c:138
@@ -917,19 +938,33 @@ msgstr ""
 msgid "bad compile mode"
 msgstr ""
 
-#: py/builtinimport.c:338
+#: py/builtinhelp.c:137
+msgid "Plus any modules on the filesystem\n"
+msgstr ""
+
+#: py/builtinhelp.c:183
+#, c-format
+msgid ""
+"Welcome to Adafruit CircuitPython %s!\n"
+"\n"
+"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"\n"
+"To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
+
+#: py/builtinimport.c:336
 msgid "cannot perform relative import"
 msgstr ""
 
-#: py/builtinimport.c:422 py/builtinimport.c:534
+#: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
 msgstr ""
 
-#: py/builtinimport.c:425 py/builtinimport.c:537
+#: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
 msgstr ""
 
-#: py/builtinimport.c:512
+#: py/builtinimport.c:510
 msgid "relative import"
 msgstr ""
 
@@ -1078,6 +1113,72 @@ msgstr ""
 msgid "'data' requires integer arguments"
 msgstr ""
 
+#: py/emitinlinethumb.c:102
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr ""
+
+#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
+#, c-format
+msgid "'%s' expects at most r%d"
+msgstr ""
+
+#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
+#, c-format
+msgid "'%s' expects a register"
+msgstr ""
+
+#: py/emitinlinethumb.c:211
+#, c-format
+msgid "'%s' expects a special register"
+msgstr ""
+
+#: py/emitinlinethumb.c:239
+#, c-format
+msgid "'%s' expects an FPU register"
+msgstr ""
+
+#: py/emitinlinethumb.c:292
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr ""
+
+#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
+#, c-format
+msgid "'%s' expects an integer"
+msgstr ""
+
+#: py/emitinlinethumb.c:304
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr ""
+
+#: py/emitinlinethumb.c:328
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr ""
+
+#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
+#, c-format
+msgid "'%s' expects a label"
+msgstr ""
+
+#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
+msgid "label '%q' not defined"
+msgstr ""
+
+#: py/emitinlinethumb.c:806
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr ""
+
+#: py/emitinlinethumb.c:810
+msgid "branch not in range"
+msgstr ""
+
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
 msgstr ""
@@ -1086,28 +1187,9 @@ msgstr ""
 msgid "parameters must be registers in sequence a2 to a5"
 msgstr ""
 
-#: py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr ""
-
-#: py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr ""
-
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
-
-#: py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr ""
-
-#: py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
 msgstr ""
 
 #: py/emitinlinextensa.c:327
@@ -1929,7 +2011,7 @@ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:223
+#: shared-bindings/audioio/AudioOut.c:226
 msgid "Not playing"
 msgstr ""
 
@@ -1966,6 +2048,22 @@ msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
 
+#: shared-bindings/audioio/Mixer.c:94
+msgid "Invalid voice count"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:99
+msgid "Invalid channel count"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:103
+msgid "Sample rate must be positive"
+msgstr ""
+
+#: shared-bindings/audioio/Mixer.c:107
+msgid "bits_per_sample must be 8 or 16"
+msgstr ""
+
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -1990,20 +2088,44 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:168
+#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
 msgid "Invalid polarity"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:172
+#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
 msgid "Invalid phase"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:176
+#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
 msgid "Invalid number of bits"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:341
+#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
+msgstr ""
+
+#: shared-bindings/bleio/Address.c:101
+msgid "Wrong address length"
+msgstr ""
+
+#: shared-bindings/bleio/Address.c:107
+msgid "Wrong number of bytes provided"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:210
+msgid "Can't add services in Central mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:226
+msgid "Can't connect in Peripheral mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:256
+msgid "Can't change the name in Central mode"
+msgstr ""
+
+#: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
+msgid "Can't advertise in Central mode"
 msgstr ""
 
 #: shared-bindings/busio/I2C.c:120
@@ -2120,7 +2242,7 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
-#: shared-bindings/pulseio/PulseOut.c:75
+#: shared-bindings/pulseio/PulseOut.c:76
 msgid "Expected a %q"
 msgstr ""
 
@@ -2163,7 +2285,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
-"PWM frequency not writeable when variable_frequency is False on construction."
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:275
@@ -2182,7 +2304,7 @@ msgstr ""
 msgid "Read-only"
 msgstr ""
 
-#: shared-bindings/pulseio/PulseOut.c:134
+#: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
 msgstr ""
 
@@ -2211,6 +2333,10 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
+#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
+msgid "no available NIC"
+msgstr ""
+
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
 msgstr ""
@@ -2235,15 +2361,15 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:250
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:255
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:226 shared-bindings/time/__init__.c:259
+#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
@@ -2254,6 +2380,34 @@ msgstr ""
 #: shared-bindings/util.c:38
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
+msgid "Couldn't allocate first buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
+msgid "Couldn't allocate second buffer"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:82
+msgid "Voice index too high"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:85
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:88
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:91
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+#: shared-module/audioio/Mixer.c:100
+msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 
 #: shared-module/audioio/WaveFile.c:61
@@ -2276,39 +2430,31 @@ msgstr ""
 msgid "Invalid file"
 msgstr ""
 
-#: shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
-msgstr ""
-
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:45
+#: shared-module/bitbangio/SPI.c:44
 msgid "Clock pin init failed."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:51
+#: shared-module/bitbangio/SPI.c:50
 msgid "MOSI pin init failed."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:62
+#: shared-module/bitbangio/SPI.c:61
 msgid "MISO pin init failed."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:122
+#: shared-module/bitbangio/SPI.c:121
 msgid "Cannot write without MOSI pin."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:177
+#: shared-module/bitbangio/SPI.c:176
 msgid "Cannot read without MISO pin."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c:241
+#: shared-module/bitbangio/SPI.c:240
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
 
@@ -2342,10 +2488,27 @@ msgstr ""
 msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr ""
 
+#: shared-module/storage/__init__.c:155
+msgid "Cannot remount '/' when USB is active."
+msgstr ""
+
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
 msgstr ""
 
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
+msgstr ""
+
+#: shared-module/usb_hid/Device.c:45
+#, c-format
+msgid "Buffer incorrect size. Should be %d bytes."
+msgstr ""
+
+#: shared-module/usb_hid/Device.c:53
+msgid "USB Busy"
+msgstr ""
+
+#: shared-module/usb_hid/Device.c:59
+msgid "USB Error"
 msgstr ""

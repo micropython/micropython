@@ -20,8 +20,6 @@
 #define MICROPY_COMP_CONST          (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
-// Turn off for consistency
-#define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
@@ -39,7 +37,6 @@
 #define MICROPY_PY_BUILTINS_ENUMERATE (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
-#define MICROPY_PY_BUILTINS_HELP_TEXT circuitpython_help_text
 #define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_FILTER  (1)
 #define MICROPY_PY_BUILTINS_SET     (1)
@@ -57,7 +54,6 @@
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_IO               (0)
 #define MICROPY_PY_URANDOM          (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
 #define MICROPY_PY_STRUCT           (0)
@@ -66,6 +62,18 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
+
+#ifndef MICROPY_PY_NETWORK
+#define MICROPY_PY_NETWORK          (0)
+#endif
+
+#ifndef MICROPY_PY_WIZNET5K
+#define MICROPY_PY_WIZNET5K         (0)
+#endif
+
+#ifndef MICROPY_PY_CC3K
+#define MICROPY_PY_CC3K             (0)
+#endif
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -84,7 +92,6 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
-#define MICROPY_MODULE_WEAK_LINKS   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_ENABLE_FINALISER    (1)
@@ -121,6 +128,9 @@ typedef unsigned mp_uint_t; // must be pointer size
 
 typedef long mp_off_t;
 
+// XXX check we don't need this
+#define MICROPY_THREAD_YIELD()
+
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 #define mp_type_fileio mp_type_vfs_fat_fileio
@@ -140,15 +150,48 @@ typedef long mp_off_t;
 #include "include/sam.h"
 
 #ifdef SAMD21
-#define CIRCUITPY_MCU_FAMILY samd21
+#define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
-#define PORT_HEAP_SIZE (16384 + 4096)
+#define PORT_HEAP_SIZE                              (16384 + 4096)
+#define SPI_FLASH_MAX_BAUDRATE 8000000
+#define CIRCUITPY_DEFAULT_STACK_SIZE                4096
+#define MICROPY_CPYTHON_COMPAT                      (0)
+#define MICROPY_MODULE_WEAK_LINKS                   (0)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
+#define MICROPY_PY_FUNCTION_ATTRS                   (0)
+#define MICROPY_PY_IO                               (0)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
+#define MICROPY_PY_SYS_EXC_INFO                     (0)
+#define MICROPY_PY_UERRNO_LIST \
+    X(EPERM) \
+    X(ENOENT) \
+    X(EIO) \
+    X(EAGAIN) \
+    X(ENOMEM) \
+    X(EACCES) \
+    X(EEXIST) \
+    X(ENODEV) \
+    X(EISDIR) \
+    X(EINVAL) \
+
 #endif
 
 #ifdef SAMD51
-#define CIRCUITPY_MCU_FAMILY samd51
+#define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
-#define PORT_HEAP_SIZE (0x20000) // 128KiB
+#define PORT_HEAP_SIZE                              (0x20000) // 128KiB
+#define SPI_FLASH_MAX_BAUDRATE 24000000
+#define CIRCUITPY_DEFAULT_STACK_SIZE                8192
+#define MICROPY_CPYTHON_COMPAT                      (1)
+#define MICROPY_MODULE_WEAK_LINKS                   (1)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
+#define MICROPY_PY_FUNCTION_ATTRS                   (1)
+#define MICROPY_PY_IO                               (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
+#define MICROPY_PY_SYS_EXC_INFO                     (1)
+//      MICROPY_PY_UERRNO_LIST - Use the default
 #endif
 
 #ifdef LONGINT_IMPL_NONE
@@ -194,6 +237,9 @@ extern const struct _mp_obj_module_t gamepad_module;
 extern const struct _mp_obj_module_t stage_module;
 extern const struct _mp_obj_module_t touchio_module;
 extern const struct _mp_obj_module_t usb_hid_module;
+extern const struct _mp_obj_module_t network_module;
+extern const struct _mp_obj_module_t socket_module;
+extern const struct _mp_obj_module_t wiznet_module;
 
 // Internal flash size dependent settings.
 #if BOARD_FLASH_SIZE > 192000
@@ -207,7 +253,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_URE (1)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #ifndef MICROPY_PY_FRAMEBUF
-      #define MICROPY_PY_FRAMEBUF         (1)
+      #define MICROPY_PY_FRAMEBUF         (0)
     #endif
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
@@ -234,10 +280,33 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #endif
 
     #ifdef CIRCUITPY_DISPLAYIO
-        #define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
+	#define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
     #else
-        #define DISPLAYIO_MODULE
+	#define DISPLAYIO_MODULE
     #endif
+
+    #if MICROPY_PY_NETWORK
+        #define NETWORK_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module },
+        #define SOCKET_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module },
+        #if MICROPY_PY_WIZNET5K
+            #define WIZNET_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_wiznet), (mp_obj_t)&wiznet_module },
+        #else
+            #define WIZNET_MODULE
+        #endif
+    #else
+        #define NETWORK_MODULE
+        #define SOCKET_MODULE
+        #define WIZNET_MODULE
+    #endif
+
+    // (u)json depends, perhaps erroneously, on MICROPY_PY_IO
+    #if MICROPY_PY_IO
+        #define JSON_MODULE { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+        #define MICROPY_PY_UJSON                         (1)
+    #else
+        #define JSON_MODULE
+    #endif
+
 
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
@@ -246,6 +315,10 @@ extern const struct _mp_obj_module_t usb_hid_module;
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
         DISPLAYIO_MODULE \
         I2CSLAVE_MODULE \
+        NETWORK_MODULE \
+        SOCKET_MODULE \
+        WIZNET_MODULE \
+        JSON_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
     #endif
@@ -290,6 +363,34 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
+#elif MICROPY_MODULE_WEAK_LINKS
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&os_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rtc), (mp_obj_t)&rtc_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
+    TOUCHIO_MODULE \
+    EXTRA_BUILTIN_MODULES
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
+    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
+    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&os_module) }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+
 #else
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
@@ -317,18 +418,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ustack),(mp_obj_t)&ustack_module }
 
-#define MICROPY_PY_UERRNO_LIST \
-    X(EPERM) \
-    X(ENOENT) \
-    X(EIO) \
-    X(EAGAIN) \
-    X(ENOMEM) \
-    X(EACCES) \
-    X(EEXIST) \
-    X(ENODEV) \
-    X(EISDIR) \
-    X(EINVAL) \
-
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
@@ -343,7 +432,18 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+void run_background_tasks(void);
+#define MICROPY_VM_HOOK_LOOP run_background_tasks();
+#define MICROPY_VM_HOOK_RETURN run_background_tasks();
+
 #include "peripherals/samd/dma.h"
+
+#include "supervisor/flash_root_pointers.h"
+#if MICROPY_PY_NETWORK
+    #define NETWORK_ROOT_POINTERS mp_obj_list_t mod_network_nic_list;
+#else
+    #define NETWORK_ROOT_POINTERS
+#endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
@@ -352,16 +452,10 @@ extern const struct _mp_obj_module_t usb_hid_module;
     mp_obj_t rtc_time_source; \
     FLASH_ROOT_POINTERS \
     mp_obj_t gamepad_singleton; \
+    NETWORK_ROOT_POINTERS \
 
-void run_background_tasks(void);
-#define MICROPY_VM_HOOK_LOOP run_background_tasks();
-#define MICROPY_VM_HOOK_RETURN run_background_tasks();
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
-
-// TODO(tannewt): Make this 6k+ for any non-express M4 boards because they cache sectors on the
-// stack.
-#define CIRCUITPY_DEFAULT_STACK_SIZE 4096
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

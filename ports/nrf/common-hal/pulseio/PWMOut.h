@@ -27,19 +27,17 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
 
-#include "common-hal/microcontroller/Pin.h"
-
+#include "nrfx_pwm.h"
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
     NRF_PWM_Type* pwm;
-
-    uint8_t  channel;
-    bool     variable_freq;
-    uint16_t duty;
-    uint32_t freq;
+    uint8_t pin_number;
+    uint8_t channel: 7;
+    bool variable_frequency: 1;
+    uint16_t duty_cycle;
+    uint32_t frequency;
 } pulseio_pwmout_obj_t;
 
 void pwmout_reset(void);

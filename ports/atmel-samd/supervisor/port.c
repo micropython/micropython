@@ -32,7 +32,6 @@
 #include "hal/include/hal_delay.h"
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_init.h"
-#include "hal/include/hal_usb_device.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hpl/pm/hpl_pm_base.h"
 
@@ -48,13 +47,13 @@
 #include "common-hal/audiobusio/PDMIn.h"
 #include "common-hal/audiobusio/I2SOut.h"
 #include "common-hal/audioio/AudioOut.h"
+#include "common-hal/busio/SPI.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/touchio/TouchIn.h"
-#include "common-hal/usb_hid/Device.h"
 #include "samd/cache.h"
 #include "samd/clocks.h"
 #include "samd/events.h"
@@ -62,8 +61,10 @@
 #include "samd/dma.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "board_busses.h"
+#include "reset.h"
 #include "tick.h"
-#include "usb.h"
+
+#include "tusb.h"
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS
 #include "shared-module/gamepad/__init__.h"
@@ -225,35 +226,14 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    // Reset all SERCOMs except the ones being used by on-board devices.
-    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-#ifdef SPI_FLASH_SERCOM
-        if (sercom_instances[i] == SPI_FLASH_SERCOM) {
-            continue;
-        }
-#endif
-#ifdef MICROPY_HW_APA102_SERCOM
-        if (sercom_instances[i] == MICROPY_HW_APA102_SERCOM) {
-            continue;
-        }
-#endif
-#ifdef CIRCUITPY_DISPLAYIO
-        // TODO(tannewt): Make this dynamic.
-        if (sercom_instances[i] == board_display_obj.bus.spi_desc.dev.prvt) {
-            continue;
-        }
-#endif
-        // SWRST is same for all modes of SERCOMs.
-        sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
-    }
+    reset_sercoms();
 
 #if defined(EXPRESS_BOARD) && !defined(__SAMR21G18A__)
+    audio_dma_reset();
     audioout_reset();
     #if !defined(__SAMD51G19A__) && !defined(__SAMD51G18A__)
     i2sout_reset();
     #endif
-    audio_dma_reset();
     //pdmin_reset();
 #endif
 #ifdef SAMD21
@@ -290,11 +270,14 @@ void reset_port(void) {
     // gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
     // #endif
 
-    usb_hid_reset();
-
-    if (usb_connected()) {
+    if (tud_cdc_connected()) {
         save_usb_clock_calibration();
     }
+}
+
+void reset_to_bootloader(void) {
+    _bootloader_dbl_tap = DBL_TAP_MAGIC;
+    reset();
 }
 
 /**

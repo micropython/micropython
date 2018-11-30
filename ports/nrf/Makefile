@@ -21,13 +21,17 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 ifneq ($(SD), )
-	include drivers/bluetooth/bluetooth_common.mk
+	include bluetooth/bluetooth_common.mk
 endif
 
 FROZEN_MPY_DIR = freeze
 
 # include py core make definitions
 include ../../py/py.mk
+
+ifneq ($(MCU_SUB_VARIANT),nrf52840)
+USB = FALSE
+endif
 
 include $(TOP)/supervisor/supervisor.mk
 
@@ -47,12 +51,11 @@ INC += -I./nrfx
 INC += -I./nrfx/hal
 INC += -I./nrfx/mdk
 INC += -I./nrfx/drivers/include
-INC += -I../../lib/mp-readline
-INC += -I./drivers/bluetooth
-INC += -I./drivers
+INC += -I./bluetooth
 INC += -I./peripherals
+INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
-INC += -I./usb
+INC += -I../../supervisor/shared/usb
 
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
@@ -68,6 +71,9 @@ LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE) -L boards/
 LDFLAGS += -Wl,--gc-sections
+
+# TinyUSB defines
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_NRF5X -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -90,21 +96,29 @@ LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_power.c \
 	drivers/src/nrfx_spim.c \
+	drivers/src/nrfx_timer.c \
 	drivers/src/nrfx_twim.c \
-	drivers/src/nrfx_uart.c \
+	drivers/src/nrfx_uarte.c \
 	)
+
+ifdef EXTERNAL_FLASH_DEVICES
+	ifeq ($(QSPI_FLASH_FILESYSTEM),1)
+		SRC_NRFX += nrfx/drivers/src/nrfx_qspi.c
+	endif
+endif
+
 
 SRC_C += \
 	background.c \
 	fatfs_port.c \
-	internal_flash.c \
 	mphalport.c \
 	tick.c \
+	board_busses.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
-	drivers/bluetooth/ble_drv.c \
-	drivers/bluetooth/ble_uart.c \
+	bluetooth/ble_drv.c \
+	bluetooth/ble_uart.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -122,20 +136,9 @@ SRC_C += \
 	peripherals/nrf/clocks.c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	peripherals/nrf/$(MCU_CHIP)/power.c \
+	peripherals/nrf/timers.c \
 	supervisor/shared/memory.c
 
-DRIVERS_SRC_C += $(addprefix modules/,\
-	ubluepy/modubluepy.c \
-	ubluepy/ubluepy_peripheral.c \
-	ubluepy/ubluepy_service.c \
-	ubluepy/ubluepy_characteristic.c \
-	ubluepy/ubluepy_uuid.c \
-	ubluepy/ubluepy_delegate.c \
-	ubluepy/ubluepy_constants.c \
-	ubluepy/ubluepy_descriptor.c \
-	ubluepy/ubluepy_scanner.c \
-	ubluepy/ubluepy_scan_entry.c \
-	)
 
 SRC_COMMON_HAL += \
 	analogio/AnalogIn.c \
@@ -157,7 +160,6 @@ SRC_COMMON_HAL += \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
-	storage/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	time/__init__.c \
@@ -165,7 +167,13 @@ SRC_COMMON_HAL += \
 ifneq ($(SD), )
 SRC_COMMON_HAL += \
 	bleio/__init__.c \
-	bleio/Adapter.c
+	bleio/Adapter.c \
+	bleio/Characteristic.c \
+	bleio/Descriptor.c \
+	bleio/Device.c \
+	bleio/Scanner.c \
+	bleio/Service.c \
+	bleio/UUID.c
 endif
 
 # These don't have corresponding files in each port but are still located in
@@ -180,14 +188,18 @@ SRC_BINDINGS_ENUMS = \
 	math/__init__.c \
 	util.c
 
-SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+ifneq ($(SD), )
+SRC_BINDINGS_ENUMS += \
+	bleio/Address.c \
+	bleio/AddressType.c \
+	bleio/AdvertisementData.c \
+	bleio/ScanEntry.c \
+	bleio/UUIDType.c
+endif
 
 SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
-	storage/__init__.c \
 	struct/__init__.c \
 	gamepad/__init__.c \
 	gamepad/GamePad.c \
@@ -196,44 +208,29 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
+	storage/__init__.c
 
 #	uheap/__init__.c \
 	ustack/__init__.c
-
-SRC_SHARED_BINDINGS = \
-	struct/__init__.c \
-	gamepad/__init__.c \
-	gamepad/GamePad.c \
-	bitbangio/__init__.c \
-	bitbangio/I2C.c \
-	bitbangio/SPI.c \
-	bitbangio/OneWire.c \
-	random/__init__.c \
 
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 
 SRC_C += \
-	usb/usb.c \
-	usb/usb_msc_flash.c \
-	usb/usb_desc.c \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
-	lib/tinyusb/src/class/cdc/cdc_device.c \
-	lib/tinyusb/src/class/hid/hid_device.c \
-	lib/tinyusb/src/tusb.c \
+	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c
 
-SRC_COMMON_HAL += \
+SRC_SHARED_MODULE += \
 	usb_hid/__init__.c \
 	usb_hid/Device.c \
 
 endif
 
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
-SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
+SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
 SRC_S = supervisor/cpu.s
@@ -297,16 +294,16 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 else ifeq ($(FLASHER), pyocd)
 
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
-	pyocd-tool -t $(MCU_SUB_VARIANT) erase $(BOOT_SETTING_ADDR)
-	pyocd-tool -t $(MCU_SUB_VARIANT) write32 $(BOOT_SETTING_ADDR) 0x00000001
-	pyocd-tool -t $(MCU_SUB_VARIANT) reset
+	pyocd-flashtool -t $(MCU_VARIANT) $< --sector_erase
+	#pyocd-tool -t $(MCU_VARIANT) erase $(BOOT_SETTING_ADDR)
+	pyocd-tool -t $(MCU_VARIANT) write32 $(BOOT_SETTING_ADDR) 0x00000001
+	pyocd-tool -t $(MCU_VARIANT) reset
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) --chip_erase
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $(SOFTDEV_HEX)
-	pyocd-flashtool -t $(MCU_SUB_VARIANT) $< --sector_erase
-	pyocd-tool -t $(MCU_SUB_VARIANT) reset $(BOOT_SETTING_ADDR)
+	pyocd-flashtool -t $(MCU_VARIANT) --chip_erase
+	pyocd-flashtool -t $(MCU_VARIANT) $(SOFTDEV_HEX)
+	pyocd-flashtool -t $(MCU_VARIANT) $< --sector_erase
+	pyocd-tool -t $(MCU_VARIANT) reset $(BOOT_SETTING_ADDR)
 
 endif
 
@@ -341,9 +338,10 @@ dfu-gen: $(BUILD)/dfu-package.zip
 $(BUILD)/dfu-package.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $^ $(BUILD)/dfu-package.zip
 
+# You must have $^ here because it deduplicates entries in $(OBJ)
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction

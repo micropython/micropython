@@ -15,6 +15,9 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PB08) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PB09) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_SDA), MP_ROM_PTR(&pin_PA12) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_SCL), MP_ROM_PTR(&pin_PA13) },
+
     // Key Grid columns
     { MP_OBJ_NEW_QSTR(MP_QSTR_COL0),  MP_ROM_PTR(&pin_PA14) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_COL1),  MP_ROM_PTR(&pin_PA15) },
@@ -36,8 +39,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // NeoPixels
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PA27) },
 
-    { MP_ROM_QSTR(MP_QSTR_APA102_MOSI), MP_ROM_PTR(&pin_PA01) },
-    { MP_ROM_QSTR(MP_QSTR_APA102_SCK), MP_ROM_PTR(&pin_PA00) },
+    { MP_ROM_QSTR(MP_QSTR_APA102_MOSI), MP_ROM_PTR(&pin_PB03) },
+    { MP_ROM_QSTR(MP_QSTR_APA102_SCK), MP_ROM_PTR(&pin_PB02) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
 };

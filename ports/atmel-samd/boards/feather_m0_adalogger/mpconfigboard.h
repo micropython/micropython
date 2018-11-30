@@ -3,11 +3,9 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Adalogger"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-#define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25)
+#define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
-
-#include "internal_flash.h"
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 

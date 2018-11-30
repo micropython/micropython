@@ -136,19 +136,26 @@ static void check_lock(busio_spi_obj_t *self) {
 
 //|   .. method:: SPI.configure(\*, baudrate=100000, polarity=0, phase=0, bits=8)
 //|
-//|     Configures the SPI bus. Only valid when locked.
+//|     Configures the SPI bus. The SPI object must be locked.
 //|
 //|     :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
 //|       due to the granularity of available clock settings.
 //|       Check the `frequency` attribute for the actual clock rate.
-//|       **Note:** on the SAMD21, it is possible to set the baud rate to 24 MHz, but that
-//|       speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
-//|       within spec for the SAMD21.
 //|     :param int polarity: the base state of the clock line (0 or 1)
 //|     :param int phase: the edge of the clock that data is captured. First (0)
 //|       or second (1). Rising or falling depends on clock polarity.
 //|     :param int bits: the number of bits per word
 //|
+//|   .. note:: On the SAMD21, it is possible to set the baudrate to 24 MHz, but that
+//|      speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
+//|      within spec for the SAMD21.
+//|
+//|   .. note:: On the nRF52832, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
+//|      and 8MHz. On the nRF52840, 16MHz and 32MHz are also available, but only on the first
+//|      `busio.SPI` object you create. Two more ``busio.SPI`` objects can be created, but they are restricted
+//|      to 8MHz maximum. This is a hardware restriction: there is only one high-speed SPI peripheral.
+//|      If you pick a a baudrate other than one of these, the nearest lower
+//|      baudrate will be chosen, with a minimum of 125kHz.
 STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
     static const mp_arg_t allowed_args[] = {

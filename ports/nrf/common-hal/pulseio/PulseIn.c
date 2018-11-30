@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "py/gc.h"
 #include "py/runtime.h"
 

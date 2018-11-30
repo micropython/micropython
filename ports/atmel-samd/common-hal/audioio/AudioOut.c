@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "common-hal/audioio/AudioOut.h"
 #include "shared-bindings/audioio/AudioOut.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
@@ -52,11 +53,73 @@
 #include "samd/pins.h"
 #include "samd/timers.h"
 
+#ifdef SAMD21
+static void ramp_value(uint16_t start, uint16_t end) {
+    start = DAC->DATA.reg;
+    int32_t diff = (int32_t) end - start;
+    int32_t step = 49;
+    int32_t steps = diff / step;
+    if (diff < 0) {
+        steps = -steps;
+        step = -step;
+    }
+    for (int32_t i = 0; i < steps; i++) {
+        uint32_t value = start + step * i;
+        DAC->DATA.reg = value;
+        DAC->DATABUF.reg = value;
+        common_hal_mcu_delay_us(50);
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+    }
+}
+#endif
+
+#ifdef SAMD51
+static void ramp_value(uint16_t start, uint16_t end) {
+    int32_t diff = (int32_t) end - start;
+    int32_t step = 49;
+    int32_t steps = diff / step;
+    if (diff < 0) {
+        steps = -steps;
+        step = -step;
+    }
+
+    for (int32_t i = 0; i < steps; i++) {
+        uint16_t value = start + step * i;
+        DAC->DATA[0].reg = value;
+        DAC->DATABUF[0].reg = value;
+        DAC->DATA[1].reg = value;
+        DAC->DATABUF[1].reg = value;
+
+        common_hal_mcu_delay_us(50);
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+    }
+}
+#endif
+
 void audioout_reset(void) {
+    #if defined(SAMD21) && !defined(PIN_PA02)
+    return;
+    #endif
+    #ifdef SAMD21
+    while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
+    #endif
+    #ifdef SAMD51
+    while (DAC->SYNCBUSY.reg & DAC_SYNCBUSY_SWRST) {}
+    #endif
+    if (DAC->CTRLA.bit.ENABLE) {
+        ramp_value(0x8000, 0);
+    }
+    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
+
+    // TODO(tannewt): Turn off the DAC clocks to save power.
 }
 
 void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
-        const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel) {
+        const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
     #ifdef SAMD51
     bool dac_clock_enabled = hri_mclk_get_APBDMASK_DAC_bit(MCLK);
     #endif
@@ -94,12 +157,10 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     if (right_channel != NULL) {
         claim_pin(right_channel);
         self->right_channel = right_channel;
-        gpio_set_pin_function(self->right_channel->number, GPIO_PIN_FUNCTION_B);
         audio_dma_init(&self->right_dma);
     }
     #endif
     self->left_channel = left_channel;
-    gpio_set_pin_function(self->left_channel->number, GPIO_PIN_FUNCTION_B);
     audio_dma_init(&self->left_dma);
 
     #ifdef SAMD51
@@ -118,6 +179,10 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
 
     DAC->CTRLA.bit.SWRST = 1;
     while (DAC->CTRLA.bit.SWRST == 1) {}
+    // Make sure there are no outstanding access errors. (Reading DATA can cause this.)
+    #ifdef SAMD51
+    PAC->INTFLAGD.reg = PAC_INTFLAGD_DAC;
+    #endif
 
     bool channel0_enabled = true;
     #ifdef SAMD51
@@ -159,6 +224,8 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     #endif
     #ifdef SAMD51
     while (DAC->SYNCBUSY.bit.ENABLE == 1) {}
+    while (channel0_enabled && DAC->STATUS.bit.READY0 == 0) {}
+    while (channel1_enabled && DAC->STATUS.bit.READY1 == 0) {}
     #endif
 
     // Use a timer to coordinate when DAC conversions occur.
@@ -220,12 +287,20 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
 
     #ifdef SAMD51
     connect_event_user_to_channel(EVSYS_ID_USER_DAC_START_1, channel);
+    if (right_channel != NULL) {
+        gpio_set_pin_function(self->right_channel->number, GPIO_PIN_FUNCTION_B);
+    }
     #define EVSYS_ID_USER_DAC_START EVSYS_ID_USER_DAC_START_0
     #endif
     connect_event_user_to_channel(EVSYS_ID_USER_DAC_START, channel);
+    gpio_set_pin_function(self->left_channel->number, GPIO_PIN_FUNCTION_B);
     init_async_event_channel(channel, tc_gen_id);
 
     self->tc_to_dac_event_channel = channel;
+
+    // Ramp the DAC up.
+    self->quiescent_value = quiescent_value;
+    ramp_value(0, quiescent_value);
 
     // Leave the DMA setup to playback.
 }
@@ -238,6 +313,9 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
     if (common_hal_audioio_audioout_deinited(self)) {
         return;
     }
+
+    // Ramp the DAC down.
+    ramp_value(self->quiescent_value, 0);
 
     DAC->CTRLA.bit.ENABLE = 0;
     #ifdef SAMD21
@@ -381,6 +459,9 @@ void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self) {
     #ifdef SAMD51
     audio_dma_stop(&self->right_dma);
     #endif
+    // Ramp the DAC to default. The start is ignored when the current value can be readback.
+    // Otherwise, we just set it immediately.
+    ramp_value(self->quiescent_value, self->quiescent_value);
 }
 
 bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self) {

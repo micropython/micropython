@@ -23,14 +23,7 @@
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#include "external_flash/devices.h"
-
-#define EXTERNAL_FLASH_DEVICE_COUNT 1
-#define EXTERNAL_FLASH_DEVICES GD25Q16C
-
 #define EXTERNAL_FLASH_QSPI_DUAL
-
-#include "external_flash/external_flash.h"
 
 #define BOARD_HAS_CRYSTAL 1
 

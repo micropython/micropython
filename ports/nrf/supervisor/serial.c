@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017, 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,67 @@
  * THE SOFTWARE.
  */
 
-#include "mphalport.h"
+#include "py/mphal.h"
 
-#if MICROPY_PY_BLE_NUS
+#include "supervisor/serial.h"
+
+#if (MICROPY_PY_BLE_NUS == 1)
 #include "ble_uart.h"
 #else
+#include <string.h>
 #include "nrf_gpio.h"
+#include "nrfx_uarte.h"
 #endif
 
-#if !defined( NRF52840_XXAA) || ( defined(CFG_HWUART_FOR_SERIAL) && CFG_HWUART_FOR_SERIAL == 1 )
-
-#define INST_NO 0
-
-nrfx_uart_t serial_instance = NRFX_UART_INSTANCE(INST_NO);
+#if (MICROPY_PY_BLE_NUS == 1)
 
 void serial_init(void) {
-#if MICROPY_PY_BLE_NUS
-    ble_uart_init0();
-    while (!ble_uart_enabled()) {
-        ;
-    }
-#else
-    nrfx_uart_config_t config = NRFX_UART_DEFAULT_CONFIG;
-    config.pseltxd = MICROPY_HW_UART_TX;
-    config.pselrxd = MICROPY_HW_UART_RX;
-    config.hwfc = MICROPY_HW_UART_HWFC ? NRF_UART_HWFC_ENABLED : NRF_UART_HWFC_DISABLED;
-#ifdef MICROPY_HW_UART_CTS
-    config.pselcts = MICROPY_HW_UART_CTS;
-#endif
-#ifdef MICROPY_HW_UART_RTS
-    config.pselrts = MICROPY_HW_UART_RTS;
-#endif
+    ble_uart_init();
+}
 
-    const nrfx_err_t err = nrfx_uart_init(&serial_instance, &config, NULL);
-    if (err == NRFX_SUCCESS)
+bool serial_connected(void) {
+    return ble_uart_connected();
+}
+
+char serial_read(void) {
+    return (char) ble_uart_rx_chr();
+}
+
+bool serial_bytes_available(void) {
+    return ble_uart_stdin_any();
+}
+
+void serial_write(const char *text) {
+    ble_uart_stdout_tx_str(text);
+}
+
+#elif !defined(NRF52840_XXAA)
+
+uint8_t serial_received_char;
+nrfx_uarte_t serial_instance = NRFX_UARTE_INSTANCE(0);
+
+void serial_init(void) {
+    nrfx_uarte_config_t config = {
+        .pseltxd = MICROPY_HW_UART_TX,
+        .pselrxd = MICROPY_HW_UART_RX,
+        .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
+        .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
+        .p_context = NULL,
+        .hwfc = NRF_UARTE_HWFC_DISABLED,
+        .parity = NRF_UARTE_PARITY_EXCLUDED,
+        .baudrate = NRF_UARTE_BAUDRATE_115200,
+        .interrupt_priority = 7
+    };
+
+    nrfx_uarte_uninit(&serial_instance);
+    const nrfx_err_t err = nrfx_uarte_init(&serial_instance, &config, NULL);    // no callback for blocking mode
+
+    if (err != NRFX_SUCCESS) {
         NRFX_ASSERT(err);
+    }
 
-    nrfx_uart_rx_enable(&serial_instance);
-#endif
+    // enabled receiving
+    nrf_uarte_task_trigger(serial_instance.p_reg, NRF_UARTE_TASK_STARTRX);
 }
 
 bool serial_connected(void) {
@@ -69,40 +92,36 @@ bool serial_connected(void) {
 }
 
 char serial_read(void) {
-    return (char) mp_hal_stdin_rx_chr();
+    uint8_t data;
+    nrfx_uarte_rx(&serial_instance, &data, 1);
+    return data;
 }
 
 bool serial_bytes_available(void) {
-    return mp_hal_stdin_any();
-}
-
-void serial_write(const char *text) {
-    mp_hal_stdout_tx_str(text);
-}
-
-#else
-
-#include "tusb.h"
-
-void serial_init(void) {
-    // usb is already initialized in board_init()
-}
-
-
-bool serial_connected(void) {
-    return tud_cdc_connected();
-}
-
-char serial_read(void) {
-    return (char) tud_cdc_read_char();
-}
-
-bool serial_bytes_available(void) {
-    return tud_cdc_available() > 0;
+    return nrf_uarte_event_check(serial_instance.p_reg, NRF_UARTE_EVENT_RXDRDY);
 }
 
 void serial_write(const char* text) {
-    tud_cdc_write(text, strlen(text));
+    serial_write_substring(text, strlen(text));
+}
+
+void serial_write_substring(const char *text, uint32_t len) {
+    if (len == 0) {
+        return;
+    }
+
+    // EasyDMA can only access SRAM
+    uint8_t * tx_buf = (uint8_t*) text;
+    if ( !nrfx_is_in_ram(text) ) {
+        tx_buf = (uint8_t *) m_malloc(len, false);
+        memcpy(tx_buf, text, len);
+    }
+
+    nrfx_uarte_tx(&serial_instance, tx_buf, len);
+
+    if ( !nrfx_is_in_ram(text) ) {
+        m_free(tx_buf);
+    }
 }
 
 #endif

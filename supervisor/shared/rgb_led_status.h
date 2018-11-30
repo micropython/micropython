@@ -33,7 +33,7 @@
 #include "lib/utils/pyexec.h"
 #include "supervisor/port.h"
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "rgb_led_colors.h"
 
 // Overall, the time module must be implemented.
