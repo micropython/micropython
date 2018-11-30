@@ -92,7 +92,7 @@ def get_current_info():
     response = response.json()
 
     git_info = commit_sha, response["sha"]
-    return git_info, json.loads(base64.b64decode(response["content"]))
+    return git_info, json.loads(base64.b64decode(response["content"]).decode("utf-8"))
 
 def create_pr(changes, updated, git_info):
     commit_sha, original_blob_sha = git_info
@@ -172,7 +172,7 @@ def generate_download_info():
     boards = {}
     errors = []
 
-    new_tag = os.environ.get("TRAVIS_TAG", "4.0.0-alpha.3")
+    new_tag = os.environ["TRAVIS_TAG"]
 
     changes = {
         "new_release": new_tag,
@@ -240,8 +240,7 @@ def generate_download_info():
         create_pr(changes, current_info, git_info)
 
 if __name__ == "__main__":
-    if "TRAVIS_TAG" in os.environ:
-        print("tag", os.environ["TRAVIS_TAG"])
+    if "TRAVIS_TAG" in os.environ and os.environ["TRAVIS_TAG"]:
         generate_download_info()
     else:
         print("skipping website update because this isn't a tag")

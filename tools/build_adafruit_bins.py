@@ -37,7 +37,7 @@ for board in build_boards:
 
     for language in languages:
         start_time = time.monotonic()
-        make_result = subprocess.run("make -C ../ports/" + board_info["port"] + " TRANSLATION=" + language + " BOARD=" + board, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        make_result = subprocess.run("make -C ../ports/" + board_info["port"] + " TRANSLATION=" + language + " BOARD=" + board, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         build_duration = time.monotonic() - start_time
         success = "\033[32msucceeded\033[0m"
         if make_result.returncode != 0:

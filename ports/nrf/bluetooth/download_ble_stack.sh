@@ -12,7 +12,8 @@ function download_s132_nrf52_2_0_1
     cd "${1}/s132_nrf52_2.0.1"
     wget https://www.nordicsemi.com/api/sitecore/Products/MedialibraryZipDownload2 --post-data="ids=863031714A574444AADFE444EBE5BA9B|&fileName=DeviceDownload" -O temp.zip
     unzip -u temp.zip
-    rm temp.zip
+    unzip -u s132nrf52201.zip
+    rm temp.zip s132nrf52201.zip
     cd -
 }
 
