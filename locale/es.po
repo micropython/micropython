@@ -891,7 +891,7 @@ msgstr "a la función le hacen falta %d argumentos posicionales requeridos"
 #: py/argcheck.c:72
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr "la función esperaba a minimo %d argumentos, tiene %d"
+msgstr "la función esperaba minimo %d argumentos, tiene %d"
 
 #: py/argcheck.c:97
 msgid "'%q' argument required"
@@ -1960,7 +1960,7 @@ msgstr "objeto '%s' no tiene atributo '%q'"
 
 #: py/runtime.c:1238
 msgid "object not iterable"
-msgstr "objeto no es iterable"
+msgstr "objeto no iterable"
 
 #: py/runtime.c:1241
 #, c-format
@@ -2141,7 +2141,7 @@ msgstr ""
 
 #: shared-bindings/bleio/Address.c:101
 msgid "Wrong address length"
-msgstr "Longitud de addres erronea"
+msgstr "Longitud de address erronea"
 
 #: shared-bindings/bleio/Address.c:107
 msgid "Wrong number of bytes provided"
@@ -2265,7 +2265,7 @@ msgstr "se espera un DigitalInOut"
 
 #: shared-bindings/i2cslave/I2CSlave.c:98
 msgid "can't convert address to int"
-msgstr "no se puede convertis address a int"
+msgstr "no se puede convertir address a int"
 
 #: shared-bindings/i2cslave/I2CSlave.c:101
 msgid "address out of bounds"
