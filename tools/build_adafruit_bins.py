@@ -44,17 +44,24 @@ for board in build_boards:
             exit_status = make_result.returncode
             success = "\033[31mfailed\033[0m"
 
+        other_output = ""
+
         for extension in board_info["extensions"]:
             temp_filename = "../ports/{port}/build-{board}/firmware.{extension}".format(port=board_info["port"], board=board, extension=extension)
             final_filename = "adafruit-circuitpython-{board}-{language}-{version}.{extension}".format(board=board, language=language, version=version, extension=extension)
             final_filename = os.path.join(bin_directory, final_filename)
-            shutil.copyfile(temp_filename, final_filename)
+            try:
+                shutil.copyfile(temp_filename, final_filename)
+            except FileNotFoundError:
+                other_output = "Cannot find file {}".format(temp_filename)
+                if exit_status == 0:
+                    exit_status = 1
 
         if travis:
             print('travis_fold:start:adafruit-bins-{}-{}\\r'.format(language, board))
         print("Build {} for {} took {:.2f}s and {}".format(board, language, build_duration, success))
-        print(len(make_result.stdout))
         print(make_result.stdout.decode("utf-8"))
+        print(other_output)
         # Only upload to Rosie if its a pull request.
         if travis:
             for rosie in ROSIE_SETUPS:
