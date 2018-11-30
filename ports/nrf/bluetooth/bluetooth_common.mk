@@ -28,7 +28,7 @@ define STACK_MISSING_ERROR
 ###### ERROR: Bluetooth LE Stack not found ############
 #                                                     #
 # The build target requires a Bluetooth LE stack.     #
-# $(SOFTDEV_VERSION_LONG) Bluetooth LE stack not found.      #
+# $(SOFTDEV_HEX) not found. #
 #                                                     #
 # Please run the download script:                     #
 #                                                     #

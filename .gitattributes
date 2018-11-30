@@ -13,6 +13,7 @@
 *.mpy binary
 *.deb binary
 *.zip binary
+*.pdf binary
 
 # These should also not be modified by git.
 tests/basics/string_cr_conversion.py -text
