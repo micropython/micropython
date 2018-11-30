@@ -1897,8 +1897,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Archivo .mpy incompatible. Actualice todos los archivos .mpy."
-"Consulte http://adafru.it/mpy-update para más información".
+"Archivo .mpy incompatible. Actualice todos los archivos .mpy. "
+"Consulte http://adafru.it/mpy-update para más información"
 
 #: py/persistentcode.c:326
 msgid "can only save bytecode"
