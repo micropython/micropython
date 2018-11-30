@@ -1,0 +1,1550 @@
+|-----------------------------------------------------------------------------|
+|  2 Mbps PHY Support                                                         |
+|-----------------------------------------------------------------------------|
+
+//|
+//| Bitfield for PHYs used by PHY commands and events below
+//|
++/**@defgroup BLE_GAP_PHYS GAP PHYs
++ * @{ */
++#define BLE_GAP_PHY_AUTO                         0x00    /**< Automatic PHY selection. Refer @ref sd_ble_gap_phy_update for more information.*/
++#define BLE_GAP_PHY_1MBPS                        0x01    /**< 1 Mbps PHY. */
++#define BLE_GAP_PHY_2MBPS                        0x02    /**< 2 Mbps PHY. */
++#define BLE_GAP_PHY_CODED                        0x04    /**< Coded PHY. */
++
++/**@} */
+
+
+//|
+//| PHY Update event: Notifies the application that the PHY has been changed, or that a PHY update
+//| procedure is requested but the PHY is not changed.
+//|
+//| PHY Update Request event: Notifies the application that the peer has initiated a PHY Update Procedure.
+//| Application must respond to this event with a SD_BLE_GAP_PHY_UPDATE command providing its PHY preferences,
+//| otherwise the PHY Update procedure will time out.
+//|
+ enum BLE_GAP_EVTS
+ {
+   BLE_GAP_EVT_SEC_REQUEST,                      /**< Security Request.                               \n See @ref ble_gap_evt_sec_request_t.          */
+   BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST,        /**< Connection Parameter Update Request.            \n Reply with @ref sd_ble_gap_conn_param_update. \n See @ref ble_gap_evt_conn_param_update_request_t. */
+   BLE_GAP_EVT_SCAN_REQ_REPORT,                  /**< Scan request report.                            \n See @ref ble_gap_evt_scan_req_report_t. */
+-  BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST,       /**< Data Length Update request.                     \n Reply with @ref sd_ble_gap_data_length_update.\n See @ref ble_gap_evt_data_length_update_request_t. */
++  BLE_GAP_EVT_PHY_UPDATE_REQUEST,               /**< PHY Update Request.                             \n Reply with @ref sd_ble_gap_phy_update. \n See @ref ble_gap_evt_phy_update_request_t. */
++  BLE_GAP_EVT_PHY_UPDATE,                       /**< PHY Update Procedure is complete.               \n See @ref ble_gap_evt_phy_update_t.           */
++  BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST,       /**< Data Length Update Request.                     \n Reply with @ref sd_ble_gap_data_length_update.\n See @ref ble_gap_evt_data_length_update_request_t. */
+   BLE_GAP_EVT_DATA_LENGTH_UPDATE,               /**< LL Data Channel PDU payload length updated.     \n See @ref ble_gap_evt_data_length_update_t. */
+ };
+
+ 
++/**@brief PHY preferences for TX and RX
++ * @note  tx_phys and rx_phys are bit fields. Multiple bits can be set in them to indicate multiple preferred PHYs for each direction.
++ * @code
++ * p_gap_phys->tx_phys = BLE_GAP_PHY_1MBPS | BLE_GAP_PHY_2MBPS;
++ * p_gap_phys->rx_phys = BLE_GAP_PHY_1MBPS | BLE_GAP_PHY_2MBPS;
++ * @endcode
++ *
++ */
++typedef struct
++{
++  uint8_t tx_phys;     /**< Preferred transmit PHYs, see @ref BLE_GAP_PHYS. */
++  uint8_t rx_phys;     /**< Preferred receive PHYs, see @ref BLE_GAP_PHYS. */
++} ble_gap_phys_t;
++
+
++/**@brief Event structure for @ref BLE_GAP_EVT_PHY_UPDATE_REQUEST. */
++typedef struct
++{
++  ble_gap_phys_t peer_preferred_phys;            /**< The PHYs the peer prefers to use. */
++} ble_gap_evt_phy_update_request_t;
++
++/**@brief Event Structure for @ref BLE_GAP_EVT_PHY_UPDATE. */
++typedef struct
++{
++  uint8_t status;                               /**< Status of the procedure, see @ref BLE_HCI_STATUS_CODES.*/
++  uint8_t tx_phy;                               /**< TX PHY for this connection, see @ref BLE_GAP_PHYS. */
++  uint8_t rx_phy;                               /**< RX PHY for this connection, see @ref BLE_GAP_PHYS. */
++} ble_gap_evt_phy_update_t;
+
+ typedef struct
+ {
+   uint16_t conn_handle;                                     /**< Connection Handle on which event occurred. */
+   union                                                     /**< union alternative identified by evt_id in enclosing struct. */
+   {
+     ble_gap_evt_conn_param_update_request_t   conn_param_update_request;    /**< Connection Parameter Update Parameters. */
+-    ble_gap_evt_scan_req_report_t             scan_req_report;              /**< Scan Request Report parameters. */
++    ble_gap_evt_scan_req_report_t             scan_req_report;              /**< Scan Request Report Parameters. */
++    ble_gap_evt_phy_update_request_t          phy_update_request;           /**< PHY Update Request Event Parameters. */
++    ble_gap_evt_phy_update_t                  phy_update;                   /**< PHY Update Parameters. */
+     ble_gap_evt_data_length_update_request_t  data_length_update_request;   /**< Data Length Update Request Event Parameters. */
+     ble_gap_evt_data_length_update_t          data_length_update;           /**< Data Length Update Event Parameters. */
+   } params;                                                                 /**< Event Parameters. */
+ } ble_gap_evt_t;
+ 
+//|
+//| PHY Update command. Use for initiating or responding to a PHY Update Procedure.
+//| Either the master or the slave must call this function for the PHY to be changed.
+//|
+ enum BLE_GAP_SVCS
+ {
+   SD_BLE_GAP_CONNECT,                           /**< Connect. */
+   SD_BLE_GAP_CONNECT_CANCEL,                    /**< Cancel ongoing connection procedure. */
+   SD_BLE_GAP_RSSI_GET,                          /**< Get the last RSSI sample. */
++  SD_BLE_GAP_PHY_UPDATE,                        /**< Initiate or respond to a PHY Update Procedure. */
+   SD_BLE_GAP_DATA_LENGTH_UPDATE,                /**< Initiate or respond to a Data Length Update Procedure. */
+ };
+
+ 
++/**@brief Initiate or respond to a PHY Update Procedure
++ *
++ * @details   This function is used to initiate or respond to a PHY Update Procedure. It will always generate a
++ *            @ref BLE_GAP_EVT_PHY_UPDATE event if successfully executed. If @ref ble_gap_phys_t::tx_phys or @ref ble_gap_phys_t::rx_phys
++ *            is @ref BLE_GAP_PHY_AUTO, then the stack will select a PHY for the respective direction based on the peer's PHY preferences
++ *            and the local stack configuration. If the peer does not support the PHY Update Procedure, then the
++ *            resulting @ref BLE_GAP_EVT_PHY_UPDATE event will have a status set to
++ *            @ref BLE_HCI_UNSUPPORTED_REMOTE_FEATURE.
++ *            If the PHY procedure was rejected by the peer due to a procedure collision, the status will be
++ *            @ref BLE_HCI_STATUS_CODE_LMP_ERROR_TRANSACTION_COLLISION or @ref BLE_HCI_DIFFERENT_TRANSACTION_COLLISION.
++ *            If the peer responds to the PHY Update procedure with invalid parameters, the status will be @ref BLE_HCI_STATUS_CODE_INVALID_LMP_PARAMETERS.
++ *            If the PHY procedure was rejected by the peer for a different reason, the status will contain the reason as specified by the peer.
++ *
++ * @events
++ * @event{@ref BLE_GAP_EVT_PHY_UPDATE, Result of the PHY Update Procedure.}
++ * @endevents
++ *
++ * @mscs
++ * @mmsc{@ref BLE_GAP_CENTRAL_PHY_UPDATE}
++ * @mmsc{@ref BLE_GAP_PERIPHERAL_PHY_UPDATE}
++ * @endmscs
++ *
++ * @param[in] conn_handle   Connection handle to indicate the connection for which the PHY Update is requested.
++ * @param[in] p_gap_phys    Pointer to PHY structure.
++ *
++ * @retval ::NRF_SUCCESS Successfully requested a PHY Update.
++ * @retval ::NRF_ERROR_INVALID_ADDR Invalid pointer supplied.
++ * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid connection handle supplied.
++ * @retval ::NRF_ERROR_INVALID_PARAM Unsupported PHYs supplied to the call.
++ * @retval ::NRF_ERROR_INVALID_STATE Invalid state to perform operation.
++ * @retval ::NRF_ERROR_BUSY Procedure is already in progress or not allowed at this time. Process pending events and wait for the pending procedure to complete and retry.
++ *
++ */
++SVCALL(SD_BLE_GAP_PHY_UPDATE, uint32_t, sd_ble_gap_phy_update(uint16_t conn_handle, ble_gap_phys_t const *p_gap_phys));
++
+
+
+//| 
+//| New BLE HCI status code
+//|  
++#define BLE_HCI_STATUS_CODE_LMP_ERROR_TRANSACTION_COLLISION 0x23  /**< LMP Error Transaction Collision/LL Procedure Collision. */
+
+|-----------------------------------------------------------------------------|
+|  Connection-Oriented Channels in LE Credit Based Flow Control Mode          |
+|-----------------------------------------------------------------------------|
+
+//| 
+//| New L2CAP specific connection configuration ID
+//| 
+ enum BLE_CONN_CFGS
+ {
+     BLE_CONN_CFG_GAP = BLE_CONN_CFG_BASE,  /**< BLE GAP specific connection configuration. */
+     BLE_CONN_CFG_GATTC,                    /**< BLE GATTC specific connection configuration. */
+     BLE_CONN_CFG_GATTS,                    /**< BLE GATTS specific connection configuration. */
+     BLE_CONN_CFG_GATT,                     /**< BLE GATT specific connection configuration. */
++    BLE_CONN_CFG_L2CAP,                    /**< BLE L2CAP specific connection configuration. */
+ };
+
+ 
+//| 
+//| New L2CAP originated event
+//|  
+ typedef struct
+ {
+   ble_evt_hdr_t header;           /**< Event header. */
+   union
+   {
+     ble_common_evt_t  common_evt; /**< Common Event, evt_id in BLE_EVT_* series. */
+     ble_gap_evt_t     gap_evt;    /**< GAP originated event, evt_id in BLE_GAP_EVT_* series. */
+     ble_gattc_evt_t   gattc_evt;  /**< GATT client originated event, evt_id in BLE_GATTC_EVT* series. */
+     ble_gatts_evt_t   gatts_evt;  /**< GATT server originated event, evt_id in BLE_GATTS_EVT* series. */
++    ble_l2cap_evt_t   l2cap_evt;  /**< L2CAP originated event, evt_id in BLE_L2CAP_EVT* series. */
+   } evt;                          /**< Event union. */
+ } ble_evt_t;
+ 
+
+//| 
+//| New L2CAP connection configuration
+//|  
+ typedef struct
+ {
+   uint8_t              conn_cfg_tag;        /**< The application chosen tag it can use with the @ref sd_ble_gap_adv_start() and @ref sd_ble_gap_connect()
+                                                  calls to select this configuration when creating a connection.
+                                                  Must be different for all connection configurations added and not @ref BLE_CONN_CFG_TAG_DEFAULT. */
+   union {
+     ble_gap_conn_cfg_t   gap_conn_cfg;      /**< GAP connection configuration, cfg_id is @ref BLE_CONN_CFG_GAP. */
+     ble_gattc_conn_cfg_t gattc_conn_cfg;    /**< GATTC connection configuration, cfg_id is @ref BLE_CONN_CFG_GATTC. */
+     ble_gatts_conn_cfg_t gatts_conn_cfg;    /**< GATTS connection configuration, cfg_id is @ref BLE_CONN_CFG_GATTS. */
+     ble_gatt_conn_cfg_t  gatt_conn_cfg;     /**< GATT connection configuration, cfg_id is @ref BLE_CONN_CFG_GATT. */
++    ble_l2cap_conn_cfg_t l2cap_conn_cfg;    /**< L2CAP connection configuration, cfg_id is @ref BLE_CONN_CFG_L2CAP. */
+   } params;                                 /**< Connection configuration union. */
+ } ble_conn_cfg_t;
+ 
+//|
+//| API additions related to Connection-Oriented Channels
+//|
++/**@addtogroup BLE_L2CAP_TERMINOLOGY Terminology
++ * @{
++ * @details
++ *
++ * L2CAP SDU
++ * - A data unit that the application can send/receive to/from a peer.
++ *
++ * L2CAP PDU
++ * - A data unit that is exchanged between local and remote L2CAP entities.
++ *   It consists of L2CAP protocol control information and payload fields.
++ *   The payload field can contain an L2CAP SDU or a part of an L2CAP SDU.
++ *
++ * L2CAP MTU
++ * - The maximum length of an L2CAP SDU.
++ *
++ * L2CAP MPS
++ * - The maximum length of an L2CAP PDU payload field.
++ *
++ * Credits
++ * - A value indicating the number of L2CAP PDUs that the receiver of the credit can send to the peer.
++ * @} */
++
++/**@addtogroup BLE_L2CAP_ENUMERATIONS Enumerations
++ * @{ */
++
++/**@brief L2CAP API SVC numbers. */
++enum BLE_L2CAP_SVCS
++{
++  SD_BLE_L2CAP_CH_SETUP = BLE_L2CAP_SVC_BASE,           /**< Set up an L2CAP channel. */
++  SD_BLE_L2CAP_CH_RELEASE,                              /**< Release an L2CAP channel. */
++  SD_BLE_L2CAP_CH_RX,                                   /**< Receive an SDU on an L2CAP channel. */
++  SD_BLE_L2CAP_CH_TX,                                   /**< Transmit an SDU on an L2CAP channel. */
++  SD_BLE_L2CAP_CH_FLOW_CONTROL,                         /**< Advanced SDU reception flow control. */
++};
++
++/**@brief L2CAP Event IDs. */
++enum BLE_L2CAP_EVTS
++{
++  BLE_L2CAP_EVT_CH_SETUP_REQUEST = BLE_L2CAP_EVT_BASE,  /**< L2CAP Channel Setup Request event.
++                                                          \n See @ref ble_l2cap_evt_ch_setup_request_t. */
++  BLE_L2CAP_EVT_CH_SETUP_REFUSED,                       /**< L2CAP Channel Setup Refused event.
++                                                          \n See @ref ble_l2cap_evt_ch_setup_refused_t. */
++  BLE_L2CAP_EVT_CH_SETUP,                               /**< L2CAP Channel Setup Completed event.
++                                                          \n See @ref ble_l2cap_evt_ch_setup_t. */
++  BLE_L2CAP_EVT_CH_RELEASED,                            /**< L2CAP Channel Released event.
++                                                          \n No additional event structure applies. */
++  BLE_L2CAP_EVT_CH_SDU_BUF_RELEASED,                    /**< L2CAP Channel SDU data buffer released event.
++                                                          \n See @ref ble_l2cap_evt_ch_sdu_buf_released_t. */
++  BLE_L2CAP_EVT_CH_CREDIT,                              /**< L2CAP Channel Credit received.
++                                                          \n See @ref ble_l2cap_evt_ch_credit_t. */
++  BLE_L2CAP_EVT_CH_RX,                                  /**< L2CAP Channel SDU received.
++                                                          \n See @ref ble_l2cap_evt_ch_rx_t. */
++  BLE_L2CAP_EVT_CH_TX,                                  /**< L2CAP Channel SDU transmitted.
++                                                          \n See @ref ble_l2cap_evt_ch_tx_t. */
++};
++
++/** @} */
++
+ /**@addtogroup BLE_L2CAP_DEFINES Defines
+  * @{ */
+ 
++/**@brief Maximum number of L2CAP channels per connection. */
++#define BLE_L2CAP_CH_COUNT_MAX    (64)
++
++/**@brief Minimum L2CAP MTU, in bytes. */
++#define BLE_L2CAP_MTU_MIN         (23)
++
++/**@brief Minimum L2CAP MPS, in bytes. */
++#define BLE_L2CAP_MPS_MIN         (23)
++
++/**@brief Invalid CID. */
++#define BLE_L2CAP_CID_INVALID     (0x0000)
++
++/**@brief Default number of credits for @ref sd_ble_l2cap_ch_flow_control. */
++#define BLE_L2CAP_CREDITS_DEFAULT (1)
++
++/**@defgroup BLE_L2CAP_CH_SETUP_REFUSED_SRCS L2CAP channel setup refused sources
++ * @{ */
++#define BLE_L2CAP_CH_SETUP_REFUSED_SRC_LOCAL            (0x01)    /**< Local. */
++#define BLE_L2CAP_CH_SETUP_REFUSED_SRC_REMOTE           (0x02)    /**< Remote. */
++ /** @}  */
++
++ /** @defgroup BLE_L2CAP_CH_STATUS_CODES L2CAP channel status codes
++ * @{ */
++#define BLE_L2CAP_CH_STATUS_CODE_SUCCESS                (0x0000)  /**< Success. */
++#define BLE_L2CAP_CH_STATUS_CODE_LE_PSM_NOT_SUPPORTED   (0x0002)  /**< LE_PSM not supported. */
++#define BLE_L2CAP_CH_STATUS_CODE_NO_RESOURCES           (0x0004)  /**< No resources available. */
++#define BLE_L2CAP_CH_STATUS_CODE_INSUFF_AUTHENTICATION  (0x0005)  /**< Insufficient authentication. */
++#define BLE_L2CAP_CH_STATUS_CODE_INSUFF_AUTHORIZATION   (0x0006)  /**< Insufficient authorization. */
++#define BLE_L2CAP_CH_STATUS_CODE_INSUFF_ENC_KEY_SIZE    (0x0007)  /**< Insufficient encryption key size. */
++#define BLE_L2CAP_CH_STATUS_CODE_INSUFF_ENC             (0x0008)  /**< Insufficient encryption. */
++#define BLE_L2CAP_CH_STATUS_CODE_INVALID_SCID           (0x0009)  /**< Invalid Source CID. */
++#define BLE_L2CAP_CH_STATUS_CODE_SCID_ALLOCATED         (0x000A)  /**< Source CID already allocated. */
++#define BLE_L2CAP_CH_STATUS_CODE_UNACCEPTABLE_PARAMS    (0x000B)  /**< Unacceptable parameters. */
++#define BLE_L2CAP_CH_STATUS_CODE_NOT_UNDERSTOOD         (0x8000)  /**< Command Reject received instead of LE Credit Based Connection Response. */
++#define BLE_L2CAP_CH_STATUS_CODE_TIMEOUT                (0xC000)  /**< Operation timed out. */
++/** @} */
++
++/** @} */
++
++/**@addtogroup BLE_L2CAP_STRUCTURES Structures
++ * @{ */
++
++/**
++ * @brief BLE L2CAP connection configuration parameters, set with @ref sd_ble_cfg_set.
++ *
++ * @note  These parameters are set per connection, so all L2CAP channels created on this connection
++ *        will have the same parameters.
++ *
++ * @retval ::NRF_ERROR_INVALID_PARAM  One or more of the following is true:
++ *                                    - rx_mps is smaller than @ref BLE_L2CAP_MPS_MIN.
++ *                                    - tx_mps is smaller than @ref BLE_L2CAP_MPS_MIN.
++ *                                    - ch_count is greater than @ref BLE_L2CAP_CH_COUNT_MAX.
++ * @retval ::NRF_ERROR_NO_MEM         rx_mps or tx_mps is set too high.
++ */
++typedef struct
++{
++  uint16_t    rx_mps;        /**< The maximum L2CAP PDU payload size, in bytes, that L2CAP shall
++                                  be able to receive on L2CAP channels on connections with this
++                                  configuration. The minimum value is @ref BLE_L2CAP_MPS_MIN. */
++  uint16_t    tx_mps;        /**< The maximum L2CAP PDU payload size, in bytes, that L2CAP shall
++                                  be able to transmit on L2CAP channels on connections with this
++                                  configuration. The minimum value is @ref BLE_L2CAP_MPS_MIN. */
++  uint8_t     rx_queue_size; /**< Number of SDU data buffers that can be queued for reception per
++                                  L2CAP channel. The minimum value is one. */
++  uint8_t     tx_queue_size; /**< Number of SDU data buffers that can be queued for transmission
++                                  per L2CAP channel. The minimum value is one. */
++  uint8_t     ch_count;      /**< Number of L2CAP channels the application can create per connection
++                                  with this configuration. The default value is zero, the maximum
++                                  value is @ref BLE_L2CAP_CH_COUNT_MAX.
++                                  @note if this parameter is set to zero, all other parameters in
++                                  @ref ble_l2cap_conn_cfg_t are ignored. */
++} ble_l2cap_conn_cfg_t;
++
++/**@brief L2CAP channel RX parameters. */
++typedef struct
++{
++  uint16_t    rx_mtu;        /**< The maximum L2CAP SDU size, in bytes, that L2CAP shall be able to
++                                  receive on this L2CAP channel.
++                                  - Must be equal to or greater than @ref BLE_L2CAP_MTU_MIN. */
++  uint16_t    rx_mps;        /**< The maximum L2CAP PDU payload size, in bytes, that L2CAP shall be
++                                  able to receive on this L2CAP channel.
++                                  - Must be equal to or greater than @ref BLE_L2CAP_MPS_MIN.
++                                  - Must be equal to or less than @ref ble_l2cap_conn_cfg_t::rx_mps. */
++  ble_data_t  sdu_buf;       /**< SDU data buffer for reception.
++                                  - If @ref ble_data_t::p_data is non-NULL, initial credits are
++                                    issued to the peer.
++                                  - If @ref ble_data_t::p_data is NULL, no initial credits are
++                                    issued to the peer. */
++} ble_l2cap_ch_rx_params_t;
++
++/**@brief L2CAP channel setup parameters. */
++typedef struct
++{
++  ble_l2cap_ch_rx_params_t      rx_params;  /**< L2CAP channel RX parameters. */
++  uint16_t                      le_psm;     /**< LE Protocol/Service Multiplexer. Used when requesting
++                                                 setup of an L2CAP channel, ignored otherwise. */
++  uint16_t                      status;     /**< Status code, see @ref BLE_L2CAP_CH_STATUS_CODES.
++                                                 Used when replying to a setup request of an L2CAP
++                                                 channel, ignored otherwise. */
++} ble_l2cap_ch_setup_params_t;
++
++/**@brief L2CAP channel TX parameters. */
++typedef struct
++{
++  uint16_t    tx_mtu;        /**< The maximum L2CAP SDU size, in bytes, that L2CAP is able to
++                                  transmit on this L2CAP channel. */
++  uint16_t    peer_mps;      /**< The maximum L2CAP PDU payload size, in bytes, that the peer is
++                                  able to receive on this L2CAP channel. */
++  uint16_t    tx_mps;        /**< The maximum L2CAP PDU payload size, in bytes, that L2CAP is able
++                                  to transmit on this L2CAP channel. This is effective tx_mps,
++                                  selected by the SoftDevice as
++                                  MIN( @ref ble_l2cap_ch_tx_params_t::peer_mps, @ref ble_l2cap_conn_cfg_t::tx_mps ) */
++  uint16_t    credits;       /**< Initial credits given by the peer. */
++} ble_l2cap_ch_tx_params_t;
++
++/**@brief L2CAP Channel Setup Request event. */
++typedef struct
++{
++  ble_l2cap_ch_tx_params_t  tx_params;  /**< L2CAP channel TX parameters. */
++  uint16_t                  le_psm;     /**< LE Protocol/Service Multiplexer. */
++} ble_l2cap_evt_ch_setup_request_t;
++
++/**@brief L2CAP Channel Setup Refused event. */
++typedef struct
++{
++  uint8_t  source;           /**< Source, see @ref BLE_L2CAP_CH_SETUP_REFUSED_SRCS */
++  uint16_t status;           /**< Status code, see @ref BLE_L2CAP_CH_STATUS_CODES */
++} ble_l2cap_evt_ch_setup_refused_t;
++
++/**@brief L2CAP Channel Setup Completed event. */
++typedef struct
++{
++  ble_l2cap_ch_tx_params_t tx_params;  /**< L2CAP channel TX parameters. */
++} ble_l2cap_evt_ch_setup_t;
++
++/**@brief L2CAP Channel SDU Data Duffer Released event. */
++typedef struct
++{
++  ble_data_t  sdu_buf;       /**< Returned reception or transmission SDU data buffer. The SoftDevice
++                                  returns SDU data buffers supplied by the application, which have
++                                  not yet been returned previously via a @ref BLE_L2CAP_EVT_CH_RX or
++                                  @ref BLE_L2CAP_EVT_CH_TX event. */
++} ble_l2cap_evt_ch_sdu_buf_released_t;
++
++/**@brief L2CAP Channel Credit received event. */
++typedef struct
++{
++  uint16_t  credits;         /**< Additional credits given by the peer. */
++} ble_l2cap_evt_ch_credit_t;
++
++/**@brief L2CAP Channel received SDU event. */
++typedef struct
++{
++  uint16_t    sdu_len;       /**< Total SDU length, in bytes. */
++  ble_data_t  sdu_buf;       /**< SDU data buffer.
++                                  @note If there is not enough space in the buffer
++                                        (sdu_buf.len < sdu_len) then the rest of the SDU will be
++                                        silently discarded by the SoftDevice. */
++} ble_l2cap_evt_ch_rx_t;
++
++/**@brief L2CAP Channel transmitted SDU event. */
++typedef struct
++{
++  ble_data_t  sdu_buf;       /**< SDU data buffer. */
++} ble_l2cap_evt_ch_tx_t;
++
++/**@brief L2CAP event structure. */
++typedef struct
++{
++  uint16_t conn_handle;                                     /**< Connection Handle on which the event occured. */
++  uint16_t local_cid;                                       /**< Local Channel ID of the L2CAP channel, or
++                                                                 @ref BLE_L2CAP_CID_INVALID if not present. */
++  union
++  {
++    ble_l2cap_evt_ch_setup_request_t    ch_setup_request;   /**< L2CAP Channel Setup Request Event Parameters. */
++    ble_l2cap_evt_ch_setup_refused_t    ch_setup_refused;   /**< L2CAP Channel Setup Refused Event Parameters. */
++    ble_l2cap_evt_ch_setup_t            ch_setup;           /**< L2CAP Channel Setup Completed Event Parameters. */
++    ble_l2cap_evt_ch_sdu_buf_released_t ch_sdu_buf_released;/**< L2CAP Channel SDU Data Buffer Released Event Parameters. */
++    ble_l2cap_evt_ch_credit_t           credit;             /**< L2CAP Channel Credit Received Event Parameters. */
++    ble_l2cap_evt_ch_rx_t               rx;                 /**< L2CAP Channel SDU Received Event Parameters. */
++    ble_l2cap_evt_ch_tx_t               tx;                 /**< L2CAP Channel SDU Transmitted Event Parameters. */
++  } params;                                                 /**< Event Parameters. */
++} ble_l2cap_evt_t;
++
++/** @} */
++
++/**@addtogroup BLE_L2CAP_FUNCTIONS Functions
++ * @{ */
++
++/**@brief Set up an L2CAP channel.
++ *
++ * @details This function is used to:
++ *          - Request setup of an L2CAP channel: sends an LE Credit Based Connection Request packet to a peer.
++ *          - Reply to a setup request of an L2CAP channel (if called in response to a
++ *            @ref BLE_L2CAP_EVT_CH_SETUP_REQUEST event): sends an LE Credit Based Connection
++ *            Response packet to a peer.
++ *
++ * @note    A call to this function will require the application to keep the SDU data buffer alive
++ *          until the SDU data buffer is returned in @ref BLE_L2CAP_EVT_CH_RX or
++ *          @ref BLE_L2CAP_EVT_CH_SDU_BUF_RELEASED event.
++ *
++ * @events
++ * @event{@ref BLE_L2CAP_EVT_CH_SETUP, Setup successful.}
++ * @event{@ref BLE_L2CAP_EVT_CH_SETUP_REFUSED, Setup failed.}
++ * @endevents
++ *
++ * @mscs
++ * @mmsc{@ref BLE_L2CAP_CH_SETUP_MSC}
++ * @endmscs
++ *
++ * @param[in] conn_handle      Connection Handle.
++ * @param[in,out] p_local_cid  Pointer to a uint16_t containing Local Channel ID of the L2CAP channel:
++ *                             - As input: @ref BLE_L2CAP_CID_INVALID when requesting setup of an L2CAP
++ *                               channel or local_cid provided in the @ref BLE_L2CAP_EVT_CH_SETUP_REQUEST
++ *                               event when replying to a setup request of an L2CAP channel.
++ *                             - As output: local_cid for this channel.
++ * @param[in] p_params         L2CAP channel parameters.
++ *
++ * @retval ::NRF_SUCCESS                    Successfully queued request or response for transmission.
++ * @retval ::NRF_ERROR_BUSY                 The stack is busy, process pending events and retry.
++ * @retval ::NRF_ERROR_INVALID_ADDR         Invalid pointer supplied.
++ * @retval ::BLE_ERROR_INVALID_CONN_HANDLE  Invalid Connection Handle.
++ * @retval ::NRF_ERROR_INVALID_PARAM        Invalid parameter(s) supplied.
++ * @retval ::NRF_ERROR_INVALID_LENGTH       Supplied higher rx_mps than has been configured on this link.
++ * @retval ::NRF_ERROR_INVALID_STATE        Invalid State to perform operation (L2CAP channel already set up).
++ * @retval ::NRF_ERROR_NOT_FOUND            CID not found.
++ * @retval ::NRF_ERROR_RESOURCES            The limit has been reached for available L2CAP channels,
++ *                                          see @ref ble_l2cap_conn_cfg_t::ch_count.
++ */
++SVCALL(SD_BLE_L2CAP_CH_SETUP, uint32_t, sd_ble_l2cap_ch_setup(uint16_t conn_handle, uint16_t *p_local_cid, ble_l2cap_ch_setup_params_t const *p_params));
++
++/**@brief Release an L2CAP channel.
++ *
++ * @details This sends a Disconnection Request packet to a peer.
++ *
++ * @events
++ * @event{@ref BLE_L2CAP_EVT_CH_RELEASED, Release complete.}
++ * @endevents
++ *
++ * @mscs
++ * @mmsc{@ref BLE_L2CAP_CH_RELEASE_MSC}
++ * @endmscs
++ *
++ * @param[in] conn_handle   Connection Handle.
++ * @param[in] local_cid     Local Channel ID of the L2CAP channel.
++ *
++ * @retval ::NRF_SUCCESS                    Successfully queued request for transmission.
++ * @retval ::BLE_ERROR_INVALID_CONN_HANDLE  Invalid Connection Handle.
++ * @retval ::NRF_ERROR_INVALID_STATE        Invalid State to perform operation (Setup or release is
++ *                                          in progress for the L2CAP channel).
++ * @retval ::NRF_ERROR_NOT_FOUND            CID not found.
++ */
++SVCALL(SD_BLE_L2CAP_CH_RELEASE, uint32_t, sd_ble_l2cap_ch_release(uint16_t conn_handle, uint16_t local_cid));
++
++/**@brief Receive an SDU on an L2CAP channel.
++ *
++ * @details This may issue additional credits to the peer using an LE Flow Control Credit packet.
++ *
++ * @note    A call to this function will require the application to keep the memory pointed by
++ *          @ref ble_data_t::p_data alive until the SDU data buffer is returned in @ref BLE_L2CAP_EVT_CH_RX
++ *          or @ref BLE_L2CAP_EVT_CH_SDU_BUF_RELEASED event.
++ *
++ * @note    The SoftDevice can queue up to @ref ble_l2cap_conn_cfg_t::rx_queue_size SDU data buffers
++ *          for reception per L2CAP channel.
++ *
++ * @events
++ * @event{@ref BLE_L2CAP_EVT_CH_RX, The SDU is received.}
++ * @endevents
++ *
++ * @mscs
++ * @mmsc{@ref BLE_L2CAP_CH_RX_MSC}
++ * @endmscs
++ *
++ * @param[in] conn_handle Connection Handle.
++ * @param[in] local_cid   Local Channel ID of the L2CAP channel.
++ * @param[in] p_sdu_buf   Pointer to the SDU data buffer.
++ *
++ * @retval ::NRF_SUCCESS                    Buffer accepted.
++ * @retval ::NRF_ERROR_INVALID_ADDR         Invalid pointer supplied.
++ * @retval ::BLE_ERROR_INVALID_CONN_HANDLE  Invalid Connection Handle.
++ * @retval ::NRF_ERROR_INVALID_STATE        Invalid State to perform operation (Setup or release is
++ *                                          in progress for an L2CAP channel).
++ * @retval ::NRF_ERROR_NOT_FOUND            CID not found.
++ * @retval ::NRF_ERROR_RESOURCES            Too many SDU data buffers supplied. Wait for a
++ *                                          @ref BLE_L2CAP_EVT_CH_RX event and retry.
++ */
++SVCALL(SD_BLE_L2CAP_CH_RX, uint32_t, sd_ble_l2cap_ch_rx(uint16_t conn_handle, uint16_t local_cid, ble_data_t const *p_sdu_buf));
++
++/**@brief Transmit an SDU on an L2CAP channel.
++ *
++ * @note    A call to this function will require the application to keep the memory pointed by
++ *          @ref ble_data_t::p_data alive until the SDU data buffer is returned in @ref BLE_L2CAP_EVT_CH_TX
++ *          or @ref BLE_L2CAP_EVT_CH_SDU_BUF_RELEASED event.
++ *
++ * @note    The SoftDevice can queue up to @ref ble_l2cap_conn_cfg_t::tx_queue_size SDUs for
++ *          transmission per L2CAP channel.
++ *
++ * @note    The application can keep track of the available credits for transmission by following
++ *          the procedure below:
++ *          - Store initial credits given by the peer in a variable.
++ *            (Initial credits are provided in a @ref BLE_L2CAP_EVT_CH_SETUP event.)
++ *          - Decrement the variable, which stores the currently available credits, by
++ *            ceiling((@ref ble_data_t::len + 2) / tx_mps) when a call to this function returns
++ *            @ref NRF_SUCCESS. (tx_mps is provided in a @ref BLE_L2CAP_EVT_CH_SETUP event.)
++ *          - Increment the variable, which stores the currently available credits, by additional
++ *            credits given by the peer in a @ref BLE_L2CAP_EVT_CH_CREDIT event.
++ *
++ * @events
++ * @event{@ref BLE_L2CAP_EVT_CH_TX, The SDU is transmitted.}
++ * @endevents
++ *
++ * @mscs
++ * @mmsc{@ref BLE_L2CAP_CH_TX_MSC}
++ * @endmscs
++ *
++ * @param[in] conn_handle Connection Handle.
++ * @param[in] local_cid   Local Channel ID of the L2CAP channel.
++ * @param[in] p_sdu_buf   Pointer to the SDU data buffer.
++ *
++ * @retval ::NRF_SUCCESS                    Successfully queued L2CAP SDU for transmission.
++ * @retval ::NRF_ERROR_INVALID_ADDR         Invalid pointer supplied.
++ * @retval ::BLE_ERROR_INVALID_CONN_HANDLE  Invalid Connection Handle.
++ * @retval ::NRF_ERROR_INVALID_STATE        Invalid State to perform operation (Setup or release is
++ *                                          in progress for the L2CAP channel).
++ * @retval ::NRF_ERROR_NOT_FOUND            CID not found.
++ * @retval ::NRF_ERROR_DATA_SIZE            Invalid SDU length supplied, must not be more than
++ *                                          @ref ble_l2cap_ch_tx_params_t::tx_mtu provided in
++ *                                          @ref BLE_L2CAP_EVT_CH_SETUP event.
++ * @retval ::NRF_ERROR_RESOURCES            Too many SDUs queued for transmission. Wait for a
++ *                                          @ref BLE_L2CAP_EVT_CH_TX event and retry.
++ */
++SVCALL(SD_BLE_L2CAP_CH_TX, uint32_t, sd_ble_l2cap_ch_tx(uint16_t conn_handle, uint16_t local_cid, ble_data_t const *p_sdu_buf));
++
++/**@brief Advanced SDU reception flow control.
++ *
++ * @details Adjust the way the SoftDevice issues credits to the peer.
++ *          This may issue additional credits to the peer using an LE Flow Control Credit packet.
++ *
++ * @mscs
++ * @mmsc{@ref BLE_L2CAP_CH_FLOW_CONTROL_MSC}
++ * @endmscs
++ *
++ * @param[in] conn_handle Connection Handle.
++ * @param[in] local_cid   Local Channel ID of the L2CAP channel or @ref BLE_L2CAP_CID_INVALID to set
++ *                        the value that will be used for newly created channels.
++ * @param[in] credits     Number of credits that the SoftDevice will make sure the peer has every
++ *                        time it starts using a new reception buffer.
++ *                        - @ref BLE_L2CAP_CREDITS_DEFAULT is the default value the SoftDevice will
++ *                          use if this function is not called.
++ *                        - If set to zero, the SoftDevice will stop issuing credits for new reception
++ *                          buffers the application provides or has provided. SDU reception that is
++ *                          currently ongoing will be allowed to complete.
++ * @param[out] p_credits  NULL or pointer to a uint16_t. If a valid pointer is provided, it will be
++ *                        written by the SoftDevice with the number of credits that is or will be
++ *                        available to the peer. If the value written by the SoftDevice is 0 when
++ *                        credits parameter was set to 0, the peer will not be able to send more
++ *                        data until more credits are provided by calling this function again with
++ *                        credits > 0. This parameter is ignored when local_cid is set to @ref
++ *                        BLE_L2CAP_CID_INVALID.
++ *
++ * @note Application should take care when setting number of credits higher than default value. In
++ *       this case the application must make sure that the SoftDevice always has reception buffers
++ *       available (see @ref sd_ble_l2cap_ch_rx) for that channel. If the SoftDevice does not have
++ *       such buffers available, packets may be NACKed on the Link Layer and all Bluetooth traffic
++ *       on the connection handle may be stalled until the SoftDevice again has an available
++ *       reception buffer. This applies even if the application has used this call to set the
++ *       credits back to default, or zero.
++ *
++ * @retval ::NRF_SUCCESS                    Flow control parameters accepted.
++ * @retval ::NRF_ERROR_INVALID_ADDR         Invalid pointer supplied.
++ * @retval ::BLE_ERROR_INVALID_CONN_HANDLE  Invalid Connection Handle.
++ * @retval ::NRF_ERROR_INVALID_STATE        Invalid State to perform operation (Setup or release is
++ *                                          in progress for an L2CAP channel).
++ * @retval ::NRF_ERROR_NOT_FOUND            CID not found.
++ */
++SVCALL(SD_BLE_L2CAP_CH_FLOW_CONTROL, uint32_t, sd_ble_l2cap_ch_flow_control(uint16_t conn_handle, uint16_t local_cid, uint16_t credits, uint16_t *p_credits));
++
+ 
+
+//| 
+//| Data buffer provided to/from the application
+//| 
++/**@brief Data structure. */
++typedef struct
++{
++  uint8_t     *p_data;  /**< Pointer to the data buffer provided to/from the application. */
++  uint16_t     len;     /**< Length of the data buffer, in bytes. */
++} ble_data_t;
++
+
+
+
+|-----------------------------------------------------------------------------|
+|  Network Privacy                                                            |
+|-----------------------------------------------------------------------------|
+
+//|
+//| Now supporting both network privacy and device privacy.
+//|
+ #define BLE_GAP_PRIVACY_MODE_OFF                       0x00 /**< Device will send and accept its identity address for its own address. */
+ #define BLE_GAP_PRIVACY_MODE_DEVICE_PRIVACY            0x01 /**< Device will send and accept only private addresses for its own address. */
++#define BLE_GAP_PRIVACY_MODE_NETWORK_PRIVACY           0x02 /**< Device will send and accept only private addresses for its own address,
++                                                                 and will not accept a peer using identity address as sender address when
++                                                                 the peer IRK is exchanged, non-zero and added to the identity list. */
+ 
+
+-/**@brief Device Privacy.
++/**@brief Privacy.
+  *
+  *        The privacy feature provides a way for the device to avoid being tracked over a period of time.
+  *        The privacy feature, when enabled, hides the local device identity and replaces it with a private address
+  *        that is automatically refreshed at a specified interval.
+  *
+  *        If a device still wants to be recognized by other peers, it needs to share it's Identity Resolving Key (IRK).
+  *        With this key, a device can generate a random private address that can only be recognized by peers in possession of that key,
+  *        and devices can establish connections without revealing their real identities.
+  *
++ *        Both network privacy (@ref BLE_GAP_PRIVACY_MODE_NETWORK_PRIVACY) and device privacy (@ref BLE_GAP_PRIVACY_MODE_DEVICE_PRIVACY)
++ *        are supported.
++ *
+  * @note  If the device IRK is updated, the new IRK becomes the one to be distributed in all
+  *        bonding procedures performed after @ref sd_ble_gap_privacy_set returns.
+  *        The IRK distributed during bonding procedure is the device IRK that is active when @ref sd_ble_gap_sec_params_reply is called.
+  */
+ typedef struct
+ {
+   uint8_t        privacy_mode;         /**< Privacy mode, see @ref BLE_GAP_PRIVACY_MODES. Default is @ref BLE_GAP_PRIVACY_MODE_OFF. */
+   uint8_t        private_addr_type;    /**< The private address type must be either @ref BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE or @ref BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_NON_RESOLVABLE. */
+   uint16_t       private_addr_cycle_s; /**< Private address cycle interval in seconds. Providing an address cycle value of 0 will use the default value defined by @ref BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S. */
+   ble_gap_irk_t *p_device_irk;         /**< When used as input, pointer to IRK structure that will be used as the default IRK. If NULL, the device default IRK will be used.
+                                             When used as output, pointer to IRK structure where the current default IRK will be written to. If NULL, this argument is ignored.
+                                             By default, the default IRK is used to generate random private resolvable addresses for the local device unless instructed otherwise. */
+ } ble_gap_privacy_params_t;
+
++#define BLE_UUID_GAP_CHARACTERISTIC_RPA_ONLY          0x2AC9 /**< Resolvable Private Address Only Characteristic. */
+
+
+//|
+//| Improved documentation for sd_ble_gap_privacy_get 
+//|
+ /**@brief Get privacy settings.
+  *
+- * @note  The privacy settings returned include the current device irk as well.
++ * @note ::ble_gap_privacy_params_t::p_device_irk must be initialized to NULL or a valid address before this function is called.
++ *       If it is initialized to a valid address, the address pointed to will contain the current device IRK on return.
+  *
+- * @param[in] p_privacy_params Privacy settings.
++ * @param[in,out] p_privacy_params Privacy settings.
+  *
+  * @retval ::NRF_SUCCESS            Privacy settings read.
+  * @retval ::NRF_ERROR_INVALID_ADDR The pointer given for returning the privacy settings may be NULL or invalid.
+  *                                  Otherwise, the p_device_irk pointer in privacy parameter is an invalid pointer.
+  */
+ SVCALL(SD_BLE_GAP_PRIVACY_GET, uint32_t, sd_ble_gap_privacy_get(ble_gap_privacy_params_t *p_privacy_params));
+
+|-----------------------------------------------------------------------------|
+|  Updates for Bluetooth 5 compliance                                         |
+|-----------------------------------------------------------------------------|
+
+//| 
+//| BLE_GAP_EVT_TIMEOUT {src: BLE_GAP_TIMEOUT_SRC_SECURITY_REQUEST} replaced with BLE_GAP_EVT_AUTH_STATUS {auth_status: BLE_GAP_SEC_STATUS_TIMEOUT}
+//|  
+ /**@defgroup BLE_GAP_TIMEOUT_SOURCES GAP Timeout sources
+  * @{ */
+ #define BLE_GAP_TIMEOUT_SRC_ADVERTISING                0x00 /**< Advertising timeout. */
+-#define BLE_GAP_TIMEOUT_SRC_SECURITY_REQUEST           0x01 /**< Security request timeout. */
+-#define BLE_GAP_TIMEOUT_SRC_SCAN                       0x02 /**< Scanning timeout. */
+-#define BLE_GAP_TIMEOUT_SRC_CONN                       0x03 /**< Connection timeout. */
+-#define BLE_GAP_TIMEOUT_SRC_AUTH_PAYLOAD               0x04 /**< Authenticated payload timeout. */
++#define BLE_GAP_TIMEOUT_SRC_SCAN                       0x01 /**< Scanning timeout. */
++#define BLE_GAP_TIMEOUT_SRC_CONN                       0x02 /**< Connection timeout. */
++#define BLE_GAP_TIMEOUT_SRC_AUTH_PAYLOAD               0x03 /**< Authenticated payload timeout. */
+ /**@} */
+
+
+//| 
+//| Lowering of the lower limit for advertising interval for non-connectable advertisement.
+//|  
+ /**@defgroup BLE_GAP_ADV_INTERVALS GAP Advertising interval max and min
+  * @{ */
+ #define BLE_GAP_ADV_INTERVAL_MIN        0x0020 /**< Minimum Advertising interval in 625 us units, i.e. 20 ms. */
+-#define BLE_GAP_ADV_NONCON_INTERVAL_MIN 0x00A0 /**< Minimum Advertising interval in 625 us units for non connectable mode, i.e. 100 ms. */
+ #define BLE_GAP_ADV_INTERVAL_MAX        0x4000 /**< Maximum Advertising interval in 625 us units, i.e. 10.24 s. */
+  /**@}  */
+
+ 
+//| 
+//| Change of definition of LE Security Mode 1 level 4.
+//|
+ /**@brief GAP connection security modes.
+  *
+  * Security Mode 0 Level 0: No access permissions at all (this level is not defined by the Bluetooth Core specification).\n
+  * Security Mode 1 Level 1: No security is needed (aka open link).\n
+  * Security Mode 1 Level 2: Encrypted link required, MITM protection not necessary.\n
+  * Security Mode 1 Level 3: MITM protected encrypted link required.\n
+- * Security Mode 1 Level 4: LESC MITM protected encrypted link required.\n
++ * Security Mode 1 Level 4: LESC MITM protected encrypted link using a 128-bit strength encryption key required.\n
+  * Security Mode 2 Level 1: Signing or encryption required, MITM protection not necessary.\n
+  * Security Mode 2 Level 2: MITM protected signing required, unless link is MITM protected encrypted.\n
+  */
+ typedef struct
+ {
+   uint8_t sm : 4;                     /**< Security Mode (1 or 2), 0 for no permissions at all. */
+   uint8_t lv : 4;                     /**< Level (1, 2, 3 or 4), 0 for no permissions at all. */
+
+ } ble_gap_conn_sec_mode_t;
+
+|-----------------------------------------------------------------------------|
+|  Master boot record                                                         |
+|-----------------------------------------------------------------------------|
+
+
+//| 
+//| New API for forwarding all interrupts to a specific address
+//|  
+ enum NRF_MBR_COMMANDS
+ {
+   SD_MBR_COMMAND_COPY_BL,                 /**< Copy a new BootLoader. @see sd_mbr_command_copy_bl_t*/
+   SD_MBR_COMMAND_COPY_SD,                 /**< Copy a new SoftDevice. @see ::sd_mbr_command_copy_sd_t*/
+   SD_MBR_COMMAND_INIT_SD,                 /**< Initialize forwarding interrupts to SD, and run reset function in SD*/
+   SD_MBR_COMMAND_COMPARE,                 /**< This command works like memcmp. @see ::sd_mbr_command_compare_t*/
+-  SD_MBR_COMMAND_VECTOR_TABLE_BASE_SET, /**< Start forwarding all exception to this address @see ::sd_mbr_command_vector_table_base_set_t*/
++  SD_MBR_COMMAND_VECTOR_TABLE_BASE_SET,   /**< Change the address the MBR starts after a reset @see ::sd_mbr_command_vector_table_base_set_t*/
++  SD_MBR_COMMAND_RESERVED,
++  SD_MBR_COMMAND_IRQ_FORWARD_ADDRESS_SET, /**< Start forwarding all interrupts to this address @see ::sd_mbr_command_irq_forward_address_set_t*/
+ };
+ 
++/**@brief Sets the base address of the interrupt vector table for interrupts forwarded from the MBR
++ * Unlike sd_mbr_command_vector_table_base_set_t, this function does not reset, and it does not
++ * change where the MBR starts after reset.
++ *
++ * @retval ::NRF_SUCCESS
++ */
++typedef struct
++{
++  uint32_t address; /**< The base address of the interrupt vector table for forwarded interrupts.*/
++} sd_mbr_command_irq_forward_address_set_t;
+ 
+ typedef struct
+ {
+   uint32_t command;  /**< type of command to be issued see @ref NRF_MBR_COMMANDS. */
+   union
+   {
+     sd_mbr_command_copy_sd_t copy_sd;  /**< Parameters for copy SoftDevice.*/
+     sd_mbr_command_compare_t compare;  /**< Parameters for verify.*/
+     sd_mbr_command_copy_bl_t copy_bl;  /**< Parameters for copy BootLoader. Requires parameter page. */
+     sd_mbr_command_vector_table_base_set_t base_set; /**< Parameters for vector table base set. Requires parameter page.*/
++    sd_mbr_command_irq_forward_address_set_t irq_forward_address_set; /**< Parameters for irq forward address set*/
+   } params;
+ } sd_mbr_command_t;
+ 
+
+|-----------------------------------------------------------------------------|
+|  Removal of Compatibility mode 2 option                                     |
+|-----------------------------------------------------------------------------|
+ 
+ enum BLE_GAP_OPTS
+ {
+   BLE_GAP_OPT_CH_MAP  = BLE_GAP_OPT_BASE,       /**< Channel Map. @ref ble_gap_opt_ch_map_t  */
+   BLE_GAP_OPT_LOCAL_CONN_LATENCY,               /**< Local connection latency. @ref ble_gap_opt_local_conn_latency_t */
+   BLE_GAP_OPT_PASSKEY,                          /**< Set passkey. @ref ble_gap_opt_passkey_t */
+   BLE_GAP_OPT_SCAN_REQ_REPORT,                  /**< Scan request report. @ref ble_gap_opt_scan_req_report_t */
+   BLE_GAP_OPT_COMPAT_MODE_1,                    /**< Compatibility mode. @ref ble_gap_opt_compat_mode_1_t */
+-  BLE_GAP_OPT_COMPAT_MODE_2,                    /**< Compatibility mode. @ref ble_gap_opt_compat_mode_2_t */
+   BLE_GAP_OPT_AUTH_PAYLOAD_TIMEOUT,             /**< Set Authenticated payload timeout. @ref ble_gap_opt_auth_payload_timeout_t */
+   BLE_GAP_OPT_SLAVE_LATENCY_DISABLE,            /**< Disable slave latency. @ref ble_gap_opt_slave_latency_disable_t */
+ };
+ 
+
+-/**@brief Compatibility mode 2 option.
+- *
+- *        This can be used with @ref sd_ble_opt_set to enable compatibility mode 2.
+- *        Compatibility mode 2 is disabled by default.
+- *
+- *  @note  Compatibility mode 2 enables interoperability with devices that initiate Feature exchange
+- *         and version exchange procedure in parallel.
+- *
+- *  @retval ::NRF_SUCCESS Set successfully.
+- *  @retval ::NRF_ERROR_INVALID_PARAM if enable bit is not set to 1. Currently only enabling is supported.
+- *  @retval ::NRF_ERROR_INVALID_STATE When any role is running while mode 2 is set.
+- */
+-typedef struct
+-{
+-   uint8_t enable : 1;                           /**< Enable compatibility mode 2.*/
+-} ble_gap_opt_compat_mode_2_t;
+-
+-
+ 
+ 
+ /**@brief Option structure for GAP options. */
+ typedef union
+ {
+   ble_gap_opt_ch_map_t                  ch_map;                    /**< Parameters for the Channel Map option. */
+   ble_gap_opt_local_conn_latency_t      local_conn_latency;        /**< Parameters for the Local connection latency option */
+   ble_gap_opt_passkey_t                 passkey;                   /**< Parameters for the Passkey option.*/
+   ble_gap_opt_scan_req_report_t         scan_req_report;           /**< Parameters for the scan request report option.*/
+   ble_gap_opt_compat_mode_1_t           compat_mode_1;             /**< Parameters for the compatibility mode 1 option.*/
+-  ble_gap_opt_compat_mode_2_t           compat_mode_2;             /**< Parameters for the compatibility mode 2 option.*/
+   ble_gap_opt_auth_payload_timeout_t    auth_payload_timeout;      /**< Parameters for the authenticated payload timeout option.*/
+   ble_gap_opt_slave_latency_disable_t   slave_latency_disable;     /**< Parameters for the Disable slave latency option */
+ } ble_gap_opt_t;
+ /**@} */
+ 
+
+
+|-----------------------------------------------------------------------------|
+|  Misc                                                                       |
+|-----------------------------------------------------------------------------|
+
+
+//| 
+//| Added defines for Authenticated payload timeout 
+//|  
++/**@defgroup BLE_GAP_AUTH_PAYLOAD_TIMEOUT Authenticated payload timeout defines.
++  * @{ */
++#define BLE_GAP_AUTH_PAYLOAD_TIMEOUT_MAX (48000) /**< Maximum authenticated payload timeout in 10 ms units, i.e. 8 minutes. */
++#define BLE_GAP_AUTH_PAYLOAD_TIMEOUT_MIN (1)     /**< Minimum authenticated payload timeout in 10 ms units, i.e. 10 ms. */
++/**@} */
+
+ /**@brief Authenticated payload timeout option.
+  *
+- *        This can be used with @ref sd_ble_opt_set to change the Authenticated payload timeout to a value other than the default of 8 minutes.
++ *        This can be used with @ref sd_ble_opt_set to change the Authenticated payload timeout to a value other
++ *        than the default of @ref BLE_GAP_AUTH_PAYLOAD_TIMEOUT_MAX.
+  *
+  * @note  The authenticated payload timeout event ::BLE_GAP_TIMEOUT_SRC_AUTH_PAYLOAD will be generated
+  *        if auth_payload_timeout time has elapsed without receiving a packet with a valid MIC on an encrypted
+  *        link.
+  *
+  * @note  The LE ping procedure will be initiated before the timer expires to give the peer a chance
+  *        to reset the timer. In addition the stack will try to prioritize running of LE ping over other
+  *        activities to increase chances of finishing LE ping before timer expires. To avoid side-effects
+  *        on other activities, it is recommended to use high timeout values.
+  *        Recommended timeout > 2*(connInterval * (6 + connSlaveLatency)).
+  *
+  * @retval ::NRF_SUCCESS Set successfully.
+  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied. auth_payload_timeout was outside of allowed range.
+  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid connection handle parameter.
+  */
+ typedef struct
+ {
+   uint16_t   conn_handle;                       /**< Connection Handle */
+-  uint16_t   auth_payload_timeout;              /**< Requested timeout in 10 ms unit. Maximum is 48 000 (=480 000 ms =8 min). Minimum is 1 (=10 ms). */
++  uint16_t   auth_payload_timeout;              /**< Requested timeout in 10 ms unit, see @ref BLE_GAP_AUTH_PAYLOAD_TIMEOUT. */
+ } ble_gap_opt_auth_payload_timeout_t;
+
+
+//| 
+//| APIs not returning NRF_ERROR_BUSY anymore.
+//|  
+ /**@brief Start advertising (GAP Discoverable, Connectable modes, Broadcast Procedure).
+  *
+  * @note Only one advertiser may be active at any time.
+  *
+  * @param[in] p_adv_params Pointer to advertising parameters structure.
+  * @param[in] conn_cfg_tag Tag identifying a configuration set by @ref sd_ble_cfg_set or @ref
+  *                         BLE_CONN_CFG_TAG_DEFAULT to use the default connection configuration. If
+  *                         @ref ble_gap_adv_params_t::type is @ref BLE_GAP_ADV_TYPE_ADV_NONCONN_IND,
+  *                         this is ignored.
+  *
+  * @retval ::NRF_SUCCESS The BLE stack has started advertising.
+  * @retval ::NRF_ERROR_INVALID_ADDR Invalid pointer supplied.
+  * @retval ::NRF_ERROR_INVALID_STATE Invalid state to perform operation.
+  * @retval ::NRF_ERROR_CONN_COUNT The limit of available connections has been reached; connectable advertiser cannot be started.
+  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied, check the accepted ranges and limits.
+  * @retval ::BLE_ERROR_GAP_INVALID_BLE_ADDR Invalid Bluetooth address supplied.
+  * @retval ::BLE_ERROR_GAP_DISCOVERABLE_WITH_WHITELIST Discoverable mode and whitelist incompatible.
+- * @retval ::NRF_ERROR_BUSY The stack is busy, process pending events and retry.
+  * @retval ::NRF_ERROR_RESOURCES Not enough BLE role slots available.
+  *                               Stop one or more currently active roles (Central, Peripheral or Observer) and try again
+  */
+ SVCALL(SD_BLE_GAP_ADV_START, uint32_t, sd_ble_gap_adv_start(ble_gap_adv_params_t const *p_adv_params, uint8_t conn_cfg_tag));
+
+
+ /**@brief Initiate the GAP Authentication procedure.
+  *
+  * @details In the central role, this function will send an SMP Pairing Request (or an SMP Pairing Failed if rejected),
+  *          otherwise in the peripheral role, an SMP Security Request will be sent.
+  *
+  * @param[in] conn_handle Connection handle.
+  * @param[in] p_sec_params Pointer to the @ref ble_gap_sec_params_t structure with the security parameters to be used during the pairing or bonding procedure.
+  *                         In the peripheral role, only the bond, mitm, lesc and keypress fields of this structure are used.
+  *                         In the central role, this pointer may be NULL to reject a Security Request.
+  *
+  * @retval ::NRF_SUCCESS Successfully initiated authentication procedure.
+  * @retval ::NRF_ERROR_INVALID_ADDR Invalid pointer supplied.
+  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied.
+  * @retval ::NRF_ERROR_INVALID_STATE Invalid state to perform operation.
+- * @retval ::NRF_ERROR_BUSY The stack is busy, process pending events and retry.
+  * @retval ::NRF_ERROR_NO_MEM The maximum number of authentication procedures that can run in parallel for the given role is reached.
+  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid connection handle supplied.
+  * @retval ::NRF_ERROR_NOT_SUPPORTED Setting of sign or link fields in @ref ble_gap_sec_kdist_t not supported.
+  * @retval ::NRF_ERROR_TIMEOUT A SMP timeout has occurred, and further SMP operations on this link is prohibited.
+  */
+ SVCALL(SD_BLE_GAP_AUTHENTICATE, uint32_t, sd_ble_gap_authenticate(uint16_t conn_handle, ble_gap_sec_params_t const *p_sec_params));
+ 
+
+ /**@brief Start scanning (GAP Discovery procedure, Observer Procedure).
+  *
+  * @param[in] p_scan_params Pointer to scan parameters structure.
+  *
+  * @retval ::NRF_SUCCESS Successfully initiated scanning procedure.
+  * @retval ::NRF_ERROR_INVALID_ADDR Invalid pointer supplied.
+  * @retval ::NRF_ERROR_INVALID_STATE Invalid state to perform operation.
+  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied.
+- * @retval ::NRF_ERROR_BUSY The stack is busy, process pending events and retry.
+  * @retval ::NRF_ERROR_RESOURCES Not enough BLE role slots available.
+  *                               Stop one or more currently active roles (Central, Peripheral or Broadcaster) and try again
+  */
+ SVCALL(SD_BLE_GAP_SCAN_START, uint32_t, sd_ble_gap_scan_start(ble_gap_scan_params_t const *p_scan_params));
+
+
+ /**@brief Create a connection (GAP Link Establishment).
+  *
+  * @note If a scanning procedure is currently in progress it will be automatically stopped when calling this function.
+  *       The scanning procedure will be stopped even if the function returns an error.
+  *
+  * @param[in] p_peer_addr   Pointer to peer address. If the use_whitelist bit is set in @ref ble_gap_scan_params_t, then this is ignored.
+- *                          If @ref ble_gap_addr_t::addr_id_peer is set then p_peer_addr must be present in the device identity list
+- *                          see @ref sd_ble_gap_device_identities_set.
+  * @param[in] p_scan_params Pointer to scan parameters structure.
+  * @param[in] p_conn_params Pointer to desired connection parameters.
+  * @param[in] conn_cfg_tag  Tag identifying a configuration set by @ref sd_ble_cfg_set or @ref
+  *                          BLE_CONN_CFG_TAG_DEFAULT to use the default connection configuration.
+  *
+  * @retval ::NRF_SUCCESS Successfully initiated connection procedure.
+  * @retval ::NRF_ERROR_INVALID_ADDR Invalid parameter(s) pointer supplied.
+  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied.
+  *                                   - Invalid parameter(s) in p_scan_params or p_conn_params.
+  *                                   - Use of whitelist requested but whitelist has not been set, see @ref sd_ble_gap_whitelist_set.
+  *                                   - Peer address was not present in the device identity list, see @ref sd_ble_gap_device_identities_set.
+  * @retval ::NRF_ERROR_INVALID_STATE The SoftDevice is in an invalid state to perform this operation. This may be due to an
+  *                                   existing locally initiated connect procedure, which must complete before initiating again.
+  * @retval ::BLE_ERROR_GAP_INVALID_BLE_ADDR Invalid Peer address.
+  * @retval ::NRF_ERROR_CONN_COUNT The limit of available connections has been reached.
+- * @retval ::NRF_ERROR_BUSY The stack is busy, process pending events and retry. If another connection is being established
+- *                          wait for the corresponding @ref BLE_GAP_EVT_CONNECTED event before calling again.
+  * @retval ::NRF_ERROR_RESOURCES Not enough BLE role slots available.
+  *                               Stop one or more currently active roles (Central, Peripheral or Broadcaster) and try again
+  */
+ SVCALL(SD_BLE_GAP_CONNECT, uint32_t, sd_ble_gap_connect(ble_gap_addr_t const *p_peer_addr, ble_gap_scan_params_t const *p_scan_params, ble_gap_conn_params_t const *p_conn_params, uint8_t conn_cfg_tag));
+
+
+//| 
+//| APIs now also returning NRF_ERROR_BUSY.
+//|  
+
+ /**@brief Provide a user memory block.
+  *
+  * @note This call can only be used as a response to a @ref BLE_EVT_USER_MEM_REQUEST event issued to the application.
+  *
+  * @param[in] conn_handle Connection handle.
+  * @param[in] p_block Pointer to a user memory block structure or NULL if memory is managed by the application.
+  *
+  * @mscs
+- * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_NOBUF_PEER_CANCEL_MSC}
++ * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_PEER_CANCEL_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_NOBUF_AUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_NOBUF_NOAUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_BUF_AUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_BUF_NOAUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_QUEUE_FULL_MSC}
+  * @endmscs
+  *
+  * @retval ::NRF_SUCCESS Successfully queued a response to the peer.
+  * @retval ::NRF_ERROR_INVALID_ADDR Invalid pointer supplied.
++ * @retval ::NRF_ERROR_BUSY The stack is busy, process pending events and retry.
+  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid Connection Handle.
+  * @retval ::NRF_ERROR_INVALID_LENGTH Invalid user memory block length supplied.
+  * @retval ::NRF_ERROR_INVALID_STATE Invalid Connection state or no user memory request pending.
+  */
+ SVCALL(SD_BLE_USER_MEM_REPLY, uint32_t, sd_ble_user_mem_reply(uint16_t conn_handle, ble_user_mem_block_t const *p_block));
+
+
+ /**@brief Reply with GAP security parameters.
+  *
+  * @details This function is only used to reply to a @ref BLE_GAP_EVT_SEC_PARAMS_REQUEST, calling it at other times will result in an @ref NRF_ERROR_INVALID_STATE.
+  * @note    If the call returns an error code, the request is still pending, and the reply call may be repeated with corrected parameters.
+  *
+  * @param[in] conn_handle Connection handle.
+  * @param[in] sec_status Security status, see @ref BLE_GAP_SEC_STATUS.
+  * @param[in] p_sec_params Pointer to a @ref ble_gap_sec_params_t security parameters structure. In the central role this must be set to NULL, as the parameters have
+  *                         already been provided during a previous call to @ref sd_ble_gap_authenticate.
+  * @param[in,out] p_sec_keyset Pointer to a @ref ble_gap_sec_keyset_t security keyset structure. Any keys generated and/or distributed as a result of the ongoing security procedure
+  *                         will be stored into the memory referenced by the pointers inside this structure. The keys will be stored and available to the application
+  *                         upon reception of a @ref BLE_GAP_EVT_AUTH_STATUS event.
+  *                         Note that the SoftDevice expects the application to provide memory for storing the
+  *                         peer's keys. So it must be ensured that the relevant pointers inside this structure are not NULL. The pointers to the local key
+  *                         can, however, be NULL, in which case, the local key data will not be available to the application upon reception of the
+  *                         @ref BLE_GAP_EVT_AUTH_STATUS event.
+  *
+  * @retval ::NRF_SUCCESS Successfully accepted security parameter from the application.
+  * @retval ::NRF_ERROR_INVALID_ADDR Invalid pointer supplied.
++ * @retval ::NRF_ERROR_BUSY The stack is busy, process pending events and retry.
+  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied.
+  * @retval ::NRF_ERROR_INVALID_STATE Invalid state to perform operation.
+  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid connection handle supplied.
+  * @retval ::NRF_ERROR_NOT_SUPPORTED Setting of sign or link fields in @ref ble_gap_sec_kdist_t not supported.
+  */
+ SVCALL(SD_BLE_GAP_SEC_PARAMS_REPLY, uint32_t, sd_ble_gap_sec_params_reply(uint16_t conn_handle, uint8_t sec_status, ble_gap_sec_params_t const *p_sec_params, ble_gap_sec_keyset_t const *p_sec_keyset));
+
+
+ /**@brief Respond to a Read/Write authorization request.
+  *
+  * @note This call should only be used as a response to a @ref BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST event issued to the application.
+  *
+  * @mscs
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_NOBUF_AUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_BUF_AUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_NOBUF_NOAUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_READ_REQ_AUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_WRITE_REQ_AUTH_MSC}
+  * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_QUEUE_FULL_MSC}
+- * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_NOBUF_PEER_CANCEL_MSC}
++ * @mmsc{@ref BLE_GATTS_QUEUED_WRITE_PEER_CANCEL_MSC}
+  * @endmscs
+  *
+  * @param[in] conn_handle                 Connection handle.
+  * @param[in] p_rw_authorize_reply_params Pointer to a structure with the attribute provided by the application.
+  *
+  * @note @ref ble_gatts_authorize_params_t::p_data is ignored when this function is used to respond
+  *       to a @ref BLE_GATTS_AUTHORIZE_TYPE_READ event if @ref ble_gatts_authorize_params_t::update
+  *       is set to 0.
+  *
+  * @retval ::NRF_SUCCESS               Successfully queued a response to the peer, and in the case of a write operation, Attribute Table updated.
+  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid Connection Handle.
++ * @retval ::NRF_ERROR_BUSY            The stack is busy, process pending events and retry.
+  * @retval ::NRF_ERROR_INVALID_ADDR    Invalid pointer supplied.
+  * @retval ::NRF_ERROR_INVALID_STATE   Invalid Connection State or no authorization request pending.
+  * @retval ::NRF_ERROR_INVALID_PARAM   Authorization op invalid,
+  *                                         handle supplied does not match requested handle,
+  *                                         or invalid data to be written provided by the application.
+  */
+ SVCALL(SD_BLE_GATTS_RW_AUTHORIZE_REPLY, uint32_t, sd_ble_gatts_rw_authorize_reply(uint16_t conn_handle, ble_gatts_rw_authorize_reply_params_t const *p_rw_authorize_reply_params));
+
+
+
+//| 
+//| Flag indicating the establishment of an LE Secure Connection 
+//|  
+ typedef struct
+ {
+   uint8_t               auth_status;            /**< Authentication status, see @ref BLE_GAP_SEC_STATUS. */
+   uint8_t               error_src : 2;          /**< On error, source that caused the failure, see @ref BLE_GAP_SEC_STATUS_SOURCES. */
+   uint8_t               bonded : 1;             /**< Procedure resulted in a bond. */
++  uint8_t               lesc : 1;               /**< Procedure resulted in a LE Secure Connection. */
+   ble_gap_sec_levels_t  sm1_levels;             /**< Levels supported in Security Mode 1. */
+   ble_gap_sec_levels_t  sm2_levels;             /**< Levels supported in Security Mode 2. */
+   ble_gap_sec_kdist_t   kdist_own;              /**< Bitmap stating which keys were exchanged (distributed) by the local device. If bonding with LE Secure Connections, the enc bit will be always set. */
+   ble_gap_sec_kdist_t   kdist_peer;             /**< Bitmap stating which keys were exchanged (distributed) by the remote device. If bonding with LE Secure Connections, the enc bit will never be set. */
+ } ble_gap_evt_auth_status_t;
+ 
+//| 
+//| Stack will no longer return BUSY on sd_ble_gap_conn_param_update unless the procedure is already in progress.
+//|  
+ /**@brief Update connection parameters.
+  *
+  * @details In the central role this will initiate a Link Layer connection parameter update procedure,
+  *          otherwise in the peripheral role, this will send the corresponding L2CAP request and wait for
+  *          the central to perform the procedure. In both cases, and regardless of success or failure, the application
+  *          will be informed of the result with a @ref BLE_GAP_EVT_CONN_PARAM_UPDATE event.
+  *
+  * @details This function can be used as a central both to reply to a @ref BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST or to start the procedure unrequested.
+  *
+  * @param[in] conn_handle Connection handle.
+  * @param[in] p_conn_params  Pointer to desired connection parameters. If NULL is provided on a peripheral role,
+  *                           the parameters in the PPCP characteristic of the GAP service will be used instead.
+  *                           If NULL is provided on a central role and in response to a @ref BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST, the peripheral request will be rejected
+  *
+  * @retval ::NRF_SUCCESS The Connection Update procedure has been started successfully.
+  * @retval ::NRF_ERROR_INVALID_ADDR Invalid pointer supplied.
+  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied, check parameter limits and constraints.
+  * @retval ::NRF_ERROR_INVALID_STATE Invalid state to perform operation.
+- * @retval ::NRF_ERROR_BUSY Procedure already in progress or not allowed at this time, process pending events and wait for pending procedures to complete and retry.
++ * @retval ::NRF_ERROR_BUSY Procedure already in progress, wait for pending procedures to complete and retry.
+  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid connection handle supplied.
+  * @retval ::NRF_ERROR_NO_MEM Not enough memory to complete operation.
+  */
+ SVCALL(SD_BLE_GAP_CONN_PARAM_UPDATE, uint32_t, sd_ble_gap_conn_param_update(uint16_t conn_handle, ble_gap_conn_params_t const *p_conn_params));
+ 
+
+//| 
+//| Renamed Defines and structure member related to clock accuracy 
+//|  
+-/**@defgroup NRF_CLOCK_LF_XTAL_ACCURACY Clock accuracy
++/**@defgroup NRF_CLOCK_LF_ACCURACY Clock accuracy
+  * @{ */
+ 
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_250_PPM (0) /**< Default: 250 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_500_PPM (1) /**< 500 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_150_PPM (2) /**< 150 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_100_PPM (3) /**< 100 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_75_PPM  (4) /**< 75 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_50_PPM  (5) /**< 50 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_30_PPM  (6) /**< 30 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM  (7) /**< 20 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_10_PPM  (8) /**< 10 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_5_PPM   (9) /**<  5 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_2_PPM  (10) /**<  2 ppm */
+-#define NRF_CLOCK_LF_XTAL_ACCURACY_1_PPM  (11) /**<  1 ppm */
++#define NRF_CLOCK_LF_ACCURACY_250_PPM (0) /**< Default: 250 ppm */
++#define NRF_CLOCK_LF_ACCURACY_500_PPM (1) /**< 500 ppm */
++#define NRF_CLOCK_LF_ACCURACY_150_PPM (2) /**< 150 ppm */
++#define NRF_CLOCK_LF_ACCURACY_100_PPM (3) /**< 100 ppm */
++#define NRF_CLOCK_LF_ACCURACY_75_PPM  (4) /**< 75 ppm */
++#define NRF_CLOCK_LF_ACCURACY_50_PPM  (5) /**< 50 ppm */
++#define NRF_CLOCK_LF_ACCURACY_30_PPM  (6) /**< 30 ppm */
++#define NRF_CLOCK_LF_ACCURACY_20_PPM  (7) /**< 20 ppm */
++#define NRF_CLOCK_LF_ACCURACY_10_PPM  (8) /**< 10 ppm */
++#define NRF_CLOCK_LF_ACCURACY_5_PPM   (9) /**<  5 ppm */
++#define NRF_CLOCK_LF_ACCURACY_2_PPM  (10) /**<  2 ppm */
++#define NRF_CLOCK_LF_ACCURACY_1_PPM  (11) /**<  1 ppm */
+ 
+
+ /**@brief Type representing LFCLK oscillator source. */
+ typedef struct
+ {
+   uint8_t source;         /**< LF oscillator clock source, see @ref NRF_CLOCK_LF_SRC. */
+   uint8_t rc_ctiv;        /**< Only for NRF_CLOCK_LF_SRC_RC: Calibration timer interval in 1/4 second
+                                units (nRF51: 1-64, nRF52: 1-32).
+                                @note To avoid excessive clock drift, 0.5 degrees Celsius is the
+                                      maximum temperature change allowed in one calibration timer
+                                      interval. The interval should be selected to ensure this.
+ 
+                                   @note Must be 0 if source is not NRF_CLOCK_LF_SRC_RC.  */
+   uint8_t rc_temp_ctiv;   /**<  Only for NRF_CLOCK_LF_SRC_RC: How often (in number of calibration
+                                 intervals) the RC oscillator shall be calibrated if the temperature
+                                 hasn't changed.
+                                      0: Always calibrate even if the temperature hasn't changed.
+                                      1: Only calibrate if the temperature has changed (nRF51 only).
+                                      2-33: Check the temperature and only calibrate if it has changed,
+                                            however calibration will take place every rc_temp_ctiv
+                                            intervals in any case.
+ 
+                                 @note Must be 0 if source is not NRF_CLOCK_LF_SRC_RC.
+ 
+                                 @note For nRF52, the application must ensure calibration at least once
+                                       every 8 seconds to ensure +/-500 ppm clock stability. The
+                                       recommended configuration for NRF_CLOCK_LF_SRC_RC on nRF52 is
+                                       rc_ctiv=16 and rc_temp_ctiv=2. This will ensure calibration at
+                                       least once every 8 seconds and for temperature changes of 0.5
+                                       degrees Celsius every 4 seconds. See the Product Specification
+                                       for the nRF52 device being used for more information.*/
+-  uint8_t xtal_accuracy; /**< External crystal clock accuracy used in the LL to compute timing
+-                              windows, see @ref NRF_CLOCK_LF_XTAL_ACCURACY.
+-
+-                              @note For the NRF_CLOCK_LF_SRC_RC clock source this parameter is ignored. */
++  uint8_t accuracy;       /**< External clock accuracy used in the LL to compute timing
++                               windows, see @ref NRF_CLOCK_LF_ACCURACY.*/
+ } nrf_clock_lf_cfg_t;
+
+
+//| 
+//| Removal of references to nRF51 
+//|  
+-#ifdef NRF51
+-  #define __NRF_NVIC_ISER_COUNT (1) /**< The number of ISER/ICER registers in the NVIC that are used. */
+-
+-  /**@brief Interrupts used by the SoftDevice. */
+-  #define __NRF_NVIC_SD_IRQS_0 ((uint32_t)( \
+-        (1U << POWER_CLOCK_IRQn) \
+-      | (1U << RADIO_IRQn) \
+-      | (1U << RTC0_IRQn) \
+-      | (1U << TIMER0_IRQn) \
+-      | (1U << RNG_IRQn) \
+-      | (1U << ECB_IRQn) \
+-      | (1U << CCM_AAR_IRQn) \
+-      | (1U << TEMP_IRQn) \
+-      | (1U << __NRF_NVIC_NVMC_IRQn) \
+-      | (1U << (uint32_t)SWI5_IRQn) \
+-    ))
+-
+-  /**@brief Interrupts available for to application. */
+-  #define __NRF_NVIC_APP_IRQS_0 (~__NRF_NVIC_SD_IRQS_0)
+-#endif
+-
+-#ifdef NRF52
+ #define __NRF_NVIC_ISER_COUNT (2) /**< The number of ISER/ICER registers in the NVIC that are used. */
+ 
+-  /**@brief Interrupts used by the SoftDevice. */
++/**@brief Interrupts used by the SoftDevice, with IRQn in the range 0-31. */
+ #define __NRF_NVIC_SD_IRQS_0 ((uint32_t)( \
+       (1U << POWER_CLOCK_IRQn) \
+     | (1U << RADIO_IRQn) \
+     | (1U << RTC0_IRQn) \
+     | (1U << TIMER0_IRQn) \
+     | (1U << RNG_IRQn) \
+     | (1U << ECB_IRQn) \
+     | (1U << CCM_AAR_IRQn) \
+     | (1U << TEMP_IRQn) \
+     | (1U << __NRF_NVIC_NVMC_IRQn) \
+     | (1U << (uint32_t)SWI5_EGU5_IRQn) \
+   ))
++
++/**@brief Interrupts used by the SoftDevice, with IRQn in the range 32-63. */
+ #define __NRF_NVIC_SD_IRQS_1 ((uint32_t)0)
+ 
+-  /**@brief Interrupts available for to application. */
++/**@brief Interrupts available for to application, with IRQn in the range 0-31. */
+ #define __NRF_NVIC_APP_IRQS_0 (~__NRF_NVIC_SD_IRQS_0)
++
++/**@brief Interrupts available for to application, with IRQn in the range 32-63. */
+ #define __NRF_NVIC_APP_IRQS_1 (~__NRF_NVIC_SD_IRQS_1)
+-#endif
++
+
+ __STATIC_INLINE uint32_t __sd_nvic_app_accessible_irq(IRQn_Type IRQn)
+ {
+   if (IRQn < 32)
+   {
+     return ((1UL<<IRQn) & __NRF_NVIC_APP_IRQS_0) != 0;
+   }
+-#ifdef NRF52
+   else if (IRQn < 64)
+   {
+     return ((1UL<<(IRQn-32)) & __NRF_NVIC_APP_IRQS_1) != 0;
+   }
+-#endif
+   else
+   {
+     return 1;
+   }
+ }
+ 
+ __STATIC_INLINE uint32_t __sd_nvic_is_app_accessible_priority(uint32_t priority)
+ {
+   if(priority >= (1 << __NVIC_PRIO_BITS))
+   {
+     return 0;
+   }
+-#ifdef NRF51
+-  if(   priority == 0
+-     || priority == 2
+-     )
+-  {
+-    return 0;
+-  }
+-#endif
+-#ifdef NRF52
+   if(   priority == 0
+      || priority == 1
+      || priority == 4
+      )
+   {
+     return 0;
+   }
+-#endif
+   return 1;
+ }
+ 
+ __STATIC_INLINE uint32_t sd_nvic_critical_region_enter(uint8_t * p_is_nested_critical_region)
+ {
+   int was_masked = __sd_nvic_irq_disable();
+   if (!nrf_nvic_state.__cr_flag)
+   {
+     nrf_nvic_state.__cr_flag = 1;
+     nrf_nvic_state.__irq_masks[0] = ( NVIC->ICER[0] & __NRF_NVIC_APP_IRQS_0 );
+     NVIC->ICER[0] = __NRF_NVIC_APP_IRQS_0;
+-    #ifdef NRF52
+     nrf_nvic_state.__irq_masks[1] = ( NVIC->ICER[1] & __NRF_NVIC_APP_IRQS_1 );
+     NVIC->ICER[1] = __NRF_NVIC_APP_IRQS_1;
+-    #endif
+     *p_is_nested_critical_region = 0;
+   }
+   else
+   {
+     *p_is_nested_critical_region = 1;
+   }
+   if (!was_masked)
+   {
+     __sd_nvic_irq_enable();
+   }
+   return NRF_SUCCESS;
+ }
+ 
+ __STATIC_INLINE uint32_t sd_nvic_critical_region_exit(uint8_t is_nested_critical_region)
+ {
+   if (nrf_nvic_state.__cr_flag && (is_nested_critical_region == 0))
+   {
+     int was_masked = __sd_nvic_irq_disable();
+     NVIC->ISER[0] = nrf_nvic_state.__irq_masks[0];
+-    #ifdef NRF52
+     NVIC->ISER[1] = nrf_nvic_state.__irq_masks[1];
+-    #endif
+     nrf_nvic_state.__cr_flag = 0;
+     if (!was_masked)
+     {
+       __sd_nvic_irq_enable();
+     }
+   }
+ 
+   return NRF_SUCCESS;
+ }
+
+-#ifdef NRF51
+-#define SD_EVT_IRQn                       (SWI2_IRQn)        /**< SoftDevice Event IRQ number. Used for both protocol events and SoC events. */
+-#define SD_EVT_IRQHandler                 (SWI2_IRQHandler)  /**< SoftDevice Event IRQ handler. Used for both protocol events and SoC events. */
+-#define RADIO_NOTIFICATION_IRQn           (SWI1_IRQn)        /**< The radio notification IRQ number. */
+-#define RADIO_NOTIFICATION_IRQHandler     (SWI1_IRQHandler)  /**< The radio notification IRQ handler. */
+-#endif
+-#ifdef NRF52
+ #define SD_EVT_IRQn                       (SWI2_EGU2_IRQn)        /**< SoftDevice Event IRQ number. Used for both protocol events and SoC events. */
+ #define SD_EVT_IRQHandler                 (SWI2_EGU2_IRQHandler)  /**< SoftDevice Event IRQ handler. Used for both protocol events and SoC events.
+                                                                        The default interrupt priority for this handler is set to 4 */
+ #define RADIO_NOTIFICATION_IRQn           (SWI1_EGU1_IRQn)        /**< The radio notification IRQ number. */
+ #define RADIO_NOTIFICATION_IRQHandler     (SWI1_EGU1_IRQHandler)  /**< The radio notification IRQ handler.
+                                                                        The default interrupt priority for this handler is set to 4 */
+-#endif
+-
+ 
+/**@brief Set bits in the general purpose retention registers (NRF_POWER->GPREGRET*).
+  *
+  * @param[in] gpregret_id 0 for GPREGRET, 1 for GPREGRET2.
+  * @param[in] gpregret_msk Bits to be set in the GPREGRET register.
+  *
+- * @note nRF51 does only have one general purpose retained register, so gpregret_id must be 0 on nRF51.
+  * @retval ::NRF_SUCCESS
+  */
+ SVCALL(SD_POWER_GPREGRET_SET, uint32_t, sd_power_gpregret_set(uint32_t gpregret_id, uint32_t gpregret_msk));
+ 
+ /**@brief Clear bits in the general purpose retention registers (NRF_POWER->GPREGRET*).
+  *
+  * @param[in] gpregret_id 0 for GPREGRET, 1 for GPREGRET2.
+  * @param[in] gpregret_msk Bits to be clear in the GPREGRET register.
+  *
+- * @note nRF51 does only have one general purpose retained register, so gpregret_id must be 0 on nRF51.
+  * @retval ::NRF_SUCCESS
+  */
+ SVCALL(SD_POWER_GPREGRET_CLR, uint32_t, sd_power_gpregret_clr(uint32_t gpregret_id, uint32_t gpregret_msk));
+ 
+ /**@brief Get contents of the general purpose retention registers (NRF_POWER->GPREGRET*).
+  *
+  * @param[in] gpregret_id 0 for GPREGRET, 1 for GPREGRET2.
+  * @param[out] p_gpregret Contents of the GPREGRET register.
+  *
+- * @note nRF51 does only have one general purpose retained register, so gpregret_id must be 0 on nRF51.
+  * @retval ::NRF_SUCCESS
+  */
+ SVCALL(SD_POWER_GPREGRET_GET, uint32_t, sd_power_gpregret_get(uint32_t gpregret_id, uint32_t *p_gpregret));
+ 
+ /**@brief Flash Write
+ *
+ * Commands to write a buffer to flash
+ *
+ * If the SoftDevice is enabled:
+ *  This call initiates the flash access command, and its completion will be communicated to the
+ *  application with exactly one of the following events:
+ *      - @ref NRF_EVT_FLASH_OPERATION_SUCCESS - The command was successfully completed.
+ *      - @ref NRF_EVT_FLASH_OPERATION_ERROR   - The command could not be started.
+ *
+ * If the SoftDevice is not enabled no event will be generated, and this call will return @ref NRF_SUCCESS when the
+  * write has been completed
+ *
+ * @note
+ *      - This call takes control over the radio and the CPU during flash erase and write to make sure that
+ *        they will not interfere with the flash access. This means that all interrupts will be blocked
+-*        for a predictable time (depending on the NVMC specification in nRF51 Series Reference Manual
++*        for a predictable time (depending on the NVMC specification in the device's Product Specification
+ *        and the command parameters).
+ *      - The data in the p_src buffer should not be modified before the @ref NRF_EVT_FLASH_OPERATION_SUCCESS
+ *        or the @ref NRF_EVT_FLASH_OPERATION_ERROR have been received if the SoftDevice is enabled.
+ *
+ *
+ * @param[in]  p_dst Pointer to start of flash location to be written.
+ * @param[in]  p_src Pointer to buffer with data to be written.
+-* @param[in]  size  Number of 32-bit words to write. Maximum size is 256 32-bit words for nRF51 and 1024 for nRF52.
++* @param[in]  size  Number of 32-bit words to write. Maximum size is the number of words in one
++*                   flash page. See the device's Product Specification for details.
+ *
+ * @retval ::NRF_ERROR_INVALID_ADDR   Tried to write to a non existing flash address, or p_dst or p_src was unaligned.
+ * @retval ::NRF_ERROR_BUSY           The previous command has not yet completed.
+ * @retval ::NRF_ERROR_INVALID_LENGTH Size was 0, or higher than the maximum allowed size.
+ * @retval ::NRF_ERROR_FORBIDDEN      Tried to write to or read from protected location.
+ * @retval ::NRF_SUCCESS              The command was accepted.
+ */
+ SVCALL(SD_FLASH_WRITE, uint32_t, sd_flash_write(uint32_t * p_dst, uint32_t const * p_src, uint32_t size));
+ 
+ 
+ /**@brief Flash Erase page
+ *
+ * Commands to erase a flash page
+ * If the SoftDevice is enabled:
+ *  This call initiates the flash access command, and its completion will be communicated to the
+ *  application with exactly one of the following events:
+ *      - @ref NRF_EVT_FLASH_OPERATION_SUCCESS - The command was successfully completed.
+ *      - @ref NRF_EVT_FLASH_OPERATION_ERROR   - The command could not be started.
+ *
+ * If the SoftDevice is not enabled no event will be generated, and this call will return @ref NRF_SUCCESS when the
+ * erase has been completed
+ *
+ * @note
+ *      - This call takes control over the radio and the CPU during flash erase and write to make sure that
+ *        they will not interfere with the flash access. This means that all interrupts will be blocked
+-*        for a predictable time (depending on the NVMC specification in nRF51 Series Reference Manual
++*        for a predictable time (depending on the NVMC specification in the device's Product Specification
+ *        and the command parameters).
+ *
+ *
+ * @param[in]  page_number           Page number of the page to erase
+ *
+ * @retval ::NRF_ERROR_INTERNAL      If a new session could not be opened due to an internal error.
+ * @retval ::NRF_ERROR_INVALID_ADDR  Tried to erase to a non existing flash page.
+ * @retval ::NRF_ERROR_BUSY          The previous command has not yet completed.
+ * @retval ::NRF_ERROR_FORBIDDEN     Tried to erase a protected page.
+ * @retval ::NRF_SUCCESS             The command was accepted.
+ */
+ SVCALL(SD_FLASH_PAGE_ERASE, uint32_t, sd_flash_page_erase(uint32_t page_number));
+ 
+ 
+ /**@brief Flash Protection set
+  *
+  * Commands to set the flash protection configuration registers.
+-   On nRF51 this sets the PROTENSETx registers of the MPU peripheral.
+-   On nRF52 this sets the CONFIGx registers of the BPROT peripheral.
++   This sets the CONFIGx registers of the BPROT peripheral.
+  *
+  * @note To read the values read them directly. They are only write-protected.
+  *
+  * @param[in]  block_cfg0 Value to be written to the configuration register.
+  * @param[in]  block_cfg1 Value to be written to the configuration register.
+- * @param[in]  block_cfg2 Value to be written to the configuration register (ignored on nRF51).
+- * @param[in]  block_cfg3 Value to be written to the configuration register (ignored on nRF51).
++ * @param[in]  block_cfg2 Value to be written to the configuration register.
++ * @param[in]  block_cfg3 Value to be written to the configuration register.
+  *
+  * @retval ::NRF_ERROR_FORBIDDEN Tried to protect the SoftDevice.
+  * @retval ::NRF_SUCCESS Values successfully written to configuration registers.
+  */
+
+
+//| 
+//| Version information update
+//|  
+ /** @brief The major version for the SoftDevice binary distributed with this header file. */
+-#define SD_MAJOR_VERSION  (4)
++#define SD_MAJOR_VERSION  (5)
+ 
+
+ /** @brief The bugfix version for the SoftDevice binary distributed with this header file. */
+-#define SD_BUGFIX_VERSION (3)
++#define SD_BUGFIX_VERSION (0)
+ 
+
+//| 
+//| SoftDevice unique string related updates
+//|  
++/** @brief SoftDevice unique string size in bytes. */
++#define SD_UNIQUE_STR_SIZE 20
++
+
+ 
++/** @brief Defines the offset for the SoftDevice unique string relative to the SoftDevice base address.
++ *         The SD_UNIQUE_STR is stored as an array of uint8_t. The size of array is @ref SD_UNIQUE_STR_SIZE.
++ */
++#define SD_UNIQUE_STR_OFFSET (SOFTDEVICE_INFO_STRUCT_OFFSET + 0x18)
++
+ 
+-/** @brief Defines a macro for retrieving the actual FWID value from a given base address. Use @ref
+- *         MBR_SIZE as the argument when the SoftDevice is installed just above the MBR (the usual
+- *         case). */
++/** @brief Defines a macro for retrieving the actual SoftDevice version from a given base address.
++ *         Use @ref MBR_SIZE as the argument when the SoftDevice is installed just above the MBR
++ *         (the usual case). */
+ #define SD_VERSION_GET(baseaddr) ((SD_INFO_STRUCT_SIZE_GET(baseaddr) > (SD_VERSION_OFFSET - SOFTDEVICE_INFO_STRUCT_OFFSET)) \
+         ? (*((uint32_t *) ((baseaddr) + SD_VERSION_OFFSET))) : SDM_INFO_FIELD_INVALID)
+ 
++/** @brief Defines a macro for retrieving the address of SoftDevice unique str based on a given base address.
++ *         Use @ref MBR_SIZE as the argument when the SoftDevice is installed just above the MBR
++ *         (the usual case). */
++#define SD_UNIQUE_STR_ADDR_GET(baseaddr) ((SD_INFO_STRUCT_SIZE_GET(baseaddr) > (SD_UNIQUE_STR_OFFSET - SOFTDEVICE_INFO_STRUCT_OFFSET)) \
++        ? (((uint8_t *) ((baseaddr) + SD_UNIQUE_STR_OFFSET))) : SDM_INFO_FIELD_INVALID)
++
+ 
+//|
+//| New defines for timing constraints the application must take into account when using NRF_RADIO_SIGNAL_CALLBACK_ACTION_EXTEND with the Radio Timeslot API.
+//|
++/**@brief The maximum processing time to handle a timeslot extension. */
++#define NRF_RADIO_MAX_EXTENSION_PROCESSING_TIME_US           (17)
++
++/**@brief The latest time before the end of a timeslot the timeslot can be extended. */
++#define NRF_RADIO_MIN_EXTENSION_MARGIN_US                    (79)
++
+
+ enum NRF_RADIO_SIGNAL_CALLBACK_ACTION
+ {
+   NRF_RADIO_SIGNAL_CALLBACK_ACTION_NONE,            /**< Return without action. */
+-  NRF_RADIO_SIGNAL_CALLBACK_ACTION_EXTEND,          /**< Request an extension of the current timeslot (maximum execution time for this action is when the extension succeeded). */
++  NRF_RADIO_SIGNAL_CALLBACK_ACTION_EXTEND,          /**< Request an extension of the current
++                                                         timeslot. Maximum execution time for this action:
++                                                         @ref NRF_RADIO_MAX_EXTENSION_PROCESSING_TIME_US.
++                                                         This action must be started at least @ref
++                                                         NRF_RADIO_MIN_EXTENSION_MARGIN_US before
++                                                         the end of the timeslot. */
+   NRF_RADIO_SIGNAL_CALLBACK_ACTION_END,             /**< End the current radio timeslot. */
+   NRF_RADIO_SIGNAL_CALLBACK_ACTION_REQUEST_AND_END  /**< Request a new radio timeslot and end the current timeslot. */
+ };
+ 

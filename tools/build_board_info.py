@@ -241,6 +241,7 @@ def generate_download_info():
 
 if __name__ == "__main__":
     if "TRAVIS_TAG" in os.environ:
+        print("tag", os.environ["TRAVIS_TAG"])
         generate_download_info()
     else:
         print("skipping website update because this isn't a tag")
