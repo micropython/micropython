@@ -135,7 +135,7 @@
 #elif defined(STM32H743xx)
 #define VBAT_DIV (4)
 #elif defined(STM32L475xx) || defined(STM32L476xx) || \
-      defined(STM32L496xx)
+      defined(STM32L496xx) || defined(STM32L432xx)
 #define VBAT_DIV (3)
 #else
 #error Unsupported processor
@@ -281,7 +281,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 
     adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
 
-#if defined(STM32L4)
+#if defined (STM32L471xx) || defined (STM32L475xx) || defined (STM32L476xx) || defined (STM32L485xx) || defined (STM32L486xx) || defined (STM32L496xx) || defined (STM32L4A6xx)
     ADC_MultiModeTypeDef multimode;
     multimode.Mode = ADC_MODE_INDEPENDENT;
     if (HAL_ADCEx_MultiModeConfigChannel(&adc_obj->handle, &multimode) != HAL_OK)

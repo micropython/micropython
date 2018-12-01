@@ -474,7 +474,9 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
+    #if defined(GPIOD)
     __HAL_RCC_GPIOD_CLK_ENABLE();
+    #endif
 
     #if defined(STM32F4) ||  defined(STM32F7)
         #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
