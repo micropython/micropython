@@ -1,6 +1,4 @@
 import os
-from sh import rm
-from sh import make
 import sys
 import subprocess
 import shutil
@@ -8,7 +6,7 @@ import build_board_info as build_info
 import time
 
 for port in build_info.SUPPORTED_PORTS:
-    rm("-rf", "../ports/{}/build*".format(port))
+    result = subprocess.run("rm -rf ../ports/{}/build*".format(port), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
 ROSIE_SETUPS = ["rosie-ci"]
 rosie_ok = {}
@@ -60,8 +58,9 @@ for board in build_boards:
         if travis:
             print('travis_fold:start:adafruit-bins-{}-{}\\r'.format(language, board))
         print("Build {} for {} took {:.2f}s and {}".format(board, language, build_duration, success))
-        print(make_result.stdout.decode("utf-8"))
-        print(other_output)
+        if make_result.returncode != 0:
+            print(make_result.stdout.decode("utf-8"))
+            print(other_output)
         # Only upload to Rosie if its a pull request.
         if travis:
             for rosie in ROSIE_SETUPS:
