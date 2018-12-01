@@ -84,7 +84,7 @@ static const flash_layout_t flash_layout[] = {
 #error Unsupported processor
 #endif
 
-#if defined(STM32L4) || defined(STM32H7)
+#if (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32H7)
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {
@@ -109,7 +109,7 @@ static uint32_t get_bank(uint32_t addr) {
     }
 }
 
-#if defined(STM32L4)
+#if (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE))
 // get the page of a given flash address
 static uint32_t get_page(uint32_t addr) {
     if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
@@ -163,6 +163,11 @@ void flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGERR);
     EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.PageAddress = flash_dest;
+    EraseInitStruct.NbPages     = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
+    #elif  (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE))
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+    EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
+    EraseInitStruct.Page        = flash_dest;
     EraseInitStruct.NbPages     = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
     #elif defined(STM32L4)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
