@@ -97,7 +97,7 @@ Using esptool.py you can erase the flash with the command::
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp32-20180511-v1.9.4.bin
+    esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 esp32-20180511-v1.9.4.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
@@ -108,7 +108,7 @@ For some boards with a particular FlashROM configuration (e.g. some variants of
 a NodeMCU board) you may need to use the following command to deploy
 the firmware (note the ``-fm dio`` option)::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp32-20180511-v1.9.4.bin
+    esptool.py --chip esp32  --port /dev/ttyUSB0 write_flash  -z 0x1000 --flash_size=detect -fm dio 0 esp32-20180511-v1.9.4.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
