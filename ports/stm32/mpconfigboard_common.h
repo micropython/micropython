@@ -197,6 +197,13 @@
 #define MICROPY_HW_ENABLE_STORAGE (0)
 #endif
 
+// IF the SD card is present it will be booted from by default
+#if defined(MICROPY_HW_HAS_SDCARD) && !defined(MICROPY_HW_BOOT_SDCARD)
+#define MICROPY_HW_BOOT_SDCARD (1)
+#endif
+
+
+
 // Enable hardware I2C if there are any peripherals defined
 #if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL) \
     || defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C4_SCL)
