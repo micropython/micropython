@@ -83,3 +83,6 @@
 [submodule "tools/huffman"]
 	path = tools/huffman
 	url = https://github.com/tannewt/huffman.git
+[submodule "tools/adabot"]
+	path = tools/adabot
+	url = https://github.com/adafruit/adabot.git
