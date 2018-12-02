@@ -217,6 +217,9 @@ typedef struct _mp_state_vm_t {
     #endif
 } mp_state_vm_t;
 
+// Can't include bc.h due to circular dependency.
+struct _mp_code_state_t;
+
 // This structure holds state that is specific to a given thread.
 // Everything in this structure is scanned for root pointers.
 typedef struct _mp_state_thread_t {
@@ -231,6 +234,11 @@ typedef struct _mp_state_thread_t {
     uint8_t *pystack_start;
     uint8_t *pystack_end;
     uint8_t *pystack_cur;
+    #endif
+
+    #if MICROPY_ACCESS_CODE_STATE
+    // code_state structure of the currently running function.
+    struct _mp_code_state_t *code_state;
     #endif
 
     ////////////////////////////////////////////////////////////

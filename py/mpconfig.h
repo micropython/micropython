@@ -242,6 +242,13 @@
 #define alloca(x) m_malloc(x)
 #endif
 
+// Various features may need to access code state of the currently
+// running function/generator. This is an internal setting, automatically
+// enabled as needed.
+#ifndef MICROPY_ACCESS_CODE_STATE
+#define MICROPY_ACCESS_CODE_STATE (0)
+#endif
+
 /*****************************************************************************/
 /* MicroPython emitters                                                     */
 
