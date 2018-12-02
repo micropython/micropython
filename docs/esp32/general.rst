@@ -38,24 +38,24 @@ Technical specifications and SoC datasheets
 -------------------------------------------
 
 The datasheets and other reference material for ESP32 chip are available
-from the vendor site: http://bbs.espressif.com/viewtopic.php?f=67&t=225 .
+from the vendor site: https://www.espressif.com/en/support/download/documents?keys=esp32 .
 They are the primary reference for the chip technical specifications, capabilities,
 operating modes, internal functioning, etc.
 
 For your convenience, some of technical specifications are provided below:
 
-* Architecture: Xtensa lx106
-* CPU frequency: 80MHz overclockable to 160MHz
-* Total RAM available: 96KB (part of it reserved for system)
-* BootROM: 64KB
+* Architecture: Xtensa Dual-Core 32-bit LX6 
+* CPU frequency: 160MHz overclockable to 240MHz
+* Total RAM available: 528KB (part of it reserved for system)
+* BootROM: 448KB
 * Internal FlashROM: None
-* External FlashROM: code and data, via SPI Flash. Normal sizes 512KB-4MB.
-* GPIO: 16 + 1 (GPIOs are multiplexed with other functions, including
+* External FlashROM: code and data, via SPI Flash. Normal sizes 4MB.
+* GPIO: 34 (GPIOs are multiplexed with other functions, including
   external FlashROM, UART, deep sleep wake-up, etc.)
-* UART: One RX/TX UART (no hardware handshaking), one TX-only UART.
+* UART: 3 RX/TX UART (no hardware handshaking), one TX-only UART.
 * SPI: 2 SPI interfaces (one used for FlashROM).
-* I2C: No native external I2C (bitbang implementation available on any pins).
-* I2S: 1.
+* I2C: 1 native  I2C (bitbang implementation available on any pins).
+* I2S: 2.
 * Programming: using BootROM bootloader from UART. Due to external FlashROM
   and always-available BootROM bootloader, ESP32 is not brickable.
 
