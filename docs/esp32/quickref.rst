@@ -314,25 +314,29 @@ For low-level driving of a NeoPixel::
     import esp
     esp.neopixel_write(pin, grb_buf, is800khz)
 
-APA102 driver
--------------
+Capacitive Touch
+----------------
 
-Use the ``apa102`` module::
+Use the ``TouchPad`` class in the ``machine`` module::
 
-    from machine import Pin
-    from apa102 import APA102
+    from machine import TouchPad
 
-    clock = Pin(14, Pin.OUT)     # set GPIO14 to output to drive the clock
-    data = Pin(13, Pin.OUT)      # set GPIO13 to output to drive the data
-    apa = APA102(clock, data, 8) # create APA102 driver on the clock and the data pin for 8 pixels
-    apa[0] = (255, 255, 255, 31) # set the first pixel to white with a maximum brightness of 31
-    apa.write()                  # write data to all pixels
-    r, g, b, brightness = apa[0] # get first pixel colour
+    t = TouchPad(Pin(14))
+    t.read()              # Returns a smaller number when touched 
 
-For low-level driving of an APA102::
+`TouchPad.read` returns a value relative to the capacitive variation. Small numbers (typically in
+the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when 
+no touch is present. However the values are *relative* and can vary depending on the board 
+and surrounding composition so some calibration may be required.
 
-    import esp
-    esp.apa102_write(clock_pin, data_pin, rgbi_buf)
+There are ten capacitive touch-enabled pins that can be used on the ESP32: 0, 2, 4, 12, 13
+14, 15, 27, 32, 33. Trying to assign to any other pins will result in a ``ValueError``.
+
+Note that TouchPad's can be used to wake an ESP32 from `deepsleep`. (not yet implemented?)
+
+For more details refer to `Espressif Touch Sensor
+<https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/touch_pad.html>`_.
+
 
 DHT driver
 ----------
