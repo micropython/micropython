@@ -61,7 +61,7 @@ For your convenience, some of technical specifications are provided below:
 * Programming: using BootROM bootloader from UART. Due to external FlashROM
   and always-available BootROM bootloader, ESP32 is not brickable.
  
-For more information the the ESP32 datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf 
+For more information see the ESP32 datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf 
 
 
 Scarcity of runtime resources
