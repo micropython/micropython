@@ -45,7 +45,7 @@ operating modes, internal functioning, etc.
 For your convenience, some of technical specifications are provided below:
 
 * Architecture: Xtensa Dual-Core 32-bit LX6 
-* CPU frequency: 160MHz overclockable to 240MHz
+* CPU frequency: upto 240MHz
 * Total RAM available: 528KB (part of it reserved for system)
 * BootROM: 448KB
 * Internal FlashROM: None
@@ -58,6 +58,8 @@ For your convenience, some of technical specifications are provided below:
 * I2S: 2.
 * Programming: using BootROM bootloader from UART. Due to external FlashROM
   and always-available BootROM bootloader, ESP32 is not brickable.
+ 
+For more information the the ESP32 datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf 
 
 
 Scarcity of runtime resources
