@@ -53,9 +53,11 @@ For your convenience, some of technical specifications are provided below:
 * GPIO: 34 (GPIOs are multiplexed with other functions, including
   external FlashROM, UART, deep sleep wake-up, etc.)
 * UART: 3 RX/TX UART (no hardware handshaking), one TX-only UART.
-* SPI: 2 SPI interfaces (one used for FlashROM).
-* I2C: 1 native  I2C (bitbang implementation available on any pins).
+* SPI: 4 SPI interfaces (one used for FlashROM).
+* I2C: 2 I2C (bitbang implementation available on any pins).
 * I2S: 2.
+* ADC: 12-bit SAR ADC up to 18 channels
+* DAC: 2  8-bit DAC
 * Programming: using BootROM bootloader from UART. Due to external FlashROM
   and always-available BootROM bootloader, ESP32 is not brickable.
  
