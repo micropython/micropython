@@ -250,6 +250,9 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
 STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    if (!mp_get_stream(args[0])->is_text && MP_OBJ_IS_STR(args[1])) {
+        mp_raise_ValueError(translate("string not supported; use bytes or bytearray"));
+    }
     size_t max_len = (size_t)-1;
     size_t off = 0;
     if (n_args == 3) {
@@ -282,6 +285,9 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     // https://docs.python.org/3/library/socket.html#socket.socket.recv_into
     mp_uint_t len = bufinfo.len;
     if (n_args > 2) {
+        if (mp_get_stream(args[0])->pyserial_compatibility) {
+            mp_raise_ValueError(translate("length argument not allowed for this type"));
+        }
         len = mp_obj_get_int(args[2]);
         if (len > bufinfo.len) {
             len = bufinfo.len;

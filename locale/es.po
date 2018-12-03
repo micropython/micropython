@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-09 16:20-0800\n"
+"POT-Creation-Date: 2018-12-03 15:57-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -132,7 +132,7 @@ msgstr "encabezado de compresión"
 msgid "invalid dupterm index"
 msgstr "index dupterm inválido"
 
-#: extmod/vfs_fat.c:426 py/moduerrno.c:150
+#: extmod/vfs_fat.c:426 py/moduerrno.c:154
 msgid "Read-only filesystem"
 msgstr "Sistema de archivos de solo-Lectura"
 
@@ -152,11 +152,11 @@ msgstr "argumentos inválidos"
 msgid "script compilation not supported"
 msgstr "script de compilación no soportado"
 
-#: main.c:154
+#: main.c:155
 msgid " output:\n"
 msgstr " salida:\n"
 
-#: main.c:168 main.c:241
+#: main.c:169 main.c:242
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -164,49 +164,49 @@ msgstr ""
 "Auto-reload habilitado. Simplemente guarda los archivos via USB para "
 "ejecutarlos o entra al REPL para desabilitarlos.\n"
 
-#: main.c:170
+#: main.c:171
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 
-#: main.c:172 main.c:243
+#: main.c:173 main.c:244
 msgid "Auto-reload is off.\n"
 msgstr "Auto-recarga deshabilitada.\n"
 
-#: main.c:186
+#: main.c:187
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
-#: main.c:202
+#: main.c:203
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ADVERTENCIA: El nombre de archivo de tu código tiene dos extensiones\n"
 
-#: main.c:250
+#: main.c:251
 msgid "You requested starting safe mode by "
 msgstr "Solicitaste iniciar en modo seguro por "
 
-#: main.c:253
+#: main.c:254
 msgid "To exit, please reset the board without "
 msgstr "Para salir, por favor reinicia la tarjeta sin "
 
-#: main.c:260
+#: main.c:261
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 "Estás ejecutando en modo seguro, lo cual significa que algo realmente malo "
 "ha sucedido.\n"
 
-#: main.c:262
+#: main.c:263
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
-#: main.c:263
+#: main.c:264
 #, fuzzy
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 "Por favor registra un issue en la siguiente URL con el contenidos de tu "
 "unidad de almacenamiento CIRCUITPY:\n"
 
-#: main.c:266
+#: main.c:267
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -214,7 +214,7 @@ msgstr ""
 "La alimentación del microcontrolador cayó. Por favor asegurate de que tu "
 "fuente de alimentación provee\n"
 
-#: main.c:267
+#: main.c:268
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
@@ -222,12 +222,12 @@ msgstr ""
 "suficiente poder para todo el circuito y presiona reset (después de expulsar "
 "CIRCUITPY).\n"
 
-#: main.c:271
+#: main.c:272
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
 
-#: main.c:429
+#: main.c:430
 msgid "soft reboot\n"
 msgstr "reinicio suave\n"
 
@@ -1350,27 +1350,27 @@ msgstr "buffer demasiado pequeño"
 msgid "expecting a dict for keyword args"
 msgstr "esperando un diccionario para argumentos por palabra clave"
 
-#: py/moduerrno.c:143 py/moduerrno.c:146
+#: py/moduerrno.c:147 py/moduerrno.c:150
 msgid "Permission denied"
 msgstr "Permiso denegado"
 
-#: py/moduerrno.c:144
+#: py/moduerrno.c:148
 msgid "No such file/directory"
 msgstr "No existe el archivo/directorio"
 
-#: py/moduerrno.c:145
+#: py/moduerrno.c:149
 msgid "Input/output error"
 msgstr "error Input/output"
 
-#: py/moduerrno.c:147
+#: py/moduerrno.c:151
 msgid "File exists"
 msgstr "El archivo ya existe"
 
-#: py/moduerrno.c:148
+#: py/moduerrno.c:152
 msgid "Unsupported operation"
 msgstr "Operación no soportada"
 
-#: py/moduerrno.c:149
+#: py/moduerrno.c:153
 msgid "Invalid argument"
 msgstr "Argumento inválido"
 
@@ -2005,6 +2005,14 @@ msgstr "objeto no en secuencia"
 msgid "stream operation not supported"
 msgstr "operación stream no soportada"
 
+#: py/stream.c:254
+msgid "string not supported; use bytes or bytearray"
+msgstr ""
+
+#: py/stream.c:289
+msgid "length argument not allowed for this type"
+msgstr ""
+
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
 msgstr "variable local referenciada antes de la asignación"
@@ -2167,11 +2175,11 @@ msgstr ""
 msgid "Function requires lock."
 msgstr "La función requiere lock"
 
-#: shared-bindings/busio/UART.c:102
+#: shared-bindings/busio/UART.c:104
 msgid "bits must be 7, 8 or 9"
 msgstr "bits deben ser 7, 8 o 9"
 
-#: shared-bindings/busio/UART.c:114
+#: shared-bindings/busio/UART.c:116
 msgid "stop must be 1 or 2"
 msgstr "stop debe ser 1 o 2"
 
@@ -2396,15 +2404,15 @@ msgstr "time.struct_time() acepta exactamente 1 argumento"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:263
 msgid "Tuple or struct_time argument required"
 msgstr "Argumento tuple o struct_time requerido"
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:268
 msgid "function takes exactly 9 arguments"
 msgstr "la función toma exactamente 9 argumentos."
 
-#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
+#: shared-bindings/time/__init__.c:239 shared-bindings/time/__init__.c:272
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
@@ -2550,35 +2558,35 @@ msgstr "USB ocupado"
 msgid "USB Error"
 msgstr "Error USB"
 
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "No se puede agregar la Característica."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "No se pueden establecer los parámetros PPCP."
 
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "No se puede agregar la Característica."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"

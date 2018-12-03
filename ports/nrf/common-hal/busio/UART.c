@@ -76,7 +76,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
 
 void common_hal_busio_uart_construct (busio_uart_obj_t *self,
                                       const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-                                      uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
+                                      uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
                                       uint8_t receiver_buffer_size) {
     if ( (tx == mp_const_none) && (rx == mp_const_none) ) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
@@ -124,7 +124,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     }
 
     self->baudrate = baudrate;
-    self->timeout_ms = timeout;
+    self->timeout_ms = timeout * 1000;
 
     // queue 1-byte transfer for rx_characters_available()
     self->rx_count = -1;
@@ -317,7 +317,7 @@ static uint32_t get_nrf_baud (uint32_t baudrate)
 
 void common_hal_busio_uart_construct (busio_uart_obj_t *self,
                                       const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-                                      uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
+                                      uint8_t bits, uart_parity_t parity, uint8_t stop, float timeout,
                                       uint8_t receiver_buffer_size) {
     mp_raise_NotImplementedError(translate("busio.UART not available"));
 }
