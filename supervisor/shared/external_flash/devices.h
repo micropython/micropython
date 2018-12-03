@@ -220,10 +220,10 @@ typedef struct {
     .memory_type = 0x70, \
     .capacity = 0x15, \
     .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x02, \
     .has_sector_protection = false, \
     .supports_fast_read = true, \
     .supports_qspi = true, \
-    .has_quad_enable = true, \
     .supports_qspi_writes = true, \
     .write_status_register_split = false, \
 }
@@ -254,10 +254,10 @@ typedef struct {
     .memory_type = 0x70, \
     .capacity = 0x16, \
     .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x02, \
     .has_sector_protection = false, \
     .supports_fast_read = true, \
     .supports_qspi = true, \
-    .has_quad_enable = true, \
     .supports_qspi_writes = true, \
     .write_status_register_split = false, \
 }
@@ -275,7 +275,6 @@ typedef struct {
     .has_sector_protection = false, \
     .supports_fast_read = true, \
     .supports_qspi = true, \
-    .has_quad_enable = true, \
     .supports_qspi_writes = true, \
     .write_status_register_split = false, \
     .single_status_byte = false, \
@@ -364,10 +363,10 @@ typedef struct {
     .memory_type = 0x70, \
     .capacity = 0x18, \
     .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x02, \
     .has_sector_protection = false, \
     .supports_fast_read = true, \
     .supports_qspi = true, \
-    .has_quad_enable = true, \
     .supports_qspi_writes = true, \
     .write_status_register_split = false, \
 }
