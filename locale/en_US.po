@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-09 15:57-0800\n"
+"POT-Creation-Date: 2018-12-03 15:57-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -131,7 +131,7 @@ msgstr ""
 msgid "invalid dupterm index"
 msgstr ""
 
-#: extmod/vfs_fat.c:426 py/moduerrno.c:150
+#: extmod/vfs_fat.c:426 py/moduerrno.c:154
 msgid "Read-only filesystem"
 msgstr ""
 
@@ -151,70 +151,70 @@ msgstr ""
 msgid "script compilation not supported"
 msgstr ""
 
-#: main.c:154
+#: main.c:155
 msgid " output:\n"
 msgstr ""
 
-#: main.c:168 main.c:241
+#: main.c:169 main.c:242
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
 
-#: main.c:170
+#: main.c:171
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr ""
 
-#: main.c:172 main.c:243
+#: main.c:173 main.c:244
 msgid "Auto-reload is off.\n"
 msgstr ""
 
-#: main.c:186
+#: main.c:187
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
 
-#: main.c:202
+#: main.c:203
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 
-#: main.c:250
+#: main.c:251
 msgid "You requested starting safe mode by "
 msgstr ""
 
-#: main.c:253
+#: main.c:254
 msgid "To exit, please reset the board without "
 msgstr ""
 
-#: main.c:260
+#: main.c:261
 msgid ""
 "You are running in safe mode which means something really bad happened.\n"
 msgstr ""
 
-#: main.c:262
+#: main.c:263
 msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 msgstr ""
 
-#: main.c:263
+#: main.c:264
 msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 msgstr ""
 
-#: main.c:266
+#: main.c:267
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
 msgstr ""
 
-#: main.c:267
+#: main.c:268
 msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
 
-#: main.c:271
+#: main.c:272
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 
-#: main.c:429
+#: main.c:430
 msgid "soft reboot\n"
 msgstr ""
 
@@ -1325,27 +1325,27 @@ msgstr ""
 msgid "expecting a dict for keyword args"
 msgstr ""
 
-#: py/moduerrno.c:143 py/moduerrno.c:146
+#: py/moduerrno.c:147 py/moduerrno.c:150
 msgid "Permission denied"
 msgstr ""
 
-#: py/moduerrno.c:144
+#: py/moduerrno.c:148
 msgid "No such file/directory"
 msgstr ""
 
-#: py/moduerrno.c:145
+#: py/moduerrno.c:149
 msgid "Input/output error"
 msgstr ""
 
-#: py/moduerrno.c:147
+#: py/moduerrno.c:151
 msgid "File exists"
 msgstr ""
 
-#: py/moduerrno.c:148
+#: py/moduerrno.c:152
 msgid "Unsupported operation"
 msgstr ""
 
-#: py/moduerrno.c:149
+#: py/moduerrno.c:153
 msgid "Invalid argument"
 msgstr ""
 
@@ -1974,6 +1974,14 @@ msgstr ""
 msgid "stream operation not supported"
 msgstr ""
 
+#: py/stream.c:254
+msgid "string not supported; use bytes or bytearray"
+msgstr ""
+
+#: py/stream.c:289
+msgid "length argument not allowed for this type"
+msgstr ""
+
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
 msgstr ""
@@ -2132,11 +2140,11 @@ msgstr ""
 msgid "Function requires lock."
 msgstr ""
 
-#: shared-bindings/busio/UART.c:102
+#: shared-bindings/busio/UART.c:104
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: shared-bindings/busio/UART.c:114
+#: shared-bindings/busio/UART.c:116
 msgid "stop must be 1 or 2"
 msgstr ""
 
@@ -2361,15 +2369,15 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:263
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:268
 msgid "function takes exactly 9 arguments"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
+#: shared-bindings/time/__init__.c:239 shared-bindings/time/__init__.c:272
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
