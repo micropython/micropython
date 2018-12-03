@@ -292,9 +292,10 @@ typedef struct _lwip_socket_obj_t {
     uint8_t type;
 
     #define STATE_NEW 0
-    #define STATE_CONNECTING 1
-    #define STATE_CONNECTED 2
-    #define STATE_PEER_CLOSED 3
+    #define STATE_LISTENING 1
+    #define STATE_CONNECTING 2
+    #define STATE_CONNECTED 3
+    #define STATE_PEER_CLOSED 4
     // Negative value is lwIP error
     int8_t state;
 } lwip_socket_obj_t;
@@ -759,7 +760,7 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     tcp_accept(new_pcb, _lwip_tcp_accept);
 
     // Socket is no longer considered "new" for purposes of polling
-    socket->state = STATE_CONNECTING;
+    socket->state = STATE_LISTENING;
 
     return mp_const_none;
 }
@@ -1214,8 +1215,20 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         uintptr_t flags = arg;
         ret = 0;
 
-        if (flags & MP_STREAM_POLL_RD && socket->incoming.pbuf != NULL) {
-            ret |= MP_STREAM_POLL_RD;
+        if (flags & MP_STREAM_POLL_RD) {
+            if (socket->state == STATE_LISTENING) {
+                // Listening TCP socket may have one or multiple connections waiting
+                if ((socket->incoming.connection.alloc == 0
+                    && socket->incoming.connection.tcp.item != NULL)
+                    || socket->incoming.connection.tcp.array[socket->incoming.connection.iget] != NULL) {
+                        ret |= MP_STREAM_POLL_RD;
+                }
+            } else {
+                // Otherwise there is just one slot for incoming data
+                if (socket->incoming.pbuf != NULL) {
+                    ret |= MP_STREAM_POLL_RD;
+                }
+            }
         }
 
         // Note: pcb.tcp==NULL if state<0, and in this case we can't call tcp_sndbuf
