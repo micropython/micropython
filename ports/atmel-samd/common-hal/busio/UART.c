@@ -28,6 +28,7 @@
 #include "shared-bindings/busio/UART.h"
 
 #include "mpconfigport.h"
+#include "lib/utils/interrupt_char.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
@@ -272,12 +273,17 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
             start_ticks = ticks_ms;
         }
 #ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP
-#endif
-       // If we are zero timeout, make sure we don't loop again (in the event
-       // we read in under 1ms)
-       if (self->timeout_ms == 0)
+        MICROPY_VM_HOOK_LOOP ;
+        // Allow user to break out of a timeout with a KeyboardInterrupt.
+        if (mp_hal_is_interrupted()) {
             break;
+        }
+#endif
+        // If we are zero timeout, make sure we don't loop again (in the event
+        // we read in under 1ms)
+        if (self->timeout_ms == 0) {
+            break;
+        }
     }
 
     if (total_read == 0) {

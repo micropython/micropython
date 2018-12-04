@@ -31,6 +31,7 @@
 #include "shared-bindings/util.h"
 
 #include "lib/utils/context_manager_helpers.h"
+#include "lib/utils/interrupt_char.h"
 
 #include "py/ioctl.h"
 #include "py/objproperty.h"
@@ -56,10 +57,11 @@
 //|   :param int bits:  the number of bits per byte, 7, 8 or 9.
 //|   :param Parity parity:  the parity used for error checking.
 //|   :param int stop:  the number of stop bits, 1 or 2.
-//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.
+//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters. Raises ``ValueError`` if timeout >100 seconds.
 //|   :param int receiver_buffer_size: the character length of the read buffer (0 to disable). (When a character is 9 bits the buffer will be 2 * receiver_buffer_size bytes.)
 //|
 //|   *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
+//|   The new upper limit on ``timeout`` is meant to catch mistaken use of milliseconds.
 
 typedef struct {
     mp_obj_base_t base;
@@ -116,9 +118,13 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         mp_raise_ValueError(translate("stop must be 1 or 2"));
     }
 
+    mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
+    if (timeout > 100.0f) {
+        mp_raise_ValueError(translate("timeout >100 (units are now seconds, not msecs)"));
+    }
+
     common_hal_busio_uart_construct(self, tx, rx,
-                                    args[ARG_baudrate].u_int, bits, parity, stop,
-                                    mp_obj_get_float(args[ARG_timeout].u_obj),
+                                    args[ARG_baudrate].u_int, bits, parity, stop, timeout,
                                     args[ARG_receiver_buffer_size].u_int);
     return (mp_obj_t)self;
 }
