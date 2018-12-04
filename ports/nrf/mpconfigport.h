@@ -175,6 +175,8 @@ extern const struct _mp_obj_module_t gamepad_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t usb_hid_module;
 extern const struct _mp_obj_module_t bleio_module;
+extern const struct _mp_obj_module_t touchio_module;
+
 
 #if MICROPY_PY_BLEIO
 #define BLEIO_MODULE { MP_ROM_QSTR(MP_QSTR_bleio), MP_ROM_PTR(&bleio_module) },
@@ -205,6 +207,7 @@ extern const struct _mp_obj_module_t bleio_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_json            ), (mp_obj_t)&mp_module_ujson        }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_touchio         ), (mp_obj_t)&touchio_module         }, \
     USBHID_MODULE  \
     BLEIO_MODULE
 

@@ -165,6 +165,8 @@ SRC_COMMON_HAL += \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	time/__init__.c \
+	touchio/__init__.c \
+	touchio/TouchIn.c \
 
 ifneq ($(SD), )
 SRC_COMMON_HAL += \
