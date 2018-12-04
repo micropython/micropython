@@ -280,11 +280,17 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define LED0 MICROPY_HW_LED1
 #define LED1 MICROPY_HW_LED2
 #define LED2 MICROPY_HW_LED3
+#ifdef MICROPY_HW_LED4
+#define LED3 MICROPY_HW_LED4
+#endif
 
 void led_init(void) {
     mp_hal_pin_output(LED0);
     mp_hal_pin_output(LED1);
     mp_hal_pin_output(LED2);
+    #ifdef LED3
+    mp_hal_pin_output(LED3);
+    #endif
 }
 
 void led_state(int led, int val) {
@@ -302,6 +308,9 @@ void led_state_all(unsigned int mask) {
     led_state(LED0, mask & 1);
     led_state(LED1, mask & 2);
     led_state(LED2, mask & 4);
+    #ifdef LED3
+    led_state(LED3, mask & 8);
+    #endif
 }
 
 /******************************************************************************/
@@ -1089,7 +1098,11 @@ static int pyb_usbdd_shutdown(void) {
 
 #define RESET_MODE_NUM_STATES (4)
 #define RESET_MODE_TIMEOUT_CYCLES (8)
+#ifdef LED3
+#define RESET_MODE_LED_STATES 0x8421
+#else
 #define RESET_MODE_LED_STATES 0x7421
+#endif
 
 static int get_reset_mode(void) {
     usrbtn_init();
