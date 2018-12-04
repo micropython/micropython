@@ -298,6 +298,12 @@ void led_state(int led, int val) {
     }
 }
 
+void led_state_all(unsigned int mask) {
+    led_state(LED0, mask & 1);
+    led_state(LED1, mask & 2);
+    led_state(LED2, mask & 4);
+}
+
 /******************************************************************************/
 // USR BUTTON
 
@@ -1100,9 +1106,7 @@ static int get_reset_mode(void) {
                     reset_mode = 1;
                 }
                 uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-                led_state(LED0, l & 1);
-                led_state(LED1, l & 2);
-                led_state(LED2, l & 4);
+                led_state_all(l);
             }
             if (!usrbtn_state()) {
                 break;
@@ -1111,14 +1115,10 @@ static int get_reset_mode(void) {
         }
         // Flash the selected reset mode
         for (int i = 0; i < 6; i++) {
-            led_state(LED0, 0);
-            led_state(LED1, 0);
-            led_state(LED2, 0);
+            led_state_all(0);
             mp_hal_delay_ms(50);
             uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-            led_state(LED0, l & 1);
-            led_state(LED1, l & 2);
-            led_state(LED2, l & 4);
+            led_state_all(l);
             mp_hal_delay_ms(50);
         }
         mp_hal_delay_ms(300);
@@ -1127,9 +1127,7 @@ static int get_reset_mode(void) {
 }
 
 static void do_reset(void) {
-    led_state(LED0, 0);
-    led_state(LED1, 0);
-    led_state(LED2, 0);
+    led_state_all(0);
     mp_hal_delay_ms(50);
     pyb_usbdd_shutdown();
     #if defined(MBOOT_I2C_SCL)
@@ -1235,9 +1233,7 @@ enter_bootloader:
     i2c_init(initial_r0);
     #endif
 
-    led_state(LED0, 0);
-    led_state(LED1, 0);
-    led_state(LED2, 0);
+    led_state_all(0);
 
     #if USE_USB_POLLING
     uint32_t ss = systick_ms;
