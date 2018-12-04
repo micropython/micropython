@@ -340,7 +340,6 @@ void powerctrl_enter_stop_mode(void) {
     enable_irq(irq_state);
 }
 
-#if !defined(STM32L4)
 void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
 
@@ -376,6 +375,10 @@ void powerctrl_enter_standby_mode(void) {
     PWR->CR2 |= PWR_CR2_CWUPF6 | PWR_CR2_CWUPF5 | PWR_CR2_CWUPF4 | PWR_CR2_CWUPF3 | PWR_CR2_CWUPF2 | PWR_CR2_CWUPF1;
     #elif defined(STM32H7)
     // TODO
+    #elif defined(STM32L4)
+    // clear all wake-up flags
+    PWR->SCR |= PWR_SCR_CWUF5 | PWR_SCR_CWUF4 | PWR_SCR_CWUF3 | PWR_SCR_CWUF2 | PWR_SCR_CWUF1;
+    // TODO
     #else
     // clear global wake-up flag
     PWR->CR |= PWR_CR_CWUF;
@@ -388,4 +391,3 @@ void powerctrl_enter_standby_mode(void) {
     HAL_PWR_EnterSTANDBYMode();
     // we never return; MCU is reset on exit from standby
 }
-#endif

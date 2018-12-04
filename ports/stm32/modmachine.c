@@ -330,11 +330,7 @@ STATIC mp_obj_t machine_sleep(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
 
 STATIC mp_obj_t machine_deepsleep(void) {
-    #if defined(STM32L4)
-    printf("machine.deepsleep not supported yet\n");
-    #else
     powerctrl_enter_standby_mode();
-    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
