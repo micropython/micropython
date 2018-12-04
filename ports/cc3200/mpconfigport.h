@@ -34,6 +34,7 @@
 
 // options to control how MicroPython is built
 
+#define MICROPY_GC_STACK_ENTRY_TYPE                 uint16_t
 #define MICROPY_ALLOC_PATH_MAX                      (128)
 #define MICROPY_PERSISTENT_CODE_LOAD                (1)
 #define MICROPY_EMIT_THUMB                          (0)
