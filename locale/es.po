@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-03 15:57-0500\n"
+"POT-Creation-Date: 2018-12-04 16:17-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -234,8 +234,9 @@ msgstr "reinicio suave\n"
 #: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
-msgstr "Todos los canales de eventos de sincronización(sync event channels)"
-" están siendo utilizados"
+msgstr ""
+"Todos los canales de eventos de sincronización(sync event channels) están "
+"siendo utilizados"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:135
 msgid "calibration is read only"
@@ -374,7 +375,7 @@ msgstr "No hay suficientes pines disponibles"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
-#: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
@@ -388,31 +389,31 @@ msgstr "SDA o SCL necesitan una pull up"
 msgid "Unsupported baudrate"
 msgstr "Baudrate no soportado"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:66
+#: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits no soportados"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:72
-#: ports/nrf/common-hal/busio/UART.c:82
+#: ports/atmel-samd/common-hal/busio/UART.c:73
+#: ports/nrf/common-hal/busio/UART.c:83
 msgid "tx and rx cannot both be None"
 msgstr "Ambos tx y rx no pueden ser None"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:145
-#: ports/nrf/common-hal/busio/UART.c:115
+#: ports/atmel-samd/common-hal/busio/UART.c:146
+#: ports/nrf/common-hal/busio/UART.c:116
 msgid "Failed to allocate RX buffer"
 msgstr "Ha fallado la asignación del buffer RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:153
+#: ports/atmel-samd/common-hal/busio/UART.c:154
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:240
-#: ports/nrf/common-hal/busio/UART.c:149
+#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/nrf/common-hal/busio/UART.c:157
 msgid "No RX pin"
 msgstr "Sin pin RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:294
-#: ports/nrf/common-hal/busio/UART.c:195
+#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/nrf/common-hal/busio/UART.c:207
 msgid "No TX pin"
 msgstr "Sin pin TX"
 
@@ -823,24 +824,24 @@ msgstr "Todos los timers están siendo usados"
 msgid "All SPI peripherals are in use"
 msgstr "Todos los timers están siendo usados"
 
-#: ports/nrf/common-hal/busio/UART.c:48
+#: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lx"
 
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:87
 msgid "Invalid buffer size"
 msgstr "Tamaño de buffer inválido"
 
-#: ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:91
 msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
 
-#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
-#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
-#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
-#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
-#: ports/nrf/common-hal/busio/UART.c:364
+#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
+#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
+#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
+#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
+#: ports/nrf/common-hal/busio/UART.c:376
 msgid "busio.UART not available"
 msgstr "busio.UART no disponible"
 
@@ -911,8 +912,9 @@ msgstr "argumento número/tipos no coinciden"
 
 #: py/argcheck.c:147
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr "argumento(s) por palabra clave aún no implementados - usa argumentos"
-" normales en su lugar"
+msgstr ""
+"argumento(s) por palabra clave aún no implementados - usa argumentos "
+"normales en su lugar"
 
 #: py/bc.c:88 py/objnamedtuple.c:108
 msgid "%q() takes %d positional arguments but %d were given"
@@ -971,7 +973,8 @@ msgid ""
 msgstr ""
 "Bienvenido a Adafruit CircuitPython %s!\n"
 "\n"
-"Visita learn.adafruit.com/category/circuitpython para obtener guías de proyectos.\n"
+"Visita learn.adafruit.com/category/circuitpython para obtener guías de "
+"proyectos.\n"
 "\n"
 "Para listar los módulos incorporados por favor haga `help(\"modules\")`.\n"
 
@@ -1069,8 +1072,9 @@ msgstr "no deberia estar/tener agumento por palabra clave despues de */**"
 
 #: py/compile.c:2291
 msgid "non-keyword arg after keyword arg"
-msgstr "no deberia estar/tener agumento por palabra clave despues de argumento "
-"por palabra clave"
+msgstr ""
+"no deberia estar/tener agumento por palabra clave despues de argumento por "
+"palabra clave"
 
 #: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
 #: py/parse.c:1176
@@ -1534,8 +1538,8 @@ msgstr "valores complejos no soportados"
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
-msgstr "no se puede enviar un valor que no sea None a un generador recién "
-"iniciado"
+msgstr ""
+"no se puede enviar un valor que no sea None a un generador recién iniciado"
 
 #: py/objgenerator.c:126
 msgid "generator already executing"
@@ -1639,8 +1643,8 @@ msgstr "numero erroneo de argumentos"
 
 #: py/objstr.c:467
 msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr "join espera una lista de objetos str/bytes consistentes con el mismo"
-" objeto"
+msgstr ""
+"join espera una lista de objetos str/bytes consistentes con el mismo objeto"
 
 #: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
 msgid "empty separator"
@@ -1691,8 +1695,8 @@ msgstr "se espera ':' despues de un especificaro de tipo format"
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
-"no se puede cambiar de la numeración automática de campos a la especificación"
-" de campo manual"
+"no se puede cambiar de la numeración automática de campos a la "
+"especificación de campo manual"
 
 #: py/objstr.c:1055 py/objstr.c:1083
 msgid "tuple index out of range"
@@ -1897,8 +1901,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Archivo .mpy incompatible. Actualice todos los archivos .mpy. "
-"Consulte http://adafru.it/mpy-update para más información"
+"Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte "
+"http://adafru.it/mpy-update para más información"
 
 #: py/persistentcode.c:326
 msgid "can only save bytecode"
@@ -2175,13 +2179,17 @@ msgstr ""
 msgid "Function requires lock."
 msgstr "La función requiere lock"
 
-#: shared-bindings/busio/UART.c:104
+#: shared-bindings/busio/UART.c:106
 msgid "bits must be 7, 8 or 9"
 msgstr "bits deben ser 7, 8 o 9"
 
-#: shared-bindings/busio/UART.c:116
+#: shared-bindings/busio/UART.c:118
 msgid "stop must be 1 or 2"
 msgstr "stop debe ser 1 o 2"
+
+#: shared-bindings/busio/UART.c:123
+msgid "timeout >100 (units are now seconds, not msecs)"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
 msgid "Invalid direction."
@@ -2424,8 +2432,8 @@ msgstr ""
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"El objeto se ha desinicializado y ya no se puede utilizar. "
-"Crea un nuevo objeto"
+"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo "
+"objeto"
 
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
@@ -2558,35 +2566,35 @@ msgstr "USB ocupado"
 msgid "USB Error"
 msgstr "Error USB"
 
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "No se puede agregar la Característica."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Tipo de Servicio inválido"
 
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "No se puede agregar la Característica."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
+
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."

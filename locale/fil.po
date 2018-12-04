@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-03 15:57-0500\n"
+"POT-Creation-Date: 2018-12-04 16:17-0500\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -372,7 +372,7 @@ msgstr "Hindi sapat ang magagamit na pins"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
-#: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
@@ -386,31 +386,31 @@ msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 msgid "Unsupported baudrate"
 msgstr "Hindi supportadong baudrate"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:66
+#: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:72
-#: ports/nrf/common-hal/busio/UART.c:82
+#: ports/atmel-samd/common-hal/busio/UART.c:73
+#: ports/nrf/common-hal/busio/UART.c:83
 msgid "tx and rx cannot both be None"
 msgstr "tx at rx hindi pwedeng parehas na None"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:145
-#: ports/nrf/common-hal/busio/UART.c:115
+#: ports/atmel-samd/common-hal/busio/UART.c:146
+#: ports/nrf/common-hal/busio/UART.c:116
 msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:153
+#: ports/atmel-samd/common-hal/busio/UART.c:154
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:240
-#: ports/nrf/common-hal/busio/UART.c:149
+#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/nrf/common-hal/busio/UART.c:157
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:294
-#: ports/nrf/common-hal/busio/UART.c:195
+#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/nrf/common-hal/busio/UART.c:207
 msgid "No TX pin"
 msgstr "Walang TX pin"
 
@@ -825,26 +825,26 @@ msgstr "Lahat ng timer ginagamit"
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/UART.c:48
+#: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:87
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "mali ang buffer length"
 
-#: ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:91
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
-#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
-#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
-#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
-#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
-#: ports/nrf/common-hal/busio/UART.c:364
+#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
+#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
+#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
+#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
+#: ports/nrf/common-hal/busio/UART.c:376
 msgid "busio.UART not available"
 msgstr ""
 
@@ -2193,13 +2193,17 @@ msgstr ""
 msgid "Function requires lock."
 msgstr "Kailangan ng lock ang function."
 
-#: shared-bindings/busio/UART.c:104
+#: shared-bindings/busio/UART.c:106
 msgid "bits must be 7, 8 or 9"
 msgstr "bits ay dapat 7, 8 o 9"
 
-#: shared-bindings/busio/UART.c:116
+#: shared-bindings/busio/UART.c:118
 msgid "stop must be 1 or 2"
 msgstr "stop dapat 1 o 2"
+
+#: shared-bindings/busio/UART.c:123
+msgid "timeout >100 (units are now seconds, not msecs)"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
 msgid "Invalid direction."
@@ -2594,36 +2598,36 @@ msgstr "Busy ang USB"
 msgid "USB Error"
 msgstr "May pagkakamali ang USB"
 
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Hindi mabasa and Characteristic."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "ang palette ay dapat 32 bytes ang haba"
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Mali ang tipo ng serbisyo"
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Hindi mabasa and Characteristic."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
+
+#~ msgid "Can not add Service."
+#~ msgstr "Hindi maidaragdag ang serbisyo."

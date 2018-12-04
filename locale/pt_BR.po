@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-03 15:57-0500\n"
+"POT-Creation-Date: 2018-12-04 16:17-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -360,7 +360,7 @@ msgstr "Não há pinos suficientes disponíveis"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
-#: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
@@ -374,31 +374,31 @@ msgstr "SDA ou SCL precisa de um pull up"
 msgid "Unsupported baudrate"
 msgstr "Taxa de transmissão não suportada"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:66
+#: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits não suportado"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:72
-#: ports/nrf/common-hal/busio/UART.c:82
+#: ports/atmel-samd/common-hal/busio/UART.c:73
+#: ports/nrf/common-hal/busio/UART.c:83
 msgid "tx and rx cannot both be None"
 msgstr "TX e RX não podem ser ambos"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:145
-#: ports/nrf/common-hal/busio/UART.c:115
+#: ports/atmel-samd/common-hal/busio/UART.c:146
+#: ports/nrf/common-hal/busio/UART.c:116
 msgid "Failed to allocate RX buffer"
 msgstr "Falha ao alocar buffer RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:153
+#: ports/atmel-samd/common-hal/busio/UART.c:154
 msgid "Could not initialize UART"
 msgstr "Não foi possível inicializar o UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:240
-#: ports/nrf/common-hal/busio/UART.c:149
+#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/nrf/common-hal/busio/UART.c:157
 msgid "No RX pin"
 msgstr "Nenhum pino RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:294
-#: ports/nrf/common-hal/busio/UART.c:195
+#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/nrf/common-hal/busio/UART.c:207
 msgid "No TX pin"
 msgstr "Nenhum pino TX"
 
@@ -808,26 +808,26 @@ msgstr "Todos os periféricos I2C estão em uso"
 msgid "All SPI peripherals are in use"
 msgstr "Todos os periféricos SPI estão em uso"
 
-#: ports/nrf/common-hal/busio/UART.c:48
+#: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "erro = 0x%08lX"
 
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:87
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "Arquivo inválido"
 
-#: ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:91
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "I2C operação não suportada"
 
-#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
-#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
-#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
-#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
-#: ports/nrf/common-hal/busio/UART.c:364
+#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
+#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
+#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
+#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
+#: ports/nrf/common-hal/busio/UART.c:376
 msgid "busio.UART not available"
 msgstr "busio.UART não disponível"
 
@@ -2149,12 +2149,16 @@ msgstr ""
 msgid "Function requires lock."
 msgstr ""
 
-#: shared-bindings/busio/UART.c:104
+#: shared-bindings/busio/UART.c:106
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: shared-bindings/busio/UART.c:116
+#: shared-bindings/busio/UART.c:118
 msgid "stop must be 1 or 2"
+msgstr ""
+
+#: shared-bindings/busio/UART.c:123
+msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
@@ -2531,32 +2535,32 @@ msgstr "USB ocupada"
 msgid "USB Error"
 msgstr "Erro na USB"
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Não é possível adicionar o serviço."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
 
 #~ msgid "Can not query for the device address."
 #~ msgstr "Não é possível consultar o endereço do dispositivo."
 
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de serviço inválido"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Não é possível adicionar o serviço."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
