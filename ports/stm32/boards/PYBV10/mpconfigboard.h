@@ -100,3 +100,9 @@
 
 // MMA accelerometer config
 #define MICROPY_HW_MMA_AVDD_PIN     (pin_B5)
+
+// Bootloader configuration (only needed if Mboot is used)
+#define MBOOT_I2C_PERIPH_ID 1
+#define MBOOT_I2C_SCL (pin_B8)
+#define MBOOT_I2C_SDA (pin_B9)
+#define MBOOT_I2C_ALTFUNC (4)
