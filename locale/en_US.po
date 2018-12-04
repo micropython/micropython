@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-03 15:57-0500\n"
+"POT-Creation-Date: 2018-12-04 16:17-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -360,7 +360,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
-#: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
@@ -374,31 +374,31 @@ msgstr ""
 msgid "Unsupported baudrate"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:66
+#: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:72
-#: ports/nrf/common-hal/busio/UART.c:82
+#: ports/atmel-samd/common-hal/busio/UART.c:73
+#: ports/nrf/common-hal/busio/UART.c:83
 msgid "tx and rx cannot both be None"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:145
-#: ports/nrf/common-hal/busio/UART.c:115
+#: ports/atmel-samd/common-hal/busio/UART.c:146
+#: ports/nrf/common-hal/busio/UART.c:116
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:153
+#: ports/atmel-samd/common-hal/busio/UART.c:154
 msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:240
-#: ports/nrf/common-hal/busio/UART.c:149
+#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/nrf/common-hal/busio/UART.c:157
 msgid "No RX pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:294
-#: ports/nrf/common-hal/busio/UART.c:195
+#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/nrf/common-hal/busio/UART.c:207
 msgid "No TX pin"
 msgstr ""
 
@@ -807,24 +807,24 @@ msgstr ""
 msgid "All SPI peripherals are in use"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:48
+#: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:87
 msgid "Invalid buffer size"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:91
 msgid "Odd parity is not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
-#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
-#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
-#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
-#: ports/nrf/common-hal/busio/UART.c:364
+#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
+#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
+#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
+#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
+#: ports/nrf/common-hal/busio/UART.c:376
 msgid "busio.UART not available"
 msgstr ""
 
@@ -2140,12 +2140,16 @@ msgstr ""
 msgid "Function requires lock."
 msgstr ""
 
-#: shared-bindings/busio/UART.c:104
+#: shared-bindings/busio/UART.c:106
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: shared-bindings/busio/UART.c:116
+#: shared-bindings/busio/UART.c:118
 msgid "stop must be 1 or 2"
+msgstr ""
+
+#: shared-bindings/busio/UART.c:123
+msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
