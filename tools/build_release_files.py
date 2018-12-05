@@ -6,7 +6,7 @@ import build_board_info as build_info
 import time
 
 for port in build_info.SUPPORTED_PORTS:
-    result = subprocess.run("rm -rf ../ports/{}/build*".format(port), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    result = subprocess.run("rm -rf ../ports/{}/build*".format(port), shell=True)
 
 ROSIE_SETUPS = ["rosie-ci"]
 rosie_ok = {}
