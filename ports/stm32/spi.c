@@ -187,11 +187,11 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
             }
             #else
             if (spi->Instance == SPI3) {
-                // SPI3 are on APB1
+                // SPI3 is on APB1
                 spi_clock = HAL_RCC_GetPCLK1Freq();
             #if defined(SPI2)
             } else if (spi->Instance == SPI2) {
-                // SPI2 are on APB1
+                // SPI2 is on APB1
                 spi_clock = HAL_RCC_GetPCLK1Freq();
             #endif
             } else {
@@ -550,7 +550,7 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
             #else
             #if defined(SPI2)
             if (spi->Instance == SPI2) {
-                // SPI2 and SPI3 are on APB1
+                // SPI2 is on APB1
                 spi_clock = HAL_RCC_GetPCLK1Freq();
             } else
             #endif
