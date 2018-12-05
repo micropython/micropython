@@ -71,6 +71,7 @@ for board in build_boards:
         if travis:
             print('travis_fold:end:adafruit-bins-{}-{}\\r'.format(language, board))
 
-        print()
+        # Flush so travis will see something before 10 minutes has passed.
+        print(flush=True)
 
 sys.exit(exit_status)
