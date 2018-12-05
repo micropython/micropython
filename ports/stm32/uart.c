@@ -607,7 +607,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
                 mp_print_str(print, "CTS");
             }
         }
-        mp_printf(print, ", timeout=%u, timeout_char=%u, read_buf_len=%u)",
+        mp_printf(print, ", timeout=%u, timeout_char=%u, rxbuf=%u)",
             self->timeout, self->timeout_char,
             self->read_buf_len == 0 ? 0 : self->read_buf_len - 1); // -1 to adjust for usable length of buffer
     }
@@ -634,12 +634,13 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HWCONTROL_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} }, // legacy
     };
 
     // parse args
     struct {
-        mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, read_buf_len;
+        mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, rxbuf, read_buf_len;
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
@@ -719,6 +720,10 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     }
     self->read_buf_head = 0;
     self->read_buf_tail = 0;
+    if (args.rxbuf.u_int >= 0) {
+        // rxbuf overrides legacy read_buf_len
+        args.read_buf_len.u_int = args.rxbuf.u_int;
+    }
     if (args.read_buf_len.u_int <= 0) {
         // no read buffer
         self->read_buf_len = 0;

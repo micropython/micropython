@@ -12,8 +12,8 @@ UART XB
 UART YA
 UART YB
 ValueError Z
-UART(1, baudrate=9600, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=3, read_buf_len=64)
-UART(1, baudrate=2400, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=7, read_buf_len=64)
+UART(1, baudrate=9600, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=3, rxbuf=64)
+UART(1, baudrate=2400, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=7, rxbuf=64)
 0
 3
 4
@@ -22,3 +22,7 @@ None
 4
 None
 None
+UART(1, baudrate=9600, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=3, rxbuf=8)
+UART(1, baudrate=9600, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=3, rxbuf=0)
+UART(1, baudrate=9600, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=3, rxbuf=4)
+UART(1, baudrate=9600, bits=8, parity=None, stop=1, flow=0, timeout=1000, timeout_char=3, rxbuf=0)
