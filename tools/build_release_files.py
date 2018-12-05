@@ -55,9 +55,10 @@ for board in build_boards:
                 if exit_status == 0:
                     exit_status = 1
 
+        print("Build {} for {} took {:.2f}s and {}".format(board, language, build_duration, success))
         if travis:
             print('travis_fold:start:adafruit-bins-{}-{}\\r'.format(language, board))
-        print("Build {} for {} took {:.2f}s and {}".format(board, language, build_duration, success))
+        print("(dup)Build {} for {} took {:.2f}s and {}".format(board, language, build_duration, success))
         if make_result.returncode != 0:
             print(make_result.stdout.decode("utf-8"))
             print(other_output)
