@@ -92,7 +92,9 @@ script:
   - make -C mpy-cross -j2
   - echo -en 'travis_fold:end:mpy-cross\\r'
 
-  - cd tools && python3 build_release_files.py
+  # Use unbuffered output because building all the releases can take a long time.
+  # Travis will cancel the job if it sees no output for >10 minutes.
+  - cd tools && python3 -u build_release_files.py
   - cd ..
 
   - echo 'Building unix' && echo -en 'travis_fold:start:unix\\r'
