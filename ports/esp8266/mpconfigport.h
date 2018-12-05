@@ -201,6 +201,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t pin_irq_handler[16]; \
+    byte *uart0_rxbuf; \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
