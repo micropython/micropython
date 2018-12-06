@@ -54,6 +54,7 @@ typedef struct _mp_framebuf_p_t {
 // constants for formats
 #define FRAMEBUF_MVLSB    (0)
 #define FRAMEBUF_RGB565   (1)
+#define FRAMEBUF_XRGB8888 (7)
 #define FRAMEBUF_GS2_HMSB (5)
 #define FRAMEBUF_GS4_HMSB (2)
 #define FRAMEBUF_GS8      (6)
@@ -124,6 +125,26 @@ STATIC uint32_t rgb565_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
 
 STATIC void rgb565_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
     uint16_t *b = &((uint16_t*)fb->buf)[x + y * fb->stride];
+    while (h--) {
+        for (int ww = w; ww; --ww) {
+            *b++ = col;
+        }
+        b += fb->stride - w;
+    }
+}
+
+// Functions for XRGB8888 format
+
+STATIC void xrgb8888_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
+    ((uint32_t*)fb->buf)[x + y * fb->stride] = col;
+}
+
+STATIC uint32_t xrgb8888_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
+    return ((uint32_t*)fb->buf)[x + y * fb->stride];
+}
+
+STATIC void xrgb8888_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+    uint32_t *b = &((uint32_t*)fb->buf)[x + y * fb->stride];
     while (h--) {
         for (int ww = w; ww; --ww) {
             *b++ = col;
@@ -229,6 +250,7 @@ STATIC void gs8_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int 
 STATIC mp_framebuf_p_t formats[] = {
     [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
     [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
+    [FRAMEBUF_XRGB8888] = {xrgb8888_setpixel, xrgb8888_getpixel, xrgb8888_fill_rect},
     [FRAMEBUF_GS2_HMSB] = {gs2_hmsb_setpixel, gs2_hmsb_getpixel, gs2_hmsb_fill_rect},
     [FRAMEBUF_GS4_HMSB] = {gs4_hmsb_setpixel, gs4_hmsb_getpixel, gs4_hmsb_fill_rect},
     [FRAMEBUF_GS8] = {gs8_setpixel, gs8_getpixel, gs8_fill_rect},
@@ -282,6 +304,7 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     switch (o->format) {
         case FRAMEBUF_MVLSB:
         case FRAMEBUF_RGB565:
+        case FRAMEBUF_XRGB8888:
             break;
         case FRAMEBUF_MHLSB:
         case FRAMEBUF_MHMSB:
@@ -631,6 +654,7 @@ STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MVLSB), MP_ROM_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_MONO_VLSB), MP_ROM_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_INT(FRAMEBUF_RGB565) },
+    { MP_ROM_QSTR(MP_QSTR_XRGB8888), MP_ROM_INT(FRAMEBUF_XRGB8888) },
     { MP_ROM_QSTR(MP_QSTR_GS2_HMSB), MP_ROM_INT(FRAMEBUF_GS2_HMSB) },
     { MP_ROM_QSTR(MP_QSTR_GS4_HMSB), MP_ROM_INT(FRAMEBUF_GS4_HMSB) },
     { MP_ROM_QSTR(MP_QSTR_GS8), MP_ROM_INT(FRAMEBUF_GS8) },
