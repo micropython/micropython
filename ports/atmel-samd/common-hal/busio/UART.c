@@ -28,6 +28,7 @@
 #include "shared-bindings/busio/UART.h"
 
 #include "mpconfigport.h"
+#include "lib/utils/interrupt_char.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
@@ -53,7 +54,7 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-        uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
+        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
         uint8_t receiver_buffer_size) {
     Sercom* sercom = NULL;
     uint8_t sercom_index = 255; // Unset index
@@ -74,7 +75,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     self->baudrate = baudrate;
     self->character_bits = bits;
-    self->timeout_ms = timeout;
+    self->timeout_ms = timeout * 1000;
 
     // This assignment is only here because the usart_async routines take a *const argument.
     struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
@@ -272,12 +273,17 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
             start_ticks = ticks_ms;
         }
 #ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP
-#endif
-       // If we are zero timeout, make sure we don't loop again (in the event
-       // we read in under 1ms)
-       if (self->timeout_ms == 0)
+        MICROPY_VM_HOOK_LOOP ;
+        // Allow user to break out of a timeout with a KeyboardInterrupt.
+        if (mp_hal_is_interrupted()) {
             break;
+        }
+#endif
+        // If we are zero timeout, make sure we don't loop again (in the event
+        // we read in under 1ms)
+        if (self->timeout_ms == 0) {
+            break;
+        }
     }
 
     if (total_read == 0) {
@@ -324,10 +330,8 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         return MP_STREAM_ERROR;
     }
 
-    struct usart_async_status async_status;
-    // Could return ERR_BUSY, but if that's true there's already a problem.
-    usart_async_get_status(usart_desc_p, &async_status);
-    return async_status.txcnt;
+    // All the characters got written.
+    return len;
 }
 
 uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {

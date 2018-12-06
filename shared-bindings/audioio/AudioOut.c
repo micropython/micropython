@@ -101,7 +101,7 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_left_channel, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_right_channel, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_quiescent_value, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_int = 0x8000} },
+        { MP_QSTR_quiescent_value, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x8000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

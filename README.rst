@@ -65,6 +65,7 @@ Other
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  `Electronic Cats Meow Meow <https://electroniccats.com/gomeow/>`__
+-  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__ 
 
 
 Download

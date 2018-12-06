@@ -20,14 +20,6 @@
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#include "external_flash/devices.h"
-
-// these are the labeled pins (SDA, SCL, SCK, MOSI, MISO, etc)
-#define EXTERNAL_FLASH_DEVICE_COUNT 1
-#define EXTERNAL_FLASH_DEVICES W25Q128JV_PM
-
-#include "external_flash/external_flash.h"
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PB09)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB08)
 

@@ -37,7 +37,7 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D6),  (mp_obj_t)&pin_PD20 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D7),  (mp_obj_t)&pin_PD21 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D8),  (mp_obj_t)&pin_PB18 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D9),  (mp_obj_t)&pin_PB19 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D9),  (mp_obj_t)&pin_PB02 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D10),  (mp_obj_t)&pin_PB22 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D11),  (mp_obj_t)&pin_PB23 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D12),  (mp_obj_t)&pin_PB00 },
@@ -56,13 +56,12 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX1), (mp_obj_t)&pin_PB13 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D19), (mp_obj_t)&pin_PB13 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D20), (mp_obj_t)&pin_PB20 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D21), (mp_obj_t)&pin_PB21 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), (mp_obj_t)&pin_PB20 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D21), (mp_obj_t)&pin_PB21 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), (mp_obj_t)&pin_PB21 },
 
-    // Not connected but probably should be.
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_D22), (mp_obj_t)&pin_PB01 },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_D23), (mp_obj_t)&pin_PB01 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D22), (mp_obj_t)&pin_PD12 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D23), (mp_obj_t)&pin_PA15 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D24), (mp_obj_t)&pin_PC17 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCL1), (mp_obj_t)&pin_PC17 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D25), (mp_obj_t)&pin_PC16 },
@@ -73,7 +72,8 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PCC_DEN2), (mp_obj_t)&pin_PA13 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D28), (mp_obj_t)&pin_PA14 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PCC_CLK), (mp_obj_t)&pin_PA14 },
-    // { MP_OBJ_NEW_QSTR(MP_QSTR_D29), (mp_obj_t)&pin_PB01 }, // TODO GCLK
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D29), (mp_obj_t)&pin_PB19 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PCC_XCLK), (mp_obj_t)&pin_PB19 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D30), (mp_obj_t)&pin_PA23 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PCC_D7), (mp_obj_t)&pin_PA23 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D31), (mp_obj_t)&pin_PA22 },
@@ -121,6 +121,8 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_SCK), (mp_obj_t)&pin_PB27 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS), (mp_obj_t)&pin_PB28 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_MISO), (mp_obj_t)&pin_PB29 },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CARD_DETECT), (mp_obj_t)&pin_PB31 },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), (mp_obj_t)&pin_PC24 },
 

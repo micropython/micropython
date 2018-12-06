@@ -10,12 +10,14 @@ else
   endif
 endif
 
+CLI_SD := $(SD)
+
 include boards/$(BOARD)/mpconfigboard.mk
 
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
-# Build directory with SD
-BUILD ?= $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
+# Build directory with SD if it's different from the default.
+BUILD ?= $(if $(CLI_SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
