@@ -234,6 +234,7 @@ STATIC mp_obj_t esp32_pwm_deinit(mp_obj_t self_in) {
         ledc_stop(PWMODE, chan, 0);
         self->active = 0;
         self->channel = -1;
+        gpio_matrix_out(self->pin, SIG_GPIO_OUT_IDX, false, false);
     }
     return mp_const_none;
 }
