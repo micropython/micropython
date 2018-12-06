@@ -294,6 +294,37 @@ STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
+STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    // Save settings
+    uart_word_length_t word_length;
+    uart_parity_t parity;
+    uart_get_word_length(self->uart_num, &word_length);
+    uart_get_parity(self->uart_num, &parity);
+
+    // Synthesise the break condition by either a longer word or using even parity
+    uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
+    if (word_length != UART_DATA_8_BITS) {
+        uart_set_word_length(self->uart_num, UART_DATA_8_BITS);
+    } else if (parity == UART_PARITY_DISABLE) {
+        uart_set_parity(self->uart_num, UART_PARITY_EVEN);
+    } else {
+        // Cannot synthesise break
+        mp_raise_OSError(MP_EPERM);
+    }
+    char buf[1] = {0};
+    uart_write_bytes(self->uart_num, buf, 1);
+    uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
+
+    // Restore original settings
+    uart_set_word_length(self->uart_num, word_length);
+    uart_set_parity(self->uart_num, parity);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
+
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
 
@@ -302,6 +333,7 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
