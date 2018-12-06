@@ -1,6 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit CircuitPlayground Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA17)
+
 // Don't allow touch on A0 (PA02), because it's connected to the speaker.
 #define PA02_NO_TOUCH       (true)
 

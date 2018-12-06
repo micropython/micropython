@@ -34,6 +34,14 @@
 #include "genhdr/compression.generated.h"
 #endif
 
+#include "supervisor/serial.h"
+
+void serial_write_compressed(const compressed_string_t* compressed) {
+    char decompressed[compressed->length];
+    decompress(compressed, decompressed);
+    serial_write(decompressed);
+}
+
 char* decompress(const compressed_string_t* compressed, char* decompressed) {
     uint8_t this_byte = 0;
     uint8_t this_bit = 7;

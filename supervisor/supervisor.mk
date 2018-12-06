@@ -6,6 +6,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/flash.c \
 	supervisor/shared/micropython.c \
 	supervisor/shared/rgb_led_status.c \
+	supervisor/shared/safe_mode.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/translate.c

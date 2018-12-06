@@ -488,6 +488,8 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(base);
     if (type->subscr != NULL) {
         mp_obj_t ret = type->subscr(base, index, value);
+        // May have called port specific C code. Make sure it didn't mess up the heap.
+        assert_heap_ok();
         if (ret != MP_OBJ_NULL) {
             return ret;
         }

@@ -3,6 +3,8 @@
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA15)
+
 // RGB Status LED Pins
 #define MICROPY_HW_APA102_MOSI   (&pin_PB03)
 #define MICROPY_HW_APA102_SCK    (&pin_PB02)

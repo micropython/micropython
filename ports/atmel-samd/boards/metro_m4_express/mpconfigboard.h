@@ -8,6 +8,8 @@
 #define MICROPY_HW_LED_TX   (&pin_PA27)
 #define MICROPY_HW_LED_RX   (&pin_PB06)
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA16)
+
 #define MICROPY_HW_NEOPIXEL (&pin_PB22)
 
 // These are pins not to reset.

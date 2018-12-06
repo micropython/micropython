@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,24 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "PCA10059 nRF52840 Dongle"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nRF52840-DK"
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
+#define MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
 
-#define MICROPY_HW_LED_STATUS          (&pin_P0_06)
+typedef enum {
+  NO_SAFE_MODE = 0,
+  BROWNOUT,
+  HARD_CRASH,
+  USER_SAFE_MODE,
+  HEAP_OVERWRITTEN,
+  MANUAL_SAFE_MODE,
+  MICROPY_NLR_JUMP_FAIL,
+  MICROPY_FATAL_ERROR
+} safe_mode_t;
 
-#define PORT_HEAP_SIZE              (128 * 1024)
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+safe_mode_t wait_for_safe_mode_reset(void);
+
+void reset_into_safe_mode(safe_mode_t reason);
+
+void print_safe_mode_message(safe_mode_t reason);
+
+#endif  // MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H

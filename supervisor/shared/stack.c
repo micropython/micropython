@@ -29,6 +29,7 @@
 #include "py/mpconfig.h"
 #include "py/runtime.h"
 #include "supervisor/cpu.h"
+#include "supervisor/shared/safe_mode.h"
 
 extern uint32_t _estack;
 
@@ -37,8 +38,6 @@ static uint32_t current_stack_size = 0;
 supervisor_allocation* stack_alloc = NULL;
 
 #define EXCEPTION_STACK_SIZE 1024
-
-#define STACK_CANARY_VALUE 0x017829ef
 
 void allocate_stack(void) {
     mp_uint_t regs[10];
@@ -62,9 +61,7 @@ inline bool stack_ok(void) {
 
 inline void assert_heap_ok(void) {
     if (!stack_ok()) {
-        asm("nop");
-        while(true) {}
-        mp_raise_RuntimeError(translate("Stack clobbered heap."));
+        reset_into_safe_mode(HEAP_OVERWRITTEN);
     }
 }
 

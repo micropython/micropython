@@ -64,6 +64,9 @@
 #include "reset.h"
 #include "tick.h"
 
+#include "supervisor/shared/safe_mode.h"
+#include "supervisor/shared/stack.h"
+
 #include "tusb.h"
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS
@@ -153,35 +156,6 @@ safe_mode_t port_init(void) {
     samd_peripherals_enable_cache();
 #endif
 
-// On power on start or external reset, set _ezero to the canary word. If it
-// gets killed, we boot in safe mode. _ezero is the boundary between statically
-// allocated memory including the fixed MicroPython heap and the stack. If either
-// misbehaves, the canary will not be intact after soft reset.
-#ifdef CIRCUITPY_CANARY_WORD
-#ifdef SAMD21
-    bool power_on_or_external_reset = hri_pm_get_RCAUSE_POR_bit(PM) || hri_pm_get_RCAUSE_EXT_bit(PM);
-    bool system_reset = hri_pm_get_RCAUSE_SYST_bit(PM);
-#endif
-#ifdef SAMD51
-    bool power_on_or_external_reset = hri_rstc_get_RCAUSE_POR_bit(RSTC) || hri_rstc_get_RCAUSE_EXT_bit(RSTC);
-    bool system_reset = hri_rstc_get_RCAUSE_SYST_bit(RSTC);
-#endif
-   if (power_on_or_external_reset) {
-        _ezero = CIRCUITPY_CANARY_WORD;
-    } else if (system_reset) {
-        // If we're starting from a system reset we're likely coming from the
-        // bootloader or hard fault handler. If we're coming from the handler
-        // the canary will be CIRCUITPY_SAFE_RESTART_WORD and we don't want to
-        // revive the canary so that a second hard fault won't restart. Resets
-        // from anywhere else are ok.
-        if (_ezero == CIRCUITPY_SAFE_RESTART_WORD) {
-            _ezero = ~CIRCUITPY_CANARY_WORD;
-        } else {
-            _ezero = CIRCUITPY_CANARY_WORD;
-        }
-    }
-#endif
-
 #ifdef SAMD21
     hri_nvmctrl_set_CTRLB_RWS_bf(NVMCTRL, 2);
     _pm_init();
@@ -199,13 +173,6 @@ safe_mode_t port_init(void) {
 
     // Init the board last so everything else is ready
     board_init();
-
-    #ifdef CIRCUITPY_CANARY_WORD
-    // Run in safe mode if the canary is corrupt.
-    if (_ezero != CIRCUITPY_CANARY_WORD) {
-        return HARD_CRASH;
-    }
-    #endif
 
     #ifdef SAMD21
     if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
@@ -280,6 +247,20 @@ void reset_to_bootloader(void) {
     reset();
 }
 
+void reset_cpu(void) {
+    reset();
+}
+
+extern uint32_t _ebss;
+// Place the word to save just after our BSS section that gets blanked.
+void port_set_saved_word(uint32_t value) {
+    _ebss = value;
+}
+
+uint32_t port_get_saved_word(void) {
+    return _ebss;
+}
+
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
@@ -290,18 +271,9 @@ __attribute__((used)) void HardFault_Handler(void)
     // loop below.
     REG_MTB_MASTER = 0x00000000 + 6;
 #endif
-#ifdef CIRCUITPY_CANARY_WORD
-    // If the canary is intact, then kill it and reset so we have a chance to
-    // read our files.
-    if (_ezero == CIRCUITPY_CANARY_WORD) {
-        _ezero = CIRCUITPY_SAFE_RESTART_WORD;
-        NVIC_SystemReset();
-    }
-#endif
+
+    reset_into_safe_mode(HARD_CRASH);
     while (true) {
-        asm("");
-    }
-    for (uint32_t i = 0; i < 100000; i++) {
-        asm("noop;");
+        asm("nop;");
     }
 }
