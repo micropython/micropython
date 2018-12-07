@@ -30,6 +30,7 @@
 #include <stdbool.h>
 
 void run_background_tasks(void);
+void run_background_vm_tasks(void);
 bool background_tasks_ok(void);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H

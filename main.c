@@ -51,6 +51,7 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
@@ -140,12 +141,6 @@ const char* first_existing_file_in_list(const char ** filenames) {
     return NULL;
 }
 
-void write_compressed(const compressed_string_t* compressed) {
-    char decompressed[compressed->length];
-    decompress(compressed, decompressed);
-    serial_write(decompressed);
-}
-
 bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     const char* filename = first_existing_file_in_list(filenames);
     if (filename == NULL) {
@@ -166,11 +161,11 @@ bool run_code_py(safe_mode_t safe_mode) {
     if (serial_connected_at_start) {
         serial_write("\n");
         if (autoreload_is_enabled()) {
-            write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+            serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
         } else if (safe_mode != NO_SAFE_MODE) {
-            write_compressed(translate("Running in safe mode! Auto-reload is off.\n"));
+            serial_write_compressed(translate("Running in safe mode! Auto-reload is off.\n"));
         } else if (!autoreload_is_enabled()) {
-            write_compressed(translate("Auto-reload is off.\n"));
+            serial_write_compressed(translate("Auto-reload is off.\n"));
         }
     }
     #endif
@@ -184,7 +179,7 @@ bool run_code_py(safe_mode_t safe_mode) {
     bool found_main = false;
 
     if (safe_mode != NO_SAFE_MODE) {
-        write_compressed(translate("Running in safe mode! Not running saved code.\n"));
+        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
     } else {
         new_status_color(MAIN_RUNNING);
 
@@ -200,7 +195,7 @@ bool run_code_py(safe_mode_t safe_mode) {
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
             if (found_main) {
-                write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+                serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
         stop_mp();
@@ -220,8 +215,8 @@ bool run_code_py(safe_mode_t safe_mode) {
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
+        #ifdef CIRCUITPY_SUPERVISOR_BACKGROUND
+            CIRCUITPY_SUPERVISOR_BACKGROUND
         #endif
         if (reload_requested) {
             return true;
@@ -239,37 +234,14 @@ bool run_code_py(safe_mode_t safe_mode) {
 
             if (!serial_connected_at_start) {
                 if (autoreload_is_enabled()) {
-                    write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+                    serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
                 } else {
-                    write_compressed(translate("Auto-reload is off.\n"));
+                    serial_write_compressed(translate("Auto-reload is off.\n"));
                 }
             }
-            // Output a user safe mode string if its set.
-            #ifdef BOARD_USER_SAFE_MODE
-            if (safe_mode == USER_SAFE_MODE) {
-                serial_write("\n");
-                write_compressed(translate("You requested starting safe mode by "));
-                serial_write(BOARD_USER_SAFE_MODE_ACTION);
-                serial_write("\n");
-                write_compressed(translate("To exit, please reset the board without "));
-                serial_write(BOARD_USER_SAFE_MODE_ACTION);
-                serial_write("\n");
-            } else
-            #endif
-            if (safe_mode != NO_SAFE_MODE) {
-                serial_write("\n");
-                write_compressed(translate("You are running in safe mode which means something really bad happened.\n"));
-                if (safe_mode == HARD_CRASH) {
-                    write_compressed(translate("Looks like our core CircuitPython code crashed hard. Whoops!\n"));
-                    write_compressed(translate("Please file an issue here with the contents of your CIRCUITPY drive:\n"));
-                    serial_write("https://github.com/adafruit/circuitpython/issues\n");
-                } else if (safe_mode == BROWNOUT) {
-                    write_compressed(translate("The microcontroller's power dipped. Please make sure your power supply provides\n"));
-                    write_compressed(translate("enough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"));
-                }
-            }
+            print_safe_mode_message(safe_mode);
             serial_write("\n");
-            write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
+            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
         }
         if (serial_connected_before_animation && !serial_connected()) {
             serial_connected_at_start = false;
@@ -394,6 +366,11 @@ int __attribute__((used)) main(void) {
     init_status_leds();
     rgb_led_status_init();
 
+    // Wait briefly to give a reset window where we'll enter safe mode after the reset.
+    if (safe_mode == NO_SAFE_MODE) {
+        safe_mode = wait_for_safe_mode_reset();
+    }
+
     stack_init();
 
     // Create a new filesystem only if we're not in a safe mode.
@@ -427,7 +404,7 @@ int __attribute__((used)) main(void) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
-                write_compressed(translate("soft reboot\n"));
+                serial_write_compressed(translate("soft reboot\n"));
             }
             first_run = false;
             skip_repl = run_code_py(safe_mode);
@@ -455,12 +432,12 @@ void gc_collect(void) {
 }
 
 void NORETURN nlr_jump_fail(void *val) {
-    HardFault_Handler();
+    reset_into_safe_mode(MICROPY_NLR_JUMP_FAIL);
     while (true) {}
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    HardFault_Handler();
+    reset_into_safe_mode(MICROPY_FATAL_ERROR);
     while (true) {}
 }
 

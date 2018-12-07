@@ -29,6 +29,8 @@
 #define MICROPY_HW_MCU_NAME         "nRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nRF52-DK"
 
+#define MICROPY_HW_LED_STATUS          (&pin_P0_17)
+
 #define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
 #define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
 #define MICROPY_HW_UART_HWFC        (0)

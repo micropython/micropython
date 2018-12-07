@@ -33,6 +33,8 @@
 #define PORT_HEAP_SIZE              (128 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
+#define MICROPY_HW_LED_STATUS          (&pin_P0_13)
+
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_27)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_26)
 
