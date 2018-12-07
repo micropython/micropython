@@ -40,12 +40,23 @@
 // Number of items per traceback entry (file, line, block)
 #define TRACEBACK_ENTRY_LEN (3)
 
-// Number of traceback entries to reserve in the emergency exception buffer
-#define EMG_TRACEBACK_ALLOC (2 * TRACEBACK_ENTRY_LEN)
-
-// Optionally allocated buffer for storing the first argument of an exception
-// allocated when the heap is locked.
+// Optionally allocated buffer for storing some traceback, the tuple argument,
+// and possible string object and data, for when the heap is locked.
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+
+// When used the layout of the emergency exception buffer is:
+//  - traceback entry (file, line, block)
+//  - traceback entry (file, line, block)
+//  - mp_obj_tuple_t object
+//  - n_args * mp_obj_t for tuple
+//  - mp_obj_str_t object
+//  - string data
+#define EMG_BUF_TRACEBACK_OFFSET    (0)
+#define EMG_BUF_TRACEBACK_SIZE      (2 * TRACEBACK_ENTRY_LEN * sizeof(size_t))
+#define EMG_BUF_TUPLE_OFFSET        (EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE)
+#define EMG_BUF_TUPLE_SIZE(n_args)  (sizeof(mp_obj_tuple_t) + n_args * sizeof(mp_obj_t))
+#define EMG_BUF_STR_OFFSET          (EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(1))
+
 #   if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
 #define mp_emergency_exception_buf_size MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
 
@@ -153,9 +164,9 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
         // reserved room (after the traceback data) for a tuple with 1 element.
         // Otherwise we are free to use the whole buffer after the traceback data.
         if (o_tuple == NULL && mp_emergency_exception_buf_size >=
-            EMG_TRACEBACK_ALLOC * sizeof(size_t) + sizeof(mp_obj_tuple_t) + n_args * sizeof(mp_obj_t)) {
+            EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(n_args)) {
             o_tuple = (mp_obj_tuple_t*)
-                ((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf) + EMG_TRACEBACK_ALLOC * sizeof(size_t));
+                ((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_TUPLE_OFFSET);
         }
         #endif
 
@@ -366,11 +377,10 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     // that buffer to store the string object and its data (at least 16 bytes for
     // the string data), reserving room at the start for the traceback and 1-tuple.
     if ((o_str == NULL || o_str_buf == NULL)
-        && mp_emergency_exception_buf_size >= EMG_TRACEBACK_ALLOC * sizeof(size_t)
-            + sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t) + sizeof(mp_obj_str_t) + 16) {
+        && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16) {
         used_emg_buf = true;
         o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
-            + EMG_TRACEBACK_ALLOC * sizeof(size_t) + sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t));
+            + EMG_BUF_STR_OFFSET);
         o_str_buf = (byte*)&o_str[1];
         o_str_alloc = (uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
             + mp_emergency_exception_buf_size - o_str_buf;
@@ -464,11 +474,12 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         self->traceback_data = m_new_maybe(size_t, TRACEBACK_ENTRY_LEN);
         if (self->traceback_data == NULL) {
             #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-            if (mp_emergency_exception_buf_size >= EMG_TRACEBACK_ALLOC * sizeof(size_t)) {
+            if (mp_emergency_exception_buf_size >= EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE) {
                 // There is room in the emergency buffer for traceback data
-                size_t *tb = (size_t*)MP_STATE_VM(mp_emergency_exception_buf);
+                size_t *tb = (size_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
+                    + EMG_BUF_TRACEBACK_OFFSET);
                 self->traceback_data = tb;
-                self->traceback_alloc = EMG_TRACEBACK_ALLOC;
+                self->traceback_alloc = EMG_BUF_TRACEBACK_SIZE / sizeof(size_t);
             } else {
                 // Can't allocate and no room in emergency buffer
                 return;
