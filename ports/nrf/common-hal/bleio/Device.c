@@ -360,7 +360,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
         characteristic->props.notify = gattc_char->char_props.notify;
         characteristic->props.read = gattc_char->char_props.read;
         characteristic->props.write = gattc_char->char_props.write;
-        characteristic->props.write_wo_resp = gattc_char->char_props.write_wo_resp;
+        characteristic->props.write_no_response = gattc_char->char_props.write_wo_resp;
         characteristic->handle = gattc_char->handle_value;
         characteristic->service = m_char_discovery_service;
 

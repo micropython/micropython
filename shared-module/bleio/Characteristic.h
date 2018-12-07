@@ -39,7 +39,7 @@ typedef struct {
     struct {
         bool broadcast : 1;
         bool read : 1;
-        bool write_wo_resp : 1;
+        bool write_no_response : 1;
         bool write : 1;
         bool notify : 1;
         bool indicate : 1;

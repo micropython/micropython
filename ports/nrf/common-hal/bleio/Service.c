@@ -34,7 +34,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     ble_gatts_char_md_t char_md = {
         .char_props.broadcast      = characteristic->props.broadcast,
         .char_props.read           = characteristic->props.read,
-        .char_props.write_wo_resp  = characteristic->props.write_wo_resp,
+        .char_props.write_wo_resp  = characteristic->props.write_no_response,
         .char_props.write          = characteristic->props.write,
         .char_props.notify         = characteristic->props.notify,
         .char_props.indicate       = characteristic->props.indicate,

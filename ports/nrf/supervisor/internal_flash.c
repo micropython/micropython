@@ -70,16 +70,52 @@ uint32_t supervisor_flash_get_block_count(void) {
     return ((uint32_t) __fatfs_flash_length) / FILESYSTEM_BLOCK_SIZE ;
 }
 
-// TODO support flashing with SD enabled
+#ifdef BLUETOOTH_SD
+STATIC bool wait_for_flash_operation() {
+    do {
+        sd_app_evt_wait();
+        uint32 evt_id;
+        uint32_t result = sd_evt_get(&evt_id);
+        if (result == NRF_SUCCESS) {
+            switch (evt_id) {
+            case NRF_EVT_FLASH_OPERATION_SUCCESS:
+                return true;
+
+            case NRF_EVT_FLASH_OPERATION_ERROR:
+                return false;
+
+            default:
+                // Some other event. Wait for a flash event.
+                continue;
+            }
+        }
+        return false;
+    } while (true);
+}
+#endif
+
 void supervisor_flash_flush(void) {
     if (_flash_page_addr == NO_CACHE) return;
 
     // Skip if data is the same
     if (memcmp(_flash_cache, (void *)_flash_page_addr, FL_PAGE_SZ) != 0) {
-//        _is_flashing = true;
+
+#ifdef BLUETOOTH_SD
+    uint8_t sd_en = 0;
+    (void) sd_softdevice_is_enabled(&sd_en);
+
+    if (sd_en) {
+        sd_flash_page_erase(_flash_page_addr / FL_PAGE_SZ);
+        wait_for_flash_operation();    // TODO: handle error return.
+        sd_flash_write(_flash_page_addr, (uint32_t *)_flash_cache, FL_PAGE_SZ / sizeof(uint32_t));
+        wait_for_flash_operation();
+    } else {
+#endif
         nrf_nvmc_page_erase(_flash_page_addr);
         nrf_nvmc_write_words(_flash_page_addr, (uint32_t *)_flash_cache, FL_PAGE_SZ / sizeof(uint32_t));
+#ifdef BLUETOOTH_SD
     }
+#endif
 
     _flash_page_addr = NO_CACHE;
 }
@@ -100,10 +136,6 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
         if (page_addr != _flash_page_addr) {
             supervisor_flash_flush();
-
-            // writing previous cached data, skip current data until flashing is done
-            // tinyusb stack will invoke write_block() with the same parameters later on
-            //        if ( _is_flashing ) return;
 
             _flash_page_addr = page_addr;
             memcpy(_flash_cache, (void *)page_addr, FL_PAGE_SZ);

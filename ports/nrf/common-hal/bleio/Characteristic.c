@@ -107,7 +107,7 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
         .len = bufinfo->len,
     };
 
-    if (characteristic->props.write_wo_resp) {
+    if (characteristic->props.write_no_response) {
         write_params.write_op = BLE_GATT_OP_WRITE_CMD;
 
         err_code = sd_mutex_acquire(m_write_mutex);

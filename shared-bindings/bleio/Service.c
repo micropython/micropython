@@ -27,6 +27,7 @@
 
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 
@@ -38,7 +39,7 @@
 //| Stores information about a BLE service and its characteristics.
 //|
 
-//| .. class:: Service(uuid, secondary=False)
+//| .. class:: Service(uuid, characteristics, *, secondary=False)
 //|
 //|   Create a new Service object identified by the specified UUID.
 //|   To mark the service as secondary, pass `True` as :py:data:`secondary`.
@@ -47,22 +48,6 @@
 //|   :param bool secondary: If the service is a secondary one
 //|
 
-//|   .. method:: add_characteristic(characteristic)
-//|
-//|     Appends the :py:data:`characteristic` to the list of this service's characteristics.
-//|
-//|      :param bleio.Characteristic characteristic: the characteristic to append
-//|
-
-//|   .. attribute:: characteristics
-//|
-//|     A `list` of `bleio.Characteristic` that are offered by this service. (read-only)
-//|
-
-//|   .. attribute:: uuid
-//|
-//|     The UUID of this service. (read-only)
-//|
 STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -72,19 +57,20 @@ STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, true);
+    mp_arg_check_num(n_args, n_kw, 2, 3, true);
     bleio_service_obj_t *self = m_new_obj(bleio_service_obj_t);
+    self->char_list = mp_obj_new_list(0, NULL);
     self->base.type = &bleio_service_type;
     self->device = NULL;
-    self->char_list = mp_obj_new_list(0, NULL);
     self->handle = 0xFFFF;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
 
-    enum { ARG_uuid, ARG_secondary };
+    enum { ARG_uuid, ARG_characteristics, ARG_secondary };
     static const mp_arg_t allowed_args[] = {
-        { ARG_uuid, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { ARG_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_characteristics, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_secondary, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
@@ -95,41 +81,42 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const mp_obj_t uuid = args[ARG_uuid].u_obj;
 
-    if (uuid == mp_const_none) {
-        return MP_OBJ_FROM_PTR(self);
+    if (!MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
+        mp_raise_ValueError(translate("Expected a UUID"));
     }
 
-    if (MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
-        self->uuid = MP_OBJ_TO_PTR(uuid);
-    } else {
-        mp_raise_ValueError(translate("Expected a UUID or None"));
-    }
+    self->uuid = MP_OBJ_TO_PTR(uuid);
 
+    // If characteristics is not an iterable, an exception will be thrown.
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(args[ARG_characteristics].u_obj, &iter_buf);
+    mp_obj_t characteristic;
+
+    while ((characteristic = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (!MP_OBJ_IS_TYPE(characteristic, &bleio_characteristic_type)) {
+            mp_raise_ValueError(translate("characteristics includes an object that is not a Characteristic"));
+        }
+        bleio_characteristic_obj_t *characteristic_ptr = MP_OBJ_TO_PTR(characteristic);
+        if (common_hal_bleio_uuid_get_uuid128_reference(uuid) !=
+        common_hal_bleio_uuid_get_uuid128_reference(characteristic_ptr->uuid)) {
+            // The descriptor base UUID doesn't match the characteristic base UUID.
+            mp_raise_ValueError(translate("Characteristic UUID doesn't match Service UUID"));
+        }
+        characteristic_ptr->service = self;
+        mp_obj_list_append(self->char_list, characteristic);
+    }
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t bleio_service_add_characteristic(mp_obj_t self_in, mp_obj_t characteristic_in) {
-    bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(characteristic_in);
-
-    if (common_hal_bleio_uuid_get_uuid128_reference(self->uuid) !=
-        common_hal_bleio_uuid_get_uuid128_reference(characteristic->uuid)) {
-        // The descriptor base UUID doesn't match the characteristic base UUID.
-        mp_raise_ValueError(translate("Characteristic UUID doesn't match Descriptor UUID"));
-    }
-
-    characteristic->service = self;
-
-    mp_obj_list_append(self->char_list, characteristic);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_service_add_characteristic_obj, bleio_service_add_characteristic);
-
+//|   .. attribute:: characteristics
+//|
+//|     A `list` of `bleio.Characteristic` that are offered by this service. (read-only)
+//|
 STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    return self->char_list;
+    // Return list as a tuple so user won't be able to change it.
+    mp_obj_list_t *char_list = MP_OBJ_TO_PTR(self->char_list);
+    return mp_obj_new_tuple(char_list->len, char_list->items);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_service_get_characteristics);
 
@@ -140,6 +127,10 @@ const mp_obj_property_t bleio_service_characteristics_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|   .. attribute:: uuid
+//|
+//|     The UUID of this service. (read-only)
+//|
 STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -155,7 +146,6 @@ const mp_obj_property_t bleio_service_uuid_obj = {
 };
 
 STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_add_characteristic), MP_ROM_PTR(&bleio_service_add_characteristic_obj) },
     { MP_ROM_QSTR(MP_QSTR_characteristics),    MP_ROM_PTR(&bleio_service_characteristics_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),               MP_ROM_PTR(&bleio_service_uuid_obj) },
 };
