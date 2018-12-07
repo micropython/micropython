@@ -755,7 +755,7 @@ soft_reset_exit:
     mod_network_deinit();
     #endif
     timer_deinit();
-    uart_deinit();
+    uart_deinit_all();
     #if MICROPY_HW_ENABLE_CAN
     can_deinit();
     #endif
