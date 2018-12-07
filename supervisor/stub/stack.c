@@ -24,11 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <stdint.h>
-
-void allocate_stack(void) {
-}
+#include "supervisor/shared/stack.h"
 
 bool stack_ok(void) {
     return true;
@@ -44,6 +40,7 @@ void stack_resize(void) {
 }
 
 void set_next_stack_size(uint32_t size) {
+    (void) size;
 }
 
 uint32_t get_current_stack_size(void) {
