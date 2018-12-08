@@ -28,8 +28,11 @@
 #include "supervisor/usb.h"
 #endif
 
+#include "supervisor/shared/stack.h"
+
 void run_background_tasks(void) {
     #ifdef NRF52840
         usb_background();
     #endif
+    assert_heap_ok();
 }

@@ -451,10 +451,8 @@ extern const struct _mp_obj_module_t wiznet_module;
     NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);
-void run_background_vm_tasks(void);
-#define MICROPY_VM_HOOK_LOOP run_background_vm_tasks();
-#define MICROPY_VM_HOOK_RETURN run_background_vm_tasks();
-#define CIRCUITPY_SUPERVISOR_BACKGROUND run_background_tasks();
+#define MICROPY_VM_HOOK_LOOP run_background_tasks();
+#define MICROPY_VM_HOOK_RETURN run_background_tasks();
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"

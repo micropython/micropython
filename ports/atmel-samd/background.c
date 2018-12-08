@@ -39,6 +39,7 @@ volatile uint64_t last_finished_tick = 0;
 bool stack_ok_so_far = true;
 
 void run_background_tasks(void) {
+    assert_heap_ok();
     #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
     audio_dma_background();
     #endif
@@ -50,14 +51,9 @@ void run_background_tasks(void) {
     network_module_background();
     #endif
     usb_background();
+    assert_heap_ok();
 
     last_finished_tick = ticks_ms;
-}
-
-void run_background_vm_tasks(void) {
-    assert_heap_ok();
-    run_background_tasks();
-    assert_heap_ok();
 }
 
 bool background_tasks_ok(void) {
