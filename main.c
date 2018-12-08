@@ -215,8 +215,8 @@ bool run_code_py(safe_mode_t safe_mode) {
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
-        #ifdef CIRCUITPY_SUPERVISOR_BACKGROUND
-            CIRCUITPY_SUPERVISOR_BACKGROUND
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
         #endif
         if (reload_requested) {
             return true;
