@@ -46,11 +46,12 @@ You will need the following components:
 
 Connect the components as shown to your board.
 
-![Test jig Fritzing diagram](doc/test_jig.png)
+.. image:: docs/test_jig.png
+    :alt: Test jig Fritzing diagram
 
 Copy the *lib* folder to the CIRCUITPYTHON drive. Copy *main.py* to the root directory of your CIRCUITPYTHON drive. Open a Serial terminal and connect to the board. Follow the directions given to run through the tests.
 
 Building
 ========
 
-Individual test modules can be built with the mpy-cross cross-compiler. This is required to save RAM space if you plan to run more than one test at a time. See [the mpy-cross directory in circuitpython](https://github.com/adafruit/circuitpython/tree/master/mpy-cross) to learn more.
+Individual test modules can be built with the mpy-cross cross-compiler. This is required to save RAM space if you plan to run more than one test at a time. See `the mpy-cross directory in circuitpython <https://github.com/adafruit/circuitpython/tree/master/mpy-cross>`_ to learn more.
