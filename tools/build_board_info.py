@@ -35,7 +35,10 @@ extension_by_board = {
     "feather_m0_basic": BIN_UF2,
     "feather_m0_rfm69": BIN,
     "feather_m0_rfm9x": BIN,
-    "makerdiary_nrf52840_mdk": HEX
+    "makerdiary_nrf52840_mdk": HEX,
+    "particle_argon": UF2,
+    "particle_boron": UF2,
+    "particle_xenon": UF2
 }
 
 def get_languages():
