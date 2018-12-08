@@ -36,6 +36,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SD_MOSI), MP_ROM_PTR(&pin_PA12) },
     { MP_ROM_QSTR(MP_QSTR_SD_MISO), MP_ROM_PTR(&pin_PA15) },
     { MP_ROM_QSTR(MP_QSTR_SD_CS), MP_ROM_PTR(&pin_PA14) },
+    { MP_ROM_QSTR(MP_QSTR_SD_CD), MP_ROM_PTR(&pin_PA27) },
     { MP_ROM_QSTR(MP_QSTR_L),   MP_ROM_PTR(&pin_PB08) },
     { MP_ROM_QSTR(MP_QSTR_VOLTAGE_MONITOR), MP_ROM_PTR(&pin_PB09) },
     { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_PB09) },
