@@ -64,6 +64,7 @@ void uart_init0(void);
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
 bool uart_init2(pyb_uart_obj_t *uart_obj);
+void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf);
 void uart_deinit(pyb_uart_obj_t *uart_obj);
 void uart_irq_handler(mp_uint_t uart_id);
 

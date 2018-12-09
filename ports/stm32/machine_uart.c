@@ -223,25 +223,18 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         }
         self->char_width = CHAR_WIDTH_8BIT;
     }
-    self->read_buf_head = 0;
-    self->read_buf_tail = 0;
     if (args.rxbuf.u_int >= 0) {
         // rxbuf overrides legacy read_buf_len
         args.read_buf_len.u_int = args.rxbuf.u_int;
     }
     if (args.read_buf_len.u_int <= 0) {
         // no read buffer
-        self->read_buf_len = 0;
-        self->read_buf = NULL;
-        HAL_NVIC_DisableIRQ(self->irqn);
-        __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
+        uart_set_rxbuf(self, 0, NULL);
     } else {
         // read buffer using interrupts
-        self->read_buf_len = args.read_buf_len.u_int + 1; // +1 to adjust for usable length of buffer
-        self->read_buf = m_new(byte, self->read_buf_len << self->char_width);
-        __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
-        NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_UART);
-        HAL_NVIC_EnableIRQ(self->irqn);
+        size_t len = args.read_buf_len.u_int + 1; // +1 to adjust for usable length of buffer
+        uint8_t *buf = m_new(byte, len << self->char_width);
+        uart_set_rxbuf(self, len, buf);
     }
 
     // compute actual baudrate that was configured

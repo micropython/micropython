@@ -302,6 +302,21 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
     return true;
 }
 
+void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
+    self->read_buf_head = 0;
+    self->read_buf_tail = 0;
+    self->read_buf_len = len;
+    self->read_buf = buf;
+    if (len == 0) {
+        HAL_NVIC_DisableIRQ(self->irqn);
+        __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
+    } else {
+        __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
+        NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_UART);
+        HAL_NVIC_EnableIRQ(self->irqn);
+    }
+}
+
 void uart_deinit(pyb_uart_obj_t *self) {
     self->is_enabled = false;
     UART_HandleTypeDef *uart = &self->uart;
