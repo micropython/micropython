@@ -297,6 +297,9 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
+    \
+    /* list of all interrupt handler (if they been created) */ \
+    mp_obj_list_t mp_irq_obj_list; \
 
 // type definitions for the specific machine
 

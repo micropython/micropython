@@ -33,6 +33,7 @@
 #include "py/mphal.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
+#include "lib/utils/mpirq.h"
 #include "lib/oofatfs/ff.h"
 #include "lwip/init.h"
 #include "extmod/vfs.h"
@@ -552,6 +553,10 @@ soft_reset:
     reset_mode = update_reset_mode(1);
     #endif
 
+    // deactivate all callbacks to avoid undefined behaviour
+    // when coming out of a soft reset
+    mp_irq_deactivate_all();
+
     // Python threading init
     #if MICROPY_PY_THREAD
     mp_thread_init();
@@ -581,7 +586,7 @@ soft_reset:
     // zeroing out memory and resetting any of the sub-systems.  Following this
     // we can run Python scripts (eg boot.py), but anything that is configurable
     // by boot.py must be set after boot.py is run.
-
+    mp_irq_init0();
     readline_init0();
     pin_init0();
     extint_init0();

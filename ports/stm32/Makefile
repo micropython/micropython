@@ -114,6 +114,7 @@ SRC_LIB = $(addprefix lib/,\
 	utils/pyexec.c \
 	utils/interrupt_char.c \
 	utils/sys_stdio_mphal.c \
+	utils/mpirq.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
