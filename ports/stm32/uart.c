@@ -411,34 +411,56 @@ uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
 
     #if defined(STM32F0)
     uart_clk = HAL_RCC_GetPCLK1Freq();
-    #elif defined(STM32F7) || defined(STM32H7)
-    UART_ClockSourceTypeDef clocksource = UART_CLOCKSOURCE_UNDEFINED;
-    UART_GETCLOCKSOURCE(&self->uart, clocksource);
-    switch (clocksource) {
-        #if defined(STM32H7)
-        case UART_CLOCKSOURCE_D2PCLK1: uart_clk = HAL_RCC_GetPCLK1Freq(); break;
-        case UART_CLOCKSOURCE_D3PCLK1: uart_clk = HAL_RCC_GetPCLK1Freq(); break;
-        case UART_CLOCKSOURCE_D2PCLK2: uart_clk = HAL_RCC_GetPCLK2Freq(); break;
-        #else
-        case UART_CLOCKSOURCE_PCLK1:  uart_clk = HAL_RCC_GetPCLK1Freq(); break;
-        case UART_CLOCKSOURCE_PCLK2:  uart_clk = HAL_RCC_GetPCLK2Freq(); break;
-        case UART_CLOCKSOURCE_SYSCLK: uart_clk = HAL_RCC_GetSysClockFreq(); break;
-        #endif
-        #if defined(STM32H7)
-        case UART_CLOCKSOURCE_CSI:    uart_clk = CSI_VALUE; break;
-        #endif
-        case UART_CLOCKSOURCE_HSI:    uart_clk = HSI_VALUE; break;
-        case UART_CLOCKSOURCE_LSE:    uart_clk = LSE_VALUE; break;
-        #if defined(STM32H7)
-        case UART_CLOCKSOURCE_PLL2:
-        case UART_CLOCKSOURCE_PLL3:
-        #endif
-        case UART_CLOCKSOURCE_UNDEFINED: break;
+    #elif defined(STM32F7)
+    switch ((RCC->DCKCFGR2 >> ((self->uart_id - 1) * 2)) & 3) {
+        case 0:
+            if (self->uart_id == 1 || self->uart_id == 6) {
+                uart_clk = HAL_RCC_GetPCLK2Freq();
+            } else {
+                uart_clk = HAL_RCC_GetPCLK1Freq();
+            }
+            break;
+        case 1:
+            uart_clk = HAL_RCC_GetSysClockFreq();
+            break;
+        case 2:
+            uart_clk = HSI_VALUE;
+            break;
+        case 3:
+            uart_clk = LSE_VALUE;
+            break;
+    }
+    #elif defined(STM32H7)
+    uint32_t csel;
+    if (self->uart_id == 1 || self->uart_id == 6) {
+        csel = RCC->D2CCIP2R >> 3;
+    } else {
+        csel = RCC->D2CCIP2R;
+    }
+    switch (csel & 3) {
+        case 0:
+            if (self->uart_id == 1 || self->uart_id == 6) {
+                uart_clk = HAL_RCC_GetPCLK2Freq();
+            } else {
+                uart_clk = HAL_RCC_GetPCLK1Freq();
+            }
+            break;
+        case 3:
+            uart_clk = HSI_VALUE;
+            break;
+        case 4:
+            uart_clk = CSI_VALUE;
+            break;
+        case 5:
+            uart_clk = LSE_VALUE;
+            break;
+        default:
+            break;
     }
     #else
-    if (self->uart.Instance == USART1
+    if (self->uart_id == 1
         #if defined(USART6)
-        || self->uart.Instance == USART6
+        || self->uart_id == 6
         #endif
         ) {
         uart_clk = HAL_RCC_GetPCLK2Freq();
