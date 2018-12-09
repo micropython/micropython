@@ -36,7 +36,6 @@
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"
-#include "mbedtls/net.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/pk.h"
