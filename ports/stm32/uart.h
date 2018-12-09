@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_STM32_UART_H
 #define MICROPY_INCLUDED_STM32_UART_H
 
+struct _mp_irq_obj_t;
+
 typedef enum {
     PYB_UART_NONE = 0,
     PYB_UART_1 = 1,
@@ -57,6 +59,9 @@ typedef struct _pyb_uart_obj_t {
     volatile uint16_t read_buf_head;    // indexes first empty slot
     uint16_t read_buf_tail;             // indexes first full slot (not full if equals head)
     byte *read_buf;                     // byte or uint16_t, depending on char size
+    uint16_t mp_irq_trigger;            // user IRQ trigger mask
+    uint16_t mp_irq_flags;              // user IRQ active IRQ flags
+    struct _mp_irq_obj_t *mp_irq_obj;   // user IRQ object
 } pyb_uart_obj_t;
 
 extern const mp_obj_type_t pyb_uart_type;

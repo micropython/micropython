@@ -33,6 +33,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "lib/utils/interrupt_char.h"
+#include "lib/utils/mpirq.h"
 #include "uart.h"
 #include "irq.h"
 #include "pendsv.h"
@@ -71,6 +72,77 @@
 /// To check if there is anything to be read, use:
 ///
 ///     uart.any()               # returns True if any characters waiting
+
+typedef struct _pyb_uart_irq_map_t {
+    uint16_t irq_en;
+    uint16_t flag;
+} pyb_uart_irq_map_t;
+
+STATIC const pyb_uart_irq_map_t mp_irq_map[] = {
+    { USART_CR1_IDLEIE, UART_FLAG_IDLE}, // RX idle
+    { USART_CR1_PEIE,   UART_FLAG_PE},   // parity error
+    { USART_CR1_TXEIE,  UART_FLAG_TXE},  // TX register empty
+    { USART_CR1_TCIE,   UART_FLAG_TC},   // TX complete
+    { USART_CR1_RXNEIE, UART_FLAG_RXNE}, // RX register not empty
+    #if 0
+    // For now only IRQs selected by CR1 are supported
+    #if defined(STM32F4)
+    { USART_CR2_LBDIE,  UART_FLAG_LBD},  // LIN break detection
+    #else
+    { USART_CR2_LBDIE,  UART_FLAG_LBDF}, // LIN break detection
+    #endif
+    { USART_CR3_CTSIE,  UART_FLAG_CTS},  // CTS
+    #endif
+};
+
+// OR-ed IRQ flags which should not be touched by the user
+STATIC const uint32_t mp_irq_reserved = UART_FLAG_RXNE;
+
+// OR-ed IRQ flags which are allowed to be used by the user
+STATIC const uint32_t mp_irq_allowed = UART_FLAG_IDLE;
+
+STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+
+STATIC void pyb_uart_irq_config(pyb_uart_obj_t *self, bool enable) {
+    if (self->mp_irq_trigger) {
+        for (size_t entry = 0; entry < MP_ARRAY_SIZE(mp_irq_map); ++entry) {
+            if (mp_irq_map[entry].flag & mp_irq_reserved) {
+                continue;
+            }
+            if (mp_irq_map[entry].flag & self->mp_irq_trigger) {
+                if (enable) {
+                    self->uartx->CR1 |= mp_irq_map[entry].irq_en;
+                } else {
+                    self->uartx->CR1 &= ~mp_irq_map[entry].irq_en;
+                }
+            }
+        }
+    }
+}
+
+STATIC mp_uint_t pyb_uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pyb_uart_irq_config(self, false);
+    self->mp_irq_trigger = new_trigger;
+    pyb_uart_irq_config(self, true);
+    return 0;
+}
+
+STATIC mp_uint_t pyb_uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+STATIC const mp_irq_methods_t pyb_uart_irq_methods = {
+    .init = pyb_uart_irq,
+    .trigger = pyb_uart_irq_trigger,
+    .info = pyb_uart_irq_info,
+};
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -123,9 +195,13 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
                 mp_print_str(print, "CTS");
             }
         }
-        mp_printf(print, ", timeout=%u, timeout_char=%u, rxbuf=%u)",
+        mp_printf(print, ", timeout=%u, timeout_char=%u, rxbuf=%u",
             self->timeout, self->timeout_char,
             self->read_buf_len == 0 ? 0 : self->read_buf_len - 1); // -1 to adjust for usable length of buffer
+        if (self->mp_irq_trigger != 0) {
+            mp_printf(print, "; irq=0x%x", self->mp_irq_trigger);
+        }
+        mp_print_str(print, ")");
     }
 }
 
@@ -414,6 +490,43 @@ STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);
 
+// irq(handler, trigger, hard)
+STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[MP_IRQ_ARG_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_IRQ_ARG_INIT_NUM_ARGS, mp_irq_init_args, args);
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&pyb_uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+
+    if (n_args > 1 || kw_args->used != 0) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError("handler must be None or callable");
+        }
+
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~mp_irq_allowed;
+        if (trigger != 0 && not_supported) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "trigger 0x%08x unsupported", not_supported));
+        }
+
+        // Reconfigure user IRQs
+        pyb_uart_irq_config(self, false);
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+        pyb_uart_irq_config(self, true);
+    }
+
+    return MP_OBJ_FROM_PTR(self->mp_irq_obj);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
+
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
 
@@ -429,6 +542,7 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     /// \method write(buf)
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_uart_irq_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&pyb_uart_writechar_obj) },
     { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&pyb_uart_readchar_obj) },
@@ -437,6 +551,9 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
+
+    // IRQ flags
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_FLAG_IDLE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);

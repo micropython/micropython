@@ -33,6 +33,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "lib/utils/interrupt_char.h"
+#include "lib/utils/mpirq.h"
 #include "uart.h"
 #include "irq.h"
 #include "pendsv.h"
@@ -326,6 +327,9 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
         }
         uart_obj->char_width = CHAR_WIDTH_8BIT;
     }
+
+    uart_obj->mp_irq_trigger = 0;
+    uart_obj->mp_irq_obj = NULL;
 
     return true;
 }
@@ -696,5 +700,25 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 UART_RXNE_IT_DIS(self->uartx);
             }
         }
+    }
+
+    // Set user IRQ flags
+    self->mp_irq_flags = 0;
+    #if defined(STM32F4)
+    if (self->uartx->SR & USART_SR_IDLE) {
+        (void)self->uartx->SR;
+        (void)self->uartx->DR;
+        self->mp_irq_flags |= UART_FLAG_IDLE;
+    }
+    #else
+    if (self->uartx->ISR & USART_ISR_IDLE) {
+        self->uartx->ICR = USART_ICR_IDLECF;
+        self->mp_irq_flags |= UART_FLAG_IDLE;
+    }
+    #endif
+
+    // Check the flags to see if the user handler should be called
+    if (self->mp_irq_trigger & self->mp_irq_flags) {
+        mp_irq_handler(self->mp_irq_obj);
     }
 }
