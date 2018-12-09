@@ -245,46 +245,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     }
 
     // compute actual baudrate that was configured
-    // (this formula assumes UART_OVERSAMPLING_16)
-    uint32_t actual_baudrate = 0;
-    #if defined(STM32F0)
-    actual_baudrate = HAL_RCC_GetPCLK1Freq();
-    #elif defined(STM32F7) || defined(STM32H7)
-    UART_ClockSourceTypeDef clocksource = UART_CLOCKSOURCE_UNDEFINED;
-    UART_GETCLOCKSOURCE(&self->uart, clocksource);
-    switch (clocksource) {
-        #if defined(STM32H7)
-        case UART_CLOCKSOURCE_D2PCLK1: actual_baudrate = HAL_RCC_GetPCLK1Freq(); break;
-        case UART_CLOCKSOURCE_D3PCLK1: actual_baudrate = HAL_RCC_GetPCLK1Freq(); break;
-        case UART_CLOCKSOURCE_D2PCLK2: actual_baudrate = HAL_RCC_GetPCLK2Freq(); break;
-        #else
-        case UART_CLOCKSOURCE_PCLK1:  actual_baudrate = HAL_RCC_GetPCLK1Freq(); break;
-        case UART_CLOCKSOURCE_PCLK2:  actual_baudrate = HAL_RCC_GetPCLK2Freq(); break;
-        case UART_CLOCKSOURCE_SYSCLK: actual_baudrate = HAL_RCC_GetSysClockFreq(); break;
-        #endif
-        #if defined(STM32H7)
-        case UART_CLOCKSOURCE_CSI:    actual_baudrate = CSI_VALUE; break;
-        #endif
-        case UART_CLOCKSOURCE_HSI:    actual_baudrate = HSI_VALUE; break;
-        case UART_CLOCKSOURCE_LSE:    actual_baudrate = LSE_VALUE; break;
-        #if defined(STM32H7)
-        case UART_CLOCKSOURCE_PLL2:
-        case UART_CLOCKSOURCE_PLL3:
-        #endif
-        case UART_CLOCKSOURCE_UNDEFINED: break;
-    }
-    #else
-    if (self->uart.Instance == USART1
-        #if defined(USART6)
-        || self->uart.Instance == USART6
-        #endif
-        ) {
-        actual_baudrate = HAL_RCC_GetPCLK2Freq();
-    } else {
-        actual_baudrate = HAL_RCC_GetPCLK1Freq();
-    }
-    #endif
-    actual_baudrate /= self->uart.Instance->BRR;
+    uint32_t actual_baudrate = uart_get_baudrate(self);
 
     // check we could set the baudrate within 5%
     uint32_t baudrate_diff;
