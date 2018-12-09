@@ -33,6 +33,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "lib/utils/interrupt_char.h"
+#include "lib/utils/mpirq.h"
 #include "uart.h"
 #include "irq.h"
 #include "pendsv.h"
@@ -75,6 +76,15 @@
 #define CHAR_WIDTH_8BIT (0)
 #define CHAR_WIDTH_9BIT (1)
 
+/*
+ * IRQ properties to be included in the parents
+ * _pyb_uart_obj_t
+ */
+typedef struct {
+    uint32_t trigger;
+    uint32_t flags;
+} mp_irq_pp_t;
+
 struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     UART_HandleTypeDef uart;            // this is 17 words big
@@ -90,10 +100,52 @@ struct _pyb_uart_obj_t {
     volatile uint16_t read_buf_head;    // indexes first empty slot
     uint16_t read_buf_tail;             // indexes first full slot (not full if equals head)
     byte *read_buf;                     // byte or uint16_t, depending on char size
+    mp_irq_pp_t mpirq;                  // Structure holding the MP related IRQ handling (parent properties)
 };
 
+typedef struct _pyb_uart_irq_map_t {
+    uint32_t irq_en;
+    uint32_t flag;
+} pyb_uart_irq_map_t;
+
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
+STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger);
+STATIC void uart_irq_enable (mp_obj_t self_in);
+STATIC void uart_irq_disable (mp_obj_t self_in);
 extern void NORETURN __fatal_error(const char *msg);
+STATIC const mp_irq_methods_t uart_irq_methods;
+
+STATIC const pyb_uart_irq_map_t mp_irq_map[]= {
+    { UART_IT_IDLE, UART_FLAG_IDLE}, /*!< UART idle interruption                         */
+    { UART_IT_PE  , UART_FLAG_PE},   /*!< UART parity error interruption                 */
+    { UART_IT_TXE , UART_FLAG_TXE},  /*!< UART transmit data register empty interruption */
+    { UART_IT_TC  , UART_FLAG_TC},   /*!< UART transmission complete interruption        */
+    { UART_IT_RXNE, UART_FLAG_RXNE}, /*!< UART read data register not empty interruption */
+#if defined(STM32F4)
+    { UART_IT_LBD , UART_FLAG_LBD},  /*!< UART LIN break detection interruption          */
+#else
+    { UART_IT_LBD , UART_FLAG_LBDF}, /*!< UART LIN break detection interruption          */
+#endif
+    { UART_IT_CTS , UART_FLAG_CTS},  /*!< UART CTS interruption                          */
+};
+enum {
+    IRQ_IDLE, /*!< UART idle interruption                         */
+    IRQ_PE  , /*!< UART parity error interruption                 */
+    IRQ_TXE , /*!< UART transmit data register empty interruption */
+    IRQ_TC  , /*!< UART transmission complete interruption        */
+    IRQ_RXNE, /*!< UART read data register not empty interruption */
+    IRQ_LBD , /*!< UART LIN break detection interruption          */
+    IRQ_CTS , /*!< UART CTS interruption                          */
+    IRQ_CNT
+};
+
+// OR-ed IRQ Flags which should not be touched by MP
+// THE INDIVIDUAL FLAGS MUST BE ONE HOT ENCODED
+STATIC uint32_t irq_not_touch = UART_FLAG_RXNE;
+
+// OR-ed IRQ Flags which are supported by MP
+// THE INDIVIDUAL FLAGS MUST BE ONE HOT ENCODED
+STATIC uint32_t irq_mp_allowed = UART_FLAG_IDLE;
 
 void uart_init0(void) {
     #if defined(STM32H7)
@@ -535,6 +587,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
         return;
     }
 
+    self->mpirq.flags = 0;
     if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
         if (self->read_buf_len != 0) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
@@ -562,6 +615,84 @@ void uart_irq_handler(mp_uint_t uart_id) {
             }
         }
     }
+    /*
+     * Add here handling of MP handled IRQ
+     */
+    if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_IDLE) != RESET) {
+        __HAL_UART_CLEAR_IDLEFLAG(&self->uart);
+        self->mpirq.flags |= UART_FLAG_IDLE;
+    }
+
+    // check the flags to see if the user handler should be called
+    if (self->mpirq.trigger & self->mpirq.flags) {
+        // call the MP defined handler
+        mp_irq_handler(mp_irq_find(self));
+    }
+}
+
+STATIC mp_obj_t uart_irq_new(pyb_uart_obj_t *self, mp_obj_t handler, mp_int_t trigger, bool hard) {
+    // disable the uart interrupts before updating anything
+    uart_irq_disable(self);
+    self->mpirq.trigger = 0;
+
+    // create the callback
+    mp_obj_t _irq = mp_irq_new((mp_obj_t)self, handler, hard, &uart_irq_methods);
+
+    if (_irq != mp_const_none)
+    {
+        uart_irq_trigger(self, trigger);
+    }
+    return _irq;
+}
+
+STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uart_irq_disable(self_in);
+    self->mpirq.trigger = new_trigger;
+    if (new_trigger != 0)
+    {
+        uart_irq_enable(self_in);
+    }
+    return 0;
+}
+
+STATIC void uart_irq_enable(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->mpirq.trigger) {
+        for (uint8_t entry=0;entry<IRQ_CNT;entry++) {
+            if (irq_not_touch&mp_irq_map[entry].flag) {
+                continue;
+            }
+            if (mp_irq_map[entry].flag&self->mpirq.trigger) {
+                __HAL_UART_ENABLE_IT(&self->uart, mp_irq_map[entry].irq_en);
+            }
+        }
+    }
+}
+
+STATIC void uart_irq_disable(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->mpirq.trigger) {
+        for (uint8_t entry=0;entry<IRQ_CNT;entry++) {
+            if (irq_not_touch&mp_irq_map[entry].flag) {
+                continue;
+            }
+            if (mp_irq_map[entry].flag&self->mpirq.trigger) {
+                __HAL_UART_DISABLE_IT(&self->uart, mp_irq_map[entry].irq_en);
+            }
+        }
+    }
+}
+
+STATIC mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (IRQ_INFO_FLAGS == info_type)
+    {
+        return self->mpirq.flags;
+    } else if (IRQ_INFO_TRIGGERS == info_type) {
+        return self->mpirq.trigger;
+    }
+    return 0;
 }
 
 /******************************************************************************/
@@ -610,6 +741,9 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         mp_printf(print, ", timeout=%u, timeout_char=%u, rxbuf=%u)",
             self->timeout, self->timeout_char,
             self->read_buf_len == 0 ? 0 : self->read_buf_len - 1); // -1 to adjust for usable length of buffer
+        if (self->mpirq.trigger!=0) {
+            mp_printf(print, " Callback on IRQ(s): 0x%08x",self->mpirq.trigger);
+        }
     }
 }
 
@@ -1038,6 +1172,46 @@ STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);
 
+/// \method irq(handler, trigger, hard)
+STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[IRQ_ARG_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, IRQ_ARG_INIT_NUM_ARGS, mp_irq_init_args, args);
+    mp_obj_t * irq;
+    pyb_uart_obj_t *self = pos_args[0];
+
+    if (n_args>1){
+        /*
+         * If any arguments are given these (even the defaults)
+         * are used. So call uart.irq(trigger=42) deactivate the IRQ
+         * as the default to handler is None
+         */
+        uint trigger = 0;
+        // Check handler
+        mp_obj_t handler = args[IRQ_ARG_INIT_handler].u_obj;
+        if ( (handler != mp_const_none) && (!mp_obj_is_callable(handler)) ) {
+            mp_raise_ValueError("IRQ handler must be None or a callable object");
+        }
+
+        if (n_args>2) {
+            // check the trigger
+            trigger = args[IRQ_ARG_INIT_trigger].u_int;
+            mp_uint_t not_supported = trigger & ~irq_mp_allowed;
+            if ( (trigger!=0) && (not_supported) ) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "IRQ Flags(0x%08x) not supported", not_supported));
+            }
+        }
+
+        // register a new callback, trigger, hard value
+        irq = uart_irq_new(self, handler, trigger, args[IRQ_ARG_INIT_hard].u_bool);
+    } else {
+        irq = (mp_obj_t *)mp_irq_find(self);
+    }
+    return irq;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
+
+
+
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
 
@@ -1053,6 +1227,7 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     /// \method write(buf)
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_uart_irq_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&pyb_uart_writechar_obj) },
     { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&pyb_uart_readchar_obj) },
@@ -1061,8 +1236,10 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
-};
 
+    // IRQ flags
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX_IDLE), MP_ROM_INT(UART_FLAG_IDLE) },
+};
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
 STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
@@ -1158,6 +1335,12 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .write = pyb_uart_write,
     .ioctl = pyb_uart_ioctl,
     .is_text = false,
+};
+
+STATIC const mp_irq_methods_t uart_irq_methods = {
+    .init = pyb_uart_irq,
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info
 };
 
 const mp_obj_type_t pyb_uart_type = {
