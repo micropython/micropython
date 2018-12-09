@@ -332,10 +332,10 @@ void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
 void uart_deinit(pyb_uart_obj_t *self) {
     self->is_enabled = false;
 
-    UART_HandleTypeDef huart;
-    huart.Instance = self->uartx;
-    HAL_UART_DeInit(&huart);
+    // Disable UART
+    self->uartx->CR1 &= ~USART_CR1_UE;
 
+    // Reset and turn off the UART peripheral
     if (self->uart_id == 1) {
         HAL_NVIC_DisableIRQ(USART1_IRQn);
         __HAL_RCC_USART1_FORCE_RESET();
