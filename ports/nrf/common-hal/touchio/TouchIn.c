@@ -26,6 +26,7 @@
  */
 
 #include <string.h>
+#include <stdio.h>
 
 #include "py/nlr.h"
 #include "py/mperrno.h"
@@ -35,24 +36,114 @@
 #include "shared-bindings/touchio/TouchIn.h"
 #include "supervisor/shared/translate.h"
 
+#include "nrf.h"
+#include "nrfx/hal/nrf_saadc.h"
+
 #include "tick.h"
 
 bool touch_enabled = false;
 
+#define CHANNEL_NO 0
+#define N_SAMPLES 10
+
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
-    return 4242;
+
+    nrf_saadc_value_t samples[N_SAMPLES];
+
+    // Configure analog input.
+    // XXX cloned from AnalogIn and probably overkill
+
+    const nrf_saadc_channel_config_t config = {
+        .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
+        .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
+        .gain = NRF_SAADC_GAIN1_6,
+        .reference = NRF_SAADC_REFERENCE_INTERNAL,
+        .acq_time = NRF_SAADC_ACQTIME_3US,
+        .mode = NRF_SAADC_MODE_SINGLE_ENDED,
+        .burst = NRF_SAADC_BURST_DISABLED,
+        .pin_p = NRF_SAADC_INPUT_VDD,
+        .pin_n = NRF_SAADC_INPUT_VDD,
+    };
+
+    nrf_saadc_resolution_set(NRF_SAADC_RESOLUTION_14BIT);
+    nrf_saadc_oversample_set(NRF_SAADC_OVERSAMPLE_DISABLED);
+    nrf_saadc_enable();
+
+    for (uint32_t i = 0; i < NRF_SAADC_CHANNEL_COUNT; i++)
+        nrf_saadc_channel_input_set(i, NRF_SAADC_INPUT_DISABLED, NRF_SAADC_INPUT_DISABLED);
+
+    nrf_saadc_channel_init(CHANNEL_NO, &config);
+    nrf_saadc_buffer_init(samples, N_SAMPLES);
+
+    // set pad to digital output high for 20us to charge it
+
+    nrf_gpio_cfg_output(self->pin->number);
+    nrf_gpio_pin_set(self->pin->number);
+
+    mp_hal_delay_us(20);
+
+    // set pad back to an input and take some samples
+
+     __disable_irq();
+
+    nrf_saadc_channel_input_set(CHANNEL_NO, self->pin->adc_channel, self->pin->adc_channel);
+ 
+    nrf_saadc_task_trigger(NRF_SAADC_TASK_START);
+    while (nrf_saadc_event_check(NRF_SAADC_EVENT_STARTED) == 0);
+    nrf_saadc_event_clear(NRF_SAADC_EVENT_STARTED);
+
+    // XXX surely there's a better way
+    for (uint32_t i = 0; i < N_SAMPLES; i++) {
+        nrf_saadc_task_trigger(NRF_SAADC_TASK_SAMPLE);
+        while (nrf_saadc_event_check(NRF_SAADC_EVENT_DONE) == 0);
+        nrf_saadc_event_clear(NRF_SAADC_EVENT_DONE);
+    }
+
+    __enable_irq();
+
+    nrf_saadc_task_trigger(NRF_SAADC_TASK_STOP);
+    while (nrf_saadc_event_check(NRF_SAADC_EVENT_STOPPED) == 0);
+    nrf_saadc_event_clear(NRF_SAADC_EVENT_STOPPED);
+
+    // turn off SAADC & set output pin low
+
+    nrf_gpio_pin_clear(self->pin->number);
+
+    nrf_saadc_channel_input_set(CHANNEL_NO, NRF_SAADC_INPUT_DISABLED, NRF_SAADC_INPUT_DISABLED);
+    nrf_saadc_disable();
+
+    nrf_gpio_cfg_output(self->pin->number);
+
+    int32_t sumy = 0;
+    int32_t sumxy = 0;
+
+    //mp_printf(MP_PYTHON_PRINTER, "touch");
+
+    // XXX sort of like a least squares fit here
+
+    for (int i = 0; i < N_SAMPLES; i++) {
+        //mp_printf(MP_PYTHON_PRINTER, " %d", samples[i]);
+        sumy += samples[i];
+        sumxy += i*samples[i];
+    }
+    int32_t r = (N_SAMPLES - 1) * sumy / 2 - sumxy;
+
+    //mp_printf(MP_PYTHON_PRINTER, " -> %d %d -> %d\n", sumy, sumxy, r);
+
+    return (uint16_t)r;
 }
 
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
         const mcu_pin_obj_t *pin) {
-//    if (!pin->has_touch) {
+    if (!pin->adc_channel) {
         mp_raise_ValueError(translate("Invalid pin"));
-//    }
-//    claim_pin(pin);
+    }
+    self->pin = pin;
+    claim_pin(pin);
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
-    return self->config.pin == NO_PIN;
+    return self->pin == NULL;
 }
 
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
@@ -60,8 +151,8 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
         return;
     }
 
-    reset_pin_number(self->config.pin);
-    self->config.pin = NO_PIN;
+    reset_pin_number(self->pin->number);
+    self->pin = NULL;
 }
 
 void touchin_reset() {

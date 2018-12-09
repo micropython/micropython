@@ -34,9 +34,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    struct {
-        uint8_t pin;
-    } config;
+    const mcu_pin_obj_t *pin;
     uint16_t threshold;
 } touchio_touchin_obj_t;
 
