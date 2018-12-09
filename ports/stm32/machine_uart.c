@@ -78,37 +78,48 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         mp_printf(print, "UART(%u)", self->uart_id);
     } else {
         mp_int_t bits;
-        switch (self->uart.Init.WordLength) {
-            #ifdef UART_WORDLENGTH_7B
-            case UART_WORDLENGTH_7B: bits = 7; break;
-            #endif
-            case UART_WORDLENGTH_8B: bits = 8; break;
-            case UART_WORDLENGTH_9B: default: bits = 9; break;
+        uint32_t cr1 = self->uartx->CR1;
+        #if defined(UART_CR1_M1)
+        if (cr1 & UART_CR1_M1) {
+            bits = 7;
+        } else if (cr1 & UART_CR1_M0) {
+            bits = 9;
+        } else {
+            bits = 8;
         }
-        if (self->uart.Init.Parity != UART_PARITY_NONE) {
+        #else
+        if (cr1 & USART_CR1_M) {
+            bits = 9;
+        } else {
+            bits = 8;
+        }
+        #endif
+        if (cr1 & USART_CR1_PCE) {
             bits -= 1;
         }
         mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
-            self->uart_id, self->uart.Init.BaudRate, bits);
-        if (self->uart.Init.Parity == UART_PARITY_NONE) {
+            self->uart_id, uart_get_baudrate(self), bits);
+        if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");
-        } else if (self->uart.Init.Parity == UART_PARITY_EVEN) {
+        } else if (!(cr1 & USART_CR1_PS)) {
             mp_print_str(print, "0");
         } else {
             mp_print_str(print, "1");
         }
+        uint32_t cr2 = self->uartx->CR2;
         mp_printf(print, ", stop=%u, flow=",
-            self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2);
-        if (self->uart.Init.HwFlowCtl == UART_HWCONTROL_NONE) {
+            ((cr2 >> USART_CR2_STOP_Pos) & 3) == 0 ? 1 : 2);
+        uint32_t cr3 = self->uartx->CR3;
+        if (!(cr3 & (USART_CR3_CTSE | USART_CR3_RTSE))) {
             mp_print_str(print, "0");
         } else {
-            if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+            if (cr3 & USART_CR3_RTSE) {
                 mp_print_str(print, "RTS");
-                if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                if (cr3 & USART_CR3_CTSE) {
                    mp_print_str(print, "|");
                 }
             }
-            if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+            if (cr3 & USART_CR3_CTSE) {
                 mp_print_str(print, "CTS");
             }
         }
@@ -151,8 +162,9 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
     // set the UART configuration values
-    memset(&self->uart, 0, sizeof(self->uart));
-    UART_InitTypeDef *init = &self->uart.Init;
+    UART_InitTypeDef init_struct;
+    memset(&init_struct, 0, sizeof(init_struct));
+    UART_InitTypeDef *init = &init_struct;
 
     // baudrate
     init->BaudRate = args.baudrate.u_int;
@@ -194,7 +206,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     init->OverSampling = UART_OVERSAMPLING_16;
 
     // init UART (if it fails, it's because the port doesn't exist)
-    if (!uart_init2(self)) {
+    if (!uart_init2(self, init)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", self->uart_id));
     }
 
@@ -247,8 +259,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     } else {
         baudrate_diff = init->BaudRate - actual_baudrate;
     }
-    init->BaudRate = actual_baudrate; // remember actual baudrate for printing
-    if (20 * baudrate_diff > init->BaudRate) {
+    if (20 * baudrate_diff > actual_baudrate) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate));
     }
 
@@ -408,9 +419,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
-    self->uart.Instance->RQR = USART_RQR_SBKRQ; // write-only register
+    self->uartx->RQR = USART_RQR_SBKRQ; // write-only register
     #else
-    self->uart.Instance->CR1 |= USART_CR1_SBK;
+    self->uartx->CR1 |= USART_CR1_SBK;
     #endif
     return mp_const_none;
 }
@@ -521,7 +532,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t a
         if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self)) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && __HAL_UART_GET_FLAG(&self->uart, UART_FLAG_TXE)) {
+        if ((flags & MP_STREAM_POLL_WR) && uart_tx_avail(self)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {

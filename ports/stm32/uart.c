@@ -37,6 +37,14 @@
 #include "irq.h"
 #include "pendsv.h"
 
+#if defined(STM32F4)
+#define UART_RXNE_IS_SET(uart) ((uart)->SR & USART_SR_RXNE)
+#else
+#define UART_RXNE_IS_SET(uart) ((uart)->ISR & USART_ISR_RXNE)
+#endif
+#define UART_RXNE_IT_EN(uart) do { (uart)->CR1 |= USART_CR1_RXNEIE; } while (0)
+#define UART_RXNE_IT_DIS(uart) do { (uart)->CR1 &= ~USART_CR1_RXNEIE; } while (0)
+
 extern void NORETURN __fatal_error(const char *msg);
 
 void uart_init0(void) {
@@ -115,7 +123,7 @@ bool uart_exists(int uart_id) {
 }
 
 // assumes Init parameters have been set up correctly
-bool uart_init2(pyb_uart_obj_t *uart_obj) {
+bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
     int uart_unit;
@@ -142,12 +150,12 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             pins[0] = MICROPY_HW_UART2_TX;
             pins[1] = MICROPY_HW_UART2_RX;
             #if defined(MICROPY_HW_UART2_RTS)
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+            if (init->HwFlowCtl & UART_HWCONTROL_RTS) {
                 pins[2] = MICROPY_HW_UART2_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART2_CTS)
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+            if (init->HwFlowCtl & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART2_CTS;
             }
             #endif
@@ -167,12 +175,12 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             pins[0] = MICROPY_HW_UART3_TX;
             pins[1] = MICROPY_HW_UART3_RX;
             #if defined(MICROPY_HW_UART3_RTS)
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+            if (init->HwFlowCtl & UART_HWCONTROL_RTS) {
                 pins[2] = MICROPY_HW_UART3_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART3_CTS)
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+            if (init->HwFlowCtl & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART3_CTS;
             }
             #endif
@@ -226,12 +234,12 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             pins[0] = MICROPY_HW_UART6_TX;
             pins[1] = MICROPY_HW_UART6_RX;
             #if defined(MICROPY_HW_UART6_RTS)
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+            if (init->HwFlowCtl & UART_HWCONTROL_RTS) {
                 pins[2] = MICROPY_HW_UART6_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART6_CTS)
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+            if (init->HwFlowCtl & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART6_CTS;
             }
             #endif
@@ -291,10 +299,14 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
     }
 
     uart_obj->irqn = irqn;
-    uart_obj->uart.Instance = UARTx;
+    uart_obj->uartx = UARTx;
 
     // init UARTx
-    HAL_UART_Init(&uart_obj->uart);
+    UART_HandleTypeDef huart;
+    memset(&huart, 0, sizeof(huart));
+    huart.Instance = UARTx;
+    huart.Init = *init;
+    HAL_UART_Init(&huart);
 
     uart_obj->is_enabled = true;
     uart_obj->attached_to_repl = false;
@@ -309,9 +321,9 @@ void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
     self->read_buf = buf;
     if (len == 0) {
         HAL_NVIC_DisableIRQ(self->irqn);
-        __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
+        UART_RXNE_IT_DIS(self->uartx);
     } else {
-        __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
+        UART_RXNE_IT_EN(self->uartx);
         NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_UART);
         HAL_NVIC_EnableIRQ(self->irqn);
     }
@@ -319,20 +331,23 @@ void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
 
 void uart_deinit(pyb_uart_obj_t *self) {
     self->is_enabled = false;
-    UART_HandleTypeDef *uart = &self->uart;
-    HAL_UART_DeInit(uart);
-    if (uart->Instance == USART1) {
+
+    UART_HandleTypeDef huart;
+    huart.Instance = self->uartx;
+    HAL_UART_DeInit(&huart);
+
+    if (self->uart_id == 1) {
         HAL_NVIC_DisableIRQ(USART1_IRQn);
         __HAL_RCC_USART1_FORCE_RESET();
         __HAL_RCC_USART1_RELEASE_RESET();
         __HAL_RCC_USART1_CLK_DISABLE();
-    } else if (uart->Instance == USART2) {
+    } else if (self->uart_id == 2) {
         HAL_NVIC_DisableIRQ(USART2_IRQn);
         __HAL_RCC_USART2_FORCE_RESET();
         __HAL_RCC_USART2_RELEASE_RESET();
         __HAL_RCC_USART2_CLK_DISABLE();
     #if defined(USART3)
-    } else if (uart->Instance == USART3) {
+    } else if (self->uart_id == 3) {
         #if !defined(STM32F0)
         HAL_NVIC_DisableIRQ(USART3_IRQn);
         #endif
@@ -341,60 +356,60 @@ void uart_deinit(pyb_uart_obj_t *self) {
         __HAL_RCC_USART3_CLK_DISABLE();
     #endif
     #if defined(UART4)
-    } else if (uart->Instance == UART4) {
+    } else if (self->uart_id == 4) {
         HAL_NVIC_DisableIRQ(UART4_IRQn);
         __HAL_RCC_UART4_FORCE_RESET();
         __HAL_RCC_UART4_RELEASE_RESET();
         __HAL_RCC_UART4_CLK_DISABLE();
     #endif
     #if defined(USART4)
-    } else if (uart->Instance == USART4) {
+    } else if (self->uart_id == 4) {
         __HAL_RCC_USART4_FORCE_RESET();
         __HAL_RCC_USART4_RELEASE_RESET();
         __HAL_RCC_USART4_CLK_DISABLE();
     #endif
     #if defined(UART5)
-    } else if (uart->Instance == UART5) {
+    } else if (self->uart_id == 5) {
         HAL_NVIC_DisableIRQ(UART5_IRQn);
         __HAL_RCC_UART5_FORCE_RESET();
         __HAL_RCC_UART5_RELEASE_RESET();
         __HAL_RCC_UART5_CLK_DISABLE();
     #endif
     #if defined(USART5)
-    } else if (uart->Instance == USART5) {
+    } else if (self->uart_id == 5) {
         __HAL_RCC_USART5_FORCE_RESET();
         __HAL_RCC_USART5_RELEASE_RESET();
         __HAL_RCC_USART5_CLK_DISABLE();
     #endif
     #if defined(UART6)
-    } else if (uart->Instance == USART6) {
+    } else if (self->uart_id == 6) {
         HAL_NVIC_DisableIRQ(USART6_IRQn);
         __HAL_RCC_USART6_FORCE_RESET();
         __HAL_RCC_USART6_RELEASE_RESET();
         __HAL_RCC_USART6_CLK_DISABLE();
     #endif
     #if defined(UART7)
-    } else if (uart->Instance == UART7) {
+    } else if (self->uart_id == 7) {
         HAL_NVIC_DisableIRQ(UART7_IRQn);
         __HAL_RCC_UART7_FORCE_RESET();
         __HAL_RCC_UART7_RELEASE_RESET();
         __HAL_RCC_UART7_CLK_DISABLE();
     #endif
     #if defined(USART7)
-    } else if (uart->Instance == USART7) {
+    } else if (self->uart_id == 7) {
         __HAL_RCC_USART7_FORCE_RESET();
         __HAL_RCC_USART7_RELEASE_RESET();
         __HAL_RCC_USART7_CLK_DISABLE();
     #endif
     #if defined(UART8)
-    } else if (uart->Instance == UART8) {
+    } else if (self->uart_id == 8) {
         HAL_NVIC_DisableIRQ(UART8_IRQn);
         __HAL_RCC_UART8_FORCE_RESET();
         __HAL_RCC_UART8_RELEASE_RESET();
         __HAL_RCC_UART8_CLK_DISABLE();
     #endif
     #if defined(USART8)
-    } else if (uart->Instance == USART8) {
+    } else if (self->uart_id == 8) {
         __HAL_RCC_USART8_FORCE_RESET();
         __HAL_RCC_USART8_RELEASE_RESET();
         __HAL_RCC_USART8_CLK_DISABLE();
@@ -485,7 +500,7 @@ uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
     #endif
 
     // This formula assumes UART_OVERSAMPLING_16
-    uint32_t baudrate = uart_clk / self->uart.Instance->BRR;
+    uint32_t baudrate = uart_clk / self->uartx->BRR;
 
     return baudrate;
 }
@@ -497,7 +512,7 @@ mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
     } else if (buffer_bytes > 0) {
         return buffer_bytes;
     } else {
-        return __HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET;
+        return UART_RXNE_IS_SET(self->uartx);
     }
 }
 
@@ -507,7 +522,7 @@ mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
 bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
     uint32_t start = HAL_GetTick();
     for (;;) {
-        if (self->read_buf_tail != self->read_buf_head || __HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
+        if (self->read_buf_tail != self->read_buf_head || UART_RXNE_IS_SET(self->uartx)) {
             return true; // have at least 1 char ready for reading
         }
         if (HAL_GetTick() - start >= timeout) {
@@ -528,17 +543,17 @@ int uart_rx_char(pyb_uart_obj_t *self) {
             data = self->read_buf[self->read_buf_tail];
         }
         self->read_buf_tail = (self->read_buf_tail + 1) % self->read_buf_len;
-        if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
+        if (UART_RXNE_IS_SET(self->uartx)) {
             // UART was stalled by flow ctrl: re-enable IRQ now we have room in buffer
-            __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
+            UART_RXNE_IT_EN(self->uartx);
         }
         return data;
     } else {
         // no buffering
         #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
-        return self->uart.Instance->RDR & self->char_mask;
+        return self->uartx->RDR & self->char_mask;
         #else
-        return self->uart.Instance->DR & self->char_mask;
+        return self->uartx->DR & self->char_mask;
         #endif
     }
 }
@@ -548,7 +563,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
 bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
     uint32_t start = HAL_GetTick();
     for (;;) {
-        if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_TXE)) {
+        if (uart_tx_avail(self)) {
             return true; // tx register is empty
         }
         if (HAL_GetTick() - start >= timeout) {
@@ -565,9 +580,15 @@ STATIC bool uart_wait_flag_set(pyb_uart_obj_t *self, uint32_t flag, uint32_t tim
     // an interrupt and the flag can be set quickly if the baudrate is large.
     uint32_t start = HAL_GetTick();
     for (;;) {
-        if (__HAL_UART_GET_FLAG(&self->uart, flag)) {
+        #if defined(STM32F4)
+        if (self->uartx->SR & flag) {
             return true;
         }
+        #else
+        if (self->uartx->ISR & flag) {
+            return true;
+        }
+        #endif
         if (timeout == 0 || HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
@@ -585,7 +606,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
     }
 
     uint32_t timeout;
-    if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+    if (self->uartx->CR3 & USART_CR3_CTSE) {
         // CTS can hold off transmission for an arbitrarily long time. Apply
         // the overall timeout rather than the character timeout.
         timeout = self->timeout;
@@ -600,7 +621,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
 
     const uint8_t *src = (const uint8_t*)src_in;
     size_t num_tx = 0;
-    USART_TypeDef *uart = self->uart.Instance;
+    USART_TypeDef *uart = self->uartx;
 
     while (num_tx < num_chars) {
         if (!uart_wait_flag_set(self, UART_FLAG_TXE, timeout)) {
@@ -648,15 +669,15 @@ void uart_irq_handler(mp_uint_t uart_id) {
         return;
     }
 
-    if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
+    if (UART_RXNE_IS_SET(self->uartx)) {
         if (self->read_buf_len != 0) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
                 #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
-                int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
+                int data = self->uartx->RDR; // clears UART_FLAG_RXNE
                 #else
-                int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
+                int data = self->uartx->DR; // clears UART_FLAG_RXNE
                 #endif
                 data &= self->char_mask;
                 // Handle interrupt coming in on a UART REPL
@@ -671,7 +692,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 }
                 self->read_buf_head = next_head;
             } else { // No room: leave char in buf, disable interrupt
-                __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
+                UART_RXNE_IT_DIS(self->uartx);
             }
         }
     }

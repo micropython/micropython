@@ -43,7 +43,7 @@ typedef enum {
 
 typedef struct _pyb_uart_obj_t {
     mp_obj_base_t base;
-    UART_HandleTypeDef uart;            // this is 17 words big
+    USART_TypeDef *uartx;
     IRQn_Type irqn;
     pyb_uart_t uart_id : 8;
     bool is_enabled : 1;
@@ -63,7 +63,7 @@ extern const mp_obj_type_t pyb_uart_type;
 void uart_init0(void);
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
-bool uart_init2(pyb_uart_obj_t *uart_obj);
+bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init);
 void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf);
 void uart_deinit(pyb_uart_obj_t *uart_obj);
 void uart_irq_handler(mp_uint_t uart_id);
@@ -76,5 +76,13 @@ int uart_rx_char(pyb_uart_obj_t *uart_obj);
 bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout);
 size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode);
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
+
+static inline bool uart_tx_avail(pyb_uart_obj_t *self) {
+    #if defined(STM32F4)
+    return self->uartx->SR & USART_SR_TXE;
+    #else
+    return self->uartx->ISR & USART_ISR_TXE;
+    #endif
+}
 
 #endif // MICROPY_INCLUDED_STM32_UART_H
