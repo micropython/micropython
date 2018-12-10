@@ -161,6 +161,11 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
+    // static UARTs are used for internal purposes and shouldn't be reconfigured
+    if (self->is_static) {
+        mp_raise_ValueError("UART is static and can't be init'd");
+    }
+
     // baudrate
     uint32_t baudrate = args.baudrate.u_int;
 

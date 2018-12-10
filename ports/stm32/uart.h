@@ -46,6 +46,7 @@ typedef struct _pyb_uart_obj_t {
     USART_TypeDef *uartx;
     IRQn_Type irqn;
     pyb_uart_t uart_id : 8;
+    bool is_static : 1;
     bool is_enabled : 1;
     bool attached_to_repl;              // whether the UART is attached to REPL
     byte char_width;                    // 0 for 7,8 bit chars, 1 for 9 bit chars

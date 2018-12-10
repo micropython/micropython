@@ -64,18 +64,15 @@ void uart_init0(void) {
         __fatal_error("HAL_RCCEx_PeriphCLKConfig");
     }
     #endif
-
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
-        MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
-    }
 }
 
 // unregister all interrupt sources
 void uart_deinit_all(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
         pyb_uart_obj_t *uart_obj = MP_STATE_PORT(pyb_uart_obj_all)[i];
-        if (uart_obj != NULL) {
+        if (uart_obj != NULL && !uart_obj->is_static) {
             uart_deinit(uart_obj);
+            MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
         }
     }
 }
