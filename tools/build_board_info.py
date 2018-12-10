@@ -65,7 +65,7 @@ def get_version_info():
     version = None
     sha = git("rev-parse", "--short", "HEAD").stdout.decode("utf-8")
     try:
-        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8")
+        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8").strip()
     except sh.ErrorReturnCode_128:
         # No exact match
         pass
