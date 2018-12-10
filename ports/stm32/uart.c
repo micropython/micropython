@@ -318,6 +318,18 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     uart_obj->is_enabled = true;
     uart_obj->attached_to_repl = false;
 
+    if (bits == UART_WORDLENGTH_9B && parity == UART_PARITY_NONE) {
+        uart_obj->char_mask = 0x1ff;
+        uart_obj->char_width = CHAR_WIDTH_9BIT;
+    } else {
+        if (bits == UART_WORDLENGTH_9B || parity == UART_PARITY_NONE) {
+            uart_obj->char_mask = 0xff;
+        } else {
+            uart_obj->char_mask = 0x7f;
+        }
+        uart_obj->char_width = CHAR_WIDTH_8BIT;
+    }
+
     return true;
 }
 

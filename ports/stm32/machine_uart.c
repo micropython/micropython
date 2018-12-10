@@ -217,17 +217,6 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
 
     // setup the read buffer
     m_del(byte, self->read_buf, self->read_buf_len << self->char_width);
-    if (bits == UART_WORDLENGTH_9B && parity == UART_PARITY_NONE) {
-        self->char_mask = 0x1ff;
-        self->char_width = CHAR_WIDTH_9BIT;
-    } else {
-        if (bits == UART_WORDLENGTH_9B || parity == UART_PARITY_NONE) {
-            self->char_mask = 0xff;
-        } else {
-            self->char_mask = 0x7f;
-        }
-        self->char_width = CHAR_WIDTH_8BIT;
-    }
     if (args.rxbuf.u_int >= 0) {
         // rxbuf overrides legacy read_buf_len
         args.read_buf_len.u_int = args.rxbuf.u_int;
