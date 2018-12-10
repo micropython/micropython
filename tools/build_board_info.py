@@ -215,7 +215,7 @@ def generate_download_info():
         board_path = os.path.join("../ports", port, "boards")
         for board_path in os.scandir(board_path):
             if board_path.is_dir():
-                board_files = os.listdir(board_path)
+                board_files = os.listdir(board_path.path)
                 board_id = board_path.name
                 board_info = board_mapping[board_id]
 
@@ -239,8 +239,10 @@ def generate_download_info():
 
     changes["new_languages"] = set(languages) - previous_languages
 
-    if changes["new_languages"]:
+    if changes["new_release"]:
         create_pr(changes, current_info, git_info)
+    else:
+        print("No new release to update")
 
 if __name__ == "__main__":
     if "TRAVIS_TAG" in os.environ and os.environ["TRAVIS_TAG"]:
