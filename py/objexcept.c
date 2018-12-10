@@ -324,7 +324,35 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
 }
 
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg) {
-    return mp_obj_new_exception_msg_varg(exc_type, msg);
+    // Check that the given type is an exception type
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+
+    // Try to allocate memory for the message
+    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+
+    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+    // If memory allocation failed and there is an emergency buffer then try to use
+    // that buffer to store the string object, reserving room at the start for the
+    // traceback and 1-tuple.
+    if (o_str == NULL
+        && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t)) {
+        o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
+            + EMG_BUF_STR_OFFSET);
+    }
+    #endif
+
+    if (o_str == NULL) {
+        // No memory for the string object so create the exception with no args
+        return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
+    }
+
+    // Create the string object and call mp_obj_exception_make_new to create the exception
+    o_str->base.type = &mp_type_str;
+    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    o_str->len = strlen(msg);
+    o_str->data = (const byte*)msg;
+    mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
+    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
 
 // The following struct and function implement a simple printer that conservatively
