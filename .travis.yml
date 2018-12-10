@@ -37,8 +37,8 @@ deploy:
   provider: releases
   api_key:
     secure: "jdqVFw6itRY4qwQF4ReXo0uaymT+Mob6RhYX0lw8KWFNqBgHnLVuKmKKcGMEuRvBVMPkvxF7bMuOQzSBOunqwlHFse3oMzdWvQODv1zwV7pSRXGwTdIvTPbBjKWxnBG9uSNRf2R5AMflJFUxy2CbtBpgvNzr+4VLREZDrrjEu8C1iTtXGpSm5AQ5iIp2fkMAWD85FP7CQPpkqRoxhSIFZmTdurfYRmenq1OZ/4SeD5TESKcyvqJNzVT9z210B3cg3eAkP6ukvelW4qE2zgIANqUkGqvDEnAvEII9M89kuwhCMAekdfwnUSPrry+g77i1dUZHoRN1+MFj+waYtPaqxdYo2G1sysa6enxlu4jHMR5MfMk9eKHgaNgL3PiyANusYSS44amh8QIiVaX5nw82myZDCpQOZW7YqJKE6WX70Lbs4mS+wIs+ig4KIXO1B0p9kMb0OeVjHRl+KcXsWGRu/ECG/ExpqlVIssSPU407LohMXT2cJ37CY/R/EeK2XSDsQ2M3L3EAGUjCJdBGuwsOJ+2lG+HQpAVu9vAB4kq5jy9Ye+MG+8Xlkly3XZZ5+FkXyYxKnXb26/QVv0e5sIG5OmdJCPYFaH2J1QdKo7CdhEcBtrf6DMPWaimGMldShFqzLjOz3b3qLysRxFF0aGb7ipKPa57vawNzYHoPAViOcXQ="
-  file:
-  - $(ls -d1 bin/*/* | tr "\n" ":")
+  file_glob: true
+  file: "$TRAVIS_BUILD_DIR/bin/*/*"
   skip_cleanup: true
   draft: true
   on:
