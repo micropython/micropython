@@ -123,7 +123,8 @@ bool uart_exists(int uart_id) {
 }
 
 // assumes Init parameters have been set up correctly
-bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init) {
+bool uart_init(pyb_uart_obj_t *uart_obj,
+    uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
     int uart_unit;
@@ -150,12 +151,12 @@ bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init) {
             pins[0] = MICROPY_HW_UART2_TX;
             pins[1] = MICROPY_HW_UART2_RX;
             #if defined(MICROPY_HW_UART2_RTS)
-            if (init->HwFlowCtl & UART_HWCONTROL_RTS) {
+            if (flow & UART_HWCONTROL_RTS) {
                 pins[2] = MICROPY_HW_UART2_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART2_CTS)
-            if (init->HwFlowCtl & UART_HWCONTROL_CTS) {
+            if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART2_CTS;
             }
             #endif
@@ -175,12 +176,12 @@ bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init) {
             pins[0] = MICROPY_HW_UART3_TX;
             pins[1] = MICROPY_HW_UART3_RX;
             #if defined(MICROPY_HW_UART3_RTS)
-            if (init->HwFlowCtl & UART_HWCONTROL_RTS) {
+            if (flow & UART_HWCONTROL_RTS) {
                 pins[2] = MICROPY_HW_UART3_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART3_CTS)
-            if (init->HwFlowCtl & UART_HWCONTROL_CTS) {
+            if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART3_CTS;
             }
             #endif
@@ -234,12 +235,12 @@ bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init) {
             pins[0] = MICROPY_HW_UART6_TX;
             pins[1] = MICROPY_HW_UART6_RX;
             #if defined(MICROPY_HW_UART6_RTS)
-            if (init->HwFlowCtl & UART_HWCONTROL_RTS) {
+            if (flow & UART_HWCONTROL_RTS) {
                 pins[2] = MICROPY_HW_UART6_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART6_CTS)
-            if (init->HwFlowCtl & UART_HWCONTROL_CTS) {
+            if (flow & UART_HWCONTROL_CTS) {
                 pins[3] = MICROPY_HW_UART6_CTS;
             }
             #endif
@@ -305,7 +306,13 @@ bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init) {
     UART_HandleTypeDef huart;
     memset(&huart, 0, sizeof(huart));
     huart.Instance = UARTx;
-    huart.Init = *init;
+    huart.Init.BaudRate = baudrate;
+    huart.Init.WordLength = bits;
+    huart.Init.StopBits = stop;
+    huart.Init.Parity = parity;
+    huart.Init.Mode = UART_MODE_TX_RX;
+    huart.Init.HwFlowCtl = flow;
+    huart.Init.OverSampling = UART_OVERSAMPLING_16;
     HAL_UART_Init(&huart);
 
     uart_obj->is_enabled = true;
@@ -420,21 +427,6 @@ void uart_deinit(pyb_uart_obj_t *self) {
 void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
     self->attached_to_repl = attached;
 }
-
-/* obsolete and unused
-bool uart_init(pyb_uart_obj_t *uart_obj, uint32_t baudrate) {
-    UART_HandleTypeDef *uh = &uart_obj->uart;
-    memset(uh, 0, sizeof(*uh));
-    uh->Init.BaudRate = baudrate;
-    uh->Init.WordLength = UART_WORDLENGTH_8B;
-    uh->Init.StopBits = UART_STOPBITS_1;
-    uh->Init.Parity = UART_PARITY_NONE;
-    uh->Init.Mode = UART_MODE_TX_RX;
-    uh->Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    uh->Init.OverSampling = UART_OVERSAMPLING_16;
-    return uart_init2(uart_obj);
-}
-*/
 
 uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
     uint32_t uart_clk = 0;

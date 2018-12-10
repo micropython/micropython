@@ -161,52 +161,45 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
-    // set the UART configuration values
-    UART_InitTypeDef init_struct;
-    memset(&init_struct, 0, sizeof(init_struct));
-    UART_InitTypeDef *init = &init_struct;
-
     // baudrate
-    init->BaudRate = args.baudrate.u_int;
+    uint32_t baudrate = args.baudrate.u_int;
 
     // parity
-    mp_int_t bits = args.bits.u_int;
+    uint32_t bits = args.bits.u_int;
+    uint32_t parity;
     if (args.parity.u_obj == mp_const_none) {
-        init->Parity = UART_PARITY_NONE;
+        parity = UART_PARITY_NONE;
     } else {
-        mp_int_t parity = mp_obj_get_int(args.parity.u_obj);
-        init->Parity = (parity & 1) ? UART_PARITY_ODD : UART_PARITY_EVEN;
+        mp_int_t p = mp_obj_get_int(args.parity.u_obj);
+        parity = (p & 1) ? UART_PARITY_ODD : UART_PARITY_EVEN;
         bits += 1; // STs convention has bits including parity
     }
 
     // number of bits
     if (bits == 8) {
-        init->WordLength = UART_WORDLENGTH_8B;
+        bits = UART_WORDLENGTH_8B;
     } else if (bits == 9) {
-        init->WordLength = UART_WORDLENGTH_9B;
+        bits = UART_WORDLENGTH_9B;
     #ifdef UART_WORDLENGTH_7B
     } else if (bits == 7) {
-        init->WordLength = UART_WORDLENGTH_7B;
+        bits = UART_WORDLENGTH_7B;
     #endif
     } else {
         mp_raise_ValueError("unsupported combination of bits and parity");
     }
 
     // stop bits
+    uint32_t stop;
     switch (args.stop.u_int) {
-        case 1: init->StopBits = UART_STOPBITS_1; break;
-        default: init->StopBits = UART_STOPBITS_2; break;
+        case 1: stop = UART_STOPBITS_1; break;
+        default: stop = UART_STOPBITS_2; break;
     }
 
     // flow control
-    init->HwFlowCtl = args.flow.u_int;
-
-    // extra config (not yet configurable)
-    init->Mode = UART_MODE_TX_RX;
-    init->OverSampling = UART_OVERSAMPLING_16;
+    uint32_t flow = args.flow.u_int;
 
     // init UART (if it fails, it's because the port doesn't exist)
-    if (!uart_init2(self, init)) {
+    if (!uart_init(self, baudrate, bits, parity, stop, flow)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", self->uart_id));
     }
 
@@ -217,18 +210,18 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     // make sure it is at least as long as a whole character (13 bits to be safe)
     // minimum value is 2ms because sys-tick has a resolution of only 1ms
     self->timeout_char = args.timeout_char.u_int;
-    uint32_t min_timeout_char = 13000 / init->BaudRate + 2;
+    uint32_t min_timeout_char = 13000 / baudrate + 2;
     if (self->timeout_char < min_timeout_char) {
         self->timeout_char = min_timeout_char;
     }
 
     // setup the read buffer
     m_del(byte, self->read_buf, self->read_buf_len << self->char_width);
-    if (init->WordLength == UART_WORDLENGTH_9B && init->Parity == UART_PARITY_NONE) {
+    if (bits == UART_WORDLENGTH_9B && parity == UART_PARITY_NONE) {
         self->char_mask = 0x1ff;
         self->char_width = CHAR_WIDTH_9BIT;
     } else {
-        if (init->WordLength == UART_WORDLENGTH_9B || init->Parity == UART_PARITY_NONE) {
+        if (bits == UART_WORDLENGTH_9B || parity == UART_PARITY_NONE) {
             self->char_mask = 0xff;
         } else {
             self->char_mask = 0x7f;
@@ -254,10 +247,10 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
 
     // check we could set the baudrate within 5%
     uint32_t baudrate_diff;
-    if (actual_baudrate > init->BaudRate) {
-        baudrate_diff = actual_baudrate - init->BaudRate;
+    if (actual_baudrate > baudrate) {
+        baudrate_diff = actual_baudrate - baudrate;
     } else {
-        baudrate_diff = init->BaudRate - actual_baudrate;
+        baudrate_diff = baudrate - actual_baudrate;
     }
     if (20 * baudrate_diff > actual_baudrate) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate));

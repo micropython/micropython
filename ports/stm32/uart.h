@@ -63,7 +63,8 @@ extern const mp_obj_type_t pyb_uart_type;
 void uart_init0(void);
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
-bool uart_init2(pyb_uart_obj_t *uart_obj, UART_InitTypeDef *init);
+bool uart_init(pyb_uart_obj_t *uart_obj,
+    uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow);
 void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf);
 void uart_deinit(pyb_uart_obj_t *uart_obj);
 void uart_irq_handler(mp_uint_t uart_id);
