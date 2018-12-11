@@ -510,13 +510,14 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#endif')
     print()
 
-    print('enum {')
-    for i in range(len(new)):
-        if i == 0:
-            print('    MP_QSTR_%s = MP_QSTRnumber_of,' % new[i][1])
-        else:
-            print('    MP_QSTR_%s,' % new[i][1])
-    print('};')
+    if len(new) > 0:
+        print('enum {')
+        for i in range(len(new)):
+            if i == 0:
+                print('    MP_QSTR_%s = MP_QSTRnumber_of,' % new[i][1])
+            else:
+                print('    MP_QSTR_%s,' % new[i][1])
+        print('};')
 
     # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
     qstr_pool_alloc = min(len(new), 10)
