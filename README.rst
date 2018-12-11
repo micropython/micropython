@@ -60,13 +60,15 @@ Other
    supported using the `Adafruit CircuitPython SD
    library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
 -  `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`__
--  `Arduino MKR Zero <https://store.arduino.cc/arduino-mkrzero>`
+-  `Arduino MKR Zero <https://store.arduino.cc/arduino-mkrzero>`__ (MicroSD card
+   supported using the `Adafruit CircuitPython SD
+   library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
 
 "Third-party" or "non-Adafruit" boards
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  `Electronic Cats Meow Meow <https://electroniccats.com/gomeow/>`__
--  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`
+-  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__ 
 
 Download
 --------
