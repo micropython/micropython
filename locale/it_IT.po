@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-09 16:20-0800\n"
+"POT-Creation-Date: 2018-12-06 17:04-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -131,7 +131,7 @@ msgstr "compressione dell'header"
 msgid "invalid dupterm index"
 msgstr "indice dupterm non valido"
 
-#: extmod/vfs_fat.c:426 py/moduerrno.c:150
+#: extmod/vfs_fat.c:426 py/moduerrno.c:154
 msgid "Read-only filesystem"
 msgstr "Filesystem in sola lettura"
 
@@ -151,11 +151,11 @@ msgstr "argomenti non validi"
 msgid "script compilation not supported"
 msgstr "compilazione dello scrip non suportata"
 
-#: main.c:154
+#: main.c:150
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:168 main.c:241
+#: main.c:164 main.c:237
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,71 +163,28 @@ msgstr ""
 "L'auto-reload è attivo. Salva i file su USB per eseguirli o entra nel REPL "
 "per disabilitarlo.\n"
 
-#: main.c:170
+#: main.c:166
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Modalità sicura in esecuzione! Auto-reload disattivato.\n"
 
-#: main.c:172 main.c:243
+#: main.c:168 main.c:239
 msgid "Auto-reload is off.\n"
 msgstr "Auto-reload disattivato.\n"
 
-#: main.c:186
+#: main.c:182
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Modalità sicura in esecuzione! Codice salvato non in esecuzione.\n"
 
-#: main.c:202
+#: main.c:198
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENZIONE: Il nome del sorgente ha due estensioni\n"
 
-#: main.c:250
-msgid "You requested starting safe mode by "
-msgstr "È stato richiesto l'avvio in modalità sicura da "
-
-#: main.c:253
-msgid "To exit, please reset the board without "
-msgstr "Per uscire resettare la scheda senza "
-
-#: main.c:260
-msgid ""
-"You are running in safe mode which means something really bad happened.\n"
-msgstr ""
-"Sei nella modalità sicura che significa che qualcosa di molto brutto è "
-"successo.\n"
-
-#: main.c:262
-msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr ""
-"Sembra che il codice del core di CircuitPython sia crashato malamente. "
-"Whoops!\n"
-
-#: main.c:263
-msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-msgstr ""
-"Ti preghiamo di compilare una issue con il contenuto del tuo drie "
-"CIRCUITPY:\n"
-
-#: main.c:266
-msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
-msgstr ""
-"La potenza del microcontrollore è calata. Assicurati che l'alimentazione sia "
-"attaccata correttamente\n"
-
-#: main.c:267
-msgid ""
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
-msgstr ""
-"abbastanza potenza per l'intero circuito e premere reset (dopo aver espulso "
-"CIRCUITPY).\n"
-
-#: main.c:271
+#: main.c:244
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Premi un qualunque tasto per entrare nel REPL. Usa CTRL-D per ricaricare."
 
-#: main.c:429
+#: main.c:407
 msgid "soft reboot\n"
 msgstr "soft reboot\n"
 
@@ -375,7 +332,7 @@ msgstr "Non sono presenti abbastanza pin"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
-#: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
@@ -389,31 +346,31 @@ msgstr "SDA o SCL necessitano un pull-up"
 msgid "Unsupported baudrate"
 msgstr "baudrate non supportato"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:66
+#: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
 msgstr "byte > 8 bit non supportati"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:72
-#: ports/nrf/common-hal/busio/UART.c:82
+#: ports/atmel-samd/common-hal/busio/UART.c:73
+#: ports/nrf/common-hal/busio/UART.c:83
 msgid "tx and rx cannot both be None"
 msgstr "tx e rx non possono essere entrambi None"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:145
-#: ports/nrf/common-hal/busio/UART.c:115
+#: ports/atmel-samd/common-hal/busio/UART.c:146
+#: ports/nrf/common-hal/busio/UART.c:116
 msgid "Failed to allocate RX buffer"
 msgstr "Impossibile allocare buffer RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:153
+#: ports/atmel-samd/common-hal/busio/UART.c:154
 msgid "Could not initialize UART"
 msgstr "Impossibile inizializzare l'UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:240
-#: ports/nrf/common-hal/busio/UART.c:149
+#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/nrf/common-hal/busio/UART.c:157
 msgid "No RX pin"
 msgstr "Nessun pin RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:294
-#: ports/nrf/common-hal/busio/UART.c:195
+#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/nrf/common-hal/busio/UART.c:207
 msgid "No TX pin"
 msgstr "Nessun pin TX"
 
@@ -459,7 +416,7 @@ msgid "pop from an empty PulseIn"
 msgstr "pop sun un PulseIn vuoto"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
+#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:422
 msgid "index out of range"
 msgstr "indice fuori intervallo"
 
@@ -825,26 +782,26 @@ msgstr "Tutte le periferiche I2C sono in uso"
 msgid "All SPI peripherals are in use"
 msgstr "Tutte le periferiche SPI sono in uso"
 
-#: ports/nrf/common-hal/busio/UART.c:48
+#: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:87
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "lunghezza del buffer non valida"
 
-#: ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:91
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "operazione I2C non supportata"
 
-#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
-#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
-#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
-#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
-#: ports/nrf/common-hal/busio/UART.c:364
+#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
+#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
+#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
+#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
+#: ports/nrf/common-hal/busio/UART.c:376
 #, fuzzy
 msgid "busio.UART not available"
 msgstr "busio.UART non ancora implementato"
@@ -1355,140 +1312,140 @@ msgstr "buffer troppo piccolo"
 msgid "expecting a dict for keyword args"
 msgstr "argomenti nominati necessitano un dizionario"
 
-#: py/moduerrno.c:143 py/moduerrno.c:146
+#: py/moduerrno.c:147 py/moduerrno.c:150
 msgid "Permission denied"
 msgstr "Permesso negato"
 
-#: py/moduerrno.c:144
+#: py/moduerrno.c:148
 msgid "No such file/directory"
 msgstr "Nessun file/directory esistente"
 
-#: py/moduerrno.c:145
+#: py/moduerrno.c:149
 msgid "Input/output error"
 msgstr "Errore input/output"
 
-#: py/moduerrno.c:147
+#: py/moduerrno.c:151
 msgid "File exists"
 msgstr "File esistente"
 
-#: py/moduerrno.c:148
+#: py/moduerrno.c:152
 msgid "Unsupported operation"
 msgstr "Operazione non supportata"
 
-#: py/moduerrno.c:149
+#: py/moduerrno.c:153
 msgid "Invalid argument"
 msgstr "Argomento non valido"
 
-#: py/obj.c:90
+#: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (chiamata più recente per ultima):\n"
 
-#: py/obj.c:94
+#: py/obj.c:96
 msgid "  File \"%q\", line %d"
 msgstr "  File \"%q\", riga %d"
 
-#: py/obj.c:96
+#: py/obj.c:98
 msgid "  File \"%q\""
 msgstr "  File \"%q\""
 
-#: py/obj.c:100
+#: py/obj.c:102
 msgid ", in %q\n"
 msgstr ", in %q\n"
 
-#: py/obj.c:257
+#: py/obj.c:259
 msgid "can't convert to int"
 msgstr "non è possibile convertire a int"
 
-#: py/obj.c:260
+#: py/obj.c:262
 #, c-format
 msgid "can't convert %s to int"
 msgstr "non è possibile convertire %s a int"
 
-#: py/obj.c:320
+#: py/obj.c:322
 msgid "can't convert to float"
 msgstr "non è possibile convertire a float"
 
-#: py/obj.c:323
+#: py/obj.c:325
 #, c-format
 msgid "can't convert %s to float"
 msgstr "non è possibile convertire %s a float"
 
-#: py/obj.c:353
+#: py/obj.c:355
 msgid "can't convert to complex"
 msgstr "non è possibile convertire a complex"
 
-#: py/obj.c:356
+#: py/obj.c:358
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "non è possibile convertire a complex"
 
-#: py/obj.c:371
+#: py/obj.c:373
 msgid "expected tuple/list"
 msgstr "lista/tupla prevista"
 
-#: py/obj.c:374
+#: py/obj.c:376
 #, c-format
 msgid "object '%s' is not a tuple or list"
 msgstr "oggetto '%s' non è una tupla o una lista"
 
-#: py/obj.c:385
+#: py/obj.c:387
 msgid "tuple/list has wrong length"
 msgstr "tupla/lista ha la lunghezza sbagliata"
 
-#: py/obj.c:387
+#: py/obj.c:389
 #, c-format
 msgid "requested length %d but object has length %d"
 msgstr "lunghezza %d richiesta ma l'oggetto ha lunghezza %d"
 
-#: py/obj.c:400
+#: py/obj.c:402
 msgid "indices must be integers"
 msgstr "gli indici devono essere interi"
 
-#: py/obj.c:403
+#: py/obj.c:405
 msgid "%q indices must be integers, not %s"
 msgstr "gli indici %q devono essere interi, non %s"
 
-#: py/obj.c:423
+#: py/obj.c:425
 msgid "%q index out of range"
 msgstr "indice %q fuori intervallo"
 
-#: py/obj.c:455
+#: py/obj.c:457
 msgid "object has no len"
 msgstr "l'oggetto non ha lunghezza"
 
-#: py/obj.c:458
+#: py/obj.c:460
 #, c-format
 msgid "object of type '%s' has no len()"
 msgstr "l'oggetto di tipo '%s' non implementa len()"
 
-#: py/obj.c:496
+#: py/obj.c:500
 msgid "object does not support item deletion"
 msgstr ""
 
-#: py/obj.c:499
+#: py/obj.c:503
 #, c-format
 msgid "'%s' object does not support item deletion"
 msgstr ""
 
-#: py/obj.c:503
+#: py/obj.c:507
 msgid "object is not subscriptable"
 msgstr ""
 
-#: py/obj.c:506
+#: py/obj.c:510
 #, c-format
 msgid "'%s' object is not subscriptable"
 msgstr ""
 
-#: py/obj.c:510
+#: py/obj.c:514
 msgid "object does not support item assignment"
 msgstr ""
 
-#: py/obj.c:513
+#: py/obj.c:517
 #, c-format
 msgid "'%s' object does not support item assignment"
 msgstr ""
 
-#: py/obj.c:544
+#: py/obj.c:548
 msgid "object with buffer protocol required"
 msgstr ""
 
@@ -2011,6 +1968,14 @@ msgstr "oggetto non in sequenza"
 msgid "stream operation not supported"
 msgstr "operazione di stream non supportata"
 
+#: py/stream.c:254
+msgid "string not supported; use bytes or bytearray"
+msgstr ""
+
+#: py/stream.c:289
+msgid "length argument not allowed for this type"
+msgstr ""
+
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
 msgstr "variabile locale richiamata prima di un assegnamento"
@@ -2180,12 +2145,16 @@ msgstr ""
 msgid "Function requires lock."
 msgstr ""
 
-#: shared-bindings/busio/UART.c:102
+#: shared-bindings/busio/UART.c:106
 msgid "bits must be 7, 8 or 9"
 msgstr "i bit devono essere 7, 8 o 9"
 
-#: shared-bindings/busio/UART.c:114
+#: shared-bindings/busio/UART.c:118
 msgid "stop must be 1 or 2"
+msgstr ""
+
+#: shared-bindings/busio/UART.c:123
+msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
@@ -2417,15 +2386,15 @@ msgstr "time.struct_time() prende esattamente un argomento"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:263
 msgid "Tuple or struct_time argument required"
 msgstr "Tupla o struct_time richiesto come argomento"
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:268
 msgid "function takes exactly 9 arguments"
 msgstr "la funzione prende esattamente 9 argomenti"
 
-#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
+#: shared-bindings/time/__init__.c:239 shared-bindings/time/__init__.c:272
 msgid "timestamp out of range for platform time_t"
 msgstr "timestamp è fuori intervallo per il time_t della piattaforma"
 
@@ -2571,32 +2540,111 @@ msgstr "USB occupata"
 msgid "USB Error"
 msgstr "Errore USB"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo di servizio non valido"
+#: supervisor/shared/safe_mode.c:97
+msgid "You requested starting safe mode by "
+msgstr "È stato richiesto l'avvio in modalità sicura da "
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
+#: supervisor/shared/safe_mode.c:100
+msgid "To exit, please reset the board without "
+msgstr "Per uscire resettare la scheda senza "
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossibile impostare i parametri PPCP."
+#: supervisor/shared/safe_mode.c:107
+#, fuzzy
+msgid ""
+"You are running in safe mode which means something unanticipated happened.\n"
+msgstr ""
+"Sei nella modalità sicura che significa che qualcosa di molto brutto è "
+"successo.\n"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossibile applicare i parametri GAP."
+#: supervisor/shared/safe_mode.c:109
+msgid ""
+"Looks like our core CircuitPython code crashed hard. Whoops!\n"
+"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+" with the contents of your CIRCUITPY drive and this message:\n"
+msgstr ""
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+#: supervisor/shared/safe_mode.c:111
+msgid "Crash into the HardFault_Handler.\n"
+msgstr ""
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
+#: supervisor/shared/safe_mode.c:113
+msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgstr ""
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
+#: supervisor/shared/safe_mode.c:115
+msgid "MicroPython fatal error.\n"
+msgstr ""
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
+#: supervisor/shared/safe_mode.c:118
+#, fuzzy
+msgid ""
+"The microcontroller's power dipped. Please make sure your power supply "
+"provides\n"
+"enough power for the whole circuit and press reset (after ejecting "
+"CIRCUITPY).\n"
+msgstr ""
+"La potenza del microcontrollore è calata. Assicurati che l'alimentazione sia "
+"attaccata correttamente\n"
+
+#: supervisor/shared/safe_mode.c:120
+msgid ""
+"The CircuitPython heap was corrupted because the stack was too small.\n"
+"Please increase stack size limits and press reset (after ejecting "
+"CIRCUITPY).\n"
+"If you didn't change the stack, then file an issue here with the contents of "
+"your CIRCUITPY drive:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:123
+msgid ""
+"The reset button was pressed while booting CircuitPython. Press again to "
+"exit safe mode.\n"
+msgstr ""
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
+#~ "Whoops!\n"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
+#~ "CIRCUITPY:\n"
 
 #~ msgid "Can not add Service."
 #~ msgstr "Non è possibile aggiungere Service."
 
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+
 #~ msgid "Can not add Characteristic."
 #~ msgstr "Non è possibile aggiungere Characteristic."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
+#~ "espulso CIRCUITPY).\n"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossibile impostare i parametri PPCP."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossibile applicare i parametri GAP."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo di servizio non valido"

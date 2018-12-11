@@ -28,6 +28,9 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 
+#include "nrfx/hal/nrf_power.h"
+#include "nrfx/drivers/include/nrfx_power.h"
+
 #include "nrf/cache.h"
 #include "nrf/clocks.h"
 #include "nrf/power.h"
@@ -41,36 +44,33 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "tick.h"
 
-safe_mode_t port_init(void) {
+static void power_warning_handler(void) {
+    reset_into_safe_mode(BROWNOUT);
+}
 
+safe_mode_t port_init(void) {
     nrf_peripherals_clocks_init();
 
     // If GPIO voltage is set wrong in UICR, this will fix it, and
     // will also do a reset to make the change take effect.
     nrf_peripherals_power_init();
 
+    nrfx_power_pofwarn_config_t power_failure_config;
+    power_failure_config.handler = power_warning_handler;
+    power_failure_config.thr = NRF_POWER_POFTHR_V27;
+    #if NRF_POWER_HAS_VDDH
+    power_failure_config.thrvddh = NRF_POWER_POFTHRVDDH_V27;
+    #endif
+    nrfx_power_pof_init(&power_failure_config);
+    nrfx_power_pof_enable(&power_failure_config);
+
     nrf_peripherals_enable_cache();
 
     // Configure millisecond timer initialization.
     tick_init();
 
-#if 0
-    #ifdef CIRCUITPY_CANARY_WORD
-    // Run in safe mode if the canary is corrupt.
-    if (_ezero != CIRCUITPY_CANARY_WORD) {
-        return HARD_CRASH;
-    }
-    #endif
-#endif
-
     // Will do usb_init() if chip supports USB.
     board_init();
-
-#if 0
-    if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
-    }
-#endif
 
     return NO_SAFE_MODE;
 }
@@ -93,13 +93,26 @@ void reset_to_bootloader(void) {
     enum { DFU_MAGIC_SERIAL = 0x4e };
 
     NRF_POWER->GPREGRET = DFU_MAGIC_SERIAL;
+    reset_cpu();
+}
+
+void reset_cpu(void) {
     NVIC_SystemReset();
 }
 
+extern uint32_t _ebss;
+// Place the word to save just after our BSS section that gets blanked.
+void port_set_saved_word(uint32_t value) {
+    _ebss = value;
+}
 
-void HardFault_Handler(void)
-{
+uint32_t port_get_saved_word(void) {
+    return _ebss;
+}
+
+void HardFault_Handler(void) {
+    reset_into_safe_mode(HARD_CRASH);
     while (true) {
-        asm("");
+        asm("nop;");
     }
 }

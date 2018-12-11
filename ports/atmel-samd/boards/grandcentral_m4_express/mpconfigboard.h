@@ -3,7 +3,9 @@
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
-// This is for Rev A which is green
+// This is for Rev B which is green and has the SD card slot at the edge of the board.
+
+#define MICROPY_HW_LED_STATUS   (&pin_PB01)
 
 #define MICROPY_HW_LED_TX   &(pin_PC30)
 #define MICROPY_HW_LED_RX   &(pin_PC31)

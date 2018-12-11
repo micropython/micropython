@@ -44,6 +44,9 @@ typedef struct {
     uint8_t* buffer;
     uint32_t bufsize;
     volatile int32_t rx_count;
+
+    uint8_t tx_pin_number;
+    uint8_t rx_pin_number;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H

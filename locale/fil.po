@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-09 16:20-0800\n"
+"POT-Creation-Date: 2018-12-06 17:04-0800\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -131,7 +131,7 @@ msgstr "compression header"
 msgid "invalid dupterm index"
 msgstr "mali ang dupterm index"
 
-#: extmod/vfs_fat.c:426 py/moduerrno.c:150
+#: extmod/vfs_fat.c:426 py/moduerrno.c:154
 msgid "Read-only filesystem"
 msgstr "Basahin-lamang mode"
 
@@ -151,11 +151,11 @@ msgstr "mali ang mga argumento"
 msgid "script compilation not supported"
 msgstr "script kompilasyon hindi supportado"
 
-#: main.c:154
+#: main.c:150
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:168 main.c:241
+#: main.c:164 main.c:237
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,70 +163,29 @@ msgstr ""
 "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
 "para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
 
-#: main.c:170
+#: main.c:166
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:172 main.c:243
+#: main.c:168 main.c:239
 msgid "Auto-reload is off.\n"
 msgstr "Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:186
+#: main.c:182
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: main.c:202
+#: main.c:198
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 
-#: main.c:250
-msgid "You requested starting safe mode by "
-msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
-
-#: main.c:253
-msgid "To exit, please reset the board without "
-msgstr "Para lumabas, paki-reset ang board na wala ang "
-
-#: main.c:260
-msgid ""
-"You are running in safe mode which means something really bad happened.\n"
-msgstr ""
-"Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang "
-"nangyari.\n"
-
-#: main.c:262
-msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#: main.c:263
-msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-msgstr ""
-"Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-"drive:\n"
-
-#: main.c:266
-msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
-msgstr ""
-"Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
-"supply \n"
-
-#: main.c:267
-msgid ""
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
-msgstr ""
-"ay nagbibigay ng sapat na power para sa buong circuit at i-press ang reset "
-"(pagkatapos i-eject ang CIRCUITPY).\n"
-
-#: main.c:271
+#: main.c:244
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Pindutin ang anumang key upang ipasok ang REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
-#: main.c:429
+#: main.c:407
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
@@ -372,7 +331,7 @@ msgstr "Hindi sapat ang magagamit na pins"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
-#: ports/atmel-samd/common-hal/busio/UART.c:119
+#: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:82
 msgid "Invalid pins"
@@ -386,31 +345,31 @@ msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 msgid "Unsupported baudrate"
 msgstr "Hindi supportadong baudrate"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:66
+#: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:72
-#: ports/nrf/common-hal/busio/UART.c:82
+#: ports/atmel-samd/common-hal/busio/UART.c:73
+#: ports/nrf/common-hal/busio/UART.c:83
 msgid "tx and rx cannot both be None"
 msgstr "tx at rx hindi pwedeng parehas na None"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:145
-#: ports/nrf/common-hal/busio/UART.c:115
+#: ports/atmel-samd/common-hal/busio/UART.c:146
+#: ports/nrf/common-hal/busio/UART.c:116
 msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:153
+#: ports/atmel-samd/common-hal/busio/UART.c:154
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:240
-#: ports/nrf/common-hal/busio/UART.c:149
+#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/nrf/common-hal/busio/UART.c:157
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:294
-#: ports/nrf/common-hal/busio/UART.c:195
+#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/nrf/common-hal/busio/UART.c:207
 msgid "No TX pin"
 msgstr "Walang TX pin"
 
@@ -455,7 +414,7 @@ msgid "pop from an empty PulseIn"
 msgstr "pop mula sa walang laman na PulseIn"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
+#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:422
 msgid "index out of range"
 msgstr "index wala sa sakop"
 
@@ -825,26 +784,26 @@ msgstr "Lahat ng timer ginagamit"
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng timer ginagamit"
 
-#: ports/nrf/common-hal/busio/UART.c:48
+#: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:86
+#: ports/nrf/common-hal/busio/UART.c:87
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "mali ang buffer length"
 
-#: ports/nrf/common-hal/busio/UART.c:90
+#: ports/nrf/common-hal/busio/UART.c:91
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
-#: ports/nrf/common-hal/busio/UART.c:322 ports/nrf/common-hal/busio/UART.c:326
-#: ports/nrf/common-hal/busio/UART.c:331 ports/nrf/common-hal/busio/UART.c:336
-#: ports/nrf/common-hal/busio/UART.c:342 ports/nrf/common-hal/busio/UART.c:347
-#: ports/nrf/common-hal/busio/UART.c:352 ports/nrf/common-hal/busio/UART.c:356
-#: ports/nrf/common-hal/busio/UART.c:364
+#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
+#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
+#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
+#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
+#: ports/nrf/common-hal/busio/UART.c:376
 msgid "busio.UART not available"
 msgstr ""
 
@@ -1356,140 +1315,140 @@ msgstr "masyadong maliit ang buffer"
 msgid "expecting a dict for keyword args"
 msgstr "umaasa ng dict para sa keyword args"
 
-#: py/moduerrno.c:143 py/moduerrno.c:146
+#: py/moduerrno.c:147 py/moduerrno.c:150
 msgid "Permission denied"
 msgstr "Walang pahintulot"
 
-#: py/moduerrno.c:144
+#: py/moduerrno.c:148
 msgid "No such file/directory"
 msgstr "Walang file/directory"
 
-#: py/moduerrno.c:145
+#: py/moduerrno.c:149
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
 
-#: py/moduerrno.c:147
+#: py/moduerrno.c:151
 msgid "File exists"
 msgstr "Mayroong file"
 
-#: py/moduerrno.c:148
+#: py/moduerrno.c:152
 msgid "Unsupported operation"
 msgstr "Hindi sinusuportahang operasyon"
 
-#: py/moduerrno.c:149
+#: py/moduerrno.c:153
 msgid "Invalid argument"
 msgstr "Maling argumento"
 
-#: py/obj.c:90
+#: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (pinakahuling huling tawag): \n"
 
-#: py/obj.c:94
+#: py/obj.c:96
 msgid "  File \"%q\", line %d"
 msgstr "  File \"%q\", line %d"
 
-#: py/obj.c:96
+#: py/obj.c:98
 msgid "  File \"%q\""
 msgstr "  File \"%q\""
 
-#: py/obj.c:100
+#: py/obj.c:102
 msgid ", in %q\n"
 msgstr ", sa %q\n"
 
-#: py/obj.c:257
+#: py/obj.c:259
 msgid "can't convert to int"
 msgstr "hindi ma-convert sa int"
 
-#: py/obj.c:260
+#: py/obj.c:262
 #, c-format
 msgid "can't convert %s to int"
 msgstr "hindi ma-convert %s sa int"
 
-#: py/obj.c:320
+#: py/obj.c:322
 msgid "can't convert to float"
 msgstr "hindi ma-convert sa float"
 
-#: py/obj.c:323
+#: py/obj.c:325
 #, c-format
 msgid "can't convert %s to float"
 msgstr "hindi ma-convert %s sa int"
 
-#: py/obj.c:353
+#: py/obj.c:355
 msgid "can't convert to complex"
 msgstr "hindi ma-convert sa complex"
 
-#: py/obj.c:356
+#: py/obj.c:358
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "hindi ma-convert %s sa complex"
 
-#: py/obj.c:371
+#: py/obj.c:373
 msgid "expected tuple/list"
 msgstr "umaasa ng tuple/list"
 
-#: py/obj.c:374
+#: py/obj.c:376
 #, c-format
 msgid "object '%s' is not a tuple or list"
 msgstr "object '%s' ay hindi tuple o list"
 
-#: py/obj.c:385
+#: py/obj.c:387
 msgid "tuple/list has wrong length"
 msgstr "mali ang haba ng tuple/list"
 
-#: py/obj.c:387
+#: py/obj.c:389
 #, c-format
 msgid "requested length %d but object has length %d"
 msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
 
-#: py/obj.c:400
+#: py/obj.c:402
 msgid "indices must be integers"
 msgstr "ang mga indeks ay dapat na integer"
 
-#: py/obj.c:403
+#: py/obj.c:405
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
-#: py/obj.c:423
+#: py/obj.c:425
 msgid "%q index out of range"
 msgstr "%q indeks wala sa sakop"
 
-#: py/obj.c:455
+#: py/obj.c:457
 msgid "object has no len"
 msgstr "object walang len"
 
-#: py/obj.c:458
+#: py/obj.c:460
 #, c-format
 msgid "object of type '%s' has no len()"
 msgstr "object na type '%s' walang len()"
 
-#: py/obj.c:496
+#: py/obj.c:500
 msgid "object does not support item deletion"
 msgstr "ang object ay hindi sumusuporta sa pagbura ng item"
 
-#: py/obj.c:499
+#: py/obj.c:503
 #, c-format
 msgid "'%s' object does not support item deletion"
 msgstr "'%s' object ay hindi sumusuporta sa pagtanggal ng item"
 
-#: py/obj.c:503
+#: py/obj.c:507
 msgid "object is not subscriptable"
 msgstr "ang bagay ay hindi maaaring ma-subscript"
 
-#: py/obj.c:506
+#: py/obj.c:510
 #, c-format
 msgid "'%s' object is not subscriptable"
 msgstr "'%s' object ay hindi maaaring i-subscript"
 
-#: py/obj.c:510
+#: py/obj.c:514
 msgid "object does not support item assignment"
 msgstr "ang object na '%s' ay hindi maaaring i-subscript"
 
-#: py/obj.c:513
+#: py/obj.c:517
 #, c-format
 msgid "'%s' object does not support item assignment"
 msgstr "'%s' object hindi sumusuporta ng item assignment"
 
-#: py/obj.c:544
+#: py/obj.c:548
 msgid "object with buffer protocol required"
 msgstr "object na may buffer protocol kinakailangan"
 
@@ -2015,6 +1974,14 @@ msgstr "object wala sa sequence"
 msgid "stream operation not supported"
 msgstr "stream operation hindi sinusuportahan"
 
+#: py/stream.c:254
+msgid "string not supported; use bytes or bytearray"
+msgstr ""
+
+#: py/stream.c:289
+msgid "length argument not allowed for this type"
+msgstr ""
+
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
 msgstr "local variable na reference bago na i-assign"
@@ -2185,13 +2152,17 @@ msgstr ""
 msgid "Function requires lock."
 msgstr "Kailangan ng lock ang function."
 
-#: shared-bindings/busio/UART.c:102
+#: shared-bindings/busio/UART.c:106
 msgid "bits must be 7, 8 or 9"
 msgstr "bits ay dapat 7, 8 o 9"
 
-#: shared-bindings/busio/UART.c:114
+#: shared-bindings/busio/UART.c:118
 msgid "stop must be 1 or 2"
 msgstr "stop dapat 1 o 2"
+
+#: shared-bindings/busio/UART.c:123
+msgid "timeout >100 (units are now seconds, not msecs)"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
 msgid "Invalid direction."
@@ -2430,15 +2401,15 @@ msgstr "time.struct_time() kumukuha ng 1 argument"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kumukuha ng 9-sequence"
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:264
+#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:263
 msgid "Tuple or struct_time argument required"
 msgstr "Tuple o struct_time argument kailangan"
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:269
+#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:268
 msgid "function takes exactly 9 arguments"
 msgstr "function kumukuha ng 9 arguments"
 
-#: shared-bindings/time/__init__.c:240 shared-bindings/time/__init__.c:273
+#: shared-bindings/time/__init__.c:239 shared-bindings/time/__init__.c:272
 msgid "timestamp out of range for platform time_t"
 msgstr "wala sa sakop ng timestamp ang platform time_t"
 
@@ -2586,9 +2557,99 @@ msgstr "Busy ang USB"
 msgid "USB Error"
 msgstr "May pagkakamali ang USB"
 
+#: supervisor/shared/safe_mode.c:97
+msgid "You requested starting safe mode by "
+msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
+
+#: supervisor/shared/safe_mode.c:100
+msgid "To exit, please reset the board without "
+msgstr "Para lumabas, paki-reset ang board na wala ang "
+
+#: supervisor/shared/safe_mode.c:107
+#, fuzzy
+msgid ""
+"You are running in safe mode which means something unanticipated happened.\n"
+msgstr ""
+"Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang "
+"nangyari.\n"
+
+#: supervisor/shared/safe_mode.c:109
+msgid ""
+"Looks like our core CircuitPython code crashed hard. Whoops!\n"
+"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+" with the contents of your CIRCUITPY drive and this message:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:111
+msgid "Crash into the HardFault_Handler.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:113
+msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:115
+msgid "MicroPython fatal error.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:118
+#, fuzzy
+msgid ""
+"The microcontroller's power dipped. Please make sure your power supply "
+"provides\n"
+"enough power for the whole circuit and press reset (after ejecting "
+"CIRCUITPY).\n"
+msgstr ""
+"Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
+"supply \n"
+
+#: supervisor/shared/safe_mode.c:120
+msgid ""
+"The CircuitPython heap was corrupted because the stack was too small.\n"
+"Please increase stack size limits and press reset (after ejecting "
+"CIRCUITPY).\n"
+"If you didn't change the stack, then file an issue here with the contents of "
+"your CIRCUITPY drive:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:123
+msgid ""
+"The reset button was pressed while booting CircuitPython. Press again to "
+"exit safe mode.\n"
+msgstr ""
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
+#~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "ang palette ay dapat 32 bytes ang haba"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+
+#~ msgid "Can not add Service."
+#~ msgstr "Hindi maidaragdag ang serbisyo."
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Mali ang tipo ng serbisyo"
@@ -2599,12 +2660,6 @@ msgstr "May pagkakamali ang USB"
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
@@ -2613,9 +2668,3 @@ msgstr "May pagkakamali ang USB"
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Hindi ma-apply ang GAP parameters."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."

@@ -81,7 +81,9 @@ BASE_CFLAGS = \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
 
-
+	# Use these flags to debug build times and header includes.
+	# -ftime-report
+	# -H
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
 ifeq ($(CHIP_FAMILY), samd21)

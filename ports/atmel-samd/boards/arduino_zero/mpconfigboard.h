@@ -1,7 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "Arduino Zero"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-// #define MICROPY_HW_LED_MSC  &pin_PA17 // red
+#define MICROPY_HW_LED_STATUS   (&pin_PA17)
+
 #define MICROPY_HW_LED_TX   &pin_PA27
 #define MICROPY_HW_LED_RX   &pin_PB03
 

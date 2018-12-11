@@ -78,8 +78,11 @@
 	url = https://github.com/adafruit/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = https://github.com/tannewt/tinyusb.git
+	url = https://github.com/hathach/tinyusb.git
 	branch = develop
 [submodule "tools/huffman"]
 	path = tools/huffman
 	url = https://github.com/tannewt/huffman.git
+[submodule "tools/adabot"]
+	path = tools/adabot
+	url = https://github.com/adafruit/adabot.git

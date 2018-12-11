@@ -5,6 +5,7 @@
 
 // Rev E
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA23)
 #define MICROPY_HW_NEOPIXEL (&pin_PB03)
 
 // These are pins not to reset.

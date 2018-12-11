@@ -43,4 +43,5 @@ bool serial_bytes_available(void) {
 }
 
 void serial_write(const char* text) {
+    (void) text;
 }
