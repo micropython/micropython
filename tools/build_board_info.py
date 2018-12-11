@@ -21,24 +21,29 @@ HEX = ('hex',)
 
 # Default extensions
 extension_by_port = {
-    "nrf": BIN,
+    "nrf": UF2,
     "esp8266": BIN,
     "atmel-samd": UF2,
 }
 
 # Per board overrides
 extension_by_board = {
-    "feather_nrf52832": BIN,
+    # samd
     "arduino_mkr1300": BIN,
     "arduino_zero": BIN,
     "feather_m0_adalogger": BIN_UF2,
     "feather_m0_basic": BIN_UF2,
     "feather_m0_rfm69": BIN,
     "feather_m0_rfm9x": BIN,
+
+    # nrf52832
+    "feather_nrf52832": BIN,
+    "pca10040": BIN,
+
+    # nRF52840 dev kits that may not have UF2 bootloaders,
     "makerdiary_nrf52840_mdk": HEX,
-    "particle_argon": UF2,
-    "particle_boron": UF2,
-    "particle_xenon": UF2
+    "pca10056": BIN_UF2,
+    "pca10059": BIN_UF2
 }
 
 def get_languages():
