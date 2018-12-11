@@ -45,13 +45,40 @@ bool touch_enabled = false;
 
 #define CHANNEL_NO 0
 #define N_SAMPLES 10
+#define K_FACTOR 100000000L
+
+static uint16_t process_samples(nrf_saadc_value_t samples[], int n_samples) {
+    // XXX sort of like a least squares fit here, with the assumption
+    // that the timing ('x') is stable (thus we suspend interrupts while
+    // taking these measurements)
+
+    int32_t sumy = 0;
+    int32_t sumxy = 0;
+
+    for (int i = 0; i < N_SAMPLES; i++) {
+        sumy += samples[i];
+        sumxy += i*samples[i];
+    }
+
+    // we don't really care about the units, and so we can cut out a 
+    // whole bunch of stuff which is based only on N_SAMPLES, eg:
+    // n, sum(x), sum(x^2) and sum(x)^2 terms.  This leaves only:
+
+    int16_t m = (N_SAMPLES - 1) * sumy / 2 - sumxy;
+
+    // m is proportional to the charge rate of the capacitor which is 
+    // in reciprocal proportion to the actual capacitance.  
+    return (uint16_t)(K_FACTOR / m);
+}
 
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 
     nrf_saadc_value_t samples[N_SAMPLES];
 
     // Configure analog input.
-    // XXX cloned from AnalogIn and probably overkill
+    // XXX analogio.AnalogIn and this class both use SAADC channel 0 
+    // all the time and never any other channel.  This seems a bit 
+    // silly.
 
     const nrf_saadc_channel_config_t config = {
         .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
@@ -75,14 +102,15 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     nrf_saadc_channel_init(CHANNEL_NO, &config);
     nrf_saadc_buffer_init(samples, N_SAMPLES);
 
-    // set pad to digital output high for 20us to charge it
+    // set pad to digital output high for 10us to charge it
 
     nrf_gpio_cfg_output(self->pin->number);
     nrf_gpio_pin_set(self->pin->number);
 
-    mp_hal_delay_us(20);
+    mp_hal_delay_us(10);
 
     // set pad back to an input and take some samples
+    // IRQs are suspended to make sure our samples are at fixed times.
 
      __disable_irq();
 
@@ -92,7 +120,7 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     while (nrf_saadc_event_check(NRF_SAADC_EVENT_STARTED) == 0);
     nrf_saadc_event_clear(NRF_SAADC_EVENT_STARTED);
 
-    // XXX surely there's a better way
+    // XXX surely there's a better way? PPI?
     for (uint32_t i = 0; i < N_SAMPLES; i++) {
         nrf_saadc_task_trigger(NRF_SAADC_TASK_SAMPLE);
         while (nrf_saadc_event_check(NRF_SAADC_EVENT_DONE) == 0);
@@ -105,7 +133,7 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     while (nrf_saadc_event_check(NRF_SAADC_EVENT_STOPPED) == 0);
     nrf_saadc_event_clear(NRF_SAADC_EVENT_STOPPED);
 
-    // turn off SAADC & set output pin low
+    // turn off SAADC & set output pin low (to minimize leakage currents)
 
     nrf_gpio_pin_clear(self->pin->number);
 
@@ -114,23 +142,8 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 
     nrf_gpio_cfg_output(self->pin->number);
 
-    int32_t sumy = 0;
-    int32_t sumxy = 0;
+    return process_samples(samples, N_SAMPLES);
 
-    //mp_printf(MP_PYTHON_PRINTER, "touch");
-
-    // XXX sort of like a least squares fit here
-
-    for (int i = 0; i < N_SAMPLES; i++) {
-        //mp_printf(MP_PYTHON_PRINTER, " %d", samples[i]);
-        sumy += samples[i];
-        sumxy += i*samples[i];
-    }
-    int32_t r = (N_SAMPLES - 1) * sumy / 2 - sumxy;
-
-    //mp_printf(MP_PYTHON_PRINTER, " -> %d %d -> %d\n", sumy, sumxy, r);
-
-    return (uint16_t)r;
 }
 
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
