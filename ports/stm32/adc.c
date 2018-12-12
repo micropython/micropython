@@ -306,7 +306,13 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 #elif defined(STM32F4) || defined(STM32F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(STM32H7)
-    sConfig.SamplingTime = ADC_SAMPLETIME_8CYCLES_5;
+    if (channel == ADC_CHANNEL_VREFINT
+        || channel == ADC_CHANNEL_TEMPSENSOR
+        || channel == ADC_CHANNEL_VBAT) {
+        sConfig.SamplingTime = ADC_SAMPLETIME_387CYCLES_5;
+    } else {
+        sConfig.SamplingTime = ADC_SAMPLETIME_8CYCLES_5;
+    }
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.OffsetRightShift = DISABLE;
