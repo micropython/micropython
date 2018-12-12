@@ -67,6 +67,7 @@
 #define ADC_CAL_ADDRESS         (0x1ffff7ba)
 #define ADC_CAL1                ((uint16_t*)0x1ffff7b8)
 #define ADC_CAL2                ((uint16_t*)0x1ffff7c2)
+#define ADC_CAL_BITS            (12)
 
 #elif defined(STM32F4)
 
@@ -76,6 +77,7 @@
 #define ADC_CAL_ADDRESS         (0x1fff7a2a)
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
+#define ADC_CAL_BITS            (12)
 
 #elif defined(STM32F7)
 
@@ -91,6 +93,7 @@
 
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
+#define ADC_CAL_BITS            (12)
 
 #elif defined(STM32H7)
 
@@ -100,6 +103,7 @@
 #define ADC_CAL_ADDRESS         (0x1FF1E860)
 #define ADC_CAL1                ((uint16_t*)(0x1FF1E820))
 #define ADC_CAL2                ((uint16_t*)(0x1FF1E840))
+#define ADC_CAL_BITS            (16)
 #define ADC_CHANNEL_VBAT        ADC_CHANNEL_VBAT_DIV4
 
 #elif defined(STM32L4)
@@ -110,6 +114,7 @@
 #define ADC_CAL_ADDRESS         (0x1fff75aa)
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS - 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 0x20))
+#define ADC_CAL_BITS            (12)
 
 #else
 
@@ -149,7 +154,7 @@
 #define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
 
 // scale and calibration values for VBAT and VREF
-#define ADC_SCALE (ADC_SCALE_V / 4095)
+#define ADC_SCALE (ADC_SCALE_V / ((1 << ADC_CAL_BITS) - 1))
 #define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
 typedef struct _pyb_obj_adc_t {
@@ -699,13 +704,14 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
     return 12;
 }
 
+STATIC uint32_t adc_config_and_read_ref(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
+    uint32_t raw_value = adc_config_and_read_channel(adcHandle, channel);
+    // Scale raw reading to the number of bits used by the calibration constants
+    return raw_value << (ADC_CAL_BITS - adc_get_resolution(adcHandle));
+}
+
 int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
-    int32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_TEMPSENSOR);
-
-    // Note: constants assume 12-bit resolution, so we scale the raw value to
-    //       be 12-bits.
-    raw_value <<= (12 - adc_get_resolution(adcHandle));
-
+    int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     return ((raw_value - CORE_TEMP_V25) / CORE_TEMP_AVG_SLOPE) + 25;
 }
 
@@ -714,31 +720,18 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 STATIC volatile float adc_refcor = 1.0f;
 
 float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
-    int32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_TEMPSENSOR);
-
-    // constants assume 12-bit resolution so we scale the raw value to 12-bits
-    raw_value <<= (12 - adc_get_resolution(adcHandle));
-
+    int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
     return (((float)raw_value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
 }
 
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
-    uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VBAT);
-
-    // Note: constants assume 12-bit resolution, so we scale the raw value to
-    //       be 12-bits.
-    raw_value <<= (12 - adc_get_resolution(adcHandle));
-
+    uint32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_VBAT);
     return raw_value * VBAT_DIV * ADC_SCALE * adc_refcor;
 }
 
 float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
-    uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VREFINT);
-
-    // Note: constants assume 12-bit resolution, so we scale the raw value to
-    //       be 12-bits.
-    raw_value <<= (12 - adc_get_resolution(adcHandle));
+    uint32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_VREFINT);
 
     // update the reference correction factor
     adc_refcor = ((float)(*VREFIN_CAL)) / ((float)raw_value);
