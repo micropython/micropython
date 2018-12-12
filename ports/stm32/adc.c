@@ -677,6 +677,9 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
         case 8:  resolution = ADC_RESOLUTION_8B;  break;
         case 10: resolution = ADC_RESOLUTION_10B; break;
         case 12: resolution = ADC_RESOLUTION_12B; break;
+        #if defined(STM32H7)
+        case 16: resolution = ADC_RESOLUTION_16B; break;
+        #endif
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "resolution %d not supported", resolution));
@@ -706,6 +709,9 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
         #endif
         case ADC_RESOLUTION_8B:  return 8;
         case ADC_RESOLUTION_10B: return 10;
+        #if defined(STM32H7)
+        case ADC_RESOLUTION_16B: return 16;
+        #endif
     }
     return 12;
 }
