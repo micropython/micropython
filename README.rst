@@ -60,13 +60,15 @@ Other
    supported using the `Adafruit CircuitPython SD
    library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
 -  `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`__
+-  `Arduino MKR Zero <https://store.arduino.cc/arduino-mkrzero>`__ (MicroSD card
+   supported using the `Adafruit CircuitPython SD
+   library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
 
 "Third-party" or "non-Adafruit" boards
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  `Electronic Cats Meow Meow <https://electroniccats.com/gomeow/>`__
--  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__ 
-
+-  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__
 
 Download
 --------
@@ -207,7 +209,7 @@ amongst ports including CircuitPython:
 -  ``extmod`` Shared C code used in multiple ports' modules.
 -  ``lib`` Shared core C code including externally developed libraries
    such as FATFS.
--  ``logo`` The MicroPython logo.
+-  ``logo`` The CircuitPython logo.
 -  ``mpy-cross`` A cross compiler that converts Python files to byte
    code prior to being run in MicroPython. Useful for reducing library
    size.
@@ -262,7 +264,7 @@ project.
 
 `⬆ back to top <#adafruit-circuitpython>`__
 
-.. |Build Status| image:: https://travis-ci.org/adafruit/circuitpython.svg?branch=master
+.. |Build Status| image:: https://travis-ci.com/adafruit/circuitpython.svg?branch=master
    :target: https://travis-ci.org/adafruit/circuitpython
 .. |Doc Status| image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
    :target: http://circuitpython.readthedocs.io/

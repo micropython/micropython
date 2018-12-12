@@ -149,6 +149,8 @@ SRC_C = \
 	alloc.c \
 	coverage.c \
 	fatfs_port.c \
+	supervisor/stub/serial.c \
+	supervisor/stub/stack.c \
 	supervisor/shared/translate.c \
 	$(SRC_MOD)
 

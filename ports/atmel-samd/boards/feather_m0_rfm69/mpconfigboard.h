@@ -1,5 +1,5 @@
 // LEDs
-//#define MICROPY_HW_LED_MSC              PIN_PA17 // red
+#define MICROPY_HW_LED_STATUS   (&pin_PA17)
 
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 RFM69"
 #define MICROPY_HW_MCU_NAME "samd21g18"

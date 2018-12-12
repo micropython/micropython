@@ -1,6 +1,7 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Metro M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA17)
 #define MICROPY_HW_LED_TX   &pin_PA27
 // Comment this out if you have trouble connecting over SWD. It's one of the SWD pins.
 #define MICROPY_HW_LED_RX   &pin_PA31

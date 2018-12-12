@@ -31,6 +31,7 @@
 #include "shared-bindings/util.h"
 
 #include "lib/utils/context_manager_helpers.h"
+#include "lib/utils/interrupt_char.h"
 
 #include "py/ioctl.h"
 #include "py/objproperty.h"
@@ -45,7 +46,7 @@
 //| =================================================
 //|
 //|
-//| .. class:: UART(tx, rx, \*, baudrate=9600, bits=8, parity=None, stop=1, timeout=1000, receiver_buffer_size=64)
+//| .. class:: UART(tx, rx, \*, baudrate=9600, bits=8, parity=None, stop=1, timeout=1, receiver_buffer_size=64)
 //|
 //|   A common bidirectional serial protocol that uses an an agreed upon speed
 //|   rather than a shared clock line.
@@ -53,12 +54,15 @@
 //|   :param ~microcontroller.Pin tx: the pin to transmit with, or ``None`` if this ``UART`` is receive-only.
 //|   :param ~microcontroller.Pin rx: the pin to receive on, or ``None`` if this ``UART`` is transmit-only.
 //|   :param int baudrate: the transmit and receive speed.
-///   :param int bits:  the number of bits per byte, 7, 8 or 9.
-///   :param Parity parity:  the parity used for error checking.
-///   :param int stop:  the number of stop bits, 1 or 2.
-///   :param int timeout:  the timeout in milliseconds to wait for the first character and between subsequent characters.
-///   :param int receiver_buffer_size: the character length of the read buffer (0 to disable). (When a character is 9 bits the buffer will be 2 * receiver_buffer_size bytes.)
+//|   :param int bits:  the number of bits per byte, 7, 8 or 9.
+//|   :param Parity parity:  the parity used for error checking.
+//|   :param int stop:  the number of stop bits, 1 or 2.
+//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters. Raises ``ValueError`` if timeout >100 seconds.
+//|   :param int receiver_buffer_size: the character length of the read buffer (0 to disable). (When a character is 9 bits the buffer will be 2 * receiver_buffer_size bytes.)
 //|
+//|   *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
+//|   The new upper limit on ``timeout`` is meant to catch mistaken use of milliseconds.
+
 typedef struct {
     mp_obj_base_t base;
 } busio_uart_parity_obj_t;
@@ -83,7 +87,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_parity, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_stop, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
         { MP_QSTR_receiver_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -114,9 +118,14 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         mp_raise_ValueError(translate("stop must be 1 or 2"));
     }
 
+    mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
+    if (timeout > 100.0f) {
+        mp_raise_ValueError(translate("timeout >100 (units are now seconds, not msecs)"));
+    }
+
     common_hal_busio_uart_construct(self, tx, rx,
-        args[ARG_baudrate].u_int, bits, parity, stop, args[ARG_timeout].u_int,
-        args[ARG_receiver_buffer_size].u_int);
+                                    args[ARG_baudrate].u_int, bits, parity, stop, timeout,
+                                    args[ARG_receiver_buffer_size].u_int);
     return (mp_obj_t)self;
 }
 
@@ -161,14 +170,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|     :return: Data read
 //|     :rtype: bytes or None
 //|
-//|   .. method:: readinto(buf, nbytes=None)
+//|   .. method:: readinto(buf)
 //|
-//|     Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-//|     that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
+//|     Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|     :return: number of bytes read and stored into ``buf``
 //|     :rtype: bytes or None
 //|
+//|     *New in CircuitPython 4.0:* No length parameter is permitted.
+
 //|   .. method:: readline()
 //|
 //|     Read a line, ending in a newline character.
@@ -179,6 +189,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|   .. method:: write(buf)
 //|
 //|     Write the buffer of bytes to the bus.
+//|
+//|     *New in CircuitPython 4.0:* ``buf`` must be bytes, not a string.
 //|
 //|     :return: the number of bytes written
 //|     :rtype: int or None
@@ -353,6 +365,8 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .write = busio_uart_write,
     .ioctl = busio_uart_ioctl,
     .is_text = false,
+    // Match PySerial when possible, such as disallowing optional length argument for .readinto()
+    .pyserial_compatibility = true,
 };
 
 const mp_obj_type_t busio_uart_type = {

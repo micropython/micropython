@@ -33,12 +33,7 @@
 #error "Please define PORT_HEAP_SIZE to specify heap size in bytes."
 #endif
 
-typedef enum {
-  NO_SAFE_MODE = 0,
-  BROWNOUT,
-  HARD_CRASH,
-  USER_SAFE_MODE,
-} safe_mode_t;
+#include "supervisor/shared/safe_mode.h"
 
 // Provided by the linker;
 extern uint32_t _ezero;
@@ -51,7 +46,10 @@ extern uint32_t _ebss;
 
 safe_mode_t port_init(void);
 
-// Reset the microcontroller.
+// Reset the microcontroller completely.
+void reset_cpu(void);
+
+// Reset the microcontroller state.
 void reset_port(void);
 
 // Reset the rest of the board.
@@ -60,8 +58,8 @@ void reset_board(void);
 // Reset to the bootloader
 void reset_to_bootloader(void);
 
-#ifdef NRF52_SERIES
-void HardFault_Handler(void);
-#endif
+// Save and retrieve a word from memory that is preserved over reset. Used for safe mode.
+void port_set_saved_word(uint32_t);
+uint32_t port_get_saved_word(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

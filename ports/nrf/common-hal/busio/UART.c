@@ -27,6 +27,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/busio/UART.h"
 
+#include "lib/utils/interrupt_char.h"
 #include "py/mpconfig.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
@@ -76,7 +77,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
 
 void common_hal_busio_uart_construct (busio_uart_obj_t *self,
                                       const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-                                      uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
+                                      uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
                                       uint8_t receiver_buffer_size) {
     if ( (tx == mp_const_none) && (rx == mp_const_none) ) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
@@ -116,15 +117,19 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         }
         self->bufsize = receiver_buffer_size;
 
+        self->rx_pin_number = rx->number;
         claim_pin(rx);
     }
 
     if ( tx != mp_const_none ) {
+        self->tx_pin_number = tx->number;
         claim_pin(tx);
+    } else {
+        self->tx_pin_number = NO_PIN;
     }
 
     self->baudrate = baudrate;
-    self->timeout_ms = timeout;
+    self->timeout_ms = timeout * 1000;
 
     // queue 1-byte transfer for rx_characters_available()
     self->rx_count = -1;
@@ -132,13 +137,16 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return (nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED) &&
-           (nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED);
+    return self->rx_pin_number == NO_PIN;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if ( !common_hal_busio_uart_deinited(self) ) {
         nrfx_uarte_uninit(&self->uarte);
+        reset_pin_number(self->tx_pin_number);
+        reset_pin_number(self->rx_pin_number);
+        self->tx_pin_number = NO_PIN;
+        self->rx_pin_number = NO_PIN;
         gc_free(self->buffer);
     }
 }
@@ -156,7 +164,11 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         // Wait for on-going transfer to complete
         while ( (self->rx_count == -1) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP;
+            // Allow user to break out of a timeout with a KeyboardInterrupt.
+            if (mp_hal_is_interrupted()) {
+                return 0;
+            }
 #endif
         }
 
@@ -317,7 +329,7 @@ static uint32_t get_nrf_baud (uint32_t baudrate)
 
 void common_hal_busio_uart_construct (busio_uart_obj_t *self,
                                       const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-                                      uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
+                                      uint8_t bits, uart_parity_t parity, uint8_t stop, float timeout,
                                       uint8_t receiver_buffer_size) {
     mp_raise_NotImplementedError(translate("busio.UART not available"));
 }
