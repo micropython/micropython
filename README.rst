@@ -209,7 +209,7 @@ amongst ports including CircuitPython:
 -  ``extmod`` Shared C code used in multiple ports' modules.
 -  ``lib`` Shared core C code including externally developed libraries
    such as FATFS.
--  ``logo`` The MicroPython logo.
+-  ``logo`` The CircuitPython logo.
 -  ``mpy-cross`` A cross compiler that converts Python files to byte
    code prior to being run in MicroPython. Useful for reducing library
    size.
