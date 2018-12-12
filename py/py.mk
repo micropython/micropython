@@ -131,9 +131,20 @@ endif
 
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
-CFLAGS_MOD += -DMICROPY_CMODULES_INCLUDE_H='"genhdr/cmodules.h"'
-include $(USER_C_MODULES)/*/micropython.mk
-SRC_QSTR += $(BUILD)/genhdr/cmodules.h
+# pre-define USERMOD variables as expanded so that variables are immediate 
+# expanded as they're added to them
+SRC_USERMOD := 
+CFLAGS_USERMOD :=
+LDFLAGS_USERMOD :=
+$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
+    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
+    $(info Including User C Module from $(USERMOD_DIR))\
+	$(eval include $(module))\
+)
+
+SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
+CFLAGS_MOD += $(CFLAGS_USERMOD)
+LDFLAGS_MOD += $(LDFLAGS_USERMOD)
 endif
 
 # py object files
@@ -334,6 +345,8 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_C
 $(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
 	@$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
+
+SRC_QSTR += $(HEADER_BUILD)/moduledefs.h
 
 # Force nlr code to always be compiled with space-saving optimisation so
 # that the function preludes are of a minimal and predictable form.
