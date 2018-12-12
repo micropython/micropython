@@ -68,7 +68,7 @@ Other
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  `Electronic Cats Meow Meow <https://electroniccats.com/gomeow/>`__
--  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__ 
+-  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__
 
 Download
 --------
@@ -264,7 +264,7 @@ project.
 
 `⬆ back to top <#adafruit-circuitpython>`__
 
-.. |Build Status| image:: https://travis-ci.org/adafruit/circuitpython.svg?branch=master
+.. |Build Status| image:: https://travis-ci.com/adafruit/circuitpython.svg?branch=master
    :target: https://travis-ci.org/adafruit/circuitpython
 .. |Doc Status| image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
    :target: http://circuitpython.readthedocs.io/
