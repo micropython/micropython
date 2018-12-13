@@ -199,35 +199,62 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
 
-mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items) {
-    mp_obj_array_t *self = m_new_obj(mp_obj_array_t);
-    self->base.type = &mp_type_memoryview;
-    self->typecode = typecode;
-    self->memview_offset = 0;
-    self->len = nitems;
-    self->items = items;
-    return MP_OBJ_FROM_PTR(self);
-}
-
-STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    (void)type_in;
-
-    // TODO possibly allow memoryview constructor to take start/stop so that one
-    // can do memoryview(b, 4, 8) instead of memoryview(b)[4:8] (uses less RAM)
-
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+// Order of args optimized for register calling convention
+STATIC mp_obj_t memoryview_init_internal(size_t n_args, const mp_obj_t *args, mp_obj_array_t *self) {
+    mp_obj_t buf = args[0];
+    mp_int_t offset = 0;
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    mp_int_t el_size = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    mp_int_t num_el = bufinfo.len / el_size;
+    mp_int_t size = num_el;
 
-    mp_obj_array_t *self = MP_OBJ_TO_PTR(mp_obj_new_memoryview(bufinfo.typecode,
-        bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL),
-        bufinfo.buf));
+    if (n_args > 1) {
+        size = mp_obj_get_int(args[n_args - 1]);
+        if (size < 0) {
+            size = 0;
+        }
+        if (n_args > 2) {
+            offset = mp_obj_get_int(args[1]);
+            if (offset < 0 || offset >= num_el) {
+                offset = 0;
+            }
+        }
+        if (offset + size > num_el) {
+            size = num_el - offset;
+        }
+    }
+
+    self->typecode = bufinfo.typecode;
+    self->memview_offset = offset;
+    self->len = size;
+    self->items = bufinfo.buf;
 
     // test if the object can be written to
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
         self->typecode |= MP_OBJ_ARRAY_TYPECODE_FLAG_RW; // indicate writable buffer
     }
+
+    return mp_const_none;
+}
+
+#if MICROPY_PY_BUILTINS_MEMORYVIEW_INIT
+STATIC mp_obj_t memoryview_init(size_t n_args, const mp_obj_t *args) {
+    mp_obj_array_t *self = MP_OBJ_TO_PTR(args[0]);
+    return memoryview_init_internal(n_args - 1, args + 1, self);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(memoryview_init_obj, 2, 4, memoryview_init);
+#endif
+
+STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
+
+    mp_arg_check_num(n_args, n_kw, 1, 3, false);
+
+    mp_obj_array_t *self = m_new_obj(mp_obj_array_t);
+    self->base.type = &mp_type_memoryview;
+    memoryview_init_internal(n_args, args, self);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -554,6 +581,15 @@ const mp_obj_type_t mp_type_bytearray = {
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
+
+#if MICROPY_PY_BUILTINS_MEMORYVIEW_INIT
+STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&memoryview_init_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table);
+#endif
+
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
     .name = MP_QSTR_memoryview,
@@ -563,6 +599,9 @@ const mp_obj_type_t mp_type_memoryview = {
     .binary_op = array_binary_op,
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_INIT
+    .locals_dict = (mp_obj_dict_t*)&memoryview_locals_dict,
+    #endif
 };
 #endif
 

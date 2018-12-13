@@ -814,6 +814,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
 #endif
 
+// Whether to support memoryview.init() method (MicroPython extension)
+#ifndef MICROPY_PY_BUILTINS_MEMORYVIEW_INIT
+#define MICROPY_PY_BUILTINS_MEMORYVIEW_INIT (1)
+#endif
+
 // Whether to support set object
 #ifndef MICROPY_PY_BUILTINS_SET
 #define MICROPY_PY_BUILTINS_SET (1)
