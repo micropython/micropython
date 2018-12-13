@@ -141,14 +141,19 @@ STATIC qstr qstr_add(const byte *q_ptr) {
 
     // make sure we have room in the pool for a new qstr
     if (MP_STATE_VM(last_pool)->len >= MP_STATE_VM(last_pool)->alloc) {
-        qstr_pool_t *pool = m_new_obj_var_maybe(qstr_pool_t, const char*, MP_STATE_VM(last_pool)->alloc * 2);
+        size_t new_alloc = MP_STATE_VM(last_pool)->alloc * 2;
+        #ifdef MICROPY_QSTR_EXTRA_POOL
+        // Put a lower bound on the allocation size in case the extra qstr pool has few entries
+        new_alloc = MAX(10, new_alloc);
+        #endif
+        qstr_pool_t *pool = m_new_obj_var_maybe(qstr_pool_t, const char*, new_alloc);
         if (pool == NULL) {
             QSTR_EXIT();
-            m_malloc_fail(MP_STATE_VM(last_pool)->alloc * 2);
+            m_malloc_fail(new_alloc);
         }
         pool->prev = MP_STATE_VM(last_pool);
         pool->total_prev_len = MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len;
-        pool->alloc = MP_STATE_VM(last_pool)->alloc * 2;
+        pool->alloc = new_alloc;
         pool->len = 0;
         MP_STATE_VM(last_pool) = pool;
         DEBUG_printf("QSTR: allocate new pool of size %d\n", MP_STATE_VM(last_pool)->alloc);
