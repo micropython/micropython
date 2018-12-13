@@ -73,7 +73,11 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
     switch ( event->type ) {
         case NRFX_UARTE_EVT_RX_DONE:
             for(uint8_t i=0; i < event->data.rxtx.bytes; i++) {
-                ringbuf_put(&self->rbuf, event->data.rxtx.p_data[i]);
+                if ( ringbuf_put(&self->rbuf, event->data.rxtx.p_data[i]) < 0 ) {
+                    // if full overwrite old data
+                    (void) ringbuf_get(&self->rbuf);
+                    ringbuf_put(&self->rbuf, event->data.rxtx.p_data[i]);
+                }
             }
 
             // keep receiving
