@@ -74,16 +74,16 @@
 #define mp_builtin_open_obj mp_vfs_open_obj
 #endif
 
-#define MICROPY_CPYTHON_COMPAT                   (0)
+#define MICROPY_CPYTHON_COMPAT                   (1)
 #define MICROPY_STREAMS_NON_BLOCK                (1)
 #define MICROPY_MODULE_WEAK_LINKS                (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS            (1)
 #define MICROPY_USE_INTERNAL_ERRNO               (0)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE          (1)
-#define MICROPY_PY_BUILTINS_STR_CENTER           (0)
-#define MICROPY_PY_BUILTINS_STR_PARTITION        (0)
-#define MICROPY_PY_BUILTINS_STR_SPLITLINES       (0)
+#define MICROPY_PY_BUILTINS_STR_CENTER           (1)
+#define MICROPY_PY_BUILTINS_STR_PARTITION        (1)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES       (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW           (1)
 #define MICROPY_PY_BUILTINS_FROZENSET            (1)
 #define MICROPY_PY_BUILTINS_EXECFILE             (0)
@@ -155,6 +155,7 @@ typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #define mp_type_fileio mp_type_vfs_fat_fileio
+#define mp_type_textio mp_type_vfs_fat_textio
 
 // extra built in modules to add to the list of known ones
 

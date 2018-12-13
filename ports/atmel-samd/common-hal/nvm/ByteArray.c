@@ -28,6 +28,8 @@
 
 #include "hal_flash.h"
 
+#include "supervisor/shared/stack.h"
+
 #include <stdint.h>
 #include <string.h>
 
@@ -42,6 +44,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
     struct flash_descriptor desc;
     desc.dev.hw = NVMCTRL;
     flash_write(&desc, (uint32_t) self->start_address + start_index, values, len);
+    assert_heap_ok();
     return true;
 }
 

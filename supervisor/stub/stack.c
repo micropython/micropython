@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,25 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "PCA10059 nRF52840 Dongle"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nRF52840-DK"
+#include "supervisor/shared/stack.h"
 
-#define MICROPY_HW_LED_STATUS          (&pin_P0_06)
+bool stack_ok(void) {
+    return true;
+}
 
-#define PORT_HEAP_SIZE              (128 * 1024)
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+void assert_heap_ok(void) {
+}
+
+void stack_init(void) {
+}
+
+void stack_resize(void) {
+}
+
+void set_next_stack_size(uint32_t size) {
+    (void) size;
+}
+
+uint32_t get_current_stack_size(void) {
+    return 0;
+}

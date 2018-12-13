@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-04 16:17-0500\n"
+"POT-Creation-Date: 2018-12-06 17:04-0800\n"
 "PO-Revision-Date: 2018-08-30 23:04-0700\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -151,11 +151,11 @@ msgstr "mali ang mga argumento"
 msgid "script compilation not supported"
 msgstr "script kompilasyon hindi supportado"
 
-#: main.c:155
+#: main.c:150
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:169 main.c:242
+#: main.c:164 main.c:237
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,70 +163,29 @@ msgstr ""
 "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
 "para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
 
-#: main.c:171
+#: main.c:166
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:173 main.c:244
+#: main.c:168 main.c:239
 msgid "Auto-reload is off.\n"
 msgstr "Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:187
+#: main.c:182
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: main.c:203
+#: main.c:198
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 
-#: main.c:251
-msgid "You requested starting safe mode by "
-msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
-
-#: main.c:254
-msgid "To exit, please reset the board without "
-msgstr "Para lumabas, paki-reset ang board na wala ang "
-
-#: main.c:261
-msgid ""
-"You are running in safe mode which means something really bad happened.\n"
-msgstr ""
-"Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang "
-"nangyari.\n"
-
-#: main.c:263
-msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-msgstr "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#: main.c:264
-msgid "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-msgstr ""
-"Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-"drive:\n"
-
-#: main.c:267
-msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
-msgstr ""
-"Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
-"supply \n"
-
-#: main.c:268
-msgid ""
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
-msgstr ""
-"ay nagbibigay ng sapat na power para sa buong circuit at i-press ang reset "
-"(pagkatapos i-eject ang CIRCUITPY).\n"
-
-#: main.c:272
+#: main.c:244
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Pindutin ang anumang key upang ipasok ang REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
-#: main.c:430
+#: main.c:407
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
@@ -455,7 +414,7 @@ msgid "pop from an empty PulseIn"
 msgstr "pop mula sa walang laman na PulseIn"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:420
+#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:422
 msgid "index out of range"
 msgstr "index wala sa sakop"
 
@@ -1380,116 +1339,116 @@ msgstr "Hindi sinusuportahang operasyon"
 msgid "Invalid argument"
 msgstr "Maling argumento"
 
-#: py/obj.c:90
+#: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (pinakahuling huling tawag): \n"
 
-#: py/obj.c:94
+#: py/obj.c:96
 msgid "  File \"%q\", line %d"
 msgstr "  File \"%q\", line %d"
 
-#: py/obj.c:96
+#: py/obj.c:98
 msgid "  File \"%q\""
 msgstr "  File \"%q\""
 
-#: py/obj.c:100
+#: py/obj.c:102
 msgid ", in %q\n"
 msgstr ", sa %q\n"
 
-#: py/obj.c:257
+#: py/obj.c:259
 msgid "can't convert to int"
 msgstr "hindi ma-convert sa int"
 
-#: py/obj.c:260
+#: py/obj.c:262
 #, c-format
 msgid "can't convert %s to int"
 msgstr "hindi ma-convert %s sa int"
 
-#: py/obj.c:320
+#: py/obj.c:322
 msgid "can't convert to float"
 msgstr "hindi ma-convert sa float"
 
-#: py/obj.c:323
+#: py/obj.c:325
 #, c-format
 msgid "can't convert %s to float"
 msgstr "hindi ma-convert %s sa int"
 
-#: py/obj.c:353
+#: py/obj.c:355
 msgid "can't convert to complex"
 msgstr "hindi ma-convert sa complex"
 
-#: py/obj.c:356
+#: py/obj.c:358
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "hindi ma-convert %s sa complex"
 
-#: py/obj.c:371
+#: py/obj.c:373
 msgid "expected tuple/list"
 msgstr "umaasa ng tuple/list"
 
-#: py/obj.c:374
+#: py/obj.c:376
 #, c-format
 msgid "object '%s' is not a tuple or list"
 msgstr "object '%s' ay hindi tuple o list"
 
-#: py/obj.c:385
+#: py/obj.c:387
 msgid "tuple/list has wrong length"
 msgstr "mali ang haba ng tuple/list"
 
-#: py/obj.c:387
+#: py/obj.c:389
 #, c-format
 msgid "requested length %d but object has length %d"
 msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
 
-#: py/obj.c:400
+#: py/obj.c:402
 msgid "indices must be integers"
 msgstr "ang mga indeks ay dapat na integer"
 
-#: py/obj.c:403
+#: py/obj.c:405
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
-#: py/obj.c:423
+#: py/obj.c:425
 msgid "%q index out of range"
 msgstr "%q indeks wala sa sakop"
 
-#: py/obj.c:455
+#: py/obj.c:457
 msgid "object has no len"
 msgstr "object walang len"
 
-#: py/obj.c:458
+#: py/obj.c:460
 #, c-format
 msgid "object of type '%s' has no len()"
 msgstr "object na type '%s' walang len()"
 
-#: py/obj.c:496
+#: py/obj.c:500
 msgid "object does not support item deletion"
 msgstr "ang object ay hindi sumusuporta sa pagbura ng item"
 
-#: py/obj.c:499
+#: py/obj.c:503
 #, c-format
 msgid "'%s' object does not support item deletion"
 msgstr "'%s' object ay hindi sumusuporta sa pagtanggal ng item"
 
-#: py/obj.c:503
+#: py/obj.c:507
 msgid "object is not subscriptable"
 msgstr "ang bagay ay hindi maaaring ma-subscript"
 
-#: py/obj.c:506
+#: py/obj.c:510
 #, c-format
 msgid "'%s' object is not subscriptable"
 msgstr "'%s' object ay hindi maaaring i-subscript"
 
-#: py/obj.c:510
+#: py/obj.c:514
 msgid "object does not support item assignment"
 msgstr "ang object na '%s' ay hindi maaaring i-subscript"
 
-#: py/obj.c:513
+#: py/obj.c:517
 #, c-format
 msgid "'%s' object does not support item assignment"
 msgstr "'%s' object hindi sumusuporta ng item assignment"
 
-#: py/obj.c:544
+#: py/obj.c:548
 msgid "object with buffer protocol required"
 msgstr "object na may buffer protocol kinakailangan"
 
@@ -2598,9 +2557,99 @@ msgstr "Busy ang USB"
 msgid "USB Error"
 msgstr "May pagkakamali ang USB"
 
+#: supervisor/shared/safe_mode.c:97
+msgid "You requested starting safe mode by "
+msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
+
+#: supervisor/shared/safe_mode.c:100
+msgid "To exit, please reset the board without "
+msgstr "Para lumabas, paki-reset ang board na wala ang "
+
+#: supervisor/shared/safe_mode.c:107
+#, fuzzy
+msgid ""
+"You are running in safe mode which means something unanticipated happened.\n"
+msgstr ""
+"Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang "
+"nangyari.\n"
+
+#: supervisor/shared/safe_mode.c:109
+msgid ""
+"Looks like our core CircuitPython code crashed hard. Whoops!\n"
+"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+" with the contents of your CIRCUITPY drive and this message:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:111
+msgid "Crash into the HardFault_Handler.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:113
+msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:115
+msgid "MicroPython fatal error.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:118
+#, fuzzy
+msgid ""
+"The microcontroller's power dipped. Please make sure your power supply "
+"provides\n"
+"enough power for the whole circuit and press reset (after ejecting "
+"CIRCUITPY).\n"
+msgstr ""
+"Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
+"supply \n"
+
+#: supervisor/shared/safe_mode.c:120
+msgid ""
+"The CircuitPython heap was corrupted because the stack was too small.\n"
+"Please increase stack size limits and press reset (after ejecting "
+"CIRCUITPY).\n"
+"If you didn't change the stack, then file an issue here with the contents of "
+"your CIRCUITPY drive:\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c:123
+msgid ""
+"The reset button was pressed while booting CircuitPython. Press again to "
+"exit safe mode.\n"
+msgstr ""
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
+#~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "ang palette ay dapat 32 bytes ang haba"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+
+#~ msgid "Can not add Service."
+#~ msgstr "Hindi maidaragdag ang serbisyo."
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Mali ang tipo ng serbisyo"
@@ -2611,12 +2660,6 @@ msgstr "May pagkakamali ang USB"
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
@@ -2625,9 +2668,3 @@ msgstr "May pagkakamali ang USB"
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Hindi ma-apply ang GAP parameters."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."

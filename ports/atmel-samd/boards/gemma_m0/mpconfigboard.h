@@ -1,6 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Gemma M0"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA23)
+
 #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
 #define MICROPY_HW_APA102_SCK    (&pin_PA01)
 

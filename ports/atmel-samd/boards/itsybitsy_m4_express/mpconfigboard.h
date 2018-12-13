@@ -4,6 +4,8 @@
 #define CIRCUITPY_MCU_FAMILY samd51
 
 // This is for Rev B
+#define MICROPY_HW_LED_STATUS   (&pin_PA22)
+
 #define MICROPY_HW_APA102_MOSI   (&pin_PB03)
 #define MICROPY_HW_APA102_SCK    (&pin_PB02)
 

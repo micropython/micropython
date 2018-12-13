@@ -3,6 +3,8 @@
 #define MICROPY_HW_BOARD_NAME "Hacked Feather M0 Express with 8Mbyte SPI flash"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA17)
+
 #define MICROPY_HW_NEOPIXEL (&pin_PA06)
 
 #define SPI_FLASH_MOSI_PIN          &pin_PA08

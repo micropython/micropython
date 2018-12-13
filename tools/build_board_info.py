@@ -21,21 +21,29 @@ HEX = ('hex',)
 
 # Default extensions
 extension_by_port = {
-    "nrf": BIN,
+    "nrf": UF2,
     "esp8266": BIN,
     "atmel-samd": UF2,
 }
 
 # Per board overrides
 extension_by_board = {
-    "feather_nrf52832": BIN,
+    # samd
     "arduino_mkr1300": BIN,
     "arduino_zero": BIN,
     "feather_m0_adalogger": BIN_UF2,
     "feather_m0_basic": BIN_UF2,
     "feather_m0_rfm69": BIN,
     "feather_m0_rfm9x": BIN,
-    "makerdiary_nrf52840_mdk": HEX
+
+    # nrf52832
+    "feather_nrf52832": BIN,
+    "pca10040": BIN,
+
+    # nRF52840 dev kits that may not have UF2 bootloaders,
+    "makerdiary_nrf52840_mdk": HEX,
+    "pca10056": BIN_UF2,
+    "pca10059": BIN_UF2
 }
 
 def get_languages():
@@ -62,7 +70,7 @@ def get_version_info():
     version = None
     sha = git("rev-parse", "--short", "HEAD").stdout.decode("utf-8")
     try:
-        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8")
+        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8").strip()
     except sh.ErrorReturnCode_128:
         # No exact match
         pass
@@ -212,7 +220,7 @@ def generate_download_info():
         board_path = os.path.join("../ports", port, "boards")
         for board_path in os.scandir(board_path):
             if board_path.is_dir():
-                board_files = os.listdir(board_path)
+                board_files = os.listdir(board_path.path)
                 board_id = board_path.name
                 board_info = board_mapping[board_id]
 
@@ -236,8 +244,10 @@ def generate_download_info():
 
     changes["new_languages"] = set(languages) - previous_languages
 
-    if changes["new_languages"]:
+    if changes["new_release"]:
         create_pr(changes, current_info, git_info)
+    else:
+        print("No new release to update")
 
 if __name__ == "__main__":
     if "TRAVIS_TAG" in os.environ and os.environ["TRAVIS_TAG"]:
