@@ -1051,20 +1051,28 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     } else if (attr == MP_QSTR___class__) {
         // a.__class__ is equivalent to type(a)
         dest[0] = MP_OBJ_FROM_PTR(type);
+        return;
 #endif
 
     } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
         dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
         dest[1] = obj;
+        return;
 
     } else if (type->attr != NULL) {
         // this type can do its own load, so call it
         type->attr(obj, attr, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            return;
+        }
 
-    } else if (type->locals_dict != NULL) {
-        // generic method lookup
-        // this is a lookup in the object (ie not class or type)
-        assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
+    }
+
+    if (type->locals_dict != NULL) {
+        // generic method lookup in a type
+        // note that this applies only to native types, instance types
+        // implement more complex lookup via their ->attr().
+        assert(type->locals_dict->base.type == &mp_type_dict);
         mp_map_t *locals_map = &type->locals_dict->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
