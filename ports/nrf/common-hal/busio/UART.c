@@ -52,21 +52,40 @@
 
 static uint32_t get_nrf_baud (uint32_t baudrate);
 
+static uint16_t ringbuf_count(ringbuf_t *r)
+{
+    volatile int count = r->iput - r->iget;
+    if ( count < 0 ) {
+        count += r->size;
+    }
+
+    return (uint16_t) count;
+}
+
+static void ringbuf_clear(ringbuf_t *r)
+{
+    r->iput = r->iget = 0;
+}
+
 static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context) {
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
 
     switch ( event->type ) {
         case NRFX_UARTE_EVT_RX_DONE:
-            self->rx_count = event->data.rxtx.bytes;
+            for(uint8_t i=0; i < event->data.rxtx.bytes; i++) {
+                ringbuf_put(&self->rbuf, event->data.rxtx.p_data[i]);
+            }
+
+            // keep receiving
+            _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, &self->rx_char, 1));
         break;
 
         case NRFX_UARTE_EVT_TX_DONE:
+            // nothing to do
         break;
 
         case NRFX_UARTE_EVT_ERROR:
-            if ( self->rx_count == -1 ) {
-                self->rx_count = 0;
-            }
+            // Handle error
         break;
 
         default:
@@ -110,12 +129,15 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 
     // Init buffer for rx
     if ( rx != mp_const_none ) {
-        self->buffer = (uint8_t *) gc_alloc(receiver_buffer_size, false, false);
-        if ( !self->buffer ) {
+        self->rbuf.buf = (uint8_t *) gc_alloc(receiver_buffer_size, false, false);
+
+        if ( !self->rbuf.buf ) {
             nrfx_uarte_uninit(&self->uarte);
             mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
         }
-        self->bufsize = receiver_buffer_size;
+
+        self->rbuf.size = receiver_buffer_size;
+        self->rbuf.iget = self->rbuf.iput = 0;
 
         self->rx_pin_number = rx->number;
         claim_pin(rx);
@@ -131,9 +153,8 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     self->baudrate = baudrate;
     self->timeout_ms = timeout * 1000;
 
-    // queue 1-byte transfer for rx_characters_available()
-    self->rx_count = -1;
-    _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, 1));
+    // Initial wait for incoming byte
+    _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, &self->rx_char, 1));
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -147,7 +168,10 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         reset_pin_number(self->rx_pin_number);
         self->tx_pin_number = NO_PIN;
         self->rx_pin_number = NO_PIN;
-        gc_free(self->buffer);
+
+        gc_free(self->rbuf.buf);
+        self->rbuf.size = 0;
+        self->rbuf.iput = self->rbuf.iget = 0;
     }
 }
 
@@ -157,48 +181,33 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         mp_raise_ValueError(translate("No RX pin"));
     }
 
-    size_t remain = len;
+    size_t rx_bytes = 0;
     uint64_t start_ticks = ticks_ms;
 
-    while ( 1 ) {
-        // Wait for on-going transfer to complete
-        while ( (self->rx_count == -1) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    // Wait for all bytes received or timeout
+    while ( (ringbuf_count(&self->rbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP;
-            // Allow user to break out of a timeout with a KeyboardInterrupt.
-            if (mp_hal_is_interrupted()) {
-                return 0;
-            }
+        MICROPY_VM_HOOK_LOOP ;
+        // Allow user to break out of a timeout with a KeyboardInterrupt.
+        if ( mp_hal_is_interrupted() ) {
+            return 0;
+        }
 #endif
-        }
-
-        // copy received data
-        if ( self->rx_count > 0 ) {
-            memcpy(data, self->buffer, self->rx_count);
-            data += self->rx_count;
-            remain -= self->rx_count;
-
-            self->rx_count = 0;
-        }
-
-        // exit if complete or time up
-        if ( !remain || !(ticks_ms - start_ticks < self->timeout_ms) ) {
-            break;
-        }
-
-        // prepare next receiving
-        const size_t cnt = MIN(self->bufsize, remain);
-        self->rx_count = -1;
-        _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, cnt));
     }
 
-    // queue 1-byte transfer for rx_characters_available()
-    if ( self->rx_count == 0 ) {
-        self->rx_count = -1;
-        _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, 1));
+    // prevent conflict with uart irq
+    NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
+
+    // copy received data
+    rx_bytes = ringbuf_count(&self->rbuf);
+    rx_bytes = MIN(rx_bytes, len);
+    for ( uint16_t i = 0; i < rx_bytes; i++ ) {
+        data[i] = ringbuf_get(&self->rbuf);
     }
 
-    return len - remain;
+    NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
+
+    return rx_bytes;
 }
 
 // Write characters.
@@ -258,15 +267,14 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return (self->rx_count > 0) ? self->rx_count : 0;
+    return ringbuf_count(&self->rbuf);
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
-    // Discard received byte, and queue 1-byte transfer for rx_characters_available()
-    if ( self->rx_count > 0 ) {
-        self->rx_count = -1;
-        _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, self->buffer, 1));
-    }
+    // prevent conflict with uart irq
+    NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
+    ringbuf_clear(&self->rbuf);
+    NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
