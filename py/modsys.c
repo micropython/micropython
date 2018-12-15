@@ -37,8 +37,6 @@
 
 #if MICROPY_PY_SYS
 
-#include "genhdr/mpversion.h"
-
 // defined per port; type of these is irrelevant, just need pointer
 extern struct _mp_dummy_t mp_sys_stdin_obj;
 extern struct _mp_dummy_t mp_sys_stdout_obj;
