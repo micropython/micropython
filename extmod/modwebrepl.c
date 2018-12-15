@@ -35,7 +35,6 @@
 #include "py/mphal.h"
 #endif
 #include "extmod/modwebsocket.h"
-#include "genhdr/mpversion.h"
 
 #if MICROPY_PY_WEBREPL
 
