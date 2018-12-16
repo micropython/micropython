@@ -6,8 +6,7 @@
 #include "py/obj.h"
 
 STATIC mp_obj_t mp_lv_task_handler(mp_obj_t arg)
-{
-    printf("lv_task_handler\n");    
+{  
     lv_task_handler();
     return mp_const_none;
 }
@@ -71,8 +70,6 @@ static void hal_init(void)
 
 void lv_mp_init(void)
 {
-
-    printf("lv_mp_init\n");    
     lv_init();
     hal_init();
 }
