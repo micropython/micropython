@@ -74,7 +74,7 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA) -lSDL2  
 
 # Flags to link with pthread library
 LIBPTHREAD = -lpthread
@@ -152,6 +152,9 @@ SRC_C = \
 	alloc.c \
 	coverage.c \
 	fatfs_port.c \
+    lv_mpy_hal.c \
+    monitor.c \
+    mouse.c \
 	$(SRC_MOD)
 
 LIB_SRC_C = $(addprefix lib/,\
