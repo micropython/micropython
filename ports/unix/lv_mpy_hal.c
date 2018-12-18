@@ -24,8 +24,8 @@ static int tick_thread(void * data)
 
     while(1) {
         SDL_Delay(5);   /*Sleep for 5 millisecond*/
-        lv_tick_inc(5); /*Tell LittelvGL that 5 milliseconds were elapsed*/ 
-	    mp_sched_schedule((mp_obj_t)&mp_lv_task_handler_obj, mp_const_none);
+        lv_tick_inc(5); /*Tell LittelvGL that 5 milliseconds were elapsed*/
+        mp_sched_schedule((mp_obj_t)&mp_lv_task_handler_obj, mp_const_none);
     }
 
     return 0;
