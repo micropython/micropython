@@ -170,13 +170,7 @@ These commands should be executed from the root directory of the repository
 
 Build commands are run from the ``circuitpython/ports/atmel-samd`` directory.
 
-To build for the Arduino Zero:
-
-.. code-block:: shell
-
-    make
-
-To build for other boards you must change it by setting ``BOARD``. For example:
+To build for a given board you must specify it by setting ``BOARD``. For example:
 
 .. code-block:: shell
 
