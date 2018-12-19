@@ -285,7 +285,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     }
 
     uint32_t mode = MP_HAL_PIN_MODE_ALT;
-    uint32_t pull = MP_HAL_PIN_PULL_UP;
+    uint32_t pull = MP_HAL_PIN_PULL_NONE;
 
     for (uint i = 0; i < 4; i++) {
         if (pins[i] != NULL) {
