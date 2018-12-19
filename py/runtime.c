@@ -33,6 +33,7 @@
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
+#include "py/objtype.h"
 #include "py/objmodule.h"
 #include "py/objgenerator.h"
 #include "py/smallint.h"
@@ -1051,6 +1052,12 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     } else if (attr == MP_QSTR___class__) {
         // a.__class__ is equivalent to type(a)
         dest[0] = MP_OBJ_FROM_PTR(type);
+    
+    } else if (attr == MP_QSTR___base__) {
+        mp_obj_type_t* t = MP_OBJ_TO_PTR(obj);
+        if (mp_obj_is_instance_type(t)) {
+             dest[0] = MP_OBJ_FROM_PTR(t->parent);
+        }
 #endif
 
     } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
