@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# This is a port of the MicroPython upip utility to CPython
+# Port Copyright (c) Peter Hinch
+# Licensed under the MIT license.
+
+# Please note that the author of upip, Paul Sokolovsky, advocates its use
+# rather than this port.
+
+# upip licensing/attribution
+# upip - Package manager for MicroPython
+#
+# Copyright (c) 2015-2018 Paul Sokolovsky
+#
+# Licensed under the MIT license.
+#
 import sys
 import os
 import errno
@@ -149,7 +164,8 @@ def url_open(url):
     return s
 
 def get_pkg_metadata(name):
-    f = url_open("https://pypi.python.org/pypi/%s/json" % name)
+#    f = url_open("https://pypi.python.org/pypi/%s/json" % name)
+    f = url_open("https://pypi.org/pypi/%s/json" % name)
     s = read_lines(f)
     try:
         return json.loads(s.decode('UTF8'))
