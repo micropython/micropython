@@ -202,7 +202,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     str_cmp_err:
         #if MICROPY_PY_STR_BYTES_CMP_WARN
         if (MP_OBJ_IS_TYPE(o1, &mp_type_bytes) || MP_OBJ_IS_TYPE(o2, &mp_type_bytes)) {
-            mp_warning("Comparison between bytes and str");
+            mp_warning(MP_WARN_CAT(BytesWarning), "Comparison between bytes and str");
         }
         #endif
         return false;
