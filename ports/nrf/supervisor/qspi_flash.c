@@ -40,15 +40,13 @@
 
 bool spi_flash_command(uint8_t command) {
     nrf_qspi_cinstr_conf_t cinstr_cfg = {
-        .opcode = 0,
-        .length = 0,
+        .opcode = command,
+        .length = 1,
         .io2_level = true,
         .io3_level = true,
         .wipwait = false,
         .wren = false
     };
-    cinstr_cfg.opcode = command;
-    cinstr_cfg.length = 1;
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
     return true;
 }
@@ -91,8 +89,7 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
 }
 
 bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
-    nrfx_qspi_read(data, length, address);
-    return true;
+    return nrfx_qspi_read(data, length, address) == NRFX_SUCCESS;
 }
 
 void spi_flash_init(void) {
@@ -115,7 +112,7 @@ void spi_flash_init(void) {
             .dpmconfig = false
         },
         .phy_if = {
-            .sck_freq = NRF_QSPI_FREQ_32MDIV16, // Start at a slow 2mhz and speed up once we know what we're talking to.
+            .sck_freq = NRF_QSPI_FREQ_32MDIV16, // Start at a slow 2MHz and speed up once we know what we're talking to.
             .sck_delay = 10,    // min time CS must stay high before going low again. in unit of 62.5 ns
             .spi_mode = NRF_QSPI_MODE_0,
             .dpmen = false
@@ -145,7 +142,7 @@ void spi_flash_init_device(const external_flash_device* device) {
     // Switch to single output line if the device doesn't support quad programs.
     if (!device->supports_qspi_writes) {
         NRF_QSPI->IFCONFIG0 &= ~QSPI_IFCONFIG0_WRITEOC_Msk;
-        NRF_QSPI->IFCONFIG0 |= QSPI_IFCONFIG0_WRITEOC_PP;
+        NRF_QSPI->IFCONFIG0 |= QSPI_IFCONFIG0_WRITEOC_PP << QSPI_IFCONFIG0_WRITEOC_Pos;
     }
 
     // Speed up as much as we can.
@@ -153,6 +150,11 @@ void spi_flash_init_device(const external_flash_device* device) {
     while (32000000 / (sckfreq + 1) > device->max_clock_speed_mhz * 1000000 && sckfreq < 16) {
         sckfreq += 1;
     }
+    // No more than 16 MHz. At 32 MHz GD25Q16C doesn't work reliably on Feather 52840, even though
+    // it should work up to 104 MHz.
+    // sckfreq = 0 is 32 Mhz
+    // sckfreq = 1 is 16 MHz, etc.
+    sckfreq = MAX(1, sckfreq);
     NRF_QSPI->IFCONFIG1 &= ~QSPI_IFCONFIG1_SCKFREQ_Msk;
-    NRF_QSPI->IFCONFIG1 |=  sckfreq << QSPI_IFCONFIG1_SCKDELAY_Pos;
+    NRF_QSPI->IFCONFIG1 |=  sckfreq << QSPI_IFCONFIG1_SCKFREQ_Pos;
 }
