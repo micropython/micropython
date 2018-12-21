@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-12-06 17:04-0800\n"
-"PO-Revision-Date: 2018-12-19 01:30-0800\n"
+"PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
 "Language: fil\n"
@@ -182,7 +182,7 @@ msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 #: main.c:244
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
-"Pindutin ang anumang key upang ipasok ang REPL. Gamitin ang CTRL-D upang i-"
+"Pindutin ang anumang key upang pumasok sa REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
 #: main.c:407
