@@ -46,7 +46,7 @@ endif
 # include py core make definitions
 include ../../py/py.mk
 
-GIT_SUBMODULES = lib/nrfx lib/tinyusb
+GIT_SUBMODULES = lib/nrfx lib/tinyusb lib/nrfxlib
 
 MICROPY_VFS_FAT ?= 0
 MPY_CROSS = ../../mpy-cross/mpy-cross
