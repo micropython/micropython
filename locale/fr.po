@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 17:29+0100\n"
+"POT-Creation-Date: 2018-12-26 20:49+0100\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -710,8 +710,8 @@ msgid "Can not fit data into the advertisment packet"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c:266
-#, c-format
-msgid "Failed to discover services, status: 0x%08lX"
+#, fuzzy, c-format
+msgid "Failed to discover serivices, status: 0x%08lX"
 msgstr "Echec de la découverte de services, statut: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:403
@@ -2632,22 +2632,29 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2656,26 +2663,19 @@ msgstr ""
 #~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
 
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être une displayio.Palette"

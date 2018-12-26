@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-06 17:04-0800\n"
+"POT-Creation-Date: 2018-12-26 20:49+0100\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -352,12 +352,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits no soportados"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:83
+#: ports/nrf/common-hal/busio/UART.c:106
 msgid "tx and rx cannot both be None"
 msgstr "Ambos tx y rx no pueden ser None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:116
+#: ports/nrf/common-hal/busio/UART.c:140
 msgid "Failed to allocate RX buffer"
 msgstr "Ha fallado la asignación del buffer RX"
 
@@ -366,12 +366,12 @@ msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:157
+#: ports/nrf/common-hal/busio/UART.c:185
 msgid "No RX pin"
 msgstr "Sin pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:207
+#: ports/nrf/common-hal/busio/UART.c:220
 msgid "No TX pin"
 msgstr "Sin pin TX"
 
@@ -787,19 +787,19 @@ msgstr "Todos los timers están siendo usados"
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lx"
 
-#: ports/nrf/common-hal/busio/UART.c:87
+#: ports/nrf/common-hal/busio/UART.c:110
 msgid "Invalid buffer size"
 msgstr "Tamaño de buffer inválido"
 
-#: ports/nrf/common-hal/busio/UART.c:91
+#: ports/nrf/common-hal/busio/UART.c:114
 msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
 
-#: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
-#: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
-#: ports/nrf/common-hal/busio/UART.c:354 ports/nrf/common-hal/busio/UART.c:359
-#: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
-#: ports/nrf/common-hal/busio/UART.c:376
+#: ports/nrf/common-hal/busio/UART.c:346 ports/nrf/common-hal/busio/UART.c:350
+#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
+#: ports/nrf/common-hal/busio/UART.c:366 ports/nrf/common-hal/busio/UART.c:371
+#: ports/nrf/common-hal/busio/UART.c:376 ports/nrf/common-hal/busio/UART.c:380
+#: ports/nrf/common-hal/busio/UART.c:388
 msgid "busio.UART not available"
 msgstr "busio.UART no disponible"
 
@@ -2585,16 +2585,38 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#, fuzzy
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
-#~ "unidad de almacenamiento CIRCUITPY:\n"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "No se puede agregar la Característica."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
+
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2603,35 +2625,13 @@ msgstr ""
 #~ "suficiente poder para todo el circuito y presiona reset (después de "
 #~ "expulsar CIRCUITPY).\n"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "No se puede agregar la Característica."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
+#, fuzzy
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
+#~ "unidad de almacenamiento CIRCUITPY:\n"
