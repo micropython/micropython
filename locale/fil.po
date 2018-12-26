@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-12-06 17:04-0800\n"
-"PO-Revision-Date: 2018-08-30 23:04-0700\n"
+"PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
 "Language: fil\n"
@@ -182,7 +182,7 @@ msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 #: main.c:244
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
-"Pindutin ang anumang key upang ipasok ang REPL. Gamitin ang CTRL-D upang i-"
+"Pindutin ang anumang key upang pumasok sa REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
 #: main.c:407
@@ -323,7 +323,7 @@ msgstr "Lahat ng event channels ginagamit"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr ""
+msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -653,49 +653,49 @@ msgstr "Hindi supportado ang AnalogOut"
 #: ports/nrf/common-hal/bleio/Adapter.c:41
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr ""
+msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:125
 #, c-format
 msgid "Failed to change softdevice state, error: 0x%08lX"
-msgstr ""
+msgstr "Nabigo sa pagbago ng softdevice state, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:135
 #, c-format
 msgid "Failed to get softdevice state, error: 0x%08lX"
-msgstr ""
+msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:155
 #, c-format
 msgid "Failed to get local address, error: 0x%08lX"
-msgstr ""
+msgstr "Nabigo sa pagkuha ng local na address, , error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:52
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to write gatts value, status: 0x%08lX"
-msgstr "Hindi maisulat ang attribute value. status: 0x%02x"
+msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:76
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to notify attribute value, status: 0x%08lX"
-msgstr "Hindi mabalitaan ang attribute value. status: 0x%02x"
+msgstr "Hindi mabalitaan ang attribute value, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:91
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read attribute value, status: 0x%08lX"
-msgstr "Hindi mabasa ang value ng attribute. status: 0x%02x"
+msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:119
 #: ports/nrf/common-hal/bleio/Device.c:272
 #: ports/nrf/common-hal/bleio/Device.c:307
 #, c-format
 msgid "Failed to acquire mutex, status: 0x%08lX"
-msgstr ""
+msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:126
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to write attribute value, status: 0x%08lX"
-msgstr "Hindi maisulat ang attribute value. status: 0x%02x"
+msgstr "Hindi maisulat ang attribute value, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:138
 #: ports/nrf/common-hal/bleio/Device.c:284
@@ -704,65 +704,64 @@ msgstr "Hindi maisulat ang attribute value. status: 0x%02x"
 #: ports/nrf/common-hal/bleio/Device.c:391
 #, c-format
 msgid "Failed to release mutex, status: 0x%08lX"
-msgstr ""
+msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:81
 #: ports/nrf/common-hal/bleio/Device.c:114
-#, fuzzy
 msgid "Can not fit data into the advertisment packet"
-msgstr "Hindi makasya ang data sa loob ng advertisement packet."
+msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Device.c:266
 #, c-format
 msgid "Failed to discover serivices, status: 0x%08lX"
-msgstr ""
+msgstr "Nabigo sa pagdiscover ng services, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:403
 #: ports/nrf/common-hal/bleio/Scanner.c:76
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to continue scanning, status: 0x%0xlX"
-msgstr "Hindi masimulaan mag i-scan. status: 0x%02x"
+msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
 #: ports/nrf/common-hal/bleio/Device.c:436
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect, status: 0x%08lX"
-msgstr "Hindi makaconnect. status: 0x%02x"
+msgstr "Hindi makaconnect, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:513
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to add service, status: 0x%08lX"
-msgstr "Hindi mahinto ang advertisement. status: 0x%02x"
+msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:531
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to start advertisment, status: 0x%08lX"
-msgstr "Hindi masimulaan ang advertisement. status 0x%02x"
+msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:549
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to stop advertisment, status: 0x%08lX"
-msgstr "Hindi mahinto ang advertisement. status: 0x%02x"
+msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:575
 #: ports/nrf/common-hal/bleio/Scanner.c:103
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to start scanning, status: 0x%0xlX"
-msgstr "Hindi masimulaan mag i-scan. status: 0x%02x"
+msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 
 #: ports/nrf/common-hal/bleio/Device.c:592
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to create mutex, status: 0x%0xlX"
-msgstr "Hindi mabasa ang value ng attribute. status: 0x%02x"
+msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
 
 #: ports/nrf/common-hal/bleio/Service.c:83
 #, c-format
 msgid "Failed to add characteristic, status: 0x%08lX"
-msgstr ""
+msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/UUID.c:97
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to add Vendor Specific UUID, status: 0x%08lX"
-msgstr "Hindi maaaring magdagdag ng Vendor Specific na 128-bit UUID."
+msgstr "Hindi matagumpay ang paglagay ng Vender Specific UUID, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/UUID.c:102
 msgid "Invalid UUID string length"
@@ -775,29 +774,25 @@ msgid "Invalid UUID parameter"
 msgstr "Mali ang UUID parameter"
 
 #: ports/nrf/common-hal/busio/I2C.c:96
-#, fuzzy
 msgid "All I2C peripherals are in use"
-msgstr "Lahat ng timer ginagamit"
+msgstr "Lahat ng I2C peripherals ginagamit"
 
 #: ports/nrf/common-hal/busio/SPI.c:133
-#, fuzzy
 msgid "All SPI peripherals are in use"
-msgstr "Lahat ng timer ginagamit"
+msgstr "Lahat ng SPI peripherals ay ginagamit"
 
 #: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
-msgstr ""
+msgstr "error = 0x%08lX"
 
 #: ports/nrf/common-hal/busio/UART.c:87
-#, fuzzy
 msgid "Invalid buffer size"
-msgstr "mali ang buffer length"
+msgstr "Mali ang buffer size"
 
 #: ports/nrf/common-hal/busio/UART.c:91
-#, fuzzy
 msgid "Odd parity is not supported"
-msgstr "hindi sinusuportahan ang bytes > 8 bits"
+msgstr "Odd na parity ay hindi supportado"
 
 #: ports/nrf/common-hal/busio/UART.c:334 ports/nrf/common-hal/busio/UART.c:338
 #: ports/nrf/common-hal/busio/UART.c:343 ports/nrf/common-hal/busio/UART.c:348
@@ -805,7 +800,7 @@ msgstr "hindi sinusuportahan ang bytes > 8 bits"
 #: ports/nrf/common-hal/busio/UART.c:364 ports/nrf/common-hal/busio/UART.c:368
 #: ports/nrf/common-hal/busio/UART.c:376
 msgid "busio.UART not available"
-msgstr ""
+msgstr "busio.UART hindi available"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
@@ -813,9 +808,8 @@ msgid "Can not get temperature. status: 0x%02x"
 msgstr "Hindi makuha ang temperatura. status 0x%02x"
 
 #: ports/nrf/common-hal/pulseio/PWMOut.c:161
-#, fuzzy
 msgid "All PWM peripherals are in use"
-msgstr "Lahat ng timer ginagamit"
+msgstr "Lahat ng PWM peripherals ay ginagamit"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -923,9 +917,8 @@ msgid "bad compile mode"
 msgstr "masamang mode ng compile"
 
 #: py/builtinhelp.c:137
-#, fuzzy
 msgid "Plus any modules on the filesystem\n"
-msgstr "Hindi ma-remount ang filesystem"
+msgstr "Kasama ang kung ano pang modules na sa filesystem\n"
 
 #: py/builtinhelp.c:183
 #, c-format
@@ -936,6 +929,12 @@ msgid ""
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
+"Mabuhay sa Adafruit CircuitPython %s!\n"
+"\n"
+"Mangyaring bisitahin ang learn.adafruit.com/category/circuitpython para sa "
+"project guides.\n"
+"\n"
+"Para makita ang listahan ng modules, `help(“modules”)`.\n"
 
 #: py/builtinimport.c:336
 msgid "cannot perform relative import"
@@ -1099,19 +1098,17 @@ msgid "'data' requires integer arguments"
 msgstr "'data' kailangan ng integer arguments"
 
 #: py/emitinlinethumb.c:102
-#, fuzzy
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
+msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Thumb assembly"
 
 #: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
-#, fuzzy
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
+msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence r0 hanggang r3"
 
 #: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' expects at most r%d"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
+msgstr "Inaasahan ng '%s' ang hangang r%d"
 
 #: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
 #, c-format
@@ -1119,19 +1116,19 @@ msgid "'%s' expects a register"
 msgstr "Inaasahan ng '%s' ang isang rehistro"
 
 #: py/emitinlinethumb.c:211
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' expects a special register"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
+msgstr "Inaasahan ng '%s' ang isang espesyal na register"
 
 #: py/emitinlinethumb.c:239
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' expects an FPU register"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
+msgstr "Inaasahan ng '%s' ang isang FPU register"
 
 #: py/emitinlinethumb.c:292
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
+msgstr "Inaasahan ng '%s' ay {r0, r1, …}"
 
 #: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
 #, c-format
@@ -1139,14 +1136,14 @@ msgid "'%s' expects an integer"
 msgstr "Inaasahan ng '%s' ang isang integer"
 
 #: py/emitinlinethumb.c:304
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
+msgstr "'%s' integer 0x%x ay wala sa mask na sakop ng 0x%x"
 
 #: py/emitinlinethumb.c:328
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
+msgstr "Inaasahan ng '%s' ang isang address sa [a, b]"
 
 #: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
 #, c-format
@@ -1158,14 +1155,13 @@ msgid "label '%q' not defined"
 msgstr "label '%d' kailangan na i-define"
 
 #: py/emitinlinethumb.c:806
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr "hindi sinusuportahan ang instruction ng Xtensa '%s' sa %d argumento"
+msgstr "hindi sinusuportahan ang thumb instruktion '%s' sa %d argumento"
 
 #: py/emitinlinethumb.c:810
-#, fuzzy
 msgid "branch not in range"
-msgstr "chr() arg wala sa sakop ng range(256)"
+msgstr "branch wala sa range"
 
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
@@ -1976,11 +1972,11 @@ msgstr "stream operation hindi sinusuportahan"
 
 #: py/stream.c:254
 msgid "string not supported; use bytes or bytearray"
-msgstr ""
+msgstr "string hindi supportado; gumamit ng bytes o kaya bytearray"
 
 #: py/stream.c:289
 msgid "length argument not allowed for this type"
-msgstr ""
+msgstr "length argument ay walang pahintulot sa ganitong type"
 
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
@@ -2062,24 +2058,20 @@ msgstr ""
 "para sa bit_depth = 8"
 
 #: shared-bindings/audioio/Mixer.c:94
-#, fuzzy
 msgid "Invalid voice count"
-msgstr "Mali ang tipo ng serbisyo"
+msgstr "Maling bilang ng voice"
 
 #: shared-bindings/audioio/Mixer.c:99
-#, fuzzy
 msgid "Invalid channel count"
-msgstr "Maling argumento"
+msgstr "Maling bilang ng channel"
 
 #: shared-bindings/audioio/Mixer.c:103
-#, fuzzy
 msgid "Sample rate must be positive"
-msgstr "Dapat aktibo ang STA"
+msgstr "Sample rate ay dapat positibo"
 
 #: shared-bindings/audioio/Mixer.c:107
-#, fuzzy
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits ay dapat 7, 8 o 9"
+msgstr "bits_per_sample ay dapat 8 o 16"
 
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
@@ -2125,28 +2117,27 @@ msgstr "aarehas na haba dapat ang buffer slices"
 
 #: shared-bindings/bleio/Address.c:101
 msgid "Wrong address length"
-msgstr ""
+msgstr "Mali ang address length"
 
 #: shared-bindings/bleio/Address.c:107
-#, fuzzy
 msgid "Wrong number of bytes provided"
-msgstr "mali ang bilang ng argumento"
+msgstr "Mali ang bilang ng bytes"
 
 #: shared-bindings/bleio/Device.c:210
 msgid "Can't add services in Central mode"
-msgstr ""
+msgstr "Hindi maarang maglagay ng service sa Central mode"
 
 #: shared-bindings/bleio/Device.c:226
 msgid "Can't connect in Peripheral mode"
-msgstr ""
+msgstr "Hindi maconnect sa Peripheral mode"
 
 #: shared-bindings/bleio/Device.c:256
 msgid "Can't change the name in Central mode"
-msgstr ""
+msgstr "Hindi mapalitan ang pangalan sa Central mode"
 
 #: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
 msgid "Can't advertise in Central mode"
-msgstr ""
+msgstr "Hindi ma advertise habang nasa Central mode"
 
 #: shared-bindings/busio/I2C.c:120
 msgid "Function requires lock."
@@ -2162,7 +2153,7 @@ msgstr "stop dapat 1 o 2"
 
 #: shared-bindings/busio/UART.c:123
 msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr ""
+msgstr "timeout >100 (units ay seconds, hindi na msecs)"
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
 msgid "Invalid direction."
@@ -2187,76 +2178,62 @@ msgid "Unsupported pull value."
 msgstr "Hindi suportado ang pull value."
 
 #: shared-bindings/displayio/Bitmap.c:84
-#, fuzzy
 msgid "y should be an int"
-msgstr "Haba ay dapat int"
+msgstr "y ay dapat int"
 
 #: shared-bindings/displayio/Bitmap.c:89
-#, fuzzy
 msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-"ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', "
-"'H', 'b' o'B'"
+msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
 
 #: shared-bindings/displayio/Bitmap.c:94
-#, fuzzy
 msgid "row data must be a buffer"
-msgstr "constant ay dapat na integer"
+msgstr "row data ay dapat na buffer"
 
 #: shared-bindings/displayio/ColorConverter.c:72
-#, fuzzy
 msgid "color should be an int"
-msgstr "Haba ay dapat int"
+msgstr "color ay dapat na int"
 
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
-msgstr ""
+msgstr "displayio ay nasa gitna ng konstruksiyon"
 
 #: shared-bindings/displayio/Group.c:65
-#, fuzzy
 msgid "Group must have size at least 1"
-msgstr "Buffer dapat ay hindi baba sa 1 na haba"
+msgstr "Group dapat ay hindi baba sa 1 na haba"
 
 #: shared-bindings/displayio/Palette.c:96
-#, fuzzy
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-"ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', "
-"'H', 'b' o'B'"
+msgstr "ang color buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
 
 #: shared-bindings/displayio/Palette.c:102
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
+msgstr "color buffer ay dapat na 3 bytes (RGB) o 4 bytes (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c:106
-#, fuzzy
 msgid "color must be between 0x000000 and 0xffffff"
-msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
+msgstr "color ay dapat mula sa 0x000000 hangang 0xffffff"
 
 #: shared-bindings/displayio/Palette.c:110
-#, fuzzy
 msgid "color buffer must be a buffer or int"
-msgstr "buffer ay dapat bytes-like object"
+msgstr "color buffer ay dapat buffer or int"
 
 #: shared-bindings/displayio/Palette.c:123
 #: shared-bindings/displayio/Palette.c:137
 msgid "palette_index should be an int"
-msgstr ""
+msgstr "palette_index ay dapat na int"
 
 #: shared-bindings/displayio/Sprite.c:48
-#, fuzzy
 msgid "position must be 2-tuple"
-msgstr "stop dapat 1 o 2"
+msgstr "position ay dapat 2-tuple"
 
 #: shared-bindings/displayio/Sprite.c:97
-#, fuzzy
 msgid "unsupported bitmap type"
-msgstr "Hindi supportadong baudrate"
+msgstr "Hindi supportadong tipo ng bitmap"
 
 #: shared-bindings/displayio/Sprite.c:162
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
+msgstr "pixel_shader ay dapat displayio.Palette o displayio.ColorConverter"
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
@@ -2322,11 +2299,10 @@ msgid ""
 msgstr "PWM duty_cycle ay dapat sa loob ng 0 at 65535 (16 bit resolution)"
 
 #: shared-bindings/pulseio/PWMOut.c:195
-#, fuzzy
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
-"PWM frequency hindi maisulat kapag variable_frequency ay False sa pag buo."
+"PWM frequency hindi writable kapag variable_frequency ay False sa pag buo."
 
 #: shared-bindings/pulseio/PulseIn.c:275
 msgid "Cannot delete values"
@@ -2375,7 +2351,7 @@ msgstr "RTC calibration ay hindi supportado ng board na ito"
 
 #: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
 msgid "no available NIC"
-msgstr ""
+msgstr "walang magagamit na NIC"
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
@@ -2434,23 +2410,23 @@ msgstr "Hindi ma-iallocate ang second buffer"
 
 #: shared-module/audioio/Mixer.c:82
 msgid "Voice index too high"
-msgstr ""
+msgstr "Index ng Voice ay masyadong mataas"
 
 #: shared-module/audioio/Mixer.c:85
 msgid "The sample's sample rate does not match the mixer's"
-msgstr ""
+msgstr "Ang sample rate ng sample ay hindi tugma sa mixer"
 
 #: shared-module/audioio/Mixer.c:88
 msgid "The sample's channel count does not match the mixer's"
-msgstr ""
+msgstr "Ang channel count ng sample ay hindi tugma sa mixer"
 
 #: shared-module/audioio/Mixer.c:91
 msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr ""
+msgstr "Ang bits_per_sample ng sample ay hindi tugma sa mixer"
 
 #: shared-module/audioio/Mixer.c:100
 msgid "The sample's signedness does not match the mixer's"
-msgstr ""
+msgstr "Ang signedness ng sample hindi tugma sa mixer"
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
@@ -2502,35 +2478,33 @@ msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
 
 #: shared-module/displayio/Bitmap.c:49
 msgid "Only bit maps of 8 bit color or less are supported"
-msgstr ""
+msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
 
 #: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
-msgstr ""
+msgstr "row ay dapat packed at ang word nakahanay"
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
-msgstr ""
+msgstr "Puno ang group"
 
 #: shared-module/displayio/Group.c:48
-#, fuzzy
 msgid "Group empty"
-msgstr "walang laman"
+msgstr "Walang laman ang group"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
-#, fuzzy
 msgid "Invalid BMP file"
-msgstr "Mali ang file"
+msgstr "Mali ang BMP file"
 
 #: shared-module/displayio/OnDiskBitmap.c:59
 #, c-format
 msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr ""
+msgstr "Tanging Windows format, uncompressed BMP lamang ang supportado %d"
 
 #: shared-module/displayio/OnDiskBitmap.c:64
 #, c-format
 msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr ""
+msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"
 
 #: shared-module/storage/__init__.c:155
 msgid "Cannot remount '/' when USB is active."
@@ -2566,12 +2540,9 @@ msgid "To exit, please reset the board without "
 msgstr "Para lumabas, paki-reset ang board na wala ang "
 
 #: supervisor/shared/safe_mode.c:107
-#, fuzzy
 msgid ""
 "You are running in safe mode which means something unanticipated happened.\n"
-msgstr ""
-"Ikaw ay tumatakbo sa safe mode, ang ibig sabihin nito ay may masamang "
-"nangyari.\n"
+msgstr "Ikaw ay tumatakbo sa safe mode dahil may masamang nangyari.\n"
 
 #: supervisor/shared/safe_mode.c:109
 msgid ""
@@ -2579,21 +2550,24 @@ msgid ""
 "Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
 " with the contents of your CIRCUITPY drive and this message:\n"
 msgstr ""
+"Mukhang ang core CircuitPython code nag crash. Ay!\n"
+"Maaring mag file ng issue sa https://github.com/adafruit/circuitpython/"
+"issues\n"
+"kasama ng laman ng iyong CIRCUITPY drive at ang message na ito:\n"
 
 #: supervisor/shared/safe_mode.c:111
 msgid "Crash into the HardFault_Handler.\n"
-msgstr ""
+msgstr "Nagcrash sa HardFault_Handler.\n"
 
 #: supervisor/shared/safe_mode.c:113
 msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
-msgstr ""
+msgstr "CircuitPython NLR jump nabigo. Maaring memory corruption.\n"
 
 #: supervisor/shared/safe_mode.c:115
 msgid "MicroPython fatal error.\n"
-msgstr ""
+msgstr "CircuitPython fatal na pagkakamali.\n"
 
 #: supervisor/shared/safe_mode.c:118
-#, fuzzy
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
@@ -2602,6 +2576,7 @@ msgid ""
 msgstr ""
 "Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
 "supply \n"
+"pindutin ang reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
 #: supervisor/shared/safe_mode.c:120
 msgid ""
@@ -2611,12 +2586,19 @@ msgid ""
 "If you didn't change the stack, then file an issue here with the contents of "
 "your CIRCUITPY drive:\n"
 msgstr ""
+"Ang CircuitPython heap ay na corrupt dahil ang stack ay maliit.\n"
+"Maaring i-increase ang stack size limit at i-press ang reset (pagkatapos i-"
+"eject ang CIRCUITPY.\n"
+"Kung hindi mo pinalitan ang stack, mag file ng issue dito kasama ng laman ng "
+"CIRCUITPY drive:\n"
 
 #: supervisor/shared/safe_mode.c:123
 msgid ""
 "The reset button was pressed while booting CircuitPython. Press again to "
 "exit safe mode.\n"
 msgstr ""
+"Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
+"ulit para lumabas sa safe mode.\n"
 
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
