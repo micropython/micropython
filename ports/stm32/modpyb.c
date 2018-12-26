@@ -134,7 +134,7 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
 
     #if MICROPY_PY_PYB_LEGACY
-    { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_standby), MP_ROM_PTR(&machine_deepsleep_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_main), MP_ROM_PTR(&pyb_main_obj) },
