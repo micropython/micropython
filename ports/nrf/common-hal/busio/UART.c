@@ -81,7 +81,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
             }
 
             // keep receiving
-            _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, &self->rx_char, 1));
+            (void) nrfx_uarte_rx(&self->uarte, &self->rx_char, 1);
         break;
 
         case NRFX_UARTE_EVT_TX_DONE:
@@ -89,7 +89,11 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
         break;
 
         case NRFX_UARTE_EVT_ERROR:
-            // Handle error
+            // Possible Error source is Overrun, Parity, Framing, Break
+            // uint32_t errsrc = event->data.error.error_mask;
+
+            // Keep receiving
+            (void) nrfx_uarte_rx(&self->uarte, &self->rx_char, 1);
         break;
 
         default:
