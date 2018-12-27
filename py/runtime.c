@@ -129,6 +129,8 @@ void mp_init(void) {
 }
 
 void mp_deinit(void) {
+    MP_THREAD_GIL_EXIT();
+
     //mp_obj_dict_free(&dict_main);
     //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
 
