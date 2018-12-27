@@ -72,7 +72,7 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
 #if (BLUETOOTH_SD == 140)
     const uint32_t err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to continue scanning"));
+        mp_raise_OSError_msg_varg(translate("Failed to continue scanning, err 0x%04x"), err_code);
     }
 #endif
 }
@@ -98,7 +98,7 @@ void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_int_t timeout) 
 #endif
 
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to start scanning"));
+        mp_raise_OSError_msg_varg(translate("Failed to start scanning, err 0x%04x"), err_code);
     }
 
     if (timeout > 0) {

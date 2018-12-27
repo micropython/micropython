@@ -31,7 +31,7 @@
 #include "shared-bindings/bleio/AdvertisementData.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Descriptor.h"
-#include "shared-bindings/bleio/Device.h"
+#include "shared-bindings/bleio/LocalPeripheral.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Scanner.h"
 #include "shared-bindings/bleio/Service.h"
@@ -76,7 +76,7 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AdvertisementData), MP_ROM_PTR(&bleio_advertisementdata_type) },
     { MP_ROM_QSTR(MP_QSTR_Characteristic),    MP_ROM_PTR(&bleio_characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
-    { MP_ROM_QSTR(MP_QSTR_Device),            MP_ROM_PTR(&bleio_device_type) },
+    { MP_ROM_QSTR(MP_QSTR_LocalPeripheral),   MP_ROM_PTR(&bleio_local_peripheral_type) },
     { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
     { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
     { MP_ROM_QSTR(MP_QSTR_Service),           MP_ROM_PTR(&bleio_service_type) },

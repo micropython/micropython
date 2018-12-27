@@ -171,7 +171,7 @@ STATIC mp_obj_t bleio_device_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     enum { ARG_address, ARG_scan_entry };
     static const mp_arg_t allowed_args[] = {
-        { ARG_address, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_address, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_scan_entry, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
 

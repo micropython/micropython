@@ -79,12 +79,14 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_NRF5X -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_C
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-#ASMFLAGS += -g -gtabs+
-CFLAGS += -O1 -ggdb
-LDFLAGS += -O1
+  #ASMFLAGS += -g -gtabs+
+  CFLAGS += -O1 -ggdb
+  LDFLAGS += -O1
+  # You may want to enable these flags to make setting breakpoints easier.
+  CFLAGS += -fno-inline -fno-ipa-sra
 else
-CFLAGS += -Os -DNDEBUG
-LDFLAGS += -Os
+  CFLAGS += -Os -DNDEBUG
+  LDFLAGS += -Os
 endif
 
 LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
@@ -172,7 +174,7 @@ SRC_COMMON_HAL += \
 	bleio/Adapter.c \
 	bleio/Characteristic.c \
 	bleio/Descriptor.c \
-	bleio/Device.c \
+	bleio/LocalPeripheral.c \
 	bleio/Scanner.c \
 	bleio/Service.c \
 	bleio/UUID.c

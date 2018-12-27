@@ -51,7 +51,7 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, uint32_t uuid16, ui
         // Register this vendor-specific UUID. Bytes 12 and 13 will be zero.
         const uint32_t err_code = sd_ble_uuid_vs_add(&vs_uuid, &self->nrf_ble_uuid.type);
         if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError_msg(translate("Could not register Vendor-Specific UUID"));
+            mp_raise_OSError_msg_varg(translate("Failed to register Vendor-Specific UUID, err 0x%04x"), err_code);
         }
     }
 }
@@ -70,7 +70,7 @@ bool common_hal_bleio_uuid_get_uuid128(bleio_uuid_obj_t *self, uint8_t uuid128[1
     const uint32_t err_code = sd_ble_uuid_encode(&self->nrf_ble_uuid, &length, uuid128);
 
     if (err_code != NRF_SUCCESS) {
-            mp_raise_RuntimeError(translate("Could not decode ble_uuid"));
+        mp_raise_OSError_msg_varg(translate("Could not decode ble_uuid, err 0x%04x"), err_code);
     }
     // If not 16 bytes, this is not a 128-bit UUID, so return.
     return length == 16;

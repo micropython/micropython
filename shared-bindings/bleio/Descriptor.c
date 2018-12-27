@@ -81,7 +81,7 @@ STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_ar
 
     enum { ARG_uuid };
     static const mp_arg_t allowed_args[] = {
-        { ARG_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -97,13 +97,6 @@ STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_ar
     common_hal_bleio_descriptor_construct(self, uuid);
 
     return MP_OBJ_FROM_PTR(self);
-}
-
-STATIC void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "Descriptor(uuid=");
-    bleio_uuid_print(print, self->uuid, kind);
-    mp_printf(print, ", handle=%04x", common_hal_bleio_descriptor_get_handle(self));
 }
 
 STATIC mp_obj_t bleio_descriptor_get_handle(mp_obj_t self_in) {
@@ -161,7 +154,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_descriptor_locals_dict, bleio_descriptor_local
 const mp_obj_type_t bleio_descriptor_type = {
     { &mp_type_type },
     .name = MP_QSTR_Descriptor,
-    .print = bleio_descriptor_print,
     .make_new = bleio_descriptor_make_new,
     .locals_dict = (mp_obj_dict_t*)&bleio_descriptor_locals_dict
 };

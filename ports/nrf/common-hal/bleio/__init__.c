@@ -27,6 +27,8 @@
 
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
+#include "shared-bindings/bleio/LocalPeripheral.h"
+#include "common-hal/bleio/__init__.h"
 
 // The singleton bleio.Adapter object, bound to bleio.adapter
 // It currently only has properties and no state
@@ -35,3 +37,25 @@ const super_adapter_obj_t common_hal_bleio_adapter_obj = {
         .type = &bleio_adapter_type,
     },
 };
+
+gatt_role_t common_hal_bleio_device_get_gatt_role(mp_obj_t device) {
+    if (MP_OBJ_IS_TYPE(device, &bleio_local_peripheral_type)) {
+        return ((bleio_local_peripheral_obj_t*) MP_OBJ_TO_PTR(device))->gatt_role;
+// Does not exist yet.
+//    } else if (MP_OBJ_IS_TYPE(device, &bleio_local_central_type)) {
+//        return ((bleio_local_central_obj_t*) MP_OBJ_TO_PTR(device))->gatt_role;
+    } else {
+        return GATT_ROLE_NONE;
+    }
+}
+
+uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device) {
+    if (MP_OBJ_IS_TYPE(device, &bleio_local_peripheral_type)) {
+        return ((bleio_local_peripheral_obj_t*) MP_OBJ_TO_PTR(device))->conn_handle;
+// Does not exist yet.
+//    } else if (MP_OBJ_IS_TYPE(device, &bleio_local_central_type)) {
+//        return ((bleio_local_central_obj_t*) MP_OBJ_TO_PTR(device))->conn_handle;
+    } else {
+        return 0;
+    }
+}

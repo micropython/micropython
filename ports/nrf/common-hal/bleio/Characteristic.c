@@ -30,16 +30,19 @@
 #include "ble_drv.h"
 #include "ble_gatts.h"
 #include "nrf_soc.h"
+
 #include "py/runtime.h"
+#include "common-hal/bleio/__init__.h"
 #include "shared-module/bleio/Characteristic.h"
 
-static volatile bleio_characteristic_obj_t *m_read_characteristic;
-static volatile uint8_t m_tx_in_progress;
-static nrf_mutex_t *m_write_mutex;
+
+STATIC volatile bleio_characteristic_obj_t *m_read_characteristic;
+STATIC volatile uint8_t m_tx_in_progress;
+STATIC nrf_mutex_t *m_write_mutex;
+
 
 STATIC void gatts_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
-    bleio_device_obj_t *device = characteristic->service->device;
-    const uint16_t conn_handle = device->conn_handle;
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
 
     ble_gatts_value_t gatts_value = {
         .p_value = bufinfo->buf,
@@ -48,17 +51,17 @@ STATIC void gatts_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
 
     const uint32_t err_code = sd_ble_gatts_value_set(conn_handle, characteristic->handle, &gatts_value);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to write gatts value"));
+        mp_raise_OSError_msg_varg(translate("Failed to write gatts value, err 0x%04x"), err_code);
     }
 }
 
 STATIC void gatts_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
-    bleio_device_obj_t *device = characteristic->service->device;
     uint16_t hvx_len = bufinfo->len;
 
     ble_gatts_hvx_params_t hvx_params = {
         .handle = characteristic->handle,
         .type = BLE_GATT_HVX_NOTIFICATION,
+        .offset = 0,
         .p_len = &hvx_len,
         .p_data = bufinfo->buf,
     };
@@ -69,25 +72,26 @@ STATIC void gatts_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_i
 #endif
     }
 
-    const uint32_t err_code = sd_ble_gatts_hvx(device->conn_handle, &hvx_params);
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
+    const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to notify attribute value"));
+        mp_raise_OSError_msg_varg(translate("Failed to notify attribute value, err %0x04x"), err_code);
     }
 
     m_tx_in_progress += 1;
 }
 
 STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
-    bleio_service_obj_t *service = characteristic->service;
-    bleio_device_obj_t *device = service->device;
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
 
     m_read_characteristic = characteristic;
 
-    const uint32_t err_code = sd_ble_gattc_read(device->conn_handle, characteristic->handle, 0);
+    const uint32_t err_code = sd_ble_gattc_read(conn_handle, characteristic->handle, 0);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to read attribute value"));
+        mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err %0x04x"), err_code);
     }
 
+//
     while (m_read_characteristic != NULL) {
 #ifdef MICROPY_VM_HOOK_LOOP
     MICROPY_VM_HOOK_LOOP
@@ -96,7 +100,7 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
 }
 
 STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
-    bleio_device_obj_t *device = characteristic->service->device;
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
     uint32_t err_code;
 
     ble_gattc_write_params_t write_params = {
@@ -112,13 +116,13 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
 
         err_code = sd_mutex_acquire(m_write_mutex);
         if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError_msg(translate("Failed to acquire mutex"));
+            mp_raise_OSError_msg_varg(translate("Failed to acquire mutex, err 0x%04x"), err_code);
         }
     }
 
-    err_code = sd_ble_gattc_write(device->conn_handle, &write_params);
+    err_code = sd_ble_gattc_write(conn_handle, &write_params);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to write attribute value"));
+        mp_raise_OSError_msg_varg(translate("Failed to write attribute value, err 0x%04x"), err_code);
     }
 
     while (sd_mutex_acquire(m_write_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
@@ -129,33 +133,28 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
 
     err_code = sd_mutex_release(m_write_mutex);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to release mutex"));
+        mp_raise_OSError_msg_varg(translate("Failed to release mutex, err 0x%04x"), err_code);
     }
 }
 
 STATIC void on_ble_evt(ble_evt_t *ble_evt, void *param) {
     switch (ble_evt->header.evt_id) {
-#if (BLE_API_VERSION == 4)
         case BLE_GATTS_EVT_HVN_TX_COMPLETE:
             m_tx_in_progress -= ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
             break;
-#else
-        case BLE_EVT_TX_COMPLETE:
-            m_tx_in_progress -= ble_evt->evt.common_evt.params.tx_complete.count;
-            break;
-#endif
 
         case BLE_GATTC_EVT_READ_RSP:
         {
             ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
             m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
+            // Flag to busy-wait loop that we've read the characteristic.
             m_read_characteristic = NULL;
             break;
         }
 
         case BLE_GATTC_EVT_WRITE_RSP:
+            // Someone else can write now.
             sd_mutex_release(m_write_mutex);
-//            m_write_done = true;
             break;
     }
 }
@@ -165,21 +164,34 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self)
 }
 
 void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self) {
-    gattc_read(self);
+    switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
+    case GATT_ROLE_CLIENT:
+        gattc_read(self);
+        break;
+
+    default:
+        mp_raise_RuntimeError(translate("bad GATT role"));
+        break;
+    }
 }
 
 void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
-    const bleio_device_obj_t *device = self->service->device;
-
-    if (device->is_peripheral) {
-        // TODO: Add indications
+    switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
+    case GATT_ROLE_SERVER:
         if (self->props.notify) {
             gatts_notify(self, bufinfo);
         } else {
             gatts_write(self, bufinfo);
         }
-    } else {
-        gattc_write(self, bufinfo);
-    }
+        break;
 
+    case GATT_ROLE_CLIENT:
+        // TODO: Add indications
+        gattc_write(self, bufinfo);
+        break;
+
+    default:
+        mp_raise_RuntimeError(translate("bad GATT role"));
+        break;
+    }
 }

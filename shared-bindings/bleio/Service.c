@@ -45,23 +45,16 @@
 //|   To mark the service as secondary, pass `True` as :py:data:`secondary`.
 //|
 //|   :param bleio.UUID uuid: The uuid of the service
+//|   :param iterable characteristics: the Characteristic objects for this service
 //|   :param bool secondary: If the service is a secondary one
 //|
-
-STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    mp_printf(print, "Service(");
-    bleio_uuid_print(print, self->uuid, kind);
-    mp_printf(print, ")");
-}
 
 STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, true);
     bleio_service_obj_t *self = m_new_obj(bleio_service_obj_t);
     self->char_list = mp_obj_new_list(0, NULL);
     self->base.type = &bleio_service_type;
-    self->device = NULL;
+    self->device = mp_const_none;
     self->handle = 0xFFFF;
 
     mp_map_t kw_args;
@@ -69,7 +62,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     enum { ARG_uuid, ARG_characteristics, ARG_secondary };
     static const mp_arg_t allowed_args[] = {
-        { ARG_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_characteristics, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_secondary, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
@@ -98,13 +91,17 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
         }
         bleio_characteristic_obj_t *characteristic_ptr = MP_OBJ_TO_PTR(characteristic);
         if (common_hal_bleio_uuid_get_uuid128_reference(uuid) !=
-        common_hal_bleio_uuid_get_uuid128_reference(characteristic_ptr->uuid)) {
+            common_hal_bleio_uuid_get_uuid128_reference(characteristic_ptr->uuid)) {
             // The descriptor base UUID doesn't match the characteristic base UUID.
             mp_raise_ValueError(translate("Characteristic UUID doesn't match Service UUID"));
         }
         characteristic_ptr->service = self;
         mp_obj_list_append(self->char_list, characteristic);
     }
+
+    // Do port-specific initialization.
+    common_hal_bleio_service_construct(self);
+
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -155,7 +152,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_service_locals_dict, bleio_service_locals_dict
 const mp_obj_type_t bleio_service_type = {
     { &mp_type_type },
     .name = MP_QSTR_Service,
-    .print = bleio_service_print,
     .make_new = bleio_service_make_new,
     .locals_dict = (mp_obj_dict_t*)&bleio_service_locals_dict
 };
