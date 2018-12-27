@@ -67,18 +67,24 @@ static void ringbuf_clear(ringbuf_t *r)
     r->iput = r->iget = 0;
 }
 
+// will overwrite old data
+static void ringbuf_put_n(ringbuf_t* r, uint8_t* buf, uint8_t bufsize)
+{
+    for(uint8_t i=0; i < bufsize; i++) {
+        if ( ringbuf_put(r, buf[i]) < 0 ) {
+            // if full overwrite old data
+            (void) ringbuf_get(r);
+            ringbuf_put(r, buf[i]);
+        }
+    }
+}
+
 static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context) {
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
 
     switch ( event->type ) {
         case NRFX_UARTE_EVT_RX_DONE:
-            for(uint8_t i=0; i < event->data.rxtx.bytes; i++) {
-                if ( ringbuf_put(&self->rbuf, event->data.rxtx.p_data[i]) < 0 ) {
-                    // if full overwrite old data
-                    (void) ringbuf_get(&self->rbuf);
-                    ringbuf_put(&self->rbuf, event->data.rxtx.p_data[i]);
-                }
-            }
+            ringbuf_put_n(&self->rbuf, event->data.rxtx.p_data, event->data.rxtx.bytes);
 
             // keep receiving
             (void) nrfx_uarte_rx(&self->uarte, &self->rx_char, 1);
@@ -91,6 +97,8 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
         case NRFX_UARTE_EVT_ERROR:
             // Possible Error source is Overrun, Parity, Framing, Break
             // uint32_t errsrc = event->data.error.error_mask;
+
+            ringbuf_put_n(&self->rbuf, event->data.error.rxtx.p_data, event->data.error.rxtx.bytes);
 
             // Keep receiving
             (void) nrfx_uarte_rx(&self->uarte, &self->rx_char, 1);
