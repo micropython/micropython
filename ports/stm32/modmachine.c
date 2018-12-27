@@ -105,6 +105,12 @@ void machine_init(void) {
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->CPUCR |= PWR_CPUCR_CSSF;
     } else
+    #elif defined(STM32L4)
+    if (PWR->SR1 & PWR_SR1_SBF) {
+        // came out of standby
+        reset_cause = PYB_RESET_DEEPSLEEP;
+        PWR->SCR |= PWR_SCR_CSBF;
+    } else
     #endif
     {
         // get reset cause from RCC flags
