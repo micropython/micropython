@@ -39,7 +39,7 @@
 
 // all TWI instances have the same max size
 // 16 bits for 840, 10 bits for 810, 8 bits for 832
-#define I2C_MAX_XFER_LEN         ( 1UL << TWIM0_EASYDMA_MAXCNT_SIZE)
+#define I2C_MAX_XFER_LEN         ((1UL << TWIM0_EASYDMA_MAXCNT_SIZE) - 1)
 
 STATIC twim_peripheral_t twim_peripherals[] = {
 #if NRFX_CHECK(NRFX_TWIM0_ENABLED)
