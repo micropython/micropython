@@ -85,7 +85,7 @@ def find_dfu_cfg_descr(descr):
         nt = collections.namedtuple('CfgDescr',
             ['bLength', 'bDescriptorType', 'bmAttributes',
             'wDetachTimeOut', 'wTransferSize', 'bcdDFUVersion'])
-        return nt(*struct.unpack('<BBBHHH', bytes(descr)))
+        return nt(*struct.unpack('<BBBHHH', bytearray(descr)))
     return None
 
 
