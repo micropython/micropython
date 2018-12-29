@@ -74,7 +74,7 @@ uint32_t supervisor_flash_get_block_count(void) {
 STATIC bool wait_for_flash_operation() {
     do {
         sd_app_evt_wait();
-        uint32 evt_id;
+        uint32_t evt_id;
         uint32_t result = sd_evt_get(&evt_id);
         if (result == NRF_SUCCESS) {
             switch (evt_id) {
@@ -107,7 +107,7 @@ void supervisor_flash_flush(void) {
     if (sd_en) {
         sd_flash_page_erase(_flash_page_addr / FL_PAGE_SZ);
         wait_for_flash_operation();    // TODO: handle error return.
-        sd_flash_write(_flash_page_addr, (uint32_t *)_flash_cache, FL_PAGE_SZ / sizeof(uint32_t));
+        sd_flash_write((uint32_t *)_flash_page_addr, (uint32_t *)_flash_cache, FL_PAGE_SZ / sizeof(uint32_t));
         wait_for_flash_operation();
     } else {
 #endif
@@ -118,6 +118,7 @@ void supervisor_flash_flush(void) {
 #endif
 
     _flash_page_addr = NO_CACHE;
+    }
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
