@@ -729,17 +729,17 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 int data = self->uartx->DR; // clears UART_FLAG_RXNE
                 #endif
                 data &= self->char_mask;
-                // Handle interrupt coming in on a UART REPL
                 if (self->attached_to_repl && data == mp_interrupt_char) {
+                    // Handle interrupt coming in on a UART REPL
                     pendsv_kbd_intr();
-                    return;
-                }
-                if (self->char_width == CHAR_WIDTH_9BIT) {
-                    ((uint16_t*)self->read_buf)[self->read_buf_head] = data;
                 } else {
-                    self->read_buf[self->read_buf_head] = data;
+                    if (self->char_width == CHAR_WIDTH_9BIT) {
+                        ((uint16_t*)self->read_buf)[self->read_buf_head] = data;
+                    } else {
+                        self->read_buf[self->read_buf_head] = data;
+                    }
+                    self->read_buf_head = next_head;
                 }
-                self->read_buf_head = next_head;
             } else { // No room: leave char in buf, disable interrupt
                 UART_RXNE_IT_DIS(self->uartx);
             }
