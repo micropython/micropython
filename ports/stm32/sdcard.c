@@ -169,8 +169,13 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
 
     #if defined(STM32H7)
     // Reset SDMMC
+    #if defined(MICROPY_HW_SDMMC2_CK)
+    __HAL_RCC_SDMMC2_FORCE_RESET();
+    __HAL_RCC_SDMMC2_RELEASE_RESET();
+    #else
     __HAL_RCC_SDMMC1_FORCE_RESET();
     __HAL_RCC_SDMMC1_RELEASE_RESET();
+    #endif
     #endif
 
     // NVIC configuration for SDIO interrupts
