@@ -46,7 +46,6 @@ typedef enum {
 typedef struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     USART_TypeDef *uartx;
-    IRQn_Type irqn;
     pyb_uart_t uart_id : 8;
     bool is_static : 1;
     bool is_enabled : 1;

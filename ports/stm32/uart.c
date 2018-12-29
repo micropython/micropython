@@ -46,6 +46,44 @@
 #define UART_RXNE_IT_EN(uart) do { (uart)->CR1 |= USART_CR1_RXNEIE; } while (0)
 #define UART_RXNE_IT_DIS(uart) do { (uart)->CR1 &= ~USART_CR1_RXNEIE; } while (0)
 
+#define USART_CR1_IE_BASE (USART_CR1_PEIE | USART_CR1_TXEIE | USART_CR1_TCIE | USART_CR1_RXNEIE | USART_CR1_IDLEIE)
+#define USART_CR2_IE_BASE (USART_CR2_LBDIE)
+#define USART_CR3_IE_BASE (USART_CR3_CTSIE | USART_CR3_EIE)
+
+#if defined(STM32F0)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
+
+#elif defined(STM32F4)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE)
+
+#elif defined(STM32F7)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#if defined(USART_CR3_TCBGTIE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_TCBGTIE)
+#else
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE)
+#endif
+
+#elif defined(STM32H7)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_RXFFIE | USART_CR1_TXFEIE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_RXFTIE | USART_CR3_TCBGTIE | USART_CR3_TXFTIE | USART_CR3_WUFIE)
+
+#elif defined(STM32L4)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#if defined(USART_CR3_TCBGTIE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_TCBGTIE | USART_CR3_WUFIE)
+#else
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
+#endif
+#endif
+
 extern void NORETURN __fatal_error(const char *msg);
 
 void uart_init0(void) {
@@ -297,7 +335,6 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
         }
     }
 
-    uart_obj->irqn = irqn;
     uart_obj->uartx = UARTx;
 
     // init UARTx
@@ -312,6 +349,13 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
     HAL_UART_Init(&huart);
+
+    // Disable all individual UART IRQs, but enable the global handler
+    uart_obj->uartx->CR1 &= ~USART_CR1_IE_ALL;
+    uart_obj->uartx->CR2 &= ~USART_CR2_IE_ALL;
+    uart_obj->uartx->CR3 &= ~USART_CR3_IE_ALL;
+    NVIC_SetPriority(IRQn_NONNEG(irqn), IRQ_PRI_UART);
+    HAL_NVIC_EnableIRQ(irqn);
 
     uart_obj->is_enabled = true;
     uart_obj->attached_to_repl = false;
@@ -340,12 +384,9 @@ void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
     self->read_buf_len = len;
     self->read_buf = buf;
     if (len == 0) {
-        HAL_NVIC_DisableIRQ(self->irqn);
         UART_RXNE_IT_DIS(self->uartx);
     } else {
         UART_RXNE_IT_EN(self->uartx);
-        NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_UART);
-        HAL_NVIC_EnableIRQ(self->irqn);
     }
 }
 
