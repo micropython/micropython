@@ -517,7 +517,7 @@ mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
     } else if (buffer_bytes > 0) {
         return buffer_bytes;
     } else {
-        return UART_RXNE_IS_SET(self->uartx);
+        return UART_RXNE_IS_SET(self->uartx) != 0;
     }
 }
 
