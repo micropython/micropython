@@ -12,6 +12,10 @@ NTP_DELTA = 3155673600
 
 host = "pool.ntp.org"
 
+def sethost(addr):
+    global host
+    host = str(addr)
+
 def time():
     NTP_QUERY = bytearray(48)
     NTP_QUERY[0] = 0x1b
