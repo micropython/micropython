@@ -34,7 +34,7 @@ typedef struct {
     uint16_t handle;
     bool is_secondary;
     bleio_uuid_obj_t *uuid;
-    // May be a LocalPeripheral, RemotePeripheral, etc.
+    // May be a PeripheralServer, CentralClient, etc.
     mp_obj_t *device;
     mp_obj_t char_list;
     uint16_t start_handle;

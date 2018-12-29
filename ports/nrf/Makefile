@@ -175,7 +175,7 @@ SRC_COMMON_HAL += \
 	bleio/Broadcaster.c \
 	bleio/Characteristic.c \
 	bleio/Descriptor.c \
-	bleio/LocalPeripheral.c \
+	bleio/Peripheral.c \
 	bleio/Scanner.c \
 	bleio/Service.c \
 	bleio/UUID.c

@@ -34,7 +34,7 @@
 void common_hal_bleio_service_construct(bleio_service_obj_t *self) {
 }
 
-// Call this after the Service has been added to the LocalPeripheral.
+// Call this after the Service has been added to the Peripheral.
 void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self) {
     // Add all the characteristics.
     const mp_obj_list_t *char_list = MP_OBJ_TO_PTR(self->char_list);

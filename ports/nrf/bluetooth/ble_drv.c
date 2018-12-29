@@ -48,7 +48,12 @@ typedef struct event_handler {
 static event_handler_t *m_event_handlers = NULL;
 
 void ble_drv_reset() {
-    // Linked-list members will be gc'd.
+    event_handler_t *handler = m_event_handlers;
+    while (handler != NULL) {
+        event_handler_t *next = handler->next;
+        m_free(handler);
+        handler = next;
+    }
     m_event_handlers = NULL;
 }
 

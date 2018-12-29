@@ -134,7 +134,7 @@ STATIC MP_DEFINE_CONST_DICT(bleio_broadcaster_locals_dict, bleio_broadcaster_loc
 
 const mp_obj_type_t bleio_broadcaster_type = {
     { &mp_type_type },
-    .name = MP_QSTR_LocalPeripheral,
+    .name = MP_QSTR_Broadcaster,
     .make_new = bleio_broadcaster_make_new,
     .locals_dict = (mp_obj_dict_t*)&bleio_broadcaster_locals_dict
 };
