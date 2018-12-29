@@ -30,6 +30,13 @@
 #include "shared-bindings/bleio/LocalPeripheral.h"
 #include "common-hal/bleio/__init__.h"
 
+// Turn off BLE on a reset or reload.
+void bleio_reset() {
+    if (common_hal_bleio_adapter_get_enabled()) {
+        common_hal_bleio_adapter_set_enabled(false);
+    }
+}
+
 // The singleton bleio.Adapter object, bound to bleio.adapter
 // It currently only has properties and no state
 const super_adapter_obj_t common_hal_bleio_adapter_obj = {

@@ -172,6 +172,7 @@ ifneq ($(SD), )
 SRC_COMMON_HAL += \
 	bleio/__init__.c \
 	bleio/Adapter.c \
+	bleio/Broadcaster.c \
 	bleio/Characteristic.c \
 	bleio/Descriptor.c \
 	bleio/LocalPeripheral.c \

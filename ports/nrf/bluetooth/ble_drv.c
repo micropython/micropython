@@ -45,7 +45,12 @@ typedef struct event_handler {
     ble_drv_evt_handler_t func;
 } event_handler_t;
 
-static event_handler_t *m_event_handlers;
+static event_handler_t *m_event_handlers = NULL;
+
+void ble_drv_reset() {
+    // Linked-list members will be gc'd.
+    m_event_handlers = NULL;
+}
 
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
     event_handler_t *handler = m_new_ll(event_handler_t, 1);

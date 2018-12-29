@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,32 +25,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H
-#define MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H
+#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_LOCALPERIPHERAL_H
+#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_LOCALPERIPHERAL_H
+
+#include <stdbool.h>
 
 #include "ble.h"
 
-#if (BLUETOOTH_SD == 132) && (BLE_API_VERSION == 2)
-#define NRF52
-#endif
+#include "shared-module/bleio/__init__.h"
+#include "shared-module/bleio/Address.h"
 
-#define MAX_TX_IN_PROGRESS 10
+// typedef struct {
+//     mp_obj_base_t base;
+//     bool is_peripheral;
+//     mp_obj_t name;
+//     bleio_address_obj_t address;
+//     volatile uint16_t conn_handle;
+//     mp_obj_t service_list;
+//     mp_obj_t notif_handler;
+//     mp_obj_t conn_handler;
+// } bleio_device_obj_t;
 
-#ifndef BLE_GATT_ATT_MTU_DEFAULT
-    #define BLE_GATT_ATT_MTU_DEFAULT GATT_MTU_SIZE_DEFAULT
-#endif
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t name;
+    gatt_role_t gatt_role;
+    volatile uint16_t conn_handle;
+    mp_obj_t service_list;
+    mp_obj_t notif_handler;
+    mp_obj_t conn_handler;
+    // The advertising data buffer is held by us, not by the SD, so we must
+    // maintain it and not change it. If we need to change its contents during advertising,
+    // there are tricks to get the SD to notice (see DevZone - TBS).
+    uint8_t adv_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
 
-#define BLE_CONN_CFG_TAG_CUSTOM 1
+} bleio_local_peripheral_obj_t;
 
-#define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
-// 0.625 msecs (625 usecs)
-#define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
-#define UNIT_0_625_MS (625)
-#define UNIT_10_MS    (10000)
-
-typedef void (*ble_drv_evt_handler_t)(ble_evt_t*, void*);
-
-void ble_drv_reset();
-void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param);
-
-#endif // MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H
+#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_LOCALPERIPHERAL_H
