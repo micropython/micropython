@@ -150,8 +150,8 @@ static void check_lock(busio_spi_obj_t *self) {
 //|      speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
 //|      within spec for the SAMD21.
 //|
-//|   .. note:: On the nRF52832, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
-//|      and 8MHz. On the nRF52840, 16MHz and 32MHz are also available, but only on the first
+//|   .. note:: On the nRF52840, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
+//|      and 8MHz. 16MHz and 32MHz are also available, but only on the first
 //|      `busio.SPI` object you create. Two more ``busio.SPI`` objects can be created, but they are restricted
 //|      to 8MHz maximum. This is a hardware restriction: there is only one high-speed SPI peripheral.
 //|      If you pick a a baudrate other than one of these, the nearest lower

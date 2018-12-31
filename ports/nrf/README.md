@@ -22,9 +22,6 @@ This is a port of CircuitPython to the Nordic Semiconductor nRF52 series of chip
 
 ## Tested Hardware
 
-* nRF52832
-  * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html)
-  * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
 
@@ -36,7 +33,6 @@ the following links:
 > **NOTE**: These board specific readmes may be more up to date than the
   generic board-neutral documentation further down.
 
-* Adafruit [Feather nRF52](boards/feather_nrf52832/README.md): 512KB Flash, 64KB SRAM
 * Adafruit [Feather nRF52840](boards/feather_nrf52840_express/README.md): 1MB Flash, 256KB SRAM
 * Nordic PCA10056 see [Feather nRF52840](boards/pca10056/README.md)
 * MakerDiary NRF52840 MDK see [its README](boards/makerdiary_nrf52840_mdk/README.md)
@@ -77,9 +73,7 @@ Note: further tuning of features to include in bluetooth or even setting up the 
 
 Target Board (BOARD)     | Bluetooth Stack (SD)    | Bluetooth Support      | Flash Util
 -------------------------|-------------------------|------------------------|-------------------------------
-pca10040                 | s132                    | Peripheral and Scanner | [Segger](#segger-targets)
 pca10056                 | s140                    | Peripheral and Scanner | [Segger](#segger-targets)
-feather_nrf52832         | s132                    | Peripheral and Scanner | [UART DFU](#dfu-targets)
 feather_nrf52840_express | s140                    | Peripheral and Scanner | UF2 bootloader
 makerdiary_nrf52840_mdk  | s140                    | Peripheral and Scanner | pyocd or ARM mbed DAPLink
 
@@ -111,8 +105,8 @@ run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Ada
 
 Example on how to generate and flash feather_nrf52832 target:
 
-    make BOARD=feather_nrf52832 SD=s132
-    make BOARD=feather_nrf52832 SD=s132 dfu-gen dfu-flash
+    make BOARD=feather_nrf52840 SD=s140
+    make BOARD=feather_nrf52840 SD=s140 dfu-gen dfu-flash
 
 ## Bluetooth LE REPL
 

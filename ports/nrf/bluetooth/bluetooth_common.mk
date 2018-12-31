@@ -1,12 +1,4 @@
-ifeq ($(SD), s132)
-	CFLAGS += -DBLUETOOTH_SD=132
-
-ifeq ($(SOFTDEV_VERSION), 2.0.1)
-	CFLAGS += -DBLE_API_VERSION=2
-else ifeq ($(SOFTDEV_VERSION), 5.0.0)
-	CFLAGS += -DBLE_API_VERSION=4
-endif
-else ifeq ($(SD), s140)
+ifeq ($(SD), s140)
 	CFLAGS += -DBLUETOOTH_SD=140
 	CFLAGS += -DBLE_API_VERSION=4
 else
