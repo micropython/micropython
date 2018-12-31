@@ -611,6 +611,12 @@ mp_obj_t mp_obj_new_bytearray(size_t n, void *items) {
     return MP_OBJ_FROM_PTR(o);
 }
 
+mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n) {
+    mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
+    memset(o->items, 0, n);
+    return MP_OBJ_FROM_PTR(o);
+}
+
 // Create bytearray which references specified memory area
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items) {
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);

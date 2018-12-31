@@ -36,6 +36,7 @@
 // 20 bytes max (23 - 3).
 #define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
 
+gatt_role_t common_hal_bleio_device_get_gatt_role(mp_obj_t device);
 uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
 
 #endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_INIT_H

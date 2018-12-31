@@ -27,6 +27,12 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
 
+typedef enum {
+    GATT_ROLE_NONE,
+    GATT_ROLE_SERVER,
+    GATT_ROLE_CLIENT,
+} gatt_role_t;
+
 extern void bleio_reset(void);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +36,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/Characteristic.h"
-#include "shared-bindings/bleio/LocalPeripheral.h"
+#include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 
@@ -56,7 +57,7 @@ STATIC void check_data_fit(size_t pos, size_t data_len) {
     }
 }
 
-STATIC uint32_t add_services_to_advertisement(bleio_local_peripheral_obj_t *self, size_t* adv_data_pos_p, size_t uuid_len) {
+STATIC uint32_t add_services_to_advertisement(bleio_peripheral_obj_t *self, size_t* adv_data_pos_p, size_t uuid_len) {
     uint32_t uuids_total_size = 0;
     const mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
     uint32_t err_code = NRF_SUCCESS;
@@ -99,7 +100,7 @@ STATIC uint32_t add_services_to_advertisement(bleio_local_peripheral_obj_t *self
 
 
 
-STATIC uint32_t set_advertisement_data(bleio_local_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
+STATIC uint32_t set_advertisement_data(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
     common_hal_bleio_adapter_set_enabled(true);
 
     size_t adv_data_pos = 0;
@@ -203,7 +204,7 @@ STATIC uint32_t set_advertisement_data(bleio_local_peripheral_obj_t *self, bool 
         m_adv_params.properties.type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
     }
 
-    common_hal_bleio_local_peripheral_stop_advertising(self);
+    common_hal_bleio_peripheral_stop_advertising(self);
 
     const ble_gap_adv_data_t ble_gap_adv_data = {
         .adv_data.p_data = self->adv_data,
@@ -221,7 +222,7 @@ STATIC uint32_t set_advertisement_data(bleio_local_peripheral_obj_t *self, bool 
 }
 
 STATIC void on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
-    bleio_local_peripheral_obj_t *self = (bleio_local_peripheral_obj_t*)self_in;
+    bleio_peripheral_obj_t *self = (bleio_peripheral_obj_t*)self_in;
 
     switch (ble_evt->header.evt_id) {
     case BLE_GAP_EVT_CONNECTED: {
@@ -266,14 +267,17 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         break;
     }
 
+    default:
+        mp_printf(&mp_plat_print, "Unhandled event: 0x%04x\n", ble_evt->header.evt_id);
+        break;
     }
 }
 
 
-void common_hal_bleio_local_peripheral_construct(bleio_local_peripheral_obj_t *self) {
+void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self) {
     common_hal_bleio_adapter_set_enabled(true);   // TODO -- Do this somewhere else maybe bleio __init__
 
-    self->gatt_role = GATT_ROLE_NONE;
+    self->gatt_role = GATT_ROLE_SERVER;
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
 
     // Add all the services.
@@ -301,11 +305,11 @@ void common_hal_bleio_local_peripheral_construct(bleio_local_peripheral_obj_t *s
 }
 
 
-bool common_hal_bleio_local_peripheral_get_connected(bleio_local_peripheral_obj_t *self) {
+bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self) {
     return self->conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
-void common_hal_bleio_local_peripheral_start_advertising(bleio_local_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
+void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
     if (connectable) {
         ble_drv_add_event_handler(on_ble_evt, self);
     }
@@ -316,7 +320,7 @@ void common_hal_bleio_local_peripheral_start_advertising(bleio_local_peripheral_
     }
 }
 
-void common_hal_bleio_local_peripheral_stop_advertising(bleio_local_peripheral_obj_t *self) {
+void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *self) {
 
     if (m_adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET)
         return;

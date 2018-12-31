@@ -35,13 +35,63 @@
 #include "common-hal/bleio/__init__.h"
 #include "shared-module/bleio/Characteristic.h"
 
-
+// TODO - should these be per object?? *****
 STATIC volatile bleio_characteristic_obj_t *m_read_characteristic;
 STATIC volatile uint8_t m_tx_in_progress;
 STATIC nrf_mutex_t *m_write_mutex;
 
+STATIC uint16_t get_cccd(bleio_characteristic_obj_t *characteristic) {
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
+    uint16_t cccd;
+    ble_gatts_value_t value = {
+        .p_value = (uint8_t*) &cccd,
+        .len = 2,
+    };
+
+    const uint32_t err_code = sd_ble_gatts_value_get(conn_handle, characteristic->cccd_handle, &value);
+
+
+    if (err_code == BLE_ERROR_GATTS_SYS_ATTR_MISSING) {
+        // CCCD is not set, so say that neither Notify nor Indicate is enabled.
+        cccd = 0;
+    } else if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to read CCD value, err 0x%04x"), err_code);
+    }
+
+    return cccd;
+}
+
+STATIC void gatts_read(bleio_characteristic_obj_t *characteristic) {
+    // This might be BLE_CONN_HANDLE_INVALID if we're not conected, but that's OK, because
+    // we can still read and write the local value.
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
+
+    mp_buffer_info_t bufinfo;
+    ble_gatts_value_t gatts_value = {
+        .p_value = NULL,
+        .len = 0,
+    };
+
+    // Read once to find out what size buffer we need, then read again to fill buffer.
+
+    uint32_t err_code = sd_ble_gatts_value_get(conn_handle, characteristic->handle, &gatts_value);
+    if (err_code == NRF_SUCCESS) {
+        characteristic->value_data = mp_obj_new_bytearray_of_zeros(gatts_value.len);
+        mp_get_buffer_raise(characteristic->value_data, &bufinfo, MP_BUFFER_WRITE);
+
+        // Read again, with the correct size of buffer.
+        err_code = sd_ble_gatts_value_get(conn_handle, characteristic->handle, &gatts_value);
+    }
+
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to read gatts value, err 0x%04x"), err_code);
+    }
+}
+
 
 STATIC void gatts_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
+    // This might be BLE_CONN_HANDLE_INVALID if we're not conected, but that's OK, because
+    // we can still read and write the local value.
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
 
     ble_gatts_value_t gatts_value = {
@@ -55,12 +105,12 @@ STATIC void gatts_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
     }
 }
 
-STATIC void gatts_notify(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
+STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo, uint16_t hvx_type) {
     uint16_t hvx_len = bufinfo->len;
 
     ble_gatts_hvx_params_t hvx_params = {
         .handle = characteristic->handle,
-        .type = BLE_GATT_HVX_NOTIFICATION,
+        .type = hvx_type,
         .offset = 0,
         .p_len = &hvx_len,
         .p_data = bufinfo->buf,
@@ -163,10 +213,14 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self)
     ble_drv_add_event_handler(on_ble_evt, NULL);
 }
 
-void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self) {
+void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
     switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
     case GATT_ROLE_CLIENT:
         gattc_read(self);
+        break;
+
+    case GATT_ROLE_SERVER:
+        gatts_read(self);
         break;
 
     default:
@@ -175,18 +229,30 @@ void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self
     }
 }
 
-void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
+void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
+    bool sent = false;
+    uint16_t cccd = 0;
+
     switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
     case GATT_ROLE_SERVER:
-        if (self->props.notify) {
-            gatts_notify(self, bufinfo);
-        } else {
+        if (self->props.notify || self->props.indicate) {
+            cccd = get_cccd(self);
+        }
+        // It's possible that both notify and indicate are set.
+        if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
+            sent = true;
+        }
+        if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
+            sent = true;
+        }
+        if (!sent) {
             gatts_write(self, bufinfo);
         }
         break;
 
     case GATT_ROLE_CLIENT:
-        // TODO: Add indications
         gattc_write(self, bufinfo);
         break;
 

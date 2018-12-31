@@ -233,7 +233,7 @@ const mp_obj_property_t bleio_characteristic_uuid_obj = {
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    common_hal_bleio_characteristic_read_value(self);
+    common_hal_bleio_characteristic_get_value(self);
 
     return self->value_data;
 }
@@ -245,7 +245,7 @@ STATIC mp_obj_t bleio_characteristic_set_value(mp_obj_t self_in, mp_obj_t value_
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(value_in, &bufinfo, MP_BUFFER_READ);
 
-    common_hal_bleio_characteristic_write_value(self, &bufinfo);
+    common_hal_bleio_characteristic_set_value(self, &bufinfo);
 
     return mp_const_none;
 }

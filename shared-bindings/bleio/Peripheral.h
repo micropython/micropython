@@ -25,40 +25,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_LOCALPERIPHERAL_H
-#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_LOCALPERIPHERAL_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PERIPHERAL_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PERIPHERAL_H
 
-#include <stdbool.h>
+#include "common-hal/bleio/Peripheral.h"
 
-#include "ble.h"
+extern const mp_obj_type_t bleio_peripheral_type;
 
-#include "shared-module/bleio/__init__.h"
-#include "shared-module/bleio/Address.h"
+extern void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self);
+extern bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self);
+extern void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *device, bool connectable, mp_buffer_info_t *raw_data);
+extern void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *device);
 
-// typedef struct {
-//     mp_obj_base_t base;
-//     bool is_peripheral;
-//     mp_obj_t name;
-//     bleio_address_obj_t address;
-//     volatile uint16_t conn_handle;
-//     mp_obj_t service_list;
-//     mp_obj_t notif_handler;
-//     mp_obj_t conn_handler;
-// } bleio_device_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t name;
-    gatt_role_t gatt_role;
-    volatile uint16_t conn_handle;
-    mp_obj_t service_list;
-    mp_obj_t notif_handler;
-    mp_obj_t conn_handler;
-    // The advertising data buffer is held by us, not by the SD, so we must
-    // maintain it and not change it. If we need to change its contents during advertising,
-    // there are tricks to get the SD to notice (see DevZone - TBS).
-    uint8_t adv_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
-
-} bleio_local_peripheral_obj_t;
-
-#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_LOCALPERIPHERAL_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PERIPHERAL_H
