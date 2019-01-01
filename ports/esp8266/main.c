@@ -102,6 +102,13 @@ void soft_reset(void) {
 }
 
 void init_done(void) {
+    // Configure sleep, and put the radio to sleep if no interfaces are active
+    wifi_fpm_set_sleep_type(MODEM_SLEEP_T);
+    if (wifi_get_opmode() == NULL_MODE) {
+        wifi_fpm_open();
+        wifi_fpm_do_sleep(0xfffffff);
+    }
+
     #if MICROPY_REPL_EVENT_DRIVEN
     uart_task_init();
     #endif

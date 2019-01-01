@@ -18,7 +18,14 @@ def ffi_open(names):
 
 libc = ffi_open(('libc.so', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
 
-strtof = libc.func("f", "strtof", "sp")
+try:
+    strtof = libc.func("f", "strtof", "sp")
+except OSError:
+    # Some libc's (e.g. Android's Bionic) define strtof as macro/inline func
+    # in terms of strtod().
+    print("SKIP")
+    raise SystemExit
+
 print('%.6f' % strtof('1.23', None))
 
 strtod = libc.func("d", "strtod", "sp")

@@ -381,9 +381,9 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
 #define OP_BLX(reg) (0x4780 | ((reg) << 3))
 #define OP_SVC(arg) (0xdf00 | (arg))
 
-void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
+void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp) {
     // Load ptr to function from table, indexed by fun_id, then call it
-    asm_thumb_ldr_reg_reg_i12_optimised(as, reg_temp, ASM_THUMB_REG_R7, fun_id);
+    asm_thumb_ldr_reg_reg_i12_optimised(as, reg_temp, ASM_THUMB_REG_FUN_TABLE, fun_id);
     asm_thumb_op16(as, OP_BLX(reg_temp));
 }
 

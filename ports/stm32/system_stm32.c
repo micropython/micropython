@@ -517,11 +517,11 @@ void SystemClock_Config(void)
     /* PLL3 for USB Clock */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
-    PeriphClkInitStruct.PLL3.PLL3M = 4;
-    PeriphClkInitStruct.PLL3.PLL3N = 120;
-    PeriphClkInitStruct.PLL3.PLL3P = 2;
-    PeriphClkInitStruct.PLL3.PLL3Q = 5;
-    PeriphClkInitStruct.PLL3.PLL3R = 2;
+    PeriphClkInitStruct.PLL3.PLL3M = MICROPY_HW_CLK_PLL3M;
+    PeriphClkInitStruct.PLL3.PLL3N = MICROPY_HW_CLK_PLL3N;
+    PeriphClkInitStruct.PLL3.PLL3P = MICROPY_HW_CLK_PLL3P;
+    PeriphClkInitStruct.PLL3.PLL3Q = MICROPY_HW_CLK_PLL3Q;
+    PeriphClkInitStruct.PLL3.PLL3R = MICROPY_HW_CLK_PLL3R;
     PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_1;
     PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;

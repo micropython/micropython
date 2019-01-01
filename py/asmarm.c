@@ -362,19 +362,11 @@ void asm_arm_b_label(asm_arm_t *as, uint label) {
     asm_arm_bcc_label(as, ASM_ARM_CC_AL, label);
 }
 
-void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
-    // If the table offset fits into the ldr instruction
-    if (fun_id < (0x1000 / 4)) {
-        emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_LR, ASM_ARM_REG_PC)); // mov lr, pc
-        emit_al(as, 0x597f000 | (fun_id << 2)); // ldr pc, [r7, #fun_id*4]
-        return;
-    }
-
-    emit_al(as, 0x59f0004 | (reg_temp << 12)); // ldr rd, [pc, #4]
-    // Set lr after fun_ptr
-    emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_LR, ASM_ARM_REG_PC, 4)); // add lr, pc, #4
-    emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_PC, reg_temp)); // mov pc, reg_temp
-    emit(as, (uint) fun_ptr);
+void asm_arm_bl_ind(asm_arm_t *as, uint fun_id, uint reg_temp) {
+    // The table offset should fit into the ldr instruction
+    assert(fun_id < (0x1000 / 4));
+    emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_LR, ASM_ARM_REG_PC)); // mov lr, pc
+    emit_al(as, 0x597f000 | (fun_id << 2)); // ldr pc, [r7, #fun_id*4]
 }
 
 void asm_arm_bx_reg(asm_arm_t *as, uint reg_src) {

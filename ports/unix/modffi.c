@@ -108,6 +108,8 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'I': return &ffi_type_uint;
         case 'l': return &ffi_type_slong;
         case 'L': return &ffi_type_ulong;
+        case 'q': return &ffi_type_sint64;
+        case 'Q': return &ffi_type_uint64;
         #if MICROPY_PY_BUILTINS_FLOAT
         case 'f': return &ffi_type_float;
         case 'd': return &ffi_type_double;

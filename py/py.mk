@@ -27,7 +27,7 @@ CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/extmod/axtls-include
 AXTLS_DIR = lib/axtls
-$(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-unused-parameter -Wno-unused-variable -Wno-unused-const-variable -Wno-unused-but-set-variable -Wno-array-bounds -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition $(AXTLS_DEFS_EXTRA)
+$(BUILD)/$(AXTLS_DIR)/%.o: CFLAGS += -Wno-all -Wno-unused-parameter -Wno-uninitialized -Wno-sign-compare -Wno-old-style-definition $(AXTLS_DEFS_EXTRA)
 SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 	ssl/asn1.c \
 	ssl/loader.c \
@@ -326,7 +326,7 @@ $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 # may require disabling tail jump optimization. This will make sure that
 # each opcode has its own dispatching jump which will improve branch
 # branch predictor efficiency.
-# http://article.gmane.org/gmane.comp.lang.lua.general/75426
+# https://marc.info/?l=lua-l&m=129778596120851
 # http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
 # http://www.emulators.com/docs/nx25_nostradamus.htm
 #-fno-crossjumping

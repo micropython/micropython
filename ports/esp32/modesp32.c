@@ -32,6 +32,7 @@
 #include "soc/rtc_cntl_reg.h"
 #include "soc/sens_reg.h"
 #include "driver/gpio.h"
+#include "driver/adc.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -138,6 +139,12 @@ STATIC mp_obj_t esp32_raw_temperature(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperature);
 
+STATIC mp_obj_t esp32_hall_sensor(void) {
+    adc1_config_width(ADC_WIDTH_12Bit);
+    return MP_OBJ_NEW_SMALL_INT(hall_sensor_read());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
+
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
@@ -145,6 +152,7 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
 

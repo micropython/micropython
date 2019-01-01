@@ -380,7 +380,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         pcd_fs_handle.Init.dma_enable = 0;
         pcd_fs_handle.Init.low_power_enable = 0;
         pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
-        pcd_fs_handle.Init.Sof_enable = 1;
+        pcd_fs_handle.Init.Sof_enable = 0;
         pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
         #if defined(STM32L4)
         pcd_fs_handle.Init.lpm_enable = DISABLE;
@@ -435,7 +435,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         #else
         pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
         #endif
-        pcd_hs_handle.Init.Sof_enable = 1;
+        pcd_hs_handle.Init.Sof_enable = 0;
         if (high_speed) {
             pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
         } else {
@@ -481,7 +481,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
 
         pcd_hs_handle.Init.low_power_enable = 0;
         pcd_hs_handle.Init.phy_itface = PCD_PHY_ULPI;
-        pcd_hs_handle.Init.Sof_enable = 1;
+        pcd_hs_handle.Init.Sof_enable = 0;
         pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
         pcd_hs_handle.Init.vbus_sensing_enable = 1;
 

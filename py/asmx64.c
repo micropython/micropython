@@ -183,21 +183,22 @@ STATIC void asm_x64_write_word32_to(asm_x64_t *as, int offset, int w32) {
 */
 
 STATIC void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int disp_offset) {
-    assert(disp_r64 != ASM_X64_REG_RSP);
-
-    if (disp_r64 == ASM_X64_REG_R12) {
-        // special case for r12; not fully implemented
-        assert(SIGNED_FIT8(disp_offset));
-        asm_x64_write_byte_3(as, MODRM_R64(r64) | MODRM_RM_DISP8 | MODRM_RM_R64(disp_r64), 0x24, IMM32_L0(disp_offset));
-        return;
-    }
-
-    if (disp_offset == 0 && disp_r64 != ASM_X64_REG_RBP && disp_r64 != ASM_X64_REG_R13) {
-        asm_x64_write_byte_1(as, MODRM_R64(r64) | MODRM_RM_DISP0 | MODRM_RM_R64(disp_r64));
+    uint8_t rm_disp;
+    if (disp_offset == 0 && (disp_r64 & 7) != ASM_X64_REG_RBP) {
+        rm_disp = MODRM_RM_DISP0;
     } else if (SIGNED_FIT8(disp_offset)) {
-        asm_x64_write_byte_2(as, MODRM_R64(r64) | MODRM_RM_DISP8 | MODRM_RM_R64(disp_r64), IMM32_L0(disp_offset));
+        rm_disp = MODRM_RM_DISP8;
     } else {
-        asm_x64_write_byte_1(as, MODRM_R64(r64) | MODRM_RM_DISP32 | MODRM_RM_R64(disp_r64));
+        rm_disp = MODRM_RM_DISP32;
+    }
+    asm_x64_write_byte_1(as, MODRM_R64(r64) | rm_disp | MODRM_RM_R64(disp_r64));
+    if ((disp_r64 & 7) == ASM_X64_REG_RSP) {
+        // Special case for rsp and r12, they need a SIB byte
+        asm_x64_write_byte_1(as, 0x24);
+    }
+    if (rm_disp == MODRM_RM_DISP8) {
+        asm_x64_write_byte_1(as, IMM32_L0(disp_offset));
+    } else if (rm_disp == MODRM_RM_DISP32) {
         asm_x64_write_word32(as, disp_offset);
     }
 }
@@ -529,52 +530,54 @@ void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label) {
 void asm_x64_entry(asm_x64_t *as, int num_locals) {
     assert(num_locals >= 0);
     asm_x64_push_r64(as, ASM_X64_REG_RBP);
-    asm_x64_mov_r64_r64(as, ASM_X64_REG_RBP, ASM_X64_REG_RSP);
-    num_locals |= 1; // make it odd so stack is aligned on 16 byte boundary
-    asm_x64_sub_r64_i32(as, ASM_X64_REG_RSP, num_locals * WORD_SIZE);
     asm_x64_push_r64(as, ASM_X64_REG_RBX);
     asm_x64_push_r64(as, ASM_X64_REG_R12);
     asm_x64_push_r64(as, ASM_X64_REG_R13);
+    num_locals |= 1; // make it odd so stack is aligned on 16 byte boundary
+    asm_x64_sub_r64_i32(as, ASM_X64_REG_RSP, num_locals * WORD_SIZE);
     as->num_locals = num_locals;
 }
 
 void asm_x64_exit(asm_x64_t *as) {
+    asm_x64_sub_r64_i32(as, ASM_X64_REG_RSP, -as->num_locals * WORD_SIZE);
     asm_x64_pop_r64(as, ASM_X64_REG_R13);
     asm_x64_pop_r64(as, ASM_X64_REG_R12);
     asm_x64_pop_r64(as, ASM_X64_REG_RBX);
-    asm_x64_write_byte_1(as, OPCODE_LEAVE);
+    asm_x64_pop_r64(as, ASM_X64_REG_RBP);
     asm_x64_ret(as);
 }
 
 // locals:
 //  - stored on the stack in ascending order
 //  - numbered 0 through as->num_locals-1
-//  - RBP points above the last local
+//  - RSP points to the first local
 //
-//                          | RBP
-//                          v
+//  | RSP
+//  v
 //  l0  l1  l2  ...  l(n-1)
 //  ^                ^
 //  | low address    | high address in RAM
 //
-STATIC int asm_x64_local_offset_from_ebp(asm_x64_t *as, int local_num) {
-    return (-as->num_locals + local_num) * WORD_SIZE;
+STATIC int asm_x64_local_offset_from_rsp(asm_x64_t *as, int local_num) {
+    (void)as;
+    // Stack is full descending, RSP points to local0
+    return local_num * WORD_SIZE;
 }
 
 void asm_x64_mov_local_to_r64(asm_x64_t *as, int src_local_num, int dest_r64) {
-    asm_x64_mov_mem64_to_r64(as, ASM_X64_REG_RBP, asm_x64_local_offset_from_ebp(as, src_local_num), dest_r64);
+    asm_x64_mov_mem64_to_r64(as, ASM_X64_REG_RSP, asm_x64_local_offset_from_rsp(as, src_local_num), dest_r64);
 }
 
 void asm_x64_mov_r64_to_local(asm_x64_t *as, int src_r64, int dest_local_num) {
-    asm_x64_mov_r64_to_mem64(as, src_r64, ASM_X64_REG_RBP, asm_x64_local_offset_from_ebp(as, dest_local_num));
+    asm_x64_mov_r64_to_mem64(as, src_r64, ASM_X64_REG_RSP, asm_x64_local_offset_from_rsp(as, dest_local_num));
 }
 
 void asm_x64_mov_local_addr_to_r64(asm_x64_t *as, int local_num, int dest_r64) {
-    int offset = asm_x64_local_offset_from_ebp(as, local_num);
+    int offset = asm_x64_local_offset_from_rsp(as, local_num);
     if (offset == 0) {
-        asm_x64_mov_r64_r64(as, dest_r64, ASM_X64_REG_RBP);
+        asm_x64_mov_r64_r64(as, dest_r64, ASM_X64_REG_RSP);
     } else {
-        asm_x64_lea_disp_to_r64(as, ASM_X64_REG_RBP, offset, dest_r64);
+        asm_x64_lea_disp_to_r64(as, ASM_X64_REG_RSP, offset, dest_r64);
     }
 }
 
@@ -587,12 +590,12 @@ void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label) {
 
 /*
 void asm_x64_push_local(asm_x64_t *as, int local_num) {
-    asm_x64_push_disp(as, ASM_X64_REG_RBP, asm_x64_local_offset_from_ebp(as, local_num));
+    asm_x64_push_disp(as, ASM_X64_REG_RSP, asm_x64_local_offset_from_rsp(as, local_num));
 }
 
 void asm_x64_push_local_addr(asm_x64_t *as, int local_num, int temp_r64) {
-    asm_x64_mov_r64_r64(as, temp_r64, ASM_X64_REG_RBP);
-    asm_x64_add_i32_to_r32(as, asm_x64_local_offset_from_ebp(as, local_num), temp_r64);
+    asm_x64_mov_r64_r64(as, temp_r64, ASM_X64_REG_RSP);
+    asm_x64_add_i32_to_r32(as, asm_x64_local_offset_from_rsp(as, local_num), temp_r64);
     asm_x64_push_r64(as, temp_r64);
 }
 */
@@ -618,21 +621,10 @@ void asm_x64_call_i1(asm_x64_t *as, void* func, int i1) {
 }
 */
 
-void asm_x64_call_ind(asm_x64_t *as, void *ptr, int temp_r64) {
+void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r64) {
     assert(temp_r64 < 8);
-#ifdef __LP64__
-    asm_x64_mov_i64_to_r64_optimised(as, (int64_t)ptr, temp_r64);
-#else
-    // If we get here, sizeof(int) == sizeof(void*).
-    asm_x64_mov_i64_to_r64_optimised(as, (int64_t)(unsigned int)ptr, temp_r64);
-#endif
+    asm_x64_mov_mem64_to_r64(as, ASM_X64_REG_FUN_TABLE, fun_id * WORD_SIZE, temp_r64);
     asm_x64_write_byte_2(as, OPCODE_CALL_RM32, MODRM_R64(2) | MODRM_RM_REG | MODRM_RM_R64(temp_r64));
-    // this reduces code size by 2 bytes per call, but doesn't seem to speed it up at all
-    // doesn't work anymore because calls are 64 bits away
-    /*
-    asm_x64_write_byte_1(as, OPCODE_CALL_REL32);
-    asm_x64_write_word32(as, ptr - (void*)(as->code_base + as->code_offset + 4));
-    */
 }
 
 #endif // MICROPY_EMIT_X64

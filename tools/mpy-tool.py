@@ -73,9 +73,9 @@ MP_BC_MAKE_CLOSURE = 0x62
 MP_BC_MAKE_CLOSURE_DEFARGS = 0x63
 MP_BC_RAISE_VARARGS = 0x5c
 # extra byte if caching enabled:
-MP_BC_LOAD_NAME = 0x1c
-MP_BC_LOAD_GLOBAL = 0x1d
-MP_BC_LOAD_ATTR = 0x1e
+MP_BC_LOAD_NAME = 0x1b
+MP_BC_LOAD_GLOBAL = 0x1c
+MP_BC_LOAD_ATTR = 0x1d
 MP_BC_STORE_ATTR = 0x26
 
 def make_opcode_format():
@@ -166,18 +166,18 @@ def mp_opcode_format(bytecode, ip, opcode_format=make_opcode_format()):
     ip_start = ip
     f = (opcode_format[opcode >> 2] >> (2 * (opcode & 3))) & 3
     if f == MP_OPCODE_QSTR:
+        if config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
+            if (opcode == MP_BC_LOAD_NAME
+                or opcode == MP_BC_LOAD_GLOBAL
+                or opcode == MP_BC_LOAD_ATTR
+                or opcode == MP_BC_STORE_ATTR):
+                ip += 1
         ip += 3
     else:
         extra_byte = (
             opcode == MP_BC_RAISE_VARARGS
             or opcode == MP_BC_MAKE_CLOSURE
             or opcode == MP_BC_MAKE_CLOSURE_DEFARGS
-            or config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE and (
-                opcode == MP_BC_LOAD_NAME
-                or opcode == MP_BC_LOAD_GLOBAL
-                or opcode == MP_BC_LOAD_ATTR
-                or opcode == MP_BC_STORE_ATTR
-            )
         )
         ip += 1
         if f == MP_OPCODE_VAR_UINT:
@@ -278,7 +278,8 @@ class RawCode:
             f, sz = mp_opcode_format(self.bytecode, ip)
             if f == 1:
                 qst = self._unpack_qstr(ip + 1).qstr_id
-                print('   ', '0x%02x,' % self.bytecode[ip], qst, '& 0xff,', qst, '>> 8,')
+                extra = '' if sz == 3 else ' 0x%02x,' % self.bytecode[ip + 3]
+                print('   ', '0x%02x,' % self.bytecode[ip], qst, '& 0xff,', qst, '>> 8,', extra)
             else:
                 print('   ', ''.join('0x%02x, ' % self.bytecode[ip + i] for i in range(sz)))
             ip += sz
@@ -509,13 +510,14 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#endif')
     print()
 
-    print('enum {')
-    for i in range(len(new)):
-        if i == 0:
-            print('    MP_QSTR_%s = MP_QSTRnumber_of,' % new[i][1])
-        else:
-            print('    MP_QSTR_%s,' % new[i][1])
-    print('};')
+    if len(new) > 0:
+        print('enum {')
+        for i in range(len(new)):
+            if i == 0:
+                print('    MP_QSTR_%s = MP_QSTRnumber_of,' % new[i][1])
+            else:
+                print('    MP_QSTR_%s,' % new[i][1])
+        print('};')
 
     # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
     qstr_pool_alloc = min(len(new), 10)

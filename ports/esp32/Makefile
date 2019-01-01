@@ -165,6 +165,7 @@ SRC_C = \
 	modmachine.c \
 	modnetwork.c \
 	network_lan.c \
+	network_ppp.c \
 	modsocket.c \
 	modesp.c \
 	esp32_ulp.c \
@@ -499,6 +500,16 @@ ESPIDF_LWIP_O = $(addprefix $(ESPCOMP)/lwip/,\
 	netif/ethernet.o \
 	netif/lowpan6.o \
 	netif/ethernetif.o \
+	netif/ppp/ppp.o \
+	netif/ppp/magic.o \
+	netif/ppp/lcp.o \
+	netif/ppp/ipcp.o \
+	netif/ppp/auth.o \
+	netif/ppp/fsm.o \
+	netif/ppp/ipv6cp.o \
+	netif/ppp/utils.o \
+	netif/ppp/vj.o \
+	netif/ppp/pppos.o \
 	port/freertos/sys_arch.o \
 	port/netif/wlanif.o \
 	port/netif/ethernetif.o \

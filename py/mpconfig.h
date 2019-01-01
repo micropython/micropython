@@ -26,6 +26,23 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
+// Current version of MicroPython
+#define MICROPY_VERSION_MAJOR (1)
+#define MICROPY_VERSION_MINOR (9)
+#define MICROPY_VERSION_MICRO (4)
+
+// Combined version as a 32-bit number for convenience
+#define MICROPY_VERSION ( \
+    MICROPY_VERSION_MAJOR << 16 \
+    | MICROPY_VERSION_MINOR << 8 \
+    | MICROPY_VERSION_MICRO)
+
+// String version
+#define MICROPY_VERSION_STRING \
+    MP_STRINGIFY(MICROPY_VERSION_MAJOR) "." \
+    MP_STRINGIFY(MICROPY_VERSION_MINOR) "." \
+    MP_STRINGIFY(MICROPY_VERSION_MICRO)
+
 // This file contains default configuration settings for MicroPython.
 // You can override any of the options below using mpconfigport.h file
 // located in a directory of your port.
@@ -104,6 +121,15 @@
 // Number of words allocated (in BSS) to the GC stack (minimum is 1)
 #ifndef MICROPY_ALLOC_GC_STACK_SIZE
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
+#endif
+
+// The C-type to use for entries in the GC stack.  By default it allows the
+// heap to be as large as the address space, but the bit-width of this type can
+// be reduced to save memory when the heap is small enough.  The type must be
+// big enough to index all blocks in the heap, which is set by
+// heap-size-in-bytes / MICROPY_BYTES_PER_GC_BLOCK.
+#ifndef MICROPY_GC_STACK_ENTRY_TYPE
+#define MICROPY_GC_STACK_ENTRY_TYPE size_t
 #endif
 
 // Be conservative and always clear to zero newly (re)allocated memory in the GC.
@@ -633,6 +659,11 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_BUILTIN_INIT (0)
 #endif
 
+// Whether to support module-level __getattr__ (see PEP 562)
+#ifndef MICROPY_MODULE_GETATTR
+#define MICROPY_MODULE_GETATTR (0)
+#endif
+
 // Whether module weak links are supported
 #ifndef MICROPY_MODULE_WEAK_LINKS
 #define MICROPY_MODULE_WEAK_LINKS (0)
@@ -765,6 +796,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_STR_CENTER (0)
 #endif
 
+// Whether str.count() method provided
+#ifndef MICROPY_PY_BUILTINS_STR_COUNT
+#define MICROPY_PY_BUILTINS_STR_COUNT (1)
+#endif
+
 // Whether str % (...) formatting operator provided
 #ifndef MICROPY_PY_BUILTINS_STR_OP_MODULO
 #define MICROPY_PY_BUILTINS_STR_OP_MODULO (1)
@@ -783,6 +819,11 @@ typedef double mp_float_t;
 // Whether to support bytearray object
 #ifndef MICROPY_PY_BUILTINS_BYTEARRAY
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
+#endif
+
+// Whether to support dict.fromkeys() class method
+#ifndef MICROPY_PY_BUILTINS_DICT_FROMKEYS
+#define MICROPY_PY_BUILTINS_DICT_FROMKEYS (1)
 #endif
 
 // Whether to support memoryview object
@@ -1149,6 +1190,12 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES (0)
+#endif
+
+// Whether to provide SHORT, INT, LONG, etc. types in addition to
+// exact-bitness types like INT16, INT32, etc.
+#ifndef MICROPY_PY_UCTYPES_NATIVE_C_TYPES
+#define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
 #endif
 
 #ifndef MICROPY_PY_UZLIB

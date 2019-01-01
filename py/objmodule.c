@@ -61,6 +61,13 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+        #if MICROPY_MODULE_GETATTR
+        } else if (attr != MP_QSTR___getattr__) {
+            elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
+            }
+        #endif
         }
     } else {
         // delete/store attribute

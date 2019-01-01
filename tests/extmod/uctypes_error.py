@@ -35,3 +35,9 @@ try:
     S.x = 1 
 except TypeError:
     print('TypeError')
+
+# unsupported unary op
+try:
+    hash(S)
+except TypeError:
+    print('TypeError')

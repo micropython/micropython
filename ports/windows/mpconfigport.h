@@ -26,7 +26,7 @@
 
 // options to control how MicroPython is built
 
-// Linking with GNU readline (MICROPY_USE_READLINE == 2) causes binary to be licensed under GPL
+// By default use MicroPython version of readline
 #ifndef MICROPY_USE_READLINE
 #define MICROPY_USE_READLINE        (1)
 #endif

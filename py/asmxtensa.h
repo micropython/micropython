@@ -245,6 +245,9 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
 void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label);
 void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 
+// Holds a pointer to mp_fun_table
+#define ASM_XTENSA_REG_FUN_TABLE ASM_XTENSA_REG_A15
+
 #if GENERIC_ASM_API
 
 // The following macros provide a (mostly) arch-independent API to
@@ -268,6 +271,8 @@ void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 #define REG_LOCAL_3 ASM_XTENSA_REG_A14
 #define REG_LOCAL_NUM (3)
 
+#define REG_FUN_TABLE ASM_XTENSA_REG_FUN_TABLE
+
 #define ASM_T               asm_xtensa_t
 #define ASM_END_PASS        asm_xtensa_end_pass
 #define ASM_ENTRY           asm_xtensa_entry
@@ -281,7 +286,7 @@ void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 #define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
     asm_xtensa_bcc_reg_reg_label(as, ASM_XTENSA_CC_EQ, reg1, reg2, label)
 #define ASM_JUMP_REG(as, reg) asm_xtensa_op_jx((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_xtensa_call_ind((as), (idx))
+#define ASM_CALL_IND(as, idx) asm_xtensa_call_ind((as), (idx))
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_xtensa_mov_local_reg((as), (local_num), (reg_src))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_xtensa_mov_reg_i32((as), (reg_dest), (imm))

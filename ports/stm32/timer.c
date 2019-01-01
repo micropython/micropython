@@ -611,7 +611,9 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     switch (self->tim_id) {
         case 1: __HAL_RCC_TIM1_CLK_ENABLE(); break;
         case 2: __HAL_RCC_TIM2_CLK_ENABLE(); break;
+        #if defined(TIM3)
         case 3: __HAL_RCC_TIM3_CLK_ENABLE(); break;
+        #endif
         #if defined(TIM4)
         case 4: __HAL_RCC_TIM4_CLK_ENABLE(); break;
         #endif
@@ -706,7 +708,9 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
     #endif
     TIM_ENTRY(2, TIM2_IRQn),
+    #if defined(TIM3)
     TIM_ENTRY(3, TIM3_IRQn),
+    #endif
     #if defined(TIM4)
     TIM_ENTRY(4, TIM4_IRQn),
     #endif
@@ -1127,7 +1131,9 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             // Only Timers 1, 2, 3, 4, 5, and 8 support encoder mode
             if (self->tim.Instance != TIM1
             &&  self->tim.Instance != TIM2
+            #if defined(TIM3)
             &&  self->tim.Instance != TIM3
+            #endif
             #if defined(TIM4)
             &&  self->tim.Instance != TIM4
             #endif

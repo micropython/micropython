@@ -676,6 +676,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
     { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj) },
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS

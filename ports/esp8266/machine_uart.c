@@ -57,13 +57,13 @@ STATIC const char *_parity_name[] = {"None", "1", "0"};
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, rxbuf=%u, timeout=%u, timeout_char=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->timeout, self->timeout_char);
+        self->stop, uart0_get_rxbuf_len() - 1, self->timeout, self->timeout_char);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_rxbuf, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -71,6 +71,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
         //{ MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         //{ MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
@@ -142,6 +143,20 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         default:
             mp_raise_ValueError("invalid stop bits");
             break;
+    }
+
+    // set rx ring buffer
+    if (args[ARG_rxbuf].u_int > 0) {
+        uint16_t len = args[ARG_rxbuf].u_int + 1; // account for usable items in ringbuf
+        byte *buf;
+        if (len <= UART0_STATIC_RXBUF_LEN) {
+            buf = uart_ringbuf_array;
+            MP_STATE_PORT(uart0_rxbuf) = NULL; // clear any old pointer
+        } else {
+            buf = m_new(byte, len);
+            MP_STATE_PORT(uart0_rxbuf) = buf; // retain root pointer
+        }
+        uart0_set_rxbuf(buf, len);
     }
 
     // set timeout

@@ -90,6 +90,9 @@ Functions
    in a row and the lock-depth will increase, and then `heap_unlock()` must be
    called the same number of times to make the heap available again.
 
+   If the REPL becomes active with the heap locked then it will be forcefully
+   unlocked.
+
 .. function:: kbd_intr(chr)
 
    Set the character that will raise a `KeyboardInterrupt` exception.  By

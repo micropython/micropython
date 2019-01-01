@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2018 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ enum {
 #define AGG_TYPE_BITS 2
 
 enum {
-    STRUCT, PTR, ARRAY, BITFIELD,
+    STRUCT, PTR, ARRAY,
 };
 
 // Here we need to set sign bit right
@@ -137,7 +137,11 @@ STATIC void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     (void)kind;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     const char *typen = "unk";
-    if (MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)) {
+    if (MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)
+      #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+        || MP_OBJ_IS_TYPE(self->desc, &mp_type_ordereddict)
+      #endif
+      ) {
         typen = "STRUCT";
     } else if (MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
@@ -206,7 +210,11 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
 }
 
 STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size) {
-    if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_dict)) {
+    if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_dict)
+      #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+        && !MP_OBJ_IS_TYPE(desc_in, &mp_type_ordereddict)
+      #endif
+      ) {
         if (MP_OBJ_IS_TYPE(desc_in, &mp_type_tuple)) {
             return uctypes_struct_agg_size((mp_obj_tuple_t*)MP_OBJ_TO_PTR(desc_in), layout_type, max_field_size);
         } else if (MP_OBJ_IS_SMALL_INT(desc_in)) {
@@ -261,7 +269,8 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
     return total_size;
 }
 
-STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
+STATIC mp_obj_t uctypes_struct_sizeof(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t obj_in = args[0];
     mp_uint_t max_field_size = 0;
     if (MP_OBJ_IS_TYPE(obj_in, &mp_type_bytearray)) {
         return mp_obj_len(obj_in);
@@ -270,15 +279,22 @@ STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
     // We can apply sizeof either to structure definition (a dict)
     // or to instantiated structure
     if (MP_OBJ_IS_TYPE(obj_in, &uctypes_struct_type)) {
+        if (n_args != 1) {
+            mp_raise_TypeError(NULL);
+        }
         // Extract structure definition
         mp_obj_uctypes_struct_t *obj = MP_OBJ_TO_PTR(obj_in);
         obj_in = obj->desc;
         layout_type = obj->flags;
+    } else {
+        if (n_args == 2) {
+            layout_type = mp_obj_get_int(args[1]);
+        }
     }
     mp_uint_t size = uctypes_struct_size(obj_in, layout_type, &max_field_size);
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_sizeof_obj, uctypes_struct_sizeof);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uctypes_struct_sizeof_obj, 1, 2, uctypes_struct_sizeof);
 
 static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
@@ -390,8 +406,11 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
 STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set_val) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // TODO: Support at least OrderedDict in addition
-    if (!MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)) {
+    if (!MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)
+      #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+        && !MP_OBJ_IS_TYPE(self->desc, &mp_type_ordereddict)
+      #endif
+      ) {
             mp_raise_TypeError("struct: no fields");
     }
 
@@ -595,6 +614,25 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     }
 }
 
+STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+        case MP_UNARY_OP_INT:
+            if (MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
+                mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
+                mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
+                uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
+                if (agg_type == PTR) {
+                    byte *p = *(void**)self->addr;
+                    return mp_obj_new_int((mp_int_t)(uintptr_t)p);
+                }
+            }
+            /* fallthru */
+
+        default: return MP_OBJ_NULL; // op not supported
+    }
+}
+
 STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
@@ -643,6 +681,7 @@ STATIC const mp_obj_type_t uctypes_struct_type = {
     .make_new = uctypes_struct_make_new,
     .attr = uctypes_struct_attr,
     .subscr = uctypes_struct_subscr,
+    .unary_op = uctypes_struct_unary_op,
     .buffer_p = { .get_buffer = uctypes_get_buffer },
 };
 
@@ -700,6 +739,30 @@ STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_FLOAT32), MP_ROM_INT(TYPE2SMALLINT(FLOAT32, 4)) },
     { MP_ROM_QSTR(MP_QSTR_FLOAT64), MP_ROM_INT(TYPE2SMALLINT(FLOAT64, 4)) },
     #endif
+
+    #if MICROPY_PY_UCTYPES_NATIVE_C_TYPES
+    // C native type aliases. These depend on GCC-compatible predefined
+    // preprocessor macros.
+    #if __SIZEOF_SHORT__ == 2
+    { MP_ROM_QSTR(MP_QSTR_SHORT), MP_ROM_INT(TYPE2SMALLINT(INT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_USHORT), MP_ROM_INT(TYPE2SMALLINT(UINT16, 4)) },
+    #endif
+    #if __SIZEOF_INT__ == 4
+    { MP_ROM_QSTR(MP_QSTR_INT), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    #endif
+    #if __SIZEOF_LONG__ == 4
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    #elif __SIZEOF_LONG__ == 8
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    #endif
+    #if __SIZEOF_LONG_LONG__ == 8
+    { MP_ROM_QSTR(MP_QSTR_LONGLONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONGLONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    #endif
+    #endif // MICROPY_PY_UCTYPES_NATIVE_C_TYPES
 
     { MP_ROM_QSTR(MP_QSTR_PTR), MP_ROM_INT(TYPE2SMALLINT(PTR, AGG_TYPE_BITS)) },
     { MP_ROM_QSTR(MP_QSTR_ARRAY), MP_ROM_INT(TYPE2SMALLINT(ARRAY, AGG_TYPE_BITS)) },

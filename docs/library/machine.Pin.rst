@@ -179,7 +179,7 @@ Methods
 
    Availability: WiPy.
 
-.. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), \*, priority=1, wake=None)
+.. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), \*, priority=1, wake=None, hard=False)
 
    Configure an interrupt handler to be called when the trigger source of the
    pin is active.  If the pin mode is ``Pin.IN`` then the trigger source is
@@ -191,7 +191,8 @@ Methods
    The arguments are:
 
      - ``handler`` is an optional function to be called when the interrupt
-       triggers.
+       triggers. The handler must take exactly one argument which is the
+       ``Pin`` instance.
 
      - ``trigger`` configures the event which can generate an interrupt.
        Possible values are:
@@ -211,6 +212,10 @@ Methods
        system.  It can be ``machine.IDLE``, ``machine.SLEEP`` or ``machine.DEEPSLEEP``.
        These values can also be OR'ed together to make a pin generate interrupts in
        more than one power mode.
+
+     - ``hard`` if true a hardware interrupt is used. This reduces the delay
+       between the pin change and the handler being called. Hard interrupt
+       handlers may not allocate memory; see :ref:`isr_rules`.
 
    This method returns a callback object.
 

@@ -89,10 +89,9 @@ STATIC void bound_meth_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // not load attribute
         return;
     }
-    if (attr == MP_QSTR___name__) {
-        mp_obj_bound_meth_t *o = MP_OBJ_TO_PTR(self_in);
-        dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(o->meth));
-    }
+    // Delegate the load to the method object
+    mp_obj_bound_meth_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_load_method_maybe(self->meth, attr, dest);
 }
 #endif
 
