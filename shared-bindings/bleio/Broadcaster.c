@@ -42,18 +42,14 @@
 //|    import bleio
 //|    import time
 //|
-//|
 //|    # Broadcast once a second.
 //|    broadcaster = bleio.Broadcaster(interval=1)
 //|    i = 0
-//|    data = bytearray(1)
 //|    # Broadcast a byte of data that's incremented once a minute
 //|    while True:
-//|        data[0] = i
-//|        bytearray
+//|        # data is an entire advertising data packet, starting with flags.
 //|        broadcaster.start_advertising(data)
 //|        time.sleep(60)
-//|        i += 1
 //|
 //| .. class:: Broadcaster(interval=1)
 //|
@@ -88,9 +84,9 @@ STATIC mp_obj_t bleio_broadcaster_make_new(const mp_obj_type_t *type, size_t n_a
 
 //|   .. method:: start_advertising(data)
 //|
-//|     Start advertising the given manufacturer-specific data.
+//|     Start advertising using the given data packet.
 //|
-//|     :param buf data:  Send data bytes in advertising packets, labeled as manufacturer-specific data
+//|     :param buf data:  advertising data packet, starting with advertising data flags (0x01)
 //|
 STATIC mp_obj_t bleio_broadcaster_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_broadcaster_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);

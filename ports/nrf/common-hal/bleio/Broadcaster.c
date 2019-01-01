@@ -38,12 +38,6 @@
 
 static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
-STATIC void check_data_fit(size_t pos, size_t data_len) {
-    if (pos + data_len >= BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
-        mp_raise_ValueError(translate("Data too large for advertisement packet"));
-    }
-}
-
 void common_hal_bleio_broadcaster_construct(bleio_broadcaster_obj_t *self, mp_float_t interval) {
     common_hal_bleio_adapter_set_enabled(true);   // TODO -- Do this somewhere else maybe bleio __init__
     const mp_float_t min = BLE_GAP_ADV_INTERVAL_MIN * ADV_INTERVAL_UNIT_FLOAT_SECS;
@@ -58,25 +52,16 @@ void common_hal_bleio_broadcaster_construct(bleio_broadcaster_obj_t *self, mp_fl
 
 
 void common_hal_bleio_broadcaster_start_advertising(bleio_broadcaster_obj_t *self, mp_buffer_info_t *data) {
-    size_t adv_data_pos = 0;
     uint32_t err_code;
 
-    // Build up advertising packet.
-    check_data_fit(adv_data_pos, 1 + 1 + 1);
-    self->adv_data[adv_data_pos++] = 2;
-    self->adv_data[adv_data_pos++] = BLE_GAP_AD_TYPE_FLAGS;
-    self->adv_data[adv_data_pos++] = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
-
-    // Data is always send as manufacturer-specific data
-    check_data_fit(adv_data_pos, 1 + 1 + data->len);
-    self->adv_data[adv_data_pos++] = 1 + data->len;
-    self->adv_data[adv_data_pos++] = BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA;
-    memcpy(&(self->adv_data[adv_data_pos]), data->buf, data->len);
-    adv_data_pos += data->len;
+    if (data->len >= BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
+        mp_raise_ValueError(translate("Data too large for advertisement packet"));
+    }
+    memcpy(self->adv_data, data->buf, data->len);
 
     ble_gap_adv_params_t m_adv_params = {
         .interval = (uint32_t) (self->interval / ADV_INTERVAL_UNIT_FLOAT_SECS),
-        .properties.type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED,
+        .properties.type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED,
         .duration = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED,
         .filter_policy = BLE_GAP_ADV_FP_ANY,
         .primary_phy = BLE_GAP_PHY_1MBPS,
@@ -86,7 +71,7 @@ void common_hal_bleio_broadcaster_start_advertising(bleio_broadcaster_obj_t *sel
 
     const ble_gap_adv_data_t ble_gap_adv_data = {
         .adv_data.p_data = self->adv_data,
-        .adv_data.len = adv_data_pos,
+        .adv_data.len = data->len,
     };
 
     err_code = sd_ble_gap_adv_set_configure(&m_adv_handle, &ble_gap_adv_data, &m_adv_params);
