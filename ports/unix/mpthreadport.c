@@ -173,6 +173,11 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
         goto er;
     }
 
+    ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    if (ret != 0) {
+        goto er;
+    }
+
     pthread_mutex_lock(&thread_mutex);
 
     // create thread
@@ -205,12 +210,18 @@ er:
 
 void mp_thread_finish(void) {
     pthread_mutex_lock(&thread_mutex);
-    // TODO unlink from list
+    thread_t *prev = NULL;
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
-            th->ready = 0;
+            if (prev == NULL) {
+                thread = th->next;
+            } else {
+                prev->next = th->next;
+            }
+            free(th);
             break;
         }
+        prev = th;
     }
     pthread_mutex_unlock(&thread_mutex);
 }
