@@ -93,6 +93,19 @@ void mp_thread_init(void) {
     sigaction(SIGUSR1, &sa, NULL);
 }
 
+void mp_thread_deinit(void) {
+    pthread_mutex_lock(&thread_mutex);
+    while (thread->next != NULL) {
+        thread_t *th = thread;
+        thread = thread->next;
+        pthread_cancel(th->id);
+        free(th);
+    }
+    pthread_mutex_unlock(&thread_mutex);
+    assert(thread->id == pthread_self());
+    free(thread);
+}
+
 // This function scans all pointers that are external to the current thread.
 // It does this by signalling all other threads and getting them to scan their
 // own registers and stack.  Note that there may still be some edge cases left
@@ -127,6 +140,7 @@ void mp_thread_set_state(void *state) {
 }
 
 void mp_thread_start(void) {
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
     pthread_mutex_lock(&thread_mutex);
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
