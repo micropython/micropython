@@ -36,6 +36,7 @@
 
 #include <signal.h>
 #include <sched.h>
+#include <semaphore.h>
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
@@ -53,7 +54,7 @@ STATIC thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
 // it's needed because we can't use any pthread calls in a signal handler
-STATIC volatile int thread_signal_done;
+STATIC sem_t thread_signal_done;
 
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
@@ -70,7 +71,7 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
         gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
         #endif
-        thread_signal_done = 1;
+        sem_post(&thread_signal_done);
     }
 }
 
@@ -84,6 +85,7 @@ void mp_thread_init(void) {
     thread->ready = 1;
     thread->arg = NULL;
     thread->next = NULL;
+    sem_init(&thread_signal_done, 0, 0);
 
     // enable signal handler for garbage collection
     struct sigaction sa;
@@ -122,11 +124,8 @@ void mp_thread_gc_others(void) {
         if (!th->ready) {
             continue;
         }
-        thread_signal_done = 0;
         pthread_kill(th->id, SIGUSR1);
-        while (thread_signal_done == 0) {
-            sched_yield();
-        }
+        sem_wait(&thread_signal_done);
     }
     pthread_mutex_unlock(&thread_mutex);
 }
