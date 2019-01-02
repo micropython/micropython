@@ -265,7 +265,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ POP_EXCEPT
 \\d\+ JUMP \\d\+
 \\d\+ END_FINALLY
-\\d\+ POP_BLOCK
 \\d\+ LOAD_CONST_NONE
 \\d\+ LOAD_FAST 1
 \\d\+ POP_TOP
@@ -286,7 +285,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ POP_TOP
 \\d\+ LOAD_DEREF 14
 \\d\+ POP_TOP
-\\d\+ POP_BLOCK
 \\d\+ LOAD_CONST_NONE
 \\d\+ WITH_CLEANUP
 \\d\+ END_FINALLY

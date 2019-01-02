@@ -633,8 +633,6 @@ dispatch_loop:
                             // replacing it with None, which signals END_FINALLY to just
                             // execute the finally handler normally.
                             SET_TOP(mp_const_none);
-                            assert(exc_sp >= exc_stack);
-                            POP_EXC_BLOCK();
                         } else {
                             // We need to re-raise the exception.  We pop __exit__ handler
                             // by copying the exception instance down to the new top-of-stack.
@@ -654,7 +652,7 @@ unwind_jump:;
                     while ((unum & 0x7f) > 0) {
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
-                        if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                        if (MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
                             // Getting here the stack looks like:
                             //     (..., X, dest_ip)
                             // where X is pointed to by exc_sp->val_sp and in the case
@@ -698,6 +696,8 @@ unwind_jump:;
                     // if TOS is an integer, finishes coroutine and returns control to caller
                     // if TOS is an exception, reraises the exception
                     if (TOP() == mp_const_none) {
+                        assert(exc_sp >= exc_stack);
+                        POP_EXC_BLOCK();
                         sp--;
                     } else if (mp_obj_is_small_int(TOP())) {
                         // We finished "finally" coroutine and now dispatch back
@@ -1063,7 +1063,7 @@ unwind_jump:;
 unwind_return:
                     // Search for and execute finally handlers that aren't already active
                     while (exc_sp >= exc_stack) {
-                        if (!currently_in_except_block && MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                        if (!currently_in_except_block && MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
                             // Found a finally handler that isn't active.
                             // Getting here the stack looks like:
                             //     (..., X, [iter0, iter1, ...,] ret_val)
@@ -1419,7 +1419,7 @@ unwind_loop:
                 mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val), source_file, source_line, block_name);
             }
 
-            while (currently_in_except_block) {
+            while (currently_in_except_block || (exc_sp >= exc_stack && exc_sp->handler <= code_state->ip)) {
                 // nested exception
 
                 assert(exc_sp >= exc_stack);
