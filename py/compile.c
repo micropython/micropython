@@ -1599,7 +1599,6 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
         }
         compile_node(comp, pns_except->nodes[1]); // the <body>
         if (qstr_exception_local != 0) {
-            EMIT(pop_block);
             EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
             EMIT_ARG(label_assign, l3);
             EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
@@ -1635,7 +1634,6 @@ STATIC void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n
     } else {
         compile_try_except(comp, pn_body, n_except, pn_except, pn_else);
     }
-    EMIT(pop_block);
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
     EMIT_ARG(label_assign, l_finally_block);
     compile_node(comp, pn_finally);
@@ -1811,8 +1809,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         compile_async_with_stmt_helper(comp, n - 1, nodes + 1, body);
         EMIT_ARG(adjust_stack_size, -3);
 
-        // Finish the "try" block
-        EMIT(pop_block);
+        // We have now finished the "try" block and fall through to the "finally"
 
         // At this point, after the with body has executed, we have 3 cases:
         // 1. no exception, we just fall through to this point; stack: (..., ctx_mgr)

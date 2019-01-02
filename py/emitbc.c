@@ -738,7 +738,6 @@ void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind) {
 }
 
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
-    mp_emit_bc_pop_block(emit);
     mp_emit_bc_load_const_tok(emit, MP_TOKEN_KW_NONE);
     mp_emit_bc_label_assign(emit, label);
     emit_bc_pre(emit, 2); // ensure we have enough stack space to call the __exit__ method
