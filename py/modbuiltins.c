@@ -316,6 +316,22 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_min_obj, 1, mp_builtin_min);
 
 #endif
 
+#if MICROPY_PY_BUILTINS_NEXT2
+STATIC mp_obj_t mp_builtin_next(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 1) {
+        mp_obj_t ret = mp_iternext_allow_raise(args[0]);
+        if (ret == MP_OBJ_STOP_ITERATION) {
+            nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        } else {
+            return ret;
+        }
+    } else {
+        mp_obj_t ret = mp_iternext(args[0]);
+        return ret == MP_OBJ_STOP_ITERATION ? args[1] : ret;
+    }
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_next_obj, 1, 2, mp_builtin_next);
+#else
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
     if (ret == MP_OBJ_STOP_ITERATION) {
@@ -325,6 +341,7 @@ STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
+#endif
 
 STATIC mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_OP_MODULO
