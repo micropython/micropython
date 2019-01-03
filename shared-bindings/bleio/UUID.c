@@ -89,18 +89,6 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
     return MP_OBJ_FROM_PTR(self);
 }
 
-void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (common_hal_bleio_uuid_get_size(self) == 128) {
-        mp_printf(print, "UUID(uuid16=0x%04x, uuid128_reference=0x%02x)",
-                  common_hal_bleio_uuid_get_uuid16(self),
-                  common_hal_bleio_uuid_get_uuid128_reference(self));
-    } else {
-        mp_printf(print, "UUID(0x%04x)", common_hal_bleio_uuid_get_uuid16(self));
-    }
-}
-
 //|   .. attribute:: uuid16
 //|
 //|     The 16-bit part of the UUID. (read-only)
@@ -236,7 +224,6 @@ STATIC mp_obj_t bleio_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_
 const mp_obj_type_t bleio_uuid_type = {
     { &mp_type_type },
     .name = MP_QSTR_UUID,
-    .print = bleio_uuid_print,
     .make_new = bleio_uuid_make_new,
     .unary_op = bleio_uuid_unary_op,
     .binary_op = bleio_uuid_binary_op,

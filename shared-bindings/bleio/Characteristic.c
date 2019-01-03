@@ -89,14 +89,6 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    mp_printf(print, "Characteristic(");
-    bleio_uuid_print(print, self->uuid, kind);
-    mp_printf(print, ")");
-}
-
 //|   .. attribute:: broadcast
 //|
 //|     A `bool` specifying if the characteristic allows broadcasting its value. (read-only)
@@ -274,7 +266,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_locals_dict, bleio_characterist
 const mp_obj_type_t bleio_characteristic_type = {
     { &mp_type_type },
     .name = MP_QSTR_Characteristic,
-    .print = bleio_characteristic_print,
     .make_new = bleio_characteristic_make_new,
     .locals_dict = (mp_obj_dict_t*)&bleio_characteristic_locals_dict
 };
