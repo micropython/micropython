@@ -85,8 +85,8 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // chech if ca validation is required
-    if (args[4].u_int != SSL_CERT_NONE && args[5].u_obj == mp_const_none) {
+    // check if ca validation is required
+    if (args[4].u_int != SSL_CERT_NONE && args[6].u_obj == mp_const_none) {
         goto arg_error;
     }
 
