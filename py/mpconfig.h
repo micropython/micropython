@@ -881,6 +881,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_RANGE_BINOP (0)
 #endif
 
+// Support for callling next() with second argument
+#ifndef MICROPY_PY_BUILTINS_NEXT2
+#define MICROPY_PY_BUILTINS_NEXT2 (0)
+#endif
+
 // Whether to support rounding of integers (incl bignum); eg round(123,-1)=120
 #ifndef MICROPY_PY_BUILTINS_ROUND_INT
 #define MICROPY_PY_BUILTINS_ROUND_INT (0)
