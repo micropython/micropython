@@ -78,6 +78,7 @@ STATIC void gatts_read(bleio_characteristic_obj_t *characteristic) {
     if (err_code == NRF_SUCCESS) {
         characteristic->value_data = mp_obj_new_bytearray_of_zeros(gatts_value.len);
         mp_get_buffer_raise(characteristic->value_data, &bufinfo, MP_BUFFER_WRITE);
+        gatts_value.p_value = bufinfo.buf;
 
         // Read again, with the correct size of buffer.
         err_code = sd_ble_gatts_value_get(conn_handle, characteristic->handle, &gatts_value);
