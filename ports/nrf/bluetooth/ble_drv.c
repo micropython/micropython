@@ -53,27 +53,22 @@ void ble_drv_reset() {
 }
 
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
-    event_handler_t *handler = m_new_ll(event_handler_t, 1);
-    handler->next = NULL;
-    handler->param = param;
-    handler->func = func;
-
-    if (m_event_handlers == NULL) {
-        m_event_handlers = handler;
-        return;
-    }
-
     event_handler_t *it = m_event_handlers;
-    while (it->next != NULL) {
+    while (it != NULL) {
+        // If event handler and its corresponding param are already on the list, don't add again.
         if ((it->func == func) && (it->param == param)) {
-            m_free(handler);
             return;
         }
-
         it = it->next;
     }
 
-    it->next = handler;
+    // Add a new handler to the front of the list
+    event_handler_t *handler = m_new_ll(event_handler_t, 1);
+    handler->next = m_event_handlers;
+    handler->param = param;
+    handler->func = func;
+
+    m_event_handlers = handler;
 }
 
 void SD_EVT_IRQHandler(void) {

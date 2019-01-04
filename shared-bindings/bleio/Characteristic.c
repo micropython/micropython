@@ -35,15 +35,21 @@
 //| :class:`Characteristic` -- BLE service characteristic
 //| =========================================================
 //|
-//| Stores information about a BLE service characteristic and allows to read
-//| and write the characteristic's value.
+//| Stores information about a BLE service characteristic and allows reading
+//| and writing of the characteristic's value.
 //|
 //|
 //| .. class:: Characteristic(uuid, *, broadcast=False, indicate=False, notify=False, read=False, write=False, write_no_response=False)
 //|
 //|   Create a new Characteristic object identified by the specified UUID.
 //|
-//|   :param bleio.UUID uuid: The uuid of the characteristic (read_only)
+//|   :param bleio.UUID uuid: The uuid of the characteristic
+//|   :param bool broadcast: Allowed in advertising packets
+//|   :param bool indicate: Server will indicate to the client when the value is set and wait for a response
+//|   :param bool notify: Server will notify the client when the value is set
+//|   :param bool read: Clients may read this characteristic
+//|   :param bool write: Clients may write this characteristic; a response will be sent back
+//|   :param bool write_no_response: Clients may write this characteristic; no response will be sent back
 //|
 STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);

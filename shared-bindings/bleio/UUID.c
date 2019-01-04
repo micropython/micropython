@@ -109,8 +109,8 @@ const mp_obj_property_t bleio_uuid_uuid16_obj = {
 
 //|   .. attribute:: uuid128
 //|
-//|     The 128-bit value of the UUID, return as a bytes().
-//|     Throws AttributeError if this is a 16-bit UUID. (read-only)
+//|     The 128-bit value of the UUID, returned as bytes.
+//|     Raises AttributeError if this is a 16-bit UUID. (read-only)
 //|
 STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -127,26 +127,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_obj, bleio_uuid_get_uuid128);
 const mp_obj_property_t bleio_uuid_uuid128_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
-//|   .. attribute:: uuid128_reference
-//|
-//|     An opaque reference representing the 128-bit UUID. (read-only)
-//|     Returns None if this is a 16-bit UUID.
-//|
-STATIC mp_obj_t bleio_uuid_get_uuid128_reference(mp_obj_t self_in) {
-    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint32_t reference = common_hal_bleio_uuid_get_uuid128_reference(self);
-    return reference == 0 ? mp_const_none : MP_OBJ_NEW_SMALL_INT(reference);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_reference_obj, bleio_uuid_get_uuid128_reference);
-
-const mp_obj_property_t bleio_uuid_uuid128_reference_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_reference_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
@@ -174,7 +154,6 @@ const mp_obj_property_t bleio_uuid_size_obj = {
 STATIC const mp_rom_map_elem_t bleio_uuid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uuid16), MP_ROM_PTR(&bleio_uuid_uuid16_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid128), MP_ROM_PTR(&bleio_uuid_uuid128_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uuid128_reference), MP_ROM_PTR(&bleio_uuid_uuid128_reference_obj) },
     { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&bleio_uuid_size_obj) },
 };
 

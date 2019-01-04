@@ -221,7 +221,7 @@ STATIC uint32_t set_advertisement_data(bleio_peripheral_obj_t *self, bool connec
     return err_code;
 }
 
-STATIC void on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
+STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_peripheral_obj_t *self = (bleio_peripheral_obj_t*)self_in;
 
     switch (ble_evt->header.evt_id) {
@@ -311,7 +311,7 @@ bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self) {
 
 void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
     if (connectable) {
-        ble_drv_add_event_handler(on_ble_evt, self);
+        ble_drv_add_event_handler(peripheral_on_ble_evt, self);
     }
 
     const uint32_t err_code = set_advertisement_data(self, connectable, raw_data);

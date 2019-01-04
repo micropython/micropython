@@ -55,7 +55,7 @@ STATIC uint16_t get_cccd(bleio_characteristic_obj_t *characteristic) {
         // CCCD is not set, so say that neither Notify nor Indicate is enabled.
         cccd = 0;
     } else if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to read CCD value, err 0x%04x"), err_code);
+        mp_raise_OSError_msg_varg(translate("Failed to read CCCD value, err 0x%04x"), err_code);
     }
 
     return cccd;
@@ -126,7 +126,7 @@ STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
     const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to notify attribute value, err %0x04x"), err_code);
+        mp_raise_OSError_msg_varg(translate("Failed to notify or indicate attribute value, err %0x04x"), err_code);
     }
 
     m_tx_in_progress += 1;
@@ -188,7 +188,7 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
     }
 }
 
-STATIC void on_ble_evt(ble_evt_t *ble_evt, void *param) {
+STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     switch (ble_evt->header.evt_id) {
         case BLE_GATTS_EVT_HVN_TX_COMPLETE:
             m_tx_in_progress -= ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
@@ -211,7 +211,7 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *param) {
 }
 
 void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self) {
-    ble_drv_add_event_handler(on_ble_evt, NULL);
+    ble_drv_add_event_handler(characteristic_on_ble_evt, NULL);
 }
 
 void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
