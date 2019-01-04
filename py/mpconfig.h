@@ -409,6 +409,11 @@
 #define MICROPY_DEBUG_VERBOSE (0)
 #endif
 
+// Whether to enable a simple VM stack overflow check
+#ifndef MICROPY_DEBUG_VM_STACK_OVERFLOW
+#define MICROPY_DEBUG_VM_STACK_OVERFLOW (0)
+#endif
+
 /*****************************************************************************/
 /* Optimisations                                                             */
 

@@ -195,16 +195,11 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 // than this will try to use the heap, with fallback to stack allocation.
 #define VM_MAX_STATE_ON_STACK (11 * sizeof(mp_uint_t))
 
-// Set this to 1 to enable a simple stack overflow check.
-#define VM_DETECT_STACK_OVERFLOW (0)
-
 #define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var) \
     { \
         /* bytecode prelude: state size and exception stack size */               \
         n_state_out_var = mp_decode_uint_value(bytecode);                         \
         size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(bytecode)); \
-                                                                                  \
-        n_state_out_var += VM_DETECT_STACK_OVERFLOW;                              \
                                                                                   \
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
@@ -270,9 +265,17 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     #else
     if (state_size > VM_MAX_STATE_ON_STACK) {
         code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
+        #if MICROPY_DEBUG_VM_STACK_OVERFLOW
+        if (code_state != NULL) {
+            memset(code_state->state, 0, state_size);
+        }
+        #endif
     }
     if (code_state == NULL) {
         code_state = alloca(sizeof(mp_code_state_t) + state_size);
+        #if MICROPY_DEBUG_VM_STACK_OVERFLOW
+        memset(code_state->state, 0, state_size);
+        #endif
         state_size = 0; // indicate that we allocated using alloca
     }
     #endif
@@ -284,31 +287,34 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
     mp_globals_set(code_state->old_globals);
 
-#if VM_DETECT_STACK_OVERFLOW
+    #if MICROPY_DEBUG_VM_STACK_OVERFLOW
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         if (code_state->sp < code_state->state) {
-            printf("VM stack underflow: " INT_FMT "\n", code_state->sp - code_state->state);
+            mp_printf(MICROPY_DEBUG_PRINTER, "VM stack underflow: " INT_FMT "\n", code_state->sp - code_state->state);
             assert(0);
         }
     }
-    // We can't check the case when an exception is returned in state[n_state - 1]
+    const byte *bytecode_ptr = mp_decode_uint_skip(mp_decode_uint_skip(self->bytecode));
+    size_t n_pos_args = bytecode_ptr[1];
+    size_t n_kwonly_args = bytecode_ptr[2];
+    // We can't check the case when an exception is returned in state[0]
     // and there are no arguments, because in this case our detection slot may have
     // been overwritten by the returned exception (which is allowed).
-    if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && self->n_pos_args + self->n_kwonly_args == 0)) {
+    if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && n_pos_args + n_kwonly_args == 0)) {
         // Just check to see that we have at least 1 null object left in the state.
         bool overflow = true;
-        for (size_t i = 0; i < n_state - self->n_pos_args - self->n_kwonly_args; i++) {
+        for (size_t i = 0; i < n_state - n_pos_args - n_kwonly_args; ++i) {
             if (code_state->state[i] == MP_OBJ_NULL) {
                 overflow = false;
                 break;
             }
         }
         if (overflow) {
-            printf("VM stack overflow state=%p n_state+1=" UINT_FMT "\n", code_state->state, n_state);
+            mp_printf(MICROPY_DEBUG_PRINTER, "VM stack overflow state=%p n_state+1=" UINT_FMT "\n", code_state->state, n_state);
             assert(0);
         }
     }
-#endif
+    #endif
 
     mp_obj_t result;
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
