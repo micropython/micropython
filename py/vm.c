@@ -100,13 +100,11 @@
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
     exc_sp->handler = ip + ulab; \
-    exc_sp->val_sp = MP_TAGPTR_MAKE(sp, ((with_or_finally) << 1) | currently_in_except_block); \
+    exc_sp->val_sp = MP_TAGPTR_MAKE(sp, ((with_or_finally) << 1)); \
     exc_sp->prev_exc = NULL; \
-    currently_in_except_block = 0; /* in a try block now */ \
 } while (0)
 
 #define POP_EXC_BLOCK() \
-    currently_in_except_block = MP_TAGPTR_TAG0(exc_sp->val_sp); /* restore previous state */ \
     exc_sp--; /* pop back to previous exception handler */ \
     CLEAR_SYS_EXC_INFO() /* just clear sys.exc_info(), not compliant, but it shouldn't be used in 1st place */
 
@@ -161,7 +159,6 @@ run_code_state: ;
     }
 
     // variables that are visible to the exception handler (declared volatile)
-    volatile bool currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
     mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
 
     #if MICROPY_PY_THREAD_GIL && MICROPY_PY_THREAD_GIL_VM_DIVISOR
@@ -771,7 +768,6 @@ unwind_jump:;
                 // matched against: SETUP_EXCEPT
                 ENTRY(MP_BC_POP_EXCEPT):
                     assert(exc_sp >= exc_stack);
-                    assert(currently_in_except_block);
                     POP_EXC_BLOCK();
                     DISPATCH();
 
@@ -906,7 +902,7 @@ unwind_jump:;
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
                         mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1);
                         #if !MICROPY_ENABLE_PYSTACK
                         if (new_state == NULL) {
@@ -942,7 +938,7 @@ unwind_jump:;
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
 
                         mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(false, unum, sp, &out_args);
@@ -985,7 +981,7 @@ unwind_jump:;
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
 
                         size_t n_args = unum & 0xff;
                         size_t n_kw = (unum >> 8) & 0xff;
@@ -1025,7 +1021,7 @@ unwind_jump:;
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
                         code_state->ip = ip;
                         code_state->sp = sp;
-                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
 
                         mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(true, unum, sp, &out_args);
@@ -1063,7 +1059,7 @@ unwind_jump:;
 unwind_return:
                     // Search for and execute finally handlers that aren't already active
                     while (exc_sp >= exc_stack) {
-                        if (!currently_in_except_block && MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
+                        if (MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
                             // Found a finally handler that isn't active.
                             // Getting here the stack looks like:
                             //     (..., X, [iter0, iter1, ...,] ret_val)
@@ -1145,7 +1141,7 @@ yield:
                     nlr_pop();
                     code_state->ip = ip;
                     code_state->sp = sp;
-                    code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+                    code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, 0);
                     return MP_VM_RETURN_YIELD;
 
                 ENTRY(MP_BC_YIELD_FROM): {
@@ -1419,7 +1415,8 @@ unwind_loop:
                 mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val), source_file, source_line, block_name);
             }
 
-            while (currently_in_except_block || (exc_sp >= exc_stack && exc_sp->handler <= code_state->ip)) {
+            while (exc_sp >= exc_stack && exc_sp->handler <= code_state->ip) {
+
                 // nested exception
 
                 assert(exc_sp >= exc_stack);
@@ -1432,9 +1429,6 @@ unwind_loop:
             }
 
             if (exc_sp >= exc_stack) {
-                // set flag to indicate that we are now handling an exception
-                currently_in_except_block = 1;
-
                 // catch exception and pass to byte code
                 code_state->ip = exc_sp->handler;
                 mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
@@ -1460,7 +1454,6 @@ unwind_loop:
                 fastn = &code_state->state[n_state - 1];
                 exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
                 // variables that are visible to the exception handler (declared volatile)
-                currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
                 exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
                 goto unwind_loop;
 
