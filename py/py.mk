@@ -120,12 +120,20 @@ $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
 #LittlevGL
-
-
 LVGL_DIR = lib/lvgl
+$(info BUILD=$(BUILD) PWD=$(PWD) PY_SRC=$(PY_SRC))
+QSTR_GLOBAL_DEPENDENCIES += $(BUILD)/micropython/lv_mpy.c
+$(BUILD)/micropython/lv_mpy.c: $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py $(TOP)/$(LVGL_DIR)/lv_objx/*.h 
+	$(ECHO) "LVGL-GEN $@"
+	$(Q)mkdir -p $(BUILD)/micropython
+	$(Q)$(PYTHON) $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py -X anim -X group -I $(TOP)/$(LVGL_DIR)/micropython/pycparser/utils/fake_libc_include $(TOP)/$(LVGL_DIR)/lv_objx/*.h > $(BUILD)/micropython/lv_mpy.c 
+
+CFLAGS_MOD += -Wno-unused-function
+
 INC += -I$(TOP)/$(LVGL_DIR)
 
-SRC_MOD += $(addprefix $(LVGL_DIR)/,\
+SRC_MOD += $(BUILD)/micropython/lv_mpy.c \
+    $(addprefix $(LVGL_DIR)/,\
     lv_core/lv_group.c \
     lv_core/lv_indev.c \
     lv_core/lv_obj.c \
@@ -213,7 +221,6 @@ SRC_MOD += $(addprefix $(LVGL_DIR)/,\
     lv_themes/lv_theme_night.c \
     lv_themes/lv_theme_templ.c \
     lv_themes/lv_theme_zen.c \
-    micropython/lv_mpy.c \
     )
 
 
