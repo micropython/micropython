@@ -24,7 +24,9 @@ boards use smaller version.
 
 .. raw:: html
 
-	<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vScaJ9uQ6F4GrqRryacOq_mXEN65M5stznXedXISxaqJ9Udg8bWvizAKO0_pByGftUb5eCmMR2MIxJD/pubhtml?widget=true&amp;headers=false"></iframe>
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vScaJ9uQ6F4GrqRryacOq_mXEN65M5stznXedXISxaqJ9Udg8bWvizAKO0_pByGftUb5eCmMR2MIxJD/pubhtml?widget=true&amp;headers=false"></iframe>
+    </div>
 
 The full pinout spreadsheet can be found `here <https://docs.google.com/spreadsheets/d/e/2PACX-1vScaJ9uQ6F4GrqRryacOq_mXEN65M5stznXedXISxaqJ9Udg8bWvizAKO0_pByGftUb5eCmMR2MIxJD/pubhtml>`_.
 
