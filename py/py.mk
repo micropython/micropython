@@ -121,12 +121,12 @@ endif
 
 #LittlevGL
 LVGL_DIR = lib/lvgl
-$(info BUILD=$(BUILD) PWD=$(PWD) PY_SRC=$(PY_SRC))
+ALL_LVGL_SRC = $(shell find $(TOP)/$(LVGL_DIR) -type f)
 QSTR_GLOBAL_DEPENDENCIES += $(BUILD)/micropython/lv_mpy.c
-$(BUILD)/micropython/lv_mpy.c: $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py $(TOP)/$(LVGL_DIR)/lv_objx/*.h 
+$(BUILD)/micropython/lv_mpy.c: $(ALL_LVGL_SRC)
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(BUILD)/micropython
-	$(Q)$(PYTHON) $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py -X anim -X group -I $(TOP)/$(LVGL_DIR)/micropython/pycparser/utils/fake_libc_include $(TOP)/$(LVGL_DIR)/lv_objx/*.h > $(BUILD)/micropython/lv_mpy.c 
+	$(Q)$(PYTHON) $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py -X anim -X group -I $(TOP)/$(LVGL_DIR)/micropython/pycparser/utils/fake_libc_include $(TOP)/$(LVGL_DIR)/lv_objx/*.h > $@
 
 CFLAGS_MOD += -Wno-unused-function
 
