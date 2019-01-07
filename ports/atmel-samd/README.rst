@@ -22,7 +22,9 @@ different names. The table below matches the pin order in
 and omits the pins only available on the largest package because all supported
 boards use smaller version.
 
-<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vScaJ9uQ6F4GrqRryacOq_mXEN65M5stznXedXISxaqJ9Udg8bWvizAKO0_pByGftUb5eCmMR2MIxJD/pubhtml?widget=true&amp;headers=false"></iframe>
+.. raw:: html
+
+	<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vScaJ9uQ6F4GrqRryacOq_mXEN65M5stznXedXISxaqJ9Udg8bWvizAKO0_pByGftUb5eCmMR2MIxJD/pubhtml?widget=true&amp;headers=false"></iframe>
 
 The full pinout spreadsheet can be found `here <https://docs.google.com/spreadsheets/d/e/2PACX-1vScaJ9uQ6F4GrqRryacOq_mXEN65M5stznXedXISxaqJ9Udg8bWvizAKO0_pByGftUb5eCmMR2MIxJD/pubhtml>`_.
 
