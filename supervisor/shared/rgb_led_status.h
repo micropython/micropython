@@ -36,6 +36,8 @@
 #include "py/mpconfig.h"
 #include "rgb_led_colors.h"
 
+#include "supervisor/shared/safe_mode.h"
+
 // Overall, the time module must be implemented.
 // To work with a DotStar, one must have MICROPY_HW_APA102_SCK and
 // MICROPY_HW_APA102_MOSI defined and bitbangio.SPI or busio.SPI implemented.

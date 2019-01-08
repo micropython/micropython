@@ -41,9 +41,11 @@ typedef struct {
     uint32_t baudrate;
     uint32_t timeout_ms;
 
-    uint8_t* buffer;
-    uint32_t bufsize;
-    volatile int32_t rx_count;
+    ringbuf_t rbuf;
+    uint8_t rx_char; // EasyDMA buf
+
+    uint8_t tx_pin_number;
+    uint8_t rx_pin_number;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H

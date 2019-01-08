@@ -34,7 +34,6 @@
 typedef struct {
     nrfx_twim_t twim;
     bool in_use;
-    uint8_t max_xfer_size;
 } twim_peripheral_t;
 
 typedef struct {

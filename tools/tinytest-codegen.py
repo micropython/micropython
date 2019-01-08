@@ -23,7 +23,7 @@ def chew_filename(t):
 
 def script_to_map(test_file):
     r = {"name": chew_filename(test_file)["func"]}
-    with open(t) as test:
+    with open(test_file, "rb") as test:
         script = test.readlines()
 
     # Test for import skip_if and inject it into the test as needed.
@@ -39,7 +39,11 @@ def script_to_map(test_file):
             continue
           script.insert(index + total_lines, "\t" + line)
           total_lines += 1
-    r['script'] = escape(''.join(script))
+    r['script'] = escape(b''.join(script))
+
+    with open(test_file + ".exp", "rb") as f:
+        r["output"] = escape(f.read())
+
     return r
 
 test_function = (

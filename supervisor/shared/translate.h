@@ -35,7 +35,7 @@ typedef struct {
 } compressed_string_t;
 
 const compressed_string_t* translate(const char* c);
-
+void serial_write_compressed(const compressed_string_t* compressed);
 char* decompress(const compressed_string_t* compressed, char* decompressed);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H

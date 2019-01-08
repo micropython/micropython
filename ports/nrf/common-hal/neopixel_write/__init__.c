@@ -28,6 +28,8 @@
 #include "shared-bindings/neopixel_write/__init__.h"
 #include "nrf_pwm.h"
 
+#include "tick.h"
+
 // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
 // [[[Begin of the Neopixel NRF52 EasyDMA implementation
 //                                    by the Hackerspace San Salvador]]]
@@ -95,6 +97,9 @@ static NRF_PWM_Type* find_free_pwm (void) {
     return NULL;
 }
 
+uint64_t next_start_tick_ms = 0;
+uint32_t next_start_tick_us = 1000;
+
 void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // To support both the SoftDevice + Neopixels we use the EasyDMA
     // feature from the NRF25. However this technique implies to
@@ -117,13 +122,16 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
     // only malloc if there is PWM device available
     if ( pwm != NULL ) {
-        if (numBytes == 4) {
+        if (pattern_size <= sizeof(one_pixel) * sizeof(uint32_t)) {
             pixels_pattern = (uint16_t *) one_pixel;
         } else {
             pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
             pattern_on_heap = true;
         }
     }
+
+    // Wait to make sure we don't append onto the last transmission.
+    wait_until(next_start_tick_ms, next_start_tick_us);
 
     // Use the identified device to choose the implementation
     // If a PWM device is available use DMA
@@ -140,8 +148,8 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         }
 
         // Zero padding to indicate the end of sequence
-        pixels_pattern[++pos] = 0 | (0x8000);  // Seq end
-        pixels_pattern[++pos] = 0 | (0x8000);  // Seq end
+        pixels_pattern[pos++] = 0 | (0x8000);  // Seq end
+        pixels_pattern[pos++] = 0 | (0x8000);  // Seq end
 
         // Set the wave mode to count UP
         // Set the PWM to use the 16MHz clock
@@ -273,5 +281,14 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
         // Enable interrupts again
         __enable_irq();
+    }
+
+    // Update the next start.
+    current_tick(&next_start_tick_ms, &next_start_tick_us);
+    if (next_start_tick_us < 100) {
+        next_start_tick_ms += 1;
+        next_start_tick_us = 100 - next_start_tick_us;
+    } else {
+        next_start_tick_us -= 100;
     }
 }

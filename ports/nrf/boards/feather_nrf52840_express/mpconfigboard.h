@@ -35,6 +35,8 @@
 
 #define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
 
+#define MICROPY_HW_LED_STATUS       (&pin_P1_15)
+
 #ifdef QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 17)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 22)
