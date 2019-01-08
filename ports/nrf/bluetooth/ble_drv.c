@@ -71,6 +71,20 @@ void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
     m_event_handlers = handler;
 }
 
+void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
+    event_handler_t *it = m_event_handlers;
+    event_handler_t **prev = &m_event_handlers;
+    while (it != NULL) {
+        if ((it->func == func) && (it->param == param)) {
+            // Splice out the matching handler.
+            *prev = it->next;
+            return;
+        }
+        prev = &(it->next);
+        it = it->next;
+    }
+}
+
 void SD_EVT_IRQHandler(void) {
     uint32_t evt_id;
     while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {

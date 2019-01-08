@@ -24,15 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
+#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
+#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H
 
-#include "common-hal/bleio/Characteristic.h"
+#include "py/ringbuf.h"
 
-extern const mp_obj_type_t bleio_characteristic_type;
+#include "shared-bindings/bleio/Characteristic.h"
 
-extern void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props);
-extern void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self);
-extern void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo);
+typedef struct {
+    mp_obj_base_t base;
+    bleio_characteristic_obj_t *characteristic;
+    // Ring buffer storing consecutive incoming values.
+    ringbuf_t ringbuf;
+} bleio_characteristic_buffer_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
+#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H

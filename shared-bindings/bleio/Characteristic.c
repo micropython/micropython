@@ -55,13 +55,13 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
     self->base.type = &bleio_characteristic_type;
-    self->service = NULL;
-    self->value_data = NULL;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
 
-    enum { ARG_uuid, ARG_broadcast, ARG_indicate, ARG_notify, ARG_read, ARG_write, ARG_write_no_response };
+    enum {
+        ARG_uuid, ARG_broadcast, ARG_indicate, ARG_notify, ARG_read, ARG_write, ARG_write_no_response,
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_broadcast, MP_ARG_KW_ONLY| MP_ARG_BOOL, {.u_bool = false} },
@@ -83,14 +83,16 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
 
     self->uuid = MP_OBJ_TO_PTR(uuid);
 
-    self->props.broadcast = args[ARG_broadcast].u_bool;
-    self->props.indicate = args[ARG_indicate].u_bool;
-    self->props.notify = args[ARG_notify].u_bool;
-    self->props.read = args[ARG_read].u_bool;
-    self->props.write = args[ARG_write].u_bool;
-    self->props.write_no_response = args[ARG_write_no_response].u_bool;
+    bleio_characteristic_properties_t properties;
 
-    common_hal_bleio_characteristic_construct(self);
+    properties.broadcast = args[ARG_broadcast].u_bool;
+    properties.indicate = args[ARG_indicate].u_bool;
+    properties.notify = args[ARG_notify].u_bool;
+    properties.read = args[ARG_read].u_bool;
+    properties.write = args[ARG_write].u_bool;
+    properties.write_no_response = args[ARG_write_no_response].u_bool;
+
+    common_hal_bleio_characteristic_construct(self, uuid, properties);
 
     return MP_OBJ_FROM_PTR(self);
 }

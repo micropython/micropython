@@ -268,7 +268,7 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     }
 
     default:
-        mp_printf(&mp_plat_print, "Unhandled event: 0x%04x\n", ble_evt->header.evt_id);
+        mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
         break;
     }
 }

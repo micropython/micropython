@@ -28,6 +28,7 @@
 #include "ble.h"
 #include "py/runtime.h"
 #include "common-hal/bleio/__init__.h"
+#include "common-hal/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/Adapter.h"
 
@@ -85,6 +86,10 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
         err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &attr_char_value, &handles);
         if (err_code != NRF_SUCCESS) {
             mp_raise_OSError_msg_varg(translate("Failed to add characteristic, err 0x%04x"), err_code);
+        }
+
+        if (characteristic->handle != BLE_GATT_HANDLE_INVALID) {
+            mp_raise_ValueError(translate("Characteristic already in use by another Service."));
         }
 
         characteristic->user_desc_handle = handles.user_desc_handle;

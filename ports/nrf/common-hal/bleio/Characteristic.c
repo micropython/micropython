@@ -33,6 +33,7 @@
 
 #include "py/runtime.h"
 #include "common-hal/bleio/__init__.h"
+#include "common-hal/bleio/Characteristic.h"
 #include "shared-module/bleio/Characteristic.h"
 
 // TODO - should these be per object?? *****
@@ -190,28 +191,41 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
 
 STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     switch (ble_evt->header.evt_id) {
-        case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-            m_tx_in_progress -= ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
-            break;
+    case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+        m_tx_in_progress -= ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
+        break;
 
-        case BLE_GATTC_EVT_READ_RSP:
-        {
-            ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
-            m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
-            // Flag to busy-wait loop that we've read the characteristic.
-            m_read_characteristic = NULL;
-            break;
-        }
-
-        case BLE_GATTC_EVT_WRITE_RSP:
-            // Someone else can write now.
-            sd_mutex_release(m_write_mutex);
-            break;
+    case BLE_GATTC_EVT_READ_RSP:
+    {
+        ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
+        m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
+        // Flag to busy-wait loop that we've read the characteristic.
+        m_read_characteristic = NULL;
+        break;
     }
+
+    case BLE_GATTC_EVT_WRITE_RSP:
+        // Someone else can write now.
+        sd_mutex_release(m_write_mutex);
+        break;
+
+        // For debugging.
+    default:
+        mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
+        break;
+    }
+
 }
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self) {
-    ble_drv_add_event_handler(characteristic_on_ble_evt, NULL);
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props) {
+    self->service = NULL;
+    self->uuid = uuid;
+    self->value_data = NULL;
+    self->props = props;
+    self->handle = BLE_GATT_HANDLE_INVALID;
+
+    ble_drv_add_event_handler(characteristic_on_ble_evt, self);
+
 }
 
 void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {

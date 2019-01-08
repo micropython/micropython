@@ -24,15 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
 
-#include "common-hal/bleio/Characteristic.h"
+#include "common-hal/bleio/CharacteristicBuffer.h"
 
-extern const mp_obj_type_t bleio_characteristic_type;
+extern const mp_obj_type_t bleio_characteristic_buffer_type;
 
-extern void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props);
-extern void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self);
-extern void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo);
+extern void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic, size_t buffer_size);
+// Returns a uint8_t byte value, or -1 if no data is available.
+int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self);
+int common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
