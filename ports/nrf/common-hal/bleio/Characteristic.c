@@ -125,12 +125,13 @@ STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp
     }
 
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
+    m_tx_in_progress++;
     const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
     if (err_code != NRF_SUCCESS) {
+        m_tx_in_progress--;
         mp_raise_OSError_msg_varg(translate("Failed to notify or indicate attribute value, err %0x04x"), err_code);
     }
 
-    m_tx_in_progress += 1;
 }
 
 STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
@@ -192,8 +193,16 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
 STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     switch (ble_evt->header.evt_id) {
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-        m_tx_in_progress -= ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
+    {
+        uint8_t count = ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
+        // Don't underflow the count.
+        if (count >= m_tx_in_progress) {
+            m_tx_in_progress = 0;
+        } else {
+            m_tx_in_progress -= count;
+        }
         break;
+    }
 
     case BLE_GATTC_EVT_READ_RSP:
     {
