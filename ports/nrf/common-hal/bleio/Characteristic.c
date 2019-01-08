@@ -211,7 +211,7 @@ STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
 
         // For debugging.
     default:
-        mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
+        // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
         break;
     }
 
