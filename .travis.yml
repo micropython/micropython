@@ -116,7 +116,7 @@ script:
   - echo 'travis_fold:end:test_native' && tools/print_status.py status
 
   - (echo 'Testing with mpy' && echo 'travis_fold:start:test_mpy')
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float)) ; echo "Testing with mpy status: $?" >status
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float)) ; echo $? >status
   - echo 'travis_fold:end:test_mpy' && tools/print_status.py status
 
   - (echo 'Building docs' && echo 'travis_fold:start:build_docs')
