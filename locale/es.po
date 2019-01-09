@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 20:49+0100\n"
+"POT-Creation-Date: 2019-01-09 14:00-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -335,7 +335,7 @@ msgstr "No hay suficientes pines disponibles"
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:82
+#: ports/nrf/common-hal/busio/I2C.c:84
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
@@ -352,12 +352,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits no soportados"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:106
+#: ports/nrf/common-hal/busio/UART.c:118
 msgid "tx and rx cannot both be None"
 msgstr "Ambos tx y rx no pueden ser None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:140
+#: ports/nrf/common-hal/busio/UART.c:152
 msgid "Failed to allocate RX buffer"
 msgstr "Ha fallado la asignación del buffer RX"
 
@@ -366,12 +366,12 @@ msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:185
+#: ports/nrf/common-hal/busio/UART.c:197
 msgid "No RX pin"
 msgstr "Sin pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:220
+#: ports/nrf/common-hal/busio/UART.c:232
 msgid "No TX pin"
 msgstr "Sin pin TX"
 
@@ -655,126 +655,187 @@ msgstr "Funcionalidad AnalogOut no soportada"
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Adapter.c:125
-#, c-format
-msgid "Failed to change softdevice state, error: 0x%08lX"
+#: ports/nrf/common-hal/bleio/Adapter.c:110
+#, fuzzy
+msgid "Failed to change softdevice state"
 msgstr "No se puede cambiar el estado del softdevice, error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:135
-#, c-format
-msgid "Failed to get softdevice state, error: 0x%08lX"
+#: ports/nrf/common-hal/bleio/Adapter.c:119
+#, fuzzy
+msgid "Failed to get softdevice state"
 msgstr "No se puede obtener el estado del softdevice, error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:155
-#, c-format
-msgid "Failed to get local address, error: 0x%08lX"
+#: ports/nrf/common-hal/bleio/Adapter.c:138
+#, fuzzy
+msgid "Failed to get local address"
 msgstr "No se puede obtener la dirección local, error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:52
-#, fuzzy, c-format
-msgid "Failed to write gatts value, status: 0x%08lX"
-msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
+#: ports/nrf/common-hal/bleio/Broadcaster.c:48
+msgid "interval not in range 0.0020 to 10.24"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:76
-#, fuzzy, c-format
-msgid "Failed to notify attribute value, status: 0x%08lX"
-msgstr "No se puede notificar el valor del anuncio. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:91
-#, fuzzy, c-format
-msgid "Failed to read attribute value, status: 0x%08lX"
-msgstr "No se puede leer el valor del atributo. status 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:119
-#: ports/nrf/common-hal/bleio/Device.c:272
-#: ports/nrf/common-hal/bleio/Device.c:307
-#, c-format
-msgid "Failed to acquire mutex, status: 0x%08lX"
-msgstr "No se puede adquirir el mutex, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:126
-#, fuzzy, c-format
-msgid "Failed to write attribute value, status: 0x%08lX"
-msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:138
-#: ports/nrf/common-hal/bleio/Device.c:284
-#: ports/nrf/common-hal/bleio/Device.c:319
-#: ports/nrf/common-hal/bleio/Device.c:354
-#: ports/nrf/common-hal/bleio/Device.c:391
-#, c-format
-msgid "Failed to release mutex, status: 0x%08lX"
-msgstr "No se puede liberar el mutex, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Device.c:81
-#: ports/nrf/common-hal/bleio/Device.c:114
+#: ports/nrf/common-hal/bleio/Broadcaster.c:58
+#: ports/nrf/common-hal/bleio/Peripheral.c:56
 #, fuzzy
-msgid "Can not fit data into the advertisment packet"
+msgid "Data too large for advertisement packet"
 msgstr "Los datos no caben en el paquete de anuncio."
 
-#: ports/nrf/common-hal/bleio/Device.c:266
-#, c-format
-msgid "Failed to discover serivices, status: 0x%08lX"
-msgstr "No se puede descubrir servicios, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Device.c:403
-#: ports/nrf/common-hal/bleio/Scanner.c:76
+#: ports/nrf/common-hal/bleio/Broadcaster.c:83
+#: ports/nrf/common-hal/bleio/Peripheral.c:320
 #, fuzzy, c-format
-msgid "Failed to continue scanning, status: 0x%0xlX"
-msgstr "No se puede iniciar el escaneo. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Device.c:436
-#, fuzzy, c-format
-msgid "Failed to connect, status: 0x%08lX"
-msgstr "No se puede conectar. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Device.c:513
-#, fuzzy, c-format
-msgid "Failed to add service, status: 0x%08lX"
-msgstr "No se puede detener el anuncio. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Device.c:531
-#, fuzzy, c-format
-msgid "Failed to start advertisment, status: 0x%08lX"
+msgid "Failed to start advertising, err 0x%04x"
 msgstr "No se puede inicar el anuncio. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:549
+#: ports/nrf/common-hal/bleio/Broadcaster.c:96
+#: ports/nrf/common-hal/bleio/Peripheral.c:332
 #, fuzzy, c-format
-msgid "Failed to stop advertisment, status: 0x%08lX"
+msgid "Failed to stop advertising, err 0x%04x"
 msgstr "No se puede detener el anuncio. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:575
-#: ports/nrf/common-hal/bleio/Scanner.c:103
+#: ports/nrf/common-hal/bleio/Characteristic.c:59
 #, fuzzy, c-format
-msgid "Failed to start scanning, status: 0x%0xlX"
-msgstr "No se puede iniciar el escaneo. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Device.c:592
-#, fuzzy, c-format
-msgid "Failed to create mutex, status: 0x%0xlX"
+msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "No se puede leer el valor del atributo. status 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Service.c:83
-#, c-format
-msgid "Failed to add characteristic, status: 0x%08lX"
+#: ports/nrf/common-hal/bleio/Characteristic.c:89
+#, fuzzy, c-format
+msgid "Failed to read gatts value, err 0x%04x"
+msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:106
+#, fuzzy, c-format
+msgid "Failed to write gatts value, err 0x%04x"
+msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:132
+#, fuzzy, c-format
+msgid "Failed to notify or indicate attribute value, err %0x04x"
+msgstr "No se puede notificar el valor del anuncio. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:144
+#, fuzzy, c-format
+msgid "Failed to read attribute value, err %0x04x"
+msgstr "No se puede leer el valor del atributo. status 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:172
+#, fuzzy, c-format
+msgid "Failed to acquire mutex, err 0x%04x"
+msgstr "No se puede adquirir el mutex, status: 0x%08lX"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:178
+#, fuzzy, c-format
+msgid "Failed to write attribute value, err 0x%04x"
+msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:189
+#, fuzzy, c-format
+msgid "Failed to release mutex, err 0x%04x"
+msgstr "No se puede liberar el mutex, status: 0x%08lX"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c:251
+#: ports/nrf/common-hal/bleio/Characteristic.c:284
+msgid "bad GATT role"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Device.c:80
+#: ports/nrf/common-hal/bleio/Device.c:112
+#, fuzzy
+msgid "Data too large for the advertisement packet"
+msgstr "Los datos no caben en el paquete de anuncio."
+
+#: ports/nrf/common-hal/bleio/Device.c:262
+#, fuzzy
+msgid "Failed to discover services"
+msgstr "No se puede descubrir servicios, status: 0x%08lX"
+
+#: ports/nrf/common-hal/bleio/Device.c:267
+#: ports/nrf/common-hal/bleio/Device.c:300
+#, fuzzy
+msgid "Failed to acquire mutex"
+msgstr "No se puede adquirir el mutex, status: 0x%08lX"
+
+#: ports/nrf/common-hal/bleio/Device.c:278
+#: ports/nrf/common-hal/bleio/Device.c:311
+#: ports/nrf/common-hal/bleio/Device.c:342
+#: ports/nrf/common-hal/bleio/Device.c:376
+#, fuzzy
+msgid "Failed to release mutex"
+msgstr "No se puede liberar el mutex, status: 0x%08lX"
+
+#: ports/nrf/common-hal/bleio/Device.c:387
+#, fuzzy
+msgid "Failed to continue scanning"
+msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:419
+#, fuzzy
+msgid "Failed to connect:"
+msgstr "No se puede conectar. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:489
+#, fuzzy
+msgid "Failed to add service"
+msgstr "No se puede detener el anuncio. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:506
+#, fuzzy
+msgid "Failed to start advertising"
+msgstr "No se puede inicar el anuncio. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:523
+#, fuzzy
+msgid "Failed to stop advertising"
+msgstr "No se puede detener el anuncio. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:548
+#, fuzzy
+msgid "Failed to start scanning"
+msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Device.c:564
+#, fuzzy
+msgid "Failed to create mutex"
+msgstr "No se puede leer el valor del atributo. status 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Peripheral.c:300
+#, fuzzy, c-format
+msgid "Failed to add service, err 0x%04x"
+msgstr "No se puede detener el anuncio. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Scanner.c:75
+#, fuzzy, c-format
+msgid "Failed to continue scanning, err 0x%04x"
+msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Scanner.c:101
+#, fuzzy, c-format
+msgid "Failed to start scanning, err 0x%04x"
+msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Service.c:88
+#, fuzzy, c-format
+msgid "Failed to add characteristic, err 0x%04x"
 msgstr "No se puede añadir caracteristica, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/UUID.c:97
+#: ports/nrf/common-hal/bleio/Service.c:92
+msgid "Characteristic already in use by another Service."
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/UUID.c:54
 #, fuzzy, c-format
-msgid "Failed to add Vendor Specific UUID, status: 0x%08lX"
+msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "No se puede agregar el Vendor Specific 128-bit UUID."
 
-#: ports/nrf/common-hal/bleio/UUID.c:102
-msgid "Invalid UUID string length"
-msgstr "Longitud de string UUID inválida"
+#: ports/nrf/common-hal/bleio/UUID.c:73
+#, c-format
+msgid "Could not decode ble_uuid, err 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/UUID.c:109
-#: shared-bindings/bleio/Characteristic.c:125
-#: shared-bindings/bleio/Service.c:105
-msgid "Invalid UUID parameter"
-msgstr "Parámetro UUID inválido"
+#: ports/nrf/common-hal/bleio/UUID.c:88
+msgid "Unexpected nrfx uuid type"
+msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:96
+#: ports/nrf/common-hal/busio/I2C.c:98
 msgid "All I2C peripherals are in use"
 msgstr "Todos los timers están siendo usados"
 
@@ -787,25 +848,25 @@ msgstr "Todos los timers están siendo usados"
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lx"
 
-#: ports/nrf/common-hal/busio/UART.c:110
+#: ports/nrf/common-hal/busio/UART.c:122
 msgid "Invalid buffer size"
 msgstr "Tamaño de buffer inválido"
 
-#: ports/nrf/common-hal/busio/UART.c:114
+#: ports/nrf/common-hal/busio/UART.c:126
 msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
 
-#: ports/nrf/common-hal/busio/UART.c:346 ports/nrf/common-hal/busio/UART.c:350
-#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
-#: ports/nrf/common-hal/busio/UART.c:366 ports/nrf/common-hal/busio/UART.c:371
-#: ports/nrf/common-hal/busio/UART.c:376 ports/nrf/common-hal/busio/UART.c:380
-#: ports/nrf/common-hal/busio/UART.c:388
+#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
+#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
+#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
+#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
+#: ports/nrf/common-hal/busio/UART.c:400
 msgid "busio.UART not available"
 msgstr "busio.UART no disponible"
 
-#: ports/nrf/common-hal/microcontroller/Processor.c:49
-#, c-format
-msgid "Can not get temperature. status: 0x%02x"
+#: ports/nrf/common-hal/microcontroller/Processor.c:48
+#, fuzzy
+msgid "Cannot get temperature"
 msgstr "No se puede obtener la temperatura. status: 0x%02x"
 
 #: ports/nrf/common-hal/pulseio/PWMOut.c:161
@@ -1955,7 +2016,7 @@ msgstr "la asignación de memoria falló, el heap está bloqueado"
 msgid "memory allocation failed, allocating %u bytes"
 msgstr "la asignación de memoria falló, asignando %u bytes"
 
-#: py/runtime.c:1609
+#: py/runtime.c:1620
 msgid "maximum recursion depth exceeded"
 msgstr "profundidad máxima de recursión excedida"
 
@@ -2109,13 +2170,31 @@ msgstr "Numero inválido de bits"
 msgid "buffer slices must be of equal length"
 msgstr ""
 
-#: shared-bindings/bleio/Address.c:101
-msgid "Wrong address length"
-msgstr "Longitud de address erronea"
+#: shared-bindings/bleio/Address.c:119
+#, c-format
+msgid "Address is not %d bytes long or is in wrong format"
+msgstr ""
 
-#: shared-bindings/bleio/Address.c:107
-msgid "Wrong number of bytes provided"
-msgstr "Numero erroneo de bytes dados"
+#: shared-bindings/bleio/Address.c:126
+#, fuzzy, c-format
+msgid "Address must be %d bytes long"
+msgstr "palette debe ser 32 bytes de largo"
+
+#: shared-bindings/bleio/Characteristic.c:81
+#: shared-bindings/bleio/Descriptor.c:93 shared-bindings/bleio/Service.c:78
+#, fuzzy
+msgid "Expected a UUID"
+msgstr "Se espera un %q"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:68
+#, fuzzy
+msgid "buffer_size must be >= 1"
+msgstr "los buffers deben de tener la misma longitud"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:72
+#, fuzzy
+msgid "Expected a Characteristic"
+msgstr "No se puede agregar la Característica."
 
 #: shared-bindings/bleio/Device.c:210
 msgid "Can't add services in Central mode"
@@ -2131,6 +2210,40 @@ msgstr "No se puede cambiar el nombre en modo Central"
 
 #: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
 msgid "Can't advertise in Central mode"
+msgstr ""
+
+#: shared-bindings/bleio/Peripheral.c:111
+msgid "services includes an object that is not a Service"
+msgstr ""
+
+#: shared-bindings/bleio/Peripheral.c:124
+#, fuzzy
+msgid "name must be a string"
+msgstr "palabras clave deben ser strings"
+
+#: shared-bindings/bleio/Service.c:90
+msgid "characteristics includes an object that is not a Characteristic"
+msgstr ""
+
+#: shared-bindings/bleio/Service.c:96
+msgid "Characteristic UUID doesn't match Service UUID"
+msgstr ""
+
+#: shared-bindings/bleio/UUID.c:66
+msgid "UUID integer value not in range 0 to 0xffff"
+msgstr ""
+
+#: shared-bindings/bleio/UUID.c:75
+msgid "UUID value is not int or byte buffer"
+msgstr ""
+
+#: shared-bindings/bleio/UUID.c:79
+#, fuzzy
+msgid "Byte buffer must be 16 bytes."
+msgstr "buffer debe de ser un objeto bytes-like"
+
+#: shared-bindings/bleio/UUID.c:120
+msgid "not a 128-bit UUID"
 msgstr ""
 
 #: shared-bindings/busio/I2C.c:120
@@ -2585,38 +2698,16 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
+#, fuzzy
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
+#~ "unidad de almacenamiento CIRCUITPY:\n"
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "No se puede agregar la Característica."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
-
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2625,13 +2716,44 @@ msgstr ""
 #~ "suficiente poder para todo el circuito y presiona reset (después de "
 #~ "expulsar CIRCUITPY).\n"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
 
-#, fuzzy
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
-#~ "unidad de almacenamiento CIRCUITPY:\n"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Numero erroneo de bytes dados"
+
+#~ msgid "Wrong address length"
+#~ msgstr "Longitud de address erronea"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parámetro UUID inválido"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longitud de string UUID inválida"
