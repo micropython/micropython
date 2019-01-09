@@ -50,7 +50,7 @@
 //|   - a buffer object (bytearray, bytes)  of 16 bytes in little-endian order (128-bit UUID)
 //|
 //|   :param int/buffer value: The uuid value to encapsulate
-
+//|
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

@@ -42,7 +42,8 @@
 //|
 //|   :param bleio.Characteristic characteristic: The characteristic to monitor
 //|   :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
-//|   Must be >= 1.
+//|     Must be >= 1.
+//|
 STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, true);
     bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);

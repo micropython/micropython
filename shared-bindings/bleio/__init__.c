@@ -57,9 +57,12 @@
 //|     AddressType
 //|     AdvertisementData
 //|     Adapter
+//|     Broadcaster
 //|     Characteristic
+//|     CharacteristicBuffer
 //|     Descriptor
 //|     Device
+//|     Peripheral
 //|     ScanEntry
 //|     Scanner
 //|     Service

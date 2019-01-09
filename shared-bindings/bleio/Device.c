@@ -52,10 +52,10 @@
 //| When a device is created without any parameter passed to the constructor,
 //| it will be set to the Peripheral role. If a address is passed, the device
 //| will be a Central. For a Peripheral you can set the `name`, add services
-//| via `add_service` and then start and stop advertising via `start_advertising`
-//| and `stop_advertising`. For the Central, you can `bleio.Device.connect` and `bleio.Device.disconnect`
+//| via `add_service` and then start and stop advertising via `bleio.Device.start_advertising`
+//| and `bleio.Device.stop_advertising`. For the Central, you can `bleio.Device.connect` and `bleio.Device.disconnect`
 //| to the device, once a connection is established, the device's services can
-//| be accessed using `services`.
+//| be accessed using `bleio.Device.services`.
 //|
 //| Usage::
 //|
