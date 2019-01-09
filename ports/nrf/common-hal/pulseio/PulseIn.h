@@ -37,13 +37,13 @@ typedef struct {
     uint8_t pin;
     bool idle_state;
     bool paused;
+    volatile bool first_edge;
 
     uint16_t* buffer;
     uint16_t maxlen;
 
     volatile uint16_t start;
     volatile uint16_t len;
-    volatile bool first_edge;
     volatile uint16_t last_us;
     volatile uint64_t last_ms;
 } pulseio_pulsein_obj_t;
