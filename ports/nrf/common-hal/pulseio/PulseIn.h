@@ -35,15 +35,17 @@ typedef struct {
     mp_obj_base_t base;
 
     uint8_t pin;
+    bool idle_state;
+    bool paused;
+
     uint16_t* buffer;
     uint16_t maxlen;
-    bool idle_state;
+
     volatile uint16_t start;
     volatile uint16_t len;
     volatile bool first_edge;
-    bool paused;
-    volatile uint64_t last_ms;
     volatile uint16_t last_us;
+    volatile uint64_t last_ms;
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);

@@ -59,6 +59,9 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     uint64_t current_ms;
     current_tick(&current_ms, &current_us);
 
+    // current_tick gives us the remaining us until the next tick but we want the number since the last ms.
+    current_us = 1000 - current_us;
+
     pulseio_pulsein_obj_t* self = NULL;
     for(int i = 0; i < NRFX_ARRAY_SIZE(_objs); i++ ) {
         if ( _objs[i] && _objs[i]->pin == pin ) {
@@ -66,7 +69,6 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
             break;
         }
     }
-
     if ( !self ) return;
 
     if (self->first_edge) {
