@@ -42,8 +42,7 @@ static const char *TAG = "sc";
 wifi_config_t * wifi_config;
 char phoneip[15] = {0};
 
-static EventGroupHandle_t wait_event_group;
-static const int SMARTCONFIG_DONE_BIT = BIT1;
+smartconfig_status_t smartconfig_status;
 
 void STATIC smartconfig_callback(smartconfig_status_t status, void *pdata) {
     switch(status) {
@@ -73,9 +72,9 @@ void STATIC smartconfig_callback(smartconfig_status_t status, void *pdata) {
                 ESP_LOGI(TAG, "Phone ip: %d.%d.%d.%d\n", phone_ip[0], phone_ip[1], phone_ip[2], phone_ip[3]);
                 sprintf(phoneip, "%d.%d.%d.%d", phone_ip[0], phone_ip[1], phone_ip[2], phone_ip[3]);
             }
-            xEventGroupSetBits(wait_event_group, SMARTCONFIG_DONE_BIT);
             break;
     }
+    smartconfig_status = status;
 }
 
 STATIC mp_obj_t espsmartconfig_set_type(size_t n_args, const mp_obj_t *args) {
@@ -89,7 +88,7 @@ STATIC mp_obj_t espsmartconfig_set_type(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espsmartconfig_set_type_obj, 0, 1, espsmartconfig_set_type);
 
 STATIC mp_obj_t espsmartconfig_start(void) {
-    wait_event_group = xEventGroupCreate();
+    smartconfig_status = SC_STATUS_WAIT;
     esp_smartconfig_start(smartconfig_callback);
     return mp_const_none;
 }
@@ -97,7 +96,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(espsmartconfig_start_obj, espsmartconfig_start);
 
 STATIC mp_obj_t espsmartconfig_stop(void) {
     esp_smartconfig_stop();
-    vEventGroupDelete(wait_event_group);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espsmartconfig_stop_obj, espsmartconfig_stop);
@@ -132,33 +130,30 @@ STATIC mp_obj_t espsmartconfig_getphoneip(void) {
 
 MP_DEFINE_CONST_FUN_OBJ_0(espsmartconfig_getphoneip_obj, espsmartconfig_getphoneip);
 
-STATIC mp_obj_t espsmartconfig_wait(void) {
-    EventBits_t uxBits;
-    while (1) {
-        uxBits = xEventGroupWaitBits(wait_event_group, SMARTCONFIG_DONE_BIT, true, false, portMAX_DELAY);
-        if(uxBits & SMARTCONFIG_DONE_BIT) {
-            break;
-        }
-    }
-
-    return mp_const_none;
+STATIC mp_obj_t espsmartconfig_status(void) {
+    return mp_obj_new_int(smartconfig_status);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_0(espsmartconfig_wait_obj, espsmartconfig_wait);
+MP_DEFINE_CONST_FUN_OBJ_0(espsmartconfig_status_obj, espsmartconfig_status);
 
 
 STATIC const mp_map_elem_t mo_module_espsmartconfig_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_smartconfig) },
-    { MP_ROM_QSTR(MP_QSTR_set_type), (mp_obj_t)&espsmartconfig_set_type_obj },
-    { MP_ROM_QSTR(MP_QSTR_start), (mp_obj_t)&espsmartconfig_start_obj },
-    { MP_ROM_QSTR(MP_QSTR_stop), (mp_obj_t)&espsmartconfig_stop_obj },
-    { MP_ROM_QSTR(MP_QSTR_get_ssid), (mp_obj_t)&espsmartconfig_getssid_obj },
-    { MP_ROM_QSTR(MP_QSTR_get_password), (mp_obj_t)&espsmartconfig_getpassword_obj },
-    { MP_ROM_QSTR(MP_QSTR_get_phoneip), (mp_obj_t)&espsmartconfig_getphoneip_obj },
-    { MP_ROM_QSTR(MP_QSTR_wait), (mp_obj_t)&espsmartconfig_wait_obj },
-    { MP_ROM_QSTR(MP_QSTR_ESPTOUCH), MP_ROM_INT(SC_TYPE_ESPTOUCH) },
-    { MP_ROM_QSTR(MP_QSTR_AIRKISS), MP_ROM_INT(SC_TYPE_AIRKISS) },
-    { MP_ROM_QSTR(MP_QSTR_ESPTOUCH_AIRKISS), MP_ROM_INT(SC_TYPE_ESPTOUCH_AIRKISS) },
+    { MP_ROM_QSTR(MP_QSTR_set_type), MP_ROM_PTR((mp_obj_t *)&espsmartconfig_set_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR((mp_obj_t *)&espsmartconfig_start_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR((mp_obj_t *)&espsmartconfig_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_ssid), MP_ROM_PTR((mp_obj_t *)&espsmartconfig_getssid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_password), MP_ROM_PTR((mp_obj_t *)&espsmartconfig_getpassword_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_phoneip), MP_ROM_PTR((mp_obj_t *)&espsmartconfig_getphoneip_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR((mp_obj_t *)&espsmartconfig_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SC_TYPE_ESPTOUCH), MP_ROM_INT(SC_TYPE_ESPTOUCH) },
+    { MP_ROM_QSTR(MP_QSTR_SC_TYPE_AIRKISS), MP_ROM_INT(SC_TYPE_AIRKISS) },
+    { MP_ROM_QSTR(MP_QSTR_SC_TYPE_ESPTOUCH_AIRKISS), MP_ROM_INT(SC_TYPE_ESPTOUCH_AIRKISS) },
+    { MP_ROM_QSTR(MP_QSTR_SC_STATUS_WAIT), MP_ROM_INT((mp_uint_t)SC_STATUS_WAIT) },
+    { MP_ROM_QSTR(MP_QSTR_SC_STATUS_FIND_CHANNEL), MP_ROM_INT((mp_uint_t)SC_STATUS_FIND_CHANNEL) },
+    { MP_ROM_QSTR(MP_QSTR_SC_STATUS_GETTING_SSID_PSWD), MP_ROM_INT((mp_uint_t)SC_STATUS_GETTING_SSID_PSWD) },
+    { MP_ROM_QSTR(MP_QSTR_SC_STATUS_LINK), MP_ROM_INT((mp_uint_t)SC_STATUS_LINK) },
+    { MP_ROM_QSTR(MP_QSTR_SC_STATUS_LINK_OVER), MP_ROM_INT((mp_uint_t)SC_STATUS_LINK_OVER) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mo_module_espsmartconfig_globals, mo_module_espsmartconfig_globals_table);
