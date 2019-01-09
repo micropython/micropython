@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,43 +24,52 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include "py/mpstate.h"
+#include "py/gc.h"
 
-#if !MICROPY_NLR_SETJMP
-// When not using setjmp, nlr_push_tail is called from inline asm so needs special care
-#if MICROPY_NLR_X86 && MICROPY_NLR_OS_WINDOWS
-#if defined   (__GNUC__)
-// On these 32-bit platforms make sure nlr_push_tail doesn't have a leading underscore
-unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
-#endif
-#else
-#if defined   (__GNUC__)
-// LTO can't see inside inline asm functions so explicitly mark nlr_push_tail as used
-__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
-#endif
-#endif
-#endif
+#if MICROPY_ENABLE_GC
 
-unsigned int nlr_push_tail(nlr_buf_t *nlr) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    nlr->prev = *top;
-    MP_NLR_SAVE_PYSTACK(nlr);
-    *top = nlr;
-    return 0; // normal return
+// If MICROPY_GCREGS_SETJMP was requested explicitly, or if
+// we enabled it as a fallback above.
+#if MICROPY_GCREGS_SETJMP
+#include <setjmp.h>
+
+typedef jmp_buf regs_t;
+
+STATIC void gc_helper_get_regs(regs_t arr) {
+    setjmp(arr);
 }
 
-void nlr_pop(void) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    *top = (*top)->prev;
+#endif // MICROPY_GCREGS_SETJMP
+
+// this function is used by mpthreadport.c
+void gc_collect_regs_and_stack(void);
+
+void gc_collect_regs_and_stack(void) {
+    regs_t regs;
+    gc_helper_get_regs(regs);
+    // GC stack (and regs because we captured them)
+    void **regs_ptr = (void**)(void*)&regs;
+    gc_collect_root(regs_ptr, ((uintptr_t)MP_STATE_THREAD(stack_top) - (uintptr_t)&regs) / sizeof(uintptr_t));
 }
 
-#if !MICROPY_NLR_SETJMP && defined(_WIN32)
-void asm_nlr_jump(void *jmpbuf, void *val);
+void gc_collect(void) {
+    //gc_dump_info();
 
-NORETURN void nlr_jump(void *val) {
-    MP_NLR_JUMP_HEAD(val, top)
-    asm_nlr_jump(top, val);
-    for (;;); // needed to silence compiler warning
+    gc_collect_start();
+    gc_collect_regs_and_stack();
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
+    #if MICROPY_EMIT_NATIVE
+    mp_win_mark_exec();
+    #endif
+    gc_collect_end();
+
+    //printf("-----\n");
+    //gc_dump_info();
 }
-#endif
 
+#endif //MICROPY_ENABLE_GC

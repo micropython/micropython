@@ -127,23 +127,43 @@ void asm_x64_call_ind(asm_x64_t* as, size_t fun_id, int temp_r32);
 
 #define ASM_WORD_SIZE (8)
 
-#define REG_RET ASM_X64_REG_RAX
-#define REG_ARG_1 ASM_X64_REG_RDI
-#define REG_ARG_2 ASM_X64_REG_RSI
-#define REG_ARG_3 ASM_X64_REG_RDX
-#define REG_ARG_4 ASM_X64_REG_RCX
-#define REG_ARG_5 ASM_X64_REG_R08
+#ifdef _WIN64
+    #define REG_RET ASM_X64_REG_RAX
+    #define REG_ARG_1 ASM_X64_REG_RCX
+    #define REG_ARG_2 ASM_X64_REG_RDX
+    #define REG_ARG_3 ASM_X64_REG_R08
+    #define REG_ARG_4 ASM_X64_REG_R09
+    #define REG_ARG_5 ASM_X64_REG_R10
 
-// caller-save
-#define REG_TEMP0 ASM_X64_REG_RAX
-#define REG_TEMP1 ASM_X64_REG_RDI
-#define REG_TEMP2 ASM_X64_REG_RSI
+    // caller-save
+    #define REG_TEMP0 ASM_X64_REG_RAX
+    #define REG_TEMP1 ASM_X64_REG_RCX
+    #define REG_TEMP2 ASM_X64_REG_RDX
 
-// callee-save
-#define REG_LOCAL_1 ASM_X64_REG_RBX
-#define REG_LOCAL_2 ASM_X64_REG_R12
-#define REG_LOCAL_3 ASM_X64_REG_R13
-#define REG_LOCAL_NUM (3)
+    // callee-save
+    #define REG_LOCAL_1 ASM_X64_REG_RBX
+    #define REG_LOCAL_2 ASM_X64_REG_RSI
+    #define REG_LOCAL_3 ASM_X64_REG_RDI
+    #define REG_LOCAL_NUM (3)
+#else
+    #define REG_RET ASM_X64_REG_RAX
+    #define REG_ARG_1 ASM_X64_REG_RDI
+    #define REG_ARG_2 ASM_X64_REG_RSI
+    #define REG_ARG_3 ASM_X64_REG_RDX
+    #define REG_ARG_4 ASM_X64_REG_RCX
+    #define REG_ARG_5 ASM_X64_REG_R08
+
+    // caller-save
+    #define REG_TEMP0 ASM_X64_REG_RAX
+    #define REG_TEMP1 ASM_X64_REG_RDI
+    #define REG_TEMP2 ASM_X64_REG_RSI
+
+    // callee-save
+    #define REG_LOCAL_1 ASM_X64_REG_RBX
+    #define REG_LOCAL_2 ASM_X64_REG_R12
+    #define REG_LOCAL_3 ASM_X64_REG_R13
+    #define REG_LOCAL_NUM (3)
+#endif
 
 // Holds a pointer to mp_fun_table
 #define REG_FUN_TABLE ASM_X64_REG_FUN_TABLE

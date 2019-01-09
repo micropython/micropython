@@ -33,7 +33,6 @@
 
 #define MICROPY_ALLOC_PATH_MAX      (260) //see minwindef.h for msvc or limits.h for mingw
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
-#define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_COMP_MODULE_CONST   (1)
@@ -119,9 +118,21 @@
 
 extern const struct _mp_print_t mp_stderr_print;
 
+#if defined(__MINGW64__) || defined(__MINGW32__)
+#define MICROPY_NLR_SETJMP          (1)
+#endif
+
 #ifdef _MSC_VER
 #define MICROPY_GCREGS_SETJMP       (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
+#define MICROPY_NLR_SETJMP          (0)
+
+#if defined(_WIN64)
+#define MICROPY_EMIT_X64            (1)
+#elif defined(_WIN32)
+#define MICROPY_EMIT_X86            (1)
+#endif
+
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
@@ -181,10 +192,10 @@ extern const struct _mp_obj_module_t mp_module_time;
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
 
-#if MICROPY_USE_READLINE == 1
 #define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[50];
-#endif
+    char *readline_hist[50]; \
+    void *mmap_region_head;
+
 
 #define MP_STATE_PORT               MP_STATE_VM
 
@@ -196,6 +207,12 @@ extern const struct _mp_obj_module_t mp_module_time;
 #include "realpath.h"
 #include "init.h"
 #include "sleep.h"
+
+void mp_win_alloc_exec(size_t min_size, void** ptr, size_t *size);
+void mp_win_free_exec(void *ptr, size_t size);
+void mp_win_mark_exec(void);
+#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_win_alloc_exec(min_size, ptr, size)
+#define MP_PLAT_FREE_EXEC(ptr, size) mp_win_free_exec(ptr, size)
 
 #ifdef __GNUC__
 #define MP_NOINLINE __attribute__((noinline))

@@ -9,9 +9,15 @@
 #include "py/asmx64.h"
 
 // Word indices of REG_LOCAL_x in nlr_buf_t
+#ifdef _WIN64
+#define NLR_BUF_IDX_LOCAL_1 (2) // rbx
+#define NLR_BUF_IDX_LOCAL_2 (6) // rsi
+#define NLR_BUF_IDX_LOCAL_3 (5) // rdi
+#else
 #define NLR_BUF_IDX_LOCAL_1 (5) // rbx
 #define NLR_BUF_IDX_LOCAL_2 (6) // r12
 #define NLR_BUF_IDX_LOCAL_3 (7) // r13
+#endif
 
 #define N_X64 (1)
 #define EXPORT_FUN(name) emit_native_x64_##name
