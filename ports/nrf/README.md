@@ -103,7 +103,7 @@ run follow command to install [adafruit-nrfutil](https://github.com/adafruit/Ada
 * dfu-gen: Generates a Firmware zip to be used by the DFU flash application.
 * dfu-flash: Triggers the DFU flash application to upload the firmware from the generated Firmware zip file.
 
-Example on how to generate and flash feather_nrf52832 target:
+Example on how to generate and flash feather_nrf52840 target:
 
     make BOARD=feather_nrf52840 SD=s140
     make BOARD=feather_nrf52840 SD=s140 dfu-gen dfu-flash

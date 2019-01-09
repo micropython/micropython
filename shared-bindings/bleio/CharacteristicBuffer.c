@@ -32,7 +32,7 @@
 //| .. currentmodule:: bleio
 //|
 //| :class:`CharacteristicBuffer` -- GATT Service incoming values buffer.
-//| =========================================================
+//| =====================================================================
 //|
 //| Accumulates a Characteristic's incoming values in a FIFO buffer.
 //|
