@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#include "nrfx_twim.h"
+void board_init(void) {
+}
 
-#include "py/obj.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-typedef struct {
-    nrfx_twim_t twim;
-    bool in_use;
-} twim_peripheral_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    twim_peripheral_t* twim_peripheral;
-    bool has_lock;
-    uint8_t scl_pin_number;
-    uint8_t sda_pin_number;
-} busio_i2c_obj_t;
-
-void i2c_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
+void reset_board(void) {
+}

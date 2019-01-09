@@ -117,7 +117,7 @@
 #define MICROPY_PY_UHEAPQ                        (0)
 #define MICROPY_PY_UHASHLIB                      (1)
 #define MICROPY_PY_STRUCT                        (0)
-#define MICROPY_PY_FRAMEBUF                      (1)
+#define MICROPY_PY_FRAMEBUF                      (0)
 
 #define MICROPY_KBD_EXCEPTION                    (1)
 

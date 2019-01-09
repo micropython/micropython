@@ -37,19 +37,21 @@
 #include "nrfx_spim.h"
 #include "nrf_gpio.h"
 
+// all TWI instances have the same max size
+// 16 bits for 840, 10 bits for 810, 8 bits for 832
+#define I2C_MAX_XFER_LEN         ((1UL << TWIM0_EASYDMA_MAXCNT_SIZE) - 1)
+
 STATIC twim_peripheral_t twim_peripherals[] = {
 #if NRFX_CHECK(NRFX_TWIM0_ENABLED)
     // SPIM0 and TWIM0 share an address.
     { .twim = NRFX_TWIM_INSTANCE(0),
-      .in_use = false,
-      .max_xfer_size = TWIM0_EASYDMA_MAXCNT_SIZE,
+      .in_use = false
     },
 #endif
 #if NRFX_CHECK(NRFX_TWIM1_ENABLED)
     // SPIM1 and TWIM1 share an address.
     { .twim = NRFX_TWIM_INSTANCE(1),
-      .in_use = false,
-      .max_xfer_size = TWIM1_EASYDMA_MAXCNT_SIZE,
+      .in_use = false
     },
 #endif
 };
@@ -198,24 +200,25 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len, bool stopBit) {
-    if(len == 0)
+    if(len == 0) {
         return common_hal_busio_i2c_probe(self, addr) ? 0 : MP_ENODEV;
+    }
 
-    const uint32_t max_xfer_size = self->twim_peripheral->max_xfer_size;
-    const uint32_t parts = len / max_xfer_size;
-    const uint32_t remainder = len % max_xfer_size;
     nrfx_err_t err = NRFX_SUCCESS;
 
     nrfx_twim_enable(&self->twim_peripheral->twim);
 
-    for (uint32_t i = 0; i < parts; ++i) {
-        err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data + i * max_xfer_size, max_xfer_size, !stopBit);
-        if (err != NRFX_SUCCESS)
-            break;
-    }
+    // break into MAX_XFER_LEN transaction
+    while ( len ) {
+        const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
 
-    if ((remainder > 0) && (err == NRFX_SUCCESS))
-        err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data + parts * max_xfer_size, remainder, !stopBit);
+        if ( NRFX_SUCCESS != (err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data, xact_len, !stopBit)) ) {
+            break;
+        }
+
+        len -= xact_len;
+        data += xact_len;
+    }
 
     nrfx_twim_disable(&self->twim_peripheral->twim);
 
@@ -223,24 +226,25 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const u
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t *data, size_t len) {
-    if(len == 0)
+    if(len == 0) {
         return 0;
+    }
 
-    const uint32_t max_xfer_size = self->twim_peripheral->max_xfer_size;
-    const uint32_t parts = len / max_xfer_size;
-    const uint32_t remainder = len % max_xfer_size;
     nrfx_err_t err = NRFX_SUCCESS;
 
     nrfx_twim_enable(&self->twim_peripheral->twim);
 
-    for (uint32_t i = 0; i < parts; ++i) {
-        err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data + i * max_xfer_size, max_xfer_size);
-        if (err != NRFX_SUCCESS)
-            break;
-    }
+    // break into MAX_XFER_LEN transaction
+    while ( len ) {
+        const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
 
-    if ((remainder > 0) && (err == NRFX_SUCCESS))
-        err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data + parts * max_xfer_size, remainder);
+        if ( NRFX_SUCCESS != (err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data, xact_len)) ) {
+            break;
+        }
+
+        len -= xact_len;
+        data += xact_len;
+    }
 
     nrfx_twim_disable(&self->twim_peripheral->twim);
 
