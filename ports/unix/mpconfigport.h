@@ -93,7 +93,7 @@
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else
     #ifdef __ANDROID__
-        #define MICROPY_PY_SYS_PLATFORM  "android"
+        #define MICROPY_PY_SYS_PLATFORM  "bionic"
     #else
         #define MICROPY_PY_SYS_PLATFORM  "linux"
     #endif
