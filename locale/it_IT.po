@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 20:49+0100\n"
+"POT-Creation-Date: 2019-01-10 11:05-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -334,7 +334,7 @@ msgstr "Non sono presenti abbastanza pin"
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:82
+#: ports/nrf/common-hal/busio/I2C.c:84
 msgid "Invalid pins"
 msgstr "Pin non validi"
 
@@ -351,12 +351,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "byte > 8 bit non supportati"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:106
+#: ports/nrf/common-hal/busio/UART.c:118
 msgid "tx and rx cannot both be None"
 msgstr "tx e rx non possono essere entrambi None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:140
+#: ports/nrf/common-hal/busio/UART.c:152
 msgid "Failed to allocate RX buffer"
 msgstr "Impossibile allocare buffer RX"
 
@@ -365,12 +365,12 @@ msgid "Could not initialize UART"
 msgstr "Impossibile inizializzare l'UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:185
+#: ports/nrf/common-hal/busio/UART.c:197
 msgid "No RX pin"
 msgstr "Nessun pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:220
+#: ports/nrf/common-hal/busio/UART.c:232
 msgid "No TX pin"
 msgstr "Nessun pin TX"
 
@@ -774,7 +774,7 @@ msgstr "Lunghezza della stringa UUID non valida"
 msgid "Invalid UUID parameter"
 msgstr "Parametro UUID non valido"
 
-#: ports/nrf/common-hal/busio/I2C.c:96
+#: ports/nrf/common-hal/busio/I2C.c:98
 msgid "All I2C peripherals are in use"
 msgstr "Tutte le periferiche I2C sono in uso"
 
@@ -787,21 +787,21 @@ msgstr "Tutte le periferiche SPI sono in uso"
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:110
+#: ports/nrf/common-hal/busio/UART.c:122
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "lunghezza del buffer non valida"
 
-#: ports/nrf/common-hal/busio/UART.c:114
+#: ports/nrf/common-hal/busio/UART.c:126
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "operazione I2C non supportata"
 
-#: ports/nrf/common-hal/busio/UART.c:346 ports/nrf/common-hal/busio/UART.c:350
-#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
-#: ports/nrf/common-hal/busio/UART.c:366 ports/nrf/common-hal/busio/UART.c:371
-#: ports/nrf/common-hal/busio/UART.c:376 ports/nrf/common-hal/busio/UART.c:380
-#: ports/nrf/common-hal/busio/UART.c:388
+#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
+#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
+#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
+#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
+#: ports/nrf/common-hal/busio/UART.c:400
 #, fuzzy
 msgid "busio.UART not available"
 msgstr "busio.UART non ancora implementato"
@@ -2607,14 +2607,28 @@ msgstr ""
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossibile applicare i parametri GAP."
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
+#~ "CIRCUITPY:\n"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Non è possibile aggiungere Characteristic."
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
+#~ "Whoops!\n"
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Impossibile impostare i parametri PPCP."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossibile applicare i parametri GAP."
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2623,28 +2637,14 @@ msgstr ""
 #~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
 #~ "espulso CIRCUITPY).\n"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Non è possibile aggiungere Characteristic."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
-
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
 
 #~ msgid "Can not add Service."
 #~ msgstr "Non è possibile aggiungere Service."
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
-#~ "CIRCUITPY:\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
-#~ "Whoops!\n"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."

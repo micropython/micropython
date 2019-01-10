@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 20:49+0100\n"
+"POT-Creation-Date: 2019-01-10 11:05-0800\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -329,7 +329,7 @@ msgstr "Não há pinos suficientes disponíveis"
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:82
+#: ports/nrf/common-hal/busio/I2C.c:84
 msgid "Invalid pins"
 msgstr "Pinos inválidos"
 
@@ -346,12 +346,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits não suportado"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:106
+#: ports/nrf/common-hal/busio/UART.c:118
 msgid "tx and rx cannot both be None"
 msgstr "TX e RX não podem ser ambos"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:140
+#: ports/nrf/common-hal/busio/UART.c:152
 msgid "Failed to allocate RX buffer"
 msgstr "Falha ao alocar buffer RX"
 
@@ -360,12 +360,12 @@ msgid "Could not initialize UART"
 msgstr "Não foi possível inicializar o UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:185
+#: ports/nrf/common-hal/busio/UART.c:197
 msgid "No RX pin"
 msgstr "Nenhum pino RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:220
+#: ports/nrf/common-hal/busio/UART.c:232
 msgid "No TX pin"
 msgstr "Nenhum pino TX"
 
@@ -767,7 +767,7 @@ msgstr ""
 msgid "Invalid UUID parameter"
 msgstr "Parâmetro UUID inválido"
 
-#: ports/nrf/common-hal/busio/I2C.c:96
+#: ports/nrf/common-hal/busio/I2C.c:98
 msgid "All I2C peripherals are in use"
 msgstr "Todos os periféricos I2C estão em uso"
 
@@ -780,21 +780,21 @@ msgstr "Todos os periféricos SPI estão em uso"
 msgid "error = 0x%08lX"
 msgstr "erro = 0x%08lX"
 
-#: ports/nrf/common-hal/busio/UART.c:110
+#: ports/nrf/common-hal/busio/UART.c:122
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "Arquivo inválido"
 
-#: ports/nrf/common-hal/busio/UART.c:114
+#: ports/nrf/common-hal/busio/UART.c:126
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "I2C operação não suportada"
 
-#: ports/nrf/common-hal/busio/UART.c:346 ports/nrf/common-hal/busio/UART.c:350
-#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
-#: ports/nrf/common-hal/busio/UART.c:366 ports/nrf/common-hal/busio/UART.c:371
-#: ports/nrf/common-hal/busio/UART.c:376 ports/nrf/common-hal/busio/UART.c:380
-#: ports/nrf/common-hal/busio/UART.c:388
+#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
+#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
+#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
+#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
+#: ports/nrf/common-hal/busio/UART.c:400
 msgid "busio.UART not available"
 msgstr "busio.UART não disponível"
 
@@ -2557,32 +2557,32 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Não é possível consultar o endereço do dispositivo."
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+#~ msgid "Can not add Service."
+#~ msgstr "Não é possível adicionar o serviço."
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
 
-#~ msgid "Can not add Service."
-#~ msgstr "Não é possível adicionar o serviço."
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de serviço inválido"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Não é possível consultar o endereço do dispositivo."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."

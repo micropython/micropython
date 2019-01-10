@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 20:49+0100\n"
+"POT-Creation-Date: 2019-01-10 11:05-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -333,7 +333,7 @@ msgstr "Hindi sapat ang magagamit na pins"
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:82
+#: ports/nrf/common-hal/busio/I2C.c:84
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -350,12 +350,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:106
+#: ports/nrf/common-hal/busio/UART.c:118
 msgid "tx and rx cannot both be None"
 msgstr "tx at rx hindi pwedeng parehas na None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:140
+#: ports/nrf/common-hal/busio/UART.c:152
 msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
@@ -364,12 +364,12 @@ msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:185
+#: ports/nrf/common-hal/busio/UART.c:197
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:220
+#: ports/nrf/common-hal/busio/UART.c:232
 msgid "No TX pin"
 msgstr "Walang TX pin"
 
@@ -773,7 +773,7 @@ msgstr "Mali ang UUID string length"
 msgid "Invalid UUID parameter"
 msgstr "Mali ang UUID parameter"
 
-#: ports/nrf/common-hal/busio/I2C.c:96
+#: ports/nrf/common-hal/busio/I2C.c:98
 msgid "All I2C peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
 
@@ -786,19 +786,19 @@ msgstr "Lahat ng SPI peripherals ay ginagamit"
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
 
-#: ports/nrf/common-hal/busio/UART.c:110
+#: ports/nrf/common-hal/busio/UART.c:122
 msgid "Invalid buffer size"
 msgstr "Mali ang buffer size"
 
-#: ports/nrf/common-hal/busio/UART.c:114
+#: ports/nrf/common-hal/busio/UART.c:126
 msgid "Odd parity is not supported"
 msgstr "Odd na parity ay hindi supportado"
 
-#: ports/nrf/common-hal/busio/UART.c:346 ports/nrf/common-hal/busio/UART.c:350
-#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
-#: ports/nrf/common-hal/busio/UART.c:366 ports/nrf/common-hal/busio/UART.c:371
-#: ports/nrf/common-hal/busio/UART.c:376 ports/nrf/common-hal/busio/UART.c:380
-#: ports/nrf/common-hal/busio/UART.c:388
+#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
+#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
+#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
+#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
+#: ports/nrf/common-hal/busio/UART.c:400
 msgid "busio.UART not available"
 msgstr "busio.UART hindi available"
 
@@ -2600,17 +2600,34 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
-
 #~ msgid "Can not add Characteristic."
 #~ msgstr "Hindi mabasa and Characteristic."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
 
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "ang palette ay dapat 32 bytes ang haba"
+
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
 
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
@@ -2620,13 +2637,6 @@ msgstr ""
 
 #~ msgid "Can not add Service."
 #~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
@@ -2640,13 +2650,3 @@ msgstr ""
 #~ msgstr ""
 #~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
 #~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
