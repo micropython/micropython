@@ -56,7 +56,7 @@ void allocate_stack(void) {
 }
 
 inline bool stack_ok(void) {
-    return *stack_alloc->ptr == STACK_CANARY_VALUE;
+    return stack_alloc == NULL || *stack_alloc->ptr == STACK_CANARY_VALUE;
 }
 
 inline void assert_heap_ok(void) {

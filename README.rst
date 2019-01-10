@@ -1,7 +1,9 @@
 Adafruit CircuitPython
 ======================
 
-|Build Status| |Doc Status| |Discord|
+.. image:: https://github.com/adafruit/circuitpython/blob/master/logo/CircuitPython_Repo_header_logo.png
+
+|Build Status| |Doc Status| |License| |Discord|
 
 `Status <#status>`__ \| `Supported Boards <#supported-boards>`__
 \| `Download <#download>`__ \|
@@ -270,3 +272,5 @@ project.
    :target: http://circuitpython.readthedocs.io/
 .. |Discord| image:: https://img.shields.io/discord/327254708534116352.svg
    :target: https://discord.gg/nBQh6qu
+.. |License| image:: https://github.com/adafruit/circuitpython/blob/master/logo/license-MIT-brightgreen.svg
+   :target: https://opensource.org/licenses/MIT
