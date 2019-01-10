@@ -39,6 +39,8 @@ typedef struct {
     uint32_t length; // in bytes
 } supervisor_allocation;
 
+
+
 void memory_init(void);
 void free_memory(supervisor_allocation* allocation);
 supervisor_allocation* allocate_remaining_memory(void);
@@ -47,5 +49,12 @@ supervisor_allocation* allocate_remaining_memory(void);
 // at a lower address from the top of the stack. Otherwise, addresses will increase starting after
 // statically allocated memory.
 supervisor_allocation* allocate_memory(uint32_t length, bool high_address);
+
+static inline uint16_t align32_size(uint16_t size) {
+    if (size % 4 != 0) {
+        return (size & 0xfffc) + 0x4;
+    }
+    return size;
+}
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_MEMORY_H

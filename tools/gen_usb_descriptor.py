@@ -274,6 +274,8 @@ descriptor_list = []
 descriptor_list.append(cdc_iad)
 descriptor_list.extend(cdc_interfaces)
 descriptor_list.extend(msc_interfaces)
+# Only add the control interface because other audio interfaces are managed by it to ensure the
+# correct ordering.
 descriptor_list.append(audio_control_interface)
 # Put the CDC IAD just before the CDC interfaces.
 # There appears to be a bug in the Windows composite USB driver that requests the
