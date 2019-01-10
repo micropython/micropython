@@ -375,9 +375,24 @@ STATIC mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
 
     // XXX Would be nicer to use RTC to handle timeouts
     for (int i = 0; i <= sock->retries; ++i) {
-        MP_THREAD_GIL_EXIT();
+        // Poll the socket to see if it has waiting data and only release the GIL if it doesn't.
+        // This ensures higher performance in the case of many small reads, eg for readline.
+        bool release_gil;
+        {
+            fd_set rfds;
+            FD_ZERO(&rfds);
+            FD_SET(sock->fd, &rfds);
+            struct timeval timeout = { .tv_sec = 0, .tv_usec = 0 };
+            int r = select(sock->fd + 1, &rfds, NULL, NULL, &timeout);
+            release_gil = r != 1;
+        }
+        if (release_gil) {
+            MP_THREAD_GIL_EXIT();
+        }
         int r = lwip_recvfrom_r(sock->fd, buf, size, 0, from, from_len);
-        MP_THREAD_GIL_ENTER();
+        if (release_gil) {
+            MP_THREAD_GIL_ENTER();
+        }
         if (r == 0) {
             sock->peer_closed = true;
         }
