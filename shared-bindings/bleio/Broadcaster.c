@@ -31,7 +31,7 @@
 
 //| .. currentmodule:: bleio
 //|
-//| :class:`Broadcaster` -- A GAP Broadcaster
+//| :class:`Broadcaster` -- Broadcast advertising packets.
 //| =========================================================
 //|
 //| Implement a BLE broadcaster which sends data in advertising packets and does not connect.
@@ -44,12 +44,13 @@
 //|
 //|    # Broadcast once a second.
 //|    broadcaster = bleio.Broadcaster(interval=1)
-//|    i = 0
+//|    data = 0
 //|    # Broadcast a byte of data that's incremented once a minute
 //|    while True:
 //|        # data is an entire advertising data packet, starting with flags.
 //|        broadcaster.start_advertising(data)
 //|        time.sleep(60)
+//|        data += 1
 //|
 //| .. class:: Broadcaster(interval=1)
 //|

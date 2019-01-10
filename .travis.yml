@@ -74,7 +74,7 @@ before_script:
   - sudo apt-get install -y python3-pip
   - pip3 install --user sh click
   - ([[ -z "$TRAVIS_TESTS" ]] || sudo pip install --upgrade cpp-coveralls)
-  - (! var_search "${TRAVIS_TESTS-}" docs || pip install --user 'Sphinx<1.8.0' sphinx-rtd-theme 'recommonmark<0.5.0')
+  - (! var_search "${TRAVIS_TESTS-}" docs || pip install --user Sphinx sphinx-rtd-theme recommonmark)
   - (! var_search "${TRAVIS_TESTS-}" translations || pip3 install --user polib)
 
   # report some good version numbers to the build

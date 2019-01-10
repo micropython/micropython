@@ -33,9 +33,9 @@ the following links:
 > **NOTE**: These board specific readmes may be more up to date than the
   generic board-neutral documentation further down.
 
-* Adafruit [Feather nRF52840](boards/feather_nrf52840_express/README.md): 1MB Flash, 256KB SRAM
-* Nordic PCA10056 see [Feather nRF52840](boards/pca10056/README.md)
-* MakerDiary NRF52840 MDK see [its README](boards/makerdiary_nrf52840_mdk/README.md)
+* Adafruit Feather nRF52840: `boards/feather_nrf52840_express/README.md`: 1MB Flash, 256KB SRAM
+* Nordic PCA10056 (uses nRF52840): `boards/pca10056/README.md`
+* MakerDiary NRF52840 MDK: `boards/makerdiary_nrf52840_mdk/README.md`
 
 For all other board targets, see the generic notes below.
 
