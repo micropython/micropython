@@ -3,331 +3,334 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-01-10 11:05-0800\n"
-"PO-Revision-Date: 2018-12-20 22:15-0800\n"
-"Last-Translator: Timothy <me@timothygarcia.ca>\n"
-"Language-Team: fil\n"
-"Language: fil\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
 
 #: extmod/machine_i2c.c:299
 msgid "invalid I2C peripheral"
-msgstr "maling I2C peripheral"
+msgstr "perangkat I2C tidak valid"
 
 #: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
 #: extmod/machine_i2c.c:392
 msgid "I2C operation not supported"
-msgstr "Hindi supportado ang operasyong I2C"
+msgstr "operasi I2C tidak didukung"
 
 #: extmod/machine_mem.c:45 ports/unix/modmachine.c:53
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
-msgstr "address %08x ay hindi pantay sa %d bytes"
+msgstr "alamat %08x tidak selaras dengan %d bytes"
 
 #: extmod/machine_spi.c:57
 msgid "invalid SPI peripheral"
-msgstr "hindi wastong SPI peripheral"
+msgstr "perangkat SPI tidak valid"
 
 #: extmod/machine_spi.c:124
 msgid "buffers must be the same length"
-msgstr "ang buffers ay dapat parehas sa haba"
+msgstr "buffers harus mempunyai panjang yang sama"
 
 #: extmod/machine_spi.c:207
 msgid "bits must be 8"
-msgstr "bits ay dapat walo (8)"
+msgstr "bits harus memilki nilai 8"
 
 #: extmod/machine_spi.c:210
 msgid "firstbit must be MSB"
-msgstr "firstbit ay dapat MSB"
+msgstr "bit pertama(firstbit) harus berupa MSB"
 
 #: extmod/machine_spi.c:215
 msgid "must specify all of sck/mosi/miso"
-msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
+msgstr "harus menentukan semua pin sck/mosi/miso"
 
 #: extmod/modframebuf.c:299
 msgid "invalid format"
-msgstr "hindi wastong pag-format"
+msgstr "format tidak valid"
 
 #: extmod/modubinascii.c:38 extmod/moduhashlib.c:102
 msgid "a bytes-like object is required"
-msgstr "a bytes-like object ay kailangan"
+msgstr "sebuah objek menyerupai byte (bytes-like) dibutuhkan"
 
 #: extmod/modubinascii.c:90
 msgid "odd-length string"
-msgstr "odd-length string"
+msgstr "panjang data string memiliki keganjilan (odd-length)"
 
 #: extmod/modubinascii.c:101
 msgid "non-hex digit found"
-msgstr "non-hex digit nahanap"
+msgstr "digit non-hex ditemukan"
 
 #: extmod/modubinascii.c:169
 msgid "incorrect padding"
-msgstr "mali ang padding"
+msgstr "lapisan (padding) tidak benar"
 
 #: extmod/moductypes.c:122
 msgid "syntax error in uctypes descriptor"
-msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
+msgstr "sintaksis error pada pendeskripsi uctypes"
 
 #: extmod/moductypes.c:219
 msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
+msgstr "tidak dapat mendapatkan ukuran scalar secara tidak ambigu"
 
 #: extmod/moductypes.c:397
 msgid "struct: no fields"
-msgstr "struct: walang fields"
+msgstr "struct: tidak ada fields"
 
 #: extmod/moductypes.c:530
 msgid "struct: cannot index"
-msgstr "struct: hindi ma-index"
+msgstr "struct: tidak bisa melakukan index"
 
 #: extmod/moductypes.c:544
 msgid "struct: index out of range"
-msgstr "struct: index hindi maabot"
+msgstr "struct: index keluar dari jangkauan"
 
 #: extmod/moduheapq.c:38
 msgid "heap must be a list"
-msgstr "list dapat ang heap"
+msgstr "heap harus berupa sebuah list"
 
 #: extmod/moduheapq.c:86 extmod/modutimeq.c:147 extmod/modutimeq.c:172
 msgid "empty heap"
-msgstr "walang laman ang heap"
+msgstr "heap kosong"
 
 #: extmod/modujson.c:281
 msgid "syntax error in JSON"
-msgstr "sintaks error sa JSON"
+msgstr "sintaksis error pada JSON"
 
 #: extmod/modure.c:161
 msgid "Splitting with sub-captures"
-msgstr "Binibiyak gamit ang sub-captures"
+msgstr "Memisahkan dengan menggunakan sub-captures"
 
 #: extmod/modure.c:207
 msgid "Error in regex"
-msgstr "May pagkakamali sa REGEX"
+msgstr "Error pada regex"
 
 #: extmod/modussl_axtls.c:81
 msgid "invalid key"
-msgstr "mali ang key"
+msgstr "key tidak valid"
 
 #: extmod/modussl_axtls.c:87
 msgid "invalid cert"
-msgstr "mali ang cert"
+msgstr "cert tidak valid"
 
 #: extmod/modutimeq.c:131
 msgid "queue overflow"
-msgstr "puno na ang pila (overflow)"
+msgstr "antrian meluap (overflow)"
 
 #: extmod/moduzlib.c:98
 msgid "compression header"
-msgstr "compression header"
+msgstr "kompresi header"
 
 #: extmod/uos_dupterm.c:120
 msgid "invalid dupterm index"
-msgstr "mali ang dupterm index"
+msgstr "indeks dupterm tidak valid"
 
 #: extmod/vfs_fat.c:426 py/moduerrno.c:154
 msgid "Read-only filesystem"
-msgstr "Basahin-lamang mode"
+msgstr "sistem file (filesystem) bersifat Read-only"
 
 #: extmod/vfs_posix_file.c:48 ports/unix/file.c:50 py/objstringio.c:43
 msgid "I/O operation on closed file"
-msgstr "I/O operasyon sa saradong file"
+msgstr "operasi I/O pada file tertutup"
 
 #: lib/embed/abort_.c:8
 msgid "abort() called"
-msgstr "abort() tinawag"
+msgstr "abort() dipanggil"
 
 #: lib/netutils/netutils.c:83
 msgid "invalid arguments"
-msgstr "mali ang mga argumento"
+msgstr "argumen-argumen tidak valid"
 
 #: lib/utils/pyexec.c:97 py/builtinimport.c:251
 msgid "script compilation not supported"
-msgstr "script kompilasyon hindi supportado"
+msgstr "kompilasi script tidak didukung"
 
 #: main.c:150
 msgid " output:\n"
-msgstr " output:\n"
+msgstr "output:\n"
 
 #: main.c:164 main.c:237
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
-"para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
+"Auto-reload aktif. Silahkan simpan data-data (files) melalui USB untuk "
+"menjalankannya atau masuk ke REPL untukmenonaktifkan.\n"
 
 #: main.c:166
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
+msgstr "Berjalan di mode aman(safe mode)! Auto-reload tidak aktif.\n"
 
 #: main.c:168 main.c:239
 msgid "Auto-reload is off.\n"
-msgstr "Awtomatikong pag re-reload ay OFF.\n"
+msgstr "Auto-reload tidak aktif.\n"
 
 #: main.c:182
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
+msgstr ""
+"Berjalan di mode aman(safe mode)! tidak menjalankan kode yang tersimpan.\n"
 
 #: main.c:198
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
+msgstr "PERINGATAN: Nama file kode anda mempunyai dua ekstensi\n"
 
 #: main.c:244
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
-"Pindutin ang anumang key upang pumasok sa REPL. Gamitin ang CTRL-D upang i-"
-"reload."
+"Tekan tombol apa saja untuk masuk ke dalam REPL. Gunakan CTRL+D untuk reset "
+"(Reload)"
 
 #: main.c:407
 msgid "soft reboot\n"
-msgstr "malambot na reboot\n"
+msgstr "memulai ulang software(soft reboot)\n"
 
 #: ports/atmel-samd/audio_dma.c:209
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
 msgid "All sync event channels in use"
-msgstr "Lahat ng sync event channels ay ginagamit"
+msgstr "Semua channel event yang disinkronisasi sedang digunakan"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:135
 msgid "calibration is read only"
-msgstr "pagkakalibrate ay basahin lamang"
+msgstr "kalibrasi adalah read only"
 
 #: ports/atmel-samd/bindings/samd/Clock.c:137
 msgid "calibration is out of range"
-msgstr "kalibrasion ay wala sa sakop"
+msgstr "kalibrasi keluar dari jangkauan"
 
 #: ports/atmel-samd/board_busses.c:59 ports/nrf/board_busses.c:39
 msgid "No default I2C bus"
-msgstr "Walang default na I2C bus"
+msgstr "Tidak ada standar bus I2C"
 
 #: ports/atmel-samd/board_busses.c:85 ports/nrf/board_busses.c:64
 msgid "No default SPI bus"
-msgstr "Walang default SPI bus"
+msgstr "Tidak ada standar bus SPI"
 
 #: ports/atmel-samd/board_busses.c:112 ports/nrf/board_busses.c:91
 msgid "No default UART bus"
-msgstr "Walang default UART bus"
+msgstr "Tidak ada standar bus UART"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 #: ports/nrf/common-hal/analogio/AnalogIn.c:39
 msgid "Pin does not have ADC capabilities"
-msgstr "Ang pin ay walang kakayahan sa ADC"
+msgstr "Pin tidak mempunya kemampuan untuk ADC (Analog Digital Converter)"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:49
 msgid "No DAC on chip"
-msgstr "Walang DAC sa chip"
+msgstr "Tidak ada DAC (Digital Analog Converter) di dalam chip"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c:56
 msgid "AnalogOut not supported on given pin"
-msgstr "Hindi supportado ang AnalogOut sa ibinigay na pin"
+msgstr "pin yang dipakai tidak mendukung AnalogOut"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
 msgid "Invalid bit clock pin"
-msgstr "Mali ang bit clock pin"
+msgstr "Bit clock pada pin tidak valid"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
 msgid "Bit clock and word select must share a clock unit"
-msgstr "Ang bit clock at word select dapat makibahagi sa isang clock unit"
+msgstr "Bit clock dan word harus memiliki kesamaan pada clock unit"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
 msgid "Invalid data pin"
-msgstr "Mali ang data pin"
+msgstr "data pin tidak valid"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:169
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:174
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:145
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:150
 msgid "Serializer in use"
-msgstr "Serializer ginagamit"
+msgstr "Serializer sedang digunakan"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:230
 msgid "Clock unit in use"
-msgstr "Clock unit ginagamit"
+msgstr "Clock unit sedang digunakan"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
 msgid "Unable to find free GCLK"
-msgstr "Hindi mahanap ang libreng GCLK"
+msgstr "Tidak dapat menemukan GCLK yang kosong"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:254
 msgid "Too many channels in sample."
-msgstr "Sobra ang channels sa sample."
+msgstr "Terlalu banyak channel dalam sampel"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
 msgid "No DMA channel found"
-msgstr "Walang DMA channel na mahanap"
+msgstr "tidak ada channel DMA ditemukan"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
 msgid "Unable to allocate buffers for signed conversion"
-msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
+msgstr "Tidak dapat mengalokasikan buffer untuk signed conversion"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:109
 msgid "Invalid clock pin"
-msgstr "Mali ang clock pin"
+msgstr "Clock pada pin tidak valid"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
 msgid "Only 8 or 16 bit mono with "
-msgstr "Tanging 8 o 16 na bit mono na may "
+msgstr "Hanya 8 atau 16 bit mono dengan "
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
 msgid "sampling rate out of range"
-msgstr "pagpili ng rate wala sa sakop"
+msgstr "nilai sampling keluar dari jangkauan"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
 msgid "DAC already in use"
-msgstr "Ginagamit na ang DAC"
+msgstr "DAC sudah digunakan"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
 msgid "Right channel unsupported"
-msgstr "Hindi supportado ang kanang channel"
+msgstr "Channel Kanan tidak didukung"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
 msgid "Invalid pin"
-msgstr "Mali ang pin"
+msgstr "Pin tidak valid"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
 msgid "Invalid pin for left channel"
-msgstr "Mali ang pin para sa kaliwang channel"
+msgstr "Pin untuk channel kiri tidak valid"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
 msgid "Invalid pin for right channel"
-msgstr "Mali ang pin para sa kanang channel"
+msgstr "Pin untuk channel kanan tidak valid"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
 msgid "Cannot output both channels on the same pin"
-msgstr "Hindi maaaring output ang mga parehong channel sa parehong pin"
+msgstr ""
+"Tidak dapat menggunakan output di kedua channel dengan menggunakan pin yang "
+"sama"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 #: ports/nrf/common-hal/pulseio/PulseOut.c:107
 msgid "All timers in use"
-msgstr "Lahat ng timer ginagamit"
+msgstr "Semua timer sedang digunakan"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
 msgid "All event channels in use"
-msgstr "Lahat ng event channels ginagamit"
+msgstr "Semua channel event sedang digunakan"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"
+msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
-msgstr "Hindi sapat ang magagamit na pins"
+msgstr "Pin yang tersedia tidak cukup"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
@@ -335,367 +338,368 @@ msgstr "Hindi sapat ang magagamit na pins"
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:84
 msgid "Invalid pins"
-msgstr "Mali ang pins"
+msgstr "Pin-pin tidak valid"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:101
 msgid "SDA or SCL needs a pull up"
-msgstr "Kailangan ng pull up resistors ang SDA o SCL"
+msgstr "SDA atau SCL membutuhkan pull up"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:121
 msgid "Unsupported baudrate"
-msgstr "Hindi supportadong baudrate"
+msgstr "Baudrate tidak didukung"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
-msgstr "hindi sinusuportahan ang bytes > 8 bits"
+msgstr "byte > 8 bit tidak didukung"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
 #: ports/nrf/common-hal/busio/UART.c:118
 msgid "tx and rx cannot both be None"
-msgstr "tx at rx hindi pwedeng parehas na None"
+msgstr "tx dan rx keduanya tidak boleh kosong"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
 #: ports/nrf/common-hal/busio/UART.c:152
 msgid "Failed to allocate RX buffer"
-msgstr "Nabigong ilaan ang RX buffer"
+msgstr "Gagal untuk mengalokasikan buffer RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:154
 msgid "Could not initialize UART"
-msgstr "Hindi ma-initialize ang UART"
+msgstr "Tidak dapat menginisialisasi UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
 #: ports/nrf/common-hal/busio/UART.c:197
 msgid "No RX pin"
-msgstr "Walang RX pin"
+msgstr "Tidak pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
 #: ports/nrf/common-hal/busio/UART.c:232
 msgid "No TX pin"
-msgstr "Walang TX pin"
+msgstr "Tidak ada pin TX"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c:147
 msgid "Cannot get pull while in output mode"
-msgstr "Hindi makakakuha ng pull habang nasa output mode"
+msgstr "Tidak bisa mendapatkan pull pada saat mode output"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr "Hindi ma-reset sa bootloader dahil walang bootloader."
+msgstr ""
+"Tidak dapat melakukan reset ke bootloader karena tidak ada bootloader yang "
+"terisi"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
 #: ports/nrf/common-hal/pulseio/PWMOut.c:119
 #: ports/nrf/common-hal/pulseio/PWMOut.c:233
 msgid "Invalid PWM frequency"
-msgstr "Mali ang PWM frequency"
+msgstr "Frekuensi PWM tidak valid"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
 msgid "All timers for this pin are in use"
-msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
+msgstr "Semua timer untuk pin ini sedang digunakan"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
-msgstr "Walang support sa hardware ang pin"
+msgstr "Tidak ada dukungan hardware untuk pin"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
-msgstr "Ginagamit na ang EXTINT channel"
+msgstr "Channel EXTINT sedang digunakan"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
-msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
+msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
 msgid "pop from an empty PulseIn"
-msgstr "pop mula sa walang laman na PulseIn"
+msgstr "Muncul dari PulseIn yang kosong"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:422
 msgid "index out of range"
-msgstr "index wala sa sakop"
+msgstr "index keluar dari jangkauan"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:178
 msgid "Another send is already active"
-msgstr "Isa pang send ay aktibo na"
+msgstr "Send yang lain sudah aktif"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
 msgid "Both pins must support hardware interrupts"
-msgstr "Ang parehong mga pin ay dapat na sumusuporta sa hardware interrupts"
+msgstr "Kedua pin harus mendukung hardware interrut"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:46
 msgid "A hardware interrupt channel is already in use"
-msgstr "Isang channel ng hardware interrupt ay ginagamit na"
+msgstr "Sebuah channel hardware interrupt sedang digunakan"
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c:101
 msgid "calibration value out of range +/-127"
-msgstr "ang halaga ng pagkakalibrate ay wala sa sakop +/-127"
+msgstr "nilai kalibrasi keluar dari jangkauan +/-127"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
 msgid "No free GCLKs"
-msgstr "Walang libreng GCLKs"
+msgstr "Tidak ada GCLK yang kosong"
 
 #: ports/esp8266/common-hal/analogio/AnalogIn.c:43
 msgid "Pin %q does not have ADC capabilities"
-msgstr "Walang kakayahang ADC ang pin %q"
+msgstr "Pin %q tidak memiliki kemampuan ADC"
 
 #: ports/esp8266/common-hal/analogio/AnalogOut.c:39
 msgid "No hardware support for analog out."
-msgstr "Hindi supportado ng hardware ang analog out."
+msgstr "Tidak dukungan hardware untuk analog out."
 
 #: ports/esp8266/common-hal/busio/SPI.c:72
 msgid "Pins not valid for SPI"
-msgstr "Mali ang pins para sa SPI"
+msgstr "Pin-pin tidak valid untuk SPI"
 
 #: ports/esp8266/common-hal/busio/UART.c:45
 msgid "Only tx supported on UART1 (GPIO2)."
-msgstr "Tanging suportado ang TX sa UART1 (GPIO2)."
+msgstr "Hanya tx yang mendukung pada UART1 (GPIO2)."
 
 #: ports/esp8266/common-hal/busio/UART.c:67 ports/esp8266/machine_uart.c:108
 msgid "invalid data bits"
-msgstr "mali ang data bits"
+msgstr "bit data tidak valid"
 
 #: ports/esp8266/common-hal/busio/UART.c:91 ports/esp8266/machine_uart.c:144
 msgid "invalid stop bits"
-msgstr "mali ang stop bits"
+msgstr "stop bit tidak valid"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
 msgid "ESP8266 does not support pull down."
-msgstr "Walang pull down support ang ESP8266."
+msgstr "ESP866 tidak mendukung pull down"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
 msgid "GPIO16 does not support pull up."
-msgstr "Walang pull down support ang GPI016."
+msgstr "GPIO16 tidak mendukung pull up"
 
 #: ports/esp8266/common-hal/microcontroller/__init__.c:66
 msgid "ESP8226 does not support safe mode."
-msgstr "Walang safemode support ang ESP8266."
+msgstr "ESP8266 tidak mendukung safe mode"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:54
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:113
 #, c-format
 msgid "Maximum PWM frequency is %dhz."
-msgstr "Pinakamataas na PWM frequency ay %dhz."
+msgstr "Nilai maksimum frekuensi PWM adalah %dhz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:57
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:116
 msgid "Minimum PWM frequency is 1hz."
-msgstr "Pinakamababang PWM frequency ay 1hz."
+msgstr "Nilai minimum frekuensi PWM is 1hz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr ""
-"Hindi sinusuportahan ang maraming mga PWM frequency. PWM na naka-set sa %dhz."
+msgstr "Nilai Frekuensi PWM ganda tidak didukung. PWM sudah diatur pada %dhz"
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
 msgid "PWM not supported on pin %d"
-msgstr "Walang PWM support sa pin %d"
+msgstr "PWM tidak didukung pada pin %d"
 
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:78
 msgid "No PulseIn support for %q"
-msgstr "Walang PulseIn support sa %q"
+msgstr "Tidak ada dukungan PulseIn untuk %q"
 
 #: ports/esp8266/common-hal/storage/__init__.c:34
 msgid "Unable to remount filesystem"
-msgstr "Hindi ma-remount ang filesystem"
+msgstr "Tidak dapat memasang filesystem kembali"
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
 msgstr ""
-"Gamitin ang esptool upang burahin ang flash at muling i-upload ang Python"
+"Gunakan esptool untuk menghapus flash dan upload ulang Python sebagai "
+"gantinya"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
-msgstr "C-level assert"
+msgstr "Dukungan C-level"
 
 #: ports/esp8266/machine_adc.c:57
 #, c-format
 msgid "not a valid ADC Channel: %d"
-msgstr "hindi tamang ADC Channel: %d"
+msgstr "tidak valid channel ADC: %d"
 
 #: ports/esp8266/machine_hspi.c:131 ports/esp8266/machine_hspi.c:137
 msgid "impossible baudrate"
-msgstr "impossibleng baudrate"
+msgstr "baudrate tidak memungkinkan"
 
 #: ports/esp8266/machine_pin.c:129
 msgid "expecting a pin"
-msgstr "umaasa ng isang pin"
+msgstr "mengharapkan sebuah pin"
 
 #: ports/esp8266/machine_pin.c:284
 msgid "Pin(16) doesn't support pull"
-msgstr "Walang pull support ang Pin(16)"
+msgstr "Pin(16) tidak mendukung pull"
 
 #: ports/esp8266/machine_pin.c:323
 msgid "invalid pin"
-msgstr "mali ang pin"
+msgstr "pin tidak valid"
 
 #: ports/esp8266/machine_pin.c:389
 msgid "pin does not have IRQ capabilities"
-msgstr "walang IRQ capabilities ang pin"
+msgstr "pin tidak memiliki kemampuan IRQ"
 
 #: ports/esp8266/machine_rtc.c:185
 msgid "buffer too long"
-msgstr "masyadong mahaba ng buffer"
+msgstr "buffer terlalu panjang"
 
 #: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
 #: ports/esp8266/machine_rtc.c:246
 msgid "invalid alarm"
-msgstr "mali ang alarm"
+msgstr "alarm tidak valid"
 
 #: ports/esp8266/machine_uart.c:169
 #, c-format
 msgid "UART(%d) does not exist"
-msgstr "Walang UART(%d)"
+msgstr "UART(%d) tidak ada"
 
 #: ports/esp8266/machine_uart.c:219
 msgid "UART(1) can't read"
-msgstr "Hindi mabasa ang UART(1)"
+msgstr "UART(1) tidak dapat dibaca"
 
 #: ports/esp8266/modesp.c:119
 msgid "len must be multiple of 4"
-msgstr "len ay dapat multiple ng 4"
+msgstr "len harus kelipatan dari 4"
 
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
-"nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
+msgstr "alokasi memori gagal, mengalokasikan %u byte untuk kode native"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
-msgstr "dapat na mas mababa sa 1MB ang lokasyon ng flash"
+msgstr "alokasi flash harus dibawah 1MByte"
 
 #: ports/esp8266/modmachine.c:63
 msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr "ang frequency ay dapat 80Mhz or 160MHz lamang"
+msgstr "frekuensi hanya bisa didefinisikan 80Mhz atau 160Mhz"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "AP required"
-msgstr "AP kailangan"
+msgstr "AP dibutuhkan"
 
 #: ports/esp8266/modnetwork.c:61
 msgid "STA required"
-msgstr "STA kailangan"
+msgstr "STA dibutuhkan"
 
 #: ports/esp8266/modnetwork.c:87
 msgid "Cannot update i/f status"
-msgstr "Hindi ma-update i/f status"
+msgstr "Tidak dapat memperbarui status i/f"
 
 #: ports/esp8266/modnetwork.c:142
 msgid "Cannot set STA config"
-msgstr "Hindi ma-set ang STA Config"
+msgstr "Tidak dapat mengatur konfigurasi STA"
 
 #: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
-msgstr "Hindi maka connect sa AP"
+msgstr "Tidak dapat menyambungkan ke AP"
 
 #: ports/esp8266/modnetwork.c:152
 msgid "Cannot disconnect from AP"
-msgstr "Hindi ma disconnect sa AP"
+msgstr "Tidak dapat memutuskna dari AP"
 
 #: ports/esp8266/modnetwork.c:173
 msgid "unknown status param"
-msgstr "hindi alam na status param"
+msgstr "status param tidak diketahui"
 
 #: ports/esp8266/modnetwork.c:222
 msgid "STA must be active"
-msgstr "Dapat aktibo ang STA"
+msgstr "STA harus aktif"
 
 #: ports/esp8266/modnetwork.c:239
 msgid "scan failed"
-msgstr "nabigo ang pag-scan"
+msgstr "scan gagal"
 
 #: ports/esp8266/modnetwork.c:306
 msgid "wifi_set_ip_info() failed"
-msgstr "nabigo ang wifi_set_ip_info()"
+msgstr "wifi_set_ip_info() gagal"
 
 #: ports/esp8266/modnetwork.c:319
 msgid "either pos or kw args are allowed"
-msgstr "pos o kw args ang pinahihintulutan"
+msgstr "hanya antar pos atau kw args yang diperbolehkan"
 
 #: ports/esp8266/modnetwork.c:329
 msgid "can't get STA config"
-msgstr "hindi makuha ang STA config"
+msgstr "tidak bisa mendapatkan konfigurasi STA"
 
 #: ports/esp8266/modnetwork.c:331
 msgid "can't get AP config"
-msgstr "hindi makuha ang AP config"
+msgstr "tidak bisa mendapatkan konfigurasi AP"
 
 #: ports/esp8266/modnetwork.c:346
 msgid "invalid buffer length"
-msgstr "mali ang buffer length"
+msgstr "panjang buffer tidak valid"
 
 #: ports/esp8266/modnetwork.c:405
 msgid "can't set STA config"
-msgstr "hindi makuha ang STA config"
+msgstr "tidak bisa mendapatkan konfigurasi STA"
 
 #: ports/esp8266/modnetwork.c:407
 msgid "can't set AP config"
-msgstr "hindi makuha ang AP config"
+msgstr "tidak bisa mendapatkan konfigurasi AP"
 
 #: ports/esp8266/modnetwork.c:416
 msgid "can query only one param"
-msgstr "maaaring i-query lamang ang isang param"
+msgstr "hanya bisa melakukan query satu param"
 
 #: ports/esp8266/modnetwork.c:469
 msgid "unknown config param"
-msgstr "hindi alam na config param"
+msgstr "konfigurasi param tidak diketahui"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
-msgstr "Hindi supportado ang AnalogOut"
+msgstr "fungsionalitas AnalogOut tidak didukung"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:41
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr "Dukungan soft device, id: 0x%08lX, pc: 0x%08l"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:125
 #, c-format
 msgid "Failed to change softdevice state, error: 0x%08lX"
-msgstr "Nabigo sa pagbago ng softdevice state, error: 0x%08lX"
+msgstr "Gagal untuk merubah status softdevice, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:135
 #, c-format
 msgid "Failed to get softdevice state, error: 0x%08lX"
-msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
+msgstr "Gagal untuk mendapatkan status softdevice, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:155
 #, c-format
 msgid "Failed to get local address, error: 0x%08lX"
-msgstr "Nabigo sa pagkuha ng local na address, , error: 0x%08lX"
+msgstr "Gagal untuk mendapatkan alamat lokal, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:52
 #, c-format
 msgid "Failed to write gatts value, status: 0x%08lX"
-msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
+msgstr "Gagal untuk menulis nilai gatts, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:76
 #, c-format
 msgid "Failed to notify attribute value, status: 0x%08lX"
-msgstr "Hindi mabalitaan ang attribute value, status: 0x%08lX"
+msgstr "Gagal untuk melaporkan nilai atribut, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:91
 #, c-format
 msgid "Failed to read attribute value, status: 0x%08lX"
-msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
+msgstr "Gagal untuk membaca nilai atribut, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:119
 #: ports/nrf/common-hal/bleio/Device.c:272
 #: ports/nrf/common-hal/bleio/Device.c:307
 #, c-format
 msgid "Failed to acquire mutex, status: 0x%08lX"
-msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
+msgstr "Gagal untuk mendapatkan mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:126
 #, c-format
 msgid "Failed to write attribute value, status: 0x%08lX"
-msgstr "Hindi maisulat ang attribute value, status: 0x%08lX"
+msgstr "Gagal untuk menulis nilai atribut, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:138
 #: ports/nrf/common-hal/bleio/Device.c:284
@@ -704,82 +708,82 @@ msgstr "Hindi maisulat ang attribute value, status: 0x%08lX"
 #: ports/nrf/common-hal/bleio/Device.c:391
 #, c-format
 msgid "Failed to release mutex, status: 0x%08lX"
-msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
+msgstr "Gagal untuk melepaskan mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:81
 #: ports/nrf/common-hal/bleio/Device.c:114
 msgid "Can not fit data into the advertisment packet"
-msgstr "Hindi makasya ang data sa loob ng advertisement packet"
+msgstr "Tidak bisa menyesuaikan data ke dalam paket advertisment"
 
 #: ports/nrf/common-hal/bleio/Device.c:266
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to discover serivices, status: 0x%08lX"
-msgstr "Nabigo sa pagdiscover ng services, status: 0x%08lX"
+msgstr "Gagal untuk menemukan layanan, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:403
 #: ports/nrf/common-hal/bleio/Scanner.c:76
 #, c-format
 msgid "Failed to continue scanning, status: 0x%0xlX"
-msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
+msgstr "Gagal untuk melanjutkan scanning, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:436
 #, c-format
 msgid "Failed to connect, status: 0x%08lX"
-msgstr "Hindi makaconnect, status: 0x%08lX"
+msgstr "Gagal untuk menyambungkan, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:513
 #, c-format
 msgid "Failed to add service, status: 0x%08lX"
-msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
+msgstr "Gagal untuk menambahkan layanan, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:531
 #, c-format
 msgid "Failed to start advertisment, status: 0x%08lX"
-msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
+msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:549
 #, c-format
 msgid "Failed to stop advertisment, status: 0x%08lX"
-msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
+msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:575
 #: ports/nrf/common-hal/bleio/Scanner.c:103
 #, c-format
 msgid "Failed to start scanning, status: 0x%0xlX"
-msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
+msgstr "Gagal untuk melakukan scanning, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Device.c:592
 #, c-format
 msgid "Failed to create mutex, status: 0x%0xlX"
-msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
+msgstr "Gagal untuk membuat mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Service.c:83
 #, c-format
 msgid "Failed to add characteristic, status: 0x%08lX"
-msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
+msgstr "Gagal untuk menambahkan karakteristik, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/UUID.c:97
 #, c-format
 msgid "Failed to add Vendor Specific UUID, status: 0x%08lX"
-msgstr "Hindi matagumpay ang paglagay ng Vender Specific UUID, status: 0x%08lX"
+msgstr "Gagal untuk menambahkan Vendor Spesific UUID, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/UUID.c:102
 msgid "Invalid UUID string length"
-msgstr "Mali ang UUID string length"
+msgstr "Panjang string UUID tidak valid"
 
 #: ports/nrf/common-hal/bleio/UUID.c:109
 #: shared-bindings/bleio/Characteristic.c:125
 #: shared-bindings/bleio/Service.c:105
 msgid "Invalid UUID parameter"
-msgstr "Mali ang UUID parameter"
+msgstr "Parameter UUID tidak valid"
 
 #: ports/nrf/common-hal/busio/I2C.c:98
 msgid "All I2C peripherals are in use"
-msgstr "Lahat ng I2C peripherals ginagamit"
+msgstr "Semua perangkat I2C sedang digunakan"
 
 #: ports/nrf/common-hal/busio/SPI.c:133
 msgid "All SPI peripherals are in use"
-msgstr "Lahat ng SPI peripherals ay ginagamit"
+msgstr "Semua perangkat SPI sedang digunakan"
 
 #: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
@@ -788,11 +792,11 @@ msgstr "error = 0x%08lX"
 
 #: ports/nrf/common-hal/busio/UART.c:122
 msgid "Invalid buffer size"
-msgstr "Mali ang buffer size"
+msgstr "Ukuran buffer tidak valid"
 
 #: ports/nrf/common-hal/busio/UART.c:126
 msgid "Odd parity is not supported"
-msgstr "Odd na parity ay hindi supportado"
+msgstr "Parity ganjil tidak didukung"
 
 #: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
 #: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
@@ -800,24 +804,24 @@ msgstr "Odd na parity ay hindi supportado"
 #: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
 #: ports/nrf/common-hal/busio/UART.c:400
 msgid "busio.UART not available"
-msgstr "busio.UART hindi available"
+msgstr "busio.UART tidak tersedia"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:49
 #, c-format
 msgid "Can not get temperature. status: 0x%02x"
-msgstr "Hindi makuha ang temperatura. status 0x%02x"
+msgstr "Tidak bisa mendapatkan temperatur. status: 0x%02x"
 
 #: ports/nrf/common-hal/pulseio/PWMOut.c:161
 msgid "All PWM peripherals are in use"
-msgstr "Lahat ng PWM peripherals ay ginagamit"
+msgstr "Semua perangkat PWM sedang digunakan"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
-msgstr "Hindi alam ang type"
+msgstr "Tipe tidak diketahui"
 
 #: ports/unix/modffi.c:207 ports/unix/modffi.c:265
 msgid "Error in ffi_prep_cif"
-msgstr "Pagkakamali sa ffi_prep_cif"
+msgstr "Errod pada ffi_prep_cif"
 
 #: ports/unix/modffi.c:270
 msgid "ffi_prep_closure_loc"
@@ -825,7 +829,7 @@ msgstr "ffi_prep_closure_loc"
 
 #: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
-msgstr "Hindi alam ipasa ang object sa native function"
+msgstr "Tidak tahu cara meloloskan objek ke fungsi native"
 
 #: ports/unix/modusocket.c:474
 #, c-format
@@ -834,91 +838,87 @@ msgstr "[addrinfo error %d]"
 
 #: py/argcheck.c:44
 msgid "function does not take keyword arguments"
-msgstr "ang function ay hindi kumukuha ng mga argumento ng keyword"
+msgstr "fungsi tidak dapat mengambil argumen keyword"
 
 #: py/argcheck.c:54 py/bc.c:85 py/objnamedtuple.c:104
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
-"ang function ay kumuhuha ng %d positional arguments ngunit %d ang ibinigay"
+msgstr "fungsi mengambil posisi argumen %d tapi %d yang diberikan"
 
 #: py/argcheck.c:64
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr "function kulang ng %d required na positional arguments"
+msgstr "fungsi kehilangan %d argumen posisi yang dibutuhkan"
 
 #: py/argcheck.c:72
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr "function na inaasahang %d ang argumento, ngunit %d ang nakuha"
+msgstr "fungsi diharapkan setidaknya %d argumen, hanya mendapatkan %d"
 
 #: py/argcheck.c:97
 msgid "'%q' argument required"
-msgstr "'%q' argument kailangan"
+msgstr "'%q' argumen dibutuhkan"
 
 #: py/argcheck.c:122
 msgid "extra positional arguments given"
-msgstr "dagdag na positional argument na ibinigay"
+msgstr "argumen posisi ekstra telah diberikan"
 
 #: py/argcheck.c:130
 msgid "extra keyword arguments given"
-msgstr "dagdag na keyword argument na ibinigay"
+msgstr "argumen keyword ekstra telah diberikan"
 
 #: py/argcheck.c:142
 msgid "argument num/types mismatch"
-msgstr "hindi tugma ang argument num/types"
+msgstr "argumen num/types tidak cocok"
 
 #: py/argcheck.c:147
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr ""
-"kindi pa ipinapatupad ang (mga) argument(s) ng keyword - gumamit ng normal "
-"args"
+msgstr "argumen keyword belum diimplementasi - gunakan args normal"
 
 #: py/bc.c:88 py/objnamedtuple.c:108
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr ""
-"Ang %q() ay kumukuha ng %d positional arguments pero %d lang ang binigay"
+msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
 
 #: py/bc.c:197 py/bc.c:215
 msgid "unexpected keyword argument"
-msgstr "hindi inaasahang argumento ng keyword"
+msgstr "argumen keyword tidak diharapkan"
 
 #: py/bc.c:199
 msgid "keywords must be strings"
-msgstr "ang keywords dapat strings"
+msgstr "keyword harus berupa string"
 
 #: py/bc.c:206 py/objnamedtuple.c:138
 msgid "function got multiple values for argument '%q'"
-msgstr "ang function ay nakakuha ng maraming values para sa argument '%q'"
+msgstr "fungsi mendapatkan nilai ganda untuk argumen '%q'"
 
 #: py/bc.c:218 py/objnamedtuple.c:130
 msgid "unexpected keyword argument '%q'"
-msgstr "hindi inaasahang argumento ng keyword na '%q'"
+msgstr "keyword argumen '%q' tidak diharapkan"
 
 #: py/bc.c:244
 #, c-format
 msgid "function missing required positional argument #%d"
-msgstr "function nangangailangan ng positional argument #%d"
+msgstr "fungsi kehilangan argumen posisi #%d yang dibutuhkan"
 
 #: py/bc.c:260
 msgid "function missing required keyword argument '%q'"
-msgstr "function nangangailangan ng keyword argument '%q'"
+msgstr "fungsi kehilangan argumen keyword '%q' yang dibutuhkan"
 
 #: py/bc.c:269
 msgid "function missing keyword-only argument"
-msgstr "function nangangailangan ng keyword-only argument"
+msgstr "fungsi kehilangan argumen keyword-only"
 
 #: py/binary.c:112
 msgid "bad typecode"
-msgstr "masamang typecode"
+msgstr "typecode buruk"
 
 #: py/builtinevex.c:99
 msgid "bad compile mode"
-msgstr "masamang mode ng compile"
+msgstr "mode compile buruk"
 
 #: py/builtinhelp.c:137
 msgid "Plus any modules on the filesystem\n"
-msgstr "Kasama ang kung ano pang modules na sa filesystem\n"
+msgstr "Tambahkan module apapun pada filesystem\n"
 
 #: py/builtinhelp.c:183
 #, c-format
@@ -929,24 +929,24 @@ msgid ""
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
-"Mabuhay sa Adafruit CircuitPython %s!\n"
+"Selamat datang ke Adafruit CircuitPython %s!\n"
 "\n"
-"Mangyaring bisitahin ang learn.adafruit.com/category/circuitpython para sa "
-"project guides.\n"
+"Silahkan kunjungi learn.adafruit.com/category/circuitpython untuk panduan "
+"project.\n"
 "\n"
-"Para makita ang listahan ng modules, `help(“modules”)`.\n"
+"Untuk menampilkan modul built-in silahkan ketik `help(\"modules\")`.\n"
 
 #: py/builtinimport.c:336
 msgid "cannot perform relative import"
-msgstr "hindi maaring isagawa ang relative import"
+msgstr "tidak dapat melakukan relative import"
 
 #: py/builtinimport.c:420 py/builtinimport.c:532
 msgid "module not found"
-msgstr "module hindi nakita"
+msgstr "modul tidak ditemukan"
 
 #: py/builtinimport.c:423 py/builtinimport.c:535
 msgid "no module named '%q'"
-msgstr "walang module na '%q'"
+msgstr "tidak ada modul yang bernama '%q'"
 
 #: py/builtinimport.c:510
 msgid "relative import"
@@ -954,1595 +954,1576 @@ msgstr "relative import"
 
 #: py/compile.c:397 py/compile.c:542
 msgid "can't assign to expression"
-msgstr "hindi ma i-assign sa expression"
+msgstr "tidak dapat menetapkan ke ekspresi"
 
 #: py/compile.c:416
 msgid "multiple *x in assignment"
-msgstr "maramihang *x sa assignment"
+msgstr "perkalian *x dalam assignment"
 
 #: py/compile.c:642
 msgid "non-default argument follows default argument"
-msgstr "non-default argument sumusunod sa default argument"
+msgstr "argumen non-default mengikuti argumen standar(default)"
 
 #: py/compile.c:771 py/compile.c:789
 msgid "invalid micropython decorator"
-msgstr "mali ang micropython decorator"
+msgstr "micropython decorator tidak valid"
 
 #: py/compile.c:943
 msgid "can't delete expression"
-msgstr "hindi mabura ang expression"
+msgstr "tidak bisa menghapus ekspresi"
 
 #: py/compile.c:955
 msgid "'break' outside loop"
-msgstr "'break' sa labas ng loop"
+msgstr "'break' diluar loop"
 
 #: py/compile.c:958
 msgid "'continue' outside loop"
-msgstr "'continue' sa labas ng loop"
+msgstr "'continue' diluar loop"
 
 #: py/compile.c:969
 msgid "'return' outside function"
-msgstr "'return' sa labas ng function"
+msgstr "'return' diluar fungsi"
 
 #: py/compile.c:1169
 msgid "identifier redefined as global"
-msgstr "identifier ginawang global"
+msgstr "identifier didefinisi ulang sebagai global"
 
 #: py/compile.c:1185
 msgid "no binding for nonlocal found"
-msgstr "no binding para sa nonlocal, nahanap"
+msgstr "tidak ada ikatan/bind pada temuan nonlocal"
 
 #: py/compile.c:1188
 msgid "identifier redefined as nonlocal"
-msgstr "identifier ginawang nonlocal"
+msgstr "identifier didefinisi ulang sebagai nonlocal"
 
 #: py/compile.c:1197
 msgid "can't declare nonlocal in outer code"
-msgstr "hindi madeclare nonlocal sa outer code"
+msgstr "tidak dapat mendeklarasikan nonlocal diluar jangkauan kode"
 
 #: py/compile.c:1542
 msgid "default 'except' must be last"
-msgstr "default 'except' ay dapat sa huli"
+msgstr "'except' standar harus terakhir"
 
 #: py/compile.c:2095
 msgid "*x must be assignment target"
-msgstr "*x ay dapat na assignment target"
+msgstr "*x harus menjadi target assignment"
 
 #: py/compile.c:2193
 msgid "super() can't find self"
-msgstr "super() hindi mahanap ang sarili"
+msgstr "super() tidak dapat menemukan dirinya sendiri"
 
 #: py/compile.c:2256
 msgid "can't have multiple *x"
-msgstr "hindi puede ang maraming *x"
+msgstr "tidak bisa memiliki *x ganda"
 
 #: py/compile.c:2263
 msgid "can't have multiple **x"
-msgstr "hindi puede ang maraming **x"
+msgstr "tidak bisa memiliki **x ganda"
 
 #: py/compile.c:2271
 msgid "LHS of keyword arg must be an id"
-msgstr "LHS ng keyword arg ay dapat na id"
+msgstr "LHS dari keyword arg harus menjadi sebuah id"
 
 #: py/compile.c:2287
 msgid "non-keyword arg after */**"
-msgstr "non-keyword arg sa huli ng */**"
+msgstr "non-keyword arg setelah */**"
 
 #: py/compile.c:2291
 msgid "non-keyword arg after keyword arg"
-msgstr "non-keyword arg sa huli ng keyword arg"
+msgstr "non-keyword arg setelah keyword arg"
 
 #: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
 #: py/parse.c:1176
 msgid "invalid syntax"
-msgstr "mali ang sintaks"
+msgstr "syntax tidak valid"
 
 #: py/compile.c:2465
 msgid "expecting key:value for dict"
-msgstr "umaasang key: halaga para sa dict"
+msgstr "key:value diharapkan untuk dict"
 
 #: py/compile.c:2475
 msgid "expecting just a value for set"
-msgstr "umaasa sa value para sa set"
+msgstr "hanya mengharapkan sebuah nilai (value) untuk set"
 
 #: py/compile.c:2600
 msgid "'yield' outside function"
-msgstr "'yield' sa labas ng function"
+msgstr "'yield' diluar fungsi"
 
 #: py/compile.c:2619
 msgid "'await' outside function"
-msgstr "'await' sa labas ng function"
+msgstr "'await' diluar fungsi"
 
 #: py/compile.c:2774
 msgid "name reused for argument"
-msgstr "name muling ginamit para sa argument"
+msgstr "nama digunakan kembali untuk argumen"
 
 #: py/compile.c:2827
 msgid "parameter annotation must be an identifier"
-msgstr "parameter annotation ay dapat na identifier"
+msgstr "anotasi parameter haruse sebuah identifier"
 
 #: py/compile.c:2969 py/compile.c:3137
 msgid "return annotation must be an identifier"
-msgstr "return annotation ay dapat na identifier"
+msgstr "anotasi return harus sebuah identifier"
 
 #: py/compile.c:3097
 msgid "inline assembler must be a function"
-msgstr "inline assembler ay dapat na function"
+msgstr "inline assembler harus sebuah fungsi"
 
 #: py/compile.c:3134
 msgid "unknown type"
-msgstr "hindi malaman ang type (unknown type)"
+msgstr "tipe tidak diketahui"
 
 #: py/compile.c:3154
 msgid "expecting an assembler instruction"
-msgstr "umaasa ng assembler instruction"
+msgstr "sebuah instruksi assembler diharapkan"
 
 #: py/compile.c:3184
 msgid "'label' requires 1 argument"
-msgstr "'label' kailangan ng 1 argument"
+msgstr "'label' membutuhkan 1 argumen"
 
 #: py/compile.c:3190
 msgid "label redefined"
-msgstr "ang label ay na-define ulit"
+msgstr "label didefinis ulang"
 
 #: py/compile.c:3196
 msgid "'align' requires 1 argument"
-msgstr "'align' kailangan ng 1 argument"
+msgstr "'align' membutuhkan 1 argumen"
 
 #: py/compile.c:3205
 msgid "'data' requires at least 2 arguments"
-msgstr "'data' kailangan ng hindi bababa sa 2 argument"
+msgstr "'data' membutuhkan setidaknya 2 argumen"
 
 #: py/compile.c:3212
 msgid "'data' requires integer arguments"
-msgstr "'data' kailangan ng integer arguments"
+msgstr "'data' membutuhkan argumen integer"
 
 #: py/emitinlinethumb.c:102
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Thumb assembly"
+msgstr "hanya mampu memiliki hingga 4 parameter untuk Thumb assembly"
 
 #: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence r0 hanggang r3"
+msgstr "parameter harus menjadi register dalam urutan r0 sampai r3"
 
 #: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr "Inaasahan ng '%s' ang hangang r%d"
+msgstr "'%s' mengharapkan setidaknya r%d"
 
 #: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
 #, c-format
 msgid "'%s' expects a register"
-msgstr "Inaasahan ng '%s' ang isang rehistro"
+msgstr "'%s' mengharapkan sebuah register"
 
 #: py/emitinlinethumb.c:211
 #, c-format
 msgid "'%s' expects a special register"
-msgstr "Inaasahan ng '%s' ang isang espesyal na register"
+msgstr "'%s' mengharapkan sebuah register spesial"
 
 #: py/emitinlinethumb.c:239
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr "Inaasahan ng '%s' ang isang FPU register"
+msgstr "'%s' mengharapkan sebuah FPU register"
 
 #: py/emitinlinethumb.c:292
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "Inaasahan ng '%s' ay {r0, r1, …}"
+msgstr "'%s' mengharapkan {r0, r1, ...}"
 
 #: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
 #, c-format
 msgid "'%s' expects an integer"
-msgstr "Inaasahan ng '%s' ang isang integer"
+msgstr "'%s' mengharapkan integer"
 
 #: py/emitinlinethumb.c:304
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' integer 0x%x ay wala sa mask na sakop ng 0x%x"
+msgstr "'%s' integer 0x%x tidak cukup didalam mask 0x%x"
 
 #: py/emitinlinethumb.c:328
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr "Inaasahan ng '%s' ang isang address sa [a, b]"
+msgstr "'%s' mengharapkan sebuah alamat dengan bentuk [a, b]"
 
 #: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
 #, c-format
 msgid "'%s' expects a label"
-msgstr "'%s' umaasa ng label"
+msgstr ""
 
 #: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
 msgid "label '%q' not defined"
-msgstr "label '%d' kailangan na i-define"
+msgstr ""
 
 #: py/emitinlinethumb.c:806
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr "hindi sinusuportahan ang thumb instruktion '%s' sa %d argumento"
+msgstr ""
 
 #: py/emitinlinethumb.c:810
 msgid "branch not in range"
-msgstr "branch wala sa range"
+msgstr ""
 
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
-msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Xtensa assembly"
+msgstr ""
 
 #: py/emitinlinextensa.c:91 py/emitinlinextensa.c:96
 msgid "parameters must be registers in sequence a2 to a5"
-msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
+msgstr ""
 
 #: py/emitinlinextensa.c:174
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
+msgstr ""
 
 #: py/emitinlinextensa.c:327
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr "hindi sinusuportahan ang instruction ng Xtensa '%s' sa %d argumento"
+msgstr ""
 
 #: py/emitnative.c:183
 msgid "unknown type '%q'"
-msgstr "hindi malaman ang type '%q'"
+msgstr ""
 
 #: py/emitnative.c:260
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
-"Ang mga function ng Viper ay kasalukuyang hindi sumusuporta sa higit sa 4 na "
-"argumento"
 
 #: py/emitnative.c:742
 msgid "conversion to object"
-msgstr "kombersyon to object"
+msgstr ""
 
 #: py/emitnative.c:921
 msgid "local '%q' used before type known"
-msgstr "local '%q' ginamit bago alam ang type"
+msgstr ""
 
 #: py/emitnative.c:1118 py/emitnative.c:1156
 msgid "can't load from '%q'"
-msgstr "hidi ma i-load galing sa '%q'"
+msgstr ""
 
 #: py/emitnative.c:1128
 msgid "can't load with '%q' index"
-msgstr "hindi ma i-load gamit ng '%q' na index"
+msgstr ""
 
 #: py/emitnative.c:1188
 msgid "local '%q' has type '%q' but source is '%q'"
-msgstr "local '%q' ay may type '%q' pero ang source ay '%q'"
+msgstr ""
 
 #: py/emitnative.c:1289 py/emitnative.c:1379
 msgid "can't store '%q'"
-msgstr "hindi ma i-store ang '%q'"
+msgstr ""
 
 #: py/emitnative.c:1358 py/emitnative.c:1419
 msgid "can't store to '%q'"
-msgstr "hindi ma i-store sa '%q'"
+msgstr ""
 
 #: py/emitnative.c:1369
 msgid "can't store with '%q' index"
-msgstr "hindi ma i-store gamit ng '%q' na index"
+msgstr ""
 
 #: py/emitnative.c:1540
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr "hindi maaaring ma-convert ang '% qt' sa 'bool'"
+msgstr ""
 
 #: py/emitnative.c:1774
 msgid "unary op %q not implemented"
-msgstr "unary op %q hindi implemented"
+msgstr ""
 
 #: py/emitnative.c:1930
 msgid "binary op %q not implemented"
-msgstr "binary op %q hindi implemented"
+msgstr ""
 
 #: py/emitnative.c:1951
 msgid "can't do binary op between '%q' and '%q'"
-msgstr "hindi magawa ang binary op sa gitna ng '%q' at '%q'"
+msgstr ""
 
 #: py/emitnative.c:2126
 msgid "casting"
-msgstr "casting"
+msgstr ""
 
 #: py/emitnative.c:2173
 msgid "return expected '%q' but got '%q'"
-msgstr "return umasa ng '%q' pero ang nakuha ay ‘%q’"
+msgstr ""
 
 #: py/emitnative.c:2191
 msgid "must raise an object"
-msgstr "dapat itaas ang isang object"
+msgstr ""
 
 #: py/emitnative.c:2201
 msgid "native yield"
-msgstr "native yield"
+msgstr ""
 
 #: py/lexer.c:345
 msgid "unicode name escapes"
-msgstr "unicode name escapes"
+msgstr ""
 
 #: py/modbuiltins.c:162
 msgid "chr() arg not in range(0x110000)"
-msgstr "chr() arg wala sa sakop ng range(0x110000)"
+msgstr ""
 
 #: py/modbuiltins.c:171
 msgid "chr() arg not in range(256)"
-msgstr "chr() arg wala sa sakop ng range(256)"
+msgstr ""
 
 #: py/modbuiltins.c:285
 msgid "arg is an empty sequence"
-msgstr "arg ay walang laman na sequence"
+msgstr ""
 
 #: py/modbuiltins.c:350
 msgid "ord expects a character"
-msgstr "ord umaasa ng character"
+msgstr ""
 
 #: py/modbuiltins.c:353
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
-msgstr "ord() umaasa ng character pero string ng %d haba ang nakita"
+msgstr ""
 
 #: py/modbuiltins.c:363
 msgid "3-arg pow() not supported"
-msgstr "3-arg pow() hindi suportado"
+msgstr ""
 
 #: py/modbuiltins.c:517
 msgid "must use keyword argument for key function"
-msgstr "dapat gumamit ng keyword argument para sa key function"
+msgstr ""
 
 #: py/modmath.c:41 shared-bindings/math/__init__.c:53
 msgid "math domain error"
-msgstr "may pagkakamali sa math domain"
+msgstr ""
 
 #: py/modmath.c:196 py/objfloat.c:270 py/objint_longlong.c:222
 #: py/objint_mpz.c:230 py/runtime.c:619 shared-bindings/math/__init__.c:346
 msgid "division by zero"
-msgstr "dibisyon ng zero"
+msgstr ""
 
 #: py/modmicropython.c:155
 msgid "schedule stack full"
-msgstr "puno na ang schedule stack"
+msgstr ""
 
 #: py/modstruct.c:145 py/modstruct.c:153 py/modstruct.c:234 py/modstruct.c:244
 #: shared-bindings/struct/__init__.c:103 shared-bindings/struct/__init__.c:145
 #: shared-module/struct/__init__.c:91 shared-module/struct/__init__.c:175
 msgid "buffer too small"
-msgstr "masyadong maliit ang buffer"
+msgstr ""
 
 #: py/modthread.c:240
 msgid "expecting a dict for keyword args"
-msgstr "umaasa ng dict para sa keyword args"
+msgstr ""
 
 #: py/moduerrno.c:147 py/moduerrno.c:150
 msgid "Permission denied"
-msgstr "Walang pahintulot"
+msgstr ""
 
 #: py/moduerrno.c:148
 msgid "No such file/directory"
-msgstr "Walang file/directory"
+msgstr ""
 
 #: py/moduerrno.c:149
 msgid "Input/output error"
-msgstr "May mali sa Input/Output"
+msgstr ""
 
 #: py/moduerrno.c:151
 msgid "File exists"
-msgstr "Mayroong file"
+msgstr ""
 
 #: py/moduerrno.c:152
 msgid "Unsupported operation"
-msgstr "Hindi sinusuportahang operasyon"
+msgstr ""
 
 #: py/moduerrno.c:153
 msgid "Invalid argument"
-msgstr "Maling argumento"
+msgstr ""
 
 #: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
-msgstr "Traceback (pinakahuling huling tawag): \n"
+msgstr ""
 
 #: py/obj.c:96
 msgid "  File \"%q\", line %d"
-msgstr "  File \"%q\", line %d"
+msgstr ""
 
 #: py/obj.c:98
 msgid "  File \"%q\""
-msgstr "  File \"%q\""
+msgstr ""
 
 #: py/obj.c:102
 msgid ", in %q\n"
-msgstr ", sa %q\n"
+msgstr ""
 
 #: py/obj.c:259
 msgid "can't convert to int"
-msgstr "hindi ma-convert sa int"
+msgstr ""
 
 #: py/obj.c:262
 #, c-format
 msgid "can't convert %s to int"
-msgstr "hindi ma-convert %s sa int"
+msgstr ""
 
 #: py/obj.c:322
 msgid "can't convert to float"
-msgstr "hindi ma-convert sa float"
+msgstr ""
 
 #: py/obj.c:325
 #, c-format
 msgid "can't convert %s to float"
-msgstr "hindi ma-convert %s sa int"
+msgstr ""
 
 #: py/obj.c:355
 msgid "can't convert to complex"
-msgstr "hindi ma-convert sa complex"
+msgstr ""
 
 #: py/obj.c:358
 #, c-format
 msgid "can't convert %s to complex"
-msgstr "hindi ma-convert %s sa complex"
+msgstr ""
 
 #: py/obj.c:373
 msgid "expected tuple/list"
-msgstr "umaasa ng tuple/list"
+msgstr ""
 
 #: py/obj.c:376
 #, c-format
 msgid "object '%s' is not a tuple or list"
-msgstr "object '%s' ay hindi tuple o list"
+msgstr ""
 
 #: py/obj.c:387
 msgid "tuple/list has wrong length"
-msgstr "mali ang haba ng tuple/list"
+msgstr ""
 
 #: py/obj.c:389
 #, c-format
 msgid "requested length %d but object has length %d"
-msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
+msgstr ""
 
 #: py/obj.c:402
 msgid "indices must be integers"
-msgstr "ang mga indeks ay dapat na integer"
+msgstr ""
 
 #: py/obj.c:405
 msgid "%q indices must be integers, not %s"
-msgstr "%q indeks ay dapat integers, hindi %s"
+msgstr ""
 
 #: py/obj.c:425
 msgid "%q index out of range"
-msgstr "%q indeks wala sa sakop"
+msgstr ""
 
 #: py/obj.c:457
 msgid "object has no len"
-msgstr "object walang len"
+msgstr ""
 
 #: py/obj.c:460
 #, c-format
 msgid "object of type '%s' has no len()"
-msgstr "object na type '%s' walang len()"
+msgstr ""
 
 #: py/obj.c:500
 msgid "object does not support item deletion"
-msgstr "ang object ay hindi sumusuporta sa pagbura ng item"
+msgstr ""
 
 #: py/obj.c:503
 #, c-format
 msgid "'%s' object does not support item deletion"
-msgstr "'%s' object ay hindi sumusuporta sa pagtanggal ng item"
+msgstr ""
 
 #: py/obj.c:507
 msgid "object is not subscriptable"
-msgstr "ang bagay ay hindi maaaring ma-subscript"
+msgstr ""
 
 #: py/obj.c:510
 #, c-format
 msgid "'%s' object is not subscriptable"
-msgstr "'%s' object ay hindi maaaring i-subscript"
+msgstr ""
 
 #: py/obj.c:514
 msgid "object does not support item assignment"
-msgstr "ang object na '%s' ay hindi maaaring i-subscript"
+msgstr ""
 
 #: py/obj.c:517
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr "'%s' object hindi sumusuporta ng item assignment"
+msgstr ""
 
 #: py/obj.c:548
 msgid "object with buffer protocol required"
-msgstr "object na may buffer protocol kinakailangan"
+msgstr ""
 
 #: py/objarray.c:413 py/objstr.c:427 py/objstrunicode.c:191 py/objtuple.c:187
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
-msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
+msgstr ""
 
 #: py/objarray.c:426
 msgid "lhs and rhs should be compatible"
-msgstr "lhs at rhs ay dapat magkasundo"
+msgstr ""
 
 #: py/objarray.c:444 shared-bindings/nvm/ByteArray.c:107
 msgid "array/bytes required on right side"
-msgstr "array/bytes kinakailangan sa kanang bahagi"
+msgstr ""
 
 #: py/objcomplex.c:203
 msgid "can't do truncated division of a complex number"
 msgstr ""
-"hindi maaaring gawin ang truncated division ng isang kumplikadong numero"
 
 #: py/objcomplex.c:209
 msgid "complex division by zero"
-msgstr "kumplikadong dibisyon sa pamamagitan ng zero"
+msgstr ""
 
 #: py/objcomplex.c:237
 msgid "0.0 to a complex power"
-msgstr "0.0 para sa complex power"
+msgstr ""
 
 #: py/objdeque.c:107
 msgid "full"
-msgstr "puno"
+msgstr ""
 
 #: py/objdeque.c:127
 msgid "empty"
-msgstr "walang laman"
+msgstr ""
 
 #: py/objdict.c:314
 msgid "popitem(): dictionary is empty"
-msgstr "popitem(): dictionary ay walang laman"
+msgstr ""
 
 #: py/objdict.c:357
 msgid "dict update sequence has wrong length"
-msgstr "may mali sa haba ng dict update sequence"
+msgstr ""
 
 #: py/objfloat.c:308 py/parsenum.c:331
 msgid "complex values not supported"
-msgstr "kumplikadong values hindi sinusuportahan"
+msgstr ""
 
 #: py/objgenerator.c:108
 msgid "can't send non-None value to a just-started generator"
-msgstr "hindi mapadala ang non-None value sa isang kaka umpisang generator"
+msgstr ""
 
 #: py/objgenerator.c:126
 msgid "generator already executing"
-msgstr "insinasagawa na ng generator"
+msgstr ""
 
 #: py/objgenerator.c:229
 msgid "generator ignored GeneratorExit"
-msgstr "hindi pinansin ng generator ang GeneratorExit"
+msgstr ""
 
 #: py/objgenerator.c:251
 msgid "can't pend throw to just-started generator"
-msgstr "hindi mapadala ang send throw sa isang kaka umpisang generator"
+msgstr ""
 
 #: py/objint.c:144
 msgid "can't convert inf to int"
-msgstr "hindi ma i-convert inf sa int"
+msgstr ""
 
 #: py/objint.c:146
 msgid "can't convert NaN to int"
-msgstr "hindi ma i-convert NaN sa int"
+msgstr ""
 
 #: py/objint.c:163
 msgid "float too big"
-msgstr "masyadong malaki ang float"
+msgstr ""
 
 #: py/objint.c:328
 msgid "long int not supported in this build"
-msgstr "long int hindi sinusuportahan sa build na ito"
+msgstr ""
 
 #: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
 msgid "small int overflow"
-msgstr "small int overflow"
+msgstr ""
 
 #: py/objint_longlong.c:189 py/objint_mpz.c:283 py/runtime.c:486
 msgid "negative power with no float support"
-msgstr "negatibong power na walang float support"
+msgstr ""
 
 #: py/objint_longlong.c:251
 msgid "ulonglong too large"
-msgstr "ulonglong masyadong malaki"
+msgstr ""
 
 #: py/objint_mpz.c:267 py/runtime.c:396 py/runtime.c:411
 msgid "negative shift count"
-msgstr "negative shift count"
+msgstr ""
 
 #: py/objint_mpz.c:336
 msgid "pow() with 3 arguments requires integers"
-msgstr "pow() na may 3 argumento kailangan ng integers"
+msgstr ""
 
 #: py/objint_mpz.c:347
 msgid "pow() 3rd argument cannot be 0"
-msgstr "pow() 3rd argument ay hindi maaring 0"
+msgstr ""
 
 #: py/objint_mpz.c:415
 msgid "overflow converting long int to machine word"
-msgstr "overflow nagcoconvert ng long int sa machine word"
+msgstr ""
 
 #: py/objlist.c:273
 msgid "pop from empty list"
-msgstr "pop galing sa walang laman na list"
+msgstr ""
 
 #: py/objnamedtuple.c:92
 msgid "can't set attribute"
-msgstr "hindi ma i-set ang attribute"
+msgstr ""
 
 #: py/objobject.c:55
 msgid "__new__ arg must be a user-type"
-msgstr "__new__ arg ay dapat na user-type"
+msgstr ""
 
 #: py/objrange.c:110
 msgid "zero step"
-msgstr "zero step"
+msgstr ""
 
 #: py/objset.c:371
 msgid "pop from an empty set"
-msgstr "pop sa walang laman na set"
+msgstr ""
 
 #: py/objslice.c:66
 msgid "Length must be an int"
-msgstr "Haba ay dapat int"
+msgstr ""
 
 #: py/objslice.c:71
 msgid "Length must be non-negative"
-msgstr "Haba ay dapat hindi negatibo"
+msgstr ""
 
 #: py/objslice.c:86 py/sequence.c:57
 msgid "slice step cannot be zero"
-msgstr "slice step ay hindi puedeng 0"
+msgstr ""
 
 #: py/objslice.c:159
 msgid "Cannot subclass slice"
-msgstr "Hindi magawa ang sublcass slice"
+msgstr ""
 
 #: py/objstr.c:261
 msgid "bytes value out of range"
-msgstr "bytes value wala sa sakop"
+msgstr ""
 
 #: py/objstr.c:270
 msgid "wrong number of arguments"
-msgstr "mali ang bilang ng argumento"
+msgstr ""
 
 #: py/objstr.c:467
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
-"join umaaasang may listahan ng str/bytes objects na naalinsunod sa self "
-"object"
 
 #: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
 msgid "empty separator"
-msgstr "walang laman na separator"
+msgstr ""
 
 #: py/objstr.c:641
 msgid "rsplit(None,n)"
-msgstr "rsplit(None,n)"
+msgstr ""
 
 #: py/objstr.c:713
 msgid "substring not found"
-msgstr "substring hindi nahanap"
+msgstr ""
 
 #: py/objstr.c:770
 msgid "start/end indices"
-msgstr "start/end indeks"
+msgstr ""
 
 #: py/objstr.c:931
 msgid "bad format string"
-msgstr "maling format ang string"
+msgstr ""
 
 #: py/objstr.c:953
 msgid "single '}' encountered in format string"
-msgstr "isang '}' nasalubong sa format string"
+msgstr ""
 
 #: py/objstr.c:992
 msgid "bad conversion specifier"
-msgstr "masamang pag convert na specifier"
+msgstr ""
 
 #: py/objstr.c:996
 msgid "end of format while looking for conversion specifier"
-msgstr "sa huli ng format habang naghahanap sa conversion specifier"
+msgstr ""
 
 #: py/objstr.c:998
 #, c-format
 msgid "unknown conversion specifier %c"
-msgstr "hindi alam ang conversion specifier na %c"
+msgstr ""
 
 #: py/objstr.c:1029
 msgid "unmatched '{' in format"
-msgstr "hindi tugma ang '{' sa format"
+msgstr ""
 
 #: py/objstr.c:1036
 msgid "expected ':' after format specifier"
-msgstr "umaasa ng ':' pagkatapos ng format specifier"
+msgstr ""
 
 #: py/objstr.c:1050
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
-"hindi mapalitan ang awtomatikong field numbering sa manual field "
-"specification"
 
 #: py/objstr.c:1055 py/objstr.c:1083
 msgid "tuple index out of range"
-msgstr "indeks ng tuple wala sa sakop"
+msgstr ""
 
 #: py/objstr.c:1071
 msgid "attributes not supported yet"
-msgstr "attributes hindi sinusuportahan"
+msgstr ""
 
 #: py/objstr.c:1079
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
-"hindi mapalitan ang manual field specification sa awtomatikong field "
-"numbering"
 
 #: py/objstr.c:1171
 msgid "invalid format specifier"
-msgstr "mali ang format specifier"
+msgstr ""
 
 #: py/objstr.c:1192
 msgid "sign not allowed in string format specifier"
-msgstr "sign hindi maaring string format specifier"
+msgstr ""
 
 #: py/objstr.c:1200
 msgid "sign not allowed with integer format specifier 'c'"
-msgstr "sign hindi maari sa integer format specifier 'c'"
+msgstr ""
 
 #: py/objstr.c:1259
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
-msgstr "hindi alam ang format code '%c' para sa object na ang type ay '%s'"
+msgstr ""
 
 #: py/objstr.c:1331
 #, c-format
 msgid "unknown format code '%c' for object of type 'float'"
-msgstr "hindi alam ang format code '%c' sa object na ang type ay 'float'"
+msgstr ""
 
 #: py/objstr.c:1343
 msgid "'=' alignment not allowed in string format specifier"
-msgstr "'=' Gindi pinapayagan ang alignment sa pag specify ng string format"
+msgstr ""
 
 #: py/objstr.c:1367
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
-msgstr "hindi alam ang format ng code na '%c' para sa object ng type ay 'str'"
+msgstr ""
 
 #: py/objstr.c:1415
 msgid "format requires a dict"
-msgstr "kailangan ng format ng dict"
+msgstr ""
 
 #: py/objstr.c:1424
 msgid "incomplete format key"
-msgstr "hindi kumpleto ang format key"
+msgstr ""
 
 #: py/objstr.c:1482
 msgid "incomplete format"
-msgstr "hindi kumpleto ang format"
+msgstr ""
 
 #: py/objstr.c:1490
 msgid "not enough arguments for format string"
-msgstr "kulang sa arguments para sa format string"
+msgstr ""
 
 #: py/objstr.c:1500
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%%c nangangailangan ng int o char"
+msgstr ""
 
 #: py/objstr.c:1507
 msgid "integer required"
-msgstr "kailangan ng int"
+msgstr ""
 
 #: py/objstr.c:1570
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
-msgstr "hindi sinusuportahan ang format character na '%c' (0x%x) sa index %d"
+msgstr ""
 
 #: py/objstr.c:1577
 msgid "not all arguments converted during string formatting"
-msgstr "hindi lahat ng arguments na i-convert habang string formatting"
+msgstr ""
 
 #: py/objstr.c:2102
 msgid "can't convert to str implicitly"
-msgstr "hindi ma i-convert sa string ng walang pahiwatig"
+msgstr ""
 
 #: py/objstr.c:2106
 msgid "can't convert '%q' object to %q implicitly"
-msgstr "hindi maaaring i-convert ang '%q' na bagay sa %q nang walang pahiwatig"
+msgstr ""
 
 #: py/objstrunicode.c:134
 #, c-format
 msgid "string indices must be integers, not %s"
-msgstr "ang indeks ng string ay dapat na integer, hindi %s"
+msgstr ""
 
 #: py/objstrunicode.c:145 py/objstrunicode.c:164
 msgid "string index out of range"
-msgstr "indeks ng string wala sa sakop"
+msgstr ""
 
 #: py/objtype.c:358
 msgid "__init__() should return None"
-msgstr "__init __ () dapat magbalik na None"
+msgstr ""
 
 #: py/objtype.c:360
 #, c-format
 msgid "__init__() should return None, not '%s'"
-msgstr "__init__() dapat magbalink na None, hindi '%s'"
+msgstr ""
 
 #: py/objtype.c:623 py/objtype.c:1275 py/runtime.c:1065
 msgid "unreadable attribute"
-msgstr "hindi mabasa ang attribute"
+msgstr ""
 
 #: py/objtype.c:868 py/runtime.c:653
 msgid "object not callable"
-msgstr "hindi matatawag ang object"
+msgstr ""
 
 #: py/objtype.c:870 py/runtime.c:655
 #, c-format
 msgid "'%s' object is not callable"
-msgstr "'%s' object hindi matatawag"
+msgstr ""
 
 #: py/objtype.c:978
 msgid "type takes 1 or 3 arguments"
-msgstr "type kumuhuha ng 1 o 3 arguments"
+msgstr ""
 
 #: py/objtype.c:989
 msgid "cannot create instance"
-msgstr "hindi magawa ang instance"
+msgstr ""
 
 #: py/objtype.c:991
 msgid "cannot create '%q' instances"
-msgstr "hindi magawa '%q' instances"
+msgstr ""
 
 #: py/objtype.c:1047
 msgid "can't add special method to already-subclassed class"
 msgstr ""
-"hindi madagdag ang isang espesyal na method sa isang na i-subclass na class"
 
 #: py/objtype.c:1091 py/objtype.c:1097
 msgid "type is not an acceptable base type"
-msgstr "hindi puede ang type para sa base type"
+msgstr ""
 
 #: py/objtype.c:1100
 msgid "type '%q' is not an acceptable base type"
-msgstr "hindi maari ang type na '%q' para sa base type"
+msgstr ""
 
 #: py/objtype.c:1137
 msgid "multiple inheritance not supported"
-msgstr "maraming inhertance hindi sinusuportahan"
+msgstr ""
 
 #: py/objtype.c:1164
 msgid "multiple bases have instance lay-out conflict"
-msgstr "maraming bases ay may instance lay-out conflict"
+msgstr ""
 
 #: py/objtype.c:1205
 msgid "first argument to super() must be type"
-msgstr "unang argument ng super() ay dapat type"
+msgstr ""
 
 #: py/objtype.c:1370
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
-msgstr "issubclass() arg 2 ay dapat na class o tuple ng classes"
+msgstr ""
 
 #: py/objtype.c:1384
 msgid "issubclass() arg 1 must be a class"
-msgstr "issubclass() arg 1 ay dapat na class"
+msgstr ""
 
 #: py/parse.c:726
 msgid "constant must be an integer"
-msgstr "constant ay dapat na integer"
+msgstr ""
 
 #: py/parse.c:868
 msgid "Unable to init parser"
-msgstr "Hindi ma-init ang parser"
+msgstr ""
 
 #: py/parse.c:1170
 msgid "unexpected indent"
-msgstr "hindi inaasahang indent"
+msgstr ""
 
 #: py/parse.c:1173
 msgid "unindent does not match any outer indentation level"
-msgstr "unindent hindi tugma sa indentation level sa labas"
+msgstr ""
 
 #: py/parsenum.c:60
 msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "int() arg 2 ay dapat >=2 at <= 36"
+msgstr ""
 
 #: py/parsenum.c:151
 msgid "invalid syntax for integer"
-msgstr "maling sintaks sa integer"
+msgstr ""
 
 #: py/parsenum.c:155
 #, c-format
 msgid "invalid syntax for integer with base %d"
-msgstr "maling sintaks sa integer na may base %d"
+msgstr ""
 
 #: py/parsenum.c:339
 msgid "invalid syntax for number"
-msgstr "maling sintaks sa number"
+msgstr ""
 
 #: py/parsenum.c:342
 msgid "decimal numbers not supported"
-msgstr "decimal numbers hindi sinusuportahan"
+msgstr ""
 
 #: py/persistentcode.c:223
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-".mpy file hindi compatible. Maaring i-update lahat ng .mpy files. See http://"
-"adafru.it/mpy-update for more info."
 
 #: py/persistentcode.c:326
 msgid "can only save bytecode"
-msgstr "maaring i-save lamang ang bytecode"
+msgstr ""
 
 #: py/runtime.c:206
 msgid "name not defined"
-msgstr "name hindi na define"
+msgstr ""
 
 #: py/runtime.c:209
 msgid "name '%q' is not defined"
-msgstr "name '%q' ay hindi defined"
+msgstr ""
 
 #: py/runtime.c:304 py/runtime.c:611
 msgid "unsupported type for operator"
-msgstr "hindi sinusuportahang type para sa operator"
+msgstr ""
 
 #: py/runtime.c:307
 msgid "unsupported type for %q: '%s'"
-msgstr "hindi sinusuportahang type para sa %q: '%s'"
+msgstr ""
 
 #: py/runtime.c:614
 msgid "unsupported types for %q: '%s', '%s'"
-msgstr "hindi sinusuportahang type para sa %q: '%s', '%s'"
+msgstr ""
 
 #: py/runtime.c:881 py/runtime.c:888 py/runtime.c:945
 msgid "wrong number of values to unpack"
-msgstr "maling number ng value na i-unpack"
+msgstr ""
 
 #: py/runtime.c:883 py/runtime.c:947
 #, c-format
 msgid "need more than %d values to unpack"
-msgstr "kailangan ng higit sa %d na halaga upang i-unpack"
+msgstr ""
 
 #: py/runtime.c:890
 #, c-format
 msgid "too many values to unpack (expected %d)"
-msgstr "masyadong maraming values para i-unpact (umaasa ng %d)"
+msgstr ""
 
 #: py/runtime.c:984
 msgid "argument has wrong type"
-msgstr "may maling type ang argument"
+msgstr ""
 
 #: py/runtime.c:986
 msgid "argument should be a '%q' not a '%q'"
-msgstr "argument ay dapat na '%q' hindi '%q'"
+msgstr ""
 
 #: py/runtime.c:1123 py/runtime.c:1197
 msgid "no such attribute"
-msgstr "walang ganoon na attribute"
+msgstr ""
 
 #: py/runtime.c:1128
 msgid "type object '%q' has no attribute '%q'"
-msgstr "type object '%q' ay walang attribute '%q'"
+msgstr ""
 
 #: py/runtime.c:1132 py/runtime.c:1200
 msgid "'%s' object has no attribute '%q'"
-msgstr "'%s' object ay walang attribute '%q'"
+msgstr ""
 
 #: py/runtime.c:1238
 msgid "object not iterable"
-msgstr "object hindi ma i-iterable"
+msgstr ""
 
 #: py/runtime.c:1241
 #, c-format
 msgid "'%s' object is not iterable"
-msgstr "'%s' object ay hindi ma i-iterable"
+msgstr ""
 
 #: py/runtime.c:1260 py/runtime.c:1296
 msgid "object not an iterator"
-msgstr "object ay hindi iterator"
+msgstr ""
 
 #: py/runtime.c:1262 py/runtime.c:1298
 #, c-format
 msgid "'%s' object is not an iterator"
-msgstr "'%s' object ay hindi iterator"
+msgstr ""
 
 #: py/runtime.c:1401
 msgid "exceptions must derive from BaseException"
-msgstr "ang mga exceptions ay dapat makuha mula sa BaseException"
+msgstr ""
 
 #: py/runtime.c:1430
 msgid "cannot import name %q"
-msgstr "hindi ma-import ang name %q"
+msgstr ""
 
 #: py/runtime.c:1535
 msgid "memory allocation failed, heap is locked"
-msgstr "abigo ang paglalaan ng memorya, ang heap ay naka-lock"
+msgstr ""
 
 #: py/runtime.c:1539
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
-msgstr "nabigo ang paglalaan ng memorya, paglalaan ng %u bytes"
+msgstr ""
 
 #: py/runtime.c:1609
 msgid "maximum recursion depth exceeded"
-msgstr "lumagpas ang maximum recursion depth"
+msgstr ""
 
 #: py/sequence.c:264
 msgid "object not in sequence"
-msgstr "object wala sa sequence"
+msgstr ""
 
 #: py/stream.c:96
 msgid "stream operation not supported"
-msgstr "stream operation hindi sinusuportahan"
+msgstr ""
 
 #: py/stream.c:254
 msgid "string not supported; use bytes or bytearray"
-msgstr "string hindi supportado; gumamit ng bytes o kaya bytearray"
+msgstr ""
 
 #: py/stream.c:289
 msgid "length argument not allowed for this type"
-msgstr "length argument ay walang pahintulot sa ganitong type"
+msgstr ""
 
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
-msgstr "local variable na reference bago na i-assign"
+msgstr ""
 
 #: py/vm.c:1142
 msgid "no active exception to reraise"
-msgstr "walang aktibong exception para i-reraise"
+msgstr ""
 
 #: py/vm.c:1284
 msgid "byte code not implemented"
-msgstr "byte code hindi pa implemented"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c:71
 msgid "graphic must be 2048 bytes long"
-msgstr "graphic ay dapat 2048 bytes ang haba"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c:77 shared-bindings/_stage/Text.c:75
 msgid "palette must be 32 bytes long"
-msgstr "ang palette ay dapat 32 bytes ang haba"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c:84
 msgid "map buffer too small"
-msgstr "masyadong maliit ang buffer map"
+msgstr ""
 
 #: shared-bindings/_stage/Text.c:69
 msgid "font must be 2048 bytes long"
-msgstr "font ay dapat 2048 bytes ang haba"
+msgstr ""
 
 #: shared-bindings/_stage/Text.c:81
 msgid "chars buffer too small"
-msgstr "masyadong maliit ang buffer"
+msgstr ""
 
 #: shared-bindings/analogio/AnalogOut.c:118
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut ay 16 bits. Value ay dapat hindi hihigit pa sa 65536."
+msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c:225
 #: shared-bindings/audioio/AudioOut.c:226
 msgid "Not playing"
-msgstr "Hindi playing"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:124
 msgid "Bit depth must be multiple of 8."
-msgstr "Bit depth ay dapat multiple ng 8."
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:128
 msgid "Oversample must be multiple of 8."
-msgstr "Oversample ay dapat multiple ng 8."
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:136
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr "Ang delay ng startup ng mikropono ay dapat na nasa 0.0 hanggang 1.0"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:193
 msgid "destination_length must be an int >= 0"
-msgstr "ang destination_length ay dapat na isang int >= 0"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:199
 msgid "Cannot record to a file"
-msgstr "Hindi ma-record sa isang file"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c:202
 msgid "Destination capacity is smaller than destination_length."
 msgstr ""
-"Ang kapasidad ng destinasyon ay mas maliit kaysa sa destination_length."
 
 #: shared-bindings/audiobusio/PDMIn.c:206
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr ""
-"ang destination buffer ay dapat na isang array ng uri 'H' para sa bit_depth "
-"= 16"
 
 #: shared-bindings/audiobusio/PDMIn.c:208
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
-"ang destination buffer ay dapat na isang bytearray o array ng uri na 'B' "
-"para sa bit_depth = 8"
 
 #: shared-bindings/audioio/Mixer.c:94
 msgid "Invalid voice count"
-msgstr "Maling bilang ng voice"
+msgstr ""
 
 #: shared-bindings/audioio/Mixer.c:99
 msgid "Invalid channel count"
-msgstr "Maling bilang ng channel"
+msgstr ""
 
 #: shared-bindings/audioio/Mixer.c:103
 msgid "Sample rate must be positive"
-msgstr "Sample rate ay dapat positibo"
+msgstr ""
 
 #: shared-bindings/audioio/Mixer.c:107
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits_per_sample ay dapat 8 o 16"
+msgstr ""
 
 #: shared-bindings/audioio/RawSample.c:98
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
-"ang sample_source buffer ay dapat na isang bytearray o array ng uri na 'h', "
-"'H', 'b' o'B'"
 
 #: shared-bindings/audioio/RawSample.c:104
 msgid "buffer must be a bytes-like object"
-msgstr "buffer ay dapat bytes-like object"
+msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
 #: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
-msgstr "file ay dapat buksan sa byte mode"
+msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c:111 shared-bindings/bitbangio/SPI.c:121
 #: shared-bindings/busio/SPI.c:133
 msgid "Function requires lock"
-msgstr "Function nangangailangan ng lock"
+msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c:195 shared-bindings/busio/I2C.c:210
 msgid "Buffer must be at least length 1"
-msgstr "Buffer dapat ay hindi baba sa 1 na haba"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
 msgid "Invalid polarity"
-msgstr "Mali ang polarity"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
 msgid "Invalid phase"
-msgstr "Mali ang phase"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
 msgid "Invalid number of bits"
-msgstr "Mali ang bilang ng bits"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
 msgid "buffer slices must be of equal length"
-msgstr "aarehas na haba dapat ang buffer slices"
+msgstr ""
 
 #: shared-bindings/bleio/Address.c:101
 msgid "Wrong address length"
-msgstr "Mali ang address length"
+msgstr ""
 
 #: shared-bindings/bleio/Address.c:107
 msgid "Wrong number of bytes provided"
-msgstr "Mali ang bilang ng bytes"
+msgstr ""
 
 #: shared-bindings/bleio/Device.c:210
 msgid "Can't add services in Central mode"
-msgstr "Hindi maarang maglagay ng service sa Central mode"
+msgstr ""
 
 #: shared-bindings/bleio/Device.c:226
 msgid "Can't connect in Peripheral mode"
-msgstr "Hindi maconnect sa Peripheral mode"
+msgstr ""
 
 #: shared-bindings/bleio/Device.c:256
 msgid "Can't change the name in Central mode"
-msgstr "Hindi mapalitan ang pangalan sa Central mode"
+msgstr ""
 
 #: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
 msgid "Can't advertise in Central mode"
-msgstr "Hindi ma advertise habang nasa Central mode"
+msgstr ""
 
 #: shared-bindings/busio/I2C.c:120
 msgid "Function requires lock."
-msgstr "Kailangan ng lock ang function."
+msgstr ""
 
 #: shared-bindings/busio/UART.c:106
 msgid "bits must be 7, 8 or 9"
-msgstr "bits ay dapat 7, 8 o 9"
+msgstr ""
 
 #: shared-bindings/busio/UART.c:118
 msgid "stop must be 1 or 2"
-msgstr "stop dapat 1 o 2"
+msgstr ""
 
 #: shared-bindings/busio/UART.c:123
 msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "timeout >100 (units ay seconds, hindi na msecs)"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:211
 msgid "Invalid direction."
-msgstr "Mali ang direksyon."
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:240
 msgid "Cannot set value when direction is input."
-msgstr "Hindi ma i-set ang value kapag ang direksyon ay input."
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:266
 #: shared-bindings/digitalio/DigitalInOut.c:281
 msgid "Drive mode not used when direction is input."
-msgstr "Drive mode ay hindi ginagamit kapag ang direksyon ay input."
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:314
 #: shared-bindings/digitalio/DigitalInOut.c:331
 msgid "Pull not used when direction is output."
-msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:340
 msgid "Unsupported pull value."
-msgstr "Hindi suportado ang pull value."
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c:84
 msgid "y should be an int"
-msgstr "y ay dapat int"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c:89
 msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c:94
 msgid "row data must be a buffer"
-msgstr "row data ay dapat na buffer"
+msgstr ""
 
 #: shared-bindings/displayio/ColorConverter.c:72
 msgid "color should be an int"
-msgstr "color ay dapat na int"
+msgstr ""
 
 #: shared-bindings/displayio/FourWire.c:55
 #: shared-bindings/displayio/FourWire.c:64
 msgid "displayio is a work in progress"
-msgstr "displayio ay nasa gitna ng konstruksiyon"
+msgstr ""
 
 #: shared-bindings/displayio/Group.c:65
 msgid "Group must have size at least 1"
-msgstr "Group dapat ay hindi baba sa 1 na haba"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c:96
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "ang color buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c:102
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr "color buffer ay dapat na 3 bytes (RGB) o 4 bytes (RGB + pad byte)"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c:106
 msgid "color must be between 0x000000 and 0xffffff"
-msgstr "color ay dapat mula sa 0x000000 hangang 0xffffff"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c:110
 msgid "color buffer must be a buffer or int"
-msgstr "color buffer ay dapat buffer or int"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c:123
 #: shared-bindings/displayio/Palette.c:137
 msgid "palette_index should be an int"
-msgstr "palette_index ay dapat na int"
+msgstr ""
 
 #: shared-bindings/displayio/Sprite.c:48
 msgid "position must be 2-tuple"
-msgstr "position ay dapat 2-tuple"
+msgstr ""
 
 #: shared-bindings/displayio/Sprite.c:97
 msgid "unsupported bitmap type"
-msgstr "Hindi supportadong tipo ng bitmap"
+msgstr ""
 
 #: shared-bindings/displayio/Sprite.c:162
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr "pixel_shader ay dapat displayio.Palette o displayio.ColorConverter"
+msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
-msgstr "masyadong maraming argumento"
+msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:104
 msgid "expected a DigitalInOut"
-msgstr "umasa ng DigitalInOut"
+msgstr ""
 
 #: shared-bindings/i2cslave/I2CSlave.c:98
 msgid "can't convert address to int"
-msgstr "hindi ma i-convert ang address sa INT"
+msgstr ""
 
 #: shared-bindings/i2cslave/I2CSlave.c:101
 msgid "address out of bounds"
-msgstr "wala sa sakop ang address"
+msgstr ""
 
 #: shared-bindings/i2cslave/I2CSlave.c:107
 msgid "addresses is empty"
-msgstr "walang laman ang address"
+msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
 msgid "Expected a %q"
-msgstr "Umasa ng %q"
+msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c:100
 msgid "%q in use"
-msgstr "%q ay ginagamit"
+msgstr ""
 
 #: shared-bindings/microcontroller/__init__.c:126
 msgid "Invalid run mode."
-msgstr "Mali ang run mode."
+msgstr ""
 
 #: shared-bindings/multiterminal/__init__.c:68
 msgid "Stream missing readinto() or write() method."
-msgstr "Stream kulang ng readinto() o write() method."
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
-msgstr "Slice at value iba't ibang haba."
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:104
 msgid "Array values should be single bytes."
-msgstr "Array values ay dapat single bytes."
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
 msgid "Unable to write to nvm."
-msgstr "Hindi ma i-sulat sa NVM."
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c:137
 msgid "Bytes must be between 0 and 255."
-msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
+msgstr ""
 
 #: shared-bindings/os/__init__.c:200
 msgid "No hardware random available"
-msgstr "Walang magagamit na hardware random"
+msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:164
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr "PWM duty_cycle ay dapat sa loob ng 0 at 65535 (16 bit resolution)"
+msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c:195
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
-"PWM frequency hindi writable kapag variable_frequency ay False sa pag buo."
 
 #: shared-bindings/pulseio/PulseIn.c:275
 msgid "Cannot delete values"
-msgstr "Hindi mabura ang values"
+msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:281
 msgid "Slices not supported"
-msgstr "Hindi suportado ang Slices"
+msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:287
 msgid "index must be int"
-msgstr "index ay dapat int"
+msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c:293
 msgid "Read-only"
-msgstr "Basahin-lamang"
+msgstr ""
 
 #: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
-msgstr "May halfwords (type 'H') dapat ang array"
+msgstr ""
 
 #: shared-bindings/random/__init__.c:92 shared-bindings/random/__init__.c:100
 msgid "stop not reachable from start"
-msgstr "stop hindi maabot sa simula"
+msgstr ""
 
 #: shared-bindings/random/__init__.c:111
 msgid "step must be non-zero"
-msgstr "step ay dapat hindi zero"
+msgstr ""
 
 #: shared-bindings/random/__init__.c:114
 msgid "invalid step"
-msgstr "mali ang step"
+msgstr ""
 
 #: shared-bindings/random/__init__.c:146
 msgid "empty sequence"
-msgstr "walang laman ang sequence"
+msgstr ""
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
 #: shared-bindings/time/__init__.c:190
 msgid "RTC is not supported on this board"
-msgstr "Hindi supportado ang RTC sa board na ito"
+msgstr ""
 
 #: shared-bindings/rtc/RTC.c:52
 msgid "RTC calibration is not supported on this board"
-msgstr "RTC calibration ay hindi supportado ng board na ito"
+msgstr ""
 
 #: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
 msgid "no available NIC"
-msgstr "walang magagamit na NIC"
+msgstr ""
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
-msgstr "ang filesystem dapat mag bigay ng mount method"
+msgstr ""
 
 #: shared-bindings/supervisor/__init__.c:93
 msgid "Brightness must be between 0 and 255"
-msgstr "Ang liwanag ay dapat sa gitna ng 0 o 255"
+msgstr ""
 
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
-msgstr "Ang laki ng stack ay dapat na hindi bababa sa 256"
+msgstr ""
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
-msgstr "sleep length ay dapat hindi negatibo"
+msgstr ""
 
 #: shared-bindings/time/__init__.c:88
 msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() kumukuha ng 1 argument"
+msgstr ""
 
 #: shared-bindings/time/__init__.c:91
 msgid "time.struct_time() takes a 9-sequence"
-msgstr "time.struct_time() kumukuha ng 9-sequence"
+msgstr ""
 
 #: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:263
 msgid "Tuple or struct_time argument required"
-msgstr "Tuple o struct_time argument kailangan"
+msgstr ""
 
 #: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:268
 msgid "function takes exactly 9 arguments"
-msgstr "function kumukuha ng 9 arguments"
+msgstr ""
 
 #: shared-bindings/time/__init__.c:239 shared-bindings/time/__init__.c:272
 msgid "timestamp out of range for platform time_t"
-msgstr "wala sa sakop ng timestamp ang platform time_t"
+msgstr ""
 
 #: shared-bindings/touchio/TouchIn.c:173
 msgid "threshold must be in the range 0-65536"
-msgstr "ang threshold ay dapat sa range 0-65536"
+msgstr ""
 
 #: shared-bindings/util.c:38
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"Object ay deinitialized at hindi na magagamit. Lumikha ng isang bagong "
-"Object."
 
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
-msgstr "Hindi ma-iallocate ang first buffer"
+msgstr ""
 
 #: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
 msgid "Couldn't allocate second buffer"
-msgstr "Hindi ma-iallocate ang second buffer"
+msgstr ""
 
 #: shared-module/audioio/Mixer.c:82
 msgid "Voice index too high"
-msgstr "Index ng Voice ay masyadong mataas"
+msgstr ""
 
 #: shared-module/audioio/Mixer.c:85
 msgid "The sample's sample rate does not match the mixer's"
-msgstr "Ang sample rate ng sample ay hindi tugma sa mixer"
+msgstr ""
 
 #: shared-module/audioio/Mixer.c:88
 msgid "The sample's channel count does not match the mixer's"
-msgstr "Ang channel count ng sample ay hindi tugma sa mixer"
+msgstr ""
 
 #: shared-module/audioio/Mixer.c:91
 msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr "Ang bits_per_sample ng sample ay hindi tugma sa mixer"
+msgstr ""
 
 #: shared-module/audioio/Mixer.c:100
 msgid "The sample's signedness does not match the mixer's"
-msgstr "Ang signedness ng sample hindi tugma sa mixer"
+msgstr ""
 
 #: shared-module/audioio/WaveFile.c:61
 msgid "Invalid wave file"
-msgstr "May hindi tama sa wave file"
+msgstr ""
 
 #: shared-module/audioio/WaveFile.c:69
 msgid "Invalid format chunk size"
-msgstr "Mali ang format ng chunk size"
+msgstr ""
 
 #: shared-module/audioio/WaveFile.c:83
 msgid "Unsupported format"
-msgstr "Hindi supportadong format"
+msgstr ""
 
 #: shared-module/audioio/WaveFile.c:99
 msgid "Data chunk must follow fmt chunk"
-msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
+msgstr ""
 
 #: shared-module/audioio/WaveFile.c:107
 msgid "Invalid file"
-msgstr "Mali ang file"
+msgstr ""
 
 #: shared-module/bitbangio/I2C.c:58
 msgid "Clock stretch too long"
-msgstr "Masyadong mahaba ang Clock stretch"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c:44
 msgid "Clock pin init failed."
-msgstr "Nabigo sa pag init ng Clock pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c:50
 msgid "MOSI pin init failed."
-msgstr "Hindi ma-initialize ang MOSI pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c:61
 msgid "MISO pin init failed."
-msgstr "Hindi ma-initialize ang MISO pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c:121
 msgid "Cannot write without MOSI pin."
-msgstr "Hindi maaring isulat kapag walang MOSI pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c:176
 msgid "Cannot read without MISO pin."
-msgstr "Hindi maaring mabasa kapag walang MISO pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c:240
 msgid "Cannot transfer without MOSI and MISO pins."
-msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
+msgstr ""
 
 #: shared-module/displayio/Bitmap.c:49
 msgid "Only bit maps of 8 bit color or less are supported"
-msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
+msgstr ""
 
 #: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
-msgstr "row ay dapat packed at ang word nakahanay"
+msgstr ""
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
-msgstr "Puno ang group"
+msgstr ""
 
 #: shared-module/displayio/Group.c:48
 msgid "Group empty"
-msgstr "Walang laman ang group"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c:49
 msgid "Invalid BMP file"
-msgstr "Mali ang BMP file"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c:59
 #, c-format
 msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr "Tanging Windows format, uncompressed BMP lamang ang supportado %d"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c:64
 #, c-format
 msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"
+msgstr ""
 
 #: shared-module/storage/__init__.c:155
 msgid "Cannot remount '/' when USB is active."
-msgstr "Hindi ma-remount '/' kapag aktibo ang USB."
+msgstr ""
 
 #: shared-module/struct/__init__.c:39
 msgid "'S' and 'O' are not supported format types"
-msgstr "Ang 'S' at 'O' ay hindi suportadong uri ng format"
+msgstr ""
 
 #: shared-module/struct/__init__.c:83
 msgid "too many arguments provided with the given format"
-msgstr "masyadong maraming mga argumento na ibinigay sa ibinigay na format"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c:45
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Mali ang size ng buffer. Dapat %d bytes."
+msgstr ""
 
 #: shared-module/usb_hid/Device.c:53
 msgid "USB Busy"
-msgstr "Busy ang USB"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c:59
 msgid "USB Error"
-msgstr "May pagkakamali ang USB"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c:97
 msgid "You requested starting safe mode by "
-msgstr "Ikaw ang humiling sa safe mode sa pamamagitan ng "
+msgstr "Anda mengajukan untuk memulai mode aman pada (safe mode) pada "
 
 #: supervisor/shared/safe_mode.c:100
 msgid "To exit, please reset the board without "
-msgstr "Para lumabas, paki-reset ang board na wala ang "
+msgstr "Untuk keluar, silahkan reset board tanpa "
 
 #: supervisor/shared/safe_mode.c:107
+#, fuzzy
 msgid ""
 "You are running in safe mode which means something unanticipated happened.\n"
-msgstr "Ikaw ay tumatakbo sa safe mode dahil may masamang nangyari.\n"
+msgstr ""
+"Anda sedang menjalankan mode aman (safe mode) yang berarti sesuatu yang "
+"sangat buruk telah terjadi.\n"
 
 #: supervisor/shared/safe_mode.c:109
 msgid ""
@@ -2550,33 +2531,29 @@ msgid ""
 "Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
 " with the contents of your CIRCUITPY drive and this message:\n"
 msgstr ""
-"Mukhang ang core CircuitPython code nag crash. Ay!\n"
-"Maaring mag file ng issue sa https://github.com/adafruit/circuitpython/"
-"issues\n"
-"kasama ng laman ng iyong CIRCUITPY drive at ang message na ito:\n"
 
 #: supervisor/shared/safe_mode.c:111
 msgid "Crash into the HardFault_Handler.\n"
-msgstr "Nagcrash sa HardFault_Handler.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c:113
 msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
-msgstr "CircuitPython NLR jump nabigo. Maaring memory corruption.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c:115
 msgid "MicroPython fatal error.\n"
-msgstr "CircuitPython fatal na pagkakamali.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c:118
+#, fuzzy
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"Ang kapangyarihan ng mikrokontroller ay bumaba. Mangyaring suriin ang power "
-"supply \n"
-"pindutin ang reset (pagkatapos i-eject ang CIRCUITPY).\n"
+"Tegangan dari mikrokontroler turun atau mati. Pastikan sumber tegangan "
+"memberikan daya\n"
 
 #: supervisor/shared/safe_mode.c:120
 msgid ""
@@ -2586,67 +2563,25 @@ msgid ""
 "If you didn't change the stack, then file an issue here with the contents of "
 "your CIRCUITPY drive:\n"
 msgstr ""
-"Ang CircuitPython heap ay na corrupt dahil ang stack ay maliit.\n"
-"Maaring i-increase ang stack size limit at i-press ang reset (pagkatapos i-"
-"eject ang CIRCUITPY.\n"
-"Kung hindi mo pinalitan ang stack, mag file ng issue dito kasama ng laman ng "
-"CIRCUITPY drive:\n"
 
 #: supervisor/shared/safe_mode.c:123
 msgid ""
 "The reset button was pressed while booting CircuitPython. Press again to "
 "exit safe mode.\n"
 msgstr ""
-"Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
-"ulit para lumabas sa safe mode.\n"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Hindi mabasa and Characteristic."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
-
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
+#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
 #~ "CIRCUITPY).\n"
 #~ msgstr ""
-#~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
-#~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
+#~ "tegangan cukup untuk semua sirkuit dan tekan reset (setelah mencabut "
+#~ "CIRCUITPY).\n"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"

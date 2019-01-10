@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 20:49+0100\n"
+"POT-Creation-Date: 2019-01-10 11:05-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -329,7 +329,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/SPI.c:171
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:82
+#: ports/nrf/common-hal/busio/I2C.c:84
 msgid "Invalid pins"
 msgstr ""
 
@@ -346,12 +346,12 @@ msgid "bytes > 8 bits not supported"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:106
+#: ports/nrf/common-hal/busio/UART.c:118
 msgid "tx and rx cannot both be None"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:140
+#: ports/nrf/common-hal/busio/UART.c:152
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
@@ -360,12 +360,12 @@ msgid "Could not initialize UART"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:185
+#: ports/nrf/common-hal/busio/UART.c:197
 msgid "No RX pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:220
+#: ports/nrf/common-hal/busio/UART.c:232
 msgid "No TX pin"
 msgstr ""
 
@@ -766,7 +766,7 @@ msgstr ""
 msgid "Invalid UUID parameter"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:96
+#: ports/nrf/common-hal/busio/I2C.c:98
 msgid "All I2C peripherals are in use"
 msgstr ""
 
@@ -779,19 +779,19 @@ msgstr ""
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:110
+#: ports/nrf/common-hal/busio/UART.c:122
 msgid "Invalid buffer size"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:114
+#: ports/nrf/common-hal/busio/UART.c:126
 msgid "Odd parity is not supported"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:346 ports/nrf/common-hal/busio/UART.c:350
-#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
-#: ports/nrf/common-hal/busio/UART.c:366 ports/nrf/common-hal/busio/UART.c:371
-#: ports/nrf/common-hal/busio/UART.c:376 ports/nrf/common-hal/busio/UART.c:380
-#: ports/nrf/common-hal/busio/UART.c:388
+#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
+#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
+#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
+#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
+#: ports/nrf/common-hal/busio/UART.c:400
 msgid "busio.UART not available"
 msgstr ""
 
