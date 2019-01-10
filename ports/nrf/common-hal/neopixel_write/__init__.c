@@ -141,7 +141,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         for ( uint16_t n = 0; n < numBytes; n++ ) {
             uint8_t pix = pixels[n];
 
-            for ( uint8_t mask = 0x80, i = 0; mask > 0; mask >>= 1, i++ ) {
+            for ( uint8_t mask = 0x80; mask > 0; mask >>= 1 ) {
                 pixels_pattern[pos] = (pix & mask) ? MAGIC_T1H : MAGIC_T0H;
                 pos++;
             }
