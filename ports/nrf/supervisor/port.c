@@ -42,6 +42,7 @@
 #include "common-hal/busio/SPI.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseOut.h"
+#include "common-hal/pulseio/PulseIn.h"
 #include "tick.h"
 
 static void power_warning_handler(void) {
@@ -84,6 +85,7 @@ void reset_port(void) {
     spi_reset();
     pwmout_reset();
     pulseout_reset();
+    pulsein_reset();
     timers_reset();
 
     reset_all_pins();
