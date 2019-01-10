@@ -65,8 +65,13 @@
 
 void SystemClock_Config(void);
 
-pyb_thread_t pyb_thread_main;
-fs_user_mount_t fs_user_mount_flash;
+#if MICROPY_PY_THREAD
+STATIC pyb_thread_t pyb_thread_main;
+#endif
+
+#if MICROPY_HW_ENABLE_STORAGE
+STATIC fs_user_mount_t fs_user_mount_flash;
+#endif
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
