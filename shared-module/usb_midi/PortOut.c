@@ -24,37 +24,17 @@
  * THE SOFTWARE.
  */
 
-// Basic allocations outside them for areas such as the VM heap and stack.
-// supervisor/shared/memory.c has a basic implementation for a continuous chunk of memory. Add it
-// to a SRC_ in a Makefile to use it.
+#include "shared-module/usb_midi/PortOut.h"
+#include "supervisor/shared/translate.h"
+#include "tusb.h"
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
-#define MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
-
-#include <stdbool.h>
-#include <stdint.h>
-
-typedef struct {
-    uint32_t* ptr;
-    uint32_t length; // in bytes
-} supervisor_allocation;
-
-
-
-void memory_init(void);
-void free_memory(supervisor_allocation* allocation);
-supervisor_allocation* allocate_remaining_memory(void);
-
-// Allocate a piece of a given length in bytes. If high_address is true then it should be allocated
-// at a lower address from the top of the stack. Otherwise, addresses will increase starting after
-// statically allocated memory.
-supervisor_allocation* allocate_memory(uint32_t length, bool high_address);
-
-static inline uint16_t align32_size(uint16_t size) {
-    if (size % 4 != 0) {
-        return (size & 0xfffc) + 0x4;
-    }
-    return size;
+void common_hal_usb_midi_portout_construct(usb_midi_portout_obj_t *self) {
 }
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
+size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
+    return tud_midi_write(0, data, len);
+}
+
+bool common_hal_usb_midi_portout_ready_to_tx(usb_midi_portout_obj_t *self) {
+    return tud_midi_connected();
+}

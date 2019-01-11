@@ -24,37 +24,16 @@
  * THE SOFTWARE.
  */
 
-// Basic allocations outside them for areas such as the VM heap and stack.
-// supervisor/shared/memory.c has a basic implementation for a continuous chunk of memory. Add it
-// to a SRC_ in a Makefile to use it.
+#ifndef SHARED_MODULE_USB_MIDI_PORTOUT_H
+#define SHARED_MODULE_USB_MIDI_PORTOUT_H
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
-#define MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
-
-#include <stdbool.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-typedef struct {
-    uint32_t* ptr;
-    uint32_t length; // in bytes
-} supervisor_allocation;
+#include "py/obj.h"
 
+typedef struct  {
+    mp_obj_base_t base;
+} usb_midi_portout_obj_t;
 
-
-void memory_init(void);
-void free_memory(supervisor_allocation* allocation);
-supervisor_allocation* allocate_remaining_memory(void);
-
-// Allocate a piece of a given length in bytes. If high_address is true then it should be allocated
-// at a lower address from the top of the stack. Otherwise, addresses will increase starting after
-// statically allocated memory.
-supervisor_allocation* allocate_memory(uint32_t length, bool high_address);
-
-static inline uint16_t align32_size(uint16_t size) {
-    if (size % 4 != 0) {
-        return (size & 0xfffc) + 0x4;
-    }
-    return size;
-}
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
+#endif /* SHARED_MODULE_USB_MIDI_PORTOUT_H */

@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,37 +24,21 @@
  * THE SOFTWARE.
  */
 
-// Basic allocations outside them for areas such as the VM heap and stack.
-// supervisor/shared/memory.c has a basic implementation for a continuous chunk of memory. Add it
-// to a SRC_ in a Makefile to use it.
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTIN_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTIN_H
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
-#define MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
+#include "shared-module/usb_midi/PortIn.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+extern const mp_obj_type_t usb_midi_portin_type;
 
-typedef struct {
-    uint32_t* ptr;
-    uint32_t length; // in bytes
-} supervisor_allocation;
+// Construct an underlying UART object.
+extern void common_hal_usb_midi_portin_construct(usb_midi_portin_obj_t *self,
+    uint8_t receiver_buffer_size);
+// Read characters.
+extern size_t common_hal_usb_midi_portin_read(usb_midi_portin_obj_t *self,
+    uint8_t *data, size_t len, int *errcode);
 
+extern uint32_t common_hal_usb_midi_portin_bytes_available(usb_midi_portin_obj_t *self);
+extern void common_hal_usb_midi_portin_clear_buffer(usb_midi_portin_obj_t *self);
 
-
-void memory_init(void);
-void free_memory(supervisor_allocation* allocation);
-supervisor_allocation* allocate_remaining_memory(void);
-
-// Allocate a piece of a given length in bytes. If high_address is true then it should be allocated
-// at a lower address from the top of the stack. Otherwise, addresses will increase starting after
-// statically allocated memory.
-supervisor_allocation* allocate_memory(uint32_t length, bool high_address);
-
-static inline uint16_t align32_size(uint16_t size) {
-    if (size % 4 != 0) {
-        return (size & 0xfffc) + 0x4;
-    }
-    return size;
-}
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_MEMORY_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTIN_H
