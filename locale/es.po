@@ -1831,7 +1831,7 @@ msgstr "sangría inesperada"
 
 #: py/parse.c:1173
 msgid "unindent does not match any outer indentation level"
-msgstr "no coincide con ningún nivel de sangría exterior"
+msgstr "sangría no coincide con ningún nivel exterior"
 
 #: py/parsenum.c:60
 msgid "int() arg 2 must be >= 2 and <= 36"
