@@ -46,7 +46,7 @@
 //|   Not currently dynamically supported.
 //|
 //|   PortOut objects are constructed for every corresponding entry in the USB descriptor and added
-//|   to the `usb_midi.ports` tuple.
+//|   to the ``usb_midi.ports`` tuple.
 //|
 
 STATIC mp_obj_t usb_midi_portout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {

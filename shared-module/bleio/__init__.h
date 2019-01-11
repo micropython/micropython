@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
  * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,15 +24,15 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "PCA10040"
-#define MICROPY_HW_MCU_NAME         "nRF52832"
-#define MICROPY_PY_SYS_PLATFORM     "nRF52-DK"
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
 
-#define MICROPY_HW_LED_STATUS          (&pin_P0_17)
+typedef enum {
+    GATT_ROLE_NONE,
+    GATT_ROLE_SERVER,
+    GATT_ROLE_CLIENT,
+} gatt_role_t;
 
-#define MICROPY_HW_UART_RX          NRF_GPIO_PIN_MAP(0, 8)
-#define MICROPY_HW_UART_TX          NRF_GPIO_PIN_MAP(0, 6)
-#define MICROPY_HW_UART_HWFC        (0)
+extern void bleio_reset(void);
 
-#define PORT_HEAP_SIZE              (32 * 1024)
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H

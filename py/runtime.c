@@ -1599,6 +1599,17 @@ NORETURN void mp_raise_OSError(int errno_) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
 }
 
+NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
+    mp_raise_msg(&mp_type_OSError, msg);
+}
+
+NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OSError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
 
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);

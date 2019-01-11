@@ -43,11 +43,15 @@
 #define BLE_CONN_CFG_TAG_CUSTOM 1
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
+// 0.625 msecs (625 usecs)
+#define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
 #define UNIT_0_625_MS (625)
 #define UNIT_10_MS    (10000)
 
 typedef void (*ble_drv_evt_handler_t)(ble_evt_t*, void*);
 
+void ble_drv_reset();
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param);
+void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param);
 
 #endif // MICROPY_INCLUDED_NRF_BLUETOOTH_BLE_DRV_H

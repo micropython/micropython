@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,23 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUIDTYPE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUIDTYPE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_BROADCASTER_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_BROADCASTER_H
 
-#include "py/obj.h"
+#include "common-hal/bleio/Broadcaster.h"
 
-typedef enum {
-    UUID_TYPE_16BIT,
-    UUID_TYPE_128BIT
-} bleio_uuid_type_t;
+extern const mp_obj_type_t bleio_broadcaster_type;
 
-extern const mp_obj_type_t bleio_uuidtype_type;
+extern void common_hal_bleio_broadcaster_construct(bleio_broadcaster_obj_t *self, mp_float_t interval);
+extern void common_hal_bleio_broadcaster_start_advertising(bleio_broadcaster_obj_t *self, mp_buffer_info_t *data);
+extern void common_hal_bleio_broadcaster_stop_advertising(bleio_broadcaster_obj_t *self);
 
-typedef struct {
-    mp_obj_base_t base;
-} bleio_uuidtype_obj_t;
-
-extern const bleio_uuidtype_obj_t bleio_uuidtype_16bit_obj;
-extern const bleio_uuidtype_obj_t bleio_uuidtype_128bit_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUIDTYPE_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_BROADCASTER_H

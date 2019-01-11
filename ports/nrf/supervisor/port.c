@@ -38,6 +38,7 @@
 
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/bleio/__init__.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/pulseio/PWMOut.h"
@@ -87,6 +88,8 @@ void reset_port(void) {
     pulseout_reset();
     pulsein_reset();
     timers_reset();
+
+    bleio_reset();
 
     reset_all_pins();
 }
