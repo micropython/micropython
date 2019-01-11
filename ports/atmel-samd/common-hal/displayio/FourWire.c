@@ -40,6 +40,8 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     uint8_t set_column_command, uint8_t set_row_command, uint8_t write_ram_command) {
 
     common_hal_busio_spi_construct(&self->bus, clock, data, mp_const_none);
+    common_hal_busio_spi_never_reset(&self->bus);
+
     common_hal_digitalio_digitalinout_construct(&self->command, command);
     common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
@@ -47,6 +49,10 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
 
     common_hal_digitalio_digitalinout_construct(&self->reset, reset);
     common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
+
+    never_reset_pin_number(command->number);
+    never_reset_pin_number(chip_select->number);
+    never_reset_pin_number(reset->number);
 
     self->width = width;
     self->height = height;
