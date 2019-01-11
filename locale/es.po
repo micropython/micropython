@@ -1287,7 +1287,7 @@ msgstr "pow() con 3 argumentos no soportado"
 
 #: py/modbuiltins.c:517
 msgid "must use keyword argument for key function"
-msgstr ""
+msgstr "debe utilizar argumento de palabra clave para la función clave"
 
 #: py/modmath.c:41 shared-bindings/math/__init__.c:53
 msgid "math domain error"
@@ -1338,7 +1338,7 @@ msgstr "Argumento inválido"
 
 #: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
-msgstr ""
+msgstr "Traceback (ultima llamada reciente):\n"
 
 #: py/obj.c:96
 msgid "  File \"%q\", line %d"
@@ -1429,12 +1429,12 @@ msgstr "objeto '%s' no soporta la eliminación de elementos"
 
 #: py/obj.c:507
 msgid "object is not subscriptable"
-msgstr ""
+msgstr "el objeto no es suscriptable"
 
 #: py/obj.c:510
 #, c-format
 msgid "'%s' object is not subscriptable"
-msgstr ""
+msgstr "el objeto '%s' no es suscriptable"
 
 #: py/obj.c:514
 msgid "object does not support item assignment"
@@ -1529,19 +1529,19 @@ msgstr "long int no soportado en esta compilación"
 
 #: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
 msgid "small int overflow"
-msgstr ""
+msgstr "pequeño int desbordamiento"
 
 #: py/objint_longlong.c:189 py/objint_mpz.c:283 py/runtime.c:486
 msgid "negative power with no float support"
-msgstr ""
+msgstr "potencia negativa sin float support"
 
 #: py/objint_longlong.c:251
 msgid "ulonglong too large"
-msgstr ""
+msgstr "ulonglong muy largo"
 
 #: py/objint_mpz.c:267 py/runtime.c:396 py/runtime.c:411
 msgid "negative shift count"
-msgstr ""
+msgstr "cuenta negativa de turnos"
 
 #: py/objint_mpz.c:336
 msgid "pow() with 3 arguments requires integers"
@@ -1553,11 +1553,11 @@ msgstr "el 3er argumento de pow() no puede ser 0"
 
 #: py/objint_mpz.c:415
 msgid "overflow converting long int to machine word"
-msgstr ""
+msgstr "desbordamiento convirtiendo long int a palabra de máquina"
 
 #: py/objlist.c:273
 msgid "pop from empty list"
-msgstr ""
+msgstr "pop desde una lista vacía"
 
 #: py/objnamedtuple.c:92
 msgid "can't set attribute"
@@ -1569,11 +1569,11 @@ msgstr "__new__ arg debe ser un user-type"
 
 #: py/objrange.c:110
 msgid "zero step"
-msgstr ""
+msgstr "paso cero"
 
 #: py/objset.c:371
 msgid "pop from an empty set"
-msgstr ""
+msgstr "pop desde un set vacío"
 
 #: py/objslice.c:66
 msgid "Length must be an int"
@@ -1585,7 +1585,7 @@ msgstr "Longitud no deberia ser negativa"
 
 #: py/objslice.c:86 py/sequence.c:57
 msgid "slice step cannot be zero"
-msgstr ""
+msgstr "slice step no puede ser cero"
 
 #: py/objslice.c:159
 msgid "Cannot subclass slice"
@@ -1610,7 +1610,7 @@ msgstr "separator vacío"
 
 #: py/objstr.c:641
 msgid "rsplit(None,n)"
-msgstr ""
+msgstr "rsplit(None,n)"
 
 #: py/objstr.c:713
 msgid "substring not found"
@@ -1618,7 +1618,7 @@ msgstr "substring no encontrado"
 
 #: py/objstr.c:770
 msgid "start/end indices"
-msgstr ""
+msgstr "índices inicio/final"
 
 #: py/objstr.c:931
 msgid "bad format string"
@@ -1626,7 +1626,7 @@ msgstr "formato de string erroneo"
 
 #: py/objstr.c:953
 msgid "single '}' encountered in format string"
-msgstr ""
+msgstr "un solo '}' encontrado en format string"
 
 #: py/objstr.c:992
 msgid "bad conversion specifier"
@@ -1643,7 +1643,7 @@ msgstr "especificador de conversión %c desconocido"
 
 #: py/objstr.c:1029
 msgid "unmatched '{' in format"
-msgstr ""
+msgstr "No coinciden '{' en format"
 
 #: py/objstr.c:1036
 msgid "expected ':' after format specifier"
@@ -1667,7 +1667,7 @@ msgstr "atributos aún no soportados"
 #: py/objstr.c:1079
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
-msgstr ""
+msgstr "no se puede cambiar de especificación de campo manual a numeración automática de campos"
 
 #: py/objstr.c:1171
 msgid "invalid format specifier"
@@ -1675,34 +1675,34 @@ msgstr "especificador de formato inválido"
 
 #: py/objstr.c:1192
 msgid "sign not allowed in string format specifier"
-msgstr ""
+msgstr "signo no permitido en el espeficador de string format"
 
 #: py/objstr.c:1200
 msgid "sign not allowed with integer format specifier 'c'"
-msgstr ""
+msgstr "signo no permitido con el especificador integer format 'c'"
 
 #: py/objstr.c:1259
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
-msgstr ""
+msgstr "codigo format desconocido '%c' para el typo de objeto '%s'"
 
 #: py/objstr.c:1331
 #, c-format
 msgid "unknown format code '%c' for object of type 'float'"
-msgstr ""
+msgstr "codigo format desconocido '%c' para el typo de objeto 'float'"
 
 #: py/objstr.c:1343
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "'=' alineación no permitida en el especificador string format"
 
 #: py/objstr.c:1367
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
-msgstr ""
+msgstr "codigo format desconocido '%c' para objeto de tipo 'str'"
 
 #: py/objstr.c:1415
 msgid "format requires a dict"
-msgstr ""
+msgstr "format requiere un dict"
 
 #: py/objstr.c:1424
 msgid "incomplete format key"
@@ -1714,38 +1714,38 @@ msgstr "formato incompleto"
 
 #: py/objstr.c:1490
 msgid "not enough arguments for format string"
-msgstr ""
+msgstr "no suficientes argumentos para format string"
 
 #: py/objstr.c:1500
 #, c-format
 msgid "%%c requires int or char"
-msgstr ""
+msgstr "%%c requiere int o char"
 
 #: py/objstr.c:1507
 msgid "integer required"
-msgstr ""
+msgstr "Entero requerido"
 
 #: py/objstr.c:1570
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
-msgstr ""
+msgstr "carácter no soportado '%c' (0x%x) en índice %d"
 
 #: py/objstr.c:1577
 msgid "not all arguments converted during string formatting"
-msgstr ""
+msgstr "no todos los argumentos fueron convertidos durante el formato de string"
 
 #: py/objstr.c:2102
 msgid "can't convert to str implicitly"
-msgstr ""
+msgstr "no se puede convertir a str implícitamente"
 
 #: py/objstr.c:2106
 msgid "can't convert '%q' object to %q implicitly"
-msgstr ""
+msgstr "no se puede convertir el objeto '%q' a %q implícitamente"
 
 #: py/objstrunicode.c:134
 #, c-format
 msgid "string indices must be integers, not %s"
-msgstr ""
+msgstr "índices de string deben ser enteros, no %s"
 
 #: py/objstrunicode.c:145 py/objstrunicode.c:164
 msgid "string index out of range"
@@ -1766,12 +1766,12 @@ msgstr "atributo no legible"
 
 #: py/objtype.c:868 py/runtime.c:653
 msgid "object not callable"
-msgstr ""
+msgstr "objeto no puede ser llamado"
 
 #: py/objtype.c:870 py/runtime.c:655
 #, c-format
 msgid "'%s' object is not callable"
-msgstr ""
+msgstr "objeto '%s' no puede ser llamado"
 
 #: py/objtype.c:978
 msgid "type takes 1 or 3 arguments"
@@ -1811,11 +1811,11 @@ msgstr "primer argumento para super() debe ser de tipo"
 
 #: py/objtype.c:1370
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
-msgstr ""
+msgstr "issubclass() arg 2 debe ser una clase o tuple de clases"
 
 #: py/objtype.c:1384
 msgid "issubclass() arg 1 must be a class"
-msgstr ""
+msgstr "issubclass() arg 1 debe ser una clase"
 
 #: py/parse.c:726
 msgid "constant must be an integer"
@@ -1827,15 +1827,15 @@ msgstr "Incapaz de inicializar el parser"
 
 #: py/parse.c:1170
 msgid "unexpected indent"
-msgstr ""
+msgstr "sangría inesperada"
 
 #: py/parse.c:1173
 msgid "unindent does not match any outer indentation level"
-msgstr ""
+msgstr "no coincide con ningún nivel de sangría exterior"
 
 #: py/parsenum.c:60
 msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr ""
+msgstr "int() arg 2 debe ser >= 2 y <= 36"
 
 #: py/parsenum.c:151
 msgid "invalid syntax for integer"
@@ -1969,11 +1969,11 @@ msgstr "operación stream no soportada"
 
 #: py/stream.c:254
 msgid "string not supported; use bytes or bytearray"
-msgstr ""
+msgstr "string no soportado; usa bytes o bytearray"
 
 #: py/stream.c:289
 msgid "length argument not allowed for this type"
-msgstr ""
+msgstr "argumento length no permitido para este tipo"
 
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
@@ -1981,7 +1981,7 @@ msgstr "variable local referenciada antes de la asignación"
 
 #: py/vm.c:1142
 msgid "no active exception to reraise"
-msgstr ""
+msgstr "exception no activa para reraise"
 
 #: py/vm.c:1284
 msgid "byte code not implemented"
@@ -2038,11 +2038,11 @@ msgstr "No se puede grabar en un archivo"
 
 #: shared-bindings/audiobusio/PDMIn.c:202
 msgid "Destination capacity is smaller than destination_length."
-msgstr ""
+msgstr "Capacidad de destino es mas pequeña que destination_length."
 
 #: shared-bindings/audiobusio/PDMIn.c:206
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr ""
+msgstr "el buffer de destino debe ser un array de tipo 'H' para bit_depth = 16"
 
 #: shared-bindings/audiobusio/PDMIn.c:208
 msgid ""
@@ -2285,7 +2285,7 @@ msgstr "Bytes debe estar entre 0 y 255."
 
 #: shared-bindings/os/__init__.c:200
 msgid "No hardware random available"
-msgstr ""
+msgstr "No hay hardware random disponible"
 
 #: shared-bindings/pulseio/PWMOut.c:164
 msgid ""
@@ -2546,6 +2546,9 @@ msgid ""
 "Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
 " with the contents of your CIRCUITPY drive and this message:\n"
 msgstr ""
+"Parece que nuestro código de CircuitPython ha fallado con fuerza. Whoops!\n"
+"Por favor, crea un issue en https://github.com/adafruit/circuitpython/issues\n"
+" con el contenido de su unidad CIRCUITPY y este mensaje:\n"
 
 #: supervisor/shared/safe_mode.c:111
 msgid "Crash into the HardFault_Handler.\n"
@@ -2557,7 +2560,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c:115
 msgid "MicroPython fatal error.\n"
-msgstr ""
+msgstr "MicroPython fatal error.\n"
 
 #: supervisor/shared/safe_mode.c:118
 #, fuzzy
@@ -2569,6 +2572,8 @@ msgid ""
 msgstr ""
 "La alimentación del microcontrolador cayó. Por favor asegurate de que tu "
 "fuente de alimentación provee\n"
+"suficiente energia para todo el circuito y presiona el botón de reset (despues"
+"de expulsar CIRCUITPY).\n"
 
 #: supervisor/shared/safe_mode.c:120
 msgid ""
@@ -2584,6 +2589,8 @@ msgid ""
 "The reset button was pressed while booting CircuitPython. Press again to "
 "exit safe mode.\n"
 msgstr ""
+"El botón reset fue presionado mientras arrancaba CircuitPython. Presiona otra"
+" vez para salir del modo seguro.\n"
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "No se pueden aplicar los parámetros GAP."
