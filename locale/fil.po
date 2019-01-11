@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-10 20:56-0500\n"
+"POT-Creation-Date: 2019-01-10 21:32-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -404,17 +404,20 @@ msgstr "Ginagamit na ang EXTINT channel"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
+#: ports/nrf/common-hal/pulseio/PulseIn.c:129
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
+#: ports/nrf/common-hal/pulseio/PulseIn.c:254
 msgid "pop from an empty PulseIn"
 msgstr "pop mula sa walang laman na PulseIn"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:422
+#: ports/esp8266/common-hal/pulseio/PulseIn.c:182
+#: ports/nrf/common-hal/pulseio/PulseIn.c:241 py/obj.c:422
 msgid "index out of range"
 msgstr "index wala sa sakop"
 
@@ -681,13 +684,13 @@ msgid "Data too large for advertisement packet"
 msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:320
+#: ports/nrf/common-hal/bleio/Peripheral.c:324
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:332
+#: ports/nrf/common-hal/bleio/Peripheral.c:336
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
@@ -797,7 +800,7 @@ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 msgid "Failed to create mutex"
 msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c:300
+#: ports/nrf/common-hal/bleio/Peripheral.c:304
 #, fuzzy, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
@@ -2726,7 +2729,6 @@ msgstr ""
 
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "Mali ang bilang ng bytes"
-
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Hindi ma-apply ang GAP parameters."

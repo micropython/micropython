@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-10 20:56-0500\n"
+"POT-Creation-Date: 2019-01-10 21:32-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -406,17 +406,20 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
+#: ports/nrf/common-hal/pulseio/PulseIn.c:129
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Falló la asignación del buffer RX de %d bytes"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
+#: ports/nrf/common-hal/pulseio/PulseIn.c:254
 msgid "pop from an empty PulseIn"
 msgstr "pop de un PulseIn vacío"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:422
+#: ports/esp8266/common-hal/pulseio/PulseIn.c:182
+#: ports/nrf/common-hal/pulseio/PulseIn.c:241 py/obj.c:422
 msgid "index out of range"
 msgstr "index fuera de rango"
 
@@ -681,13 +684,13 @@ msgid "Data too large for advertisement packet"
 msgstr "Los datos no caben en el paquete de anuncio."
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:320
+#: ports/nrf/common-hal/bleio/Peripheral.c:324
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "No se puede inicar el anuncio. status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:332
+#: ports/nrf/common-hal/bleio/Peripheral.c:336
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "No se puede detener el anuncio. status: 0x%02x"
@@ -797,7 +800,7 @@ msgstr "No se puede iniciar el escaneo. status: 0x%02x"
 msgid "Failed to create mutex"
 msgstr "No se puede leer el valor del atributo. status 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c:300
+#: ports/nrf/common-hal/bleio/Peripheral.c:304
 #, fuzzy, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "No se puede detener el anuncio. status: 0x%02x"
@@ -2709,7 +2712,6 @@ msgstr ""
 
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "Numero erroneo de bytes dados"
-
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "No se pueden aplicar los parámetros GAP."

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-09 14:00-0500\n"
+"POT-Creation-Date: 2019-01-10 21:31-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -400,17 +400,20 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
+#: ports/nrf/common-hal/pulseio/PulseIn.c:129
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:151
+#: ports/nrf/common-hal/pulseio/PulseIn.c:254
 msgid "pop from an empty PulseIn"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:182 py/obj.c:422
+#: ports/esp8266/common-hal/pulseio/PulseIn.c:182
+#: ports/nrf/common-hal/pulseio/PulseIn.c:241 py/obj.c:422
 msgid "index out of range"
 msgstr ""
 
@@ -670,13 +673,13 @@ msgid "Data too large for advertisement packet"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:320
+#: ports/nrf/common-hal/bleio/Peripheral.c:324
 #, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:332
+#: ports/nrf/common-hal/bleio/Peripheral.c:336
 #, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr ""
@@ -775,7 +778,7 @@ msgstr ""
 msgid "Failed to create mutex"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Peripheral.c:300
+#: ports/nrf/common-hal/bleio/Peripheral.c:304
 #, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr ""
