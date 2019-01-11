@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
+#include "shared-module/usb_midi/PortOut.h"
+#include "supervisor/shared/translate.h"
+#include "tusb.h"
 
-#include "common-hal/microcontroller/Pin.h"
+void common_hal_usb_midi_portout_construct(usb_midi_portout_obj_t *self) {
+}
 
-#include "py/obj.h"
+size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
+    return tud_midi_write(0, data, len);
+}
 
-typedef struct {
-    mp_obj_base_t base;
-
-    uint8_t pin;
-    bool idle_state;
-    bool paused;
-    volatile bool first_edge;
-
-    uint16_t* buffer;
-    uint16_t maxlen;
-
-    volatile uint16_t start;
-    volatile uint16_t len;
-    volatile uint16_t last_us;
-    volatile uint64_t last_ms;
-} pulseio_pulsein_obj_t;
-
-void pulsein_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
+bool common_hal_usb_midi_portout_ready_to_tx(usb_midi_portout_obj_t *self) {
+    return tud_midi_connected();
+}

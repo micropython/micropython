@@ -24,30 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#include "common-hal/microcontroller/Pin.h"
+void board_init(void) {
+}
 
-#include "py/obj.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-typedef struct {
-    mp_obj_base_t base;
-
-    uint8_t pin;
-    bool idle_state;
-    bool paused;
-    volatile bool first_edge;
-
-    uint16_t* buffer;
-    uint16_t maxlen;
-
-    volatile uint16_t start;
-    volatile uint16_t len;
-    volatile uint16_t last_us;
-    volatile uint64_t last_ms;
-} pulseio_pulsein_obj_t;
-
-void pulsein_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
+void reset_board(void) {
+}

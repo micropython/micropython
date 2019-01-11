@@ -192,7 +192,8 @@ const mp_obj_property_t bleio_peripheral_name_obj = {
 //|     services are included in the advertisement packets.
 //|
 //|     :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
-//|     :param buf data:  If not None, then send data bytes in advertising packets.
+//|     :param buf data: If `None`, advertise the services passed to this Peripheral when it was created.
+//|       If not `None`, then send the bytes in ``data`` as the advertising packet.
 //|
 STATIC mp_obj_t bleio_peripheral_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);

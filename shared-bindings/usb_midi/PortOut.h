@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTOUT_H
 
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-module/usb_midi/PortOut.h"
 
-#include "py/obj.h"
+extern const mp_obj_type_t usb_midi_portout_type;
 
-typedef struct {
-    mp_obj_base_t base;
+// Construct an underlying UART object.
+extern void common_hal_usb_midi_portout_construct(usb_midi_portout_obj_t *self,
+    uint8_t receiver_buffer_size);
 
-    uint8_t pin;
-    bool idle_state;
-    bool paused;
-    volatile bool first_edge;
+// Write characters. len is in characters NOT bytes!
+extern size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self,
+                              const uint8_t *data, size_t len, int *errcode);
 
-    uint16_t* buffer;
-    uint16_t maxlen;
+extern bool common_hal_usb_midi_portout_ready_to_tx(usb_midi_portout_obj_t *self);
 
-    volatile uint16_t start;
-    volatile uint16_t len;
-    volatile uint16_t last_us;
-    volatile uint64_t last_ms;
-} pulseio_pulsein_obj_t;
-
-void pulsein_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI_PORTOUT_H

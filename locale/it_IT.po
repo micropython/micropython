@@ -2729,14 +2729,28 @@ msgstr ""
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossibile applicare i parametri GAP."
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
+#~ "CIRCUITPY:\n"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Non è possibile aggiungere Characteristic."
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
+#~ "Whoops!\n"
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Impossibile impostare i parametri PPCP."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossibile applicare i parametri GAP."
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2745,25 +2759,14 @@ msgstr ""
 #~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
 #~ "espulso CIRCUITPY).\n"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
-
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
 
 #~ msgid "Can not add Service."
 #~ msgstr "Non è possibile aggiungere Service."
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
-#~ "CIRCUITPY:\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
-#~ "Whoops!\n"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."

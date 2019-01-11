@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
-
-#include "common-hal/microcontroller/Pin.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
 
 #include "py/obj.h"
 
-typedef struct {
-    mp_obj_base_t base;
+extern mp_obj_dict_t usb_midi_module_globals;
 
-    uint8_t pin;
-    bool idle_state;
-    bool paused;
-    volatile bool first_edge;
-
-    uint16_t* buffer;
-    uint16_t maxlen;
-
-    volatile uint16_t start;
-    volatile uint16_t len;
-    volatile uint16_t last_us;
-    volatile uint64_t last_ms;
-} pulseio_pulsein_obj_t;
-
-void pulsein_reset(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PULSEIN_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H

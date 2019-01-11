@@ -90,13 +90,13 @@ BASE_CFLAGS = \
 ifeq ($(CHIP_FAMILY), samd21)
 CFLAGS += -Os -DNDEBUG
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)
 CFLAGS += -Os -DNDEBUG
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
 
 #Debugging/Optimization
@@ -104,9 +104,9 @@ ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
   # You may want to disable -flto if it interferes with debugging.
-  CFLAGS += -flto
+  # CFLAGS += -flto
   # You may want to enable these flags to make setting breakpoints easier.
-  # CFLAGS += -fno-inline -fno-ipa-sra
+  CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -267,7 +267,6 @@ SRC_C = \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
 	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/dcd_$(CHIP_FAMILY).c \
-	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/hal_$(CHIP_FAMILY).c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \

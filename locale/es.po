@@ -2710,14 +2710,32 @@ msgstr ""
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "Numero erroneo de bytes dados"
 
+
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "No se pueden aplicar los parámetros GAP."
 
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
 
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#, fuzzy
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
+#~ "unidad de almacenamiento CIRCUITPY:\n"
 
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
@@ -2727,12 +2745,6 @@ msgstr ""
 
 #~ msgid "Can not add Service."
 #~ msgstr "No se puede agregar el Servicio."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
@@ -2746,14 +2758,3 @@ msgstr ""
 #~ msgstr ""
 #~ "suficiente poder para todo el circuito y presiona reset (después de "
 #~ "expulsar CIRCUITPY).\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
-#~ "unidad de almacenamiento CIRCUITPY:\n"

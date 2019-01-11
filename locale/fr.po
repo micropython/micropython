@@ -2766,17 +2766,12 @@ msgstr ""
 #~ msgstr ""
 #~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
 
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2785,19 +2780,27 @@ msgstr ""
 #~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être une displayio.Palette"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
 
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
 
+#~ msgid "Can not query for the device address."
+#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Impossible d'appliquer les paramètres GAP"
 
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"

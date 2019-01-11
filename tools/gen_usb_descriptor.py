@@ -176,16 +176,33 @@ hid_interfaces = [
     ]
 
 # Audio!
-midi_in_jack = midi.InJackDescriptor(
-    description="MIDI PC <- CircuitPython internals",
+# In and out here are relative to CircuitPython
+
+# USB OUT -> midi_in_jack_emb -> midi_out_jack_ext -> CircuitPython
+midi_in_jack_emb = midi.InJackDescriptor(
+    description="MIDI PC -> CircuitPython",
     bJackType=midi.JACK_TYPE_EMBEDDED,
-    iJack=0)
-midi_out_jack = midi.OutJackDescriptor(
-    description="MIDI PC -> CircuitPython internals",
+    iJack=StringIndex.index("CircuitPython usb_midi.ports[0]"))
+midi_out_jack_ext = midi.OutJackDescriptor(
+                    description="MIDI data out to user code.",
+                    bJackType=midi.JACK_TYPE_EXTERNAL,
+                    input_pins=[(midi_in_jack_emb, 1)],
+                    iJack=0)
+
+# USB IN <- midi_out_jack_emb <- midi_in_jack_ext <- CircuitPython
+midi_in_jack_ext = midi.InJackDescriptor(
+                    description="MIDI data in from user code.",
+                    bJackType=midi.JACK_TYPE_EXTERNAL,
+                    iJack=0)
+midi_out_jack_emb = midi.OutJackDescriptor(
+    description="MIDI PC <- CircuitPython",
     bJackType=midi.JACK_TYPE_EMBEDDED,
-    iJack=0)
+    input_pins=[(midi_in_jack_ext, 1)],
+    iJack=StringIndex.index("CircuitPython usb_midi.ports[1]"))
+
+
 audio_midi_interface = standard.InterfaceDescriptor(
-    description="All the audio",
+    description="Midi goodness",
     bInterfaceClass=audio.AUDIO_CLASS_DEVICE,
     bInterfaceSubClass=audio.AUDIO_SUBCLASS_MIDI_STREAMING,
     bInterfaceProtocol=audio.AUDIO_PROTOCOL_V1,
@@ -193,26 +210,23 @@ audio_midi_interface = standard.InterfaceDescriptor(
     subdescriptors=[
         midi.Header(
             jacks_and_elements=[
-                midi_in_jack,
-                midi.InJackDescriptor(
-                    description="MIDI data in from user code.",
-                    bJackType=midi.JACK_TYPE_EXTERNAL, iJack=0),
-                midi_out_jack,
-                midi.OutJackDescriptor(
-                    description="MIDI data out to user code.",
-                    bJackType=midi.JACK_TYPE_EXTERNAL, iJack=0),
-            ]
+                midi_in_jack_emb,
+                midi_in_jack_ext,
+                midi_out_jack_emb,
+                midi_out_jack_ext
+            ],
         ),
         standard.EndpointDescriptor(
-            description="MIDI data out",
+            description="MIDI data out to CircuitPython",
             bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
-        midi.DataEndpointDescriptor(baAssocJack=[midi_out_jack]),
+        midi.DataEndpointDescriptor(baAssocJack=[midi_in_jack_emb]),
         standard.EndpointDescriptor(
-            description="MIDI data in",
+            description="MIDI data in from CircuitPython",
             bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
-            bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
-        midi.DataEndpointDescriptor(baAssocJack=[midi_in_jack]),
+            bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+            bInterval = 0x0),
+        midi.DataEndpointDescriptor(baAssocJack=[midi_out_jack_emb]),
     ])
 
 cs_ac_interface = audio10.AudioControlInterface(
@@ -234,12 +248,12 @@ audio_control_interface = standard.InterfaceDescriptor(
         ])
 
 # Audio streaming interfaces must occur before MIDI ones.
-# audio_interfaces = [audio_control_interface] + cs_ac_interface.audio_streaming_interfaces + cs_ac_interface.midi_streaming_interfaces
+audio_interfaces = [audio_control_interface] + cs_ac_interface.audio_streaming_interfaces + cs_ac_interface.midi_streaming_interfaces
 
 # This will renumber the endpoints to make them unique across descriptors,
 # and renumber the interfaces in order. But we still need to fix up certain
 # interface cross-references.
-interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
+interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces, audio_interfaces)
 
 # Now adjust the CDC interface cross-references.
 
@@ -256,21 +270,13 @@ cdc_iad = standard.InterfaceAssociationDescriptor(
     bFunctionSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
     bFunctionProtocol=cdc.CDC_PROTOCOL_NONE)
 
-# audio_iad = standard.InterfaceAssociationDescriptor(
-#     description="Audio IAD",
-#     bFirstInterface=audio_control_interface.bInterfaceNumber,
-#     bInterfaceCount=len(audio_interfaces),
-#     bFunctionClass=audio.AUDIO_CLASS_DEVICE,
-#     bFunctionSubClass=audio.AUDIO_SUBCLASS_UNKNOWN,
-#     bFunctionProtocol=audio.AUDIO_PROTOCOL_V1)
-
-
 descriptor_list = []
 descriptor_list.append(cdc_iad)
-# descriptor_list.append(audio_iad)
 descriptor_list.extend(cdc_interfaces)
 descriptor_list.extend(msc_interfaces)
-# descriptor_list.append(audio_control_interface)
+# Only add the control interface because other audio interfaces are managed by it to ensure the
+# correct ordering.
+descriptor_list.append(audio_control_interface)
 # Put the CDC IAD just before the CDC interfaces.
 # There appears to be a bug in the Windows composite USB driver that requests the
 # HID report descriptor with the wrong interface number if the HID interface is not given

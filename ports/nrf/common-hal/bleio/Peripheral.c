@@ -100,6 +100,10 @@ STATIC uint32_t add_services_to_advertisement(bleio_peripheral_obj_t *self, size
 
 
 
+// if raw_data is a zero-length buffer, generate an advertising packet that advertises the
+// services passed in when this Peripheral was created.
+// If raw_data contains some bytes, use those bytes as the advertising packet.
+// TODO: Generate the advertising packet in Python, not here.
 STATIC uint32_t set_advertisement_data(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
     common_hal_bleio_adapter_set_enabled(true);
 

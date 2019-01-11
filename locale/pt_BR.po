@@ -2670,17 +2670,23 @@ msgstr ""
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parâmetro UUID inválido"
 
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
+
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Tipo de serviço inválido"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Não é possível definir parâmetros PPCP."
@@ -2688,11 +2694,8 @@ msgstr ""
 #~ msgid "Can not query for the device address."
 #~ msgstr "Não é possível consultar o endereço do dispositivo."
 
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
-
-#~ msgid "Can not add Service."
-#~ msgstr "Não é possível adicionar o serviço."
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."
