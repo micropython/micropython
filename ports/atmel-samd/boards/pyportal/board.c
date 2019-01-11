@@ -49,7 +49,7 @@ uint8_t display_init_sequence[] = {
     0xc1, 1, 0x10,             // Power control SAP[2:0];BT[3:0]
     0xc5, 2, 0x3e, 0x28,       // VCM control
     0xc7, 1, 0x86,             // VCM control2
-    0x36, 1, 0x48,             // Memory Access Control
+    0x36, 1, 0x38,             // Memory Access Control
     0x37, 1, 0x00,             // Vertical scroll zero
     0x3a, 1, 0x55,             // COLMOD: Pixel Format Set
     0xb1, 2, 0x00, 0x18,       // Frame Rate Control (In Normal Mode/Full Colors)
@@ -72,9 +72,9 @@ void board_init(void) {
         &pin_PA12, // Data
         &pin_PB09, // Command or data
         &pin_PB06, // Chip select
-        &pin_PB05, // Reset
-        240, // Width
-        320, // Height
+        &pin_PA00, // Reset
+        320, // Width
+        240, // Height
         0, // column start
         0, // row start
         16, // Color depth
