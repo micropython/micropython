@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-09 14:00-0500\n"
+"POT-Creation-Date: 2019-01-10 20:56-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2667,32 +2667,32 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Can not add Service."
-#~ msgstr "Não é possível adicionar o serviço."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Não é possível consultar o endereço do dispositivo."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parâmetro UUID inválido"
 
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parâmetro UUID inválido"
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de serviço inválido"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Não é possível consultar o endereço do dispositivo."
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Não é possível adicionar o serviço."
