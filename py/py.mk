@@ -121,16 +121,16 @@ endif
 
 #LittlevGL
 LVGL_DIR = lib/lvgl
+INC += -I$(TOP)/$(LVGL_DIR)
 ALL_LVGL_SRC = $(shell find $(TOP)/$(LVGL_DIR) -type f)
 QSTR_GLOBAL_DEPENDENCIES += $(BUILD)/micropython/lv_mpy.c
 $(BUILD)/micropython/lv_mpy.c: $(ALL_LVGL_SRC)
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(BUILD)/micropython
-	$(Q)$(PYTHON) $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py -X anim -X group -I $(TOP)/$(LVGL_DIR)/micropython/pycparser/utils/fake_libc_include $(TOP)/$(LVGL_DIR)/lv_objx/*.h > $@
+	$(Q)$(PYTHON) $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py -X anim -X group $(INC) -I $(TOP)/$(LVGL_DIR)/micropython/pycparser/utils/fake_libc_include $(TOP)/$(LVGL_DIR)/lv_objx/*.h > $@
 
 CFLAGS_MOD += -Wno-unused-function
 
-INC += -I$(TOP)/$(LVGL_DIR)
 
 SRC_MOD += $(BUILD)/micropython/lv_mpy.c \
     $(addprefix $(LVGL_DIR)/,\
@@ -184,6 +184,7 @@ SRC_MOD += $(BUILD)/micropython/lv_mpy.c \
     lv_misc/lv_templ.c \
     lv_misc/lv_txt.c \
     lv_misc/lv_ufs.c \
+	lv_misc/lv_gc.c \
     lv_objx/lv_arc.c \
     lv_objx/lv_bar.c \
     lv_objx/lv_btn.c \

@@ -21,9 +21,19 @@
 #define LV_MEM_AUTO_DEFRAG  1               /*Automatically defrag on free*/
 #else       /*LV_MEM_CUSTOM*/
 #define LV_MEM_CUSTOM_INCLUDE <lv_mp_mem_custom_include.h>   /*Header for the dynamic memory function*/
-#define LV_MEM_CUSTOM_ALLOC   m_malloc       /*Wrapper to malloc*/
-#define LV_MEM_CUSTOM_FREE    m_free         /*Wrapper to free*/
+#define LV_MEM_CUSTOM_ALLOC     m_malloc       /*Wrapper to malloc*/
+#define LV_MEM_CUSTOM_FREE      m_free         /*Wrapper to free*/
 #endif     /*LV_MEM_CUSTOM*/
+
+/* Enable GC for Micropython */
+#define LV_ENABLE_GC 1
+#if LV_ENABLE_GC == 1
+long unsigned int gc_nbytes(const void *ptr);
+#   define LV_MEM_CUSTOM_REALLOC   m_realloc      /*Wrapper to realloc*/
+#   define LV_MEM_CUSTOM_GET_SIZE  gc_nbytes      /*Wrapper to lv_mem_get_size*/
+#   define LV_GC_INCLUDE "py/mpstate.h"
+#   define LV_GC_ROOT(x) MP_STATE_PORT(x)
+#endif /* LV_ENABLE_GC */
 
 /*===================
    Graphical settings
