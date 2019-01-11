@@ -71,6 +71,10 @@ bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, ui
             if (displayio_sprite_get_pixel(layer, x, y, pixel)) {
                 return true;
             }
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
+            if (displayio_group_get_pixel(layer, x, y, pixel)) {
+                return true;
+            }
         }
         // TODO: Tiled layer
     }
