@@ -93,9 +93,13 @@
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else
     #ifdef __ANDROID__
-        #define MICROPY_PY_SYS_PLATFORM  "bionic"
+        #define MICROPY_PY_SYS_PLATFORM  "android"
     #else
-        #define MICROPY_PY_SYS_PLATFORM  "linux"
+        #ifdef __EMSCRIPTEN__
+            #define MICROPY_PY_SYS_PLATFORM  "wasm"
+        #else
+            #define MICROPY_PY_SYS_PLATFORM  "linux"
+        #endif
     #endif
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
