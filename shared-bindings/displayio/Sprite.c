@@ -36,6 +36,7 @@
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/Shape.h"
 #include "supervisor/shared/translate.h"
 
 void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
@@ -91,6 +92,10 @@ STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_ar
         height = bmp->height;
     } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        width = bmp->width;
+        height = bmp->height;
+    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_shape_type)) {
+        displayio_shape_t* bmp = MP_OBJ_TO_PTR(bitmap);
         width = bmp->width;
         height = bmp->height;
     } else {
