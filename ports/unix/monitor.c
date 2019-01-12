@@ -282,7 +282,7 @@ void lv_task_handler(void);
 
 static void monitor_sdl_refr_core(void)
 {
-    lv_task_handler() ;   
+//  lv_task_handler() ;   
     if(sdl_refr_qry != false) {
         sdl_refr_qry = false;
         SDL_UpdateTexture(texture, NULL, tft_fb, MONITOR_HOR_RES * sizeof(uint32_t));
