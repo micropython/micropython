@@ -1,8 +1,8 @@
 LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x239A
 USB_PID = 0x8021
-USB_PRODUCT = "Metro M4 Express"
-USB_MANUFACTURER = "Adafruit Industries LLC"
+USB_PRODUCT = "Datalore IP M4"
+USB_MANUFACTURER = "TG-Boards"
 
 QSPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICE_COUNT = 3

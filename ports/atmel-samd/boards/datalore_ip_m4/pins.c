@@ -39,8 +39,6 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PA12 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), (mp_obj_t)&pin_PA14 },
 
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_LED_RX), (mp_obj_t)&pin_PB06 },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_LED_TX), (mp_obj_t)&pin_PA27 },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
