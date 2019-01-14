@@ -86,16 +86,19 @@ STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_ar
 
     uint16_t width;
     uint16_t height;
-    if (MP_OBJ_IS_TYPE(bitmap, &displayio_bitmap_type)) {
+    mp_obj_t native = mp_instance_cast_to_native_base(bitmap, &displayio_shape_type);
+    if (native != MP_OBJ_NULL) {
+        displayio_shape_t* bmp = MP_OBJ_TO_PTR(native);
+        width = bmp->width;
+        height = bmp->height;
+    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
         width = bmp->width;
         height = bmp->height;
     } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
-        width = bmp->width;
-        height = bmp->height;
-    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_shape_type)) {
-        displayio_shape_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
         width = bmp->width;
         height = bmp->height;
     } else {
@@ -108,7 +111,7 @@ STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_ar
 
     displayio_sprite_t *self = m_new_obj(displayio_sprite_t);
     self->base.type = &displayio_sprite_type;
-    common_hal_displayio_sprite_construct(self, bitmap, args[ARG_pixel_shader].u_obj,
+    common_hal_displayio_sprite_construct(self, native, args[ARG_pixel_shader].u_obj,
             width, height, x, y);
     return MP_OBJ_FROM_PTR(self);
 }
