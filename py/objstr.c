@@ -132,14 +132,14 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
 #if MICROPY_CPYTHON_COMPAT
-    if (n_kw != 0) {
+    if (kw_args != NULL && kw_args->used != 0) {
         mp_arg_error_unimpl_kw();
     }
 #endif
 
-    mp_arg_check_num(n_args, n_kw, 0, 3, false);
+    mp_arg_check_num(n_args, kw_args, 0, 3, false);
 
     switch (n_args) {
         case 0:
@@ -190,11 +190,11 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     }
 }
 
-STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
 
     #if MICROPY_CPYTHON_COMPAT
-    if (n_kw != 0) {
+    if (kw_args != NULL && kw_args->used != 0) {
         mp_arg_error_unimpl_kw();
     }
     #else
@@ -455,7 +455,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     if (!MP_OBJ_IS_TYPE(arg, &mp_type_list) && !MP_OBJ_IS_TYPE(arg, &mp_type_tuple)) {
         // arg is not a list nor a tuple, try to convert it to a list
         // TODO: Try to optimize?
-        arg = mp_type_list.make_new(&mp_type_list, 1, 0, &arg);
+        arg = mp_type_list.make_new(&mp_type_list, 1, &arg, NULL);
     }
     mp_obj_get_array(arg, &seq_len, &seq_items);
 
@@ -1875,7 +1875,7 @@ STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
+    return mp_obj_str_make_new(&mp_type_str, n_args, args, NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
 
@@ -1888,7 +1888,7 @@ STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return bytes_make_new(NULL, n_args, 0, args);
+    return bytes_make_new(NULL, n_args, args, NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
 #endif

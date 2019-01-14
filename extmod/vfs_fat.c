@@ -65,8 +65,8 @@ mp_import_stat_t fat_vfs_import_stat(void *vfs_in, const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     // create new object
     fs_user_mount_t *vfs = m_new_obj(fs_user_mount_t);
@@ -111,7 +111,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_del_obj, fat_vfs_del);
 
 STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     // create new object
-    fs_user_mount_t *vfs = MP_OBJ_TO_PTR(fat_vfs_make_new(&mp_fat_vfs_type, 1, 0, &bdev_in));
+    fs_user_mount_t *vfs = MP_OBJ_TO_PTR(fat_vfs_make_new(&mp_fat_vfs_type, 1, &bdev_in, NULL));
 
     // make the filesystem
     uint8_t working_buf[_MAX_SS];

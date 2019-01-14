@@ -33,7 +33,7 @@
 
 #if MICROPY_PY_BUILTINS_PROPERTY
 
-STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     enum { ARG_fget, ARG_fset, ARG_fdel, ARG_doc };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
@@ -42,7 +42,7 @@ STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size
         { MP_QSTR_doc, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
     };
     mp_arg_val_t vals[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, vals);
+    mp_arg_parse_all(n_args, args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, vals);
 
     mp_obj_property_t *o = m_new_obj(mp_obj_property_t);
     o->base.type = type;
