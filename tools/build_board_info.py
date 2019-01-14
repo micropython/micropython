@@ -12,7 +12,7 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "esp8266", "atmel-samd"]
+SUPPORTED_PORTS = ["nrf", "atmel-samd"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
@@ -22,7 +22,6 @@ HEX = ('hex',)
 # Default extensions
 extension_by_port = {
     "nrf": UF2,
-    "esp8266": BIN,
     "atmel-samd": UF2,
 }
 
