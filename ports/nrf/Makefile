@@ -214,7 +214,13 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
-	storage/__init__.c
+	storage/__init__.c 
+	
+
+ifndef EXCLUDE_PIXELBUF
+       SRC_SHARED_MODULE += _pixelbuf/__init__.c \
+       _pixelbuf/PixelBuf.c
+endif
 
 #	uheap/__init__.c \
 	ustack/__init__.c

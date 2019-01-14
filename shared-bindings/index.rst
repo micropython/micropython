@@ -61,4 +61,6 @@ Module             Supported Ports
 `touchio`          **SAMD/SAMD Express**
 `uheap`            **Debug (All)**
 `usb_hid`          **SAMD/SAMD Express**
+`_pixelbuf`        **SAMD Express**
+`_stage`           **SAMD/SAMD Express**
 =================  ==============================
