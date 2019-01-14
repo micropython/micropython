@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-10 21:32-0500\n"
+"POT-Creation-Date: 2019-01-13 23:51-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1977,7 +1977,7 @@ msgstr "may maling type ang argument"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argument ay dapat na '%q' hindi '%q'"
 
-#: py/runtime.c:1123 py/runtime.c:1197
+#: py/runtime.c:1123 py/runtime.c:1197 shared-bindings/_pixelbuf/__init__.c:106
 msgid "no such attribute"
 msgstr "walang ganoon na attribute"
 
@@ -2055,6 +2055,57 @@ msgstr "walang aktibong exception para i-reraise"
 #: py/vm.c:1284
 msgid "byte code not implemented"
 msgstr "byte code hindi pa implemented"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:101
+#, c-format
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:106
+#, c-format
+msgid "Can not use dotstar with %s"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:118
+msgid "rawbuf is not the same size as buf"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:123
+#, c-format
+msgid "buf is too small. need %d bytes"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:129
+msgid "write_args must be a list, tuple, or None"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:394
+#, fuzzy
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:396
+#, fuzzy
+msgid "Range out of bounds"
+msgstr "wala sa sakop ang address"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:405
+msgid "tuple/list required on RHS"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:421
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:444
+msgid "Pixel beyond bounds of buffer"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/__init__.c:112
+#, fuzzy
+msgid "readonly attribute"
+msgstr "hindi mabasa ang attribute"
 
 #: shared-bindings/_stage/Layer.c:71
 msgid "graphic must be 2048 bytes long"
@@ -2518,6 +2569,11 @@ msgstr ""
 "Object ay deinitialized at hindi na magagamit. Lumikha ng isang bagong "
 "Object."
 
+#: shared-module/_pixelbuf/PixelBuf.c:69
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
 msgstr "Hindi ma-iallocate ang first buffer"
@@ -2718,23 +2774,42 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
+#~ msgid "Wrong address length"
+#~ msgstr "Mali ang address length"
+
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Mali ang UUID string length"
 
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Mali ang UUID parameter"
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mali ang address length"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Mali ang tipo ng serbisyo"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "Mali ang bilang ng bytes"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
+#~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
@@ -2747,33 +2822,14 @@ msgstr ""
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+
 #~ msgid "Can not query for the device address."
 #~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
 
 #~ msgid "Can not add Service."
 #~ msgstr "Hindi maidaragdag ang serbisyo."
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
-#~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"

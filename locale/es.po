@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-10 21:32-0500\n"
+"POT-Creation-Date: 2019-01-13 23:51-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1731,7 +1731,9 @@ msgstr "atributos aún no soportados"
 #: py/objstr.c:1079
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
-msgstr "no se puede cambiar de especificación de campo manual a numeración automática de campos"
+msgstr ""
+"no se puede cambiar de especificación de campo manual a numeración "
+"automática de campos"
 
 #: py/objstr.c:1171
 msgid "invalid format specifier"
@@ -1796,7 +1798,8 @@ msgstr "carácter no soportado '%c' (0x%x) en índice %d"
 
 #: py/objstr.c:1577
 msgid "not all arguments converted during string formatting"
-msgstr "no todos los argumentos fueron convertidos durante el formato de string"
+msgstr ""
+"no todos los argumentos fueron convertidos durante el formato de string"
 
 #: py/objstr.c:2102
 msgid "can't convert to str implicitly"
@@ -1972,7 +1975,7 @@ msgstr "el argumento tiene un tipo erroneo"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argumento deberia ser un '%q' no un '%q'"
 
-#: py/runtime.c:1123 py/runtime.c:1197
+#: py/runtime.c:1123 py/runtime.c:1197 shared-bindings/_pixelbuf/__init__.c:106
 msgid "no such attribute"
 msgstr "no hay tal atributo"
 
@@ -2050,6 +2053,57 @@ msgstr "exception no activa para reraise"
 #: py/vm.c:1284
 msgid "byte code not implemented"
 msgstr "codigo byte no implementado"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:101
+#, c-format
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:106
+#, c-format
+msgid "Can not use dotstar with %s"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:118
+msgid "rawbuf is not the same size as buf"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:123
+#, c-format
+msgid "buf is too small. need %d bytes"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:129
+msgid "write_args must be a list, tuple, or None"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:394
+#, fuzzy
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr "solo se admiten segmentos con step=1 (alias None)"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:396
+#, fuzzy
+msgid "Range out of bounds"
+msgstr "address fuera de límites"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:405
+msgid "tuple/list required on RHS"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:421
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:444
+msgid "Pixel beyond bounds of buffer"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/__init__.c:112
+#, fuzzy
+msgid "readonly attribute"
+msgstr "atributo no legible"
 
 #: shared-bindings/_stage/Layer.c:71
 msgid "graphic must be 2048 bytes long"
@@ -2509,6 +2563,11 @@ msgstr ""
 "El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo "
 "objeto"
 
+#: shared-module/_pixelbuf/PixelBuf.c:69
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
 msgstr "No se pudo asignar el primer buffer"
@@ -2663,7 +2722,8 @@ msgid ""
 " with the contents of your CIRCUITPY drive and this message:\n"
 msgstr ""
 "Parece que nuestro código de CircuitPython ha fallado con fuerza. Whoops!\n"
-"Por favor, crea un issue en https://github.com/adafruit/circuitpython/issues\n"
+"Por favor, crea un issue en https://github.com/adafruit/circuitpython/"
+"issues\n"
 " con el contenido de su unidad CIRCUITPY y este mensaje:\n"
 
 #: supervisor/shared/safe_mode.c:111
@@ -2688,8 +2748,8 @@ msgid ""
 msgstr ""
 "La alimentación del microcontrolador cayó. Por favor asegurate de que tu "
 "fuente de alimentación provee\n"
-"suficiente energia para todo el circuito y presiona el botón de reset (despues"
-"de expulsar CIRCUITPY).\n"
+"suficiente energia para todo el circuito y presiona el botón de reset "
+"(despuesde expulsar CIRCUITPY).\n"
 
 #: supervisor/shared/safe_mode.c:120
 msgid ""
@@ -2705,8 +2765,11 @@ msgid ""
 "The reset button was pressed while booting CircuitPython. Press again to "
 "exit safe mode.\n"
 msgstr ""
-"El botón reset fue presionado mientras arrancaba CircuitPython. Presiona otra"
-" vez para salir del modo seguro.\n"
+"El botón reset fue presionado mientras arrancaba CircuitPython. Presiona "
+"otra vez para salir del modo seguro.\n"
+
+#~ msgid "Wrong address length"
+#~ msgstr "Longitud de address erronea"
 
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Longitud de string UUID inválida"
@@ -2714,17 +2777,34 @@ msgstr ""
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parámetro UUID inválido"
 
-#~ msgid "Wrong address length"
-#~ msgstr "Longitud de address erronea"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
 
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "Numero erroneo de bytes dados"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
+#, fuzzy
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
+#~ "unidad de almacenamiento CIRCUITPY:\n"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "suficiente poder para todo el circuito y presiona reset (después de "
+#~ "expulsar CIRCUITPY).\n"
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
@@ -2736,34 +2816,14 @@ msgstr ""
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "No se puede codificar el UUID, para revisar la longitud."
 
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
 #~ msgid "Can not query for the device address."
 #~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#, fuzzy
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
-#~ "unidad de almacenamiento CIRCUITPY:\n"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
 
 #~ msgid "Can not add Service."
 #~ msgstr "No se puede agregar el Servicio."
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "suficiente poder para todo el circuito y presiona reset (después de "
-#~ "expulsar CIRCUITPY).\n"

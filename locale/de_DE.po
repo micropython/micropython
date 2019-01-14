@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-10 21:32-0500\n"
+"POT-Creation-Date: 2019-01-13 23:51-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -1960,7 +1960,7 @@ msgstr ""
 msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
-#: py/runtime.c:1123 py/runtime.c:1197
+#: py/runtime.c:1123 py/runtime.c:1197 shared-bindings/_pixelbuf/__init__.c:106
 msgid "no such attribute"
 msgstr ""
 
@@ -2037,6 +2037,54 @@ msgstr ""
 
 #: py/vm.c:1284
 msgid "byte code not implemented"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:101
+#, c-format
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:106
+#, c-format
+msgid "Can not use dotstar with %s"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:118
+msgid "rawbuf is not the same size as buf"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:123
+#, c-format
+msgid "buf is too small. need %d bytes"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:129
+msgid "write_args must be a list, tuple, or None"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:394
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:396
+msgid "Range out of bounds"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:405
+msgid "tuple/list required on RHS"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:421
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:444
+msgid "Pixel beyond bounds of buffer"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/__init__.c:112
+msgid "readonly attribute"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c:71
@@ -2494,6 +2542,11 @@ msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
 
+#: shared-module/_pixelbuf/PixelBuf.c:69
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
 msgstr ""
@@ -2691,11 +2744,23 @@ msgstr ""
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Ungültiger UUID-Parameter"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Ungültiger Diensttyp"
+#~ msgid "Can not add Service."
+#~ msgstr "Kann den Dienst nicht hinzufügen."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Kann GAP Parameter nicht anwenden."
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr "CircuitPython ist abgestürzt. Ups!\n"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Ungültiger Diensttyp"
 
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
@@ -2705,15 +2770,6 @@ msgstr ""
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Kann das Merkmal nicht hinzufügen."
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr "CircuitPython ist abgestürzt. Ups!\n"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Kann GAP Parameter nicht anwenden."
-
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
 #~ "CIRCUITPY).\n"
@@ -2721,14 +2777,11 @@ msgstr ""
 #~ "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
 #~ "sicheren Auswerfen von CIRCUITPY.)\n"
 
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Kann das Merkmal nicht hinzufügen."
+
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Kann UUID in das advertisement packet kodieren."
 
 #~ msgid "Can not query for the device address."
 #~ msgstr "Kann nicht nach der Geräteadresse suchen."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Kann den Dienst nicht hinzufügen."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
