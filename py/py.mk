@@ -233,12 +233,6 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moduhashlib.o \
 	extmod/modubinascii.o \
 	extmod/virtpin.o \
-	extmod/machine_mem.o \
-	extmod/machine_pinbase.o \
-	extmod/machine_signal.o \
-	extmod/machine_pulse.o \
-	extmod/machine_i2c.o \
-	extmod/machine_spi.o \
 	extmod/modussl_axtls.o \
 	extmod/modussl_mbedtls.o \
 	extmod/modurandom.o \
