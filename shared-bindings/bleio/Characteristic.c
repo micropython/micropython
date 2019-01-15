@@ -51,14 +51,7 @@
 //|   :param bool write: Clients may write this characteristic; a response will be sent back
 //|   :param bool write_no_response: Clients may write this characteristic; no response will be sent back
 //|
-STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, true);
-    bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
-    self->base.type = &bleio_characteristic_type;
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-
+STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
         ARG_uuid, ARG_broadcast, ARG_indicate, ARG_notify, ARG_read, ARG_write, ARG_write_no_response,
     };
@@ -73,7 +66,7 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t uuid = args[ARG_uuid].u_obj;
 
@@ -81,6 +74,8 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
         mp_raise_ValueError(translate("Expected a UUID"));
     }
 
+    bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
+    self->base.type = &bleio_characteristic_type;
     self->uuid = MP_OBJ_TO_PTR(uuid);
 
     bleio_characteristic_properties_t properties;

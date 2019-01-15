@@ -69,22 +69,18 @@ STATIC uint8_t xdigit_8b_value(byte nibble1, byte nibble2) {
 //|     - `bleio.AddressType.RANDOM_PRIVATE_RESOLVABLE`
 //|     - `bleio.AddressType.RANDOM_PRIVATE_NON_RESOLVABLE`
 //|
-STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, true);
-    bleio_address_obj_t *self = m_new_obj(bleio_address_obj_t);
-    self->base.type = &bleio_address_type;
-    self->type = ADDRESS_PUBLIC;
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-
+STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    bleio_address_obj_t *self = m_new_obj(bleio_address_obj_t);
+    self->base.type = &bleio_address_type;
+    self->type = ADDRESS_PUBLIC;
 
     const mp_obj_t address = args[ARG_address].u_obj;
 

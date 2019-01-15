@@ -59,24 +59,19 @@
 //|   :param float interval: how often to broadcast
 //|
 
-STATIC mp_obj_t bleio_broadcaster_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, true);
-    bleio_broadcaster_obj_t *self = m_new_obj(bleio_broadcaster_obj_t);
-    self->base.type = &bleio_broadcaster_type;
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-
+STATIC mp_obj_t bleio_broadcaster_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_interval };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_interval, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
 
+    bleio_broadcaster_obj_t *self = m_new_obj(bleio_broadcaster_obj_t);
+    self->base.type = &bleio_broadcaster_type;
     // Do port-specific initialization. interval will be validated.
     common_hal_bleio_broadcaster_construct(self, interval);
 

@@ -25,6 +25,7 @@
  */
 
 #include "py/objproperty.h"
+#include "py/runtime.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Scanner.h"
 
@@ -77,7 +78,9 @@ STATIC void bleio_scanner_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     mp_printf(print, "Scanner(interval: %d window: %d)", self->interval, self->window);
 }
 
-STATIC mp_obj_t bleio_scanner_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t bleio_scanner_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
+
     bleio_scanner_obj_t *self = m_new_obj(bleio_scanner_obj_t);
     self->base.type = type;
 

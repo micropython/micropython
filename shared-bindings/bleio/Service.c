@@ -49,17 +49,7 @@
 //|   :param bool secondary: If the service is a secondary one
 //|
 
-STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 2, 3, true);
-    bleio_service_obj_t *self = m_new_obj(bleio_service_obj_t);
-    self->char_list = mp_obj_new_list(0, NULL);
-    self->base.type = &bleio_service_type;
-    self->device = mp_const_none;
-    self->handle = 0xFFFF;
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-
+STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_uuid, ARG_characteristics, ARG_secondary };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -68,9 +58,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    self->is_secondary = args[ARG_secondary].u_bool;
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t uuid = args[ARG_uuid].u_obj;
 
@@ -78,6 +66,12 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_ValueError(translate("Expected a UUID"));
     }
 
+    bleio_service_obj_t *self = m_new_obj(bleio_service_obj_t);
+    self->char_list = mp_obj_new_list(0, NULL);
+    self->base.type = &bleio_service_type;
+    self->device = mp_const_none;
+    self->handle = 0xFFFF;
+    self->is_secondary = args[ARG_secondary].u_bool;
     self->uuid = MP_OBJ_TO_PTR(uuid);
 
     // If characteristics is not an iterable, an exception will be thrown.
