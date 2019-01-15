@@ -34,6 +34,8 @@ for board in build_boards:
     board_info = all_boards[board]
 
     for language in languages:
+        bin_directory = "../bin/{}/-{board}/-{language}".format(board=board, language=language)
+        os.makedirs(bin_directory, exist_ok=True)
         start_time = time.monotonic()
         make_result = subprocess.run("make -C ../ports/" + board_info["port"] + " TRANSLATION=" + language + " BOARD=" + board, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         build_duration = time.monotonic() - start_time
