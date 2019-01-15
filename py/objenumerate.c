@@ -59,7 +59,7 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, con
     o->iter = mp_getiter(arg_vals.iterable.u_obj, NULL);
     o->cur = arg_vals.start.u_int;
 #else
-    (void)n_kw;
+    (void)kw_args;
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
     o->base.type = type;
     o->iter = mp_getiter(args[0], NULL);

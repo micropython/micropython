@@ -198,7 +198,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, cons
         mp_arg_error_unimpl_kw();
     }
     #else
-    (void)n_kw;
+    (void)kw_args;
     #endif
 
     if (n_args == 0) {
