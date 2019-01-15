@@ -36,6 +36,7 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/Sprite.h"
 
 //| :mod:`displayio` --- Native display driving
@@ -64,6 +65,7 @@
 //|     Group
 //|     OnDiskBitmap
 //|     Palette
+//|     Shape
 //|     Sprite
 //|
 //| All libraries change hardware state but are never deinit
@@ -76,6 +78,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Group), MP_ROM_PTR(&displayio_group_type) },
     { MP_ROM_QSTR(MP_QSTR_OnDiskBitmap), MP_ROM_PTR(&displayio_ondiskbitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
+    { MP_ROM_QSTR(MP_QSTR_Shape), MP_ROM_PTR(&displayio_shape_type) },
     { MP_ROM_QSTR(MP_QSTR_Sprite), MP_ROM_PTR(&displayio_sprite_type) },
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&displayio_fourwire_type) },

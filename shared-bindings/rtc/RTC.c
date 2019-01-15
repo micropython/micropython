@@ -63,9 +63,9 @@ const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 //|
 //|   This class represents the onboard Real Time Clock. It is a singleton and will always return the same instance.
 //|
-STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // No arguments
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
 
     // return constant object
     return (mp_obj_t)&rtc_rtc_obj;

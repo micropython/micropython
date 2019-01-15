@@ -64,12 +64,9 @@ STATIC mp_obj_t mp_obj_new_i2cslave_i2c_slave_request(i2cslave_i2c_slave_obj_t *
 //|   :param tuple addresses: The I2C addresses to respond to (how many is hw dependent).
 //|   :param bool smbus: Use SMBUS timings if the hardware supports it
 //|
-STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     i2cslave_i2c_slave_obj_t *self = m_new_obj(i2cslave_i2c_slave_obj_t);
     self->base.type = &i2cslave_i2c_slave_type;
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
     enum { ARG_scl, ARG_sda, ARG_addresses, ARG_smbus };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -78,7 +75,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_
         { MP_QSTR_smbus, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     assert_pin(args[ARG_scl].u_obj, false);
     assert_pin(args[ARG_sda].u_obj, false);
@@ -247,8 +244,8 @@ const mp_obj_type_t i2cslave_i2c_slave_type = {
 //|   :param bool is_read: I2C Master read request
 //|   :param bool is_restart: Repeated Start Condition
 //|
-STATIC mp_obj_t i2cslave_i2c_slave_request_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 4, 4, false);
+STATIC mp_obj_t i2cslave_i2c_slave_request_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 4, 4, false);
     return mp_obj_new_i2cslave_i2c_slave_request(args[0], mp_obj_get_int(args[1]), mp_obj_is_true(args[2]), mp_obj_is_true(args[3]));
 }
 

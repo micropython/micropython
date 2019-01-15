@@ -38,6 +38,13 @@ void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer) 
     if (self->size == self->max_size) {
         mp_raise_RuntimeError(translate("Group full"));
     }
+    mp_obj_t native_layer = mp_instance_cast_to_native_base(layer, &displayio_group_type);
+    if (native_layer == MP_OBJ_NULL) {
+        native_layer = mp_instance_cast_to_native_base(layer, &displayio_sprite_type);
+    }
+    if (native_layer == MP_OBJ_NULL) {
+        mp_raise_ValueError(translate("Layer must be a Group or Sprite subclass."));
+    }
     self->children[self->size] = layer;
     self->size++;
     self->needs_refresh = true;

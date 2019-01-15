@@ -49,16 +49,13 @@
 //|
 //|   :param int max_size: The maximum group size.
 //|
-STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 0, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_max_size };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_max_size, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 4} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t max_size = args[ARG_max_size].u_int;
     if (max_size < 1) {

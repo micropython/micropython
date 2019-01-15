@@ -95,7 +95,7 @@
 //|     button presses start to be recorded.
 //|
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
-        size_t n_kw, const mp_obj_t *args) {
+        const mp_obj_t *args, mp_map_t *kw_args) {
     if (n_args > 8) {
         mp_raise_TypeError(translate("too many arguments"));
     }

@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,34 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
-#define MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SHAPE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SHAPE_H
 
-#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "py/nlr.h"
-#include "py/objtuple.h"
-#include "py/runtime.h"
-#include "py/objstr.h"
+#include "py/obj.h"
 
-#if MICROPY_PY_COLLECTIONS
+typedef struct {
+    mp_obj_base_t base;
+    uint16_t width;
+    uint16_t height;
+    uint16_t half_width;
+    uint16_t half_height;
+    uint16_t* data;
+    bool mirror_x;
+    bool mirror_y;
+} displayio_shape_t;
 
-typedef struct _mp_obj_namedtuple_type_t {
-    mp_obj_type_t base;
-    size_t n_fields;
-    qstr fields[];
-} mp_obj_namedtuple_type_t;
-
-typedef struct _mp_obj_namedtuple_t {
-    mp_obj_tuple_t tuple;
-} mp_obj_namedtuple_t;
-
-void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
-size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name);
-void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
-mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *fields);
-mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
-
-#endif // MICROPY_PY_COLLECTIONS
-
-#endif  // MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SHAPE_H

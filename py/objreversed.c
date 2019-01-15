@@ -37,8 +37,8 @@ typedef struct _mp_obj_reversed_t {
     mp_uint_t cur_index;    // current index, plus 1; 0=no more, 1=last one (index 0)
 } mp_obj_reversed_t;
 
-STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     // check if __reversed__ exists, and if so delegate to it
     mp_obj_t dest[2];

@@ -71,21 +71,14 @@ enum {
 //|
 //|     The descriptor uuid. (read-only)
 //|
-STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, true);
-    bleio_descriptor_obj_t *self = m_new_obj(bleio_descriptor_obj_t);
-    self->base.type = type;
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-
+STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_uuid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t uuid_arg = args[ARG_uuid].u_obj;
 
@@ -93,6 +86,8 @@ STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_ar
         mp_raise_ValueError(translate("Expected a UUID"));
     }
 
+    bleio_descriptor_obj_t *self = m_new_obj(bleio_descriptor_obj_t);
+    self->base.type = type;
     bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_arg);
     common_hal_bleio_descriptor_construct(self, uuid);
 
