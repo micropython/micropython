@@ -32,6 +32,7 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
@@ -51,7 +52,7 @@
 //|
 //|   Create a FourWire object associated with the given pins.
 //|
-STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_raise_NotImplementedError(translate("displayio is a work in progress"));
     return mp_const_none;
 }
@@ -73,7 +74,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 1, displayio_fourwire_ob
 //|
 STATIC mp_obj_t displayio_fourwire_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    displayio_group_t* group = MP_OBJ_TO_PTR(group_in);
+    mp_obj_t native_layer = mp_instance_cast_to_native_base(group_in, &displayio_group_type);
+    if (native_layer == MP_OBJ_NULL) {
+        mp_raise_ValueError(translate("Must be a Group subclass."));
+    }
+    displayio_group_t* group = MP_OBJ_TO_PTR(native_layer);
     common_hal_displayio_fourwire_show(self, group);
     return mp_const_none;
 }

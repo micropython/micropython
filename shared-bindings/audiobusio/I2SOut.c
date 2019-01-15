@@ -93,10 +93,7 @@
 //|       pass
 //|     print("stopped")
 //|
-STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 3, 4, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bit_clock, ARG_word_select, ARG_data, ARG_left_justified };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bit_clock, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -105,7 +102,7 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_left_justified, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t bit_clock_obj = args[ARG_bit_clock].u_obj;
     assert_pin(bit_clock_obj, false);

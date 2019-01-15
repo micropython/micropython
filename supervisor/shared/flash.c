@@ -57,9 +57,9 @@ void supervisor_flash_set_usb_writable(bool usb_writable) {
 const mp_obj_type_t supervisor_flash_type;
 STATIC const mp_obj_base_t supervisor_flash_obj = {&supervisor_flash_type};
 
-STATIC mp_obj_t supervisor_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t supervisor_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
 
     // return singleton object
     return (mp_obj_t)&supervisor_flash_obj;

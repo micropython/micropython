@@ -67,20 +67,17 @@ void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
 //|   palette lookup, a gradient, a pattern or a color transformer.
 //|
 //|
-STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 4, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_pixel_shader, ARG_position, ARG_width, ARG_height };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_bitmap, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_pixel_shader, MP_ARG_OBJ | MP_ARG_KW_ONLY },
         { MP_QSTR_position, MP_ARG_OBJ | MP_ARG_KW_ONLY },
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t bitmap = args[ARG_bitmap].u_obj;
 

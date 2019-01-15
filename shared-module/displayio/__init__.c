@@ -39,6 +39,8 @@ void displayio_refresh_display(void) {
         return;
     }
     if (refresh_queued(display)) {
+        PORT->Group[1].DIRSET.reg = 1 << 22;
+
         // We compute the pixels
         uint16_t x0 = 0;
         uint16_t y0 = 0;
@@ -53,10 +55,19 @@ void displayio_refresh_display(void) {
             for (uint16_t x = x0; x < x1; ++x) {
                 uint16_t* pixel = &(((uint16_t*)buffer)[index]);
                 *pixel = 0;
-                if (display->current_group != NULL) {
-                    displayio_group_get_pixel(display->current_group, x, y, pixel);
-                }
 
+                PORT->Group[1].OUTTGL.reg = 1 << 22;
+
+                //if (index == 0) {
+                    if (display->current_group != NULL) {
+                        displayio_group_get_pixel(display->current_group, x, y, pixel);
+                    }
+                // } else {
+                //     *pixel = (((uint16_t*)buffer)[0]);
+                // }
+
+
+                PORT->Group[1].OUTTGL.reg = 1 << 22;
 
                 index += 1;
                 // The buffer is full, send it.

@@ -46,7 +46,7 @@
 //|   Not currently dynamically supported.
 //|
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return mp_const_none;
 }
 

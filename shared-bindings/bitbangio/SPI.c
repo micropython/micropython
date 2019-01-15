@@ -62,12 +62,7 @@
 //|
 
 // TODO(tannewt): Support LSB SPI.
-STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
-    bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
-    self->base.type = &bitbangio_spi_type;
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
     static const mp_arg_t allowed_args[] = {
        { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -75,13 +70,16 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
        { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     assert_pin(args[ARG_clock].u_obj, false);
     assert_pin(args[ARG_MOSI].u_obj, true);
     assert_pin(args[ARG_MISO].u_obj, true);
     const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(args[ARG_clock].u_obj);
     const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(args[ARG_MOSI].u_obj);
     const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(args[ARG_MISO].u_obj);
+
+    bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
+    self->base.type = &bitbangio_spi_type;
     shared_module_bitbangio_spi_construct(self, clock, mosi, miso);
     return (mp_obj_t)self;
 }

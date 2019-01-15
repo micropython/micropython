@@ -68,8 +68,8 @@
 //|     pulses[0] = 200
 //|     pulse.send(pulses)
 //|
-STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, true);
+STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
     mp_obj_t carrier_obj = args[0];
 
     if (!MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
