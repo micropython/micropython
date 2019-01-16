@@ -21,7 +21,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_NFC2), MP_ROM_PTR(&pin_P0_10) },
 
   { MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_P0_10) },
-  { MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_P1_15) },
   { MP_ROM_QSTR(MP_QSTR_D5), MP_ROM_PTR(&pin_P1_08) },
   { MP_ROM_QSTR(MP_QSTR_D6), MP_ROM_PTR(&pin_P0_07) },
   { MP_ROM_QSTR(MP_QSTR_D9), MP_ROM_PTR(&pin_P0_26) },
@@ -44,6 +43,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
   { MP_ROM_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_P1_15) },
   { MP_ROM_QSTR(MP_QSTR_RED_LED), MP_ROM_PTR(&pin_P1_15) },
+  { MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_P1_15) },
   { MP_ROM_QSTR(MP_QSTR_BLUE_LED), MP_ROM_PTR(&pin_P1_10) },
 };
 
