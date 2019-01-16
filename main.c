@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "shared-module/displayio/__init__.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
@@ -49,6 +50,7 @@
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/board_busses.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
@@ -198,10 +200,13 @@ bool run_code_py(safe_mode_t safe_mode) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
+        // Turn off the display before the heap disappears.
+        reset_primary_display();
         stop_mp();
         free_memory(heap);
 
         reset_port();
+        reset_board_busses();
         reset_board();
         reset_status_led();
 

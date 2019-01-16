@@ -1,44 +1,17 @@
-#include "shared-bindings/displayio/FourWire.h"
 
-extern displayio_fourwire_obj_t board_display_obj;
+#include "shared-module/displayio/__init__.h"
 
-void start_region_update(displayio_fourwire_obj_t* display, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-    // TODO delegate between different display types
-    displayio_fourwire_start_region_update(display, x0, y0, x1, y1);
-}
+#include "shared-bindings/displayio/Display.h"
 
-void finish_region_update(displayio_fourwire_obj_t* display) {
-    // TODO delegate between different display types
-    displayio_fourwire_finish_region_update(display);
-}
-
-void finish_refresh(displayio_fourwire_obj_t* display) {
-    // TODO delegate between different display types
-    displayio_fourwire_finish_refresh(display);
-}
-
-bool frame_queued(displayio_fourwire_obj_t* display) {
-    // TODO delegate between different display types
-    return displayio_fourwire_frame_queued(display);
-}
-
-bool refresh_queued(displayio_fourwire_obj_t* display) {
-    // TODO delegate between different display types
-    return displayio_fourwire_refresh_queued(display);
-}
-
-bool send_pixels(displayio_fourwire_obj_t* display, uint32_t* pixels, uint32_t length) {
-    // TODO delegate between different display types
-    return displayio_fourwire_send_pixels(display, pixels, length);
-}
+primary_display_t primary_display;
 
 void displayio_refresh_display(void) {
-    displayio_fourwire_obj_t* display = &board_display_obj;
+    displayio_display_obj_t* display = &primary_display.display;
 
-    if (!frame_queued(display)) {
+    if (!displayio_display_frame_queued(display)) {
         return;
     }
-    if (refresh_queued(display)) {
+    if (displayio_display_refresh_queued(display)) {
         PORT->Group[1].DIRSET.reg = 1 << 22;
 
         // We compute the pixels
@@ -50,7 +23,7 @@ void displayio_refresh_display(void) {
         //size_t row_size = (x1 - x0);
         uint16_t buffer_size = 256;
         uint32_t buffer[buffer_size / 2];
-        start_region_update(display, x0, y0, x1, y1);
+        displayio_display_start_region_update(display, x0, y0, x1, y1);
         for (uint16_t y = y0; y < y1; ++y) {
             for (uint16_t x = x0; x < x1; ++x) {
                 uint16_t* pixel = &(((uint16_t*)buffer)[index]);
@@ -72,8 +45,8 @@ void displayio_refresh_display(void) {
                 index += 1;
                 // The buffer is full, send it.
                 if (index >= buffer_size) {
-                    if (!send_pixels(display, buffer, buffer_size / 2)) {
-                        finish_region_update(display);
+                    if (!displayio_display_send_pixels(display, buffer, buffer_size / 2)) {
+                        displayio_display_finish_region_update(display);
                         return;
                     }
                     index = 0;
@@ -81,11 +54,15 @@ void displayio_refresh_display(void) {
             }
         }
         // Send the remaining data.
-        if (index && !send_pixels(display, buffer, index * 2)) {
-            finish_region_update(display);
+        if (index && !displayio_display_send_pixels(display, buffer, index * 2)) {
+            displayio_display_finish_region_update(display);
             return;
         }
-        finish_region_update(display);
+        displayio_display_finish_region_update(display);
     }
-    finish_refresh(display);
+    displayio_display_finish_refresh(display);
+}
+
+void reset_primary_display(void) {
+    common_hal_displayio_display_show(&primary_display.display, NULL);
 }

@@ -63,11 +63,12 @@ STATIC mp_obj_t board_i2c(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 #if BOARD_SPI
+STATIC busio_spi_obj_t spi_obj;
 STATIC mp_obj_t spi_singleton = NULL;
 
-STATIC mp_obj_t board_spi(void) {
+mp_obj_t board_spi(void) {
     if (spi_singleton == NULL) {
-        busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
+        busio_spi_obj_t *self = &spi_obj;
         self->base.type = &busio_spi_type;
         assert_pin_free(DEFAULT_SPI_BUS_SCK);
         assert_pin_free(DEFAULT_SPI_BUS_MOSI);
@@ -81,7 +82,7 @@ STATIC mp_obj_t board_spi(void) {
     return spi_singleton;
 }
 #else
-STATIC mp_obj_t board_spi(void) {
+mp_obj_t board_spi(void) {
     mp_raise_NotImplementedError(translate("No default SPI bus"));
     return NULL;
 }

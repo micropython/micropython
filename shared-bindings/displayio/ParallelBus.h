@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_PARALLELBUS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_PARALLELBUS_H
 
-#include <assert.h>
+#include "common-hal/displayio/ParallelBus.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "peripherals/samd/pins.h"
+#include "shared-module/displayio/Group.h"
 
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
-#ifdef MICROPY_HW_APA102_MOSI
-extern bool apa102_sck_in_use;
-extern bool apa102_mosi_in_use;
-#endif
+extern const mp_obj_type_t displayio_parallelbus_type;
 
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(uint8_t pin_number);
-void never_reset_pin_number(uint8_t pin_number);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(uint8_t pin_number);
+void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
+    const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command,
+    const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, const mcu_pin_obj_t* write);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
+bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t self);
+
+void common_hal_displayio_parallelbus_send(mp_obj_t self, bool command, uint8_t *data, uint32_t data_length);
+
+void common_hal_displayio_parallelbus_end_transaction(mp_obj_t self);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_PARALLELBUS_H

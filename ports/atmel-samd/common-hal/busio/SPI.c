@@ -66,12 +66,6 @@ void reset_sercoms(void) {
             continue;
         }
     #endif
-    #ifdef CIRCUITPY_DISPLAYIO
-        // TODO(tannewt): Make this dynamic.
-        if (sercom_instances[i] == board_display_obj.bus.spi_desc.dev.prvt) {
-            continue;
-        }
-    #endif
         // SWRST is same for all modes of SERCOMs.
         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
     }
