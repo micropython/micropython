@@ -36,6 +36,10 @@ typedef struct {
     digitalio_digitalinout_obj_t chip_select;
     digitalio_digitalinout_obj_t reset;
     digitalio_digitalinout_obj_t write;
+    digitalio_digitalinout_obj_t read;
+    uint8_t data0_pin;
+    PortGroup* write_group;
+    uint32_t write_mask;
 } displayio_parallelbus_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_PARALLELBUS_H

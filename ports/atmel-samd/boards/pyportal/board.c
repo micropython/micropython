@@ -64,12 +64,14 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
-    bus->base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(bus,
-        board_spi(),
-        &pin_PB09, // Command or data
+    displayio_parallelbus_obj_t* bus = &displays[0].parallel_bus;
+    bus->base.type = &displayio_parallelbus_type;
+    common_hal_displayio_parallelbus_construct(bus,
+        &pin_PA16, // Data0
+        &pin_PB05, // Command or data
         &pin_PB06, // Chip select
+        &pin_PB09, // Write
+        &pin_PB04, // Read
         &pin_PA00); // Reset
 
     displayio_display_obj_t* display = &displays[0].display;

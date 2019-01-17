@@ -35,8 +35,8 @@
 #include "tick.h"
 
 void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
-    const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command,
-    const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, const mcu_pin_obj_t* write) {
+    const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
+    const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
 
     uint8_t data_pin = data0->number;
     if (data_pin % 8 != 0 || data_pin % 32 >= 24) {
@@ -47,8 +47,8 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
             mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
         }
     }
-    PortGroup *const g = &PORT->Group[data0->number % 32];
-    g->DIRSET.reg = 0xff << data_pin;
+    PortGroup *const g = &PORT->Group[data0->number / 32];
+    g->DIRSET.reg = 0xff << (data_pin % 32);
     self->bus = ((uint8_t*) &g->OUT.reg) + (data0->number % 32 / 8);
 
     self->command.base.type = &digitalio_digitalinout_type;
@@ -67,13 +67,34 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     common_hal_digitalio_digitalinout_construct(&self->write, write);
     common_hal_digitalio_digitalinout_switch_to_output(&self->write, true, DRIVE_MODE_PUSH_PULL);
 
+    self->read.base.type = &digitalio_digitalinout_type;
+    common_hal_digitalio_digitalinout_construct(&self->read, read);
+    common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
+
+    self->data0_pin = data_pin;
+    self->write_group = &PORT->Group[write->number / 32];
+    self->write_mask = 1 << (write->number % 32);
+
     never_reset_pin_number(command->number);
     never_reset_pin_number(chip_select->number);
-    never_reset_pin_number(reset->number);
     never_reset_pin_number(write->number);
+    never_reset_pin_number(read->number);
+    never_reset_pin_number(reset->number);
     for (uint8_t i = 0; i < 8; i++) {
         never_reset_pin_number(data_pin + i);
     }
+}
+
+void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
+    for (uint8_t i = 0; i < 8; i++) {
+        reset_pin_number(self->data0_pin + i);
+    }
+
+    reset_pin_number(self->command.pin->number);
+    reset_pin_number(self->chip_select.pin->number);
+    reset_pin_number(self->write.pin->number);
+    reset_pin_number(self->read.pin->number);
+    reset_pin_number(self->reset.pin->number);
 }
 
 bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
@@ -85,10 +106,13 @@ bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
 void common_hal_displayio_parallelbus_send(mp_obj_t obj, bool command, uint8_t *data, uint32_t data_length) {
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->command, !command);
+    uint32_t* clear_write = (uint32_t*) &self->write_group->OUTCLR.reg;
+    uint32_t* set_write = (uint32_t*) &self->write_group->OUTSET.reg;
+    uint32_t mask = self->write_mask;
     for (uint32_t i = 0; i < data_length; i++) {
-        common_hal_digitalio_digitalinout_set_value(&self->write, false);
+        *clear_write = mask;
         *self->bus = data[i];
-        common_hal_digitalio_digitalinout_set_value(&self->write, true);
+        *set_write = mask;
     }
 }
 

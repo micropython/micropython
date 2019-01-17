@@ -37,6 +37,7 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/ParallelBus.h"
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/Sprite.h"
 
@@ -67,6 +68,7 @@
 //|     Group
 //|     OnDiskBitmap
 //|     Palette
+//|     ParallelBus
 //|     Shape
 //|     Sprite
 //|
@@ -96,6 +98,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Sprite), MP_ROM_PTR(&displayio_sprite_type) },
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&displayio_fourwire_type) },
+    { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&displayio_parallelbus_type) },
 
     { MP_ROM_QSTR(MP_QSTR_release_displays), MP_ROM_PTR(&displayio_release_displays_obj) },
 };

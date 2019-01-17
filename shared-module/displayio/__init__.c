@@ -7,6 +7,7 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/Sprite.h"
+#include "supervisor/usb.h"
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
@@ -21,8 +22,6 @@ void displayio_refresh_displays(void) {
             return;
         }
         if (displayio_display_refresh_queued(display)) {
-            PORT->Group[1].DIRSET.reg = 1 << 22;
-
             // We compute the pixels
             uint16_t x0 = 0;
             uint16_t y0 = 0;
@@ -38,8 +37,6 @@ void displayio_refresh_displays(void) {
                     uint16_t* pixel = &(((uint16_t*)buffer)[index]);
                     *pixel = 0;
 
-                    PORT->Group[1].OUTTGL.reg = 1 << 22;
-
                     //if (index == 0) {
                         if (display->current_group != NULL) {
                             displayio_group_get_pixel(display->current_group, x, y, pixel);
@@ -48,9 +45,6 @@ void displayio_refresh_displays(void) {
                     //     *pixel = (((uint16_t*)buffer)[0]);
                     // }
 
-
-                    PORT->Group[1].OUTTGL.reg = 1 << 22;
-
                     index += 1;
                     // The buffer is full, send it.
                     if (index >= buffer_size) {
@@ -58,6 +52,9 @@ void displayio_refresh_displays(void) {
                             displayio_display_finish_region_update(display);
                             return;
                         }
+                        // TODO(tannewt): Make refresh displays faster so we don't starve other
+                        // background tasks.
+                        usb_background();
                         index = 0;
                     }
                 }
@@ -182,12 +179,12 @@ void common_hal_displayio_release_displays(void) {
         } else if (bus_type == &displayio_fourwire_type) {
             common_hal_displayio_fourwire_deinit(&displays[i].fourwire_bus);
         } else if (bus_type == &displayio_parallelbus_type) {
-            //common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
+            common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
         }
-        displays[i].fourwire_bus.base.type = NULL;
+        displays[i].fourwire_bus.base.type = &mp_type_NoneType;
     }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        displays[i].display.base.type = NULL;
+        displays[i].display.base.type = &mp_type_NoneType;
     }
     // TODO(tannewt): Clear the display datastructures and release everything used.
 }

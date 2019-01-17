@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
+#include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: displayio
@@ -46,13 +47,54 @@
 //|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
 //|
-//| .. class:: ParallelBus(*, data0, command, chip_select, reset, write, bus_width=8)
+//| .. class:: ParallelBus(*, data0, command, chip_select, write, read, reset)
 //|
-//|   Create a ParallelBus object associated with the given pins.
+//|   Create a ParallelBus object associated with the given pins. The bus is inferred from data0
+//|   by implying the next 7 additional pins on a given GPIO port.
 //|
 STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_raise_NotImplementedError(translate("displayio is a work in progress"));
-    return mp_const_none;
+    enum { ARG_data0, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_write, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t data0 = args[ARG_data0].u_obj;
+    mp_obj_t command = args[ARG_command].u_obj;
+    mp_obj_t chip_select = args[ARG_chip_select].u_obj;
+    mp_obj_t write = args[ARG_write].u_obj;
+    mp_obj_t read = args[ARG_read].u_obj;
+    mp_obj_t reset = args[ARG_reset].u_obj;
+    if (data0 == mp_const_none || command == mp_const_none || chip_select == mp_const_none || write == mp_const_none || read == mp_const_none) {
+        mp_raise_ValueError(translate("Data0, command, chip_select, write and read required"));
+    }
+    assert_pin_free(data0);
+    assert_pin_free(command);
+    assert_pin_free(chip_select);
+    assert_pin_free(write);
+    assert_pin_free(read);
+    assert_pin_free(reset);
+
+    displayio_parallelbus_obj_t* self = NULL;
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].parallel_bus.base.type== NULL) {
+            self = &displays[i].parallel_bus;
+            self->base.type = &displayio_parallelbus_type;
+            break;
+        }
+    }
+    if (self == NULL) {
+        mp_raise_RuntimeError(translate("Display bus limit reached"));
+    }
+
+    common_hal_displayio_parallelbus_construct(self, data0, command, chip_select, write, read, reset);
+    return self;
 }
 
 

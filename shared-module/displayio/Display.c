@@ -113,10 +113,10 @@ void displayio_display_start_region_update(displayio_display_obj_t* self, uint16
     uint16_t data[2];
     self->send(self->bus, true, &self->set_column_command, 1);
     data[0] = __builtin_bswap16(x0 + self->colstart);
-    data[1] = __builtin_bswap16(x1 + self->colstart);
+    data[1] = __builtin_bswap16(x1 - 1 + self->colstart);
     self->send(self->bus, false, (uint8_t*) data, 4);
     self->send(self->bus, true, &self->set_row_command, 1);
-    data[0] = __builtin_bswap16(y0 + self->rowstart);
+    data[0] = __builtin_bswap16(y0 + 1 + self->rowstart);
     data[1] = __builtin_bswap16(y1 + self->rowstart);
     self->send(self->bus, false, (uint8_t*) data, 4);
     self->send(self->bus, true, &self->write_ram_command, 1);
