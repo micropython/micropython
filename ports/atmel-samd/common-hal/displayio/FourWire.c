@@ -53,6 +53,16 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     never_reset_pin_number(reset->number);
 }
 
+void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
+    if (self->bus == &self->inline_bus) {
+        common_hal_busio_spi_deinit(self->bus);
+    }
+
+    reset_pin_number(self->command.pin->number);
+    reset_pin_number(self->chip_select.pin->number);
+    reset_pin_number(self->reset.pin->number);
+}
+
 bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
     if (!common_hal_busio_spi_try_lock(self->bus)) {

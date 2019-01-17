@@ -40,18 +40,19 @@
 
 //| .. currentmodule:: displayio
 //|
-//| :class:`FourWire` -- Manage updating a display over SPI four wire protocol
+//| :class:`Display` -- Manage updating a display over a display bus
 //| ==========================================================================
 //|
-//| Manage updating a display over SPI four wire protocol in the background while Python code runs.
-//| It doesn't handle display initialization.
+//| This initializes a display and connects it into CircuitPython. Unlike other
+//| objects in CircuitPython, Display objects live until `displayio.release_displays()`
+//| is called. This is done so that CircuitPython can use the display itself.
 //|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
 //|
 //| .. class:: Display(display_bus, *, width, height, colstart=0, rowstart=0, color_depth=16,
 //|                    set_column_command=0x2a set_row_command=0x2b, write_ram_command=0x2c)
 //|
-//|   Create a FourWire object associated with the given pins.
+//|   Create a Display object.
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_color_depth, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command };
@@ -80,11 +81,15 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    displayio_display_obj_t *self;
-    if (display_bus == &primary_display.fourwire_bus) {
-        self = &primary_display.display;
-    } else {
-        self = m_new_obj(displayio_display_obj_t);
+    displayio_display_obj_t *self = NULL;
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].display.base.type == NULL) {
+            self = &displays[i].display;
+            break;
+        }
+    }
+    if (self == NULL) {
+        mp_raise_RuntimeError(translate("Display limit reached"));
     }
     self->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(self,

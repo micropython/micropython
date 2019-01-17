@@ -39,6 +39,8 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     busio_spi_obj_t* spi, const mcu_pin_obj_t* command,
     const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset);
 
+void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self);
+
 bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t self);
 
 void common_hal_displayio_fourwire_send(mp_obj_t self, bool command, uint8_t *data, uint32_t data_length);

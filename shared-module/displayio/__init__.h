@@ -36,13 +36,12 @@ typedef struct {
         displayio_fourwire_obj_t fourwire_bus;
         displayio_parallelbus_obj_t parallel_bus;
     };
-    mp_const_obj_t bus_type;
     displayio_display_obj_t display;
 } primary_display_t;
 
-extern primary_display_t primary_display;
+extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
-void displayio_refresh_display(void);
-void reset_primary_display(void);
+void displayio_refresh_displays(void);
+void reset_displays(void);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H

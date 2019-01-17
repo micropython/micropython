@@ -69,18 +69,21 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     if (command == mp_const_none || chip_select == mp_const_none) {
         mp_raise_ValueError(translate("Command and chip_select required"));
     }
+    assert_pin_free(command);
+    assert_pin_free(chip_select);
+    assert_pin_free(reset);
 
-    displayio_fourwire_obj_t* self;
+    displayio_fourwire_obj_t* self = NULL;
     mp_obj_t spi = args[ARG_spi_bus].u_obj;
-    if (board_spi() == spi && primary_display.bus_type == NULL) {
-        self = &primary_display.fourwire_bus;
-        primary_display.bus_type = &displayio_fourwire_type;
-    } else {
-        // TODO(tannewt): Always check pin free. For now we ignore the primary display.
-        assert_pin_free(command);
-        assert_pin_free(chip_select);
-        assert_pin_free(reset);
-        self = m_new_obj(displayio_fourwire_obj_t);
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].fourwire_bus.base.type== NULL) {
+            self = &displays[i].fourwire_bus;
+            self->base.type = &displayio_fourwire_type;
+            break;
+        }
+    }
+    if (self == NULL) {
+        mp_raise_RuntimeError(translate("Display bus limit reached"));
     }
 
     common_hal_displayio_fourwire_construct(self,

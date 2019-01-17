@@ -44,7 +44,7 @@ void run_background_tasks(void) {
     audio_dma_background();
     #endif
     #ifdef CIRCUITPY_DISPLAYIO
-    displayio_refresh_display();
+    displayio_refresh_displays();
     #endif
 
     #if MICROPY_PY_NETWORK

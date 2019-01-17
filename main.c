@@ -201,7 +201,7 @@ bool run_code_py(safe_mode_t safe_mode) {
             }
         }
         // Turn off the display before the heap disappears.
-        reset_primary_display();
+        reset_displays();
         stop_mp();
         free_memory(heap);
 

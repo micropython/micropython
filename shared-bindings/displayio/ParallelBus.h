@@ -38,6 +38,8 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command,
     const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, const mcu_pin_obj_t* write);
 
+void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self);
+
 bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t self);
 
 void common_hal_displayio_parallelbus_send(mp_obj_t self, bool command, uint8_t *data, uint32_t data_length);
