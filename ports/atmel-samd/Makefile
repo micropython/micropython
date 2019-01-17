@@ -305,7 +305,6 @@ SRC_COMMON_HAL = \
 	busio/UART.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
-	displayio/FourWire.c \
 	displayio/ParallelBus.c \
 	i2cslave/__init__.c \
 	i2cslave/I2CSlave.c \
@@ -380,6 +379,7 @@ SRC_SHARED_MODULE = \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
+	displayio/FourWire.c \
 	displayio/Group.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \

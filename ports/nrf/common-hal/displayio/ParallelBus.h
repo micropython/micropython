@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+#include "common-hal/digitalio/DigitalInOut.h"
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t* bus;
+    digitalio_digitalinout_obj_t command;
+    digitalio_digitalinout_obj_t chip_select;
+    digitalio_digitalinout_obj_t reset;
+    digitalio_digitalinout_obj_t write;
+    digitalio_digitalinout_obj_t read;
+    uint8_t data0_pin;
+    NRF_GPIO_Type* write_group;
+    uint32_t write_mask;
+} displayio_parallelbus_obj_t;
 
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
-
-#endif  // MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_DISPLAYIO_PARALLELBUS_H

@@ -235,5 +235,7 @@ void run_background_tasks(void);
 
 //#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 #define CIRCUITPY_DEFAULT_STACK_SIZE 4096
+#define CIRCUITPY_DISPLAYIO (1)
+#define CIRCUITPY_DISPLAY_LIMIT (3)
 
 #endif

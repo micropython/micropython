@@ -31,7 +31,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 #include "mpconfigboard.h"
-#include "samd/pins.h"
 #include "py/runtime.h"
 
 #define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))

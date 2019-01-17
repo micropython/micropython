@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_FOURWIRE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_FOURWIRE_H
 
-#include "common-hal/displayio/FourWire.h"
+#include "shared-module/displayio/FourWire.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "shared-module/displayio/Group.h"
