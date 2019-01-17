@@ -192,6 +192,7 @@ typedef long mp_off_t;
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
 #define MICROPY_PY_SYS_EXC_INFO                     (1)
 //      MICROPY_PY_UERRNO_LIST - Use the default
+#define CIRCUITPY_DISPLAY_LIMIT (3)
 #endif
 
 #ifdef LONGINT_IMPL_NONE

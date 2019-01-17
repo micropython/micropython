@@ -105,8 +105,10 @@ displayio_bitmap_t blinka_bitmap = {
 };
 
 uint32_t blinka_transparency[1] = {0x80000000};
-uint32_t blinka_colors[8] = {0x1e910000, 0x72dc722b, 0xffffb05a, 0x00000000,
-                             0x80000000, 0x00000000, 0x00000000, 0x00000000};
+
+// TODO(tannewt): Fix these colors
+uint32_t blinka_colors[8] = {0x91780000, 0x879FFC98, 0xffff0000, 0x0000f501,
+                             0x00000000, 0x00000000, 0x00000000, 0x00000000};
 
 displayio_palette_t blinka_palette = {
     .base = {.type = &displayio_palette_type },
@@ -135,6 +137,7 @@ displayio_group_t splash = {
     .base = {.type = &displayio_group_type },
     .x = 0,
     .y = 0,
+    .scale = 2,
     .size = 1,
     .max_size = 1,
     .children = splash_children,
