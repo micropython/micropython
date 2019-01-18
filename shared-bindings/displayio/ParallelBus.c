@@ -83,7 +83,8 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
 
     displayio_parallelbus_obj_t* self = NULL;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].parallel_bus.base.type== NULL) {
+        if (displays[i].parallel_bus.base.type== NULL ||
+            displays[i].parallel_bus.base.type == &mp_type_NoneType) {
             self = &displays[i].parallel_bus;
             self->base.type = &displayio_parallelbus_type;
             break;

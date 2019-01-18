@@ -30,9 +30,12 @@
 #include "supervisor/usb.h"
 
 #include "py/runtime.h"
-#include "shared-module/displayio/__init__.h"
 #include "shared-module/network/__init__.h"
 #include "supervisor/shared/stack.h"
+
+#ifdef CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 volatile uint64_t last_finished_tick = 0;
 

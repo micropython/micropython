@@ -142,6 +142,11 @@ void claim_pin(const mcu_pin_obj_t* pin) {
     #endif
 }
 
+
+bool pin_number_is_free(uint8_t pin_number) {
+    return !(claimed_pins[nrf_pin_port(pin_number)] & (1 << nrf_relative_pin_number(pin_number)));
+}
+
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
@@ -163,5 +168,5 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     }
     #endif
 
-    return !(claimed_pins[nrf_pin_port(pin->number)] & (1 << nrf_relative_pin_number(pin->number)));
+    return pin_number_is_free(pin->number);
 }

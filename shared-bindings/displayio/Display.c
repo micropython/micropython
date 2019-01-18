@@ -83,7 +83,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
 
     displayio_display_obj_t *self = NULL;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].display.base.type == NULL) {
+        if (displays[i].display.base.type == NULL ||
+            displays[i].display.base.type == &mp_type_NoneType) {
             self = &displays[i].display;
             break;
         }

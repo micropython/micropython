@@ -151,6 +151,9 @@ void reset_displays(void) {
         if (((uint32_t) fourwire->bus) < ((uint32_t) &displays) ||
             ((uint32_t) fourwire->bus) > ((uint32_t) &displays + CIRCUITPY_DISPLAY_LIMIT)) {
             busio_spi_obj_t* original_spi = fourwire->bus;
+            if (original_spi == board_spi()) {
+                continue;
+            }
             memcpy(&fourwire->inline_bus, original_spi, sizeof(busio_spi_obj_t));
             fourwire->bus = &fourwire->inline_bus;
             // Check for other displays that use the same spi bus and swap them too.

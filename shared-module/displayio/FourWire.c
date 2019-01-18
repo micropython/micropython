@@ -45,12 +45,14 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
 
-    common_hal_digitalio_digitalinout_construct(&self->reset, reset);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
+    if (reset != NULL) {
+        common_hal_digitalio_digitalinout_construct(&self->reset, reset);
+        common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
+        never_reset_pin_number(reset->number);
+    }
 
     never_reset_pin_number(command->number);
     never_reset_pin_number(chip_select->number);
-    never_reset_pin_number(reset->number);
 }
 
 void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {

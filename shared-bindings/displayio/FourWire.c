@@ -65,18 +65,23 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
 
     mp_obj_t command = args[ARG_command].u_obj;
     mp_obj_t chip_select = args[ARG_chip_select].u_obj;
-    mp_obj_t reset = args[ARG_reset].u_obj;
     if (command == mp_const_none || chip_select == mp_const_none) {
         mp_raise_ValueError(translate("Command and chip_select required"));
     }
     assert_pin_free(command);
     assert_pin_free(chip_select);
-    assert_pin_free(reset);
+    mp_obj_t reset = args[ARG_reset].u_obj;
+    if (reset != mp_const_none) {
+        assert_pin_free(reset);
+    } else {
+        reset = NULL;
+    }
 
     displayio_fourwire_obj_t* self = NULL;
     mp_obj_t spi = args[ARG_spi_bus].u_obj;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].fourwire_bus.base.type== NULL) {
+        if (displays[i].fourwire_bus.base.type == NULL ||
+            displays[i].fourwire_bus.base.type == &mp_type_NoneType) {
             self = &displays[i].fourwire_bus;
             self->base.type = &displayio_fourwire_type;
             break;
