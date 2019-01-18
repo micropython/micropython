@@ -52,6 +52,11 @@
 //|
 //|   Create a FourWire object associated with the given pins.
 //|
+//|   :param busio.SPI spi_bus: The SPI bus that make up the clock and data lines
+//|   :param microcontroller.Pin command: Data or command pin
+//|   :param microcontroller.Pin chip_select: Chip select pin
+//|   :param microcontroller.Pin reset: Reset pin
+//|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset };
     static const mp_arg_t allowed_args[] = {

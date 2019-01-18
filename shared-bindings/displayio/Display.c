@@ -49,10 +49,41 @@
 //|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
 //|
-//| .. class:: Display(display_bus, *, width, height, colstart=0, rowstart=0, color_depth=16,
-//|                    set_column_command=0x2a set_row_command=0x2b, write_ram_command=0x2c)
+//| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, color_depth=16, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c)
 //|
-//|   Create a Display object.
+//|   Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
+//|
+//|   The ``init_sequence`` is bitbacked to minimize the ram impact. Every command begins with a
+//|   command byte followed by a byte to determine the parameter count and if a delay is need after.
+//|   When the top bit of the second byte is 1, the next byte will be the delay time in milliseconds.
+//|   The remaining 7 bits are the parameter count excluding any delay byte. The third through final
+//|   bytes are the remaining command parameters. The next byte will begin a new command definition.
+//|   Here is a portion of ILI9341 init code:
+//|
+//|   .. code-block:: python
+//|
+//|     init_sequence = (b"\xe1\x0f\x00\x0E\x14\x03\x11\x07\x31\xC1\x48\x08\x0F\x0C\x31\x36\x0F" # Set Gamma
+//|                      b"\x11\x80\x78"# Exit Sleep then delay 0x78 (120ms)
+//|                      b"\x29\x80\x78"# Display on then delay 0x78 (120ms)
+//|                     )
+//|      display = displayio.Display(display_bus, init_sequence, width=320, height=240)
+//|
+//|   The first command is 0xe1 with 15 (0xf) parameters following. The second and third are 0x11 and
+//|   0x29 respectively with delays (0x80) of 120ms (0x78) and no parameters. Multiple byte literals
+//|   (b"") are merged together on load. The parens are needed to allow byte literals on subsequent
+//|   lines.
+//|
+//|   :param displayio.FourWire or displayio.ParallelBus display_bus: The bus that the display is connected to
+//|   :param buffer init_sequence: Byte-packed initialization sequence.
+//|   :param int width: Width in pixels
+//|   :param int height: Height in pixels
+//|   :param int colstart: The index if the first visible column
+//|   :param int rowstart: The index if the first visible row
+//|   :param int color_depth: The number of bits of color per pixel transmitted. (Some displays
+//|       support 18 bit but 16 is easier to transmit. The last bit is extrapolated.)
+//|   :param int set_column_command: Command used to set the start and end columns to update
+//|   :param int set_row_command: Command used so set the start and end rows to update
+//|   :param int write_ram_command: Command used to write pixels values into the update region
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_color_depth, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command };

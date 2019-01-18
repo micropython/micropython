@@ -40,7 +40,7 @@
 //| .. currentmodule:: displayio
 //|
 //| :class:`ParallelBus` -- Manage updating a display over SPI four wire protocol
-//| ==========================================================================
+//| ==============================================================================
 //|
 //| Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //| It doesn't handle display initialization.
@@ -51,6 +51,13 @@
 //|
 //|   Create a ParallelBus object associated with the given pins. The bus is inferred from data0
 //|   by implying the next 7 additional pins on a given GPIO port.
+//|
+//|   :param microcontroller.Pin: The first data pin. The rest are implied
+//|   :param microcontroller.Pin command: Data or command pin
+//|   :param microcontroller.Pin chip_select: Chip select pin
+//|   :param microcontroller.Pin write: Write pin
+//|   :param microcontroller.Pin read: Read pin
+//|   :param microcontroller.Pin reset: Reset pin
 //|
 STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_data0, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset };

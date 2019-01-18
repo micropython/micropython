@@ -46,13 +46,10 @@
 //|
 //| .. module:: displayio
 //|   :synopsis: Native helpers for driving displays
-//|   :platform: SAMD21, SAMD51
+//|   :platform: SAMD21, SAMD51, nRF52
 //|
 //| The `displayio` module contains classes to manage display output
-//| including synchronizing with refresh rates and partial updating. It does
-//| not include display initialization commands. It should live in a Python
-//| driver for use when a display is connected to a board. It should also be
-//| built into the board init when the board has the display on it.
+//| including synchronizing with refresh rates and partial updating.
 //|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
 //|
@@ -78,7 +75,9 @@
 
 //| .. method:: release_displays()
 //|
-//|   Releases any actively used displays so theis pins can be used again.
+//|   Releases any actively used displays so their busses and pins can be used again. This will also
+//|   release the builtin display on boards that have one. You will need to reinitialize it yourself
+//|   afterwards.
 //|
 STATIC mp_obj_t displayio_release_displays(void) {
     common_hal_displayio_release_displays();
