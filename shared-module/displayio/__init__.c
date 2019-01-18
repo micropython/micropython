@@ -37,13 +37,9 @@ void displayio_refresh_displays(void) {
                     uint16_t* pixel = &(((uint16_t*)buffer)[index]);
                     *pixel = 0;
 
-                    //if (index == 0) {
-                        if (display->current_group != NULL) {
-                            displayio_group_get_pixel(display->current_group, x, y, pixel);
-                        }
-                    // } else {
-                    //     *pixel = (((uint16_t*)buffer)[0]);
-                    // }
+                    if (display->current_group != NULL) {
+                        displayio_group_get_pixel(display->current_group, x, y, pixel);
+                    }
 
                     index += 1;
                     // The buffer is full, send it.
@@ -189,5 +185,4 @@ void common_hal_displayio_release_displays(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         displays[i].display.base.type = &mp_type_NoneType;
     }
-    // TODO(tannewt): Clear the display datastructures and release everything used.
 }

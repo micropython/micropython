@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,6 @@
 
 #include "boards/board.h"
 #include "mpconfigboard.h"
-#include "hal/include/hal_gpio.h"
-
-#include "shared-bindings/displayio/Display.h"
-#include "shared-bindings/displayio/FourWire.h"
-#include "shared-module/displayio/mipi_constants.h"
-
-#include "tick.h"
 
 void board_init(void) {
 }
