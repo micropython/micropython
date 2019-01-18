@@ -46,11 +46,11 @@ STATIC const mp_obj_type_t mp_type_iobase;
 
 STATIC mp_obj_base_t iobase_singleton = {&mp_type_iobase};
 
-STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type;
     (void)n_args;
-    (void)n_kw;
     (void)args;
+    (void)kw_args;
     return MP_OBJ_FROM_PTR(&iobase_singleton);
 }
 
