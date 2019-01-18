@@ -129,7 +129,7 @@ static bool wifi_sta_connect_requested = false;
 static bool wifi_sta_connected = false;
 
 // This function is called by the system-event task and so runs in a different
-// thread to the main MicroPython task.  It must not raise any Python exceptions.
+// thread to the main MicroPython task. It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
    switch(event->event_id) {
     case SYSTEM_EVENT_STA_START:
@@ -147,18 +147,24 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         // auto-reassociate.
         system_event_sta_disconnected_t *disconn = &event->event_info.disconnected;
         char *message = "";
+
         switch (disconn->reason) {
             case WIFI_REASON_BEACON_TIMEOUT:
                 // AP has dropped out; try to reconnect.
                 message = "\nbeacon timeout";
+                wifi_sta_connect_requested = false;
+                wifi_sta_connected = false;
                 break;
             case WIFI_REASON_NO_AP_FOUND:
                 // AP may not exist, or it may have momentarily dropped out; try to reconnect.
                 message = "\nno AP found";
+                wifi_sta_connect_requested = false;
+                wifi_sta_connected = false;
                 break;
             case WIFI_REASON_AUTH_FAIL:
                 message = "\nauthentication failed";
                 wifi_sta_connect_requested = false;
+                wifi_sta_connected = false;
                 break;
             default:
                 // Let other errors through and try to reconnect.
