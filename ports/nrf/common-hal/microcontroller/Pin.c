@@ -53,7 +53,7 @@ void reset_all_pins(void) {
     }
 
     for (uint32_t pin = 0; pin < NUMBER_OF_PINS; ++pin) {
-        if (!(never_reset_pins[nrf_pin_port(pin)] & (1 << nrf_relative_pin_number(pin)))) {
+        if ((never_reset_pins[nrf_pin_port(pin)] & (1 << nrf_relative_pin_number(pin))) != 0) {
             continue;
         }
         nrf_gpio_cfg_default(pin);

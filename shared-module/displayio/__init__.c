@@ -13,7 +13,7 @@ primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
 void displayio_refresh_displays(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].display.base.type == NULL) {
+        if (displays[i].display.base.type == NULL || displays[i].display.base.type == &mp_type_NoneType) {
             continue;
         }
         displayio_display_obj_t* display = &displays[i].display;
