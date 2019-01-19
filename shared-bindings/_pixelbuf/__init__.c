@@ -43,7 +43,7 @@
 //|   :synopsis: A fast RGB(W) pixel buffer library for like NeoPixel and DotStar.
 //|
 //| The `_pixelbuf` module provides :py:class:`PixelBuf` and :py:class:`ByteOrder` classes to accelerate
-//| Dotstar and Neopixel manipulation.
+//| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
 //|
 
 //| Libraries
