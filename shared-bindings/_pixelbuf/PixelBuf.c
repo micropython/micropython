@@ -76,10 +76,8 @@ extern const int32_t colorwheel(float pos);
 //|   :param ~list write_args: (optional) Tuple or list of args to pass to ``write_function``.  The 
 //|          PixelBuf instance is appended after these args.
 //|
-STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 2, MP_OBJ_FUN_ARGS_MAX, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 2, MP_OBJ_FUN_ARGS_MAX, true);
     enum { ARG_size, ARG_buf, ARG_byteorder, ARG_brightness, ARG_rawbuf, ARG_offset, ARG_dotstar,
            ARG_auto_write, ARG_write_function, ARG_write_args };
     static const mp_arg_t allowed_args[] = {
@@ -95,7 +93,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_write_args, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (mp_obj_is_subclass_fast(args[ARG_byteorder].u_obj, &pixelbuf_byteorder_type)) 
         mp_raise_TypeError_varg(translate("byteorder is not an instance of ByteOrder (got a %s)"), mp_obj_get_type_str(args[ARG_byteorder].u_obj));
