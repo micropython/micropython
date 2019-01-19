@@ -46,9 +46,9 @@ The first thing you need to do is download the most recent MicroPython firmware
 `MicroPython downloads page <http://micropython.org/download#esp32>`_.
 From here, you have 3 main choices
 
-* Stable firmware builds for 1024kb modules and above.
-* Daily firmware builds for 1024kb modules and above.
-* Daily firmware builds for 512kb modules.
+* Stable firmware builds
+* Daily firmware builds
+* Daily firmware builds with SPIRAM support
 
 If you are just starting with MicroPython, the best bet is to go for the Stable
 firmware builds. If you are an advanced, experienced MicroPython ESP32 user
@@ -56,10 +56,6 @@ who would like to follow development closely and help with testing new
 features, there are daily builds (note: you actually may need some
 development experience, e.g. being ready to follow git history to know
 what new changes and features were introduced).
-
-Support for 512kb modules is provided on a feature preview basis. For end
-users, it's recommended to use modules with flash of 1024kb or more. As
-such, only daily builds for 512kb modules are provided.
 
 Deploying the firmware
 ----------------------
