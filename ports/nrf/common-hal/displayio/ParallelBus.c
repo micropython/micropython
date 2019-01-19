@@ -39,7 +39,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
 
     uint8_t data_pin = data0->number;
-    if (data_pin % 8 != 0 || data_pin % 32 >= 24) {
+    if (data_pin % 8 != 0) {
         mp_raise_ValueError(translate("Data 0 pin must be byte aligned"));
     }
     for (uint8_t i = 0; i < 8; i++) {
@@ -57,6 +57,9 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
         num_pins_in_port = P1_PIN_NUM;
     }
     g->DIRSET = 0xff << (data_pin % num_pins_in_port);
+    for (uint8_t i = 0; i < 8; i++) {
+        g->PIN_CNF[data_pin + i] |= NRF_GPIO_PIN_S0S1 << GPIO_PIN_CNF_DRIVE_Pos;
+    }
     self->bus = ((uint8_t*) &g->OUT) + (data0->number % num_pins_in_port / 8);
 
     self->command.base.type = &digitalio_digitalinout_type;

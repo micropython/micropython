@@ -66,6 +66,8 @@ mp_obj_t board_i2c(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 #if BOARD_SPI
+// Statically allocate the SPI object so it can live past the end of the heap and into the next VM.
+// That way it can be used by built-in FourWire displays and be accessible through board.SPI().
 STATIC busio_spi_obj_t spi_obj;
 STATIC mp_obj_t spi_singleton = NULL;
 

@@ -62,11 +62,11 @@
 STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_data0, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_write, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_write, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -78,9 +78,6 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     mp_obj_t write = args[ARG_write].u_obj;
     mp_obj_t read = args[ARG_read].u_obj;
     mp_obj_t reset = args[ARG_reset].u_obj;
-    if (data0 == mp_const_none || command == mp_const_none || chip_select == mp_const_none || write == mp_const_none || read == mp_const_none) {
-        mp_raise_ValueError(translate("Data0, command, chip_select, write and read required"));
-    }
     assert_pin_free(data0);
     assert_pin_free(command);
     assert_pin_free(chip_select);
@@ -98,7 +95,7 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
         }
     }
     if (self == NULL) {
-        mp_raise_RuntimeError(translate("Display bus limit reached"));
+        mp_raise_RuntimeError(translate("Too many display busses"));
     }
 
     common_hal_displayio_parallelbus_construct(self, data0, command, chip_select, write, read, reset);

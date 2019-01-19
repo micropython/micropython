@@ -61,8 +61,8 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -70,9 +70,6 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
 
     mp_obj_t command = args[ARG_command].u_obj;
     mp_obj_t chip_select = args[ARG_chip_select].u_obj;
-    if (command == mp_const_none || chip_select == mp_const_none) {
-        mp_raise_ValueError(translate("Command and chip_select required"));
-    }
     assert_pin_free(command);
     assert_pin_free(chip_select);
     mp_obj_t reset = args[ARG_reset].u_obj;
@@ -93,7 +90,7 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
         }
     }
     if (self == NULL) {
-        mp_raise_RuntimeError(translate("Display bus limit reached"));
+        mp_raise_RuntimeError(translate("Too many display busses"));
     }
 
     common_hal_displayio_fourwire_construct(self,

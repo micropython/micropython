@@ -39,7 +39,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
 
     uint8_t data_pin = data0->number;
-    if (data_pin % 8 != 0 || data_pin % 32 >= 24) {
+    if (data_pin % 8 != 0) {
         mp_raise_ValueError(translate("Data 0 pin must be byte aligned"));
     }
     for (uint8_t i = 0; i < 8; i++) {
@@ -49,6 +49,13 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     }
     PortGroup *const g = &PORT->Group[data0->number / 32];
     g->DIRSET.reg = 0xff << (data_pin % 32);
+    uint32_t wrconfig = PORT_WRCONFIG_WRPINCFG | PORT_WRCONFIG_DRVSTR;
+    if (data_pin % 32 > 15) {
+        wrconfig |= PORT_WRCONFIG_HWSEL | (0xff << ((data_pin % 32) - 16));
+    } else {
+        wrconfig |= 0xff << (data_pin % 32);
+    }
+    g->WRCONFIG.reg = wrconfig;
     self->bus = ((uint8_t*) &g->OUT.reg) + (data0->number % 32 / 8);
 
     self->command.base.type = &digitalio_digitalinout_type;
