@@ -53,8 +53,4 @@ typedef struct {
 void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self);
 void call_write_function(pixelbuf_pixelbuf_obj_t *self);
 
-
-#include "common-hal/digitalio/DigitalInOut.h"
-extern void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* gpio, uint8_t *pixels, uint32_t numBytes);
-
 #endif  // CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
