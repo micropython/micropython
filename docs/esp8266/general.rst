@@ -49,15 +49,15 @@ For your convenience, some of technical specifications are provided below:
 * Total RAM available: 96KB (part of it reserved for system)
 * BootROM: 64KB
 * Internal FlashROM: None
-* External FlashROM: code and data, via SPI Flash. Normal sizes 512KB-4MB.
+* External FlashROM: code and data, via SPI Flash. Normal sizes 512KB-4MB
 * GPIO: 16 + 1 (GPIOs are multiplexed with other functions, including
   external FlashROM, UART, deep sleep wake-up, etc.)
-* UART: One RX/TX UART (no hardware handshaking), one TX-only UART.
-* SPI: 2 SPI interfaces (one used for FlashROM).
-* I2C: No native external I2C (bitbang implementation available on any pins).
-* I2S: 1.
-* Programming: using BootROM bootloader from UART. Due to external FlashROM
-  and always-available BootROM bootloader, ESP8266 is not brickable.
+* UART: One RX/TX UART (no hardware handshaking), one TX-only UART
+* SPI: 2 SPI interfaces (one used for FlashROM)
+* I2C: No native external I2C (bitbang implementation available on any pins)
+* I2S: 1
+* Programming: using BootROM bootloader from UART - due to external FlashROM
+  and always-available BootROM bootloader, the ESP8266 is not brickable
 
 
 Scarcity of runtime resources

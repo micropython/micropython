@@ -44,22 +44,22 @@ operating modes, internal functioning, etc.
 
 For your convenience, some of technical specifications are provided below:
 
-* Architecture: Xtensa Dual-Core 32-bit LX6 
+* Architecture: Xtensa Dual-Core 32-bit LX6
 * CPU frequency: upto 240MHz
 * Total RAM available: 528KB (part of it reserved for system)
 * BootROM: 448KB
 * Internal FlashROM: None
-* External FlashROM: code and data, via SPI Flash. Normal sizes 4MB.
+* External FlashROM: code and data, via SPI Flash. Normal sizes 4MB
 * GPIO: 34 (GPIOs are multiplexed with other functions, including
   external FlashROM, UART, deep sleep wake-up, etc.)
-* UART: 3 RX/TX UART (no hardware handshaking), one TX-only UART.
-* SPI: 4 SPI interfaces (one used for FlashROM).
-* I2C: 2 I2C (bitbang implementation available on any pins).
-* I2S: 2.
+* UART: 3 RX/TX UART (no hardware handshaking), one TX-only UART
+* SPI: 4 SPI interfaces (one used for FlashROM)
+* I2C: 2 I2C (bitbang implementation available on any pins)
+* I2S: 2
 * ADC: 12-bit SAR ADC up to 18 channels
 * DAC: 2  8-bit DAC
-* Programming: using BootROM bootloader from UART. Due to external FlashROM
-  and always-available BootROM bootloader, ESP32 is not brickable.
+* Programming: using BootROM bootloader from UART - due to external FlashROM
+  and always-available BootROM bootloader, the ESP32 is not brickable
  
 For more information see the ESP32 datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf 
 
