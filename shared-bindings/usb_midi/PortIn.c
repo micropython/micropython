@@ -49,7 +49,7 @@
 //|   to the ``usb_midi.ports`` tuple.
 //|
 
-STATIC mp_obj_t usb_midi_portin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+STATIC mp_obj_t usb_midi_portin_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return mp_const_none;
 }
 

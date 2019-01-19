@@ -35,7 +35,8 @@ the following links:
 
 * Adafruit Feather nRF52840: `boards/feather_nrf52840_express/README.md`: 1MB Flash, 256KB SRAM
 * Nordic PCA10056 (uses nRF52840): `boards/pca10056/README.md`
-* MakerDiary NRF52840 MDK: `boards/makerdiary_nrf52840_mdk/README.md`
+* MakerDiary nRF52840 MDK: `boards/makerdiary_nrf52840_mdk/README.md`
+* MakerDiary nRF52840 MDK USB Dongle: `boards/makerdiary_nrf52840_mdk_usb_dongle/README.md`
 
 For all other board targets, see the generic notes below.
 
@@ -76,6 +77,7 @@ Target Board (BOARD)     | Bluetooth Stack (SD)    | Bluetooth Support      | Fl
 pca10056                 | s140                    | Peripheral and Scanner | [Segger](#segger-targets)
 feather_nrf52840_express | s140                    | Peripheral and Scanner | UF2 bootloader
 makerdiary_nrf52840_mdk  | s140                    | Peripheral and Scanner | pyocd or ARM mbed DAPLink
+makerdiary_nrf52840_mdk_usb_dongle | s140          | Peripheral and Scanner | DFU bootloader & nrfutil
 
 ## Segger Targets
 

@@ -248,7 +248,7 @@ STATIC mp_obj_t scanentry_get_service_uuids(mp_obj_t self_in) {
     mp_obj_t entries = mp_obj_new_list(0, NULL);
     for (size_t i = 0; i < uuids_len / sizeof(uint16_t); ++i) {
         const mp_obj_t uuid_int = mp_obj_new_int(uuids[sizeof(uint16_t) * i] | (uuids[sizeof(uint16_t) * i + 1] << 8));
-        const mp_obj_t uuid_obj = bleio_uuid_type.make_new(&bleio_uuid_type, 1, 0, &uuid_int);
+        const mp_obj_t uuid_obj = bleio_uuid_type.make_new(&bleio_uuid_type, 1, &uuid_int, NULL);
 
         mp_obj_list_append(entries, uuid_obj);
     }

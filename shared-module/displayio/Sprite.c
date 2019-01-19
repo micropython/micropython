@@ -30,6 +30,7 @@
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/Shape.h"
 
 void common_hal_displayio_sprite_construct(displayio_sprite_t *self, mp_obj_t bitmap,
         mp_obj_t pixel_shader, uint16_t width, uint16_t height, uint16_t x, uint16_t y) {
@@ -71,6 +72,8 @@ bool displayio_sprite_get_pixel(displayio_sprite_t *self, int16_t x, int16_t y, 
     uint32_t value = 0;
     if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
         value = common_hal_displayio_bitmap_get_pixel(self->bitmap, x, y);
+    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
+        value = common_hal_displayio_shape_get_pixel(self->bitmap, x, y);
     } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
         value = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, x, y);
     }

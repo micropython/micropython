@@ -70,7 +70,7 @@ bool common_hal_displayio_fourwire_begin_transaction(displayio_fourwire_obj_t* s
         return false;
     }
     // TODO(tannewt): Stop hardcoding SPI frequency, polarity and phase.
-    common_hal_busio_spi_configure(&self->bus, 12000000, 0, 0, 8);
+    common_hal_busio_spi_configure(&self->bus, 48000000, 0, 0, 8);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
     return true;
 }

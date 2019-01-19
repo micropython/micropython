@@ -82,16 +82,7 @@ static const char default_name[] = "CIRCUITPY";
 //|   :param str name: The name used when advertising this peripheral
 //|
 
-STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, true);
-    bleio_peripheral_obj_t *self = m_new_obj(bleio_peripheral_obj_t);
-    self->base.type = &bleio_peripheral_type;
-    self->service_list = mp_obj_new_list(0, NULL);
-    self->notif_handler = mp_const_none;
-
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-
+STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_services, ARG_name };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_services, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -99,13 +90,17 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // If services is not an iterable, an exception will be thrown.
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_services].u_obj, &iter_buf);
     mp_obj_t service;
 
+    bleio_peripheral_obj_t *self = m_new_obj(bleio_peripheral_obj_t);
+    self->base.type = &bleio_peripheral_type;
+    self->service_list = mp_obj_new_list(0, NULL);
+    self->notif_handler = mp_const_none;
     while ((service = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!MP_OBJ_IS_TYPE(service, &bleio_service_type)) {
             mp_raise_ValueError(translate("services includes an object that is not a Service"));

@@ -39,20 +39,20 @@
 
 //| :mod:`socket` --- TCP, UDP and RAW socket support
 //| =================================================
-//| 
+//|
 //| .. module:: socket
 //|   :synopsis: TCP, UDP and RAW sockets
 //|   :platform: SAMD21, SAMD51
 //|
 //| Create TCP, UDP and RAW sockets for communicating over the Internet.
-//|   
+//|
 
 STATIC const mp_obj_type_t socket_type;
 
 //| .. currentmodule:: socket
 //|
 //| .. class:: socket(family, type, proto, ...)
-//|   
+//|
 //|   Create a new socket
 //|
 //|   :param ~int family: AF_INET or AF_INET6
@@ -60,8 +60,8 @@ STATIC const mp_obj_type_t socket_type;
 //|   :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)
 //|
 
-STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 4, false);
+STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 4, false);
 
     // create socket object (not bound to any NIC yet)
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
@@ -245,8 +245,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 //|   Reads some bytes from the connected remote address.
 //|   Suits sockets of type SOCK_STREAM
 //|   Returns a bytes() of length <= bufsize
-//| 
-//|   :param ~int bufsize: maximum number of bytes to receive  
+//|
+//|   :param ~int bufsize: maximum number of bytes to receive
 
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -313,7 +313,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(socket_sendto_obj, socket_sendto);
 //|   * a bytes() of length <= bufsize
 //|   * a remote_address, which is a tuple of ip address and port number
 //|
-//|   :param ~int bufsize: maximum number of bytes to receive  
+//|   :param ~int bufsize: maximum number of bytes to receive
 //|
 
 STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
@@ -469,10 +469,10 @@ STATIC const mp_obj_type_t socket_type = {
 };
 
 //| .. function:: getaddrinfo(host, port)
-//| 
+//|
 //|   Gets the address information for a hostname and port
 //|
-//|   Returns the appropriate family, socket type, socket protocol and 
+//|   Returns the appropriate family, socket type, socket protocol and
 //|   address information to call socket.socket() and socket.connect() with,
 //|   as a tuple.
 //|

@@ -36,6 +36,7 @@
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/Shape.h"
 #include "supervisor/shared/translate.h"
 
 void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
@@ -66,31 +67,35 @@ void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
 //|   palette lookup, a gradient, a pattern or a color transformer.
 //|
 //|
-STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 4, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_pixel_shader, ARG_position, ARG_width, ARG_height };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_bitmap, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_pixel_shader, MP_ARG_OBJ | MP_ARG_KW_ONLY },
         { MP_QSTR_position, MP_ARG_OBJ | MP_ARG_KW_ONLY },
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t bitmap = args[ARG_bitmap].u_obj;
 
     uint16_t width;
     uint16_t height;
-    if (MP_OBJ_IS_TYPE(bitmap, &displayio_bitmap_type)) {
+    mp_obj_t native = mp_instance_cast_to_native_base(bitmap, &displayio_shape_type);
+    if (native != MP_OBJ_NULL) {
+        displayio_shape_t* bmp = MP_OBJ_TO_PTR(native);
+        width = bmp->width;
+        height = bmp->height;
+    } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
         width = bmp->width;
         height = bmp->height;
     } else if (MP_OBJ_IS_TYPE(bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t* bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
         width = bmp->width;
         height = bmp->height;
     } else {
@@ -103,7 +108,7 @@ STATIC mp_obj_t displayio_sprite_make_new(const mp_obj_type_t *type, size_t n_ar
 
     displayio_sprite_t *self = m_new_obj(displayio_sprite_t);
     self->base.type = &displayio_sprite_type;
-    common_hal_displayio_sprite_construct(self, bitmap, args[ARG_pixel_shader].u_obj,
+    common_hal_displayio_sprite_construct(self, native, args[ARG_pixel_shader].u_obj,
             width, height, x, y);
     return MP_OBJ_FROM_PTR(self);
 }
