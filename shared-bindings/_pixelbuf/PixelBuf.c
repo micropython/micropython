@@ -454,32 +454,6 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     }
 }
 
-//|   .. method:: fill_wheel(start=0, step=1)
-//|
-//|     fill the buffer with a colorwheel starting at offset n, and stepping by step
-//|
-
-STATIC mp_obj_t pixelbuf_pixelbuf_fill_wheel(mp_obj_t self_in, mp_obj_t start, mp_obj_t step) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    float i = MP_OBJ_IS_SMALL_INT(start) ? MP_OBJ_SMALL_INT_VALUE(start) : mp_obj_float_get(start);
-    float incr = MP_OBJ_IS_SMALL_INT(step) ? MP_OBJ_SMALL_INT_VALUE(step) : mp_obj_float_get(step);
-
-    bool auto_write = self->auto_write;
-    self->auto_write = false;
-    for (size_t n = 0; n < self->pixels; n++) {
-        mp_obj_t value = MP_OBJ_NEW_SMALL_INT(colorwheel(i));
-        pixelbuf_pixelbuf_subscr(self_in, MP_OBJ_NEW_SMALL_INT(n), value);
-        i += incr;
-    }
-    self->auto_write = auto_write;
-    if (auto_write)
-        call_write_function(self);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(pixelbuf_pixelbuf_fill_wheel_obj, pixelbuf_pixelbuf_fill_wheel);
-
 STATIC const mp_rom_map_elem_t pixelbuf_pixelbuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_auto_write), MP_ROM_PTR(&pixelbuf_pixelbuf_auto_write_obj)},
     { MP_ROM_QSTR(MP_QSTR_bpp), MP_ROM_PTR(&pixelbuf_pixelbuf_bpp_obj)},
@@ -487,7 +461,6 @@ STATIC const mp_rom_map_elem_t pixelbuf_pixelbuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_buf), MP_ROM_PTR(&pixelbuf_pixelbuf_buf_obj)},
     { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_PTR(&pixelbuf_pixelbuf_byteorder_obj)},
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&pixelbuf_pixelbuf_show_obj)},
-    { MP_ROM_QSTR(MP_QSTR_fill_wheel), MP_ROM_PTR(&pixelbuf_pixelbuf_fill_wheel_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_locals_dict_table);
