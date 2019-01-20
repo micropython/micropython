@@ -290,12 +290,12 @@ Hardware SPI has the same methods as Software SPI above::
     vspi = SPI(2, baudrate=80000000, polarity=0, phase=0, bits=8, firstbit=0, sck=Pin(18), mosi=Pin(23), miso=Pin(19))
 
 .. Warning::
-   VSPI and HSPI cannot currently be used simultaneously. See ticket 
+   VSPI and HSPI cannot currently be used simultaneously. See  
    `#4068 <https://github.com/micropython/micropython/issues/4068>`_.
 
 .. Warning::
    A software reset (Ctrl+D at the REPL) does not currently reset HW SPI
-   resources. See ticket `#4103 <https://github.com/micropython/micropython/issues/4103>`_. 
+   resources. See `#4103 <https://github.com/micropython/micropython/issues/4103>`_. 
    The reccomended workaround is to instead trigger a hardware reset.
 
 
@@ -397,6 +397,14 @@ For low-level driving of a NeoPixel::
 
     import esp
     esp.neopixel_write(pin, grb_buf, is800khz)
+
+.. Warning::
+   By default, ``NeoPixel`` is configured to control the more popular *800KHz*
+   units. It is possible to use alternative timing to control other (typically
+   400KHz) devices by passing ``timing=True`` when constructing the
+   ``NeoPixel`` object. See `#4396 <https://github.com/micropython/micropython/issues/4396>`_ for
+   more details.
+
 
 Capacitive Touch
 ----------------
