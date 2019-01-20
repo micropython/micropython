@@ -247,20 +247,39 @@ class::
     spi.write_readinto(b'1234', buf) # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf) # write buf to MOSI and read MISO back into buf
 
+.. Warning::
+   Currently *all* of ``sck``, ``mosi`` and ``miso`` *must* be specified when
+   initialising Software SPI. 
 
 Hardware SPI bus
 ----------------
 
-The hardware SPI is faster (up to 80Mhz), but only works on following pins:
-``MISO`` is GPIO12, ``MOSI`` is GPIO13, and ``SCK`` is GPIO14. It has the same
-methods as the bitbanging SPI class above, except for the pin parameters for the
-constructor and init (as those are fixed)::
+There are two hardware SPI channels that allow faster (up to 80Mhz)
+transmission rates, but are only supported on a subset of pins.
+
+=====  ===========  ============
+\      HSPI (id=1)   VSPI (id=2)
+=====  ===========  ============
+sck    14           18
+mosi   13           23
+miso   12           19
+=====  ===========  ============
+
+Hardware SPI has the same methods as Software SPI above::
 
     from machine import Pin, SPI
 
-    hspi = SPI(1, baudrate=80000000, polarity=0, phase=0)
+    vspi = SPI(2, baudrate=80000000, polarity=0, phase=0, bits=8, firstbit=0, sck=Pin(18), mosi=Pin(23), miso=Pin(19))
 
-(``SPI(0)`` is used for FlashROM and not available to users.)
+.. Warning::
+   VSPI and HSPI cannot currently be used simultaneously. See ticket 
+   `#4068 <https://github.com/micropython/micropython/issues/4068>`_.
+
+.. Warning::
+   A software reset (Ctrl+D at the REPL) does not currently reset HW SPI
+   resources. See ticket `#4103 <https://github.com/micropython/micropython/issues/4103>`_. 
+   The reccomended workaround is to instead trigger a hardware reset.
+
 
 I2C bus
 -------
