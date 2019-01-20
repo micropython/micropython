@@ -16,18 +16,11 @@ Requirements
 
 The first thing you need is a board with an ESP32 chip.  The MicroPython
 software supports the ESP32 chip itself and any board should work.  The main
-characteristic of a board is how much flash it has, how the GPIO pins are
-connected to the outside world, and whether it includes a built-in USB-serial
-convertor to make the UART available to your PC.
+characteristic of a board is how the GPIO pins are connected to the outside
+world, and whether it includes a built-in USB-serial convertor to make the
+UART available to your PC.
 
-The minimum requirement for flash size is 1Mbyte. There is also a special
-build for boards with 512KB, but it is highly limited comparing to the
-normal build: there is no support for filesystem, and thus features which
-depend on it won't work (WebREPL, upip, etc.). As such, 512KB build will
-be more interesting for users who build from source and fine-tune parameters
-for their particular application.
-
-Names of pins will be given in this tutorial using the chip names (eg GPIO0)
+Names of pins will be given in this tutorial using the chip names (eg GPIO2)
 and it should be straightforward to find which pin this corresponds to on your
 particular board.
 
@@ -44,7 +37,7 @@ Getting the firmware
 The first thing you need to do is download the most recent MicroPython firmware 
 .bin file to load onto your ESP32 device. You can download it from the  
 `MicroPython downloads page <http://micropython.org/download#esp32>`_.
-From here, you have 3 main choices
+From here, you have 3 main choices:
 
 * Stable firmware builds
 * Daily firmware builds
@@ -54,7 +47,7 @@ If you are just starting with MicroPython, the best bet is to go for the Stable
 firmware builds. If you are an advanced, experienced MicroPython ESP32 user
 who would like to follow development closely and help with testing new
 features, there are daily builds (note: you actually may need some
-development experience, e.g. being ready to follow git history to know
+development experience, e.g. being ready to follow Git history to know
 what new changes and features were introduced).
 
 Deploying the firmware
@@ -62,14 +55,14 @@ Deploying the firmware
 
 Once you have the MicroPython firmware (compiled code), you need to load it onto 
 your ESP32 device.  There are two main steps to do this: first you
-need to put your device in boot-loader mode, and second you need to copy across
+need to put your device in bootloader mode, and second you need to copy across
 the firmware.  The exact procedure for these steps is highly dependent on the
 particular board and you will need to refer to its documentation for details.
 
 If you have a board that has a USB connector, a USB-serial convertor, and has
 the DTR and RTS pins wired in a special way then deploying the firmware should
 be easy as all steps can be done automatically.  Boards that have such features
-include the Adafruit Feather HUZZAH and NodeMCU boards.
+include the Adafruit Feather HUZZAH32.
 
 For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
@@ -97,14 +90,8 @@ And then deploy the new firmware using::
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
-(eg down to 115200).  The filename of the firmware should also match the file
-that you have.
-
-For some boards with a particular FlashROM configuration (e.g. some variants of
-a NodeMCU board) you may need to use the following command to deploy
-the firmware (note the ``-fm dio`` option)::
-
-    esptool.py --chip esp32  --port /dev/ttyUSB0 write_flash  -z 0x1000 --flash_size=detect -fm dio 0 esp32-20180511-v1.9.4.bin
+(eg down to 115200 by adding ``--baud 115200`` into the command).  The filename
+of the firmware should also match the file that you have.
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -117,60 +104,27 @@ over UART0 (GPIO1=TX, GPIO3=RX), which might be connected to a USB-serial
 convertor, depending on your board.  The baudrate is 115200.  The next part of
 the tutorial will discuss the prompt in more detail.
 
-WiFi
-----
-
-After a fresh install and boot the device configures itself as a WiFi access
-point (AP) that you can connect to.  The ESSID is of the form MicroPython-xxxxxx
-where the x's are replaced with part of the MAC address of your device (so will
-be the same everytime, and most likely different for all ESP32 chips).  The
-password for the WiFi is micropythoN (note the upper-case N).  Its IP address
-will be 192.168.4.1 once you connect to its network.  WiFi configuration will
-be discussed in more detail later in the tutorial.
-
 Troubleshooting installation problems
 -------------------------------------
 
 If you experience problems during flashing or with running firmware immediately
 after it, here are troubleshooting recommendations:
 
-* Be aware of and try to exclude hardware problems. There are 2 common problems:
-  bad power source quality and worn-out/defective FlashROM. Speaking of power
-  source, not just raw amperage is important, but also low ripple and noise/EMI
-  in general. If you experience issues with self-made or wall-wart style power
-  supply, try USB power from a computer. Unearthed power supplies are also known
-  to cause problems as they source of increased EMI (electromagnetic interference)
-  - at the very least, and may lead to electrical devices breakdown. So, you are
-  advised to avoid using unearthed power connections when working with ESP32
-  and other boards. In regard to FlashROM hardware problems, there are independent
-  (not related to MicroPython in any way) reports
-  `(e.g.) <http://internetofhomethings.com/homethings/?p=538>`_
-  that on some ESP32 modules, FlashROM can be programmed as little as 20 times
-  before programming errors occur. This is *much* less than 100,000 programming
-  cycles cited for FlashROM chips of a type used with ESP32 by reputable
-  vendors, which points to either production rejects, or second-hand worn-out
-  flash chips to be used on some (apparently cheap) modules/boards. You may want
-  to use your best judgement about source, price, documentation, warranty,
-  post-sales support for the modules/boards you purchase.
+* Be aware of and try to exclude hardware problems.  The most common problem is
+  bad power source quality.  Speaking of power source, not just raw amperage is
+  important, but also low ripple and noise/EMI in general. If you experience
+  issues with self-made or wall-wart style power supplies, try USB power from a
+  computer. Unearthed power supplies are also known to cause problems as they
+  are a source of increased EMI (electromagnetic interference) at the very
+  least, and may lead to electrical devices breakdown.  So, you are advised to
+  avoid using unearthed power connections when working with ESP32 and other
+  boards.
 
 * The flashing instructions above use flashing speed of 460800 baud, which is
   good compromise between speed and stability. However, depending on your
   module/board, USB-UART convertor, cables, host OS, etc., the above baud
   rate may be too high and lead to errors. Try a more common 115200 baud
   rate instead in such cases.
-
-* If lower baud rate didn't help, you may want to try older version of
-  esptool.py, which had a different programming algorithm::
-
-    pip install esptool==1.0.1
-
-  This version doesn't support ``--flash_size=detect`` option, so you will
-  need to specify FlashROM size explicitly (in megabits). It also requires
-  Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in the
-  command above.
-
-* The ``--flash_size`` option in the commands above is mandatory. Omitting
-  it will lead to a corrupted firmware.
 
 * To catch incorrect flash content (e.g. from a defective sector on a chip),
   add ``--verify`` switch to the commands above.
@@ -183,7 +137,7 @@ after it, here are troubleshooting recommendations:
     esp.check_fw()
 
   If the last output value is True, the firmware is OK. Otherwise, it's
-  corrupted and need to be reflashed correctly.
+  corrupted and needs to be reflashed correctly.
 
 * If you experience any issues with another flashing application (not
   esptool.py), try esptool.py, it is a generally accepted flashing
@@ -191,8 +145,4 @@ after it, here are troubleshooting recommendations:
 
 * If you still experience problems with even flashing the firmware, please
   refer to esptool.py project page, https://github.com/espressif/esptool
-  for additional documentation and bug tracker where you can report problems.
-
-* If you are able to flash firmware, but ``--verify`` option or
-  ``esp.check_fw()`` return errors even after multiple retries, you
-  may have a defective FlashROM chip, as explained above.
+  for additional documentation and a bug tracker where you can report problems.
