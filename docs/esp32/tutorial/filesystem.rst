@@ -1,14 +1,15 @@
 The internal filesystem
 =======================
 
-If your devices has 1Mbyte or more of storage then it will be set up (upon first
-boot) to contain a filesystem.  This filesystem uses the FAT format and is
-stored in the flash after the MicroPython firmware.
+If your devices has 1Mbyte or more of storage (basically all ESP32 boards) 
+then it will be set up (upon first boot) to contain a filesystem.  This
+filesystem uses the FAT format and is stored in the flash after the MicroPython
+firmware.
 
 Creating and reading files
 --------------------------
 
-MicroPython on the ESP8266 supports the standard way of accessing files in
+MicroPython on the ESP32 supports the standard way of accessing files in
 Python, using the built-in ``open()`` function.
 
 To create a file try::
@@ -55,7 +56,7 @@ And remove entries::
 Start up scripts
 ----------------
 
-There are two files that are treated specially by the ESP8266 when it starts up:
+There are two files that are treated specially by the ESP32 when it starts up:
 boot.py and main.py.  The boot.py script is executed first (if it exists) and
 then once it completes the main.py script is executed.  You can create these
 files yourself and populate them with the code that you want to run when the
