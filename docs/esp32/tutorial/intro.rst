@@ -62,7 +62,8 @@ particular board and you will need to refer to its documentation for details.
 If you have a board that has a USB connector, a USB-serial convertor, and has
 the DTR and RTS pins wired in a special way then deploying the firmware should
 be easy as all steps can be done automatically.  Boards that have such features
-include the Adafruit Feather HUZZAH32.
+include the Adafruit Feather HUZZAH32, M5Stack, Wemos LOLIN32, and TinyPICO
+boards, along with the Espressif DevKitC, PICO-KIT, WROVER-KIT dev-kits.
 
 For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
@@ -88,10 +89,15 @@ And then deploy the new firmware using::
 
     esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 esp32-20180511-v1.9.4.bin
 
-You might need to change the "port" setting to something else relevant for your
-PC.  You may also need to reduce the baudrate if you get errors when flashing
-(eg down to 115200 by adding ``--baud 115200`` into the command).  The filename
-of the firmware should also match the file that you have.
+Notes:
+
+* You might need to change the "port" setting to something else relevant for your
+  PC
+* You may need to reduce the baudrate if you get errors when flashing
+  (eg down to 115200 by adding ``--baud 115200`` into the command)
+* For some boards with a particular FlashROM configuration you may need to
+  change the flash mode (eg by adding ``-fm dio`` into the command)
+* The filename of the firmware should match the file that you have
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -110,15 +116,16 @@ Troubleshooting installation problems
 If you experience problems during flashing or with running firmware immediately
 after it, here are troubleshooting recommendations:
 
-* Be aware of and try to exclude hardware problems.  The most common problem is
-  bad power source quality.  Speaking of power source, not just raw amperage is
-  important, but also low ripple and noise/EMI in general. If you experience
-  issues with self-made or wall-wart style power supplies, try USB power from a
-  computer. Unearthed power supplies are also known to cause problems as they
-  are a source of increased EMI (electromagnetic interference) at the very
-  least, and may lead to electrical devices breakdown.  So, you are advised to
-  avoid using unearthed power connections when working with ESP32 and other
-  boards.
+* Be aware of and try to exclude hardware problems.  There are 2 common
+  problems: bad power source quality, and worn-out/defective FlashROM.
+  Speaking of power source, not just raw amperage is important, but also low
+  ripple and noise/EMI in general. If you experience issues with self-made or
+  wall-wart style power supplies, try USB power from a computer. Unearthed
+  power supplies are also known to cause problems as they are a source of
+  increased EMI (electromagnetic interference) at the very least, and may lead
+  to electrical devices breakdown.  So, you are advised to avoid using
+  unearthed power connections when working with ESP32 and other boards.
+
 
 * The flashing instructions above use flashing speed of 460800 baud, which is
   good compromise between speed and stability. However, depending on your
@@ -146,3 +153,7 @@ after it, here are troubleshooting recommendations:
 * If you still experience problems with even flashing the firmware, please
   refer to esptool.py project page, https://github.com/espressif/esptool
   for additional documentation and a bug tracker where you can report problems.
+
+* If you are able to flash firmware, but ``--verify`` option or
+  ``esp.check_fw()`` return errors even after multiple retries, you
+  may have a defective FlashROM chip.
