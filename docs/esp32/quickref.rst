@@ -166,9 +166,16 @@ Notes:
 PWM (pulse width modulation)
 ----------------------------
 
-PWM can be enabled on all pins except Pin(16).  There is a single frequency
-for all channels, with range between 1 and 1000 (measured in Hz).  The duty
-cycle is between 0 and 1023 inclusive.
+PWM can be enabled on all output-enabled pins.  There is a single frequency
+for all channels, with range between 1Hz and 40MHz.  The duty cycle is
+between 0 and 1023 inclusive, however the tradeoff for having such a high
+frequency range is that the higher the frequency used, the lower the actual
+duty resolution used by the hardware.  The 0 to 1023 range should always be
+used by the user, however this is converted to a lower resolution version that
+is then utilised by the hardware, and so small changes in duty may not affect
+the output.  Further to this, the higher end of the frequency range (>10MHz)
+does not necessarily operate as would be expected, and should be used with
+caution.
 
 Use the ``machine.PWM`` class::
 
@@ -181,7 +188,7 @@ Use the ``machine.PWM`` class::
     pwm0.duty(200)          # set duty cycle
     pwm0.deinit()           # turn off PWM on the pin
 
-    pwm2 = PWM(Pin(2), freq=500, duty=512) # create and configure in one go
+    pwm2 = PWM(Pin(2), freq=20000, duty=512) # create and configure in one go
 
 ADC (analog to digital conversion)
 ----------------------------------
