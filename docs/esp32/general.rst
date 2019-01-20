@@ -64,21 +64,10 @@ For your convenience, some of technical specifications are provided below:
 For more information see the ESP32 datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf 
 
 
-Scarcity of runtime resources
------------------------------
-
-ESP32 has very modest resources (first of all, RAM memory). So, please
-avoid allocating too big container objects (lists, dictionaries) and
-buffers. There is also no full-fledged OS to keep track of resources
-and automatically clean them up, so that's the task of a user/user
-application: please be sure to close open files, sockets, etc. as soon
-as possible after use.
-
-
 Boot process
 ------------
 
-On boot, MicroPython EPS8266 port executes ``_boot.py`` script from internal
+On boot, MicroPython ESP32 port executes ``_boot.py`` script from internal
 frozen modules. It mounts filesystem in FlashROM, or if it's not available,
 performs first-time setup of the module and creates the filesystem. This
 part of the boot process is considered fixed, and not available for customization
