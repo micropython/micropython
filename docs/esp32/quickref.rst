@@ -46,6 +46,24 @@ The :mod:`esp` module::
     esp.osdebug(None)       # turn off vendor O/S debugging messages
     esp.osdebug(0)          # redirect vendor O/S debugging messages to UART(0)
 
+    # low level methods to interact with flash storage
+    esp.flash_size()                # get the total size of the flash memory
+    esp.flash_user_start()          # get the offset at which the user flash space starts
+    esp.write(byte_offset, bytes)
+    esp.read(byte_offset, length_or_buffer)
+    esp.erase(sector_no)
+
+The :mod:`esp32` module::
+
+    import esp32
+
+    esp32.hall_sensor()     # read the internal hall sensor
+    esp32.raw_temperature() # read the internal temperature of the MCU, in Farenheit
+
+Note that the temperature sensor in the ESP32 will typically read higher than
+ambient due to the IC getting warm while it runs.  This effect can be minimised
+by reading the temperature sensor immediately after waking up from sleep.
+
 Networking
 ----------
 
