@@ -52,33 +52,6 @@
 
 static uint32_t get_nrf_baud (uint32_t baudrate);
 
-static uint16_t ringbuf_count(ringbuf_t *r)
-{
-    volatile int count = r->iput - r->iget;
-    if ( count < 0 ) {
-        count += r->size;
-    }
-
-    return (uint16_t) count;
-}
-
-static void ringbuf_clear(ringbuf_t *r)
-{
-    r->iput = r->iget = 0;
-}
-
-// will overwrite old data
-static void ringbuf_put_n(ringbuf_t* r, uint8_t* buf, uint8_t bufsize)
-{
-    for(uint8_t i=0; i < bufsize; i++) {
-        if ( ringbuf_put(r, buf[i]) < 0 ) {
-            // if full overwrite old data
-            (void) ringbuf_get(r);
-            ringbuf_put(r, buf[i]);
-        }
-    }
-}
-
 static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context) {
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
 
@@ -145,15 +118,19 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
 
     // Init buffer for rx
     if ( rx != mp_const_none ) {
-        self->rbuf.buf = (uint8_t *) gc_alloc(receiver_buffer_size, false, false);
+        // Initially allocate the UART's buffer in the long-lived part of the
+        // heap.  UARTs are generally long-lived objects, but the "make long-
+        // lived" machinery is incapable of moving internal pointers like
+        // self->buffer, so do it manually.  (However, as long as internal
+        // pointers like this are NOT moved, allocating the buffer
+        // in the long-lived pool is not strictly necessary)
+        // (This is a macro.)
+        ringbuf_alloc(&self->rbuf, receiver_buffer_size, true);
 
         if ( !self->rbuf.buf ) {
             nrfx_uarte_uninit(&self->uarte);
             mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
         }
-
-        self->rbuf.size = receiver_buffer_size;
-        self->rbuf.iget = self->rbuf.iput = 0;
 
         self->rx_pin_number = rx->number;
         claim_pin(rx);

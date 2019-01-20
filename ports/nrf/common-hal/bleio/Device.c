@@ -262,11 +262,13 @@ STATIC bool discover_services(bleio_device_obj_t *device, uint16_t start_handle)
         mp_raise_OSError_msg(translate("Failed to discover services"));
     }
 
+    // Serialize discovery.
     err_code = sd_mutex_acquire(m_discovery_mutex);
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg(translate("Failed to acquire mutex"));
     }
 
+    // Wait for someone else to release m_discovery_mutex.
     while (sd_mutex_acquire(m_discovery_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
 #ifdef MICROPY_VM_HOOK_LOOP
     MICROPY_VM_HOOK_LOOP

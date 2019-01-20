@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
+#include "py/mpconfig.h"
+#include "py/runtime.h"
+#include "nrf_soc.h"
 
-#include "common-hal/bleio/CharacteristicBuffer.h"
+void sd_mutex_acquire_check(nrf_mutex_t* p_mutex) {
+    uint32_t err_code = sd_mutex_acquire(p_mutex);
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to acquire mutex, err 0x%04x"), err_code);
+    }
+}
 
-extern const mp_obj_type_t bleio_characteristic_buffer_type;
+void sd_mutex_acquire_wait(nrf_mutex_t* p_mutex) {
+    while (sd_mutex_acquire(p_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
+#ifdef MICROPY_VM_HOOK_LOOP
+    MICROPY_VM_HOOK_LOOP
+#endif
+    }
+}
 
-extern void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic, mp_float_t timeout, size_t buffer_size);
-int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode);
-uint32_t common_hal_bleio_characteristic_buffer_rx_characters_available(bleio_characteristic_buffer_obj_t *self);
-void common_hal_bleio_characteristic_buffer_clear_rx_buffer(bleio_characteristic_buffer_obj_t *self);
-bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer_obj_t *self);
-int common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self);
-bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self);
+void sd_mutex_acquire_wait_no_vm(nrf_mutex_t* p_mutex) {
+    while (sd_mutex_acquire(p_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
+    }
+}
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTICBUFFER_H
+void sd_mutex_release_check(nrf_mutex_t* p_mutex) {
+    uint32_t err_code = sd_mutex_release(p_mutex);
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to release mutex, err 0x%04x"), err_code);
+    }
+}
