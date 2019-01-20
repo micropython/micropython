@@ -416,7 +416,7 @@ Capacitive Touch
 
 Use the ``TouchPad`` class in the ``machine`` module::
 
-    from machine import TouchPad
+    from machine import TouchPad, Pin
 
     t = TouchPad(Pin(14))
     t.read()              # Returns a smaller number when touched 
@@ -429,9 +429,18 @@ and surrounding composition so some calibration may be required.
 There are ten capacitive touch-enabled pins that can be used on the ESP32: 0, 2, 4, 12, 13
 14, 15, 27, 32, 33. Trying to assign to any other pins will result in a ``ValueError``.
 
-Note that TouchPad's can be used to wake an ESP32 from `deepsleep`. (not yet implemented?)
+Note that TouchPads can be used to wake an ESP32 from `sleep`::
 
-For more details refer to `Espressif Touch Sensor
+    import machine
+    from machine import TouchPad, Pin
+    import esp32
+
+    t = TouchPad(Pin(14))
+    t.config(500)               # configure the threshold at which the pin is considered touched
+    esp32.wake_on_touch(True)
+    machine.sleep()             # put the MCU to sleep until a touchpad is touched
+
+For more details on touchpads refer to `Espressif Touch Sensor
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/touch_pad.html>`_.
 
 
