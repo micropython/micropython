@@ -2,8 +2,8 @@ Network basics
 ==============
 
 The network module is used to configure the WiFi connection.  There are two WiFi
-interfaces, one for the station (when the ESP8266 connects to a router) and one
-for the access point (for other devices to connect to the ESP8266).  Create
+interfaces, one for the station (when the ESP32 connects to a router) and one
+for the access point (for other devices to connect to the ESP32).  Create
 instances of these objects using::
 
     >>> import network
@@ -27,8 +27,8 @@ The returned values are: IP address, netmask, gateway, DNS.
 Configuration of the WiFi
 -------------------------
 
-Upon a fresh install the ESP8266 is configured in access point mode, so the
-AP_IF interface is active and the STA_IF interface is inactive.  You can
+Upon a fresh install the ESP32 is configured with no WiFi interface active.  So
+both the AP_IF interface and the STA_IF interface are both inactive.  You can
 configure the module to connect to your own network using the STA_IF interface.
 
 First activate the station interface::
