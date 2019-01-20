@@ -42,7 +42,7 @@ locally from the the GitHub repository
 `<https://github.com/micropython/webrepl>`__ .
 
 Before connecting to WebREPL, you should set a password and enable it via
-a normal serial connection. Initial versions of MicroPython for ESP8266
+a normal serial connection. Initial versions of MicroPython for ESP
 came with WebREPL automatically enabled on the boot and with the
 ability to set a password via WiFi on the first connection, but as WebREPL
 was becoming more widely known and popular, the initial setup has switched
@@ -53,12 +53,12 @@ to a wired connection for improved security::
 Follow the on-screen instructions and prompts. To make any changes active,
 you will need to reboot your device.
 
-To use WebREPL connect your computer to the ESP8266's access point
+To use WebREPL connect your computer to the ESP32's access point
 (MicroPython-xxxxxx, see the previous section about this).  If you have
 already reconfigured your ESP8266 to connect to a router then you can
 skip this part.
 
-Once you are on the same network as the ESP8266 you click the "Connect" button
+Once you are on the same network as the ESP32 you click the "Connect" button
 (if you are connecting via a router then you may need to change the IP address,
 by default the IP address is correct when connected to the ESP8266's access
 point).  If the connection succeeds then you should see a password prompt.
@@ -77,13 +77,13 @@ error with the text that you enter then an error message is printed.
 
 Try typing the following at the prompt::
 
-    >>> print('hello esp8266!')
-    hello esp8266!
+    >>> print('hello esp32!')
+    hello esp32!
 
 Note that you shouldn't type the ``>>>`` arrows, they are there to indicate that
 you should type the text after it at the prompt.  And then the line following is
 what the device should respond with.  In the end, once you have entered the text
-``print("hello esp8266!")`` and pressed the Enter key, the output on your screen
+``print("hello esp32!")`` and pressed the Enter key, the output on your screen
 should look exactly like it does above.
 
 If you already know some python you can now try some basic commands here.   For
@@ -96,8 +96,8 @@ example::
     >>> 12**34
     4922235242952026704037113243122008064
 
-If your board has an LED attached to GPIO2 (the ESP-12 modules do) then you can
-turn it on and off using the following code::
+If your board has an LED attached to GPIO2 then you can turn it on and off
+using the following code::
 
     >>> import machine
     >>> pin = machine.Pin(2, machine.Pin.OUT)
@@ -106,7 +106,6 @@ turn it on and off using the following code::
 
 Note that ``on`` method of a Pin might turn the LED off and ``off`` might
 turn it on (or vice versa), depending on how the LED is wired on your board.
-To resolve this, machine.Signal class is provided.
 
 Line editing
 ~~~~~~~~~~~~
@@ -120,7 +119,7 @@ Input history
 ~~~~~~~~~~~~~
 
 The REPL remembers a certain number of previous lines of text that you entered
-(up to 8 on the ESP8266).  To recall previous lines use the up and down arrow
+(up to 8 on the ESP32).  To recall previous lines use the up and down arrow
 keys.
 
 Tab completion
