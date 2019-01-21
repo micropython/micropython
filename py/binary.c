@@ -49,7 +49,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
     switch (struct_type) {
         case '<': case '>':
             switch (val_type) {
-                case 'b': case 'B':
+                case 'b': case 'B': case 'x':
                     size = 1; break;
                 case 'h': case 'H':
                     size = 2; break;
@@ -79,7 +79,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
             // particular (or any) ABI.
             switch (val_type) {
                 case BYTEARRAY_TYPECODE:
-                case 'b': case 'B':
+                case 'b': case 'B': case 'x':
                     align = size = 1; break;
                 case 'h': case 'H':
                     align = alignof(short);
@@ -126,6 +126,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
             break;
         case BYTEARRAY_TYPECODE:
         case 'B':
+        case 'x':   // value will be discarded
             val = ((unsigned char*)p)[index];
             break;
         case 'h':
@@ -364,6 +365,8 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
         case 'B':
             ((unsigned char*)p)[index] = val;
             break;
+        case 'x':
+            ((unsigned char*)p)[index] = 0;
         case 'h':
             ((short*)p)[index] = val;
             break;
