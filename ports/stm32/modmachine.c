@@ -247,6 +247,10 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
+#if defined(STM32F7) || defined(STM32H7)
+uint8_t machine_bootloader_request = 0;
+#endif
+
 STATIC NORETURN mp_obj_t machine_bootloader(void) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
@@ -264,12 +268,10 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
     #endif
 
 #if defined(STM32F7) || defined(STM32H7)
-    // arm-none-eabi-gcc 4.9.0 does not correctly inline this
-    // MSP function, so we write it out explicitly here.
-    //__set_MSP(*((uint32_t*) 0x1FF00000));
-    __ASM volatile ("movw r3, #0x0000\nmovt r3, #0x1FF0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
-
-    ((void (*)(void)) *((uint32_t*) 0x1FF00004))();
+    SCB_DisableDCache();
+    machine_bootloader_request = 1; // Set BL Request marker to be checked in resethandler.s
+    __DSB();
+    NVIC_SystemReset();
 #else
     __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
 

@@ -32,9 +32,22 @@
     .global Reset_Handler
     .type Reset_Handler, %function
 
+    /* The Bootloader request pattern is stored here in machine.bootloader() */
+    .extern machine_bootloader_request
+
 Reset_Handler:
     /* Save the first argument to pass through to stm32_main */
     mov  r4, r0
+
+    #if defined(STM32F7) || defined(STM32H7)
+    /* Check for and handle bootloader request */
+    ldr r0, =machine_bootloader_request
+    ldr r1, =0x01
+    ldr r2, [r0, #0]
+    str r0, [r0, #0] /* Invalidate */
+    cmp r2, r1
+    beq Jump_Bootloader
+    #endif
 
     /* Load the stack pointer */
     ldr  sp, =_estack
@@ -67,4 +80,11 @@ Reset_Handler:
     mov  r0, r4
     b    stm32_main
 
+#if defined(STM32F7) || defined(STM32H7)
+Jump_Bootloader:
+    ldr r0, =0x1FF00000 /* ROM Bootloader base address */
+    ldr sp, [r0, #0] /* SP @ +0 */
+    ldr r0, [r0, #4] /* PC @ +4 */
+    bx r0
+#endif
     .size Reset_Handler, .-Reset_Handler
