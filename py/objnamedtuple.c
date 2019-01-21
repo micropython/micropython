@@ -96,7 +96,10 @@ void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t*)type_in;
     size_t num_fields = type->n_fields;
-    size_t n_kw = kw_args->used;
+    size_t n_kw = 0;
+    if (kw_args != NULL) {
+        n_kw = kw_args->used;
+    }
     if (n_args + n_kw != num_fields) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
