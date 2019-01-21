@@ -22,7 +22,7 @@ void IRAM_ATTR esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numByte
 
     uint32_t fcpu = ets_get_cpu_frequency() * 1000000;
 
-    if (timing == 1) {
+    if (timing == 0) {
         // 800 KHz
         time0 = (fcpu * 0.35) / 1000000; // 0.35us
         time1 = (fcpu * 0.8) / 1000000; // 0.8us
