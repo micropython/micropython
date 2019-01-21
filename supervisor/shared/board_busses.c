@@ -31,8 +31,11 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 #include "mpconfigboard.h"
-#include "samd/pins.h"
 #include "py/runtime.h"
+
+#ifdef CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 #define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
@@ -41,7 +44,7 @@
 #if BOARD_I2C
 STATIC mp_obj_t i2c_singleton = NULL;
 
-STATIC mp_obj_t board_i2c(void) {
+mp_obj_t board_i2c(void) {
 
     if (i2c_singleton == NULL) {
         busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
@@ -55,7 +58,7 @@ STATIC mp_obj_t board_i2c(void) {
     return i2c_singleton;
 }
 #else
-STATIC mp_obj_t board_i2c(void) {
+mp_obj_t board_i2c(void) {
     mp_raise_NotImplementedError(translate("No default I2C bus"));
     return NULL;
 }
@@ -63,11 +66,14 @@ STATIC mp_obj_t board_i2c(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 #if BOARD_SPI
+// Statically allocate the SPI object so it can live past the end of the heap and into the next VM.
+// That way it can be used by built-in FourWire displays and be accessible through board.SPI().
+STATIC busio_spi_obj_t spi_obj;
 STATIC mp_obj_t spi_singleton = NULL;
 
-STATIC mp_obj_t board_spi(void) {
+mp_obj_t board_spi(void) {
     if (spi_singleton == NULL) {
-        busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
+        busio_spi_obj_t *self = &spi_obj;
         self->base.type = &busio_spi_type;
         assert_pin_free(DEFAULT_SPI_BUS_SCK);
         assert_pin_free(DEFAULT_SPI_BUS_MOSI);
@@ -81,7 +87,7 @@ STATIC mp_obj_t board_spi(void) {
     return spi_singleton;
 }
 #else
-STATIC mp_obj_t board_spi(void) {
+mp_obj_t board_spi(void) {
     mp_raise_NotImplementedError(translate("No default SPI bus"));
     return NULL;
 }
@@ -91,7 +97,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
 #if BOARD_UART
 STATIC mp_obj_t uart_singleton = NULL;
 
-STATIC mp_obj_t board_uart(void) {
+mp_obj_t board_uart(void) {
     if (uart_singleton == NULL) {
         busio_uart_obj_t *self = m_new_obj(busio_uart_obj_t);
         self->base.type = &busio_uart_type;
@@ -108,7 +114,7 @@ STATIC mp_obj_t board_uart(void) {
     return uart_singleton;
 }
 #else
-STATIC mp_obj_t board_uart(void) {
+mp_obj_t board_uart(void) {
     mp_raise_NotImplementedError(translate("No default UART bus"));
     return NULL;
 }
@@ -121,7 +127,18 @@ void reset_board_busses(void) {
     i2c_singleton = NULL;
 #endif
 #if BOARD_SPI
-    spi_singleton = NULL;
+    bool display_using_spi = false;
+    #ifdef CIRCUITPY_DISPLAYIO
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].fourwire_bus.bus == spi_singleton) {
+            display_using_spi = true;
+            break;
+        }
+    }
+    #endif
+    if (!display_using_spi) {
+        spi_singleton = NULL;
+    }
 #endif
 #if BOARD_UART
     uart_singleton = NULL;

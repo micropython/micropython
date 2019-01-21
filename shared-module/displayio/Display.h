@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+#include "shared-module/displayio/Group.h"
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
+typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
+typedef void (*display_bus_send)(mp_obj_t bus, bool command, uint8_t *data, uint32_t data_length);
+typedef void (*display_bus_end_transaction)(mp_obj_t bus);
 
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t bus;
+    uint16_t width;
+    uint16_t height;
+    uint16_t color_depth;
+    uint8_t set_column_command;
+    uint8_t set_row_command;
+    uint8_t write_ram_command;
+    displayio_group_t *current_group;
+    bool refresh;
+    uint64_t last_refresh;
+    int16_t colstart;
+    int16_t rowstart;
+    display_bus_begin_transaction begin_transaction;
+    display_bus_send send;
+    display_bus_end_transaction end_transaction;
+} displayio_display_obj_t;
 
-#endif  // MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
