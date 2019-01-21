@@ -127,7 +127,7 @@ QSTR_GLOBAL_DEPENDENCIES += $(BUILD)/micropython/lv_mpy.c
 $(BUILD)/micropython/lv_mpy.c: $(ALL_LVGL_SRC)
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(BUILD)/micropython
-	$(Q)$(PYTHON) $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py -X anim -X group $(INC) -I $(TOP)/$(LVGL_DIR)/micropython/pycparser/utils/fake_libc_include $(TOP)/$(LVGL_DIR)/lv_objx/*.h > $@
+	$(Q)$(PYTHON) $(TOP)/$(LVGL_DIR)/micropython/gen_mpy.py -X anim -X group -X task $(INC) -I $(TOP)/$(LVGL_DIR)/micropython/pycparser/utils/fake_libc_include $(TOP)/$(LVGL_DIR)/lvgl.h > $@
 
 CFLAGS_MOD += -Wno-unused-function
 
