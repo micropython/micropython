@@ -10,13 +10,12 @@ Quick reference for the ESP32
 The Espressif ESP32 Development Board (image attribution: Adafruit).
 
 Below is a quick reference for ESP32-based boards.  If it is your first time
-working with this board please consider reading the following sections first:
+working with this board it may be useful to get an overview of the microcontroller:
 
 .. toctree::
    :maxdepth: 1
 
    general.rst
-   tutorial/index.rst
 
 Installing MicroPython
 ----------------------
@@ -166,16 +165,11 @@ Notes:
 PWM (pulse width modulation)
 ----------------------------
 
-PWM can be enabled on all output-enabled pins.  There is a single frequency
-for all channels, with range between 1Hz and 40MHz.  The duty cycle is
-between 0 and 1023 inclusive, however the tradeoff for having such a high
-frequency range is that the higher the frequency used, the lower the actual
-duty resolution used by the hardware.  The 0 to 1023 range should always be
-used by the user, however this is converted to a lower resolution version that
-is then utilised by the hardware, and so small changes in duty may not affect
-the output.  Further to this, the higher end of the frequency range (>10MHz)
-does not necessarily operate as would be expected, and should be used with
-caution.
+PWM can be enabled on all output-enabled pins. The base frequency can
+range from 1Hz to 40MHz but there is a tradeoff; as the base frequency
+*increases* the duty resolution *decreases*. See 
+`LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/ledc.html>`_
+for more details.
 
 Use the ``machine.PWM`` class::
 
