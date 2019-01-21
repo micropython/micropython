@@ -36,6 +36,7 @@ typedef struct {
     mp_obj_base_t base;
     int16_t x;
     int16_t y;
+    uint16_t scale;
     uint16_t size;
     uint16_t max_size;
     mp_obj_t* children;

@@ -27,8 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
 
-#include "py/obj.h"
-
-// Nothing now.
+void common_hal_displayio_release_displays(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H

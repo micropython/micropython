@@ -118,7 +118,6 @@ SRC_C += \
 	fatfs_port.c \
 	mphalport.c \
 	tick.c \
-	board_busses.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
@@ -156,6 +155,7 @@ SRC_COMMON_HAL += \
 	busio/__init__.c\
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
+	displayio/ParallelBus.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \
@@ -214,6 +214,16 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
+	displayio/__init__.c \
+	displayio/Bitmap.c \
+	displayio/ColorConverter.c \
+	displayio/Display.c \
+	displayio/FourWire.c \
+	displayio/Group.c \
+	displayio/OnDiskBitmap.c \
+	displayio/Palette.c \
+	displayio/Shape.c \
+	displayio/Sprite.c \
 	storage/__init__.c
 
 #	uheap/__init__.c \

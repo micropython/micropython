@@ -60,7 +60,6 @@
 #include "samd/external_interrupts.h"
 #include "samd/dma.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "board_busses.h"
 #include "reset.h"
 #include "tick.h"
 
@@ -225,8 +224,6 @@ void reset_port(void) {
     reset_event_system();
 
     reset_all_pins();
-
-    reset_board_busses();
 
     // Output clocks for debugging.
     // not supported by SAMD51G; uncomment for SAMD51J or update for 51G
