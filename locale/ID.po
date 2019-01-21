@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-20 17:33-0800\n"
+"POT-Creation-Date: 2019-01-20 22:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1363,9 +1363,9 @@ msgstr ""
 msgid "schedule stack full"
 msgstr ""
 
-#: py/modstruct.c:145 py/modstruct.c:153 py/modstruct.c:234 py/modstruct.c:244
-#: shared-bindings/struct/__init__.c:103 shared-bindings/struct/__init__.c:145
-#: shared-module/struct/__init__.c:91 shared-module/struct/__init__.c:175
+#: py/modstruct.c:148 py/modstruct.c:156 py/modstruct.c:244 py/modstruct.c:254
+#: shared-bindings/struct/__init__.c:102 shared-bindings/struct/__init__.c:161
+#: shared-module/struct/__init__.c:183
 msgid "buffer too small"
 msgstr ""
 
@@ -2649,9 +2649,19 @@ msgstr ""
 msgid "'S' and 'O' are not supported format types"
 msgstr ""
 
-#: shared-module/struct/__init__.c:83
+#: shared-module/struct/__init__.c:128
+#, fuzzy, c-format
+msgid "unpack requires a buffer of %d bytes"
+msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
+
+#: shared-module/struct/__init__.c:136
 msgid "too many arguments provided with the given format"
 msgstr ""
+
+#: shared-module/struct/__init__.c:179
+#, fuzzy
+msgid "buffer size must match format"
+msgstr "buffers harus mempunyai panjang yang sama"
 
 #: shared-module/usb_hid/Device.c:45
 #, c-format
@@ -2739,17 +2749,8 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parameter UUID tidak valid"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Panjang string UUID tidak valid"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2758,5 +2759,14 @@ msgstr ""
 #~ "tegangan cukup untuk semua sirkuit dan tekan reset (setelah mencabut "
 #~ "CIRCUITPY).\n"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Panjang string UUID tidak valid"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parameter UUID tidak valid"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-20 17:33-0800\n"
+"POT-Creation-Date: 2019-01-20 22:46-0500\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -1366,9 +1366,9 @@ msgstr "division par zéro"
 msgid "schedule stack full"
 msgstr "pile de plannification pleine"
 
-#: py/modstruct.c:145 py/modstruct.c:153 py/modstruct.c:234 py/modstruct.c:244
-#: shared-bindings/struct/__init__.c:103 shared-bindings/struct/__init__.c:145
-#: shared-module/struct/__init__.c:91 shared-module/struct/__init__.c:175
+#: py/modstruct.c:148 py/modstruct.c:156 py/modstruct.c:244 py/modstruct.c:254
+#: shared-bindings/struct/__init__.c:102 shared-bindings/struct/__init__.c:161
+#: shared-module/struct/__init__.c:183
 msgid "buffer too small"
 msgstr "tampon trop petit"
 
@@ -2703,9 +2703,19 @@ msgstr "'/' ne peut être remonté quand l'USB est actif."
 msgid "'S' and 'O' are not supported format types"
 msgstr "'S' et 'O' ne sont pas des types de format supportés"
 
-#: shared-module/struct/__init__.c:83
+#: shared-module/struct/__init__.c:128
+#, fuzzy, c-format
+msgid "unpack requires a buffer of %d bytes"
+msgstr "Echec de l'allocation de %d octets du tampon RX"
+
+#: shared-module/struct/__init__.c:136
 msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
+
+#: shared-module/struct/__init__.c:179
+#, fuzzy
+msgid "buffer size must match format"
+msgstr "les slices de tampon doivent être de longueurs égales"
 
 #: shared-module/usb_hid/Device.c:45
 #, c-format
@@ -2806,47 +2816,17 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longeur de chaîne UUID invalide"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Paramètre UUID invalide"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
+#~ msgid "Can not query for the device address."
+#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
 
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
-
-#, fuzzy
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "mauvais nombre d'octets fourni'"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2855,14 +2835,44 @@ msgstr ""
 #~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
+#, fuzzy
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "mauvais nombre d'octets fourni'"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+#~ msgid "Wrong address length"
+#~ msgstr "Mauvaise longueur d'adresse"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
+
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être une displayio.Palette"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Paramètre UUID invalide"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longeur de chaîne UUID invalide"
