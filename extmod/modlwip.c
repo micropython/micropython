@@ -1258,8 +1258,6 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 
         if (socket->pcb.tcp == NULL) {
             return 0;
-<<<<<<< HEAD
-=======
         }
 
         // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
@@ -1278,7 +1276,6 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             }
             case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
             //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
->>>>>>> eb446ec2276baa7fa1d11056df39de1143487c06
         }
         socket->pcb.tcp = NULL;
         socket->state = _ERR_BADF;
