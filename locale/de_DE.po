@@ -508,8 +508,7 @@ msgstr "Dateisystem kann nicht wieder gemounted werden."
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
-"Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
+msgstr "Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -650,110 +649,110 @@ msgstr ""
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c:37
 msgid "AnalogOut functionality not supported"
-msgstr ""
+msgstr "AnalogOut-Funktion wird nicht unterstützt"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:41
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr ""
+msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:110
 #, fuzzy
 msgid "Failed to change softdevice state"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Fehler beim Ändern des Softdevice-Status"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:119
 #, fuzzy
 msgid "Failed to get softdevice state"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Fehler beim Abrufen des Softdevice-Status"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:138
 msgid "Failed to get local address"
-msgstr ""
+msgstr "Lokale Adresse konnte nicht abgerufen werden"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:48
 msgid "interval not in range 0.0020 to 10.24"
-msgstr ""
+msgstr "Das Interval ist nicht im Bereich 0.0020 bis 10.24"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:58
 #: ports/nrf/common-hal/bleio/Peripheral.c:56
 #, fuzzy
 msgid "Data too large for advertisement packet"
-msgstr "Daten können nicht in das advertisement packet eingefügt werden."
+msgstr "Zu vielen Daten für das advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
 #: ports/nrf/common-hal/bleio/Peripheral.c:324
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
-msgstr "Kann advertisement nicht starten. Status: 0x%02x"
+msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
 #: ports/nrf/common-hal/bleio/Peripheral.c:336
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:59
 #, fuzzy, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:89
 #, fuzzy, c-format
 msgid "Failed to read gatts value, err 0x%04x"
-msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:106
 #, fuzzy, c-format
 msgid "Failed to write gatts value, err 0x%04x"
-msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:132
 #, fuzzy, c-format
 msgid "Failed to notify or indicate attribute value, err %0x04x"
-msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%02x"
+msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:144
 #, fuzzy, c-format
 msgid "Failed to read attribute value, err %0x04x"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:172
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:178
 #, fuzzy, c-format
 msgid "Failed to write attribute value, err 0x%04x"
-msgstr "Kann den Attributwert nicht schreiben. Status: 0x%02x"
+msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:189
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:251
 #: ports/nrf/common-hal/bleio/Characteristic.c:284
 msgid "bad GATT role"
-msgstr ""
+msgstr "bad GATT role"
 
 #: ports/nrf/common-hal/bleio/Device.c:80
 #: ports/nrf/common-hal/bleio/Device.c:112
 #, fuzzy
 msgid "Data too large for the advertisement packet"
-msgstr "Daten können nicht in das advertisement packet eingefügt werden."
+msgstr "Daten sind zu groß für das advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Device.c:262
 #, fuzzy
 msgid "Failed to discover services"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Es konnten keine Dienste gefunden werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:267
 #: ports/nrf/common-hal/bleio/Device.c:300
 #, fuzzy
 msgid "Failed to acquire mutex"
-msgstr "Konnte keinen RX Buffer allozieren"
+msgstr "Akquirieren des Mutex gescheitert"
 
 #: ports/nrf/common-hal/bleio/Device.c:278
 #: ports/nrf/common-hal/bleio/Device.c:311
@@ -761,105 +760,105 @@ msgstr "Konnte keinen RX Buffer allozieren"
 #: ports/nrf/common-hal/bleio/Device.c:376
 #, fuzzy
 msgid "Failed to release mutex"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+msgstr "Loslassen des Mutex gescheitert"
 
 #: ports/nrf/common-hal/bleio/Device.c:387
 #, fuzzy
 msgid "Failed to continue scanning"
-msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
+msgstr "Der Scanvorgang kann nicht fortgesetzt werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:419
 #, fuzzy
 msgid "Failed to connect:"
-msgstr "Kann nicht verbinden. Status: 0x%02x"
+msgstr "Das Verbinden ist fehlgeschlagen:"
 
 #: ports/nrf/common-hal/bleio/Device.c:489
 #, fuzzy
 msgid "Failed to add service"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Dienst konnte nicht hinzugefügt werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:506
 #, fuzzy
 msgid "Failed to start advertising"
-msgstr "Kann advertisement nicht starten. Status: 0x%02x"
+msgstr "Kann advertisement nicht starten"
 
 #: ports/nrf/common-hal/bleio/Device.c:523
 #, fuzzy
 msgid "Failed to stop advertising"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Kann advertisement nicht stoppen"
 
 #: ports/nrf/common-hal/bleio/Device.c:548
 #, fuzzy
 msgid "Failed to start scanning"
-msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
+msgstr "Der Scanvorgang kann nicht gestartet werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:564
 #, fuzzy
 msgid "Failed to create mutex"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%02x"
+msgstr "Erstellen des Mutex ist fehlgeschlagen"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c:304
 #, fuzzy, c-format
 msgid "Failed to add service, err 0x%04x"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Dienst konnte nicht hinzugefügt werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Scanner.c:75
 #, fuzzy, c-format
 msgid "Failed to continue scanning, err 0x%04x"
-msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
+msgstr "Der Scanvorgang kann nicht fortgesetzt werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Scanner.c:101
 #, fuzzy, c-format
 msgid "Failed to start scanning, err 0x%04x"
-msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%02x"
+msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Service.c:88
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
-msgstr "Kann advertisement nicht stoppen. Status: 0x%02x"
+msgstr "Fehler beim Hinzufügen des Merkmals. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Service.c:92
 msgid "Characteristic already in use by another Service."
-msgstr ""
+msgstr "Merkmal wird bereits von einem anderen Dienst verwendet."
 
 #: ports/nrf/common-hal/bleio/UUID.c:54
 #, fuzzy, c-format
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr "Kann keine herstellerspezifische 128-Bit-UUID hinzufügen."
+msgstr "Kann keine herstellerspezifische UUID hinzufügen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/UUID.c:73
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr ""
+msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/UUID.c:88
 msgid "Unexpected nrfx uuid type"
-msgstr ""
+msgstr "Unerwarteter nrfx uuid-Typ"
 
 #: ports/nrf/common-hal/busio/I2C.c:98
 #, fuzzy
 msgid "All I2C peripherals are in use"
-msgstr "Alle timer werden benutzt"
+msgstr "Alle I2C-Peripheriegeräte sind in Benutzung"
 
 #: ports/nrf/common-hal/busio/SPI.c:133
 #, fuzzy
 msgid "All SPI peripherals are in use"
-msgstr "Alle timer werden benutzt"
+msgstr "Alle SPI-Peripheriegeräte sind in Benutzung"
 
 #: ports/nrf/common-hal/busio/UART.c:49
 #, c-format
 msgid "error = 0x%08lX"
-msgstr ""
+msgstr "error = 0x%08lX"
 
 #: ports/nrf/common-hal/busio/UART.c:122
 #, fuzzy
 msgid "Invalid buffer size"
-msgstr "ungültiger dupterm index"
+msgstr "Ungültige Puffergröße"
 
 #: ports/nrf/common-hal/busio/UART.c:126
 #, fuzzy
 msgid "Odd parity is not supported"
-msgstr "bytes mit merh als 8 bits werden nicht unterstützt"
+msgstr "bytes mit mehr als 8 bits werden nicht unterstützt"
 
 #: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
 #: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
@@ -867,17 +866,17 @@ msgstr "bytes mit merh als 8 bits werden nicht unterstützt"
 #: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
 #: ports/nrf/common-hal/busio/UART.c:400
 msgid "busio.UART not available"
-msgstr ""
+msgstr "Kann busio.UART nicht finden"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:48
 #, fuzzy
 msgid "Cannot get temperature"
-msgstr "Kann PPCP Parameter nicht setzen."
+msgstr "Kann Temperatur nicht holen"
 
 #: ports/nrf/common-hal/pulseio/PWMOut.c:161
 #, fuzzy
 msgid "All PWM peripherals are in use"
-msgstr "Alle timer werden benutzt"
+msgstr "Alle PWM-Peripheriegeräte werden verwendet"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -889,7 +888,7 @@ msgstr "Fehler in ffi_prep_cif"
 
 #: ports/unix/modffi.c:270
 msgid "ffi_prep_closure_loc"
-msgstr ""
+msgstr "ffi_prep_closure_loc"
 
 #: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
