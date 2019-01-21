@@ -45,7 +45,7 @@ def setup():
 #import esp
 #esp.osdebug(None)
 import uos, machine
-uos.dupterm(machine.UART(0, 115200), 1)
+#uos.dupterm(None, 1) # disable REPL on UART(0)
 import gc
 #import webrepl
 #webrepl.start()

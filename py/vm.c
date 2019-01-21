@@ -115,7 +115,7 @@
 // returns:
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
-//  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
+//  MP_VM_RETURN_EXCEPTION, exception in state[0]
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
 #define SELECTIVE_EXC_IP (0)
 #if SELECTIVE_EXC_IP
@@ -1274,7 +1274,7 @@ yield:
                 {
                     mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
                     nlr_pop();
-                    fastn[0] = obj;
+                    code_state->state[0] = obj;
                     return MP_VM_RETURN_EXCEPTION;
                 }
 

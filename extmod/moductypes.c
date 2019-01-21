@@ -614,6 +614,25 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     }
 }
 
+STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+        case MP_UNARY_OP_INT:
+            if (MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
+                mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
+                mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
+                uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
+                if (agg_type == PTR) {
+                    byte *p = *(void**)self->addr;
+                    return mp_obj_new_int((mp_int_t)(uintptr_t)p);
+                }
+            }
+            /* fallthru */
+
+        default: return MP_OBJ_NULL; // op not supported
+    }
+}
+
 STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
@@ -662,6 +681,7 @@ STATIC const mp_obj_type_t uctypes_struct_type = {
     .make_new = uctypes_struct_make_new,
     .attr = uctypes_struct_attr,
     .subscr = uctypes_struct_subscr,
+    .unary_op = uctypes_struct_unary_op,
     .buffer_p = { .get_buffer = uctypes_get_buffer },
 };
 
@@ -719,6 +739,30 @@ STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_FLOAT32), MP_ROM_INT(TYPE2SMALLINT(FLOAT32, 4)) },
     { MP_ROM_QSTR(MP_QSTR_FLOAT64), MP_ROM_INT(TYPE2SMALLINT(FLOAT64, 4)) },
     #endif
+
+    #if MICROPY_PY_UCTYPES_NATIVE_C_TYPES
+    // C native type aliases. These depend on GCC-compatible predefined
+    // preprocessor macros.
+    #if __SIZEOF_SHORT__ == 2
+    { MP_ROM_QSTR(MP_QSTR_SHORT), MP_ROM_INT(TYPE2SMALLINT(INT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_USHORT), MP_ROM_INT(TYPE2SMALLINT(UINT16, 4)) },
+    #endif
+    #if __SIZEOF_INT__ == 4
+    { MP_ROM_QSTR(MP_QSTR_INT), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    #endif
+    #if __SIZEOF_LONG__ == 4
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
+    #elif __SIZEOF_LONG__ == 8
+    { MP_ROM_QSTR(MP_QSTR_LONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    #endif
+    #if __SIZEOF_LONG_LONG__ == 8
+    { MP_ROM_QSTR(MP_QSTR_LONGLONG), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_ULONGLONG), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
+    #endif
+    #endif // MICROPY_PY_UCTYPES_NATIVE_C_TYPES
 
     { MP_ROM_QSTR(MP_QSTR_PTR), MP_ROM_INT(TYPE2SMALLINT(PTR, AGG_TYPE_BITS)) },
     { MP_ROM_QSTR(MP_QSTR_ARRAY), MP_ROM_INT(TYPE2SMALLINT(ARRAY, AGG_TYPE_BITS)) },

@@ -65,8 +65,13 @@
 
 void SystemClock_Config(void);
 
-pyb_thread_t pyb_thread_main;
-fs_user_mount_t fs_user_mount_flash;
+#if MICROPY_PY_THREAD
+STATIC pyb_thread_t pyb_thread_main;
+#endif
+
+#if MICROPY_HW_ENABLE_STORAGE
+STATIC fs_user_mount_t fs_user_mount_flash;
+#endif
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
@@ -268,7 +273,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 }
 #endif
 
-#if MICROPY_HW_HAS_SDCARD
+#if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 STATIC bool init_sdcard_fs(void) {
     bool first_part = true;
     for (int part_num = 1; part_num <= 4; ++part_num) {
@@ -474,7 +479,9 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
+    #if defined(GPIOD)
     __HAL_RCC_GPIOD_CLK_ENABLE();
+    #endif
 
     #if defined(STM32F4) ||  defined(STM32F7)
         #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
@@ -516,6 +523,7 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_HW_ENABLE_RTC
     rtc_init_start(false);
     #endif
+    uart_init0();
     spi_init0();
     #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
@@ -584,7 +592,6 @@ soft_reset:
     pin_init0();
     extint_init0();
     timer_init0();
-    uart_init0();
 
     // Define MICROPY_HW_UART_REPL to be PYB_UART_6 and define
     // MICROPY_HW_UART_REPL_BAUD in your mpconfigboard.h file if you want a
@@ -618,7 +625,7 @@ soft_reset:
     #endif
 
     bool mounted_sdcard = false;
-    #if MICROPY_HW_HAS_SDCARD
+    #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
@@ -753,7 +760,7 @@ soft_reset_exit:
     mod_network_deinit();
     #endif
     timer_deinit();
-    uart_deinit();
+    uart_deinit_all();
     #if MICROPY_HW_ENABLE_CAN
     can_deinit();
     #endif

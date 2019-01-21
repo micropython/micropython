@@ -76,3 +76,44 @@ How to use
 5. Use either USB DFU or I2C to download firmware.  The script mboot.py shows how
    to communicate with the I2C boot loader interface.  It should be run on a
    pyboard connected via I2C to the target board.
+
+Example: Mboot on PYBv1.x
+-------------------------
+
+By default mboot is not used on PYBv1.x, but full mboot configuration is provided
+for these boards to demonstrate how it works and for testing.  To build and
+deploy mboot on these pyboards the only difference from the normal build process
+is to pass `USE_MBOOT=1` to make, so that the mboot configuration is used instead
+of the non-mboot configuration.
+
+In detail for PYBv1.0 (for PYBv1.1 use PYBV11 instead of PYBV10):
+
+1. Make sure the pyboard is in factory DFU mode (power up with BOOT0 connected to
+   3V3), then build mboot and deploy it (from the stm32/mboot/ directory):
+
+    $ make BOARD=PYBV10 USE_MBOOT=1 clean all deploy
+
+   This will put mboot on the pyboard.
+
+2. Now put the pyboard in mboot mode by holding down USR, pressing RST, and
+   continue to hold down USR until the blue LED is lit (the 4th option in the
+   cycle) and then release USR.  The red LED will blink once per second to
+   indicate that it's in mboot.  Then build the MicroPython firmware and deploy
+   it (from the stm32/ directory):
+
+    $ make BOARD=PYBV10 USE_MBOOT=1 clean all deploy
+
+   MicroPython will now be on the device and should boot straightaway.
+
+On PYBv1.x without mboot the flash layout is as follows:
+
+    0x08000000  0x08004000      0x08020000
+    | ISR text  | filesystem    | rest of MicroPython firmware
+
+On PYBv1.x with mboot the flash layout is as follows:
+
+    0x08000000  0x08004000      0x08020000
+    | mboot     | filesystem    | ISR and full MicroPython firmware
+
+Note that the filesystem remains intact when going to/from an mboot configuration
+so its contents will be preserved.

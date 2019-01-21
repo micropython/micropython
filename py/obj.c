@@ -235,12 +235,8 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         return mp_obj_int_get_checked(arg);
     } else {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("can't convert to int");
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "can't convert %s to int", mp_obj_get_type_str(arg)));
-        }
+        mp_obj_t res = mp_unary_op(MP_UNARY_OP_INT, (mp_obj_t)arg);
+        return mp_obj_int_get_checked(res);
     }
 }
 

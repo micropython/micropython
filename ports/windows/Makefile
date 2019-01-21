@@ -46,9 +46,6 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 SRC_C += lib/mp-readline/readline.c
-else ifeq ($(MICROPY_USE_READLINE),2)
-CFLAGS_MOD += -DMICROPY_USE_READLINE=2
-LDFLAGS_MOD += -lreadline
 endif
 
 LIB += -lws2_32
