@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-18 11:43-0800\n"
+"POT-Creation-Date: 2019-01-20 17:33-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,8 +21,8 @@ msgstr ""
 msgid "invalid I2C peripheral"
 msgstr "perangkat I2C tidak valid"
 
-#: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
-#: extmod/machine_i2c.c:392
+#: extmod/machine_i2c.c:338 extmod/machine_i2c.c:352 extmod/machine_i2c.c:366
+#: extmod/machine_i2c.c:390
 msgid "I2C operation not supported"
 msgstr "operasi I2C tidak didukung"
 
@@ -904,7 +904,7 @@ msgstr "[addrinfo error %d]"
 msgid "function does not take keyword arguments"
 msgstr "fungsi tidak dapat mengambil argumen keyword"
 
-#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:105
+#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:108
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "fungsi mengambil posisi argumen %d tapi %d yang diberikan"
@@ -939,7 +939,7 @@ msgstr "argumen num/types tidak cocok"
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr "argumen keyword belum diimplementasi - gunakan args normal"
 
-#: py/bc.c:88 py/objnamedtuple.c:109
+#: py/bc.c:88 py/objnamedtuple.c:112
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
 
@@ -951,11 +951,11 @@ msgstr "argumen keyword tidak diharapkan"
 msgid "keywords must be strings"
 msgstr "keyword harus berupa string"
 
-#: py/bc.c:206 py/objnamedtuple.c:139
+#: py/bc.c:206 py/objnamedtuple.c:142
 msgid "function got multiple values for argument '%q'"
 msgstr "fungsi mendapatkan nilai ganda untuk argumen '%q'"
 
-#: py/bc.c:218 py/objnamedtuple.c:131
+#: py/bc.c:218 py/objnamedtuple.c:134
 msgid "unexpected keyword argument '%q'"
 msgstr "keyword argumen '%q' tidak diharapkan"
 
@@ -1543,11 +1543,11 @@ msgstr ""
 msgid "empty"
 msgstr ""
 
-#: py/objdict.c:312
+#: py/objdict.c:315
 msgid "popitem(): dictionary is empty"
 msgstr ""
 
-#: py/objdict.c:355
+#: py/objdict.c:358
 msgid "dict update sequence has wrong length"
 msgstr ""
 
@@ -2288,29 +2288,21 @@ msgstr ""
 msgid "color should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:79
-msgid "Width and height kwargs required"
+#: shared-bindings/displayio/Display.c:119
+msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:93
-msgid "Display limit reached"
-msgstr ""
-
-#: shared-bindings/displayio/Display.c:112
+#: shared-bindings/displayio/Display.c:138
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:69
-msgid "Command and chip_select required"
+#: shared-bindings/displayio/FourWire.c:93
+#: shared-bindings/displayio/ParallelBus.c:98
+msgid "Too many display busses"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:91
-#: shared-bindings/displayio/ParallelBus.c:94
-msgid "Display bus limit reached"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:104
-#: shared-bindings/displayio/ParallelBus.c:106
+#: shared-bindings/displayio/FourWire.c:106
+#: shared-bindings/displayio/ParallelBus.c:110
 msgid "displayio is a work in progress"
 msgstr ""
 
@@ -2337,10 +2329,6 @@ msgstr ""
 #: shared-bindings/displayio/Palette.c:120
 #: shared-bindings/displayio/Palette.c:134
 msgid "palette_index should be an int"
-msgstr ""
-
-#: shared-bindings/displayio/ParallelBus.c:75
-msgid "Data0, command, chip_select, write and read required"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c:92
@@ -2682,11 +2670,11 @@ msgstr ""
 msgid "No default I2C bus"
 msgstr "Tidak ada standar bus I2C"
 
-#: supervisor/shared/board_busses.c:89
+#: supervisor/shared/board_busses.c:91
 msgid "No default SPI bus"
 msgstr "Tidak ada standar bus SPI"
 
-#: supervisor/shared/board_busses.c:116
+#: supervisor/shared/board_busses.c:118
 msgid "No default UART bus"
 msgstr "Tidak ada standar bus UART"
 
@@ -2751,8 +2739,17 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Panjang string UUID tidak valid"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parameter UUID tidak valid"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2761,14 +2758,5 @@ msgstr ""
 #~ "tegangan cukup untuk semua sirkuit dan tekan reset (setelah mencabut "
 #~ "CIRCUITPY).\n"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parameter UUID tidak valid"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Panjang string UUID tidak valid"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-18 11:43-0800\n"
+"POT-Creation-Date: 2019-01-20 17:33-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -21,8 +21,8 @@ msgstr ""
 msgid "invalid I2C peripheral"
 msgstr "maling I2C peripheral"
 
-#: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
-#: extmod/machine_i2c.c:392
+#: extmod/machine_i2c.c:338 extmod/machine_i2c.c:352 extmod/machine_i2c.c:366
+#: extmod/machine_i2c.c:390
 msgid "I2C operation not supported"
 msgstr "Hindi supportado ang operasyong I2C"
 
@@ -902,7 +902,7 @@ msgstr "[addrinfo error %d]"
 msgid "function does not take keyword arguments"
 msgstr "ang function ay hindi kumukuha ng mga argumento ng keyword"
 
-#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:105
+#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:108
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -940,7 +940,7 @@ msgstr ""
 "kindi pa ipinapatupad ang (mga) argument(s) ng keyword - gumamit ng normal "
 "args"
 
-#: py/bc.c:88 py/objnamedtuple.c:109
+#: py/bc.c:88 py/objnamedtuple.c:112
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
 "Ang %q() ay kumukuha ng %d positional arguments pero %d lang ang binigay"
@@ -953,11 +953,11 @@ msgstr "hindi inaasahang argumento ng keyword"
 msgid "keywords must be strings"
 msgstr "ang keywords dapat strings"
 
-#: py/bc.c:206 py/objnamedtuple.c:139
+#: py/bc.c:206 py/objnamedtuple.c:142
 msgid "function got multiple values for argument '%q'"
 msgstr "ang function ay nakakuha ng maraming values para sa argument '%q'"
 
-#: py/bc.c:218 py/objnamedtuple.c:131
+#: py/bc.c:218 py/objnamedtuple.c:134
 msgid "unexpected keyword argument '%q'"
 msgstr "hindi inaasahang argumento ng keyword na '%q'"
 
@@ -1548,11 +1548,11 @@ msgstr "puno"
 msgid "empty"
 msgstr "walang laman"
 
-#: py/objdict.c:312
+#: py/objdict.c:315
 msgid "popitem(): dictionary is empty"
 msgstr "popitem(): dictionary ay walang laman"
 
-#: py/objdict.c:355
+#: py/objdict.c:358
 msgid "dict update sequence has wrong length"
 msgstr "may mali sa haba ng dict update sequence"
 
@@ -2311,29 +2311,21 @@ msgstr "row data ay dapat na buffer"
 msgid "color should be an int"
 msgstr "color ay dapat na int"
 
-#: shared-bindings/displayio/Display.c:79
-msgid "Width and height kwargs required"
+#: shared-bindings/displayio/Display.c:119
+msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:93
-msgid "Display limit reached"
-msgstr ""
-
-#: shared-bindings/displayio/Display.c:112
+#: shared-bindings/displayio/Display.c:138
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:69
-msgid "Command and chip_select required"
+#: shared-bindings/displayio/FourWire.c:93
+#: shared-bindings/displayio/ParallelBus.c:98
+msgid "Too many display busses"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:91
-#: shared-bindings/displayio/ParallelBus.c:94
-msgid "Display bus limit reached"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:104
-#: shared-bindings/displayio/ParallelBus.c:106
+#: shared-bindings/displayio/FourWire.c:106
+#: shared-bindings/displayio/ParallelBus.c:110
 msgid "displayio is a work in progress"
 msgstr "displayio ay nasa gitna ng konstruksiyon"
 
@@ -2361,10 +2353,6 @@ msgstr "color buffer ay dapat buffer or int"
 #: shared-bindings/displayio/Palette.c:134
 msgid "palette_index should be an int"
 msgstr "palette_index ay dapat na int"
-
-#: shared-bindings/displayio/ParallelBus.c:75
-msgid "Data0, command, chip_select, write and read required"
-msgstr ""
 
 #: shared-bindings/displayio/Shape.c:92
 #, fuzzy
@@ -2712,11 +2700,11 @@ msgstr "May pagkakamali ang USB"
 msgid "No default I2C bus"
 msgstr "Walang default na I2C bus"
 
-#: supervisor/shared/board_busses.c:89
+#: supervisor/shared/board_busses.c:91
 msgid "No default SPI bus"
 msgstr "Walang default SPI bus"
 
-#: supervisor/shared/board_busses.c:116
+#: supervisor/shared/board_busses.c:118
 msgid "No default UART bus"
 msgstr "Walang default UART bus"
 
@@ -2789,35 +2777,21 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mali ang address length"
-
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Mali ang UUID string length"
 
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Mali ang UUID parameter"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Hindi ma-set ang PPCP parameters."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Mali ang bilang ng bytes"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2826,25 +2800,39 @@ msgstr ""
 #~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
 #~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
-
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
+
+#~ msgid "Wrong address length"
+#~ msgstr "Mali ang address length"
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Mali ang bilang ng bytes"
 
 #~ msgid "Can not add Service."
 #~ msgstr "Hindi maidaragdag ang serbisyo."
 
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Mali ang tipo ng serbisyo"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "ang palette ay dapat 32 bytes ang haba"

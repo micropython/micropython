@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-18 11:43-0800\n"
+"POT-Creation-Date: 2019-01-20 17:33-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -20,8 +20,8 @@ msgstr ""
 msgid "invalid I2C peripheral"
 msgstr "périphérique I2C invalide"
 
-#: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
-#: extmod/machine_i2c.c:392
+#: extmod/machine_i2c.c:338 extmod/machine_i2c.c:352 extmod/machine_i2c.c:366
+#: extmod/machine_i2c.c:390
 msgid "I2C operation not supported"
 msgstr "opération sur I2C non supportée"
 
@@ -904,7 +904,7 @@ msgstr ""
 msgid "function does not take keyword arguments"
 msgstr "la fonction ne prend pas d'arguments nommés"
 
-#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:105
+#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:108
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "la fonction prend %d argument(s) mais %d ont été donné(s)"
@@ -940,7 +940,7 @@ msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
 "argument(s) nommé(s) pas encore implémenté - utilisez les arguments normaux"
 
-#: py/bc.c:88 py/objnamedtuple.c:109
+#: py/bc.c:88 py/objnamedtuple.c:112
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() prend %d arguments mais %d ont été donnés"
 
@@ -952,11 +952,11 @@ msgstr "argument nommé imprévu"
 msgid "keywords must be strings"
 msgstr "les noms doivent être des chaînes de caractère"
 
-#: py/bc.c:206 py/objnamedtuple.c:139
+#: py/bc.c:206 py/objnamedtuple.c:142
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 
-#: py/bc.c:218 py/objnamedtuple.c:131
+#: py/bc.c:218 py/objnamedtuple.c:134
 msgid "unexpected keyword argument '%q'"
 msgstr "argument nommé '%q' imprévu"
 
@@ -1546,11 +1546,11 @@ msgstr "plein"
 msgid "empty"
 msgstr "vide"
 
-#: py/objdict.c:312
+#: py/objdict.c:315
 msgid "popitem(): dictionary is empty"
 msgstr "popitem(): dictionnaire vide"
 
-#: py/objdict.c:355
+#: py/objdict.c:358
 msgid "dict update sequence has wrong length"
 msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
 
@@ -2318,29 +2318,21 @@ msgstr "les données de ligne doivent être un tampon"
 msgid "color should be an int"
 msgstr "la couleur doit être un entier (int)"
 
-#: shared-bindings/displayio/Display.c:79
-msgid "Width and height kwargs required"
+#: shared-bindings/displayio/Display.c:119
+msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:93
-msgid "Display limit reached"
-msgstr ""
-
-#: shared-bindings/displayio/Display.c:112
+#: shared-bindings/displayio/Display.c:138
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:69
-msgid "Command and chip_select required"
+#: shared-bindings/displayio/FourWire.c:93
+#: shared-bindings/displayio/ParallelBus.c:98
+msgid "Too many display busses"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:91
-#: shared-bindings/displayio/ParallelBus.c:94
-msgid "Display bus limit reached"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:104
-#: shared-bindings/displayio/ParallelBus.c:106
+#: shared-bindings/displayio/FourWire.c:106
+#: shared-bindings/displayio/ParallelBus.c:110
 msgid "displayio is a work in progress"
 msgstr "displayio est en cours de développement"
 
@@ -2374,10 +2366,6 @@ msgstr "le tampon de couleur doit être un tampon ou un entier"
 #, fuzzy
 msgid "palette_index should be an int"
 msgstr "palette_index devrait être un entier (int)'"
-
-#: shared-bindings/displayio/ParallelBus.c:75
-msgid "Data0, command, chip_select, write and read required"
-msgstr ""
 
 #: shared-bindings/displayio/Shape.c:92
 #, fuzzy
@@ -2736,11 +2724,11 @@ msgstr "Erreur USB"
 msgid "No default I2C bus"
 msgstr "Pas de bus I2C par défaut"
 
-#: supervisor/shared/board_busses.c:89
+#: supervisor/shared/board_busses.c:91
 msgid "No default SPI bus"
 msgstr "Pas de bus SPI par défaut"
 
-#: supervisor/shared/board_busses.c:116
+#: supervisor/shared/board_busses.c:118
 msgid "No default UART bus"
 msgstr "Pas de bus UART par défaut"
 
@@ -2818,44 +2806,47 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
-
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Longeur de chaîne UUID invalide"
 
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Paramètre UUID invalide"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
-
 #, fuzzy
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "mauvais nombre d'octets fourni'"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être une displayio.Palette"
 
 #, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "value_size doit être une puissance de 2"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+
+#~ msgid "Wrong address length"
+#~ msgstr "Mauvaise longueur d'adresse"
+
+#, fuzzy
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "mauvais nombre d'octets fourni'"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2864,17 +2855,14 @@ msgstr ""
 #~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
 
 #~ msgid "Can not query for the device address."
 #~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
