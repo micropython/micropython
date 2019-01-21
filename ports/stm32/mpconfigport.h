@@ -32,6 +32,13 @@
 #include "mpconfigboard_common.h"
 
 // memory allocation policies
+#ifndef MICROPY_GC_STACK_ENTRY_TYPE
+#if MICROPY_HW_SDRAM_SIZE
+#define MICROPY_GC_STACK_ENTRY_TYPE uint32_t
+#else
+#define MICROPY_GC_STACK_ENTRY_TYPE uint16_t
+#endif
+#endif
 #define MICROPY_ALLOC_PATH_MAX      (128)
 
 // emitters

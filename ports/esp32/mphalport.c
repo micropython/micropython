@@ -61,11 +61,17 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    MP_THREAD_GIL_EXIT();
+    // Only release the GIL if many characters are being sent
+    bool release_gil = len > 20;
+    if (release_gil) {
+        MP_THREAD_GIL_EXIT();
+    }
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);
     }
-    MP_THREAD_GIL_ENTER();
+    if (release_gil) {
+        MP_THREAD_GIL_ENTER();
+    }
     mp_uos_dupterm_tx_strn(str, len);
 }
 

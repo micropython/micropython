@@ -280,11 +280,17 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define LED0 MICROPY_HW_LED1
 #define LED1 MICROPY_HW_LED2
 #define LED2 MICROPY_HW_LED3
+#ifdef MICROPY_HW_LED4
+#define LED3 MICROPY_HW_LED4
+#endif
 
 void led_init(void) {
     mp_hal_pin_output(LED0);
     mp_hal_pin_output(LED1);
     mp_hal_pin_output(LED2);
+    #ifdef LED3
+    mp_hal_pin_output(LED3);
+    #endif
 }
 
 void led_state(int led, int val) {
@@ -296,6 +302,15 @@ void led_state(int led, int val) {
     } else {
         MICROPY_HW_LED_OFF(led);
     }
+}
+
+void led_state_all(unsigned int mask) {
+    led_state(LED0, mask & 1);
+    led_state(LED1, mask & 2);
+    led_state(LED2, mask & 4);
+    #ifdef LED3
+    led_state(LED3, mask & 8);
+    #endif
 }
 
 /******************************************************************************/
@@ -1083,7 +1098,11 @@ static int pyb_usbdd_shutdown(void) {
 
 #define RESET_MODE_NUM_STATES (4)
 #define RESET_MODE_TIMEOUT_CYCLES (8)
+#ifdef LED3
+#define RESET_MODE_LED_STATES 0x8421
+#else
 #define RESET_MODE_LED_STATES 0x7421
+#endif
 
 static int get_reset_mode(void) {
     usrbtn_init();
@@ -1100,9 +1119,7 @@ static int get_reset_mode(void) {
                     reset_mode = 1;
                 }
                 uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-                led_state(LED0, l & 1);
-                led_state(LED1, l & 2);
-                led_state(LED2, l & 4);
+                led_state_all(l);
             }
             if (!usrbtn_state()) {
                 break;
@@ -1111,14 +1128,10 @@ static int get_reset_mode(void) {
         }
         // Flash the selected reset mode
         for (int i = 0; i < 6; i++) {
-            led_state(LED0, 0);
-            led_state(LED1, 0);
-            led_state(LED2, 0);
+            led_state_all(0);
             mp_hal_delay_ms(50);
             uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-            led_state(LED0, l & 1);
-            led_state(LED1, l & 2);
-            led_state(LED2, l & 4);
+            led_state_all(l);
             mp_hal_delay_ms(50);
         }
         mp_hal_delay_ms(300);
@@ -1127,9 +1140,7 @@ static int get_reset_mode(void) {
 }
 
 static void do_reset(void) {
-    led_state(LED0, 0);
-    led_state(LED1, 0);
-    led_state(LED2, 0);
+    led_state_all(0);
     mp_hal_delay_ms(50);
     pyb_usbdd_shutdown();
     #if defined(MBOOT_I2C_SCL)
@@ -1235,9 +1246,7 @@ enter_bootloader:
     i2c_init(initial_r0);
     #endif
 
-    led_state(LED0, 0);
-    led_state(LED1, 0);
-    led_state(LED2, 0);
+    led_state_all(0);
 
     #if USE_USB_POLLING
     uint32_t ss = systick_ms;

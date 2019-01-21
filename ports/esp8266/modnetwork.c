@@ -83,7 +83,19 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
         } else {
             mode &= ~mask;
         }
+        if (mode != NULL_MODE) {
+            wifi_fpm_do_wakeup();
+            wifi_fpm_close();
+        }
         error_check(wifi_set_opmode(mode), "Cannot update i/f status");
+        if (mode == NULL_MODE) {
+            // Wait for the interfaces to go down before forcing power management
+            while (wifi_get_opmode() != NULL_MODE) {
+                ets_loop_iter();
+            }
+            wifi_fpm_open();
+            wifi_fpm_do_sleep(0xfffffff);
+        }
         return mp_const_none;
     }
 

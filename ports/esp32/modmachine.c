@@ -120,7 +120,6 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 }
 
 STATIC mp_obj_t machine_sleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "light sleep not available for this version of ESP-IDF"));
     return machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, pos_args, kw_args);
 };
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_sleep_obj, 0,  machine_sleep);

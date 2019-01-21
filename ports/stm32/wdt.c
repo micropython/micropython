@@ -37,7 +37,7 @@ typedef struct _pyb_wdt_obj_t {
     mp_obj_base_t base;
 } pyb_wdt_obj_t;
 
-STATIC pyb_wdt_obj_t pyb_wdt = {{&pyb_wdt_type}};
+STATIC const pyb_wdt_obj_t pyb_wdt = {{&pyb_wdt_type}};
 
 STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse arguments

@@ -97,6 +97,11 @@
 #define MICROPY_HW_HAS_SDCARD (0)
 #endif
 
+// Whether to automatically mount (and boot from) the SD card if it's present
+#ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
+#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_HAS_SDCARD)
+#endif
+
 // Whether to enable the MMA7660 driver, exposed as pyb.Accel
 #ifndef MICROPY_HW_HAS_MMA7660
 #define MICROPY_HW_HAS_MMA7660 (0)

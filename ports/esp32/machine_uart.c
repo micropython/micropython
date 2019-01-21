@@ -46,6 +46,8 @@ typedef struct _machine_uart_obj_t {
     int8_t rx;
     int8_t rts;
     int8_t cts;
+    uint16_t txbuf;
+    uint16_t rxbuf;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } machine_uart_obj_t;
@@ -59,13 +61,13 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t baudrate;
     uart_get_baudrate(self->uart_num, &baudrate);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, timeout=%u, timeout_char=%u)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u)",
         self->uart_num, baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx, self->rts, self->cts, self->timeout, self->timeout_char);
+        self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char);
 }
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_timeout, ARG_timeout_char };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -75,6 +77,8 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
         { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
@@ -83,6 +87,29 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     // wait for all data to be transmitted before changing settings
     uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
+
+    if (args[ARG_txbuf].u_int >= 0 || args[ARG_rxbuf].u_int >= 0) {
+        // must reinitialise driver to change the tx/rx buffer size
+        if (args[ARG_txbuf].u_int >= 0) {
+            self->txbuf = args[ARG_txbuf].u_int;
+        }
+        if (args[ARG_rxbuf].u_int >= 0) {
+            self->rxbuf = args[ARG_rxbuf].u_int;
+        }
+        uart_config_t uartcfg = {
+            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+            .rx_flow_ctrl_thresh = 0
+        };
+        uint32_t baudrate;
+        uart_get_baudrate(self->uart_num, &baudrate);
+        uartcfg.baud_rate = baudrate;
+        uart_get_word_length(self->uart_num, &uartcfg.data_bits);
+        uart_get_parity(self->uart_num, &uartcfg.parity);
+        uart_get_stop_bits(self->uart_num, &uartcfg.stop_bits);
+        uart_driver_delete(self->uart_num);
+        uart_param_config(self->uart_num, &uartcfg);
+        uart_driver_install(self->uart_num, self->rxbuf, self->txbuf, 0, NULL, 0);
+    }
 
     // set baudrate
     uint32_t baudrate = 115200;
@@ -214,6 +241,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->stop = 1;
     self->rts = UART_PIN_NO_CHANGE;
     self->cts = UART_PIN_NO_CHANGE;
+    self->txbuf = 256;
+    self->rxbuf = 256; // IDF minimum
     self->timeout = 0;
     self->timeout_char = 0;
 
@@ -239,8 +268,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     // Setup
     uart_param_config(self->uart_num, &uartcfg);
 
-    // RX and TX buffers are currently hardcoded at 256 bytes each (IDF minimum).
-    uart_driver_install(uart_num, 256, 256, 0, NULL, 0);
+    uart_driver_install(uart_num, self->rxbuf, self->txbuf, 0, NULL, 0);
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -266,6 +294,37 @@ STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
+STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    // Save settings
+    uart_word_length_t word_length;
+    uart_parity_t parity;
+    uart_get_word_length(self->uart_num, &word_length);
+    uart_get_parity(self->uart_num, &parity);
+
+    // Synthesise the break condition by either a longer word or using even parity
+    uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
+    if (word_length != UART_DATA_8_BITS) {
+        uart_set_word_length(self->uart_num, UART_DATA_8_BITS);
+    } else if (parity == UART_PARITY_DISABLE) {
+        uart_set_parity(self->uart_num, UART_PARITY_EVEN);
+    } else {
+        // Cannot synthesise break
+        mp_raise_OSError(MP_EPERM);
+    }
+    char buf[1] = {0};
+    uart_write_bytes(self->uart_num, buf, 1);
+    uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
+
+    // Restore original settings
+    uart_set_word_length(self->uart_num, word_length);
+    uart_set_parity(self->uart_num, parity);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
+
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
 
@@ -274,6 +333,7 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);

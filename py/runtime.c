@@ -129,6 +129,8 @@ void mp_init(void) {
 }
 
 void mp_deinit(void) {
+    MP_THREAD_GIL_EXIT();
+
     //mp_obj_dict_free(&dict_main);
     //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
 
@@ -228,6 +230,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
             case MP_UNARY_OP_HASH:
                 return arg;
             case MP_UNARY_OP_POSITIVE:
+            case MP_UNARY_OP_INT:
                 return arg;
             case MP_UNARY_OP_NEGATIVE:
                 // check for overflow
@@ -265,12 +268,23 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
                 return result;
             }
         }
+        // With MP_UNARY_OP_INT, mp_unary_op() becomes a fallback for mp_obj_get_int().
+        // In this case provide a more focused error message to not confuse, e.g. chr(1.0)
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("unsupported type for operator");
+            if (op == MP_UNARY_OP_INT) {
+                mp_raise_TypeError("can't convert to int");
+            } else {
+                mp_raise_TypeError("unsupported type for operator");
+            }
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "unsupported type for %q: '%s'",
-                mp_unary_op_method_name[op], mp_obj_get_type_str(arg)));
+            if (op == MP_UNARY_OP_INT) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "can't convert %s to int", mp_obj_get_type_str(arg)));
+            } else {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "unsupported type for %q: '%s'",
+                    mp_unary_op_method_name[op], mp_obj_get_type_str(arg)));
+            }
         }
     }
 }
