@@ -1,16 +1,20 @@
-:mod:`esp` --- functions related to the ESP8266
-===============================================
+:mod:`esp` --- functions related to the ESP8266 and ESP32
+=========================================================
 
 .. module:: esp
-    :synopsis: functions related to the ESP8266
+    :synopsis: functions related to the ESP8266 and ESP32
 
-The ``esp`` module contains specific functions related to the ESP8266 module.
+The ``esp`` module contains specific functions related to both the ESP8266 and 
+ESP32 modules.  Some functions are only available on one or the other of these
+ports.
 
 
 Functions
 ---------
 
 .. function:: sleep_type([sleep_type])
+
+    **Note**: ESP8266 only
 
     Get or set the sleep type.
 
@@ -29,6 +33,8 @@ Functions
 
 .. function:: deepsleep(time=0)
 
+    **Note**: ESP8266 only - use `machine.deepsleep()` on ESP32
+
     Enter deep sleep.
 
     The whole module powers down, except for the RTC clock circuit, which can
@@ -38,7 +44,17 @@ Functions
 
 .. function:: flash_id()
 
+    **Note**: ESP8266 only
+
     Read the device ID of the flash memory.
+
+.. function:: flash_size()
+
+    Read the total size of the flash memory.
+
+.. function:: flash_user_start()
+
+    Read the memory offset at which the user flash space begins.
 
 .. function:: flash_read(byte_offset, length_or_buffer)
 
@@ -47,6 +63,8 @@ Functions
 .. function:: flash_erase(sector_no)
 
 .. function:: set_native_code_location(start, length)
+
+    **Note**: ESP8266 only
 
     Set the location that native code will be placed for execution after it is
     compiled.  Native code is emitted when the ``@micropython.native``,
