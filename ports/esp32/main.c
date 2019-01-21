@@ -62,11 +62,6 @@ int vprintf_null(const char *format, va_list ap) {
     return 0;
 }
 
-int vprintf_null(const char *format, va_list ap) {
-    // do nothing: this is used as a log target during raw repl mode
-    return 0;
-}
-
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)get_sp();
     #if MICROPY_PY_THREAD

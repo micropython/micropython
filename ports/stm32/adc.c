@@ -106,16 +106,6 @@
 #define ADC_CAL_BITS            (16)
 #define ADC_CHANNEL_VBAT        ADC_CHANNEL_VBAT_DIV4
 
-#elif defined(STM32H7)
-
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (16)
-#define ADC_SCALE_V             (3.3f)
-#define ADC_CAL_ADDRESS         (0x1FF1E860)
-#define ADC_CAL1                ((uint16_t*)(0x1FF1E820))
-#define ADC_CAL2                ((uint16_t*)(0x1FF1E840))
-#define ADC_CHANNEL_VBAT        ADC_CHANNEL_VBAT_DIV4
-
 #elif defined(STM32L4)
 
 #define ADC_FIRST_GPIO_CHANNEL  (1)

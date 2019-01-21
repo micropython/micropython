@@ -1303,37 +1303,6 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         }
         ret = 0;
 
-        // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
-        tcp_recv(socket->pcb.tcp, NULL);
-
-        switch (socket->type) {
-            case MOD_NETWORK_SOCK_STREAM: {
-                if (socket->pcb.tcp->state == LISTEN) {
-                    socket_is_listener = true;
-                }
-                if (tcp_close(socket->pcb.tcp) != ERR_OK) {
-                    DEBUG_printf("lwip_close: had to call tcp_abort()\n");
-                    tcp_abort(socket->pcb.tcp);
-                }
-                break;
-            }
-            case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
-            //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
-        }
-        socket->pcb.tcp = NULL;
-        socket->state = _ERR_BADF;
-        if (socket->incoming.pbuf != NULL) {
-            if (!socket_is_listener) {
-                pbuf_free(socket->incoming.pbuf);
-            } else {
-                // Deregister callback and abort
-                tcp_poll(socket->incoming.connection, NULL, 0);
-                tcp_abort(socket->incoming.connection);
-            }
-            socket->incoming.pbuf = NULL;
-        }
-        ret = 0;
-
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;

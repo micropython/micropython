@@ -201,11 +201,6 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
         n_state_out_var = mp_decode_uint_value(bytecode);                         \
         size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(bytecode)); \
                                                                                   \
-<<<<<<< HEAD
-        n_state_out_var += VM_DETECT_STACK_OVERFLOW;                              \
-                                                                                  \
-=======
->>>>>>> eb446ec2276baa7fa1d11056df39de1143487c06
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
                            + n_exc_stack * sizeof(mp_exc_stack_t);                \
@@ -328,11 +323,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     } else {
         // must be an exception because normal functions can't yield
         assert(vm_return_kind == MP_VM_RETURN_EXCEPTION);
-<<<<<<< HEAD
-        // return value is in fastn[0]==state[n_state - 1]
-=======
         // returned exception is in state[0]
->>>>>>> eb446ec2276baa7fa1d11056df39de1143487c06
         result = code_state->state[0];
     }
 
