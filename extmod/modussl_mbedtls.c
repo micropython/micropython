@@ -61,6 +61,7 @@ struct ssl_args {
     mp_arg_val_t cert;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
+    mp_arg_val_t ca_certs;
 };
 
 STATIC const mp_obj_type_t ussl_socket_type;
@@ -147,7 +148,9 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         goto cleanup;
     }
 
-    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    
+    if (args->ca_certs.u_obj == MP_OBJ_NULL)
+    	mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
@@ -185,12 +188,41 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         assert(ret == 0);
     }
 
+
+    if (args->ca_certs.u_obj != MP_OBJ_NULL){
+        size_t cert_len;
+	const byte *cert = (const byte*)mp_obj_str_get_data(args->ca_certs.u_obj, &cert_len);
+        // len should include terminating null
+
+        ret = mbedtls_x509_crt_parse(&o->cacert, cert, cert_len + 1);
+        if(ret != 0){
+            printf("mbedtls_x509_crt_parse error: -%x\n", -ret);
+	    goto cleanup;
+	}
+
+        mbedtls_ssl_conf_ca_chain(&o->conf, &o->cacert, NULL);
+    	
+    }
+
+    bool cleanup = false;
     while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
             printf("mbedtls_ssl_handshake error: -%x\n", -ret);
-            goto cleanup;
+            cleanup = true;
+	    break;
         }
     }
+   
+    if (args->ca_certs.u_obj != MP_OBJ_NULL)
+    	if( ( ret = mbedtls_ssl_get_verify_result( &o->ssl ) ) != 0 ){	
+        	char vrfy_buf[512];
+        	printf("CA Verify failed: ");
+       		mbedtls_x509_crt_verify_info( vrfy_buf, sizeof( vrfy_buf ), " ", ret );
+        	printf("%s\n", vrfy_buf );
+		goto cleanup;
+    	}
+   
+    if (cleanup) goto cleanup;
 
     return o;
 
@@ -322,6 +354,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_ca_certs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // TODO: Check that sock implements stream protocol
