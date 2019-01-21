@@ -124,8 +124,8 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte* end_p, size
     char fmt_type = get_fmt_type(&fmt);
     const mp_uint_t total_sz = shared_modules_struct_calcsize(fmt_in);
 
-    if (p + total_sz != end_p) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, translate("unpack requires a buffer of %d bytes"), total_sz);
+    if (p + total_sz > end_p) {
+        mp_raise_RuntimeError(translate("buffer too small"));
     }
 
     size_t i;
