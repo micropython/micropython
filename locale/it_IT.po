@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-21 21:50-0500\n"
+"POT-Creation-Date: 2019-01-22 14:00-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -1973,7 +1973,7 @@ msgstr "il tipo dell'argomento è errato"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "l'argomento dovrebbe essere un '%q' e non un '%q'"
 
-#: py/runtime.c:1123 py/runtime.c:1197
+#: py/runtime.c:1123 py/runtime.c:1197 shared-bindings/_pixelbuf/__init__.c:106
 msgid "no such attribute"
 msgstr "attributo inesistente"
 
@@ -2051,6 +2051,57 @@ msgstr "nessuna eccezione attiva da rilanciare"
 #: py/vm.c:1284
 msgid "byte code not implemented"
 msgstr "byte code non implementato"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:99
+#, c-format
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:104
+#, c-format
+msgid "Can not use dotstar with %s"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:116
+msgid "rawbuf is not the same size as buf"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:121
+#, c-format
+msgid "buf is too small. need %d bytes"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:127
+msgid "write_args must be a list, tuple, or None"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:392
+#, fuzzy
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr "solo slice con step=1 (aka None) sono supportate"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:394
+#, fuzzy
+msgid "Range out of bounds"
+msgstr "indirizzo fuori limite"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:403
+msgid "tuple/list required on RHS"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:419
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:442
+msgid "Pixel beyond bounds of buffer"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/__init__.c:112
+#, fuzzy
+msgid "readonly attribute"
+msgstr "attributo non leggibile"
 
 #: shared-bindings/_stage/Layer.c:71
 msgid "graphic must be 2048 bytes long"
@@ -2569,6 +2620,11 @@ msgstr ""
 "L'oggetto è stato deinizializzato e non può essere più usato. Crea un nuovo "
 "oggetto."
 
+#: shared-module/_pixelbuf/PixelBuf.c:69
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
 msgstr "Impossibile allocare il primo buffer"
@@ -2802,24 +2858,44 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Lunghezza della stringa UUID non valida"
-
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parametro UUID non valido"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo di servizio non valido"
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Lunghezza della stringa UUID non valida"
 
 #, fuzzy
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "numero di argomenti errato"
 
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo di servizio non valido"
+
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Impossibile impostare i parametri PPCP."
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Non è possibile aggiungere Characteristic."
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossibile applicare i parametri GAP."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Non è possibile aggiungere Service."
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
+#~ "espulso CIRCUITPY).\n"
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Fallita allocazione del buffer RX di %d byte"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
 
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
@@ -2833,33 +2909,13 @@ msgstr ""
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
 
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Non è possibile aggiungere Characteristic."
+
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Non è possibile aggiungere Service."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
 #~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
 #~ "Whoops!\n"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
-#~ "espulso CIRCUITPY).\n"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossibile applicare i parametri GAP."
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Fallita allocazione del buffer RX di %d byte"

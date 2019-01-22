@@ -227,6 +227,12 @@ SRC_SHARED_MODULE = \
 	displayio/Sprite.c \
 	storage/__init__.c
 
+
+ifndef EXCLUDE_PIXELBUF
+       SRC_SHARED_MODULE += _pixelbuf/__init__.c \
+       _pixelbuf/PixelBuf.c
+endif
+
 #	uheap/__init__.c \
 	ustack/__init__.c
 
