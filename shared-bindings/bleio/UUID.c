@@ -70,20 +70,51 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, co
         common_hal_bleio_uuid_construct(self, uuid16, NULL);
 
     } else {
-        mp_buffer_info_t bufinfo;
-        if (!mp_get_buffer(value, &bufinfo, MP_BUFFER_READ)) {
-            mp_raise_ValueError(translate("UUID value is not int or byte buffer"));
+        if (MP_OBJ_IS_STR(value)) {
+            // 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+            GET_STR_DATA_LEN(value, chars, len);
+            char hex[32];
+            // Validate length, hyphens, and hex digits.
+            bool good_uuid =
+                len == 36 && chars[8] == '-' && chars[13] == '-' && chars[18] == '-' && chars[23] == '-';
+            if (good_uuid) {
+                size_t hex_idx = 0;
+                for (int i = 0; i < len; i++) {
+                    if (unichar_isxdigit(chars[i])) {
+                        hex[hex_idx] = chars[i];
+                        hex_idx++;
+                    }
+                }
+                good_uuid = hex_idx == 32;
+            }
+            if (!good_uuid) {
+                mp_raise_ValueError(translate("UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"));
+            }
+
+            size_t hex_idx = 0;
+            for (int i = 15; i >= 0; i--) {
+                uuid128[i] = (unichar_xdigit_value(hex[hex_idx]) << 4) | unichar_xdigit_value(hex[hex_idx + 1]);
+                hex_idx += 2;
+            }
+        } else {
+            // Last possibility is that it's a buf.
+            mp_buffer_info_t bufinfo;
+            if (!mp_get_buffer(value, &bufinfo, MP_BUFFER_READ)) {
+                mp_raise_ValueError(translate("UUID value is not str, int or byte buffer"));
+            }
+
+            if (bufinfo.len != 16) {
+                mp_raise_ValueError(translate("Byte buffer must be 16 bytes."));
+            }
+
+            memcpy(uuid128, bufinfo.buf, 16);
         }
 
-        if (bufinfo.len != 16) {
-            mp_raise_ValueError(translate("Byte buffer must be 16 bytes."));
-        }
-
-        memcpy(uuid128, bufinfo.buf, 16);
+        // Str and bytes both get constructed the same way here.
         uint32_t uuid16 = (uuid128[13] << 8) | uuid128[12];
         uuid128[12] = 0;
         uuid128[13] = 0;
-        common_hal_bleio_uuid_construct(self, uuid16, bufinfo.buf);
+        common_hal_bleio_uuid_construct(self, uuid16, uuid128);
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -200,9 +231,32 @@ STATIC mp_obj_t bleio_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_
     }
 }
 
+void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t size = common_hal_bleio_uuid_get_size(self);
+    if (size == 16) {
+        mp_printf(print, "UUID(0x%04x)", common_hal_bleio_uuid_get_uuid16(self));
+    } else {
+        uint8_t uuid128[16];
+        (void) common_hal_bleio_uuid_get_uuid128(self, uuid128);
+        mp_printf(print, "UUID('"
+                  "%02x%02x%02x%02x-"
+                  "%02x%02x-"
+                  "%02x%02x-"
+                  "%02x%02x-"
+                  "%02x%02x%02x%02x%02x%02x')",
+                  uuid128[15], uuid128[14], uuid128[13], uuid128[12],
+                  uuid128[11], uuid128[10],
+                  uuid128[9], uuid128[8],
+                  uuid128[7], uuid128[6],
+                  uuid128[5], uuid128[4], uuid128[3], uuid128[2], uuid128[1], uuid128[0]);
+    }
+}
+
 const mp_obj_type_t bleio_uuid_type = {
     { &mp_type_type },
     .name = MP_QSTR_UUID,
+    .print = bleio_uuid_print,
     .make_new = bleio_uuid_make_new,
     .unary_op = bleio_uuid_unary_op,
     .binary_op = bleio_uuid_binary_op,

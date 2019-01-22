@@ -62,7 +62,7 @@
 //|
 //|   *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
 //|   The new upper limit on ``timeout`` is meant to catch mistaken use of milliseconds.
-
+//|
 typedef struct {
     mp_obj_base_t base;
 } busio_uart_parity_obj_t;
@@ -172,7 +172,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|     Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|     :return: number of bytes read and stored into ``buf``
-//|     :rtype: bytes or None
+//|     :rtype: int or None (on a non-blocking error)
 //|
 //|     *New in CircuitPython 4.0:* No length parameter is permitted.
 

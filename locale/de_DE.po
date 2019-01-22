@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-20 22:46-0500\n"
+"POT-Creation-Date: 2019-01-21 21:50-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -338,12 +338,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes mit merh als 8 bits werden nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:118
+#: ports/nrf/common-hal/busio/UART.c:91
 msgid "tx and rx cannot both be None"
 msgstr "tx und rx können nicht beide None sein"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:152
+#: ports/nrf/common-hal/busio/UART.c:132
 msgid "Failed to allocate RX buffer"
 msgstr "Konnte keinen RX Buffer allozieren"
 
@@ -352,12 +352,12 @@ msgid "Could not initialize UART"
 msgstr "Konnte UART nicht initialisieren"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:197
+#: ports/nrf/common-hal/busio/UART.c:174
 msgid "No RX pin"
 msgstr "Kein RX Pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:232
+#: ports/nrf/common-hal/busio/UART.c:209
 msgid "No TX pin"
 msgstr "Kein TX Pin"
 
@@ -508,7 +508,8 @@ msgstr "Dateisystem kann nicht wieder gemounted werden."
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr "Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
+msgstr ""
+"Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -717,7 +718,7 @@ msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%04x"
 msgid "Failed to read attribute value, err %0x04x"
 msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:172
+#: ports/nrf/common-hal/bleio/Characteristic.c:172 ports/nrf/sd_mutex.c:34
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
@@ -727,7 +728,7 @@ msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:189
+#: ports/nrf/common-hal/bleio/Characteristic.c:189 ports/nrf/sd_mutex.c:54
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
@@ -748,51 +749,51 @@ msgstr "Daten sind zu groß für das advertisement packet"
 msgid "Failed to discover services"
 msgstr "Es konnten keine Dienste gefunden werden"
 
-#: ports/nrf/common-hal/bleio/Device.c:267
-#: ports/nrf/common-hal/bleio/Device.c:300
+#: ports/nrf/common-hal/bleio/Device.c:268
+#: ports/nrf/common-hal/bleio/Device.c:302
 #, fuzzy
 msgid "Failed to acquire mutex"
 msgstr "Akquirieren des Mutex gescheitert"
 
-#: ports/nrf/common-hal/bleio/Device.c:278
-#: ports/nrf/common-hal/bleio/Device.c:311
-#: ports/nrf/common-hal/bleio/Device.c:342
-#: ports/nrf/common-hal/bleio/Device.c:376
+#: ports/nrf/common-hal/bleio/Device.c:280
+#: ports/nrf/common-hal/bleio/Device.c:313
+#: ports/nrf/common-hal/bleio/Device.c:344
+#: ports/nrf/common-hal/bleio/Device.c:378
 #, fuzzy
 msgid "Failed to release mutex"
 msgstr "Loslassen des Mutex gescheitert"
 
-#: ports/nrf/common-hal/bleio/Device.c:387
+#: ports/nrf/common-hal/bleio/Device.c:389
 #, fuzzy
 msgid "Failed to continue scanning"
 msgstr "Der Scanvorgang kann nicht fortgesetzt werden"
 
-#: ports/nrf/common-hal/bleio/Device.c:419
+#: ports/nrf/common-hal/bleio/Device.c:421
 #, fuzzy
 msgid "Failed to connect:"
 msgstr "Das Verbinden ist fehlgeschlagen:"
 
-#: ports/nrf/common-hal/bleio/Device.c:489
+#: ports/nrf/common-hal/bleio/Device.c:491
 #, fuzzy
 msgid "Failed to add service"
 msgstr "Dienst konnte nicht hinzugefügt werden"
 
-#: ports/nrf/common-hal/bleio/Device.c:506
+#: ports/nrf/common-hal/bleio/Device.c:508
 #, fuzzy
 msgid "Failed to start advertising"
 msgstr "Kann advertisement nicht starten"
 
-#: ports/nrf/common-hal/bleio/Device.c:523
+#: ports/nrf/common-hal/bleio/Device.c:525
 #, fuzzy
 msgid "Failed to stop advertising"
 msgstr "Kann advertisement nicht stoppen"
 
-#: ports/nrf/common-hal/bleio/Device.c:548
+#: ports/nrf/common-hal/bleio/Device.c:550
 #, fuzzy
 msgid "Failed to start scanning"
 msgstr "Der Scanvorgang kann nicht gestartet werden"
 
-#: ports/nrf/common-hal/bleio/Device.c:564
+#: ports/nrf/common-hal/bleio/Device.c:566
 #, fuzzy
 msgid "Failed to create mutex"
 msgstr "Erstellen des Mutex ist fehlgeschlagen"
@@ -850,21 +851,21 @@ msgstr "Alle SPI-Peripheriegeräte sind in Benutzung"
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
 
-#: ports/nrf/common-hal/busio/UART.c:122
+#: ports/nrf/common-hal/busio/UART.c:95
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "Ungültige Puffergröße"
 
-#: ports/nrf/common-hal/busio/UART.c:126
+#: ports/nrf/common-hal/busio/UART.c:99
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "bytes mit mehr als 8 bits werden nicht unterstützt"
 
-#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
-#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
-#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
-#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
-#: ports/nrf/common-hal/busio/UART.c:400
+#: ports/nrf/common-hal/busio/UART.c:335 ports/nrf/common-hal/busio/UART.c:339
+#: ports/nrf/common-hal/busio/UART.c:344 ports/nrf/common-hal/busio/UART.c:349
+#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
+#: ports/nrf/common-hal/busio/UART.c:365 ports/nrf/common-hal/busio/UART.c:369
+#: ports/nrf/common-hal/busio/UART.c:377
 msgid "busio.UART not available"
 msgstr "Kann busio.UART nicht finden"
 
@@ -1360,7 +1361,7 @@ msgstr ""
 
 #: py/modstruct.c:148 py/modstruct.c:156 py/modstruct.c:244 py/modstruct.c:254
 #: shared-bindings/struct/__init__.c:102 shared-bindings/struct/__init__.c:161
-#: shared-module/struct/__init__.c:183
+#: shared-module/struct/__init__.c:128 shared-module/struct/__init__.c:183
 msgid "buffer too small"
 msgstr ""
 
@@ -2129,7 +2130,7 @@ msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:85
+#: shared-bindings/displayio/OnDiskBitmap.c:87
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -2173,15 +2174,34 @@ msgstr "Buffer müssen gleich lang sein"
 msgid "Expected a UUID"
 msgstr ""
 
-#: shared-bindings/bleio/CharacteristicBuffer.c:61
+#: shared-bindings/bleio/CharacteristicBuffer.c:39
+#, fuzzy
+msgid "Not connected"
+msgstr "Kann nicht zu AP verbinden"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:74
+#, fuzzy
+msgid "timeout must be >= 0.0"
+msgstr "bits müssen 8 sein"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:79
 #, fuzzy
 msgid "buffer_size must be >= 1"
 msgstr "Buffer müssen gleich lang sein"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c:65
+#: shared-bindings/bleio/CharacteristicBuffer.c:83
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Kann das Merkmal nicht hinzufügen."
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:138
+#, fuzzy
+msgid "CharacteristicBuffer writing not provided"
+msgstr "Merkmal wird bereits von einem anderen Dienst verwendet."
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:147
+msgid "Not connected."
+msgstr ""
 
 #: shared-bindings/bleio/Device.c:210
 msgid "Can't add services in Central mode"
@@ -2220,16 +2240,20 @@ msgstr ""
 msgid "UUID integer value not in range 0 to 0xffff"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c:75
-msgid "UUID value is not int or byte buffer"
+#: shared-bindings/bleio/UUID.c:91
+msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c:79
+#: shared-bindings/bleio/UUID.c:103
+msgid "UUID value is not str, int or byte buffer"
+msgstr ""
+
+#: shared-bindings/bleio/UUID.c:107
 #, fuzzy
 msgid "Byte buffer must be 16 bytes."
 msgstr "Buffer müssen gleich lang sein"
 
-#: shared-bindings/bleio/UUID.c:120
+#: shared-bindings/bleio/UUID.c:151
 msgid "not a 128-bit UUID"
 msgstr ""
 
@@ -2650,11 +2674,6 @@ msgstr "Kann '/' nicht remounten when USB aktiv ist"
 msgid "'S' and 'O' are not supported format types"
 msgstr ""
 
-#: shared-module/struct/__init__.c:128
-#, fuzzy, c-format
-msgid "unpack requires a buffer of %d bytes"
-msgstr "Konnte keine RX Buffer mit %d allozieren"
-
 #: shared-module/struct/__init__.c:136
 msgid "too many arguments provided with the given format"
 msgstr ""
@@ -2748,29 +2767,22 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Kann das Merkmal nicht hinzufügen."
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Ungültige UUID-Stringlänge"
 
-#~ msgid "Can not add Service."
-#~ msgstr "Kann den Dienst nicht hinzufügen."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Kann UUID in das advertisement packet kodieren."
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr "CircuitPython ist abgestürzt. Ups!\n"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Ungültiger UUID-Parameter"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Kann GAP Parameter nicht anwenden."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Kann nicht nach der Geräteadresse suchen."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
+#~ msgid "Invalid Service type"
+#~ msgstr "Ungültiger Diensttyp"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2779,19 +2791,30 @@ msgstr ""
 #~ "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
 #~ "sicheren Auswerfen von CIRCUITPY.)\n"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Ungültiger Diensttyp"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Ungültiger UUID-Parameter"
+#~ msgid "Can not query for the device address."
+#~ msgstr "Kann nicht nach der Geräteadresse suchen."
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Bitte erstelle ein issue hier mit dem Inhalt deines CIRCUITPY-speichers:\n"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Kann UUID in das advertisement packet kodieren."
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Kann GAP Parameter nicht anwenden."
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Ungültige UUID-Stringlänge"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr "CircuitPython ist abgestürzt. Ups!\n"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Kann den Dienst nicht hinzufügen."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Kann das Merkmal nicht hinzufügen."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Konnte keine RX Buffer mit %d allozieren"

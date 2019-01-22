@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-20 22:46-0500\n"
+"POT-Creation-Date: 2019-01-21 21:50-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -334,12 +334,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits não suportado"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:118
+#: ports/nrf/common-hal/busio/UART.c:91
 msgid "tx and rx cannot both be None"
 msgstr "TX e RX não podem ser ambos"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:152
+#: ports/nrf/common-hal/busio/UART.c:132
 msgid "Failed to allocate RX buffer"
 msgstr "Falha ao alocar buffer RX"
 
@@ -348,12 +348,12 @@ msgid "Could not initialize UART"
 msgstr "Não foi possível inicializar o UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:197
+#: ports/nrf/common-hal/busio/UART.c:174
 msgid "No RX pin"
 msgstr "Nenhum pino RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:232
+#: ports/nrf/common-hal/busio/UART.c:209
 msgid "No TX pin"
 msgstr "Nenhum pino TX"
 
@@ -711,7 +711,7 @@ msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
 msgid "Failed to read attribute value, err %0x04x"
 msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:172
+#: ports/nrf/common-hal/bleio/Characteristic.c:172 ports/nrf/sd_mutex.c:34
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
@@ -721,7 +721,7 @@ msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:189
+#: ports/nrf/common-hal/bleio/Characteristic.c:189 ports/nrf/sd_mutex.c:54
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
@@ -742,49 +742,49 @@ msgstr "Não é possível ajustar dados no pacote de anúncios."
 msgid "Failed to discover services"
 msgstr "Não pode parar propaganda. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:267
-#: ports/nrf/common-hal/bleio/Device.c:300
+#: ports/nrf/common-hal/bleio/Device.c:268
+#: ports/nrf/common-hal/bleio/Device.c:302
 #, fuzzy
 msgid "Failed to acquire mutex"
 msgstr "Falha ao alocar buffer RX"
 
-#: ports/nrf/common-hal/bleio/Device.c:278
-#: ports/nrf/common-hal/bleio/Device.c:311
-#: ports/nrf/common-hal/bleio/Device.c:342
-#: ports/nrf/common-hal/bleio/Device.c:376
+#: ports/nrf/common-hal/bleio/Device.c:280
+#: ports/nrf/common-hal/bleio/Device.c:313
+#: ports/nrf/common-hal/bleio/Device.c:344
+#: ports/nrf/common-hal/bleio/Device.c:378
 #, fuzzy
 msgid "Failed to release mutex"
 msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:387
+#: ports/nrf/common-hal/bleio/Device.c:389
 msgid "Failed to continue scanning"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c:419
+#: ports/nrf/common-hal/bleio/Device.c:421
 msgid "Failed to connect:"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c:489
+#: ports/nrf/common-hal/bleio/Device.c:491
 #, fuzzy
 msgid "Failed to add service"
 msgstr "Não pode parar propaganda. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:506
+#: ports/nrf/common-hal/bleio/Device.c:508
 #, fuzzy
 msgid "Failed to start advertising"
 msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:523
+#: ports/nrf/common-hal/bleio/Device.c:525
 #, fuzzy
 msgid "Failed to stop advertising"
 msgstr "Não pode parar propaganda. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:548
+#: ports/nrf/common-hal/bleio/Device.c:550
 #, fuzzy
 msgid "Failed to start scanning"
 msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:564
+#: ports/nrf/common-hal/bleio/Device.c:566
 #, fuzzy
 msgid "Failed to create mutex"
 msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
@@ -840,21 +840,21 @@ msgstr "Todos os periféricos SPI estão em uso"
 msgid "error = 0x%08lX"
 msgstr "erro = 0x%08lX"
 
-#: ports/nrf/common-hal/busio/UART.c:122
+#: ports/nrf/common-hal/busio/UART.c:95
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "Arquivo inválido"
 
-#: ports/nrf/common-hal/busio/UART.c:126
+#: ports/nrf/common-hal/busio/UART.c:99
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "I2C operação não suportada"
 
-#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
-#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
-#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
-#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
-#: ports/nrf/common-hal/busio/UART.c:400
+#: ports/nrf/common-hal/busio/UART.c:335 ports/nrf/common-hal/busio/UART.c:339
+#: ports/nrf/common-hal/busio/UART.c:344 ports/nrf/common-hal/busio/UART.c:349
+#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
+#: ports/nrf/common-hal/busio/UART.c:365 ports/nrf/common-hal/busio/UART.c:369
+#: ports/nrf/common-hal/busio/UART.c:377
 msgid "busio.UART not available"
 msgstr "busio.UART não disponível"
 
@@ -1350,7 +1350,7 @@ msgstr ""
 
 #: py/modstruct.c:148 py/modstruct.c:156 py/modstruct.c:244 py/modstruct.c:254
 #: shared-bindings/struct/__init__.c:102 shared-bindings/struct/__init__.c:161
-#: shared-module/struct/__init__.c:183
+#: shared-module/struct/__init__.c:128 shared-module/struct/__init__.c:183
 msgid "buffer too small"
 msgstr ""
 
@@ -2119,7 +2119,7 @@ msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:85
+#: shared-bindings/displayio/OnDiskBitmap.c:87
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -2164,15 +2164,33 @@ msgstr "buffers devem ser o mesmo tamanho"
 msgid "Expected a UUID"
 msgstr "Esperado um"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c:61
+#: shared-bindings/bleio/CharacteristicBuffer.c:39
+#, fuzzy
+msgid "Not connected"
+msgstr "Não é possível conectar-se ao AP"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:74
+#, fuzzy
+msgid "timeout must be >= 0.0"
+msgstr "bits devem ser 8"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:79
 #, fuzzy
 msgid "buffer_size must be >= 1"
 msgstr "buffers devem ser o mesmo tamanho"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c:65
+#: shared-bindings/bleio/CharacteristicBuffer.c:83
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Não é possível adicionar Característica."
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:138
+msgid "CharacteristicBuffer writing not provided"
+msgstr ""
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:147
+msgid "Not connected."
+msgstr ""
 
 #: shared-bindings/bleio/Device.c:210
 msgid "Can't add services in Central mode"
@@ -2211,16 +2229,20 @@ msgstr ""
 msgid "UUID integer value not in range 0 to 0xffff"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c:75
-msgid "UUID value is not int or byte buffer"
+#: shared-bindings/bleio/UUID.c:91
+msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c:79
+#: shared-bindings/bleio/UUID.c:103
+msgid "UUID value is not str, int or byte buffer"
+msgstr ""
+
+#: shared-bindings/bleio/UUID.c:107
 #, fuzzy
 msgid "Byte buffer must be 16 bytes."
 msgstr "buffers devem ser o mesmo tamanho"
 
-#: shared-bindings/bleio/UUID.c:120
+#: shared-bindings/bleio/UUID.c:151
 msgid "not a 128-bit UUID"
 msgstr ""
 
@@ -2642,11 +2664,6 @@ msgstr "Não é possível remontar '/' enquanto o USB estiver ativo."
 msgid "'S' and 'O' are not supported format types"
 msgstr "'S' e 'O' não são tipos de formato suportados"
 
-#: shared-module/struct/__init__.c:128
-#, fuzzy, c-format
-msgid "unpack requires a buffer of %d bytes"
-msgstr "Falha ao alocar buffer RX de %d bytes"
-
 #: shared-module/struct/__init__.c:136
 msgid "too many arguments provided with the given format"
 msgstr "Muitos argumentos fornecidos com o formato dado"
@@ -2736,32 +2753,36 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parâmetro UUID inválido"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
+#~ msgid "Can not query for the device address."
+#~ msgstr "Não é possível consultar o endereço do dispositivo."
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Tipo de serviço inválido"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Não é possível consultar o endereço do dispositivo."
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parâmetro UUID inválido"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Falha ao alocar buffer RX de %d bytes"
