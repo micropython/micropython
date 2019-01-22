@@ -78,12 +78,12 @@ Not all of these functions and types are turned on in all CircuitPython ports, f
 
    .. classmethod:: from_bytes(bytes, byteorder)
 
-      In CircuitPython, `byteorder` parameter must be positional (this is
+      In CircuitPython, ``byteorder`` parameter must be positional (this is
       compatible with CPython).
 
    .. method:: to_bytes(size, byteorder)
 
-      In CircuitPython, `byteorder` parameter must be positional (this is
+      In CircuitPython, ``byteorder`` parameter must be positional (this is
       compatible with CPython).
 
 .. function:: isinstance()

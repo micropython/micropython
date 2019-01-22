@@ -191,6 +191,10 @@ LDFLAGS += -mthumb -mcpu=cortex-m4
 BOOTLOADER_SIZE := 0x4000
 endif
 
+ifdef EXCLUDE_PIXELBUF
+CFLAGS += -DEXCLUDE_PIXELBUF
+endif
+
 SRC_ASF := \
 	gcc/gcc/startup_$(CHIP_FAMILY).c \
 	gcc/system_$(CHIP_FAMILY).c \
@@ -419,6 +423,11 @@ ifneq ($(CHIP_VARIANT),SAMR21G18A)
 		audioio/Mixer.c \
 		audioio/RawSample.c \
 		audioio/WaveFile.c
+endif
+
+ifndef EXCLUDE_PIXELBUF
+	SRC_SHARED_MODULE += _pixelbuf/__init__.c \
+    	_pixelbuf/PixelBuf.c
 endif
 
 # The smallest SAMD51 packages don't have I2S. Everything else does.

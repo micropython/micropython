@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-21 21:50-0500\n"
+"POT-Creation-Date: 2019-01-22 14:00-0800\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1948,7 +1948,7 @@ msgstr "argumento tem tipo errado"
 msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
-#: py/runtime.c:1123 py/runtime.c:1197
+#: py/runtime.c:1123 py/runtime.c:1197 shared-bindings/_pixelbuf/__init__.c:106
 msgid "no such attribute"
 msgstr ""
 
@@ -2026,6 +2026,55 @@ msgstr ""
 #: py/vm.c:1284
 msgid "byte code not implemented"
 msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:99
+#, c-format
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:104
+#, c-format
+msgid "Can not use dotstar with %s"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:116
+msgid "rawbuf is not the same size as buf"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:121
+#, c-format
+msgid "buf is too small. need %d bytes"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:127
+msgid "write_args must be a list, tuple, or None"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:392
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:394
+msgid "Range out of bounds"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:403
+msgid "tuple/list required on RHS"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:419
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:442
+msgid "Pixel beyond bounds of buffer"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/__init__.c:112
+#, fuzzy
+msgid "readonly attribute"
+msgstr "atributo ilegível"
 
 #: shared-bindings/_stage/Layer.c:71
 msgid "graphic must be 2048 bytes long"
@@ -2528,6 +2577,11 @@ msgid ""
 msgstr ""
 "Objeto foi desinicializado e não pode ser mais usaado. Crie um novo objeto."
 
+#: shared-module/_pixelbuf/PixelBuf.c:69
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
 msgstr "Não pôde alocar primeiro buffer"
@@ -2753,36 +2807,36 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."
+
 #~ msgid "Can not query for the device address."
 #~ msgstr "Não é possível consultar o endereço do dispositivo."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parâmetro UUID inválido"
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
 
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Pode codificar o UUID no pacote de anúncios."
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
-
 #, fuzzy
 #~ msgid "unpack requires a buffer of %d bytes"
 #~ msgstr "Falha ao alocar buffer RX de %d bytes"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parâmetro UUID inválido"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de serviço inválido"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."

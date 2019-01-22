@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-21 21:50-0500\n"
+"POT-Creation-Date: 2019-01-22 14:00-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -1977,7 +1977,7 @@ msgstr "l'argument est d'un mauvais type"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "l'argument devrait être un(e) '%q', pas '%q'"
 
-#: py/runtime.c:1123 py/runtime.c:1197
+#: py/runtime.c:1123 py/runtime.c:1197 shared-bindings/_pixelbuf/__init__.c:106
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
@@ -2056,6 +2056,57 @@ msgstr "aucune exception active à relever"
 #: py/vm.c:1284
 msgid "byte code not implemented"
 msgstr "bytecode non implémenté"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:99
+#, c-format
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:104
+#, c-format
+msgid "Can not use dotstar with %s"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:116
+msgid "rawbuf is not the same size as buf"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:121
+#, c-format
+msgid "buf is too small. need %d bytes"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:127
+msgid "write_args must be a list, tuple, or None"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:392
+#, fuzzy
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr "seuls les slices avec 'step=1' (cad None) sont supportées"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:394
+#, fuzzy
+msgid "Range out of bounds"
+msgstr "adresse hors limites"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:403
+msgid "tuple/list required on RHS"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:419
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c:442
+msgid "Pixel beyond bounds of buffer"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/__init__.c:112
+#, fuzzy
+msgid "readonly attribute"
+msgstr "attribut illisible"
 
 #: shared-bindings/_stage/Layer.c:71
 msgid "graphic must be 2048 bytes long"
@@ -2585,6 +2636,11 @@ msgstr ""
 "L'objet a été désinitialisé et ne peut plus être utilisé. Créez un nouvel "
 "objet."
 
+#: shared-module/_pixelbuf/PixelBuf.c:69
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
 msgstr "Impossible d'allouer le 1er tampon"
@@ -2833,25 +2889,45 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être une displayio.Palette"
+
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Longeur de chaîne UUID invalide"
 
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Paramètre UUID invalide"
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
-
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
-
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Impossible d'appliquer les paramètres GAP"
 
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
+#~ "'reset' (après avoir éjecter CIRCUITPY).\n"
+
 #~ msgid "Invalid Service type"
 #~ msgstr "Type de service invalide"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
 
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
@@ -2865,35 +2941,15 @@ msgstr ""
 #~ msgstr "Mauvaise longueur d'adresse"
 
 #, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
+
+#, fuzzy
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "mauvais nombre d'octets fourni'"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
-#~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
 #~ msgid "Can not add Service."
 #~ msgstr "Impossible d'ajouter le Service"
 
 #~ msgid "Can not query for the device address."
 #~ msgstr "Impossible d'obtenir l'adresse du périphérique"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
