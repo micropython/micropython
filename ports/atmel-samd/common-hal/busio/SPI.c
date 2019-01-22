@@ -54,6 +54,17 @@ void never_reset_sercom(Sercom* sercom) {
     }
 }
 
+void allow_reset_sercom(Sercom* sercom) {
+    // Reset all SERCOMs except the ones being used by on-board devices.
+    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+        if (sercom_instances[i] == sercom) {
+            never_reset_sercoms[i] = false;
+            break;
+        }
+    }
+}
+
 void reset_sercoms(void) {
     // Reset all SERCOMs except the ones being used by on-board devices.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
@@ -63,12 +74,6 @@ void reset_sercoms(void) {
         }
     #ifdef MICROPY_HW_APA102_SERCOM
         if (sercom_instances[i] == MICROPY_HW_APA102_SERCOM) {
-            continue;
-        }
-    #endif
-    #ifdef CIRCUITPY_DISPLAYIO
-        // TODO(tannewt): Make this dynamic.
-        if (sercom_instances[i] == board_display_obj.bus.spi_desc.dev.prvt) {
             continue;
         }
     #endif
@@ -241,6 +246,8 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         return;
     }
+    allow_reset_sercom(self->spi_desc.dev.prvt);
+
     spi_m_sync_disable(&self->spi_desc);
     spi_m_sync_deinit(&self->spi_desc);
     reset_pin_number(self->clock_pin);

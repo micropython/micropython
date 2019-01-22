@@ -43,16 +43,16 @@
 /******************************************************************************/
 // MicroPython bindings for generic machine.SPI
 
-STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
+STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
-mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check the id argument, if given
     if (n_args > 0) {
         if (args[0] != MP_OBJ_NEW_SMALL_INT(-1)) {
             #if defined(MICROPY_PY_MACHINE_SPI_MAKE_NEW)
             // dispatch to port-specific constructor
-            extern mp_obj_t MICROPY_PY_MACHINE_SPI_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
-            return MICROPY_PY_MACHINE_SPI_MAKE_NEW(type, n_args, n_kw, args);
+            extern mp_obj_t MICROPY_PY_MACHINE_SPI_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+            return MICROPY_PY_MACHINE_SPI_MAKE_NEW(type, n_args, args, kw_args);
             #else
             mp_raise_ValueError(translate("invalid SPI peripheral"));
             #endif
@@ -62,7 +62,7 @@ mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
 
     // software SPI
-    return mp_machine_soft_spi_make_new(type, n_args, n_kw, args);
+    return mp_machine_soft_spi_make_new(type, n_args, args, kw_args);
 }
 
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -180,7 +180,7 @@ STATIC void mp_machine_soft_spi_print(const mp_print_t *print, mp_obj_t self_in,
         mp_hal_pin_name(self->spi.sck), mp_hal_pin_name(self->spi.mosi), mp_hal_pin_name(self->spi.miso));
 }
 
-STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 500000} },
@@ -193,7 +193,7 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, all_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // create new object
     mp_machine_soft_spi_obj_t *self = m_new_obj(mp_machine_soft_spi_obj_t);

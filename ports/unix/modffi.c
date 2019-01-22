@@ -304,9 +304,9 @@ STATIC mp_obj_t ffimod_addr(mp_obj_t self_in, mp_obj_t symname_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ffimod_addr_obj, ffimod_addr);
 
-STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)n_args;
-    (void)n_kw;
+    (void)kw_args;
 
     const char *fname = NULL;
     if (args[0] != mp_const_none) {
@@ -481,7 +481,7 @@ STATIC const mp_obj_type_t opaque_type = {
 */
 
 STATIC mp_obj_t mod_ffi_open(size_t n_args, const mp_obj_t *args) {
-    return ffimod_make_new(&ffimod_type, n_args, 0, args);
+    return ffimod_make_new(&ffimod_type, n_args, args, NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ffi_open_obj, 1, 2, mod_ffi_open);
 

@@ -49,6 +49,7 @@
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/board_busses.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
@@ -58,6 +59,10 @@
 
 #ifdef MICROPY_PY_NETWORK
 #include "shared-module/network/__init__.h"
+#endif
+
+#ifdef CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -198,10 +203,15 @@ bool run_code_py(safe_mode_t safe_mode) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
+        #ifdef CIRCUITPY_DISPLAYIO
+        // Turn off the display before the heap disappears.
+        reset_displays();
+        #endif
         stop_mp();
         free_memory(heap);
 
         reset_port();
+        reset_board_busses();
         reset_board();
         reset_status_led();
 

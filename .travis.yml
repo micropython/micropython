@@ -21,7 +21,7 @@ git:
 # that SDK is shortest and add it there.  In the case of major re-organizations,
 # just try to make the builds "about equal in run time"
 env:
-  - TRAVIS_TESTS="unix docs translations website" TRAVIS_BOARDS="circuitplayground_express mini_sam_m4 grandcentral_m4_express pca10056 pca10059 feather_nrf52840_express makerdiary_nrf52840_mdk particle_boron particle_argon particle_xenon sparkfun_nrf52840_mini" TRAVIS_SDK=arm:nrf
+  - TRAVIS_TESTS="unix docs translations website" TRAVIS_BOARDS="circuitplayground_express mini_sam_m4 grandcentral_m4_express pca10056 pca10059 feather_nrf52840_express makerdiary_nrf52840_mdk makerdiary_nrf52840_mdk_usb_dongle particle_boron particle_argon particle_xenon sparkfun_nrf52840_mini" TRAVIS_SDK=arm:nrf
   - TRAVIS_BOARDS="metro_m0_express metro_m4_express pirkey_m0 trellis_m4_express trinket_m0" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_radiofruit_zigbee gemma_m0 hallowing_m0_express itsybitsy_m0_express itsybitsy_m4_express meowmeow" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_m0_express_crickit feather_m0_rfm69 feather_m0_rfm9x feather_m4_express arduino_zero arduino_mkr1300 arduino_mkrzero" TRAVIS_SDK=arm
@@ -86,7 +86,7 @@ before_script:
 script:
   # Build mpy-cross first because other builds depend on it.
   - echo 'Building mpy-cross' && echo 'travis_fold:start:mpy-cross'
-  - make -C mpy-cross -j2 ; echo $? > status
+  - make -C mpy-cross -j2 ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:mpy-cross' && tools/print_status.py status
 
   # Use unbuffered output because building all the releases can take a long time.
@@ -95,7 +95,7 @@ script:
   - cd ..
 
   - echo 'Building unix' && echo 'travis_fold:start:unix'
-  - (! var_search "${TRAVIS_TESTS-}" unix || (make -C ports/unix deplibs -j2 && make -C ports/unix -j2 && make -C ports/unix coverage -j2)) ; echo $? > status
+  - (! var_search "${TRAVIS_TESTS-}" unix || (make -C ports/unix deplibs -j2 && make -C ports/unix -j2 && make -C ports/unix coverage -j2)) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:unix' && tools/print_status.py status
 
   # run tests without coverage info
@@ -104,27 +104,27 @@ script:
 
   # run tests with coverage info
   - echo 'Test all' && echo 'travis_fold:start:test_all'
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1)) ; echo $? > status
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1)) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:test_all' && tools/print_status.py status
 
   - echo 'Test threads' && echo 'travis_fold:start:test_threads'
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread)) ; echo $? >status
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread)) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:test_threads' && tools/print_status.py status
 
   - echo 'Testing with native' && echo 'travis_fold:start:test_native'
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native)) ; echo $? >status
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native)) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:test_native' && tools/print_status.py status
 
   - (echo 'Testing with mpy' && echo 'travis_fold:start:test_mpy')
-  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float)) ; echo $? >status
+  - (! var_search "${TRAVIS_TESTS-}" unix || (cd tests && MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float)) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:test_mpy' && tools/print_status.py status
 
   - (echo 'Building docs' && echo 'travis_fold:start:build_docs')
-  - (! var_search "${TRAVIS_TESTS-}" docs || sphinx-build -E -W -b html . _build/html)  ; echo $? >status
+  - (! var_search "${TRAVIS_TESTS-}" docs || sphinx-build -E -W -b html . _build/html) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:build_docs' && tools/print_status.py status
 
   - (echo 'Building translations' && echo 'travis_fold:start:build_translations')
-  - (! var_search "${TRAVIS_TESTS-}" translations || make check-translate)  ; echo $? >status
+  - (! var_search "${TRAVIS_TESTS-}" translations || make check-translate) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:build_translations' && tools/print_status.py status
 
   # run coveralls coverage analysis (try to, even if some builds/tests failed)

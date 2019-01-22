@@ -238,7 +238,6 @@ SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
 SRC_C = \
 	audio_dma.c \
-	board_busses.c \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
@@ -306,7 +305,7 @@ SRC_COMMON_HAL = \
 	busio/UART.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
-	displayio/FourWire.c \
+	displayio/ParallelBus.c \
 	i2cslave/__init__.c \
 	i2cslave/I2CSlave.c \
 	microcontroller/__init__.c \
@@ -379,6 +378,8 @@ SRC_SHARED_MODULE = \
 	displayio/__init__.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
+	displayio/Display.c \
+	displayio/FourWire.c \
 	displayio/Group.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
