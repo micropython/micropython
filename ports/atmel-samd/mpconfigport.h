@@ -284,8 +284,10 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     #endif
 
     #ifdef CIRCUITPY_DISPLAYIO
+    #define CIRCUITPY_DISPLAY_LIMIT (3)
 	#define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
     #else
+    #define CIRCUITPY_DISPLAY_LIMIT (0)
 	#define DISPLAYIO_MODULE
     #endif
 
@@ -345,6 +347,7 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     #define MICROPY_PY_BUILTINS_COMPLEX (0)
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+    #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
 // Disabled for now.

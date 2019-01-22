@@ -33,21 +33,11 @@
 
 typedef struct {
     mp_obj_base_t base;
-    busio_spi_obj_t bus;
+    busio_spi_obj_t* bus;
+    busio_spi_obj_t inline_bus;
     digitalio_digitalinout_obj_t command;
     digitalio_digitalinout_obj_t chip_select;
     digitalio_digitalinout_obj_t reset;
-    uint16_t width;
-    uint16_t height;
-    uint16_t color_depth;
-    uint8_t set_column_command;
-    uint8_t set_row_command;
-    uint8_t write_ram_command;
-    displayio_group_t *current_group;
-    bool refresh;
-    uint64_t last_refresh;
-    int16_t colstart;
-    int16_t rowstart;
 } displayio_fourwire_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_FOURWIRE_H

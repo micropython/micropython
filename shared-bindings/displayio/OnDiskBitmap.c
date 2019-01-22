@@ -29,7 +29,9 @@
 #include <stdint.h>
 
 #include "py/runtime.h"
+#include "py/objproperty.h"
 #include "supervisor/shared/translate.h"
+#include "shared-bindings/displayio/OnDiskBitmap.h"
 
 //| .. currentmodule:: displayio
 //|
@@ -92,7 +94,49 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
     return MP_OBJ_FROM_PTR(self);
 }
 
+//|   .. attribute:: width
+//|
+//|      Width of the bitmap. (read only)
+//|
+STATIC mp_obj_t displayio_ondiskbitmap_obj_get_width(mp_obj_t self_in) {
+    displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_get_width(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_width_obj, displayio_ondiskbitmap_obj_get_width);
+
+const mp_obj_property_t displayio_ondiskbitmap_width_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_width_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+
+};
+
+//|   .. attribute:: height
+//|
+//|      Height of the bitmap. (read only)
+//|
+STATIC mp_obj_t displayio_ondiskbitmap_obj_get_height(mp_obj_t self_in) {
+    displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_ondiskbitmap_get_height(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_height_obj, displayio_ondiskbitmap_obj_get_height);
+
+const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_height_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+
+};
+
 STATIC const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_ondiskbitmap_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_ondiskbitmap_width_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondiskbitmap_locals_dict_table);
 

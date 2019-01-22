@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,14 @@
  */
 
 #include "boards/board.h"
+#include "supervisor/shared/board_busses.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 
 #include "tick.h"
-
-displayio_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 
@@ -64,15 +63,21 @@ uint8_t display_init_sequence[] = {
     0x29, DELAY, 120, // Display on
 };
 
-
 void board_init(void) {
-    board_display_obj.base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(&board_display_obj,
-        &pin_PA13, // Clock
-        &pin_PA12, // Data
-        &pin_PB09, // Command or data
+    displayio_parallelbus_obj_t* bus = &displays[0].parallel_bus;
+    bus->base.type = &displayio_parallelbus_type;
+    common_hal_displayio_parallelbus_construct(bus,
+        &pin_PA16, // Data0
+        &pin_PB05, // Command or data
         &pin_PB06, // Chip select
-        &pin_PA00, // Reset
+        &pin_PB09, // Write
+        &pin_PB04, // Read
+        &pin_PA00); // Reset
+
+    displayio_display_obj_t* display = &displays[0].display;
+    display->base.type = &displayio_display_type;
+    common_hal_displayio_display_construct(display,
+        bus,
         320, // Width
         240, // Height
         0, // column start
@@ -80,33 +85,9 @@ void board_init(void) {
         16, // Color depth
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
-        MIPI_COMMAND_WRITE_MEMORY_START); // Write memory command
-
-    uint32_t i = 0;
-    common_hal_displayio_fourwire_begin_transaction(&board_display_obj);
-    while (i < sizeof(display_init_sequence)) {
-        uint8_t *cmd = display_init_sequence + i;
-        uint8_t data_size = *(cmd + 1);
-        bool delay = (data_size & DELAY) != 0;
-        data_size &= ~DELAY;
-        uint8_t *data = cmd + 2;
-        common_hal_displayio_fourwire_send(&board_display_obj, true, cmd, 1);
-        common_hal_displayio_fourwire_send(&board_display_obj, false, data, data_size);
-        if (delay) {
-            data_size++;
-            uint16_t delay_length_ms = *(cmd + 1 + data_size);
-            if (delay_length_ms == 255) {
-                delay_length_ms = 500;
-            }
-            uint64_t start = ticks_ms;
-            while (ticks_ms - start < delay_length_ms) {}
-        } else {
-            uint64_t start = ticks_ms;
-            while (ticks_ms - start < 10) {}
-        }
-        i += 2 + data_size;
-    }
-    common_hal_displayio_fourwire_end_transaction(&board_display_obj);
+        MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
+        display_init_sequence,
+        sizeof(display_init_sequence));
 }
 
 bool board_requests_safe_mode(void) {
@@ -114,5 +95,4 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    common_hal_displayio_fourwire_show(&board_display_obj, NULL);
 }

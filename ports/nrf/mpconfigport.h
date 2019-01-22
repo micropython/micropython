@@ -163,6 +163,7 @@ extern const struct _mp_obj_module_t microcontroller_module;
 extern const struct _mp_obj_module_t bitbangio_module;
 extern const struct _mp_obj_module_t analogio_module;
 extern const struct _mp_obj_module_t digitalio_module;
+extern const struct _mp_obj_module_t displayio_module;
 extern const struct _mp_obj_module_t pulseio_module;
 extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
@@ -195,6 +196,7 @@ extern const struct _mp_obj_module_t bleio_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_busio           ), (mp_obj_t)&busio_module           }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_analogio        ), (mp_obj_t)&analogio_module        }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_digitalio       ), (mp_obj_t)&digitalio_module       }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_displayio       ), (mp_obj_t)&displayio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_pulseio         ), (mp_obj_t)&pulseio_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_microcontroller ), (mp_obj_t)&microcontroller_module }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_neopixel_write  ), (mp_obj_t)&neopixel_write_module  }, \
@@ -235,5 +237,7 @@ void run_background_tasks(void);
 
 //#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 #define CIRCUITPY_DEFAULT_STACK_SIZE 4096
+#define CIRCUITPY_DISPLAYIO (1)
+#define CIRCUITPY_DISPLAY_LIMIT (3)
 
 #endif

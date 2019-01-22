@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-13 23:51-0500\n"
+"POT-Creation-Date: 2019-01-22 14:00-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -21,8 +21,8 @@ msgstr ""
 msgid "invalid I2C peripheral"
 msgstr "periferica I2C invalida"
 
-#: extmod/machine_i2c.c:340 extmod/machine_i2c.c:354 extmod/machine_i2c.c:368
-#: extmod/machine_i2c.c:392
+#: extmod/machine_i2c.c:338 extmod/machine_i2c.c:352 extmod/machine_i2c.c:366
+#: extmod/machine_i2c.c:390
 msgid "I2C operation not supported"
 msgstr "operazione I2C non supportata"
 
@@ -151,11 +151,11 @@ msgstr "argomenti non validi"
 msgid "script compilation not supported"
 msgstr "compilazione dello scrip non suportata"
 
-#: main.c:150
+#: main.c:155
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:164 main.c:237
+#: main.c:169 main.c:247
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,28 +163,28 @@ msgstr ""
 "L'auto-reload è attivo. Salva i file su USB per eseguirli o entra nel REPL "
 "per disabilitarlo.\n"
 
-#: main.c:166
+#: main.c:171
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Modalità sicura in esecuzione! Auto-reload disattivato.\n"
 
-#: main.c:168 main.c:239
+#: main.c:173 main.c:249
 msgid "Auto-reload is off.\n"
 msgstr "Auto-reload disattivato.\n"
 
-#: main.c:182
+#: main.c:187
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Modalità sicura in esecuzione! Codice salvato non in esecuzione.\n"
 
-#: main.c:198
+#: main.c:203
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENZIONE: Il nome del sorgente ha due estensioni\n"
 
-#: main.c:244
+#: main.c:254
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Premi un qualunque tasto per entrare nel REPL. Usa CTRL-D per ricaricare."
 
-#: main.c:407
+#: main.c:417
 msgid "soft reboot\n"
 msgstr "soft reboot\n"
 
@@ -200,18 +200,6 @@ msgstr "la calibrazione è in sola lettura"
 #: ports/atmel-samd/bindings/samd/Clock.c:137
 msgid "calibration is out of range"
 msgstr "la calibrazione è fuori intervallo"
-
-#: ports/atmel-samd/board_busses.c:59 ports/nrf/board_busses.c:39
-msgid "No default I2C bus"
-msgstr "Nessun bus I2C predefinito"
-
-#: ports/atmel-samd/board_busses.c:85 ports/nrf/board_busses.c:64
-msgid "No default SPI bus"
-msgstr "Nessun bus SPI predefinito"
-
-#: ports/atmel-samd/board_busses.c:112 ports/nrf/board_busses.c:91
-msgid "No default UART bus"
-msgstr "Nessun bus UART predefinito"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
 #: ports/nrf/common-hal/analogio/AnalogIn.c:39
@@ -331,7 +319,7 @@ msgid "Not enough pins available"
 msgstr "Non sono presenti abbastanza pin"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:78
-#: ports/atmel-samd/common-hal/busio/SPI.c:171
+#: ports/atmel-samd/common-hal/busio/SPI.c:176
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
 #: ports/nrf/common-hal/busio/I2C.c:84
@@ -351,12 +339,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "byte > 8 bit non supportati"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:118
+#: ports/nrf/common-hal/busio/UART.c:91
 msgid "tx and rx cannot both be None"
 msgstr "tx e rx non possono essere entrambi None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:152
+#: ports/nrf/common-hal/busio/UART.c:132
 msgid "Failed to allocate RX buffer"
 msgstr "Impossibile allocare buffer RX"
 
@@ -365,12 +353,12 @@ msgid "Could not initialize UART"
 msgstr "Impossibile inizializzare l'UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:197
+#: ports/nrf/common-hal/busio/UART.c:174
 msgid "No RX pin"
 msgstr "Nessun pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:232
+#: ports/nrf/common-hal/busio/UART.c:209
 msgid "No TX pin"
 msgstr "Nessun pin TX"
 
@@ -378,6 +366,18 @@ msgstr "Nessun pin TX"
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c:147
 msgid "Cannot get pull while in output mode"
 msgstr ""
+
+#: ports/atmel-samd/common-hal/displayio/ParallelBus.c:43
+#: ports/nrf/common-hal/displayio/ParallelBus.c:43
+#, fuzzy
+msgid "Data 0 pin must be byte aligned"
+msgstr "graphic deve essere lunga 2048 byte"
+
+#: ports/atmel-samd/common-hal/displayio/ParallelBus.c:47
+#: ports/nrf/common-hal/displayio/ParallelBus.c:47
+#, fuzzy, c-format
+msgid "Bus pin %d is already in use"
+msgstr "DAC già in uso"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
@@ -719,7 +719,7 @@ msgstr "Impossibile notificare valore dell'attributo. status: 0x%02x"
 msgid "Failed to read attribute value, err %0x04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:172
+#: ports/nrf/common-hal/bleio/Characteristic.c:172 ports/nrf/sd_mutex.c:34
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
@@ -729,7 +729,7 @@ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c:189
+#: ports/nrf/common-hal/bleio/Characteristic.c:189 ports/nrf/sd_mutex.c:54
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
@@ -750,51 +750,51 @@ msgstr "Impossibile inserire dati nel pacchetto di advertisement."
 msgid "Failed to discover services"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:267
-#: ports/nrf/common-hal/bleio/Device.c:300
+#: ports/nrf/common-hal/bleio/Device.c:268
+#: ports/nrf/common-hal/bleio/Device.c:302
 #, fuzzy
 msgid "Failed to acquire mutex"
 msgstr "Impossibile allocare buffer RX"
 
-#: ports/nrf/common-hal/bleio/Device.c:278
-#: ports/nrf/common-hal/bleio/Device.c:311
-#: ports/nrf/common-hal/bleio/Device.c:342
-#: ports/nrf/common-hal/bleio/Device.c:376
+#: ports/nrf/common-hal/bleio/Device.c:280
+#: ports/nrf/common-hal/bleio/Device.c:313
+#: ports/nrf/common-hal/bleio/Device.c:344
+#: ports/nrf/common-hal/bleio/Device.c:378
 #, fuzzy
 msgid "Failed to release mutex"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:387
+#: ports/nrf/common-hal/bleio/Device.c:389
 #, fuzzy
 msgid "Failed to continue scanning"
 msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:419
+#: ports/nrf/common-hal/bleio/Device.c:421
 #, fuzzy
 msgid "Failed to connect:"
 msgstr "Impossibile connettersi. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:489
+#: ports/nrf/common-hal/bleio/Device.c:491
 #, fuzzy
 msgid "Failed to add service"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:506
+#: ports/nrf/common-hal/bleio/Device.c:508
 #, fuzzy
 msgid "Failed to start advertising"
 msgstr "Impossibile avviare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:523
+#: ports/nrf/common-hal/bleio/Device.c:525
 #, fuzzy
 msgid "Failed to stop advertising"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:548
+#: ports/nrf/common-hal/bleio/Device.c:550
 #, fuzzy
 msgid "Failed to start scanning"
 msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c:564
+#: ports/nrf/common-hal/bleio/Device.c:566
 #, fuzzy
 msgid "Failed to create mutex"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
@@ -851,21 +851,21 @@ msgstr "Tutte le periferiche SPI sono in uso"
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:122
+#: ports/nrf/common-hal/busio/UART.c:95
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "lunghezza del buffer non valida"
 
-#: ports/nrf/common-hal/busio/UART.c:126
+#: ports/nrf/common-hal/busio/UART.c:99
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "operazione I2C non supportata"
 
-#: ports/nrf/common-hal/busio/UART.c:358 ports/nrf/common-hal/busio/UART.c:362
-#: ports/nrf/common-hal/busio/UART.c:367 ports/nrf/common-hal/busio/UART.c:372
-#: ports/nrf/common-hal/busio/UART.c:378 ports/nrf/common-hal/busio/UART.c:383
-#: ports/nrf/common-hal/busio/UART.c:388 ports/nrf/common-hal/busio/UART.c:392
-#: ports/nrf/common-hal/busio/UART.c:400
+#: ports/nrf/common-hal/busio/UART.c:335 ports/nrf/common-hal/busio/UART.c:339
+#: ports/nrf/common-hal/busio/UART.c:344 ports/nrf/common-hal/busio/UART.c:349
+#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
+#: ports/nrf/common-hal/busio/UART.c:365 ports/nrf/common-hal/busio/UART.c:369
+#: ports/nrf/common-hal/busio/UART.c:377
 #, fuzzy
 msgid "busio.UART not available"
 msgstr "busio.UART non ancora implementato"
@@ -901,49 +901,49 @@ msgstr "Non so come passare l'oggetto alla funzione nativa"
 msgid "[addrinfo error %d]"
 msgstr "[errore addrinfo %d]"
 
-#: py/argcheck.c:44
+#: py/argcheck.c:53
 msgid "function does not take keyword arguments"
 msgstr "la funzione non prende argomenti nominati"
 
-#: py/argcheck.c:54 py/bc.c:85 py/objnamedtuple.c:104
+#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:108
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
 "la funzione prende %d argomenti posizionali ma ne sono stati forniti %d"
 
-#: py/argcheck.c:64
+#: py/argcheck.c:73
 #, c-format
 msgid "function missing %d required positional arguments"
 msgstr "mancano %d argomenti posizionali obbligatori alla funzione"
 
-#: py/argcheck.c:72
+#: py/argcheck.c:81
 #, c-format
 msgid "function expected at most %d arguments, got %d"
 msgstr "la funzione prevede al massimo %d argmoneti, ma ne ha ricevuti %d"
 
-#: py/argcheck.c:97
+#: py/argcheck.c:106
 msgid "'%q' argument required"
 msgstr "'%q' argomento richiesto"
 
-#: py/argcheck.c:122
+#: py/argcheck.c:131
 msgid "extra positional arguments given"
 msgstr "argomenti posizonali extra dati"
 
-#: py/argcheck.c:130
+#: py/argcheck.c:139
 msgid "extra keyword arguments given"
 msgstr "argomento nominato aggiuntivo fornito"
 
-#: py/argcheck.c:142
+#: py/argcheck.c:151
 msgid "argument num/types mismatch"
 msgstr "discrepanza di numero/tipo di argomenti"
 
-#: py/argcheck.c:147
+#: py/argcheck.c:156
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
 "argomento(i) nominati non ancora implementati - usare invece argomenti "
 "normali"
 
-#: py/bc.c:88 py/objnamedtuple.c:108
+#: py/bc.c:88 py/objnamedtuple.c:112
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() prende %d argomenti posizionali ma ne sono stati forniti %d"
 
@@ -955,11 +955,11 @@ msgstr "argomento nominato inaspettato"
 msgid "keywords must be strings"
 msgstr "argomenti nominati devono essere stringhe"
 
-#: py/bc.c:206 py/objnamedtuple.c:138
+#: py/bc.c:206 py/objnamedtuple.c:142
 msgid "function got multiple values for argument '%q'"
 msgstr "la funzione ha ricevuto valori multipli per l'argomento '%q'"
 
-#: py/bc.c:218 py/objnamedtuple.c:130
+#: py/bc.c:218 py/objnamedtuple.c:134
 msgid "unexpected keyword argument '%q'"
 msgstr "argomento nominato '%q' inaspettato"
 
@@ -1366,9 +1366,9 @@ msgstr "divisione per zero"
 msgid "schedule stack full"
 msgstr ""
 
-#: py/modstruct.c:145 py/modstruct.c:153 py/modstruct.c:234 py/modstruct.c:244
-#: shared-bindings/struct/__init__.c:103 shared-bindings/struct/__init__.c:145
-#: shared-module/struct/__init__.c:91 shared-module/struct/__init__.c:175
+#: py/modstruct.c:148 py/modstruct.c:156 py/modstruct.c:244 py/modstruct.c:254
+#: shared-bindings/struct/__init__.c:102 shared-bindings/struct/__init__.c:161
+#: shared-module/struct/__init__.c:128 shared-module/struct/__init__.c:183
 msgid "buffer too small"
 msgstr "buffer troppo piccolo"
 
@@ -1546,11 +1546,11 @@ msgstr "pieno"
 msgid "empty"
 msgstr "vuoto"
 
-#: py/objdict.c:314
+#: py/objdict.c:315
 msgid "popitem(): dictionary is empty"
 msgstr "popitem(): il dizionario è vuoto"
 
-#: py/objdict.c:357
+#: py/objdict.c:358
 msgid "dict update sequence has wrong length"
 msgstr "sequanza di aggiornamento del dizionario ha la lunghezza errata"
 
@@ -1814,71 +1814,71 @@ msgstr "indici della stringa devono essere interi, non %s"
 msgid "string index out of range"
 msgstr "indice della stringa fuori intervallo"
 
-#: py/objtype.c:358
+#: py/objtype.c:368
 msgid "__init__() should return None"
 msgstr "__init__() deve ritornare None"
 
-#: py/objtype.c:360
+#: py/objtype.c:370
 #, c-format
 msgid "__init__() should return None, not '%s'"
 msgstr "__init__() deve ritornare None, non '%s'"
 
-#: py/objtype.c:623 py/objtype.c:1275 py/runtime.c:1065
+#: py/objtype.c:633 py/objtype.c:1287 py/runtime.c:1065
 msgid "unreadable attribute"
 msgstr "attributo non leggibile"
 
-#: py/objtype.c:868 py/runtime.c:653
+#: py/objtype.c:878 py/runtime.c:653
 msgid "object not callable"
 msgstr ""
 
-#: py/objtype.c:870 py/runtime.c:655
+#: py/objtype.c:880 py/runtime.c:655
 #, c-format
 msgid "'%s' object is not callable"
 msgstr ""
 
-#: py/objtype.c:978
+#: py/objtype.c:988
 msgid "type takes 1 or 3 arguments"
 msgstr "tipo prende 1 o 3 argomenti"
 
-#: py/objtype.c:989
+#: py/objtype.c:999
 msgid "cannot create instance"
 msgstr "impossibile creare un istanza"
 
-#: py/objtype.c:991
+#: py/objtype.c:1001
 msgid "cannot create '%q' instances"
 msgstr "creare '%q' istanze"
 
-#: py/objtype.c:1047
+#: py/objtype.c:1059
 msgid "can't add special method to already-subclassed class"
 msgstr ""
 
-#: py/objtype.c:1091 py/objtype.c:1097
+#: py/objtype.c:1103 py/objtype.c:1109
 msgid "type is not an acceptable base type"
 msgstr "il tipo non è un tipo di base accettabile"
 
-#: py/objtype.c:1100
+#: py/objtype.c:1112
 msgid "type '%q' is not an acceptable base type"
 msgstr "il tipo '%q' non è un tipo di base accettabile"
 
-#: py/objtype.c:1137
+#: py/objtype.c:1149
 msgid "multiple inheritance not supported"
 msgstr "ereditarietà multipla non supportata"
 
-#: py/objtype.c:1164
+#: py/objtype.c:1176
 msgid "multiple bases have instance lay-out conflict"
 msgstr ""
 
-#: py/objtype.c:1205
+#: py/objtype.c:1217
 msgid "first argument to super() must be type"
 msgstr ""
 
-#: py/objtype.c:1370
+#: py/objtype.c:1382
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
 "il secondo argomento di issubclass() deve essere una classe o una tupla di "
 "classi"
 
-#: py/objtype.c:1384
+#: py/objtype.c:1396
 msgid "issubclass() arg 1 must be a class"
 msgstr "il primo argomento di issubclass() deve essere una classe"
 
@@ -2052,49 +2052,49 @@ msgstr "nessuna eccezione attiva da rilanciare"
 msgid "byte code not implemented"
 msgstr "byte code non implementato"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:101
+#: shared-bindings/_pixelbuf/PixelBuf.c:99
 #, c-format
 msgid "byteorder is not an instance of ByteOrder (got a %s)"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:106
+#: shared-bindings/_pixelbuf/PixelBuf.c:104
 #, c-format
 msgid "Can not use dotstar with %s"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:118
+#: shared-bindings/_pixelbuf/PixelBuf.c:116
 msgid "rawbuf is not the same size as buf"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:123
+#: shared-bindings/_pixelbuf/PixelBuf.c:121
 #, c-format
 msgid "buf is too small. need %d bytes"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:129
+#: shared-bindings/_pixelbuf/PixelBuf.c:127
 msgid "write_args must be a list, tuple, or None"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:394
+#: shared-bindings/_pixelbuf/PixelBuf.c:392
 #, fuzzy
 msgid "Only slices with step=1 (aka None) are supported"
 msgstr "solo slice con step=1 (aka None) sono supportate"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:396
+#: shared-bindings/_pixelbuf/PixelBuf.c:394
 #, fuzzy
 msgid "Range out of bounds"
 msgstr "indirizzo fuori limite"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:405
+#: shared-bindings/_pixelbuf/PixelBuf.c:403
 msgid "tuple/list required on RHS"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:421
+#: shared-bindings/_pixelbuf/PixelBuf.c:419
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:444
+#: shared-bindings/_pixelbuf/PixelBuf.c:442
 msgid "Pixel beyond bounds of buffer"
 msgstr ""
 
@@ -2127,8 +2127,8 @@ msgstr "buffer dei caratteri troppo piccolo"
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr "AnalogOut ha solo 16 bit. Il valore deve essere meno di 65536."
 
-#: shared-bindings/audiobusio/I2SOut.c:225
-#: shared-bindings/audioio/AudioOut.c:226
+#: shared-bindings/audiobusio/I2SOut.c:222
+#: shared-bindings/audioio/AudioOut.c:223
 msgid "Not playing"
 msgstr "In pausa"
 
@@ -2169,27 +2169,27 @@ msgstr ""
 "il buffer di destinazione deve essere un bytearray o un array di tipo 'B' "
 "con bit_depth = 8"
 
-#: shared-bindings/audioio/Mixer.c:94
+#: shared-bindings/audioio/Mixer.c:91
 #, fuzzy
 msgid "Invalid voice count"
 msgstr "Tipo di servizio non valido"
 
-#: shared-bindings/audioio/Mixer.c:99
+#: shared-bindings/audioio/Mixer.c:96
 #, fuzzy
 msgid "Invalid channel count"
 msgstr "Argomento non valido"
 
-#: shared-bindings/audioio/Mixer.c:103
+#: shared-bindings/audioio/Mixer.c:100
 #, fuzzy
 msgid "Sample rate must be positive"
 msgstr "STA deve essere attiva"
 
-#: shared-bindings/audioio/Mixer.c:107
+#: shared-bindings/audioio/Mixer.c:104
 #, fuzzy
 msgid "bits_per_sample must be 8 or 16"
 msgstr "i bit devono essere 7, 8 o 9"
 
-#: shared-bindings/audioio/RawSample.c:98
+#: shared-bindings/audioio/RawSample.c:95
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
@@ -2197,65 +2197,83 @@ msgstr ""
 "il buffer sample_source deve essere un bytearray o un array di tipo 'h', "
 "'H', 'b' o 'B'"
 
-#: shared-bindings/audioio/RawSample.c:104
+#: shared-bindings/audioio/RawSample.c:101
 msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:85
+#: shared-bindings/displayio/OnDiskBitmap.c:87
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c:111 shared-bindings/bitbangio/SPI.c:121
-#: shared-bindings/busio/SPI.c:133
+#: shared-bindings/bitbangio/I2C.c:109 shared-bindings/bitbangio/SPI.c:119
+#: shared-bindings/busio/SPI.c:130
 msgid "Function requires lock"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c:195 shared-bindings/busio/I2C.c:210
+#: shared-bindings/bitbangio/I2C.c:193 shared-bindings/busio/I2C.c:207
 msgid "Buffer must be at least length 1"
 msgstr "Il buffer deve essere lungo almeno 1"
 
-#: shared-bindings/bitbangio/SPI.c:151 shared-bindings/busio/SPI.c:175
+#: shared-bindings/bitbangio/SPI.c:149 shared-bindings/busio/SPI.c:172
 msgid "Invalid polarity"
 msgstr "Polarità non valida"
 
-#: shared-bindings/bitbangio/SPI.c:155 shared-bindings/busio/SPI.c:179
+#: shared-bindings/bitbangio/SPI.c:153 shared-bindings/busio/SPI.c:176
 msgid "Invalid phase"
 msgstr "Fase non valida"
 
-#: shared-bindings/bitbangio/SPI.c:159 shared-bindings/busio/SPI.c:183
+#: shared-bindings/bitbangio/SPI.c:157 shared-bindings/busio/SPI.c:180
 msgid "Invalid number of bits"
 msgstr "Numero di bit non valido"
 
-#: shared-bindings/bitbangio/SPI.c:284 shared-bindings/busio/SPI.c:348
+#: shared-bindings/bitbangio/SPI.c:282 shared-bindings/busio/SPI.c:345
 msgid "buffer slices must be of equal length"
 msgstr "slice del buffer devono essere della stessa lunghezza"
 
-#: shared-bindings/bleio/Address.c:119
+#: shared-bindings/bleio/Address.c:115
 #, c-format
 msgid "Address is not %d bytes long or is in wrong format"
 msgstr ""
 
-#: shared-bindings/bleio/Address.c:126
+#: shared-bindings/bleio/Address.c:122
 #, fuzzy, c-format
 msgid "Address must be %d bytes long"
 msgstr "la palette deve essere lunga 32 byte"
 
-#: shared-bindings/bleio/Characteristic.c:81
-#: shared-bindings/bleio/Descriptor.c:93 shared-bindings/bleio/Service.c:78
+#: shared-bindings/bleio/Characteristic.c:74
+#: shared-bindings/bleio/Descriptor.c:86 shared-bindings/bleio/Service.c:66
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Atteso un %q"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c:68
+#: shared-bindings/bleio/CharacteristicBuffer.c:39
+#, fuzzy
+msgid "Not connected"
+msgstr "Impossible connettersi all'AP"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:74
+#, fuzzy
+msgid "timeout must be >= 0.0"
+msgstr "i bit devono essere 8"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:79
 #, fuzzy
 msgid "buffer_size must be >= 1"
 msgstr "slice del buffer devono essere della stessa lunghezza"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c:72
+#: shared-bindings/bleio/CharacteristicBuffer.c:83
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:138
+msgid "CharacteristicBuffer writing not provided"
+msgstr ""
+
+#: shared-bindings/bleio/CharacteristicBuffer.c:147
+msgid "Not connected."
+msgstr ""
 
 #: shared-bindings/bleio/Device.c:210
 msgid "Can't add services in Central mode"
@@ -2273,20 +2291,20 @@ msgstr ""
 msgid "Can't advertise in Central mode"
 msgstr ""
 
-#: shared-bindings/bleio/Peripheral.c:111
+#: shared-bindings/bleio/Peripheral.c:106
 msgid "services includes an object that is not a Service"
 msgstr ""
 
-#: shared-bindings/bleio/Peripheral.c:124
+#: shared-bindings/bleio/Peripheral.c:119
 #, fuzzy
 msgid "name must be a string"
 msgstr "argomenti nominati devono essere stringhe"
 
-#: shared-bindings/bleio/Service.c:90
+#: shared-bindings/bleio/Service.c:84
 msgid "characteristics includes an object that is not a Characteristic"
 msgstr ""
 
-#: shared-bindings/bleio/Service.c:96
+#: shared-bindings/bleio/Service.c:90
 msgid "Characteristic UUID doesn't match Service UUID"
 msgstr ""
 
@@ -2294,32 +2312,36 @@ msgstr ""
 msgid "UUID integer value not in range 0 to 0xffff"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c:75
-msgid "UUID value is not int or byte buffer"
+#: shared-bindings/bleio/UUID.c:91
+msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c:79
+#: shared-bindings/bleio/UUID.c:103
+msgid "UUID value is not str, int or byte buffer"
+msgstr ""
+
+#: shared-bindings/bleio/UUID.c:107
 #, fuzzy
 msgid "Byte buffer must be 16 bytes."
 msgstr "i buffer devono essere della stessa lunghezza"
 
-#: shared-bindings/bleio/UUID.c:120
+#: shared-bindings/bleio/UUID.c:151
 msgid "not a 128-bit UUID"
 msgstr ""
 
-#: shared-bindings/busio/I2C.c:120
+#: shared-bindings/busio/I2C.c:117
 msgid "Function requires lock."
 msgstr ""
 
-#: shared-bindings/busio/UART.c:106
+#: shared-bindings/busio/UART.c:103
 msgid "bits must be 7, 8 or 9"
 msgstr "i bit devono essere 7, 8 o 9"
 
-#: shared-bindings/busio/UART.c:118
+#: shared-bindings/busio/UART.c:115
 msgid "stop must be 1 or 2"
 msgstr ""
 
-#: shared-bindings/busio/UART.c:123
+#: shared-bindings/busio/UART.c:120
 msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr ""
 
@@ -2345,7 +2367,7 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr "Valore di pull non supportato."
 
-#: shared-bindings/displayio/Bitmap.c:84
+#: shared-bindings/displayio/Bitmap.c:84 shared-bindings/displayio/Shape.c:88
 msgid "y should be an int"
 msgstr "y dovrebbe essere un int"
 
@@ -2361,47 +2383,70 @@ msgstr "valori della riga devono essere un buffer"
 msgid "color should be an int"
 msgstr "il colore deve essere un int"
 
-#: shared-bindings/displayio/FourWire.c:55
-#: shared-bindings/displayio/FourWire.c:64
+#: shared-bindings/displayio/Display.c:119
+msgid "Too many displays"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:138
+msgid "Must be a Group subclass."
+msgstr ""
+
+#: shared-bindings/displayio/FourWire.c:93
+#: shared-bindings/displayio/ParallelBus.c:98
+msgid "Too many display busses"
+msgstr ""
+
+#: shared-bindings/displayio/FourWire.c:106
+#: shared-bindings/displayio/ParallelBus.c:110
 msgid "displayio is a work in progress"
 msgstr ""
 
-#: shared-bindings/displayio/Group.c:65
+#: shared-bindings/displayio/Group.c:62
 msgid "Group must have size at least 1"
 msgstr "Il gruppo deve avere dimensione almeno 1"
 
-#: shared-bindings/displayio/Palette.c:96
+#: shared-bindings/displayio/Palette.c:93
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 "buffer del colore deve essere un bytearray o un array di tipo 'b' o 'B'"
 
-#: shared-bindings/displayio/Palette.c:102
+#: shared-bindings/displayio/Palette.c:99
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
 "il buffer del colore deve esseer di 3 byte (RGB) o 4 byte (RGB + pad byte)"
 
-#: shared-bindings/displayio/Palette.c:106
+#: shared-bindings/displayio/Palette.c:103
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "il colore deve essere compreso tra 0x000000 e 0xffffff"
 
-#: shared-bindings/displayio/Palette.c:110
+#: shared-bindings/displayio/Palette.c:107
 msgid "color buffer must be a buffer or int"
 msgstr "il buffer del colore deve essere un buffer o un int"
 
-#: shared-bindings/displayio/Palette.c:123
-#: shared-bindings/displayio/Palette.c:137
+#: shared-bindings/displayio/Palette.c:120
+#: shared-bindings/displayio/Palette.c:134
 msgid "palette_index should be an int"
 msgstr "palette_index deve essere un int"
 
-#: shared-bindings/displayio/Sprite.c:48
+#: shared-bindings/displayio/Shape.c:92
+#, fuzzy
+msgid "start_x should be an int"
+msgstr "y dovrebbe essere un int"
+
+#: shared-bindings/displayio/Shape.c:96
+#, fuzzy
+msgid "end_x should be an int"
+msgstr "y dovrebbe essere un int"
+
+#: shared-bindings/displayio/Sprite.c:49
 msgid "position must be 2-tuple"
 msgstr "position deve essere una 2-tuple"
 
-#: shared-bindings/displayio/Sprite.c:97
+#: shared-bindings/displayio/Sprite.c:102
 msgid "unsupported bitmap type"
 msgstr "tipo di bitmap non supportato"
 
-#: shared-bindings/displayio/Sprite.c:162
+#: shared-bindings/displayio/Sprite.c:167
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader deve essere displayio.Palette o displayio.ColorConverter"
 
@@ -2413,15 +2458,15 @@ msgstr "troppi argomenti"
 msgid "expected a DigitalInOut"
 msgstr "DigitalInOut atteso"
 
-#: shared-bindings/i2cslave/I2CSlave.c:98
+#: shared-bindings/i2cslave/I2CSlave.c:95
 msgid "can't convert address to int"
 msgstr "impossible convertire indirizzo in int"
 
-#: shared-bindings/i2cslave/I2CSlave.c:101
+#: shared-bindings/i2cslave/I2CSlave.c:98
 msgid "address out of bounds"
 msgstr "indirizzo fuori limite"
 
-#: shared-bindings/i2cslave/I2CSlave.c:107
+#: shared-bindings/i2cslave/I2CSlave.c:104
 msgid "addresses is empty"
 msgstr "gli indirizzi sono vuoti"
 
@@ -2463,14 +2508,14 @@ msgstr "I byte devono essere compresi tra 0 e 255"
 msgid "No hardware random available"
 msgstr "Nessun generatore hardware di numeri casuali disponibile"
 
-#: shared-bindings/pulseio/PWMOut.c:164
+#: shared-bindings/pulseio/PWMOut.c:162
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 "duty_cycle del PWM deve essere compresa tra 0 e 65535 inclusiva (risoluzione "
 "a 16 bit)"
 
-#: shared-bindings/pulseio/PWMOut.c:195
+#: shared-bindings/pulseio/PWMOut.c:193
 #, fuzzy
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -2478,19 +2523,19 @@ msgstr ""
 "frequenza PWM frequency non è scrivibile quando variable_frequency è "
 "impostato nel costruttore a False."
 
-#: shared-bindings/pulseio/PulseIn.c:275
+#: shared-bindings/pulseio/PulseIn.c:272
 msgid "Cannot delete values"
 msgstr "Impossibile cancellare valori"
 
-#: shared-bindings/pulseio/PulseIn.c:281
+#: shared-bindings/pulseio/PulseIn.c:278
 msgid "Slices not supported"
 msgstr "Slice non supportate"
 
-#: shared-bindings/pulseio/PulseIn.c:287
+#: shared-bindings/pulseio/PulseIn.c:284
 msgid "index must be int"
 msgstr "l'indice deve essere int"
 
-#: shared-bindings/pulseio/PulseIn.c:293
+#: shared-bindings/pulseio/PulseIn.c:290
 msgid "Read-only"
 msgstr "Sola lettura"
 
@@ -2664,11 +2709,20 @@ msgstr "Sono supportate solo bitmap con colori a 8 bit o meno"
 msgid "row must be packed and word aligned"
 msgstr "la riga deve essere compattata e allineata alla parola"
 
+#: shared-module/displayio/Display.c:62
+#, fuzzy
+msgid "Unsupported display bus type"
+msgstr "tipo di bitmap non supportato"
+
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
 msgstr "Gruppo pieno"
 
-#: shared-module/displayio/Group.c:48
+#: shared-module/displayio/Group.c:46
+msgid "Layer must be a Group or Sprite subclass."
+msgstr ""
+
+#: shared-module/displayio/Group.c:55
 msgid "Group empty"
 msgstr "Gruppo vuoto"
 
@@ -2686,6 +2740,21 @@ msgstr "Formato solo di Windows, BMP non compresso supportato %d"
 msgid "Only true color (24 bpp or higher) BMP supported %x"
 msgstr "Solo BMP true color (24 bpp o superiore) sono supportati %x"
 
+#: shared-module/displayio/Shape.c:60
+#, fuzzy
+msgid "y value out of bounds"
+msgstr "indirizzo fuori limite"
+
+#: shared-module/displayio/Shape.c:63
+#, fuzzy
+msgid "x value out of bounds"
+msgstr "indirizzo fuori limite"
+
+#: shared-module/displayio/Shape.c:67
+#, c-format
+msgid "Maximum x value when mirrored is %d"
+msgstr ""
+
 #: shared-module/storage/__init__.c:155
 msgid "Cannot remount '/' when USB is active."
 msgstr "Non è possibile rimontare '/' mentre l'USB è attiva."
@@ -2694,9 +2763,14 @@ msgstr "Non è possibile rimontare '/' mentre l'USB è attiva."
 msgid "'S' and 'O' are not supported format types"
 msgstr "'S' e 'O' non sono formati supportati"
 
-#: shared-module/struct/__init__.c:83
+#: shared-module/struct/__init__.c:136
 msgid "too many arguments provided with the given format"
 msgstr "troppi argomenti forniti con il formato specificato"
+
+#: shared-module/struct/__init__.c:179
+#, fuzzy
+msgid "buffer size must match format"
+msgstr "slice del buffer devono essere della stessa lunghezza"
 
 #: shared-module/usb_hid/Device.c:45
 #, c-format
@@ -2710,6 +2784,18 @@ msgstr "USB occupata"
 #: shared-module/usb_hid/Device.c:59
 msgid "USB Error"
 msgstr "Errore USB"
+
+#: supervisor/shared/board_busses.c:62
+msgid "No default I2C bus"
+msgstr "Nessun bus I2C predefinito"
+
+#: supervisor/shared/board_busses.c:91
+msgid "No default SPI bus"
+msgstr "Nessun bus SPI predefinito"
+
+#: supervisor/shared/board_busses.c:118
+msgid "No default UART bus"
+msgstr "Nessun bus UART predefinito"
 
 #: supervisor/shared/safe_mode.c:97
 msgid "You requested starting safe mode by "
@@ -2778,12 +2864,18 @@ msgstr ""
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Lunghezza della stringa UUID non valida"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo di servizio non valido"
-
 #, fuzzy
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "numero di argomenti errato"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo di servizio non valido"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossibile impostare i parametri PPCP."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossibile applicare i parametri GAP."
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
@@ -2798,34 +2890,32 @@ msgstr ""
 #~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
 #~ "espulso CIRCUITPY).\n"
 
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Fallita allocazione del buffer RX di %d byte"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
 #~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
 #~ "CIRCUITPY:\n"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
-
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
-
 #~ msgid "Can not add Characteristic."
 #~ msgstr "Non è possibile aggiungere Characteristic."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
 #~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
 #~ "Whoops!\n"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossibile applicare i parametri GAP."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossibile impostare i parametri PPCP."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
