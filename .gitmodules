@@ -18,6 +18,6 @@
 [submodule "lib/nrfx"]
 	path = lib/nrfx
 	url = https://github.com/NordicSemiconductor/nrfx.git
-[submodule "lib/lvgl"]
-	path = lib/lvgl
-	url = https://github.com/amirgon/lvgl.git
+[submodule "lib/lv_bindings"]
+	path = lib/lv_bindings
+	url = https://github.com/amirgon/lv_bindings.git

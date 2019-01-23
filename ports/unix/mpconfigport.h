@@ -296,7 +296,7 @@ void mp_unix_mark_exec(void);
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #define MP_STATE_PORT MP_STATE_VM
-#include "lib/lvgl/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/lv_misc/lv_gc.h"
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
     const char *readline_hist[50]; \
