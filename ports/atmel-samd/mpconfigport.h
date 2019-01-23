@@ -283,9 +283,15 @@ extern const struct _mp_obj_module_t pixelbuf_module;
         #define I2CSLAVE_MODULE
     #endif
 
+    #if !defined(CIRCUITPY_DISPLAYIO) || CIRCUITPY_DISPLAYIO
     #define CIRCUITPY_DISPLAYIO (1)
     #define CIRCUITPY_DISPLAY_LIMIT (3)
 	#define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
+    #else
+    #define CIRCUITPY_DISPLAYIO (0)
+    #define CIRCUITPY_DISPLAY_LIMIT (0)
+    #define DISPLAYIO_MODULE
+    #endif
 
     #if MICROPY_PY_NETWORK
         #define NETWORK_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module },
