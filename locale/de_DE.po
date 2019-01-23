@@ -1375,7 +1375,7 @@ msgstr "Nicht unterstützter Vorgang"
 
 #: py/moduerrno.c:153
 msgid "Invalid argument"
-msgstr "Ungültiges Argument
+msgstr "Ungültiges Argument"
 
 #: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
