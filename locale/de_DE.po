@@ -1379,7 +1379,7 @@ msgstr "Ungültiges Argument"
 
 #: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
-msgstr "Zurückverfolgung (jüngste Aufforderung zuletzt):"
+msgstr "Zurückverfolgung (jüngste Aufforderung zuletzt):\n"
 
 #: py/obj.c:96
 msgid "  File \"%q\", line %d"
