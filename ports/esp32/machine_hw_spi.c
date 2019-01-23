@@ -186,9 +186,16 @@ STATIC void machine_hw_spi_init_internal(
     };
 
     //Initialize the SPI bus
-    // FIXME: Does the DMA matter? There are two
 
-    ret = spi_bus_initialize(self->host, &buscfg, 1);
+    // Select DMA channel based on the hardware SPI host
+    int dma_chan = 0;
+    if (self->host == HSPI_HOST) {
+        dma_chan = 1;
+    } else if (self->host == VSPI_HOST) {
+        dma_chan = 2;
+    }
+
+    ret = spi_bus_initialize(self->host, &buscfg, dma_chan);
     switch (ret) {
         case ESP_ERR_INVALID_ARG:
             mp_raise_msg(&mp_type_OSError, "invalid configuration");
