@@ -994,7 +994,7 @@ msgstr "Kein Modul mit dem Namen '%q'"
 
 #: py/builtinimport.c:510
 msgid "relative import"
-msgstr "relativer Import
+msgstr "relativer Import"
 
 #: py/compile.c:397 py/compile.c:542
 msgid "can't assign to expression"
