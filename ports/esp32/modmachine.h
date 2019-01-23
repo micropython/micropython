@@ -18,6 +18,7 @@ extern const mp_obj_type_t machine_dac_type;
 extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_hw_i2c_type;
 extern const mp_obj_type_t machine_hw_spi_type;
+extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_rtc_type;
 extern const mp_obj_type_t machine_sdcard_type;
@@ -27,5 +28,7 @@ void machine_deinit(void);
 void machine_pins_init(void);
 void machine_pins_deinit(void);
 void machine_timer_deinit_all(void);
+void machine_i2s_init();
+
 
 #endif // MICROPY_INCLUDED_ESP32_MODMACHINE_H
