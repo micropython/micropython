@@ -99,8 +99,8 @@ displayio_bitmap_t blinka_bitmap = {
 
 uint32_t blinka_transparency[1] = {0x80000000};
 
-// TODO(tannewt): Fix these colors
-uint32_t blinka_colors[8] = {0x91780000, 0x879FFC98, 0xffff0000, 0x0000f501,
+// These colors are RGB 565 with the bytes swapped.
+uint32_t blinka_colors[8] = {0x78890000, 0x9F86B8FC, 0xffff0D5A, 0x0000f501,
                              0x00000000, 0x00000000, 0x00000000, 0x00000000};
 
 displayio_palette_t blinka_palette = {

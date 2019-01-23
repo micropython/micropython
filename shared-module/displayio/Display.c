@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/ParallelBus.h"
+#include "shared-bindings/time/__init__.h"
 
 #include <stdint.h>
 
@@ -73,18 +74,15 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t *data = cmd + 2;
         self->send(self->bus, true, cmd, 1);
         self->send(self->bus, false, data, data_size);
+        uint16_t delay_length_ms = 10;
         if (delay) {
             data_size++;
-            uint16_t delay_length_ms = *(cmd + 1 + data_size);
+            delay_length_ms = *(cmd + 1 + data_size);
             if (delay_length_ms == 255) {
                 delay_length_ms = 500;
             }
-            uint64_t start = ticks_ms;
-            while (ticks_ms - start < delay_length_ms) {}
-        } else {
-            uint64_t start = ticks_ms;
-            while (ticks_ms - start < 10) {}
         }
+        common_hal_time_delay_ms(delay_length_ms);
         i += 2 + data_size;
     }
     self->end_transaction(self->bus);
