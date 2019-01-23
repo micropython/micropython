@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-22 14:00-0800\n"
+"POT-Creation-Date: 2019-01-22 15:57-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -311,7 +311,7 @@ msgstr "Alle event Kanäle werden benutzt"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr ""
+msgstr "Abtastrate zu hoch. Wert muss unter %d liegen"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c:71
 msgid "Not enough pins available"
@@ -335,7 +335,7 @@ msgstr "Baudrate wird nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:67
 msgid "bytes > 8 bits not supported"
-msgstr "bytes mit merh als 8 bits werden nicht unterstützt"
+msgstr "bytes mit mehr als 8 bits werden nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
 #: ports/nrf/common-hal/busio/UART.c:91
@@ -369,13 +369,13 @@ msgstr "Pull up im Ausgabemodus nicht möglich"
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c:43
 #: ports/nrf/common-hal/displayio/ParallelBus.c:43
 msgid "Data 0 pin must be byte aligned"
-msgstr ""
+msgstr "Data 0 pin muss am Byte ausgerichtet sein"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c:47
 #: ports/nrf/common-hal/displayio/ParallelBus.c:47
-#, fuzzy, c-format
+#, c-format
 msgid "Bus pin %d is already in use"
-msgstr "DAC wird schon benutzt"
+msgstr "Bus pin %d wird schon benutzt"
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
 #: ports/esp8266/common-hal/microcontroller/__init__.c:64
@@ -399,7 +399,7 @@ msgstr "Keine Hardwareunterstützung an diesem Pin"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
 msgid "EXTINT channel already in use"
-msgstr "EXTINT Kanal wird benutzt"
+msgstr "EXTINT Kanal ist schon in Benutzung"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
 #: ports/esp8266/common-hal/pulseio/PulseIn.c:86
@@ -491,7 +491,8 @@ msgstr "Minimale PWM Frequenz ist %dHz"
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
 msgstr ""
-"Mehrere PWM Frequenzen nicht unterstützt. PWM bereits auf %dHz gesetzt."
+"Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf %dHz "
+"gesetzt."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
@@ -513,7 +514,7 @@ msgstr ""
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
-msgstr ""
+msgstr "C-Level Assert"
 
 #: ports/esp8266/machine_adc.c:57
 #, c-format
@@ -658,12 +659,10 @@ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:110
-#, fuzzy
 msgid "Failed to change softdevice state"
 msgstr "Fehler beim Ändern des Softdevice-Status"
 
 #: ports/nrf/common-hal/bleio/Adapter.c:119
-#, fuzzy
 msgid "Failed to get softdevice state"
 msgstr "Fehler beim Abrufen des Softdevice-Status"
 
@@ -677,81 +676,77 @@ msgstr "Das Interval ist nicht im Bereich 0.0020 bis 10.24"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:58
 #: ports/nrf/common-hal/bleio/Peripheral.c:56
-#, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Zu vielen Daten für das advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
 #: ports/nrf/common-hal/bleio/Peripheral.c:324
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
 #: ports/nrf/common-hal/bleio/Peripheral.c:336
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:59
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:89
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:106
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:132
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to notify or indicate attribute value, err %0x04x"
 msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:144
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read attribute value, err %0x04x"
 msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:172 ports/nrf/sd_mutex.c:34
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
+msgstr "Mutex konnte nicht akquiriert werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:178
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:189 ports/nrf/sd_mutex.c:54
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c:251
 #: ports/nrf/common-hal/bleio/Characteristic.c:284
 msgid "bad GATT role"
-msgstr "bad GATT role"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c:80
 #: ports/nrf/common-hal/bleio/Device.c:112
-#, fuzzy
 msgid "Data too large for the advertisement packet"
 msgstr "Daten sind zu groß für das advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Device.c:262
-#, fuzzy
 msgid "Failed to discover services"
 msgstr "Es konnten keine Dienste gefunden werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:268
 #: ports/nrf/common-hal/bleio/Device.c:302
-#, fuzzy
 msgid "Failed to acquire mutex"
 msgstr "Akquirieren des Mutex gescheitert"
 
@@ -759,62 +754,54 @@ msgstr "Akquirieren des Mutex gescheitert"
 #: ports/nrf/common-hal/bleio/Device.c:313
 #: ports/nrf/common-hal/bleio/Device.c:344
 #: ports/nrf/common-hal/bleio/Device.c:378
-#, fuzzy
 msgid "Failed to release mutex"
 msgstr "Loslassen des Mutex gescheitert"
 
 #: ports/nrf/common-hal/bleio/Device.c:389
-#, fuzzy
 msgid "Failed to continue scanning"
 msgstr "Der Scanvorgang kann nicht fortgesetzt werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:421
-#, fuzzy
 msgid "Failed to connect:"
-msgstr "Das Verbinden ist fehlgeschlagen:"
+msgstr "Verbindung fehlgeschlagen:"
 
 #: ports/nrf/common-hal/bleio/Device.c:491
-#, fuzzy
 msgid "Failed to add service"
 msgstr "Dienst konnte nicht hinzugefügt werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:508
-#, fuzzy
 msgid "Failed to start advertising"
 msgstr "Kann advertisement nicht starten"
 
 #: ports/nrf/common-hal/bleio/Device.c:525
-#, fuzzy
 msgid "Failed to stop advertising"
 msgstr "Kann advertisement nicht stoppen"
 
 #: ports/nrf/common-hal/bleio/Device.c:550
-#, fuzzy
 msgid "Failed to start scanning"
 msgstr "Der Scanvorgang kann nicht gestartet werden"
 
 #: ports/nrf/common-hal/bleio/Device.c:566
-#, fuzzy
 msgid "Failed to create mutex"
 msgstr "Erstellen des Mutex ist fehlgeschlagen"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c:304
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "Dienst konnte nicht hinzugefügt werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Scanner.c:75
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Der Scanvorgang kann nicht fortgesetzt werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Scanner.c:101
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Service.c:88
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Fehler beim Hinzufügen des Merkmals. Status: 0x%04x"
 
@@ -823,7 +810,7 @@ msgid "Characteristic already in use by another Service."
 msgstr "Merkmal wird bereits von einem anderen Dienst verwendet."
 
 #: ports/nrf/common-hal/bleio/UUID.c:54
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Kann keine herstellerspezifische UUID hinzufügen. Status: 0x%04x"
 
@@ -837,12 +824,10 @@ msgid "Unexpected nrfx uuid type"
 msgstr "Unerwarteter nrfx uuid-Typ"
 
 #: ports/nrf/common-hal/busio/I2C.c:98
-#, fuzzy
 msgid "All I2C peripherals are in use"
 msgstr "Alle I2C-Peripheriegeräte sind in Benutzung"
 
 #: ports/nrf/common-hal/busio/SPI.c:133
-#, fuzzy
 msgid "All SPI peripherals are in use"
 msgstr "Alle SPI-Peripheriegeräte sind in Benutzung"
 
@@ -852,14 +837,12 @@ msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
 
 #: ports/nrf/common-hal/busio/UART.c:95
-#, fuzzy
 msgid "Invalid buffer size"
 msgstr "Ungültige Puffergröße"
 
 #: ports/nrf/common-hal/busio/UART.c:99
-#, fuzzy
 msgid "Odd parity is not supported"
-msgstr "bytes mit mehr als 8 bits werden nicht unterstützt"
+msgstr "Ungerade Parität wird nicht unterstützt"
 
 #: ports/nrf/common-hal/busio/UART.c:335 ports/nrf/common-hal/busio/UART.c:339
 #: ports/nrf/common-hal/busio/UART.c:344 ports/nrf/common-hal/busio/UART.c:349
@@ -870,12 +853,10 @@ msgid "busio.UART not available"
 msgstr "Kann busio.UART nicht finden"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:48
-#, fuzzy
 msgid "Cannot get temperature"
 msgstr "Kann Temperatur nicht holen"
 
 #: ports/nrf/common-hal/pulseio/PWMOut.c:161
-#, fuzzy
 msgid "All PWM peripherals are in use"
 msgstr "Alle PWM-Peripheriegeräte werden verwendet"
 
@@ -981,9 +962,8 @@ msgid "bad compile mode"
 msgstr ""
 
 #: py/builtinhelp.c:137
-#, fuzzy
 msgid "Plus any modules on the filesystem\n"
-msgstr "Dateisystem kann nicht wieder gemounted werden."
+msgstr ""
 
 #: py/builtinhelp.c:183
 #, c-format
@@ -994,6 +974,12 @@ msgid ""
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
+"Willkommen bei Adafruit CircuitPython %s!\n"
+"\n"
+"Projektleitfäden findest du auf learn.adafruit.com/category/circuitpython \n"
+"\n"
+"Um die integrierten Module aufzulisten, führe bitte `help(\"modules\")` "
+"aus.\n"
 
 #: py/builtinimport.c:336
 msgid "cannot perform relative import"
@@ -2149,23 +2135,20 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/audioio/Mixer.c:91
-#, fuzzy
 msgid "Invalid voice count"
-msgstr "Ungültiger clock pin"
+msgstr "Ungültige Anzahl von Stimmen"
 
 #: shared-bindings/audioio/Mixer.c:96
-#, fuzzy
 msgid "Invalid channel count"
-msgstr "Ungültiger clock pin"
+msgstr "Ungültige Anzahl von Kanälen"
 
 #: shared-bindings/audioio/Mixer.c:100
 msgid "Sample rate must be positive"
-msgstr ""
+msgstr "Abtastrate muss positiv sein"
 
 #: shared-bindings/audioio/Mixer.c:104
-#, fuzzy
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits müssen 8 sein"
+msgstr "Es müssen 8 oder 16 bits_per_sample sein"
 
 #: shared-bindings/audioio/RawSample.c:95
 msgid ""
@@ -2185,42 +2168,42 @@ msgstr ""
 #: shared-bindings/bitbangio/I2C.c:109 shared-bindings/bitbangio/SPI.c:119
 #: shared-bindings/busio/SPI.c:130
 msgid "Function requires lock"
-msgstr ""
+msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 
 #: shared-bindings/bitbangio/I2C.c:193 shared-bindings/busio/I2C.c:207
 msgid "Buffer must be at least length 1"
-msgstr ""
+msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
 
 #: shared-bindings/bitbangio/SPI.c:149 shared-bindings/busio/SPI.c:172
 msgid "Invalid polarity"
-msgstr ""
+msgstr "Ungültige Polarität"
 
 #: shared-bindings/bitbangio/SPI.c:153 shared-bindings/busio/SPI.c:176
 msgid "Invalid phase"
-msgstr ""
+msgstr "Ungültige Phase"
 
 #: shared-bindings/bitbangio/SPI.c:157 shared-bindings/busio/SPI.c:180
 msgid "Invalid number of bits"
-msgstr ""
+msgstr "Ungültige Anzahl von Bits"
 
 #: shared-bindings/bitbangio/SPI.c:282 shared-bindings/busio/SPI.c:345
 msgid "buffer slices must be of equal length"
-msgstr ""
+msgstr "Puffersegmente müssen gleich lang sein"
 
 #: shared-bindings/bleio/Address.c:115
 #, c-format
 msgid "Address is not %d bytes long or is in wrong format"
-msgstr ""
+msgstr "Die Adresse ist nicht %d Bytes lang oder das Format ist falsch"
 
 #: shared-bindings/bleio/Address.c:122
-#, fuzzy, c-format
+#, c-format
 msgid "Address must be %d bytes long"
-msgstr "Buffer müssen gleich lang sein"
+msgstr "Die Adresse muss %d Bytes lang sein"
 
 #: shared-bindings/bleio/Characteristic.c:74
 #: shared-bindings/bleio/Descriptor.c:86 shared-bindings/bleio/Service.c:66
 msgid "Expected a UUID"
-msgstr ""
+msgstr "Eine UUID wird erwartet"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:39
 #, fuzzy
@@ -2233,14 +2216,12 @@ msgid "timeout must be >= 0.0"
 msgstr "bits müssen 8 sein"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:79
-#, fuzzy
 msgid "buffer_size must be >= 1"
-msgstr "Buffer müssen gleich lang sein"
+msgstr "Puffergröße muss >= 1 sein"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:83
-#, fuzzy
 msgid "Expected a Characteristic"
-msgstr "Kann das Merkmal nicht hinzufügen."
+msgstr "Erwartet ein Merkmal"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:138
 #, fuzzy
@@ -2272,9 +2253,8 @@ msgid "services includes an object that is not a Service"
 msgstr ""
 
 #: shared-bindings/bleio/Peripheral.c:119
-#, fuzzy
 msgid "name must be a string"
-msgstr "heap muss eine Liste sein"
+msgstr "name muss ein String sein"
 
 #: shared-bindings/bleio/Service.c:84
 msgid "characteristics includes an object that is not a Characteristic"
@@ -2297,9 +2277,8 @@ msgid "UUID value is not str, int or byte buffer"
 msgstr ""
 
 #: shared-bindings/bleio/UUID.c:107
-#, fuzzy
 msgid "Byte buffer must be 16 bytes."
-msgstr "Buffer müssen gleich lang sein"
+msgstr "Der Puffer muss 16 Bytes lang sein"
 
 #: shared-bindings/bleio/UUID.c:151
 msgid "not a 128-bit UUID"
@@ -2307,7 +2286,7 @@ msgstr ""
 
 #: shared-bindings/busio/I2C.c:117
 msgid "Function requires lock."
-msgstr ""
+msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 
 #: shared-bindings/busio/UART.c:103
 msgid "bits must be 7, 8 or 9"
@@ -2415,9 +2394,8 @@ msgid "position must be 2-tuple"
 msgstr ""
 
 #: shared-bindings/displayio/Sprite.c:102
-#, fuzzy
 msgid "unsupported bitmap type"
-msgstr "Baudrate wird nicht unterstütz"
+msgstr "Nicht unterstützter Bitmap-Typ"
 
 #: shared-bindings/displayio/Sprite.c:167
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -2675,9 +2653,8 @@ msgid "row must be packed and word aligned"
 msgstr ""
 
 #: shared-module/displayio/Display.c:62
-#, fuzzy
 msgid "Unsupported display bus type"
-msgstr "Baudrate wird nicht unterstütz"
+msgstr "Nicht unterstützter display bus type"
 
 #: shared-module/displayio/Group.c:39
 msgid "Group full"
@@ -2692,9 +2669,8 @@ msgid "Group empty"
 msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c:49
-#, fuzzy
 msgid "Invalid BMP file"
-msgstr "Ungültiger Pin"
+msgstr "Ungültige BMP-Datei"
 
 #: shared-module/displayio/OnDiskBitmap.c:59
 #, c-format
@@ -2732,9 +2708,8 @@ msgid "too many arguments provided with the given format"
 msgstr ""
 
 #: shared-module/struct/__init__.c:179
-#, fuzzy
 msgid "buffer size must match format"
-msgstr "Buffer müssen gleich lang sein"
+msgstr "Buffergröße muss zum Format passen"
 
 #: shared-module/usb_hid/Device.c:45
 #, c-format
@@ -2770,10 +2745,11 @@ msgid "To exit, please reset the board without "
 msgstr "Zum beenden bitte resette das board ohne "
 
 #: supervisor/shared/safe_mode.c:107
-#, fuzzy
 msgid ""
 "You are running in safe mode which means something unanticipated happened.\n"
-msgstr "Sicherheitsmodus aktiv, etwas wirklich schlechtes ist passiert.\n"
+msgstr ""
+"Sie laufen im abgesicherten Modus, was bedeutet, dass etwas Unerwartetes "
+"passiert ist.\n"
 
 #: supervisor/shared/safe_mode.c:109
 msgid ""
@@ -2781,6 +2757,10 @@ msgid ""
 "Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
 " with the contents of your CIRCUITPY drive and this message:\n"
 msgstr ""
+"Sieht aus, als wäre der CircuitPython-Kernel-Code abgestürzt. Uups!\n"
+"Bitte melde das Problem unter https://github.com/adafruit/circuitpython/"
+"issues\n"
+"mit dem Inhalt deines CIRCUITPY-Laufwerks und dieser Nachricht:\n"
 
 #: supervisor/shared/safe_mode.c:111
 msgid "Crash into the HardFault_Handler.\n"
@@ -2795,15 +2775,17 @@ msgid "MicroPython fatal error.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c:118
-#, fuzzy
 msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,"
-"dass deine Stromversorgung\n"
+"Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher,\n"
+"dass deine Stromversorgung genug Leistung für die gesamte Schaltung zur\n"
+"Verfügung stellt und drücke die Reset-Taste (nachdem du das CIRCUITPY-"
+"Laufwerk\n"
+"ausgeworfen hast)\n"
 
 #: supervisor/shared/safe_mode.c:120
 msgid ""
@@ -2820,11 +2802,36 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "unpack erfordert einen Puffer von %d Bytes"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr "CircuitPython ist abgestürzt. Ups!\n"
+
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Kann UUID in das advertisement packet kodieren."
 
+#~ msgid "Invalid Service type"
+#~ msgstr "Ungültiger Diensttyp"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Kann nicht nach der Geräteadresse suchen."
+
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Ungültige UUID-Stringlänge"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
+#~ "sicheren Auswerfen von CIRCUITPY.)\n"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
 
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
@@ -2837,37 +2844,11 @@ msgstr ""
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Kann GAP Parameter nicht anwenden."
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
-
 #~ msgid "Can not add Service."
 #~ msgstr "Kann den Dienst nicht hinzufügen."
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Kann nicht nach der Geräteadresse suchen."
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Konnte keine RX Buffer mit %d allozieren"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Ungültiger Diensttyp"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "genug Strom für den ganzen Schaltkreis liefert und drücke reset (nach dem "
-#~ "sicheren Auswerfen von CIRCUITPY.)\n"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Kann UUID nicht kodieren, um die Länge zu überprüfen."
 
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Ungültiger UUID-Parameter"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Der Gerätename kann nicht im Stack verwendet werden."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Kann advertisement data nicht anwenden. Status: 0x%02x"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr "CircuitPython ist abgestürzt. Ups!\n"
