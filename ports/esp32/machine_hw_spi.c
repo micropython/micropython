@@ -58,6 +58,9 @@ typedef struct _machine_hw_spi_obj_t {
     } state;
 } machine_hw_spi_obj_t;
 
+// Static objects mapping to HSPI and VSPI hardware peripherals
+STATIC machine_hw_spi_obj_t machine_hw_spi_obj[2];
+
 STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
     switch (spi_bus_remove_device(self->spi)) {
         case ESP_ERR_INVALID_ARG:
@@ -363,7 +366,12 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_hw_spi_obj_t *self = m_new_obj(machine_hw_spi_obj_t);
+    machine_hw_spi_obj_t *self;
+    if (args[ARG_id].u_int == HSPI_HOST) {
+        self = &machine_hw_spi_obj[0];
+    } else {
+        self = &machine_hw_spi_obj[1];
+    }
     self->base.type = &machine_hw_spi_type;
 
     machine_hw_spi_init_internal(
