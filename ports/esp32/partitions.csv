@@ -6,4 +6,4 @@ phy_init, data, phy,     0xf000,  0x1000
 factory,  app,  factory, 0x10000, 1144k
 ota_0,    app,  ota_0,   0x130000,1144k
 ota_1,    app,  ota_1,   0x250000,1144k
-internalfs, data,spiffs, 0x36e000,80k
+internalfs, data,spiffs, 0x36e000,584k
