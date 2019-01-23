@@ -148,3 +148,4 @@ The following libraries are specific to the ESP8266 and ESP32.
   :maxdepth: 2
 
   esp.rst
+  esp32.rst
