@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Roy Hooper
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#ifndef CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
+#define CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+#include "shared-bindings/_pixelbuf/types.h"
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
+const mp_obj_type_t pixelbuf_pixelbuf_type;
 
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
+typedef struct {
+    mp_obj_base_t base;
+    size_t pixels;
+    size_t bytes;
+    size_t pixel_step;
+    pixelbuf_byteorder_obj_t byteorder;
+    mp_obj_t bytearray;
+    mp_obj_t rawbytearray;
+    mp_float_t brightness;
+    bool two_buffers;
+    size_t offset;
+    bool dotstar_mode;
+    uint8_t *rawbuf;
+    uint8_t *buf;
+    mp_obj_t write_function;
+    mp_obj_tuple_t *write_function_args;
+    bool auto_write;
+} pixelbuf_pixelbuf_obj_t;
 
-void reset_board_busses(void);
+void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self);
+void call_write_function(pixelbuf_pixelbuf_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
+#endif  // CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H

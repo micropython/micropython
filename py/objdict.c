@@ -91,7 +91,10 @@ STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     }
     #endif
     if (n_args > 0 || kw_args != NULL) {
-        mp_obj_t args2[2] = {dict_out, args[0]}; // args[0] is always valid, even if it's not a positional arg
+        mp_obj_t args2[2] = {dict_out, NULL}; // args[0] is always valid, even if it's not a positional arg
+        if (n_args > 0) {
+            args2[1] = args[0];
+        }
         dict_update(n_args + 1, args2, kw_args); // dict_update will check that n_args + 1 == 1 or 2
     }
     return dict_out;

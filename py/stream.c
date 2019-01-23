@@ -103,7 +103,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
     // CPython does a readall, but here we silently let negatives through,
     // and they will cause a MemoryError.
     mp_int_t sz;
-    if (n_args == 1 || ((sz = mp_obj_get_int(args[1])) == -1)) {
+    if (n_args == 1 || args[1] == mp_const_none || ((sz = mp_obj_get_int(args[1])) == -1)) {
         return stream_readall(args[0]);
     }
 

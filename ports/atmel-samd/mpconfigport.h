@@ -241,6 +241,9 @@ extern const struct _mp_obj_module_t usb_midi_module;
 extern const struct _mp_obj_module_t network_module;
 extern const struct _mp_obj_module_t socket_module;
 extern const struct _mp_obj_module_t wiznet_module;
+#ifndef EXCLUDE_PIXELBUF
+extern const struct _mp_obj_module_t pixelbuf_module;
+#endif
 
 // Internal flash size dependent settings.
 #if BOARD_FLASH_SIZE > 192000
@@ -280,10 +283,14 @@ extern const struct _mp_obj_module_t wiznet_module;
         #define I2CSLAVE_MODULE
     #endif
 
-    #ifdef CIRCUITPY_DISPLAYIO
+    #if !defined(CIRCUITPY_DISPLAYIO) || CIRCUITPY_DISPLAYIO
+    #define CIRCUITPY_DISPLAYIO (1)
+    #define CIRCUITPY_DISPLAY_LIMIT (3)
 	#define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
     #else
-	#define DISPLAYIO_MODULE
+    #define CIRCUITPY_DISPLAYIO (0)
+    #define CIRCUITPY_DISPLAY_LIMIT (0)
+    #define DISPLAYIO_MODULE
     #endif
 
     #if MICROPY_PY_NETWORK
@@ -308,6 +315,11 @@ extern const struct _mp_obj_module_t wiznet_module;
         #define JSON_MODULE
     #endif
 
+    #ifndef EXCLUDE_PIXELBUF
+        #define PIXELBUF_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module }
+    #else
+        #define PIXELBUF_MODULE
+    #endif
 
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
@@ -321,7 +333,8 @@ extern const struct _mp_obj_module_t wiznet_module;
         WIZNET_MODULE \
         JSON_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
+        { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }, \
+        PIXELBUF_MODULE
     #endif
     #define EXPRESS_BOARD
 
@@ -336,6 +349,7 @@ extern const struct _mp_obj_module_t wiznet_module;
     #define MICROPY_PY_BUILTINS_COMPLEX (0)
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+    #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
 // Disabled for now.

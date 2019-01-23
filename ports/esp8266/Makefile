@@ -148,6 +148,11 @@ SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
 	struct/__init__.c
+	
+ifndef EXCLUDE_PIXELBUF
+       SRC_SHARED_MODULE += _pixelbuf/__init__.c \
+       _pixelbuf/PixelBuf.c
+endif
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
@@ -216,7 +221,8 @@ SRC_QSTR += $(SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-all: $(BUILD)/libaxtls.a $(FWBIN)
+all:
+	@echo "CircuitPython 4.0.0 and later do not support esp8266 boards."
 
 CONFVARS_FILE = $(BUILD)/confvars
 

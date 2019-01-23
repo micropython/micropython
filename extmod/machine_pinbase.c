@@ -45,11 +45,11 @@ STATIC const mp_pinbase_t pinbase_singleton = {
     .base = { &machine_pinbase_type },
 };
 
-STATIC mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type;
     (void)n_args;
-    (void)n_kw;
     (void)args;
+    (void)kw_args;
     return MP_OBJ_FROM_PTR(&pinbase_singleton);
 }
 

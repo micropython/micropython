@@ -16,3 +16,5 @@ CFLAGS_INLINE_LIMIT = 45
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_IRRemote
+
+EXCLUDE_PIXELBUF = 1

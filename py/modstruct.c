@@ -97,7 +97,10 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
             total_cnt += 1;
             size += cnt;
         } else {
-            total_cnt += cnt;
+            // Pad bytes are skipped and don't get included in the item count.
+            if (*fmt != 'x') {
+                total_cnt += cnt;
+            }
             mp_uint_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
             while (cnt--) {
@@ -166,7 +169,10 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
         } else {
             while (cnt--) {
                 item = mp_binary_get_val(fmt_type, *fmt, &p);
-                res->items[i++] = item;
+                // Pad bytes ('x') are just skipped.
+                if (*fmt != 'x') {
+                    res->items[i++] = item;
+                }
             }
         }
         fmt++;
@@ -204,7 +210,11 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
         } else {
             // If we run out of args then we just finish; CPython would raise struct.error
             while (cnt-- && i < n_args) {
-                mp_binary_set_val(fmt_type, *fmt, args[i++], &p);
+                mp_binary_set_val(fmt_type, *fmt, args[i], &p);
+                // Pad bytes don't have a corresponding argument.
+                if (*fmt != 'x') {
+                    i++;
+                }
             }
         }
         fmt++;

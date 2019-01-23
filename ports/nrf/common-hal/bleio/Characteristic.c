@@ -36,9 +36,9 @@
 #include "common-hal/bleio/Characteristic.h"
 #include "shared-module/bleio/Characteristic.h"
 
-// TODO - should these be per object?? *****
 STATIC volatile bleio_characteristic_obj_t *m_read_characteristic;
 STATIC volatile uint8_t m_tx_in_progress;
+// Serialize gattc writes that send a response. This might be done per object?
 STATIC nrf_mutex_t *m_write_mutex;
 
 STATIC uint16_t get_cccd(bleio_characteristic_obj_t *characteristic) {

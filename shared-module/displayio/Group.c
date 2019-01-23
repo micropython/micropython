@@ -67,11 +67,14 @@ void displayio_group_construct(displayio_group_t* self, mp_obj_t* child_array, u
     self->children = child_array;
     self->max_size = max_size;
     self->needs_refresh = false;
+    self->scale = 1;
 }
 
 bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, uint16_t* pixel) {
     x -= self->x;
     y -= self->y;
+    x /= self->scale;
+    y /= self->scale;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i];
         if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {

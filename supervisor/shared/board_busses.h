@@ -24,16 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
+#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
 
-void board_i2c(void);
-extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
+#include "py/obj.h"
 
-void board_spi(void);
-extern mp_obj_fun_builtin_fixed_t board_spi_obj;
+mp_obj_t board_i2c(void);
+MP_DECLARE_CONST_FUN_OBJ_0(board_i2c_obj);
 
-void board_uart(void);
-extern mp_obj_fun_builtin_fixed_t board_uart_obj;
+mp_obj_t board_spi(void);
+MP_DECLARE_CONST_FUN_OBJ_0(board_spi_obj);
 
-#endif  // MICROPY_INCLUDED_NRF_BOARD_BUSSES_H
+mp_obj_t board_uart(void);
+MP_DECLARE_CONST_FUN_OBJ_0(board_uart_obj);
+
+void reset_board_busses(void);
+
+#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H

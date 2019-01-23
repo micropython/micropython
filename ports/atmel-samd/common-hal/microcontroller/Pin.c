@@ -100,6 +100,8 @@ void never_reset_pin_number(uint8_t pin_number) {
 }
 
 void reset_pin_number(uint8_t pin_number) {
+    never_reset_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
+
     if (pin_number >= PORT_BITS) {
         return;
     }
@@ -169,6 +171,20 @@ void claim_pin(const mcu_pin_obj_t* pin) {
     #endif
 }
 
+bool pin_number_is_free(uint8_t pin_number) {
+    PortGroup *const port = &PORT->Group[(enum gpio_port)GPIO_PORT(pin_number)];
+    uint8_t pin_index = GPIO_PIN(pin_number);
+    volatile PORT_PINCFG_Type *state = &port->PINCFG[pin_index];
+    volatile PORT_PMUX_Type *pmux = &port->PMUX[pin_index / 2];
+
+    if (pin_number == PIN_PA30 || pin_number == PIN_PA31) {
+        return state->bit.PMUXEN == 1 && ((pmux->reg >> (4 * pin_index % 2)) & 0xf) == 0x6;
+    }
+
+    return state->bit.PMUXEN == 0 && state->bit.INEN == 0 &&
+           state->bit.PULLEN == 0 && (port->DIR.reg & (1 << pin_index)) == 0;
+}
+
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
@@ -190,15 +206,5 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     }
     #endif
 
-    PortGroup *const port = &PORT->Group[(enum gpio_port)GPIO_PORT(pin->number)];
-    uint8_t pin_index = GPIO_PIN(pin->number);
-    volatile PORT_PINCFG_Type *state = &port->PINCFG[pin_index];
-    volatile PORT_PMUX_Type *pmux = &port->PMUX[pin_index / 2];
-
-    if (pin->number == PIN_PA30 || pin->number == PIN_PA31) {
-        return state->bit.PMUXEN == 1 && ((pmux->reg >> (4 * pin_index % 2)) & 0xf) == 0x6;
-    }
-
-    return state->bit.PMUXEN == 0 && state->bit.INEN == 0 &&
-           state->bit.PULLEN == 0 && (port->DIR.reg & (1 << pin_index)) == 0;
+    return pin_number_is_free(pin->number);
 }

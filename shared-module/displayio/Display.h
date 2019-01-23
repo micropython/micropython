@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_FOURWIRE_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_FOURWIRE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
 
-#include "common-hal/busio/SPI.h"
-#include "common-hal/digitalio/DigitalInOut.h"
 #include "shared-module/displayio/Group.h"
+
+typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
+typedef void (*display_bus_send)(mp_obj_t bus, bool command, uint8_t *data, uint32_t data_length);
+typedef void (*display_bus_end_transaction)(mp_obj_t bus);
 
 typedef struct {
     mp_obj_base_t base;
-    busio_spi_obj_t bus;
-    digitalio_digitalinout_obj_t command;
-    digitalio_digitalinout_obj_t chip_select;
-    digitalio_digitalinout_obj_t reset;
+    mp_obj_t bus;
     uint16_t width;
     uint16_t height;
     uint16_t color_depth;
@@ -48,6 +47,9 @@ typedef struct {
     uint64_t last_refresh;
     int16_t colstart;
     int16_t rowstart;
-} displayio_fourwire_obj_t;
+    display_bus_begin_transaction begin_transaction;
+    display_bus_send send;
+    display_bus_end_transaction end_transaction;
+} displayio_display_obj_t;
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_FOURWIRE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,13 @@
 
 #include "ble_drv.h"
 #include "ble_gatts.h"
-#include "nrf_soc.h"
+#include "sd_mutex.h"
 
+#include "lib/utils/interrupt_char.h"
 #include "py/runtime.h"
+#include "py/stream.h"
+
+#include "tick.h"
 
 #include "common-hal/bleio/__init__.h"
 #include "common-hal/bleio/CharacteristicBuffer.h"
@@ -43,10 +47,13 @@ STATIC void characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
         ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
         // Event handle must match the handle for my characteristic.
         if (evt_write->handle == self->characteristic->handle) {
-            // Push all the data onto the ring buffer.
+            // Push all the data onto the ring buffer, but wait for any reads to finish.
+            sd_mutex_acquire_wait_no_vm(&self->ringbuf_mutex);
             for (size_t i = 0; i < evt_write->len; i++) {
                 ringbuf_put(&self->ringbuf, evt_write->data[i]);
             }
+            // Don't check for errors: we're in an event handler.
+            sd_mutex_release(&self->ringbuf_mutex);
         break;
         }
     }
@@ -54,22 +61,75 @@ STATIC void characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
 
 }
 
-// Assumes that buffer_size has been validated before call.
-void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic, size_t buffer_size) {
+// Assumes that timeout and buffer_size have been validated before call.
+void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
+                                                      bleio_characteristic_obj_t *characteristic,
+                                                      mp_float_t timeout,
+                                                      size_t buffer_size) {
 
     self->characteristic = characteristic;
+    self->timeout_ms = timeout * 1000;
     // This is a macro.
-    ringbuf_alloc(&self->ringbuf, buffer_size);
+    // true means long-lived, so it won't be moved.
+    ringbuf_alloc(&self->ringbuf, buffer_size, true);
+    sd_mutex_new(&self->ringbuf_mutex);
 
     ble_drv_add_event_handler(characteristic_buffer_on_ble_evt, self);
 
 }
 
-// Returns a uint8_t byte value, or -1 if no data is available.
-int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self) {
-    return ringbuf_get(&self->ringbuf);
+int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {
+    uint64_t start_ticks = ticks_ms;
+
+    // Wait for all bytes received or timeout
+    while ( (ringbuf_count(&self->ringbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP ;
+        // Allow user to break out of a timeout with a KeyboardInterrupt.
+        if ( mp_hal_is_interrupted() ) {
+            return 0;
+        }
+#endif
+    }
+
+    // Copy received data. Lock out writes while copying.
+    sd_mutex_acquire_wait(&self->ringbuf_mutex);
+
+    size_t rx_bytes = MIN(ringbuf_count(&self->ringbuf), len);
+    for ( size_t i = 0; i < rx_bytes; i++ ) {
+        data[i] = ringbuf_get(&self->ringbuf);
+    }
+
+    // Writes now OK.
+    sd_mutex_release_check(&self->ringbuf_mutex);
+
+    return rx_bytes;
+}
+
+uint32_t common_hal_bleio_characteristic_buffer_rx_characters_available(bleio_characteristic_buffer_obj_t *self) {
+    return ringbuf_count(&self->ringbuf);
+}
+
+void common_hal_bleio_characteristic_buffer_clear_rx_buffer(bleio_characteristic_buffer_obj_t *self) {
+    // prevent conflict with uart irq
+    sd_mutex_acquire_wait(&self->ringbuf_mutex);
+    ringbuf_clear(&self->ringbuf);
+    sd_mutex_release_check(&self->ringbuf_mutex);
+}
+
+bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer_obj_t *self) {
+    return self->characteristic == NULL;
 }
 
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self) {
-    ble_drv_remove_event_handler(characteristic_buffer_on_ble_evt, self);
+    if (!common_hal_bleio_characteristic_buffer_deinited(self)) {
+        ble_drv_remove_event_handler(characteristic_buffer_on_ble_evt, self);
+    }
+}
+
+bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self) {
+    return self->characteristic != NULL &&
+        self->characteristic->service != NULL &&
+        self->characteristic->service->device != NULL &&
+        common_hal_bleio_device_get_conn_handle(self->characteristic->service->device) != BLE_CONN_HANDLE_INVALID;
 }
