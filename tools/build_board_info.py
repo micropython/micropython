@@ -162,7 +162,10 @@ def update_downloads(boards, release):
 
     assets = response.json()["assets"]
     for asset in assets:
-        boards[asset["name"].split("-")[2]]["download_count"] += asset["download_count"]
+        board_name = asset["name"].split("-")[2]
+        if board_name not in boards:
+            continue
+        boards[board_name]["download_count"] += asset["download_count"]
 
 
 def print_active_user():
