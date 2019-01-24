@@ -266,10 +266,18 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         break;
     }
 
+    case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+        sd_ble_gap_data_length_update(self->conn_handle, NULL, NULL);
+        break;
+
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST: {
         sd_ble_gatts_exchange_mtu_reply(self->conn_handle, BLE_GATT_ATT_MTU_DEFAULT);
         break;
     }
+
+    case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+        sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
+        break;
 
     default:
         // For debugging.

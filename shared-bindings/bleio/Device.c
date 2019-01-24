@@ -48,6 +48,9 @@
 //| :class:`Device` -- BLE device
 //| =========================================================
 //|
+//| **IGNORE ``Device`` and all its documentation.
+//| It is being replaced by `Peripheral` and other classes.**
+//|
 //| Provides access a to BLE device, either in a Peripheral or Central role.
 //| When a device is created without any parameter passed to the constructor,
 //| it will be set to the Peripheral role. If a address is passed, the device
