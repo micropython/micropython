@@ -275,6 +275,10 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         break;
     }
 
+    case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+        sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
+        break;
+
     default:
         // For debugging.
         // mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
