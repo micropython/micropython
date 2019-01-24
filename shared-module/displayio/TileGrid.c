@@ -45,6 +45,7 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
         self->inline_tiles = false;
     }
     self->width_in_tiles = width;
+    self->height_in_tiles = width;
     self->total_width = width * tile_width;
     self->total_height = height * tile_height;
     self->tile_width = tile_width;
@@ -110,6 +111,14 @@ bool displayio_tilegrid_get_pixel(displayio_tilegrid_t *self, int16_t x, int16_t
     }
 
     return false;
+}
+
+void common_hal_displayio_textgrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index) {
+    uint8_t* tiles = self->tiles;
+    if (self->inline_tiles) {
+        tiles = (uint8_t*) &self->tiles;
+    }
+    tiles[y * self->width_in_tiles + x] = tile_index;
 }
 
 bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self) {

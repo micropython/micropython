@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,41 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
-
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "py/obj.h"
+#include "py/runtime.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t bitmap;
-    mp_obj_t pixel_shader;
-    uint16_t x;
-    uint16_t y;
-    uint16_t width_in_tiles;
-    uint16_t height_in_tiles;
-    uint16_t total_width;
-    uint16_t total_height;
-    uint16_t tile_width;
-    uint16_t tile_height;
-    uint8_t* tiles;
-    bool needs_refresh;
-    bool inline_tiles;
-} displayio_tilegrid_t;
+#include "shared-bindings/terminalio/__init__.h"
+#include "shared-bindings/terminalio/Terminal.h"
 
-bool displayio_tilegrid_get_pixel(displayio_tilegrid_t *self, int16_t x, int16_t y, uint16_t *pixel);
-bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self);
-void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self);
+#include "py/runtime.h"
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
+//| :mod:`terminalio` --- MIDI over USB
+//| =================================================
+//|
+//| .. module:: terminalio
+//|   :synopsis: MIDI over USB
+//|
+//| The `terminalio` module contains classes to transmit and receive MIDI messages over USB
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     Terminal
+//|
+//|
+STATIC const mp_rom_map_elem_t  terminalio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_terminalio) },
+    { MP_ROM_QSTR(MP_QSTR_Terminal),   MP_OBJ_FROM_PTR(&terminalio_terminal_type) },
+};
+
+
+STATIC MP_DEFINE_CONST_DICT(terminalio_module_globals, terminalio_module_globals_table);
+
+const mp_obj_module_t terminalio_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&terminalio_module_globals,
+};

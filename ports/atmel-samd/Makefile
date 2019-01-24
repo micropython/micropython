@@ -399,6 +399,8 @@ SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
 	struct/__init__.c \
+	terminalio/__init__.c \
+	terminalio/Terminal.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	usb_hid/__init__.c \

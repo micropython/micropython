@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
-
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
 
 #include "py/obj.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t bitmap;
-    mp_obj_t pixel_shader;
-    uint16_t x;
-    uint16_t y;
-    uint16_t width_in_tiles;
-    uint16_t height_in_tiles;
-    uint16_t total_width;
-    uint16_t total_height;
-    uint16_t tile_width;
-    uint16_t tile_height;
-    uint8_t* tiles;
-    bool needs_refresh;
-    bool inline_tiles;
-} displayio_tilegrid_t;
+extern mp_obj_dict_t usb_midi_module_globals;
 
-bool displayio_tilegrid_get_pixel(displayio_tilegrid_t *self, int16_t x, int16_t y, uint16_t *pixel);
-bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self);
-void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
