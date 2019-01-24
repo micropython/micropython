@@ -70,7 +70,7 @@ static const char default_name[] = "CIRCUITPY";
 //|    periph = bleio.Peripheral([service])
 //|    periph.start_advertising()
 //|
-//|    while not periph.connected():
+//|    while not periph.connected:
 //|        # Wait for connection.
 //|        pass
 //|

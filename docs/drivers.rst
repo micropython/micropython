@@ -70,6 +70,8 @@ These libraries build on top of the low level APIs to simplify common tasks.
     miniQR Non-hardware QR code generator <https://circuitpython.readthedocs.io/projects/miniqr/en/latest/>
     Slideshow <https://circuitpython.readthedocs.io/projects/slideshow/en/latest/>
     LED Animation <https://circuitpython.readthedocs.io/projects/led-animation/en/latest/>
+    Bluetooth Low Energy (BLE)  <https://circuitpython.readthedocs.io/projects/ble/en/latest/>
+    Bluefruit LE Connect App  <https://circuitpython.readthedocs.io/projects/bluefruitconnect/en/latest/>
 
 Blinky
 --------
