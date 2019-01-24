@@ -39,7 +39,7 @@
 #include "shared-bindings/displayio/Shape.h"
 #include "supervisor/shared/translate.h"
 
-void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
+static void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
     // TODO(tannewt): Support any value sequence such as bytearray or bytes.
     mp_obj_tuple_t *position = MP_OBJ_TO_PTR(position_obj);
     if (MP_OBJ_IS_TYPE(position_obj, &mp_type_tuple) && position->len == 2) {

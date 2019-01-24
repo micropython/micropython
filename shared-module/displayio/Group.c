@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/displayio/Sprite.h"
+#include "shared-bindings/displayio/TileGrid.h"
 
 void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size) {
     mp_obj_t* children = m_new(mp_obj_t, max_size);
@@ -43,7 +44,10 @@ void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer) 
         native_layer = mp_instance_cast_to_native_base(layer, &displayio_sprite_type);
     }
     if (native_layer == MP_OBJ_NULL) {
-        mp_raise_ValueError(translate("Layer must be a Group or Sprite subclass."));
+        native_layer = mp_instance_cast_to_native_base(layer, &displayio_tilegrid_type);
+    }
+    if (native_layer == MP_OBJ_NULL) {
+        mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass."));
     }
     self->children[self->size] = layer;
     self->size++;
@@ -77,7 +81,11 @@ bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, ui
     y /= self->scale;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i];
-        if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
+        if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
+            if (displayio_tilegrid_get_pixel(layer, x, y, pixel)) {
+                return true;
+            }
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
             if (displayio_sprite_get_pixel(layer, x, y, pixel)) {
                 return true;
             }

@@ -40,6 +40,7 @@
 #include "shared-bindings/displayio/ParallelBus.h"
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/Sprite.h"
+#include "shared-bindings/displayio/TileGrid.h"
 
 //| :mod:`displayio` --- Native display driving
 //| =========================================================================
@@ -68,6 +69,7 @@
 //|     ParallelBus
 //|     Shape
 //|     Sprite
+//|     TileGrid
 //|
 //| All libraries change hardware state but are never deinit
 //|
@@ -95,6 +97,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
     { MP_ROM_QSTR(MP_QSTR_Shape), MP_ROM_PTR(&displayio_shape_type) },
     { MP_ROM_QSTR(MP_QSTR_Sprite), MP_ROM_PTR(&displayio_sprite_type) },
+    { MP_ROM_QSTR(MP_QSTR_TileGrid), MP_ROM_PTR(&displayio_tilegrid_type) },
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&displayio_fourwire_type) },
     { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&displayio_parallelbus_type) },
