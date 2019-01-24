@@ -269,7 +269,7 @@ long unsigned int gc_nbytes(const void *ptr);
 #endif
 
 /*Tileview (dependencies: lv_page) */
-#define USE_LV_TILEVIEW     0
+#define USE_LV_TILEVIEW     1
 #if USE_LV_TILEVIEW
 #define LV_TILEVIEW_ANIM_TIME   300     /*Time of slide animation [ms] (0: no animation)*/
 #endif
@@ -291,7 +291,7 @@ long unsigned int gc_nbytes(const void *ptr);
 #define USE_LV_CHART    1
 
 /*Table (dependencies: lv_label)*/
-#define USE_LV_TABLE    0
+#define USE_LV_TABLE    1
 #if USE_LV_TABLE
 #define LV_TABLE_COL_MAX    12
 #endif
@@ -310,7 +310,7 @@ long unsigned int gc_nbytes(const void *ptr);
 #endif
 
 /*Spinbox (dependencies: lv_ta)*/
-#define USE_LV_SPINBOX       0
+#define USE_LV_SPINBOX       1
 
 /*Calendar (dependencies: -)*/
 #define USE_LV_CALENDAR 1
@@ -324,7 +324,7 @@ long unsigned int gc_nbytes(const void *ptr);
 #endif
 
 /*Canvas (dependencies: lv_img)*/
-#define USE_LV_CANVAS       0
+#define USE_LV_CANVAS       1
 /*************************
  * User input objects
  *************************/
