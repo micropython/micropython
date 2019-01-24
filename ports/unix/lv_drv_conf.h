@@ -11,7 +11,7 @@
 
 #if 1 /*Set it to "1" to enable the content*/
 
-#include "../../lib/lvgl/lvgl.h"
+#include "../../lib/lv_bindings/lvgl/lvgl.h"
 
 /*********************
  * DELAY INTERFACE

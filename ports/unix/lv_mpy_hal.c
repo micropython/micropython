@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include "../../lib/lvgl/lvgl.h"
+#include "../../lib/lv_bindings/lvgl/lvgl.h"
 #include "monitor.h" 
 #include "mouse.h" 
 #include "py/runtime.h"

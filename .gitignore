@@ -20,6 +20,14 @@
 ######################
 *.swp
 
+# VIM Session Files
+######################
+Session.vim
+
+# CTags files
+######################
+tags
+
 # Build directory
 ######################
 build/

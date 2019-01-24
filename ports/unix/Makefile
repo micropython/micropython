@@ -27,7 +27,7 @@ CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
-CFLAGS += -g
+CFLAGS += -g3
 COPT = -O0
 else
 COPT = -Os -fdata-sections -ffunction-sections -DNDEBUG

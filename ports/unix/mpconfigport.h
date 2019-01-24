@@ -49,8 +49,8 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
-#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
-#define MICROPY_MEM_STATS           (1)
+#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (0)
+#define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_MODULE_BUILTIN_INIT (1)
@@ -296,8 +296,9 @@ void mp_unix_mark_exec(void);
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #define MP_STATE_PORT MP_STATE_VM
-
+#include "lib/lv_bindings/lvgl/lv_misc/lv_gc.h"
 #define MICROPY_PORT_ROOT_POINTERS \
+    LV_ROOTS \
     const char *readline_hist[50]; \
     void *mmap_region_head; \
 
