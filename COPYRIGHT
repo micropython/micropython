@@ -127,6 +127,404 @@ Copyright: 1984-1985, Adobe Systems Incorporated.
 License: UNKNOWN
  FIXME
 
+Files: lib/libffi/*
+Copyright: 1996-2014, Anthony Green, Red Hat, Inc and others.
+License: Expat
+ FIXME
+
+Files: lib/libffi/doc/libffi.text
+Copyright: 2008, 2010, 2011 Red Hat, Inc.
+License: GPL-2+
+ FIXME
+
+Files: lib/libffi/include/ffi_common.h
+Copyright: 1996, Red Hat, Inc.
+  2007, Free Software Foundation, Inc
+  2011-2013, Anthony Green
+License: UNKNOWN
+ FIXME
+
+Files: lib/libffi/libtool-ldflags
+Copyright: 2005, Free Software Foundation, Inc.
+License: GPL-2+
+ FIXME
+
+Files: lib/libffi/m4/ax_append_flag.m4
+ lib/libffi/m4/ax_check_compile_flag.m4
+Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
+  2011, Maarten Bosmans <mkbosmans@gmail.com>
+License: GPL-3+
+ FIXME
+
+Files: lib/libffi/m4/ax_cflags_warn_all.m4
+Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
+  2010, Rhys Ulerich <rhys.ulerich@gmail.com>
+License: GPL-3+
+ FIXME
+
+Files: lib/libffi/m4/ax_configure_args.m4
+Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
+License: GPL-3+
+ FIXME
+
+Files: lib/libffi/m4/ax_enable_builddir.m4
+Copyright: 2009, Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+  2009, Guido U. Draheim <guidod@gmx.de>
+License: GPL-3+
+ FIXME
+
+Files: lib/libffi/m4/ax_gcc_archflag.m4
+Copyright: 2008, Matteo Frigo
+  2008, Steven G. Johnson <stevenj@alum.mit.edu>
+  2012, Tsukasa Oi
+License: GPL-3+
+ FIXME
+
+Files: lib/libffi/m4/ax_cc_maxopt.m4
+ lib/libffi/m4/ax_compiler_vendor.m4
+ lib/libffi/m4/ax_gcc_x86_cpuid.m4
+Copyright: 2008, Matteo Frigo
+  2008, Steven G. Johnson <stevenj@alum.mit.edu>
+License: GPL-3+
+ FIXME
+
+Files: lib/libffi/msvcc.sh
+Copyright: 2009, Timothy Wall <twalljava@dev.java.net>
+License: MPL-1.1 or GPL-2+ or LGPL-2.1+
+ FIXME
+
+Files: lib/libffi/src/aarch64/*
+Copyright: 2009-2012, ARM Ltd.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/arc/*
+Copyright: 2013, Synopsys, Inc. (www.synopsys.com)
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/arc/ffitarget.h
+Copyright: 2012, Anthony Green
+  2013, Synopsys, Inc. (www.synopsys.com)
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/arm/ffi.c
+Copyright: 1998, 2008, 2011, Red Hat, Inc.
+  2011, Anthony Green
+  2011, Free Software Foundation
+  2011, Plausible Labs Cooperative, Inc.
+  2011, Timothy Wall
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/arm/ffitarget.h
+Copyright: 1996-2003, Red Hat, Inc.
+  2010, CodeSourcery
+  2012, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/arm/sysv.S
+Copyright: 1998, 2008, 2011, Red Hat, Inc.
+  2011, Plausible Labs Cooperative, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/avr32/ffi.c
+ lib/libffi/src/avr32/ffitarget.h
+Copyright: 2009, Bradley Smith <brad@brad-smith.co.uk>
+  2011-2012, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/avr32/sysv.S
+Copyright: 2009, Bradley Smith <brad@brad-smith.co.uk>
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/bfin/*
+Copyright: 2012, Alexandre K. I. de Mendonca <alexandre.keunecke@gmail.com>,
+  Paulo Pizarro <paulo.pizarro@gmail.com>
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/closures.c
+Copyright: 2007, 2009-2010, Free Software Foundation, Inc
+  2007, 2009-2010, Red Hat, Inc.
+  2011, Plausible Labs Cooperative, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/cris/ffi.c
+Copyright: 1998, Cygnus Solutions
+  2004, Simon Posnjak
+  2005, Axis Communications AB
+  2007, Free Software Foundation, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/cris/sysv.S
+Copyright: 2004, Simon Posnjak
+  2005, Axis Communications AB
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/dlmalloc.c
+Copyright: NONE
+License: public-domain
+ This is a version (aka dlmalloc) of malloc/free/realloc written by
+ Doug Lea and released to the public domain.
+
+Files: lib/libffi/src/frv/ffi.c
+ lib/libffi/src/x86/ffitarget.h
+Copyright: 1996-2003, 2008, 2010, Red Hat, Inc.
+  2004, 2012, 2014, Anthony Green
+  2007-2008, Free Software Foundation, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/ia64/ffi.c
+Copyright: 1998, 2007-2008, 2012, Red Hat, Inc.
+  2000, Hewlett Packard Company
+  2011, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/ia64/ia64_flags.h
+Copyright: 2000, Hewlett Packard Company
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/ia64/unix.S
+Copyright: 1998, 2008, Red Hat, Inc.
+  2000, Hewlett Packard Company
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/m88k/*
+ lib/libffi/src/vax/*
+Copyright: 2013, Miodrag Vallat. <miod@openbsd.org>
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/m68k/sysv.S
+Copyright: 1998, 2012, Andreas Schwab
+  2008, Red Hat, Inc.
+  2012, Alan Hourihane
+  2012, Thorsten Glaser
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/metag/*
+Copyright: 2013, Imagination Technologies Ltd.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/microblaze/*
+Copyright: 2012-2013, Xilinx, Inc
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/mips/ffi.c
+Copyright: 1996, 2007-2008, 2011, Red Hat, Inc.
+  2008, David Daney
+  2011, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/m32r/ffi.c
+Copyright: 2004, Renesas Technology
+  2008, Red Hat, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/m32r/ffitarget.h
+Copyright: 2004, Renesas Technology.
+  2012, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/m32r/sysv.S
+Copyright: 2004, Renesas Technology
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/nios2/*
+Copyright: 2013, Mentor Graphics.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/or1k/*
+Copyright: 2014, Sebastian Macke <sebastian@macke.de>
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/pa/ffi.c
+Copyright: 2003-2004, Randolph Chung <tausq@debian.org>
+  2006, Free Software Foundation, Inc.
+  2008, Red Hat, Inc.
+  2011, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/pa/hpux32.S
+Copyright: 2006, Free Software Foundation, Inc.
+  2008, Red Hat, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/pa/linux.S
+Copyright: 2003-2004, Randolph Chung <tausq@debian.org>
+  2008, Red Hat, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/aix.S
+ lib/libffi/src/powerpc/aix_closure.S
+ lib/libffi/src/powerpc/darwin_closure.S
+Copyright: 2002-2004, 2009-2010, Free Software Foundation, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/asm.h
+Copyright: 1998, Geoffrey Keating
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/ffi.c
+ lib/libffi/src/powerpc/ffi_linux64.c
+ lib/libffi/src/powerpc/ffi_powerpc.h
+ lib/libffi/src/powerpc/ffi_sysv.c
+Copyright: 1998, Geoffrey Keating
+  2007-2008, Free Software Foundation, Inc
+  2008, Red Hat, Inc
+  2011, Anthony Green
+  2011, Kyle Moffett
+  2013, IBM
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/darwin.S
+Copyright: 2000, John Hornkvist
+  2004, 2010, Free Software Foundation, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/ffi_darwin.c
+Copyright: 1998, Geoffrey Keating
+  2001, John Hornkvist
+  2002, 2006-2007, 2009-2010, Free Software Foundation, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/ffitarget.h
+Copyright: 1996-2003, Red Hat, Inc.
+  2007-2008, 2010, Free Software Foundation, Inc
+  2012, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/linux64.S
+ lib/libffi/src/powerpc/linux64_closure.S
+ lib/libffi/src/powerpc/ppc_closure.S
+Copyright: 2003, Jakub Jelinek <jakub@redhat.com>
+  2008, Red Hat, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/powerpc/sysv.S
+Copyright: 1998, Geoffrey Keating
+  2007, Free Software Foundation, Inc
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/s390/ffi.c
+Copyright: 2000, 2007, Software AG
+  2008, Red Hat, Inc
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/s390/sysv.S
+Copyright: 2000, Software AG
+  2008, Red Hat, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/sh/sysv.S
+ lib/libffi/src/sh64/sysv.S
+Copyright: 2002-2004, 2006, 2008, Kaz Kojima
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/sh/ffi.c
+Copyright: 2002-2008, 2012, Kaz Kojima
+  2008, Red Hat, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/sh64/ffi.c
+Copyright: 2003-2004, 2006-2007, 2012, Kaz Kojima
+  2008, Anthony Green
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/sparc/v8.S
+ lib/libffi/src/x86/sysv.S
+Copyright: 1996, 1998, 2001-2003, 2005, 2008, 2010, Red Hat, Inc.
+  1996-1997, 2003-2004, 2008, Red Hat, Inc.
+  2013, The Written Word, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/tile/*
+Copyright: 2011, Tilera Corp.
+  2012, Tilera Corp.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/x86/ffi.c
+Copyright: 1996, 1998-1999, 2001, 2007-2008, Red Hat, Inc.
+  2002, Bo Thorsen
+  2002, Ranjit Mathew
+  2002, Roger Sayle
+  2008, 2010, Free Software Foundation, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/x86/ffi64.c
+Copyright: 2002, 2007, Bo Thorsen <bo@suse.de>
+  2008, 2010, Red Hat, Inc.
+  2011, Anthony Green
+  2013, The Written Word, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/x86/unix64.S
+Copyright: 2002, Bo Thorsen <bo@suse.de>
+  2008, Red Hat, Inc
+  2013, The Written Word, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/src/xtensa/*
+Copyright: 2013, Tensilica, Inc.
+License: Expat
+ FIXME
+
+Files: lib/libffi/testsuite/lib/*
+ lib/libffi/testsuite/libffi.call/call.exp
+ lib/libffi/testsuite/libffi.complex/complex.exp
+ lib/libffi/testsuite/libffi.go/go.exp
+Copyright: 2003-2011, 2014, Free Software Foundation, Inc.
+License: GPL-3+
+ FIXME
+
+Files: lib/libffi/texinfo.tex
+Copyright: 1985-1986, 1988, 1990-2013, Free Software Foundation, Inc.
+License: GPL-3
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
@@ -139,234 +537,6 @@ Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Andrew Mulholland (@gbaman)
   Joe Glancy (@JoeGlancy)
 License: Expat
- FIXME
-
-Files: lib/libffi/.gitignore
- lib/libffi/.travis.yml
- lib/libffi/ChangeLog.libffi
- lib/libffi/ChangeLog.libffi-3.1
- lib/libffi/ChangeLog.libgcj
- lib/libffi/ChangeLog.v1
- lib/libffi/Makefile.am
- lib/libffi/README
- lib/libffi/acinclude.m4
- lib/libffi/autogen.sh
- lib/libffi/configure.ac
- lib/libffi/configure.host
- lib/libffi/doc/version.texi
- lib/libffi/generate-darwin-source-and-headers.py
- lib/libffi/include/Makefile.am
- lib/libffi/libffi.pc.in
- lib/libffi/libffi.xcodeproj/project.pbxproj
- lib/libffi/libtool-version
- lib/libffi/m4/asmcfi.m4
- lib/libffi/man/Makefile.am
- lib/libffi/man/ffi.3
- lib/libffi/man/ffi_call.3
- lib/libffi/man/ffi_prep_cif.3
- lib/libffi/man/ffi_prep_cif_var.3
- lib/libffi/src/alpha/internal.h
- lib/libffi/src/arm/internal.h
- lib/libffi/src/dlmalloc.c
- lib/libffi/src/m68k/ffi.c
- lib/libffi/src/s390/internal.h
- lib/libffi/src/sparc/internal.h
- lib/libffi/src/x86/internal.h
- lib/libffi/src/x86/internal64.h
- lib/libffi/src/x86/win64.S
- lib/libffi/stamp-h.in
- lib/libffi/testsuite/Makefile.am
- lib/libffi/testsuite/config/default.exp
- lib/libffi/testsuite/libffi.call/closure_fn0.c
- lib/libffi/testsuite/libffi.call/closure_fn1.c
- lib/libffi/testsuite/libffi.call/closure_fn2.c
- lib/libffi/testsuite/libffi.call/closure_fn3.c
- lib/libffi/testsuite/libffi.call/closure_fn4.c
- lib/libffi/testsuite/libffi.call/closure_fn5.c
- lib/libffi/testsuite/libffi.call/closure_fn6.c
- lib/libffi/testsuite/libffi.call/closure_loc_fn0.c
- lib/libffi/testsuite/libffi.call/closure_simple.c
- lib/libffi/testsuite/libffi.call/cls_12byte.c
- lib/libffi/testsuite/libffi.call/cls_16byte.c
- lib/libffi/testsuite/libffi.call/cls_18byte.c
- lib/libffi/testsuite/libffi.call/cls_19byte.c
- lib/libffi/testsuite/libffi.call/cls_1_1byte.c
- lib/libffi/testsuite/libffi.call/cls_20byte.c
- lib/libffi/testsuite/libffi.call/cls_20byte1.c
- lib/libffi/testsuite/libffi.call/cls_24byte.c
- lib/libffi/testsuite/libffi.call/cls_2byte.c
- lib/libffi/testsuite/libffi.call/cls_3_1byte.c
- lib/libffi/testsuite/libffi.call/cls_3byte1.c
- lib/libffi/testsuite/libffi.call/cls_3byte2.c
- lib/libffi/testsuite/libffi.call/cls_4_1byte.c
- lib/libffi/testsuite/libffi.call/cls_4byte.c
- lib/libffi/testsuite/libffi.call/cls_5_1_byte.c
- lib/libffi/testsuite/libffi.call/cls_5byte.c
- lib/libffi/testsuite/libffi.call/cls_64byte.c
- lib/libffi/testsuite/libffi.call/cls_6_1_byte.c
- lib/libffi/testsuite/libffi.call/cls_6byte.c
- lib/libffi/testsuite/libffi.call/cls_7_1_byte.c
- lib/libffi/testsuite/libffi.call/cls_7byte.c
- lib/libffi/testsuite/libffi.call/cls_8byte.c
- lib/libffi/testsuite/libffi.call/cls_9byte1.c
- lib/libffi/testsuite/libffi.call/cls_9byte2.c
- lib/libffi/testsuite/libffi.call/cls_align_double.c
- lib/libffi/testsuite/libffi.call/cls_align_float.c
- lib/libffi/testsuite/libffi.call/cls_align_longdouble.c
- lib/libffi/testsuite/libffi.call/cls_align_longdouble_split.c
- lib/libffi/testsuite/libffi.call/cls_align_longdouble_split2.c
- lib/libffi/testsuite/libffi.call/cls_align_pointer.c
- lib/libffi/testsuite/libffi.call/cls_align_sint16.c
- lib/libffi/testsuite/libffi.call/cls_align_sint32.c
- lib/libffi/testsuite/libffi.call/cls_align_sint64.c
- lib/libffi/testsuite/libffi.call/cls_align_uint16.c
- lib/libffi/testsuite/libffi.call/cls_align_uint32.c
- lib/libffi/testsuite/libffi.call/cls_align_uint64.c
- lib/libffi/testsuite/libffi.call/cls_dbls_struct.c
- lib/libffi/testsuite/libffi.call/cls_double.c
- lib/libffi/testsuite/libffi.call/cls_double_va.c
- lib/libffi/testsuite/libffi.call/cls_float.c
- lib/libffi/testsuite/libffi.call/cls_longdouble.c
- lib/libffi/testsuite/libffi.call/cls_longdouble_va.c
- lib/libffi/testsuite/libffi.call/cls_many_mixed_args.c
- lib/libffi/testsuite/libffi.call/cls_many_mixed_float_double.c
- lib/libffi/testsuite/libffi.call/cls_multi_schar.c
- lib/libffi/testsuite/libffi.call/cls_multi_sshort.c
- lib/libffi/testsuite/libffi.call/cls_multi_sshortchar.c
- lib/libffi/testsuite/libffi.call/cls_multi_uchar.c
- lib/libffi/testsuite/libffi.call/cls_multi_ushort.c
- lib/libffi/testsuite/libffi.call/cls_multi_ushortchar.c
- lib/libffi/testsuite/libffi.call/cls_pointer.c
- lib/libffi/testsuite/libffi.call/cls_pointer_stack.c
- lib/libffi/testsuite/libffi.call/cls_schar.c
- lib/libffi/testsuite/libffi.call/cls_sint.c
- lib/libffi/testsuite/libffi.call/cls_sshort.c
- lib/libffi/testsuite/libffi.call/cls_struct_va1.c
- lib/libffi/testsuite/libffi.call/cls_uchar.c
- lib/libffi/testsuite/libffi.call/cls_uchar_va.c
- lib/libffi/testsuite/libffi.call/cls_uint.c
- lib/libffi/testsuite/libffi.call/cls_uint_va.c
- lib/libffi/testsuite/libffi.call/cls_ulong_va.c
- lib/libffi/testsuite/libffi.call/cls_ulonglong.c
- lib/libffi/testsuite/libffi.call/cls_ushort.c
- lib/libffi/testsuite/libffi.call/cls_ushort_va.c
- lib/libffi/testsuite/libffi.call/err_bad_abi.c
- lib/libffi/testsuite/libffi.call/err_bad_typedef.c
- lib/libffi/testsuite/libffi.call/ffitest.h
- lib/libffi/testsuite/libffi.call/float.c
- lib/libffi/testsuite/libffi.call/float1.c
- lib/libffi/testsuite/libffi.call/float2.c
- lib/libffi/testsuite/libffi.call/float3.c
- lib/libffi/testsuite/libffi.call/float4.c
- lib/libffi/testsuite/libffi.call/float_va.c
- lib/libffi/testsuite/libffi.call/huge_struct.c
- lib/libffi/testsuite/libffi.call/many.c
- lib/libffi/testsuite/libffi.call/many2.c
- lib/libffi/testsuite/libffi.call/many_double.c
- lib/libffi/testsuite/libffi.call/many_mixed.c
- lib/libffi/testsuite/libffi.call/negint.c
- lib/libffi/testsuite/libffi.call/nested_struct.c
- lib/libffi/testsuite/libffi.call/nested_struct1.c
- lib/libffi/testsuite/libffi.call/nested_struct10.c
- lib/libffi/testsuite/libffi.call/nested_struct11.c
- lib/libffi/testsuite/libffi.call/nested_struct2.c
- lib/libffi/testsuite/libffi.call/nested_struct3.c
- lib/libffi/testsuite/libffi.call/nested_struct4.c
- lib/libffi/testsuite/libffi.call/nested_struct5.c
- lib/libffi/testsuite/libffi.call/nested_struct6.c
- lib/libffi/testsuite/libffi.call/nested_struct7.c
- lib/libffi/testsuite/libffi.call/nested_struct8.c
- lib/libffi/testsuite/libffi.call/nested_struct9.c
- lib/libffi/testsuite/libffi.call/pr1172638.c
- lib/libffi/testsuite/libffi.call/problem1.c
- lib/libffi/testsuite/libffi.call/promotion.c
- lib/libffi/testsuite/libffi.call/pyobjc-tc.c
- lib/libffi/testsuite/libffi.call/return_dbl.c
- lib/libffi/testsuite/libffi.call/return_dbl1.c
- lib/libffi/testsuite/libffi.call/return_dbl2.c
- lib/libffi/testsuite/libffi.call/return_fl.c
- lib/libffi/testsuite/libffi.call/return_fl1.c
- lib/libffi/testsuite/libffi.call/return_fl2.c
- lib/libffi/testsuite/libffi.call/return_fl3.c
- lib/libffi/testsuite/libffi.call/return_ldl.c
- lib/libffi/testsuite/libffi.call/return_ll.c
- lib/libffi/testsuite/libffi.call/return_ll1.c
- lib/libffi/testsuite/libffi.call/return_sc.c
- lib/libffi/testsuite/libffi.call/return_sl.c
- lib/libffi/testsuite/libffi.call/return_uc.c
- lib/libffi/testsuite/libffi.call/return_ul.c
- lib/libffi/testsuite/libffi.call/stret_large.c
- lib/libffi/testsuite/libffi.call/stret_large2.c
- lib/libffi/testsuite/libffi.call/stret_medium.c
- lib/libffi/testsuite/libffi.call/stret_medium2.c
- lib/libffi/testsuite/libffi.call/strlen.c
- lib/libffi/testsuite/libffi.call/strlen2.c
- lib/libffi/testsuite/libffi.call/strlen3.c
- lib/libffi/testsuite/libffi.call/strlen4.c
- lib/libffi/testsuite/libffi.call/struct1.c
- lib/libffi/testsuite/libffi.call/struct2.c
- lib/libffi/testsuite/libffi.call/struct3.c
- lib/libffi/testsuite/libffi.call/struct4.c
- lib/libffi/testsuite/libffi.call/struct5.c
- lib/libffi/testsuite/libffi.call/struct6.c
- lib/libffi/testsuite/libffi.call/struct7.c
- lib/libffi/testsuite/libffi.call/struct8.c
- lib/libffi/testsuite/libffi.call/struct9.c
- lib/libffi/testsuite/libffi.call/testclosure.c
- lib/libffi/testsuite/libffi.call/uninitialized.c
- lib/libffi/testsuite/libffi.call/unwindtest.cc
- lib/libffi/testsuite/libffi.call/unwindtest_ffi_call.cc
- lib/libffi/testsuite/libffi.call/va_1.c
- lib/libffi/testsuite/libffi.call/va_struct1.c
- lib/libffi/testsuite/libffi.call/va_struct2.c
- lib/libffi/testsuite/libffi.call/va_struct3.c
- lib/libffi/testsuite/libffi.complex/cls_align_complex.inc
- lib/libffi/testsuite/libffi.complex/cls_align_complex_double.c
- lib/libffi/testsuite/libffi.complex/cls_align_complex_float.c
- lib/libffi/testsuite/libffi.complex/cls_align_complex_longdouble.c
- lib/libffi/testsuite/libffi.complex/cls_complex.inc
- lib/libffi/testsuite/libffi.complex/cls_complex_double.c
- lib/libffi/testsuite/libffi.complex/cls_complex_float.c
- lib/libffi/testsuite/libffi.complex/cls_complex_longdouble.c
- lib/libffi/testsuite/libffi.complex/cls_complex_struct.inc
- lib/libffi/testsuite/libffi.complex/cls_complex_struct_double.c
- lib/libffi/testsuite/libffi.complex/cls_complex_struct_float.c
- lib/libffi/testsuite/libffi.complex/cls_complex_struct_longdouble.c
- lib/libffi/testsuite/libffi.complex/cls_complex_va.inc
- lib/libffi/testsuite/libffi.complex/cls_complex_va_double.c
- lib/libffi/testsuite/libffi.complex/cls_complex_va_float.c
- lib/libffi/testsuite/libffi.complex/cls_complex_va_longdouble.c
- lib/libffi/testsuite/libffi.complex/complex.inc
- lib/libffi/testsuite/libffi.complex/complex_defs_double.inc
- lib/libffi/testsuite/libffi.complex/complex_defs_float.inc
- lib/libffi/testsuite/libffi.complex/complex_defs_longdouble.inc
- lib/libffi/testsuite/libffi.complex/complex_double.c
- lib/libffi/testsuite/libffi.complex/complex_float.c
- lib/libffi/testsuite/libffi.complex/complex_int.c
- lib/libffi/testsuite/libffi.complex/complex_longdouble.c
- lib/libffi/testsuite/libffi.complex/ffitest.h
- lib/libffi/testsuite/libffi.complex/many_complex.inc
- lib/libffi/testsuite/libffi.complex/many_complex_double.c
- lib/libffi/testsuite/libffi.complex/many_complex_float.c
- lib/libffi/testsuite/libffi.complex/many_complex_longdouble.c
- lib/libffi/testsuite/libffi.complex/return_complex.inc
- lib/libffi/testsuite/libffi.complex/return_complex1.inc
- lib/libffi/testsuite/libffi.complex/return_complex1_double.c
- lib/libffi/testsuite/libffi.complex/return_complex1_float.c
- lib/libffi/testsuite/libffi.complex/return_complex1_longdouble.c
- lib/libffi/testsuite/libffi.complex/return_complex2.inc
- lib/libffi/testsuite/libffi.complex/return_complex2_double.c
- lib/libffi/testsuite/libffi.complex/return_complex2_float.c
- lib/libffi/testsuite/libffi.complex/return_complex2_longdouble.c
- lib/libffi/testsuite/libffi.complex/return_complex_double.c
- lib/libffi/testsuite/libffi.complex/return_complex_float.c
- lib/libffi/testsuite/libffi.complex/return_complex_longdouble.c
- lib/libffi/testsuite/libffi.go/aa-direct.c
- lib/libffi/testsuite/libffi.go/closure1.c
- lib/libffi/testsuite/libffi.go/ffitest.h
- lib/libffi/testsuite/libffi.go/static-chain.h
-Copyright: NONE
-License: UNKNOWN
  FIXME
 
 Files: lib/lwip/.gitattributes
@@ -2749,35 +2919,6 @@ Copyright: 1993, Sun Microsystems, Inc.
 License: UNKNOWN
  FIXME
 
-Files: lib/libffi/include/ffi.h.in
- lib/libffi/src/alpha/ffi.c
- lib/libffi/src/alpha/ffitarget.h
- lib/libffi/src/cris/ffitarget.h
- lib/libffi/src/frv/ffitarget.h
- lib/libffi/src/ia64/ffitarget.h
- lib/libffi/src/m68k/ffitarget.h
- lib/libffi/src/mips/ffitarget.h
- lib/libffi/src/pa/ffitarget.h
- lib/libffi/src/prep_cif.c
- lib/libffi/src/s390/ffitarget.h
- lib/libffi/src/sh/ffitarget.h
- lib/libffi/src/sh64/ffitarget.h
- lib/libffi/src/sparc/ffi.c
- lib/libffi/src/sparc/ffi64.c
- lib/libffi/src/sparc/ffitarget.h
-Copyright: 1996, 1998, 2007, Red Hat, Inc.
-  1996, 2003-2004, 2007-2008, Red Hat, Inc.
-  1996-2003, 2007-2008, Red Hat, Inc.
-  1996-2003, Red Hat, Inc.
-  1996-2004, Red Hat, Inc.
-  1998, 2001, 2007-2008, Red Hat, Inc.
-  2011, 2013, Anthony Green
-  2011, 2014, Anthony Green
-  2011-2012, Anthony Green
-  2012, Anthony Green
-License: Expat
- FIXME
-
 Files: lib/cmsis/inc/cmsis_armcc.h
  lib/cmsis/inc/cmsis_armcc_V6.h
  lib/cmsis/inc/cmsis_gcc.h
@@ -2968,25 +3109,6 @@ Copyright: 2016, Damien P. George
 License: UNKNOWN
  FIXME
 
-Files: lib/libffi/src/debug.c
- lib/libffi/src/java_raw_api.c
- lib/libffi/src/mips/n32.S
- lib/libffi/src/mips/o32.S
- lib/libffi/src/raw_api.c
- lib/libffi/src/sparc/v9.S
- lib/libffi/src/types.c
- lib/libffi/src/x86/ffiw64.c
-Copyright: 1996, 1998, 2005, 2007, 2009-2010, Red Hat, Inc.
-  1996, 1998, 2005, Red Hat, Inc.
-  1996, 1998, Red Hat, Inc.
-  1996, Red Hat, Inc.
-  1999, 2007-2008, Red Hat, Inc.
-  1999, 2008, Red Hat, Inc.
-  2000, 2003-2004, 2008, Red Hat, Inc.
-  2014, Red Hat, Inc.
-License: Expat
- FIXME
-
 Files: lib/lwip/src/include/netif/ppp/fsm.h
  lib/lwip/src/include/netif/ppp/ipcp.h
  lib/lwip/src/include/netif/ppp/lcp.h
@@ -3007,29 +3129,6 @@ Files: ports/cc3200/mpthreadport.c
  py/mpthread.h
 Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: Expat
- FIXME
-
-Files: lib/libffi/src/m88k/ffi.c
- lib/libffi/src/m88k/ffitarget.h
- lib/libffi/src/m88k/obsd.S
- lib/libffi/src/vax/elfbsd.S
- lib/libffi/src/vax/ffi.c
- lib/libffi/src/vax/ffitarget.h
-Copyright: 2013, Miodrag Vallat. <miod@openbsd.org>
-License: Expat
- FIXME
-
-Files: lib/libffi/testsuite/lib/libffi.exp
- lib/libffi/testsuite/lib/target-libpath.exp
- lib/libffi/testsuite/lib/wrapper.exp
- lib/libffi/testsuite/libffi.call/call.exp
- lib/libffi/testsuite/libffi.complex/complex.exp
- lib/libffi/testsuite/libffi.go/go.exp
-Copyright: 2003, 2005, 2008-2011, 2014, Free Software Foundation, Inc.
-  2003, 2006, 2009-2010, 2014, Free Software Foundation, Inc.
-  2004, 2007, Free Software Foundation, Inc.
-  2004-2005, 2007, Free Software Foundation, Inc.
-License: GPL-3+
  FIXME
 
 Files: lib/nrfx/mdk/ses_startup_nrf51.s
@@ -3066,28 +3165,6 @@ Files: lib/lwip/src/apps/snmp/snmpv3.c
  lib/lwip/src/include/lwip/apps/snmpv3.h
 Copyright: 2016, Elias Oenal.
 License: BSD-3-clause
- FIXME
-
-Files: lib/libffi/src/frv/eabi.S
- lib/libffi/src/moxie/eabi.S
- lib/libffi/src/moxie/ffi.c
- lib/libffi/src/moxie/ffitarget.h
-Copyright: 2004, Anthony Green
-  2012-2013, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/powerpc/ffi.c
- lib/libffi/src/powerpc/ffi_linux64.c
- lib/libffi/src/powerpc/ffi_powerpc.h
- lib/libffi/src/powerpc/ffi_sysv.c
-Copyright: 1998, Geoffrey Keating
-  2007-2008, Free Software Foundation, Inc
-  2008, Red Hat, Inc
-  2011, Anthony Green
-  2011, Kyle Moffett
-  2013, IBM
-License: Expat
  FIXME
 
 Files: ports/nrf/boards/wt51822_s4at/mpconfigboard.h
@@ -3169,13 +3246,6 @@ Copyright: 2014, STMicroelectronics</center></h2>
 License: BSD-3-clause
  FIXME
 
-Files: lib/libffi/src/aarch64/ffi.c
- lib/libffi/src/aarch64/ffitarget.h
- lib/libffi/src/aarch64/sysv.S
-Copyright: 2009-2012, ARM Ltd.
-License: Expat
- FIXME
-
 Files: ports/zephyr/machine_pin.c
  ports/zephyr/main.c
  ports/zephyr/modutime.c
@@ -3183,23 +3253,6 @@ Copyright: 2013-2014, Damien P. George
   2013-2015, Damien P. George
   2016, Linaro Limited
   2016-2017, Linaro Limited
-License: Expat
- FIXME
-
-Files: lib/libffi/src/powerpc/aix.S
- lib/libffi/src/powerpc/aix_closure.S
- lib/libffi/src/powerpc/darwin_closure.S
-Copyright: 2002, 2009, Free Software Foundation, Inc.
-  2002-2003, 2009, Free Software Foundation, Inc.
-  2002-2004, 2010, Free Software Foundation, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/powerpc/linux64.S
- lib/libffi/src/powerpc/linux64_closure.S
- lib/libffi/src/powerpc/ppc_closure.S
-Copyright: 2003, Jakub Jelinek <jakub@redhat.com>
-  2008, Red Hat, Inc.
 License: Expat
  FIXME
 
@@ -3218,55 +3271,11 @@ Copyright: 2015, Mark Shannon
 License: Expat
  FIXME
 
-Files: lib/libffi/src/nios2/ffi.c
- lib/libffi/src/nios2/ffitarget.h
- lib/libffi/src/nios2/sysv.S
-Copyright: 2013, Mentor Graphics.
-License: Expat
- FIXME
-
 Files: ports/esp32/machine_adc.c
  ports/esp32/machine_dac.c
  ports/esp32/machine_touchpad.c
 Copyright: 2017, Nick Moore
 License: Expat
- FIXME
-
-Files: lib/libffi/src/or1k/ffi.c
- lib/libffi/src/or1k/ffitarget.h
- lib/libffi/src/or1k/sysv.S
-Copyright: 2014, Sebastian Macke <sebastian@macke.de>
-License: Expat
- FIXME
-
-Files: lib/libffi/src/xtensa/ffi.c
- lib/libffi/src/xtensa/ffitarget.h
- lib/libffi/src/xtensa/sysv.S
-Copyright: 2013, Tensilica, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/tile/ffi.c
- lib/libffi/src/tile/ffitarget.h
- lib/libffi/src/tile/tile.S
-Copyright: 2011, Tilera Corp.
-  2012, Tilera Corp.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/microblaze/ffi.c
- lib/libffi/src/microblaze/ffitarget.h
- lib/libffi/src/microblaze/sysv.S
-Copyright: 2012-2013, Xilinx, Inc
-License: Expat
- FIXME
-
-Files: lib/libffi/m4/ax_cc_maxopt.m4
- lib/libffi/m4/ax_compiler_vendor.m4
- lib/libffi/m4/ax_gcc_x86_cpuid.m4
-Copyright: 2008, Matteo Frigo
-  2008, Steven G. Johnson <stevenj@alum.mit.edu>
-License: GPL-3+
  FIXME
 
 Files: ports/stm32/sdram.c
@@ -3391,31 +3400,6 @@ Copyright: 1997, Global Election Systems Inc.
 License: BSD~unspecified
  FIXME
 
-Files: lib/libffi/src/bfin/ffi.c
- lib/libffi/src/bfin/sysv.S
-Copyright: 2012, Alexandre K. I. de Mendonca <alexandre.keunecke@gmail.com>,
-License: Expat
- FIXME
-
-Files: lib/libffi/src/avr32/ffi.c
- lib/libffi/src/avr32/ffitarget.h
-Copyright: 2009, Bradley Smith <brad@brad-smith.co.uk>
-  2011, Anthony Green
-  2012, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/frv/ffi.c
- lib/libffi/src/x86/ffitarget.h
-Copyright: 1996-2003, 2010, Red Hat, Inc.
-  2004, Anthony Green
-  2007, Free Software Foundation, Inc.
-  2008, Free Software Foundation, Inc.
-  2008, Red Hat, Inc.
-  2012, 2014, Anthony Green
-License: Expat
- FIXME
-
 Files: ports/nrf/modules/machine/spi.c
  ports/nrf/modules/machine/uart.c
 Copyright: 2013-2014, Damien P. George
@@ -3481,27 +3465,6 @@ Copyright: 2015, David Ogilvy (MetalPhreak)
 License: Expat
  FIXME
 
-Files: lib/libffi/src/metag/ffitarget.h
- lib/libffi/src/metag/sysv.S
-Copyright: 2013, Imagination Technologies Ltd.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/sh/sysv.S
- lib/libffi/src/sh64/sysv.S
-Copyright: 2002-2004, 2006, 2008, Kaz Kojima
-  2003-2004, 2006, 2008, Kaz Kojima
-License: Expat
- FIXME
-
-Files: lib/libffi/src/sparc/v8.S
- lib/libffi/src/x86/sysv.S
-Copyright: 1996, 1998, 2001-2003, 2005, 2008, 2010, Red Hat, Inc.
-  1996-1997, 2003-2004, 2008, Red Hat, Inc.
-  2013, The Written Word, Inc.
-License: Expat
- FIXME
-
 Files: ports/esp8266/espapa102.c
  ports/esp8266/espapa102.h
 Copyright: 2016, Robert Foss, Daniel Busch
@@ -3512,18 +3475,6 @@ Files: ports/nrf/drivers/softpwm.h
  ports/nrf/drivers/ticker.h
 Copyright: 2013-2016, The MicroPython-on-micro:bit Developers:
 License: Expat
- FIXME
-
-Files: lib/libffi/libtool-ldflags
-Copyright: 2005, Free Software Foundation, Inc.
-License: GPL-2+
- FIXME
-
-Files: lib/libffi/m4/ax_append_flag.m4
- lib/libffi/m4/ax_check_compile_flag.m4
-Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
-  2011, Maarten Bosmans <mkbosmans@gmail.com>
-License: GPL-3+
  FIXME
 
 Files: drivers/cc3000/src/inet_ntop.c
@@ -3675,139 +3626,10 @@ Copyright: 2013-2014, Damien P. George
 License: CC0 and/or Expat
  FIXME
 
-Files: lib/libffi/src/aarch64/internal.h
-Copyright: NONE
-License: Expat
- FIXME
-
 Files: ports/esp32/modnetwork.c
 Copyright: 2015, Paul Sokolovsky
   2016-2017, Nick Moore @mnemote
   2017 "Eric Poulsen" <eric@zyxod.com>
-License: Expat
- FIXME
-
-Files: lib/libffi/src/m68k/sysv.S
-Copyright: 1998, 2012, Andreas Schwab
-  2008, Red Hat, Inc.
-  2012, Alan Hourihane
-  2012, Thorsten Glaser
-License: Expat
- FIXME
-
-Files: lib/libffi/src/bfin/ffitarget.h
-Copyright: 2012, Alexandre K. I. de Mendonca <alexandre.keunecke@gmail.com>
-License: Expat
- FIXME
-
-Files: lib/libffi/src/x86/ffi64.c
-Copyright: 2002, 2007, Bo Thorsen <bo@suse.de>
-  2008, 2010, Red Hat, Inc.
-  2011, Anthony Green
-  2013, The Written Word, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/arm/ffitarget.h
-Copyright: 1996-2003, Red Hat, Inc.
-  2010, CodeSourcery
-  2012, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/mips/ffi.c
-Copyright: 1996, 2007-2008, 2011, Red Hat, Inc.
-  2008, David Daney
-  2011, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/arm/ffi.c
-Copyright: 1998, 2008, 2011, Red Hat, Inc.
-  2011, Anthony Green
-  2011, Free Software Foundation
-  2011, Plausible Labs Cooperative, Inc.
-  2011, Timothy Wall
-License: Expat
- FIXME
-
-Files: lib/libffi/src/powerpc/ffitarget.h
-Copyright: 1996-2003, Red Hat, Inc.
-  2007-2008, 2010, Free Software Foundation, Inc
-  2012, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/pa/ffi.c
-Copyright: 2003-2004, Randolph Chung <tausq@debian.org>
-  2006, Free Software Foundation, Inc.
-  2008, Red Hat, Inc.
-  2011, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/ia64/ffi.c
-Copyright: 1998, 2007-2008, 2012, Red Hat, Inc.
-  2000, Hewlett Packard Company
-  2011, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/sh64/ffi.c
-Copyright: 2003-2004, 2006-2007, 2012, Kaz Kojima
-  2008, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/m32r/ffitarget.h
-Copyright: 2004, Renesas Technology.
-  2012, Anthony Green
-License: Expat
- FIXME
-
-Files: lib/libffi/src/arc/ffitarget.h
-Copyright: 2012, Anthony Green
-  2013, Synopsys, Inc. (www.synopsys.com)
-License: Expat
- FIXME
-
-Files: lib/libffi/LICENSE
-Copyright: 1996-2014, Anthony Green, Red Hat, Inc and others.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/cris/ffi.c
-Copyright: 1998, Cygnus Solutions
-  2004, Simon Posnjak
-  2005, Axis Communications AB
-  2007, Free Software Foundation, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/cris/sysv.S
-Copyright: 2004, Simon Posnjak
-  2005, Axis Communications AB
-License: Expat
- FIXME
-
-Files: lib/libffi/src/x86/ffi.c
-Copyright: 1996, 1998-1999, 2001, 2007-2008, Red Hat, Inc.
-  2002, Bo Thorsen
-  2002, Ranjit Mathew
-  2002, Roger Sayle
-  2008, 2010, Free Software Foundation, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/x86/unix64.S
-Copyright: 2002, Bo Thorsen <bo@suse.de>
-  2008, Red Hat, Inc
-  2013, The Written Word, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/avr32/sysv.S
-Copyright: 2009, Bradley Smith <brad@brad-smith.co.uk>
 License: Expat
  FIXME
 
@@ -3894,68 +3716,9 @@ Copyright: 2014, Fabian Vogt
 License: Expat
  FIXME
 
-Files: lib/libffi/src/powerpc/sysv.S
-Copyright: 1998, Geoffrey Keating
-  2007, Free Software Foundation, Inc
-License: Expat
- FIXME
-
-Files: lib/libffi/src/closures.c
-Copyright: 2007, 2009-2010, Free Software Foundation, Inc
-  2007, 2009-2010, Red Hat, Inc.
-  2011, Plausible Labs Cooperative, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/powerpc/ffi_darwin.c
-Copyright: 1998, Geoffrey Keating
-  2001, John Hornkvist
-  2002, 2006-2007, 2009-2010, Free Software Foundation, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/powerpc/darwin.S
-Copyright: 2000, John Hornkvist
-  2004, 2010, Free Software Foundation, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/pa/hpux32.S
-Copyright: 2006, Free Software Foundation, Inc.
-  2008, Red Hat, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/powerpc/asm.h
-Copyright: 1998, Geoffrey Keating
-License: Expat
- FIXME
-
-Files: lib/libffi/src/ia64/ia64_flags.h
-Copyright: 2000, Hewlett Packard Company
-License: Expat
- FIXME
-
-Files: lib/libffi/src/ia64/unix.S
-Copyright: 1998, 2008, Red Hat, Inc.
-  2000, Hewlett Packard Company
-License: Expat
- FIXME
-
-Files: lib/libffi/src/metag/ffi.c
-Copyright: 2013, Imagination Technologies
-License: Expat
- FIXME
-
 Files: py/runtime_utils.c
 Copyright: 2015, Josef Gajdusek
   2015, Paul Sokolovsky
-License: Expat
- FIXME
-
-Files: lib/libffi/src/sh/ffi.c
-Copyright: 2002-2008, 2012, Kaz Kojima
-  2008, Red Hat, Inc.
 License: Expat
  FIXME
 
@@ -3975,103 +3738,14 @@ Copyright: 2013, Philip Thrasher
 License: Expat
  FIXME
 
-Files: lib/libffi/src/arm/sysv.S
-Copyright: 1998, 2008, 2011, Red Hat, Inc.
-  2011, Plausible Labs Cooperative, Inc.
-License: Expat
- FIXME
-
 Files: tools/gen-cpydiff.py
 Copyright: 2016, Rami Ali
-License: Expat
- FIXME
-
-Files: lib/libffi/src/pa/linux.S
-Copyright: 2003-2004, Randolph Chung <tausq@debian.org>
-  2008, Red Hat, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/alpha/osf.S
-Copyright: 1998, 2001, 2007-2008, 2011, 2014, Red Hat
-License: Expat
- FIXME
-
-Files: lib/libffi/src/s390/ffi.c
-Copyright: 2000, 2007, Software AG
-  2008, Red Hat, Inc
-License: Expat
- FIXME
-
-Files: lib/libffi/src/m32r/ffi.c
-Copyright: 2004, Renesas Technology
-  2008, Red Hat, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/s390/sysv.S
-Copyright: 2000, Software AG
-  2008, Red Hat, Inc.
-License: Expat
- FIXME
-
-Files: lib/libffi/src/m32r/sysv.S
-Copyright: 2004, Renesas Technology
 License: Expat
  FIXME
 
 Files: lib/libm_dbl/README
 Copyright: 2005-2014, Rich Felker, et al.
 License: Expat
- FIXME
-
-Files: lib/libffi/src/arc/ffi.c
-Copyright: 2013, Synopsys, Inc. (www.synopsys.com)
-License: Expat
- FIXME
-
-Files: lib/libffi/src/arc/arcompact.S
-Copyright: 2013, Synposys, Inc. (www.synopsys.com)
-License: Expat
- FIXME
-
-Files: lib/libffi/doc/libffi.texi
-Copyright: @copyright{} 2008, 2010, 2011 Red Hat, Inc.
-License: GPL-2+
- FIXME
-
-Files: lib/libffi/msvcc.sh
-Copyright: 2009, the Initial Developer.
-License: GPL-2+ or LGPL-2.1+ and/or MPL-1.1
- FIXME
-
-Files: lib/libffi/texinfo.tex
-Copyright: 1985-1986, 1988, 1990-2013, Free Software Foundation, Inc.
-License: GPL-3
- FIXME
-
-Files: lib/libffi/m4/ax_enable_builddir.m4
-Copyright: 2009, Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-  2009, Guido U. Draheim <guidod@gmx.de>
-License: GPL-3+
- FIXME
-
-Files: lib/libffi/m4/ax_configure_args.m4
-Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
-License: GPL-3+
- FIXME
-
-Files: lib/libffi/m4/ax_cflags_warn_all.m4
-Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
-  2010, Rhys Ulerich <rhys.ulerich@gmail.com>
-License: GPL-3+
- FIXME
-
-Files: lib/libffi/m4/ax_gcc_archflag.m4
-Copyright: 2008, Matteo Frigo
-  2008, Steven G. Johnson <stevenj@alum.mit.edu>
-  2012, Tsukasa Oi
-License: GPL-3+
  FIXME
 
 Files: tools/dfu.py
@@ -4081,13 +3755,6 @@ License: LGPL-3.0
 
 Files: ports/stm32/usbd_cdc_interface.h
 Copyright: (c) 2014 STMicroelectronics</center></h2>
-License: UNKNOWN
- FIXME
-
-Files: lib/libffi/include/ffi_common.h
-Copyright: 1996, Red Hat, Inc.
-  2007, Free Software Foundation, Inc
-  2011-2013, Anthony Green
 License: UNKNOWN
  FIXME
 
@@ -4144,11 +3811,6 @@ License: UNKNOWN
 Files: extmod/re1.5/re1.5.h
 Copyright: 2007-2009, Russ Cox.
   2014, Paul Sokolovsky.
-License: UNKNOWN
- FIXME
-
-Files: lib/libffi/include/ffi_cfi.h
-Copyright: 2014, Red Hat, Inc.
 License: UNKNOWN
  FIXME
 
