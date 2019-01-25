@@ -2,11 +2,13 @@
 #include <string.h>
 #include "shared-module/displayio/__init__.h"
 
+
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/Sprite.h"
+#include "supervisor/shared/display.h"
 #include "supervisor/usb.h"
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
