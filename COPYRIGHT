@@ -9,6 +9,62 @@ Copyright: 2013, 2014 Damien P. George
 License: Expat
  FIXME
 
+Files: lib/axtls/*
+Copyright: 2007-2017 Cameron Rich
+License: BSD-3-clause
+ FIXME
+
+Files: lib/axtls/config/scripts/config/*
+Copyright: 2002, Roman Zippel <zippel@linux-m68k.org>
+License: GPL-2
+ FIXME
+
+Files: lib/axtls/config/scripts/config/lxdialog/*
+Copyright: NONE
+License: GPL-2+
+ FIXME
+
+Files: lib/axtls/config/scripts/config/zconf.tab.h_shipped
+Copyright: 1984, 1989-1990, 2000-2002, Free Software Foundation, Inc.
+License: GPL-2+
+ FIXME
+
+Files: lib/axtls/config/Rules.mak
+ lib/axtls/config/scripts/config/Makefile
+Copyright: 1999-2005, Erik Andersen <andersen@codepoet.org>
+License: GPL-2
+ FIXME
+
+Files: lib/axtls/www/index.html
+Copyright: 2004-2006, Osmosoft Limited
+License: BSD-3-clause
+ FIXME
+
+Files: lib/axtls/axtlswrap/axtlswrap.c
+Copyright: 2009, Steve Bennett
+License: BSD-3-clause
+ FIXME
+
+Files: lib/axtls/config/scripts/config/mkconfigs
+Copyright: 2002, Al Stone <ahs3 at fc.hp.com>
+  2002, Hewlett-Packard Company
+  2002, Khalid Aziz <khalid_aziz at hp.com>
+  2002, Randy Dunlap <rddunlap at osdl.org>
+License: GPL-2+
+ FIXME
+
+Files: lib/axtls/config/scripts/config/zconf.tab.c_shipped
+Copyright: 1984, 1989-1990, 2000-2003, Free Software Foundation, Inc.
+  2002, Roman Zippel <zippel@linux-m68k.org>
+License: GPL-2+
+ FIXME
+
+Files: lib/axtls/config/scripts/config/util.c
+Copyright: 2002-2005, Roman Zippel <zippel@linux-m68k.org>
+  2002-2005, Sam Ravnborg <sam@ravnborg.org>
+License: GPL-2.0
+ FIXME
+
 Files: lib/libm/*
 Copyright: 2005-2014 Rich Felker, et al.
 License: Expat
@@ -26,125 +82,6 @@ Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Andrew Mulholland (@gbaman)
   Joe Glancy (@JoeGlancy)
 License: Expat
- FIXME
-
-Files: lib/axtls/.git
- lib/axtls/.gitignore
- lib/axtls/README
- lib/axtls/bindings/Config.in
- lib/axtls/bindings/README
- lib/axtls/config/axtls.RES
- lib/axtls/config/Config.in
- lib/axtls/config/JMeter.jmx
- lib/axtls/config/axhttpd.aip
- lib/axtls/config/axtls.rc
- lib/axtls/config/linuxconfig
- lib/axtls/config/makefile.post
- lib/axtls/config/scripts/config/Kconfig-language.txt
- lib/axtls/config/scripts/config/lkc_proto.h
- lib/axtls/config/scripts/config/lxdialog/BIG.FAT.WARNING
- lib/axtls/config/upyconfig
- lib/axtls/config/upyconfig.client
- lib/axtls/config/win32config
- lib/axtls/docsrc/axTLS.dox
- lib/axtls/docsrc/images/axolotl.jpg
- lib/axtls/docsrc/images/tsbasbw.gif
- lib/axtls/httpd/Config.in
- lib/axtls/httpd/kepler.patch
- lib/axtls/httpd/kepler-1.1-snapshot-20070521-1825.tar.gz
- lib/axtls/samples/Config.in
- lib/axtls/samples/java/manifest.mf
- lib/axtls/ssl/BigIntConfig.in
- lib/axtls/ssl/Config.in
- lib/axtls/ssl/cert.h
- lib/axtls/ssl/private_key.h
- lib/axtls/ssl/test/axTLS.ca_key.pem
- lib/axtls/ssl/test/axTLS.ca_x509.cer
- lib/axtls/ssl/test/axTLS.ca_x509.pem
- lib/axtls/ssl/test/axTLS.ca_x509_sha256.pem
- lib/axtls/ssl/test/axTLS.encrypted.p8
- lib/axtls/ssl/test/axTLS.encrypted_pem.p8
- lib/axtls/ssl/test/axTLS.key_1024
- lib/axtls/ssl/test/axTLS.key_1024.pem
- lib/axtls/ssl/test/axTLS.key_2048
- lib/axtls/ssl/test/axTLS.key_2048.pem
- lib/axtls/ssl/test/axTLS.key_4096
- lib/axtls/ssl/test/axTLS.key_4096.pem
- lib/axtls/ssl/test/axTLS.key_aes128.pem
- lib/axtls/ssl/test/axTLS.key_aes256.pem
- lib/axtls/ssl/test/axTLS.key_device.pem
- lib/axtls/ssl/test/axTLS.key_end_chain.pem
- lib/axtls/ssl/test/axTLS.key_intermediate_ca.pem
- lib/axtls/ssl/test/axTLS.key_intermediate_ca2.pem
- lib/axtls/ssl/test/axTLS.noname.p12
- lib/axtls/ssl/test/axTLS.unencrypted.p8
- lib/axtls/ssl/test/axTLS.unencrypted_pem.p8
- lib/axtls/ssl/test/axTLS.withCA.p12
- lib/axtls/ssl/test/axTLS.withoutCA.p12
- lib/axtls/ssl/test/axTLS.x509_1024.cer
- lib/axtls/ssl/test/axTLS.x509_1024.pem
- lib/axtls/ssl/test/axTLS.x509_1024_sha256.pem
- lib/axtls/ssl/test/axTLS.x509_1024_sha384.pem
- lib/axtls/ssl/test/axTLS.x509_1024_sha512.pem
- lib/axtls/ssl/test/axTLS.x509_2048.cer
- lib/axtls/ssl/test/axTLS.x509_2048.pem
- lib/axtls/ssl/test/axTLS.x509_4096.cer
- lib/axtls/ssl/test/axTLS.x509_4096.pem
- lib/axtls/ssl/test/axTLS.x509_aes128.pem
- lib/axtls/ssl/test/axTLS.x509_aes256.pem
- lib/axtls/ssl/test/axTLS.x509_bad_after.pem
- lib/axtls/ssl/test/axTLS.x509_bad_before.pem
- lib/axtls/ssl/test/axTLS.x509_device.cer
- lib/axtls/ssl/test/axTLS.x509_device.pem
- lib/axtls/ssl/test/axTLS.x509_end_chain.pem
- lib/axtls/ssl/test/axTLS.x509_end_chain_bad.pem
- lib/axtls/ssl/test/axTLS.x509_intermediate_ca.pem
- lib/axtls/ssl/test/axTLS.x509_intermediate_ca2.pem
- lib/axtls/ssl/test/ca-bundle.crt
- lib/axtls/ssl/test/camster_duckdns_org.crt
- lib/axtls/ssl/test/comodo.sha384.cer
- lib/axtls/ssl/test/deutsche_telecom.x509_ca
- lib/axtls/ssl/test/equifax.x509_ca
- lib/axtls/ssl/test/gnutls.cer
- lib/axtls/ssl/test/header_issue.dat
- lib/axtls/ssl/test/killgnutls.sh
- lib/axtls/ssl/test/killopenssl.sh
- lib/axtls/ssl/test/microsoft.x509_ca
- lib/axtls/ssl/test/microsoft.x509_ca.pem
- lib/axtls/ssl/test/ms_iis.cer
- lib/axtls/ssl/test/qualityssl.com.der
- lib/axtls/ssl/test/socgen.cer
- lib/axtls/ssl/test/thawte.x509_ca
- lib/axtls/ssl/test/verisign.x509_ca.pem
- lib/axtls/ssl/test/verisign.x509_my_cert.pem
- lib/axtls/www/bin/.htaccess
- lib/axtls/www/favicon.ico
- lib/axtls/www/lua/download.lua
- lib/axtls/www/lua/env.lua
- lib/axtls/www/lua/overview.lp
- lib/axtls/www/lua/prepara_sql2.lua
- lib/axtls/www/lua/test_conc.lua
- lib/axtls/www/lua/test_cookies.lp
- lib/axtls/www/lua/test_cookies.lua
- lib/axtls/www/lua/test_err.lua
- lib/axtls/www/lua/test_fs.lua
- lib/axtls/www/lua/test_htk.lua
- lib/axtls/www/lua/test_lib.lua
- lib/axtls/www/lua/test_main.html
- lib/axtls/www/lua/test_main.lp
- lib/axtls/www/lua/test_main.lua
- lib/axtls/www/lua/test_session.lua
- lib/axtls/www/lua/test_sql.lua
- lib/axtls/www/lua/test_sql2.lua
- lib/axtls/www/lua/test_variables.lp
- lib/axtls/www/test_dir/bin/.htaccess
- lib/axtls/www/test_dir/no_http/.htaccess
- lib/axtls/www/test_dir/no_http/.htpasswd
- lib/axtls/www/test_dir/no_http/index.html
- lib/axtls/www/test_dir/no_ssl/.htaccess
- lib/axtls/www/test_dir/no_ssl/index.html
-Copyright: NONE
-License: UNKNOWN
  FIXME
 
 Files: lib/berkeley-db-1.xx/.git
@@ -2344,90 +2281,6 @@ Copyright: 1987, 1993, The Regents of the University of California.
 License: BSD-4-clause
  FIXME
 
-Files: lib/axtls/Makefile
- lib/axtls/axtlswrap/Makefile
- lib/axtls/bindings/Makefile
- lib/axtls/bindings/csharp/Makefile
- lib/axtls/bindings/csharp/axTLS.cs
- lib/axtls/bindings/generate_SWIG_interface.pl
- lib/axtls/bindings/generate_interface.pl
- lib/axtls/bindings/java/Makefile
- lib/axtls/bindings/java/SSL.java
- lib/axtls/bindings/java/SSLCTX.java
- lib/axtls/bindings/java/SSLClient.java
- lib/axtls/bindings/java/SSLReadHolder.java
- lib/axtls/bindings/java/SSLServer.java
- lib/axtls/bindings/java/SSLUtil.java
- lib/axtls/bindings/lua/Makefile
- lib/axtls/bindings/perl/Makefile
- lib/axtls/bindings/vbnet/Makefile
- lib/axtls/bindings/vbnet/axTLSvb.vb
- lib/axtls/config/makefile.conf
- lib/axtls/config/makefile.dotnet.conf
- lib/axtls/config/makefile.java.conf
- lib/axtls/crypto/Makefile
- lib/axtls/crypto/bigint.h
- lib/axtls/crypto/bigint_impl.h
- lib/axtls/crypto/crypto.h
- lib/axtls/crypto/crypto_misc.c
- lib/axtls/crypto/hmac.c
- lib/axtls/crypto/os_int.h
- lib/axtls/crypto/rc4.c
- lib/axtls/crypto/rsa.c
- lib/axtls/crypto/sha1.c
- lib/axtls/crypto/sha256.c
- lib/axtls/crypto/sha384.c
- lib/axtls/crypto/sha512.c
- lib/axtls/docsrc/Makefile
- lib/axtls/httpd/Makefile
- lib/axtls/httpd/axhttp.h
- lib/axtls/httpd/axhttpd.c
- lib/axtls/httpd/htpasswd.c
- lib/axtls/httpd/proc.c
- lib/axtls/httpd/tdate_parse.c
- lib/axtls/samples/Makefile
- lib/axtls/samples/c/Makefile
- lib/axtls/samples/c/axssl.c
- lib/axtls/samples/csharp/Makefile
- lib/axtls/samples/csharp/axssl.cs
- lib/axtls/samples/java/Makefile
- lib/axtls/samples/java/axssl.java
- lib/axtls/samples/lua/Makefile
- lib/axtls/samples/lua/axssl.lua
- lib/axtls/samples/perl/Makefile
- lib/axtls/samples/perl/axssl.pl
- lib/axtls/samples/vbnet/Makefile
- lib/axtls/samples/vbnet/axssl.vb
- lib/axtls/ssl/Makefile
- lib/axtls/ssl/asn1.c
- lib/axtls/ssl/crypto_misc.h
- lib/axtls/ssl/gen_cert.c
- lib/axtls/ssl/loader.c
- lib/axtls/ssl/openssl.c
- lib/axtls/ssl/os_port_micropython.h
- lib/axtls/ssl/p12.c
- lib/axtls/ssl/ssl.h
- lib/axtls/ssl/test/Makefile
- lib/axtls/ssl/test/make_certs.sh
- lib/axtls/ssl/test/perf_bigint.c
- lib/axtls/ssl/test/ssltest.c
- lib/axtls/ssl/test/test_axssl.sh
- lib/axtls/ssl/tls1.c
- lib/axtls/ssl/tls1.h
- lib/axtls/ssl/tls1_clnt.c
- lib/axtls/ssl/tls1_svr.c
-Copyright: 2007, Cameron Rich
-  2007-2014, Cameron Rich
-  2007-2015, Cameron Rich
-  2007-2016, Cameron Rich
-  2007-2017, Cameron Rich
-  2009, Cameron Rich
-  2012-2016, Cameron Rich
-  2015, Cameron Rich
-  Cameron Rich
-License: BSD-3-clause
- FIXME
-
 Files: ports/nrf/boards/arduino_primo/mpconfigboard.h
  ports/nrf/boards/dvk_bl652/mpconfigboard.h
  ports/nrf/boards/feather52/mpconfigboard.h
@@ -3054,21 +2907,6 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
-Files: lib/axtls/config/scripts/config/conf.c
- lib/axtls/config/scripts/config/confdata.c
- lib/axtls/config/scripts/config/expr.c
- lib/axtls/config/scripts/config/expr.h
- lib/axtls/config/scripts/config/lex.zconf.c_shipped
- lib/axtls/config/scripts/config/lkc.h
- lib/axtls/config/scripts/config/mconf.c
- lib/axtls/config/scripts/config/menu.c
- lib/axtls/config/scripts/config/symbol.c
- lib/axtls/config/scripts/config/zconf.l
- lib/axtls/config/scripts/config/zconf.y
-Copyright: 2002, Roman Zippel <zippel@linux-m68k.org>
-License: GPL-2.0
- FIXME
-
 Files: drivers/wiznet5k/ethernet/socket.c
  drivers/wiznet5k/ethernet/socket.h
  drivers/wiznet5k/ethernet/w5500/w5500.c
@@ -3188,19 +3026,6 @@ License: Expat
 Files: ports/nrf/boards/microbit/modules/iters.c
 Copyright: 2015-2016 Mark Shannon
 License: Expat
- FIXME
-
-Files: lib/axtls/config/scripts/config/lxdialog/checklist.c
- lib/axtls/config/scripts/config/lxdialog/colors.h
- lib/axtls/config/scripts/config/lxdialog/dialog.h
- lib/axtls/config/scripts/config/lxdialog/inputbox.c
- lib/axtls/config/scripts/config/lxdialog/menubox.c
- lib/axtls/config/scripts/config/lxdialog/msgbox.c
- lib/axtls/config/scripts/config/lxdialog/textbox.c
- lib/axtls/config/scripts/config/lxdialog/util.c
- lib/axtls/config/scripts/config/lxdialog/yesno.c
-Copyright: NONE
-License: GPL-2+
  FIXME
 
 Files: drivers/dht/dht.py
@@ -3776,10 +3601,8 @@ Copyright: 2013-2016, The MicroPython-on-micro:bit Developers:
 License: Expat
  FIXME
 
-Files: lib/axtls/config/scripts/config/zconf.tab.h_shipped
- lib/libffi/libtool-ldflags
-Copyright: 1984, 1989-1990, 2000-2002, Free Software Foundation, Inc.
-  2005, Free Software Foundation, Inc.
+Files: lib/libffi/libtool-ldflags
+Copyright: 2005, Free Software Foundation, Inc.
 License: GPL-2+
  FIXME
 
@@ -3827,13 +3650,6 @@ License: UNKNOWN
 Files: lib/oofatfs/ff.c
  lib/oofatfs/ff.h
 Copyright: 2016, ChaN, all right reserved.
-License: UNKNOWN
- FIXME
-
-Files: lib/axtls/config/Rules.mak
- lib/axtls/config/scripts/config/Makefile
-Copyright: 1999-2005, Erik Andersen <andersen@codepoet.org>
-  2002, Erik Andersen <andersen@codepoet.org>
 License: UNKNOWN
  FIXME
 
@@ -3888,33 +3704,9 @@ Copyright: (c) 2018 STMicroelectronics</center></h2>
 License: BSD-3-clause
  FIXME
 
-Files: lib/axtls/crypto/md5.c
-Copyright: (d)) + (x) + (uint32_t)(ac);
-  2007, Cameron Rich
-License: BSD-3-clause
- FIXME
-
 Files: lib/lwip/src/include/lwip/apps/snmp.h
 Copyright: 2001-2002, Axon Digital Design B.V., The Netherlands.
   2001-2002, Leon Woestenberg <leon.woestenberg@axon.tv>
-License: BSD-3-clause
- FIXME
-
-Files: lib/axtls/crypto/bigint.c
-Copyright: 2007, Cameron Rich
-  carry += COMP_RADIX;
-License: BSD-3-clause
- FIXME
-
-Files: lib/axtls/crypto/aes.c
-Copyright: 2007-2016, Cameron Rich
-  from (b)
-License: BSD-3-clause
- FIXME
-
-Files: lib/axtls/ssl/x509.c
-Copyright: 2007-2016, Cameron Rich
-  ttt");
 License: BSD-3-clause
  FIXME
 
@@ -3941,19 +3733,8 @@ Copyright: 2016, Erik Andersson <erian747@gmail.com>
 License: BSD-3-clause
  FIXME
 
-Files: lib/axtls/www/index.html
-Copyright: 2006, Osmosoft Limited
-  Osmosoft Limited 2004-2006
-License: BSD-3-clause
- FIXME
-
 Files: ports/stm32/boards/startup_stm32f0.s
 Copyright: STMicroelectronics *****END OF FILE***
-License: BSD-3-clause
- FIXME
-
-Files: lib/axtls/axtlswrap/axtlswrap.c
-Copyright: 2009, Steve Bennett
 License: BSD-3-clause
  FIXME
 
@@ -4358,29 +4139,9 @@ Copyright: @copyright{} 2008, 2010, 2011 Red Hat, Inc.
 License: GPL-2+
  FIXME
 
-Files: lib/axtls/config/scripts/config/mkconfigs
-Copyright: 2002, Al Stone <ahs3 at fc.hp.com>
-  2002, Hewlett-Packard Company
-  2002, Khalid Aziz <khalid_aziz at hp.com>
-  2002, Randy Dunlap <rddunlap at osdl.org>
-License: GPL-2+
- FIXME
-
-Files: lib/axtls/config/scripts/config/zconf.tab.c_shipped
-Copyright: 1984, 1989-1990, 2000-2003, Free Software Foundation, Inc.
-  2002, Roman Zippel <zippel@linux-m68k.org>
-License: GPL-2+
- FIXME
-
 Files: lib/libffi/msvcc.sh
 Copyright: 2009, the Initial Developer.
 License: GPL-2+ or LGPL-2.1+ and/or MPL-1.1
- FIXME
-
-Files: lib/axtls/config/scripts/config/util.c
-Copyright: 2002-2005, Roman Zippel <zippel@linux-m68k.org>
-  2002-2005, Sam Ravnborg <sam@ravnborg.org>
-License: GPL-2.0
  FIXME
 
 Files: lib/libffi/texinfo.tex
@@ -4419,11 +4180,6 @@ License: LGPL-3.0
 
 Files: ports/stm32/usbd_cdc_interface.h
 Copyright: (c) 2014 STMicroelectronics</center></h2>
-License: UNKNOWN
- FIXME
-
-Files: lib/axtls/docsrc/doco_footer.html
-Copyright: <sup>©</sup> 2007 Cameron Rich</CITE>
 License: UNKNOWN
  FIXME
 
