@@ -65,6 +65,11 @@ Copyright: 2002-2005, Roman Zippel <zippel@linux-m68k.org>
 License: GPL-2.0
  FIXME
 
+Files: lib/cmsis/*
+Copyright: 2009-2015, ARM LIMITED
+License: BSD-3-clause
+ FIXME
+
 Files: lib/libm/*
 Copyright: 2005-2014 Rich Felker, et al.
 License: Expat
@@ -2917,23 +2922,6 @@ Files: lib/libm/ef_rem_pio2.c
  lib/libm/wf_tgamma.c
 Copyright: 1993, Sun Microsystems, Inc.
 License: UNKNOWN
- FIXME
-
-Files: lib/cmsis/inc/cmsis_armcc.h
- lib/cmsis/inc/cmsis_armcc_V6.h
- lib/cmsis/inc/cmsis_gcc.h
- lib/cmsis/inc/core_cm0.h
- lib/cmsis/inc/core_cm0plus.h
- lib/cmsis/inc/core_cm3.h
- lib/cmsis/inc/core_cm4.h
- lib/cmsis/inc/core_cm7.h
- lib/cmsis/inc/core_cmFunc.h
- lib/cmsis/inc/core_cmInstr.h
- lib/cmsis/inc/core_cmSimd.h
- lib/cmsis/inc/core_sc000.h
- lib/cmsis/inc/core_sc300.h
-Copyright: 2009-2015, ARM LIMITED
-License: BSD-3-clause
  FIXME
 
 Files: lib/lwip/src/apps/snmp/snmp_asn1.c
