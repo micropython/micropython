@@ -84,7 +84,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
 #if MICROPY_PY_COLLECTIONS
 mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    if (n_args != 1 || kw_args != NULL || kw_args->used > 0) {
+    if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
         mp_raise_TypeError(translate("time.struct_time() takes exactly 1 argument"));
     }
     if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
