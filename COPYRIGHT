@@ -70,22 +70,12 @@ Copyright: 2005-2014 Rich Felker, et al.
 License: Expat
  FIXME
 
-Files: ports/nrf/boards/microbit/*
-Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
-  Damien P. George (@dpgeorge)
-  Nicholas H. Tollervey (@ntoll)
-  Matthew Else (@matthewelse)
-  Alan M. Jackson (@alanmjackson)
-  Mark Shannon (@markshannon)
-  Larry Hastings (@larryhastings)
-  Mariia Koroliuk (@marichkakorolyuk)
-  Andrew Mulholland (@gbaman)
-  Joe Glancy (@JoeGlancy)
-License: Expat
+Files: lib/berkeley-db-1.xx/*
+Copyright: 1987-1994, The Regents of the University of California.
+License: BSD-4-clause
  FIXME
 
-Files: lib/berkeley-db-1.xx/.git
- lib/berkeley-db-1.xx/Makefile.inc
+Files: lib/berkeley-db-1.xx/Makefile.inc
  lib/berkeley-db-1.xx/PORT/Makefile
  lib/berkeley-db-1.xx/PORT/README
  lib/berkeley-db-1.xx/PORT/aix.3.2/Makefile
@@ -129,6 +119,26 @@ Files: lib/berkeley-db-1.xx/.git
  lib/berkeley-db-1.xx/test/run.test
 Copyright: NONE
 License: UNKNOWN
+ FIXME
+
+Files: lib/berkeley-db-1.xx/docs/hash.usenix.ps
+ lib/berkeley-db-1.xx/docs/libtp.usenix.ps
+Copyright: 1984-1985, Adobe Systems Incorporated.
+License: UNKNOWN
+ FIXME
+
+Files: ports/nrf/boards/microbit/*
+Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
+  Damien P. George (@dpgeorge)
+  Nicholas H. Tollervey (@ntoll)
+  Matthew Else (@matthewelse)
+  Alan M. Jackson (@alanmjackson)
+  Mark Shannon (@markshannon)
+  Larry Hastings (@larryhastings)
+  Mariia Koroliuk (@marichkakorolyuk)
+  Andrew Mulholland (@gbaman)
+  Joe Glancy (@JoeGlancy)
+License: Expat
  FIXME
 
 Files: lib/libffi/.gitignore
@@ -2196,91 +2206,6 @@ Copyright: 2001, Swedish Institute of Computer Science.
 License: BSD-3-clause
  FIXME
 
-Files: lib/berkeley-db-1.xx/PORT/aix.3.2/include/compat.h
- lib/berkeley-db-1.xx/PORT/bsd.4.4/include/db.h
- lib/berkeley-db-1.xx/PORT/bsdi.1.0/include/assert.h
- lib/berkeley-db-1.xx/PORT/bsdi.1.0/include/compat.h
- lib/berkeley-db-1.xx/PORT/bsdi.1.0/local/local.h
- lib/berkeley-db-1.xx/PORT/bsdi.1.0/local/makebuf.c
- lib/berkeley-db-1.xx/PORT/bsdi.1.0/local/setvbuf.c
- lib/berkeley-db-1.xx/PORT/clib/memmove.c
- lib/berkeley-db-1.xx/PORT/clib/mktemp.c
- lib/berkeley-db-1.xx/PORT/clib/strerror.c
- lib/berkeley-db-1.xx/PORT/dgux.5.4/include/compat.h
- lib/berkeley-db-1.xx/PORT/hpux.9.01/include/compat.h
- lib/berkeley-db-1.xx/PORT/include/cdefs.h
- lib/berkeley-db-1.xx/PORT/include/compat.h
- lib/berkeley-db-1.xx/PORT/include/ndbm.h
- lib/berkeley-db-1.xx/PORT/include/queue.h
- lib/berkeley-db-1.xx/PORT/irix.4.05F/include/compat.h
- lib/berkeley-db-1.xx/PORT/linux/include/compat.h
- lib/berkeley-db-1.xx/PORT/osf.1.0.2/include/compat.h
- lib/berkeley-db-1.xx/PORT/ptx.2.0/include/compat.h
- lib/berkeley-db-1.xx/PORT/ptx.2.0/include/pathnames.h
- lib/berkeley-db-1.xx/PORT/sinix.5.41/include/compat.h
- lib/berkeley-db-1.xx/PORT/sunos.4.1.1/include/compat.h
- lib/berkeley-db-1.xx/PORT/sunos.4.1.1/include/pathnames.h
- lib/berkeley-db-1.xx/PORT/sunos.5.2/include/compat.h
- lib/berkeley-db-1.xx/PORT/ultrix.4.2/include/compat.h
- lib/berkeley-db-1.xx/PORT/ultrix.4.2/include/db.h
- lib/berkeley-db-1.xx/btree/bt_close.c
- lib/berkeley-db-1.xx/btree/bt_conv.c
- lib/berkeley-db-1.xx/btree/bt_debug.c
- lib/berkeley-db-1.xx/btree/bt_delete.c
- lib/berkeley-db-1.xx/btree/bt_get.c
- lib/berkeley-db-1.xx/btree/bt_open.c
- lib/berkeley-db-1.xx/btree/bt_overflow.c
- lib/berkeley-db-1.xx/btree/bt_page.c
- lib/berkeley-db-1.xx/btree/bt_put.c
- lib/berkeley-db-1.xx/btree/bt_search.c
- lib/berkeley-db-1.xx/btree/bt_seq.c
- lib/berkeley-db-1.xx/btree/bt_split.c
- lib/berkeley-db-1.xx/btree/bt_utils.c
- lib/berkeley-db-1.xx/btree/btree.h
- lib/berkeley-db-1.xx/btree/extern.h
- lib/berkeley-db-1.xx/db/db.c
- lib/berkeley-db-1.xx/hash/extern.h
- lib/berkeley-db-1.xx/hash/hash.c
- lib/berkeley-db-1.xx/hash/hash.h
- lib/berkeley-db-1.xx/hash/hash_bigkey.c
- lib/berkeley-db-1.xx/hash/hash_buf.c
- lib/berkeley-db-1.xx/hash/hash_func.c
- lib/berkeley-db-1.xx/hash/hash_log2.c
- lib/berkeley-db-1.xx/hash/hash_page.c
- lib/berkeley-db-1.xx/hash/hsearch.c
- lib/berkeley-db-1.xx/hash/ndbm.c
- lib/berkeley-db-1.xx/hash/page.h
- lib/berkeley-db-1.xx/hash/search.h
- lib/berkeley-db-1.xx/include/db.h
- lib/berkeley-db-1.xx/include/filevtable.h
- lib/berkeley-db-1.xx/include/mpool.h
- lib/berkeley-db-1.xx/man/btree.3
- lib/berkeley-db-1.xx/man/dbopen.3
- lib/berkeley-db-1.xx/man/hash.3
- lib/berkeley-db-1.xx/man/mpool.3
- lib/berkeley-db-1.xx/man/recno.3
- lib/berkeley-db-1.xx/mpool/mpool.c
- lib/berkeley-db-1.xx/recno/extern.h
- lib/berkeley-db-1.xx/recno/rec_close.c
- lib/berkeley-db-1.xx/recno/rec_delete.c
- lib/berkeley-db-1.xx/recno/rec_get.c
- lib/berkeley-db-1.xx/recno/rec_open.c
- lib/berkeley-db-1.xx/recno/rec_put.c
- lib/berkeley-db-1.xx/recno/rec_search.c
- lib/berkeley-db-1.xx/recno/rec_seq.c
- lib/berkeley-db-1.xx/recno/rec_utils.c
- lib/berkeley-db-1.xx/recno/recno.h
- lib/berkeley-db-1.xx/test/btree.tests/main.c
-Copyright: 1987, 1993, The Regents of the University of California.
-  1988, 1993, The Regents of the University of California.
-  1990, 1993, The Regents of the University of California.
-  1990, 1993-1994, The Regents of the University of California.
-  1990, The Regents of the University of California.
-  1991, 1993, The Regents of the University of California.
-  1991, 1993-1994, The Regents of the University of California.
-License: BSD-4-clause
- FIXME
-
 Files: ports/nrf/boards/arduino_primo/mpconfigboard.h
  ports/nrf/boards/dvk_bl652/mpconfigboard.h
  ports/nrf/boards/feather52/mpconfigboard.h
@@ -3074,18 +2999,6 @@ Copyright: 1984-2000, Carnegie Mellon University.
 License: UNKNOWN
  FIXME
 
-Files: lib/berkeley-db-1.xx/test/hash.tests/driver2.c
- lib/berkeley-db-1.xx/test/hash.tests/tcreat3.c
- lib/berkeley-db-1.xx/test/hash.tests/tdel.c
- lib/berkeley-db-1.xx/test/hash.tests/thash4.c
- lib/berkeley-db-1.xx/test/hash.tests/tread2.c
- lib/berkeley-db-1.xx/test/hash.tests/tseq.c
- lib/berkeley-db-1.xx/test/hash.tests/tverify.c
-Copyright: 1991, 1993, The Regents of the University of California.
-  1991, 1993n
-License: BSD-4-clause
- FIXME
-
 Files: ports/cc3200/mpthreadport.c
  ports/cc3200/mpthreadport.h
  ports/unix/mpthreadport.c
@@ -3632,12 +3545,6 @@ Copyright: (c) 2014 STMicroelectronics</center></h2>
 License: UNKNOWN
  FIXME
 
-Files: lib/berkeley-db-1.xx/docs/hash.usenix.ps
- lib/berkeley-db-1.xx/docs/libtp.usenix.ps
-Copyright: 1984-1985, Adobe Systems Incorporated.
-License: UNKNOWN
- FIXME
-
 Files: lib/lwip/src/include/netif/ppp/ipv6cp.h
  lib/lwip/src/netif/ppp/ipv6cp.c
 Copyright: 1984-2000, Carnegie Mellon University.
@@ -3753,12 +3660,6 @@ Files: ports/stm32/system_stm32.c
 Copyright: 2013-2014, Damien P. George
   2014, STMicroelectronics</center></h2>
 License: BSD-3-clause and/or Expat
- FIXME
-
-Files: lib/berkeley-db-1.xx/test/dbtest.c
-Copyright: 1992-1993, 1994n
-  1992-1994, The Regents of the University of California.
-License: BSD-4-clause
  FIXME
 
 Files: lib/lwip/src/include/netif/ppp/pppdebug.h
