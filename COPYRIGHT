@@ -11,9 +11,11 @@ Files: CONTRIBUTING.md
  docs/conf.py
  docs/differences/index_template.txt
  docs/esp32/general.rst
+ docs/esp32/img/esp32.jpg
  docs/esp32/quickref.rst
  docs/esp32/tutorial/intro.rst
  docs/esp8266/general.rst
+ docs/esp8266/img/adafruit_products_pinoutstop.jpg
  docs/esp8266/quickref.rst
  docs/esp8266/tutorial/adc.rst
  docs/esp8266/tutorial/dht.rst
@@ -105,6 +107,13 @@ Files: CONTRIBUTING.md
  docs/pyboard/tutorial/assembler.rst
  docs/pyboard/tutorial/debounce.rst
  docs/pyboard/tutorial/fading_led.rst
+ docs/pyboard/tutorial/img/fading_leds_breadboard_fritzing.png
+ docs/pyboard/tutorial/img/pyboard_servo.jpg
+ docs/pyboard/tutorial/img/pyboard_usb_micro.jpg
+ docs/pyboard/tutorial/img/skin_amp_1.jpg
+ docs/pyboard/tutorial/img/skin_amp_2.jpg
+ docs/pyboard/tutorial/img/skin_lcd_1.jpg
+ docs/pyboard/tutorial/img/skin_lcd_2.jpg
  docs/pyboard/tutorial/index.rst
  docs/pyboard/tutorial/intro.rst
  docs/pyboard/tutorial/lcd160cr_skin.rst
@@ -141,6 +150,7 @@ Files: CONTRIBUTING.md
  docs/reference/repl.rst
  docs/reference/speed_python.rst
  docs/static/customstyle.css
+ docs/static/favicon.ico
  docs/templates/layout.html
  docs/templates/replace.inc
  docs/templates/topindex.html
@@ -217,6 +227,7 @@ Files: CONTRIBUTING.md
  lib/axtls/README
  lib/axtls/bindings/Config.in
  lib/axtls/bindings/README
+ lib/axtls/config/axtls.RES
  lib/axtls/config/Config.in
  lib/axtls/config/JMeter.jmx
  lib/axtls/config/axhttpd.aip
@@ -230,19 +241,78 @@ Files: CONTRIBUTING.md
  lib/axtls/config/upyconfig.client
  lib/axtls/config/win32config
  lib/axtls/docsrc/axTLS.dox
+ lib/axtls/docsrc/images/axolotl.jpg
+ lib/axtls/docsrc/images/tsbasbw.gif
  lib/axtls/httpd/Config.in
  lib/axtls/httpd/kepler.patch
+ lib/axtls/httpd/kepler-1.1-snapshot-20070521-1825.tar.gz
  lib/axtls/samples/Config.in
  lib/axtls/samples/java/manifest.mf
  lib/axtls/ssl/BigIntConfig.in
  lib/axtls/ssl/Config.in
  lib/axtls/ssl/cert.h
  lib/axtls/ssl/private_key.h
+ lib/axtls/ssl/test/axTLS.ca_key.pem
+ lib/axtls/ssl/test/axTLS.ca_x509.cer
+ lib/axtls/ssl/test/axTLS.ca_x509.pem
+ lib/axtls/ssl/test/axTLS.ca_x509_sha256.pem
+ lib/axtls/ssl/test/axTLS.encrypted.p8
+ lib/axtls/ssl/test/axTLS.encrypted_pem.p8
+ lib/axtls/ssl/test/axTLS.key_1024
+ lib/axtls/ssl/test/axTLS.key_1024.pem
+ lib/axtls/ssl/test/axTLS.key_2048
+ lib/axtls/ssl/test/axTLS.key_2048.pem
+ lib/axtls/ssl/test/axTLS.key_4096
+ lib/axtls/ssl/test/axTLS.key_4096.pem
+ lib/axtls/ssl/test/axTLS.key_aes128.pem
+ lib/axtls/ssl/test/axTLS.key_aes256.pem
+ lib/axtls/ssl/test/axTLS.key_device.pem
+ lib/axtls/ssl/test/axTLS.key_end_chain.pem
+ lib/axtls/ssl/test/axTLS.key_intermediate_ca.pem
+ lib/axtls/ssl/test/axTLS.key_intermediate_ca2.pem
+ lib/axtls/ssl/test/axTLS.noname.p12
+ lib/axtls/ssl/test/axTLS.unencrypted.p8
+ lib/axtls/ssl/test/axTLS.unencrypted_pem.p8
+ lib/axtls/ssl/test/axTLS.withCA.p12
+ lib/axtls/ssl/test/axTLS.withoutCA.p12
+ lib/axtls/ssl/test/axTLS.x509_1024.cer
+ lib/axtls/ssl/test/axTLS.x509_1024.pem
+ lib/axtls/ssl/test/axTLS.x509_1024_sha256.pem
+ lib/axtls/ssl/test/axTLS.x509_1024_sha384.pem
+ lib/axtls/ssl/test/axTLS.x509_1024_sha512.pem
+ lib/axtls/ssl/test/axTLS.x509_2048.cer
+ lib/axtls/ssl/test/axTLS.x509_2048.pem
+ lib/axtls/ssl/test/axTLS.x509_4096.cer
+ lib/axtls/ssl/test/axTLS.x509_4096.pem
+ lib/axtls/ssl/test/axTLS.x509_aes128.pem
+ lib/axtls/ssl/test/axTLS.x509_aes256.pem
+ lib/axtls/ssl/test/axTLS.x509_bad_after.pem
+ lib/axtls/ssl/test/axTLS.x509_bad_before.pem
+ lib/axtls/ssl/test/axTLS.x509_device.cer
+ lib/axtls/ssl/test/axTLS.x509_device.pem
+ lib/axtls/ssl/test/axTLS.x509_end_chain.pem
+ lib/axtls/ssl/test/axTLS.x509_end_chain_bad.pem
+ lib/axtls/ssl/test/axTLS.x509_intermediate_ca.pem
+ lib/axtls/ssl/test/axTLS.x509_intermediate_ca2.pem
  lib/axtls/ssl/test/ca-bundle.crt
  lib/axtls/ssl/test/camster_duckdns_org.crt
+ lib/axtls/ssl/test/comodo.sha384.cer
+ lib/axtls/ssl/test/deutsche_telecom.x509_ca
+ lib/axtls/ssl/test/equifax.x509_ca
+ lib/axtls/ssl/test/gnutls.cer
+ lib/axtls/ssl/test/header_issue.dat
  lib/axtls/ssl/test/killgnutls.sh
  lib/axtls/ssl/test/killopenssl.sh
+ lib/axtls/ssl/test/microsoft.x509_ca
+ lib/axtls/ssl/test/microsoft.x509_ca.pem
+ lib/axtls/ssl/test/ms_iis.cer
+ lib/axtls/ssl/test/qualityssl.com.der
+ lib/axtls/ssl/test/socgen.cer
+ lib/axtls/ssl/test/thawte.x509_ca
+ lib/axtls/ssl/test/verisign.x509_ca.pem
+ lib/axtls/ssl/test/verisign.x509_my_cert.pem
  lib/axtls/www/bin/.htaccess
+ lib/axtls/www/favicon.ico
  lib/axtls/www/lua/env.lua
  lib/axtls/www/lua/prepara_sql2.lua
  lib/axtls/www/lua/test_conc.lua
@@ -583,6 +653,7 @@ Files: CONTRIBUTING.md
  lib/lwip/doc/sys_arch.txt
  lib/lwip/src/FILES
  lib/lwip/src/apps/httpd/fs/404.html
+ lib/lwip/src/apps/httpd/fs/img/sics.gif
  lib/lwip/src/apps/httpd/fs/index.html
  lib/lwip/src/apps/httpd/fsdata.c
  lib/lwip/src/apps/httpd/httpd_structs.h
@@ -635,10 +706,12 @@ Files: CONTRIBUTING.md
  lib/nrfx/CHANGELOG.md
  lib/nrfx/README.md
  lib/nrfx/doc/buildfiles/extra_stylesheet.css
+ lib/nrfx/doc/buildfiles/favicon.ico
  lib/nrfx/doc/buildfiles/footer.html
  lib/nrfx/doc/buildfiles/header.html
  lib/nrfx/doc/buildfiles/index.html
  lib/nrfx/doc/buildfiles/layout.xml
+ lib/nrfx/doc/buildfiles/nordic_small.png
  lib/nrfx/doc/config_dox/nrfx_adc_dox_config.h
  lib/nrfx/doc/config_dox/nrfx_clock_dox_config.h
  lib/nrfx/doc/config_dox/nrfx_comp_dox_config.h
@@ -694,7 +767,15 @@ Files: CONTRIBUTING.md
  lib/stm32lib/README.md
  lib/tinytest/README
  lib/utils/stdout_helpers.c
+ logo/1bit-logo.png
+ logo/logo.jpg
+ logo/micropythonpowered-art.png
+ logo/trans-logo.png
+ logo/upython-with-micro.jpg
+ logo/upython-with-micro.png
+ logo/vector-logo-2.png
  logo/vector-logo-2-BW.svg
+ logo/vector-logo-3.png
  logo/vector-logo-R2000.dxf
  logo/vector-logo-inkscape_master.svg
  logo/vector-logo.svg
