@@ -70,11 +70,6 @@ Copyright: 2009-2015, ARM LIMITED
 License: BSD-3-clause
  FIXME
 
-Files: lib/libm/*
-Copyright: 2005-2014 Rich Felker, et al.
-License: Expat
- FIXME
-
 Files: lib/berkeley-db-1.xx/*
 Copyright: 1987-1994, The Regents of the University of California.
 License: BSD-4-clause
@@ -530,6 +525,45 @@ Copyright: 1985-1986, 1988, 1990-2013, Free Software Foundation, Inc.
 License: GPL-3
  FIXME
 
+Files: lib/libm/*
+Copyright: 2005-2014 Rich Felker, et al.
+License: Expat
+ FIXME
+
+Files: lib/libm/asinfacosf.clib/libm/ef_rem_pio2.c
+ lib/libm/ef_sqrt.c
+ lib/libm/erf_lgamma.c
+ lib/libm/fdlibm.h
+ lib/libm/kf_cos.c
+ lib/libm/kf_rem_pio2.c
+ lib/libm/kf_sin.c
+ lib/libm/kf_tan.c
+ lib/libm/sf_cos.c
+ lib/libm/sf_erf.c
+ lib/libm/sf_frexp.c
+ lib/libm/sf_ldexp.c
+ lib/libm/sf_modf.c
+ lib/libm/sf_sin.c
+ lib/libm/sf_tan.c
+ lib/libm/wf_lgamma.c
+ lib/libm/wf_tgamma.c
+ lib/libm/atan2f.c
+ lib/libm/atanf.c
+ lib/libm/libm.h
+ lib/libm/log1pf.c
+ lib/libm_dbl/*
+Copyright: 1993, 2001, 2004, Sun Microsystems, Inc.
+License: permissive
+ Developed at SunPro, a Sun Microsystems, Inc. business. Permission to use,
+ copy, modify, and distribute this software is freely granted, provided that
+ this notice is preserved.
+
+Files: lib/libm/math.c
+Copyright: 1993, Sun Microsystems, Inc.
+  2013-2014, Damien P. George
+License: Expat
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
@@ -612,6 +646,14 @@ Copyright: NONE
 License: UNKNOWN
  FIXME
  
+Files: lib/lwip/src/include/netif/ppp/eap.h
+ lib/lwip/src/netif/ppp/eap.c
+Copyright: 1993, Sun Microsystems, Inc.
+  2001, Sun Microsystems, Inc.
+  2004, Sun Microsystems, Inc.
+License: UNKNOWN
+ FIXME
+
 Files: lib/nrfx/.gitignore
  lib/nrfx/CHANGELOG.md
  lib/nrfx/README.md
@@ -2300,39 +2342,6 @@ Copyright: 2014, Paul Sokolovsky
 License: Expat
  FIXME
 
-Files: lib/libm/asinfacosf.c
- lib/libm/atan2f.c
- lib/libm/atanf.c
- lib/libm/libm.h
- lib/libm/log1pf.c
- lib/libm_dbl/__cos.c
- lib/libm_dbl/__rem_pio2.c
- lib/libm_dbl/__rem_pio2_large.c
- lib/libm_dbl/__sin.c
- lib/libm_dbl/__tan.c
- lib/libm_dbl/acos.c
- lib/libm_dbl/asin.c
- lib/libm_dbl/atan.c
- lib/libm_dbl/atan2.c
- lib/libm_dbl/cos.c
- lib/libm_dbl/erf.c
- lib/libm_dbl/exp.c
- lib/libm_dbl/expm1.c
- lib/libm_dbl/libm.h
- lib/libm_dbl/log.c
- lib/libm_dbl/log1p.c
- lib/libm_dbl/pow.c
- lib/libm_dbl/sin.c
- lib/libm_dbl/sqrt.c
- lib/libm_dbl/tan.c
- lib/lwip/src/include/netif/ppp/eap.h
- lib/lwip/src/netif/ppp/eap.c
-Copyright: 1993, Sun Microsystems, Inc.
-  2001, Sun Microsystems, Inc.
-  2004, Sun Microsystems, Inc.
-License: UNKNOWN
- FIXME
-
 Files: ports/cc3200/FreeRTOS/FreeRTOSConfig.h
  ports/cc3200/FreeRTOS/Source/croutine.c
  ports/cc3200/FreeRTOS/Source/event_groups.c
@@ -2505,27 +2514,6 @@ Files: lib/lwip/src/api/netdb.c
  lib/lwip/src/netif/ppp/pppos.c
 Copyright: NONE
 License: BSD-3-clause
- FIXME
-
-Files: lib/libm/ef_rem_pio2.c
- lib/libm/ef_sqrt.c
- lib/libm/erf_lgamma.c
- lib/libm/fdlibm.h
- lib/libm/kf_cos.c
- lib/libm/kf_rem_pio2.c
- lib/libm/kf_sin.c
- lib/libm/kf_tan.c
- lib/libm/sf_cos.c
- lib/libm/sf_erf.c
- lib/libm/sf_frexp.c
- lib/libm/sf_ldexp.c
- lib/libm/sf_modf.c
- lib/libm/sf_sin.c
- lib/libm/sf_tan.c
- lib/libm/wf_lgamma.c
- lib/libm/wf_tgamma.c
-Copyright: 1993, Sun Microsystems, Inc.
-License: UNKNOWN
  FIXME
 
 Files: lib/lwip/src/apps/snmp/snmp_asn1.c
@@ -3271,12 +3259,6 @@ Copyright: 2014, Damien P. George
 License: Expat
  FIXME
 
-Files: lib/libm/math.c
-Copyright: 1993, Sun Microsystems, Inc.
-  2013-2014, Damien P. George
-License: Expat
- FIXME
-
 Files: docs/license.rst
 Copyright: 2013-2017, Damien P. George, and others
 License: Expat
@@ -3317,11 +3299,6 @@ License: Expat
 
 Files: tools/gen-cpydiff.py
 Copyright: 2016, Rami Ali
-License: Expat
- FIXME
-
-Files: lib/libm_dbl/README
-Copyright: 2005-2014, Rich Felker, et al.
 License: Expat
  FIXME
 
