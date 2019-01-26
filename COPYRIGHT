@@ -553,7 +553,7 @@ Files: lib/libm/asinfacosf.clib/libm/ef_rem_pio2.c
  lib/libm/log1pf.c
  lib/libm_dbl/*
 Copyright: 1993, 2001, 2004, Sun Microsystems, Inc.
-License: permissive
+License: permissive0
  Developed at SunPro, a Sun Microsystems, Inc. business. Permission to use,
  copy, modify, and distribute this software is freely granted, provided that
  this notice is preserved.
@@ -563,6 +563,343 @@ Copyright: 1993, Sun Microsystems, Inc.
   2013-2014, Damien P. George
 License: Expat
  FIXME
+
+Files: lib/lwip/*
+Copyright: 2001-2004 Swedish Institute of Computer Science.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/lwiperf/lwiperf.c
+ lib/lwip/src/include/lwip/apps/lwiperf.h
+Copyright: 2014, Simon Goldschmidt
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/mdns/mdns.c
+ lib/lwip/src/include/lwip/apps/mdns.h
+ lib/lwip/src/include/lwip/apps/mdns_opts.h
+ lib/lwip/src/include/lwip/apps/mdns_priv.h
+ lib/lwip/test/unit/mdns/test_mdns.c
+Copyright: 2015, Verisure Innovation AB
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/mqtt/mqtt.c
+Copyright: 2016, Erik Andersson <erian747@gmail.com>
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/snmp/snmp_asn1.c
+ lib/lwip/src/apps/snmp/snmp_core.c
+ lib/lwip/src/apps/snmp/snmp_mib2.c
+ lib/lwip/src/apps/snmp/snmp_mib2_icmp.c
+ lib/lwip/src/apps/snmp/snmp_mib2_interfaces.c
+ lib/lwip/src/apps/snmp/snmp_mib2_ip.c
+ lib/lwip/src/apps/snmp/snmp_mib2_snmp.c
+ lib/lwip/src/apps/snmp/snmp_mib2_system.c
+ lib/lwip/src/apps/snmp/snmp_mib2_tcp.c
+ lib/lwip/src/apps/snmp/snmp_mib2_udp.c
+ lib/lwip/src/include/lwip/apps/snmp_core.h
+Copyright: 2006, Axon Digital Design B.V., The Netherlands.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/snmp/snmpv3.c
+ lib/lwip/src/apps/snmp/snmpv3_dummy.c
+ lib/lwip/src/apps/snmp/snmpv3_priv.h
+ lib/lwip/src/include/lwip/apps/snmpv3.h
+Copyright: 2016, Elias Oenal.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/snmp/snmp_asn1.h
+ lib/lwip/src/apps/snmp/snmp_msg.c
+ lib/lwip/src/apps/snmp/snmp_msg.h
+Copyright: 2006, Axon Digital Design B.V., The Netherlands.
+  2016, Elias Oenal.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/snmp/snmpv3_mbedtls.c
+Copyright: 2016, Elias Oenal and Dirk Ziegelmeier.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/sntp/sntp.c
+ lib/lwip/src/include/lwip/apps/sntp.h
+ lib/lwip/src/include/lwip/apps/sntp_opts.h
+Copyright: 2007-2009, Frédéric Bernon, Simon Goldschmidt
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/apps/tftp/tftp_server.c
+ lib/lwip/src/include/lwip/apps/tftp_opts.h
+ lib/lwip/src/include/lwip/apps/tftp_server.h
+Copyright: Deltatee Enterprises Ltd. 2013
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/core/dns.c
+ lib/lwip/src/include/lwip/dns.h
+ lib/lwip/src/include/lwip/prot/dns.h
+Copyright: 2002-2003, Adam Dunkels.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/core/ipv4/autoip.c
+ lib/lwip/src/include/lwip/autoip.h
+ lib/lwip/src/include/lwip/prot/autoip.h
+Copyright: 2007, Dominik Spies <kontakt@dspies.de>
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/core/ipv4/dhcp.c
+ lib/lwip/src/include/lwip/dhcp.h
+ lib/lwip/src/include/lwip/prot/dhcp.h
+Copyright: 2001-2004, Axon Digital Design B.V., The Netherlands.
+  2001-2004, Leon Woestenberg <leon.woestenberg@gmx.net>
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/core/ipv4/etharp.c
+ lib/lwip/src/include/lwip/etharp.h
+ lib/lwip/src/include/netif/ethernet.h
+ lib/lwip/src/netif/ethernet.c
+Copyright: 2001-2003, Swedish Institute of Computer Science.
+  2003-2004, Axon Digital Design B.V., The Netherlands.
+  2003-2004, Leon Woestenberg <leon.woestenberg@axon.tv>
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/core/ipv4/igmp.c
+ lib/lwip/src/include/lwip/igmp.h
+Copyright: 2002, CITEL Technologies Ltd.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/core/ipv6/dhcp6.c
+ lib/lwip/src/core/ipv6/ethip6.c
+ lib/lwip/src/core/ipv6/icmp6.c
+ lib/lwip/src/core/ipv6/inet6.c
+ lib/lwip/src/core/ipv6/ip6.c
+ lib/lwip/src/core/ipv6/ip6_addr.c
+ lib/lwip/src/core/ipv6/ip6_frag.c
+ lib/lwip/src/core/ipv6/mld6.c
+ lib/lwip/src/core/ipv6/nd6.c
+ lib/lwip/src/include/lwip/dhcp6.h
+ lib/lwip/src/include/lwip/ethip6.h
+ lib/lwip/src/include/lwip/icmp6.h
+ lib/lwip/src/include/lwip/ip6.h
+ lib/lwip/src/include/lwip/ip6_addr.h
+ lib/lwip/src/include/lwip/ip6_frag.h
+ lib/lwip/src/include/lwip/mld6.h
+ lib/lwip/src/include/lwip/nd6.h
+ lib/lwip/src/include/lwip/priv/nd6_priv.h
+ lib/lwip/src/include/netif/lowpan6.h
+ lib/lwip/src/include/netif/lowpan6_opts.h
+ lib/lwip/src/netif/lowpan6.c
+Copyright: 2010, Inico Technologies Ltd.
+  2015, Inico Technologies Ltd.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/include/netif/ppp/eap.h
+ lib/lwip/src/netif/ppp/eap.c
+Copyright: 1993, 2001, 2004, Sun Microsystems, Inc.
+License: permissive1
+ Non-exclusive rights to redistribute, modify, translate, and use
+ this software in source and binary forms, in whole or in part, is
+ hereby granted, provided that the above copyright notice is
+ duplicated in any source form, and that neither the name of the
+ copyright holder nor the author is used to endorse or promote
+ products derived from this software.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+Files: lib/lwip/src/include/netif/ppp/polarssl/arc4.h
+ lib/lwip/src/include/netif/ppp/polarssl/des.h
+ lib/lwip/src/include/netif/ppp/polarssl/md4.h
+ lib/lwip/src/include/netif/ppp/polarssl/md5.h
+ lib/lwip/src/include/netif/ppp/polarssl/sha1.h
+ lib/lwip/src/netif/ppp/polarssl/arc4.c
+ lib/lwip/src/netif/ppp/polarssl/des.c
+ lib/lwip/src/netif/ppp/polarssl/md4.c
+ lib/lwip/src/netif/ppp/polarssl/md5.c
+ lib/lwip/src/netif/ppp/polarssl/sha1.c
+Copyright: 2006-2008, Christophe Devine
+  2009, Paul Bakker <polarssl_maintainer at polarssl dot org>
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/include/netif/ppp/ccp.h
+ lib/lwip/src/include/netif/ppp/chap-md5.h
+ lib/lwip/src/include/netif/ppp/chap-new.h
+ lib/lwip/src/include/netif/ppp/mppe.h
+ lib/lwip/src/netif/ppp/ccp.c
+ lib/lwip/src/netif/ppp/chap-md5.c
+ lib/lwip/src/netif/ppp/chap-new.c
+ lib/lwip/src/netif/ppp/demand.c
+ lib/lwip/src/netif/ppp/multilink.c
+ lib/lwip/src/netif/ppp/utils.c
+Copyright: 1994-2003, 2008, Paul Mackerras.
+License: BSD-like-paul-m
+
+Files: lib/lwip/src/include/netif/ppp/fsm.h
+ lib/lwip/src/include/netif/ppp/ipcp.h
+ lib/lwip/src/include/netif/ppp/lcp.h
+ lib/lwip/src/include/netif/ppp/upap.h
+ lib/lwip/src/netif/ppp/fsm.c
+ lib/lwip/src/netif/ppp/ipcp.c
+ lib/lwip/src/netif/ppp/lcp.c
+ lib/lwip/src/netif/ppp/upap.c
+Copyright: 1984-2000, Carnegie Mellon University.
+License: BSD-like-cm
+
+Files: lib/lwip/src/include/netif/ppp/chap_ms.h
+ lib/lwip/src/include/netif/ppp/pppcrypt.h
+ lib/lwip/src/netif/ppp/pppcrypt.c
+Copyright: 1995, Eric Rosenquist.
+License: BSD-like-type-1
+
+Files: lib/lwip/src/include/netif/ppp/magic.h
+ lib/lwip/src/netif/ppp/magic.c
+Copyright: 1984-2000, Carnegie Mellon University.
+  1998, Global Election Systems Inc.
+  2003, Marc Boucher, Services Informatiques (MBSI) inc.
+License: BSD-2-clause
+ FIXME
+
+Files: lib/lwip/src/include/lwip/apps/mqtt.h
+ lib/lwip/src/include/lwip/apps/mqtt_opts.h
+Copyright: 2016, Erik Andersson
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/include/netif/ppp/pppoe.h
+ lib/lwip/src/netif/ppp/pppoe.c
+Copyright: 2002, The NetBSD Foundation, Inc.
+  2006, Marc Boucher, Services Informatiques (MBSI) inc.
+License: BSD-4-clause
+ FIXME
+
+Files: lib/lwip/src/include/netif/ppp/ppp.h
+ lib/lwip/src/include/netif/ppp/ppp_impl.h
+Copyright: 1997, Global Election Systems Inc.
+  2003, Marc Boucher, Services Informatiques (MBSI) inc.
+License: BSD~unspecified
+ The authors hereby grant permission to use, copy, modify, distribute,
+ and license this software and its documentation for any purpose, provided
+ that existing copyright notices are retained in all copies and that this
+ notice and the following disclaimer are included verbatim in any 
+ distributions. No written agreement, license, or royalty fee is required
+ for any of the authorized uses.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+ IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Files: lib/lwip/src/include/netif/ppp/ipv6cp.h
+ lib/lwip/src/netif/ppp/ipv6cp.c
+Copyright: 1984-2000, Carnegie Mellon University.
+  1995-1997, Francis.Dupont@inria.fr, INRIA Rocquencourt, Alain.Durand@imag.fr,
+  IMAG, Jean-Luc.Richier@imag.fr, IMAG-LSR.
+  1998-1999, Francis.Dupont@inria.fr, GIE DYADE, Alain.Durand@imag.fr,
+  IMAG,Jean-Luc.Richier@imag.fr, IMAG-LSR.
+  1999, Tommi Komulainen.
+License: BSD-like-tommi-k
+
+Files: lib/lwip/src/include/netif/ppp/ecp.h
+ lib/lwip/src/netif/ppp/mppe.c
+Copyright: 2002, Google, Inc.
+  2002-2004, Google, Inc.
+License: BSD-like-type-1
+
+Files: lib/lwip/src/include/netif/ppp/vj.h
+ lib/lwip/src/netif/ppp/vj.c
+Copyright: 1989, Regents of the University of California.
+License: permissive2
+ Redistribution and use in source and binary forms are permitted
+ provided that the above copyright notice and this paragraph are
+ duplicated in all such forms and that any documentation,
+ advertising materials, and other materials related to such
+ distribution and use acknowledge that the software was developed
+ by the University of California, Berkeley.  The name of the
+ University may not be used to endorse or promote products derived
+ from this software without specific prior written permission.
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+Files: lib/lwip/src/include/netif/ppp/eui64.h
+ lib/lwip/src/netif/ppp/eui64.c
+Copyright: 1999, Tommi Komulainen.
+License: BSD-like-tommi-k
+
+Files: lib/lwip/src/include/lwip/apps/snmp.h
+Copyright: 2001-2002, Axon Digital Design B.V., The Netherlands.
+  2001-2002, Leon Woestenberg <leon.woestenberg@axon.tv>
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/include/lwip/apps/snmp_opts.h
+Copyright: 2015, Dirk Ziegelmeier
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/netif/ppp/auth.c
+Copyright: 1984-2000, Carnegie Mellon University.
+  1993-2002, Paul Mackerras.
+License: BSD-like-paul-m
+
+Files: lib/lwip/src/netif/ppp/chap_ms.c
+Copyright: 1995, Eric Rosenquist.
+  2002, Google, Inc.
+License: BSD-like-type-1
+
+Files: lib/lwip/src/netif/ppp/ecp.c
+Copyright: 1994-2002, Paul Mackerras.
+  2002, Google, Inc.
+License: BSD-like-type-1
+
+Files: lib/lwip/src/netif/ppp/ppp.c
+Copyright: 1989, Carnegie Mellon University.
+  1994, The Australian National University.
+  1997, Global Election Systems Inc.
+  2003, Marc Boucher, Services Informatiques (MBSI) inc.
+License: BSD-3-clause
+ FIXME
+
+Files: lib/lwip/src/include/netif/ppp/pppdebug.h
+Copyright: 1998, Global Election Systems Inc.
+  2001, Cognizant Pty Ltd.
+  2003, Marc Boucher, Services Informatiques (MBSI) inc.
+License: permissive3
+ The authors hereby grant permission to use, copy, modify, distribute,
+ and license this software and its documentation for any purpose, provided
+ that existing copyright notices are retained in all copies and that this
+ notice and the following disclaimer are included verbatim in any 
+ distributions. No written agreement, license, or royalty fee is required
+ for any of the authorized uses.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+ IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
@@ -576,82 +913,6 @@ Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Andrew Mulholland (@gbaman)
   Joe Glancy (@JoeGlancy)
 License: Expat
- FIXME
-
-Files: lib/lwip/.gitattributes
- lib/lwip/.gitignore
- lib/lwip/CHANGELOG
- lib/lwip/FILES
- lib/lwip/README
- lib/lwip/UPGRADING
- lib/lwip/doc/FILES
- lib/lwip/doc/NO_SYS_SampleCode.c
- lib/lwip/doc/contrib.txt
- lib/lwip/doc/doxygen/generate.bat
- lib/lwip/doc/doxygen/generate.sh
- lib/lwip/doc/doxygen/lwip.Doxyfile
- lib/lwip/doc/doxygen/main_page.h
- lib/lwip/doc/doxygen/output/index.html
- lib/lwip/doc/mdns.txt
- lib/lwip/doc/mqtt_client.txt
- lib/lwip/doc/ppp.txt
- lib/lwip/doc/rawapi.txt
- lib/lwip/doc/savannah.txt
- lib/lwip/doc/sys_arch.txt
- lib/lwip/src/FILES
- lib/lwip/src/apps/httpd/fs/404.html
- lib/lwip/src/apps/httpd/fs/img/sics.gif
- lib/lwip/src/apps/httpd/fs/index.html
- lib/lwip/src/apps/httpd/fsdata.c
- lib/lwip/src/apps/httpd/httpd_structs.h
- lib/lwip/src/apps/httpd/makefsdata/makefsdata
- lib/lwip/src/apps/httpd/makefsdata/makefsdata.c
- lib/lwip/src/apps/httpd/makefsdata/readme.txt
- lib/lwip/src/include/lwip/apps/FILES
- lib/lwip/src/include/lwip/priv/memp_std.h
- lib/lwip/src/include/netif/etharp.h
- lib/lwip/src/netif/FILES
- lib/lwip/src/netif/ppp/PPPD_FOLLOWUP
- lib/lwip/src/netif/ppp/polarssl/README
- lib/lwip/test/fuzz/README
- lib/lwip/test/fuzz/inputs/arp/arp_req.bin
- lib/lwip/test/fuzz/inputs/icmp/icmp_ping.bin
- lib/lwip/test/fuzz/inputs/ipv6/neighbor_solicitation.bin
- lib/lwip/test/fuzz/inputs/ipv6/router_adv.bin
- lib/lwip/test/fuzz/inputs/tcp/tcp_syn.bin
- lib/lwip/test/fuzz/inputs/udp/udp_port_5000.bin
- lib/lwip/test/fuzz/output_to_pcap.sh
- lib/lwip/test/unit/core/test_mem.c
- lib/lwip/test/unit/core/test_mem.h
- lib/lwip/test/unit/core/test_pbuf.c
- lib/lwip/test/unit/core/test_pbuf.h
- lib/lwip/test/unit/dhcp/test_dhcp.c
- lib/lwip/test/unit/dhcp/test_dhcp.h
- lib/lwip/test/unit/etharp/test_etharp.c
- lib/lwip/test/unit/etharp/test_etharp.h
- lib/lwip/test/unit/ip4/test_ip4.c
- lib/lwip/test/unit/ip4/test_ip4.h
- lib/lwip/test/unit/lwip_check.h
- lib/lwip/test/unit/lwip_unittests.c
- lib/lwip/test/unit/mdns/test_mdns.h
- lib/lwip/test/unit/tcp/tcp_helper.c
- lib/lwip/test/unit/tcp/tcp_helper.h
- lib/lwip/test/unit/tcp/test_tcp.c
- lib/lwip/test/unit/tcp/test_tcp.h
- lib/lwip/test/unit/tcp/test_tcp_oos.c
- lib/lwip/test/unit/tcp/test_tcp_oos.h
- lib/lwip/test/unit/udp/test_udp.c
- lib/lwip/test/unit/udp/test_udp.h
-Copyright: NONE
-License: UNKNOWN
- FIXME
- 
-Files: lib/lwip/src/include/netif/ppp/eap.h
- lib/lwip/src/netif/ppp/eap.c
-Copyright: 1993, Sun Microsystems, Inc.
-  2001, Sun Microsystems, Inc.
-  2004, Sun Microsystems, Inc.
-License: UNKNOWN
  FIXME
 
 Files: lib/nrfx/.gitignore
@@ -1920,113 +2181,6 @@ Copyright: 2011, Texas Instruments Incorporated - http:www.ti.com/
 License: BSD-3-clause
  FIXME
 
-Files:
- lib/lwip/src/Filelists.mk
- lib/lwip/src/api/api_lib.c
- lib/lwip/src/api/api_msg.c
- lib/lwip/src/api/err.c
- lib/lwip/src/api/netbuf.c
- lib/lwip/src/api/sockets.c
- lib/lwip/src/api/tcpip.c
- lib/lwip/src/apps/httpd/fs.c
- lib/lwip/src/apps/httpd/fsdata.h
- lib/lwip/src/apps/httpd/httpd.c
- lib/lwip/src/apps/snmp/snmp_core_priv.h
- lib/lwip/src/apps/snmp/snmp_netconn.c
- lib/lwip/src/apps/snmp/snmp_pbuf_stream.c
- lib/lwip/src/apps/snmp/snmp_pbuf_stream.h
- lib/lwip/src/apps/snmp/snmp_raw.c
- lib/lwip/src/apps/snmp/snmp_scalar.c
- lib/lwip/src/apps/snmp/snmp_table.c
- lib/lwip/src/apps/snmp/snmp_threadsync.c
- lib/lwip/src/apps/snmp/snmp_traps.c
- lib/lwip/src/core/def.c
- lib/lwip/src/core/inet_chksum.c
- lib/lwip/src/core/init.c
- lib/lwip/src/core/ip.c
- lib/lwip/src/core/ipv4/icmp.c
- lib/lwip/src/core/ipv4/ip4.c
- lib/lwip/src/core/ipv4/ip4_addr.c
- lib/lwip/src/core/ipv4/ip4_frag.c
- lib/lwip/src/core/mem.c
- lib/lwip/src/core/memp.c
- lib/lwip/src/core/netif.c
- lib/lwip/src/core/pbuf.c
- lib/lwip/src/core/raw.c
- lib/lwip/src/core/stats.c
- lib/lwip/src/core/sys.c
- lib/lwip/src/core/tcp.c
- lib/lwip/src/core/tcp_in.c
- lib/lwip/src/core/tcp_out.c
- lib/lwip/src/core/timeouts.c
- lib/lwip/src/core/udp.c
- lib/lwip/src/include/lwip/api.h
- lib/lwip/src/include/lwip/apps/fs.h
- lib/lwip/src/include/lwip/apps/httpd.h
- lib/lwip/src/include/lwip/apps/httpd_opts.h
- lib/lwip/src/include/lwip/apps/snmp_mib2.h
- lib/lwip/src/include/lwip/apps/snmp_scalar.h
- lib/lwip/src/include/lwip/apps/snmp_table.h
- lib/lwip/src/include/lwip/apps/snmp_threadsync.h
- lib/lwip/src/include/lwip/arch.h
- lib/lwip/src/include/lwip/debug.h
- lib/lwip/src/include/lwip/def.h
- lib/lwip/src/include/lwip/err.h
- lib/lwip/src/include/lwip/errno.h
- lib/lwip/src/include/lwip/icmp.h
- lib/lwip/src/include/lwip/inet.h
- lib/lwip/src/include/lwip/inet_chksum.h
- lib/lwip/src/include/lwip/init.h
- lib/lwip/src/include/lwip/ip.h
- lib/lwip/src/include/lwip/ip4.h
- lib/lwip/src/include/lwip/ip4_addr.h
- lib/lwip/src/include/lwip/ip4_frag.h
- lib/lwip/src/include/lwip/ip_addr.h
- lib/lwip/src/include/lwip/mem.h
- lib/lwip/src/include/lwip/memp.h
- lib/lwip/src/include/lwip/netbuf.h
- lib/lwip/src/include/lwip/netif.h
- lib/lwip/src/include/lwip/opt.h
- lib/lwip/src/include/lwip/pbuf.h
- lib/lwip/src/include/lwip/priv/api_msg.h
- lib/lwip/src/include/lwip/priv/memp_priv.h
- lib/lwip/src/include/lwip/priv/tcp_priv.h
- lib/lwip/src/include/lwip/priv/tcpip_priv.h
- lib/lwip/src/include/lwip/prot/etharp.h
- lib/lwip/src/include/lwip/prot/ethernet.h
- lib/lwip/src/include/lwip/prot/icmp.h
- lib/lwip/src/include/lwip/prot/icmp6.h
- lib/lwip/src/include/lwip/prot/igmp.h
- lib/lwip/src/include/lwip/prot/ip.h
- lib/lwip/src/include/lwip/prot/ip4.h
- lib/lwip/src/include/lwip/prot/ip6.h
- lib/lwip/src/include/lwip/prot/mld6.h
- lib/lwip/src/include/lwip/prot/nd6.h
- lib/lwip/src/include/lwip/prot/tcp.h
- lib/lwip/src/include/lwip/prot/udp.h
- lib/lwip/src/include/lwip/raw.h
- lib/lwip/src/include/lwip/sio.h
- lib/lwip/src/include/lwip/snmp.h
- lib/lwip/src/include/lwip/sockets.h
- lib/lwip/src/include/lwip/stats.h
- lib/lwip/src/include/lwip/sys.h
- lib/lwip/src/include/lwip/tcp.h
- lib/lwip/src/include/lwip/tcpip.h
- lib/lwip/src/include/lwip/timeouts.h
- lib/lwip/src/include/lwip/udp.h
- lib/lwip/src/include/netif/slipif.h
- lib/lwip/src/netif/ethernetif.c
- lib/lwip/test/fuzz/Makefile
- lib/lwip/test/fuzz/fuzz.c
- lib/lwip/test/fuzz/lwipopts.h
- lib/lwip/test/unit/lwipopts.h
-Copyright: 2001, Swedish Institute of Computer Science.
-  2001-2002, Swedish Institute of Computer Science.
-  2001-2003, Swedish Institute of Computer Science.
-  2001-2004, Swedish Institute of Computer Science.
-License: BSD-3-clause
- FIXME
-
 Files: ports/nrf/boards/arduino_primo/mpconfigboard.h
  ports/nrf/boards/dvk_bl652/mpconfigboard.h
  ports/nrf/boards/feather52/mpconfigboard.h
@@ -2399,32 +2553,6 @@ Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: UNKNOWN
  FIXME
 
-Files: lib/lwip/src/core/ipv6/dhcp6.c
- lib/lwip/src/core/ipv6/ethip6.c
- lib/lwip/src/core/ipv6/icmp6.c
- lib/lwip/src/core/ipv6/inet6.c
- lib/lwip/src/core/ipv6/ip6.c
- lib/lwip/src/core/ipv6/ip6_addr.c
- lib/lwip/src/core/ipv6/ip6_frag.c
- lib/lwip/src/core/ipv6/mld6.c
- lib/lwip/src/core/ipv6/nd6.c
- lib/lwip/src/include/lwip/dhcp6.h
- lib/lwip/src/include/lwip/ethip6.h
- lib/lwip/src/include/lwip/icmp6.h
- lib/lwip/src/include/lwip/ip6.h
- lib/lwip/src/include/lwip/ip6_addr.h
- lib/lwip/src/include/lwip/ip6_frag.h
- lib/lwip/src/include/lwip/mld6.h
- lib/lwip/src/include/lwip/nd6.h
- lib/lwip/src/include/lwip/priv/nd6_priv.h
- lib/lwip/src/include/netif/lowpan6.h
- lib/lwip/src/include/netif/lowpan6_opts.h
- lib/lwip/src/netif/lowpan6.c
-Copyright: 2010, Inico Technologies Ltd.
-  2015, Inico Technologies Ltd.
-License: BSD-3-clause
- FIXME
-
 Files: lib/nrfx/mdk/arm_startup_nrf51.s
  lib/nrfx/mdk/arm_startup_nrf52.s
  lib/nrfx/mdk/arm_startup_nrf52810.s
@@ -2495,42 +2623,6 @@ Copyright: (c) 2014 STMicroelectronics</center></h2>
 License: BSD-3-clause
  FIXME
 
-Files: lib/lwip/src/api/netdb.c
- lib/lwip/src/api/netifapi.c
- lib/lwip/src/apps/netbiosns/netbiosns.c
- lib/lwip/src/include/lwip/apps/netbiosns.h
- lib/lwip/src/include/lwip/apps/netbiosns_opts.h
- lib/lwip/src/include/lwip/netdb.h
- lib/lwip/src/include/lwip/netifapi.h
- lib/lwip/src/include/netif/ppp/ppp_opts.h
- lib/lwip/src/include/netif/ppp/pppapi.h
- lib/lwip/src/include/netif/ppp/pppol2tp.h
- lib/lwip/src/include/netif/ppp/pppos.h
- lib/lwip/src/include/posix/errno.h
- lib/lwip/src/include/posix/netdb.h
- lib/lwip/src/include/posix/sys/socket.h
- lib/lwip/src/netif/ppp/pppapi.c
- lib/lwip/src/netif/ppp/pppol2tp.c
- lib/lwip/src/netif/ppp/pppos.c
-Copyright: NONE
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/snmp/snmp_asn1.c
- lib/lwip/src/apps/snmp/snmp_core.c
- lib/lwip/src/apps/snmp/snmp_mib2.c
- lib/lwip/src/apps/snmp/snmp_mib2_icmp.c
- lib/lwip/src/apps/snmp/snmp_mib2_interfaces.c
- lib/lwip/src/apps/snmp/snmp_mib2_ip.c
- lib/lwip/src/apps/snmp/snmp_mib2_snmp.c
- lib/lwip/src/apps/snmp/snmp_mib2_system.c
- lib/lwip/src/apps/snmp/snmp_mib2_tcp.c
- lib/lwip/src/apps/snmp/snmp_mib2_udp.c
- lib/lwip/src/include/lwip/apps/snmp_core.h
-Copyright: 2006, Axon Digital Design B.V., The Netherlands.
-License: BSD-3-clause
- FIXME
-
 Files: ports/nrf/gccollect.h
  ports/nrf/help.c
  ports/nrf/main.c
@@ -2568,21 +2660,6 @@ Copyright:
 License: BSD-3-clause
  FIXME
 
-Files: lib/lwip/src/include/netif/ppp/polarssl/arc4.h
- lib/lwip/src/include/netif/ppp/polarssl/des.h
- lib/lwip/src/include/netif/ppp/polarssl/md4.h
- lib/lwip/src/include/netif/ppp/polarssl/md5.h
- lib/lwip/src/include/netif/ppp/polarssl/sha1.h
- lib/lwip/src/netif/ppp/polarssl/arc4.c
- lib/lwip/src/netif/ppp/polarssl/des.c
- lib/lwip/src/netif/ppp/polarssl/md4.c
- lib/lwip/src/netif/ppp/polarssl/md5.c
- lib/lwip/src/netif/ppp/polarssl/sha1.c
-Copyright: 2006-2008, Christophe Devine
-  2009, Paul Bakker <polarssl_maintainer at polarssl dot org>
-License: BSD-3-clause
- FIXME
-
 Files: lib/stm32lib/CMSIS/STM32F4xx/Include/stm32f469xx.h
  lib/stm32lib/CMSIS/STM32F4xx/Include/stm32f479xx.h
  lib/stm32lib/CMSIS/STM32L4xx/Include/stm32l433xx.h
@@ -2612,25 +2689,6 @@ Copyright: 2016, Linaro Limited
   2017, Linaro Limited
   2018, Linaro Limited
 License: Expat
- FIXME
-
-Files: lib/lwip/src/include/netif/ppp/ccp.h
- lib/lwip/src/include/netif/ppp/chap-md5.h
- lib/lwip/src/include/netif/ppp/chap-new.h
- lib/lwip/src/include/netif/ppp/mppe.h
- lib/lwip/src/netif/ppp/ccp.c
- lib/lwip/src/netif/ppp/chap-md5.c
- lib/lwip/src/netif/ppp/chap-new.c
- lib/lwip/src/netif/ppp/demand.c
- lib/lwip/src/netif/ppp/multilink.c
- lib/lwip/src/netif/ppp/utils.c
-Copyright: 1994-2002, Paul Mackerras.
-  1996-2002, Paul Mackerras.
-  1999-2002, Paul Mackerras.
-  2000-2002, Paul Mackerras.
-  2003, Paul Mackerras.
-  2008, Paul Mackerras.
-License: UNKNOWN
  FIXME
 
 Files: ports/stm32/boards/B_L475E_IOT01A/stm32l4xx_hal_conf.h
@@ -2674,18 +2732,6 @@ Copyright: 2015-2016 Mark Shannon
 License: Expat
  FIXME
 
-Files: lib/lwip/src/include/netif/ppp/fsm.h
- lib/lwip/src/include/netif/ppp/ipcp.h
- lib/lwip/src/include/netif/ppp/lcp.h
- lib/lwip/src/include/netif/ppp/upap.h
- lib/lwip/src/netif/ppp/fsm.c
- lib/lwip/src/netif/ppp/ipcp.c
- lib/lwip/src/netif/ppp/lcp.c
- lib/lwip/src/netif/ppp/upap.c
-Copyright: 1984-2000, Carnegie Mellon University.
-License: UNKNOWN
- FIXME
-
 Files: ports/cc3200/mpthreadport.c
  ports/cc3200/mpthreadport.h
  ports/unix/mpthreadport.c
@@ -2705,33 +2751,6 @@ Copyright: 2014-2018, SEGGER Microcontroller GmbH
 License: BSD-3-clause
  FIXME
 
-Files: lib/lwip/src/apps/mdns/mdns.c
- lib/lwip/src/include/lwip/apps/mdns.h
- lib/lwip/src/include/lwip/apps/mdns_opts.h
- lib/lwip/src/include/lwip/apps/mdns_priv.h
- lib/lwip/test/unit/mdns/test_mdns.c
-Copyright: 2015, Verisure Innovation AB
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/core/ipv4/etharp.c
- lib/lwip/src/include/lwip/etharp.h
- lib/lwip/src/include/netif/ethernet.h
- lib/lwip/src/netif/ethernet.c
-Copyright: 2001-2003, Swedish Institute of Computer Science.
-  2003-2004, Axon Digital Design B.V., The Netherlands.
-  2003-2004, Leon Woestenberg <leon.woestenberg@axon.tv>
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/snmp/snmpv3.c
- lib/lwip/src/apps/snmp/snmpv3_dummy.c
- lib/lwip/src/apps/snmp/snmpv3_priv.h
- lib/lwip/src/include/lwip/apps/snmpv3.h
-Copyright: 2016, Elias Oenal.
-License: BSD-3-clause
- FIXME
-
 Files: ports/nrf/boards/wt51822_s4at/mpconfigboard.h
  ports/nrf/drivers/flash.c
  ports/nrf/drivers/flash.h
@@ -2747,51 +2766,6 @@ Files: lib/nrfx/mdk/nrf51.svd
  lib/nrfx/mdk/nrf52840.svd
 Copyright: 2010-2018, Nordic Semiconductor ASA
 License: UNKNOWN
- FIXME
-
-Files: lib/lwip/src/core/dns.c
- lib/lwip/src/include/lwip/dns.h
- lib/lwip/src/include/lwip/prot/dns.h
-Copyright: 2002-2003, Adam Dunkels.
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/snmp/snmp_asn1.h
- lib/lwip/src/apps/snmp/snmp_msg.c
- lib/lwip/src/apps/snmp/snmp_msg.h
-Copyright: 2006, Axon Digital Design B.V., The Netherlands.
-  2016, Elias Oenal.
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/core/ipv4/dhcp.c
- lib/lwip/src/include/lwip/dhcp.h
- lib/lwip/src/include/lwip/prot/dhcp.h
-Copyright: 2001-2004, Axon Digital Design B.V., The Netherlands.
-  2001-2004, Leon Woestenberg <leon.woestenberg@gmx.net>
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/tftp/tftp_server.c
- lib/lwip/src/include/lwip/apps/tftp_opts.h
- lib/lwip/src/include/lwip/apps/tftp_server.h
-Copyright: Deltatee Enterprises Ltd. 2013
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/core/ipv4/autoip.c
- lib/lwip/src/include/lwip/autoip.h
- lib/lwip/src/include/lwip/prot/autoip.h
-Copyright: 2007, Dominik Spies <kontakt@dspies.de>
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/sntp/sntp.c
- lib/lwip/src/include/lwip/apps/sntp.h
- lib/lwip/src/include/lwip/apps/sntp_opts.h
-Copyright: 2007-2009, FrÃ©dÃ©ric Bernon, Simon Goldschmidt
-  dÃ©ric Bernon, Simon Goldschmidt
-License: BSD-3-clause
  FIXME
 
 Files: lib/tinytest/README
@@ -2866,13 +2840,6 @@ Copyright: 2007-2010, CodeSourcery, Inc.
 License: UNKNOWN
  FIXME
 
-Files: lib/lwip/src/include/netif/ppp/chap_ms.h
- lib/lwip/src/include/netif/ppp/pppcrypt.h
- lib/lwip/src/netif/ppp/pppcrypt.c
-Copyright: 1995, Eric Rosenquist.
-License: UNKNOWN
- FIXME
-
 Files: extmod/uzlib/tinfgzip.c
  extmod/uzlib/tinflate.c
  extmod/uzlib/tinfzlib.c
@@ -2891,32 +2858,6 @@ Files: ports/zephyr/src/zephyr_getchar.c
  ports/zephyr/src/zephyr_getchar.h
 Copyright: 2016, Linaro
 License: Apache-2.0
- FIXME
-
-Files: lib/lwip/src/include/netif/ppp/magic.h
- lib/lwip/src/netif/ppp/magic.c
-Copyright: 1984-2000, Carnegie Mellon University.
-  1998, Global Election Systems Inc.
-  2003, Marc Boucher, Services Informatiques (MBSI) inc.
-License: BSD-2-clause
- FIXME
-
-Files: lib/lwip/src/core/ipv4/igmp.c
- lib/lwip/src/include/lwip/igmp.h
-Copyright: 2002, CITEL Technologies Ltd.
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/include/lwip/apps/mqtt.h
- lib/lwip/src/include/lwip/apps/mqtt_opts.h
-Copyright: 2016, Erik Andersson
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/lwiperf/lwiperf.c
- lib/lwip/src/include/lwip/apps/lwiperf.h
-Copyright: 2014, Simon Goldschmidt
-License: BSD-3-clause
  FIXME
 
 Files: drivers/wiznet5k/ethernet/w5200/w5200.c
@@ -2949,20 +2890,6 @@ Files: ports/stm32/stm32_it.c
 Copyright: (c) 2014 STMicroelectronics</center></h2>
   2013-2014, Damien P. George
 License: BSD-3-clause and/or Expat
- FIXME
-
-Files: lib/lwip/src/include/netif/ppp/pppoe.h
- lib/lwip/src/netif/ppp/pppoe.c
-Copyright: 2002, The NetBSD Foundation, Inc.
-  2006, Marc Boucher, Services Informatiques (MBSI) inc.
-License: BSD-4-clause
- FIXME
-
-Files: lib/lwip/src/include/netif/ppp/ppp.h
- lib/lwip/src/include/netif/ppp/ppp_impl.h
-Copyright: 1997, Global Election Systems Inc.
-  2003, Marc Boucher, Services Informatiques (MBSI) inc.
-License: BSD~unspecified
  FIXME
 
 Files: ports/nrf/modules/machine/spi.c
@@ -3061,15 +2988,6 @@ Copyright: (c) 2014 STMicroelectronics</center></h2>
 License: UNKNOWN
  FIXME
 
-Files: lib/lwip/src/include/netif/ppp/ipv6cp.h
- lib/lwip/src/netif/ppp/ipv6cp.c
-Copyright: 1984-2000, Carnegie Mellon University.
-  1995-1997, Francis.Dupont@inria.fr, INRIA Rocquencourt, Alain.Durand@imag.fr, IMAG, Jean-Luc.Richier@imag.fr, IMAG-LSR.
-  1998-1999, Francis.Dupont@inria.fr, GIE DYADE, Alain.Durand@imag.fr, IMAG,Jean-Luc.Richier@imag.fr, IMAG-LSR.
-  1999, Tommi Komulainen.
-License: UNKNOWN
- FIXME
-
 Files: lib/oofatfs/ff.c
  lib/oofatfs/ff.h
 Copyright: 2016, ChaN, all right reserved.
@@ -3088,28 +3006,9 @@ Copyright: 2013-2014, Espressif Systems (Wuxi)
 License: UNKNOWN
  FIXME
 
-Files: lib/lwip/src/include/netif/ppp/ecp.h
- lib/lwip/src/netif/ppp/mppe.c
-Copyright: 2002, Google, Inc.
-  2002-2004, Google, Inc.
-License: UNKNOWN
- FIXME
-
 Files: extmod/re1.5/compilecode.c
  extmod/re1.5/dumpcode.c
 Copyright: 2014, Paul Sokolovsky.
-License: UNKNOWN
- FIXME
-
-Files: lib/lwip/src/include/netif/ppp/vj.h
- lib/lwip/src/netif/ppp/vj.c
-Copyright: 1989, Regents of the University of California.
-License: UNKNOWN
- FIXME
-
-Files: lib/lwip/src/include/netif/ppp/eui64.h
- lib/lwip/src/netif/ppp/eui64.c
-Copyright: 1999, Tommi Komulainen.
 License: UNKNOWN
  FIXME
 
@@ -3127,43 +3026,8 @@ Copyright: (c) 2018 STMicroelectronics</center></h2>
 License: BSD-3-clause
  FIXME
 
-Files: lib/lwip/src/include/lwip/apps/snmp.h
-Copyright: 2001-2002, Axon Digital Design B.V., The Netherlands.
-  2001-2002, Leon Woestenberg <leon.woestenberg@axon.tv>
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/netif/ppp/ppp.c
-Copyright: 1989, Carnegie Mellon University.
-  1994, The Australian National University.
-  1997, Global Election Systems Inc.
-  2003, Marc Boucher, Services Informatiques (MBSI) inc.
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/include/lwip/apps/snmp_opts.h
-Copyright: 2015, Dirk Ziegelmeier
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/snmp/snmpv3_mbedtls.c
-Copyright: 2016, Elias Oenal and Dirk Ziegelmeier.
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/apps/mqtt/mqtt.c
-Copyright: 2016, Erik Andersson <erian747@gmail.com>
-License: BSD-3-clause
- FIXME
-
 Files: ports/stm32/boards/startup_stm32f0.s
 Copyright: STMicroelectronics *****END OF FILE***
-License: BSD-3-clause
- FIXME
-
-Files: lib/lwip/src/netif/slipif.c
-Copyright: 2001-2004, Swedish Institute of Computer Science.
-  break;
 License: BSD-3-clause
  FIXME
 
@@ -3176,13 +3040,6 @@ Files: ports/stm32/system_stm32.c
 Copyright: 2013-2014, Damien P. George
   2014, STMicroelectronics</center></h2>
 License: BSD-3-clause and/or Expat
- FIXME
-
-Files: lib/lwip/src/include/netif/ppp/pppdebug.h
-Copyright: 1998, Global Election Systems Inc.
-  2001, Cognizant Pty Ltd.
-  2003, Marc Boucher, Services Informatiques (MBSI) inc.
-License: BSD~unspecified
  FIXME
 
 Files: ports/cc3200/mods/pybpin.h
@@ -3312,12 +3169,6 @@ Copyright: (c) 2014 STMicroelectronics</center></h2>
 License: UNKNOWN
  FIXME
 
-Files: lib/lwip/src/netif/ppp/auth.c
-Copyright: 1984-2000, Carnegie Mellon University.
-  1993-2002, Paul Mackerras.
-License: UNKNOWN
- FIXME
-
 Files: lib/oofatfs/diskio.h
 Copyright: ChaN, 2014 /
 License: UNKNOWN
@@ -3325,18 +3176,6 @@ License: UNKNOWN
 
 Files: lib/oofatfs/option/ccsbcs.c
 Copyright: ChaN, 2015
-License: UNKNOWN
- FIXME
-
-Files: lib/lwip/src/netif/ppp/chap_ms.c
-Copyright: 1995, Eric Rosenquist.
-  2002, Google, Inc.
-License: UNKNOWN
- FIXME
-
-Files: lib/lwip/src/netif/ppp/ecp.c
-Copyright: 1994-2002, Paul Mackerras.
-  2002, Google, Inc.
 License: UNKNOWN
  FIXME
 
@@ -3387,3 +3226,120 @@ Files: drivers/cc3000/src/patch.c
 Copyright: 2013, Texas Instruments Incorporated - http:www.ti.com/
 License: UNKNOWN
  FIXME
+
+License: BSD-like-cm
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+ .
+ 3. The name "Carnegie Mellon University" must not be used to
+    endorse or promote products derived from this software without
+    prior written permission. For permission or any legal
+    details, please contact
+      Office of Technology Transfer
+      Carnegie Mellon University
+      5000 Forbes Avenue
+      Pittsburgh, PA  15213-3890
+      (412) 268-4387, fax: (412) 268-7395
+      tech-transfer@andrew.cmu.edu
+ .
+ 4. Redistributions of any form whatsoever must retain the following
+    acknowledgment:
+    "This product includes software developed by Computing Services
+     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+ .
+ CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+ THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+ FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: BSD-like-paul-m
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. The name(s) of the authors of this software must not be used to
+    endorse or promote products derived from this software without
+    prior written permission.
+ .
+ 3. Redistributions of any form whatsoever must retain the following
+    acknowledgment:
+    "This product includes software developed by Paul Mackerras
+     <paulus@samba.org>".
+ .
+ THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
+ THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: BSD-like-tommi-k
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+ .
+ 3. The name(s) of the authors of this software must not be used to
+    endorse or promote products derived from this software without
+    prior written permission.
+ .
+ 4. Redistributions of any form whatsoever must retain the following
+    acknowledgment:
+    "This product includes software developed by Tommi Komulainen
+     <Tommi.Komulainen@iki.fi>".
+ .
+ THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
+ THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: BSD-like-type-1
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+ .
+ 3. The name(s) of the authors of this software must not be used to
+    endorse or promote products derived from this software without
+    prior written permission.
+ .
+ THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
+ THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
