@@ -46,15 +46,7 @@ def get_version_info_from_git():
     except OSError:
         return None
 
-    # Try to extract MicroPython version from git tag
-    if git_tag.startswith("v"):
-        ver = git_tag[1:].split("-")[0].split(".")
-        if len(ver) == 2:
-            ver.append("0")
-    else:
-        ver = ["0", "0", "1"]
-
-    return git_tag, git_hash, ver
+    return git_tag, git_hash
 
 def get_version_info_from_docs_conf():
     with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "docs", "conf.py")) as f:
@@ -62,10 +54,7 @@ def get_version_info_from_docs_conf():
             if line.startswith("version = release = '"):
                 ver = line.strip().split(" = ")[2].strip("'")
                 git_tag = "v" + ver
-                ver = ver.split(".")
-                if len(ver) == 2:
-                    ver.append("0")
-                return git_tag, "<no hash>", ver
+                return git_tag, "<no hash>"
     return None
 
 def make_version_header(filename):
@@ -74,7 +63,7 @@ def make_version_header(filename):
     if info is None:
         info = get_version_info_from_docs_conf()
 
-    git_tag, git_hash, ver = info
+    git_tag, git_hash = info
 
     # Generate the file with the git and version info
     file_data = """\
@@ -82,12 +71,7 @@ def make_version_header(filename):
 #define MICROPY_GIT_TAG "%s"
 #define MICROPY_GIT_HASH "%s"
 #define MICROPY_BUILD_DATE "%s"
-#define MICROPY_VERSION_MAJOR (%s)
-#define MICROPY_VERSION_MINOR (%s)
-#define MICROPY_VERSION_MICRO (%s)
-#define MICROPY_VERSION_STRING "%s.%s.%s"
-""" % (git_tag, git_hash, datetime.date.today().strftime("%Y-%m-%d"),
-    ver[0], ver[1], ver[2], ver[0], ver[1], ver[2])
+""" % (git_tag, git_hash, datetime.date.today().strftime("%Y-%m-%d"))
 
     # Check if the file contents changed from last time
     write_file = True

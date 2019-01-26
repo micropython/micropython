@@ -7,7 +7,7 @@ from esp import neopixel_write
 class NeoPixel:
     ORDER = (1, 0, 2, 3)
     
-    def __init__(self, pin, n, bpp=3, timing=0):
+    def __init__(self, pin, n, bpp=3, timing=1):
         self.pin = pin
         self.n = n
         self.bpp = bpp

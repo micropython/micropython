@@ -65,8 +65,13 @@
 
 void SystemClock_Config(void);
 
-pyb_thread_t pyb_thread_main;
-fs_user_mount_t fs_user_mount_flash;
+#if MICROPY_PY_THREAD
+STATIC pyb_thread_t pyb_thread_main;
+#endif
+
+#if MICROPY_HW_ENABLE_STORAGE
+STATIC fs_user_mount_t fs_user_mount_flash;
+#endif
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
@@ -268,7 +273,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 }
 #endif
 
-#if MICROPY_HW_HAS_SDCARD
+#if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 STATIC bool init_sdcard_fs(void) {
     bool first_part = true;
     for (int part_num = 1; part_num <= 4; ++part_num) {
@@ -620,7 +625,7 @@ soft_reset:
     #endif
 
     bool mounted_sdcard = false;
-    #if MICROPY_HW_HAS_SDCARD
+    #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
