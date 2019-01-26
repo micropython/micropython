@@ -1730,7 +1730,7 @@ Files: tests/thread/mutate_bytearray.py
  tests/thread/thread_start1.py
  tests/thread/thread_start2.py
 Copyright: 2016, Damien P. George on behalf of Pycom Ltd
-License: UNKNOWN
+License: Expat
  FIXME
 
 Files: tools/dfu.py
