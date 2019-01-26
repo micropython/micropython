@@ -1000,6 +1000,11 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
+Files: lib/tinytest/*
+Copyright: 2009-2012, Nick Mathewson
+License: BSD-3-clause
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
@@ -1628,14 +1633,6 @@ Files: ports/nrf/boards/wt51822_s4at/mpconfigboard.h
 Copyright: 2017, Ayke van Laethem
   2018, Ayke van Laethem
 License: Expat
- FIXME
-
-Files: lib/tinytest/README
- lib/tinytest/tinytest.c
- lib/tinytest/tinytest.h
- lib/tinytest/tinytest_macros.h
-Copyright: 2009-2012, Nick Mathewson
-License: BSD-3-clause
  FIXME
 
 Files: ports/stm32/boards/startup_stm32f4.s
