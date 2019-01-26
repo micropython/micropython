@@ -1409,68 +1409,53 @@ Copyright: 2016, Mark Shannon
 License: Expat
  FIXME
 
-Files: ports/stm32/boards/NUCLEO_H743ZI/stm32h7xx_hal_conf.h
- ports/stm32/boards/NUCLEO_F091RC/stm32f0xx_hal_conf.h
+Files: ports/stm32/boards/*/stm32*.h
  ports/stm32/system_stm32f0.c
-Copyright: 2016-2017, STMicroelectronics
+ ports/stm32/boards/startup_stm32f4.s
+ ports/stm32/boards/startup_stm32f7.s
+ ports/stm32/boards/startup_stm32h7.s
+ ports/stm32/boards/startup_stm32f0.s
+Copyright: 2014-2017 STMicroelectronics
 License: BSD-3-clause
  FIXME
 
 Files: ports/stm32/boards/startup_stm32l4.s
- ports/stm32/usbdev/class/inc/usbd_msc_bot.h
- ports/stm32/usbdev/class/inc/usbd_msc_data.h
- ports/stm32/usbdev/class/inc/usbd_msc_scsi.h
- ports/stm32/usbdev/class/src/usbd_msc_bot.c
- ports/stm32/usbdev/class/src/usbd_msc_data.c
- ports/stm32/usbdev/class/src/usbd_msc_scsi.c
- ports/stm32/usbdev/core/inc/usbd_core.h
- ports/stm32/usbdev/core/inc/usbd_ctlreq.h
- ports/stm32/usbdev/core/inc/usbd_def.h
- ports/stm32/usbdev/core/inc/usbd_ioreq.h
- ports/stm32/usbdev/core/src/usbd_core.c
- ports/stm32/usbdev/core/src/usbd_ctlreq.c
- ports/stm32/usbdev/core/src/usbd_ioreq.c
- ports/stm32/usbhost/Class/AUDIO/Inc/usbh_audio.h
- ports/stm32/usbhost/Class/AUDIO/Src/usbh_audio.c
- ports/stm32/usbhost/Class/CDC/Inc/usbh_cdc.h
- ports/stm32/usbhost/Class/CDC/Src/usbh_cdc.c
- ports/stm32/usbhost/Class/HID/Inc/usbh_hid.h
- ports/stm32/usbhost/Class/HID/Inc/usbh_hid_keybd.h
- ports/stm32/usbhost/Class/HID/Inc/usbh_hid_mouse.h
- ports/stm32/usbhost/Class/HID/Inc/usbh_hid_parser.h
- ports/stm32/usbhost/Class/HID/Inc/usbh_hid_usage.h
- ports/stm32/usbhost/Class/HID/Src/usbh_hid.c
- ports/stm32/usbhost/Class/HID/Src/usbh_hid_keybd.c
- ports/stm32/usbhost/Class/HID/Src/usbh_hid_mouse.c
- ports/stm32/usbhost/Class/HID/Src/usbh_hid_parser.c
- ports/stm32/usbhost/Class/MSC/Inc/usbh_msc.h
- ports/stm32/usbhost/Class/MSC/Inc/usbh_msc_bot.h
- ports/stm32/usbhost/Class/MSC/Inc/usbh_msc_scsi.h
- ports/stm32/usbhost/Class/MSC/Src/usbh_msc.c
- ports/stm32/usbhost/Class/MSC/Src/usbh_msc_bot.c
- ports/stm32/usbhost/Class/MSC/Src/usbh_msc_scsi.c
- ports/stm32/usbhost/Class/MTP/Inc/usbh_mtp.h
- ports/stm32/usbhost/Class/MTP/Inc/usbh_mtp_ptp.h
- ports/stm32/usbhost/Class/MTP/Src/usbh_mtp.c
- ports/stm32/usbhost/Class/MTP/Src/usbh_mtp_ptp.c
- ports/stm32/usbhost/Class/Template/Inc/usbh_template.h
- ports/stm32/usbhost/Class/Template/Src/usbh_template.c
- ports/stm32/usbhost/Core/Inc/usbh_conf_template.h
- ports/stm32/usbhost/Core/Inc/usbh_core.h
- ports/stm32/usbhost/Core/Inc/usbh_ctlreq.h
- ports/stm32/usbhost/Core/Inc/usbh_def.h
- ports/stm32/usbhost/Core/Inc/usbh_ioreq.h
- ports/stm32/usbhost/Core/Inc/usbh_pipes.h
- ports/stm32/usbhost/Core/Src/usbh_conf_template.c
- ports/stm32/usbhost/Core/Src/usbh_core.c
- ports/stm32/usbhost/Core/Src/usbh_ctlreq.c
- ports/stm32/usbhost/Core/Src/usbh_ioreq.c
- ports/stm32/usbhost/Core/Src/usbh_pipes.c
-Copyright: 2011, STMicroelectronics *****END OF FILE***
-  2014, STMicroelectronics</center></h2>
-  2017, STMicroelectronics</center></h2>
-  STMicroelectronics *****END OF FILE***
+ ports/stm32/usbd_cdc_interface.c
+ ports/stm32/usbd_cdc_interface.h
+ ports/stm32/usbd_conf.c
+ ports/stm32/usbd_conf.h
+ ports/stm32/usbd_desc.c
+ ports/stm32/usbd_hid_interface.c
+ ports/stm32/usbd_msc_storage.c
+ ports/stm32/usbdev/*
+ ports/stm32/usbhost/*
+Copyright: 2011, 2014, 2017, STMicroelectronics
+License: MCD-ST-Liberty-V2
+
+Files: ports/stm32/boards/LIMIFROG/board_init.c
+Copyright: 2015, LimiFrog / CYMEYA
+License: Expat
+ FIXME
+
+Files: ports/stm32/pybcdc.inf_template
+Copyright: 2000, Microsoft Corporation
+  2007, Microchip Technology Inc.
 License: UNKNOWN
+ FIXME
+
+Files: ports/stm32/sdram.c
+ ports/stm32/sdram.h
+ tools/pydfu.py
+Copyright: 2013-2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
+License: Expat
+ FIXME
+
+Files: ports/stm32/stm32_it.c
+ ports/stm32/stm32_it.h
+ ports/stm32/system_stm32.c
+Copyright: 2014 STMicroelectronics
+  2013-2014, Damien P. George
+License: BSD-3-clause and Expat
  FIXME
 
 Files: extmod/misc.h
@@ -1612,29 +1597,6 @@ Copyright: 2013, PJRC.COM, LLC.
 License: UNKNOWN
  FIXME
 
-Files: ports/stm32/boards/CERB40/stm32f4xx_hal_conf.h
- ports/stm32/boards/ESPRUINO_PICO/stm32f4xx_hal_conf.h
- ports/stm32/boards/HYDRABUS/stm32f4xx_hal_conf.h
- ports/stm32/boards/NETDUINO_PLUS_2/stm32f4xx_hal_conf.h
- ports/stm32/boards/NUCLEO_F401RE/stm32f4xx_hal_conf.h
- ports/stm32/boards/NUCLEO_F411RE/stm32f4xx_hal_conf.h
- ports/stm32/boards/NUCLEO_F429ZI/stm32f4xx_hal_conf.h
- ports/stm32/boards/NUCLEO_F446RE/stm32f4xx_hal_conf.h
- ports/stm32/boards/OLIMEX_E407/stm32f4xx_hal_conf.h
- ports/stm32/boards/PYBLITEV10/stm32f4xx_hal_conf.h
- ports/stm32/boards/PYBV10/stm32f4xx_hal_conf.h
- ports/stm32/boards/PYBV11/stm32f4xx_hal_conf.h
- ports/stm32/boards/PYBV3/stm32f4xx_hal_conf.h
- ports/stm32/boards/PYBV4/stm32f4xx_hal_conf.h
- ports/stm32/boards/STM32F411DISC/stm32f4xx_hal_conf.h
- ports/stm32/boards/STM32F429DISC/stm32f4xx_hal_conf.h
- ports/stm32/boards/STM32F439/stm32f4xx_hal_conf.h
- ports/stm32/boards/STM32F4DISC/stm32f4xx_hal_conf.h
-Copyright: (c) 2014 STMicroelectronics</center></h2>
-  STMicroelectronics *****END OF FILE***
-License: BSD-3-clause
- FIXME
-
 Files: drivers/wiznet5k/ethernet/socket.c
  drivers/wiznet5k/ethernet/socket.h
  drivers/wiznet5k/ethernet/w5500/w5500.c
@@ -1664,29 +1626,6 @@ Copyright: 2016, Linaro Limited
 License: Expat
  FIXME
 
-Files: ports/stm32/boards/B_L475E_IOT01A/stm32l4xx_hal_conf.h
- ports/stm32/boards/LIMIFROG/stm32l4xx_hal_conf.h
- ports/stm32/boards/NUCLEO_F746ZG/stm32f7xx_hal_conf.h
- ports/stm32/boards/NUCLEO_F767ZI/stm32f7xx_hal_conf.h
- ports/stm32/boards/NUCLEO_L432KC/stm32l4xx_hal_conf.h
- ports/stm32/boards/NUCLEO_L476RG/stm32l4xx_hal_conf.h
- ports/stm32/boards/STM32F769DISC/stm32f7xx_hal_conf.h
- ports/stm32/boards/STM32F7DISC/stm32f7xx_hal_conf.h
- ports/stm32/boards/STM32L476DISC/stm32l4xx_hal_conf.h
-Copyright: (c) 2015 STMicroelectronics</center></h2>
-  STMicroelectronics *****END OF FILE***
-License: BSD-3-clause
- FIXME
-
-Files: ports/stm32/boards/startup_stm32f4.s
- ports/stm32/boards/startup_stm32f7.s
- ports/stm32/boards/startup_stm32h7.s
-Copyright: 2014, STMicroelectronics</center></h2>
-  2017, STMicroelectronics</center></h2>
-  STMicroelectronics *****END OF FILE***
-License: BSD-3-clause
- FIXME
-
 Files: ports/zephyr/machine_pin.c
  ports/zephyr/main.c
  ports/zephyr/modutime.c
@@ -1695,21 +1634,6 @@ Copyright: 2013-2014, Damien P. George
   2016, Linaro Limited
   2016-2017, Linaro Limited
 License: Expat
- FIXME
-
-Files: ports/stm32/sdram.c
- ports/stm32/sdram.h
- tools/pydfu.py
-Copyright: 2013-2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
-License: UNKNOWN
- FIXME
-
-Files: ports/stm32/usbd_conf.c
- ports/stm32/usbd_conf.h
- ports/stm32/usbd_desc.c
-Copyright: (c) 2014 STMicroelectronics</center></h2>
-  STMicroelectronics *****END OF FILE***
-License: UNKNOWN
  FIXME
 
 Files: extmod/uzlib/tinfgzip.c
@@ -1744,24 +1668,11 @@ Copyright:
 License: UNKNOWN
  FIXME
 
-Files: ports/stm32/stm32_it.c
- ports/stm32/stm32_it.h
-Copyright: (c) 2014 STMicroelectronics</center></h2>
-  2013-2014, Damien P. George
-License: BSD-3-clause and/or Expat
- FIXME
-
 Files: py/asmarm.c
  py/asmarm.h
 Copyright: 2013-2014, Damien P. George
   2014, Fabian Vogt
 License: Expat
- FIXME
-
-Files: ports/stm32/usbd_cdc_interface.c
- ports/stm32/usbd_hid_interface.c
-Copyright: (c) 2014 STMicroelectronics</center></h2>
-License: UNKNOWN
  FIXME
 
 Files: extmod/re1.5/compilecode.c
@@ -1776,23 +1687,6 @@ Copyright: 1995-1998, Jean-loup Gailly and Mark Adler
   1998-2003, Joergen Ibsen / Jibz
   2003, Joergen Ibsen / Jibz
 License: Zlib
- FIXME
-
-Files: ports/stm32/boards/STM32L496GDISC/stm32l4xx_hal_conf.h
-Copyright: (c) 2018 STMicroelectronics</center></h2>
-  STMicroelectronics *****END OF FILE***
-License: BSD-3-clause
- FIXME
-
-Files: ports/stm32/boards/startup_stm32f0.s
-Copyright: STMicroelectronics *****END OF FILE***
-License: BSD-3-clause
- FIXME
-
-Files: ports/stm32/system_stm32.c
-Copyright: 2013-2014, Damien P. George
-  2014, STMicroelectronics</center></h2>
-License: BSD-3-clause and/or Expat
  FIXME
 
 Files: extmod/vfs_fat_diskio.c
@@ -1852,25 +1746,9 @@ Copyright: 2010 Antonio Galea
 License: LGPL-3.0
  FIXME
 
-Files: ports/stm32/usbd_cdc_interface.h
-Copyright: (c) 2014 STMicroelectronics</center></h2>
-License: UNKNOWN
- FIXME
-
 Files: extmod/uzlib/tinf.h
 Copyright: 2003, Joergen Ibsen / Jibz
   2014-2016, Paul Sokolovsky
-License: UNKNOWN
- FIXME
-
-Files: ports/stm32/boards/LIMIFROG/board_init.c
-Copyright: 2015, LimiFrog / CYMEYA
-License: UNKNOWN
- FIXME
-
-Files: ports/stm32/pybcdc.inf_template
-Copyright: 2000, Microsoft Corporation
-  2007, Microchip Technology Inc.
 License: UNKNOWN
  FIXME
 
@@ -1887,11 +1765,6 @@ License: UNKNOWN
 
 Files: extmod/re1.5/recursiveloop.c
 Copyright: 2007-2009, Russ Cox.
-License: UNKNOWN
- FIXME
-
-Files: ports/stm32/usbd_msc_storage.c
-Copyright: 2012, STMicroelectronics</center></h2>
 License: UNKNOWN
  FIXME
 
@@ -2011,3 +1884,73 @@ License: BSD-like-type-1
  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: MCD-ST-Liberty-V2
+  MCD-ST Liberty SW License Agreement V2
+  .
+  BY INSTALLING COPYING, DOWNLOADING, ACCESSING OR OTHERWISE USING THIS SOFTWARE
+  OR ANY PART THEREOF (AND THE RELATED DOCUMENTATION) FROM STMICROELECTRONICS
+  INTERNATIONAL N.V, SWISS BRANCH AND/OR ITS AFFILIATED COMPANIES
+  (STMICROELECTRONICS), THE RECIPIENT, ON BEHALF OF HIMSELF OR HERSELF, OR ON
+  BEHALF OF ANY ENTITY BY WHICH SUCH RECIPIENT IS EMPLOYED AND/OR ENGAGED AGREES
+  TO BE BOUND BY THIS SOFTWARE LICENSE AGREEMENT.
+ .
+  Under STMicroelectronics’ intellectual property rights, the redistribution,
+  reproduction and use in source and binary forms of the software or any part
+  thereof, with or without modification, are permitted provided that the
+  following conditions are met:
+  1.  Redistribution of source code (modified or not) must retain any copyright
+      notice, this list of conditions and the disclaimer set forth below as
+      items 10 and 11.
+  2.  Redistributions in binary form, except as embedded into microcontroller or
+      microprocessor device manufactured by or for STMicroelectronics or a
+      software update for such device, must reproduce any copyright notice
+      provided with the binary code, this list of conditions, and the disclaimer
+      set forth below as items 10 and 11, in documentation and/or other
+      materials provided with the distribution.
+  3.  Neither the name of STMicroelectronics nor the names of other contributors
+      to this software may be used to endorse or promote products derived from
+      this software or part thereof without specific written permission.
+  4.  This software or any part thereof, including modifications and/or
+      derivative works of this software, must be used and execute solely and
+      exclusively on or in combination with a microcontroller or microprocessor
+      device manufactured by or for STMicroelectronics.
+  5.  No use, reproduction or redistribution of this software partially or
+      totally may be done in any manner that would subject this software to any
+      Open Source Terms. “Open Source Terms” shall mean any open source license
+      which requires as part of distribution of software that the source code of
+      such software is distributed therewith or otherwise made available, or
+      open source license that substantially complies with the Open Source
+      definition specified at www.opensource.org and any other comparable open
+      source license such as for example GNU General Public License (GPL),
+      Eclipse Public License (EPL), Apache Software License, BSD license or MIT
+      license.
+  6.  STMicroelectronics has no obligation to provide any maintenance, support
+      or updates for the software.
+  7.  The software is and will remain the exclusive property of
+      STMicroelectronics and its licensors. The recipient will not take any
+      action that jeopardizes STMicroelectronics and its licensors' proprietary
+      rights or acquire any rights in the software, except the limited rights
+      specified hereunder.
+  8.  The recipient shall comply with all applicable laws and regulations
+      affecting the use of the software or any part thereof including any
+      applicable export control law or regulation.
+  9.  Redistribution and use of this software or any part thereof other than as
+      permitted under this license is void and will automatically terminate your
+      rights under this license.
+  10. THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
+      AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
+      LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+      PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL
+      PROPERTY RIGHTS, WHICH ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY
+      LAW. IN NO EVENT SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR
+      ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+      DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+      SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+      CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+      LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+      OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+      SUCH DAMAGE.
+  11. EXCEPT AS EXPRESSLY PERMITTED HEREUNDER, NO LICENSE OR OTHER RIGHTS,
+      WHETHER EXPRESS OR IMPLIED, ARE GRANTED UNDER ANY PATENT OR OTHER
+      INTELLECTUAL PROPERTY RIGHTS OF STMICROELECTRONICS OR ANY THIRD PARTY.
