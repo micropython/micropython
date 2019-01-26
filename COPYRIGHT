@@ -30,7 +30,102 @@ Files: examples/embedding/hello-embed.c
 Copyright: 2016, Paul Sokolovsky
 License: Expat
  FIXME
- 
+
+Files: extmod/crypto-algorithms/sha256.c
+ extmod/crypto-algorithms/sha256.h
+Copyright: NONE
+License: UNKNOWN
+ FIXME
+
+Files: extmod/machine_pinbase.c
+ extmod/machine_pinbase.h
+ extmod/machine_signal.c
+ extmod/machine_signal.h
+ extmod/modbtree.c
+ extmod/modubinascii.c
+ extmod/modubinascii.h
+ extmod/moductypes.c
+ extmod/moduhashlib.c
+ extmod/modurandom.c
+ extmod/modure.c
+ extmod/modussl_axtls.c
+ extmod/moduzlib.c
+ extmod/modwebrepl.c
+ extmod/modwebsocket.c
+ extmod/virtpin.c
+ extmod/virtpin.h
+Copyright: 2014-2018, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: extmod/misc.h
+ extmod/modutimeq.c
+ extmod/uos_dupterm.c
+ extmod/utime_mphal.c
+ extmod/utime_mphal.h
+ extmod/vfs_fat.c
+Copyright: 2013-2016, Damien P. George
+  2016-2017, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: extmod/moducryptolib.c
+Copyright: 2017-2018, Paul Sokolovsky
+  2018, Yonatan Goldschmidt
+License: Expat
+ FIXME
+
+Files: extmod/modussl_mbedtls.c
+Copyright: 2016, Linaro Ltd.
+License: Expat
+ FIXME
+
+Files: extmod/modlwip.c
+Copyright: 2013-2014, Damien P. George
+  2015, Galen Hazelwood
+  2015-2017, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: extmod/re1.5/compilecode.c
+ extmod/re1.5/dumpcode.c
+Copyright: 2014, Paul Sokolovsky.
+License: UNKNOWN
+ FIXME
+
+Files: extmod/re1.5/re1.5.h
+Copyright: 2007-2009, Russ Cox.
+  2014, Paul Sokolovsky.
+License: UNKNOWN
+ FIXME
+
+Files: extmod/re1.5/recursiveloop.c
+Copyright: 2007-2009, Russ Cox.
+License: UNKNOWN
+ FIXME
+
+Files: extmod/uzlib/adler32.c
+ extmod/uzlib/crc32.c
+Copyright: 1995-1998, Jean-loup Gailly and Mark Adler
+  1998-2003, Joergen Ibsen / Jibz
+License: Zlib
+ FIXME
+
+Files: extmod/uzlib/tinfgzip.c
+ extmod/uzlib/tinf.h
+ extmod/uzlib/tinflate.c
+ extmod/uzlib/tinfzlib.c
+Copyright: 2003, Joergen Ibsen / Jibz
+  2014-2016, Paul Sokolovsky
+License: Zlib
+ FIXME
+
+Files: extmod/vfs_fat_diskio.c
+Copyright: 2013-2014, Damien P. George
+  2013, ChaN
+License: Expat and FatFs
+ FIXME
+
 Files: lib/axtls/*
 Copyright: 2007-2017 Cameron Rich
 License: BSD-3-clause
@@ -1556,13 +1651,7 @@ Copyright: 2013-2015, Damien P. George
 License: Expat
  FIXME
 
-Files: extmod/misc.h
- extmod/modutimeq.c
- extmod/uos_dupterm.c
- extmod/utime_mphal.c
- extmod/utime_mphal.h
- extmod/vfs_fat.c
- py/bc.c
+Files: py/bc.c
  py/builtinimport.c
  py/frozenmod.c
  py/modstruct.c
@@ -1600,24 +1689,7 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
-Files: extmod/machine_pinbase.c
- extmod/machine_pinbase.h
- extmod/machine_signal.c
- extmod/machine_signal.h
- extmod/modbtree.c
- extmod/modubinascii.c
- extmod/modubinascii.h
- extmod/moductypes.c
- extmod/moduhashlib.c
- extmod/modurandom.c
- extmod/modure.c
- extmod/modussl_axtls.c
- extmod/moduzlib.c
- extmod/modwebrepl.c
- extmod/modwebsocket.c
- extmod/virtpin.c
- extmod/virtpin.h
- py/objdeque.c
+Files: py/objdeque.c
  py/objnamedtuple.h
  py/objpolyiter.c
  py/ringbuf.h
@@ -1679,57 +1751,16 @@ Copyright:
 License: BSD-3-clause
  FIXME
 
-Files: extmod/uzlib/tinfgzip.c
- extmod/uzlib/tinflate.c
- extmod/uzlib/tinfzlib.c
-Copyright: 2003, Joergen Ibsen / Jibz
-  2014-2016, Paul Sokolovsky
-License: Zlib
- FIXME
-
 Files: drivers/wiznet5k/ethernet/w5200/w5200.c
  drivers/wiznet5k/ethernet/w5200/w5200.h
 Copyright: 2013, WIZnet Co., LTD.
 License: BSD-3-clause
  FIXME
 
-Files: extmod/crypto-algorithms/sha256.c
- extmod/crypto-algorithms/sha256.h
-Copyright:
-License: UNKNOWN
- FIXME
-
 Files: py/asmarm.c
  py/asmarm.h
 Copyright: 2013-2014, Damien P. George
   2014, Fabian Vogt
-License: Expat
- FIXME
-
-Files: extmod/re1.5/compilecode.c
- extmod/re1.5/dumpcode.c
-Copyright: 2014, Paul Sokolovsky.
-License: UNKNOWN
- FIXME
-
-Files: extmod/uzlib/adler32.c
- extmod/uzlib/crc32.c
-Copyright: 1995-1998, Jean-loup Gailly and Mark Adler
-  1998-2003, Joergen Ibsen / Jibz
-  2003, Joergen Ibsen / Jibz
-License: Zlib
- FIXME
-
-Files: extmod/vfs_fat_diskio.c
-Copyright: 2013-2014, Damien P. George
-  ChaN, 2013
-License: Expat
- FIXME
-
-Files: extmod/modlwip.c
-Copyright: 2013-2014, Damien P. George
-  2015, Galen Hazelwood
-  2015-2017, Paul Sokolovsky
 License: Expat
  FIXME
 
@@ -1744,17 +1775,6 @@ Copyright: 2015, Josef Gajdusek
 License: Expat
  FIXME
 
-Files: extmod/modussl_mbedtls.c
-Copyright: 2016, Linaro Ltd.
-License: Expat
- FIXME
-
-Files: extmod/moducryptolib.c
-Copyright: 2017-2018, Paul Sokolovsky
-  2018, Yonatan Goldschmidt
-License: Expat
- FIXME
-
 Files: tools/gen-cpydiff.py
 Copyright: 2016, Rami Ali
 License: Expat
@@ -1765,25 +1785,8 @@ Copyright: 2010 Antonio Galea
 License: LGPL-3.0
  FIXME
 
-Files: extmod/uzlib/tinf.h
-Copyright: 2003, Joergen Ibsen / Jibz
-  2014-2016, Paul Sokolovsky
-License: UNKNOWN
- FIXME
-
 Files: tools/upip.py
 Copyright: 2015-2018, Paul Sokolovsky
-License: UNKNOWN
- FIXME
-
-Files: extmod/re1.5/re1.5.h
-Copyright: 2007-2009, Russ Cox.
-  2014, Paul Sokolovsky.
-License: UNKNOWN
- FIXME
-
-Files: extmod/re1.5/recursiveloop.c
-Copyright: 2007-2009, Russ Cox.
 License: UNKNOWN
  FIXME
 
