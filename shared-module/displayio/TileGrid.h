@@ -38,6 +38,7 @@ typedef struct {
     mp_obj_t pixel_shader;
     uint16_t x;
     uint16_t y;
+    uint16_t bitmap_width_in_tiles;
     uint16_t width_in_tiles;
     uint16_t height_in_tiles;
     uint16_t total_width;

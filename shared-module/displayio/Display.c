@@ -30,6 +30,8 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/ParallelBus.h"
 #include "shared-bindings/time/__init__.h"
+#include "shared-module/displayio/__init__.h"
+#include "supervisor/shared/display.h"
 
 #include <stdint.h>
 
@@ -47,6 +49,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->set_column_command = set_column_command;
     self->set_row_command = set_row_command;
     self->write_ram_command = write_ram_command;
+    self->refresh = false;
     self->current_group = NULL;
     self->colstart = colstart;
     self->rowstart = rowstart;
@@ -86,9 +89,19 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         i += 2 + data_size;
     }
     self->end_transaction(self->bus);
+
+    supervisor_start_terminal(width, height);
+
+    // Set the group after initialization otherwise we may send pixels while we delay in
+    // initialization.
+    self->refresh = true;
+    self->current_group = &circuitpython_splash;
 }
 
 void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
+    if (root_group == NULL) {
+        root_group = &circuitpython_splash;
+    }
     self->current_group = root_group;
     common_hal_displayio_display_refresh_soon(self);
 }

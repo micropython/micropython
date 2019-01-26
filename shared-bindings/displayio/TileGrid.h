@@ -32,7 +32,7 @@
 extern const mp_obj_type_t displayio_tilegrid_type;
 
 void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_t bitmap,
-        mp_obj_t pixel_shader, uint16_t width, uint16_t height,
+        uint16_t bitmap_width_in_tiles, mp_obj_t pixel_shader, uint16_t width, uint16_t height,
         uint16_t tile_width, uint16_t tile_height, uint16_t x, uint16_t y, uint8_t default_tile);
 
 void common_hal_displayio_tilegrid_get_position(displayio_tilegrid_t *self, int16_t* x, int16_t* y);

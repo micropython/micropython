@@ -138,9 +138,9 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 
     displayio_tilegrid_t *self = m_new_obj(displayio_tilegrid_t);
     self->base.type = &displayio_tilegrid_type;
-    common_hal_displayio_tilegrid_construct(self, native, args[ARG_pixel_shader].u_obj,
-        args[ARG_width].u_int, args[ARG_height].u_int, tile_width, tile_height, x, y,
-        args[ARG_default_tile].u_int);
+    common_hal_displayio_tilegrid_construct(self, native, bitmap_width / tile_width,
+        args[ARG_pixel_shader].u_obj, args[ARG_width].u_int, args[ARG_height].u_int,
+        tile_width, tile_height, x, y, args[ARG_default_tile].u_int);
     return MP_OBJ_FROM_PTR(self);
 }
 

@@ -133,11 +133,15 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
 //|
 STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_display_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t native_layer = mp_instance_cast_to_native_base(group_in, &displayio_group_type);
-    if (native_layer == MP_OBJ_NULL) {
-        mp_raise_ValueError(translate("Must be a Group subclass."));
+    displayio_group_t* group = NULL;
+    if (group_in != mp_const_none) {
+        mp_obj_t native_layer = mp_instance_cast_to_native_base(group_in, &displayio_group_type);
+        if (native_layer == MP_OBJ_NULL) {
+            mp_raise_ValueError(translate("Must be a Group subclass."));
+        }
+        group = MP_OBJ_TO_PTR(native_layer);
     }
-    displayio_group_t* group = MP_OBJ_TO_PTR(native_layer);
+
     common_hal_displayio_display_show(self, group);
     return mp_const_none;
 }

@@ -33,6 +33,7 @@
 #include "shared-bindings/displayio/Shape.h"
 
 void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_t bitmap,
+        uint16_t bitmap_width_in_tiles,
         mp_obj_t pixel_shader, uint16_t width, uint16_t height,
         uint16_t tile_width, uint16_t tile_height, uint16_t x, uint16_t y, uint8_t default_tile) {
     uint32_t total_tiles = width * height;
@@ -44,8 +45,9 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
         self->tiles = (uint8_t*) m_malloc(total_tiles, false);
         self->inline_tiles = false;
     }
+    self->bitmap_width_in_tiles = bitmap_width_in_tiles;
     self->width_in_tiles = width;
-    self->height_in_tiles = width;
+    self->height_in_tiles = height;
     self->total_width = width * tile_width;
     self->total_height = height * tile_height;
     self->tile_width = tile_width;
@@ -87,10 +89,13 @@ bool displayio_tilegrid_get_pixel(displayio_tilegrid_t *self, int16_t x, int16_t
     if (self->inline_tiles) {
         tiles = (uint8_t*) &self->tiles;
     }
+    if (tiles == NULL) {
+        return false;
+    }
     uint16_t tile_location = (y / self->tile_height) * self->width_in_tiles + x / self->tile_width;
     uint8_t tile = tiles[tile_location];
-    uint16_t tile_x = tile_x = (tile % self->width_in_tiles) * self->tile_width + x % self->tile_width;
-    uint16_t tile_y = tile_y = (tile / self->width_in_tiles) * self->tile_height + y % self->tile_height;
+    uint16_t tile_x = tile_x = (tile % self->bitmap_width_in_tiles) * self->tile_width + x % self->tile_width;
+    uint16_t tile_y = tile_y = (tile / self->bitmap_width_in_tiles) * self->tile_height + y % self->tile_height;
 
     uint32_t value = 0;
     if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
@@ -118,7 +123,11 @@ void common_hal_displayio_textgrid_set_tile(displayio_tilegrid_t *self, uint16_t
     if (self->inline_tiles) {
         tiles = (uint8_t*) &self->tiles;
     }
+    if (tiles == NULL) {
+        return;
+    }
     tiles[y * self->width_in_tiles + x] = tile_index;
+    self->needs_refresh = true;
 }
 
 bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self) {

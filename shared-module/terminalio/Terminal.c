@@ -28,7 +28,7 @@
 
 #include "shared-bindings/displayio/TileGrid.h"
 
-void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t* tilegrid, uint8_t* unicode_characters, uint16_t unicode_characters_len) {
+void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t* tilegrid, const uint8_t* unicode_characters, uint16_t unicode_characters_len) {
     self->cursor_x = 0;
     self->cursor_y = 0;
     self->tilegrid = tilegrid;
@@ -38,6 +38,7 @@ void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, d
 
 size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, const byte *data, size_t len, int *errcode) {
     const byte* i = data;
+    uint16_t start_y = self->cursor_y;
     while (i < data + len) {
         unichar c = utf8_get_char(i);
         i = utf8_next_char(i);
@@ -51,6 +52,40 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                 self->cursor_x = 0;
             } else if (c == '\n') {
                 self->cursor_y++;
+            // Commands below are used by MicroPython in the REPL
+            } else if (c == '\b') {
+                if (self->cursor_x > 0) {
+                    self->cursor_x--;
+                }
+            } else if (c == 0x1b) {
+                if (i[0] == '[') {
+                    if (i[1] == 'K') {
+                        // Clear the rest of the line.
+                        for (uint16_t j = self->cursor_x; j < self->tilegrid->width_in_tiles; j++) {
+                            common_hal_displayio_textgrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
+                        }
+                        i += 2;
+                    } else {
+                        // Handle commands of the form \x1b[####D
+                        uint16_t n = 0;
+                        uint8_t j = 1;
+                        for (; j < 6; j++) {
+                            if ('0' <= i[j] && i[j] <= '9') {
+                                n = n * 10 + (i[j] - '0');
+                            } else {
+                                c = i[j];
+                            }
+                        }
+                        if (c == 'D') {
+                            if (n > self->cursor_x) {
+                                self->cursor_x = 0;
+                            } else {
+                                self->cursor_x -= n;
+                            }
+                            i += j;
+                        }
+                    }
+                }
             }
         } else {
             // Do a linear search of the mapping for unicode.
@@ -72,6 +107,13 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         }
         if (self->cursor_y >= self->tilegrid->height_in_tiles) {
             self->cursor_y %= self->tilegrid->height_in_tiles;
+        }
+        if (self->cursor_y != start_y) {
+            // clear the new row
+            for (uint16_t j = 0; j < self->tilegrid->width_in_tiles; j++) {
+                common_hal_displayio_textgrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
+                start_y = self->cursor_y;
+            }
         }
     }
     return i - data;

@@ -29,6 +29,7 @@
 
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/ParallelBus.h"
 
 typedef struct {
@@ -40,6 +41,8 @@ typedef struct {
 } primary_display_t;
 
 extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
+
+extern displayio_group_t circuitpython_splash;
 
 void displayio_refresh_displays(void);
 void reset_displays(void);

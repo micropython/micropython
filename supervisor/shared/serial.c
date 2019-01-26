@@ -26,6 +26,8 @@
 
 #include <string.h>
 
+#include "supervisor/shared/display.h"
+#include "shared-bindings/terminalio/Terminal.h"
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
 
@@ -48,6 +50,8 @@ bool serial_bytes_available(void) {
 }
 
 void serial_write_substring(const char* text, uint32_t length) {
+    int errcode;
+    common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
     if (!tud_cdc_connected()) {
         return;
     }

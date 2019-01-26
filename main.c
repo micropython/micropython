@@ -209,6 +209,7 @@ bool run_code_py(safe_mode_t safe_mode) {
         #endif
         stop_mp();
         free_memory(heap);
+        supervisor_move_memory();
 
         reset_port();
         reset_board_busses();
@@ -221,6 +222,10 @@ bool run_code_py(safe_mode_t safe_mode) {
     }
 
     // Wait for connection or character.
+    if (!serial_connected_at_start) {
+        serial_write_compressed(translate("\nCode done running. Waiting for USB.\n"));
+    }
+
     bool serial_connected_before_animation = false;
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
@@ -342,6 +347,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         reset_board();
         stop_mp();
         free_memory(heap);
+        supervisor_move_memory();
     }
 }
 
@@ -362,6 +368,7 @@ int run_repl(void) {
     reset_board();
     stop_mp();
     free_memory(heap);
+    supervisor_move_memory();
     autoreload_resume();
     return exit_code;
 }

@@ -105,12 +105,19 @@ bool displayio_group_needs_refresh(displayio_group_t *self) {
     }
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i];
-        if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
+        if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
+            if (displayio_tilegrid_needs_refresh(layer)) {
+                return true;
+            }
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
+            if (displayio_group_needs_refresh(layer)) {
+                return true;
+            }
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
             if (displayio_sprite_needs_refresh(layer)) {
                 return true;
             }
         }
-        // TODO: Tiled layer
     }
     return false;
 }
@@ -119,9 +126,12 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
     self->needs_refresh = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i];
-        if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
+        if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
+            displayio_tilegrid_finish_refresh(layer);
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
+            displayio_group_finish_refresh(layer);
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
             displayio_sprite_finish_refresh(layer);
         }
-        // TODO: Tiled layer
     }
 }

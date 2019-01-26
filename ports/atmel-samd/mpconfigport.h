@@ -467,6 +467,7 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     mp_obj_t rtc_time_source; \
     FLASH_ROOT_POINTERS \
     mp_obj_t gamepad_singleton; \
+    mp_obj_t terminal_tilegrid_tiles; \
     NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);
