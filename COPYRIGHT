@@ -1543,7 +1543,6 @@ License: UNKNOWN
 
 Files: ports/stm32/sdram.c
  ports/stm32/sdram.h
- tools/pydfu.py
 Copyright: 2013-2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
 License: Expat
  FIXME
@@ -1669,7 +1668,6 @@ Files: py/bc.c
  py/sequence.c
  py/stream.c
  py/vm.c
- tools/pyboard.py
 Copyright: 2013-2014, Damien P. George
   2013-2015, Damien P. George
   2013-2016, Damien P. George
@@ -1775,19 +1773,30 @@ Copyright: 2015, Josef Gajdusek
 License: Expat
  FIXME
 
-Files: tools/gen-cpydiff.py
-Copyright: 2016, Rami Ali
-License: Expat
- FIXME
-
 Files: tools/dfu.py
 Copyright: 2010 Antonio Galea
 License: LGPL-3.0
  FIXME
 
+Files: tools/gen-cpydiff.py
+Copyright: 2016, Rami Ali
+License: Expat
+ FIXME
+
+Files: tools/pyboard.py
+Copyright: 2014-2016, Damien P. George
+  2017, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: tools/pydfu.py
+Copyright: 2013-2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
+License: Expat
+ FIXME
+
 Files: tools/upip.py
 Copyright: 2015-2018, Paul Sokolovsky
-License: UNKNOWN
+License: Expat
  FIXME
 
 License: BSD-like-cm
