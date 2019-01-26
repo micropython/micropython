@@ -1293,7 +1293,14 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
+Files: ports/nrf/*
+Copyright: 2015-2018, Glenn Ruben Bakke
+License: Expat
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
+ ports/nrf/drivers/softpwm.h
+ ports/nrf/drivers/ticker.h
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
   Nicholas H. Tollervey (@ntoll)
@@ -1307,76 +1314,106 @@ Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
 License: Expat
  FIXME
 
+Files: ports/nrf/boards/microbit/modules/iters.c
+Copyright: 2015-2016 Mark Shannon
+License: Expat
+ FIXME
+
+Files: ports/nrf/boards/microbit/modules/microbitfont.h
+Copyright: 2016, British Broadcasting Corporation.
+License: Expat
+ FIXME
+
+Files: ports/nrf/boards/microbit/modules/microbitimage.c
+Copyright: 2015, Damien George, Mark Shannon
+License: Expat
+ FIXME
+
+Files: ports/nrf/boards/microbit/modules/microbitconstimagetuples.c
+ ports/nrf/drivers/softpwm.c
+ ports/nrf/drivers/ticker.c
+Copyright: 2015, Mark Shannon
+  2016, Mark Shannon
+License: Expat
+ FIXME
+
+Files: ports/nrf/boards/wt51822_s4at/mpconfigboard.h
+ ports/nrf/drivers/flash.c
+ ports/nrf/drivers/flash.h
+ ports/nrf/modules/random/modrandom.h
+Copyright: 2017, Ayke van Laethem
+  2018, Ayke van Laethem
+License: Expat
+ FIXME
+
+Files: ports/nrf/drivers/bluetooth/ringbuffer.h
+Copyright: 2013, Philip Thrasher
+License: Expat
+ FIXME
+
+Files: ports/nrf/gccollect.h
+ ports/nrf/help.c
+ ports/nrf/main.c
+ ports/nrf/modules/board/led.c
+ ports/nrf/modules/board/led.h
+ ports/nrf/modules/machine/modmachine.c
+ ports/nrf/modules/machine/modmachine.h
+ ports/nrf/modules/machine/pin.c
+ ports/nrf/modules/machine/spi.h
+ ports/nrf/modules/machine/uart.h
+ ports/nrf/pin_defs_nrf5.h
+Copyright: 2013-2016, Damien P. George
+  2015-2018, Glenn Ruben Bakke
+License: Expat
+ FIXME
+
+Files: ports/nrf/modules/machine/rtcounter.c
+ ports/nrf/nrfx_config.h
+Copyright: 2016, Glenn Ruben Bakke
+  2018, Ayke van Laethem
+  2018, Glenn Ruben Bakke
+License: Expat
+ FIXME
+
+Files: ports/nrf/modules/machine/spi.c
+ ports/nrf/modules/machine/uart.c
+Copyright: 2013-2014, Damien P. George
+  2015, Glenn Ruben Bakke
+  2016-2018, Glenn Ruben Bakke
+  2018, Ayke van Laethem
+License: Expat
+ FIXME
+
+Files: ports/nrf/modules/machine/temp.c
+ ports/nrf/modules/machine/temp.h
+Copyright: 2017, Bander F. Ajba
+License: Expat
+ FIXME
+
+Files: ports/nrf/modules/music/musictunes.c
+Copyright: 2015, Damien P. George
+  2015, Nicholas H. Tollervey
+License: Expat
+ FIXME
+
+Files: ports/nrf/modules/random/modrandom.c
+Copyright: 2016, Paul Sokolovsky
+  2016, Damien P. George
+License: Expat
+ FIXME
+
+Files: ports/nrf/modules/uos/microbitfs.c
+ ports/nrf/modules/uos/microbitfs.h
+Copyright: 2016, Mark Shannon
+  2017, Ayke van Laethem
+License: Expat
+ FIXME
+
 Files: ports/stm32/boards/NUCLEO_H743ZI/stm32h7xx_hal_conf.h
  ports/stm32/boards/NUCLEO_F091RC/stm32f0xx_hal_conf.h
  ports/stm32/system_stm32f0.c
 Copyright: 2016-2017, STMicroelectronics
 License: BSD-3-clause
- FIXME
-
-Files: ports/nrf/boards/arduino_primo/mpconfigboard.h
- ports/nrf/boards/dvk_bl652/mpconfigboard.h
- ports/nrf/boards/feather52/mpconfigboard.h
- ports/nrf/boards/microbit/modules/boardmodules.h
- ports/nrf/boards/microbit/modules/modmicrobit.h
- ports/nrf/boards/microbit/mpconfigboard.h
- ports/nrf/boards/pca10000/mpconfigboard.h
- ports/nrf/boards/pca10001/mpconfigboard.h
- ports/nrf/boards/pca10028/mpconfigboard.h
- ports/nrf/boards/pca10031/mpconfigboard.h
- ports/nrf/boards/pca10040/mpconfigboard.h
- ports/nrf/boards/pca10056/mpconfigboard.h
- ports/nrf/device/startup_nrf51822.c
- ports/nrf/device/startup_nrf52832.c
- ports/nrf/device/startup_nrf52840.c
- ports/nrf/drivers/bluetooth/ble_drv.c
- ports/nrf/drivers/bluetooth/ble_drv.h
- ports/nrf/drivers/bluetooth/ble_uart.c
- ports/nrf/drivers/bluetooth/ble_uart.h
- ports/nrf/examples/nrf52_servo.py
- ports/nrf/examples/powerup.py
- ports/nrf/examples/seeed_tft.py
- ports/nrf/examples/ubluepy_temp.py
- ports/nrf/gccollect.c
- ports/nrf/modules/ble/help_sd.h
- ports/nrf/modules/ble/modble.c
- ports/nrf/modules/board/modboard.c
- ports/nrf/modules/machine/adc.c
- ports/nrf/modules/machine/adc.h
- ports/nrf/modules/machine/i2c.c
- ports/nrf/modules/machine/i2c.h
- ports/nrf/modules/machine/pwm.c
- ports/nrf/modules/machine/pwm.h
- ports/nrf/modules/machine/rtcounter.h
- ports/nrf/modules/machine/timer.c
- ports/nrf/modules/machine/timer.h
- ports/nrf/modules/music/musictunes.h
- ports/nrf/modules/ubluepy/modubluepy.c
- ports/nrf/modules/ubluepy/modubluepy.h
- ports/nrf/modules/ubluepy/ubluepy_characteristic.c
- ports/nrf/modules/ubluepy/ubluepy_constants.c
- ports/nrf/modules/ubluepy/ubluepy_delegate.c
- ports/nrf/modules/ubluepy/ubluepy_descriptor.c
- ports/nrf/modules/ubluepy/ubluepy_peripheral.c
- ports/nrf/modules/ubluepy/ubluepy_scan_entry.c
- ports/nrf/modules/ubluepy/ubluepy_scanner.c
- ports/nrf/modules/ubluepy/ubluepy_service.c
- ports/nrf/modules/ubluepy/ubluepy_uuid.c
- ports/nrf/modules/utime/modutime.c
- ports/nrf/mpconfigport.h
- ports/nrf/mphalport.c
- ports/nrf/mphalport.h
- ports/nrf/nrfx_glue.h
- ports/nrf/nrfx_log.h
- ports/nrf/qstrdefsport.h
-Copyright: 2015, Glenn Ruben Bakke
-  2015-2018, Glenn Ruben Bakke
-  2016, Glenn Ruben Bakke
-  2016-2018, Glenn Ruben Bakke
-  2017, Glenn Ruben Bakke
-  2017-2018, Glenn Ruben Bakke
-  2018, Glenn Ruben Bakke
-License: Expat
  FIXME
 
 Files: ports/stm32/boards/startup_stm32l4.s
@@ -1442,7 +1479,6 @@ Files: extmod/misc.h
  extmod/utime_mphal.c
  extmod/utime_mphal.h
  extmod/vfs_fat.c
- ports/nrf/modules/random/modrandom.c
  ports/unix/fdfile.h
  ports/unix/modffi.c
  ports/unix/modos.c
@@ -1599,28 +1635,6 @@ Copyright: (c) 2014 STMicroelectronics</center></h2>
 License: BSD-3-clause
  FIXME
 
-Files: ports/nrf/gccollect.h
- ports/nrf/help.c
- ports/nrf/main.c
- ports/nrf/modules/board/led.c
- ports/nrf/modules/board/led.h
- ports/nrf/modules/machine/modmachine.c
- ports/nrf/modules/machine/modmachine.h
- ports/nrf/modules/machine/pin.c
- ports/nrf/modules/machine/spi.h
- ports/nrf/modules/machine/uart.h
- ports/nrf/pin_defs_nrf5.h
-Copyright: 2013-2014, Damien P. George
-  2013-2015, Damien P. George
-  2013-2016, Damien P. George
-  2015, Glenn Ruben Bakke
-  2015-2018, Glenn Ruben Bakke
-  2016, 2018, Glenn Ruben Bakke
-  2016, Glenn Ruben Bakke
-  2016-2018, Glenn Ruben Bakke
-License: Expat
- FIXME
-
 Files: drivers/wiznet5k/ethernet/socket.c
  drivers/wiznet5k/ethernet/socket.h
  drivers/wiznet5k/ethernet/w5500/w5500.c
@@ -1664,20 +1678,6 @@ Copyright: (c) 2015 STMicroelectronics</center></h2>
 License: BSD-3-clause
  FIXME
 
-Files: ports/nrf/boards/microbit/modules/iters.c
-Copyright: 2015-2016 Mark Shannon
-License: Expat
- FIXME
-
-Files: ports/nrf/boards/wt51822_s4at/mpconfigboard.h
- ports/nrf/drivers/flash.c
- ports/nrf/drivers/flash.h
- ports/nrf/modules/random/modrandom.h
-Copyright: 2017, Ayke van Laethem
-  2018, Ayke van Laethem
-License: Expat
- FIXME
-
 Files: ports/stm32/boards/startup_stm32f4.s
  ports/stm32/boards/startup_stm32f7.s
  ports/stm32/boards/startup_stm32h7.s
@@ -1694,14 +1694,6 @@ Copyright: 2013-2014, Damien P. George
   2013-2015, Damien P. George
   2016, Linaro Limited
   2016-2017, Linaro Limited
-License: Expat
- FIXME
-
-Files: ports/nrf/boards/microbit/modules/microbitconstimagetuples.c
- ports/nrf/drivers/softpwm.c
- ports/nrf/drivers/ticker.c
-Copyright: 2015, Mark Shannon
-  2016, Mark Shannon
 License: Expat
  FIXME
 
@@ -1759,46 +1751,10 @@ Copyright: (c) 2014 STMicroelectronics</center></h2>
 License: BSD-3-clause and/or Expat
  FIXME
 
-Files: ports/nrf/modules/machine/spi.c
- ports/nrf/modules/machine/uart.c
-Copyright: 2013-2014, Damien P. George
-  2015, Glenn Ruben Bakke
-  2016-2018, Glenn Ruben Bakke
-  2018, Ayke van Laethem
-License: Expat
- FIXME
-
-Files: ports/nrf/modules/machine/rtcounter.c
- ports/nrf/nrfx_config.h
-Copyright: 2016, Glenn Ruben Bakke
-  2018, Ayke van Laethem
-  2018, Glenn Ruben Bakke
-License: Expat
- FIXME
-
-Files: ports/nrf/modules/uos/microbitfs.c
- ports/nrf/modules/uos/microbitfs.h
-Copyright: 2016, Mark Shannon
-  2017, Ayke van Laethem
-License: Expat
- FIXME
-
-Files: ports/nrf/modules/machine/temp.c
- ports/nrf/modules/machine/temp.h
-Copyright: 2017, Bander F. Ajba
-License: Expat
- FIXME
-
 Files: py/asmarm.c
  py/asmarm.h
 Copyright: 2013-2014, Damien P. George
   2014, Fabian Vogt
-License: Expat
- FIXME
-
-Files: ports/nrf/drivers/softpwm.h
- ports/nrf/drivers/ticker.h
-Copyright: 2013-2016, The MicroPython-on-micro:bit Developers:
 License: Expat
  FIXME
 
@@ -1839,19 +1795,9 @@ Copyright: 2013-2014, Damien P. George
 License: BSD-3-clause and/or Expat
  FIXME
 
-Files: ports/nrf/boards/microbit/modules/microbitfont.h
-Copyright: 2016, British Broadcasting Corporation.
-License: Expat
- FIXME
-
 Files: extmod/vfs_fat_diskio.c
 Copyright: 2013-2014, Damien P. George
   ChaN, 2013
-License: Expat
- FIXME
-
-Files: ports/nrf/boards/microbit/modules/microbitimage.c
-Copyright: 2015, Damien George, Mark Shannon
 License: Expat
  FIXME
 
@@ -1866,12 +1812,6 @@ Files: ports/zephyr/modmachine.c
 Copyright: 2013-2015, Damien P. George
   2016, Linaro Limited
   2016, Paul Sokolovsky
-License: Expat
- FIXME
-
-Files: ports/nrf/modules/music/musictunes.c
-Copyright: 2015, Damien P. George
-  2015, Nicholas H. Tollervey
 License: Expat
  FIXME
 
@@ -1899,11 +1839,6 @@ License: Expat
 Files: extmod/moducryptolib.c
 Copyright: 2017-2018, Paul Sokolovsky
   2018, Yonatan Goldschmidt
-License: Expat
- FIXME
-
-Files: ports/nrf/drivers/bluetooth/ringbuffer.h
-Copyright: 2013, Philip Thrasher
 License: Expat
  FIXME
 
