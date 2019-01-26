@@ -1512,6 +1512,45 @@ Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: Expat
  FIXME
 
+Files: ports/zephyr/modusocket.c
+ ports/zephyr/modzephyr.c
+ ports/zephyr/modzsensor.c
+ ports/zephyr/mpconfigport.h
+ ports/zephyr/mpconfigport_bin_testsuite.h
+ ports/zephyr/mpconfigport_minimal.h
+ ports/zephyr/src/zephyr_start.c
+ ports/zephyr/uart_core.c
+Copyright: 2016-2018, Linaro Limited
+License: Expat
+ FIXME
+
+Files: ports/zephyr/machine_pin.c
+ ports/zephyr/main.c
+ ports/zephyr/modutime.c
+Copyright: 2013-2015, Damien P. George
+  2016-2017, Linaro Limited
+License: Expat
+ FIXME
+
+Files: ports/zephyr/Makefile.zephyr
+ ports/zephyr/src/Makefile
+Copyright: 2016, Intel Corporation
+License: Apache-2.0
+ FIXME
+
+Files: ports/zephyr/src/zephyr_getchar.c
+ ports/zephyr/src/zephyr_getchar.h
+Copyright: 2016, Linaro
+License: Apache-2.0
+ FIXME
+
+Files: ports/zephyr/modmachine.c
+Copyright: 2013-2015, Damien P. George
+  2016, Linaro Limited
+  2016, Paul Sokolovsky
+License: Expat
+ FIXME
+
 Files: extmod/misc.h
  extmod/modutimeq.c
  extmod/uos_dupterm.c
@@ -1636,48 +1675,12 @@ Copyright:
 License: BSD-3-clause
  FIXME
 
-Files: ports/zephyr/modusocket.c
- ports/zephyr/modzephyr.c
- ports/zephyr/modzsensor.c
- ports/zephyr/mpconfigport.h
- ports/zephyr/mpconfigport_bin_testsuite.h
- ports/zephyr/mpconfigport_minimal.h
- ports/zephyr/src/zephyr_start.c
- ports/zephyr/uart_core.c
-Copyright: 2016, Linaro Limited
-  2017, Linaro Limited
-  2018, Linaro Limited
-License: Expat
- FIXME
-
-Files: ports/zephyr/machine_pin.c
- ports/zephyr/main.c
- ports/zephyr/modutime.c
-Copyright: 2013-2014, Damien P. George
-  2013-2015, Damien P. George
-  2016, Linaro Limited
-  2016-2017, Linaro Limited
-License: Expat
- FIXME
-
 Files: extmod/uzlib/tinfgzip.c
  extmod/uzlib/tinflate.c
  extmod/uzlib/tinfzlib.c
 Copyright: 2003, Joergen Ibsen / Jibz
   2014-2016, Paul Sokolovsky
 License: Zlib
- FIXME
-
-Files: ports/zephyr/Makefile.zephyr
- ports/zephyr/src/Makefile
-Copyright: 2016, Intel Corporation
-License: Apache-2.0
- FIXME
-
-Files: ports/zephyr/src/zephyr_getchar.c
- ports/zephyr/src/zephyr_getchar.h
-Copyright: 2016, Linaro
-License: Apache-2.0
  FIXME
 
 Files: drivers/wiznet5k/ethernet/w5200/w5200.c
@@ -1723,13 +1726,6 @@ Files: extmod/modlwip.c
 Copyright: 2013-2014, Damien P. George
   2015, Galen Hazelwood
   2015-2017, Paul Sokolovsky
-License: Expat
- FIXME
-
-Files: ports/zephyr/modmachine.c
-Copyright: 2013-2015, Damien P. George
-  2016, Linaro Limited
-  2016, Paul Sokolovsky
 License: Expat
  FIXME
 
