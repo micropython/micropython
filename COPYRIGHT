@@ -782,8 +782,7 @@ Files: lib/lwip/src/include/netif/ppp/magic.h
 Copyright: 1984-2000, Carnegie Mellon University.
   1998, Global Election Systems Inc.
   2003, Marc Boucher, Services Informatiques (MBSI) inc.
-License: BSD-2-clause
- FIXME
+License: BSD-like-cm and BSD-like-type-2
 
 Files: lib/lwip/src/include/lwip/apps/mqtt.h
  lib/lwip/src/include/lwip/apps/mqtt_opts.h
@@ -800,24 +799,7 @@ Files: lib/lwip/src/include/netif/ppp/ppp.h
  lib/lwip/src/include/netif/ppp/ppp_impl.h
 Copyright: 1997, Global Election Systems Inc.
   2003, Marc Boucher, Services Informatiques (MBSI) inc.
-License: BSD~unspecified
- The authors hereby grant permission to use, copy, modify, distribute,
- and license this software and its documentation for any purpose, provided
- that existing copyright notices are retained in all copies and that this
- notice and the following disclaimer are included verbatim in any 
- distributions. No written agreement, license, or royalty fee is required
- for any of the authorized uses.
- .
- THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
- IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
- IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+License: BSD-like-type-2
 
 Files: lib/lwip/src/include/netif/ppp/ipv6cp.h
  lib/lwip/src/netif/ppp/ipv6cp.c
@@ -1752,6 +1734,25 @@ License: BSD-like-type-1
  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: BSD-like-type-2
+ The authors hereby grant permission to use, copy, modify, distribute,
+ and license this software and its documentation for any purpose, provided
+ that existing copyright notices are retained in all copies and that this
+ notice and the following disclaimer are included verbatim in any 
+ distributions. No written agreement, license, or royalty fee is required
+ for any of the authorized uses.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+ IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: Expat
  The MIT License (MIT)
