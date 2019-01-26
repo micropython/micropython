@@ -901,6 +901,13 @@ License: permissive3
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+Files: lib/netutils/netutils.c
+ lib/netutils/netutils.h
+Copyright: 2013-2014, Damien P. George
+  2015, Daniel Campora
+License: Expat
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
