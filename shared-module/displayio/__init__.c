@@ -20,6 +20,7 @@ void displayio_refresh_displays(void) {
             continue;
         }
         displayio_display_obj_t* display = &displays[i].display;
+        displayio_display_update_backlight(display);
 
         if (!displayio_display_frame_queued(display)) {
             return;
@@ -82,6 +83,7 @@ void common_hal_displayio_release_displays(void) {
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
     }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        release_display(&displays[i].display);
         displays[i].display.base.type = &mp_type_NoneType;
     }
 
@@ -117,6 +119,7 @@ void reset_displays(void) {
             continue;
         }
         displayio_display_obj_t* display = &displays[i].display;
+        display->auto_brightness = true;
         common_hal_displayio_display_show(display, &circuitpython_splash);
     }
 }

@@ -58,6 +58,26 @@ uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initia
 uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
 #endif
 
+static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
+
+void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+    if (self->timer->is_tc) {
+        never_reset_tc_or_tcc[self->timer->index] += 1;
+    } else {
+        never_reset_tc_or_tcc[TC_INST_NUM + self->timer->index] += 1;
+    }
+
+    never_reset_pin_number(self->pin->number);
+}
+
+void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+    if (self->timer->is_tc) {
+        never_reset_tc_or_tcc[self->timer->index] -= 1;
+    } else {
+        never_reset_tc_or_tcc[TC_INST_NUM + self->timer->index] -= 1;
+    }
+}
+
 void pwmout_reset(void) {
     // Reset all timers
     for (int i = 0; i < TCC_INST_NUM; i++) {
@@ -66,6 +86,9 @@ void pwmout_reset(void) {
     }
     Tcc *tccs[TCC_INST_NUM] = TCC_INSTS;
     for (int i = 0; i < TCC_INST_NUM; i++) {
+        if (never_reset_tc_or_tcc[TC_INST_NUM + i] > 0) {
+            continue;
+        }
         // Disable the module before resetting it.
         if (tccs[i]->CTRLA.bit.ENABLE == 1) {
             tccs[i]->CTRLA.bit.ENABLE = 0;
@@ -81,6 +104,9 @@ void pwmout_reset(void) {
     }
     Tc *tcs[TC_INST_NUM] = TC_INSTS;
     for (int i = 0; i < TC_INST_NUM; i++) {
+        if (never_reset_tc_or_tcc[i] > 0) {
+            continue;
+        }
         tcs[i]->COUNT16.CTRLA.bit.SWRST = 1;
         while (tcs[i]->COUNT16.CTRLA.bit.SWRST == 1) {
         }
@@ -99,11 +125,11 @@ bool channel_ok(const pin_timer_t* t) {
             t->is_tc;
 }
 
-void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
-                                          const mcu_pin_obj_t* pin,
-                                          uint16_t duty,
-                                          uint32_t frequency,
-                                          bool variable_frequency) {
+pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+                                                    const mcu_pin_obj_t* pin,
+                                                    uint16_t duty,
+                                                    uint32_t frequency,
+                                                    bool variable_frequency) {
     self->pin = pin;
     self->variable_frequency = variable_frequency;
 
@@ -113,11 +139,11 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         && pin->timer[2].index >= TCC_INST_NUM
 #endif
         ) {
-        mp_raise_ValueError(translate("Invalid pin"));
+        return PWMOUT_INVALID_PIN;
     }
 
     if (frequency == 0 || frequency > 6000000) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        return PWMOUT_INVALID_FREQUENCY;
     }
 
     // Figure out which timer we are using.
@@ -184,11 +210,9 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
         if (timer == NULL) {
             if (found) {
-                mp_raise_ValueError(translate("All timers for this pin are in use"));
-            } else {
-                mp_raise_RuntimeError(translate("All timers in use"));
+                return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
             }
-            return;
+            return PWMOUT_ALL_TIMERS_IN_USE;
         }
 
         uint8_t resolution = 0;
@@ -259,6 +283,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_E + mux_position);
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    return PWMOUT_OK;
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {

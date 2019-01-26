@@ -87,7 +87,8 @@ void board_init(void) {
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         display_init_sequence,
-        sizeof(display_init_sequence));
+        sizeof(display_init_sequence),
+        &pin_PB31);
 }
 
 bool board_requests_safe_mode(void) {

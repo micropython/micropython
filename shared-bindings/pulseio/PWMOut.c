@@ -108,7 +108,16 @@ STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args
     // create PWM object from the given pin
     pulseio_pwmout_obj_t *self = m_new_obj(pulseio_pwmout_obj_t);
     self->base.type = &pulseio_pwmout_type;
-    common_hal_pulseio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
+    pwmout_result_t result = common_hal_pulseio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
+    if (result == PWMOUT_INVALID_PIN) {
+        mp_raise_ValueError(translate("Invalid pin"));
+    } else if (result == PWMOUT_INVALID_FREQUENCY) {
+        mp_raise_ValueError(translate("Invalid PWM frequency"));
+    } else if (result == PWMOUT_ALL_TIMERS_ON_PIN_IN_USE) {
+        mp_raise_ValueError(translate("All timers for this pin are in use"));
+    } else if (result == PWMOUT_ALL_TIMERS_IN_USE) {
+        mp_raise_RuntimeError(translate("All timers in use"));
+    }
 
     return MP_OBJ_FROM_PTR(self);
 }

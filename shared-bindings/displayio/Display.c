@@ -119,10 +119,11 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         mp_raise_RuntimeError(translate("Too many displays"));
     }
     self->base.type = &displayio_display_type;
+    // TODO(tannewt): Support backlight pin.
     common_hal_displayio_display_construct(self,
             display_bus, args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int,
             args[ARG_color_depth].u_int, args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
-            args[ARG_write_ram_command].u_int, bufinfo.buf, bufinfo.len);
+            args[ARG_write_ram_command].u_int, bufinfo.buf, bufinfo.len, NULL);
 
     return self;
 }

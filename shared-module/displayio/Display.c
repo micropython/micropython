@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/ParallelBus.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/display.h"
@@ -42,7 +43,8 @@
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
         uint16_t color_depth, uint8_t set_column_command, uint8_t set_row_command,
-        uint8_t write_ram_command, uint8_t* init_sequence, uint16_t init_sequence_len) {
+        uint8_t write_ram_command, uint8_t* init_sequence, uint16_t init_sequence_len,
+        const mcu_pin_obj_t* backlight_pin) {
     self->width = width;
     self->height = height;
     self->color_depth = color_depth;
@@ -96,6 +98,19 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     // initialization.
     self->refresh = true;
     self->current_group = &circuitpython_splash;
+
+    if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
+        pwmout_result_t result = common_hal_pulseio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 5000, false);
+        if (result != PWMOUT_OK) {
+            self->backlight_inout.base.type = &digitalio_digitalinout_type;
+            common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
+            never_reset_pin_number(backlight_pin->number);
+        } else {
+            self->backlight_pwm.base.type = &pulseio_pwmout_type;
+            common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
+        }
+    }
+    self->auto_brightness = true;
 }
 
 void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
@@ -157,4 +172,30 @@ void displayio_display_finish_refresh(displayio_display_obj_t* self) {
 bool displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length) {
     self->send(self->bus, false, (uint8_t*) pixels, length * 4);
     return true;
+}
+
+void displayio_display_update_backlight(displayio_display_obj_t* self) {
+    if (!self->auto_brightness || self->updating_backlight) {
+        return;
+    }
+    if (ticks_ms - self->last_backlight_refresh < 100) {
+        return;
+    }
+    self->updating_backlight = true;
+    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
+        common_hal_pulseio_pwmout_set_duty_cycle(&self->backlight_pwm, 0xffff);
+    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
+        common_hal_digitalio_digitalinout_set_value(&self->backlight_inout, true);
+    }
+    self->updating_backlight = false;
+    self->last_backlight_refresh = ticks_ms;
+}
+
+void release_display(displayio_display_obj_t* self) {
+    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
+        common_hal_pulseio_pwmout_reset_ok(&self->backlight_pwm);
+        common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);
+    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
+        common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
+    }
 }
