@@ -908,20 +908,6 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
-Files: ports/nrf/boards/microbit/*
-Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
-  Damien P. George (@dpgeorge)
-  Nicholas H. Tollervey (@ntoll)
-  Matthew Else (@matthewelse)
-  Alan M. Jackson (@alanmjackson)
-  Mark Shannon (@markshannon)
-  Larry Hastings (@larryhastings)
-  Mariia Koroliuk (@marichkakorolyuk)
-  Andrew Mulholland (@gbaman)
-  Joe Glancy (@JoeGlancy)
-License: Expat
- FIXME
-
 Files: lib/nrfx/*
 Copyright: 2010-2018, Nordic Semiconductor ASA.
 License: BSD-3-clause
@@ -974,6 +960,17 @@ License: permissive4
  and need not follow the licensing terms described here, provided that
  the new terms are clearly indicated on the first page of each file where
  they apply.
+
+Files: lib/oofatfs/*
+Copyright: 2014-2016, ChaN.
+License: FatFs
+ FIXME
+
+Files: lib/oofatfs/ffconf.h
+Copyright: 2013-2017, Damien P. George
+  ChaN, 2016
+License: Expat and FatFs
+ FIXME
 
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
@@ -2801,12 +2798,6 @@ Copyright: (c) 2014 STMicroelectronics</center></h2>
 License: UNKNOWN
  FIXME
 
-Files: lib/oofatfs/ff.c
- lib/oofatfs/ff.h
-Copyright: 2016, ChaN, all right reserved.
-License: UNKNOWN
- FIXME
-
 Files: ports/esp8266/hspi_register.h
  ports/esp8266/uart_register.h
 Copyright: 2010-2011, Espressif System
@@ -2882,12 +2873,6 @@ License: Expat
 Files: ports/cc3200/fatfs_port.c
 Copyright: 2013-2017, Damien P. George
   ChaN, 2014, from FatFs option/syscall.c
-License: Expat
- FIXME
-
-Files: lib/oofatfs/ffconf.h
-Copyright: 2013-2017, Damien P. George
-  ChaN, 2016
 License: Expat
  FIXME
 
@@ -2979,16 +2964,6 @@ License: LGPL-3.0
 
 Files: ports/stm32/usbd_cdc_interface.h
 Copyright: (c) 2014 STMicroelectronics</center></h2>
-License: UNKNOWN
- FIXME
-
-Files: lib/oofatfs/diskio.h
-Copyright: ChaN, 2014 /
-License: UNKNOWN
- FIXME
-
-Files: lib/oofatfs/option/ccsbcs.c
-Copyright: ChaN, 2015
 License: UNKNOWN
  FIXME
 
