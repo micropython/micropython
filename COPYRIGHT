@@ -1139,8 +1139,6 @@ License: Expat
 
 Files: ports/cc3200/mpthreadport.c
  ports/cc3200/mpthreadport.h
- ports/unix/mpthreadport.c
- ports/unix/mpthreadport.h
  py/modthread.c
  py/mpthread.h
 Copyright: 2016, Damien P. George on behalf of Pycom Ltd
@@ -1487,17 +1485,39 @@ License: PJRC.COM
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
+Files: ports/unix/fdfile.h
+ ports/unix/modffi.c
+ ports/unix/modos.c
+ ports/unix/moduselect.c
+ ports/unix/modusocket.c
+Copyright: 2013, 2014, Damien P. George
+  2014-2017, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: ports/unix/modjni.c
+ ports/unix/modtermios.c
+Copyright: 2015, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: ports/unix/alloc.c
+Copyright: 2014, Fabian Vogt
+License: Expat
+ FIXME
+
+Files: ports/unix/mpthreadport.c
+ ports/unix/mpthreadport.h
+Copyright: 2016, Damien P. George on behalf of Pycom Ltd
+License: Expat
+ FIXME
+
 Files: extmod/misc.h
  extmod/modutimeq.c
  extmod/uos_dupterm.c
  extmod/utime_mphal.c
  extmod/utime_mphal.h
  extmod/vfs_fat.c
- ports/unix/fdfile.h
- ports/unix/modffi.c
- ports/unix/modos.c
- ports/unix/moduselect.c
- ports/unix/modusocket.c
  py/bc.c
  py/builtinimport.c
  py/frozenmod.c
@@ -1554,8 +1574,6 @@ Files: examples/embedding/hello-embed.c
  extmod/modwebsocket.c
  extmod/virtpin.c
  extmod/virtpin.h
- ports/unix/modjni.c
- ports/unix/modtermios.c
  py/objdeque.c
  py/objnamedtuple.h
  py/objpolyiter.c
@@ -1717,11 +1735,6 @@ License: Expat
 
 Files: docs/license.rst
 Copyright: 2013-2017, Damien P. George, and others
-License: Expat
- FIXME
-
-Files: ports/unix/alloc.c
-Copyright: 2014, Fabian Vogt
 License: Expat
  FIXME
 
