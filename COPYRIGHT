@@ -1762,11 +1762,6 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
-Files: docs/license.rst
-Copyright: 2013-2017, Damien P. George, and others
-License: Expat
- FIXME
-
 Files: py/runtime_utils.c
 Copyright: 2015, Josef Gajdusek
   2015, Paul Sokolovsky
