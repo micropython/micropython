@@ -1010,6 +1010,13 @@ Copyright: 2016-2018, Linaro Limited
 License: Expat
  FIXME
 
+Files: lib/utils/mpirq.c
+ lib/utils/mpirq.h
+Copyright: 2015, Daniel Campora
+  2018 Tobias Badertscher
+License: Expat
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
@@ -1235,9 +1242,7 @@ Copyright: 2011, STMicroelectronics *****END OF FILE***
 License: UNKNOWN
  FIXME
 
-Files: lib/utils/mpirq.c
- lib/utils/mpirq.h
- ports/cc3200/application.lds
+Files: ports/cc3200/application.lds
  ports/cc3200/bootmgr/bootmgr.h
  ports/cc3200/bootmgr/bootmgr.lds
  ports/cc3200/bootmgr/flc.h
