@@ -1239,8 +1239,6 @@ License: Expat
 
 Files: ports/cc3200/mpthreadport.c
  ports/cc3200/mpthreadport.h
- py/modthread.c
- py/mpthread.h
 Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: Expat
  FIXME
@@ -1650,6 +1648,13 @@ Copyright: 2013-2015, Damien P. George
 License: Expat
  FIXME
 
+Files: py/asmarm.c
+ py/asmarm.h
+Copyright: 2013-2014, Damien P. George
+  2014, Fabian Vogt
+License: Expat
+ FIXME
+
 Files: py/bc.c
  py/builtinimport.c
  py/frozenmod.c
@@ -1668,22 +1673,14 @@ Files: py/bc.c
  py/sequence.c
  py/stream.c
  py/vm.c
-Copyright: 2013-2014, Damien P. George
-  2013-2015, Damien P. George
-  2013-2016, Damien P. George
-  2013-2018, Damien P. George
-  2014, Damien P. George
-  2014, Paul Sokolovsky
-  2014-2016, Damien P. George
-  2014-2016, Paul Sokolovsky
+Copyright: 2013-2018, Damien P. George
   2014-2017, Paul Sokolovsky
-  2015, Paul Sokolovsky
-  2015-2017, Paul Sokolovsky
-  2016, Damien P. George
-  2016, Paul Sokolovsky
-  2016-2017, Paul Sokolovsky
-  2017, Damien P. George
-  2017, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: py/modthread.c
+ py/mpthread.h
+Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: Expat
  FIXME
 
@@ -1693,16 +1690,13 @@ Files: py/objdeque.c
  py/ringbuf.h
  py/stackctrl.c
  py/stackctrl.h
-Copyright: 2014, Paul Sokolovsky
-  2014-2016, Paul Sokolovsky
-  2014-2017, Paul Sokolovsky
-  2014-2018, Paul Sokolovsky
+Copyright: 2014-2018, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: py/runtime_utils.c
+Copyright: 2015, Josef Gajdusek
   2015, Paul Sokolovsky
-  2015-2016, Paul Sokolovsky
-  2015-2017, Paul Sokolovsky
-  2016, Paul Sokolovsky
-  2017, Paul Sokolovsky
-  2018, Paul Sokolovsky
 License: Expat
  FIXME
 
@@ -1753,19 +1747,6 @@ Files: drivers/wiznet5k/ethernet/w5200/w5200.c
  drivers/wiznet5k/ethernet/w5200/w5200.h
 Copyright: 2013, WIZnet Co., LTD.
 License: BSD-3-clause
- FIXME
-
-Files: py/asmarm.c
- py/asmarm.h
-Copyright: 2013-2014, Damien P. George
-  2014, Fabian Vogt
-License: Expat
- FIXME
-
-Files: py/runtime_utils.c
-Copyright: 2015, Josef Gajdusek
-  2015, Paul Sokolovsky
-License: Expat
  FIXME
 
 Files: tools/dfu.py
