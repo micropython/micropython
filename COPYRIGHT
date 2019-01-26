@@ -1005,6 +1005,11 @@ Copyright: 2009-2012, Nick Mathewson
 License: BSD-3-clause
  FIXME
 
+Files: lib/upytesthelper/*
+Copyright: 2016-2018, Linaro Limited
+License: Expat
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
@@ -1559,9 +1564,7 @@ Copyright:
 License: BSD-3-clause
  FIXME
 
-Files: lib/upytesthelper/upytesthelper.c
- lib/upytesthelper/upytesthelper.h
- ports/zephyr/modusocket.c
+Files: ports/zephyr/modusocket.c
  ports/zephyr/modzephyr.c
  ports/zephyr/modzsensor.c
  ports/zephyr/mpconfigport.h
