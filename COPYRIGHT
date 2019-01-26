@@ -922,70 +922,72 @@ Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
 License: Expat
  FIXME
 
-Files: lib/nrfx/.gitignore
- lib/nrfx/CHANGELOG.md
- lib/nrfx/README.md
- lib/nrfx/doc/buildfiles/extra_stylesheet.css
- lib/nrfx/doc/buildfiles/favicon.ico
- lib/nrfx/doc/buildfiles/footer.html
- lib/nrfx/doc/buildfiles/header.html
- lib/nrfx/doc/buildfiles/index.html
- lib/nrfx/doc/buildfiles/layout.xml
- lib/nrfx/doc/buildfiles/nordic_small.png
- lib/nrfx/doc/config_dox/nrfx_adc_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_clock_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_comp_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_gpiote_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_i2s_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_lpcomp_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_pdm_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_power_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_ppi_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_prs_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_pwm_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_qdec_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_qspi_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_rng_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_rtc_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_saadc_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_spi_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_spim_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_spis_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_swi_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_systick_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_timer_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_twi_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_twim_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_twis_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_uart_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_uarte_dox_config.h
- lib/nrfx/doc/config_dox/nrfx_wdt_dox_config.h
- lib/nrfx/doc/drv_supp_matrix.dox
- lib/nrfx/doc/generate_html_doc.bat
- lib/nrfx/doc/generate_html_doc.sh
- lib/nrfx/doc/main_page.dox
- lib/nrfx/doc/nrf51_series.dox
- lib/nrfx/doc/nrf52810.dox
- lib/nrfx/doc/nrf52832.dox
- lib/nrfx/doc/nrf52840.dox
- lib/nrfx/doc/nrfx.doxyfile
- lib/nrfx/doc/nrfx_api.dox
- lib/nrfx/mdk/nrf51801_xxab.ld
- lib/nrfx/mdk/nrf51_xxaa.ld
- lib/nrfx/mdk/nrf51_xxab.ld
- lib/nrfx/mdk/nrf51_xxac.ld
- lib/nrfx/mdk/nrf52810_xxaa.ld
- lib/nrfx/mdk/nrf52832_xxab.ld
- lib/nrfx/mdk/nrf52840_xxaa.ld
- lib/nrfx/mdk/nrf52_xxaa.ld
- lib/nrfx/templates/nRF51/nrfx_config.h
- lib/nrfx/templates/nRF52810/nrfx_config.h
- lib/nrfx/templates/nRF52832/nrfx_config.h
- lib/nrfx/templates/nRF52840/nrfx_config.h
-Copyright: NONE
-License: UNKNOWN
+Files: lib/nrfx/*
+Copyright: 2010-2018, Nordic Semiconductor ASA.
+License: BSD-3-clause
  FIXME
 
+Files: lib/nrfx/mdk/arm_startup_nrf51.s
+ lib/nrfx/mdk/arm_startup_nrf52.s
+ lib/nrfx/mdk/arm_startup_nrf52810.s
+ lib/nrfx/mdk/arm_startup_nrf52840.s
+ lib/nrfx/mdk/gcc_startup_nrf51.S
+ lib/nrfx/mdk/gcc_startup_nrf52.S
+ lib/nrfx/mdk/gcc_startup_nrf52810.S
+ lib/nrfx/mdk/gcc_startup_nrf52840.S
+ lib/nrfx/mdk/iar_startup_nrf51.s
+ lib/nrfx/mdk/iar_startup_nrf52.s
+ lib/nrfx/mdk/iar_startup_nrf52810.s
+ lib/nrfx/mdk/iar_startup_nrf52840.s
+ lib/nrfx/mdk/system_nrf51.c
+ lib/nrfx/mdk/system_nrf51.h
+ lib/nrfx/mdk/system_nrf52.c
+ lib/nrfx/mdk/system_nrf52.h
+ lib/nrfx/mdk/system_nrf52810.c
+ lib/nrfx/mdk/system_nrf52810.h
+ lib/nrfx/mdk/system_nrf52840.c
+ lib/nrfx/mdk/system_nrf52840.h
+Copyright: 2009-2018, ARM Limited.
+License: Apache-2.0
+ FIXME
+
+Files: lib/nrfx/mdk/ses_startup_nrf51.s
+ lib/nrfx/mdk/ses_startup_nrf52.s
+ lib/nrfx/mdk/ses_startup_nrf52810.s
+ lib/nrfx/mdk/ses_startup_nrf52840.s
+ lib/nrfx/mdk/ses_startup_nrf_common.s
+Copyright: 2014-2018, SEGGER Microcontroller GmbH
+License: BSD-3-clause
+ FIXME
+
+Files: lib/nrfx/mdk/nrf51_common.ld
+ lib/nrfx/mdk/nrf52_common.ld
+ lib/nrfx/mdk/nrf_common.ld
+Copyright: 2007-2010, CodeSourcery, Inc.
+License: permissive4
+ The authors hereby grant permission to use, copy, modify, distribute,
+ and license this software and its documentation for any purpose, provided
+ that existing copyright notices are retained in all copies and that this
+ notice is included verbatim in any distributions.  No written agreement,
+ license, or royalty fee is required for any of the authorized uses.
+ Modifications to this software may be copyrighted by their authors
+ and need not follow the licensing terms described here, provided that
+ the new terms are clearly indicated on the first page of each file where
+ they apply.
+
+Files: ports/nrf/boards/microbit/*
+Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
+  Damien P. George (@dpgeorge)
+  Nicholas H. Tollervey (@ntoll)
+  Matthew Else (@matthewelse)
+  Alan M. Jackson (@alanmjackson)
+  Mark Shannon (@markshannon)
+  Larry Hastings (@larryhastings)
+  Mariia Koroliuk (@marichkakorolyuk)
+  Andrew Mulholland (@gbaman)
+  Joe Glancy (@JoeGlancy)
+License: Expat
+ FIXME
 
 Files: lib/stm32lib/README.md
 Copyright: NONE
@@ -1915,151 +1917,6 @@ Copyright: (c) 2016 STMicroelectronics</center></h2>
 License: BSD-3-clause
  FIXME
 
-Files:
- lib/nrfx/drivers/include/nrf_bitmask.h
- lib/nrfx/drivers/include/nrfx_adc.h
- lib/nrfx/drivers/include/nrfx_clock.h
- lib/nrfx/drivers/include/nrfx_comp.h
- lib/nrfx/drivers/include/nrfx_gpiote.h
- lib/nrfx/drivers/include/nrfx_i2s.h
- lib/nrfx/drivers/include/nrfx_lpcomp.h
- lib/nrfx/drivers/include/nrfx_pdm.h
- lib/nrfx/drivers/include/nrfx_power.h
- lib/nrfx/drivers/include/nrfx_power_clock.h
- lib/nrfx/drivers/include/nrfx_ppi.h
- lib/nrfx/drivers/include/nrfx_pwm.h
- lib/nrfx/drivers/include/nrfx_qdec.h
- lib/nrfx/drivers/include/nrfx_qspi.h
- lib/nrfx/drivers/include/nrfx_rng.h
- lib/nrfx/drivers/include/nrfx_rtc.h
- lib/nrfx/drivers/include/nrfx_saadc.h
- lib/nrfx/drivers/include/nrfx_spi.h
- lib/nrfx/drivers/include/nrfx_spim.h
- lib/nrfx/drivers/include/nrfx_spis.h
- lib/nrfx/drivers/include/nrfx_swi.h
- lib/nrfx/drivers/include/nrfx_systick.h
- lib/nrfx/drivers/include/nrfx_timer.h
- lib/nrfx/drivers/include/nrfx_twi.h
- lib/nrfx/drivers/include/nrfx_twim.h
- lib/nrfx/drivers/include/nrfx_twis.h
- lib/nrfx/drivers/include/nrfx_uart.h
- lib/nrfx/drivers/include/nrfx_uarte.h
- lib/nrfx/drivers/include/nrfx_wdt.h
- lib/nrfx/drivers/nrfx_common.h
- lib/nrfx/drivers/nrfx_errors.h
- lib/nrfx/drivers/src/nrfx_adc.c
- lib/nrfx/drivers/src/nrfx_clock.c
- lib/nrfx/drivers/src/nrfx_comp.c
- lib/nrfx/drivers/src/nrfx_gpiote.c
- lib/nrfx/drivers/src/nrfx_i2s.c
- lib/nrfx/drivers/src/nrfx_lpcomp.c
- lib/nrfx/drivers/src/nrfx_pdm.c
- lib/nrfx/drivers/src/nrfx_power.c
- lib/nrfx/drivers/src/nrfx_power_clock.c
- lib/nrfx/drivers/src/nrfx_ppi.c
- lib/nrfx/drivers/src/nrfx_pwm.c
- lib/nrfx/drivers/src/nrfx_qdec.c
- lib/nrfx/drivers/src/nrfx_qspi.c
- lib/nrfx/drivers/src/nrfx_rng.c
- lib/nrfx/drivers/src/nrfx_rtc.c
- lib/nrfx/drivers/src/nrfx_saadc.c
- lib/nrfx/drivers/src/nrfx_spi.c
- lib/nrfx/drivers/src/nrfx_spim.c
- lib/nrfx/drivers/src/nrfx_spis.c
- lib/nrfx/drivers/src/nrfx_swi.c
- lib/nrfx/drivers/src/nrfx_systick.c
- lib/nrfx/drivers/src/nrfx_timer.c
- lib/nrfx/drivers/src/nrfx_twi.c
- lib/nrfx/drivers/src/nrfx_twim.c
- lib/nrfx/drivers/src/nrfx_twis.c
- lib/nrfx/drivers/src/nrfx_uart.c
- lib/nrfx/drivers/src/nrfx_uarte.c
- lib/nrfx/drivers/src/nrfx_wdt.c
- lib/nrfx/drivers/src/prs/nrfx_prs.c
- lib/nrfx/drivers/src/prs/nrfx_prs.h
- lib/nrfx/hal/nrf_adc.h
- lib/nrfx/hal/nrf_ccm.h
- lib/nrfx/hal/nrf_clock.h
- lib/nrfx/hal/nrf_comp.h
- lib/nrfx/hal/nrf_ecb.c
- lib/nrfx/hal/nrf_ecb.h
- lib/nrfx/hal/nrf_egu.h
- lib/nrfx/hal/nrf_gpio.h
- lib/nrfx/hal/nrf_gpiote.h
- lib/nrfx/hal/nrf_i2s.h
- lib/nrfx/hal/nrf_lpcomp.h
- lib/nrfx/hal/nrf_nvmc.c
- lib/nrfx/hal/nrf_nvmc.h
- lib/nrfx/hal/nrf_pdm.h
- lib/nrfx/hal/nrf_power.h
- lib/nrfx/hal/nrf_ppi.h
- lib/nrfx/hal/nrf_pwm.h
- lib/nrfx/hal/nrf_qdec.h
- lib/nrfx/hal/nrf_qspi.h
- lib/nrfx/hal/nrf_radio.h
- lib/nrfx/hal/nrf_rng.h
- lib/nrfx/hal/nrf_rtc.h
- lib/nrfx/hal/nrf_saadc.h
- lib/nrfx/hal/nrf_spi.h
- lib/nrfx/hal/nrf_spim.h
- lib/nrfx/hal/nrf_spis.h
- lib/nrfx/hal/nrf_systick.h
- lib/nrfx/hal/nrf_temp.h
- lib/nrfx/hal/nrf_timer.h
- lib/nrfx/hal/nrf_twi.h
- lib/nrfx/hal/nrf_twim.h
- lib/nrfx/hal/nrf_twis.h
- lib/nrfx/hal/nrf_uart.h
- lib/nrfx/hal/nrf_uarte.h
- lib/nrfx/hal/nrf_usbd.h
- lib/nrfx/hal/nrf_wdt.h
- lib/nrfx/mdk/compiler_abstraction.h
- lib/nrfx/mdk/nrf.h
- lib/nrfx/mdk/nrf51.h
- lib/nrfx/mdk/nrf51422_peripherals.h
- lib/nrfx/mdk/nrf51801_peripherals.h
- lib/nrfx/mdk/nrf51802_peripherals.h
- lib/nrfx/mdk/nrf51822_peripherals.h
- lib/nrfx/mdk/nrf51824_peripherals.h
- lib/nrfx/mdk/nrf51_bitfields.h
- lib/nrfx/mdk/nrf51_deprecated.h
- lib/nrfx/mdk/nrf51_peripherals.h
- lib/nrfx/mdk/nrf51_to_nrf52.h
- lib/nrfx/mdk/nrf51_to_nrf52810.h
- lib/nrfx/mdk/nrf51_to_nrf52840.h
- lib/nrfx/mdk/nrf52.h
- lib/nrfx/mdk/nrf52810.h
- lib/nrfx/mdk/nrf52810_bitfields.h
- lib/nrfx/mdk/nrf52810_peripherals.h
- lib/nrfx/mdk/nrf52832_peripherals.h
- lib/nrfx/mdk/nrf52840.h
- lib/nrfx/mdk/nrf52840_bitfields.h
- lib/nrfx/mdk/nrf52840_peripherals.h
- lib/nrfx/mdk/nrf52_bitfields.h
- lib/nrfx/mdk/nrf52_name_change.h
- lib/nrfx/mdk/nrf52_to_nrf52810.h
- lib/nrfx/mdk/nrf52_to_nrf52840.h
- lib/nrfx/mdk/nrf_peripherals.h
- lib/nrfx/mdk/startup_config.h
- lib/nrfx/nrfx.h
- lib/nrfx/soc/nrfx_coredep.h
- lib/nrfx/soc/nrfx_irqs.h
- lib/nrfx/soc/nrfx_irqs_nrf51.h
- lib/nrfx/soc/nrfx_irqs_nrf52810.h
- lib/nrfx/soc/nrfx_irqs_nrf52832.h
- lib/nrfx/soc/nrfx_irqs_nrf52840.h
- lib/nrfx/templates/nrfx_glue.h
- lib/nrfx/templates/nrfx_log.h
-Copyright: 2010-2018, Nordic Semiconductor ASA
-  2012-2018, Nordic Semiconductor ASA
-  2013-2018, Nordic Semiconductor ASA
-  2014-2018, Nordic Semiconductor ASA
-  2015-2018, Nordic Semiconductor ASA
-  2016-2018, Nordic Semiconductor ASA
-  2017-2018, Nordic Semiconductor ASA
-  2018, Nordic Semiconductor ASA
-License: BSD-3-clause
- FIXME
 
 Files: drivers/cc3000/inc/cc3000_common.h
  drivers/cc3000/inc/ccspi.h
@@ -2360,9 +2217,7 @@ Copyright: 2015, Daniel Campora
 License: Expat
  FIXME
 
-Files: lib/netutils/netutils.c
- lib/netutils/netutils.h
- lib/timeutils/timeutils.c
+Files: lib/timeutils/timeutils.c
  lib/timeutils/timeutils.h
  ports/cc3200/boards/LAUNCHXL/mpconfigboard.h
  ports/cc3200/boards/WIPY/mpconfigboard.h
@@ -2560,30 +2415,6 @@ Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: UNKNOWN
  FIXME
 
-Files: lib/nrfx/mdk/arm_startup_nrf51.s
- lib/nrfx/mdk/arm_startup_nrf52.s
- lib/nrfx/mdk/arm_startup_nrf52810.s
- lib/nrfx/mdk/arm_startup_nrf52840.s
- lib/nrfx/mdk/gcc_startup_nrf51.S
- lib/nrfx/mdk/gcc_startup_nrf52.S
- lib/nrfx/mdk/gcc_startup_nrf52810.S
- lib/nrfx/mdk/gcc_startup_nrf52840.S
- lib/nrfx/mdk/iar_startup_nrf51.s
- lib/nrfx/mdk/iar_startup_nrf52.s
- lib/nrfx/mdk/iar_startup_nrf52810.s
- lib/nrfx/mdk/iar_startup_nrf52840.s
- lib/nrfx/mdk/system_nrf51.c
- lib/nrfx/mdk/system_nrf51.h
- lib/nrfx/mdk/system_nrf52.c
- lib/nrfx/mdk/system_nrf52.h
- lib/nrfx/mdk/system_nrf52810.c
- lib/nrfx/mdk/system_nrf52810.h
- lib/nrfx/mdk/system_nrf52840.c
- lib/nrfx/mdk/system_nrf52840.h
-Copyright: 2009-2018, ARM Limited.
-License: Apache-2.0
- FIXME
-
 Files: ports/teensy/core/HardwareSerial.h
  ports/teensy/core/analog.c
  ports/teensy/core/avr_functions.h
@@ -2749,15 +2580,6 @@ Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: Expat
  FIXME
 
-Files: lib/nrfx/mdk/ses_startup_nrf51.s
- lib/nrfx/mdk/ses_startup_nrf52.s
- lib/nrfx/mdk/ses_startup_nrf52810.s
- lib/nrfx/mdk/ses_startup_nrf52840.s
- lib/nrfx/mdk/ses_startup_nrf_common.s
-Copyright: 2014-2018, SEGGER Microcontroller GmbH
-License: BSD-3-clause
- FIXME
-
 Files: ports/nrf/boards/wt51822_s4at/mpconfigboard.h
  ports/nrf/drivers/flash.c
  ports/nrf/drivers/flash.h
@@ -2765,14 +2587,6 @@ Files: ports/nrf/boards/wt51822_s4at/mpconfigboard.h
 Copyright: 2017, Ayke van Laethem
   2018, Ayke van Laethem
 License: Expat
- FIXME
-
-Files: lib/nrfx/mdk/nrf51.svd
- lib/nrfx/mdk/nrf52.svd
- lib/nrfx/mdk/nrf52810.svd
- lib/nrfx/mdk/nrf52840.svd
-Copyright: 2010-2018, Nordic Semiconductor ASA
-License: UNKNOWN
  FIXME
 
 Files: lib/tinytest/README
@@ -2836,14 +2650,6 @@ Files: ports/stm32/usbd_conf.c
  ports/stm32/usbd_desc.c
 Copyright: (c) 2014 STMicroelectronics</center></h2>
   STMicroelectronics *****END OF FILE***
-License: UNKNOWN
- FIXME
-
-Files: lib/nrfx/mdk/nrf51_common.ld
- lib/nrfx/mdk/nrf52_common.ld
- lib/nrfx/mdk/nrf_common.ld
-Copyright: 2007-2010, CodeSourcery, Inc.
-  ed by their authors
 License: UNKNOWN
  FIXME
 
