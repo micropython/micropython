@@ -113,7 +113,6 @@ Files: extmod/vfs_fat_diskio.c
 Copyright: 2013-2014, Damien P. George
   2013, ChaN
 License: Expat and FatFs
- FIXME
 
 Files: lib/axtls/*
 Copyright: 2007-2017 Cameron Rich
@@ -991,13 +990,11 @@ License: permissive4
 Files: lib/oofatfs/*
 Copyright: 2014-2016, ChaN.
 License: FatFs
- FIXME
 
 Files: lib/oofatfs/ffconf.h
 Copyright: 2013-2017, Damien P. George
   ChaN, 2016
 License: Expat and FatFs
- FIXME
 
 Files: lib/stm32lib/*
 Copyright: 2016-2017 STMicroelectronics
@@ -1125,7 +1122,6 @@ Files: ports/cc3200/fatfs_port.c
 Copyright: 2013-2017, Damien P. George.
   2014, ChaN.
 License: Expat and FatFs
- FIXME
 
 Files: ports/cc3200/mods/modubinascii.c
  ports/cc3200/mods/moduhashlib.c
@@ -1764,6 +1760,19 @@ License: Expat
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
+
+License: FatFs
+ FatFs module is an open source software. Redistribution and use of FatFs in
+ source and binary forms, with or without modification, are permitted provided
+ that the following condition is met:
+ .
+ 1. Redistributions of source code must retain the above copyright notice,
+    this condition and the following disclaimer.
+ .
+ This software is provided by the copyright holder and contributors "AS IS"
+ and any warranties related to this software are DISCLAIMED.
+ The copyright owner or contributors be NOT LIABLE for any damages caused
+ by use of this software.
 
 License: ISC
  The ISC License (ISC)
