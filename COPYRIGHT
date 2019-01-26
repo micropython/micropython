@@ -26,6 +26,11 @@ Copyright: 1996-2001, Internet Software Consortium.
 License: ISC
  FIXME
 
+Files: drivers/wiznet5k/*
+Copyright: 2013, WIZnet Co., LTD.
+License: BSD-3-clause
+ FIXME
+
 Files: examples/embedding/hello-embed.c
 Copyright: 2016, Paul Sokolovsky
 License: Expat
@@ -1726,27 +1731,6 @@ Files: tests/thread/mutate_bytearray.py
  tests/thread/thread_start2.py
 Copyright: 2016, Damien P. George on behalf of Pycom Ltd
 License: UNKNOWN
- FIXME
-
-Files: drivers/wiznet5k/ethernet/socket.c
- drivers/wiznet5k/ethernet/socket.h
- drivers/wiznet5k/ethernet/w5500/w5500.c
- drivers/wiznet5k/ethernet/w5500/w5500.h
- drivers/wiznet5k/ethernet/wizchip_conf.c
- drivers/wiznet5k/ethernet/wizchip_conf.h
- drivers/wiznet5k/internet/dhcp/dhcp.c
- drivers/wiznet5k/internet/dhcp/dhcp.h
- drivers/wiznet5k/internet/dns/dns.c
- drivers/wiznet5k/internet/dns/dns.h
-Copyright:
-  Copyright (c) 2013, WIZnet Co., LTD.
-License: BSD-3-clause
- FIXME
-
-Files: drivers/wiznet5k/ethernet/w5200/w5200.c
- drivers/wiznet5k/ethernet/w5200/w5200.h
-Copyright: 2013, WIZnet Co., LTD.
-License: BSD-3-clause
  FIXME
 
 Files: tools/dfu.py
