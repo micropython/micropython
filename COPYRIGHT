@@ -9,6 +9,23 @@ Copyright: 2013-2018 Damien P. George
 License: Expat
  FIXME
 
+Files: drivers/cc3000/*
+ drivers/cc3100/*
+Copyright: 2011, 2014 Texas Instruments Incorporated - http:www.ti.com/
+License: BSD-3-clause
+ FIXME
+
+Files: drivers/cc3000/src/patch.c
+Copyright: 2013, Texas Instruments Incorporated - http:www.ti.com/
+License: UNKNOWN
+ FIXME
+
+Files: drivers/cc3000/src/inet_ntop.c
+ drivers/cc3000/src/inet_pton.c
+Copyright: 1996-2001, Internet Software Consortium.
+License: ISC
+ FIXME
+
 Files: lib/axtls/*
 Copyright: 2007-2017 Cameron Rich
 License: BSD-3-clause
@@ -886,13 +903,13 @@ License: permissive3
  The authors hereby grant permission to use, copy, modify, distribute,
  and license this software and its documentation for any purpose, provided
  that existing copyright notices are retained in all copies and that this
- notice and the following disclaimer are included verbatim in any 
+ notice and the following disclaimer are included verbatim in any
  distributions. No written agreement, license, or royalty fee is required
  for any of the authorized uses.
  .
  THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
@@ -998,52 +1015,7 @@ Copyright: 2016-2017, STMicroelectronics
 License: BSD-3-clause
  FIXME
 
-Files: drivers/cc3000/inc/cc3000_common.h
- drivers/cc3000/inc/ccspi.h
- drivers/cc3000/inc/data_types.h
- drivers/cc3000/inc/evnt_handler.h
- drivers/cc3000/inc/hci.h
- drivers/cc3000/inc/host_driver_version.h
- drivers/cc3000/inc/netapp.h
- drivers/cc3000/inc/nvmem.h
- drivers/cc3000/inc/security.h
- drivers/cc3000/inc/socket.h
- drivers/cc3000/inc/wlan.h
- drivers/cc3000/src/cc3000_common.c
- drivers/cc3000/src/ccspi.c
- drivers/cc3000/src/evnt_handler.c
- drivers/cc3000/src/hci.c
- drivers/cc3000/src/netapp.c
- drivers/cc3000/src/nvmem.c
- drivers/cc3000/src/security.c
- drivers/cc3000/src/socket.c
- drivers/cc3000/src/wlan.c
- drivers/cc3100/inc/device.h
- drivers/cc3100/inc/driver.h
- drivers/cc3100/inc/flowcont.h
- drivers/cc3100/inc/fs.h
- drivers/cc3100/inc/netapp.h
- drivers/cc3100/inc/netcfg.h
- drivers/cc3100/inc/nonos.h
- drivers/cc3100/inc/objInclusion.h
- drivers/cc3100/inc/protocol.h
- drivers/cc3100/inc/simplelink.h
- drivers/cc3100/inc/socket.h
- drivers/cc3100/inc/spawn.h
- drivers/cc3100/inc/trace.h
- drivers/cc3100/inc/wlan.h
- drivers/cc3100/inc/wlan_rx_filters.h
- drivers/cc3100/src/device.c
- drivers/cc3100/src/driver.c
- drivers/cc3100/src/flowcont.c
- drivers/cc3100/src/fs.c
- drivers/cc3100/src/netapp.c
- drivers/cc3100/src/netcfg.c
- drivers/cc3100/src/nonos.c
- drivers/cc3100/src/socket.c
- drivers/cc3100/src/spawn.c
- drivers/cc3100/src/wlan.c
- ports/cc3200/bootmgr/sl/user.h
+Files: ports/cc3200/bootmgr/sl/user.h
  ports/cc3200/fatfs/src/drivers/sd_diskio.c
  ports/cc3200/fatfs/src/drivers/stdcmd.h
  ports/cc3200/hal/aes.c
@@ -1840,13 +1812,6 @@ Copyright: 2013-2016, The MicroPython-on-micro:bit Developers:
 License: Expat
  FIXME
 
-Files: drivers/cc3000/src/inet_ntop.c
- drivers/cc3000/src/inet_pton.c
-Copyright: 1996, Internet Software Consortium.
-  1996-2001, Internet Software Consortium.
-License: ISC
- FIXME
-
 Files: ports/esp32/espneopixel.c
  ports/esp8266/espneopixel.c
 Copyright:
@@ -2068,11 +2033,6 @@ License: UNKNOWN
 
 Files: ports/stm32/usbd_msc_storage.c
 Copyright: 2012, STMicroelectronics</center></h2>
-License: UNKNOWN
- FIXME
-
-Files: drivers/cc3000/src/patch.c
-Copyright: 2013, Texas Instruments Incorporated - http:www.ti.com/
 License: UNKNOWN
  FIXME
 
