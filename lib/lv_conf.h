@@ -20,7 +20,7 @@
 #define LV_MEM_ATTR                         /*Complier prefix for big array declaration*/
 #define LV_MEM_AUTO_DEFRAG  1               /*Automatically defrag on free*/
 #else       /*LV_MEM_CUSTOM*/
-#define LV_MEM_CUSTOM_INCLUDE <lv_mp_mem_custom_include.h>   /*Header for the dynamic memory function*/
+#define LV_MEM_CUSTOM_INCLUDE "lv_mp_mem_custom_include.h"   /*Header for the dynamic memory function*/
 #define LV_MEM_CUSTOM_ALLOC     m_malloc       /*Wrapper to malloc*/
 #define LV_MEM_CUSTOM_FREE      m_free         /*Wrapper to free*/
 #endif     /*LV_MEM_CUSTOM*/

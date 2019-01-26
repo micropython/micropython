@@ -122,7 +122,7 @@ endif
 #LittlevGL
 LVGL_BINDING_DIR = $(TOP)/lib/lv_bindings
 LVGL_DIR = $(LVGL_BINDING_DIR)/lvgl
-INC += -I$(LVGL_DIR)
+INC += -I$(LVGL_DIR) -I$(LVGL_BINDING_DIR)/micropython/include
 ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f) $(TOP)/lib/lv_conf.h
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
 QSTR_GLOBAL_DEPENDENCIES += $(LVGL_MPY)
