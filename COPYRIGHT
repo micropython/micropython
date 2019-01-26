@@ -8,7 +8,6 @@ Files: drivers/cc3000/*
  drivers/cc3100/*
 Copyright: 2011, 2014 Texas Instruments Incorporated - http:www.ti.com/
 License: BSD-3-clause
- FIXME
 
 Files: drivers/cc3000/src/patch.c
 Copyright: 2013, Texas Instruments Incorporated - http:www.ti.com/
@@ -24,7 +23,6 @@ License: ISC
 Files: drivers/wiznet5k/*
 Copyright: 2013, WIZnet Co., LTD.
 License: BSD-3-clause
- FIXME
 
 Files: examples/embedding/hello-embed.c
 Copyright: 2016, Paul Sokolovsky
@@ -123,7 +121,6 @@ License: Expat and FatFs
 Files: lib/axtls/*
 Copyright: 2007-2017 Cameron Rich
 License: BSD-3-clause
- FIXME
 
 Files: lib/axtls/config/scripts/config/*
 Copyright: 2002, Roman Zippel <zippel@linux-m68k.org>
@@ -149,12 +146,10 @@ License: GPL-2
 Files: lib/axtls/www/index.html
 Copyright: 2004-2006, Osmosoft Limited
 License: BSD-3-clause
- FIXME
 
 Files: lib/axtls/axtlswrap/axtlswrap.c
 Copyright: 2009, Steve Bennett
 License: BSD-3-clause
- FIXME
 
 Files: lib/axtls/config/scripts/config/mkconfigs
 Copyright: 2002, Al Stone <ahs3 at fc.hp.com>
@@ -179,7 +174,6 @@ License: GPL-2.0
 Files: lib/cmsis/*
 Copyright: 2009-2015, ARM LIMITED
 License: BSD-3-clause
- FIXME
 
 Files: lib/berkeley-db-1.xx/*
 Copyright: 1987-1994, The Regents of the University of California.
@@ -627,13 +621,11 @@ License: Expat
 Files: lib/lwip/*
 Copyright: 2001-2004 Swedish Institute of Computer Science.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/lwiperf/lwiperf.c
  lib/lwip/src/include/lwip/apps/lwiperf.h
 Copyright: 2014, Simon Goldschmidt
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/mdns/mdns.c
  lib/lwip/src/include/lwip/apps/mdns.h
@@ -642,12 +634,10 @@ Files: lib/lwip/src/apps/mdns/mdns.c
  lib/lwip/test/unit/mdns/test_mdns.c
 Copyright: 2015, Verisure Innovation AB
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/mqtt/mqtt.c
 Copyright: 2016, Erik Andersson <erian747@gmail.com>
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/snmp/snmp_asn1.c
  lib/lwip/src/apps/snmp/snmp_core.c
@@ -662,7 +652,6 @@ Files: lib/lwip/src/apps/snmp/snmp_asn1.c
  lib/lwip/src/include/lwip/apps/snmp_core.h
 Copyright: 2006, Axon Digital Design B.V., The Netherlands.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/snmp/snmpv3.c
  lib/lwip/src/apps/snmp/snmpv3_dummy.c
@@ -670,7 +659,6 @@ Files: lib/lwip/src/apps/snmp/snmpv3.c
  lib/lwip/src/include/lwip/apps/snmpv3.h
 Copyright: 2016, Elias Oenal.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/snmp/snmp_asn1.h
  lib/lwip/src/apps/snmp/snmp_msg.c
@@ -678,40 +666,34 @@ Files: lib/lwip/src/apps/snmp/snmp_asn1.h
 Copyright: 2006, Axon Digital Design B.V., The Netherlands.
   2016, Elias Oenal.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/snmp/snmpv3_mbedtls.c
 Copyright: 2016, Elias Oenal and Dirk Ziegelmeier.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/sntp/sntp.c
  lib/lwip/src/include/lwip/apps/sntp.h
  lib/lwip/src/include/lwip/apps/sntp_opts.h
 Copyright: 2007-2009, Frédéric Bernon, Simon Goldschmidt
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/apps/tftp/tftp_server.c
  lib/lwip/src/include/lwip/apps/tftp_opts.h
  lib/lwip/src/include/lwip/apps/tftp_server.h
 Copyright: Deltatee Enterprises Ltd. 2013
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/core/dns.c
  lib/lwip/src/include/lwip/dns.h
  lib/lwip/src/include/lwip/prot/dns.h
 Copyright: 2002-2003, Adam Dunkels.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/core/ipv4/autoip.c
  lib/lwip/src/include/lwip/autoip.h
  lib/lwip/src/include/lwip/prot/autoip.h
 Copyright: 2007, Dominik Spies <kontakt@dspies.de>
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/core/ipv4/dhcp.c
  lib/lwip/src/include/lwip/dhcp.h
@@ -719,7 +701,6 @@ Files: lib/lwip/src/core/ipv4/dhcp.c
 Copyright: 2001-2004, Axon Digital Design B.V., The Netherlands.
   2001-2004, Leon Woestenberg <leon.woestenberg@gmx.net>
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/core/ipv4/etharp.c
  lib/lwip/src/include/lwip/etharp.h
@@ -729,13 +710,11 @@ Copyright: 2001-2003, Swedish Institute of Computer Science.
   2003-2004, Axon Digital Design B.V., The Netherlands.
   2003-2004, Leon Woestenberg <leon.woestenberg@axon.tv>
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/core/ipv4/igmp.c
  lib/lwip/src/include/lwip/igmp.h
 Copyright: 2002, CITEL Technologies Ltd.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/core/ipv6/dhcp6.c
  lib/lwip/src/core/ipv6/ethip6.c
@@ -761,7 +740,6 @@ Files: lib/lwip/src/core/ipv6/dhcp6.c
 Copyright: 2010, Inico Technologies Ltd.
   2015, Inico Technologies Ltd.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/include/netif/ppp/eap.h
  lib/lwip/src/netif/ppp/eap.c
@@ -791,7 +769,6 @@ Files: lib/lwip/src/include/netif/ppp/polarssl/arc4.h
 Copyright: 2006-2008, Christophe Devine
   2009, Paul Bakker <polarssl_maintainer at polarssl dot org>
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/include/netif/ppp/ccp.h
  lib/lwip/src/include/netif/ppp/chap-md5.h
@@ -835,7 +812,6 @@ Files: lib/lwip/src/include/lwip/apps/mqtt.h
  lib/lwip/src/include/lwip/apps/mqtt_opts.h
 Copyright: 2016, Erik Andersson
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/include/netif/ppp/pppoe.h
  lib/lwip/src/netif/ppp/pppoe.c
@@ -908,12 +884,10 @@ Files: lib/lwip/src/include/lwip/apps/snmp.h
 Copyright: 2001-2002, Axon Digital Design B.V., The Netherlands.
   2001-2002, Leon Woestenberg <leon.woestenberg@axon.tv>
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/include/lwip/apps/snmp_opts.h
 Copyright: 2015, Dirk Ziegelmeier
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/netif/ppp/auth.c
 Copyright: 1984-2000, Carnegie Mellon University.
@@ -936,7 +910,6 @@ Copyright: 1989, Carnegie Mellon University.
   1997, Global Election Systems Inc.
   2003, Marc Boucher, Services Informatiques (MBSI) inc.
 License: BSD-3-clause
- FIXME
 
 Files: lib/lwip/src/include/netif/ppp/pppdebug.h
 Copyright: 1998, Global Election Systems Inc.
@@ -970,7 +943,6 @@ License: Expat
 Files: lib/nrfx/*
 Copyright: 2010-2018, Nordic Semiconductor ASA.
 License: BSD-3-clause
- FIXME
 
 Files: lib/nrfx/mdk/arm_startup_nrf51.s
  lib/nrfx/mdk/arm_startup_nrf52.s
@@ -1003,7 +975,6 @@ Files: lib/nrfx/mdk/ses_startup_nrf51.s
  lib/nrfx/mdk/ses_startup_nrf_common.s
 Copyright: 2014-2018, SEGGER Microcontroller GmbH
 License: BSD-3-clause
- FIXME
 
 Files: lib/nrfx/mdk/nrf51_common.ld
  lib/nrfx/mdk/nrf52_common.ld
@@ -1034,7 +1005,6 @@ License: Expat and FatFs
 Files: lib/stm32lib/*
 Copyright: 2016-2017 STMicroelectronics
 License: BSD-3-clause
- FIXME
 
 Files: lib/timeutils/*
 Copyright: 2013-2014, Damien P. George
@@ -1044,7 +1014,6 @@ License: Expat
 Files: lib/tinytest/*
 Copyright: 2009-2012, Nick Mathewson
 License: BSD-3-clause
- FIXME
 
 Files: lib/upytesthelper/*
 Copyright: 2016-2018, Linaro Limited
@@ -1063,7 +1032,6 @@ Files: ports/cc3200/bootmgr/sl/user.h
  ports/cc3200/simplelink/*
 Copyright: 2011, 2014, Texas Instruments Incorporated - http:www.ti.com/
 License: BSD-3-clause
- FIXME
 
 Files: ports/cc3200/FreeRTOS/*
 Copyright: 2014, 2016, Real Time Engineers Ltd.
@@ -1412,7 +1380,6 @@ Files: ports/stm32/boards/*/stm32*.h
  ports/stm32/boards/startup_stm32f0.s
 Copyright: 2014-2017 STMicroelectronics
 License: BSD-3-clause
- FIXME
 
 Files: ports/stm32/boards/startup_stm32l4.s
  ports/stm32/usbd_cdc_interface.c
@@ -1448,7 +1415,6 @@ Files: ports/stm32/stm32_it.c
 Copyright: 2014 STMicroelectronics
   2013-2014, Damien P. George
 License: BSD-3-clause and Expat
- FIXME
 
 Files: ports/teensy/core/*
  ports/teensy/mk20dx256.ld
@@ -1633,6 +1599,36 @@ License: Expat
 Files: tools/upip.py
 Copyright: 2015-2018, Paul Sokolovsky
 License: Expat
+
+License: BSD-3-clause
+ The 3-Clause BSD License
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ 3. The name of the author may not be used to endorse or promote
+    products derived from this software without specific prior
+    written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: BSD-like-cm
  Redistribution and use in source and binary forms, with or without
