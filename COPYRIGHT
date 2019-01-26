@@ -1153,7 +1153,6 @@ License: Expat
  FIXME
 
 Files: ports/esp32/espneopixel.c
- ports/esp8266/espneopixel.c
 Copyright: NONE
 License: LGPL-3.0
  FIXME
@@ -1203,7 +1202,6 @@ License: Expat
  FIXME
 
 Files: ports/esp32/moduos.c
- ports/esp8266/modutime.c
 Copyright: 2013-2014, Damien P. George
   2015, Josef Gajdusek
   2016, Damien P. George
@@ -1228,6 +1226,70 @@ Files: ports/esp32/mpthreadport.c
  ports/esp32/mpthreadport.h
 Copyright: 2016, Damien P. George on behalf of Pycom Ltd
   2017, Pycom Limited
+License: Expat
+ FIXME
+
+Files: ports/esp8266/esp_init_data.c
+ ports/esp8266/machine_wdt.c
+ ports/esp8266/modesp.c
+ ports/esp8266/modnetwork.c
+ ports/esp8266/posix_helpers.c
+Copyright: 2016, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: ports/esp8266/espapa102.c
+ ports/esp8266/espapa102.h
+Copyright: 2016, Robert Foss, Daniel Busch
+License: Expat
+ FIXME
+
+Files: ports/esp8266/espneopixel.c
+Copyright: NONE
+License: LGPL-3.0
+ FIXME
+
+Files: ports/esp8266/esppwm.c
+ ports/esp8266/uart.c
+Copyright: 2013-2014, Espressif Systems (Wuxi)
+License: Expat
+ FIXME
+
+Files: ports/esp8266/hspi.c
+ ports/esp8266/hspi.h
+Copyright: 2015, David Ogilvy (MetalPhreak)
+License: Expat
+ FIXME
+
+Files: ports/esp8266/hspi_register.h
+ ports/esp8266/uart_register.h
+Copyright: 2010-2011, Espressif System
+License: Expat
+ FIXME
+
+Files: ports/esp8266/lexerstr32.c
+ ports/esp8266/modmachine.c
+Copyright: 2013-2016, Damien P. George
+  2016, Paul Sokolovsky
+License: Expat
+ FIXME
+
+Files: ports/esp8266/machine_adc.c
+ ports/esp8266/machine_rtc.c
+ ports/esp8266/moduos.c
+Copyright: 2015, Josef Gajdusek
+License: Expat
+ FIXME
+
+Files: ports/esp8266/modules/apa102.py
+Copyright: 2016, Robert Foss, Daniel Busch
+License: Expat
+ FIXME
+
+Files: ports/esp8266/modutime.c
+Copyright: 2013-2014, Damien P. George
+  2015, Josef Gajdusek
+  2016, Damien P. George
 License: Expat
  FIXME
 
@@ -1380,8 +1442,6 @@ Files: extmod/misc.h
  extmod/utime_mphal.c
  extmod/utime_mphal.h
  extmod/vfs_fat.c
- ports/esp8266/lexerstr32.c
- ports/esp8266/modmachine.c
  ports/nrf/modules/random/modrandom.c
  ports/unix/fdfile.h
  ports/unix/modffi.c
@@ -1444,11 +1504,6 @@ Files: examples/embedding/hello-embed.c
  extmod/modwebsocket.c
  extmod/virtpin.c
  extmod/virtpin.h
- ports/esp8266/esp_init_data.c
- ports/esp8266/machine_wdt.c
- ports/esp8266/modesp.c
- ports/esp8266/modnetwork.c
- ports/esp8266/posix_helpers.c
  ports/unix/modjni.c
  ports/unix/modtermios.c
  py/objdeque.c
@@ -1642,13 +1697,6 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
-Files: ports/esp8266/machine_adc.c
- ports/esp8266/machine_rtc.c
- ports/esp8266/moduos.c
-Copyright: 2015, Josef Gajdusek
-License: Expat
- FIXME
-
 Files: ports/nrf/boards/microbit/modules/microbitconstimagetuples.c
  ports/nrf/drivers/softpwm.c
  ports/nrf/drivers/ticker.c
@@ -1748,18 +1796,6 @@ Copyright: 2013-2014, Damien P. George
 License: Expat
  FIXME
 
-Files: ports/esp8266/hspi.c
- ports/esp8266/hspi.h
-Copyright: 2015, David Ogilvy (MetalPhreak)
-License: Expat
- FIXME
-
-Files: ports/esp8266/espapa102.c
- ports/esp8266/espapa102.h
-Copyright: 2016, Robert Foss, Daniel Busch
-License: Expat
- FIXME
-
 Files: ports/nrf/drivers/softpwm.h
  ports/nrf/drivers/ticker.h
 Copyright: 2013-2016, The MicroPython-on-micro:bit Developers:
@@ -1769,18 +1805,6 @@ License: Expat
 Files: ports/stm32/usbd_cdc_interface.c
  ports/stm32/usbd_hid_interface.c
 Copyright: (c) 2014 STMicroelectronics</center></h2>
-License: UNKNOWN
- FIXME
-
-Files: ports/esp8266/hspi_register.h
- ports/esp8266/uart_register.h
-Copyright: 2010-2011, Espressif System
-License: UNKNOWN
- FIXME
-
-Files: ports/esp8266/esppwm.c
- ports/esp8266/uart.c
-Copyright: 2013-2014, Espressif Systems (Wuxi)
 License: UNKNOWN
  FIXME
 
@@ -1923,11 +1947,6 @@ License: UNKNOWN
 Files: extmod/re1.5/re1.5.h
 Copyright: 2007-2009, Russ Cox.
   2014, Paul Sokolovsky.
-License: UNKNOWN
- FIXME
-
-Files: ports/esp8266/modules/apa102.py
-Copyright: 2016, Robert Foss, Daniel Busch
 License: UNKNOWN
  FIXME
 
