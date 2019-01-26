@@ -994,6 +994,12 @@ Copyright: 2016-2017 STMicroelectronics
 License: BSD-3-clause
  FIXME
 
+Files: lib/timeutils/*
+Copyright: 2013-2014, Damien P. George
+  2015, Daniel Campora
+License: Expat
+ FIXME
+
 Files: ports/nrf/boards/microbit/*
 Copyright: 2013-2016 The MicroPython-on-micro:bit Developers,
   Damien P. George (@dpgeorge)
@@ -1269,9 +1275,7 @@ Copyright: 2015, Daniel Campora
 License: Expat
  FIXME
 
-Files: lib/timeutils/timeutils.c
- lib/timeutils/timeutils.h
- ports/cc3200/boards/LAUNCHXL/mpconfigboard.h
+Files: ports/cc3200/boards/LAUNCHXL/mpconfigboard.h
  ports/cc3200/boards/WIPY/mpconfigboard.h
  ports/cc3200/boards/cc3200_prefix.c
  ports/cc3200/misc/help.c
