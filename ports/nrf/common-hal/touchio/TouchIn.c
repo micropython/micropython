@@ -38,8 +38,17 @@
 
 #include "nrf.h"
 
+// This is a capacitive touch sensing routine using a single digital
+// pin.  The pin should be connected to the sensing pad, and to ground
+// via a 1Mohm or thereabout drain resistor.  When a reading is taken,
+// the pin's capacitance is charged by setting it to a digital output
+// 'high' for a few microseconds, and then it is changed to a high
+// impedance input.  We measure how long it takes to discharge through
+// the resistor (around 50us), using a busy-waiting loop, and average
+// over N_SAMPLES cycles to reduce the effects of noise.
+
 #define N_SAMPLES 10
-#define TIMEOUT_US 10000
+#define TIMEOUT_TICKS 10000
 
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 
@@ -57,9 +66,8 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
         nrf_gpio_cfg_input(self->pin->number, NRF_GPIO_PIN_NOPULL);
 
         while(nrf_gpio_pin_read(self->pin->number)) {
-            if (ticks >= TIMEOUT_US) return TIMEOUT_US;
+            if (ticks >= TIMEOUT_TICKS) return TIMEOUT_TICKS;
             ticks++;
-            mp_hal_delay_us(1);
         }
     }
     return ticks;
