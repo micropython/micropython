@@ -96,6 +96,13 @@
 #define HID_REQ_SET_IDLE        (0x0a)
 #define HID_REQ_GET_IDLE        (0x02)
 
+// Value used in the configuration descriptor for the bmAttributes entry
+#if MICROPY_HW_USB_SELF_POWERED
+#define CONFIG_DESC_ATTRIBUTES (0xc0) // self powered
+#else
+#define CONFIG_DESC_ATTRIBUTES (0x80) // bus powered
+#endif
+
 #if USBD_SUPPORT_HS_MODE
 // USB Standard Device Descriptor
 __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END = {
@@ -123,7 +130,7 @@ static const uint8_t msc_template_config_desc[MSC_TEMPLATE_CONFIG_DESC_SIZE] = {
     0x01,   // bNumInterfaces: 1 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
     0xfa,   // bMaxPower: in units of 2mA
 
     //==========================================================================
@@ -171,7 +178,7 @@ static const uint8_t cdc_msc_template_config_desc[CDC_MSC_TEMPLATE_CONFIG_DESC_S
     0x03,   // bNumInterfaces: 3 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
     0xfa,   // bMaxPower: in units of 2mA
 
     //==========================================================================
@@ -308,7 +315,7 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     0x03,   // bNumInterfaces: 3 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
     0xfa,   // bMaxPower: in units of 2mA
 
     //==========================================================================
@@ -455,7 +462,7 @@ static const uint8_t cdc_template_config_desc[CDC_TEMPLATE_CONFIG_DESC_SIZE] = {
     0x02,   // bNumInterfaces: 2 interface
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
     0xfa,   // bMaxPower: in units of 2mA
 
     //--------------------------------------------------------------------------
