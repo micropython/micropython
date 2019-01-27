@@ -117,7 +117,7 @@ LDFLAGS += -u call_user_start_cpu0 -u uxTopUsedPriority -u ld_include_panic_high
 LDFLAGS += -u __cxa_guard_dummy # so that implementation of static guards is taken from cxx_guards.o instead of libstdc++.a
 LDFLAGS += -L$(ESPCOMP)/esp32/ld
 LDFLAGS += -T $(BUILD)/esp32_out.ld
-LDFLAGS += -T ./esp32.custom_common.ld
+LDFLAGS += -T esp32.common.ld
 LDFLAGS += -T esp32.rom.ld
 LDFLAGS += -T esp32.peripherals.ld
 
@@ -634,6 +634,75 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SMARTCONFIG_ACK_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ULP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
+
+LIB_ESPIDF =
+LIB_ESPIDF += driver
+LIB_ESPIDF += esp32
+LIB_ESPIDF += heap
+LIB_ESPIDF += soc
+LIB_ESPIDF += cxx
+LIB_ESPIDF += ethernet
+LIB_ESPIDF += expat
+LIB_ESPIDF += pthread
+LIB_ESPIDF += freertos
+LIB_ESPIDF += vfs
+LIB_ESPIDF += json
+LIB_ESPIDF += log
+LIB_ESPIDF += xtensa-debug-module
+LIB_ESPIDF += tcpip_adapter
+LIB_ESPIDF += app_trace
+LIB_ESPIDF += app_update
+LIB_ESPIDF += newlib
+LIB_ESPIDF += nghttp
+LIB_ESPIDF += nvs_flash
+LIB_ESPIDF += smartconfig_ack
+LIB_ESPIDF += spi_flash
+LIB_ESPIDF += ulp
+LIB_ESPIDF += lwip
+LIB_ESPIDF += mbedtls
+LIB_ESPIDF += wpa_supplicant
+
+BUILD_ESPIDF_LIB = $(BUILD)/esp-idf
+
+OBJ_ESPIDF_DIRS = $(sort $(dir $(OBJ_ESPIDF))) $(BUILD_ESPIDF_LIB) $(addprefix $(BUILD_ESPIDF_LIB)/,$(LIB_ESPIDF))
+$(OBJ_ESPIDF): | $(OBJ_ESPIDF_DIRS)
+$(OBJ_ESPIDF_DIRS):
+	$(MKDIR) -p $@
+
+define gen_espidf_lib_rule
+$(BUILD_ESPIDF_LIB)/$(1)/lib$(1).a: $(addprefix $$(BUILD)/,$(2))
+	$(ECHO) "AR $$@"
+	$(Q)$(AR) cru $$@ $$^
+endef
+
+$(eval $(call gen_espidf_lib_rule,driver,$(ESPIDF_DRIVER_O)))
+$(eval $(call gen_espidf_lib_rule,esp32,$(ESPIDF_ESP32_O)))
+$(eval $(call gen_espidf_lib_rule,heap,$(ESPIDF_HEAP_O)))
+$(eval $(call gen_espidf_lib_rule,soc,$(ESPIDF_SOC_O)))
+$(eval $(call gen_espidf_lib_rule,cxx,$(ESPIDF_CXX_O)))
+$(eval $(call gen_espidf_lib_rule,ethernet,$(ESPIDF_ETHERNET_O)))
+$(eval $(call gen_espidf_lib_rule,expat,$(ESPIDF_EXPAT_O)))
+$(eval $(call gen_espidf_lib_rule,pthread,$(ESPIDF_PTHREAD_O)))
+$(eval $(call gen_espidf_lib_rule,freertos,$(ESPIDF_FREERTOS_O)))
+$(eval $(call gen_espidf_lib_rule,vfs,$(ESPIDF_VFS_O)))
+$(eval $(call gen_espidf_lib_rule,json,$(ESPIDF_JSON_O)))
+$(eval $(call gen_espidf_lib_rule,log,$(ESPIDF_LOG_O)))
+$(eval $(call gen_espidf_lib_rule,xtensa-debug-module,$(ESPIDF_XTENSA_DEBUG_MODULE_O)))
+$(eval $(call gen_espidf_lib_rule,tcpip_adapter,$(ESPIDF_TCPIP_ADAPTER_O)))
+$(eval $(call gen_espidf_lib_rule,app_trace,$(ESPIDF_APP_TRACE_O)))
+$(eval $(call gen_espidf_lib_rule,app_update,$(ESPIDF_APP_UPDATE_O)))
+$(eval $(call gen_espidf_lib_rule,newlib,$(ESPIDF_NEWLIB_O)))
+$(eval $(call gen_espidf_lib_rule,nghttp,$(ESPIDF_NGHTTP_O)))
+$(eval $(call gen_espidf_lib_rule,nvs_flash,$(ESPIDF_NVS_FLASH_O)))
+$(eval $(call gen_espidf_lib_rule,smartconfig_ack,$(ESPIDF_SMARTCONFIG_ACK_O)))
+$(eval $(call gen_espidf_lib_rule,spi_flash,$(ESPIDF_SPI_FLASH_O)))
+$(eval $(call gen_espidf_lib_rule,ulp,$(ESPIDF_ULP_O)))
+$(eval $(call gen_espidf_lib_rule,lwip,$(ESPIDF_LWIP_O)))
+$(eval $(call gen_espidf_lib_rule,mbedtls,$(ESPIDF_MBEDTLS_O)))
+$(eval $(call gen_espidf_lib_rule,wpa_supplicant,$(ESPIDF_WPA_SUPPLICANT_O)))
+
+LIB = $(foreach lib,$(LIB_ESPIDF),$(BUILD_ESPIDF_LIB)/$(lib)/lib$(lib).a)
+
 ################################################################################
 # Main targets
 
@@ -659,7 +728,7 @@ erase:
 ################################################################################
 # Declarations to build the application
 
-OBJ = $(OBJ_MP) $(OBJ_ESPIDF)
+OBJ = $(OBJ_MP)
 
 APP_LD_ARGS =
 APP_LD_ARGS += $(LDFLAGS_MOD)
@@ -670,6 +739,7 @@ APP_LD_ARGS += $(LIBC_LIBM)
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
 APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2
 APP_LD_ARGS += $(OBJ)
+APP_LD_ARGS += $(LIB)
 APP_LD_ARGS += --end-group
 
 $(BUILD)/esp32_out.ld: sdkconfig.h
@@ -679,7 +749,7 @@ $(BUILD)/application.bin: $(BUILD)/application.elf
 	$(ECHO) "Create $@"
 	$(Q)$(ESPTOOL) --chip esp32 elf2image --flash_mode $(FLASH_MODE) --flash_freq $(FLASH_FREQ) --flash_size $(FLASH_SIZE) $<
 
-$(BUILD)/application.elf: $(OBJ) $(BUILD)/esp32_out.ld
+$(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(APP_LD_ARGS)
 	$(Q)$(SIZE) $@
