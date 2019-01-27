@@ -45,3 +45,4 @@
 #define IGNORE_PIN_PA25     1
 
 #define CIRCUITPY_I2CSLAVE
+#define CIRCUITPY_DISPLAYIO    (1)
