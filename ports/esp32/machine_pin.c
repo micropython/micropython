@@ -112,7 +112,7 @@ void machine_pins_deinit(void) {
     }
 }
 
-STATIC void IRAM_ATTR machine_pin_isr_handler(void *arg) {
+STATIC void machine_pin_isr_handler(void *arg) {
     machine_pin_obj_t *self = arg;
     mp_obj_t handler = MP_STATE_PORT(machine_pin_irq_handler)[self->id];
     mp_sched_schedule(handler, MP_OBJ_FROM_PTR(self));
