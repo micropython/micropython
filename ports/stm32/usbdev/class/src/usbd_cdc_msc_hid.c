@@ -103,6 +103,13 @@
 #define CONFIG_DESC_ATTRIBUTES (0x80) // bus powered
 #endif
 
+// Value used in the configuration descriptor for the bMaxPower entry
+#if defined(MICROPY_HW_USB_MAX_POWER_MA)
+#define CONFIG_DESC_MAXPOWER (MICROPY_HW_USB_MAX_POWER_MA / 2) // in units of 2mA
+#else
+#define CONFIG_DESC_MAXPOWER (0xfa) // 500mA in units of 2mA
+#endif
+
 #if USBD_SUPPORT_HS_MODE
 // USB Standard Device Descriptor
 __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END = {
@@ -131,7 +138,7 @@ static const uint8_t msc_template_config_desc[MSC_TEMPLATE_CONFIG_DESC_SIZE] = {
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
     CONFIG_DESC_ATTRIBUTES, // bmAttributes
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //==========================================================================
     // MSC only has 1 interface so doesn't need an IAD
@@ -179,7 +186,7 @@ static const uint8_t cdc_msc_template_config_desc[CDC_MSC_TEMPLATE_CONFIG_DESC_S
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
     CONFIG_DESC_ATTRIBUTES, // bmAttributes
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //==========================================================================
     // MSC only has 1 interface so doesn't need an IAD
@@ -316,7 +323,7 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
     CONFIG_DESC_ATTRIBUTES, // bmAttributes
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //==========================================================================
     // HID only has 1 interface so doesn't need an IAD
@@ -463,7 +470,7 @@ static const uint8_t cdc_template_config_desc[CDC_TEMPLATE_CONFIG_DESC_SIZE] = {
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
     CONFIG_DESC_ATTRIBUTES, // bmAttributes
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //--------------------------------------------------------------------------
     // Interface Descriptor
