@@ -124,7 +124,9 @@ void rtc_init_start(bool force_init) {
     rtc_need_init_finalise = false;
 
     if (!force_init) {
-        if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
+        uint32_t bdcr = RCC->BDCR;
+        if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL | RCC_BDCR_LSEON | RCC_BDCR_LSERDY))
+            == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0 | RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
             // LSE is enabled & ready --> no need to (re-)init RTC
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
@@ -133,7 +135,8 @@ void rtc_init_start(bool force_init) {
             // provide some status information
             rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
             return;
-        } else if ((RCC->BDCR & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL_1) {
+        } else if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL))
+            == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
