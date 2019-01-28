@@ -40,7 +40,6 @@ deploy:
   file_glob: true
   file: "$TRAVIS_BUILD_DIR/bin/*/*/*"
   skip_cleanup: true
-  draft: true
   on:
     tags: true
 
