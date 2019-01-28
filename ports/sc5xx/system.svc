@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+	<installedComponents>
+		<component id="com.analog.crosscore.ssldd.pinmux.component" name="Pin Multiplexing" version="1.0.0" visible="true">
+			<component-description><![CDATA[Since some processors have more peripherals than physical pins on the chip, the user needs to configure which peripherals they want enabled and onto which set of pins.  Peripheral configuration requires an in-depth understanding of the hardware.  This component makes it easier to program the peripherals without worrying about the internal details.  The user simply selects the peripherals to enable and this component will generate the C code necessary to configure the peripherals.]]></component-description>
+			<product name="Pin Multiplexing Product" version="1.0.0"/>
+		</component>
+		<component id="com.analog.crosscore.sru.component" name="SRU Configuration" version="1.0.0" visible="true">
+			<component-description><![CDATA[This add-in provides a simplified method of configuring the SHARC Signal Routing Unit (SRU).]]></component-description>
+			<product name="Analog Devices Signal Routing Unit" version="1.0.0"/>
+		</component>
+		<component id="com.analog.sourcegen.component.heap_stack" name="Heap and Stack Configuration" version="1.0.0" visible="true">
+			<component-description><![CDATA[This component provides the ability to configure the heap and stack memories.]]></component-description>
+			<product name="Startup Code/LDF" version="1.0.0"/>
+		</component>
+		<component id="com.analog.crosscore.addins.mcapi" name="Analog Devices' MCAPI" version="1.0.0" visible="true">
+			<component-description><![CDATA[This add-in provides Analog Devices' implementation of Multicore association's Multicore Communications API (MCAPI™) version 2.15]]></component-description>
+			<product name="Analog Devices implementation of Multicore Communications API (MCAPI™) v2.15" version="1.0.0"/>
+		</component>
+	</installedComponents>
+	<configurations>
+		<configuration id="com.analog.crosscore.ssldd.pinmux.component">
+			<pinmux-configuration processor="ADSP-SC589" version="1.0"/>
+		</configuration>
+		<configuration id="com.analog.sourcegen.component.heap_stack">
+			<heap_stack-configuration>
+				<crt_and_ldf>
+					<propertygroup name="mandatory">
+						<property name="si_revision" value="1.0"/>
+						<property name="processor" value="ADSP-SC589"/>
+						<property name="product_name" value="CrossCore(R) Embedded Studio"/>
+					</propertygroup>
+					<ldf>
+						<propertygroup name="system_heap" value="L3">
+							<property name="size" value="4"/>
+							<property name="size_units" value="MB"/>
+							<property name="customized" value="false"/>
+							<property name="align" value="4"/>
+						</propertygroup>
+						<propertygroup name="system_stack" value="L1">
+							<property name="size_units" value="kB"/>
+							<property name="size" value="4"/>
+							<property name="customized" value="false"/>
+							<property name="align" value="64"/>
+						</propertygroup>
+						<propertygroup name="supervisor_stack" value="L1">
+							<property name="size_units" value="kB"/>
+							<property name="customized" value="false"/>
+							<property name="align" value="64"/>
+							<property name="size" value="4"/>
+						</propertygroup>
+						<propertygroup name="FIQ_stack" value="L1">
+							<property name="customized" value="false"/>
+							<property name="size" value="4"/>
+							<property name="size_units" value="kB"/>
+							<property name="align" value="64"/>
+						</propertygroup>
+						<propertygroup name="IRQ_stack" value="L1">
+							<property name="customized" value="false"/>
+							<property name="size" value="4"/>
+							<property name="align" value="64"/>
+							<property name="size_units" value="kB"/>
+						</propertygroup>
+						<propertygroup name="abort_stack" value="L1">
+							<property name="size_units" value="kB"/>
+							<property name="size" value="4"/>
+							<property name="customized" value="false"/>
+							<property name="align" value="64"/>
+						</propertygroup>
+						<propertygroup name="undefined_stack" value="L1">
+							<property name="size" value="4"/>
+							<property name="align" value="64"/>
+							<property name="size_units" value="kB"/>
+							<property name="customized" value="false"/>
+						</propertygroup>
+						<property name="heap_stack_src_file" value="app_heap_stack.c"/>
+					</ldf>
+				</crt_and_ldf>
+			</heap_stack-configuration>
+		</configuration>
+		<configuration id="com.analog.crosscore.sru.component">
+			<sruConfiguration>
+				<sru-register-group>
+					<register name="pREG_DAI0_CLK2">0x3def7bde</register>
+					<register name="pREG_DAI0_CLK3">0x3def7bde</register>
+					<register name="pREG_DAI0_CLK4">0x3def7bde</register>
+					<register name="pREG_DAI0_CLK5">0x3def7bde</register>
+					<register name="pREG_DAI0_CLK0">0x252630c2</register>
+					<register name="pREG_DAI0_CLK1">0x3def7bde</register>
+					<register name="pREG_DAI0_DAT3">0x00000000</register>
+					<register name="pREG_DAI0_DAT4">0x00000000</register>
+					<register name="pREG_DAI0_DAT5">0x00000000</register>
+					<register name="pREG_DAI0_DAT6">0x00fbefbe</register>
+					<register name="pREG_DAI0_DAT0">0x08144040</register>
+					<register name="pREG_DAI0_DAT1">0x0f38b289</register>
+					<register name="pREG_DAI0_DAT2">0x00000450</register>
+					<register name="pREG_DAI0_FS0">0x2736b4e3</register>
+					<register name="pREG_DAI0_FS1">0x3def7bde</register>
+					<register name="pREG_DAI0_FS2">0x3def7bde</register>
+					<register name="pREG_DAI0_FS3">0x01ef7bde</register>
+					<register name="pREG_DAI0_FS4">0x000003de</register>
+					<register name="pREG_DAI0_PIN0">0x04c80a94</register>
+					<register name="pREG_DAI0_PIN3">0x03a714a3</register>
+					<register name="pREG_DAI0_PIN4">0x05694f9e</register>
+					<register name="pREG_DAI0_PIN1">0x04e84b96</register>
+					<register name="pREG_DAI0_PIN2">0x03668c98</register>
+					<register name="pREG_DAI0_MISC0">0x3def7bde</register>
+					<register name="pREG_DAI0_MISC1">0x3def7bde</register>
+					<register name="pREG_DAI0_PBEN1">0x1348d30f</register>
+					<register name="pREG_DAI0_PBEN2">0x1a5545d6</register>
+					<register name="pREG_DAI0_PBEN0">0x0e2482ca</register>
+					<register name="pREG_DAI0_PBEN3">0x1d71f79b</register>
+					<register name="pREG_DAI1_CLK0">0x252630c2</register>
+					<register name="pREG_DAI1_CLK1">0x3def7bde</register>
+					<register name="pREG_DAI1_CLK2">0x3def7bde</register>
+					<register name="pREG_DAI1_CLK3">0x3def7bde</register>
+					<register name="pREG_DAI1_CLK4">0x3def7bde</register>
+					<register name="pREG_DAI1_CLK5">0x3def7bde</register>
+					<register name="pREG_DAI1_DAT1">0x0f38b289</register>
+					<register name="pREG_DAI1_DAT0">0x08144040</register>
+					<register name="pREG_DAI1_DAT3">0x00000000</register>
+					<register name="pREG_DAI1_DAT2">0x00000450</register>
+					<register name="pREG_DAI1_DAT5">0x00000000</register>
+					<register name="pREG_DAI1_DAT4">0x00000000</register>
+					<register name="pREG_DAI1_DAT6">0x00fbefbe</register>
+					<register name="pREG_DAI1_FS3">0x01ef7bde</register>
+					<register name="pREG_DAI1_FS2">0x3def7bde</register>
+					<register name="pREG_DAI1_FS1">0x3def7bde</register>
+					<register name="pREG_DAI1_FS0">0x2736b4e3</register>
+					<register name="pREG_DAI1_FS4">0x000003de</register>
+					<register name="pREG_DAI1_PIN4">0x05694f9e</register>
+					<register name="pREG_DAI1_PIN2">0x03668c98</register>
+					<register name="pREG_DAI1_PIN3">0x03a714a3</register>
+					<register name="pREG_DAI1_PIN0">0x04c80a94</register>
+					<register name="pREG_DAI1_PIN1">0x04e84b96</register>
+					<register name="pREG_DAI1_MISC1">0x3def7bde</register>
+					<register name="pREG_DAI1_MISC0">0x3def7bde</register>
+					<register name="pREG_DAI1_PBEN3">0x1d71f79b</register>
+					<register name="pREG_DAI1_PBEN2">0x1a5545d6</register>
+					<register name="pREG_DAI1_PBEN1">0x1348d30f</register>
+					<register name="pREG_DAI1_PBEN0">0x0e2482ca</register>
+				</sru-register-group>
+				<comments/>
+			</sruConfiguration>
+		</configuration>
+		<configuration id="com.analog.crosscore.addins.mcapi">
+			<mcapi-configuration>
+				<schema>1.0</schema>
+				<mcapi-config-node-id>0</mcapi-config-node-id>
+				<mcapi-config-num-endpoints>24</mcapi-config-num-endpoints>
+				<mcapi-config-anon-endpoints>8</mcapi-config-anon-endpoints>
+				<mcapi-config-max-payload-size>256</mcapi-config-max-payload-size>
+				<mcapi-config-num-transmit-buffers>16</mcapi-config-num-transmit-buffers>
+				<mcapi-config-num-receive-buffers>1</mcapi-config-num-receive-buffers>
+				<mcapi-config-num-api-requests>31</mcapi-config-num-api-requests>
+				<mcapi-config-num-isr-requests>16</mcapi-config-num-isr-requests>
+			</mcapi-configuration>
+		</configuration>
+	</configurations>
+</root>
