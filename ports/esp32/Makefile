@@ -234,6 +234,7 @@ SRC_QSTR_AUTO_DEPS +=
 
 $(SDKCONFIG_H): $(SDKCONFIG)
 	$(ECHO) "GEN $@"
+	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(PYTHON) $(ESPIDF)/tools/kconfig_new/confgen.py \
 		--output header $@ \
 		--config $< \
