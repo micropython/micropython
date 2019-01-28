@@ -20,7 +20,16 @@
 	</installedComponents>
 	<configurations>
 		<configuration id="com.analog.crosscore.ssldd.pinmux.component">
-			<pinmux-configuration processor="ADSP-SC589" version="1.0"/>
+			<pinmux-configuration processor="ADSP-SC589" version="1.0">
+				<peripheral description="UART" name="UART0">
+					<signal bit="28" mux="0" name="RX" pin="14" port="C"/>
+					<signal bit="26" mux="0" name="TX" pin="13" port="C"/>
+				</peripheral>
+				<gpio name="Port C">
+					<signal bit="26" name="PC13" pin="13" port="C"/>
+					<signal bit="28" name="PC14" pin="14" port="C"/>
+				</gpio>
+			</pinmux-configuration>
 		</configuration>
 		<configuration id="com.analog.sourcegen.component.heap_stack">
 			<heap_stack-configuration>

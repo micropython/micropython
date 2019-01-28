@@ -44,6 +44,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
+#include "adi_initialize.h"
 #include "bm_uart.h"
 
 BM_UART uart0;
@@ -64,6 +65,8 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 
 int main(int argc, char **argv) {
+
+    adi_initComponents();
 
     uart_initialize(&uart0, UART_BAUD_RATE_115200, UART_SERIAL_8N1, UART0);
     uart_write_byte(&uart0, 0x0C); // Clear the screen

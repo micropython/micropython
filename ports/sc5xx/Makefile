@@ -11,7 +11,7 @@ CROSS_COMPILE = arm-none-eabi-
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I..\system
+INC += -Isystem
 
 CFLAGS = $(INC) -std=c99 -Wall -Werror -g -gdwarf-2 -ffunction-sections -fdata-sections -DCORE0  $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(COPT)
 
