@@ -56,4 +56,10 @@ bool displayio_display_refresh_queued(displayio_display_obj_t* self);
 void displayio_display_finish_refresh(displayio_display_obj_t* self);
 bool displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length);
 
+bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self);
+void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness);
+
+mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self);
+bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_DISPLAY_H

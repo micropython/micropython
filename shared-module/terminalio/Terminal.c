@@ -34,6 +34,7 @@ void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, d
     self->tilegrid = tilegrid;
     self->unicode_characters = unicode_characters;
     self->unicode_characters_len = unicode_characters_len;
+    self->first_row = 0;
 }
 
 size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, const byte *data, size_t len, int *errcode) {

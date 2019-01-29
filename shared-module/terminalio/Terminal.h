@@ -40,6 +40,7 @@ typedef struct  {
     displayio_tilegrid_t* tilegrid;
     const byte* unicode_characters;
     uint16_t unicode_characters_len;
+    uint16_t first_row;
 } terminalio_terminal_obj_t;
 
 #endif /* SHARED_MODULE_TERMINALIO_TERMINAL_H */

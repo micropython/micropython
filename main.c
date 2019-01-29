@@ -223,7 +223,7 @@ bool run_code_py(safe_mode_t safe_mode) {
 
     // Wait for connection or character.
     if (!serial_connected_at_start) {
-        serial_write_compressed(translate("\nCode done running. Waiting for USB.\n"));
+        serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
     }
 
     bool serial_connected_before_animation = false;

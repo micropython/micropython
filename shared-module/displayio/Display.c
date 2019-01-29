@@ -55,6 +55,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->current_group = NULL;
     self->colstart = colstart;
     self->rowstart = rowstart;
+    self->auto_brightness = false;
 
     if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
         self->begin_transaction = common_hal_displayio_parallelbus_begin_transaction;
@@ -110,7 +111,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
             common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
         }
     }
-    self->auto_brightness = true;
 }
 
 void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
@@ -131,6 +131,42 @@ int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* sel
         MICROPY_VM_HOOK_LOOP
     }
     return 0;
+}
+
+bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self) {
+    return self->auto_brightness;
+}
+
+void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness) {
+    self->auto_brightness = auto_brightness;
+}
+
+mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self) {
+    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
+        uint16_t duty_cycle = common_hal_pulseio_pwmout_get_duty_cycle(&self->backlight_pwm);
+        return duty_cycle / ((mp_float_t) 0xffff);
+    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
+        if (common_hal_digitalio_digitalinout_get_value(&self->backlight_inout)) {
+            return 1.0;
+        } else {
+            return 0.0;
+        }
+    }
+    return -1.0;
+}
+
+bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness) {
+    self->updating_backlight = true;
+    bool ok = false;
+    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
+        common_hal_pulseio_pwmout_set_duty_cycle(&self->backlight_pwm, (uint16_t) (0xffff * brightness));
+        ok = true;
+    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
+        common_hal_digitalio_digitalinout_set_value(&self->backlight_inout, brightness > 0.99);
+        ok = true;
+    }
+    self->updating_backlight = false;
+    return ok;
 }
 
 void displayio_display_start_region_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
@@ -181,13 +217,10 @@ void displayio_display_update_backlight(displayio_display_obj_t* self) {
     if (ticks_ms - self->last_backlight_refresh < 100) {
         return;
     }
-    self->updating_backlight = true;
-    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
-        common_hal_pulseio_pwmout_set_duty_cycle(&self->backlight_pwm, 0xffff);
-    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
-        common_hal_digitalio_digitalinout_set_value(&self->backlight_inout, true);
-    }
-    self->updating_backlight = false;
+    // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
+    // should account for ambient light when possible.
+    common_hal_displayio_display_set_brightness(self, 1.0);
+
     self->last_backlight_refresh = ticks_ms;
 }
 
