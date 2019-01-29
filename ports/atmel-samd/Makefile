@@ -388,7 +388,6 @@ SRC_SHARED_MODULE = \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \
-	displayio/Sprite.c \
 	displayio/TileGrid.c \
 	gamepad/__init__.c \
 	gamepad/GamePad.c \

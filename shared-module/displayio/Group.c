@@ -41,9 +41,6 @@ void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer) 
     }
     mp_obj_t native_layer = mp_instance_cast_to_native_base(layer, &displayio_group_type);
     if (native_layer == MP_OBJ_NULL) {
-        native_layer = mp_instance_cast_to_native_base(layer, &displayio_sprite_type);
-    }
-    if (native_layer == MP_OBJ_NULL) {
         native_layer = mp_instance_cast_to_native_base(layer, &displayio_tilegrid_type);
     }
     if (native_layer == MP_OBJ_NULL) {
@@ -85,10 +82,6 @@ bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, ui
             if (displayio_tilegrid_get_pixel(layer, x, y, pixel)) {
                 return true;
             }
-        } else if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
-            if (displayio_sprite_get_pixel(layer, x, y, pixel)) {
-                return true;
-            }
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
             if (displayio_group_get_pixel(layer, x, y, pixel)) {
                 return true;
@@ -113,10 +106,6 @@ bool displayio_group_needs_refresh(displayio_group_t *self) {
             if (displayio_group_needs_refresh(layer)) {
                 return true;
             }
-        } else if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
-            if (displayio_sprite_needs_refresh(layer)) {
-                return true;
-            }
         }
     }
     return false;
@@ -130,8 +119,6 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
             displayio_tilegrid_finish_refresh(layer);
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
             displayio_group_finish_refresh(layer);
-        } else if (MP_OBJ_IS_TYPE(layer, &displayio_sprite_type)) {
-            displayio_sprite_finish_refresh(layer);
         }
     }
 }

@@ -84,13 +84,14 @@ void board_init(void) {
         128, // Width
         128, // Height
         2, // column start
-        0, // row start
+        1, // row start
         16, // Color depth
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         display_init_sequence,
-        sizeof(display_init_sequence));
+        sizeof(display_init_sequence),
+        &pin_PA00);
 }
 
 bool board_requests_safe_mode(void) {

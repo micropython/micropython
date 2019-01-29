@@ -26,9 +26,10 @@
 
 #include "shared-module/terminalio/Terminal.h"
 
+#include "shared-module/displayio/__init__.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t* tilegrid, const uint8_t* unicode_characters, uint16_t unicode_characters_len) {
+void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t* tilegrid, const uint8_t* unicode_characters, size_t unicode_characters_len) {
     self->cursor_x = 0;
     self->cursor_y = 0;
     self->tilegrid = tilegrid;
@@ -115,6 +116,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                 common_hal_displayio_textgrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
                 start_y = self->cursor_y;
             }
+            common_hal_displayio_textgrid_set_top_left(self->tilegrid, 0, (start_y + self->tilegrid->height_in_tiles + 1) % self->tilegrid->height_in_tiles);
         }
     }
     return i - data;

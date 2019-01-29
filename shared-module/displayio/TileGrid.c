@@ -92,7 +92,7 @@ bool displayio_tilegrid_get_pixel(displayio_tilegrid_t *self, int16_t x, int16_t
     if (tiles == NULL) {
         return false;
     }
-    uint16_t tile_location = (y / self->tile_height) * self->width_in_tiles + x / self->tile_width;
+    uint16_t tile_location = ((y / self->tile_height + self->top_left_y) % self->height_in_tiles) * self->width_in_tiles + (x / self->tile_width + self->top_left_x) % self->width_in_tiles;
     uint8_t tile = tiles[tile_location];
     uint16_t tile_x = tile_x = (tile % self->bitmap_width_in_tiles) * self->tile_width + x % self->tile_width;
     uint16_t tile_y = tile_y = (tile / self->bitmap_width_in_tiles) * self->tile_height + y % self->tile_height;
@@ -128,6 +128,12 @@ void common_hal_displayio_textgrid_set_tile(displayio_tilegrid_t *self, uint16_t
     }
     tiles[y * self->width_in_tiles + x] = tile_index;
     self->needs_refresh = true;
+}
+
+
+void common_hal_displayio_textgrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {
+    self->top_left_x = x;
+    self->top_left_y = y;
 }
 
 bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self) {

@@ -45,6 +45,8 @@ typedef struct {
     uint16_t total_height;
     uint16_t tile_width;
     uint16_t tile_height;
+    uint16_t top_left_x;
+    uint16_t top_left_y;
     uint8_t* tiles;
     bool needs_refresh;
     bool inline_tiles;

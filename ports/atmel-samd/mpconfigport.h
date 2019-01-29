@@ -351,6 +351,7 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     #define MICROPY_PY_BUILTINS_COMPLEX (0)
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+    #define CIRCUITPY_DISPLAYIO (0)
     #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 

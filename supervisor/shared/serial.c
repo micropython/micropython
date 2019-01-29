@@ -26,6 +26,8 @@
 
 #include <string.h>
 
+#include "py/mpconfig.h"
+
 #include "supervisor/shared/display.h"
 #include "shared-bindings/terminalio/Terminal.h"
 #include "supervisor/serial.h"
@@ -50,8 +52,10 @@ bool serial_bytes_available(void) {
 }
 
 void serial_write_substring(const char* text, uint32_t length) {
+    #if CIRCUITPY_DISPLAYIO
     int errcode;
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
+    #endif
     if (!tud_cdc_connected()) {
         return;
     }

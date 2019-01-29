@@ -42,5 +42,6 @@ mp_obj_t common_hal_displayio_tilegrid_get_pixel_shader(displayio_tilegrid_t *se
 void common_hal_displayio_tilegrid_set_pixel_shader(displayio_tilegrid_t *self, mp_obj_t pixel_shader);
 
 void common_hal_displayio_textgrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index);
+void common_hal_displayio_textgrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_TILEGRID_H

@@ -96,7 +96,6 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_OnDiskBitmap), MP_ROM_PTR(&displayio_ondiskbitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
     { MP_ROM_QSTR(MP_QSTR_Shape), MP_ROM_PTR(&displayio_shape_type) },
-    { MP_ROM_QSTR(MP_QSTR_Sprite), MP_ROM_PTR(&displayio_sprite_type) },
     { MP_ROM_QSTR(MP_QSTR_TileGrid), MP_ROM_PTR(&displayio_tilegrid_type) },
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&displayio_fourwire_type) },

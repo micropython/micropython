@@ -87,6 +87,7 @@ void supervisor_stop_terminal(void) {
 }
 
 void supervisor_display_move_memory(void) {
+    #if CIRCUITPY_DISPLAYIO
     displayio_tilegrid_t* grid = &supervisor_terminal_text_grid;
     if (MP_STATE_VM(terminal_tilegrid_tiles) == NULL || grid->tiles != MP_STATE_VM(terminal_tilegrid_tiles)) {
         return;
@@ -102,6 +103,7 @@ void supervisor_display_move_memory(void) {
         grid->inline_tiles = false;
     }
     MP_STATE_VM(terminal_tilegrid_tiles) = NULL;
+    #endif
 }
 
 uint32_t blinka_bitmap_data[32] = {
@@ -149,15 +151,24 @@ displayio_palette_t blinka_palette = {
     .needs_refresh = false
 };
 
-displayio_sprite_t blinka_sprite = {
-    .base = {.type = &displayio_sprite_type },
+displayio_tilegrid_t blinka_sprite = {
+    .base = {.type = &displayio_tilegrid_type },
     .bitmap = &blinka_bitmap,
     .pixel_shader = &blinka_palette,
     .x = 0,
     .y = 0,
-    .width = 16,
-    .height = 16,
-    .needs_refresh = false
+    .bitmap_width_in_tiles = 1,
+    .width_in_tiles = 1,
+    .height_in_tiles = 1,
+    .total_width = 16,
+    .total_height = 16,
+    .tile_width = 16,
+    .tile_height = 16,
+    .top_left_x = 16,
+    .top_left_y = 16,
+    .tiles = 0,
+    .needs_refresh = false,
+    .inline_tiles = true
 };
 
 mp_obj_t splash_children[2] = {
