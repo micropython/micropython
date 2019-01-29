@@ -27,7 +27,6 @@
 #include "shared-bindings/displayio/Group.h"
 
 #include "py/runtime.h"
-#include "shared-bindings/displayio/Sprite.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
 void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size) {

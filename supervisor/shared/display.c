@@ -31,7 +31,7 @@
 #include "py/mpstate.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
-#include "shared-bindings/displayio/Sprite.h"
+#include "shared-bindings/displayio/TileGrid.h"
 #include "supervisor/memory.h"
 
 extern uint32_t blinka_bitmap_data[];

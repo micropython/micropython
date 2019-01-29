@@ -39,7 +39,6 @@
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/ParallelBus.h"
 #include "shared-bindings/displayio/Shape.h"
-#include "shared-bindings/displayio/Sprite.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
 //| :mod:`displayio` --- Native display driving

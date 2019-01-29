@@ -7,7 +7,6 @@
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
-#include "shared-bindings/displayio/Sprite.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/memory.h"
 #include "supervisor/usb.h"
