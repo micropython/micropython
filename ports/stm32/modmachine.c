@@ -329,17 +329,25 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
 
-STATIC mp_obj_t machine_sleep(void) {
+STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    if (n_args != 0) {
+        mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
+        pyb_rtc_wakeup(2, args2);
+    }
     powerctrl_enter_stop_mode();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(void) {
+STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    if (n_args != 0) {
+        mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
+        pyb_rtc_wakeup(2, args2);
+    }
     powerctrl_enter_standby_mode();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(void) {
     return MP_OBJ_NEW_SMALL_INT(reset_cause);
@@ -358,7 +366,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rng),                 MP_ROM_PTR(&pyb_rng_get_obj) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&pyb_wfi_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
 #if 0

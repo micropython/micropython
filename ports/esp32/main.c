@@ -109,6 +109,8 @@ soft_reset:
         }
     }
 
+    machine_timer_deinit_all();
+
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
     #endif

@@ -1,12 +1,5 @@
 /*
- * uzlib  -  tiny deflate/inflate library (deflate, gzip, zlib)
- *
- * Copyright (c) 2003 by Joergen Ibsen / Jibz
- * All Rights Reserved
- *
- * http://www.ibsensoftware.com/
- *
- * Copyright (c) 2014-2018 by Paul Sokolovsky
+ * Copyright (c) uzlib authors
  *
  * This software is provided 'as-is', without any express
  * or implied warranty.  In no event will the authors be
@@ -33,34 +26,20 @@
  *    any source distribution.
  */
 
-#include "tinf.h"
+/* This files contains type declaration and prototypes for defl_static.c.
+   They may be altered/distinct from the originals used in PuTTY source
+   code. */
 
-int uzlib_zlib_parse_header(TINF_DATA *d)
-{
-   unsigned char cmf, flg;
+struct Outbuf {
+    unsigned char *outbuf;
+    int outlen, outsize;
+    unsigned long outbits;
+    int noutbits;
+    int comp_disabled;
+};
 
-   /* -- get header bytes -- */
-
-   cmf = uzlib_get_byte(d);
-   flg = uzlib_get_byte(d);
-
-   /* -- check format -- */
-
-   /* check checksum */
-   if ((256*cmf + flg) % 31) return TINF_DATA_ERROR;
-
-   /* check method is deflate */
-   if ((cmf & 0x0f) != 8) return TINF_DATA_ERROR;
-
-   /* check window size is valid */
-   if ((cmf >> 4) > 7) return TINF_DATA_ERROR;
-
-   /* check there is no preset dictionary */
-   if (flg & 0x20) return TINF_DATA_ERROR;
-
-   /* initialize for adler32 checksum */
-   d->checksum_type = TINF_CHKSUM_ADLER;
-   d->checksum = 1;
-
-   return cmf >> 4;
-}
+void outbits(struct Outbuf *out, unsigned long bits, int nbits);
+void zlib_start_block(struct Outbuf *ctx);
+void zlib_finish_block(struct Outbuf *ctx);
+void zlib_literal(struct Outbuf *ectx, unsigned char c);
+void zlib_match(struct Outbuf *ectx, int distance, int len);

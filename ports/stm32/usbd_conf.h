@@ -37,10 +37,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "py/mpconfig.h"
+
 #define USBD_MAX_NUM_INTERFACES               4
 #define USBD_MAX_NUM_CONFIGURATION            1
 #define USBD_MAX_STR_DESC_SIZ                 0x100
+#if MICROPY_HW_USB_SELF_POWERED
+#define USBD_SELF_POWERED                     1
+#else
 #define USBD_SELF_POWERED                     0
+#endif
 #define USBD_DEBUG_LEVEL                      0
 
 #endif // MICROPY_INCLUDED_STM32_USBD_CONF_H
