@@ -128,19 +128,14 @@ STATIC void mp_spiflash_write_cmd_addr(mp_spiflash_t *self, uint8_t cmd, uint32_
 
 STATIC int mp_spiflash_wait_sr(mp_spiflash_t *self, uint8_t mask, uint8_t val, uint32_t timeout) {
     uint8_t sr;
-    for (; timeout; --timeout) {
+    do {
         sr = mp_spiflash_read_cmd(self, CMD_RDSR, 1);
         if ((sr & mask) == val) {
-            break;
+            return 0; // success
         }
-    }
-    if ((sr & mask) == val) {
-        return 0; // success
-    } else if (timeout == 0) {
-        return -MP_ETIMEDOUT;
-    } else {
-        return -MP_EIO;
-    }
+    } while (timeout--);
+
+    return -MP_ETIMEDOUT;
 }
 
 STATIC int mp_spiflash_wait_wel1(mp_spiflash_t *self) {
