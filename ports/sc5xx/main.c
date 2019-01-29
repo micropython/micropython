@@ -38,6 +38,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
@@ -46,6 +47,8 @@
 
 #include "adi_initialize.h"
 #include "bm_uart.h"
+#include "pin.h"
+#include "modmachine.h"
 
 BM_UART uart0;
 
@@ -72,7 +75,12 @@ int main(int argc, char **argv) {
     uart_write_byte(&uart0, 0x0C); // Clear the screen
 
     mp_init();
+    readline_init0();
+    pin_init0();
+
     pyexec_friendly_repl();
+
+    machine_deinit();
     mp_deinit();
 
     while(1);

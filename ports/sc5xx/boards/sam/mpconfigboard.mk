@@ -1,0 +1,1 @@
+SOC_VARIANT = sc589

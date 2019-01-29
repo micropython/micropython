@@ -4,6 +4,8 @@
 		<cconfiguration id="arm.toolchain.bare.target.exe.debug.1243964035">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="arm.toolchain.bare.target.exe.debug.1243964035" moduleId="org.eclipse.cdt.core.settings" name="Debug">
 				<macros>
+					<stringMacro name="pwr-service-version" type="VALUE_TEXT" value="1.0"/>
+					<stringMacro name="rtc-service-version" type="VALUE_TEXT" value="1.0"/>
 					<stringMacro name="mcapi-version" type="VALUE_TEXT" value="2.15"/>
 				</macros>
 				<externalSettings/>
@@ -18,7 +20,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="clean" description="" errorParsers="com.analog.crosscore.core.CCESARMErrorParser" id="arm.toolchain.bare.target.exe.debug.1243964035" name="Debug" parent="arm.toolchain.bare.target.exe.debug">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" errorParsers="com.analog.crosscore.core.CCESARMErrorParser" id="arm.toolchain.bare.target.exe.debug.1243964035" name="Debug" parent="arm.toolchain.bare.target.exe.debug">
 					<folderInfo id="arm.toolchain.bare.target.exe.debug.1243964035." name="/" resourcePath="">
 						<toolChain id="arm.bare.toolchain.exe.debug.838411198" name="CrossCore ARM Bare-Metal Toolchain" nonInternalBuilderId="arm.toolchain.builder.base" superClass="arm.bare.toolchain" targetTool="arm.toolchain.bare.c.linker">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="arm.toolchain.platform.base.1367543578" name="Development Platform" osList="all" superClass="arm.toolchain.platform.base"/>
@@ -47,6 +49,7 @@
 									<listOptionValue builtIn="false" value="CORE0"/>
 									<listOptionValue builtIn="false" value="_DEBUG"/>
 									<listOptionValue builtIn="false" value="ADI_MCAPI"/>
+									<listOptionValue builtIn="false" value="ADI_DEBUG"/>
 								</option>
 								<option id="arm.toolchain.cpp.compiler.option.coreid.481330984" name="Specify the core Id (-DCORE[A|B|0-2])" superClass="arm.toolchain.cpp.compiler.option.coreid" useByScannerDiscovery="false" value="0" valueType="string"/>
 								<option id="arm.base.compiler.option.include.paths.179926615" name="Additional include directories (-I):" superClass="arm.base.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
@@ -98,6 +101,8 @@
 		<cconfiguration id="arm.toolchain.bare.target.exe.release.840311475">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="arm.toolchain.bare.target.exe.release.840311475" moduleId="org.eclipse.cdt.core.settings" name="Release">
 				<macros>
+					<stringMacro name="pwr-service-version" type="VALUE_TEXT" value="1.0"/>
+					<stringMacro name="rtc-service-version" type="VALUE_TEXT" value="1.0"/>
 					<stringMacro name="mcapi-version" type="VALUE_TEXT" value="2.15"/>
 				</macros>
 				<externalSettings/>
@@ -112,7 +117,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="clean" description="" errorParsers="com.analog.crosscore.core.CCESARMErrorParser" id="arm.toolchain.bare.target.exe.release.840311475" name="Release" parent="arm.toolchain.bare.target.exe.release">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" errorParsers="com.analog.crosscore.core.CCESARMErrorParser" id="arm.toolchain.bare.target.exe.release.840311475" name="Release" parent="arm.toolchain.bare.target.exe.release">
 					<folderInfo id="arm.toolchain.bare.target.exe.release.840311475." name="/" resourcePath="">
 						<toolChain id="arm.bare.toolchain.exe.release.1024485268" name="CrossCore ARM Bare-Metal Toolchain" superClass="arm.bare.toolchain" targetTool="arm.toolchain.bare.c.linker">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="arm.toolchain.platform.base.866662164" name="Development Platform" osList="all" superClass="arm.toolchain.platform.base"/>

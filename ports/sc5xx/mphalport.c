@@ -70,3 +70,26 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
         mp_hal_stdout_tx_strn(last, str - last);
     }
 }
+
+void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af) {
+    uint32_t pin_mask = (1 << pin);
+    switch (mode) {
+    case GPIO_MODE_INPUT:
+        gpio -> DIR_CLR = pin_mask;
+        gpio -> INEN_SET = pin_mask;
+        break;
+    case GPIO_MODE_OUTPUT_PP:
+        gpio -> DIR_SET = pin_mask;
+        gpio -> INEN_CLR = pin_mask;
+        gpio -> FER_CLR = pin_mask;
+        break;
+    case GPIO_MODE_AF_PP:
+        gpio -> FER_SET = pin_mask;
+        gpio -> MUX &= ~(0x3 << (pin * 2));
+        gpio -> MUX |= ((af & 0x3) << (pin * 2));
+    }
+}
+
+void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj) {
+    mp_raise_NotImplementedError(NULL);
+}

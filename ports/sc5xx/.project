@@ -36,11 +36,21 @@
 			<type>2</type>
 			<locationURI>PARENT-2-PROJECT_LOC/py</locationURI>
 		</link>
+		<link>
+			<name>system/services/pwr/adi_pwr.c</name>
+			<type>1</type>
+			<locationURI>CCES/ARM/arm-none-eabi/arm-none-eabi/lib/src/cortex-a5/services/Source/pwr/adi_pwr.c</locationURI>
+		</link>
+		<link>
+			<name>system/services/rtc/adi_rtc.c</name>
+			<type>1</type>
+			<locationURI>CCES/ARM/arm-none-eabi/arm-none-eabi/lib/src/cortex-a5/services/Source/rtc/adi_rtc.c</locationURI>
+		</link>
 	</linkedResources>
 	<variableList>
 		<variable>
 			<name>CCES</name>
-			<value>file:/C:/Analog%20Devices/CrossCore%20Embedded%20Studio%202.8.1</value>
+			<value>file:/opt/analog/cces/2.8.1</value>
 		</variable>
 	</variableList>
 </projectDescription>

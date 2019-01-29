@@ -62,8 +62,8 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_NON_BLOCK   (0)
-#define MICROPY_MODULE_WEAK_LINKS   (0)
-#define MICROPY_CAN_OVERRIDE_BUILTINS (0)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
+#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
@@ -88,7 +88,7 @@
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
 #define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_POW3    (0)
-#define MICROPY_PY_BUILTINS_HELP    (0)
+#define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_COLLECTIONS_DEQUE (1)
@@ -103,11 +103,16 @@
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
-#define MICROPY_PY_SYS_PLATFORM     "sam"
 #define MICROPY_PY_THREAD           (0)
 
-#define MICROPY_HW_BOARD_NAME       "SAM"
-#define MICROPY_HW_MCU_NAME         "ADSP-SC589"
+// extended modules
+#define MICROPY_PY_MACHINE          (1)
+
+// board specific definition
+#include <mpconfigboard.h>
+
+// Pin definition header file
+#define MICROPY_PIN_DEFS_PORT_H     "pin_defs_sc5xx.h"
 
 // type definitions for the specific machine
 #define asm __asm
@@ -139,27 +144,32 @@ typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
+extern const struct _mp_obj_module_t machine_module;
+
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) }, \
+    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
+    { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&mp_module_ustruct) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
+
+// extra constants
+#define MICROPY_PORT_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
+
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     \
-    mp_obj_t pyb_hid_report_desc; \
-    \
-    mp_obj_t pyb_config_main; \
-    \
-    mp_obj_t pyb_switch_callback; \
-    \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
-    struct _pyb_uart_obj_t *pyb_stdio_uart; \
-
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+    struct _sc_uart_obj_t *sc_stdio_uart; \
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 

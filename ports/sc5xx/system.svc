@@ -17,6 +17,14 @@
 			<component-description><![CDATA[This add-in provides Analog Devices' implementation of Multicore association's Multicore Communications API (MCAPI™) version 2.15]]></component-description>
 			<product name="Analog Devices implementation of Multicore Communications API (MCAPI™) v2.15" version="1.0.0"/>
 		</component>
+		<component id="com.analog.crosscore.addins.ssldd.pwr.cortexa5" name="PWR Sevice for Cortex-A" version="1.0.0" visible="true">
+			<component-description><![CDATA[This add-in provides Analog Devices' implementation of the Power Service (PWR)]]></component-description>
+			<product name="Analog Devices System Services and Device Drivers" version="1.0.0"/>
+		</component>
+		<component id="com.analog.crosscore.addins.ssldd.rtc.cortexa5" name="RTC Service for Cortex-A" version="1.0.0" visible="true">
+			<component-description><![CDATA[This add-in provides Analog Devices' implementation of the Real-Time Clock Service (RTC)]]></component-description>
+			<product name="Analog Devices System Services and Device Drivers" version="1.0.0"/>
+		</component>
 	</installedComponents>
 	<configurations>
 		<configuration id="com.analog.crosscore.ssldd.pinmux.component">
