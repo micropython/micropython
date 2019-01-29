@@ -6,6 +6,7 @@ $(error Incorrect softdevice set flag)
 endif
 
 CFLAGS += -DBLUETOOTH_SD_DEBUG=1
+CFLAGS += -DSOFTDEVICE_PRESENT
 
 INC += -Ibluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
 INC += -Ibluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)

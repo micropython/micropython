@@ -43,6 +43,9 @@ extern void tusb_hal_nrf_power_event(uint32_t event);
 
 void init_usb_hardware(void) {
 
+    // 2 is max priority (0, 1 are reserved for SD)
+    NVIC_SetPriority(USBD_IRQn, 2);
+
     // USB power may already be ready at this time -> no event generated
     // We need to invoke the handler based on the status initially
     uint32_t usb_reg;
