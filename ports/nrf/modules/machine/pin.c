@@ -126,7 +126,7 @@ void pin_init0(void) {
 const pin_obj_t *pin_find(mp_obj_t user_obj) {
     const pin_obj_t *pin_obj;
     // If pin is SMALL_INT
-    if (MP_OBJ_IS_SMALL_INT(user_obj)) {
+    if (mp_obj_is_small_int(user_obj)) {
 	uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
         for (uint8_t i = 0; i < machine_pin_num_of_pins; i++) {
             if (machine_pin_obj[i].pin == value) {
@@ -136,7 +136,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     }
 
     // If a pin was provided, then use it
-    if (MP_OBJ_IS_TYPE(user_obj, &pin_type)) {
+    if (mp_obj_is_type(user_obj, &pin_type)) {
         pin_obj = user_obj;
         if (pin_class_debug) {
             printf("Pin map passed pin ");
@@ -149,7 +149,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
         pin_obj = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
         if (pin_obj != mp_const_none) {
-            if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
+            if (!mp_obj_is_type(pin_obj, &pin_type)) {
                 mp_raise_ValueError("Pin.mapper didn't return a Pin object");
             }
             if (pin_class_debug) {

@@ -93,7 +93,7 @@ void pwm_init0(void) {
 
 
 STATIC int hard_pwm_find(mp_obj_t id) {
-    if (MP_OBJ_IS_INT(id)) {
+    if (mp_obj_is_int(id)) {
         // given an integer id
         int pwm_id = mp_obj_get_int(id);
         if (pwm_id >= 0 && pwm_id < MP_ARRAY_SIZE(machine_hard_pwm_obj)) {

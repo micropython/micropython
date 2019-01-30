@@ -126,7 +126,7 @@ STATIC ffi_type *char2ffi_type(char c)
 
 STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
 {
-    if (MP_OBJ_IS_STR(o_in)) {
+    if (mp_obj_is_str(o_in)) {
         const char *s = mp_obj_str_get_str(o_in);
         ffi_type *t = char2ffi_type(*s);
         if (t != NULL) {
@@ -370,9 +370,9 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         #endif
         } else if (a == mp_const_none) {
             values[i] = 0;
-        } else if (MP_OBJ_IS_INT(a)) {
+        } else if (mp_obj_is_int(a)) {
             values[i] = mp_obj_int_get_truncated(a);
-        } else if (MP_OBJ_IS_STR(a)) {
+        } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i] = (ffi_arg)(intptr_t)s;
         } else if (((mp_obj_base_t*)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
@@ -383,7 +383,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
                 goto error;
             }
             values[i] = (ffi_arg)(intptr_t)bufinfo.buf;
-        } else if (MP_OBJ_IS_TYPE(a, &fficallback_type)) {
+        } else if (mp_obj_is_type(a, &fficallback_type)) {
             mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
             values[i] = (ffi_arg)(intptr_t)p->func;
         } else {

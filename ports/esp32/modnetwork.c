@@ -461,7 +461,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(4, tuple);
     } else {
         // set
-        if (MP_OBJ_IS_TYPE(args[1], &mp_type_tuple) || MP_OBJ_IS_TYPE(args[1], &mp_type_list)) {
+        if (mp_obj_is_type(args[1], &mp_type_tuple) || mp_obj_is_type(args[1], &mp_type_list)) {
             mp_obj_t *items;
             mp_obj_get_array_fixed_n(args[1], 4, &items);
             netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
@@ -518,7 +518,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     if (kwargs->used != 0) {
 
         for (size_t i = 0; i < kwargs->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+            if (mp_map_slot_is_filled(kwargs, i)) {
                 int req_if = -1;
 
                 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)

@@ -192,7 +192,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
 
     mp_obj_t fid = args[0].u_obj;
 
-    if (MP_OBJ_IS_SMALL_INT(fid)) {
+    if (mp_obj_is_small_int(fid)) {
         o->fd = MP_OBJ_SMALL_INT_VALUE(fid);
         return MP_OBJ_FROM_PTR(o);
     }

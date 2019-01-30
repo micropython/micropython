@@ -133,7 +133,7 @@ STATIC mp_obj_t os_dupterm(uint n_args, const mp_obj_t *args) {
         if (stream_o == mp_const_none) {
             MP_STATE_PORT(os_term_dup_obj) = MP_OBJ_NULL;
         } else {
-            if (!MP_OBJ_IS_TYPE(stream_o, &pyb_uart_type)) {
+            if (!mp_obj_is_type(stream_o, &pyb_uart_type)) {
                 // must be a stream-like object providing at least read and write methods
                 mp_load_method(stream_o, MP_QSTR_read, os_term_dup_obj.read);
                 mp_load_method(stream_o, MP_QSTR_write, os_term_dup_obj.write);

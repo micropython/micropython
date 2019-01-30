@@ -131,7 +131,7 @@ void spi_init0(void) {
 }
 
 STATIC int spi_find(mp_obj_t id) {
-    if (MP_OBJ_IS_STR(id)) {
+    if (mp_obj_is_str(id)) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
         if (0) {

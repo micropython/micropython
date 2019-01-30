@@ -409,7 +409,7 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // work out port
     mp_uint_t can_idx;
-    if (MP_OBJ_IS_STR(args[0])) {
+    if (mp_obj_is_str(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
         #ifdef MICROPY_HW_CAN1_NAME
@@ -540,7 +540,7 @@ STATIC mp_obj_t pyb_can_info(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
     } else {
-        if (!MP_OBJ_IS_TYPE(args[1], &mp_type_list)) {
+        if (!mp_obj_is_type(args[1], &mp_type_list)) {
             mp_raise_TypeError(NULL);
         }
         list = MP_OBJ_TO_PTR(args[1]);
@@ -709,7 +709,7 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         items[3] = mp_obj_new_bytes(&rx_msg.Data[0], rx_msg.DLC);
     } else {
         // User should provide a list of length at least 4 to hold the values
-        if (!MP_OBJ_IS_TYPE(ret_obj, &mp_type_list)) {
+        if (!mp_obj_is_type(ret_obj, &mp_type_list)) {
             mp_raise_TypeError(NULL);
         }
         mp_obj_list_t *list = MP_OBJ_TO_PTR(ret_obj);
@@ -719,7 +719,7 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         items = list->items;
         // Fourth element must be a memoryview which we assume points to a
         // byte-like array which is large enough, and then we resize it inplace
-        if (!MP_OBJ_IS_TYPE(items[3], &mp_type_memoryview)) {
+        if (!mp_obj_is_type(items[3], &mp_type_memoryview)) {
             mp_raise_TypeError(NULL);
         }
         mp_obj_array_t *mv = MP_OBJ_TO_PTR(items[3]);

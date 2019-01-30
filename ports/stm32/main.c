@@ -132,7 +132,7 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         { MP_QSTR_opt, MP_ARG_INT, {.u_int = 0} }
     };
 
-    if (MP_OBJ_IS_STR(pos_args[0])) {
+    if (mp_obj_is_str(pos_args[0])) {
         MP_STATE_PORT(pyb_config_main) = pos_args[0];
 
         // parse args

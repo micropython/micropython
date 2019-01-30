@@ -157,7 +157,7 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     };
 
     mp_obj_t port = portx;
-    if (MP_OBJ_IS_SMALL_INT(port)) {
+    if (mp_obj_is_small_int(port)) {
         // This is perverse, because lwip_getaddrinfo promptly converts it back to an int, but
         // that's the API we have to work with ...
         port = mp_obj_str_binary_op(MP_BINARY_OP_MODULO, mp_obj_new_str_via_qstr("%s", 2), port);

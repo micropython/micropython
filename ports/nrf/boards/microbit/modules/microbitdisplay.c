@@ -88,7 +88,7 @@ mp_obj_t microbit_display_show_func(mp_uint_t n_args, const mp_obj_t *pos_args, 
     bool wait = args[3].u_bool;
     bool loop = args[4].u_bool;
 
-    if (MP_OBJ_IS_STR(image)) {
+    if (mp_obj_is_str(image)) {
         // arg is a string object
         mp_uint_t len;
         const char *str = mp_obj_str_get_data(image, &len);
@@ -296,7 +296,7 @@ static void draw_object(mp_obj_t obj) {
         }
     } else if (mp_obj_get_type(obj) == &microbit_image_type) {
         microbit_display_show(display, (microbit_image_obj_t *)obj);
-    } else if (MP_OBJ_IS_STR(obj)) {
+    } else if (mp_obj_is_str(obj)) {
         mp_uint_t len;
         const char *str = mp_obj_str_get_data(obj, &len);
         if (len == 1) {
