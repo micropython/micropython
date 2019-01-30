@@ -94,7 +94,7 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
 
     mp_obj_t fid = file_in;
 
-    if (MP_OBJ_IS_SMALL_INT(fid)) {
+    if (mp_obj_is_small_int(fid)) {
         o->fd = MP_OBJ_SMALL_INT_VALUE(fid);
         return MP_OBJ_FROM_PTR(o);
     }

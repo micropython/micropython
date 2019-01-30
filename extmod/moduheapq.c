@@ -32,7 +32,7 @@
 // the algorithm here is modelled on CPython's heapq.py
 
 STATIC mp_obj_list_t *get_heap(mp_obj_t heap_in) {
-    if (!MP_OBJ_IS_TYPE(heap_in, &mp_type_list)) {
+    if (!mp_obj_is_type(heap_in, &mp_type_list)) {
         mp_raise_TypeError("heap must be a list");
     }
     return MP_OBJ_TO_PTR(heap_in);

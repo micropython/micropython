@@ -77,7 +77,7 @@ STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_
 STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, size_t *rwx_num) {
     mp_uint_t n_ready = 0;
     for (mp_uint_t i = 0; i < poll_map->alloc; ++i) {
-        if (!MP_MAP_SLOT_IS_FILLED(poll_map, i)) {
+        if (!mp_map_slot_is_filled(poll_map, i)) {
             continue;
         }
 
@@ -155,7 +155,7 @@ STATIC mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
             list_array[2] = mp_obj_new_list(rwx_len[2], NULL);
             rwx_len[0] = rwx_len[1] = rwx_len[2] = 0;
             for (mp_uint_t i = 0; i < poll_map.alloc; ++i) {
-                if (!MP_MAP_SLOT_IS_FILLED(&poll_map, i)) {
+                if (!mp_map_slot_is_filled(&poll_map, i)) {
                     continue;
                 }
                 poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_map.table[i].value);
@@ -266,7 +266,7 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     mp_obj_list_t *ret_list = MP_OBJ_TO_PTR(mp_obj_new_list(n_ready, NULL));
     n_ready = 0;
     for (mp_uint_t i = 0; i < self->poll_map.alloc; ++i) {
-        if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
+        if (!mp_map_slot_is_filled(&self->poll_map, i)) {
             continue;
         }
         poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_map.table[i].value);
@@ -309,7 +309,7 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
 
     for (mp_uint_t i = self->iter_idx; i < self->poll_map.alloc; ++i) {
         self->iter_idx++;
-        if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
+        if (!mp_map_slot_is_filled(&self->poll_map, i)) {
             continue;
         }
         poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_map.table[i].value);
