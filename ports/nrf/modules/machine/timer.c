@@ -126,7 +126,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 
     machine_timer_obj_t *self = (machine_timer_obj_t*)&machine_timer_obj[timer_id];
 
-    if (MP_OBJ_IS_FUN(args[ARG_callback].u_obj)) {
+    if (mp_obj_is_fun(args[ARG_callback].u_obj)) {
         machine_timer_callbacks[timer_id] = args[ARG_callback].u_obj;
     } else if (args[ARG_callback].u_obj == mp_const_none) {
         machine_timer_callbacks[timer_id] = NULL;

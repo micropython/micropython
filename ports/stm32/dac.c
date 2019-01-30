@@ -238,7 +238,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // get pin/channel to output on
     mp_int_t dac_id;
-    if (MP_OBJ_IS_INT(args[0])) {
+    if (mp_obj_is_int(args[0])) {
         dac_id = mp_obj_get_int(args[0]);
     } else {
         const pin_obj_t *pin = pin_find(args[0]);

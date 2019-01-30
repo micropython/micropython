@@ -299,7 +299,7 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     const void *optval;
     socklen_t optlen;
     int val;
-    if (MP_OBJ_IS_INT(args[3])) {
+    if (mp_obj_is_int(args[3])) {
         val = mp_obj_int_get_truncated(args[3]);
         optval = &val;
         optlen = sizeof(val);
@@ -391,13 +391,13 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
     int proto = 0;
 
     if (n_args > 0) {
-        assert(MP_OBJ_IS_SMALL_INT(args[0]));
+        assert(mp_obj_is_small_int(args[0]));
         family = MP_OBJ_SMALL_INT_VALUE(args[0]);
         if (n_args > 1) {
-            assert(MP_OBJ_IS_SMALL_INT(args[1]));
+            assert(mp_obj_is_small_int(args[1]));
             type = MP_OBJ_SMALL_INT_VALUE(args[1]);
             if (n_args > 2) {
-                assert(MP_OBJ_IS_SMALL_INT(args[2]));
+                assert(mp_obj_is_small_int(args[2]));
                 proto = MP_OBJ_SMALL_INT_VALUE(args[2]);
             }
         }
@@ -494,7 +494,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     memset(&hints, 0, sizeof(hints));
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
-    if (MP_OBJ_IS_SMALL_INT(args[1])) {
+    if (mp_obj_is_small_int(args[1])) {
         unsigned port = (unsigned short)MP_OBJ_SMALL_INT_VALUE(args[1]);
         snprintf(buf, sizeof(buf), "%u", port);
         serv = buf;

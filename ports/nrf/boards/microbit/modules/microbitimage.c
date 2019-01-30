@@ -214,7 +214,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
         }
 
         case 1: {
-            if (MP_OBJ_IS_STR(args[0])) {
+            if (mp_obj_is_str(args[0])) {
                 // arg is a string object
                 mp_uint_t len;
                 const char *str = mp_obj_str_get_data(args[0], &len);
