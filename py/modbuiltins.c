@@ -357,7 +357,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     size_t len;
     const byte *str = (const byte*)mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    if (MP_OBJ_IS_STR(o_in)) {
+    if (mp_obj_is_str(o_in)) {
         len = utf8_charlen(str, len);
         if (len == 1) {
             return mp_obj_new_int(utf8_get_char(str));
@@ -471,7 +471,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
 STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_obj_t o_in = args[0];
-    if (MP_OBJ_IS_INT(o_in)) {
+    if (mp_obj_is_int(o_in)) {
         if (n_args <= 1) {
             return o_in;
         }

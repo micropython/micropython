@@ -2939,7 +2939,7 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
         if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0])
                 && MP_PARSE_NODE_LEAF_KIND(pns->nodes[0]) == MP_PARSE_NODE_STRING)
             || (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_const_object)
-                && MP_OBJ_IS_STR(get_const_object((mp_parse_node_struct_t*)pns->nodes[0])))) {
+                && mp_obj_is_str(get_const_object((mp_parse_node_struct_t*)pns->nodes[0])))) {
                 // compile the doc string
                 compile_node(comp, pns->nodes[0]);
                 // store the doc string

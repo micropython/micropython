@@ -150,9 +150,9 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
     // Work out if we can compare just pointers
     bool compare_only_ptrs = map->all_keys_are_qstrs;
     if (compare_only_ptrs) {
-        if (MP_OBJ_IS_QSTR(index)) {
+        if (mp_obj_is_qstr(index)) {
             // Index is a qstr, so can just do ptr comparison.
-        } else if (MP_OBJ_IS_TYPE(index, &mp_type_str)) {
+        } else if (mp_obj_is_type(index, &mp_type_str)) {
             // Index is a non-interned string.
             // We can either intern the string, or force a full equality comparison.
             // We chose the latter, since interning costs time and potentially RAM,
@@ -197,7 +197,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
         mp_map_elem_t *elem = map->table + map->used++;
         elem->key = index;
-        if (!MP_OBJ_IS_QSTR(index)) {
+        if (!mp_obj_is_qstr(index)) {
             map->all_keys_are_qstrs = 0;
         }
         return elem;
@@ -218,7 +218,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 
     // get hash of index, with fast path for common case of qstr
     mp_uint_t hash;
-    if (MP_OBJ_IS_QSTR(index)) {
+    if (mp_obj_is_qstr(index)) {
         hash = qstr_hash(MP_OBJ_QSTR_VALUE(index));
     } else {
         hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
@@ -238,7 +238,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                 }
                 avail_slot->key = index;
                 avail_slot->value = MP_OBJ_NULL;
-                if (!MP_OBJ_IS_QSTR(index)) {
+                if (!mp_obj_is_qstr(index)) {
                     map->all_keys_are_qstrs = 0;
                 }
                 return avail_slot;
@@ -278,7 +278,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     map->used++;
                     avail_slot->key = index;
                     avail_slot->value = MP_OBJ_NULL;
-                    if (!MP_OBJ_IS_QSTR(index)) {
+                    if (!mp_obj_is_qstr(index)) {
                         map->all_keys_are_qstrs = 0;
                     }
                     return avail_slot;
