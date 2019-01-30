@@ -32,7 +32,18 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
+#include "nrfx_power.h"
+
+#ifdef SOFTDEVICE_PRESENT
+#include "nrf_sdm.h"
+#include "nrf_soc.h"
+#endif
+
 #include "tusb.h"
+
+// tinyusb function that handles power event (detected, ready, removed)
+// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
+extern void tusb_hal_nrf_power_event(uint32_t event);
 
 // Serial number as hex characters. This writes directly to the USB
 // descriptor.
@@ -60,6 +71,30 @@ bool usb_enabled(void) {
 
 void usb_init(void) {
     init_usb_hardware();
+
+    // USB power may already be ready at this time -> no event generated
+    // We need to invoke the handler based on the status initially
+    uint32_t usb_reg;
+
+#ifdef SOFTDEVICE_PRESENT
+    uint8_t sd_en = false;
+    (void) sd_softdevice_is_enabled(&sd_en);
+
+    if ( sd_en ) {
+        sd_power_usbregstatus_get(&usb_reg);
+    }else {
+        usb_reg = NRF_POWER->USBREGSTATUS;
+    }
+
+    if ( usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk ) {
+        tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
+    }
+
+    if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk ) {
+        tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
+    }
+#endif
+
     load_serial_number();
 
     tusb_init();
@@ -74,7 +109,7 @@ void usb_init(void) {
 }
 
 void usb_background(void) {
-    if (tusb_inited()) {
+    if (usb_enabled()) {
         tud_task();
         tud_cdc_write_flush();
     }
