@@ -36,7 +36,7 @@ void machine_init(void);
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_obj);
-MP_DECLARE_CONST_FUN_OBJ_0(machine_sleep_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(machine_lightsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_deepsleep_obj);
 
 #endif // __MICROPY_INCLUDED_NRF5_MODMACHINE_H__
