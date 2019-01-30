@@ -97,7 +97,19 @@ STATIC mp_obj_t machine_idle(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
-    printf("Warning: not yet implemented\n");
+    uint32_t max_us = 0xffffffff;
+    if (n_args == 1) {
+        mp_int_t max_ms = mp_obj_get_int(args[0]);
+        if (max_ms < 0) {
+            max_ms = 0;
+        }
+        max_us = max_ms * 1000;
+    }
+    uint32_t start = system_get_time();
+    while (system_get_time() - start <= max_us) {
+        ets_event_poll();
+        asm("waiti 0");
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
