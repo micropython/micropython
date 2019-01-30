@@ -226,8 +226,10 @@ SRC_SHARED_MODULE = \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \
-	displayio/Sprite.c \
-	storage/__init__.c
+	displayio/TileGrid.c \
+	storage/__init__.c \
+	terminalio/__init__.c \
+	terminalio/Terminal.c
 
 
 ifndef EXCLUDE_PIXELBUF

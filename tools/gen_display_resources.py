@@ -11,7 +11,11 @@ from adafruit_bitmap_font import bitmap_font
 
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--font', type=str,
-                    help='manufacturer of the device', required=True)
+                    help='Font path', required=True)
+parser.add_argument('--extra_characters', type=str,
+                    help='Unicode string of extra characters')
+parser.add_argument('--sample_file', type=argparse.FileType('r'),
+                    help='Text file that includes strings to support.')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 
 args = parser.parse_args()
@@ -25,31 +29,43 @@ class BitmapStub:
         self.rows[y] = bytes(row)
 
 f = bitmap_font.load_font(args.font, BitmapStub)
-f.load_glyphs(range(0x20, 0x7f))
-
-print(f.get_bounding_box())
 real_bb = [0, 0]
 
+# Load extra characters from the sample file.
+sample_characters = set()
+if args.sample_file:
+    for line in args.sample_file:
+        # Skip comments because we add additional characters in our huffman comments.
+        if line.startswith("//"):
+            continue
+        for c in line.strip():
+            sample_characters.add(c)
+
+# Merge visible ascii, sample characters and extra characters.
 visible_ascii = bytes(range(0x20, 0x7f)).decode("utf-8")
-extra_characters = "üàêùéáçãÍóíαψ◌"
-all_characters = visible_ascii + extra_characters
+all_characters = visible_ascii
+for c in sample_characters:
+    if c not in all_characters:
+        all_characters += c
+if args.extra_characters:
+    all_characters.extend(args.extra_characters)
 filtered_characters = all_characters
+
+# Try to pre-load all of the glyphs. Misses will still be slow later.
+f.load_glyphs(set(all_characters))
+
+# Get each glyph.
 for c in all_characters:
     g = f.get_glyph(ord(c))
     if not g:
         print("Font missing character:", c, ord(c))
         filtered_characters = filtered_characters.replace(c, "")
-        extra_characters = extra_characters.replace(c, "")
         continue
     x, y, dx, dy = g["bounds"]
-    #print(c, g["bounds"], g["shift"])
     if g["shift"][1] != 0:
         raise RuntimeError("y shift")
     real_bb[0] = max(real_bb[0], x - dx)
     real_bb[1] = max(real_bb[1], y - dy)
-
-#real_bb[1] += 1
-#print(real_bb)
 
 tile_x, tile_y = real_bb
 total_bits = tile_x * len(all_characters)
@@ -61,7 +77,6 @@ for x, c in enumerate(filtered_characters):
     g = f.get_glyph(ord(c))
     start_bit = x * tile_x + g["bounds"][2]
     start_y = (tile_y - 2) - (g["bounds"][1] + g["bounds"][3])
-    # print(c, g["bounds"], g["shift"], tile_y, start_y)
     for y, row in enumerate(g["bitmap"].rows):
         for i in range(g["bounds"][0]):
             byte = i // 8
@@ -69,23 +84,12 @@ for x, c in enumerate(filtered_characters):
             if row[byte] & (1 << (7-bit)) != 0:
                 overall_bit = start_bit + (start_y + y) * bytes_per_row * 8 + i
                 b[overall_bit // 8] |= 1 << (7 - (overall_bit % 8))
-                # print("*",end="")
-            # else:
-            #     print("_",end="")
-        #print()
 
-# print(b)
-# print("tile_x = {}".format(tile_x))
-# print("tile_y = {}".format(tile_y))
-# print("tiles = {}".format(len(all_characters)))
-# print("font = displayio.Bitmap(tile_x * tiles, tile_y, 2)")
-# for row in range(tile_y):
-#     print("font._load_row({}, {})".format(row, bytes(b[row*bytes_per_row:row*bytes_per_row+bytes_per_row])))
 
-# for row in range(tile_y):
-#     for byte in b[row*bytes_per_row:row*bytes_per_row+bytes_per_row]:
-#         print("{:08b} ".format(byte),end="")
-#     print()
+extra_characters = ""
+for c in filtered_characters:
+    if c not in visible_ascii:
+        extra_characters += c
 
 c_file = args.output_c_file
 

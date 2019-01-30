@@ -94,7 +94,7 @@ void supervisor_display_move_memory(void) {
     }
     uint16_t total_tiles = grid->width_in_tiles * grid->height_in_tiles;
 
-    tilegrid_tiles = allocate_memory(total_tiles, false);
+    tilegrid_tiles = allocate_memory(align32_size(total_tiles), false);
     if (tilegrid_tiles != NULL) {
         memcpy(tilegrid_tiles->ptr, grid->tiles, total_tiles);
         grid->tiles = (uint8_t*) tilegrid_tiles->ptr;
