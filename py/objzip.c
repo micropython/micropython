@@ -49,7 +49,7 @@ STATIC mp_obj_t zip_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 }
 
 STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_zip));
+    mp_check_self(mp_obj_is_type(self_in, &mp_type_zip));
     mp_obj_zip_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->n_iters == 0) {
         return MP_OBJ_STOP_ITERATION;

@@ -79,12 +79,12 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
             return mp_obj_new_complex(0, 0);
 
         case 1:
-            if (MP_OBJ_IS_STR(args[0])) {
+            if (mp_obj_is_str(args[0])) {
                 // a string, parse it
                 size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l, true, true, NULL);
-            } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
+            } else if (mp_obj_is_type(args[0], &mp_type_complex)) {
                 // a complex, just return it
                 return args[0];
             } else {
@@ -95,13 +95,13 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
         case 2:
         default: {
             mp_float_t real, imag;
-            if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
+            if (mp_obj_is_type(args[0], &mp_type_complex)) {
                 mp_obj_complex_get(args[0], &real, &imag);
             } else {
                 real = mp_obj_get_float(args[0]);
                 imag = 0;
             }
-            if (MP_OBJ_IS_TYPE(args[1], &mp_type_complex)) {
+            if (mp_obj_is_type(args[1], &mp_type_complex)) {
                 mp_float_t real2, imag2;
                 mp_obj_complex_get(args[1], &real2, &imag2);
                 real -= imag2;
@@ -164,7 +164,7 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
 }
 
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_complex));
+    assert(mp_obj_is_type(self_in, &mp_type_complex));
     mp_obj_complex_t *self = MP_OBJ_TO_PTR(self_in);
     *real = self->real;
     *imag = self->imag;

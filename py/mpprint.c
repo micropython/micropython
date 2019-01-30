@@ -207,7 +207,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     // If needed this function could be generalised to handle other values.
     assert(base == 2 || base == 8 || base == 10 || base == 16);
 
-    if (!MP_OBJ_IS_INT(x)) {
+    if (!mp_obj_is_int(x)) {
         // This will convert booleans to int, or raise an error for
         // non-integer types.
         x = MP_OBJ_NEW_SMALL_INT(mp_obj_get_int(x));
