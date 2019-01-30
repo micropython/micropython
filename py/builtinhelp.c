@@ -58,7 +58,7 @@ STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
 #if MICROPY_PY_BUILTINS_HELP_MODULES
 STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
     for (size_t i = 0; i < map->alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+        if (mp_map_slot_is_filled(map, i)) {
             mp_obj_list_append(list, map->table[i].key);
         }
     }

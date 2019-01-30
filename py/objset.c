@@ -85,7 +85,7 @@ STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     #endif
     mp_print_str(print, "{");
     for (size_t i = 0; i < self->set.alloc; i++) {
-        if (MP_SET_SLOT_IS_FILLED(&self->set, i)) {
+        if (mp_set_slot_is_filled(&self->set, i)) {
             if (!first) {
                 mp_print_str(print, ", ");
             }
@@ -135,7 +135,7 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     mp_set_t *set = &self->set->set;
 
     for (size_t i = self->cur; i < max; i++) {
-        if (MP_SET_SLOT_IS_FILLED(set, i)) {
+        if (mp_set_slot_is_filled(set, i)) {
             self->cur = i + 1;
             return set->table[i];
         }
@@ -441,7 +441,7 @@ STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 mp_set_t *set = &self->set;
 
                 for (size_t i = 0; i < max; i++) {
-                    if (MP_SET_SLOT_IS_FILLED(set, i)) {
+                    if (mp_set_slot_is_filled(set, i)) {
                         hash += MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, set->table[i]));
                     }
                 }

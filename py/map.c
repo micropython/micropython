@@ -395,7 +395,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
 
 mp_obj_t mp_set_remove_first(mp_set_t *set) {
     for (size_t pos = 0; pos < set->alloc; pos++) {
-        if (MP_SET_SLOT_IS_FILLED(set, pos)) {
+        if (mp_set_slot_is_filled(set, pos)) {
             mp_obj_t elem = set->table[pos];
             // delete element
             set->used--;

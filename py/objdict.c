@@ -43,7 +43,7 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
     mp_map_t *map = &dict->map;
 
     for (size_t i = *cur; i < max; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+        if (mp_map_slot_is_filled(map, i)) {
             *cur = i + 1;
             return &(map->table[i]);
         }
@@ -364,7 +364,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
 
     // update the dict with any keyword args
     for (size_t i = 0; i < kwargs->alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+        if (mp_map_slot_is_filled(kwargs, i)) {
             mp_map_lookup(&self->map, kwargs->table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = kwargs->table[i].value;
         }
     }
