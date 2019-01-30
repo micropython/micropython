@@ -178,7 +178,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         // Make a list of names in the local namespace
         mp_obj_dict_t *dict = mp_locals_get();
         for (size_t i = 0; i < dict->map.alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
+            if (mp_map_slot_is_filled(&dict->map, i)) {
                 mp_obj_list_append(dir, dict->map.table[i].key);
             }
         }

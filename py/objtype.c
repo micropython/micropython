@@ -594,7 +594,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         mp_map_t *map = &self->members;
         mp_obj_t attr_dict = mp_obj_new_dict(map->used);
         for (size_t i = 0; i < map->alloc; ++i) {
-            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+            if (mp_map_slot_is_filled(map, i)) {
                 mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
             }
         }
@@ -1146,7 +1146,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // Check if the class has any special accessor methods
     if (!(o->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
         for (size_t i = 0; i < o->locals_dict->map.alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(&o->locals_dict->map, i)) {
+            if (mp_map_slot_is_filled(&o->locals_dict->map, i)) {
                 const mp_map_elem_t *elem = &o->locals_dict->map.table[i];
                 if (check_for_special_accessors(elem->key, elem->value)) {
                     o->flags |= TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
