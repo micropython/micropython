@@ -45,10 +45,12 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
+#include <services/rtc/adi_rtc.h>
 #include "adi_initialize.h"
 #include "bm_uart.h"
 #include "pin.h"
 #include "modmachine.h"
+#include "systick.h"
 
 BM_UART uart0;
 
@@ -74,9 +76,13 @@ int main(int argc, char **argv) {
     uart_initialize(&uart0, UART_BAUD_RATE_115200, UART_SERIAL_8N1, UART0);
     uart_write_byte(&uart0, 0x0C); // Clear the screen
 
+    adi_rtc_Init();
+
     mp_init();
+    machine_init();
     readline_init0();
     pin_init0();
+    sys_tick_init();
 
     pyexec_friendly_repl();
 

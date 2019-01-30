@@ -89,11 +89,12 @@ __attribute__(( always_inline )) static inline void __WFI(void) {
   __asm volatile ("wfi");
 }
 
-static inline mp_uint_t mp_hal_ticks_ms(void) { return 0; }
 static inline void mp_hal_set_interrupt_char(char c) {}
 
 void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af);
 void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj);
+
+#define mp_hal_ticks_cpu() (0)
 
 struct _pin_obj_t;
 #define mp_hal_pin_obj_t const struct _pin_obj_t*

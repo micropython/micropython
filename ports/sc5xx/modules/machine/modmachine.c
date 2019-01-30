@@ -105,6 +105,10 @@ void check_result(ADI_PWR_RESULT result, char *message) {
     }
 }
 
+uint32_t machine_get_fsclk0() {
+    return fsclk0;
+}
+
 void machine_init(void) {
     ADI_PWR_RESULT result;
     uint32_t rcu_state = *pREG_RCU0_STAT;

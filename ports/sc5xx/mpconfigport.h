@@ -106,6 +106,8 @@
 #define MICROPY_PY_THREAD           (0)
 
 // extended modules
+#define MICROPY_PY_UTIMEQ           (1)
+#define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
 
 // board specific definition
@@ -145,6 +147,7 @@ typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t mp_module_utime;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
@@ -152,6 +155,7 @@ extern const struct _mp_obj_module_t machine_module;
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) }, \
     { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&mp_module_ustruct) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
 

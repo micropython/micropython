@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Analog Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,22 +54,19 @@
 /// yearday is 1-366
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
-        // get current date and time
-        // note: need to call get time then get date to correctly access the registers
-        rtc_init_finalise();
-        RTC_DateTypeDef date;
-        RTC_TimeTypeDef time;
-        HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
-        HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
+        struct tm date_time;
+
+        adi_rtc_GetDateTime(&date_time);
+
         mp_obj_t tuple[8] = {
-            mp_obj_new_int(2000 + date.Year),
-            mp_obj_new_int(date.Month),
-            mp_obj_new_int(date.Date),
-            mp_obj_new_int(time.Hours),
-            mp_obj_new_int(time.Minutes),
-            mp_obj_new_int(time.Seconds),
-            mp_obj_new_int(date.WeekDay - 1),
-            mp_obj_new_int(timeutils_year_day(2000 + date.Year, date.Month, date.Date)),
+            mp_obj_new_int(2000 + date_time.tm_year),
+            mp_obj_new_int(date_time.tm_mon),
+            mp_obj_new_int(date_time.tm_mday),
+            mp_obj_new_int(date_time.tm_hour),
+            mp_obj_new_int(date_time.tm_min),
+            mp_obj_new_int(date_time.tm_sec),
+            mp_obj_new_int(0), // FIX ME
+            mp_obj_new_int(timeutils_year_day(2000 + date_time.tm_year, date_time.tm_mon, date_time.tm_mday)),
         };
         return mp_obj_new_tuple(8, tuple);
     } else {
@@ -117,13 +115,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 /// Returns the number of seconds, as an integer, since 1/1/2000.
 STATIC mp_obj_t time_time(void) {
     // get date and time
-    // note: need to call get time then get date to correctly access the registers
-    rtc_init_finalise();
-    RTC_DateTypeDef date;
-    RTC_TimeTypeDef time;
-    HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
-    HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
-    return mp_obj_new_int(timeutils_seconds_since_2000(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds));
+    struct tm date_time;
+    adi_rtc_GetDateTime(&date_time);
+    return mp_obj_new_int(timeutils_seconds_since_2000(
+            2000 + date_time.tm_year, date_time.tm_mon, date_time.tm_mday,
+            date_time.tm_hour, date_time.tm_min, date_time.tm_sec));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 

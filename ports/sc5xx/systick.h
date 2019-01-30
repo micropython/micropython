@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019 Analog Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,19 +24,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SC5XX_MODMACHINE_H
-#define MICROPY_INCLUDED_SC5XX_MODMACHINE_H
+#ifndef MICROPY_INCLUDED_SC5XX_SYSTICK_H
+#define MICROPY_INCLUDED_SC5XX_SYSTICK_H
 
-#include "py/obj.h"
+void sys_tick_init();
+void sys_tick_wait_at_least(uint32_t stc, uint32_t delay_ms);
+bool sys_tick_has_passed(uint32_t stc, uint32_t delay_ms);
 
-void machine_init(void);
-void machine_deinit(void);
-
-uint32_t machine_get_fsclk0(); // For use in systick and timer service
-
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
-MP_DECLARE_CONST_FUN_OBJ_0(machine_unique_id_obj);
-MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj);
-
-#endif // MICROPY_INCLUDED_SC5XX_MODMACHINE_H
+#endif // MICROPY_INCLUDED_SC5XX_SYSTICK_H
