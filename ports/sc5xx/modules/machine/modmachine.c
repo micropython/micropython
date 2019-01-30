@@ -53,6 +53,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "pin.h"
+#include "sdcard.h"
 
 #define SC_RESET_SOFT      (0)
 #define SC_RESET_SYSSRC    (1)
@@ -282,6 +283,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_SD),                  MP_ROM_PTR(&sdcard_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SDCard),              MP_ROM_PTR(&sdcard_type) },
 
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(SC_RESET_SOFT) },
     { MP_ROM_QSTR(MP_QSTR_SYSSRC_RESET),        MP_ROM_INT(SC_RESET_SYSSRC) },

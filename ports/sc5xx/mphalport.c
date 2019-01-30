@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "extmod/misc.h"
 #include "bm_uart.h"
+#include "pin.h"
 
 // defined in main
 extern BM_UART uart0;
@@ -88,6 +89,21 @@ void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af
         gpio -> MUX &= ~(0x3 << (pin * 2));
         gpio -> MUX |= ((af & 0x3) << (pin * 2));
     }
+}
+
+void mp_hal_pin_config(mp_hal_pin_obj_t *pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
+    pin_gpio_t *gpio = pin_obj -> gpio;
+    uint32_t pin = pin_obj -> pin;
+    mp_hal_gpio_init(gpio, pin, mode, alt);
+}
+
+bool mp_hal_pin_config_alt(mp_hal_pin_obj_t *pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit) {
+    const pin_af_obj_t *af = pin_find_af(pin, fn, unit);
+    if (af == NULL) {
+        return false;
+    }
+    mp_hal_pin_config(pin, mode, pull, af->idx);
+    return true;
 }
 
 void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj) {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019 Analog Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_SC5XX_SDCARD_H
+#define MICROPY_INCLUDED_SC5XX_SDCARD_H
 
-#define MICROPY_HW_BOARD_NAME       "SAM"
-#define MICROPY_HW_MCU_NAME         "ADSP-SC589"
-#define MICROPY_PY_SYS_PLATFORM     "sam"
+// this is a fixed size and should not be changed
+#define SDCARD_BLOCK_SIZE (512)
 
-#define MICROPY_PY_MACHINE_UART     (0)
-#define MICROPY_PY_MACHINE_HW_PWM   (0)
-#define MICROPY_PY_MACHINE_HW_SPI   (0)
-#define MICROPY_PY_MACHINE_TIMER    (0)
-#define MICROPY_PY_MACHINE_RTCOUNTER (0)
-#define MICROPY_PY_MACHINE_I2C      (0)
-#define MICROPY_PY_MACHINE_ADC      (0)
-#define MICROPY_PY_MACHINE_TEMP     (0)
-#define MICROPY_PY_RANDOM_HW_RNG    (0)
+void sdcard_init(void);
+bool sdcard_is_present(void);
+bool sdcard_power_on(void);
+void sdcard_power_off(void);
+uint64_t sdcard_get_capacity_in_bytes(void);
 
-#define MICROPY_HW_HAS_LED          (0)
-#define MICROPY_HW_LED_COUNT        (3)
-#define MICROPY_HW_LED_PULLUP       (0)
+// these return 0 on success, non-zero on error
+mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
+mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
-#define MICROPY_HW_LED1             (1) // LED1
-#define MICROPY_HW_LED2             (2) // LED2
-#define MICROPY_HW_LED3             (3) // LED3
+extern const struct _mp_obj_type_t sdcard_type;
+extern const struct _mp_obj_base_t sdcard_obj;
 
-#define MICROPY_HW_HAS_SDCARD       (1)
+struct _fs_user_mount_t;
+void sdcard_init_vfs(struct _fs_user_mount_t *vfs, int part);
+
+#endif // MICROPY_INCLUDED_SC5XX_SDCARD_H

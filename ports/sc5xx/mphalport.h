@@ -27,8 +27,8 @@
 #define __MPHALPORT_H__
 
 #define asm __asm
-#include "py/obj.h"
 #include <sys/platform.h>
+#include "py/obj.h"
 
 #define GPIOA   ((pin_gpio_t *)REG_PORTA_FER)
 #define GPIOB   ((pin_gpio_t *)REG_PORTB_FER)
@@ -91,13 +91,19 @@ __attribute__(( always_inline )) static inline void __WFI(void) {
 
 static inline void mp_hal_set_interrupt_char(char c) {}
 
+#include "pin.h"
+#define mp_hal_pin_obj_t pin_obj_t
+
 void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af);
+void mp_hal_pin_config(mp_hal_pin_obj_t *pin_obj, uint32_t mode, uint32_t pull, uint32_t alt);
+bool mp_hal_pin_config_alt(mp_hal_pin_obj_t *pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);
 void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj);
+
+#define mp_hal_pin_config_alt_static(pin_obj, mode, pull, fn_type) \
+        mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)) /* Overflow Error => alt func not found */
 
 #define mp_hal_ticks_cpu() (0)
 
-struct _pin_obj_t;
-#define mp_hal_pin_obj_t const struct _pin_obj_t*
 #define mp_hal_pin_high(p) (((p)->gpio->DATA_SET) = (p)->pin_mask)
 #define mp_hal_pin_low(p)  (((p)->gpio->DATA_CLR) = (p)->pin_mask)
 #define mp_hal_pin_read(p) ((((p)->gpio->DATA) >> (p)->pin) & 1)

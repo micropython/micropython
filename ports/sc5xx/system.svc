@@ -25,6 +25,10 @@
 			<component-description><![CDATA[This add-in provides Analog Devices' implementation of the Real-Time Clock Service (RTC)]]></component-description>
 			<product name="Analog Devices System Services and Device Drivers" version="1.0.0"/>
 		</component>
+		<component id="com.analog.crosscore.addins.ssldd.rsi.cortexa5" name="RSI Driver for Cortex-A" version="1.0.0" visible="true">
+			<component-description><![CDATA[This add-in provides Analog Devices' implementation of the Removable Storage Interface Driver (RSI)]]></component-description>
+			<product name="Analog Devices System Services and Device Drivers" version="1.0.0"/>
+		</component>
 	</installedComponents>
 	<configurations>
 		<configuration id="com.analog.crosscore.ssldd.pinmux.component">
