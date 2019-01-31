@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,48 +24,41 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#include <stdint.h>
 
-#include "py/mpconfig.h"
+#include "py/obj.h"
+#include "py/runtime.h"
 
-#include "supervisor/shared/display.h"
+#include "shared-bindings/terminalio/__init__.h"
 #include "shared-bindings/terminalio/Terminal.h"
-#include "supervisor/serial.h"
-#include "supervisor/usb.h"
 
-#include "tusb.h"
+#include "py/runtime.h"
 
-void serial_init(void) {
-    usb_init();
-}
+//| :mod:`terminalio` --- Displays text in a TileGrid
+//| =================================================
+//|
+//| .. module:: terminalio
+//|   :synopsis: Displays text in a TileGrid
+//|
+//| The `terminalio` module contains classes to display a character stream on a display
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     Terminal
+//|
+//|
+STATIC const mp_rom_map_elem_t  terminalio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_terminalio) },
+    { MP_ROM_QSTR(MP_QSTR_Terminal),   MP_OBJ_FROM_PTR(&terminalio_terminal_type) },
+};
 
-bool serial_connected(void) {
-    return tud_cdc_connected();
-}
 
-char serial_read(void) {
-    return (char) tud_cdc_read_char();
-}
+STATIC MP_DEFINE_CONST_DICT(terminalio_module_globals, terminalio_module_globals_table);
 
-bool serial_bytes_available(void) {
-    return tud_cdc_available() > 0;
-}
-
-void serial_write_substring(const char* text, uint32_t length) {
-    #if CIRCUITPY_DISPLAYIO
-    int errcode;
-    common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
-    #endif
-    if (!tud_cdc_connected()) {
-        return;
-    }
-    uint32_t count = 0;
-    while (count < length) {
-        count += tud_cdc_write(text + count, length - count);
-        usb_background();
-    }
-}
-
-void serial_write(const char* text) {
-    serial_write_substring(text, strlen(text));
-}
+const mp_obj_module_t terminalio_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&terminalio_module_globals,
+};

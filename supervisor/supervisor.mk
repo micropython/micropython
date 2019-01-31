@@ -3,6 +3,7 @@ SRC_SUPERVISOR = \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
 	supervisor/shared/board_busses.c \
+	supervisor/shared/display.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/micropython.c \
@@ -71,7 +72,7 @@ else
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
-SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))
+SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o)) $(BUILD)/autogen_display_resources.o
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
 
@@ -90,3 +91,13 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
 		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
+
+CIRCUITPY_DISPLAY_FONT = "../../tools/Tecate-bitmap-fonts/bitmap/terminus-font-4.39/ter-u12n.bdf"
+
+$(BUILD)/autogen_display_resources.c: ../../tools/gen_display_resources.py $(HEADER_BUILD)/qstrdefs.generated.h Makefile | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
+	$(Q)install -d $(BUILD)/genhdr
+	$(Q)$(PYTHON3) ../../tools/gen_display_resources.py \
+		--font $(CIRCUITPY_DISPLAY_FONT) \
+		--sample_file $(HEADER_BUILD)/qstrdefs.generated.h \
+		--output_c_file $(BUILD)/autogen_display_resources.c

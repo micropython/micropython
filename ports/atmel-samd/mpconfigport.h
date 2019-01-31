@@ -235,6 +235,7 @@ extern const struct _mp_obj_module_t ustack_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
 extern const struct _mp_obj_module_t stage_module;
+extern const struct _mp_obj_module_t terminalio_module;
 extern const struct _mp_obj_module_t touchio_module;
 extern const struct _mp_obj_module_t usb_hid_module;
 extern const struct _mp_obj_module_t usb_midi_module;
@@ -286,7 +287,8 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     #if !defined(CIRCUITPY_DISPLAYIO) || CIRCUITPY_DISPLAYIO
     #define CIRCUITPY_DISPLAYIO (1)
     #define CIRCUITPY_DISPLAY_LIMIT (3)
-	#define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
+	#define DISPLAYIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module }, \
+                             { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
     #else
     #define CIRCUITPY_DISPLAYIO (0)
     #define CIRCUITPY_DISPLAY_LIMIT (0)
@@ -349,6 +351,7 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     #define MICROPY_PY_BUILTINS_COMPLEX (0)
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+    #define CIRCUITPY_DISPLAYIO (0)
     #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
@@ -465,6 +468,7 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     mp_obj_t rtc_time_source; \
     FLASH_ROOT_POINTERS \
     mp_obj_t gamepad_singleton; \
+    mp_obj_t terminal_tilegrid_tiles; \
     NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);

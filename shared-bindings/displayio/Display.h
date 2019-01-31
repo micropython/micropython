@@ -40,7 +40,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     mp_obj_t bus, uint16_t width, uint16_t height,
     int16_t colstart, int16_t rowstart, uint16_t color_depth,
     uint8_t set_column_command, uint8_t set_row_command, uint8_t write_ram_command,
-    uint8_t* init_sequence, uint16_t init_sequence_len);
+    uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin);
 
 int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* self);
 
@@ -55,5 +55,11 @@ bool displayio_display_frame_queued(displayio_display_obj_t* self);
 bool displayio_display_refresh_queued(displayio_display_obj_t* self);
 void displayio_display_finish_refresh(displayio_display_obj_t* self);
 bool displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length);
+
+bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self);
+void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness);
+
+mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self);
+bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_DISPLAY_H

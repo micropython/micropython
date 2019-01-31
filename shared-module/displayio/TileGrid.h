@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
 
-#include "shared-bindings/displayio/Display.h"
-#include "shared-bindings/displayio/FourWire.h"
-#include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/displayio/ParallelBus.h"
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "py/obj.h"
 
 typedef struct {
-    union {
-        displayio_fourwire_obj_t fourwire_bus;
-        displayio_parallelbus_obj_t parallel_bus;
-    };
-    displayio_display_obj_t display;
-} primary_display_t;
+    mp_obj_base_t base;
+    mp_obj_t bitmap;
+    mp_obj_t pixel_shader;
+    uint16_t x;
+    uint16_t y;
+    uint16_t bitmap_width_in_tiles;
+    uint16_t width_in_tiles;
+    uint16_t height_in_tiles;
+    uint16_t total_width;
+    uint16_t total_height;
+    uint16_t tile_width;
+    uint16_t tile_height;
+    uint16_t top_left_x;
+    uint16_t top_left_y;
+    uint8_t* tiles;
+    bool needs_refresh;
+    bool inline_tiles;
+} displayio_tilegrid_t;
 
-extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
+bool displayio_tilegrid_get_pixel(displayio_tilegrid_t *self, int16_t x, int16_t y, uint16_t *pixel);
+bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self);
+void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self);
 
-extern displayio_group_t circuitpython_splash;
-
-void displayio_refresh_displays(void);
-void reset_displays(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H

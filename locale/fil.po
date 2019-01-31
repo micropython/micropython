@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-22 14:00-0800\n"
+"POT-Creation-Date: 2019-01-31 09:38-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -151,11 +151,11 @@ msgstr "mali ang mga argumento"
 msgid "script compilation not supported"
 msgstr "script kompilasyon hindi supportado"
 
-#: main.c:155
+#: main.c:152
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:169 main.c:247
+#: main.c:166 main.c:247
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,21 +163,27 @@ msgstr ""
 "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
 "para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
 
-#: main.c:171
+#: main.c:168
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:173 main.c:249
+#: main.c:170 main.c:249
 msgid "Auto-reload is off.\n"
 msgstr "Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:187
+#: main.c:184
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: main.c:203
+#: main.c:200
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
+
+#: main.c:221
+msgid ""
+"\n"
+"Code done running. Waiting for reload.\n"
+msgstr ""
 
 #: main.c:254
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -185,7 +191,7 @@ msgstr ""
 "Pindutin ang anumang key upang pumasok sa REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
-#: main.c:417
+#: main.c:419
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
@@ -280,8 +286,8 @@ msgid "Right channel unsupported"
 msgstr "Hindi supportado ang kanang channel"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
+#: shared-bindings/pulseio/PWMOut.c:113
 msgid "Invalid pin"
 msgstr "Mali ang pin"
 
@@ -298,9 +304,9 @@ msgid "Cannot output both channels on the same pin"
 msgstr "Hindi maaaring output ang mga parehong channel sa parehong pin"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 #: ports/nrf/common-hal/pulseio/PulseOut.c:107
+#: shared-bindings/pulseio/PWMOut.c:119
 msgid "All timers in use"
 msgstr "Lahat ng timer ginagamit"
 
@@ -383,16 +389,11 @@ msgstr "Ginagamit na ang DAC"
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr "Hindi ma-reset sa bootloader dahil walang bootloader."
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:119
-#: ports/nrf/common-hal/pulseio/PWMOut.c:233
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:394
+#: ports/nrf/common-hal/pulseio/PWMOut.c:259
+#: shared-bindings/pulseio/PWMOut.c:115
 msgid "Invalid PWM frequency"
 msgstr "Mali ang PWM frequency"
-
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
-msgid "All timers for this pin are in use"
-msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
@@ -684,13 +685,13 @@ msgid "Data too large for advertisement packet"
 msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:324
+#: ports/nrf/common-hal/bleio/Peripheral.c:332
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:336
+#: ports/nrf/common-hal/bleio/Peripheral.c:344
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
@@ -800,7 +801,7 @@ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 msgid "Failed to create mutex"
 msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c:304
+#: ports/nrf/common-hal/bleio/Peripheral.c:312
 #, fuzzy, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
@@ -872,10 +873,6 @@ msgstr "busio.UART hindi available"
 #, fuzzy
 msgid "Cannot get temperature"
 msgstr "Hindi makuha ang temperatura. status 0x%02x"
-
-#: ports/nrf/common-hal/pulseio/PWMOut.c:161
-msgid "All PWM peripherals are in use"
-msgstr "Lahat ng PWM peripherals ay ginagamit"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -2276,19 +2273,19 @@ msgstr ""
 msgid "Not connected."
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:210
+#: shared-bindings/bleio/Device.c:213
 msgid "Can't add services in Central mode"
 msgstr "Hindi maarang maglagay ng service sa Central mode"
 
-#: shared-bindings/bleio/Device.c:226
+#: shared-bindings/bleio/Device.c:229
 msgid "Can't connect in Peripheral mode"
 msgstr "Hindi maconnect sa Peripheral mode"
 
-#: shared-bindings/bleio/Device.c:256
+#: shared-bindings/bleio/Device.c:259
 msgid "Can't change the name in Central mode"
 msgstr "Hindi mapalitan ang pangalan sa Central mode"
 
-#: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
+#: shared-bindings/bleio/Device.c:280 shared-bindings/bleio/Device.c:316
 msgid "Can't advertise in Central mode"
 msgstr "Hindi ma advertise habang nasa Central mode"
 
@@ -2384,23 +2381,23 @@ msgstr "row data ay dapat na buffer"
 msgid "color should be an int"
 msgstr "color ay dapat na int"
 
-#: shared-bindings/displayio/Display.c:119
+#: shared-bindings/displayio/Display.c:124
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:138
+#: shared-bindings/displayio/Display.c:145
 msgid "Must be a Group subclass."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:187
+#: shared-bindings/displayio/Display.c:197
+msgid "Brightness not adjustable"
 msgstr ""
 
 #: shared-bindings/displayio/FourWire.c:93
 #: shared-bindings/displayio/ParallelBus.c:98
 msgid "Too many display busses"
 msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:106
-#: shared-bindings/displayio/ParallelBus.c:110
-msgid "displayio is a work in progress"
-msgstr "displayio ay nasa gitna ng konstruksiyon"
 
 #: shared-bindings/displayio/Group.c:62
 msgid "Group must have size at least 1"
@@ -2437,15 +2434,23 @@ msgstr "y ay dapat int"
 msgid "end_x should be an int"
 msgstr "y ay dapat int"
 
-#: shared-bindings/displayio/Sprite.c:49
+#: shared-bindings/displayio/TileGrid.c:49
 msgid "position must be 2-tuple"
 msgstr "position ay dapat 2-tuple"
 
-#: shared-bindings/displayio/Sprite.c:102
+#: shared-bindings/displayio/TileGrid.c:117
 msgid "unsupported bitmap type"
 msgstr "Hindi supportadong tipo ng bitmap"
 
-#: shared-bindings/displayio/Sprite.c:167
+#: shared-bindings/displayio/TileGrid.c:128
+msgid "Tile width must exactly divide bitmap width"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:131
+msgid "Tile height must exactly divide bitmap height"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:198
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader ay dapat displayio.Palette o displayio.ColorConverter"
 
@@ -2472,6 +2477,7 @@ msgstr "walang laman ang address"
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
+#: shared-bindings/terminalio/Terminal.c:63
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
 
@@ -2507,12 +2513,16 @@ msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 msgid "No hardware random available"
 msgstr "Walang magagamit na hardware random"
 
-#: shared-bindings/pulseio/PWMOut.c:162
+#: shared-bindings/pulseio/PWMOut.c:117
+msgid "All timers for this pin are in use"
+msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
+
+#: shared-bindings/pulseio/PWMOut.c:171
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr "PWM duty_cycle ay dapat sa loob ng 0 at 65535 (16 bit resolution)"
 
-#: shared-bindings/pulseio/PWMOut.c:193
+#: shared-bindings/pulseio/PWMOut.c:202
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
@@ -2578,6 +2588,11 @@ msgstr "Ang liwanag ay dapat sa gitna ng 0 o 255"
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
 msgstr "Ang laki ng stack ay dapat na hindi bababa sa 256"
+
+#: shared-bindings/terminalio/Terminal.c:68
+#, fuzzy
+msgid "unicode_characters must be a string"
+msgstr "ang keywords dapat strings"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2703,7 +2718,7 @@ msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
 msgid "row must be packed and word aligned"
 msgstr "row ay dapat packed at ang word nakahanay"
 
-#: shared-module/displayio/Display.c:62
+#: shared-module/displayio/Display.c:69
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "Hindi supportadong tipo ng bitmap"
@@ -2713,7 +2728,7 @@ msgid "Group full"
 msgstr "Puno ang group"
 
 #: shared-module/displayio/Group.c:46
-msgid "Layer must be a Group or Sprite subclass."
+msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
 #: shared-module/displayio/Group.c:55
@@ -2863,11 +2878,17 @@ msgstr ""
 #~ msgid "Can not query for the device address."
 #~ msgstr "Hindi maaaring mag-query para sa address ng device."
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Mali ang UUID string length"
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Lahat ng PWM peripherals ay ginagamit"
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
 
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Mali ang UUID parameter"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Mali ang UUID string length"
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Hindi ma-set ang PPCP parameters."
@@ -2876,8 +2897,30 @@ msgstr ""
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "ang palette ay dapat 32 bytes ang haba"
 
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
+
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Mali ang tipo ng serbisyo"
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Mali ang bilang ng bytes"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2886,40 +2929,18 @@ msgstr ""
 #~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
 #~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
 
 #~ msgid "Can not add Service."
 #~ msgstr "Hindi maidaragdag ang serbisyo."
 
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
-
 #~ msgid "Wrong address length"
 #~ msgstr "Mali ang address length"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
 #~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Mali ang bilang ng bytes"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"

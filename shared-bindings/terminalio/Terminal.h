@@ -24,27 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SPRITE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SPRITE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "shared-module/terminalio/Terminal.h"
 
-#include "py/obj.h"
+#include "shared-bindings/displayio/TileGrid.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t bitmap;
-    mp_obj_t pixel_shader;
-    uint16_t x;
-    uint16_t y;
-    uint16_t width;
-    uint16_t height;
-    bool needs_refresh;
-} displayio_sprite_t;
+extern const mp_obj_type_t terminalio_terminal_type;
 
-bool displayio_sprite_get_pixel(displayio_sprite_t *sprite, int16_t x, int16_t y, uint16_t *pixel);
-bool displayio_sprite_needs_refresh(displayio_sprite_t *self);
-void displayio_sprite_finish_refresh(displayio_sprite_t *self);
+extern void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self,
+    displayio_tilegrid_t* tilegrid, const byte* unicode_characters, size_t unicode_characters_len);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_SPRITE_H
+// Write characters. len is in characters NOT bytes!
+extern size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self,
+                              const uint8_t *data, size_t len, int *errcode);
+
+extern bool common_hal_terminalio_terminal_ready_to_tx(terminalio_terminal_obj_t *self);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H

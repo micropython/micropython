@@ -98,19 +98,7 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     return self;
 }
 
-
-//|   .. method:: send(command, data)
-//|
-//|
-STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_raise_NotImplementedError(translate("displayio is a work in progress"));
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 1, displayio_fourwire_obj_send);
-
 STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&displayio_fourwire_send_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_fourwire_locals_dict, displayio_fourwire_locals_dict_table);
 

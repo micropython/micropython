@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 hathach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,4 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
-
-#include "shared-module/displayio/Sprite.h"
-
-extern const mp_obj_type_t displayio_sprite_type;
-
-void common_hal_displayio_sprite_construct(displayio_sprite_t *self, mp_obj_t bitmap,
-        mp_obj_t pixel_shader, uint16_t width, uint16_t height, uint16_t x, uint16_t y);
-
-void common_hal_displayio_sprite_get_position(displayio_sprite_t *self, int16_t* x, int16_t* y);
-void common_hal_displayio_sprite_set_position(displayio_sprite_t *self, int16_t x, int16_t y);
-
-mp_obj_t common_hal_displayio_sprite_get_pixel_shader(displayio_sprite_t *self);
-void common_hal_displayio_sprite_set_pixel_shader(displayio_sprite_t *self, mp_obj_t pixel_shader);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_SPRITE_H
+#include "shared-bindings/terminalio/__init__.h"

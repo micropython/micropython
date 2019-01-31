@@ -86,3 +86,9 @@
 [submodule "tools/adabot"]
 	path = tools/adabot
 	url = https://github.com/adafruit/adabot.git
+[submodule "tools/bitmap_font"]
+	path = tools/bitmap_font
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BitmapFont.git
+[submodule "tools/Tecate-bitmap-fonts"]
+	path = tools/Tecate-bitmap-fonts
+	url = https://github.com/Tecate/bitmap-fonts.git

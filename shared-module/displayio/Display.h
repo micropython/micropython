@@ -27,7 +27,9 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
 #define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
 
-#include "shared-module/displayio/Group.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/displayio/Group.h"
+#include "shared-bindings/pulseio/PWMOut.h"
 
 typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
 typedef void (*display_bus_send)(mp_obj_t bus, bool command, uint8_t *data, uint32_t data_length);
@@ -50,6 +52,16 @@ typedef struct {
     display_bus_begin_transaction begin_transaction;
     display_bus_send send;
     display_bus_end_transaction end_transaction;
+    union {
+        digitalio_digitalinout_obj_t backlight_inout;
+        pulseio_pwmout_obj_t backlight_pwm;
+    };
+    uint64_t last_backlight_refresh;
+    bool auto_brightness:1;
+    bool updating_backlight:1;
 } displayio_display_obj_t;
+
+void displayio_display_update_backlight(displayio_display_obj_t* self);
+void release_display(displayio_display_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

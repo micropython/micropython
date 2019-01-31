@@ -388,7 +388,7 @@ SRC_SHARED_MODULE = \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \
-	displayio/Sprite.c \
+	displayio/TileGrid.c \
 	gamepad/__init__.c \
 	gamepad/GamePad.c \
 	_stage/__init__.c \
@@ -398,6 +398,8 @@ SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
 	struct/__init__.c \
+	terminalio/__init__.c \
+	terminalio/Terminal.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	usb_hid/__init__.c \
