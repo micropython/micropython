@@ -109,8 +109,13 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    mp_obj_t backlight_pin = args[ARG_backlight_pin].u_obj;
-    assert_pin_free(backlight_pin);
+    mp_obj_t backlight_pin_obj = args[ARG_backlight_pin].u_obj;
+    assert_pin(backlight_pin_obj, true);
+    const mcu_pin_obj_t* backlight_pin = NULL;
+    if (backlight_pin_obj != NULL && backlight_pin_obj != mp_const_none) {
+        backlight_pin = MP_OBJ_TO_PTR(backlight_pin_obj);
+        assert_pin_free(backlight_pin);
+    }
 
     displayio_display_obj_t *self = NULL;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
@@ -127,7 +132,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     common_hal_displayio_display_construct(self,
             display_bus, args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int,
             args[ARG_color_depth].u_int, args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
-            args[ARG_write_ram_command].u_int, bufinfo.buf, bufinfo.len, backlight_pin);
+            args[ARG_write_ram_command].u_int, bufinfo.buf, bufinfo.len, MP_OBJ_TO_PTR(backlight_pin));
 
     return self;
 }
