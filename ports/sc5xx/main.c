@@ -51,8 +51,11 @@
 #include "pin.h"
 #include "modmachine.h"
 #include "systick.h"
+#include "sdcard.h"
 
 BM_UART uart0;
+
+STATIC bool init_sdcard_fs(void);
 
 int main(int argc, char **argv) {
 
@@ -70,6 +73,19 @@ int main(int argc, char **argv) {
     sys_tick_init();
     sdcard_init();
 
+    bool mounted_sdcard = false;
+    #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
+    // if an SD card is present then mount it on /sd/
+    if (sdcard_is_present()) {
+        mounted_sdcard = init_sdcard_fs();
+    }
+
+    /*if (mounted_sdcard) {
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
+    }*/
+    #endif
+
     pyexec_friendly_repl();
 
     machine_deinit();
@@ -79,6 +95,70 @@ int main(int argc, char **argv) {
 
     return 0; // never reaches here
 }
+
+#if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
+STATIC bool init_sdcard_fs(void) {
+    bool first_part = true;
+    for (int part_num = 1; part_num <= 4; ++part_num) {
+        // create vfs object
+        fs_user_mount_t *vfs_fat = m_new_obj_maybe(fs_user_mount_t);
+        mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
+        if (vfs == NULL || vfs_fat == NULL) {
+            break;
+        }
+        vfs_fat->flags = FSUSER_FREE_OBJ;
+        sdcard_init_vfs(vfs_fat, part_num);
+
+        // try to mount the partition
+        FRESULT res = f_mount(&vfs_fat->fatfs);
+
+        if (res != FR_OK) {
+            // couldn't mount
+            m_del_obj(fs_user_mount_t, vfs_fat);
+            m_del_obj(mp_vfs_mount_t, vfs);
+        } else {
+            // mounted via FatFs, now mount the SD partition in the VFS
+            if (first_part) {
+                // the first available partition is traditionally called "sd" for simplicity
+                vfs->str = "/sd";
+                vfs->len = 3;
+            } else {
+                // subsequent partitions are numbered by their index in the partition table
+                if (part_num == 2) {
+                    vfs->str = "/sd2";
+                } else if (part_num == 2) {
+                    vfs->str = "/sd3";
+                } else {
+                    vfs->str = "/sd4";
+                }
+                vfs->len = 4;
+            }
+            vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+            vfs->next = NULL;
+            for (mp_vfs_mount_t **m = &MP_STATE_VM(vfs_mount_table);; m = &(*m)->next) {
+                if (*m == NULL) {
+                    *m = vfs;
+                    break;
+                }
+            }
+
+            if (first_part) {
+                // use SD card as current directory
+                MP_STATE_PORT(vfs_cur) = vfs;
+            }
+
+            first_part = false;
+        }
+    }
+
+    if (first_part) {
+        mp_printf(&mp_plat_print, "sc5xx: can't mount SD card\n");
+        return false;
+    } else {
+        return true;
+    }
+}
+#endif
 
 void nlr_jump_fail(void *val) {
     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));

@@ -48,3 +48,4 @@
 #define MICROPY_HW_LED3             (3) // LED3
 
 #define MICROPY_HW_HAS_SDCARD       (1)
+#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_HAS_SDCARD)
