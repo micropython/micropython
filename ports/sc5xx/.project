@@ -32,9 +32,44 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>embed</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/lib/embed</locationURI>
+		</link>
+		<link>
+			<name>extmod</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/extmod</locationURI>
+		</link>
+		<link>
+			<name>mp-readline</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/lib/mp-readline</locationURI>
+		</link>
+		<link>
+			<name>oofatfs</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/lib/oofatfs</locationURI>
+		</link>
+		<link>
 			<name>py</name>
 			<type>2</type>
 			<locationURI>PARENT-2-PROJECT_LOC/py</locationURI>
+		</link>
+		<link>
+			<name>timeutils</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/lib/timeutils</locationURI>
+		</link>
+		<link>
+			<name>utils</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/lib/utils</locationURI>
+		</link>
+		<link>
+			<name>system/drivers/rsi/adi_rsi.c</name>
+			<type>1</type>
+			<locationURI>CCES/ARM/arm-none-eabi/arm-none-eabi/lib/src/cortex-a5/drivers/Source/rsi/adi_rsi.c</locationURI>
 		</link>
 		<link>
 			<name>system/services/pwr/adi_pwr.c</name>

@@ -5,6 +5,7 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="arm.toolchain.bare.target.exe.debug.1243964035" moduleId="org.eclipse.cdt.core.settings" name="Debug">
 				<macros>
 					<stringMacro name="pwr-service-version" type="VALUE_TEXT" value="1.0"/>
+					<stringMacro name="rsi-driver-version" type="VALUE_TEXT" value="1.0"/>
 					<stringMacro name="rtc-service-version" type="VALUE_TEXT" value="1.0"/>
 					<stringMacro name="mcapi-version" type="VALUE_TEXT" value="2.15"/>
 				</macros>
@@ -102,6 +103,7 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="arm.toolchain.bare.target.exe.release.840311475" moduleId="org.eclipse.cdt.core.settings" name="Release">
 				<macros>
 					<stringMacro name="pwr-service-version" type="VALUE_TEXT" value="1.0"/>
+					<stringMacro name="rsi-driver-version" type="VALUE_TEXT" value="1.0"/>
 					<stringMacro name="rtc-service-version" type="VALUE_TEXT" value="1.0"/>
 					<stringMacro name="mcapi-version" type="VALUE_TEXT" value="2.15"/>
 				</macros>
