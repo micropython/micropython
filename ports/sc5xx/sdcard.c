@@ -76,7 +76,7 @@ void sdcard_init(void) {
 }
 
 bool sdcard_is_present(void) {
-    return adi_rsi_IsCardPresent(hDevice);
+    return (adi_rsi_IsCardPresent(hDevice) == ADI_RSI_SUCCESS);
 }
 
 bool sdcard_power_on(void) {
