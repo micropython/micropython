@@ -35,11 +35,39 @@ uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
     return self->len;
 }
 
+static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_t *bytes) {
+    // Write a whole page to flash, buffering it first and then erasing and rewriting 
+    // it since we can only clear a whole page at a time.
+    // TODO (maybe) check if only clearing bits (don't need to erase)
+    // XXX should this suspend interrupts so erase/write is atomic?
+
+    if (offset == 0 && len == FLASH_PAGE_SIZE) {
+        nrf_nvmc_page_erase(page_addr);
+        nrf_nvmc_write_bytes(page_addr, bytes, FLASH_PAGE_SIZE);
+    } else {
+        uint8_t buffer[FLASH_PAGE_SIZE];
+        memcpy(buffer, (uint8_t *)page_addr, FLASH_PAGE_SIZE);
+        memcpy(buffer + offset, bytes, len);
+        nrf_nvmc_page_erase(page_addr);
+        nrf_nvmc_write_bytes(page_addr, buffer, FLASH_PAGE_SIZE);
+    }
+}
+
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
         uint32_t start_index, uint8_t* values, uint32_t len) {
-    printf("%ld %ld\n", start_index, len);
-    nrf_nvmc_page_erase(self->start_address);
-    nrf_nvmc_write_bytes(self->start_address + start_index, values, len);    
+
+    uint32_t address = self->start_address + start_index;
+    uint32_t offset = address % FLASH_PAGE_SIZE;
+    uint32_t page_addr = address - offset;
+
+    while (len) {
+        uint32_t write_len = MIN(len, FLASH_PAGE_SIZE - offset);
+        write_page(page_addr, offset, write_len, values);
+        len -= write_len;
+        values += write_len;
+        page_addr += FLASH_PAGE_SIZE;
+        offset = 0;
+    }
     return true;
 }
 
