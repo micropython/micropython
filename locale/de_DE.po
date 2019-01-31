@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-22 15:57-0800\n"
+"POT-Creation-Date: 2019-01-31 09:38-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -151,11 +151,11 @@ msgstr "ungültige argumente"
 msgid "script compilation not supported"
 msgstr "kompilieren von Skripten ist nicht unterstützt"
 
-#: main.c:155
+#: main.c:152
 msgid " output:\n"
 msgstr " Ausgabe:\n"
 
-#: main.c:169 main.c:247
+#: main.c:166 main.c:247
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,28 +163,36 @@ msgstr ""
 "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
 "auszuführen oder verbinde dich mit der REPL zum deaktivieren.\n"
 
-#: main.c:171
+#: main.c:168
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:173 main.c:249
+#: main.c:170 main.c:249
 msgid "Auto-reload is off.\n"
 msgstr "Automatisches Neuladen ist deaktiviert.\n"
 
-#: main.c:187
+#: main.c:184
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
-#: main.c:203
+#: main.c:200
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr "WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
+msgstr ""
+"WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
+
+#: main.c:221
+msgid ""
+"\n"
+"Code done running. Waiting for reload.\n"
+msgstr ""
 
 #: main.c:254
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
-"Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu laden"
+"Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
+"laden"
 
-#: main.c:417
+#: main.c:419
 msgid "soft reboot\n"
 msgstr "soft reboot\n"
 
@@ -279,8 +287,8 @@ msgid "Right channel unsupported"
 msgstr "Rechter Kanal wird nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
+#: shared-bindings/pulseio/PWMOut.c:113
 msgid "Invalid pin"
 msgstr "Ungültiger Pin"
 
@@ -297,9 +305,9 @@ msgid "Cannot output both channels on the same pin"
 msgstr "Kann nicht beite Kanäle auf dem gleichen Pin ausgeben"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 #: ports/nrf/common-hal/pulseio/PulseOut.c:107
+#: shared-bindings/pulseio/PWMOut.c:119
 msgid "All timers in use"
 msgstr "Alle timer werden benutzt"
 
@@ -381,16 +389,11 @@ msgstr "Bus pin %d wird schon benutzt"
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr "Reset zum bootloader nicht möglich da bootloader nicht vorhanden"
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:119
-#: ports/nrf/common-hal/pulseio/PWMOut.c:233
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:394
+#: ports/nrf/common-hal/pulseio/PWMOut.c:259
+#: shared-bindings/pulseio/PWMOut.c:115
 msgid "Invalid PWM frequency"
 msgstr "Ungültige PWM Frequenz"
-
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
-msgid "All timers for this pin are in use"
-msgstr "Alle timer für diesen Pin werden benutzt"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
@@ -679,13 +682,13 @@ msgid "Data too large for advertisement packet"
 msgstr "Zu vielen Daten für das advertisement packet"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:324
+#: ports/nrf/common-hal/bleio/Peripheral.c:332
 #, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:336
+#: ports/nrf/common-hal/bleio/Peripheral.c:344
 #, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
@@ -784,7 +787,7 @@ msgstr "Der Scanvorgang kann nicht gestartet werden"
 msgid "Failed to create mutex"
 msgstr "Erstellen des Mutex ist fehlgeschlagen"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c:304
+#: ports/nrf/common-hal/bleio/Peripheral.c:312
 #, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "Dienst konnte nicht hinzugefügt werden. Status: 0x%04x"
@@ -855,10 +858,6 @@ msgstr "busio.UART nicht verfügbar"
 msgid "Cannot get temperature"
 msgstr "Kann Temperatur nicht holen"
 
-#: ports/nrf/common-hal/pulseio/PWMOut.c:161
-msgid "All PWM peripherals are in use"
-msgstr "Alle PWM-Peripheriegeräte werden verwendet"
-
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
 msgstr "Unbekannter Typ"
@@ -887,7 +886,8 @@ msgstr "Funktion akzeptiert keine Keyword-Argumente"
 #: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:108
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr "Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
+msgstr ""
+"Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 
 #: py/argcheck.c:73
 #, c-format
@@ -917,7 +917,9 @@ msgstr "Anzahl/Type der Argumente passen nicht"
 
 #: py/argcheck.c:156
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr "Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen normale Argumente"
+msgstr ""
+"Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen "
+"normale Argumente"
 
 #: py/bc.c:88 py/objnamedtuple.c:112
 msgid "%q() takes %d positional arguments but %d were given"
@@ -1864,13 +1866,15 @@ msgstr ""
 
 #: py/parse.c:1170
 msgid "unexpected indent"
-msgstr "unerwarteter Einzug (Einrückung) "
-"Bitte Leerzeichen am Zeilenanfang kontrollieren!"
+msgstr ""
+"unerwarteter Einzug (Einrückung) Bitte Leerzeichen am Zeilenanfang "
+"kontrollieren!"
 
 #: py/parse.c:1173
 msgid "unindent does not match any outer indentation level"
-msgstr "Einrückung entspricht keiner äußeren Einrückungsebene. "
-"Bitte Leerzeichen am Zeilenanfang kontrollieren!"
+msgstr ""
+"Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen am "
+"Zeilenanfang kontrollieren!"
 
 #: py/parsenum.c:60
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -1898,8 +1902,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Inkompatible mpy-Datei. Bitte aktualisieren Sie alle mpy-Dateien. Siehe http://adafru.it/"
-"mpy-update für weitere Informationen."
+"Inkompatible mpy-Datei. Bitte aktualisieren Sie alle mpy-Dateien. Siehe "
+"http://adafru.it/mpy-update für weitere Informationen."
 
 #: py/persistentcode.c:326
 msgid "can only save bytecode"
@@ -2231,19 +2235,19 @@ msgstr "Schreiben von CharacteristicBuffer ist nicht vorgesehen"
 msgid "Not connected."
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:210
+#: shared-bindings/bleio/Device.c:213
 msgid "Can't add services in Central mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:226
+#: shared-bindings/bleio/Device.c:229
 msgid "Can't connect in Peripheral mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:256
+#: shared-bindings/bleio/Device.c:259
 msgid "Can't change the name in Central mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
+#: shared-bindings/bleio/Device.c:280 shared-bindings/bleio/Device.c:316
 msgid "Can't advertise in Central mode"
 msgstr ""
 
@@ -2337,22 +2341,22 @@ msgstr ""
 msgid "color should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:119
+#: shared-bindings/displayio/Display.c:124
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:138
+#: shared-bindings/displayio/Display.c:145
 msgid "Must be a Group subclass."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:187
+#: shared-bindings/displayio/Display.c:197
+msgid "Brightness not adjustable"
 msgstr ""
 
 #: shared-bindings/displayio/FourWire.c:93
 #: shared-bindings/displayio/ParallelBus.c:98
 msgid "Too many display busses"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:106
-#: shared-bindings/displayio/ParallelBus.c:110
-msgid "displayio is a work in progress"
 msgstr ""
 
 #: shared-bindings/displayio/Group.c:62
@@ -2388,15 +2392,23 @@ msgstr ""
 msgid "end_x should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:49
+#: shared-bindings/displayio/TileGrid.c:49
 msgid "position must be 2-tuple"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:102
+#: shared-bindings/displayio/TileGrid.c:117
 msgid "unsupported bitmap type"
 msgstr "Nicht unterstützter Bitmap-Typ"
 
-#: shared-bindings/displayio/Sprite.c:167
+#: shared-bindings/displayio/TileGrid.c:128
+msgid "Tile width must exactly divide bitmap width"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:131
+msgid "Tile height must exactly divide bitmap height"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:198
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
@@ -2423,6 +2435,7 @@ msgstr ""
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
+#: shared-bindings/terminalio/Terminal.c:63
 msgid "Expected a %q"
 msgstr ""
 
@@ -2458,12 +2471,16 @@ msgstr ""
 msgid "No hardware random available"
 msgstr ""
 
-#: shared-bindings/pulseio/PWMOut.c:162
+#: shared-bindings/pulseio/PWMOut.c:117
+msgid "All timers for this pin are in use"
+msgstr "Alle timer für diesen Pin werden benutzt"
+
+#: shared-bindings/pulseio/PWMOut.c:171
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 
-#: shared-bindings/pulseio/PWMOut.c:193
+#: shared-bindings/pulseio/PWMOut.c:202
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
@@ -2528,6 +2545,11 @@ msgstr ""
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
 msgstr ""
+
+#: shared-bindings/terminalio/Terminal.c:68
+#, fuzzy
+msgid "unicode_characters must be a string"
+msgstr "name muss ein String sein"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2651,7 +2673,7 @@ msgstr ""
 msgid "row must be packed and word aligned"
 msgstr ""
 
-#: shared-module/displayio/Display.c:62
+#: shared-module/displayio/Display.c:69
 msgid "Unsupported display bus type"
 msgstr "Nicht unterstützter display bus type"
 
@@ -2660,7 +2682,7 @@ msgid "Group full"
 msgstr ""
 
 #: shared-module/displayio/Group.c:46
-msgid "Layer must be a Group or Sprite subclass."
+msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
 #: shared-module/displayio/Group.c:55
@@ -2782,8 +2804,8 @@ msgid ""
 msgstr ""
 "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher, "
 "dass deine Stromversorgung genug Leistung für die gesamte Schaltung zur "
-"Verfügung stellt und drücke die Reset-Taste (nach Auswurf "
-"des CIRCUITPY-Laufwerks)\n"
+"Verfügung stellt und drücke die Reset-Taste (nach Auswurf des CIRCUITPY-"
+"Laufwerks)\n"
 
 #: supervisor/shared/safe_mode.c:120
 msgid ""
@@ -2796,15 +2818,17 @@ msgstr ""
 "Der CircuitPython-Heap war beschädigt, weil der Stack zu klein war.\n"
 "Bitte erhöhe die stack size limits und drücke die Reset-Taste (nach Auswurf "
 "des CIRCUITPY-Laufwerks)\n"
-"Wenn du den Stack nicht geändert hast, melde bitte das Problem unter "
-"https://github.com/adafruit/circuitpython/issues\n"
+"Wenn du den Stack nicht geändert hast, melde bitte das Problem unter https://"
+"github.com/adafruit/circuitpython/issues\n"
 "mit dem Inhalt deines CIRCUITPY-Laufwerks.\n"
-
 
 #: supervisor/shared/safe_mode.c:123
 msgid ""
 "The reset button was pressed while booting CircuitPython. Press again to "
 "exit safe mode.\n"
 msgstr ""
-"Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie erneut "
-"um den abgesicherten Modus zu verlassen. \n"
+"Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
+"erneut um den abgesicherten Modus zu verlassen. \n"
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Alle PWM-Peripheriegeräte werden verwendet"

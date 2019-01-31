@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-22 14:00-0800\n"
+"POT-Creation-Date: 2019-01-31 09:38-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -151,11 +151,11 @@ msgstr "argumen-argumen tidak valid"
 msgid "script compilation not supported"
 msgstr "kompilasi script tidak didukung"
 
-#: main.c:155
+#: main.c:152
 msgid " output:\n"
 msgstr "output:\n"
 
-#: main.c:169 main.c:247
+#: main.c:166 main.c:247
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,22 +163,28 @@ msgstr ""
 "Auto-reload aktif. Silahkan simpan data-data (files) melalui USB untuk "
 "menjalankannya atau masuk ke REPL untukmenonaktifkan.\n"
 
-#: main.c:171
+#: main.c:168
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Berjalan di mode aman(safe mode)! Auto-reload tidak aktif.\n"
 
-#: main.c:173 main.c:249
+#: main.c:170 main.c:249
 msgid "Auto-reload is off.\n"
 msgstr "Auto-reload tidak aktif.\n"
 
-#: main.c:187
+#: main.c:184
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
 "Berjalan di mode aman(safe mode)! tidak menjalankan kode yang tersimpan.\n"
 
-#: main.c:203
+#: main.c:200
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "PERINGATAN: Nama file kode anda mempunyai dua ekstensi\n"
+
+#: main.c:221
+msgid ""
+"\n"
+"Code done running. Waiting for reload.\n"
+msgstr ""
 
 #: main.c:254
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -186,7 +192,7 @@ msgstr ""
 "Tekan tombol apa saja untuk masuk ke dalam REPL. Gunakan CTRL+D untuk reset "
 "(Reload)"
 
-#: main.c:417
+#: main.c:419
 msgid "soft reboot\n"
 msgstr "memulai ulang software(soft reboot)\n"
 
@@ -281,8 +287,8 @@ msgid "Right channel unsupported"
 msgstr "Channel Kanan tidak didukung"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
+#: shared-bindings/pulseio/PWMOut.c:113
 msgid "Invalid pin"
 msgstr "Pin tidak valid"
 
@@ -301,9 +307,9 @@ msgstr ""
 "sama"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 #: ports/nrf/common-hal/pulseio/PulseOut.c:107
+#: shared-bindings/pulseio/PWMOut.c:119
 msgid "All timers in use"
 msgstr "Semua timer sedang digunakan"
 
@@ -387,16 +393,11 @@ msgstr ""
 "Tidak dapat melakukan reset ke bootloader karena tidak ada bootloader yang "
 "terisi"
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:119
-#: ports/nrf/common-hal/pulseio/PWMOut.c:233
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:394
+#: ports/nrf/common-hal/pulseio/PWMOut.c:259
+#: shared-bindings/pulseio/PWMOut.c:115
 msgid "Invalid PWM frequency"
 msgstr "Frekuensi PWM tidak valid"
-
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
-msgid "All timers for this pin are in use"
-msgstr "Semua timer untuk pin ini sedang digunakan"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
@@ -687,13 +688,13 @@ msgid "Data too large for advertisement packet"
 msgstr "Tidak bisa menyesuaikan data ke dalam paket advertisment"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:324
+#: ports/nrf/common-hal/bleio/Peripheral.c:332
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:336
+#: ports/nrf/common-hal/bleio/Peripheral.c:344
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
@@ -803,7 +804,7 @@ msgstr "Gagal untuk melakukan scanning, status: 0x%08lX"
 msgid "Failed to create mutex"
 msgstr "Gagal untuk membuat mutex, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c:304
+#: ports/nrf/common-hal/bleio/Peripheral.c:312
 #, fuzzy, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "Gagal untuk menambahkan layanan, status: 0x%08lX"
@@ -874,10 +875,6 @@ msgstr "busio.UART tidak tersedia"
 #, fuzzy
 msgid "Cannot get temperature"
 msgstr "Tidak bisa mendapatkan temperatur. status: 0x%02x"
-
-#: ports/nrf/common-hal/pulseio/PWMOut.c:161
-msgid "All PWM peripherals are in use"
-msgstr "Semua perangkat PWM sedang digunakan"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -2250,19 +2247,19 @@ msgstr ""
 msgid "Not connected."
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:210
+#: shared-bindings/bleio/Device.c:213
 msgid "Can't add services in Central mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:226
+#: shared-bindings/bleio/Device.c:229
 msgid "Can't connect in Peripheral mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:256
+#: shared-bindings/bleio/Device.c:259
 msgid "Can't change the name in Central mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
+#: shared-bindings/bleio/Device.c:280 shared-bindings/bleio/Device.c:316
 msgid "Can't advertise in Central mode"
 msgstr ""
 
@@ -2358,22 +2355,22 @@ msgstr ""
 msgid "color should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:119
+#: shared-bindings/displayio/Display.c:124
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:138
+#: shared-bindings/displayio/Display.c:145
 msgid "Must be a Group subclass."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:187
+#: shared-bindings/displayio/Display.c:197
+msgid "Brightness not adjustable"
 msgstr ""
 
 #: shared-bindings/displayio/FourWire.c:93
 #: shared-bindings/displayio/ParallelBus.c:98
 msgid "Too many display busses"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:106
-#: shared-bindings/displayio/ParallelBus.c:110
-msgid "displayio is a work in progress"
 msgstr ""
 
 #: shared-bindings/displayio/Group.c:62
@@ -2409,15 +2406,23 @@ msgstr ""
 msgid "end_x should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:49
+#: shared-bindings/displayio/TileGrid.c:49
 msgid "position must be 2-tuple"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:102
+#: shared-bindings/displayio/TileGrid.c:117
 msgid "unsupported bitmap type"
 msgstr ""
 
-#: shared-bindings/displayio/Sprite.c:167
+#: shared-bindings/displayio/TileGrid.c:128
+msgid "Tile width must exactly divide bitmap width"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:131
+msgid "Tile height must exactly divide bitmap height"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:198
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
@@ -2444,6 +2449,7 @@ msgstr ""
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
+#: shared-bindings/terminalio/Terminal.c:63
 msgid "Expected a %q"
 msgstr ""
 
@@ -2479,12 +2485,16 @@ msgstr ""
 msgid "No hardware random available"
 msgstr ""
 
-#: shared-bindings/pulseio/PWMOut.c:162
+#: shared-bindings/pulseio/PWMOut.c:117
+msgid "All timers for this pin are in use"
+msgstr "Semua timer untuk pin ini sedang digunakan"
+
+#: shared-bindings/pulseio/PWMOut.c:171
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 
-#: shared-bindings/pulseio/PWMOut.c:193
+#: shared-bindings/pulseio/PWMOut.c:202
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
@@ -2549,6 +2559,11 @@ msgstr ""
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
 msgstr ""
+
+#: shared-bindings/terminalio/Terminal.c:68
+#, fuzzy
+msgid "unicode_characters must be a string"
+msgstr "keyword harus berupa string"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2672,7 +2687,7 @@ msgstr ""
 msgid "row must be packed and word aligned"
 msgstr ""
 
-#: shared-module/displayio/Display.c:62
+#: shared-module/displayio/Display.c:69
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "Baudrate tidak didukung"
@@ -2682,7 +2697,7 @@ msgid "Group full"
 msgstr ""
 
 #: shared-module/displayio/Group.c:46
-msgid "Layer must be a Group or Sprite subclass."
+msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
 #: shared-module/displayio/Group.c:55
@@ -2819,13 +2834,27 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Semua perangkat PWM sedang digunakan"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parameter UUID tidak valid"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Panjang string UUID tidak valid"
+
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
 #~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Panjang string UUID tidak valid"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2833,14 +2862,3 @@ msgstr ""
 #~ msgstr ""
 #~ "tegangan cukup untuk semua sirkuit dan tekan reset (setelah mencabut "
 #~ "CIRCUITPY).\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parameter UUID tidak valid"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-22 14:00-0800\n"
+"POT-Creation-Date: 2019-01-31 09:38-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -151,11 +151,11 @@ msgstr "argomenti non validi"
 msgid "script compilation not supported"
 msgstr "compilazione dello scrip non suportata"
 
-#: main.c:155
+#: main.c:152
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:169 main.c:247
+#: main.c:166 main.c:247
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -163,28 +163,34 @@ msgstr ""
 "L'auto-reload è attivo. Salva i file su USB per eseguirli o entra nel REPL "
 "per disabilitarlo.\n"
 
-#: main.c:171
+#: main.c:168
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Modalità sicura in esecuzione! Auto-reload disattivato.\n"
 
-#: main.c:173 main.c:249
+#: main.c:170 main.c:249
 msgid "Auto-reload is off.\n"
 msgstr "Auto-reload disattivato.\n"
 
-#: main.c:187
+#: main.c:184
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Modalità sicura in esecuzione! Codice salvato non in esecuzione.\n"
 
-#: main.c:203
+#: main.c:200
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENZIONE: Il nome del sorgente ha due estensioni\n"
+
+#: main.c:221
+msgid ""
+"\n"
+"Code done running. Waiting for reload.\n"
+msgstr ""
 
 #: main.c:254
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Premi un qualunque tasto per entrare nel REPL. Usa CTRL-D per ricaricare."
 
-#: main.c:417
+#: main.c:419
 msgid "soft reboot\n"
 msgstr "soft reboot\n"
 
@@ -280,8 +286,8 @@ msgid "Right channel unsupported"
 msgstr "Canale destro non supportato"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:116
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
+#: shared-bindings/pulseio/PWMOut.c:113
 msgid "Invalid pin"
 msgstr "Pin non valido"
 
@@ -298,9 +304,9 @@ msgid "Cannot output both channels on the same pin"
 msgstr "Impossibile dare in output entrambi i canal sullo stesso pin"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:189
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
 #: ports/nrf/common-hal/pulseio/PulseOut.c:107
+#: shared-bindings/pulseio/PWMOut.c:119
 msgid "All timers in use"
 msgstr "Tutti i timer utilizzati"
 
@@ -385,16 +391,11 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Impossibile resettare nel bootloader poiché nessun bootloader è presente."
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:120
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:369
-#: ports/nrf/common-hal/pulseio/PWMOut.c:119
-#: ports/nrf/common-hal/pulseio/PWMOut.c:233
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:394
+#: ports/nrf/common-hal/pulseio/PWMOut.c:259
+#: shared-bindings/pulseio/PWMOut.c:115
 msgid "Invalid PWM frequency"
 msgstr "Frequenza PWM non valida"
-
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:187
-msgid "All timers for this pin are in use"
-msgstr "Tutti i timer per questo pin sono in uso"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
 msgid "No hardware support on pin"
@@ -683,13 +684,13 @@ msgid "Data too large for advertisement packet"
 msgstr "Impossibile inserire dati nel pacchetto di advertisement."
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:324
+#: ports/nrf/common-hal/bleio/Peripheral.c:332
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Impossibile avviare advertisement. status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:336
+#: ports/nrf/common-hal/bleio/Peripheral.c:344
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
@@ -799,7 +800,7 @@ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 msgid "Failed to create mutex"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c:304
+#: ports/nrf/common-hal/bleio/Peripheral.c:312
 #, fuzzy, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
@@ -874,11 +875,6 @@ msgstr "busio.UART non ancora implementato"
 #, fuzzy
 msgid "Cannot get temperature"
 msgstr "Impossibile leggere la temperatura. status: 0x%02x"
-
-#: ports/nrf/common-hal/pulseio/PWMOut.c:161
-#, fuzzy
-msgid "All PWM peripherals are in use"
-msgstr "Tutte le periferiche SPI sono in uso"
 
 #: ports/unix/modffi.c:138
 msgid "Unknown type"
@@ -2275,19 +2271,19 @@ msgstr ""
 msgid "Not connected."
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:210
+#: shared-bindings/bleio/Device.c:213
 msgid "Can't add services in Central mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:226
+#: shared-bindings/bleio/Device.c:229
 msgid "Can't connect in Peripheral mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:256
+#: shared-bindings/bleio/Device.c:259
 msgid "Can't change the name in Central mode"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c:277 shared-bindings/bleio/Device.c:313
+#: shared-bindings/bleio/Device.c:280 shared-bindings/bleio/Device.c:316
 msgid "Can't advertise in Central mode"
 msgstr ""
 
@@ -2383,22 +2379,22 @@ msgstr "valori della riga devono essere un buffer"
 msgid "color should be an int"
 msgstr "il colore deve essere un int"
 
-#: shared-bindings/displayio/Display.c:119
+#: shared-bindings/displayio/Display.c:124
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:138
+#: shared-bindings/displayio/Display.c:145
 msgid "Must be a Group subclass."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:187
+#: shared-bindings/displayio/Display.c:197
+msgid "Brightness not adjustable"
 msgstr ""
 
 #: shared-bindings/displayio/FourWire.c:93
 #: shared-bindings/displayio/ParallelBus.c:98
 msgid "Too many display busses"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:106
-#: shared-bindings/displayio/ParallelBus.c:110
-msgid "displayio is a work in progress"
 msgstr ""
 
 #: shared-bindings/displayio/Group.c:62
@@ -2438,15 +2434,23 @@ msgstr "y dovrebbe essere un int"
 msgid "end_x should be an int"
 msgstr "y dovrebbe essere un int"
 
-#: shared-bindings/displayio/Sprite.c:49
+#: shared-bindings/displayio/TileGrid.c:49
 msgid "position must be 2-tuple"
 msgstr "position deve essere una 2-tuple"
 
-#: shared-bindings/displayio/Sprite.c:102
+#: shared-bindings/displayio/TileGrid.c:117
 msgid "unsupported bitmap type"
 msgstr "tipo di bitmap non supportato"
 
-#: shared-bindings/displayio/Sprite.c:167
+#: shared-bindings/displayio/TileGrid.c:128
+msgid "Tile width must exactly divide bitmap width"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:131
+msgid "Tile height must exactly divide bitmap height"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c:198
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader deve essere displayio.Palette o displayio.ColorConverter"
 
@@ -2473,6 +2477,7 @@ msgstr "gli indirizzi sono vuoti"
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
+#: shared-bindings/terminalio/Terminal.c:63
 msgid "Expected a %q"
 msgstr "Atteso un %q"
 
@@ -2508,14 +2513,18 @@ msgstr "I byte devono essere compresi tra 0 e 255"
 msgid "No hardware random available"
 msgstr "Nessun generatore hardware di numeri casuali disponibile"
 
-#: shared-bindings/pulseio/PWMOut.c:162
+#: shared-bindings/pulseio/PWMOut.c:117
+msgid "All timers for this pin are in use"
+msgstr "Tutti i timer per questo pin sono in uso"
+
+#: shared-bindings/pulseio/PWMOut.c:171
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 "duty_cycle del PWM deve essere compresa tra 0 e 65535 inclusiva (risoluzione "
 "a 16 bit)"
 
-#: shared-bindings/pulseio/PWMOut.c:193
+#: shared-bindings/pulseio/PWMOut.c:202
 #, fuzzy
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -2584,6 +2593,11 @@ msgstr "La luminosità deve essere compreso tra 0 e 255"
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
 msgstr "La dimensione dello stack deve essere almeno 256"
+
+#: shared-bindings/terminalio/Terminal.c:68
+#, fuzzy
+msgid "unicode_characters must be a string"
+msgstr "argomenti nominati devono essere stringhe"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2709,7 +2723,7 @@ msgstr "Sono supportate solo bitmap con colori a 8 bit o meno"
 msgid "row must be packed and word aligned"
 msgstr "la riga deve essere compattata e allineata alla parola"
 
-#: shared-module/displayio/Display.c:62
+#: shared-module/displayio/Display.c:69
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "tipo di bitmap non supportato"
@@ -2719,7 +2733,7 @@ msgid "Group full"
 msgstr "Gruppo pieno"
 
 #: shared-module/displayio/Group.c:46
-msgid "Layer must be a Group or Sprite subclass."
+msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
 #: shared-module/displayio/Group.c:55
@@ -2861,12 +2875,16 @@ msgstr ""
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parametro UUID non valido"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Lunghezza della stringa UUID non valida"
+#, fuzzy
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Tutte le periferiche SPI sono in uso"
 
 #, fuzzy
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "numero di argomenti errato"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Lunghezza della stringa UUID non valida"
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Tipo di servizio non valido"
@@ -2874,21 +2892,20 @@ msgstr ""
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Impossibile impostare i parametri PPCP."
 
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Non è possibile aggiungere Characteristic."
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Impossibile applicare i parametri GAP."
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
-
 #~ msgid "Can not add Service."
 #~ msgstr "Non è possibile aggiungere Service."
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
-#~ "espulso CIRCUITPY).\n"
 
 #, fuzzy
 #~ msgid "unpack requires a buffer of %d bytes"
@@ -2897,8 +2914,8 @@ msgstr ""
 #~ msgid "Can not query for the device address."
 #~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
 
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
@@ -2906,16 +2923,17 @@ msgstr ""
 #~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
 #~ "CIRCUITPY:\n"
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Non è possibile aggiungere Characteristic."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
+#~ "espulso CIRCUITPY).\n"
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
 #~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
 #~ "Whoops!\n"
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
