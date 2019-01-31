@@ -1063,6 +1063,28 @@ static const USBD_ClassTypeDef pyb_usbdd_class = {
 
 static pyb_usbdd_obj_t pyb_usbdd;
 
+static int pyb_usbdd_detect_port(void) {
+    #if MBOOT_USB_AUTODETECT_PORT
+    mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+    mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+    int state = mp_hal_pin_read(pin_A11) == 0 && mp_hal_pin_read(pin_A12) == 0;
+    mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+    if (state) {
+        return USB_PHY_FS_ID;
+    }
+    mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+    mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+    state = mp_hal_pin_read(pin_B14) == 0 && mp_hal_pin_read(pin_B15) == 0;
+    mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+    if (state) {
+        return USB_PHY_HS_ID;
+    }
+    #endif
+    return MICROPY_HW_USB_MAIN_DEV;
+}
+
 static void pyb_usbdd_init(pyb_usbdd_obj_t *self, int phy_id) {
     self->started = false;
     USBD_HandleTypeDef *usbd = &self->hUSBDDevice;
@@ -1235,7 +1257,7 @@ enter_bootloader:
 
     dfu_init();
 
-    pyb_usbdd_init(&pyb_usbdd, MICROPY_HW_USB_MAIN_DEV);
+    pyb_usbdd_init(&pyb_usbdd, pyb_usbdd_detect_port());
     pyb_usbdd_start(&pyb_usbdd);
 
     #if defined(MBOOT_I2C_SCL)
@@ -1254,11 +1276,12 @@ enter_bootloader:
     #endif
     for (;;) {
         #if USE_USB_POLLING
-        #if MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
+        #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
         if (USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_fs_handle);
         }
-        #else
+        #endif
+        #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_HS_ID
         if (USB_OTG_HS->GINTSTS & USB_OTG_HS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_hs_handle);
         }
@@ -1333,11 +1356,13 @@ void I2Cx_EV_IRQHandler(void) {
 #endif
 
 #if !USE_USB_POLLING
-#if MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
+#if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
 void OTG_FS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);
 }
-#else
+#endif
+
+#if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_HS_ID
 void OTG_HS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_hs_handle);
 }
