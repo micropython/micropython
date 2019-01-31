@@ -36,15 +36,18 @@
 #include "nrf_soc.h"
 #endif
 
-/* tinyusb function that handles power event (detected, ready, removed)
- * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
- */
+// tinyusb function that handles power event (detected, ready, removed)
+// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
 extern void tusb_hal_nrf_power_event(uint32_t event);
 
 void init_usb_hardware(void) {
 
+    // 2 is max priority (0, 1 are reserved for SD)
+    NVIC_SetPriority(USBD_IRQn, 2);
+
     // USB power may already be ready at this time -> no event generated
-    // We need to invoke the handler based on the status initially
+    // We need to invoke the handler based on the status initially for the first call
+    static bool first_call = true;
     uint32_t usb_reg;
 
 #ifdef SOFTDEVICE_PRESENT
@@ -73,11 +76,14 @@ void init_usb_hardware(void) {
         usb_reg = NRF_POWER->USBREGSTATUS;
     }
 
-    if ( usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk ) {
-        tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
-    }
+    if ( first_call ) {
+        first_call = false;
+        if ( usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk ) {
+            tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
+        }
 
-    if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk ) {
-        tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
+        if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk ) {
+            tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
+        }
     }
 }

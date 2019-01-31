@@ -32,6 +32,8 @@
 #include "ble_drv.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
+#include "nrf_soc.h"
+#include "nrfx_power.h"
 #include "py/misc.h"
 
 nrf_nvic_state_t nrf_nvic_state = { 0 };
@@ -89,6 +91,23 @@ void SD_EVT_IRQHandler(void) {
     uint32_t evt_id;
     while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {
 //        sd_evt_handler(evt_id);
+
+        switch (evt_id) {
+            // usb power event
+            case NRF_EVT_POWER_USB_DETECTED:
+            case NRF_EVT_POWER_USB_POWER_READY:
+            case NRF_EVT_POWER_USB_REMOVED: {
+                int32_t usbevt = (evt_id == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
+                                 (evt_id == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
+                                 (evt_id == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
+
+                extern void tusb_hal_nrf_power_event (uint32_t event);
+                tusb_hal_nrf_power_event(usbevt);
+            }
+            break;
+
+            default: break;
+        }
     }
 
     while (1) {

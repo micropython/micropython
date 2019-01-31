@@ -36,6 +36,8 @@
 #include "py/runtime.h"
 #include "shared-bindings/bleio/Adapter.h"
 
+#include "supervisor/usb.h"
+
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     mp_raise_msg_varg(&mp_type_AssertionError,
                       translate("Soft device assert, id: 0x%08lX, pc: 0x%08lX"), id, pc);
@@ -46,9 +48,6 @@ STATIC uint32_t ble_stack_enable(void) {
         .source = NRF_CLOCK_LF_SRC_XTAL,
         .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM
     };
-
-    // The SD takes over the POWER IRQ and will fail if the IRQ is already in use
-    nrfx_power_uninit();
 
     uint32_t err_code = sd_softdevice_enable(&clock_config, softdevice_assert_handler);
     if (err_code != NRF_SUCCESS)
@@ -101,9 +100,19 @@ void common_hal_bleio_adapter_set_enabled(bool enabled) {
 
     uint32_t err_code;
     if (enabled) {
+        // The SD takes over the POWER module and will fail if the module is already in use.
+        // Occurs when USB is initialized previously
+        nrfx_power_uninit();
+
         err_code = ble_stack_enable();
+
+        // Re-init USB hardware
+        init_usb_hardware();
     } else {
         err_code = sd_softdevice_disable();
+
+        // Re-init USB hardware
+        init_usb_hardware();
     }
 
     if (err_code != NRF_SUCCESS) {
