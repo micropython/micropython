@@ -1231,9 +1231,15 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             }
         }
 
-        // Note: pcb.tcp==NULL if state<0, and in this case we can't call tcp_sndbuf
-        if (flags & MP_STREAM_POLL_WR && socket->pcb.tcp != NULL && tcp_sndbuf(socket->pcb.tcp) > 0) {
-            ret |= MP_STREAM_POLL_WR;
+        if (flags & MP_STREAM_POLL_WR) {
+            if (socket->type == MOD_NETWORK_SOCK_DGRAM && socket->pcb.udp != NULL) {
+                // UDP socket is writable
+                ret |= MP_STREAM_POLL_WR;
+            } else if (socket->pcb.tcp != NULL && tcp_sndbuf(socket->pcb.tcp) > 0) {
+                // TCP socket is writable
+                // Note: pcb.tcp==NULL if state<0, and in this case we can't call tcp_sndbuf
+                ret |= MP_STREAM_POLL_WR;
+            }
         }
 
         if (socket->state == STATE_NEW) {
