@@ -160,6 +160,7 @@ typedef struct _repl_t {
     // will be added later.
     //vstr_t line;
     bool cont_line;
+    bool paste_mode;
 } repl_t;
 
 repl_t repl;
@@ -170,6 +171,7 @@ STATIC int pyexec_friendly_repl_process_char(int c);
 void pyexec_event_repl_init(void) {
     MP_STATE_VM(repl_line) = vstr_new(32);
     repl.cont_line = false;
+    repl.paste_mode = false;
     // no prompt before printing friendly REPL banner or entering raw REPL
     readline_init(MP_STATE_VM(repl_line), "");
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -189,6 +191,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
         pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
         vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
+        repl.paste_mode = false;
         pyexec_friendly_repl_process_char(CHAR_CTRL_B);
         return 0;
     } else if (c == CHAR_CTRL_C) {
@@ -226,6 +229,32 @@ reset:
 }
 
 STATIC int pyexec_friendly_repl_process_char(int c) {
+    if (repl.paste_mode) {
+        if (c == CHAR_CTRL_C) {
+            // cancel everything
+            mp_hal_stdout_tx_str("\r\n");
+            goto input_restart;
+        } else if (c == CHAR_CTRL_D) {
+            // end of input
+            mp_hal_stdout_tx_str("\r\n");
+            int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                return ret;
+            }
+            goto input_restart;
+        } else {
+            // add char to buffer and echo
+            vstr_add_byte(MP_STATE_VM(repl_line), c);
+            if (c == '\r') {
+                mp_hal_stdout_tx_str("\r\n=== ");
+            } else {
+                char buf[1] = {c};
+                mp_hal_stdout_tx_strn(buf, 1);
+            }
+            return 0;
+        }
+    }
+
     int ret = readline_process_char(c);
 
     if (!repl.cont_line) {
@@ -253,6 +282,12 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(MP_STATE_VM(repl_line));
             return PYEXEC_FORCED_EXIT;
+        } else if (ret == CHAR_CTRL_E) {
+            // paste mode
+            mp_hal_stdout_tx_str("\r\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\r\n=== ");
+            vstr_reset(MP_STATE_VM(repl_line));
+            repl.paste_mode = true;
+            return 0;
         }
 
         if (ret < 0) {
@@ -299,6 +334,7 @@ exec: ;
 input_restart:
         vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
+        repl.paste_mode = false;
         readline_init(MP_STATE_VM(repl_line), ">>> ");
         return 0;
     }

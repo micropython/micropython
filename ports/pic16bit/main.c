@@ -39,10 +39,13 @@
 #include "board.h"
 #include "modpyb.h"
 
-_FGS(GWRP_OFF & GCP_OFF);
-_FOSCSEL(FNOSC_FRC);
-_FOSC(FCKSM_CSECMD & OSCIOFNC_ON & POSCMD_NONE);
-_FWDT(FWDTEN_OFF);
+#pragma config GWRP = OFF
+#pragma config GSS = GCP_OFF
+#pragma config FNOSC = FRC
+#pragma config FCKSM = CSECMD
+#pragma config OSCIOFNC = ON
+#pragma config POSCMD = NONE
+#pragma config FWDTEN = OFF
 
 // maximum heap for device with 8k RAM
 static char heap[4600];

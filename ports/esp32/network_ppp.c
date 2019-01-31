@@ -40,7 +40,7 @@
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-#include "lwip/pppapi.h"
+#include "netif/ppp/pppapi.h"
 
 typedef struct _ppp_if_obj_t {
     mp_obj_base_t base;

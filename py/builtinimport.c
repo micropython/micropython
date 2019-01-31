@@ -131,7 +131,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 #endif
 }
 
-#if MICROPY_ENABLE_COMPILER
+#if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
 STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     #if MICROPY_PY___FILE__
     qstr source_name = lex->source_name;
@@ -182,7 +182,7 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
 #endif
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
-    #if MICROPY_MODULE_FROZEN || MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
+    #if MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
     char *file_str = vstr_null_terminated_str(file);
     #endif
 
@@ -213,7 +213,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     // If we support loading .mpy files then check if the file extension is of
     // the correct format and, if so, load and execute the file.
-    #if MICROPY_PERSISTENT_CODE_LOAD
+    #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
         do_execute_raw_code(module_obj, raw_code);
@@ -229,7 +229,6 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
         return;
     }
     #else
-
     // If we get here then the file was not frozen and we can't compile scripts.
     mp_raise_msg(&mp_type_ImportError, "script compilation not supported");
     #endif

@@ -178,12 +178,16 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     return res;
 }
 
-int _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
-    mp_uint_t len = 0;
+STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
     mp_obj_t *elem;
-    mp_obj_get_array(addrtuple, &len, &elem);
-    if (len != 2) return -1;
-    return _socket_getaddrinfo2(elem[0], elem[1], resp);
+    mp_obj_get_array_fixed_n(addrtuple, 2, &elem);
+    int res = _socket_getaddrinfo2(elem[0], elem[1], resp);
+    if (res != 0) {
+        mp_raise_OSError(res);
+    }
+    if (*resp == NULL) {
+        mp_raise_OSError(-2); // name or service not known
+    }
 }
 
 STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {
@@ -375,9 +379,24 @@ STATIC mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
 
     // XXX Would be nicer to use RTC to handle timeouts
     for (int i = 0; i <= sock->retries; ++i) {
-        MP_THREAD_GIL_EXIT();
+        // Poll the socket to see if it has waiting data and only release the GIL if it doesn't.
+        // This ensures higher performance in the case of many small reads, eg for readline.
+        bool release_gil;
+        {
+            fd_set rfds;
+            FD_ZERO(&rfds);
+            FD_SET(sock->fd, &rfds);
+            struct timeval timeout = { .tv_sec = 0, .tv_usec = 0 };
+            int r = select(sock->fd + 1, &rfds, NULL, NULL, &timeout);
+            release_gil = r != 1;
+        }
+        if (release_gil) {
+            MP_THREAD_GIL_EXIT();
+        }
         int r = lwip_recvfrom_r(sock->fd, buf, size, 0, from, from_len);
-        MP_THREAD_GIL_ENTER();
+        if (release_gil) {
+            MP_THREAD_GIL_ENTER();
+        }
         if (r == 0) {
             sock->peer_closed = true;
         }
