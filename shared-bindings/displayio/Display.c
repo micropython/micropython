@@ -134,7 +134,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
 
 //|   .. method:: show(group)
 //|
-//|     Switches to displaying the given group of layers.
+//|     Switches to displaying the given group of layers. When group is None, the default
+//|     CircuitPython terminal will be shown.
 //|
 STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_display_obj_t *self = MP_OBJ_TO_PTR(self_in);

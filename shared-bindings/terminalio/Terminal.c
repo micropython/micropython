@@ -39,8 +39,8 @@
 
 //| .. currentmodule:: terminalio
 //|
-//| :class:`Terminal` -- manage a
-//| ==============================================================
+//| :class:`Terminal` -- display a character stream with a TileGrid
+//| ================================================================
 //|
 //| .. class:: Terminal(tilegrid, *, unicode_characters="")
 //|

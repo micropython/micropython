@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft
+ * Copyright (c) 2019 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO___INIT___H
 
-#include "py/obj.h"
+// Nothing now.
 
-extern mp_obj_dict_t usb_midi_module_globals;
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_MIDI___INIT___H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO___INIT___H

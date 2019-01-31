@@ -2,7 +2,6 @@
 #include <string.h>
 #include "shared-module/displayio/__init__.h"
 
-
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,13 +34,13 @@
 
 #include "py/runtime.h"
 
-//| :mod:`terminalio` --- MIDI over USB
+//| :mod:`terminalio` --- Displays text in a TileGrid
 //| =================================================
 //|
 //| .. module:: terminalio
-//|   :synopsis: MIDI over USB
+//|   :synopsis: Displays text in a TileGrid
 //|
-//| The `terminalio` module contains classes to transmit and receive MIDI messages over USB
+//| The `terminalio` module contains classes to display a character stream on a display
 //|
 //| Libraries
 //|
