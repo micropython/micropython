@@ -6,10 +6,10 @@
 // Clock rates are off: Salae reads 12MHz which is the limit even though we set it to the safer 8MHz.
 #define SPI_FLASH_BAUDRATE  (8000000)
 
-#define SPI_FLASH_MOSI_PIN   &PIN_PA08
-#define SPI_FLASH_MISO_PIN   &PIN_PA14
-#define SPI_FLASH_SCK_PIN    &PIN_PA09
-#define SPI_FLASH_CS_PIN     &PIN_PA13
+#define SPI_FLASH_MOSI_PIN   &pin_PA08
+#define SPI_FLASH_MISO_PIN   &pin_PA14
+#define SPI_FLASH_SCK_PIN    &pin_PA09
+#define SPI_FLASH_CS_PIN     &pin_PA13
 
 #define MICROPY_PORT_A    ( 0 )
 #define MICROPY_PORT_B    ( 0 )
