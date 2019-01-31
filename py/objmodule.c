@@ -137,7 +137,7 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
 
 #if MICROPY_PY_ARRAY
-    { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mp_module_array) },
+    { MP_ROM_QSTR(MP_QSTR_uarray), MP_ROM_PTR(&mp_module_uarray) },
 #endif
 #if MICROPY_PY_IO
     { MP_ROM_QSTR(MP_QSTR_uio), MP_ROM_PTR(&mp_module_io) },
@@ -232,6 +232,11 @@ MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
 #if MICROPY_MODULE_WEAK_LINKS
 STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
+    #if MICROPY_PY_ARRAY
+    { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mp_module_uarray) },
+    #endif
+
+    // extra weak links as defined by a port
     MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 };
 
