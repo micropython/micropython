@@ -73,17 +73,11 @@ int main(int argc, char **argv) {
     sys_tick_init();
     sdcard_init();
 
-    bool mounted_sdcard = false;
     #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
-        mounted_sdcard = init_sdcard_fs();
+        init_sdcard_fs();
     }
-
-    /*if (mounted_sdcard) {
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
-    }*/
     #endif
 
     pyexec_friendly_repl();
