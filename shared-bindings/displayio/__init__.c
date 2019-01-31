@@ -67,7 +67,6 @@
 //|     Palette
 //|     ParallelBus
 //|     Shape
-//|     Sprite
 //|     TileGrid
 //|
 //| All libraries change hardware state but are never deinit
