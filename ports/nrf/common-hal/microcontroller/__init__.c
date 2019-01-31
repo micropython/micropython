@@ -75,7 +75,7 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
         .type = &nvm_bytearray_type,
     },
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
-    .start_address = 0
+    .start_address = FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE
 };
 #endif
 
