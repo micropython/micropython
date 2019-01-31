@@ -206,7 +206,10 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 // Returns a string of 6 bytes, which is the MAC address of the board.
 STATIC mp_obj_t machine_unique_id(void) {
     uint32_t gp1[16];
-    adi_rom_otp_get(otpcmd_gp1, gp1);
+    uint32_t *addr = (uint32_t *)0x24000300;
+    for (int i = 0; i < 16; i++)
+        gp1[i] = *addr++;
+    //adi_rom_otp_get(otpcmd_gp1, gp1);
     return mp_obj_new_bytes((const byte*)gp1, 6);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);

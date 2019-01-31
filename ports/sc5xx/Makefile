@@ -39,6 +39,7 @@ endif
 LIBS = -lm
 
 SRC_C = \
+	apt-sc589.c \
 	bm_uart.c \
 	fatfs_port.c \
 	main.c \
