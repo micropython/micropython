@@ -41,12 +41,10 @@
 #define DELAY 0x80
 
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
-        mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
+        mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t color_depth, uint8_t set_column_command, uint8_t set_row_command,
-        uint8_t write_ram_command, uint8_t* init_sequence, uint16_t init_sequence_len,
+        uint8_t write_ram_command, uint8_t set_vertical_scroll, uint8_t* init_sequence, uint16_t init_sequence_len,
         const mcu_pin_obj_t* backlight_pin) {
-    self->width = width;
-    self->height = height;
     self->color_depth = color_depth;
     self->set_column_command = set_column_command;
     self->set_row_command = set_row_command;
@@ -99,6 +97,26 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     // initialization.
     self->refresh = true;
     self->current_group = &circuitpython_splash;
+
+    self->width = width;
+    self->height = height;
+    rotation = rotation % 360;
+    self->mirror_x = false;
+    self->mirror_y = false;
+    self->transpose_xy = false;
+    if (rotation == 0 || rotation == 180) {
+        if (rotation == 180) {
+            self->mirror_x = true;
+            self->mirror_y = true;
+        }
+    } else {
+        self->transpose_xy = true;
+        if (rotation == 90) {
+            self->mirror_y = true;
+        } else {
+            self->mirror_x = true;
+        }
+    }
 
     // Always set the backlight type in case we're reusing memory.
     self->backlight_inout.base.type = &mp_type_NoneType;

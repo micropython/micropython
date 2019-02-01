@@ -47,13 +47,16 @@
 //| objects in CircuitPython, Display objects live until `displayio.release_displays()`
 //| is called. This is done so that CircuitPython can use the display itself.
 //|
+//| Most people should not use this class directly. Use a specific display driver instead that will
+//| contain the initialization sequence at minimum.
+//|
 //| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
 //|
-//| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, color_depth=16, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c)
+//| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, rotation=0, color_depth=16, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c, set_vertical_scroll=0, backlight_pin=None)
 //|
 //|   Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
-//|   The ``init_sequence`` is bitbacked to minimize the ram impact. Every command begins with a
+//|   The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
 //|   command byte followed by a byte to determine the parameter count and if a delay is need after.
 //|   When the top bit of the second byte is 1, the next byte will be the delay time in milliseconds.
 //|   The remaining 7 bits are the parameter count excluding any delay byte. The third through final
@@ -73,21 +76,26 @@
 //|   (b"") are merged together on load. The parens are needed to allow byte literals on subsequent
 //|   lines.
 //|
+//|   The initialization sequence should always leave the display memory access inline with the scan
+//|   of the display to minimize tearing artifacts.
+//|
 //|   :param displayio.FourWire or displayio.ParallelBus display_bus: The bus that the display is connected to
 //|   :param buffer init_sequence: Byte-packed initialization sequence.
 //|   :param int width: Width in pixels
 //|   :param int height: Height in pixels
 //|   :param int colstart: The index if the first visible column
 //|   :param int rowstart: The index if the first visible row
+//|   :param int rotation: The rotation of the display in 90 degree increments
 //|   :param int color_depth: The number of bits of color per pixel transmitted. (Some displays
 //|       support 18 bit but 16 is easier to transmit. The last bit is extrapolated.)
 //|   :param int set_column_command: Command used to set the start and end columns to update
 //|   :param int set_row_command: Command used so set the start and end rows to update
 //|   :param int write_ram_command: Command used to write pixels values into the update region
+//|   :param int set_vertical_scroll: Command used to set the first row to show
 //|   :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_color_depth, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_backlight_pin };
+    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -95,10 +103,12 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, },
         { MP_QSTR_colstart, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_rowstart, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
+        { MP_QSTR_rotation, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_color_depth, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 16} },
         { MP_QSTR_set_column_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2a} },
         { MP_QSTR_set_row_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2b} },
         { MP_QSTR_write_ram_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2c} },
+        { MP_QSTR_set_vertical_scroll, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x0} },
         { MP_QSTR_backlight_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -116,6 +126,10 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         backlight_pin = MP_OBJ_TO_PTR(backlight_pin_obj);
         assert_pin_free(backlight_pin);
     }
+    mp_int_t rotation = args[ARG_rotation].u_int;
+    if (rotation % 90 != 0) {
+        mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
+    }
 
     displayio_display_obj_t *self = NULL;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
@@ -130,9 +144,11 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     }
     self->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(self,
-            display_bus, args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int,
+            display_bus, args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
             args[ARG_color_depth].u_int, args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
-            args[ARG_write_ram_command].u_int, bufinfo.buf, bufinfo.len, MP_OBJ_TO_PTR(backlight_pin));
+            args[ARG_write_ram_command].u_int,
+            args[ARG_set_vertical_scroll].u_int,
+            bufinfo.buf, bufinfo.len, MP_OBJ_TO_PTR(backlight_pin));
 
     return self;
 }

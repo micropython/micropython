@@ -12,6 +12,12 @@
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
+static inline void swap(uint16_t* a, uint16_t* b) {
+    uint16_t temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
 void displayio_refresh_displays(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display.base.type == NULL || displays[i].display.base.type == &mp_type_NoneType) {
@@ -24,23 +30,60 @@ void displayio_refresh_displays(void) {
             return;
         }
         if (displayio_display_refresh_queued(display)) {
-            // We compute the pixels
+            // We compute the pixels. r and c are row and column to match the display memory
+            // structure. x and y match location within the groups.
+            uint16_t c0 = 0;
+            uint16_t r0 = 0;
+            uint16_t c1 = display->width;
+            uint16_t r1 = display->height;
+            if (display->transpose_xy) {
+                swap(&c1, &r1);
+            }
+            displayio_display_start_region_update(display, c0, r0, c1, r1);
+
             uint16_t x0 = 0;
+            uint16_t x1 = display->width - 1;
+            uint16_t startx = 0;
+            int8_t dx = 1;
+            if (display->mirror_x) {
+                dx = -1;
+                startx = x1;
+            }
             uint16_t y0 = 0;
-            uint16_t x1 = display->width;
-            uint16_t y1 = display->height;
+            uint16_t y1 = display->height - 1;
+            uint16_t starty = 0;
+            int8_t dy = 1;
+            if (display->mirror_y) {
+                dy = -1;
+                starty = y1;
+            }
+
+            bool transpose = false;
+            if (display->transpose_xy) {
+                transpose = true;
+                int8_t temp_dx = dx;
+                dx = dy;
+                dy = temp_dx;
+
+                swap(&starty, &startx);
+                swap(&x0, &y0);
+                swap(&x1, &y1);
+            }
+
             size_t index = 0;
-            //size_t row_size = (x1 - x0);
             uint16_t buffer_size = 256;
             uint32_t buffer[buffer_size / 2];
-            displayio_display_start_region_update(display, x0, y0, x1, y1);
-            for (uint16_t y = y0; y < y1; ++y) {
-                for (uint16_t x = x0; x < x1; ++x) {
+            for (uint16_t y = starty; y0 <= y && y <= y1; y += dy) {
+                for (uint16_t x = startx; x0 <= x && x <= x1; x += dx) {
                     uint16_t* pixel = &(((uint16_t*)buffer)[index]);
                     *pixel = 0;
 
                     if (display->current_group != NULL) {
-                        displayio_group_get_pixel(display->current_group, x, y, pixel);
+                        if (transpose) {
+                            displayio_group_get_pixel(display->current_group, y, x, pixel);
+                        } else {
+                            displayio_group_get_pixel(display->current_group, x, y, pixel);
+                        }
                     }
 
                     index += 1;
