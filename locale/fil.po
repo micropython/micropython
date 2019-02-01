@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-31 09:38-0800\n"
+"POT-Creation-Date: 2019-02-01 00:36-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -654,22 +654,22 @@ msgstr "hindi alam na config param"
 msgid "AnalogOut functionality not supported"
 msgstr "Hindi supportado ang AnalogOut"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:41
+#: ports/nrf/common-hal/bleio/Adapter.c:43
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:110
+#: ports/nrf/common-hal/bleio/Adapter.c:119
 #, fuzzy
 msgid "Failed to change softdevice state"
 msgstr "Nabigo sa pagbago ng softdevice state, error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:119
+#: ports/nrf/common-hal/bleio/Adapter.c:128
 #, fuzzy
 msgid "Failed to get softdevice state"
 msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:138
+#: ports/nrf/common-hal/bleio/Adapter.c:147
 #, fuzzy
 msgid "Failed to get local address"
 msgstr "Nabigo sa pagkuha ng local na address, , error: 0x%08lX"
@@ -2381,16 +2381,20 @@ msgstr "row data ay dapat na buffer"
 msgid "color should be an int"
 msgstr "color ay dapat na int"
 
-#: shared-bindings/displayio/Display.c:124
+#: shared-bindings/displayio/Display.c:131
+msgid "Display rotation must be in 90 degree increments"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:143
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:145
+#: shared-bindings/displayio/Display.c:167
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:187
-#: shared-bindings/displayio/Display.c:197
+#: shared-bindings/displayio/Display.c:209
+#: shared-bindings/displayio/Display.c:219
 msgid "Brightness not adjustable"
 msgstr ""
 
@@ -2398,6 +2402,12 @@ msgstr ""
 #: shared-bindings/displayio/ParallelBus.c:98
 msgid "Too many display busses"
 msgstr ""
+
+#: shared-bindings/displayio/FourWire.c:109
+#: shared-bindings/displayio/ParallelBus.c:113
+#, fuzzy
+msgid "Command must be an int between 0 and 255"
+msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
 #: shared-bindings/displayio/Group.c:62
 msgid "Group must have size at least 1"
@@ -2718,7 +2728,7 @@ msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
 msgid "row must be packed and word aligned"
 msgstr "row ay dapat packed at ang word nakahanay"
 
-#: shared-module/displayio/Display.c:69
+#: shared-module/displayio/Display.c:67
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "Hindi supportadong tipo ng bitmap"
@@ -2875,6 +2885,9 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Mali ang UUID parameter"
+
 #~ msgid "Can not query for the device address."
 #~ msgstr "Hindi maaaring mag-query para sa address ng device."
 
@@ -2884,14 +2897,11 @@ msgstr ""
 #~ msgid "displayio is a work in progress"
 #~ msgstr "displayio ay nasa gitna ng konstruksiyon"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Mali ang UUID parameter"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
 
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Mali ang UUID string length"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
 
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
@@ -2900,27 +2910,11 @@ msgstr ""
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Mali ang bilang ng bytes"
+#~ msgid "Wrong address length"
+#~ msgstr "Mali ang address length"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2929,18 +2923,34 @@ msgstr ""
 #~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
 #~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Mali ang bilang ng bytes"
 
 #~ msgid "Can not add Service."
 #~ msgstr "Hindi maidaragdag ang serbisyo."
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mali ang address length"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
+#~ msgid "Invalid Service type"
+#~ msgstr "Mali ang tipo ng serbisyo"
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
 #~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-31 09:38-0800\n"
+"POT-Creation-Date: 2019-02-01 00:36-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -652,22 +652,22 @@ msgstr "paramètre de config. inconnu"
 msgid "AnalogOut functionality not supported"
 msgstr "AnalogOut non supporté"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:41
+#: ports/nrf/common-hal/bleio/Adapter.c:43
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Adapter.c:110
+#: ports/nrf/common-hal/bleio/Adapter.c:119
 #, fuzzy
 msgid "Failed to change softdevice state"
 msgstr "Echec de la modification de l'état du périph., erreur: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:119
+#: ports/nrf/common-hal/bleio/Adapter.c:128
 #, fuzzy
 msgid "Failed to get softdevice state"
 msgstr "Echec de l'obtention de l'état du périph., erreur: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:138
+#: ports/nrf/common-hal/bleio/Adapter.c:147
 #, fuzzy
 msgid "Failed to get local address"
 msgstr "Echec de l'obtention de l'adresse locale, erreur: 0x%08lX"
@@ -2387,16 +2387,20 @@ msgstr "les données de ligne doivent être un tampon"
 msgid "color should be an int"
 msgstr "la couleur doit être un entier (int)"
 
-#: shared-bindings/displayio/Display.c:124
+#: shared-bindings/displayio/Display.c:131
+msgid "Display rotation must be in 90 degree increments"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:143
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:145
+#: shared-bindings/displayio/Display.c:167
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:187
-#: shared-bindings/displayio/Display.c:197
+#: shared-bindings/displayio/Display.c:209
+#: shared-bindings/displayio/Display.c:219
 msgid "Brightness not adjustable"
 msgstr ""
 
@@ -2404,6 +2408,12 @@ msgstr ""
 #: shared-bindings/displayio/ParallelBus.c:98
 msgid "Too many display busses"
 msgstr ""
+
+#: shared-bindings/displayio/FourWire.c:109
+#: shared-bindings/displayio/ParallelBus.c:113
+#, fuzzy
+msgid "Command must be an int between 0 and 255"
+msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 
 #: shared-bindings/displayio/Group.c:62
 #, fuzzy
@@ -2739,7 +2749,7 @@ msgstr "Seules les bitmaps de 8bits par couleur ou moins sont supportées"
 msgid "row must be packed and word aligned"
 msgstr ""
 
-#: shared-module/displayio/Display.c:69
+#: shared-module/displayio/Display.c:67
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "type de bitmap non supporté"
@@ -2903,6 +2913,9 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Paramètre UUID invalide"
+
 #, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "la palette doit être une displayio.Palette"
@@ -2914,14 +2927,11 @@ msgstr ""
 #~ msgid "displayio is a work in progress"
 #~ msgstr "displayio est en cours de développement"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Paramètre UUID invalide"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
 
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Longeur de chaîne UUID invalide"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Impossible d'appliquer les paramètres PPCP"
@@ -2929,23 +2939,23 @@ msgstr ""
 #~ msgid "Can not add Service."
 #~ msgstr "Impossible d'ajouter le Service"
 
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+
+#~ msgid "Wrong address length"
+#~ msgstr "Mauvaise longueur d'adresse"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
+
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
-#~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
 #~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
 
 #, fuzzy
 #~ msgid "unpack requires a buffer of %d bytes"
@@ -2955,22 +2965,22 @@ msgstr ""
 #~ msgid "Wrong number of bytes provided"
 #~ msgstr "mauvais nombre d'octets fourni'"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
 
 #~ msgid "Can not query for the device address."
 #~ msgstr "Impossible d'obtenir l'adresse du périphérique"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
 
 #, fuzzy
 #~ msgid "value_size must be power of two"
 #~ msgstr "value_size doit être une puissance de 2"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
+#~ "'reset' (après avoir éjecter CIRCUITPY).\n"
