@@ -85,7 +85,7 @@
 //|   :param int height: Height in pixels
 //|   :param int colstart: The index if the first visible column
 //|   :param int rowstart: The index if the first visible row
-//|   :param int rotation: The rotation of the display in 90 degree increments
+//|   :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)
 //|   :param int color_depth: The number of bits of color per pixel transmitted. (Some displays
 //|       support 18 bit but 16 is easier to transmit. The last bit is extrapolated.)
 //|   :param int set_column_command: Command used to set the start and end columns to update
