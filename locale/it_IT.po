@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-31 09:38-0800\n"
+"POT-Creation-Date: 2019-02-01 00:36-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -654,22 +654,22 @@ msgstr "parametro di configurazione sconosciuto"
 msgid "AnalogOut functionality not supported"
 msgstr "funzionalità AnalogOut non supportata"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:41
+#: ports/nrf/common-hal/bleio/Adapter.c:43
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Adapter.c:110
+#: ports/nrf/common-hal/bleio/Adapter.c:119
 #, fuzzy
 msgid "Failed to change softdevice state"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:119
+#: ports/nrf/common-hal/bleio/Adapter.c:128
 #, fuzzy
 msgid "Failed to get softdevice state"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Adapter.c:138
+#: ports/nrf/common-hal/bleio/Adapter.c:147
 msgid "Failed to get local address"
 msgstr ""
 
@@ -2379,16 +2379,20 @@ msgstr "valori della riga devono essere un buffer"
 msgid "color should be an int"
 msgstr "il colore deve essere un int"
 
-#: shared-bindings/displayio/Display.c:124
+#: shared-bindings/displayio/Display.c:131
+msgid "Display rotation must be in 90 degree increments"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c:143
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:145
+#: shared-bindings/displayio/Display.c:167
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:187
-#: shared-bindings/displayio/Display.c:197
+#: shared-bindings/displayio/Display.c:209
+#: shared-bindings/displayio/Display.c:219
 msgid "Brightness not adjustable"
 msgstr ""
 
@@ -2396,6 +2400,12 @@ msgstr ""
 #: shared-bindings/displayio/ParallelBus.c:98
 msgid "Too many display busses"
 msgstr ""
+
+#: shared-bindings/displayio/FourWire.c:109
+#: shared-bindings/displayio/ParallelBus.c:113
+#, fuzzy
+msgid "Command must be an int between 0 and 255"
+msgstr "I byte devono essere compresi tra 0 e 255"
 
 #: shared-bindings/displayio/Group.c:62
 msgid "Group must have size at least 1"
@@ -2723,7 +2733,7 @@ msgstr "Sono supportate solo bitmap con colori a 8 bit o meno"
 msgid "row must be packed and word aligned"
 msgstr "la riga deve essere compattata e allineata alla parola"
 
-#: shared-module/displayio/Display.c:69
+#: shared-module/displayio/Display.c:67
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "tipo di bitmap non supportato"
@@ -2872,6 +2882,10 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "numero di argomenti errato"
+
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parametro UUID non valido"
 
@@ -2879,18 +2893,36 @@ msgstr ""
 #~ msgid "All PWM peripherals are in use"
 #~ msgstr "Tutte le periferiche SPI sono in uso"
 
-#, fuzzy
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "numero di argomenti errato"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Lunghezza della stringa UUID non valida"
-
 #~ msgid "Invalid Service type"
 #~ msgstr "Tipo di servizio non valido"
 
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
+#~ "Whoops!\n"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
+
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Impossibile impostare i parametri PPCP."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Fallita allocazione del buffer RX di %d byte"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
+#~ "espulso CIRCUITPY).\n"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Non è possibile aggiungere Service."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"
 
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Non è possibile inserire il nome del dipositivo nella lista."
@@ -2901,18 +2933,11 @@ msgstr ""
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
 
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Lunghezza della stringa UUID non valida"
+
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Impossibile applicare i parametri GAP."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Non è possibile aggiungere Service."
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Fallita allocazione del buffer RX di %d byte"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Non è possibile trovare l'indirizzo del dispositivo."
 
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "È possibile codificare l'UUID nel pacchetto di advertisement."
@@ -2922,18 +2947,3 @@ msgstr ""
 #~ msgstr ""
 #~ "Ti preghiamo di compilare una issue con il contenuto del tuo drie "
 #~ "CIRCUITPY:\n"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "abbastanza potenza per l'intero circuito e premere reset (dopo aver "
-#~ "espulso CIRCUITPY).\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sembra che il codice del core di CircuitPython sia crashato malamente. "
-#~ "Whoops!\n"
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Impossible inserire dati advertisement. status: 0x%02x"

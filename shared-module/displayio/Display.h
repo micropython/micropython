@@ -59,6 +59,9 @@ typedef struct {
     uint64_t last_backlight_refresh;
     bool auto_brightness:1;
     bool updating_backlight:1;
+    bool mirror_x;
+    bool mirror_y;
+    bool transpose_xy;
 } displayio_display_obj_t;
 
 void displayio_display_update_backlight(displayio_display_obj_t* self);

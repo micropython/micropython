@@ -48,11 +48,11 @@ uint8_t display_init_sequence[] = {
     0xc1, 1, 0x10,             // Power control SAP[2:0];BT[3:0]
     0xc5, 2, 0x3e, 0x28,       // VCM control
     0xc7, 1, 0x86,             // VCM control2
-    0x36, 1, 0x38,             // Memory Access Control
+    0x36, 1, 0x08,             // Memory Access Control
     0x37, 1, 0x00,             // Vertical scroll zero
     0x3a, 1, 0x55,             // COLMOD: Pixel Format Set
     0xb1, 2, 0x00, 0x18,       // Frame Rate Control (In Normal Mode/Full Colors)
-    0xb6, 3, 0x08, 0x82, 0x27, // Display Function Control
+    0xb6, 3, 0x08, 0xa2, 0x27, // Display Function Control
     0xF2, 1, 0x00,                         // 3Gamma Function Disable
     0x26, 1, 0x01,             // Gamma curve selected
     0xe0, 15, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, // Set Gamma
@@ -82,10 +82,12 @@ void board_init(void) {
         240, // Height
         0, // column start
         0, // row start
+        90, // rotation
         16, // Color depth
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
+        0x37, // Set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
         &pin_PB31);
