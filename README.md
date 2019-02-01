@@ -60,8 +60,9 @@ Additional components:
 The subdirectories above may include READMEs with additional info.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash, gcc, and Python 3.3+ (if your system only has Python 2.7
-then invoke make with the additional option `PYTHON=python2`).
+You will also need bash, gcc, and Python 3.3+ available as the command `python3`
+(if your system only has Python 2.7 then invoke make with the additional option
+`PYTHON=python2`).
 
 The Unix version
 ----------------
