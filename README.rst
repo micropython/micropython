@@ -271,6 +271,6 @@ project.
 .. |Doc Status| image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
    :target: http://circuitpython.readthedocs.io/
 .. |Discord| image:: https://img.shields.io/discord/327254708534116352.svg
-   :target: https://discord.gg/nBQh6qu
+   :target: https://adafru.it/discord
 .. |License| image:: https://github.com/adafruit/circuitpython/blob/master/logo/license-MIT-brightgreen.svg
    :target: https://opensource.org/licenses/MIT
