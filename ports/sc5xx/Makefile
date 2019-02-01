@@ -53,6 +53,7 @@ SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
 	machine/pin.c \
 	machine/pin_named_pins.c \
+	sharc/modsharc.c \
 	utime/modutime.c \
 	uos/moduos.c \
 	)

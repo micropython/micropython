@@ -41,13 +41,15 @@
 
 /* See adi_mmu.h for definitions of the ADI_MMU_* memory class macros. */
 
-#ifndef ADI_UNCACHED_SHARC_MEMORY
+/*#ifndef ADI_UNCACHED_SHARC_MEMORY
 #define SHARC_L2 ADI_MMU_RO_CACHED
 #define SHARC_L3 ADI_MMU_RO_CACHED
 #else
 #define SHARC_L2 ADI_MMU_RO_UNCACHED
 #define SHARC_L3 ADI_MMU_RO_UNCACHED
-#endif
+#endif*/
+#define SHARC_L2 ADI_MMU_RW_UNCACHED
+#define SHARC_L3 ADI_MMU_RW_UNCACHED
 
 /* ADI_CHANGES is defined for the default page table objects to ensure the
  * default symbols are weak.  Users should not define this macro when building
@@ -89,81 +91,81 @@ const adi_mmu_AbstractPageEntry _adi_mmu_absPageTable[] =
     /* L2 ROM2 */
     { 0x20280000u, 0x202BFFFFu, ADI_MMU_RO_CACHED           }, /* 256KB L2 ROM2 */
 
-	/* otp space */
-	{ 0x24000000u, 0x240FFFFFu, ADI_MMU_RW_UNCACHED           }, /* 1MB OTP Space */
+    /* otp space */
+    { 0x24000000u, 0x240FFFFFu, ADI_MMU_RW_UNCACHED           }, /* 1MB OTP Space */
 
 #if defined(__ADSPSC583__)
     /* L1 memory of SHARC0 in MP space via Slave1 port */
-    { 0x28240000u, 0x2825FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B0 */
+    { 0x28240000u, 0x2825FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B0 */
 
-    { 0x282C0000u, 0x282DFFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B1 */
+    { 0x282C0000u, 0x282DFFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B1 */
 
-    { 0x28300000u, 0x2830FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC0 L1B2 */
+    { 0x28300000u, 0x2830FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC0 L1B2 */
 
-    { 0x28380000u, 0x2838FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC0 L1B3 */
+    { 0x28380000u, 0x2838FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC0 L1B3 */
 
     /* L1 memory of SHARC0 in MP space via Slave2 port */
-    { 0x28640000u, 0x2865FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B0 */
+    { 0x28640000u, 0x2865FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B0 */
 
-    { 0x286C0000u, 0x286DFFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B1 */
+    { 0x286C0000u, 0x286DFFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B1 */
 
-    { 0x28700000u, 0x2870FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC0 L1B2 */
+    { 0x28700000u, 0x2870FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC0 L1B2 */
 
-    { 0x28780000u, 0x2878FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC0 L1B3 */
+    { 0x28780000u, 0x2878FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC0 L1B3 */
 
     /* L1 memory of SHARC1 in MP space via Slave1 port */
-    { 0x28A40000u, 0x28A5FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B0 */
+    { 0x28A40000u, 0x28A5FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B0 */
 
-    { 0x28AC0000u, 0x28ADFFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B1 */
+    { 0x28AC0000u, 0x28ADFFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B1 */
 
-    { 0x28B00000u, 0x28B0FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC1 L1B2 */
+    { 0x28B00000u, 0x28B0FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC1 L1B2 */
 
-    { 0x28B80000u, 0x28B8FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC1 L1B3 */
+    { 0x28B80000u, 0x28B8FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC1 L1B3 */
 
     /* L1 memory of SHARC1 in MP space via Slave2 port */
-    { 0x28E40000u, 0x28E5FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B0 */
+    { 0x28E40000u, 0x28E5FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B0 */
 
-    { 0x28EC0000u, 0x28EDFFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B1 */
+    { 0x28EC0000u, 0x28EDFFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B1 */
 
-    { 0x28F00000u, 0x28F0FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC1 L1B2 */
+    { 0x28F00000u, 0x28F0FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC1 L1B2 */
 
-    { 0x28F80000u, 0x28F8FFFFu, ADI_MMU_RO_UNCACHED         }, /*  64KB SHARC1 L1B3 */
+    { 0x28F80000u, 0x28F8FFFFu, ADI_MMU_RW_UNCACHED         }, /*  64KB SHARC1 L1B3 */
 #else
     /* L1 memory of SHARC0 in MP space via Slave1 port */
-    { 0x28240000u, 0x2826FFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC0 L1B0 */
+    { 0x28240000u, 0x2826FFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC0 L1B0 */
 
-    { 0x282C0000u, 0x282EFFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC0 L1B1 */
+    { 0x282C0000u, 0x282EFFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC0 L1B1 */
 
-    { 0x28300000u, 0x2831FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B2 */
+    { 0x28300000u, 0x2831FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B2 */
 
-    { 0x28380000u, 0x2839FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B3 */
+    { 0x28380000u, 0x2839FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B3 */
 
     /* L1 memory of SHARC0 in MP space via Slave2 port */
-    { 0x28640000u, 0x2866FFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC0 L1B0 */
+    { 0x28640000u, 0x2866FFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC0 L1B0 */
 
-    { 0x286C0000u, 0x286EFFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC0 L1B1 */
+    { 0x286C0000u, 0x286EFFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC0 L1B1 */
 
-    { 0x28700000u, 0x2871FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B2 */
+    { 0x28700000u, 0x2871FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B2 */
 
-    { 0x28780000u, 0x2879FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC0 L1B3 */
+    { 0x28780000u, 0x2879FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC0 L1B3 */
 
     /* L1 memory of SHARC1 in MP space via Slave1 port */
-    { 0x28A40000u, 0x28A6FFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC1 L1B0 */
+    { 0x28A40000u, 0x28A6FFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC1 L1B0 */
 
-    { 0x28AC0000u, 0x28AEFFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC1 L1B1 */
+    { 0x28AC0000u, 0x28AEFFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC1 L1B1 */
 
-    { 0x28B00000u, 0x28B1FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B2 */
+    { 0x28B00000u, 0x28B1FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B2 */
 
-    { 0x28B80000u, 0x28B9FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B3 */
+    { 0x28B80000u, 0x28B9FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B3 */
 
     /* L1 memory of SHARC1 in MP space via Slave2 port */
-    { 0x28E40000u, 0x28E6FFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC1 L1B0 */
+    { 0x28E40000u, 0x28E6FFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC1 L1B0 */
 
-    { 0x28EC0000u, 0x28EEFFFFu, ADI_MMU_RO_UNCACHED         }, /* 192KB SHARC1 L1B1 */
+    { 0x28EC0000u, 0x28EEFFFFu, ADI_MMU_RW_UNCACHED         }, /* 192KB SHARC1 L1B1 */
 
-    { 0x28F00000u, 0x28F1FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B2 */
+    { 0x28F00000u, 0x28F1FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B2 */
 
-    { 0x28F80000u, 0x28F9FFFFu, ADI_MMU_RO_UNCACHED         }, /* 128KB SHARC1 L1B3 */
+    { 0x28F80000u, 0x28F9FFFFu, ADI_MMU_RW_UNCACHED         }, /* 128KB SHARC1 L1B3 */
 #endif
 
     /* System MMR space */
@@ -183,33 +185,33 @@ const adi_mmu_AbstractPageEntry _adi_mmu_absPageTable[] =
 
 #if defined(__ADSPSC582__) /* 1 SHARC core, 1 Dynamic Memory Controller */
     /* Dynamic Memory Controller 0 (DMC0) 256MB SDRAM */
-    { 0x80000000u, 0x805FFFFFu, ADI_MMU_RO_UNCACHED         }, /*   6MB DDR-A : SHARC0 NW code   */
+    { 0x80000000u, 0x805FFFFFu, ADI_MMU_RW_UNCACHED         }, /*   6MB DDR-A : SHARC0 NW code   */
     { 0x80600000u, 0x809FFFFFu, SHARC_L3                    }, /*   4MB DDR-A : SHARC0 data      */
-    { 0x80A00000u, 0x80FFFFFFu, ADI_MMU_RO_UNCACHED         }, /*   6MB DDR-A : SHARC0 VISA code */
+    { 0x80A00000u, 0x80FFFFFFu, ADI_MMU_RW_UNCACHED         }, /*   6MB DDR-A : SHARC0 VISA code */
     { 0x81000000u, 0x87FFFFFFu, SHARC_L3                    }, /* 112MB DDR-A : SHARC0 data      */
     { 0x88000000u, 0x8FFFFFFFu, ADI_MMU_WB_CACHED           }, /* 128MB DDR-A : ARM    code&data */
 #elif defined(__ADSPSC583__) || defined(__ADSPSC584__) /* 2 SHARC cores, 1 Dynamic Memory Controller */
     /* Dynamic Memory Controller 0 (DMC0) 256MB SDRAM */
-    { 0x80000000u, 0x802FFFFFu, ADI_MMU_RO_UNCACHED         }, /*   3MB DDR-A : SHARC0 NW code   */
-    { 0x80300000u, 0x805FFFFFu, ADI_MMU_RO_UNCACHED         }, /*   3MB DDR-A : SHARC1 NW code   */
+    { 0x80000000u, 0x802FFFFFu, ADI_MMU_RW_UNCACHED         }, /*   3MB DDR-A : SHARC0 NW code   */
+    { 0x80300000u, 0x805FFFFFu, ADI_MMU_RW_UNCACHED         }, /*   3MB DDR-A : SHARC1 NW code   */
     { 0x80600000u, 0x809FFFFFu, SHARC_L3                    }, /*   4MB DDR-A : SHARC0 data      */
-    { 0x80A00000u, 0x80CFFFFFu, ADI_MMU_RO_UNCACHED         }, /*   3MB DDR-A : SHARC0 VISA code */
-    { 0x80D00000u, 0x80FFFFFFu, ADI_MMU_RO_UNCACHED         }, /*   3MB DDR-A : SHARC1 VISA code */
+    { 0x80A00000u, 0x80CFFFFFu, ADI_MMU_RW_UNCACHED         }, /*   3MB DDR-A : SHARC0 VISA code */
+    { 0x80D00000u, 0x80FFFFFFu, ADI_MMU_RW_UNCACHED         }, /*   3MB DDR-A : SHARC1 VISA code */
     { 0x81000000u, 0x84DFFFFFu, SHARC_L3                    }, /*  62MB DDR-A : SHARC0 data2     */
     { 0x84E00000u, 0x88FFFFFFu, SHARC_L3                    }, /*  66MB DDR-A : SHARC1 data2     */
     { 0x89000000u, 0x8FFFFFFFu, ADI_MMU_WB_CACHED           }, /* 112MB DDR-A : ARM    code&data */
 #else                         /* 2 SHARC cores, 2 Dynamic Memory Controllers */
     /* Dynamic Memory Controller 0 (DMC0) 256MB SDRAM */
-    { 0x80000000u, 0x805FFFFFu, ADI_MMU_RO_UNCACHED         }, /*   6MB DDR-A : SHARC0 NW code   */
+    { 0x80000000u, 0x805FFFFFu, ADI_MMU_RW_UNCACHED         }, /*   6MB DDR-A : SHARC0 NW code   */
     { 0x80600000u, 0x809FFFFFu, SHARC_L3                    }, /*   4MB DDR-A : SHARC0 data      */
-    { 0x80A00000u, 0x80FFFFFFu, ADI_MMU_RO_UNCACHED         }, /*   6MB DDR-A : SHARC0 VISA code */
+    { 0x80A00000u, 0x80FFFFFFu, ADI_MMU_RW_UNCACHED         }, /*   6MB DDR-A : SHARC0 VISA code */
     { 0x81000000u, 0x88FFFFFFu, SHARC_L3                    }, /* 128MB DDR-A : SHARC0 data2     */
     { 0x89000000u, 0x8FFFFFFFu, SHARC_L3                    }, /* 112MB DDR-A : SHARC1 data2     */
 
     /* Dynamic Memory Controller 1 (DMC1) 256MB SDRAM */
-    { 0xC0000000u, 0xC05FFFFFu, ADI_MMU_RO_UNCACHED         }, /*   6MB DDR-B : SHARC1 NW code   */
+    { 0xC0000000u, 0xC05FFFFFu, ADI_MMU_RW_UNCACHED         }, /*   6MB DDR-B : SHARC1 NW code   */
     { 0xC0600000u, 0xC09FFFFFu, SHARC_L3                    }, /*   4MB DDR-B : SHARC1 data      */
-    { 0xC0A00000u, 0xC0FFFFFFu, ADI_MMU_RO_UNCACHED         }, /*   6MB DDR-B : SHARC1 VISA code */
+    { 0xC0A00000u, 0xC0FFFFFFu, ADI_MMU_RW_UNCACHED         }, /*   6MB DDR-B : SHARC1 VISA code */
     { 0xC1000000u, 0xCFFFFFFFu, ADI_MMU_WB_CACHED           }, /* 240MB DDR-B : ARM    code&data */
 #endif
 };
