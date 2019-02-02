@@ -1065,7 +1065,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
                 // store attribute
                 mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-                elem->value = make_obj_long_lived(dest[1], 10);
+                elem->value = dest[1];
                 dest[0] = MP_OBJ_NULL; // indicate success
             }
         }
