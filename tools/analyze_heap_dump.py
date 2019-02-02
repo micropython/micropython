@@ -162,7 +162,31 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         def load_pointer(address):
             return struct.unpack("<I", load(address))[0]
 
-        heap_start, heap_size = symbols["heap"]
+        if "heap" in symbols:
+            heap_start, heap_size = symbols["heap"]
+        else:
+            print("no static heap")
+            allocations_start, allocations_size = symbols["allocations"]
+            allocations = load(allocations_start, allocations_size)
+            first_zero = True
+            potential_heap = None
+            # The heap is the last left hand allocated section that should span all the way to the
+            # right side list.
+            for address, size in struct.iter_unpack("<II", allocations):
+                print(address, size)
+                if address == 0 and first_zero:
+                    first_zero = False
+                if first_zero:
+                    potential_heap = (address, size)
+
+                if not first_zero and address != 0:
+                    if address != potential_heap[0] + potential_heap[1]:
+                        print("no active heap")
+                        return
+                    else:
+                        heap_start, heap_size = potential_heap
+                        break
+        print("found heap", heap_start, heap_size)
         heap = load(heap_start, heap_size)
         total_byte_len = len(heap)
 
@@ -170,16 +194,18 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         mp_state_ctx = symbols["mp_state_ctx"][0]
         manual_symbol_map["mp_state_ctx+20"] = "mp_state_ctx.vm.last_pool"
         last_pool = load_pointer(mp_state_ctx + 20) # (gdb) p &mp_state_ctx.vm.last_pool
-        manual_symbol_map["mp_state_ctx+104"] = "mp_state_ctx.vm.dict_main.map.table"
-        dict_main_table = load_pointer(mp_state_ctx + 104) # (gdb) p &mp_state_ctx.vm.dict_main.map.table
+        manual_symbol_map["mp_state_ctx+108"] = "mp_state_ctx.vm.dict_main.map.table"
+        dict_main_table = load_pointer(mp_state_ctx + 108) # (gdb) p &mp_state_ctx.vm.dict_main.map.table
         manual_symbol_map["mp_state_ctx+84"] = "mp_state_ctx.vm.mp_loaded_modules_dict.map.table"
         imports_table = load_pointer(mp_state_ctx + 84) # (gdb) p &mp_state_ctx.vm.mp_loaded_modules_dict.map.table
 
-        manual_symbol_map["mp_state_ctx+120"] = "mp_state_ctx.vm.mp_sys_path_obj.items"
-        manual_symbol_map["mp_state_ctx+136"] = "mp_state_ctx.vm.mp_sys_argv_obj.items"
+        manual_symbol_map["mp_state_ctx+124"] = "mp_state_ctx.vm.mp_sys_path_obj.items"
+        manual_symbol_map["mp_state_ctx+140"] = "mp_state_ctx.vm.mp_sys_argv_obj.items"
+        manual_symbol_map["mp_state_ctx+96"] = "mp_state_ctx.vm.dict_main"
+        manual_symbol_map["0x200015e0"] = "mp_state_ctx.vm.dict_main"
 
         for i in range(READLINE_HIST_SIZE):
-            manual_symbol_map["mp_state_ctx+{}".format(144 + i * 4)] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
+            manual_symbol_map["mp_state_ctx+{}".format(148 + i * 4)] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
 
         tuple_type = symbols["mp_type_tuple"][0]
         type_type = symbols["mp_type_type"][0]
@@ -191,6 +217,8 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
         bytearray_type = symbols["mp_type_bytearray"][0]
 
         dynamic_type = 0x40000000 # placeholder, doesn't match any memory
+
+        long_lived_start = load_pointer(mp_state_ctx + 272) # (gdb) p &mp_state_ctx.mem.gc_lowest_long_lived_ptr
 
         type_colors = {
             dict_type: "red",
@@ -252,9 +280,14 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             table = "<<table bgcolor=\"gray\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\"><tr><td colspan=\"4\" port=\"0\" height=\"18\" width=\"80\">0x{:08x}</td></tr>{}</table>>".format(address, rows)
 
             ownership_graph.add_node(address, label=table, style="invisible", shape="plaintext")
+            print("add  0x{:08x}".format(address))
             potential_type = None
             node = ownership_graph.get_node(address)
             node.attr["height"] = 0.25 * current_allocation
+            if address >= long_lived_start:
+                node.attr["fontcolor"] = "hotpink"
+            else:
+                node.attr["fontcolor"] = "black"
             block_data[address] = data
             for k in range(len(data) // 4):
                 word = struct.unpack_from("<I", data, offset=(k * 4))[0]
@@ -270,6 +303,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                         bgcolor = type_colors[potential_type]
                     elif print_unknown_types:
                         print("unknown type", hex(potential_type))
+
                     node.attr["label"] = "<" + node.attr["label"].replace("\"gray\"", "\"" + bgcolor + "\"") + ">"
 
                 if potential_type == str_type and k == 3:
@@ -285,7 +319,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                     if k < 4:
                         port = 0
                     ownership_graph.add_edge(address, word, tailport=str(port)+":_")
-                    #print("  0x{:08x}".format(word))
+                    print("  0x{:08x}".format(word))
                     if address in qstr_pools:
                         if k > 0:
                             qstr_chunks.append(word)
@@ -421,6 +455,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
             node.attr["label"] = "<<table bgcolor=\"gold\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\"><tr><td colspan=\"2\">0x{:08x}</td></tr>{}</table>>".format(block, rows)
 
         for node, degree in ownership_graph.in_degree_iter():
+            print(node, degree)
             if degree == 0:
                 address_bytes = struct.pack("<I", int(node))
                 location = -1
@@ -434,6 +469,8 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                         source = manual_symbol_map[source]
                     if "readline_hist" in source:
                         string_blocks.append(int(node))
+                    if pointer_location > heap_start + heap_size:
+                        source = "stack " + source
                     ownership_graph.add_edge(source, node)
 
         for block in string_blocks:
@@ -517,7 +554,11 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 wrapped.append(html.escape(printable_qstrs[i:i+16]))
             node = ownership_graph.get_node(block)
             node.attr["label"] = "<<table border=\"1\" cellspacing=\"0\" bgcolor=\"lightsalmon\" width=\"80\"><tr><td height=\"18\" >0x{:08x}</td></tr><tr><td height=\"{}\" >{}</td></tr></table>>".format(block, 18 * (len(wrapped) - 1), "<br/>".join(wrapped))
-            node.attr["fontname"] = "FiraCode-Medium"
+            node.attr["fontname"] = "FiraCode-Bold"
+            if block >= long_lived_start:
+                node.attr["fontcolor"] = "hotpink"
+            else:
+                node.attr["fontcolor"] = "black"
             node.attr["fontpath"] = "/Users/tannewt/Library/Fonts/"
             node.attr["fontsize"] = 8
 
