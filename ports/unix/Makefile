@@ -152,12 +152,12 @@ SRC_C = \
 	alloc.c \
 	coverage.c \
 	fatfs_port.c \
-    lv_mpy_hal.c \
-    monitor.c \
-    mouse.c \
 	$(SRC_MOD)
 
 LIB_SRC_C = $(addprefix lib/,\
+    lv_bindings/port/unix/lv_mpy_hal.c \
+    lv_bindings/driver/SDL/monitor.c \
+    lv_bindings/driver/SDL/mouse.c \
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
 	)

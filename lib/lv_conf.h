@@ -28,7 +28,6 @@
 /* Enable GC for Micropython */
 #define LV_ENABLE_GC 1
 #if LV_ENABLE_GC == 1
-long unsigned int gc_nbytes(const void *ptr);
 #   define LV_MEM_CUSTOM_REALLOC   m_realloc      /*Wrapper to realloc*/
 #   define LV_MEM_CUSTOM_GET_SIZE  gc_nbytes      /*Wrapper to lv_mem_get_size*/
 #   define LV_GC_INCLUDE "py/mpstate.h"

@@ -122,15 +122,15 @@ endif
 #LittlevGL
 LVGL_BINDING_DIR = $(TOP)/lib/lv_bindings
 LVGL_DIR = $(LVGL_BINDING_DIR)/lvgl
-INC += -I$(LVGL_DIR) -I$(LVGL_BINDING_DIR)/micropython/include
+INC += -I$(LVGL_DIR) -I$(LVGL_BINDING_DIR)/include
 ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f) $(TOP)/lib/lv_conf.h
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
 QSTR_GLOBAL_DEPENDENCIES += $(LVGL_MPY)
 
-$(LVGL_MPY): $(ALL_LVGL_SRC)
+$(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/micropython/gen_mpy.py -X anim -X group -X task $(INC) -I $(LVGL_BINDING_DIR)/micropython/pycparser/utils/fake_libc_include $(LVGL_DIR)/lvgl.h > $@
+	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -X anim -X group -X task $(INC) -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(LVGL_DIR)/lvgl.h > $@
 
 CFLAGS_MOD += -Wno-unused-function
 SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR) -type f -name "*.c") $(LVGL_MPY))
