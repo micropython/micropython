@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_SYSTICK_H
 #define MICROPY_INCLUDED_STM32_SYSTICK_H
 
-void sys_tick_wait_at_least(uint32_t stc, uint32_t delay_ms);
-bool sys_tick_has_passed(uint32_t stc, uint32_t delay_ms);
+void systick_wait_at_least(uint32_t stc, uint32_t delay_ms);
+bool systick_has_passed(uint32_t stc, uint32_t delay_ms);
 
 #endif // MICROPY_INCLUDED_STM32_SYSTICK_H

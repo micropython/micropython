@@ -229,7 +229,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         f_close(&fp);
 
         // keep LED on for at least 200ms
-        sys_tick_wait_at_least(start_tick, 200);
+        systick_wait_at_least(start_tick, 200);
         led_state(PYB_LED_GREEN, 0);
     } else if (res == FR_OK) {
         // mount sucessful
@@ -273,7 +273,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         f_close(&fp);
 
         // keep LED on for at least 200ms
-        sys_tick_wait_at_least(start_tick, 200);
+        systick_wait_at_least(start_tick, 200);
         led_state(PYB_LED_GREEN, 0);
     }
 
