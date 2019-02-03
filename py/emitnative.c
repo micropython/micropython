@@ -279,6 +279,14 @@ STATIC void emit_native_mov_reg_state_addr(emit_t *emit, int reg_dest, int local
     }
 }
 
+STATIC void emit_native_mov_reg_qstr(emit_t *emit, int arg_reg, qstr qst) {
+    ASM_MOV_REG_IMM(emit->as, arg_reg, qst);
+}
+
+STATIC void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
+    ASM_MOV_REG_IMM(emit->as, reg_dest, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
+}
+
 #define emit_native_mov_state_imm_via(emit, local_num, imm, reg_temp) \
     do { \
         ASM_MOV_REG_IMM((emit)->as, (reg_temp), (imm)); \
@@ -883,6 +891,12 @@ STATIC void emit_call_with_2_imm_args(emit_t *emit, mp_fun_kind_t fun_kind, mp_i
     ASM_CALL_IND(emit->as, fun_kind);
 }
 
+STATIC void emit_call_with_qstr_arg(emit_t *emit, mp_fun_kind_t fun_kind, qstr qst, int arg_reg) {
+    need_reg_all(emit);
+    emit_native_mov_reg_qstr(emit, arg_reg, qst);
+    ASM_CALL_IND(emit->as, fun_kind);
+}
+
 // vtype of all n_pop objects is VTYPE_PYOBJ
 // Will convert any items that are not VTYPE_PYOBJ to this type and put them back on the stack.
 // If any conversions of non-immediate values are needed, then it uses REG_ARG_1, REG_ARG_2 and REG_RET.
@@ -1181,7 +1195,7 @@ STATIC void emit_native_import_name(emit_t *emit, qstr qst) {
     assert(vtype_level == VTYPE_PYOBJ);
     emit->do_viper_types = orig_do_viper_types;
 
-    emit_call_with_imm_arg(emit, MP_F_IMPORT_NAME, qst, REG_ARG_1); // arg1 = import name
+    emit_call_with_qstr_arg(emit, MP_F_IMPORT_NAME, qst, REG_ARG_1); // arg1 = import name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1191,7 +1205,7 @@ STATIC void emit_native_import_from(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_module;
     emit_access_stack(emit, 1, &vtype_module, REG_ARG_1); // arg1 = module
     assert(vtype_module == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_IMPORT_FROM, qst, REG_ARG_2); // arg2 = import name
+    emit_call_with_qstr_arg(emit, MP_F_IMPORT_FROM, qst, REG_ARG_2); // arg2 = import name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1245,7 +1259,9 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qst) {
     } else
     */
     {
-        emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
+        need_reg_single(emit, REG_TEMP0, 0);
+        emit_native_mov_reg_qstr_obj(emit, REG_TEMP0, qst);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_TEMP0);
     }
 }
 
@@ -1315,7 +1331,7 @@ STATIC void emit_native_load_global(emit_t *emit, qstr qst, int kind) {
             }
         }
     }
-    emit_call_with_imm_arg(emit, MP_F_LOAD_NAME + kind, qst, REG_ARG_1);
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_NAME + kind, qst, REG_ARG_1);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1327,7 +1343,7 @@ STATIC void emit_native_load_attr(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_ATTR, qst, REG_ARG_2); // arg2 = attribute name
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -1335,13 +1351,13 @@ STATIC void emit_native_load_method(emit_t *emit, qstr qst, bool is_super) {
     if (is_super) {
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, 3); // arg2 = dest ptr
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, 2); // arg2 = dest ptr
-        emit_call_with_imm_arg(emit, MP_F_LOAD_SUPER_METHOD, qst, REG_ARG_1); // arg1 = method name
+        emit_call_with_qstr_arg(emit, MP_F_LOAD_SUPER_METHOD, qst, REG_ARG_1); // arg1 = method name
     } else {
         vtype_kind_t vtype_base;
         emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
         assert(vtype_base == VTYPE_PYOBJ);
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-        emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, qst, REG_ARG_2); // arg2 = method name
+        emit_call_with_qstr_arg(emit, MP_F_LOAD_METHOD, qst, REG_ARG_2); // arg2 = method name
     }
 }
 
@@ -1548,7 +1564,7 @@ STATIC void emit_native_store_global(emit_t *emit, qstr qst, int kind) {
             ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
         }
     }
-    emit_call_with_imm_arg(emit, MP_F_STORE_NAME + kind, qst, REG_ARG_1); // arg1 = name
+    emit_call_with_qstr_arg(emit, MP_F_STORE_NAME + kind, qst, REG_ARG_1); // arg1 = name
     emit_post(emit);
 }
 
@@ -1557,7 +1573,7 @@ STATIC void emit_native_store_attr(emit_t *emit, qstr qst) {
     emit_pre_pop_reg_reg(emit, &vtype_base, REG_ARG_1, &vtype_val, REG_ARG_3); // arg1 = base, arg3 = value
     assert(vtype_base == VTYPE_PYOBJ);
     assert(vtype_val == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
+    emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
 
@@ -1754,7 +1770,7 @@ STATIC void emit_native_delete_global(emit_t *emit, qstr qst, int kind) {
     MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_DELETE_NAME);
     MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_DELETE_GLOBAL);
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_DELETE_NAME + kind, qst, REG_ARG_1);
+    emit_call_with_qstr_arg(emit, MP_F_DELETE_NAME + kind, qst, REG_ARG_1);
     emit_post(emit);
 }
 
@@ -1762,7 +1778,8 @@ STATIC void emit_native_delete_attr(emit_t *emit, qstr qst) {
     vtype_kind_t vtype_base;
     emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
     assert(vtype_base == VTYPE_PYOBJ);
-    emit_call_with_2_imm_args(emit, MP_F_STORE_ATTR, qst, REG_ARG_2, (mp_uint_t)MP_OBJ_NULL, REG_ARG_3); // arg2 = attribute name, arg3 = value (null for delete)
+    ASM_XOR_REG_REG(emit->as, REG_ARG_3, REG_ARG_3); // arg3 = value (null for delete)
+    emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
 
@@ -1936,7 +1953,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     emit_access_stack(emit, 1, &vtype, REG_ARG_1); // arg1 = ctx_mgr
     assert(vtype == VTYPE_PYOBJ);
     emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-    emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___exit__, REG_ARG_2);
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___exit__, REG_ARG_2);
     // stack: (..., ctx_mgr, __exit__, self)
 
     emit_pre_pop_reg(emit, &vtype, REG_ARG_3); // self
@@ -1949,7 +1966,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
 
     // get __enter__ method
     emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-    emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___enter__, REG_ARG_2); // arg2 = method name
+    emit_call_with_qstr_arg(emit, MP_F_LOAD_METHOD, MP_QSTR___enter__, REG_ARG_2); // arg2 = method name
     // stack: (..., __exit__, self, __enter__, self)
 
     // call __enter__ method
