@@ -81,23 +81,9 @@ extern const dma_descr_t dma_SDIO_0;
 
 #endif
 
-typedef union {
-    uint16_t    enabled;    // Used to test if both counters are == 0
-    uint8_t     counter[2];
-} dma_idle_count_t;
-extern volatile dma_idle_count_t dma_idle;
-#define DMA_IDLE_ENABLED()  (dma_idle.enabled != 0)
-
-#define DMA_SYSTICK_MASK            0x0e
-#define DMA_MSECS_PER_SYSTICK       (DMA_SYSTICK_MASK + 1)
-#define DMA_IDLE_TICK_MAX           (8)     // 128 msec
-#define DMA_IDLE_TICK(tick)         (((tick) & DMA_SYSTICK_MASK) == 0)
-
-
 void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
-void dma_idle_handler(int controller);
 
 #endif // MICROPY_INCLUDED_STM32_DMA_H

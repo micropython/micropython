@@ -32,6 +32,39 @@
 
 extern __IO uint32_t uwTick;
 
+systick_dispatch_t systick_dispatch_table[SYSTICK_DISPATCH_NUM_SLOTS];
+
+void SysTick_Handler(void) {
+    // Instead of calling HAL_IncTick we do the increment here of the counter.
+    // This is purely for efficiency, since SysTick is called 1000 times per
+    // second at the highest interrupt priority.
+    uint32_t uw_tick = uwTick + 1;
+    uwTick = uw_tick;
+
+    // Read the systick control regster. This has the side effect of clearing
+    // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
+    // work properly.
+    SysTick->CTRL;
+
+    // Dispatch to any registered handlers in a cycle
+    systick_dispatch_t f = systick_dispatch_table[uw_tick & (SYSTICK_DISPATCH_NUM_SLOTS - 1)];
+    if (f != NULL) {
+        f(uw_tick);
+    }
+
+    #if MICROPY_PY_THREAD
+    if (pyb_thread_enabled) {
+        if (pyb_thread_cur->timeslice == 0) {
+            if (pyb_thread_cur->run_next != pyb_thread_cur) {
+                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+            }
+        } else {
+            --pyb_thread_cur->timeslice;
+        }
+    }
+    #endif
+}
+
 // We provide our own version of HAL_Delay that calls __WFI while waiting,
 // and works when interrupts are disabled.  This function is intended to be
 // used only by the ST HAL functions.
