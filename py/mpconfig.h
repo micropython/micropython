@@ -1331,17 +1331,17 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
-// Additional builtin function definitions - see builtintables.c:builtin_object_table for format.
+// Additional builtin function definitions - see modbuiltins.c:mp_module_builtins_globals_table for format.
 #ifndef MICROPY_PORT_BUILTINS
 #define MICROPY_PORT_BUILTINS
 #endif
 
-// Additional builtin module definitions - see builtintables.c:builtin_module_table for format.
+// Additional builtin module definitions - see objmodule.c:mp_builtin_module_table for format.
 #ifndef MICROPY_PORT_BUILTIN_MODULES
 #define MICROPY_PORT_BUILTIN_MODULES
 #endif
 
-// Any module weak links - see builtintables.c:mp_builtin_module_weak_links_table.
+// Any module weak links - see objmodule.c:mp_builtin_module_weak_links_table.
 #ifndef MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 #endif
