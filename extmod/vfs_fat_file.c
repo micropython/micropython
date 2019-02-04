@@ -205,7 +205,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
         o->fp.cltbl = temp_table;
         f_lseek(&o->fp, CREATE_LINKMAP);
         DWORD size = (temp_table[0] + 1) * 2;
-        o->fp.cltbl = m_malloc_maybe(size, false);
+        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD), false);
         if (o->fp.cltbl != NULL) {
             o->fp.cltbl[0] = size;
             res = f_lseek(&o->fp, CREATE_LINKMAP);
