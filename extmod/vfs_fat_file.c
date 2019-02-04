@@ -197,6 +197,23 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
         m_del_obj(pyb_file_obj_t, o);
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
+    // If we're reading, turn on fast seek.
+    if (mode == FA_READ) {
+        // one call to determine how much space we need.
+        DWORD temp_table[2];
+        temp_table[0] = 2;
+        o->fp.cltbl = temp_table;
+        f_lseek(&o->fp, CREATE_LINKMAP);
+        DWORD size = (temp_table[0] + 1) * 2;
+        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD), false);
+        if (o->fp.cltbl != NULL) {
+            o->fp.cltbl[0] = size;
+            res = f_lseek(&o->fp, CREATE_LINKMAP);
+            if (res != FR_OK) {
+                o->fp.cltbl = NULL;
+            }
+        }
+    }
 
     // for 'a' mode, we must begin at the end of the file
     if ((mode & FA_OPEN_ALWAYS) != 0) {
