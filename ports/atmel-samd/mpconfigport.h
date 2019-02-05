@@ -54,6 +54,7 @@
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
 #define MICROPY_PY_URANDOM          (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
 #define MICROPY_PY_STRUCT           (0)
@@ -256,7 +257,6 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     #define MICROPY_PY_UERRNO (1)
     #define MICROPY_PY_UERRNO_ERRORCODE (0)
     #define MICROPY_PY_URE (1)
-    #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #ifndef MICROPY_PY_FRAMEBUF
       #define MICROPY_PY_FRAMEBUF         (0)
     #endif
@@ -342,7 +342,6 @@ extern const struct _mp_obj_module_t pixelbuf_module;
 
 #else
     #define MICROPY_PY_BUILTINS_REVERSED (0)
-    #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
     #define MICROPY_PY_FRAMEBUF         (0)
     #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES

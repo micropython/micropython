@@ -126,7 +126,8 @@ STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (n < 0) {
                 n = 0;
             }
-            mp_obj_list_t *s = list_new(o->len * n);
+            size_t new_len = mp_seq_multiply_len(o->len, n);
+            mp_obj_list_t *s = list_new(new_len);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return MP_OBJ_FROM_PTR(s);
         }
