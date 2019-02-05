@@ -36,6 +36,7 @@ typedef struct {
     uint8_t pin_a;
     uint8_t pin_b;
     uint8_t state;
+    int8_t quarter;
     mp_int_t position;
 } rotaryio_incrementalencoder_obj_t;
 

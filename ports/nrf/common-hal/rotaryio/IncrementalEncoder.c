@@ -43,11 +43,21 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     new_state = (new_state << 1) + (new_state ^ nrf_gpio_pin_read(self->pin_b));
 
     uint8_t change = (new_state - self->state) & 0x03;
-    if (change == 1) self->position++;
-    else if (change == 3) self->position--;
+    if (change == 1) self->quarter++;
+    else if (change == 3) self->quarter--;
     // ignore other state transitions
 
     self->state = new_state;
+
+    // logic from the atmel-samd port: provides some damping and scales movement 
+    // down by 4:1.  
+    if (self->quarter >= 4) { 
+        self->position++;
+        self->quarter = 0;
+    } else if (self->quarter <= -4) {
+        self->position--;
+        self->quarter = 0;
+    }
 }
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
