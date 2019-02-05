@@ -25,11 +25,40 @@
  */
 
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "nrfx_gpiote.h"
 
 #include "py/runtime.h"
 
+// obj array to map pin -> self since nrfx hide the mapping
+static rotaryio_incrementalencoder_obj_t *_objs[NUMBER_OF_PINS];
+
+static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
+    rotaryio_incrementalencoder_obj_t *self = _objs[pin];
+    if (!self) return;
+
+    self->position++;
+}
+
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
     const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
+
+    self->pin_a = pin_a->number;
+    self->pin_b = pin_b->number;
+
+    _objs[self->pin_a] = self;
+    _objs[self->pin_b] = self;
+
+    nrfx_gpiote_in_config_t cfg = {
+        .sense = NRF_GPIOTE_POLARITY_TOGGLE,
+        .pull = NRF_GPIO_PIN_NOPULL,
+        .is_watcher = false,
+        .hi_accuracy = true,
+        .skip_gpio_setup = false
+    };
+    nrfx_gpiote_in_init(self->pin_a, &cfg, _intr_handler);
+    nrfx_gpiote_in_init(self->pin_b, &cfg, _intr_handler);
+    nrfx_gpiote_in_event_enable(self->pin_a, true);
+    nrfx_gpiote_in_event_enable(self->pin_b, true);
 
     claim_pin(pin_a);
     claim_pin(pin_b);
@@ -43,6 +72,9 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
+    _objs[self->pin_a] = NULL;
+    _objs[self->pin_b] = NULL;
+
     reset_pin_number(self->pin_a);
     self->pin_a = NO_PIN;
     reset_pin_number(self->pin_b);
