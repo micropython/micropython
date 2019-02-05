@@ -29,14 +29,25 @@
 
 #include "py/runtime.h"
 
-// obj array to map pin -> self since nrfx hide the mapping
+#include <stdio.h>
+
+// obj array to map pin number -> self since nrfx hide the mapping
 static rotaryio_incrementalencoder_obj_t *_objs[NUMBER_OF_PINS];
 
 static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     rotaryio_incrementalencoder_obj_t *self = _objs[pin];
     if (!self) return;
 
-    self->position++;
+    // reads a state 0 .. 3 *in order*.
+    uint8_t new_state = nrf_gpio_pin_read(self->pin_a);
+    new_state = (new_state << 1) + (new_state ^ nrf_gpio_pin_read(self->pin_b));
+
+    uint8_t change = (new_state - self->state) & 0x03;
+    if (change == 1) self->position++;
+    else if (change == 3) self->position--;
+    // ignore other state transitions
+
+    self->state = new_state;
 }
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
@@ -75,9 +86,13 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     _objs[self->pin_a] = NULL;
     _objs[self->pin_b] = NULL;
 
+    nrfx_gpiote_in_event_disable(self->pin_a);
+    nrfx_gpiote_in_event_disable(self->pin_b);
+    nrfx_gpiote_in_uninit(self->pin_a);
+    nrfx_gpiote_in_uninit(self->pin_b);
     reset_pin_number(self->pin_a);
-    self->pin_a = NO_PIN;
     reset_pin_number(self->pin_b);
+    self->pin_a = NO_PIN;
     self->pin_b = NO_PIN;
 }
 
@@ -88,7 +103,4 @@ mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementa
 void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
         mp_int_t new_position) {
     self->position = new_position;
-}
-
-void incrementalencoder_interrupt_handler(uint8_t channel) {
 }
