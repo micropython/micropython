@@ -155,9 +155,9 @@ SRC_C = \
 	$(SRC_MOD)
 
 LIB_SRC_C = $(addprefix lib/,\
-    lv_bindings/port/unix/lv_mpy_hal.c \
-    lv_bindings/driver/SDL/monitor.c \
-    lv_bindings/driver/SDL/mouse.c \
+    lv_bindings/driver/SDL/SDL_monitor.c \
+    lv_bindings/driver/SDL/SDL_mouse.c \
+	lv_bindings/driver/SDL/modSDL.c \
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
 	)
