@@ -36,7 +36,11 @@
 
 #include <signal.h>
 #include <sched.h>
-#include <semaphore.h>
+#if defined (__APPLE__)
+    #include <dispatch/dispatch.h>
+#else
+    #include <semaphore.h>
+#endif
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
@@ -54,7 +58,11 @@ STATIC thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
 // it's needed because we can't use any pthread calls in a signal handler
-STATIC sem_t thread_signal_done;
+#if defined (__APPLE__)
+    STATIC dispatch_semaphore_t thread_signal_done;
+#else
+    STATIC sem_t thread_signal_done;
+#endif
 
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
@@ -71,7 +79,11 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
         gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
         #endif
-        sem_post(&thread_signal_done);
+        #if defined (__APPLE__)
+            dispatch_semaphore_signal(thread_signal_done);
+        #else
+            sem_post(&thread_signal_done);
+        #endif
     }
 }
 
@@ -85,7 +97,11 @@ void mp_thread_init(void) {
     thread->ready = 1;
     thread->arg = NULL;
     thread->next = NULL;
-    sem_init(&thread_signal_done, 0, 0);
+    #if defined (__APPLE__)
+        thread_signal_done = dispatch_semaphore_create(0);
+    #else
+        sem_init(&thread_signal_done, 0, 0);
+    #endif
 
     // enable signal handler for garbage collection
     struct sigaction sa;
@@ -125,7 +141,11 @@ void mp_thread_gc_others(void) {
             continue;
         }
         pthread_kill(th->id, SIGUSR1);
-        sem_wait(&thread_signal_done);
+        #if defined (__APPLE__)
+            dispatch_semaphore_wait(thread_signal_done, DISPATCH_TIME_FOREVER);
+        #else
+            sem_wait(&thread_signal_done);
+        #endif
     }
     pthread_mutex_unlock(&thread_mutex);
 }
