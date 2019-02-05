@@ -292,6 +292,7 @@ ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	hw_random.o \
 	phy_init.o \
 	pm_esp32.o \
+	pm_locks.o \
 	intr_alloc.o \
 	dport_access.o \
 	wifi_init.o \
