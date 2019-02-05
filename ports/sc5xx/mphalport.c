@@ -39,7 +39,7 @@ extern BM_UART uart0;
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c = 0;
-    uart_read_byte(&uart0, &c);
+    while (uart_read_byte(&uart0, &c) != UART_SUCCESS);
     return c;
 }
 
