@@ -421,7 +421,7 @@ Note that TouchPads can be used to wake an ESP32 from sleep::
     t = TouchPad(Pin(14))
     t.config(500)               # configure the threshold at which the pin is considered touched
     esp32.wake_on_touch(True)
-    machine.sleep()             # put the MCU to sleep until a touchpad is touched
+    machine.lightsleep()        # put the MCU to sleep until a touchpad is touched
 
 For more details on touchpads refer to `Espressif Touch Sensor
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/touch_pad.html>`_.

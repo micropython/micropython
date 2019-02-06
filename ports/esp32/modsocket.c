@@ -178,12 +178,16 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     return res;
 }
 
-int _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
-    mp_uint_t len = 0;
+STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
     mp_obj_t *elem;
-    mp_obj_get_array(addrtuple, &len, &elem);
-    if (len != 2) return -1;
-    return _socket_getaddrinfo2(elem[0], elem[1], resp);
+    mp_obj_get_array_fixed_n(addrtuple, 2, &elem);
+    int res = _socket_getaddrinfo2(elem[0], elem[1], resp);
+    if (res != 0) {
+        mp_raise_OSError(res);
+    }
+    if (*resp == NULL) {
+        mp_raise_OSError(-2); // name or service not known
+    }
 }
 
 STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {

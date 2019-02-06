@@ -123,8 +123,10 @@ STATIC void mp_help_print_modules(void) {
         mp_print_str(MP_PYTHON_PRINTER, "\n");
     }
 
+    #if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
     mp_print_str(MP_PYTHON_PRINTER, "Plus any modules on the filesystem\n");
+    #endif
 }
 #endif
 

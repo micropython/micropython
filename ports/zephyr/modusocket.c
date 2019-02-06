@@ -288,7 +288,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
 STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
-    mp_warning("setsockopt() not implemented");
+    mp_warning(MP_WARN_CAT(RuntimeWarning), "setsockopt() not implemented");
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);

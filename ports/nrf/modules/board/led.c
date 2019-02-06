@@ -105,7 +105,7 @@ STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // check led number
     if (!(1 <= led_id && led_id <= NUM_LEDS)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED(%d) does not exist", led_id));
+        mp_raise_ValueError("LED doesn't exist");
     }
 
     // return static led object

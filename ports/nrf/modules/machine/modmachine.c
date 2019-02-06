@@ -149,11 +149,11 @@ STATIC mp_obj_t machine_soft_reset(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
-STATIC mp_obj_t machine_sleep(void) {
+STATIC mp_obj_t machine_lightsleep(void) {
     __WFE();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
+MP_DEFINE_CONST_FUN_OBJ_0(machine_lightsleep_obj, machine_lightsleep);
 
 STATIC mp_obj_t machine_deepsleep(void) {
     __WFI();
@@ -197,7 +197,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_HW_ENABLE_RNG
     { MP_ROM_QSTR(MP_QSTR_rng),                MP_ROM_PTR(&random_module) },
 #endif
-    { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_lightsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep),         MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),          MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),        MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_Pin),                MP_ROM_PTR(&pin_type) },
