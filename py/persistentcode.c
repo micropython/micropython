@@ -164,7 +164,7 @@ STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
     }
 }
 
-STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
+STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr source_file) {
     // load bytecode
     size_t bc_len = read_uint(reader);
     byte *bytecode = m_new(byte, bc_len);
@@ -178,7 +178,6 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 
     // load qstrs and link global qstr ids into bytecode
     qstr simple_name = load_qstr(reader);
-    qstr source_file = load_qstr(reader);
     ((byte*)ip2)[0] = simple_name; ((byte*)ip2)[1] = simple_name >> 8;
     ((byte*)ip2)[2] = source_file; ((byte*)ip2)[3] = source_file >> 8;
     load_bytecode_qstrs(reader, (byte*)ip, bytecode + bc_len);
@@ -195,7 +194,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
         *ct++ = (mp_uint_t)load_obj(reader);
     }
     for (size_t i = 0; i < n_raw_code; ++i) {
-        *ct++ = (mp_uint_t)(uintptr_t)load_raw_code(reader);
+        *ct++ = (mp_uint_t)(uintptr_t)load_raw_code(reader, source_file);
     }
 
     // create raw_code and return it
@@ -221,7 +220,8 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || header[3] > mp_small_int_bits()) {
         mp_raise_ValueError("incompatible .mpy file");
     }
-    mp_raw_code_t *rc = load_raw_code(reader);
+    qstr source_file = load_qstr(reader);
+    mp_raw_code_t *rc = load_raw_code(reader, source_file);
     reader->close(reader->data);
     return rc;
 }
@@ -324,14 +324,10 @@ STATIC void save_bytecode_qstrs(mp_print_t *print, const byte *ip, const byte *i
     }
 }
 
-STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
+STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, bool save_source_file) {
     if (rc->kind != MP_CODE_BYTECODE) {
         mp_raise_ValueError("can only save bytecode");
     }
-
-    // save bytecode
-    mp_print_uint(print, rc->data.u_byte.bc_len);
-    mp_print_bytes(print, rc->data.u_byte.bytecode, rc->data.u_byte.bc_len);
 
     // extract prelude
     const byte *ip = rc->data.u_byte.bytecode;
@@ -339,9 +335,17 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
     bytecode_prelude_t prelude;
     extract_prelude(&ip, &ip2, &prelude);
 
+    // save source_file if needed
+    if (save_source_file) {
+        save_qstr(print, ip2[2] | (ip2[3] << 8)); // source_file
+    }
+
+    // save bytecode
+    mp_print_uint(print, rc->data.u_byte.bc_len);
+    mp_print_bytes(print, rc->data.u_byte.bytecode, rc->data.u_byte.bc_len);
+
     // save qstrs
     save_qstr(print, ip2[0] | (ip2[1] << 8)); // simple_name
-    save_qstr(print, ip2[2] | (ip2[3] << 8)); // source_file
     save_bytecode_qstrs(print, ip, rc->data.u_byte.bytecode + rc->data.u_byte.bc_len);
 
     // save constant table
@@ -356,7 +360,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
         save_obj(print, (mp_obj_t)*const_table++);
     }
     for (uint i = 0; i < rc->data.u_byte.n_raw_code; ++i) {
-        save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++);
+        save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++, false);
     }
 }
 
@@ -375,7 +379,7 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     };
     mp_print_bytes(print, header, sizeof(header));
 
-    save_raw_code(print, rc);
+    save_raw_code(print, rc, true);
 }
 
 // here we define mp_raw_code_save_file depending on the port

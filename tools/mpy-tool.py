@@ -220,7 +220,7 @@ class RawCode:
     # a set of all escaped names, to make sure they are unique
     escaped_names = set()
 
-    def __init__(self, bytecode, qstrs, objs, raw_codes):
+    def __init__(self, bytecode, qstrs, objs, raw_codes, source_file):
         # set core variables
         self.bytecode = bytecode
         self.qstrs = qstrs
@@ -230,7 +230,7 @@ class RawCode:
         # extract prelude
         self.ip, self.ip2, self.prelude = extract_prelude(self.bytecode)
         self.simple_name = self._unpack_qstr(self.ip2)
-        self.source_file = self._unpack_qstr(self.ip2 + 2)
+        self.source_file = source_file
 
     def _unpack_qstr(self, ip):
         qst = self.bytecode[ip] | self.bytecode[ip + 1] << 8
@@ -429,19 +429,18 @@ def read_bytecode_qstrs(file, bytecode, ip):
             read_qstr_and_pack(file, bytecode, ip + 1)
         ip += sz
 
-def read_raw_code(f):
+def read_raw_code(f, source_file):
     bc_len = read_uint(f)
     bytecode = bytearray(f.read(bc_len))
     ip, ip2, prelude = extract_prelude(bytecode)
     read_qstr_and_pack(f, bytecode, ip2) # simple_name
-    read_qstr_and_pack(f, bytecode, ip2 + 2) # source_file
     read_bytecode_qstrs(f, bytecode, ip)
     n_obj = read_uint(f)
     n_raw_code = read_uint(f)
     qstrs = [read_qstr(f) for _ in range(prelude[3] + prelude[4])]
     objs = [read_obj(f) for _ in range(n_obj)]
-    raw_codes = [read_raw_code(f) for _ in range(n_raw_code)]
-    return RawCode(bytecode, qstrs, objs, raw_codes)
+    raw_codes = [read_raw_code(f, source_file) for _ in range(n_raw_code)]
+    return RawCode(bytecode, qstrs, objs, raw_codes, source_file)
 
 def read_mpy(filename):
     with open(filename, 'rb') as f:
@@ -454,7 +453,8 @@ def read_mpy(filename):
         config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE = (feature_flags & 1) != 0
         config.MICROPY_PY_BUILTINS_STR_UNICODE = (feature_flags & 2) != 0
         config.mp_small_int_bits = header[3]
-        return read_raw_code(f)
+        source_file = global_qstrs[read_qstr(f)] # source_file
+        return read_raw_code(f, source_file)
 
 def dump_mpy(raw_codes):
     for rc in raw_codes:
