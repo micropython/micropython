@@ -42,7 +42,7 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
     self->width = width;
     self->height = height;
     self->data = m_malloc(self->stride * height * sizeof(uint32_t), false);
-
+    self->read_only = false;
     self->bits_per_value = bits_per_value;
 
     if (bits_per_value > 8) {
@@ -62,6 +62,18 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
     }
     self->x_mask = (1 << self->x_shift) - 1; // Used as a modulus on the x value
     self->bitmask = (1 << bits_per_value) - 1;
+}
+
+uint16_t common_hal_displayio_bitmap_get_height(displayio_bitmap_t *self) {
+    return self->height;
+}
+
+uint16_t common_hal_displayio_bitmap_get_width(displayio_bitmap_t *self) {
+    return self->width;
+}
+
+uint32_t common_hal_displayio_bitmap_get_bits_per_value(displayio_bitmap_t *self) {
+    return self->bits_per_value;
 }
 
 void common_hal_displayio_bitmap_load_row(displayio_bitmap_t *self, uint16_t y, uint8_t* data, uint16_t len) {
@@ -85,6 +97,7 @@ void common_hal_displayio_bitmap_load_row(displayio_bitmap_t *self, uint16_t y, 
         row_value++;
     }
 }
+
 uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t x, int16_t y) {
     if (x >= self->width || x < 0 || y >= self->height || y < 0) {
         return 0;
@@ -97,5 +110,23 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
     } else {
         uint32_t bytes_per_value = self->bits_per_value / 8;
         return self->data[row_start + x * bytes_per_value];
+    }
+}
+
+void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+    int32_t row_start = y * self->stride;
+    if (self->bits_per_value < 8) {
+        uint32_t bit_position = (32 - ((x & self->x_mask) + 1) * self->bits_per_value);
+        uint32_t index = row_start + (x >> self->x_shift);
+        uint32_t word = self->data[index];
+        word &= ~(self->bitmask << bit_position);
+        word |= (value & self->bitmask) << bit_position;
+        self->data[index] = word;
+    } else {
+        uint32_t bytes_per_value = self->bits_per_value / 8;
+        self->data[row_start + x * bytes_per_value] = value;
     }
 }

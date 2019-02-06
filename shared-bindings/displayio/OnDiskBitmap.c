@@ -42,8 +42,6 @@
 //| much slower pixel load times. These load times may result in frame tearing where only part of
 //| the image is visible.
 //|
-//| .. warning:: This will likely be changed before 4.0.0. Consider it very experimental.
-//|
 //| It's easiest to use on a board with a built in display such as the `Hallowing M0 Express
 //| <https://www.adafruit.com/product/3900>`_.
 //|

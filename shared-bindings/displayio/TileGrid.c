@@ -60,8 +60,6 @@ static void unpack_position(mp_obj_t position_obj, int16_t* x, int16_t* y) {
 //|
 //| A single tile grid is also known as a Sprite.
 //|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: TileGrid(bitmap, *, pixel_shader, position, width=1, height=1, tile_width=None, tile_height=None, default_tile=0)
 //|
 //|   Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to

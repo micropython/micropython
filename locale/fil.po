@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-07 09:09-0600\n"
+"POT-Creation-Date: 2019-02-11 17:39-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1360,7 +1360,7 @@ msgstr "may pagkakamali sa math domain"
 msgid "division by zero"
 msgstr "dibisyon ng zero"
 
-#: py/modmicropython.c:155
+#: py/modmicropython.c:117
 msgid "schedule stack full"
 msgstr "puno na ang schedule stack"
 
@@ -2205,7 +2205,7 @@ msgid "buffer must be a bytes-like object"
 msgstr "buffer ay dapat bytes-like object"
 
 #: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:87
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr "file ay dapat buksan sa byte mode"
 
@@ -2370,74 +2370,91 @@ msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
 msgid "Unsupported pull value."
 msgstr "Hindi suportado ang pull value."
 
-#: shared-bindings/displayio/Bitmap.c:84 shared-bindings/displayio/Shape.c:88
-msgid "y should be an int"
+#: shared-bindings/displayio/Bitmap.c:131 shared-bindings/pulseio/PulseIn.c:272
+msgid "Cannot delete values"
+msgstr "Hindi mabura ang values"
+
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/pulseio/PulseIn.c:278
+msgid "Slices not supported"
+msgstr "Hindi suportado ang Slices"
+
+#: shared-bindings/displayio/Bitmap.c:156
+#, fuzzy
+msgid "pixel coordinates out of bounds"
+msgstr "wala sa sakop ang address"
+
+#: shared-bindings/displayio/Bitmap.c:166
+msgid "pixel value requires too many bits"
+msgstr ""
+
+#: shared-bindings/displayio/BuiltinFont.c:74
+#, fuzzy
+msgid "%q should be an int"
 msgstr "y ay dapat int"
 
-#: shared-bindings/displayio/Bitmap.c:89
-msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
-
-#: shared-bindings/displayio/Bitmap.c:94
-msgid "row data must be a buffer"
-msgstr "row data ay dapat na buffer"
-
-#: shared-bindings/displayio/ColorConverter.c:72
+#: shared-bindings/displayio/ColorConverter.c:70
 msgid "color should be an int"
 msgstr "color ay dapat na int"
 
-#: shared-bindings/displayio/Display.c:131
+#: shared-bindings/displayio/Display.c:129
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:143
+#: shared-bindings/displayio/Display.c:141
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:167
+#: shared-bindings/displayio/Display.c:165
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:209
-#: shared-bindings/displayio/Display.c:219
+#: shared-bindings/displayio/Display.c:207
+#: shared-bindings/displayio/Display.c:217
 msgid "Brightness not adjustable"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:93
-#: shared-bindings/displayio/ParallelBus.c:98
+#: shared-bindings/displayio/FourWire.c:91
+#: shared-bindings/displayio/ParallelBus.c:96
 msgid "Too many display busses"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:109
-#: shared-bindings/displayio/ParallelBus.c:113
+#: shared-bindings/displayio/FourWire.c:107
+#: shared-bindings/displayio/ParallelBus.c:111
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
-#: shared-bindings/displayio/Group.c:62
-msgid "Group must have size at least 1"
+#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
+#: shared-bindings/displayio/Group.c:93
+#, fuzzy
+msgid "Group must have %q at least 1"
 msgstr "Group dapat ay hindi baba sa 1 na haba"
 
-#: shared-bindings/displayio/Palette.c:93
+#: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr "ang color buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
 
-#: shared-bindings/displayio/Palette.c:99
+#: shared-bindings/displayio/Palette.c:97
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "color buffer ay dapat na 3 bytes (RGB) o 4 bytes (RGB + pad byte)"
 
-#: shared-bindings/displayio/Palette.c:103
+#: shared-bindings/displayio/Palette.c:101
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "color ay dapat mula sa 0x000000 hangang 0xffffff"
 
-#: shared-bindings/displayio/Palette.c:107
+#: shared-bindings/displayio/Palette.c:105
 msgid "color buffer must be a buffer or int"
 msgstr "color buffer ay dapat buffer or int"
 
-#: shared-bindings/displayio/Palette.c:120
-#: shared-bindings/displayio/Palette.c:134
+#: shared-bindings/displayio/Palette.c:118
+#: shared-bindings/displayio/Palette.c:132
 msgid "palette_index should be an int"
 msgstr "palette_index ay dapat na int"
+
+#: shared-bindings/displayio/Shape.c:88
+msgid "y should be an int"
+msgstr "y ay dapat int"
 
 #: shared-bindings/displayio/Shape.c:92
 #, fuzzy
@@ -2453,19 +2470,19 @@ msgstr "y ay dapat int"
 msgid "position must be 2-tuple"
 msgstr "position ay dapat 2-tuple"
 
-#: shared-bindings/displayio/TileGrid.c:117
+#: shared-bindings/displayio/TileGrid.c:115
 msgid "unsupported bitmap type"
 msgstr "Hindi supportadong tipo ng bitmap"
 
-#: shared-bindings/displayio/TileGrid.c:128
+#: shared-bindings/displayio/TileGrid.c:126
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:131
+#: shared-bindings/displayio/TileGrid.c:129
 msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:198
+#: shared-bindings/displayio/TileGrid.c:196
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader ay dapat displayio.Palette o displayio.ColorConverter"
 
@@ -2493,6 +2510,7 @@ msgstr "walang laman ang address"
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
 #: shared-bindings/terminalio/Terminal.c:63
+#: shared-bindings/terminalio/Terminal.c:68
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
 
@@ -2543,19 +2561,7 @@ msgid ""
 msgstr ""
 "PWM frequency hindi writable kapag variable_frequency ay False sa pag buo."
 
-#: shared-bindings/pulseio/PulseIn.c:272
-msgid "Cannot delete values"
-msgstr "Hindi mabura ang values"
-
-#: shared-bindings/pulseio/PulseIn.c:278
-msgid "Slices not supported"
-msgstr "Hindi suportado ang Slices"
-
-#: shared-bindings/pulseio/PulseIn.c:284
-msgid "index must be int"
-msgstr "index ay dapat int"
-
-#: shared-bindings/pulseio/PulseIn.c:290
+#: shared-bindings/pulseio/PulseIn.c:285
 msgid "Read-only"
 msgstr "Basahin-lamang"
 
@@ -2603,11 +2609,6 @@ msgstr "Ang liwanag ay dapat sa gitna ng 0 o 255"
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
 msgstr "Ang laki ng stack ay dapat na hindi bababa sa 256"
-
-#: shared-bindings/terminalio/Terminal.c:68
-#, fuzzy
-msgid "unicode_characters must be a string"
-msgstr "ang keywords dapat strings"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2729,26 +2730,27 @@ msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
 
-#: shared-module/displayio/Bitmap.c:69
+#: shared-module/displayio/Bitmap.c:81
 msgid "row must be packed and word aligned"
 msgstr "row ay dapat packed at ang word nakahanay"
+
+#: shared-module/displayio/Bitmap.c:118
+#, fuzzy
+msgid "Read-only object"
+msgstr "Basahin-lamang"
 
 #: shared-module/displayio/Display.c:67
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "Hindi supportadong tipo ng bitmap"
 
-#: shared-module/displayio/Group.c:39
+#: shared-module/displayio/Group.c:48
 msgid "Group full"
 msgstr "Puno ang group"
 
-#: shared-module/displayio/Group.c:46
+#: shared-module/displayio/Group.c:55
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
-
-#: shared-module/displayio/Group.c:55
-msgid "Group empty"
-msgstr "Walang laman ang group"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
 msgid "Invalid BMP file"
@@ -2893,6 +2895,22 @@ msgstr ""
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Mali ang UUID parameter"
 
+#~ msgid "Group empty"
+#~ msgstr "Walang laman ang group"
+
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
+
+#~ msgid "row data must be a buffer"
+#~ msgstr "row data ay dapat na buffer"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "ang keywords dapat strings"
+
+#~ msgid "index must be int"
+#~ msgstr "index ay dapat int"
+
 #~ msgid "Can not query for the device address."
 #~ msgstr "Hindi maaaring mag-query para sa address ng device."
 
@@ -2908,18 +2926,17 @@ msgstr ""
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Mali ang UUID string length"
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
-
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+
+#~ msgid "Wrong address length"
+#~ msgstr "Mali ang address length"
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Hindi ma-apply ang GAP parameters."
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mali ang address length"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2934,8 +2951,9 @@ msgstr ""
 #~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
 #~ "drive:\n"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
 #, fuzzy
 #~ msgid "unpack requires a buffer of %d bytes"
@@ -2947,15 +2965,15 @@ msgstr ""
 #~ msgid "Can not add Service."
 #~ msgstr "Hindi maidaragdag ang serbisyo."
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Mali ang tipo ng serbisyo"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "ang palette ay dapat 32 bytes ang haba"

@@ -257,7 +257,7 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|   .. method:: __get__(index)
+//|   .. method:: __getitem__(index)
 //|
 //|     Returns the value at the given index or values in slice.
 //|
@@ -277,12 +277,7 @@ STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t va
         if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
             mp_raise_NotImplementedError(translate("Slices not supported"));
         } else {
-            uint16_t index = 0;
-            if (MP_OBJ_IS_SMALL_INT(index_obj)) {
-                index = MP_OBJ_SMALL_INT_VALUE(index_obj);
-            } else {
-                mp_raise_TypeError(translate("index must be int"));
-            }
+            size_t index = mp_get_index(&pulseio_pulsein_type, common_hal_pulseio_pulsein_get_len(self), index_obj, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pulsein_get_item(self, index));

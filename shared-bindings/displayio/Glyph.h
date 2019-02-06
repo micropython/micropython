@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_TERMINALIO_TERMINAL_H
-#define SHARED_MODULE_TERMINALIO_TERMINAL_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_GLYPH_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_GLYPH_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "py/objnamedtuple.h"
 
-#include "py/obj.h"
-#include "shared-module/displayio/BuiltinFont.h"
-#include "shared-module/displayio/TileGrid.h"
+extern const mp_obj_namedtuple_type_t displayio_glyph_type;
 
-typedef struct  {
-    mp_obj_base_t base;
-    const displayio_builtinfont_t* font;
-    uint16_t cursor_x;
-    uint16_t cursor_y;
-    displayio_tilegrid_t* tilegrid;
-    uint16_t first_row;
-} terminalio_terminal_obj_t;
-
-#endif /* SHARED_MODULE_TERMINALIO_TERMINAL_H */
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_GLYPH_H

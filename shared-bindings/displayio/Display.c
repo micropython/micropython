@@ -50,8 +50,6 @@
 //| Most people should not use this class directly. Use a specific display driver instead that will
 //| contain the initialization sequence at minimum.
 //|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, rotation=0, color_depth=16, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c, set_vertical_scroll=0, backlight_pin=None)
 //|
 //|   Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).

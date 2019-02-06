@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-07 09:09-0600\n"
+"POT-Creation-Date: 2019-02-11 17:39-0800\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1359,7 +1359,7 @@ msgstr "error de dominio matemático"
 msgid "division by zero"
 msgstr "división por cero"
 
-#: py/modmicropython.c:155
+#: py/modmicropython.c:117
 msgid "schedule stack full"
 msgstr ""
 
@@ -2200,7 +2200,7 @@ msgid "buffer must be a bytes-like object"
 msgstr "buffer debe de ser un objeto bytes-like"
 
 #: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:87
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr "el archivo deberia ser una archivo abierto en modo byte"
 
@@ -2365,74 +2365,91 @@ msgstr "Pull no se usa cuando la dirección es output."
 msgid "Unsupported pull value."
 msgstr "valor pull no soportado."
 
-#: shared-bindings/displayio/Bitmap.c:84 shared-bindings/displayio/Shape.c:88
-msgid "y should be an int"
+#: shared-bindings/displayio/Bitmap.c:131 shared-bindings/pulseio/PulseIn.c:272
+msgid "Cannot delete values"
+msgstr "No se puede eliminar valores"
+
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/pulseio/PulseIn.c:278
+msgid "Slices not supported"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c:156
+#, fuzzy
+msgid "pixel coordinates out of bounds"
+msgstr "address fuera de límites"
+
+#: shared-bindings/displayio/Bitmap.c:166
+msgid "pixel value requires too many bits"
+msgstr ""
+
+#: shared-bindings/displayio/BuiltinFont.c:74
+#, fuzzy
+msgid "%q should be an int"
 msgstr "y deberia ser un int"
 
-#: shared-bindings/displayio/Bitmap.c:89
-msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
-
-#: shared-bindings/displayio/Bitmap.c:94
-msgid "row data must be a buffer"
-msgstr "row data debe ser un buffer"
-
-#: shared-bindings/displayio/ColorConverter.c:72
+#: shared-bindings/displayio/ColorConverter.c:70
 msgid "color should be an int"
 msgstr "color deberia ser un int"
 
-#: shared-bindings/displayio/Display.c:131
+#: shared-bindings/displayio/Display.c:129
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:143
+#: shared-bindings/displayio/Display.c:141
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:167
+#: shared-bindings/displayio/Display.c:165
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:209
-#: shared-bindings/displayio/Display.c:219
+#: shared-bindings/displayio/Display.c:207
+#: shared-bindings/displayio/Display.c:217
 msgid "Brightness not adjustable"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:93
-#: shared-bindings/displayio/ParallelBus.c:98
+#: shared-bindings/displayio/FourWire.c:91
+#: shared-bindings/displayio/ParallelBus.c:96
 msgid "Too many display busses"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:109
-#: shared-bindings/displayio/ParallelBus.c:113
+#: shared-bindings/displayio/FourWire.c:107
+#: shared-bindings/displayio/ParallelBus.c:111
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Bytes debe estar entre 0 y 255."
 
-#: shared-bindings/displayio/Group.c:62
-msgid "Group must have size at least 1"
+#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
+#: shared-bindings/displayio/Group.c:93
+#, fuzzy
+msgid "Group must have %q at least 1"
 msgstr "Group debe tener size de minimo 1"
 
-#: shared-bindings/displayio/Palette.c:93
+#: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr "color buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
 
-#: shared-bindings/displayio/Palette.c:99
+#: shared-bindings/displayio/Palette.c:97
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:103
+#: shared-bindings/displayio/Palette.c:101
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "color debe estar entre 0x000000 y 0xffffff"
 
-#: shared-bindings/displayio/Palette.c:107
+#: shared-bindings/displayio/Palette.c:105
 msgid "color buffer must be a buffer or int"
 msgstr "color buffer deber ser un buffer o un int"
 
-#: shared-bindings/displayio/Palette.c:120
-#: shared-bindings/displayio/Palette.c:134
+#: shared-bindings/displayio/Palette.c:118
+#: shared-bindings/displayio/Palette.c:132
 msgid "palette_index should be an int"
 msgstr "palette_index deberia ser un int"
+
+#: shared-bindings/displayio/Shape.c:88
+msgid "y should be an int"
+msgstr "y deberia ser un int"
 
 #: shared-bindings/displayio/Shape.c:92
 #, fuzzy
@@ -2448,19 +2465,19 @@ msgstr "y deberia ser un int"
 msgid "position must be 2-tuple"
 msgstr "posición debe ser 2-tuple"
 
-#: shared-bindings/displayio/TileGrid.c:117
+#: shared-bindings/displayio/TileGrid.c:115
 msgid "unsupported bitmap type"
 msgstr "tipo de bitmap no soportado"
 
-#: shared-bindings/displayio/TileGrid.c:128
+#: shared-bindings/displayio/TileGrid.c:126
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:131
+#: shared-bindings/displayio/TileGrid.c:129
 msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:198
+#: shared-bindings/displayio/TileGrid.c:196
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader debe ser displayio.Palette o displayio.ColorConverter"
 
@@ -2488,6 +2505,7 @@ msgstr "addresses esta vacío"
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
 #: shared-bindings/terminalio/Terminal.c:63
+#: shared-bindings/terminalio/Terminal.c:68
 msgid "Expected a %q"
 msgstr "Se espera un %q"
 
@@ -2537,19 +2555,7 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
-#: shared-bindings/pulseio/PulseIn.c:272
-msgid "Cannot delete values"
-msgstr "No se puede eliminar valores"
-
-#: shared-bindings/pulseio/PulseIn.c:278
-msgid "Slices not supported"
-msgstr ""
-
-#: shared-bindings/pulseio/PulseIn.c:284
-msgid "index must be int"
-msgstr "indice debe ser int"
-
-#: shared-bindings/pulseio/PulseIn.c:290
+#: shared-bindings/pulseio/PulseIn.c:285
 msgid "Read-only"
 msgstr "Solo-lectura"
 
@@ -2597,11 +2603,6 @@ msgstr "Brightness debe estar entro 0 y 255"
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
 msgstr ""
-
-#: shared-bindings/terminalio/Terminal.c:68
-#, fuzzy
-msgid "unicode_characters must be a string"
-msgstr "palabras clave deben ser strings"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2723,26 +2724,27 @@ msgstr "No se puede transferir sin pines MOSI y MISO."
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr "Solo se admiten bit maps de color de 8 bits o menos"
 
-#: shared-module/displayio/Bitmap.c:69
+#: shared-module/displayio/Bitmap.c:81
 msgid "row must be packed and word aligned"
 msgstr "la fila debe estar empacada y la palabra alineada"
+
+#: shared-module/displayio/Bitmap.c:118
+#, fuzzy
+msgid "Read-only object"
+msgstr "Solo-lectura"
 
 #: shared-module/displayio/Display.c:67
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "tipo de bitmap no soportado"
 
-#: shared-module/displayio/Group.c:39
+#: shared-module/displayio/Group.c:48
 msgid "Group full"
 msgstr "Group lleno"
 
-#: shared-module/displayio/Group.c:46
+#: shared-module/displayio/Group.c:55
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
-
-#: shared-module/displayio/Group.c:55
-msgid "Group empty"
-msgstr "Group vacío"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
 msgid "Invalid BMP file"
@@ -2887,6 +2889,22 @@ msgstr ""
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parámetro UUID inválido"
 
+#~ msgid "Group empty"
+#~ msgstr "Group vacío"
+
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
+
+#~ msgid "row data must be a buffer"
+#~ msgstr "row data debe ser un buffer"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "palabras clave deben ser strings"
+
+#~ msgid "index must be int"
+#~ msgstr "indice debe ser int"
+
 #~ msgid "Can not query for the device address."
 #~ msgstr "No se puede consultar la dirección del dispositivo."
 
@@ -2902,17 +2920,17 @@ msgstr ""
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Longitud de string UUID inválida"
 
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
-
 #~ msgid "Can encode UUID into the advertisement packet."
 #~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+
+#~ msgid "Wrong address length"
+#~ msgstr "Longitud de address erronea"
 
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "No se pueden aplicar los parámetros GAP."
 
-#~ msgid "Wrong address length"
-#~ msgstr "Longitud de address erronea"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2928,8 +2946,9 @@ msgstr ""
 #~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
 #~ "unidad de almacenamiento CIRCUITPY:\n"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
 #, fuzzy
 #~ msgid "unpack requires a buffer of %d bytes"
@@ -2941,15 +2960,14 @@ msgstr ""
 #~ msgid "Can not add Service."
 #~ msgstr "No se puede agregar el Servicio."
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Tipo de Servicio inválido"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-07 01:10-0600\n"
+"POT-Creation-Date: 2019-02-11 17:39-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1323,7 +1323,7 @@ msgstr ""
 msgid "division by zero"
 msgstr ""
 
-#: py/modmicropython.c:155
+#: py/modmicropython.c:117
 msgid "schedule stack full"
 msgstr ""
 
@@ -2148,7 +2148,7 @@ msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:87
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -2306,72 +2306,86 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:84 shared-bindings/displayio/Shape.c:88
-msgid "y should be an int"
+#: shared-bindings/displayio/Bitmap.c:131 shared-bindings/pulseio/PulseIn.c:272
+msgid "Cannot delete values"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:89
-msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/pulseio/PulseIn.c:278
+msgid "Slices not supported"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:94
-msgid "row data must be a buffer"
+#: shared-bindings/displayio/Bitmap.c:156
+msgid "pixel coordinates out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/ColorConverter.c:72
+#: shared-bindings/displayio/Bitmap.c:166
+msgid "pixel value requires too many bits"
+msgstr ""
+
+#: shared-bindings/displayio/BuiltinFont.c:74
+msgid "%q should be an int"
+msgstr ""
+
+#: shared-bindings/displayio/ColorConverter.c:70
 msgid "color should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:131
+#: shared-bindings/displayio/Display.c:129
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:143
+#: shared-bindings/displayio/Display.c:141
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:167
+#: shared-bindings/displayio/Display.c:165
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:209
-#: shared-bindings/displayio/Display.c:219
+#: shared-bindings/displayio/Display.c:207
+#: shared-bindings/displayio/Display.c:217
 msgid "Brightness not adjustable"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:93
-#: shared-bindings/displayio/ParallelBus.c:98
+#: shared-bindings/displayio/FourWire.c:91
+#: shared-bindings/displayio/ParallelBus.c:96
 msgid "Too many display busses"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:109
-#: shared-bindings/displayio/ParallelBus.c:113
+#: shared-bindings/displayio/FourWire.c:107
+#: shared-bindings/displayio/ParallelBus.c:111
 msgid "Command must be an int between 0 and 255"
 msgstr ""
 
-#: shared-bindings/displayio/Group.c:62
-msgid "Group must have size at least 1"
+#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
+#: shared-bindings/displayio/Group.c:93
+msgid "Group must have %q at least 1"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:93
+#: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:99
+#: shared-bindings/displayio/Palette.c:97
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:103
+#: shared-bindings/displayio/Palette.c:101
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:107
+#: shared-bindings/displayio/Palette.c:105
 msgid "color buffer must be a buffer or int"
 msgstr ""
 
-#: shared-bindings/displayio/Palette.c:120
-#: shared-bindings/displayio/Palette.c:134
+#: shared-bindings/displayio/Palette.c:118
+#: shared-bindings/displayio/Palette.c:132
 msgid "palette_index should be an int"
+msgstr ""
+
+#: shared-bindings/displayio/Shape.c:88
+msgid "y should be an int"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c:92
@@ -2386,19 +2400,19 @@ msgstr ""
 msgid "position must be 2-tuple"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:117
+#: shared-bindings/displayio/TileGrid.c:115
 msgid "unsupported bitmap type"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:128
+#: shared-bindings/displayio/TileGrid.c:126
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:131
+#: shared-bindings/displayio/TileGrid.c:129
 msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:198
+#: shared-bindings/displayio/TileGrid.c:196
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
@@ -2426,6 +2440,7 @@ msgstr ""
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
 #: shared-bindings/terminalio/Terminal.c:63
+#: shared-bindings/terminalio/Terminal.c:68
 msgid "Expected a %q"
 msgstr ""
 
@@ -2475,19 +2490,7 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
-#: shared-bindings/pulseio/PulseIn.c:272
-msgid "Cannot delete values"
-msgstr ""
-
-#: shared-bindings/pulseio/PulseIn.c:278
-msgid "Slices not supported"
-msgstr ""
-
-#: shared-bindings/pulseio/PulseIn.c:284
-msgid "index must be int"
-msgstr ""
-
-#: shared-bindings/pulseio/PulseIn.c:290
+#: shared-bindings/pulseio/PulseIn.c:285
 msgid "Read-only"
 msgstr ""
 
@@ -2534,10 +2537,6 @@ msgstr ""
 
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
-msgstr ""
-
-#: shared-bindings/terminalio/Terminal.c:68
-msgid "unicode_characters must be a string"
 msgstr ""
 
 #: shared-bindings/time/__init__.c:78
@@ -2658,24 +2657,24 @@ msgstr ""
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr ""
 
-#: shared-module/displayio/Bitmap.c:69
+#: shared-module/displayio/Bitmap.c:81
 msgid "row must be packed and word aligned"
+msgstr ""
+
+#: shared-module/displayio/Bitmap.c:118
+msgid "Read-only object"
 msgstr ""
 
 #: shared-module/displayio/Display.c:67
 msgid "Unsupported display bus type"
 msgstr ""
 
-#: shared-module/displayio/Group.c:39
+#: shared-module/displayio/Group.c:48
 msgid "Group full"
 msgstr ""
 
-#: shared-module/displayio/Group.c:46
-msgid "Layer must be a Group or TileGrid subclass."
-msgstr ""
-
 #: shared-module/displayio/Group.c:55
-msgid "Group empty"
+msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c:49

@@ -43,8 +43,6 @@
 //|
 //| Converts one color format to another.
 //|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: ColorConverter()
 //|
 //|   Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565

@@ -45,8 +45,6 @@
 //| Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //| It doesn't handle display initialization.
 //|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: ParallelBus(*, data0, command, chip_select, write, read, reset)
 //|
 //|   Create a ParallelBus object associated with the given pins. The bus is inferred from data0

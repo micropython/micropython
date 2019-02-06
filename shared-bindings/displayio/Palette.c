@@ -44,8 +44,6 @@
 //| Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
 //| save memory.
 //|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: Palette(color_count)
 //|
 //|   Create a Palette object to store a set number of colors.

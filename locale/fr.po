@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-07 09:09-0600\n"
+"POT-Creation-Date: 2019-02-11 17:39-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -1358,7 +1358,7 @@ msgstr "erreur de domaine math"
 msgid "division by zero"
 msgstr "division par zéro"
 
-#: py/modmicropython.c:155
+#: py/modmicropython.c:117
 msgid "schedule stack full"
 msgstr "pile de plannification pleine"
 
@@ -2206,7 +2206,7 @@ msgid "buffer must be a bytes-like object"
 msgstr "le tampon doit être un objet bytes-like"
 
 #: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:87
+#: shared-bindings/displayio/OnDiskBitmap.c:85
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -2371,85 +2371,98 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
 msgid "Unsupported pull value."
 msgstr "Valeur de tirage 'pull' non supportée."
 
-#: shared-bindings/displayio/Bitmap.c:84 shared-bindings/displayio/Shape.c:88
+#: shared-bindings/displayio/Bitmap.c:131 shared-bindings/pulseio/PulseIn.c:272
+msgid "Cannot delete values"
+msgstr "Impossible de supprimer les valeurs"
+
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/pulseio/PulseIn.c:278
+msgid "Slices not supported"
+msgstr "Slices non supportées"
+
+#: shared-bindings/displayio/Bitmap.c:156
 #, fuzzy
-msgid "y should be an int"
+msgid "pixel coordinates out of bounds"
+msgstr "adresse hors limites"
+
+#: shared-bindings/displayio/Bitmap.c:166
+msgid "pixel value requires too many bits"
+msgstr ""
+
+#: shared-bindings/displayio/BuiltinFont.c:74
+#, fuzzy
+msgid "%q should be an int"
 msgstr "y doit être un entier (int)"
 
-#: shared-bindings/displayio/Bitmap.c:89
-#, fuzzy
-msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-"le tampon de ligne doit être un bytearray ou un tableau de type 'b' ou 'B'"
-
-#: shared-bindings/displayio/Bitmap.c:94
-#, fuzzy
-msgid "row data must be a buffer"
-msgstr "les données de ligne doivent être un tampon"
-
-#: shared-bindings/displayio/ColorConverter.c:72
+#: shared-bindings/displayio/ColorConverter.c:70
 #, fuzzy
 msgid "color should be an int"
 msgstr "la couleur doit être un entier (int)"
 
-#: shared-bindings/displayio/Display.c:131
+#: shared-bindings/displayio/Display.c:129
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:143
+#: shared-bindings/displayio/Display.c:141
 msgid "Too many displays"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:167
+#: shared-bindings/displayio/Display.c:165
 msgid "Must be a Group subclass."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c:209
-#: shared-bindings/displayio/Display.c:219
+#: shared-bindings/displayio/Display.c:207
+#: shared-bindings/displayio/Display.c:217
 msgid "Brightness not adjustable"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:93
-#: shared-bindings/displayio/ParallelBus.c:98
+#: shared-bindings/displayio/FourWire.c:91
+#: shared-bindings/displayio/ParallelBus.c:96
 msgid "Too many display busses"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c:109
-#: shared-bindings/displayio/ParallelBus.c:113
+#: shared-bindings/displayio/FourWire.c:107
+#: shared-bindings/displayio/ParallelBus.c:111
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 
-#: shared-bindings/displayio/Group.c:62
+#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
+#: shared-bindings/displayio/Group.c:93
 #, fuzzy
-msgid "Group must have size at least 1"
+msgid "Group must have %q at least 1"
 msgstr "Le tampon doit être de longueur au moins 1"
 
-#: shared-bindings/displayio/Palette.c:93
+#: shared-bindings/displayio/Palette.c:91
 #, fuzzy
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 "le tampon de couleur doit être un bytearray ou un tableau de type 'b' ou 'B'"
 
-#: shared-bindings/displayio/Palette.c:99
+#: shared-bindings/displayio/Palette.c:97
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "le tampon de couleur doit faire 3 octets (RVB) ou 4 (RVB + pad byte)"
 
-#: shared-bindings/displayio/Palette.c:103
+#: shared-bindings/displayio/Palette.c:101
 #, fuzzy
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr "la couleur doit être entre 0x000000 et 0xffffff"
 
-#: shared-bindings/displayio/Palette.c:107
+#: shared-bindings/displayio/Palette.c:105
 #, fuzzy
 msgid "color buffer must be a buffer or int"
 msgstr "le tampon de couleur doit être un tampon ou un entier"
 
-#: shared-bindings/displayio/Palette.c:120
-#: shared-bindings/displayio/Palette.c:134
+#: shared-bindings/displayio/Palette.c:118
+#: shared-bindings/displayio/Palette.c:132
 #, fuzzy
 msgid "palette_index should be an int"
 msgstr "palette_index devrait être un entier (int)'"
+
+#: shared-bindings/displayio/Shape.c:88
+#, fuzzy
+msgid "y should be an int"
+msgstr "y doit être un entier (int)"
 
 #: shared-bindings/displayio/Shape.c:92
 #, fuzzy
@@ -2466,20 +2479,20 @@ msgstr "y doit être un entier (int)"
 msgid "position must be 2-tuple"
 msgstr "position doit être un 2-tuple"
 
-#: shared-bindings/displayio/TileGrid.c:117
+#: shared-bindings/displayio/TileGrid.c:115
 #, fuzzy
 msgid "unsupported bitmap type"
 msgstr "type de bitmap non supporté"
 
-#: shared-bindings/displayio/TileGrid.c:128
+#: shared-bindings/displayio/TileGrid.c:126
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:131
+#: shared-bindings/displayio/TileGrid.c:129
 msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c:198
+#: shared-bindings/displayio/TileGrid.c:196
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 "pixel_shader doit être un objet displayio.Palette ou displayio.ColorConverter"
@@ -2509,6 +2522,7 @@ msgstr "adresses vides"
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
 #: shared-bindings/terminalio/Terminal.c:63
+#: shared-bindings/terminalio/Terminal.c:68
 msgid "Expected a %q"
 msgstr "Attendu : %q"
 
@@ -2563,19 +2577,7 @@ msgstr ""
 "La fréquence de PWM n'est pas modifiable quand variable_frequency est False "
 "à la construction."
 
-#: shared-bindings/pulseio/PulseIn.c:272
-msgid "Cannot delete values"
-msgstr "Impossible de supprimer les valeurs"
-
-#: shared-bindings/pulseio/PulseIn.c:278
-msgid "Slices not supported"
-msgstr "Slices non supportées"
-
-#: shared-bindings/pulseio/PulseIn.c:284
-msgid "index must be int"
-msgstr "l'index doit être un entier"
-
-#: shared-bindings/pulseio/PulseIn.c:290
+#: shared-bindings/pulseio/PulseIn.c:285
 msgid "Read-only"
 msgstr "Lecture seule"
 
@@ -2624,11 +2626,6 @@ msgstr "La luminosité doit être entre 0 et 255"
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
 msgstr "La pile doit être au moins de 256"
-
-#: shared-bindings/terminalio/Terminal.c:68
-#, fuzzy
-msgid "unicode_characters must be a string"
-msgstr "les noms doivent être des chaînes de caractère"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2750,27 +2747,27 @@ msgstr "Pas de transfert sans broches MOSI et MISO"
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr "Seules les bitmaps de 8bits par couleur ou moins sont supportées"
 
-#: shared-module/displayio/Bitmap.c:69
+#: shared-module/displayio/Bitmap.c:81
 msgid "row must be packed and word aligned"
 msgstr ""
+
+#: shared-module/displayio/Bitmap.c:118
+#, fuzzy
+msgid "Read-only object"
+msgstr "Lecture seule"
 
 #: shared-module/displayio/Display.c:67
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "type de bitmap non supporté"
 
-#: shared-module/displayio/Group.c:39
+#: shared-module/displayio/Group.c:48
 msgid "Group full"
 msgstr "Groupe plein"
 
-#: shared-module/displayio/Group.c:46
+#: shared-module/displayio/Group.c:55
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
-
-#: shared-module/displayio/Group.c:55
-#, fuzzy
-msgid "Group empty"
-msgstr "Groupe vide"
 
 #: shared-module/displayio/OnDiskBitmap.c:49
 #, fuzzy
@@ -2922,6 +2919,26 @@ msgstr ""
 #~ msgstr "Paramètre UUID invalide"
 
 #, fuzzy
+#~ msgid "Group empty"
+#~ msgstr "Groupe vide"
+
+#, fuzzy
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr ""
+#~ "le tampon de ligne doit être un bytearray ou un tableau de type 'b' ou 'B'"
+
+#, fuzzy
+#~ msgid "row data must be a buffer"
+#~ msgstr "les données de ligne doivent être un tampon"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "les noms doivent être des chaînes de caractère"
+
+#~ msgid "index must be int"
+#~ msgstr "l'index doit être un entier"
+
+#, fuzzy
 #~ msgid "palette must be displayio.Palette"
 #~ msgstr "la palette doit être une displayio.Palette"
 
@@ -2938,18 +2955,20 @@ msgstr ""
 #~ msgid "Invalid UUID string length"
 #~ msgstr "Longeur de chaîne UUID invalide"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
-
 #~ msgid "Can not add Service."
 #~ msgstr "Impossible d'ajouter le Service"
+
+#~ msgid "Wrong address length"
+#~ msgstr "Mauvaise longueur d'adresse"
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
 #~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
 
 #~ msgid "Invalid Service type"
 #~ msgstr "Type de service invalide"
@@ -2957,10 +2976,9 @@ msgstr ""
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
 
 #, fuzzy
 #~ msgid "unpack requires a buffer of %d bytes"
@@ -2973,19 +2991,18 @@ msgstr ""
 #~ msgid "Can not apply device name in the stack."
 #~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
-
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
 #~ "CIRCUITPY).\n"
 #~ msgstr ""
 #~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
