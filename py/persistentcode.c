@@ -38,6 +38,8 @@
 
 #include "py/smallint.h"
 
+#define QSTR_LAST_STATIC MP_QSTR_zip
+
 // The current version of .mpy files
 #define MPY_VERSION (3)
 
@@ -124,6 +126,9 @@ STATIC size_t read_uint(mp_reader_t *reader) {
 
 STATIC qstr load_qstr(mp_reader_t *reader) {
     size_t len = read_uint(reader);
+    if (len == 0) {
+        return read_byte(reader);
+    }
     char *str = m_new(char, len);
     read_bytes(reader, (byte*)str, len);
     qstr qst = qstr_from_strn(str, len);
@@ -156,9 +161,12 @@ STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
         size_t sz;
         uint f = mp_opcode_format(ip, &sz);
         if (f == MP_OPCODE_QSTR) {
-            qstr qst = load_qstr(reader);
-            ip[1] = qst;
-            ip[2] = qst >> 8;
+            qstr qst = ip[1] | ip[2] << 8;
+            if (qst > QSTR_LAST_STATIC) {
+                qst = load_qstr(reader);
+                ip[1] = qst;
+                ip[2] = qst >> 8;
+            }
         }
         ip += sz;
     }
@@ -265,6 +273,11 @@ STATIC void mp_print_uint(mp_print_t *print, size_t n) {
 }
 
 STATIC void save_qstr(mp_print_t *print, qstr qst) {
+    if (qst <= QSTR_LAST_STATIC) {
+        byte buf[2] = {0, qst & 0xff};
+        mp_print_bytes(print, buf, 2);
+        return;
+    }
     size_t len;
     const byte *str = qstr_data(qst, &len);
     mp_print_uint(print, len);
@@ -318,7 +331,9 @@ STATIC void save_bytecode_qstrs(mp_print_t *print, const byte *ip, const byte *i
         uint f = mp_opcode_format(ip, &sz);
         if (f == MP_OPCODE_QSTR) {
             qstr qst = ip[1] | (ip[2] << 8);
-            save_qstr(print, qst);
+            if (qst > QSTR_LAST_STATIC) {
+                save_qstr(print, qst);
+            }
         }
         ip += sz;
     }

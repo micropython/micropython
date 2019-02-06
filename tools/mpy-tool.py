@@ -63,6 +63,17 @@ class Config:
     MICROPY_LONGINT_IMPL_MPZ = 2
 config = Config()
 
+class QStrType:
+    def __init__(self, str):
+        self.str = str
+        self.qstr_esc = qstrutil.qstr_escape(self.str)
+        self.qstr_id = 'MP_QSTR_' + self.qstr_esc
+
+# Initialise global list of qstrs with static qstrs
+global_qstrs = [None] # MP_QSTR_NULL should never be referenced
+for n in qstrutil.static_qstr_list:
+    global_qstrs.append(QStrType(n))
+
 MP_OPCODE_BYTE = 0
 MP_OPCODE_QSTR = 1
 MP_OPCODE_VAR_UINT = 2
@@ -389,13 +400,12 @@ def read_uint(f):
             break
     return i
 
-global_qstrs = []
-qstr_type = namedtuple('qstr', ('str', 'qstr_esc', 'qstr_id'))
 def read_qstr(f):
     ln = read_uint(f)
+    if ln == 0:
+        return f.read(1)[0]
     data = str_cons(f.read(ln), 'utf8')
-    qstr_esc = qstrutil.qstr_escape(data)
-    global_qstrs.append(qstr_type(data, qstr_esc, 'MP_QSTR_' + qstr_esc))
+    global_qstrs.append(QStrType(data))
     return len(global_qstrs) - 1
 
 def read_obj(f):
@@ -423,10 +433,13 @@ def read_qstr_and_pack(f, bytecode, ip):
     bytecode[ip + 1] = qst >> 8
 
 def read_bytecode_qstrs(file, bytecode, ip):
+    QSTR_LAST_STATIC = len(qstrutil.static_qstr_list)
     while ip < len(bytecode):
         f, sz = mp_opcode_format(bytecode, ip)
         if f == 1:
-            read_qstr_and_pack(file, bytecode, ip + 1)
+            qst = bytecode[ip + 1] | bytecode[ip + 2] << 8
+            if qst > QSTR_LAST_STATIC:
+                read_qstr_and_pack(file, bytecode, ip + 1)
         ip += sz
 
 def read_raw_code(f):
@@ -465,7 +478,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     new = {}
     for q in global_qstrs:
         # don't add duplicates
-        if q.qstr_esc in base_qstrs or q.qstr_esc in new:
+        if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str)
     new = sorted(new.values(), key=lambda x: x[0])
