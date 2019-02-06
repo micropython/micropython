@@ -1,6 +1,6 @@
 LD_FILE = boards/samd51x20-bootloader.ld
-USB_VID = 0x239A
-USB_PID = 0x8021
+USB_VID = 0x04D8
+USB_PID = 0xEDBE
 USB_PRODUCT = "SAM32"
 USB_MANUFACTURER = "maholli"
 
