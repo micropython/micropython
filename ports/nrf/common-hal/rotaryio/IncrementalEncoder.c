@@ -71,7 +71,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
 
     nrfx_gpiote_in_config_t cfg = {
         .sense = NRF_GPIOTE_POLARITY_TOGGLE,
-        .pull = NRF_GPIO_PIN_NOPULL,
+        .pull = NRF_GPIO_PIN_PULLUP,
         .is_watcher = false,
         .hi_accuracy = true,
         .skip_gpio_setup = false
