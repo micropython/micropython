@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2016, 2017 Nick Moore @mnemote
  * Copyright (c) 2017 "Eric Poulsen" <eric@zyxod.com>
+ *  Copyright (c) 2017 "Jens Henrik Goebbert" <jenshenrik.goebbert@gmail.com>
  *
  * Based on esp8266/modnetwork.c which is Copyright (c) 2015 Paul Sokolovsky
  * And the ESP IDF example code which is Public Domain / CC0
@@ -46,16 +47,36 @@
 #include "esp_log.h"
 #include "esp_event_loop.h"
 #include "esp_log.h"
+#include "esp_wps.h"
 #include "lwip/dns.h"
 #include "tcpip_adapter.h"
 
 #include "modnetwork.h"
 
+#define NOINCLUDE_USER_INTERFACE_H (1)
+#if NOINCLUDE_USER_INTERFACE_H
+enum {
+    STATION_IDLE = 0,
+    STATION_CONNECTING,
+    STATION_WRONG_PASSWORD,
+    STATION_NO_AP_FOUND,
+    STATION_CONNECT_FAIL,
+    STATION_GOT_IP
+};
+enum wps_cb_status {
+    WPS_CB_ST_SUCCESS = 0,
+    WPS_CB_ST_FAILED,
+    WPS_CB_ST_TIMEOUT,
+    WPS_CB_ST_WEP,
+    WPS_CB_ST_PROBING  // not in user_interface.h
+};
+#endif
+
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
 NORETURN void _esp_exceptions(esp_err_t e) {
    switch (e) {
-      case ESP_ERR_WIFI_NOT_INIT: 
+      case ESP_ERR_WIFI_NOT_INIT:
         mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
       case ESP_ERR_WIFI_NOT_STARTED:
         mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
@@ -92,7 +113,13 @@ NORETURN void _esp_exceptions(esp_err_t e) {
       case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
         mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
       case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
-        mp_raise_OSError(MP_ENOMEM); 
+        mp_raise_OSError(MP_ENOMEM);
+      case ESP_ERR_WIFI_REGISTRAR:
+        mp_raise_msg(&mp_type_OSError, "WPS Registrar not supported");
+      case ESP_ERR_WIFI_WPS_TYPE:
+        mp_raise_msg(&mp_type_OSError, "WPS Type Error");
+      case ESP_ERR_WIFI_WPS_SM:
+        mp_raise_msg(&mp_type_OSError, "WPS State Machine not initialized");
       default:
         nlr_raise(mp_obj_new_exception_msg_varg(
           &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e
@@ -103,6 +130,9 @@ NORETURN void _esp_exceptions(esp_err_t e) {
 static inline void esp_exceptions(esp_err_t e) {
     if (e != ESP_OK) _esp_exceptions(e);
 }
+
+//WPS_TYPE_PBC, WPS_TYPE_PIN, WPS_TYPE_DISABLE
+static esp_wps_config_t wps_config = WPS_CONFIG_INIT_DEFAULT(WPS_TYPE_PBC);
 
 #define ESP_EXCEPTIONS(x) do { esp_exceptions(x); } while (0);
 
@@ -128,6 +158,9 @@ static bool wifi_sta_connected = false;
 // Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
 static uint8_t wifi_sta_disconn_reason = 0;
 
+// Store the current connection status for WPS connection
+static uint8_t wifi_sta_status = 0;
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
@@ -135,13 +168,14 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     case SYSTEM_EVENT_STA_START:
         ESP_LOGI("wifi", "STA_START");
         break;
+    case SYSTEM_EVENT_STA_GOT_IP:
+            wifi_sta_status = STATION_GOT_IP;
+            ESP_LOGI("network", "GOT_IP");
+            wifi_sta_connected = true;
+            wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
+            break;
     case SYSTEM_EVENT_STA_CONNECTED:
         ESP_LOGI("network", "CONNECTED");
-        break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-        ESP_LOGI("network", "GOT_IP");
-        wifi_sta_connected = true;
-        wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
@@ -151,16 +185,20 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         wifi_sta_disconn_reason = disconn->reason;
         switch (disconn->reason) {
             case WIFI_REASON_BEACON_TIMEOUT:
+                wifi_sta_status = STATION_CONNECT_FAIL;
                 // AP has dropped out; try to reconnect.
                 message = "\nbeacon timeout";
                 break;
             case WIFI_REASON_NO_AP_FOUND:
+                wifi_sta_status = STATION_NO_AP_FOUND;
                 // AP may not exist, or it may have momentarily dropped out; try to reconnect.
                 message = "\nno AP found";
                 break;
             case WIFI_REASON_AUTH_FAIL:
                 message = "\nauthentication failed";
                 wifi_sta_connect_requested = false;
+                wifi_sta_status = STATION_WRONG_PASSWORD;
+                wifi_sta_connected = false;
                 break;
             default:
                 // Let other errors through and try to reconnect.
@@ -187,6 +225,39 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
             // If already connected and we fail to reconnect
             wifi_sta_connected = false;
         }
+        break;
+    }
+    case SYSTEM_EVENT_STA_WPS_ER_SUCCESS: {
+        wifi_sta_status = WPS_CB_ST_SUCCESS;
+        ESP_LOGI("wifi", "STA_WPS_ER_SUCCESS");
+        // Disable WPS (if enabled), which results in a disconnect event
+        if (esp_wifi_wps_disable() != ESP_OK) {
+            mp_printf(MP_PYTHON_PRINTER, "disable WPS failed\n");
+        }
+        break;
+    }
+    case SYSTEM_EVENT_STA_WPS_ER_FAILED: {
+        wifi_sta_status = WPS_CB_ST_FAILED;
+        ESP_LOGI("wifi", "STA_WPS_ER_FAILED");
+        // disable WPS (if enabled), which results in a disconnect event
+        if (esp_wifi_wps_disable() != ESP_OK) {
+            mp_printf(MP_PYTHON_PRINTER, "disable WPS failed\n");
+        }
+        break;
+    }
+    case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT: {
+        wifi_sta_status = WPS_CB_ST_TIMEOUT;
+        ESP_LOGI("wifi", "STA_WPS_ER_TIMEOUT");
+        // disable WPS (if enabled), which results in a disconnect event
+        if (esp_wifi_wps_disable() != ESP_OK) {
+            mp_printf(MP_PYTHON_PRINTER, "disable WPS failed\n");
+        }
+        break;
+    }
+    case SYSTEM_EVENT_STA_WPS_ER_PIN: {
+        ESP_LOGI("wifi", "STA_WPS_ER_PIN");
+        // show the PIN code here
+        //ESP_LOGI("wifi", "WPS_PIN = "PINSTR, PIN2STR(event->event_info.sta_er_pin.pin_code));
         break;
     }
     default:
@@ -320,19 +391,43 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         }
         ESP_EXCEPTIONS( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config) );
     }
-
-    // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
     ESP_EXCEPTIONS( esp_wifi_connect() );
     MP_THREAD_GIL_ENTER();
     wifi_sta_connect_requested = true;
-
+    wifi_sta_status = STATION_CONNECTING;
     return mp_const_none;
 }
+
+STATIC mp_obj_t esp_start_wps(mp_obj_t self_in /*wps_mode: size_t n_args, const mp_obj_t *args*/) {
+    ESP_LOGD("modnetwork", "Start WPS");
+
+    // check that STA mode is active
+    wifi_mode_t mode;
+    ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
+    if ((mode & WIFI_MODE_STA) == 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "STA must be active"));
+    }
+
+    // start wps
+    ESP_EXCEPTIONS(esp_wifi_wps_enable(&wps_config));
+
+    // 0: API not blocked while WPS on,
+    // but timeout after 120 sec because of WPS protocol specs
+    ESP_EXCEPTIONS(esp_wifi_wps_start(0));
+    wifi_sta_status = WPS_CB_ST_PROBING;
+
+    return mp_const_none; //mp_const_true : mp_const_false;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_start_wps_obj, esp_start_wps);
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     wifi_sta_connect_requested = false;
+    wifi_sta_status = STATION_IDLE;
+    wifi_sta_connected = false;
     ESP_EXCEPTIONS( esp_wifi_disconnect() );
     return mp_const_none;
 }
@@ -352,19 +447,7 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         if (self->if_id == WIFI_IF_STA) {
             // Case of no arg is only for the STA interface
-            if (wifi_sta_connected) {
-                // Happy path, connected with IP
-                return MP_OBJ_NEW_SMALL_INT(STAT_GOT_IP);
-            } else if (wifi_sta_connect_requested) {
-                // No connection or error, but is requested = Still connecting
-                return MP_OBJ_NEW_SMALL_INT(STAT_CONNECTING);
-            } else if (wifi_sta_disconn_reason == 0) {
-                // No activity, No error = Idle
-                return MP_OBJ_NEW_SMALL_INT(STAT_IDLE);
-            } else {
-                // Simply pass the error through from ESP-identifier
-                return MP_OBJ_NEW_SMALL_INT(wifi_sta_disconn_reason);
-            }
+            return MP_OBJ_NEW_SMALL_INT(wifi_sta_status);
         }
         return mp_const_none;
     }
@@ -628,6 +711,13 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             val = mp_obj_new_str(s, strlen(s));
             break;
         }
+        case QS(MP_QSTR_password):
+            if (self->if_id == WIFI_IF_STA) {
+              val = mp_obj_new_str((char*)cfg.sta.password, strlen((char*)cfg.sta.password));
+            } else { //if(self->if_id == WIFI_IF_AP) {
+              val = mp_obj_new_str((char*)cfg.ap.password, strlen((char*)cfg.ap.password));
+            }
+            break;
         default:
             goto unknown;
     }
@@ -655,6 +745,7 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_start_wps), MP_ROM_PTR(&esp_start_wps_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
@@ -706,6 +797,11 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
     { MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
     { MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
+    // WPS connection status messages
+    { MP_ROM_QSTR(MP_QSTR_STA_WPS_PROBING), MP_ROM_INT(WPS_CB_ST_PROBING)},
+    { MP_ROM_QSTR(MP_QSTR_STA_WPS_SUCCESS), MP_ROM_INT(WPS_CB_ST_SUCCESS)},
+    { MP_ROM_QSTR(MP_QSTR_STA_WPS_FAILED), MP_ROM_INT(WPS_CB_ST_FAILED)},
+    { MP_ROM_QSTR(MP_QSTR_STA_WPS_TIMEOUT), MP_ROM_INT(WPS_CB_ST_TIMEOUT)},
 #endif
 };
 
