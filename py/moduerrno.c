@@ -151,6 +151,7 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
         case EEXIST: desc = translate("File exists"); break;
         case ENODEV: desc = translate("Unsupported operation"); break;
         case EINVAL: desc = translate("Invalid argument"); break;
+        case ENOSPC: desc = translate("No space left on device"); break;
         case EROFS:  desc = translate("Read-only filesystem"); break;
     }
     if (desc != NULL && desc->length <= len) {
