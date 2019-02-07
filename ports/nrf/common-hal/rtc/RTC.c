@@ -33,24 +33,44 @@
 #include "supervisor/shared/translate.h"
 
 #include "nrfx_rtc.h"
+#include "nrf_clock.h"
 
-static uint32_t _rtc_seconds = 0;
+#define RTC_CLOCK_HZ (8)
+
+static uint32_t rtc_offset = 0;
+
+const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(0);
+
+const nrfx_rtc_config_t rtc_config = {
+	.prescaler = RTC_FREQ_TO_PRESCALER(RTC_CLOCK_HZ),
+	.reliable = 0,
+	.tick_latency = 0,
+	.interrupt_priority = 6
+};
 
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
-
+    // do nothing
 }
 
 void rtc_init(void) {
+    if (!nrf_clock_lf_is_running()) {
+        nrf_clock_task_trigger(NRF_CLOCK_TASK_LFCLKSTART);
+    }
+    nrfx_rtc_counter_clear(&rtc_instance);
+    nrfx_rtc_init(&rtc_instance, &rtc_config, rtc_handler);
+    nrfx_rtc_enable(&rtc_instance);
 }
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
-    timeutils_seconds_since_2000_to_struct_time(_rtc_seconds, tm);
+    uint32_t t = rtc_offset + (nrfx_rtc_counter_get(&rtc_instance) / RTC_CLOCK_HZ );
+    timeutils_seconds_since_2000_to_struct_time(t, tm);
 }
 
 void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
-    _rtc_seconds = timeutils_seconds_since_2000(
+    rtc_offset = timeutils_seconds_since_2000(
         tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
     );
+    nrfx_rtc_counter_clear(&rtc_instance);
 }
 
 // A positive value speeds up the clock by removing clock cycles.
