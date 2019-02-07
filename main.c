@@ -185,8 +185,8 @@ bool run_code_py(safe_mode_t safe_mode) {
     } else {
         new_status_color(MAIN_RUNNING);
 
-        const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
-        const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+        static const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        static const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
 
         stack_resize();

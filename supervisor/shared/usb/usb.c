@@ -43,7 +43,7 @@ void load_serial_number(void) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
 
-    const char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    static const char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                                     'A', 'B', 'C', 'D', 'E', 'F'};
     for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
         for (int j = 0; j < 2; j++) {
