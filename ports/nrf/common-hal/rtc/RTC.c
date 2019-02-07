@@ -32,21 +32,25 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "supervisor/shared/translate.h"
 
+#include "nrfx_rtc.h"
+
+static uint32_t _rtc_seconds = 0;
+
+void rtc_handler(nrfx_rtc_int_type_t int_type) {
+
+}
+
 void rtc_init(void) {
 }
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
-    tm->tm_year = 2000;
-    tm->tm_mon  = 1;
-    tm->tm_mday = 2;
-    tm->tm_hour = 3;
-    tm->tm_min  = 4;
-    tm->tm_sec  = 5;
-    tm->tm_wday = 6;
-    tm->tm_yday = 2;
+    timeutils_seconds_since_2000_to_struct_time(_rtc_seconds, tm);
 }
 
 void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
+    _rtc_seconds = timeutils_seconds_since_2000(
+        tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
+    );
 }
 
 // A positive value speeds up the clock by removing clock cycles.
