@@ -62,7 +62,7 @@
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
 #if MICROPY_HW_USB_FS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#elif MICROPY_HW_USB_HS && MICROPY_HW_USB_HS_IN_FS
+#elif MICROPY_HW_USB_HS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
 #else
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
