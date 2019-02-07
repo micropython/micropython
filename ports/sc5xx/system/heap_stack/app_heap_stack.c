@@ -1,6 +1,6 @@
 
 /*
-** app_heap_stack.c generated on January 25, 2019 at 09:17:55.
+** app_heap_stack.c generated on February 7, 2019 at 10:18:01.
 **
 ** Copyright (C) 2019 Analog Devices Inc., All Rights Reserved.
 **
@@ -17,10 +17,10 @@
 #define __ADI_kB (1024u)
 #define __ADI_MB (1024u * 1024u)
 
-#define __ADI_SYSTEM_HEAP_SIZE (4u)
+#define __ADI_SYSTEM_HEAP_SIZE (192u)
 #define __ADI_SYSTEM_HEAP_SIZE_UNITS __ADI_MB
 #define __ADI_SYSTEM_HEAP_ALIGN (4u)
-#define __ADI_SYSTEM_STACK_SIZE (4u)
+#define __ADI_SYSTEM_STACK_SIZE (8u)
 #define __ADI_SYSTEM_STACK_SIZE_UNITS __ADI_kB
 #define __ADI_SYSTEM_STACK_ALIGN (64u)
 #define __ADI_SUPERVISOR_STACK_SIZE (4u)
