@@ -37,6 +37,7 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
+#include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "lib/mp-readline/readline.h"
@@ -55,6 +56,8 @@
 
 BM_UART uart0;
 
+#define HEAP_SIZE 2*1024*1024
+
 STATIC bool init_sdcard_fs(void);
 
 int main(int argc, char **argv) {
@@ -65,6 +68,11 @@ int main(int argc, char **argv) {
     uart_write_byte(&uart0, 0x0C); // Clear the screen
 
     adi_rtc_Init();
+
+#if MICROPY_ENABLE_GC
+    char *heap = malloc(HEAP_SIZE);
+    gc_init(heap, heap + HEAP_SIZE);
+#endif
 
     mp_init();
     machine_init();
