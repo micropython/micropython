@@ -169,11 +169,11 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         ESP_LOGI("wifi", "STA_START");
         break;
     case SYSTEM_EVENT_STA_GOT_IP:
-            wifi_sta_status = STATION_GOT_IP;
-            ESP_LOGI("network", "GOT_IP");
-            wifi_sta_connected = true;
-            wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
-            break;
+        wifi_sta_status = STATION_GOT_IP;
+        ESP_LOGI("network", "GOT_IP");
+        wifi_sta_connected = true;
+        wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
+        break;
     case SYSTEM_EVENT_STA_CONNECTED:
         ESP_LOGI("network", "CONNECTED");
         break;
