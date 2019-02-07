@@ -31,10 +31,6 @@
 
 extern const mp_obj_type_t usb_midi_portout_type;
 
-// Construct an underlying UART object.
-extern void common_hal_usb_midi_portout_construct(usb_midi_portout_obj_t *self,
-    uint8_t receiver_buffer_size);
-
 // Write characters. len is in characters NOT bytes!
 extern size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self,
                               const uint8_t *data, size_t len, int *errcode);

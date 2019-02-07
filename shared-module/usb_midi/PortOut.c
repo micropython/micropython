@@ -28,9 +28,6 @@
 #include "supervisor/shared/translate.h"
 #include "tusb.h"
 
-void common_hal_usb_midi_portout_construct(usb_midi_portout_obj_t *self) {
-}
-
 size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     return tud_midi_write(0, data, len);
 }

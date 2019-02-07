@@ -31,9 +31,6 @@
 
 extern const mp_obj_type_t usb_midi_portin_type;
 
-// Construct an underlying UART object.
-extern void common_hal_usb_midi_portin_construct(usb_midi_portin_obj_t *self,
-    uint8_t receiver_buffer_size);
 // Read characters.
 extern size_t common_hal_usb_midi_portin_read(usb_midi_portin_obj_t *self,
     uint8_t *data, size_t len, int *errcode);
