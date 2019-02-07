@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-01 00:36-0800\n"
+"POT-Creation-Date: 2019-02-07 09:09-0600\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -131,7 +131,7 @@ msgstr "compression header"
 msgid "invalid dupterm index"
 msgstr "mali ang dupterm index"
 
-#: extmod/vfs_fat.c:426 py/moduerrno.c:154
+#: extmod/vfs_fat.c:426 py/moduerrno.c:155
 msgid "Read-only filesystem"
 msgstr "Basahin-lamang mode"
 
@@ -1398,6 +1398,10 @@ msgstr "Hindi sinusuportahang operasyon"
 msgid "Invalid argument"
 msgstr "Maling argumento"
 
+#: py/moduerrno.c:154
+msgid "No space left on device"
+msgstr ""
+
 #: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (pinakahuling huling tawag): \n"
@@ -1511,7 +1515,7 @@ msgstr "'%s' object hindi sumusuporta ng item assignment"
 msgid "object with buffer protocol required"
 msgstr "object na may buffer protocol kinakailangan"
 
-#: py/objarray.c:413 py/objstr.c:427 py/objstrunicode.c:191 py/objtuple.c:187
+#: py/objarray.c:413 py/objstr.c:428 py/objstrunicode.c:191 py/objtuple.c:188
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
@@ -1590,6 +1594,7 @@ msgid "long int not supported in this build"
 msgstr "long int hindi sinusuportahan sa build na ito"
 
 #: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
+#: py/sequence.c:41
 msgid "small int overflow"
 msgstr "small int overflow"
 
@@ -1617,7 +1622,7 @@ msgstr "pow() 3rd argument ay hindi maaring 0"
 msgid "overflow converting long int to machine word"
 msgstr "overflow nagcoconvert ng long int sa machine word"
 
-#: py/objlist.c:273
+#: py/objlist.c:274
 msgid "pop from empty list"
 msgstr "pop galing sa walang laman na list"
 
@@ -1645,7 +1650,7 @@ msgstr "Haba ay dapat int"
 msgid "Length must be non-negative"
 msgstr "Haba ay dapat hindi negatibo"
 
-#: py/objslice.c:86 py/sequence.c:57
+#: py/objslice.c:86 py/sequence.c:66
 msgid "slice step cannot be zero"
 msgstr "slice step ay hindi puedeng 0"
 
@@ -1661,149 +1666,149 @@ msgstr "bytes value wala sa sakop"
 msgid "wrong number of arguments"
 msgstr "mali ang bilang ng argumento"
 
-#: py/objstr.c:467
+#: py/objstr.c:468
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 "join umaaasang may listahan ng str/bytes objects na naalinsunod sa self "
 "object"
 
-#: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
+#: py/objstr.c:543 py/objstr.c:648 py/objstr.c:1745
 msgid "empty separator"
 msgstr "walang laman na separator"
 
-#: py/objstr.c:641
+#: py/objstr.c:642
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: py/objstr.c:713
+#: py/objstr.c:714
 msgid "substring not found"
 msgstr "substring hindi nahanap"
 
-#: py/objstr.c:770
+#: py/objstr.c:771
 msgid "start/end indices"
 msgstr "start/end indeks"
 
-#: py/objstr.c:931
+#: py/objstr.c:932
 msgid "bad format string"
 msgstr "maling format ang string"
 
-#: py/objstr.c:953
+#: py/objstr.c:954
 msgid "single '}' encountered in format string"
 msgstr "isang '}' nasalubong sa format string"
 
-#: py/objstr.c:992
+#: py/objstr.c:993
 msgid "bad conversion specifier"
 msgstr "masamang pag convert na specifier"
 
-#: py/objstr.c:996
+#: py/objstr.c:997
 msgid "end of format while looking for conversion specifier"
 msgstr "sa huli ng format habang naghahanap sa conversion specifier"
 
-#: py/objstr.c:998
+#: py/objstr.c:999
 #, c-format
 msgid "unknown conversion specifier %c"
 msgstr "hindi alam ang conversion specifier na %c"
 
-#: py/objstr.c:1029
+#: py/objstr.c:1030
 msgid "unmatched '{' in format"
 msgstr "hindi tugma ang '{' sa format"
 
-#: py/objstr.c:1036
+#: py/objstr.c:1037
 msgid "expected ':' after format specifier"
 msgstr "umaasa ng ':' pagkatapos ng format specifier"
 
-#: py/objstr.c:1050
+#: py/objstr.c:1051
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
 "hindi mapalitan ang awtomatikong field numbering sa manual field "
 "specification"
 
-#: py/objstr.c:1055 py/objstr.c:1083
+#: py/objstr.c:1056 py/objstr.c:1084
 msgid "tuple index out of range"
 msgstr "indeks ng tuple wala sa sakop"
 
-#: py/objstr.c:1071
+#: py/objstr.c:1072
 msgid "attributes not supported yet"
 msgstr "attributes hindi sinusuportahan"
 
-#: py/objstr.c:1079
+#: py/objstr.c:1080
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 "hindi mapalitan ang manual field specification sa awtomatikong field "
 "numbering"
 
-#: py/objstr.c:1171
+#: py/objstr.c:1172
 msgid "invalid format specifier"
 msgstr "mali ang format specifier"
 
-#: py/objstr.c:1192
+#: py/objstr.c:1193
 msgid "sign not allowed in string format specifier"
 msgstr "sign hindi maaring string format specifier"
 
-#: py/objstr.c:1200
+#: py/objstr.c:1201
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "sign hindi maari sa integer format specifier 'c'"
 
-#: py/objstr.c:1259
+#: py/objstr.c:1260
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "hindi alam ang format code '%c' para sa object na ang type ay '%s'"
 
-#: py/objstr.c:1331
+#: py/objstr.c:1332
 #, c-format
 msgid "unknown format code '%c' for object of type 'float'"
 msgstr "hindi alam ang format code '%c' sa object na ang type ay 'float'"
 
-#: py/objstr.c:1343
+#: py/objstr.c:1344
 msgid "'=' alignment not allowed in string format specifier"
 msgstr "'=' Gindi pinapayagan ang alignment sa pag specify ng string format"
 
-#: py/objstr.c:1367
+#: py/objstr.c:1368
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
 msgstr "hindi alam ang format ng code na '%c' para sa object ng type ay 'str'"
 
-#: py/objstr.c:1415
+#: py/objstr.c:1416
 msgid "format requires a dict"
 msgstr "kailangan ng format ng dict"
 
-#: py/objstr.c:1424
+#: py/objstr.c:1425
 msgid "incomplete format key"
 msgstr "hindi kumpleto ang format key"
 
-#: py/objstr.c:1482
+#: py/objstr.c:1483
 msgid "incomplete format"
 msgstr "hindi kumpleto ang format"
 
-#: py/objstr.c:1490
+#: py/objstr.c:1491
 msgid "not enough arguments for format string"
 msgstr "kulang sa arguments para sa format string"
 
-#: py/objstr.c:1500
+#: py/objstr.c:1501
 #, c-format
 msgid "%%c requires int or char"
 msgstr "%%c nangangailangan ng int o char"
 
-#: py/objstr.c:1507
+#: py/objstr.c:1508
 msgid "integer required"
 msgstr "kailangan ng int"
 
-#: py/objstr.c:1570
+#: py/objstr.c:1571
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "hindi sinusuportahan ang format character na '%c' (0x%x) sa index %d"
 
-#: py/objstr.c:1577
+#: py/objstr.c:1578
 msgid "not all arguments converted during string formatting"
 msgstr "hindi lahat ng arguments na i-convert habang string formatting"
 
-#: py/objstr.c:2102
+#: py/objstr.c:2103
 msgid "can't convert to str implicitly"
 msgstr "hindi ma i-convert sa string ng walang pahiwatig"
 
-#: py/objstr.c:2106
+#: py/objstr.c:2107
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "hindi maaaring i-convert ang '%q' na bagay sa %q nang walang pahiwatig"
 
@@ -2025,7 +2030,7 @@ msgstr "nabigo ang paglalaan ng memorya, paglalaan ng %u bytes"
 msgid "maximum recursion depth exceeded"
 msgstr "lumagpas ang maximum recursion depth"
 
-#: py/sequence.c:264
+#: py/sequence.c:273
 msgid "object not in sequence"
 msgstr "object wala sa sequence"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-01 00:36-0800\n"
+"POT-Creation-Date: 2019-02-07 09:09-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -131,7 +131,7 @@ msgstr "kompresi header"
 msgid "invalid dupterm index"
 msgstr "indeks dupterm tidak valid"
 
-#: extmod/vfs_fat.c:426 py/moduerrno.c:154
+#: extmod/vfs_fat.c:426 py/moduerrno.c:155
 msgid "Read-only filesystem"
 msgstr "sistem file (filesystem) bersifat Read-only"
 
@@ -1394,6 +1394,10 @@ msgstr ""
 msgid "Invalid argument"
 msgstr ""
 
+#: py/moduerrno.c:154
+msgid "No space left on device"
+msgstr ""
+
 #: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
 msgstr ""
@@ -1507,7 +1511,7 @@ msgstr ""
 msgid "object with buffer protocol required"
 msgstr ""
 
-#: py/objarray.c:413 py/objstr.c:427 py/objstrunicode.c:191 py/objtuple.c:187
+#: py/objarray.c:413 py/objstr.c:428 py/objstrunicode.c:191 py/objtuple.c:188
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
@@ -1585,6 +1589,7 @@ msgid "long int not supported in this build"
 msgstr ""
 
 #: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
+#: py/sequence.c:41
 msgid "small int overflow"
 msgstr ""
 
@@ -1612,7 +1617,7 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr ""
 
-#: py/objlist.c:273
+#: py/objlist.c:274
 msgid "pop from empty list"
 msgstr ""
 
@@ -1640,7 +1645,7 @@ msgstr ""
 msgid "Length must be non-negative"
 msgstr ""
 
-#: py/objslice.c:86 py/sequence.c:57
+#: py/objslice.c:86 py/sequence.c:66
 msgid "slice step cannot be zero"
 msgstr ""
 
@@ -1656,143 +1661,143 @@ msgstr ""
 msgid "wrong number of arguments"
 msgstr ""
 
-#: py/objstr.c:467
+#: py/objstr.c:468
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 
-#: py/objstr.c:542 py/objstr.c:647 py/objstr.c:1744
+#: py/objstr.c:543 py/objstr.c:648 py/objstr.c:1745
 msgid "empty separator"
 msgstr ""
 
-#: py/objstr.c:641
+#: py/objstr.c:642
 msgid "rsplit(None,n)"
 msgstr ""
 
-#: py/objstr.c:713
+#: py/objstr.c:714
 msgid "substring not found"
 msgstr ""
 
-#: py/objstr.c:770
+#: py/objstr.c:771
 msgid "start/end indices"
 msgstr ""
 
-#: py/objstr.c:931
+#: py/objstr.c:932
 msgid "bad format string"
 msgstr ""
 
-#: py/objstr.c:953
+#: py/objstr.c:954
 msgid "single '}' encountered in format string"
 msgstr ""
 
-#: py/objstr.c:992
+#: py/objstr.c:993
 msgid "bad conversion specifier"
 msgstr ""
 
-#: py/objstr.c:996
+#: py/objstr.c:997
 msgid "end of format while looking for conversion specifier"
 msgstr ""
 
-#: py/objstr.c:998
+#: py/objstr.c:999
 #, c-format
 msgid "unknown conversion specifier %c"
 msgstr ""
 
-#: py/objstr.c:1029
+#: py/objstr.c:1030
 msgid "unmatched '{' in format"
 msgstr ""
 
-#: py/objstr.c:1036
+#: py/objstr.c:1037
 msgid "expected ':' after format specifier"
 msgstr ""
 
-#: py/objstr.c:1050
+#: py/objstr.c:1051
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
 
-#: py/objstr.c:1055 py/objstr.c:1083
+#: py/objstr.c:1056 py/objstr.c:1084
 msgid "tuple index out of range"
 msgstr ""
 
-#: py/objstr.c:1071
+#: py/objstr.c:1072
 msgid "attributes not supported yet"
 msgstr ""
 
-#: py/objstr.c:1079
+#: py/objstr.c:1080
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 
-#: py/objstr.c:1171
+#: py/objstr.c:1172
 msgid "invalid format specifier"
 msgstr ""
 
-#: py/objstr.c:1192
+#: py/objstr.c:1193
 msgid "sign not allowed in string format specifier"
 msgstr ""
 
-#: py/objstr.c:1200
+#: py/objstr.c:1201
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr ""
 
-#: py/objstr.c:1259
+#: py/objstr.c:1260
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr ""
 
-#: py/objstr.c:1331
+#: py/objstr.c:1332
 #, c-format
 msgid "unknown format code '%c' for object of type 'float'"
 msgstr ""
 
-#: py/objstr.c:1343
+#: py/objstr.c:1344
 msgid "'=' alignment not allowed in string format specifier"
 msgstr ""
 
-#: py/objstr.c:1367
+#: py/objstr.c:1368
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
 msgstr ""
 
-#: py/objstr.c:1415
+#: py/objstr.c:1416
 msgid "format requires a dict"
 msgstr ""
 
-#: py/objstr.c:1424
+#: py/objstr.c:1425
 msgid "incomplete format key"
 msgstr ""
 
-#: py/objstr.c:1482
+#: py/objstr.c:1483
 msgid "incomplete format"
 msgstr ""
 
-#: py/objstr.c:1490
+#: py/objstr.c:1491
 msgid "not enough arguments for format string"
 msgstr ""
 
-#: py/objstr.c:1500
+#: py/objstr.c:1501
 #, c-format
 msgid "%%c requires int or char"
 msgstr ""
 
-#: py/objstr.c:1507
+#: py/objstr.c:1508
 msgid "integer required"
 msgstr ""
 
-#: py/objstr.c:1570
+#: py/objstr.c:1571
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr ""
 
-#: py/objstr.c:1577
+#: py/objstr.c:1578
 msgid "not all arguments converted during string formatting"
 msgstr ""
 
-#: py/objstr.c:2102
+#: py/objstr.c:2103
 msgid "can't convert to str implicitly"
 msgstr ""
 
-#: py/objstr.c:2106
+#: py/objstr.c:2107
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
@@ -2011,7 +2016,7 @@ msgstr ""
 msgid "maximum recursion depth exceeded"
 msgstr ""
 
-#: py/sequence.c:264
+#: py/sequence.c:273
 msgid "object not in sequence"
 msgstr ""
 
