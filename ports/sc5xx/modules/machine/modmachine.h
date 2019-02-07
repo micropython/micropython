@@ -32,7 +32,7 @@
 void machine_init(void);
 void machine_deinit(void);
 
-uint32_t machine_get_fsclk0(); // For use in systick and timer service
+uint32_t machine_get_fsclk0(); // For use in systick, timer, and spi service
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_unique_id_obj);

@@ -38,10 +38,18 @@ endif
 
 LIBS = -lm
 
+SRC_DRIVERS = $(addprefix drivers/,\
+	bus/softspi.c \
+	bus/softqspi.c \
+	memory/spiflash.c \
+	)
+
 SRC_C = \
 	apt-sc589.c \
+	bm_spi.c \
 	bm_uart.c \
 	fatfs_port.c \
+	gccollect.c \
 	main.c \
 	mphalport.c \
 	pin_defs_sc5xx.c \
@@ -50,9 +58,11 @@ SRC_C = \
 	systick.c \
 
 SRC_C += $(addprefix modules/,\
+	machine/machine_spi.c \
 	machine/modmachine.c \
 	machine/pin.c \
 	machine/pin_named_pins.c \
+	machine/spi.c \
 	sharc/modsharc.c \
 	utime/modutime.c \
 	uos/moduos.c \
@@ -157,6 +167,7 @@ OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_DRIVERS:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ADI:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
@@ -166,7 +177,7 @@ all: $(BUILD)/firmware
 
 $(BUILD)/firmware: $(OBJ)
 	$(ECHO) "LINK $@"
-	arm-none-eabi-gcc --specs=nosys.specs -mproc=ADSP-SC589 -msi-revision=1.0 -Wl,--gc-sections -o $@ $^ $(LIBS)
+	arm-none-eabi-gcc --specs=nosys.specs -mproc=ADSP-SC589 -msi-revision=1.0 -Wl,--gc-sections -Wl,-M=ARMcode.map -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction

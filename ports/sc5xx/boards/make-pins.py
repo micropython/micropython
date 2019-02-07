@@ -10,13 +10,13 @@ import csv
 # Must have matching entries in AF_FN_* enum in ../pin_defs_sc5xx.h
 SUPPORTED_FN = {
     'UART'  : ['RX', 'TX', 'CTS', 'RTS'],
-    'SPI'   : ['SS', 'CLK', 'MISO', 'MOSI'],
+    'SPI'   : ['SS', 'SCK', 'MISO', 'MOSI'],
     'MSI'   : ['CLK', 'CMD', 'D0', 'D1', 'D2', 'D3'],
     'CAN'   : ['TX', 'RX'],
 }
 
 CONDITIONAL_VAR = {
-    'SPI'   : 'MICROPY_HW_SPI{num}_CLK',
+    'SPI'   : 'MICROPY_HW_SPI{num}_SCK',
     'UART'  : 'MICROPY_HW_UART{num}_TX',
     'MSI'   : 'MICROPY_HW_MSI{num}_CLK',
     'CAN'   : 'MICROPY_HW_CAN{num}_TX',

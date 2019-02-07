@@ -30,6 +30,8 @@
 #include <sys/platform.h>
 #include "py/obj.h"
 
+#define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
+
 #define GPIOA   ((pin_gpio_t *)REG_PORTA_FER)
 #define GPIOB   ((pin_gpio_t *)REG_PORTB_FER)
 #define GPIOC   ((pin_gpio_t *)REG_PORTC_FER)
@@ -92,11 +94,25 @@ __attribute__(( always_inline )) static inline void __WFI(void) {
 static inline void mp_hal_set_interrupt_char(char c) {}
 
 #include "pin.h"
-#define mp_hal_pin_obj_t pin_obj_t
+
+#define MP_HAL_PIN_FMT                  "%q"
+#define MP_HAL_PIN_MODE_INPUT           GPIO_MODE_INPUT
+#define MP_HAL_PIN_MODE_OUTPUT          GPIO_MODE_OUTPUT_PP
+#define MP_HAL_PIN_MODE_ALT             GPIO_MODE_AF_PP
+
+#define MP_HAL_PIN_PULL_NONE            0
+#define MP_HAL_PIN_PULL_UP              0
+#define MP_HAL_PIN_PULL_DOWN            0
+
+#define mp_hal_pin_obj_t const pin_obj_t*
+#define mp_hal_get_pin_obj(o)   pin_find(o)
+#define mp_hal_pin_name(p)      ((p)->name)
+#define mp_hal_pin_input(p)     mp_hal_pin_config((p), MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0)
+#define mp_hal_pin_output(p)    mp_hal_pin_config((p), MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0)
 
 void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af);
-void mp_hal_pin_config(mp_hal_pin_obj_t *pin_obj, uint32_t mode, uint32_t pull, uint32_t alt);
-bool mp_hal_pin_config_alt(mp_hal_pin_obj_t *pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);
+void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt);
+bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);
 void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj);
 
 #define mp_hal_pin_config_alt_static(pin_obj, mode, pull, fn_type) \

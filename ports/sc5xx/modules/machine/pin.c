@@ -556,7 +556,7 @@ const mp_obj_type_t pin_type = {
     .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
 };
 
-/// \moduleref pyb
+/// \moduleref machine
 /// \class PinAF - Pin Alternate Functions
 ///
 /// A Pin represents a physical pin on the microcprocessor. Each pin
@@ -565,23 +565,20 @@ const mp_obj_type_t pin_type = {
 ///
 /// Usage Model:
 ///
-///     x3 = pyb.Pin.board.X3
+///     x3 = machine.Pin.board.X3
 ///     x3_af = x3.af_list()
 ///
 /// x3_af will now contain an array of PinAF objects which are availble on
 /// pin X3.
-///
-/// For the pyboard, x3_af would contain:
-///     [Pin.AF1_TIM2, Pin.AF2_TIM5, Pin.AF3_TIM9, Pin.AF7_USART2]
 ///
 /// Normally, each peripheral would configure the af automatically, but sometimes
 /// the same function is available on multiple pins, and having more control
 /// is desired.
 ///
 /// To configure X3 to expose TIM2_CH3, you could use:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=pyb.Pin.AF1_TIM2)
+///    pin = machine.Pin(machine.Pin.board.X3, mode=machine.Pin.AF_PP, af=machine.Pin.AF1_TIM2)
 /// or:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=1)
+///    pin = machine.Pin(machine.Pin.board.X3, mode=machine.Pin.AF_PP, af=1)
 
 /// \method __str__()
 /// Return a string describing the alternate function.

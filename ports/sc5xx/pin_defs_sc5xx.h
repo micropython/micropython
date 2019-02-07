@@ -38,12 +38,20 @@ enum {
   PORT_G,
 };
 
-enum {
-  AF_FN_UART,
-  AF_FN_MSI,
-  AF_FN_SPI,
-  AF_FN_CAN,
-};
+#define AF_FN_SPI 0
+#define AF_FN_MSI 0
+#define AF_FN_UART 0
+#define AF_FN_CAN 0
+
+// AF4 is input tap, should be considered as AF0
+#define GPIO_AF0_SPI1 0
+#define GPIO_AF0_SPI2 0
+#define GPIO_AF4_SPI1 0
+#define GPIO_AF4_SPI2 0
+
+#define SPI0 (void *)pREG_SPI0_CTL
+#define SPI1 (void *)pREG_SPI1_CTL
+#define SPI2 (void *)pREG_SPI2_CTL
 
 enum {
   AF_PIN_TYPE_UART_TX = 0,
@@ -54,7 +62,7 @@ enum {
   AF_PIN_TYPE_SPI_MOSI = 0,
   AF_PIN_TYPE_SPI_MISO,
   AF_PIN_TYPE_SPI_SCK,
-  AF_PIN_TYPE_SPI_SEL0,
+  AF_PIN_TYPE_SPI_SS,
 
   AF_PIN_TYPE_MSI_CLK = 0,
   AF_PIN_TYPE_MSI_CMD,

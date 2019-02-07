@@ -52,11 +52,12 @@
 #include "pin.h"
 #include "modmachine.h"
 #include "systick.h"
+#include "spi.h"
 #include "sdcard.h"
 
 BM_UART uart0;
 
-#define HEAP_SIZE 2*1024*1024
+#define HEAP_SIZE 128*1024*1024
 
 STATIC bool init_sdcard_fs(void);
 
@@ -79,6 +80,7 @@ int main(int argc, char **argv) {
     readline_init0();
     pin_init0();
     sys_tick_init();
+    spi_init0();
     sdcard_init();
 
     #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT

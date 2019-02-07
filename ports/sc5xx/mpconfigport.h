@@ -28,7 +28,7 @@
 
 // options to control how MicroPython is built
 
-#define MICROPY_PERSISTENT_CODE_LOAD (0)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
@@ -48,7 +48,7 @@
 
 // Python internal features
 #define MICROPY_READER_VFS          (1)
-#define MICROPY_ENABLE_GC           (0)
+#define MICROPY_ENABLE_GC           (1)
 #define MICROPY_GC_STACK_ENTRY_TYPE uint32_t
 #define MICROPY_ENABLE_FINALISER    (0)
 #define MICROPY_STACK_CHECK         (0)
@@ -106,10 +106,15 @@
 #define MICROPY_PY_THREAD           (0)
 
 // extended modules
+#define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_OS_DUPTERM       (1)
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hard_spi_make_new
+#define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
+#define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (100000)
 
 // board specific definition
 #include <mpconfigboard.h>

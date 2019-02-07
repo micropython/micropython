@@ -54,6 +54,7 @@
 #include "extmod/vfs_fat.h"
 #include "pin.h"
 #include "sdcard.h"
+#include "spi.h"
 
 #define SC_RESET_SOFT      (0)
 #define SC_RESET_SYSSRC    (1)
@@ -144,7 +145,6 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // print clock speed
     printf("CCLK: %lu MHz, SYSCLK: %lu MHz, SCLK0: %lu MHz, SCLK1: %lu MHz\n",
             fcclk / MHZTOHZ, fsysclk / MHZTOHZ, fsclk0 / MHZTOHZ, fsclk1 / MHZTOHZ);
-    // print like memory info (from GC)
 
     // to print info about memory
     /*{
@@ -169,14 +169,14 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     }
 
     // GC info
-    /*{
+    {
         gc_info_t info;
         gc_info(&info);
         printf("GC:\n");
         printf("  %u total\n", info.total);
         printf("  %u : %u\n", info.used, info.free);
         printf("  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
-    }*/
+    }
 
     // free space on flash
     /*{
@@ -194,10 +194,10 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
         #endif
     }*/
 
-    /*if (n_args == 1) {
+    if (n_args == 1) {
         // arg given means dump gc allocation table
         gc_dump_alloc_table();
-    }*/
+    }
 
     return mp_const_none;
 }
@@ -286,6 +286,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
 
     { MP_ROM_QSTR(MP_QSTR_SD),                  MP_ROM_PTR(&sdcard_obj) },
     { MP_ROM_QSTR(MP_QSTR_SDCard),              MP_ROM_PTR(&sdcard_type) },
