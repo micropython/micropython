@@ -627,6 +627,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
             // Set base dir of the script as first entry in sys.path, and find
             // the name of the file to be executed.
+            const char *file = argv[a];
             if ((statbuf.st_mode & S_IFMT) == S_IFDIR) {
                 const size_t path_len = strlen(pathbuf);
                 path_items[0] = mp_obj_new_str_via_qstr(pathbuf, path_len);
@@ -637,6 +638,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     ret = 1;
                     break;
                 }
+                file = pathbuf;
             } else {
                 char *p = strrchr(pathbuf, '/');
                 assert(NULL != p); // it's a directory, so it must have a '/' somewhere.
@@ -644,7 +646,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             }
 
             set_sys_argv(argv, argc, a);
-            ret = do_file(pathbuf);
+            ret = do_file(file);
             break;
         }
     }
