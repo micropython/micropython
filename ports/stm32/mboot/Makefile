@@ -115,13 +115,17 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-.PHONY: deploy
+.PHONY: deploy deploy-stlink
+
+FLASH_ADDR = 0x08000000
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(PYDFU) -u $<
 
-FLASH_ADDR = 0x08000000
+deploy-stlink: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $< to the board via ST-LINK"
+	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(FLASH_ADDR)
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
