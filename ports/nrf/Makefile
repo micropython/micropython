@@ -166,6 +166,8 @@ SRC_COMMON_HAL += \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
+        rotaryio/__init__.c \
+        rotaryio/IncrementalEncoder.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	time/__init__.c \
