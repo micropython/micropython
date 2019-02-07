@@ -611,22 +611,40 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
-            char *pathbuf = malloc(PATH_MAX);
-            char *basedir = realpath(argv[a], pathbuf);
-            if (basedir == NULL) {
+            char pathbuf[PATH_MAX + 1];
+            if (realpath(argv[a], pathbuf) == NULL) {
+            open_error:
                 mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
             }
 
-            // Set base dir of the script as first entry in sys.path
-            char *p = strrchr(basedir, '/');
-            path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
-            free(pathbuf);
+            struct stat statbuf;
+            if (0 != stat(pathbuf, &statbuf)) {
+                goto open_error;
+            }
+
+            // Set base dir of the script as first entry in sys.path, and find
+            // the name of the file to be executed.
+            if ((statbuf.st_mode & S_IFMT) == S_IFDIR) {
+                const size_t path_len = strlen(pathbuf);
+                path_items[0] = mp_obj_new_str_via_qstr(pathbuf, path_len);
+                strncat(pathbuf, "/__main__.py", sizeof(pathbuf) - path_len - 1);
+                if (0 != stat(pathbuf, &statbuf)) {
+                    mp_printf(&mp_stderr_print, "%s: can't find '__main__' module in '%s'\n", argv[0], argv[a]);
+                    // CPython exits with 1 in such case
+                    ret = 1;
+                    break;
+                }
+            } else {
+                char *p = strrchr(pathbuf, '/');
+                assert(NULL != p); // it's a directory, so it must have a '/' somewhere.
+                path_items[0] = mp_obj_new_str_via_qstr(pathbuf, p - pathbuf);
+            }
 
             set_sys_argv(argv, argc, a);
-            ret = do_file(argv[a]);
+            ret = do_file(pathbuf);
             break;
         }
     }
