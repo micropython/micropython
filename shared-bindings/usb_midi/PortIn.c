@@ -43,15 +43,11 @@
 //|
 //| .. class:: PortIn()
 //|
-//|   Not currently dynamically supported.
+//|   You cannot create an instance of `usb_midi.PortIn`.
 //|
-//|   PortIn objects are constructed for every corresponding entry in the USB descriptor and added
-//|   to the ``usb_midi.ports`` tuple.
+//|   PortIn objects are constructed for every corresponding entry in the USB
+//|   descriptor and added to the ``usb_midi.ports`` tuple.
 //|
-
-STATIC mp_obj_t usb_midi_portin_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return mp_const_none;
-}
 
 // These are standard stream methods. Code is in py/stream.c.
 //
@@ -120,7 +116,6 @@ STATIC const mp_stream_p_t usb_midi_portin_stream_p = {
 const mp_obj_type_t usb_midi_portin_type = {
     { &mp_type_type },
     .name = MP_QSTR_PortIn,
-    .make_new = usb_midi_portin_make_new,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &usb_midi_portin_stream_p,

@@ -28,9 +28,6 @@
 #include "supervisor/shared/translate.h"
 #include "tusb.h"
 
-void common_hal_usb_midi_portin_construct(usb_midi_portin_obj_t *self, uint8_t receiver_buffer_size) {
-}
-
 size_t common_hal_usb_midi_portin_read(usb_midi_portin_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     return tud_midi_read(data, len);
 }
