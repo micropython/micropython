@@ -79,8 +79,9 @@ void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
 void pendsv_dispatch_handler(void) {
     for (size_t i = 0; i < PENDSV_DISPATCH_NUM_SLOTS; ++i) {
         if (pendsv_dispatch_table[i] != NULL) {
+            pendsv_dispatch_t f = pendsv_dispatch_table[i];
             pendsv_dispatch_table[i] = NULL;
-            pendsv_dispatch_table[i]();
+            f();
         }
     }
 }
