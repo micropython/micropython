@@ -144,7 +144,7 @@ STATIC mp_obj_t onewire_crc8(mp_obj_t data) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_crc8_obj, onewire_crc8);
 
 STATIC const mp_rom_map_elem_t onewire_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_onewire) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__onewire) },
 
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&onewire_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_readbit), MP_ROM_PTR(&onewire_readbit_obj) },
@@ -156,7 +156,7 @@ STATIC const mp_rom_map_elem_t onewire_module_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(onewire_module_globals, onewire_module_globals_table);
 
-const mp_obj_module_t mp_module_onewire = {
+const mp_obj_module_t mp_module__onewire = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&onewire_module_globals,
 };
