@@ -47,6 +47,7 @@ SRC_DRIVERS = $(addprefix drivers/,\
 SRC_C = \
 	apt-sc589.c \
 	bm_spi.c \
+	bm_twi.c \
 	bm_uart.c \
 	fatfs_port.c \
 	gccollect.c \
@@ -58,6 +59,8 @@ SRC_C = \
 	systick.c \
 
 SRC_C += $(addprefix modules/,\
+	machine/i2c.c \
+	machine/machine_i2c.c \
 	machine/machine_spi.c \
 	machine/modmachine.c \
 	machine/pin.c \

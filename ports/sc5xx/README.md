@@ -9,10 +9,11 @@ under the clear BSD license. This port support the following boards:
 Supported Features
 ------------------
 
-* Pins
-* SDcard
-* SPI
-* RTC
+* I2C (machine.I2C)
+* Pins (machine.Pin)
+* SDcard (mounted on boot)
+* SPI (machine.SPI)
+* RTC (access through utime module)
 
 Build instructions
 ------------------

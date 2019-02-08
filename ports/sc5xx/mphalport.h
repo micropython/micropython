@@ -66,6 +66,7 @@ typedef struct {
 #define GPIO_MODE_INPUT     ((uint32_t)0x00000000)
 #define GPIO_MODE_OUTPUT_PP ((uint32_t)0x00000001)
 #define GPIO_MODE_AF_PP     ((uint32_t)0x00000002)
+#define GPIO_MODE_INVALID   ((uint32_t)0xFFFFFFFF)
 #define GPIO_MODE_IT_RISING ((uint32_t)1)
 #define GPIO_MODE_IT_FALLING ((uint32_t)2)
 
@@ -99,6 +100,7 @@ static inline void mp_hal_set_interrupt_char(char c) {}
 #define MP_HAL_PIN_MODE_INPUT           GPIO_MODE_INPUT
 #define MP_HAL_PIN_MODE_OUTPUT          GPIO_MODE_OUTPUT_PP
 #define MP_HAL_PIN_MODE_ALT             GPIO_MODE_AF_PP
+#define MP_HAL_PIN_MODE_INVALID         GPIO_MODE_INVALID
 
 #define MP_HAL_PIN_PULL_NONE            0
 #define MP_HAL_PIN_PULL_UP              0
@@ -109,6 +111,7 @@ static inline void mp_hal_set_interrupt_char(char c) {}
 #define mp_hal_pin_name(p)      ((p)->name)
 #define mp_hal_pin_input(p)     mp_hal_pin_config((p), MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0)
 #define mp_hal_pin_output(p)    mp_hal_pin_config((p), MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0)
+#define mp_hal_pin_open_drain(p) mp_hal_pin_config((p), MP_HAL_PIN_MODE_INVALID, MP_HAL_PIN_PULL_NONE, 0)
 
 void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af);
 void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt);
@@ -122,6 +125,9 @@ void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t 
 
 #define mp_hal_pin_high(p) (((p)->gpio->DATA_SET) = (p)->pin_mask)
 #define mp_hal_pin_low(p)  (((p)->gpio->DATA_CLR) = (p)->pin_mask)
+// This is required by the soft-i2c extmod outside of the sc5xx port
+#define mp_hal_pin_od_low(p)    mp_hal_pin_low(p)
+#define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 #define mp_hal_pin_read(p) ((((p)->gpio->DATA) >> (p)->pin) & 1)
 #define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
 

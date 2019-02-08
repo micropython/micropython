@@ -113,6 +113,9 @@
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hard_spi_make_new
+#define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_HW_ENABLE_HW_I2C (1)
+#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (100000)
 

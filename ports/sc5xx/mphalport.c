@@ -94,7 +94,10 @@ void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af
 void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
     pin_gpio_t *gpio = pin_obj -> gpio;
     uint32_t pin = pin_obj -> pin;
-    mp_hal_gpio_init(gpio, pin, mode, alt);
+    if (mode != MP_HAL_PIN_MODE_INVALID)
+        mp_hal_gpio_init(gpio, pin, mode, alt);
+    else
+        mp_raise_ValueError("Unsupported pin mode!");
 }
 
 bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit) {

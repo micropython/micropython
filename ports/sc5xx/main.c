@@ -53,6 +53,7 @@
 #include "modmachine.h"
 #include "systick.h"
 #include "spi.h"
+#include "i2c.h"
 #include "sdcard.h"
 
 BM_UART uart0;
@@ -81,6 +82,7 @@ int main(int argc, char **argv) {
     pin_init0();
     sys_tick_init();
     spi_init0();
+    i2c_init0();
     sdcard_init();
 
     #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
