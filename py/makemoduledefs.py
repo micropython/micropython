@@ -13,7 +13,7 @@ import argparse
 
 
 pattern = re.compile(
-    r"[\n;]\s*MP_REGISTER_MODULE\((.*?),\s*(.*?),\s*(.*?)\);",
+    r"[\n;]\s*MP_REGISTER_MODULE\(MP_QSTR_(.*?),\s*mp_module_(.*?),\s*(.*?)\);",
     flags=re.DOTALL
 )
 
@@ -69,7 +69,7 @@ def generate_module_table_header(modules):
         print((
             "#if ({enabled_define})\n"
             "    extern const struct _mp_obj_module_t {obj_module};\n"
-            "    #define {mod_def} {{ MP_ROM_QSTR({module_name}), MP_ROM_PTR(&{obj_module}) }},\n"
+            "    #define {mod_def} MP_BUILTIN_MODULE2({module_name}, {obj_module}), \n"
             "#else\n"
             "    #define {mod_def}\n"
             "#endif\n"

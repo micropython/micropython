@@ -28,7 +28,11 @@
 
 #include "py/obj.h"
 
-extern const mp_map_t mp_builtin_module_map;
+#if MICROPY_PY_BUILTINS_HELP && MICROPY_PY_BUILTINS_HELP_MODULES
+extern const size_t mp_builtin_module_names_len;
+#endif
+extern const mp_rom_obj_t mp_builtin_module_names[];
+
 extern const mp_map_t mp_builtin_module_weak_links_map;
 
 mp_obj_t mp_module_get(qstr module_name);

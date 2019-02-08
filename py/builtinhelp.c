@@ -56,6 +56,8 @@ STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
 }
 
 #if MICROPY_PY_BUILTINS_HELP_MODULES
+
+#if MICROPY_MODULE_WEAK_LINKS
 STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
     for (size_t i = 0; i < map->alloc; i++) {
         if (mp_map_slot_is_filled(map, i)) {
@@ -63,6 +65,7 @@ STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
         }
     }
 }
+#endif
 
 #if MICROPY_MODULE_FROZEN
 STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
@@ -78,7 +81,9 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
 STATIC void mp_help_print_modules(void) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
 
-    mp_help_add_from_map(list, &mp_builtin_module_map);
+    for (size_t i = 0; i < mp_builtin_module_names_len; ++i) {
+        mp_obj_list_append(list, (mp_obj_t)mp_builtin_module_names[i]);
+    }
 
     #if MICROPY_MODULE_WEAK_LINKS
     mp_help_add_from_map(list, &mp_builtin_module_weak_links_map);

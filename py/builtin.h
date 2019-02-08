@@ -90,15 +90,15 @@ MP_DECLARE_CONST_FUN_OBJ_2(mp_op_delitem_obj);
 extern const mp_obj_module_t mp_module___main__;
 extern const mp_obj_module_t mp_module_builtins;
 extern const mp_obj_module_t mp_module_array;
-extern const mp_obj_module_t mp_module_collections;
-extern const mp_obj_module_t mp_module_io;
+extern const mp_obj_module_t mp_module_ucollections;
+extern const mp_obj_module_t mp_module_uio;
 extern const mp_obj_module_t mp_module_math;
 extern const mp_obj_module_t mp_module_cmath;
 extern const mp_obj_module_t mp_module_micropython;
 extern const mp_obj_module_t mp_module_ustruct;
 extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
-extern const mp_obj_module_t mp_module_thread;
+extern const mp_obj_module_t mp_module__thread;
 
 extern const mp_obj_dict_t mp_module_builtins_globals;
 
@@ -119,7 +119,7 @@ extern const mp_obj_module_t mp_module_utimeq;
 extern const mp_obj_module_t mp_module_machine;
 extern const mp_obj_module_t mp_module_lwip;
 extern const mp_obj_module_t mp_module_uwebsocket;
-extern const mp_obj_module_t mp_module_webrepl;
+extern const mp_obj_module_t mp_module__webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
 
