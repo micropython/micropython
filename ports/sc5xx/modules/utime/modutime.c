@@ -65,7 +65,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(date_time.tm_hour),
             mp_obj_new_int(date_time.tm_min),
             mp_obj_new_int(date_time.tm_sec),
-            mp_obj_new_int(0), // FIX ME
+            mp_obj_new_int(date_time.tm_wday),
             mp_obj_new_int(timeutils_year_day(2000 + date_time.tm_year, date_time.tm_mon, date_time.tm_mday)),
         };
         return mp_obj_new_tuple(8, tuple);
