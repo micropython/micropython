@@ -73,11 +73,8 @@
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
-// USB config (CN13 - USB OTG FS)
-#define MICROPY_HW_USB_HS              (1)
-#define MICROPY_HW_USB_HS_IN_FS        (1)
-/*#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_J12)*/
-#define MICROPY_HW_USB_OTG_ID_PIN      (pin_J12)
+// USB config (CN15 - USB OTG HS with external PHY)
+#define MICROPY_HW_USB_HS (1)
 
 #if 0
 // Optional SDRAM configuration; requires SYSCLK <= 200MHz

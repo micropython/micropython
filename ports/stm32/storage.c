@@ -30,11 +30,15 @@
 #include "py/runtime.h"
 #include "extmod/vfs_fat.h"
 
+#include "systick.h"
 #include "led.h"
 #include "storage.h"
 #include "irq.h"
 
 #if MICROPY_HW_ENABLE_STORAGE
+
+#define STORAGE_SYSTICK_MASK    (0x1ff) // 512ms
+#define STORAGE_IDLE_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & STORAGE_SYSTICK_MASK) == 0)
 
 #define FLASH_PART1_START_BLOCK (0x100)
 
@@ -44,9 +48,13 @@
 
 static bool storage_is_initialised = false;
 
+static void storage_systick_callback(uint32_t ticks_ms);
+
 void storage_init(void) {
     if (!storage_is_initialised) {
         storage_is_initialised = true;
+
+        systick_enable_dispatch(SYSTICK_DISPATCH_STORAGE, storage_systick_callback);
 
         MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_INIT, 0);
 
@@ -73,11 +81,20 @@ uint32_t storage_get_block_count(void) {
     #endif
 }
 
-void storage_irq_handler(void) {
+static void storage_systick_callback(uint32_t ticks_ms) {
+    if (STORAGE_IDLE_TICK(ticks_ms)) {
+        // Trigger a FLASH IRQ to execute at a lower priority
+        NVIC->STIR = FLASH_IRQn;
+    }
+}
+
+void FLASH_IRQHandler(void) {
+    IRQ_ENTER(FLASH_IRQn);
     MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_IRQ_HANDLER, 0);
     #if defined(MICROPY_HW_BDEV2_IOCTL)
     MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_IRQ_HANDLER, 0);
     #endif
+    IRQ_EXIT(FLASH_IRQn);
 }
 
 void storage_flush(void) {

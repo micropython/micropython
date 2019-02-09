@@ -30,9 +30,6 @@
 
 #define FLASH_BLOCK_SIZE (512)
 
-#define STORAGE_SYSTICK_MASK    (0x1ff) // 512ms
-#define STORAGE_IDLE_TICK(tick) (((tick) & STORAGE_SYSTICK_MASK) == 2)
-
 // Try to match Python-level VFS block protocol where possible for these constants
 enum {
     BDEV_IOCTL_INIT = 1,
@@ -44,7 +41,6 @@ enum {
 void storage_init(void);
 uint32_t storage_get_block_size(void);
 uint32_t storage_get_block_count(void);
-void storage_irq_handler(void);
 void storage_flush(void);
 bool storage_read_block(uint8_t *dest, uint32_t block);
 bool storage_write_block(const uint8_t *src, uint32_t block);

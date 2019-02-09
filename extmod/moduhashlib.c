@@ -104,6 +104,8 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 
 #else
 
+#include "crypto-algorithms/sha256.c"
+
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
@@ -343,9 +345,5 @@ const mp_obj_module_t mp_module_uhashlib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_uhashlib_globals,
 };
-
-#if MICROPY_PY_UHASHLIB_SHA256
-#include "crypto-algorithms/sha256.c"
-#endif
 
 #endif //MICROPY_PY_UHASHLIB

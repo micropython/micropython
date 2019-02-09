@@ -62,7 +62,7 @@
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
 #if MICROPY_HW_USB_FS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#elif MICROPY_HW_USB_HS && MICROPY_HW_USB_HS_IN_FS
+#elif MICROPY_HW_USB_HS
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
 #else
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
@@ -369,7 +369,7 @@ static const flash_layout_t flash_layout[] = {
     #endif
 };
 
-#elif defined(STM32F765xx) || defined(STM32F767xx)
+#elif defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
 
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 
