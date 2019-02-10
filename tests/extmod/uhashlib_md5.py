@@ -19,3 +19,13 @@ except AttributeError:
 md5 = hashlib.md5(b'hello')
 md5.update(b'world')
 print(md5.digest())
+
+h = hashlib.md5(b'123')
+print(h.digest())
+print(h.digest())
+
+h = hashlib.md5(b'123')
+print(h.digest())
+h.update(b'456')
+print(h.digest())
+

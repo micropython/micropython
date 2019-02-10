@@ -19,3 +19,12 @@ except AttributeError:
 sha1 = hashlib.sha1(b'hello')
 sha1.update(b'world')
 print(sha1.digest())
+
+h = hashlib.sha1(b'123')
+print(h.digest())
+print(h.digest())
+
+h = hashlib.sha1(b'123')
+print(h.digest())
+h.update(b'456')
+print(h.digest())
