@@ -89,17 +89,45 @@ STATIC const pin_irq_obj_t pin_irq_obj[16];
 // whether the irq is hard or soft
 STATIC bool pin_irq_is_hard[16];
 
+// contact bounce delay (ms)
+STATIC struct pin_irq_bounce {
+    int      num;
+    int      delay;
+    int      blocked;
+    os_timer_t timer;
+} pin_irq_bounce[16];
+
 void pin_init0(void) {
     ETS_GPIO_INTR_DISABLE();
     ETS_GPIO_INTR_ATTACH(pin_intr_handler_iram, NULL);
     // disable all interrupts
     memset(&MP_STATE_PORT(pin_irq_handler)[0], 0, 16 * sizeof(mp_obj_t));
     memset(pin_irq_is_hard, 0, sizeof(pin_irq_is_hard));
+    memset(pin_irq_bounce, 0, sizeof(pin_irq_bounce));
     for (int p = 0; p < 16; ++p) {
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << p);
         SET_TRIGGER(p, 0);
+        pin_irq_bounce[p].num=p;
     }
     ETS_GPIO_INTR_ENABLE();
+}
+
+STATIC void pin_irq_bounce_cb(void *arg) {
+    struct pin_irq_bounce *self = arg;
+    mp_sched_lock();
+    mp_sched_schedule(MP_STATE_PORT(pin_irq_handler)[self->num], 
+                      MP_OBJ_FROM_PTR(&pyb_pin_obj[self->num]));
+    mp_sched_unlock();
+    self->blocked = 0;
+    os_timer_disarm(&self->timer);
+}
+
+STATIC inline void pin_delay_irq(int p) {
+    struct pin_irq_bounce *self=&pin_irq_bounce[p];
+    if (self->blocked!=0) return;
+    self->blocked = 1;
+    os_timer_setfn(&self->timer, pin_irq_bounce_cb, self);
+    os_timer_arm(&self->timer, (mp_int_t) self->delay, false);
 }
 
 void pin_intr_handler(uint32_t status) {
@@ -110,10 +138,14 @@ void pin_intr_handler(uint32_t status) {
         if (status & 1) {
             mp_obj_t handler = MP_STATE_PORT(pin_irq_handler)[p];
             if (handler != MP_OBJ_NULL) {
-                if (pin_irq_is_hard[p]) {
-                    mp_call_function_1_protected(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+                if (pin_irq_bounce[p].delay!=0) {
+                    pin_delay_irq(p);
                 } else {
-                    mp_sched_schedule(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+                    if (pin_irq_is_hard[p]) {
+                        mp_call_function_1_protected(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+                    } else {
+                        mp_sched_schedule(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+                    }
                 }
             }
         }
@@ -373,11 +405,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_on_obj, pyb_pin_on);
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
 STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_handler, ARG_trigger, ARG_hard };
+    enum { ARG_handler, ARG_trigger, ARG_hard, ARG_bounce };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_PIN_INTR_POSEDGE | GPIO_PIN_INTR_NEGEDGE} },
         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_bounce, MP_ARG_INT, {.u_int = 0} }
     };
     pyb_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -395,9 +428,14 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             handler = MP_OBJ_NULL;
             trigger = 0;
         }
+        if ( (args[ARG_hard].u_bool==true) &&
+             (args[ARG_bounce].u_int!=0) ) {
+            mp_raise_ValueError("hard and bounce together");
+        }
         ETS_GPIO_INTR_DISABLE();
         MP_STATE_PORT(pin_irq_handler)[self->phys_port] = handler;
         pin_irq_is_hard[self->phys_port] = args[ARG_hard].u_bool;
+        pin_irq_bounce[self->phys_port].delay = args[ARG_bounce].u_int;
         SET_TRIGGER(self->phys_port, trigger);
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << self->phys_port);
         ETS_GPIO_INTR_ENABLE();
