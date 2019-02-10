@@ -1,20 +1,20 @@
 try:
     import uio
     import uerrno
-    import websocket
+    import uwebsocket
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 # put raw data in the stream and do a websocket read
 def ws_read(msg, sz):
-    ws = websocket.websocket(uio.BytesIO(msg))
+    ws = uwebsocket.websocket(uio.BytesIO(msg))
     return ws.read(sz)
 
 # do a websocket write and then return the raw data from the stream
 def ws_write(msg, sz):
     s = uio.BytesIO()
-    ws = websocket.websocket(s)
+    ws = uwebsocket.websocket(s)
     ws.write(msg)
     s.seek(0)
     return s.read(sz)
@@ -36,7 +36,7 @@ print(ws_read(b"\x81\x84maskmask", 4))
 
 # close control frame
 s = uio.BytesIO(b'\x88\x00') # FRAME_CLOSE
-ws = websocket.websocket(s)
+ws = uwebsocket.websocket(s)
 print(ws.read(1))
 s.seek(2)
 print(s.read(4))
@@ -46,11 +46,11 @@ print(ws_read(b"\x89\x00\x81\x04ping", 4)) # FRAME_PING
 print(ws_read(b"\x8a\x00\x81\x04pong", 4)) # FRAME_PONG
 
 # close method
-ws = websocket.websocket(uio.BytesIO())
+ws = uwebsocket.websocket(uio.BytesIO())
 ws.close()
 
 # ioctl
-ws = websocket.websocket(uio.BytesIO())
+ws = uwebsocket.websocket(uio.BytesIO())
 print(ws.ioctl(8)) # GET_DATA_OPTS
 print(ws.ioctl(9, 2)) # SET_DATA_OPTS
 print(ws.ioctl(9))
