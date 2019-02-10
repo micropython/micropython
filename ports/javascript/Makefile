@@ -14,7 +14,12 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 CPP = clang -E
-CFLAGS = -m32 $(INC) -Wall -Werror -std=c99 $(COPT)
+
+ifdef EMSCRIPTEN
+    CPP += -isystem $(EMSCRIPTEN)/system/include/libc -cxx-isystem $(EMSCRIPTEN)/system/include/libcxx
+endif
+
+CFLAGS = -m32 -Wall -Werror $(INC) -std=c99 $(COPT)
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 
 CFLAGS += -O0 -DNDEBUG
@@ -46,8 +51,7 @@ all: $(BUILD)/micropython.js
 $(BUILD)/micropython.js: $(OBJ) library.js wrapper.js
 	$(ECHO) "LINK $(BUILD)/firmware.js"
 	$(Q)emcc $(LDFLAGS) -o $(BUILD)/firmware.js $(OBJ) $(JSFLAGS)
-	cat $(BUILD)/firmware.js > $@
-	cat wrapper.js >> $@
+	cat wrapper.js $(BUILD)/firmware.js > $@
 
 min: $(BUILD)/micropython.js
 	uglifyjs $< -c -o $(BUILD)/micropython.min.js
