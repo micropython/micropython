@@ -98,7 +98,9 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, 32);
-    mbedtls_sha256_finish_ret((mbedtls_sha256_context*)&self->state, (unsigned char *)vstr.buf);
+    mbedtls_sha256_context _temp;
+    memcpy(&_temp, self->state, sizeof(_temp));
+    mbedtls_sha256_finish_ret(&_temp, (unsigned char *)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
@@ -129,7 +131,9 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
-    sha256_final((CRYAL_SHA256_CTX*)self->state, (byte*)vstr.buf);
+    CRYAL_SHA256_CTX _temp;
+    memcpy(&_temp, self->state, sizeof(_temp));
+    sha256_final(&_temp, (byte*)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif
@@ -179,7 +183,9 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, SHA1_SIZE);
-    SHA1_Final((byte*)vstr.buf, (SHA1_CTX*)self->state);
+    SHA1_CTX _temp;
+    memcpy(&_temp, self->state, sizeof(_temp));
+    SHA1_Final((byte*)vstr.buf, &_temp);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif
@@ -216,8 +222,9 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, 20);
-    mbedtls_sha1_finish_ret((mbedtls_sha1_context*)self->state, (byte*)vstr.buf);
-    mbedtls_sha1_free((mbedtls_sha1_context*)self->state);
+    mbedtls_sha1_context _temp;
+    memcpy(&_temp, self->state, sizeof(_temp));
+    mbedtls_sha1_finish_ret((mbedtls_sha1_context*)&_temp, (byte*)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif
@@ -266,7 +273,9 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, MD5_SIZE);
-    MD5_Final((byte*)vstr.buf, (MD5_CTX*)self->state);
+    MD5_CTX _temp;
+    memcpy(&_temp, self->state, sizeof(_temp));
+    MD5_Final((byte*)vstr.buf, &_temp);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif // MICROPY_SSL_AXTLS
@@ -303,8 +312,9 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, 16);
-    mbedtls_md5_finish_ret((mbedtls_md5_context*)self->state, (byte*)vstr.buf);
-    mbedtls_md5_free((mbedtls_md5_context*)self->state);
+    mbedtls_md5_context _temp;
+    memcpy(&_temp, self->state, sizeof(_temp));
+    mbedtls_md5_finish_ret(&_temp, (byte*)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif // MICROPY_SSL_MBEDTLS
