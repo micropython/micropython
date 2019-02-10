@@ -1316,8 +1316,8 @@ typedef double mp_float_t;
 #define MICROPY_PY_USSL_FINALISER (0)
 #endif
 
-#ifndef MICROPY_PY_WEBSOCKET
-#define MICROPY_PY_WEBSOCKET (0)
+#ifndef MICROPY_PY_UWEBSOCKET
+#define MICROPY_PY_UWEBSOCKET (0)
 #endif
 
 #ifndef MICROPY_PY_FRAMEBUF

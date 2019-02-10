@@ -30,9 +30,9 @@
 
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "extmod/modwebsocket.h"
+#include "extmod/moduwebsocket.h"
 
-#if MICROPY_PY_WEBSOCKET
+#if MICROPY_PY_UWEBSOCKET
 
 enum { FRAME_HEADER, FRAME_OPT, PAYLOAD, CONTROL };
 
@@ -299,16 +299,16 @@ STATIC const mp_obj_type_t websocket_type = {
     .locals_dict = (void*)&websocket_locals_dict,
 };
 
-STATIC const mp_rom_map_elem_t websocket_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_websocket) },
+STATIC const mp_rom_map_elem_t uwebsocket_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uwebsocket) },
     { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&websocket_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(websocket_module_globals, websocket_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(uwebsocket_module_globals, uwebsocket_module_globals_table);
 
-const mp_obj_module_t mp_module_websocket = {
+const mp_obj_module_t mp_module_uwebsocket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&websocket_module_globals,
+    .globals = (mp_obj_dict_t*)&uwebsocket_module_globals,
 };
 
-#endif // MICROPY_PY_WEBSOCKET
+#endif // MICROPY_PY_UWEBSOCKET
