@@ -9,8 +9,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-07 01:10-0600\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
-"Last-Translator: Sebastian Plamauer\n"
-"Language-Team: \n"
+"Last-Translator: Pascal Deneaux\n"
+"Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -69,11 +69,11 @@ msgstr "eine nicht-hex zahl wurde gefunden"
 
 #: extmod/modubinascii.c:169
 msgid "incorrect padding"
-msgstr "falsches padding"
+msgstr "padding ist inkorrekt"
 
 #: extmod/moductypes.c:122
 msgid "syntax error in uctypes descriptor"
-msgstr "Syntaxfehler in uctypes Definition"
+msgstr "Syntaxfehler in uctypes Deskriptor"
 
 #: extmod/moductypes.c:219
 msgid "Cannot unambiguously get sizeof scalar"
@@ -105,7 +105,7 @@ msgstr "Syntaxfehler in JSON"
 
 #: extmod/modure.c:161
 msgid "Splitting with sub-captures"
-msgstr "Teilen mit unter-captures"
+msgstr "Splitting with sub-captures"
 
 #: extmod/modure.c:207
 msgid "Error in regex"
@@ -161,7 +161,7 @@ msgid ""
 "disable.\n"
 msgstr ""
 "Automatisches Neuladen ist aktiv. Speichere Dateien über USB um sie "
-"auszuführen oder verbinde dich mit der REPL zum deaktivieren.\n"
+"auszuführen oder verbinde dich mit der REPL zum Deaktivieren.\n"
 
 #: main.c:168
 msgid "Running in safe mode! Auto-reload is off.\n"
@@ -185,12 +185,12 @@ msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
+"\n"
+"Der Code wurde ausgeführt. Warte auf reload.\n"
 
 #: main.c:254
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-msgstr ""
-"Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
-"laden"
+msgstr "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu laden"
 
 #: main.c:419
 msgid "soft reboot\n"
@@ -492,9 +492,7 @@ msgstr "Minimale PWM Frequenz ist %dHz"
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:68
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr ""
-"Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf %dHz "
-"gesetzt."
+msgstr "Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf %dHz gesetzt."
 
 #: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
 #, c-format
@@ -511,8 +509,7 @@ msgstr "Dateisystem kann nicht wieder gemounted werden."
 
 #: ports/esp8266/common-hal/storage/__init__.c:38
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
-"Benutze esptool um den flash zu löschen und stattdessen Python hochzuladen"
+msgstr "Benutze das esptool um den flash zu löschen und Python erneut hochzuladen"
 
 #: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
@@ -568,8 +565,7 @@ msgstr "len muss ein vielfaches von 4 sein"
 #: ports/esp8266/modesp.c:274
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
-"Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
+msgstr "Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
 
 #: ports/esp8266/modesp.c:317
 msgid "flash location must be below 1MByte"
@@ -844,7 +840,7 @@ msgstr "Ungültige Puffergröße"
 
 #: ports/nrf/common-hal/busio/UART.c:99
 msgid "Odd parity is not supported"
-msgstr "Ungerade Parität wird nicht unterstützt"
+msgstr "Eine ungerade Parität wird nicht unterstützt"
 
 #: ports/nrf/common-hal/busio/UART.c:335 ports/nrf/common-hal/busio/UART.c:339
 #: ports/nrf/common-hal/busio/UART.c:344 ports/nrf/common-hal/busio/UART.c:349
@@ -872,12 +868,12 @@ msgstr "ffi_prep_closure_loc"
 
 #: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
-msgstr ""
+msgstr "Ich weiß nicht, wie man das Objekt an die native Funktion übergeben kann"
 
 #: ports/unix/modusocket.c:474
 #, c-format
 msgid "[addrinfo error %d]"
-msgstr ""
+msgstr "[addrinfo error %d]"
 
 #: py/argcheck.c:53
 msgid "function does not take keyword arguments"
@@ -886,8 +882,7 @@ msgstr "Funktion akzeptiert keine Keyword-Argumente"
 #: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:108
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
-"Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
+msgstr "Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 
 #: py/argcheck.c:73
 #, c-format
@@ -917,8 +912,7 @@ msgstr "Anzahl/Type der Argumente passen nicht"
 
 #: py/argcheck.c:156
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr ""
-"Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen "
+msgstr "Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen "
 "normale Argumente"
 
 #: py/bc.c:88 py/objnamedtuple.c:112
@@ -956,11 +950,11 @@ msgstr "Funktion vermisst Keyword-only-Argument"
 
 #: py/binary.c:112
 msgid "bad typecode"
-msgstr ""
+msgstr "schlechter typecode"
 
 #: py/builtinevex.c:99
 msgid "bad compile mode"
-msgstr ""
+msgstr "schlechter compile mode"
 
 #: py/builtinhelp.c:137
 msgid "Plus any modules on the filesystem\n"
@@ -1068,15 +1062,15 @@ msgstr "mehrere **x sind nicht gestattet"
 
 #: py/compile.c:2271
 msgid "LHS of keyword arg must be an id"
-msgstr ""
+msgstr "LHS of keyword arg must be an id"
 
 #: py/compile.c:2287
 msgid "non-keyword arg after */**"
-msgstr ""
+msgstr "non-keyword arg after */**"
 
 #: py/compile.c:2291
 msgid "non-keyword arg after keyword arg"
-msgstr ""
+msgstr "non-keyword arg after keyword arg"
 
 #: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
 #: py/parse.c:1176
@@ -1154,56 +1148,56 @@ msgstr ""
 #: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr ""
+msgstr "'%s' erwartet höchstens r%d"
 
 #: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s' erwartet ein Register"
 
 #: py/emitinlinethumb.c:211
 #, c-format
 msgid "'%s' expects a special register"
-msgstr ""
+msgstr "'%s' erwartet ein Spezialregister"
 
 #: py/emitinlinethumb.c:239
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr ""
+msgstr "'%s' erwartet ein FPU-Register"
 
 #: py/emitinlinethumb.c:292
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' erwartet {r0, r1, ...}"
 
 #: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' erwartet ein Integer"
 
 #: py/emitinlinethumb.c:304
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' Integer 0x%x passt nicht in Maske 0x%x"
 
 #: py/emitinlinethumb.c:328
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr ""
+msgstr "'%s' erwartet eine Adresse in der Form [a, b]"
 
 #: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
 #, c-format
 msgid "'%s' expects a label"
-msgstr ""
+msgstr "'%s' erwartet ein Label"
 
 #: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
 msgid "label '%q' not defined"
-msgstr ""
+msgstr "Label '%q' nicht definiert"
 
 #: py/emitinlinethumb.c:806
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr ""
+msgstr "nicht unterstützter Thumb-Befehl '%s' mit %d Argumenten"
 
 #: py/emitinlinethumb.c:810
 msgid "branch not in range"
@@ -1211,11 +1205,11 @@ msgstr "Zweig ist außerhalb der Reichweite"
 
 #: py/emitinlinextensa.c:86
 msgid "can only have up to 4 parameters to Xtensa assembly"
-msgstr ""
+msgstr "kann nur bis zu 4 Parameter für die Xtensa assembly haben"
 
 #: py/emitinlinextensa.c:91 py/emitinlinextensa.c:96
 msgid "parameters must be registers in sequence a2 to a5"
-msgstr ""
+msgstr "Die Parameter müssen Register der Reihenfolge a2 bis a5 sein"
 
 #: py/emitinlinextensa.c:174
 #, c-format
@@ -1269,19 +1263,19 @@ msgstr ""
 
 #: py/emitnative.c:1540
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr ""
+msgstr "Kann '%q' nicht implizit nach 'bool' konvertieren"
 
 #: py/emitnative.c:1774
 msgid "unary op %q not implemented"
-msgstr ""
+msgstr "Der unäre Operator %q ist nicht implementiert"
 
 #: py/emitnative.c:1930
 msgid "binary op %q not implemented"
-msgstr ""
+msgstr "Der binäre Operator %q ist nicht implementiert"
 
 #: py/emitnative.c:1951
 msgid "can't do binary op between '%q' and '%q'"
-msgstr ""
+msgstr "Eine binäre Operation zwischen '%q' und '%q' ist nicht möglich"
 
 #: py/emitnative.c:2126
 msgid "casting"
@@ -1305,51 +1299,51 @@ msgstr ""
 
 #: py/modbuiltins.c:162
 msgid "chr() arg not in range(0x110000)"
-msgstr ""
+msgstr "chr() arg ist nicht in range(0x110000)"
 
 #: py/modbuiltins.c:171
 msgid "chr() arg not in range(256)"
-msgstr ""
+msgstr "chr() arg ist nicht in range(256)"
 
 #: py/modbuiltins.c:285
 msgid "arg is an empty sequence"
-msgstr ""
+msgstr "arg ist eine leere Sequenz"
 
 #: py/modbuiltins.c:350
 msgid "ord expects a character"
-msgstr ""
+msgstr "ord erwartet ein Zeichen"
 
 #: py/modbuiltins.c:353
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
-msgstr ""
+msgstr "ord() erwartet ein Zeichen aber es wurde eine Zeichenfolge mit Länge %d gefunden"
 
 #: py/modbuiltins.c:363
 msgid "3-arg pow() not supported"
-msgstr ""
+msgstr "3-arg pow() wird nicht unterstützt"
 
 #: py/modbuiltins.c:517
 msgid "must use keyword argument for key function"
-msgstr ""
+msgstr "muss Schlüsselwortargument für key function verwenden"
 
 #: py/modmath.c:41 shared-bindings/math/__init__.c:53
 msgid "math domain error"
-msgstr ""
+msgstr "math domain error"
 
 #: py/modmath.c:196 py/objfloat.c:270 py/objint_longlong.c:222
 #: py/objint_mpz.c:230 py/runtime.c:619 shared-bindings/math/__init__.c:346
 msgid "division by zero"
-msgstr ""
+msgstr "Division durch Null"
 
 #: py/modmicropython.c:155
 msgid "schedule stack full"
-msgstr ""
+msgstr "Der schedule stack ist voll"
 
 #: py/modstruct.c:148 py/modstruct.c:156 py/modstruct.c:244 py/modstruct.c:254
 #: shared-bindings/struct/__init__.c:102 shared-bindings/struct/__init__.c:161
 #: shared-module/struct/__init__.c:128 shared-module/struct/__init__.c:183
 msgid "buffer too small"
-msgstr "Puffer zu klein"
+msgstr "Der Puffer ist zu klein"
 
 #: py/modthread.c:240
 msgid "expecting a dict for keyword args"
@@ -1373,7 +1367,7 @@ msgstr "Datei existiert"
 
 #: py/moduerrno.c:152
 msgid "Unsupported operation"
-msgstr "Nicht unterstützter Vorgang"
+msgstr "Nicht unterstützte Operation"
 
 #: py/moduerrno.c:153
 msgid "Invalid argument"
@@ -1381,7 +1375,7 @@ msgstr "Ungültiges Argument"
 
 #: py/moduerrno.c:154
 msgid "No space left on device"
-msgstr ""
+msgstr "Kein Speicherplatz auf Gerät"
 
 #: py/obj.c:92
 msgid "Traceback (most recent call last):\n"
@@ -1397,7 +1391,7 @@ msgstr "  Datei \"%q\""
 
 #: py/obj.c:102
 msgid ", in %q\n"
-msgstr ""
+msgstr ", in %q\n"
 
 #: py/obj.c:259
 msgid "can't convert to int"
@@ -1559,24 +1553,24 @@ msgstr ""
 
 #: py/objint.c:144
 msgid "can't convert inf to int"
-msgstr ""
+msgstr "kann inf nicht nach int konvertieren"
 
 #: py/objint.c:146
 msgid "can't convert NaN to int"
-msgstr ""
+msgstr "kann NaN nicht nach int konvertieren"
 
 #: py/objint.c:163
 msgid "float too big"
-msgstr ""
+msgstr "float zu groß"
 
 #: py/objint.c:328
 msgid "long int not supported in this build"
-msgstr ""
+msgstr "long int wird in diesem Build nicht unterstützt"
 
 #: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
 #: py/sequence.c:41
 msgid "small int overflow"
-msgstr ""
+msgstr "small int Überlauf"
 
 #: py/objint_longlong.c:189 py/objint_mpz.c:283 py/runtime.c:486
 msgid "negative power with no float support"
@@ -1979,16 +1973,16 @@ msgstr "'%s' Objekt nicht iterierbar"
 
 #: py/runtime.c:1260 py/runtime.c:1296
 msgid "object not an iterator"
-msgstr ""
+msgstr "Objekt ist kein Iterator"
 
 #: py/runtime.c:1262 py/runtime.c:1298
 #, c-format
 msgid "'%s' object is not an iterator"
-msgstr ""
+msgstr "'%s' Objekt ist kein Iterator"
 
 #: py/runtime.c:1401
 msgid "exceptions must derive from BaseException"
-msgstr ""
+msgstr "Exceptions müssen von BaseException abgeleitet sein"
 
 #: py/runtime.c:1430
 msgid "cannot import name %q"
@@ -2009,23 +2003,23 @@ msgstr "maximale Rekursionstiefe überschritten"
 
 #: py/sequence.c:273
 msgid "object not in sequence"
-msgstr ""
+msgstr "Objekt ist nicht in sequence"
 
 #: py/stream.c:96
 msgid "stream operation not supported"
-msgstr ""
+msgstr "stream operation ist nicht unterstützt"
 
 #: py/stream.c:254
 msgid "string not supported; use bytes or bytearray"
-msgstr ""
+msgstr "Zeichenfolgen werden nicht unterstützt; Verwenden Sie bytes oder bytearray"
 
 #: py/stream.c:289
 msgid "length argument not allowed for this type"
-msgstr ""
+msgstr "Für diesen Typ ist length nicht zulässig"
 
 #: py/vm.c:255
 msgid "local variable referenced before assignment"
-msgstr ""
+msgstr "Es wurde versucht auf eine Variable zuzugreifen, die es (noch) nicht gibt. Variablen immer zuerst Zuweisen!"
 
 #: py/vm.c:1142
 msgid "no active exception to reraise"
@@ -2165,16 +2159,16 @@ msgstr "Es müssen 8 oder 16 bits_per_sample sein"
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
-msgstr ""
+msgstr "sample_source buffer muss ein Bytearray oder ein Array vom Typ 'h', 'H', 'b' oder 'B' sein"
 
 #: shared-bindings/audioio/RawSample.c:101
 msgid "buffer must be a bytes-like object"
-msgstr ""
+msgstr "Puffer muss ein bytes-artiges Objekt sein"
 
 #: shared-bindings/audioio/WaveFile.c:78
 #: shared-bindings/displayio/OnDiskBitmap.c:87
 msgid "file must be a file opened in byte mode"
-msgstr ""
+msgstr "Die Datei muss eine im Byte-Modus geöffnete Datei sein"
 
 #: shared-bindings/bitbangio/I2C.c:109 shared-bindings/bitbangio/SPI.c:119
 #: shared-bindings/busio/SPI.c:130
@@ -2274,15 +2268,15 @@ msgstr ""
 
 #: shared-bindings/bleio/UUID.c:66
 msgid "UUID integer value not in range 0 to 0xffff"
-msgstr ""
+msgstr "UUID-Integer nicht im Bereich 0 bis 0xffff"
 
 #: shared-bindings/bleio/UUID.c:91
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
+msgstr "UUID Zeichenfolge ist nicht 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 
 #: shared-bindings/bleio/UUID.c:103
 msgid "UUID value is not str, int or byte buffer"
-msgstr ""
+msgstr "Der UUID-Wert ist kein str-, int- oder Byte-Puffer"
 
 #: shared-bindings/bleio/UUID.c:107
 msgid "Byte buffer must be 16 bytes."
@@ -2290,7 +2284,7 @@ msgstr "Der Puffer muss 16 Bytes lang sein"
 
 #: shared-bindings/bleio/UUID.c:151
 msgid "not a 128-bit UUID"
-msgstr ""
+msgstr "keine 128-bit UUID"
 
 #: shared-bindings/busio/I2C.c:117
 msgid "Function requires lock."
@@ -2298,11 +2292,11 @@ msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 
 #: shared-bindings/busio/UART.c:103
 msgid "bits must be 7, 8 or 9"
-msgstr ""
+msgstr "bits muss 7, 8 oder 9 sein"
 
 #: shared-bindings/busio/UART.c:115
 msgid "stop must be 1 or 2"
-msgstr ""
+msgstr "stop muss 1 oder 2 sein"
 
 #: shared-bindings/busio/UART.c:120
 msgid "timeout >100 (units are now seconds, not msecs)"
@@ -2428,7 +2422,7 @@ msgstr ""
 
 #: shared-bindings/gamepad/GamePad.c:100
 msgid "too many arguments"
-msgstr ""
+msgstr "zu viele Argumente"
 
 #: shared-bindings/gamepad/GamePad.c:104
 msgid "expected a DigitalInOut"
@@ -2436,84 +2430,84 @@ msgstr ""
 
 #: shared-bindings/i2cslave/I2CSlave.c:95
 msgid "can't convert address to int"
-msgstr ""
+msgstr "kann Adresse nicht in int konvertieren"
 
 #: shared-bindings/i2cslave/I2CSlave.c:98
 msgid "address out of bounds"
-msgstr ""
+msgstr "Adresse außerhalb der Grenzen"
 
 #: shared-bindings/i2cslave/I2CSlave.c:104
 msgid "addresses is empty"
-msgstr ""
+msgstr "adresses ist leer"
 
 #: shared-bindings/microcontroller/Pin.c:89
 #: shared-bindings/neopixel_write/__init__.c:67
 #: shared-bindings/pulseio/PulseOut.c:76
 #: shared-bindings/terminalio/Terminal.c:63
 msgid "Expected a %q"
-msgstr ""
+msgstr "Erwartet ein(e) %q"
 
 #: shared-bindings/microcontroller/Pin.c:100
 msgid "%q in use"
-msgstr ""
+msgstr "%q in Benutzung"
 
 #: shared-bindings/microcontroller/__init__.c:126
 msgid "Invalid run mode."
-msgstr ""
+msgstr "Ungültiger Ausführungsmodus"
 
 #: shared-bindings/multiterminal/__init__.c:68
 msgid "Stream missing readinto() or write() method."
-msgstr ""
+msgstr "Stream fehlt readinto() oder write() Methode."
 
 #: shared-bindings/nvm/ByteArray.c:99
 msgid "Slice and value different lengths."
-msgstr ""
+msgstr "Slice und Wert (value) haben unterschiedliche Längen."
 
 #: shared-bindings/nvm/ByteArray.c:104
 msgid "Array values should be single bytes."
-msgstr ""
+msgstr "Array-Werte sollten aus Einzelbytes bestehen."
 
 #: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
 msgid "Unable to write to nvm."
-msgstr ""
+msgstr "Schreiben in nvm nicht möglich."
 
 #: shared-bindings/nvm/ByteArray.c:137
 msgid "Bytes must be between 0 and 255."
-msgstr ""
+msgstr "Ein Bytes kann nur Werte zwischen 0 und 255 annehmen."
 
 #: shared-bindings/os/__init__.c:200
 msgid "No hardware random available"
-msgstr ""
+msgstr "Kein hardware random verfügbar"
 
 #: shared-bindings/pulseio/PWMOut.c:117
 msgid "All timers for this pin are in use"
-msgstr "Alle timer für diesen Pin werden benutzt"
+msgstr "Alle timer für diesen Pin werden bereits benutzt"
 
 #: shared-bindings/pulseio/PWMOut.c:171
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr ""
+msgstr "PWM duty_cycle muss zwischen 0 und 65535 (16 Bit Auflösung) liegen"
 
 #: shared-bindings/pulseio/PWMOut.c:202
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
-msgstr ""
+msgstr "Die PWM-Frequenz ist nicht schreibbar wenn variable_Frequenz = False."
 
 #: shared-bindings/pulseio/PulseIn.c:272
 msgid "Cannot delete values"
-msgstr ""
+msgstr "Kann Werte nicht löschen"
 
 #: shared-bindings/pulseio/PulseIn.c:278
 msgid "Slices not supported"
-msgstr ""
+msgstr "Slices werden nicht unterstützt"
 
 #: shared-bindings/pulseio/PulseIn.c:284
 msgid "index must be int"
-msgstr ""
+msgstr "index muss ein int sein"
 
 #: shared-bindings/pulseio/PulseIn.c:290
 msgid "Read-only"
-msgstr ""
+msgstr "Nur lesen möglich, da Schreibgeschützt"
 
 #: shared-bindings/pulseio/PulseOut.c:135
 msgid "Array must contain halfwords (type 'H')"
@@ -2521,28 +2515,28 @@ msgstr ""
 
 #: shared-bindings/random/__init__.c:92 shared-bindings/random/__init__.c:100
 msgid "stop not reachable from start"
-msgstr ""
+msgstr "stop ist von start aus nicht erreichbar"
 
 #: shared-bindings/random/__init__.c:111
 msgid "step must be non-zero"
-msgstr ""
+msgstr "Schritt (step) darf nicht Null sein"
 
 #: shared-bindings/random/__init__.c:114
 msgid "invalid step"
-msgstr ""
+msgstr "ungültiger Schritt (step)"
 
 #: shared-bindings/random/__init__.c:146
 msgid "empty sequence"
-msgstr ""
+msgstr "leere Sequenz"
 
 #: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
 #: shared-bindings/time/__init__.c:190
 msgid "RTC is not supported on this board"
-msgstr ""
+msgstr "Eine RTC wird auf diesem Board nicht unterstützt"
 
 #: shared-bindings/rtc/RTC.c:52
 msgid "RTC calibration is not supported on this board"
-msgstr ""
+msgstr "Die RTC-Kalibrierung wird auf diesem Board nicht unterstützt"
 
 #: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
 msgid "no available NIC"
@@ -2550,20 +2544,20 @@ msgstr ""
 
 #: shared-bindings/storage/__init__.c:77
 msgid "filesystem must provide mount method"
-msgstr ""
+msgstr "Das Dateisystem muss eine Mount-Methode bereitstellen"
 
 #: shared-bindings/supervisor/__init__.c:93
 msgid "Brightness must be between 0 and 255"
-msgstr ""
+msgstr "Die Helligkeit muss zwischen 0 und 255 liegen"
 
 #: shared-bindings/supervisor/__init__.c:119
 msgid "Stack size must be at least 256"
-msgstr ""
+msgstr "Die Stackgröße sollte mindestens 256 sein"
 
 #: shared-bindings/terminalio/Terminal.c:68
 #, fuzzy
 msgid "unicode_characters must be a string"
-msgstr "name muss ein String sein"
+msgstr "unicode_characters muss eine Zeichenfolge sein"
 
 #: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
@@ -2591,17 +2585,17 @@ msgstr ""
 
 #: shared-bindings/touchio/TouchIn.c:173
 msgid "threshold must be in the range 0-65536"
-msgstr ""
+msgstr "threshold muss im Intervall 0-65536 liegen"
 
 #: shared-bindings/util.c:38
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr ""
+msgstr "Objekt wurde deinitialisiert und kann nicht mehr verwendet werden. Erstelle ein neues Objekt."
 
 #: shared-module/_pixelbuf/PixelBuf.c:69
 #, c-format
 msgid "Expected tuple of length %d, got %d"
-msgstr ""
+msgstr "Habe ein Tupel der Länge %d erwartet aber %d erhalten"
 
 #: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
 msgid "Couldn't allocate first buffer"
@@ -2744,12 +2738,12 @@ msgstr ""
 
 #: shared-module/struct/__init__.c:179
 msgid "buffer size must match format"
-msgstr "Buffergröße muss zum Format passen"
+msgstr "Die Puffergröße muss zum Format passen"
 
 #: shared-module/usb_hid/Device.c:45
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Buffergröße falsch, sollte %d bytes sein."
+msgstr "Der Puffergröße ist inkorrekt. Sie sollte %d bytes haben."
 
 #: shared-module/usb_hid/Device.c:53
 msgid "USB Busy"
@@ -2843,6 +2837,3 @@ msgid ""
 msgstr ""
 "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
 "erneut um den abgesicherten Modus zu verlassen. \n"
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Alle PWM-Peripheriegeräte werden verwendet"
