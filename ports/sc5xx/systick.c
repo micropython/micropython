@@ -36,6 +36,7 @@
 volatile uint64_t system_milliticks = 0;
 ADI_TMR_HANDLE timer_handle;
 uint8_t timer_instance_memory[ADI_TMR_MEMORY];
+uint32_t us_divider;
 
 static void systemtimer_handler(void *pCBParam,
                                 uint32_t Event,
@@ -93,6 +94,9 @@ void sys_tick_init() {
     if ((adi_tmr_Enable(timer_handle, true)) != ADI_TMR_SUCCESS) {
         mp_raise_msg(&mp_type_RuntimeError, "Error enabling the timer.");
     }
+
+    // This is used to calculate the us tick
+    us_divider = fsclk0 / 1000000;
 }
 
 // Core delay function that does an efficient sleep and may switch thread context.
@@ -153,7 +157,14 @@ mp_uint_t mp_hal_ticks_ms(void) {
     return system_milliticks;
 }
 
-// The highest resolution is 1 ms.
 mp_uint_t mp_hal_ticks_us(void) {
-    return system_milliticks * 1000;
+    // use current count to determine us inside one ms
+    uint32_t raw_count;
+    // STW to avoid interrupt between 2 reads
+    adi_tmr_Enable(timer_handle, false);
+    adi_tmr_GetCount(timer_handle, &raw_count);
+    // prevent optimization
+    volatile uint32_t ticks = system_milliticks * 1000 + raw_count / us_divider;
+    adi_tmr_Enable(timer_handle, true);
+    return ticks;
 }
