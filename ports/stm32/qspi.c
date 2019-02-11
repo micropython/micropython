@@ -29,17 +29,18 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "qspi.h"
+#include "pin_static_af.h"
 
 #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
 
 void qspi_init(void) {
     // Configure pins
-    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 10);
-    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
+    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_NCS);
+    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_CLK);
+    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO0);
+    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO1);
+    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO2);
+    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO3);
 
     // Bring up the QSPI peripheral
 
