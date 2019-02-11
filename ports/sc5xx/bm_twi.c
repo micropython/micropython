@@ -555,10 +555,18 @@ bool twi_set_clock(BM_TWI *device,
         return false;
     }
 
-    device -> freq = 10000000 / (uint32_t)clocksHigh;
+    device->freq = 10000000 / (uint32_t)clocksHigh;
 
     device->clkdiv = (((uint8_t)clocksHigh) << 8) + (uint8_t)clocksLow;
     (*device->pREG_TWI_CLKDIV) = device->clkdiv;
+
+    if (clockFreq >= 400000) {
+        // Fast mode is used
+        *device->pREG_TWI_MSTRCTL |= BITM_TWI_MSTRCTL_FAST;
+    }
+    else {
+        *device->pREG_TWI_MSTRCTL &= ~BITM_TWI_MSTRCTL_FAST;
+    }
 
     return true;
 }
