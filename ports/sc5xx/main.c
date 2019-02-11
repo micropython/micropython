@@ -167,7 +167,7 @@ STATIC bool init_sdcard_fs(void) {
 #endif
 
 void nlr_jump_fail(void *val) {
-    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
+    uart_write_block(&uart0, (uint8_t *)"\nFatal: nlr jump fail\n", 22);
     while(1);
 }
 

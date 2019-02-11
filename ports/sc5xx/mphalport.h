@@ -67,8 +67,9 @@ typedef struct {
 #define GPIO_MODE_OUTPUT_PP ((uint32_t)0x00000001)
 #define GPIO_MODE_AF_PP     ((uint32_t)0x00000002)
 #define GPIO_MODE_INVALID   ((uint32_t)0xFFFFFFFF)
-#define GPIO_MODE_IT_RISING ((uint32_t)1)
-#define GPIO_MODE_IT_FALLING ((uint32_t)2)
+#define GPIO_MODE_IT_RISING    ((uint32_t)0)
+#define GPIO_MODE_IT_FALLING   ((uint32_t)1)
+#define GPIO_MODE_IT_LOW_LEVEL ((uint32_t)2)
 
 #define IS_GPIO_MODE(MODE) (((MODE) == GPIO_MODE_INPUT)              ||\
                             ((MODE) == GPIO_MODE_OUTPUT_PP)          ||\
@@ -116,7 +117,6 @@ static inline void mp_hal_set_interrupt_char(char c) {}
 void mp_hal_gpio_init(pin_gpio_t *gpio, uint32_t pin, uint32_t mode, uint32_t af);
 void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt);
 bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);
-void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj);
 
 #define mp_hal_pin_config_alt_static(pin_obj, mode, pull, fn_type) \
         mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)) /* Overflow Error => alt func not found */

@@ -33,9 +33,9 @@
 #include "py/mphal.h"
 #include "extmod/virtpin.h"
 #include "pin.h"
-//#include "extint.h"
+#include "extint.h"
 
-/// \moduleref pyb
+/// \moduleref machine
 /// \class Pin - control I/O pins
 ///
 /// A pin is the basic object to control I/O pins.  It has methods to set
@@ -44,40 +44,40 @@
 ///
 /// Usage Model:
 ///
-/// All Board Pins are predefined as pyb.Pin.board.Name
+/// All Board Pins are predefined as machine.Pin.board.Name
 ///
-///     x1_pin = pyb.Pin.board.X1
+///     x1_pin = machine.Pin.board.X1
 ///
-///     g = pyb.Pin(pyb.Pin.board.X1, pyb.Pin.IN)
+///     g = machine.Pin(machine.Pin.board.X1, machine.Pin.IN)
 ///
 /// CPU pins which correspond to the board pins are available
-/// as `pyb.cpu.Name`. For the CPU pins, the names are the port letter
-/// followed by the pin number. On the PYBv1.0, `pyb.Pin.board.X1` and
-/// `pyb.Pin.cpu.B6` are the same pin.
+/// as `machine.cpu.Name`. For the CPU pins, the names are the port letter
+/// followed by the pin number. On the machinev1.0, `machine.Pin.board.X1` and
+/// `machine.Pin.cpu.B6` are the same pin.
 ///
 /// You can also use strings:
 ///
-///     g = pyb.Pin('X1', pyb.Pin.OUT_PP)
+///     g = machine.Pin('X1', machine.Pin.OUT_PP)
 ///
 /// Users can add their own names:
 ///
-///     MyMapperDict = { 'LeftMotorDir' : pyb.Pin.cpu.C12 }
-///     pyb.Pin.dict(MyMapperDict)
-///     g = pyb.Pin("LeftMotorDir", pyb.Pin.OUT_OD)
+///     MyMapperDict = { 'LeftMotorDir' : machine.Pin.cpu.C12 }
+///     machine.Pin.dict(MyMapperDict)
+///     g = machine.Pin("LeftMotorDir", machine.Pin.OUT_OD)
 ///
 /// and can query mappings
 ///
-///     pin = pyb.Pin("LeftMotorDir")
+///     pin = machine.Pin("LeftMotorDir")
 ///
 /// Users can also add their own mapping function:
 ///
 ///     def MyMapper(pin_name):
 ///        if pin_name == "LeftMotorDir":
-///            return pyb.Pin.cpu.A0
+///            return machine.Pin.cpu.A0
 ///
-///     pyb.Pin.mapper(MyMapper)
+///     machine.Pin.mapper(MyMapper)
 ///
-/// So, if you were to call: `pyb.Pin("LeftMotorDir", pyb.Pin.OUT_PP)`
+/// So, if you were to call: `machine.Pin("LeftMotorDir", machine.Pin.OUT_PP)`
 /// then `"LeftMotorDir"` is passed directly to the mapper function.
 ///
 /// To summarise, the following order determines how things get mapped into
@@ -89,7 +89,7 @@
 /// 4. Supply a string which matches a board pin
 /// 5. Supply a string which matches a CPU port/pin
 ///
-/// You can set `pyb.Pin.debug(True)` to get some debug information about
+/// You can set `machine.Pin.debug(True)` to get some debug information about
 /// how a particular object gets mapped to a pin.
 
 // Pin class variables
@@ -378,11 +378,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
 STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_handler, ARG_trigger, ARG_hard };
+    enum { ARG_handler, ARG_trigger};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_MODE_IT_RISING | GPIO_MODE_IT_FALLING} },
-        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_MODE_IT_RISING | GPIO_MODE_IT_FALLING | GPIO_MODE_IT_LOW_LEVEL} },
     };
     pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -391,7 +390,7 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if (n_args > 1 || kw_args->used != 0) {
         // configure irq
         extint_register_pin(self, args[ARG_trigger].u_int,
-            args[ARG_hard].u_bool, args[ARG_handler].u_obj);
+            true, args[ARG_handler].u_obj);
     }
 
     // TODO should return an IRQ object
@@ -485,7 +484,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
 
-    // Legacy names as used by pyb.Pin
+    // Legacy names as used by machine.Pin
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&pin_name_obj) },
@@ -515,6 +514,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULLDOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_MODE_IT_RISING) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_MODE_IT_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_LOW_LEVEL), MP_ROM_INT(GPIO_MODE_IT_LOW_LEVEL) },
 
     // legacy class constants
     { MP_ROM_QSTR(MP_QSTR_OUT_PP),    MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },

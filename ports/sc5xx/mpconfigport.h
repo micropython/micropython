@@ -184,6 +184,10 @@ extern const struct _mp_obj_module_t mp_module_sharc;
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
 
+#define NUM_PORTS (6)
+#define NUM_PINS (16)
+#define NUM_VECTORS (NUM_PORTS*NUM_PINS)
+
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
@@ -191,6 +195,8 @@ extern const struct _mp_obj_module_t mp_module_sharc;
     \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
+    \
+    mp_obj_t extint_callback[NUM_VECTORS]; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
     struct _sc_uart_obj_t *sc_stdio_uart; \

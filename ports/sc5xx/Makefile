@@ -59,6 +59,7 @@ SRC_C = \
 	systick.c \
 
 SRC_C += $(addprefix modules/,\
+	machine/extint.c \
 	machine/i2c.c \
 	machine/machine_i2c.c \
 	machine/machine_spi.c \

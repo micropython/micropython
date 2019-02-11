@@ -108,7 +108,3 @@ bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, u
     mp_hal_pin_config(pin, mode, pull, af->idx);
     return true;
 }
-
-void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj) {
-    mp_raise_NotImplementedError(NULL);
-}
