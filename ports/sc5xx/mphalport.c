@@ -32,6 +32,7 @@
 #include "extmod/misc.h"
 #include "bm_uart.h"
 #include "pin.h"
+#include "lib/utils/interrupt_char.h"
 
 // defined in main
 extern BM_UART uart0;
@@ -69,6 +70,12 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
     if (str > last) {
         mp_hal_stdout_tx_strn(last, str - last);
+    }
+}
+
+void mp_hal_uart_interrupt(unsigned char c) {
+    if (c == mp_interrupt_char) {
+        mp_keyboard_interrupt();
     }
 }
 

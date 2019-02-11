@@ -93,7 +93,9 @@ __attribute__(( always_inline )) static inline void __WFI(void) {
   __asm volatile ("wfi");
 }
 
-static inline void mp_hal_set_interrupt_char(char c) {}
+#include "lib/utils/interrupt_char.h"
+
+void mp_hal_uart_interrupt(unsigned char c);
 
 #include "pin.h"
 

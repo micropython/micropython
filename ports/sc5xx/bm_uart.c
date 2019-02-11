@@ -8,6 +8,7 @@
 
 #include <services/int/adi_int.h>
 #include <sys/platform.h>
+#include "mphalport.h"
 
 // Static function prototypes
 static BM_UART_RESULT uart_read_from_tx_buffer(BM_UART *device, uint8_t *val);
@@ -96,6 +97,9 @@ static void uart_status_handler(uint32_t SID,
         if (result != UART_SUCCESS) {
             uart_fifo_error_handler(result);
         }
+
+        // Call port specific rx interrupt process function
+        mp_hal_uart_interrupt(curRxVal);
 
         new_bytes_received = true;
     }
