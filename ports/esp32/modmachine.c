@@ -34,7 +34,8 @@
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
 #include "rom/rtc.h"
-#include "esp_system.h"
+#include "esp_clk.h"
+#include "esp_pm.h"
 #include "driver/touch_pad.h"
 
 #include "py/obj.h"
@@ -60,16 +61,24 @@ typedef enum {
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        return mp_obj_new_int(ets_get_cpu_frequency() * 1000000);
+        return mp_obj_new_int(esp_clk_cpu_freq());
     } else {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
-        if (freq != 80 && freq != 160 && freq != 240) {
-            mp_raise_ValueError("frequency can only be either 80Mhz, 160MHz or 240MHz");
+        if (freq != 20 && freq != 40 && freq != 80 && freq != 160 && freq != 240) {
+            mp_raise_ValueError("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz");
         }
-        /*
-        system_update_cpu_freq(freq);
-        */
+        esp_pm_config_esp32_t pm;
+        pm.max_freq_mhz = freq;
+        pm.min_freq_mhz = freq;
+        pm.light_sleep_enable = false;
+        esp_err_t ret = esp_pm_configure(&pm);
+        if (ret != ESP_OK) {
+            mp_raise_ValueError(NULL);
+        }
+        while (esp_clk_cpu_freq() != freq * 1000000) {
+            vTaskDelay(1);
+        }
         return mp_const_none;
     }
 }

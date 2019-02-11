@@ -247,7 +247,7 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t machine_bootloader(void) {
+STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif
@@ -261,6 +261,18 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
     #if (__MPU_PRESENT == 1)
     // MPU must be disabled for bootloader to function correctly
     HAL_MPU_Disable();
+    #endif
+
+    #if MICROPY_HW_USES_BOOTLOADER
+    if (n_args == 0 || !mp_obj_is_true(args[0])) {
+        // By default, with no args given, we enter the custom bootloader (mboot)
+        #if __DCACHE_PRESENT == 1
+        SCB_DisableICache();
+        SCB_DisableDCache();
+        #endif
+        __set_MSP(*(volatile uint32_t*)0x08000000);
+        ((void (*)(uint32_t)) *((volatile uint32_t*)(0x08000000 + 4)))(0x70ad0000);
+    }
     #endif
 
 #if defined(STM32F7) || defined(STM32H7)
@@ -283,7 +295,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
 
     while (1);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
 
 // get or set the MCU frequencies
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {

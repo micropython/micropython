@@ -116,8 +116,7 @@ STATIC int rtc_find(mp_obj_t id) {
     if (rtc_id >= 0 && rtc_id < MP_ARRAY_SIZE(machine_rtc_obj)) {
         return rtc_id;
     }
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-        "RTCounter(%d) does not exist", rtc_id));
+    mp_raise_ValueError("RTCounter doesn't exist");
 }
 
 STATIC void rtc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

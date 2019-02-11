@@ -165,11 +165,28 @@ class Pin(object):
     def parse_adc(self, adc_str):
         if (adc_str[:3] != 'ADC'):
             return
-        (adc,channel) = adc_str.split('_')
+
+        if adc_str.find('_INP') != -1:
+            # STM32H7xx, entries have the form: ADCxx_IN[PN]yy/...
+            # for now just pick the entry with the most ADC periphs
+            adc, channel = None, None
+            for ss in adc_str.split('/'):
+                if ss.find('_INP') != -1:
+                    a, c = ss.split('_')
+                    if adc is None or len(a) > len(adc):
+                        adc, channel = a, c
+            if adc is None:
+                return
+            channel = channel[3:]
+        else:
+            # all other MCUs, entries have the form: ADCxx_INyy
+            adc, channel = adc_str.split('_')
+            channel = channel[2:]
+
         for idx in range(3, len(adc)):
             adc_num = int(adc[idx]) # 1, 2, or 3
             self.adc_num |= (1 << (adc_num - 1))
-        self.adc_channel = int(channel[2:])
+        self.adc_channel = int(channel)
 
     def parse_af(self, af_idx, af_strs_in):
         if len(af_strs_in) == 0:

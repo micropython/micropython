@@ -1128,14 +1128,13 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
 
         /* USB data will be immediately processed, this allow next USB traffic being
         NAKed till the end of the application Xfer */
-        usbd_cdc_receive(usbd->cdc, len);
+        return usbd_cdc_receive(usbd->cdc, len);
 
-        return USBD_OK;
     #if MICROPY_HW_USB_ENABLE_CDC2
     } else if ((usbd->usbd_mode & USBD_MODE_CDC2) && epnum == (CDC2_OUT_EP & 0x7f)) {
         size_t len = USBD_LL_GetRxDataSize(pdev, epnum);
-        usbd_cdc_receive(usbd->cdc2, len);
-        return USBD_OK;
+        return usbd_cdc_receive(usbd->cdc2, len);
+        
     #endif
     } else if ((usbd->usbd_mode & USBD_MODE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
         MSC_BOT_DataOut(pdev, epnum);

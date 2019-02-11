@@ -598,6 +598,11 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_WARNINGS (0)
 #endif
 
+// Whether to support warning categories
+#ifndef MICROPY_WARNINGS_CATEGORY
+#define MICROPY_WARNINGS_CATEGORY (0)
+#endif
+
 // This macro is used when printing runtime warnings and errors
 #ifndef MICROPY_ERROR_PRINTER
 #define MICROPY_ERROR_PRINTER (&mp_plat_print)
@@ -1326,17 +1331,17 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
-// Additional builtin function definitions - see builtintables.c:builtin_object_table for format.
+// Additional builtin function definitions - see modbuiltins.c:mp_module_builtins_globals_table for format.
 #ifndef MICROPY_PORT_BUILTINS
 #define MICROPY_PORT_BUILTINS
 #endif
 
-// Additional builtin module definitions - see builtintables.c:builtin_module_table for format.
+// Additional builtin module definitions - see objmodule.c:mp_builtin_module_table for format.
 #ifndef MICROPY_PORT_BUILTIN_MODULES
 #define MICROPY_PORT_BUILTIN_MODULES
 #endif
 
-// Any module weak links - see builtintables.c:mp_builtin_module_weak_links_table.
+// Any module weak links - see objmodule.c:mp_builtin_module_weak_links_table.
 #ifndef MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 #endif
@@ -1506,6 +1511,17 @@ typedef double mp_float_t;
 # define MP_HTOBE32(x) (x)
 # define MP_BE32TOH(x) (x)
 #endif
+#endif
+
+// Warning categories are by default implemented as strings, though
+// hook is left for a port to define them as something else.
+#if MICROPY_WARNINGS_CATEGORY
+# ifndef MP_WARN_CAT
+# define MP_WARN_CAT(x) #x
+# endif
+#else
+# undef MP_WARN_CAT
+# define MP_WARN_CAT(x) (NULL)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

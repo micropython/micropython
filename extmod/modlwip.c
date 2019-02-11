@@ -1454,7 +1454,7 @@ STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
             && (type == 0 || type == MOD_NETWORK_SOCK_STREAM)
             && proto == 0
             && flags == 0)) {
-            mp_warning("unsupported getaddrinfo constraints");
+            mp_warning(MP_WARN_CAT(RuntimeWarning), "unsupported getaddrinfo constraints");
         }
     }
 

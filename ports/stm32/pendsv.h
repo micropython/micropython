@@ -26,11 +26,21 @@
 #ifndef MICROPY_INCLUDED_STM32_PENDSV_H
 #define MICROPY_INCLUDED_STM32_PENDSV_H
 
+enum {
+    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
+    PENDSV_DISPATCH_LWIP,
+    #endif
+    PENDSV_DISPATCH_MAX
+};
+
+#if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
+#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
+#endif
+
+typedef void (*pendsv_dispatch_t)(void);
+
 void pendsv_init(void);
 void pendsv_kbd_intr(void);
-
-// since we play tricks with the stack, the compiler must not generate a
-// prelude for this function
-void pendsv_isr_handler(void) __attribute__((naked));
+void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
 
 #endif // MICROPY_INCLUDED_STM32_PENDSV_H

@@ -137,63 +137,21 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         #else // !MICROPY_HW_USB_HS_IN_FS
 
-        GPIO_InitTypeDef GPIO_InitStruct;
-
         // Configure USB HS GPIOs
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-        __HAL_RCC_GPIOH_CLK_ENABLE();
-        __HAL_RCC_GPIOI_CLK_ENABLE();
-
-        // CLK
-        GPIO_InitStruct.Pin = GPIO_PIN_5;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-        // D0
-        GPIO_InitStruct.Pin = GPIO_PIN_3;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-        // D1 D2 D3 D4 D5 D6 D7
-        GPIO_InitStruct.Pin = GPIO_PIN_0  | GPIO_PIN_1  | GPIO_PIN_5 |\
-            GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-        // STP
-        GPIO_InitStruct.Pin = GPIO_PIN_0;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-        // NXT
-        GPIO_InitStruct.Pin = GPIO_PIN_4;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-        HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
-
-        // DIR
-        GPIO_InitStruct.Pin = GPIO_PIN_11;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-        HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
+        static const mp_hal_pin_obj_t usb_pins[] = {
+            pin_A5, pin_C0, pin_H4, pin_I11, // CLK, STP, NXT, DIR
+            pin_A3, pin_B0, pin_B1, pin_B5, pin_B10, pin_B11, pin_B12, pin_B13, // D0-D7
+        };
+        for (size_t i = 0; i < MP_ARRAY_SIZE(usb_pins); ++i) {
+            mp_hal_pin_config(usb_pins[i], MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF10_OTG_HS);
+            mp_hal_pin_config_speed(usb_pins[i], GPIO_SPEED_FREQ_VERY_HIGH);
+        }
 
         // Enable USB HS Clocks
-        __USB_OTG_HS_CLK_ENABLE();
-        __USB_OTG_HS_ULPI_CLK_ENABLE();
+        __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+        __HAL_RCC_USB_OTG_HS_CLK_SLEEP_ENABLE();
+        __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
+        __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_ENABLE();
 
         #endif // !MICROPY_HW_USB_HS_IN_FS
 
@@ -419,8 +377,6 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
     #endif
     #if MICROPY_HW_USB_HS
     if (pdev->id == USB_PHY_HS_ID) {
-        #if MICROPY_HW_USB_HS_IN_FS
-
         // Set LL Driver parameters
         pcd_hs_handle.Instance = USB_OTG_HS;
         pcd_hs_handle.Init.dev_endpoints = 6;
@@ -430,23 +386,36 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         pcd_hs_handle.Init.low_power_enable = 0;
         pcd_hs_handle.Init.lpm_enable = DISABLE;
         pcd_hs_handle.Init.battery_charging_enable = DISABLE;
-        #if defined(STM32F723xx) || defined(STM32F733xx)
-        pcd_hs_handle.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-        #else
-        pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
-        #endif
         pcd_hs_handle.Init.Sof_enable = 0;
-        if (high_speed) {
-            pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
-        } else {
-            pcd_hs_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
-        }
+        pcd_hs_handle.Init.use_external_vbus = 0;
+
         #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
         pcd_hs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
         #else
         pcd_hs_handle.Init.vbus_sensing_enable = 1;
         #endif
-        pcd_hs_handle.Init.use_external_vbus = 0;
+
+        #if MICROPY_HW_USB_HS_IN_FS
+
+        #if defined(STM32F723xx) || defined(STM32F733xx)
+        pcd_hs_handle.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+        #else
+        pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
+        #endif
+
+        if (high_speed) {
+            pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
+        } else {
+            pcd_hs_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
+        }
+
+        #else
+
+        // USB HS with external PHY
+        pcd_hs_handle.Init.phy_itface = PCD_PHY_ULPI;
+        pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
+
+        #endif
 
         // Link The driver to the stack
         pcd_hs_handle.pData = pdev;
@@ -463,40 +432,6 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 128); // CDC DATA
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 4, 8); // CDC2 CMD
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 5, 128); // CDC2 DATA
-
-        #else // !MICROPY_HW_USB_HS_IN_FS
-
-        // Set LL Driver parameters
-        pcd_hs_handle.Instance = USB_OTG_HS;
-        pcd_hs_handle.Init.dev_endpoints = 6;
-        pcd_hs_handle.Init.use_dedicated_ep1 = 0;
-        pcd_hs_handle.Init.ep0_mps = 0x40;
-
-        /* Be aware that enabling USB-DMA mode will result in data being sent only by
-           multiple of 4 packet sizes. This is due to the fact that USB-DMA does
-           not allow sending data from non word-aligned addresses.
-           For this specific application, it is advised to not enable this option
-           unless required. */
-        pcd_hs_handle.Init.dma_enable = 0;
-
-        pcd_hs_handle.Init.low_power_enable = 0;
-        pcd_hs_handle.Init.phy_itface = PCD_PHY_ULPI;
-        pcd_hs_handle.Init.Sof_enable = 0;
-        pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
-        pcd_hs_handle.Init.vbus_sensing_enable = 1;
-
-        // Link The driver to the stack
-        pcd_hs_handle.pData = pdev;
-        pdev->pData = &pcd_hs_handle;
-
-        // Initialize LL Driver
-        HAL_PCD_Init(&pcd_hs_handle);
-
-        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 0x200);
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 0x80);
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x174);
-
-        #endif // !MICROPY_HW_USB_HS_IN_FS
     }
     #endif  // MICROPY_HW_USB_HS
 
