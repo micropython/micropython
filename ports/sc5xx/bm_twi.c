@@ -438,8 +438,11 @@ BM_TWI_RESULT twi_read_r(BM_TWI *device,
     (*device->pREG_TWI_MSTRCTL)  =    BITM_TWI_MSTRCTL_DIR | // receive mode
                                    (1 << 6) | // set count to a 1
                                    BITM_TWI_MSTRCTL_EN | // enable
-                                   BITM_TWI_MSTRCTL_RSTART | // do not send stop bit after read
                                    0;
+
+    if (rstart) {
+        (*device->pREG_TWI_MSTRCTL)  |=  BITM_TWI_MSTRCTL_RSTART; // repeated start enabled
+    }
 
     // wait for transmission to complete
     while (!((*device->pREG_TWI_ISTAT) & BITM_TWI_ISTAT_MCOMP)) {
