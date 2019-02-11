@@ -106,9 +106,8 @@ Method `start_wps` of the :ref:`network.WLAN <network.WLAN>` object turns on dis
 
 You can check the status of WPS connections, using :ref:`network.STA_WPS_PROBING <network.STA_WPS_PROBING>`, :ref:`network.STA_WPS_SUCCESS <network.STA_WPS_SUCCESS>`, :ref:`network.STA_WPS_FAILED <network.STA_WPS_FAILED>` and :ref:`network.STA_WPS_TIMEOUT <network.STA_WPS_TIMEOUT>` values of the `status` method of the `network.WLAN` object.
 
-Here is an example of WPS connection implementation using the button connected to one of the PINs.
+Here is an example of WPS connection implementation using the button connected to one of the PINs::
 
-```
 import machine
 import time
 import network
@@ -139,7 +138,6 @@ while True:
 
         elif wlan.status() == network.STA_WPS_TIMEOUT:
             print("WPS timeout")
-```
 
 Delay and timing
 ----------------
