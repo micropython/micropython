@@ -108,36 +108,36 @@ You can check the status of WPS connections, using :ref:`network.STA_WPS_PROBING
 
 Here is an example of WPS connection implementation using the button connected to one of the PINs::
 
-import machine
-import time
-import network
+    import machine
+    import time
+    import network
 
-button = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-while True:
-    if button.value() == 0:
-        wlan.start_wps()
-        print('start_wps')
-        while wlan.status() == network.STA_WPS_PROBING:
-            print("probing with WPS")
-            time.sleep(0.5)
+    button = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    while True:
+        if button.value() == 0:
+            wlan.start_wps()
+            print('start_wps')
+            while wlan.status() == network.STA_WPS_PROBING:
+                print("probing with WPS")
+                time.sleep(0.5)
 
-        if wlan.status() == network.STA_WPS_SUCCESS:
-            print("WPS successful")
-            print("   ESSID:    ", wlan.config('essid'))
-            print("   Password: ", wlan.config('password'))
-            wlan.connect(wlan.config('essid'), wlan.config('password'))
-            print("Waiting for connection...")
-            while not wlan.isconnected():
-                machine.idle()
-            print("Connected.")
+            if wlan.status() == network.STA_WPS_SUCCESS:
+                print("WPS successful")
+                print("   ESSID:    ", wlan.config('essid'))
+                print("   Password: ", wlan.config('password'))
+                wlan.connect(wlan.config('essid'), wlan.config('password'))
+                print("Waiting for connection...")
+                while not wlan.isconnected():
+                    machine.idle()
+                print("Connected.")
 
-        elif wlan.status() == network.STA_WPS_FAILED:
-            print("WPS failed")
+            elif wlan.status() == network.STA_WPS_FAILED:
+                print("WPS failed")
 
-        elif wlan.status() == network.STA_WPS_TIMEOUT:
-            print("WPS timeout")
+            elif wlan.status() == network.STA_WPS_TIMEOUT:
+                print("WPS timeout")
 
 Delay and timing
 ----------------
