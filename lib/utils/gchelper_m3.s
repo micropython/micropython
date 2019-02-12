@@ -31,6 +31,18 @@
     .section .text
     .align  2
 
+    .global gc_helper_get_sp
+    .type gc_helper_get_sp, %function
+
+@ uint gc_helper_get_sp(void)
+gc_helper_get_sp:
+    @ return the sp
+    mov     r0, sp
+    bx      lr
+
+    .size gc_helper_get_sp, .-gc_helper_get_sp
+
+
     .global gc_helper_get_regs_and_sp
     .type gc_helper_get_regs_and_sp, %function
 
