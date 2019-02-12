@@ -54,7 +54,7 @@
 //|
 //|     Bitmap containing all font glyphs starting with ASCII and followed by unicode. Use
 //|     `get_glyph` in most cases. This is useful for use with `displayio.TileGrid` and
-//|     `displayio.Terminal`.
+//|     `terminalio.Terminal`.
 //|
 STATIC mp_obj_t displayio_builtinfont_obj_get_bitmap(mp_obj_t self_in) {
     displayio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
