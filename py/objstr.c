@@ -408,6 +408,15 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 // objstrunicode defines own version
+size_t str_offset_to_index(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
+                           size_t offset) {
+    if (offset > self_len) {
+        mp_raise_ValueError(translate("offset out of bounds"));
+    }
+
+    return offset;
+}
+
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice) {
     size_t index_val = mp_get_index(type, self_len, index, is_slice);

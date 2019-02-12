@@ -178,6 +178,35 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     size_t len;
     subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
+#if MICROPY_PY_URE_MATCH_SPAN_START_END
+    if (n_args > 2) {
+        const mp_obj_type_t *self_type = mp_obj_get_type(args[1]);
+        mp_int_t str_len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[1]));
+        const byte *begin = (const byte *)subj.begin;
+
+        int pos = mp_obj_get_int(args[2]);
+        if (pos >= str_len) {
+            return mp_const_none;
+        }
+        if (pos < 0) {
+            pos = 0;
+        }
+        const byte *pos_ptr = str_index_to_ptr(self_type, begin, len, MP_OBJ_NEW_SMALL_INT(pos), true);
+
+        const byte *endpos_ptr = (const byte *)subj.end;
+        if (n_args > 3) {
+            int endpos = mp_obj_get_int(args[3]);
+            if (endpos <= pos) {
+                return mp_const_none;
+            }
+            // Will cap to length
+            endpos_ptr = str_index_to_ptr(self_type, begin, len, args[3], true);
+        }
+
+        subj.begin = (const char *)pos_ptr;
+        subj.end = (const char *)endpos_ptr;
+    }
+#endif
     int caps_num = (self->re.sub + 1) * 2;
     mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char*, caps_num);
     // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
