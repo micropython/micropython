@@ -257,6 +257,9 @@ extern const struct _mp_obj_module_t pixelbuf_module;
     #define MICROPY_PY_UERRNO (1)
     #define MICROPY_PY_UERRNO_ERRORCODE (0)
     #define MICROPY_PY_URE (1)
+    #define MICROPY_PY_URE_MATCH_GROUPS (1)
+    #define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
+    #define MICROPY_PY_URE_SUB (1)
     #ifndef MICROPY_PY_FRAMEBUF
       #define MICROPY_PY_FRAMEBUF         (0)
     #endif
