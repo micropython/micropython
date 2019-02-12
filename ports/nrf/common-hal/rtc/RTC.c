@@ -42,7 +42,6 @@
 #define RTC_CLOCK_HZ (8)
 
 volatile static uint32_t rtc_offset = 0;
-int8_t rtc_calibration = 0;
 
 const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(0);
 
@@ -79,15 +78,4 @@ void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
         tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
     );
     nrfx_rtc_counter_clear(&rtc_instance);
-}
-
-// A positive value speeds up the clock by removing clock cycles.
-int common_hal_rtc_get_calibration(void) {
-    return rtc_calibration;
-}
-
-void common_hal_rtc_set_calibration(int calibration) {
-    if (calibration > 127 || calibration < -127)
-        mp_raise_ValueError(translate("calibration value out of range +/-127"));
-    rtc_calibration = calibration;
 }
