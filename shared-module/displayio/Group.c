@@ -39,8 +39,8 @@ uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self) {
 }
 
 void common_hal_displayio_group_set_scale(displayio_group_t* self, uint32_t scale) {
+    self->needs_refresh = self->scale != scale;
     self->scale = scale;
-    self->needs_refresh = true;
 }
 
 mp_int_t common_hal_displayio_group_get_x(displayio_group_t* self) {
@@ -48,8 +48,8 @@ mp_int_t common_hal_displayio_group_get_x(displayio_group_t* self) {
 }
 
 void common_hal_displayio_group_set_x(displayio_group_t* self, mp_int_t x) {
+    self->needs_refresh = self->x != x;
     self->x = x;
-    self->needs_refresh = true;
 }
 
 mp_int_t common_hal_displayio_group_get_y(displayio_group_t* self) {
@@ -57,8 +57,8 @@ mp_int_t common_hal_displayio_group_get_y(displayio_group_t* self) {
 }
 
 void common_hal_displayio_group_set_y(displayio_group_t* self, mp_int_t y) {
+    self->needs_refresh = self->y != y;
     self->y = y;
-    self->needs_refresh = true;
 }
 
 void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp_obj_t layer) {
