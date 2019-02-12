@@ -59,7 +59,7 @@ void common_hal_displayio_shape_set_boundary(displayio_shape_t *self, uint16_t y
     if (y < 0 || y >= self->height || (self->mirror_y && y > self->half_height)) {
         mp_raise_ValueError(translate("y value out of bounds"));
     }
-    if (start_x < 0 || start_x > self->width || end_x < 0 || end_x > self->height) {
+    if (start_x < 0 || start_x > self->width || end_x < 0 || end_x > self->width) {
         mp_raise_ValueError(translate("x value out of bounds"));
     }
     uint16_t half_width = self->width / 2 - 1 + self->width % 2;
