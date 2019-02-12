@@ -11,6 +11,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
+#include "lib/utils/gchelper.h"
 
 #include "tinytest.h"
 #include "tinytest_macros.h"
@@ -33,9 +34,8 @@ void gc_collect(void) {
     gc_collect_start();
 
     // get the registers and the sp
-    // TODO get registers
-    volatile mp_uint_t dummy;
-    void *sp = (void*)&dummy;
+    uintptr_t regs[10];
+    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
     gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
