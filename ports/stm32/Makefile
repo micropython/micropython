@@ -275,13 +275,13 @@ SRC_O = \
 	$(STARTUP_FILE) \
 	system_stm32f0.o \
 	resethandler_m0.o \
-	gchelper_m0.o
+	lib/utils/gchelper_m0.o
 else
 SRC_O = \
 	$(STARTUP_FILE) \
 	system_stm32.o \
 	resethandler.o \
-	gchelper.o
+	lib/utils/gchelper_m3.o
 endif
 
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
