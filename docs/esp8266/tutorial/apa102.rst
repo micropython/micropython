@@ -1,0 +1,91 @@
+Controlling APA102 LEDs
+=======================
+
+APA102 LEDs, also known as DotStar LEDs, are individually addressable
+full-colour RGB LEDs, generally in a string formation. They differ from
+NeoPixels in that they require two pins to control - both a Clock and Data pin.
+They can operate at a much higher data and PWM frequencies than NeoPixels and
+are more suitable for persistence-of-vision effects.
+
+To create an APA102 object do the following::
+
+    >>> import machine, apa102
+    >>> strip = apa102.APA102(machine.Pin(5), machine.Pin(4), 60)
+
+This configures an 60 pixel APA102 strip with clock on GPIO5 and data on GPIO4.
+You can adjust the pin numbers and the number of pixels to suit your needs.
+
+The RGB colour data, as well as a brightness level, is sent to the APA102 in a
+certain order.  Usually this is ``(Red, Green, Blue, Brightness)``.
+If you are using one of the newer APA102C LEDs the green and blue are swapped,
+so the order is ``(Red, Blue, Green, Brightness)``.
+The APA102 has more of a square lens while the APA102C has more of a round one.
+If you are using a APA102C strip and would prefer to provide colours in RGB
+order instead of RBG, you can customise the tuple colour order like so::
+
+    >>> strip.ORDER = (0, 2, 1, 3)
+
+To set the colour of pixels use::
+
+    >>> strip[0] = (255, 255, 255, 31) # set to white, full brightness
+    >>> strip[1] = (255, 0, 0, 31) # set to red, full brightness
+    >>> strip[2] = (0, 255, 0, 15) # set to green, half brightness
+    >>> strip[3] = (0, 0, 255, 7)  # set to blue, quarter brightness
+
+Use the ``write()`` method to output the colours to the LEDs::
+
+    >>> strip.write()
+
+Demonstration::
+
+    import time
+    import machine, apa102
+
+    # 1M strip with 60 LEDs
+    strip = apa102.APA102(machine.Pin(5), machine.Pin(4), 60)
+
+    brightness = 1  # 0 is off, 1 is dim, 31 is max
+
+    # Helper for converting 0-255 offset to a colour tuple
+    def wheel(offset, brightness):
+        # The colours are a transition r - g - b - back to r
+        offset = 255 - offset
+        if offset < 85:
+            return (255 - offset * 3, 0, offset * 3, brightness)
+        if offset < 170:
+            offset -= 85
+            return (0, offset * 3, 255 - offset * 3, brightness)
+        offset -= 170
+        return (offset * 3, 255 - offset * 3, 0, brightness)
+
+    # Demo 1: RGB RGB RGB
+    red = 0xff0000
+    green = red >> 8
+    blue = red >> 16
+    for i in range(strip.n):
+        colour = red >> (i % 3) * 8
+        strip[i] = ((colour & red) >> 16, (colour & green) >> 8, (colour & blue), brightness)
+    strip.write()
+
+    # Demo 2: Show all colours of the rainbow
+    for i in range(strip.n):
+        strip[i] = wheel((i * 256 // strip.n) % 255, brightness)
+    strip.write()
+
+    # Demo 3: Fade all pixels together through rainbow colours, offset each pixel
+    for r in range(5):
+        for n in range(256):
+            for i in range(strip.n):
+                strip[i] = wheel(((i * 256 // strip.n) + n) & 255, brightness)
+            strip.write()
+        time.sleep_ms(25)
+
+    # Demo 4: Same colour, different brightness levels
+    for b in range(31,-1,-1):
+        strip[0] = (255, 153, 0, b)
+        strip.write()
+        time.sleep_ms(250)
+
+    # End: Turn off all the LEDs
+    strip.fill((0, 0, 0, 0))
+    strip.write()
