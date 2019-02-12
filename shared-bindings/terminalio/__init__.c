@@ -31,6 +31,7 @@
 
 #include "shared-bindings/terminalio/__init__.h"
 #include "shared-bindings/terminalio/Terminal.h"
+#include "supervisor/shared/display.h"
 
 #include "py/runtime.h"
 
@@ -40,7 +41,8 @@
 //| .. module:: terminalio
 //|   :synopsis: Displays text in a TileGrid
 //|
-//| The `terminalio` module contains classes to display a character stream on a display
+//| The `terminalio` module contains classes to display a character stream on a display. The built
+//| in font is available as ``terminalio.FONT``.
 //|
 //| Libraries
 //|
@@ -53,6 +55,7 @@
 STATIC const mp_rom_map_elem_t  terminalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_terminalio) },
     { MP_ROM_QSTR(MP_QSTR_Terminal),   MP_OBJ_FROM_PTR(&terminalio_terminal_type) },
+    { MP_ROM_QSTR(MP_QSTR_FONT), MP_ROM_PTR(&supervisor_terminal_font) },
 };
 
 
