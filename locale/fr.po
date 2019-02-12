@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-11 17:39-0800\n"
+"POT-Creation-Date: 2019-02-12 15:01-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -1358,7 +1358,7 @@ msgstr "erreur de domaine math"
 msgid "division by zero"
 msgstr "division par zéro"
 
-#: py/modmicropython.c:117
+#: py/modmicropython.c:155
 msgid "schedule stack full"
 msgstr "pile de plannification pleine"
 
@@ -1819,71 +1819,71 @@ msgstr "les indices de chaîne de caractère doivent être des entiers, pas %s"
 msgid "string index out of range"
 msgstr "index de chaîne hors gamme"
 
-#: py/objtype.c:368
+#: py/objtype.c:371
 msgid "__init__() should return None"
 msgstr "__init__() doit retourner None"
 
-#: py/objtype.c:370
+#: py/objtype.c:373
 #, c-format
 msgid "__init__() should return None, not '%s'"
 msgstr "__init__() doit retourner None, pas '%s'"
 
-#: py/objtype.c:633 py/objtype.c:1287 py/runtime.c:1065
+#: py/objtype.c:636 py/objtype.c:1290 py/runtime.c:1065
 msgid "unreadable attribute"
 msgstr "attribut illisible"
 
-#: py/objtype.c:878 py/runtime.c:653
+#: py/objtype.c:881 py/runtime.c:653
 msgid "object not callable"
 msgstr "objet non appelable"
 
-#: py/objtype.c:880 py/runtime.c:655
+#: py/objtype.c:883 py/runtime.c:655
 #, c-format
 msgid "'%s' object is not callable"
 msgstr "objet '%s' non appelable"
 
-#: py/objtype.c:988
+#: py/objtype.c:991
 msgid "type takes 1 or 3 arguments"
 msgstr "le type prend 1 ou 3 arguments"
 
-#: py/objtype.c:999
+#: py/objtype.c:1002
 msgid "cannot create instance"
 msgstr "ne peut pas créer une instance"
 
-#: py/objtype.c:1001
+#: py/objtype.c:1004
 msgid "cannot create '%q' instances"
 msgstr "ne peut pas créer une instance de '%q'"
 
-#: py/objtype.c:1059
+#: py/objtype.c:1062
 msgid "can't add special method to already-subclassed class"
 msgstr ""
 "impossible d'ajouter une méthode spécial à une classe déjà sous-classée"
 
-#: py/objtype.c:1103 py/objtype.c:1109
+#: py/objtype.c:1106 py/objtype.c:1112
 msgid "type is not an acceptable base type"
 msgstr "le type n'est pas un type de base accepté"
 
-#: py/objtype.c:1112
+#: py/objtype.c:1115
 msgid "type '%q' is not an acceptable base type"
 msgstr "le type '%q' n'est pas un type de base accepté"
 
-#: py/objtype.c:1149
+#: py/objtype.c:1152
 msgid "multiple inheritance not supported"
 msgstr "héritage multiple non supporté"
 
-#: py/objtype.c:1176
+#: py/objtype.c:1179
 msgid "multiple bases have instance lay-out conflict"
 msgstr "de multiple bases ont un conflit de lay-out d'instance"
 
-#: py/objtype.c:1217
+#: py/objtype.c:1220
 msgid "first argument to super() must be type"
 msgstr "le premier argument de super() doit être un type"
 
-#: py/objtype.c:1382
+#: py/objtype.c:1385
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
 "l'argument 2 de issubclass() doit être une classe ou un tuple de classes"
 
-#: py/objtype.c:1396
+#: py/objtype.c:1399
 msgid "issubclass() arg 1 must be a class"
 msgstr "l'argument 1 de issubclass() doit être une classe"
 
@@ -2375,7 +2375,7 @@ msgstr "Valeur de tirage 'pull' non supportée."
 msgid "Cannot delete values"
 msgstr "Impossible de supprimer les valeurs"
 
-#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:253
 #: shared-bindings/pulseio/PulseIn.c:278
 msgid "Slices not supported"
 msgstr "Slices non supportées"
@@ -2389,7 +2389,7 @@ msgstr "adresse hors limites"
 msgid "pixel value requires too many bits"
 msgstr ""
 
-#: shared-bindings/displayio/BuiltinFont.c:74
+#: shared-bindings/displayio/BuiltinFont.c:93
 #, fuzzy
 msgid "%q should be an int"
 msgstr "y doit être un entier (int)"
@@ -2427,11 +2427,11 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 
-#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
-#: shared-bindings/displayio/Group.c:93
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100
 #, fuzzy
-msgid "Group must have %q at least 1"
-msgstr "Le tampon doit être de longueur au moins 1"
+msgid "%q must be >= 1"
+msgstr "les slices de tampon doivent être de longueurs égales"
 
 #: shared-bindings/displayio/Palette.c:91
 #, fuzzy
@@ -2761,11 +2761,11 @@ msgstr "Lecture seule"
 msgid "Unsupported display bus type"
 msgstr "type de bitmap non supporté"
 
-#: shared-module/displayio/Group.c:48
+#: shared-module/displayio/Group.c:66
 msgid "Group full"
 msgstr "Groupe plein"
 
-#: shared-module/displayio/Group.c:55
+#: shared-module/displayio/Group.c:73
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2915,12 +2915,15 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Le tampon doit être de longueur au moins 1"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Paramètre UUID invalide"
-
-#, fuzzy
-#~ msgid "Group empty"
-#~ msgstr "Groupe vide"
 
 #, fuzzy
 #~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2946,20 +2949,49 @@ msgstr ""
 #~ msgid "All PWM peripherals are in use"
 #~ msgstr "Tous les périphériques PWM sont utilisés"
 
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio est en cours de développement"
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
+#, fuzzy
+#~ msgid "Group empty"
+#~ msgstr "Groupe vide"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longeur de chaîne UUID invalide"
+#~ msgid "Wrong address length"
+#~ msgstr "Mauvaise longueur d'adresse"
 
 #~ msgid "Can not add Service."
 #~ msgstr "Impossible d'ajouter le Service"
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longeur de chaîne UUID invalide"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio est en cours de développement"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
+#~ "'reset' (après avoir éjecter CIRCUITPY).\n"
+
+#, fuzzy
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "mauvais nombre d'octets fourni'"
 
 #~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
@@ -2970,39 +3002,11 @@ msgstr ""
 #~ msgstr ""
 #~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
 
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
 
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
-
-#, fuzzy
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "mauvais nombre d'octets fourni'"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
-#~ "'reset' (après avoir éjecter CIRCUITPY).\n"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
 #~ msgid "Can not query for the device address."
 #~ msgstr "Impossible d'obtenir l'adresse du périphérique"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"

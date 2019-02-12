@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-11 17:39-0800\n"
+"POT-Creation-Date: 2019-02-12 15:01-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1360,7 +1360,7 @@ msgstr "may pagkakamali sa math domain"
 msgid "division by zero"
 msgstr "dibisyon ng zero"
 
-#: py/modmicropython.c:117
+#: py/modmicropython.c:155
 msgid "schedule stack full"
 msgstr "puno na ang schedule stack"
 
@@ -1821,70 +1821,70 @@ msgstr "ang indeks ng string ay dapat na integer, hindi %s"
 msgid "string index out of range"
 msgstr "indeks ng string wala sa sakop"
 
-#: py/objtype.c:368
+#: py/objtype.c:371
 msgid "__init__() should return None"
 msgstr "__init __ () dapat magbalik na None"
 
-#: py/objtype.c:370
+#: py/objtype.c:373
 #, c-format
 msgid "__init__() should return None, not '%s'"
 msgstr "__init__() dapat magbalink na None, hindi '%s'"
 
-#: py/objtype.c:633 py/objtype.c:1287 py/runtime.c:1065
+#: py/objtype.c:636 py/objtype.c:1290 py/runtime.c:1065
 msgid "unreadable attribute"
 msgstr "hindi mabasa ang attribute"
 
-#: py/objtype.c:878 py/runtime.c:653
+#: py/objtype.c:881 py/runtime.c:653
 msgid "object not callable"
 msgstr "hindi matatawag ang object"
 
-#: py/objtype.c:880 py/runtime.c:655
+#: py/objtype.c:883 py/runtime.c:655
 #, c-format
 msgid "'%s' object is not callable"
 msgstr "'%s' object hindi matatawag"
 
-#: py/objtype.c:988
+#: py/objtype.c:991
 msgid "type takes 1 or 3 arguments"
 msgstr "type kumuhuha ng 1 o 3 arguments"
 
-#: py/objtype.c:999
+#: py/objtype.c:1002
 msgid "cannot create instance"
 msgstr "hindi magawa ang instance"
 
-#: py/objtype.c:1001
+#: py/objtype.c:1004
 msgid "cannot create '%q' instances"
 msgstr "hindi magawa '%q' instances"
 
-#: py/objtype.c:1059
+#: py/objtype.c:1062
 msgid "can't add special method to already-subclassed class"
 msgstr ""
 "hindi madagdag ang isang espesyal na method sa isang na i-subclass na class"
 
-#: py/objtype.c:1103 py/objtype.c:1109
+#: py/objtype.c:1106 py/objtype.c:1112
 msgid "type is not an acceptable base type"
 msgstr "hindi puede ang type para sa base type"
 
-#: py/objtype.c:1112
+#: py/objtype.c:1115
 msgid "type '%q' is not an acceptable base type"
 msgstr "hindi maari ang type na '%q' para sa base type"
 
-#: py/objtype.c:1149
+#: py/objtype.c:1152
 msgid "multiple inheritance not supported"
 msgstr "maraming inhertance hindi sinusuportahan"
 
-#: py/objtype.c:1176
+#: py/objtype.c:1179
 msgid "multiple bases have instance lay-out conflict"
 msgstr "maraming bases ay may instance lay-out conflict"
 
-#: py/objtype.c:1217
+#: py/objtype.c:1220
 msgid "first argument to super() must be type"
 msgstr "unang argument ng super() ay dapat type"
 
-#: py/objtype.c:1382
+#: py/objtype.c:1385
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr "issubclass() arg 2 ay dapat na class o tuple ng classes"
 
-#: py/objtype.c:1396
+#: py/objtype.c:1399
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() arg 1 ay dapat na class"
 
@@ -2374,7 +2374,7 @@ msgstr "Hindi suportado ang pull value."
 msgid "Cannot delete values"
 msgstr "Hindi mabura ang values"
 
-#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:253
 #: shared-bindings/pulseio/PulseIn.c:278
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
@@ -2388,7 +2388,7 @@ msgstr "wala sa sakop ang address"
 msgid "pixel value requires too many bits"
 msgstr ""
 
-#: shared-bindings/displayio/BuiltinFont.c:74
+#: shared-bindings/displayio/BuiltinFont.c:93
 #, fuzzy
 msgid "%q should be an int"
 msgstr "y ay dapat int"
@@ -2425,11 +2425,11 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
-#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
-#: shared-bindings/displayio/Group.c:93
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100
 #, fuzzy
-msgid "Group must have %q at least 1"
-msgstr "Group dapat ay hindi baba sa 1 na haba"
+msgid "%q must be >= 1"
+msgstr "aarehas na haba dapat ang buffer slices"
 
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2744,11 +2744,11 @@ msgstr "Basahin-lamang"
 msgid "Unsupported display bus type"
 msgstr "Hindi supportadong tipo ng bitmap"
 
-#: shared-module/displayio/Group.c:48
+#: shared-module/displayio/Group.c:66
 msgid "Group full"
 msgstr "Puno ang group"
 
-#: shared-module/displayio/Group.c:55
+#: shared-module/displayio/Group.c:73
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2892,11 +2892,16 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Group dapat ay hindi baba sa 1 na haba"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "ang palette ay dapat 32 bytes ang haba"
+
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Mali ang UUID parameter"
-
-#~ msgid "Group empty"
-#~ msgstr "Walang laman ang group"
 
 #~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
 #~ msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
@@ -2917,26 +2922,30 @@ msgstr ""
 #~ msgid "All PWM peripherals are in use"
 #~ msgstr "Lahat ng PWM peripherals ay ginagamit"
 
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Mali ang UUID string length"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+#~ msgid "Group empty"
+#~ msgstr "Walang laman ang group"
 
 #~ msgid "Wrong address length"
 #~ msgstr "Mali ang address length"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+#~ msgid "Invalid Service type"
+#~ msgstr "Mali ang tipo ng serbisyo"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Mali ang UUID string length"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Hindi maidaragdag ang serbisyo."
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2945,35 +2954,30 @@ msgstr ""
 #~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
 #~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Mali ang bilang ng bytes"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
+
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
 #~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
 #~ "drive:\n"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Mali ang bilang ng bytes"
-
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
-
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"

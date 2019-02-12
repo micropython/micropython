@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-11 17:39-0800\n"
+"POT-Creation-Date: 2019-02-12 15:01-0800\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1359,7 +1359,7 @@ msgstr "error de dominio matemático"
 msgid "division by zero"
 msgstr "división por cero"
 
-#: py/modmicropython.c:117
+#: py/modmicropython.c:155
 msgid "schedule stack full"
 msgstr ""
 
@@ -1820,69 +1820,69 @@ msgstr "índices de string deben ser enteros, no %s"
 msgid "string index out of range"
 msgstr "string index fuera de rango"
 
-#: py/objtype.c:368
+#: py/objtype.c:371
 msgid "__init__() should return None"
 msgstr "__init__() deberia devolver None"
 
-#: py/objtype.c:370
+#: py/objtype.c:373
 #, c-format
 msgid "__init__() should return None, not '%s'"
 msgstr "__init__() deberia devolver None, no '%s'"
 
-#: py/objtype.c:633 py/objtype.c:1287 py/runtime.c:1065
+#: py/objtype.c:636 py/objtype.c:1290 py/runtime.c:1065
 msgid "unreadable attribute"
 msgstr "atributo no legible"
 
-#: py/objtype.c:878 py/runtime.c:653
+#: py/objtype.c:881 py/runtime.c:653
 msgid "object not callable"
 msgstr "objeto no puede ser llamado"
 
-#: py/objtype.c:880 py/runtime.c:655
+#: py/objtype.c:883 py/runtime.c:655
 #, c-format
 msgid "'%s' object is not callable"
 msgstr "objeto '%s' no puede ser llamado"
 
-#: py/objtype.c:988
+#: py/objtype.c:991
 msgid "type takes 1 or 3 arguments"
 msgstr "type acepta 1 o 3 argumentos"
 
-#: py/objtype.c:999
+#: py/objtype.c:1002
 msgid "cannot create instance"
 msgstr "no se puede crear instancia"
 
-#: py/objtype.c:1001
+#: py/objtype.c:1004
 msgid "cannot create '%q' instances"
 msgstr "no se pueden crear '%q' instancias"
 
-#: py/objtype.c:1059
+#: py/objtype.c:1062
 msgid "can't add special method to already-subclassed class"
 msgstr "no se puede agregar un método a una clase ya subclasificada"
 
-#: py/objtype.c:1103 py/objtype.c:1109
+#: py/objtype.c:1106 py/objtype.c:1112
 msgid "type is not an acceptable base type"
 msgstr "type no es un tipo de base aceptable"
 
-#: py/objtype.c:1112
+#: py/objtype.c:1115
 msgid "type '%q' is not an acceptable base type"
 msgstr "type '%q' no es un tipo de base aceptable"
 
-#: py/objtype.c:1149
+#: py/objtype.c:1152
 msgid "multiple inheritance not supported"
 msgstr "herencia multiple no soportada"
 
-#: py/objtype.c:1176
+#: py/objtype.c:1179
 msgid "multiple bases have instance lay-out conflict"
 msgstr ""
 
-#: py/objtype.c:1217
+#: py/objtype.c:1220
 msgid "first argument to super() must be type"
 msgstr "primer argumento para super() debe ser de tipo"
 
-#: py/objtype.c:1382
+#: py/objtype.c:1385
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr "issubclass() arg 2 debe ser una clase o tuple de clases"
 
-#: py/objtype.c:1396
+#: py/objtype.c:1399
 msgid "issubclass() arg 1 must be a class"
 msgstr "issubclass() arg 1 debe ser una clase"
 
@@ -2369,7 +2369,7 @@ msgstr "valor pull no soportado."
 msgid "Cannot delete values"
 msgstr "No se puede eliminar valores"
 
-#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:253
 #: shared-bindings/pulseio/PulseIn.c:278
 msgid "Slices not supported"
 msgstr ""
@@ -2383,7 +2383,7 @@ msgstr "address fuera de límites"
 msgid "pixel value requires too many bits"
 msgstr ""
 
-#: shared-bindings/displayio/BuiltinFont.c:74
+#: shared-bindings/displayio/BuiltinFont.c:93
 #, fuzzy
 msgid "%q should be an int"
 msgstr "y deberia ser un int"
@@ -2420,11 +2420,11 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Bytes debe estar entre 0 y 255."
 
-#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
-#: shared-bindings/displayio/Group.c:93
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100
 #, fuzzy
-msgid "Group must have %q at least 1"
-msgstr "Group debe tener size de minimo 1"
+msgid "%q must be >= 1"
+msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2738,11 +2738,11 @@ msgstr "Solo-lectura"
 msgid "Unsupported display bus type"
 msgstr "tipo de bitmap no soportado"
 
-#: shared-module/displayio/Group.c:48
+#: shared-module/displayio/Group.c:66
 msgid "Group full"
 msgstr "Group lleno"
 
-#: shared-module/displayio/Group.c:55
+#: shared-module/displayio/Group.c:73
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2886,11 +2886,15 @@ msgstr ""
 "El botón reset fue presionado mientras arrancaba CircuitPython. Presiona "
 "otra vez para salir del modo seguro.\n"
 
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Group debe tener size de minimo 1"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parámetro UUID inválido"
-
-#~ msgid "Group empty"
-#~ msgstr "Group vacío"
 
 #~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
 #~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
@@ -2911,26 +2915,30 @@ msgstr ""
 #~ msgid "All PWM peripherals are in use"
 #~ msgstr "Todos los periféricos PWM en uso"
 
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio todavia esta en desarrollo"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longitud de string UUID inválida"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+#~ msgid "Group empty"
+#~ msgstr "Group vacío"
 
 #~ msgid "Wrong address length"
 #~ msgstr "Longitud de address erronea"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longitud de string UUID inválida"
+
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio todavia esta en desarrollo"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2940,34 +2948,30 @@ msgstr ""
 #~ "expulsar CIRCUITPY).\n"
 
 #, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Falló la asignación del buffer RX de %d bytes"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Numero erroneo de bytes dados"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
+
+#, fuzzy
 #~ msgid ""
 #~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
 #~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
 #~ "unidad de almacenamiento CIRCUITPY:\n"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Falló la asignación del buffer RX de %d bytes"
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Numero erroneo de bytes dados"
-
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
-
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"

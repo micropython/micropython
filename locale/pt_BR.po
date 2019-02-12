@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-11 17:39-0800\n"
+"POT-Creation-Date: 2019-02-12 15:01-0800\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1340,7 +1340,7 @@ msgstr ""
 msgid "division by zero"
 msgstr "divisão por zero"
 
-#: py/modmicropython.c:117
+#: py/modmicropython.c:155
 msgid "schedule stack full"
 msgstr ""
 
@@ -1794,69 +1794,69 @@ msgstr ""
 msgid "string index out of range"
 msgstr ""
 
-#: py/objtype.c:368
+#: py/objtype.c:371
 msgid "__init__() should return None"
 msgstr ""
 
-#: py/objtype.c:370
+#: py/objtype.c:373
 #, c-format
 msgid "__init__() should return None, not '%s'"
 msgstr ""
 
-#: py/objtype.c:633 py/objtype.c:1287 py/runtime.c:1065
+#: py/objtype.c:636 py/objtype.c:1290 py/runtime.c:1065
 msgid "unreadable attribute"
 msgstr "atributo ilegível"
 
-#: py/objtype.c:878 py/runtime.c:653
+#: py/objtype.c:881 py/runtime.c:653
 msgid "object not callable"
 msgstr ""
 
-#: py/objtype.c:880 py/runtime.c:655
+#: py/objtype.c:883 py/runtime.c:655
 #, c-format
 msgid "'%s' object is not callable"
 msgstr ""
 
-#: py/objtype.c:988
+#: py/objtype.c:991
 msgid "type takes 1 or 3 arguments"
 msgstr ""
 
-#: py/objtype.c:999
+#: py/objtype.c:1002
 msgid "cannot create instance"
 msgstr "não é possível criar instância"
 
-#: py/objtype.c:1001
+#: py/objtype.c:1004
 msgid "cannot create '%q' instances"
 msgstr ""
 
-#: py/objtype.c:1059
+#: py/objtype.c:1062
 msgid "can't add special method to already-subclassed class"
 msgstr ""
 
-#: py/objtype.c:1103 py/objtype.c:1109
+#: py/objtype.c:1106 py/objtype.c:1112
 msgid "type is not an acceptable base type"
 msgstr ""
 
-#: py/objtype.c:1112
+#: py/objtype.c:1115
 msgid "type '%q' is not an acceptable base type"
 msgstr ""
 
-#: py/objtype.c:1149
+#: py/objtype.c:1152
 msgid "multiple inheritance not supported"
 msgstr ""
 
-#: py/objtype.c:1176
+#: py/objtype.c:1179
 msgid "multiple bases have instance lay-out conflict"
 msgstr ""
 
-#: py/objtype.c:1217
+#: py/objtype.c:1220
 msgid "first argument to super() must be type"
 msgstr ""
 
-#: py/objtype.c:1382
+#: py/objtype.c:1385
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
 
-#: py/objtype.c:1396
+#: py/objtype.c:1399
 msgid "issubclass() arg 1 must be a class"
 msgstr ""
 
@@ -2338,7 +2338,7 @@ msgstr ""
 msgid "Cannot delete values"
 msgstr "Não é possível excluir valores"
 
-#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:194
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:253
 #: shared-bindings/pulseio/PulseIn.c:278
 msgid "Slices not supported"
 msgstr ""
@@ -2351,7 +2351,7 @@ msgstr ""
 msgid "pixel value requires too many bits"
 msgstr ""
 
-#: shared-bindings/displayio/BuiltinFont.c:74
+#: shared-bindings/displayio/BuiltinFont.c:93
 #, fuzzy
 msgid "%q should be an int"
 msgstr "y deve ser um int"
@@ -2388,11 +2388,11 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Os bytes devem estar entre 0 e 255."
 
-#: shared-bindings/displayio/Group.c:61 shared-bindings/displayio/Group.c:66
-#: shared-bindings/displayio/Group.c:93
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100
 #, fuzzy
-msgid "Group must have %q at least 1"
-msgstr "Grupo deve ter tamanho pelo menos 1"
+msgid "%q must be >= 1"
+msgstr "buffers devem ser o mesmo tamanho"
 
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2705,11 +2705,11 @@ msgstr "Somente leitura"
 msgid "Unsupported display bus type"
 msgstr "Taxa de transmissão não suportada"
 
-#: shared-module/displayio/Group.c:48
+#: shared-module/displayio/Group.c:66
 msgid "Group full"
 msgstr "Grupo cheio"
 
-#: shared-module/displayio/Group.c:55
+#: shared-module/displayio/Group.c:73
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2841,18 +2841,34 @@ msgstr ""
 #~ msgstr "index deve ser int"
 
 #, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "heap deve ser uma lista"
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Grupo deve ter tamanho pelo menos 1"
 
 #~ msgid "Group empty"
 #~ msgstr "Grupo vazio"
 
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "heap deve ser uma lista"
+
 #~ msgid "Invalid UUID parameter"
 #~ msgstr "Parâmetro UUID inválido"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
 
 #, fuzzy
 #~ msgid "unpack requires a buffer of %d bytes"
 #~ msgstr "Falha ao alocar buffer RX de %d bytes"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Não é possível consultar o endereço do dispositivo."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de serviço inválido"
 
 #~ msgid "Cannot set PPCP parameters."
 #~ msgstr "Não é possível definir parâmetros PPCP."
@@ -2863,23 +2879,11 @@ msgstr ""
 #~ msgid "Cannot apply GAP parameters."
 #~ msgstr "Não é possível aplicar parâmetros GAP."
 
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
-
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Não é possível consultar o endereço do dispositivo."
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
 
 #, fuzzy
 #~ msgid "All PWM peripherals are in use"
