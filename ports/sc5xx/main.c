@@ -37,6 +37,7 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
+#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -63,6 +64,10 @@ BM_UART uart0;
 STATIC bool init_sdcard_fs(void);
 
 int main(int argc, char **argv) {
+
+    // Capture the stack top ASAP
+    mp_stack_ctrl_init();
+    mp_stack_set_limit(32*1024);
 
     adi_initComponents();
 
