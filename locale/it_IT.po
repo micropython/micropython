@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-12 15:01-0800\n"
+"POT-Creation-Date: 2019-02-12 22:32-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -345,12 +345,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "byte > 8 bit non supportati"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:91
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "tx and rx cannot both be None"
 msgstr "tx e rx non possono essere entrambi None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:132
+#: ports/nrf/common-hal/busio/UART.c:188
 msgid "Failed to allocate RX buffer"
 msgstr "Impossibile allocare buffer RX"
 
@@ -359,12 +359,12 @@ msgid "Could not initialize UART"
 msgstr "Impossibile inizializzare l'UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:174
+#: ports/nrf/common-hal/busio/UART.c:230
 msgid "No RX pin"
 msgstr "Nessun pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:209
+#: ports/nrf/common-hal/busio/UART.c:265
 msgid "No TX pin"
 msgstr "Nessun pin TX"
 
@@ -847,29 +847,25 @@ msgstr "Tutte le periferiche I2C sono in uso"
 msgid "All SPI peripherals are in use"
 msgstr "Tutte le periferiche SPI sono in uso"
 
-#: ports/nrf/common-hal/busio/UART.c:49
+#: ports/nrf/common-hal/busio/UART.c:47
 #, c-format
 msgid "error = 0x%08lX"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:95
+#: ports/nrf/common-hal/busio/UART.c:145
+#, fuzzy
+msgid "All UART peripherals are in use"
+msgstr "Tutte le periferiche I2C sono in uso"
+
+#: ports/nrf/common-hal/busio/UART.c:153
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "lunghezza del buffer non valida"
 
-#: ports/nrf/common-hal/busio/UART.c:99
+#: ports/nrf/common-hal/busio/UART.c:157
 #, fuzzy
 msgid "Odd parity is not supported"
 msgstr "operazione I2C non supportata"
-
-#: ports/nrf/common-hal/busio/UART.c:335 ports/nrf/common-hal/busio/UART.c:339
-#: ports/nrf/common-hal/busio/UART.c:344 ports/nrf/common-hal/busio/UART.c:349
-#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
-#: ports/nrf/common-hal/busio/UART.c:365 ports/nrf/common-hal/busio/UART.c:369
-#: ports/nrf/common-hal/busio/UART.c:377
-#, fuzzy
-msgid "busio.UART not available"
-msgstr "busio.UART non ancora implementato"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:48
 #, fuzzy
@@ -2975,3 +2971,7 @@ msgstr ""
 
 #~ msgid "Can not encode UUID, to check length."
 #~ msgstr "Non è possibile codificare l'UUID, lunghezza da controllare."
+
+#, fuzzy
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART non ancora implementato"

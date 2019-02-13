@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-12 15:01-0800\n"
+"POT-Creation-Date: 2019-02-12 22:32-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -346,12 +346,12 @@ msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits no soportados"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:91
+#: ports/nrf/common-hal/busio/UART.c:149
 msgid "tx and rx cannot both be None"
 msgstr "Ambos tx y rx no pueden ser None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:132
+#: ports/nrf/common-hal/busio/UART.c:188
 msgid "Failed to allocate RX buffer"
 msgstr "Ha fallado la asignación del buffer RX"
 
@@ -360,12 +360,12 @@ msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:241
-#: ports/nrf/common-hal/busio/UART.c:174
+#: ports/nrf/common-hal/busio/UART.c:230
 msgid "No RX pin"
 msgstr "Sin pin RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c:300
-#: ports/nrf/common-hal/busio/UART.c:209
+#: ports/nrf/common-hal/busio/UART.c:265
 msgid "No TX pin"
 msgstr "Sin pin TX"
 
@@ -847,26 +847,23 @@ msgstr "Todos los timers están siendo usados"
 msgid "All SPI peripherals are in use"
 msgstr "Todos los timers están siendo usados"
 
-#: ports/nrf/common-hal/busio/UART.c:49
+#: ports/nrf/common-hal/busio/UART.c:47
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lx"
 
-#: ports/nrf/common-hal/busio/UART.c:95
+#: ports/nrf/common-hal/busio/UART.c:145
+#, fuzzy
+msgid "All UART peripherals are in use"
+msgstr "Todos los timers están siendo usados"
+
+#: ports/nrf/common-hal/busio/UART.c:153
 msgid "Invalid buffer size"
 msgstr "Tamaño de buffer inválido"
 
-#: ports/nrf/common-hal/busio/UART.c:99
+#: ports/nrf/common-hal/busio/UART.c:157
 msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
-
-#: ports/nrf/common-hal/busio/UART.c:335 ports/nrf/common-hal/busio/UART.c:339
-#: ports/nrf/common-hal/busio/UART.c:344 ports/nrf/common-hal/busio/UART.c:349
-#: ports/nrf/common-hal/busio/UART.c:355 ports/nrf/common-hal/busio/UART.c:360
-#: ports/nrf/common-hal/busio/UART.c:365 ports/nrf/common-hal/busio/UART.c:369
-#: ports/nrf/common-hal/busio/UART.c:377
-msgid "busio.UART not available"
-msgstr "busio.UART no disponible"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c:48
 #, fuzzy
@@ -2975,3 +2972,6 @@ msgstr ""
 
 #~ msgid "Can not apply advertisement data. status: 0x%02x"
 #~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART no disponible"
