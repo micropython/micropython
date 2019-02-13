@@ -39,8 +39,13 @@
  *===================*/
 
 /* Horizontal and vertical resolution of the library.*/
+#ifndef LV_HOR_RES          
 #define LV_HOR_RES          (440)
+#endif
+
+#ifndef LV_VER_RES
 #define LV_VER_RES          (340)
+#endif
 
 /* Dot Per Inch: used to initialize default sizes. E.g. a button with width = LV_DPI / 2 -> half inch wide
  * (Not so important, you can adjust it to modify default sizes and spaces)*/
@@ -108,7 +113,10 @@
 #define LV_INDEV_LONG_PRESS_REP_TIME    100                    /*Repeated trigger period in long press [ms] */
 
 /*Color settings*/
+#ifndef LV_COLOR_DEPTH
 #define LV_COLOR_DEPTH     32                     /*Color depth: 1/8/16/32*/
+#endif
+
 #define LV_COLOR_16_SWAP   0                      /*Swap the 2 bytes of RGB565 color. Useful if the display has a 8 bit interface (e.g. SPI)*/
 #define LV_COLOR_SCREEN_TRANSP        0           /*1: Enable screen transparency. Useful for OSD or other overlapping GUIs. Requires ARGB8888 colors*/
 #define LV_COLOR_TRANSP    LV_COLOR_LIME          /*Images pixels with this color will not be drawn (with chroma keying)*/
