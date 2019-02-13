@@ -69,6 +69,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
 void extint_enable(uint line);
 void extint_disable(uint line);
 void extint_swint(uint line);
+void extint_trigger_mode(uint line, uint32_t mode);
 
 void Handle_EXTI_Irq(uint32_t line);
 
