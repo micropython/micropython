@@ -188,7 +188,7 @@ class::
     spi.init(baudrate=200000) # set the baudrate
 
     spi.read(10)            # read 10 bytes on MISO
-    spi.read(10, 0xff)      # read 10 bytes while outputing 0xff on MOSI
+    spi.read(10, 0xff)      # read 10 bytes while outputting 0xff on MOSI
 
     buf = bytearray(50)     # create a buffer
     spi.readinto(buf)       # read into the given buffer (reads 50 bytes in this case)
