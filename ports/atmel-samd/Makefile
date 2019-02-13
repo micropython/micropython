@@ -366,6 +366,7 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
+	displayio/Glyph.c \
 	microcontroller/RunMode.c \
 	help.c \
 	math/__init__.c \
@@ -381,6 +382,7 @@ SRC_SHARED_MODULE = \
 	busio/OneWire.c \
 	displayio/__init__.c \
 	displayio/Bitmap.c \
+	displayio/BuiltinFont.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
 	displayio/FourWire.c \

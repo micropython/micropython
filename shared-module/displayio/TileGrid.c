@@ -40,9 +40,17 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
     // Sprites will only have one tile so save a little memory by inlining values in the pointer.
     uint8_t inline_tiles = sizeof(uint8_t*);
     if (total_tiles <= inline_tiles) {
+        self->tiles = 0;
+        // Pack values into the pointer since there are only a few.
+        for (uint32_t i = 0; i < inline_tiles; i++) {
+            ((uint8_t*) &self->tiles)[i] = default_tile;
+        }
         self->inline_tiles = true;
     } else {
         self->tiles = (uint8_t*) m_malloc(total_tiles, false);
+        for (uint32_t i = 0; i < total_tiles; i++) {
+            self->tiles[i] = default_tile;
+        }
         self->inline_tiles = false;
     }
     self->bitmap_width_in_tiles = bitmap_width_in_tiles;

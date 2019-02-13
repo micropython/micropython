@@ -118,7 +118,7 @@ displayio_palette_t supervisor_terminal_color = {
 c_file.write("""\
 displayio_tilegrid_t supervisor_terminal_text_grid = {{
     .base = {{ .type = &displayio_tilegrid_type }},
-    .bitmap = (displayio_bitmap_t*) &supervisor_terminal_font,
+    .bitmap = (displayio_bitmap_t*) &supervisor_terminal_font_bitmap,
     .pixel_shader = &supervisor_terminal_color,
     .x = 16,
     .y = 0,
@@ -149,7 +149,7 @@ c_file.write("""\
 """)
 
 c_file.write("""\
-const displayio_bitmap_t supervisor_terminal_font = {{
+const displayio_bitmap_t supervisor_terminal_font_bitmap = {{
     .base = {{.type = &displayio_bitmap_type }},
     .width = {},
     .height = {},
@@ -158,17 +158,29 @@ const displayio_bitmap_t supervisor_terminal_font = {{
     .bits_per_value = 1,
     .x_shift = 5,
     .x_mask = 0x1f,
-    .bitmask = 0x1
+    .bitmask = 0x1,
+    .read_only = true
 }};
 """.format(len(all_characters) * tile_x, tile_y, bytes_per_row / 4))
 
+
 c_file.write("""\
-terminalio_terminal_obj_t supervisor_terminal = {{
-    .base = {{.type = &terminalio_terminal_type }},
-    .cursor_x = 0,
-    .cursor_y = 0,
-    .tilegrid = &supervisor_terminal_text_grid,
+const displayio_builtinfont_t supervisor_terminal_font = {{
+    .base = {{.type = &displayio_builtinfont_type }},
+    .bitmap = &supervisor_terminal_font_bitmap,
+    .width = {},
+    .height = {},
     .unicode_characters = (const uint8_t*) "{}",
     .unicode_characters_len = {}
 }};
-""".format(extra_characters, len(extra_characters.encode("utf-8"))))
+""".format(tile_x, tile_y, extra_characters, len(extra_characters.encode("utf-8"))))
+
+c_file.write("""\
+terminalio_terminal_obj_t supervisor_terminal = {
+    .base = { .type = &terminalio_terminal_type },
+    .font = &supervisor_terminal_font,
+    .cursor_x = 0,
+    .cursor_y = 0,
+    .tilegrid = &supervisor_terminal_text_grid
+};
+""")

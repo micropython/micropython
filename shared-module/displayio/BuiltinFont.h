@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,23 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_TERMINALIO_TERMINAL_H
-#define SHARED_MODULE_TERMINALIO_TERMINAL_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BUILTINFONT_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BUILTINFONT_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "py/obj.h"
-#include "shared-module/displayio/BuiltinFont.h"
-#include "shared-module/displayio/TileGrid.h"
+#include "shared-bindings/displayio/Bitmap.h"
 
-typedef struct  {
+typedef struct {
     mp_obj_base_t base;
-    const displayio_builtinfont_t* font;
-    uint16_t cursor_x;
-    uint16_t cursor_y;
-    displayio_tilegrid_t* tilegrid;
-    uint16_t first_row;
-} terminalio_terminal_obj_t;
+    const displayio_bitmap_t* bitmap;
+    uint8_t width;
+    uint8_t height;
+    const byte* unicode_characters;
+    uint16_t unicode_characters_len;
+} displayio_builtinfont_t;
 
-#endif /* SHARED_MODULE_TERMINALIO_TERMINAL_H */
+uint8_t displayio_builtinfont_get_glyph_index(const displayio_builtinfont_t *self, mp_uint_t codepoint);
+
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BUILTINFONT_H

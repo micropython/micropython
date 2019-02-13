@@ -82,7 +82,7 @@ void board_init(void) {
         240, // Height
         0, // column start
         0, // row start
-        90, // rotation
+        270, // rotation
         16, // Color depth
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command

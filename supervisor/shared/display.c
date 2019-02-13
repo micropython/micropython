@@ -134,7 +134,8 @@ displayio_bitmap_t blinka_bitmap = {
     .bits_per_value = 4,
     .x_shift = 3,
     .x_mask = 0x7,
-    .bitmask = 0xf
+    .bitmask = 0xf,
+    .read_only = true
 };
 
 uint32_t blinka_transparency[1] = {0x80000000};

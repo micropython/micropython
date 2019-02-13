@@ -29,12 +29,39 @@
 #include "py/runtime.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size) {
+void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale) {
     mp_obj_t* children = m_new(mp_obj_t, max_size);
-    displayio_group_construct(self, children, max_size);
+    displayio_group_construct(self, children, max_size, scale);
 }
 
-void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer) {
+uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self) {
+    return self->scale;
+}
+
+void common_hal_displayio_group_set_scale(displayio_group_t* self, uint32_t scale) {
+    self->needs_refresh = self->scale != scale;
+    self->scale = scale;
+}
+
+mp_int_t common_hal_displayio_group_get_x(displayio_group_t* self) {
+    return self->x;
+}
+
+void common_hal_displayio_group_set_x(displayio_group_t* self, mp_int_t x) {
+    self->needs_refresh = self->x != x;
+    self->x = x;
+}
+
+mp_int_t common_hal_displayio_group_get_y(displayio_group_t* self) {
+    return self->y;
+}
+
+void common_hal_displayio_group_set_y(displayio_group_t* self, mp_int_t y) {
+    self->needs_refresh = self->y != y;
+    self->y = y;
+}
+
+void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp_obj_t layer) {
     if (self->size == self->max_size) {
         mp_raise_RuntimeError(translate("Group full"));
     }
@@ -45,29 +72,47 @@ void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer) 
     if (native_layer == MP_OBJ_NULL) {
         mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass."));
     }
-    self->children[self->size] = layer;
+    // Shift everything right.
+    for (size_t i = index; i < self->size; i++) {
+        self->children[i + 1] = self->children[i];
+    }
+    self->children[index] = native_layer;
     self->size++;
     self->needs_refresh = true;
 }
 
-mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self) {
-    if (self->size == 0) {
-        mp_raise_IndexError(translate("Group empty"));
-    }
+mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self, size_t index) {
     self->size--;
-    mp_obj_t item = self->children[self->size];
+    mp_obj_t item = self->children[index];
+    // Shift everything left.
+    for (size_t i = index; i < self->size; i++) {
+        self->children[i] = self->children[i + 1];
+    }
     self->children[self->size] = NULL;
     self->needs_refresh = true;
     return item;
 }
 
-void displayio_group_construct(displayio_group_t* self, mp_obj_t* child_array, uint32_t max_size) {
+size_t common_hal_displayio_group_get_len(displayio_group_t* self) {
+    return self->size;
+}
+
+mp_obj_t common_hal_displayio_group_get(displayio_group_t* self, size_t index) {
+    return self->children[index];
+}
+
+void common_hal_displayio_group_set(displayio_group_t* self, size_t index, mp_obj_t layer) {
+    self->children[index] = layer;
+    self->needs_refresh = true;
+}
+
+void displayio_group_construct(displayio_group_t* self, mp_obj_t* child_array, uint32_t max_size, uint32_t scale) {
     self->x = 0;
     self->y = 0;
     self->children = child_array;
     self->max_size = max_size;
     self->needs_refresh = false;
-    self->scale = 1;
+    self->scale = scale;
 }
 
 bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, uint16_t* pixel) {
@@ -86,7 +131,6 @@ bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, ui
                 return true;
             }
         }
-        // TODO: Tiled layer
     }
     return false;
 }

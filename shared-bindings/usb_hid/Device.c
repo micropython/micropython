@@ -45,11 +45,6 @@
 //|
 //|   Not currently dynamically supported.
 //|
-STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return mp_const_none;
-}
-
 //|   .. method:: send_report(buf)
 //|
 //|     Send a HID report.
@@ -114,6 +109,5 @@ STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_di
 const mp_obj_type_t usb_hid_device_type = {
     { &mp_type_type },
     .name = MP_QSTR_Device,
-    .make_new = usb_hid_device_make_new,
     .locals_dict = (mp_obj_t)&usb_hid_device_locals_dict,
 };
