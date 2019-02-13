@@ -1,15 +1,20 @@
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
 BOARD ?= PYBV10
-ifeq ($(wildcard ../boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
-endif
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+# Allow the directory containing the board configuration to be specified
+BOARD_DIR ?= $(abspath ../boards/$(BOARD))
+
+# Sanity check that the board configuration directory exists
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 include ../../../py/mkenv.mk
-include ../boards/$(BOARD)/mpconfigboard.mk
+include $(BOARD_DIR)/mpconfigboard.mk
 
 CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
@@ -45,7 +50,7 @@ CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
-CFLAGS += -I../boards/$(BOARD)
+CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
@@ -79,7 +84,7 @@ SRC_C = \
 	ports/stm32/flashbdev.c \
 	ports/stm32/spibdev.c \
 	ports/stm32/usbd_conf.c \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/ports/stm32/boards/$(BOARD)/*.c))
+	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O = \
 	ports/stm32/boards/startup_stm32$(MCU_SERIES).o \
