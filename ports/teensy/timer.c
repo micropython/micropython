@@ -142,7 +142,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
     uint32_t cmp;
     if (0) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    } else if (MP_OBJ_IS_TYPE(percent_in, &mp_type_float)) {
+    } else if (mp_obj_is_type(percent_in, &mp_type_float)) {
         float percent = mp_obj_get_float(percent_in);
         if (percent <= 0.0) {
             cmp = 0;
@@ -496,7 +496,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *args, mp_map_t 
 
     mp_obj_t pin_obj = vals[1].u_obj;
     if (pin_obj != mp_const_none) {
-        if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
+        if (!mp_obj_is_type(pin_obj, &pin_type)) {
             mp_raise_ValueError("pin argument needs to be be a Pin type");
         }
         const pin_obj_t *pin = pin_obj;

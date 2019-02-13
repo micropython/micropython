@@ -50,7 +50,7 @@
 
 STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)args;
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_0));
+    assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_0));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     return self->fun._0();
@@ -64,7 +64,7 @@ const mp_obj_type_t mp_type_fun_builtin_0 = {
 };
 
 STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_1));
+    assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_1));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     return self->fun._1(args[0]);
@@ -78,7 +78,7 @@ const mp_obj_type_t mp_type_fun_builtin_1 = {
 };
 
 STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_2));
+    assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_2));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     return self->fun._2(args[0], args[1]);
@@ -92,7 +92,7 @@ const mp_obj_type_t mp_type_fun_builtin_2 = {
 };
 
 STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_3));
+    assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_3));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
     return self->fun._3(args[0], args[1], args[2]);
@@ -106,7 +106,7 @@ const mp_obj_type_t mp_type_fun_builtin_3 = {
 };
 
 STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_var));
+    assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_var));
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
     // check number of arguments
@@ -373,7 +373,7 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
     size_t n_extra_args = 0;
     mp_obj_tuple_t *def_args = MP_OBJ_TO_PTR(def_args_in);
     if (def_args_in != MP_OBJ_NULL) {
-        assert(MP_OBJ_IS_TYPE(def_args_in, &mp_type_tuple));
+        assert(mp_obj_is_type(def_args_in, &mp_type_tuple));
         n_def_args = def_args->len;
         n_extra_args = def_args->len;
     }
@@ -442,7 +442,7 @@ typedef mp_uint_t (*inline_asm_fun_4_t)(mp_uint_t, mp_uint_t, mp_uint_t, mp_uint
 // convert a MicroPython object to a sensible value for inline asm
 STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     // TODO for byte_array, pass pointer to the array
-    if (MP_OBJ_IS_SMALL_INT(obj)) {
+    if (mp_obj_is_small_int(obj)) {
         return MP_OBJ_SMALL_INT_VALUE(obj);
     } else if (obj == mp_const_none) {
         return 0;
@@ -450,9 +450,9 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return 0;
     } else if (obj == mp_const_true) {
         return 1;
-    } else if (MP_OBJ_IS_TYPE(obj, &mp_type_int)) {
+    } else if (mp_obj_is_type(obj, &mp_type_int)) {
         return mp_obj_int_get_truncated(obj);
-    } else if (MP_OBJ_IS_STR(obj)) {
+    } else if (mp_obj_is_str(obj)) {
         // pointer to the string (it's probably constant though!)
         size_t l;
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);

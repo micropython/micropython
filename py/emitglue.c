@@ -124,10 +124,10 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
     assert(rc != NULL);
 
     // def_args must be MP_OBJ_NULL or a tuple
-    assert(def_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_args, &mp_type_tuple));
+    assert(def_args == MP_OBJ_NULL || mp_obj_is_type(def_args, &mp_type_tuple));
 
     // def_kw_args must be MP_OBJ_NULL or a dict
-    assert(def_kw_args == MP_OBJ_NULL || MP_OBJ_IS_TYPE(def_kw_args, &mp_type_dict));
+    assert(def_kw_args == MP_OBJ_NULL || mp_obj_is_type(def_kw_args, &mp_type_dict));
 
     // make the function, depending on the raw code kind
     mp_obj_t fun;

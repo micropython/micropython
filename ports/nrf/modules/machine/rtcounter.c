@@ -159,7 +159,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     if (args[ARG_callback].u_obj == mp_const_none) {
         config->callback = NULL;
-    } else if (MP_OBJ_IS_FUN(args[ARG_callback].u_obj)) {
+    } else if (mp_obj_is_fun(args[ARG_callback].u_obj)) {
         config->callback = args[ARG_callback].u_obj;
     } else {
         mp_raise_ValueError("callback must be a function");

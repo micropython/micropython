@@ -124,7 +124,7 @@ __attribute__((naked)) void PendSV_Handler(void) {
         // Check if there are any pending calls to dispatch to
         "ldr r1, pendsv_dispatch_active_ptr\n"
         "ldr r0, [r1]\n"
-        "cmp r0, 0\n"
+        "cmp r0, #0\n"
         "beq .no_dispatch\n"
         "mov r2, #0\n"
         "str r2, [r1]\n"                // clear pendsv_dispatch_active
@@ -135,7 +135,7 @@ __attribute__((naked)) void PendSV_Handler(void) {
         // Check if there is an active object to throw via nlr_jump
         "ldr r1, pendsv_object_ptr\n"
         "ldr r0, [r1]\n"
-        "cmp r0, 0\n"
+        "cmp r0, #0\n"
         "beq .no_obj\n"
         #if defined(PENDSV_DEBUG)
         "str r0, [sp, #8]\n"            // store to r0 on stack

@@ -275,7 +275,7 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
     uint32_t period;
     if (0) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    } else if (MP_OBJ_IS_TYPE(freq_in, &mp_type_float)) {
+    } else if (mp_obj_is_type(freq_in, &mp_type_float)) {
         float freq = mp_obj_get_float(freq_in);
         if (freq <= 0) {
             goto bad_freq;
@@ -370,7 +370,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
     uint32_t cmp;
     if (0) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    } else if (MP_OBJ_IS_TYPE(percent_in, &mp_type_float)) {
+    } else if (mp_obj_is_type(percent_in, &mp_type_float)) {
         mp_float_t percent = mp_obj_get_float(percent_in);
         if (percent <= 0.0) {
             cmp = 0;
@@ -988,7 +988,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     mp_obj_t pin_obj = args[2].u_obj;
     if (pin_obj != mp_const_none) {
-        if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
+        if (!mp_obj_is_type(pin_obj, &pin_type)) {
             mp_raise_ValueError("pin argument needs to be be a Pin type");
         }
         const pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);

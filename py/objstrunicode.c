@@ -126,7 +126,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     // Copied from mp_get_index; I don't want bounds checking, just give me
     // the integer as-is. (I can't bounds-check without scanning the whole
     // string; an out-of-bounds index will be caught in the loops below.)
-    if (MP_OBJ_IS_SMALL_INT(index)) {
+    if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
@@ -182,7 +182,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) {
         // load
 #if MICROPY_PY_BUILTINS_SLICE
-        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+        if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_obj_t ostart, ostop, ostep;
             mp_obj_slice_get(index, &ostart, &ostop, &ostep);
             if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {

@@ -52,7 +52,7 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
 
     // a bit of a hack: fun_bc will re-set globals, so need to make sure it's
     // the correct one
-    if (MP_OBJ_IS_TYPE(self->module_fun, &mp_type_fun_bc)) {
+    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(self->module_fun);
         fun_bc->globals = globals;
     }
@@ -114,7 +114,7 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     mp_obj_dict_t *locals = mp_locals_get();
     for (size_t i = 1; i < 3 && i < n_args; ++i) {
         if (args[i] != mp_const_none) {
-            if (!MP_OBJ_IS_TYPE(args[i], &mp_type_dict)) {
+            if (!mp_obj_is_type(args[i], &mp_type_dict)) {
                 mp_raise_TypeError(NULL);
             }
             locals = MP_OBJ_TO_PTR(args[i]);
@@ -125,7 +125,7 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     }
 
     #if MICROPY_PY_BUILTINS_COMPILE
-    if (MP_OBJ_IS_TYPE(args[0], &mp_type_code)) {
+    if (mp_obj_is_type(args[0], &mp_type_code)) {
         return code_execute(MP_OBJ_TO_PTR(args[0]), globals, locals);
     }
     #endif

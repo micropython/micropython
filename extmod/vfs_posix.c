@@ -130,7 +130,7 @@ STATIC mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
         && (strchr(mode, 'w') != NULL || strchr(mode, 'a') != NULL || strchr(mode, '+') != NULL)) {
         mp_raise_OSError(MP_EROFS);
     }
-    if (!MP_OBJ_IS_SMALL_INT(path_in)) {
+    if (!mp_obj_is_small_int(path_in)) {
         path_in = vfs_posix_get_path_obj(self, path_in);
     }
     return mp_vfs_posix_file_open(&mp_type_textio, path_in, mode_in);

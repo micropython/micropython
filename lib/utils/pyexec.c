@@ -450,7 +450,7 @@ friendly_repl_reset:
             // do the user a favor and reenable interrupts.
             if (query_irq() == IRQ_STATE_DISABLED) {
                 enable_irq(IRQ_STATE_ENABLED);
-                mp_hal_stdout_tx_str("PYB: enabling IRQs\r\n");
+                mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");
             }
         }
         #endif

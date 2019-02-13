@@ -347,7 +347,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     if (kwargs->used != 0) {
 
         for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+            if (mp_map_slot_is_filled(kwargs, i)) {
                 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
                 switch ((uintptr_t)kwargs->table[i].key) {
                     case QS(MP_QSTR_mac): {

@@ -66,7 +66,7 @@ typedef struct _mp_obj_poll_t {
 } mp_obj_poll_t;
 
 STATIC int get_fd(mp_obj_t fdlike) {
-    if (MP_OBJ_IS_OBJ(fdlike)) {
+    if (mp_obj_is_obj(fdlike)) {
         const mp_stream_p_t *stream_p = mp_get_stream_raise(fdlike, MP_STREAM_OP_IOCTL);
         int err;
         mp_uint_t res = stream_p->ioctl(fdlike, MP_STREAM_GET_FILENO, 0, &err);
@@ -80,7 +80,7 @@ STATIC int get_fd(mp_obj_t fdlike) {
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
-    bool is_fd = MP_OBJ_IS_INT(args[1]);
+    bool is_fd = mp_obj_is_int(args[1]);
     int fd = get_fd(args[1]);
 
     mp_uint_t flags;

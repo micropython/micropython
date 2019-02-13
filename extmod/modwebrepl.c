@@ -34,7 +34,7 @@
 #ifdef MICROPY_PY_WEBREPL_DELAY
 #include "py/mphal.h"
 #endif
-#include "extmod/modwebsocket.h"
+#include "extmod/moduwebsocket.h"
 
 #if MICROPY_PY_WEBREPL
 

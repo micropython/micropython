@@ -395,7 +395,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     uint32_t channel;
 
-    if (MP_OBJ_IS_INT(pin_obj)) {
+    if (mp_obj_is_int(pin_obj)) {
         channel = adc_get_internal_channel(mp_obj_get_int(pin_obj));
     } else {
         const pin_obj_t *pin = pin_find(pin_obj);

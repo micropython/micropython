@@ -120,7 +120,7 @@ If something goes wrong, you can reset the board in two ways. The first is to pr
 at the MicroPython prompt, which performs a soft reset.  You will see a message something like::
 
     >>> 
-    PYB: soft reboot
+    MPY: soft reboot
     MicroPython v1.4.6-146-g1d8b5e5 on 2015-10-21; WiPy with CC3200
     Type "help()" for more information.
     >>>

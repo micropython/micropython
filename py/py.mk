@@ -256,7 +256,7 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/modussl_mbedtls.o \
 	extmod/modurandom.o \
 	extmod/moduselect.o \
-	extmod/modwebsocket.o \
+	extmod/moduwebsocket.o \
 	extmod/modwebrepl.o \
 	extmod/modframebuf.o \
 	extmod/vfs.o \
