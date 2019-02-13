@@ -43,7 +43,7 @@
 //|
 //| .. warning:: This will likely be changed before 4.0.0. Consider it very experimental.
 //|
-//| .. class:: Shape(width, height, *, mirror_x=False, mirrored_y=False)
+//| .. class:: Shape(width, height, *, mirror_x=False, mirror_y=False)
 //|
 //|   Create a Shape object with the given fixed size. Each pixel is one bit and is stored by the
 //|   column boundaries of the shape on each row. Each row's boundary defaults to the full row.
