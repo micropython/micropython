@@ -41,18 +41,18 @@
 #define MICROPY_COMP_RETURN_IF_EXPR (1)
 
 // optimisations
-#define MICROPY_OPT_COMPUTED_GOTO   (0)
+#define MICROPY_OPT_COMPUTED_GOTO   (1)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
-#define MICROPY_OPT_MPZ_BITWISE     (0)
+#define MICROPY_OPT_MPZ_BITWISE     (1)
 #define MICROPY_OPT_MATH_FACTORIAL  (1)
 
 // Python internal features
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_GC_STACK_ENTRY_TYPE uint32_t
-#define MICROPY_ENABLE_FINALISER    (0)
+#define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
-#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)
 #define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_HELPER_REPL         (1)
@@ -107,6 +107,13 @@
 
 // extended modules
 #define MICROPY_PY_UCTYPES          (1)
+#define MICROPY_PY_UZLIB            (1)
+#define MICROPY_PY_UJSON            (1)
+#define MICROPY_PY_URE              (1)
+#define MICROPY_PY_URE_SUB          (1)
+#define MICROPY_PY_UHEAPQ           (1)
+#define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_OS_DUPTERM       (1)
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
@@ -171,7 +178,13 @@ extern const struct _mp_obj_module_t mp_module_sharc;
     { MP_ROM_QSTR(MP_QSTR_sharc), MP_ROM_PTR(&mp_module_sharc) }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) }, \
     { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) }, \
+    { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) }, \
+    { MP_ROM_QSTR(MP_QSTR_zlib), MP_ROM_PTR(&mp_module_uzlib) }, \
+    { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) }, \
+    { MP_ROM_QSTR(MP_QSTR_heapq), MP_ROM_PTR(&mp_module_uheapq) }, \
+    { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) }, \
     { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
     { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
