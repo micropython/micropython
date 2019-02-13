@@ -169,17 +169,28 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // 0x1: RX pad 1
     // 0x2: RX pad 2
     // 0x3: RX pad 3
-    sercom->USART.CTRLA.reg = SERCOM_USART_CTRLA_TXPO(tx_pad / 2) |
-                              SERCOM_USART_CTRLA_RXPO(rx_pad) |
-                              (parity == PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
+
+    // Doing a group mask and set of the registers saves 60 bytes over setting the bitfields individually.
+
+    sercom->USART.CTRLA.reg &= ~(SERCOM_USART_CTRLA_TXPO_Msk |
+                                 SERCOM_USART_CTRLA_RXPO_Msk |
+                                 SERCOM_USART_CTRLA_FORM_Msk);
+    sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(tx_pad / 2) |
+                               SERCOM_USART_CTRLA_RXPO(rx_pad) |
+                               (parity == PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
 
     // Enable tx and/or rx based on whether the pins were specified.
     // CHSIZE is 0 for 8 bits, 5, 6, 7 for 5, 6, 7 bits. 1 for 9 bits, but we don't support that.
-    sercom->USART.CTRLB.reg = (have_tx ? SERCOM_USART_CTRLB_TXEN : 0) |
-                              (have_rx ? SERCOM_USART_CTRLB_RXEN : 0) |
-                              (parity == PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
-                              (stop > 1 ? SERCOM_USART_CTRLB_SBMODE : 0) |
-                              SERCOM_USART_CTRLB_CHSIZE(bits % 8);
+    sercom->USART.CTRLB.reg &= ~(SERCOM_USART_CTRLB_TXEN |
+                                 SERCOM_USART_CTRLB_RXEN |
+                                 SERCOM_USART_CTRLB_PMODE |
+                                 SERCOM_USART_CTRLB_SBMODE |
+                                 SERCOM_USART_CTRLB_CHSIZE_Msk);
+    sercom->USART.CTRLB.reg |= (have_tx ? SERCOM_USART_CTRLB_TXEN : 0) |
+                               (have_rx ? SERCOM_USART_CTRLB_RXEN : 0) |
+                               (parity == PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
+                               (stop > 1 ? SERCOM_USART_CTRLB_SBMODE : 0) |
+                               SERCOM_USART_CTRLB_CHSIZE(bits % 8);
 
     // Set baud rate
     common_hal_busio_uart_set_baudrate(self, baudrate);
