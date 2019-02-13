@@ -197,6 +197,12 @@ LIB_SRC_C += \
 	lib/oofatfs/option/unicode.c
 endif
 
+ifeq ($(MICROPY_PY_LVGL), 1)
+LIB_SRC_C += \
+	lib/lv_bindings/driver/esp32/modlvesp32.c \
+	lib/lv_bindings/driver/esp32/modILI9341.c
+endif
+
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \
 	dht/dht.c \

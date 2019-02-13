@@ -124,13 +124,16 @@ LVGL_BINDING_DIR = $(TOP)/lib/lv_bindings
 LVGL_DIR = $(LVGL_BINDING_DIR)/lvgl
 INC += -I$(LVGL_DIR) -I$(LVGL_BINDING_DIR)/include
 ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f) $(TOP)/lib/lv_conf.h
+LVGL_PP = $(BUILD)/lvgl/lvgl.pp.c
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
 QSTR_GLOBAL_DEPENDENCIES += $(LVGL_MPY)
+CFLAGS_MOD += $(LV_CFLAGS) 
 
 $(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -X anim -X group -X task $(INC) -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(LVGL_DIR)/lvgl.h > $@
+	$(Q)$(CPP) $(LV_CFLAGS) $(INC) -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(LVGL_DIR)/lvgl.h > $(LVGL_PP)
+	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -X anim -X group -X task -E $(LVGL_PP) $(LVGL_DIR)/lvgl.h > $@
 
 CFLAGS_MOD += -Wno-unused-function
 SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR) -type f -name "*.c") $(LVGL_MPY))
