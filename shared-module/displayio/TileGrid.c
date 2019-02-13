@@ -72,9 +72,9 @@ void common_hal_displayio_tilegrid_get_position(displayio_tilegrid_t *self, int1
 }
 
 void common_hal_displayio_tilegrid_set_position(displayio_tilegrid_t *self, int16_t x, int16_t y) {
+    self->needs_refresh = self->x != x || self->y != y;
     self->x = x;
     self->y = y;
-    self->needs_refresh = true;
 }
 
 mp_obj_t common_hal_displayio_tilegrid_get_pixel_shader(displayio_tilegrid_t *self) {

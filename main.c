@@ -229,6 +229,7 @@ bool run_code_py(safe_mode_t safe_mode) {
             MICROPY_VM_HOOK_LOOP
         #endif
         if (reload_requested) {
+            reload_requested = false;
             return true;
         }
 
