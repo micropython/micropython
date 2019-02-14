@@ -286,8 +286,7 @@ size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data,
     uint8_t * tx_buf = (uint8_t*) data;
     if ( !nrfx_is_in_ram(data) ) {
         // TODO: If this is not too big, we could allocate it on the stack.
-        // Do a long-lived alloc so buffer won't move.
-        tx_buf = (uint8_t *) gc_alloc(len, false, true);
+        tx_buf = (uint8_t *) gc_alloc(len, false, false);
         memcpy(tx_buf, data, len);
     }
 
