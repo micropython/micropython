@@ -147,6 +147,36 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 #########################################
+# Rules to generate header files
+
+MAKE_PINS = ../boards/make-pins.py
+PREFIX_FILE = ../boards/stm32f4xx_prefix.c
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+HEADER_BUILD = $(BUILD)/genhdr
+GEN_QSTRDEFS_GENERATED = $(HEADER_BUILD)/qstrdefs.generated.h
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+
+$(BUILD)/main.o: $(GEN_QSTRDEFS_GENERATED) $(GEN_PINS_AF_DEFS)
+
+$(HEADER_BUILD):
+	$(MKDIR) -p $(BUILD)/genhdr
+
+$(GEN_QSTRDEFS_GENERATED): | $(HEADER_BUILD)
+	$(Q)echo "// empty" > $@
+
+$(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af ../$(AF_FILE) \
+		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) \
+		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
+		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+
+#########################################
 
 vpath %.S . $(TOP)
 $(BUILD)/%.o: %.S
@@ -189,11 +219,5 @@ clean:
 .PHONY: clean
 
 ###########################################
-
-$(BUILD)/main.o: $(BUILD)/genhdr/qstrdefs.generated.h
-
-$(BUILD)/genhdr/qstrdefs.generated.h:
-	$(MKDIR) -p $(BUILD)/genhdr
-	$(Q)echo "// empty" > $@
 
 -include $(OBJ:.o=.P)
