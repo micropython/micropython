@@ -121,7 +121,7 @@ void spi_init0(void) {
 }
 
 int spi_find_index(mp_obj_t id) {
-    if (MP_OBJ_IS_STR(id)) {
+    if (mp_obj_is_str(id)) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
         if (0) {
@@ -583,10 +583,10 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
 }
 
 const spi_t *spi_from_mp_obj(mp_obj_t o) {
-    if (MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
+    if (mp_obj_is_type(o, &pyb_spi_type)) {
         pyb_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
-    } else if (MP_OBJ_IS_TYPE(o, &machine_hard_spi_type)) {
+    } else if (mp_obj_is_type(o, &machine_hard_spi_type)) {
         machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
     } else {

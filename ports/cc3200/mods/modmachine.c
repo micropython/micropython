@@ -122,7 +122,7 @@ STATIC mp_obj_t machine_unique_id(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC mp_obj_t machine_main(mp_obj_t main) {
-    if (MP_OBJ_IS_STR(main)) {
+    if (mp_obj_is_str(main)) {
         MP_STATE_PORT(machine_config_main) = main;
     } else {
         mp_raise_ValueError(mpexception_value_invalid_arguments);
@@ -137,11 +137,11 @@ STATIC mp_obj_t machine_idle(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
-STATIC mp_obj_t machine_sleep (void) {
+STATIC mp_obj_t machine_lightsleep(void) {
     pyb_sleep_sleep();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_lightsleep_obj, machine_lightsleep);
 
 STATIC mp_obj_t machine_deepsleep (void) {
     pyb_sleep_deepsleep();
@@ -171,7 +171,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_main),                MP_ROM_PTR(&machine_main_obj) },
     { MP_ROM_QSTR(MP_QSTR_rng),                 MP_ROM_PTR(&machine_rng_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_reason),         MP_ROM_PTR(&machine_wake_reason_obj) },

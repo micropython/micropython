@@ -30,8 +30,8 @@
 
 #include "py/gc.h"
 #include "py/mpthread.h"
+#include "lib/utils/gchelper.h"
 #include "gccollect.h"
-#include "gchelper.h"
 
 /******************************************************************************
 DECLARE PUBLIC FUNCTIONS

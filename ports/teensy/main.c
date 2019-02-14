@@ -194,7 +194,7 @@ STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
 
 mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
-    if (MP_OBJ_IS_STR(source_dir)) {
+    if (mp_obj_is_str(source_dir)) {
         pyb_config_source_dir = source_dir;
     }
     return mp_const_none;
@@ -203,7 +203,7 @@ mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_source_dir_obj, pyb_source_dir);
 
 mp_obj_t pyb_main(mp_obj_t main) {
-    if (MP_OBJ_IS_STR(main)) {
+    if (mp_obj_is_str(main)) {
         pyb_config_main = main;
     }
     return mp_const_none;
@@ -212,7 +212,7 @@ mp_obj_t pyb_main(mp_obj_t main) {
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
 
 STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
-    if (MP_OBJ_IS_STR(usb_mode)) {
+    if (mp_obj_is_str(usb_mode)) {
         pyb_config_usb_mode = usb_mode;
     }
     return mp_const_none;
@@ -343,7 +343,7 @@ soft_reset:
         }
     }
 
-    printf("PYB: soft reboot\n");
+    printf("MPY: soft reboot\n");
 
 //    first_soft_reset = false;
     goto soft_reset;

@@ -197,7 +197,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // work out i2c bus
     int i2c_id = 0;
-    if (MP_OBJ_IS_STR(args[ARG_id].u_obj)) {
+    if (mp_obj_is_str(args[ARG_id].u_obj)) {
         const char *port = mp_obj_str_get_str(args[ARG_id].u_obj);
         if (0) {
         #ifdef MICROPY_HW_I2C1_NAME

@@ -290,63 +290,6 @@ void SVC_Handler(void) {
 void DebugMon_Handler(void) {
 }
 
-/**
-  * @brief  This function handles PendSVC exception.
-  * @param  None
-  * @retval None
-  */
-void PendSV_Handler(void) {
-    pendsv_isr_handler();
-}
-
-/**
-  * @brief  This function handles SysTick Handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void) {
-    // Instead of calling HAL_IncTick we do the increment here of the counter.
-    // This is purely for efficiency, since SysTick is called 1000 times per
-    // second at the highest interrupt priority.
-    // Note: we don't need uwTick to be declared volatile here because this is
-    // the only place where it can be modified, and the code is more efficient
-    // without the volatile specifier.
-    extern uint32_t uwTick;
-    uwTick += 1;
-
-    // Read the systick control regster. This has the side effect of clearing
-    // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
-    // work properly.
-    SysTick->CTRL;
-
-    // Right now we have the storage and DMA controllers to process during
-    // this interrupt and we use custom dispatch handlers.  If this needs to
-    // be generalised in the future then a dispatch table can be used as
-    // follows: ((void(*)(void))(systick_dispatch[uwTick & 0xf]))();
-
-    #if MICROPY_HW_ENABLE_STORAGE
-    if (STORAGE_IDLE_TICK(uwTick)) {
-        NVIC->STIR = FLASH_IRQn;
-    }
-    #endif
-
-    if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
-        dma_idle_handler(uwTick);
-    }
-
-    #if MICROPY_PY_THREAD
-    if (pyb_thread_enabled) {
-        if (pyb_thread_cur->timeslice == 0) {
-            if (pyb_thread_cur->run_next != pyb_thread_cur) {
-                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-            }
-        } else {
-            --pyb_thread_cur->timeslice;
-        }
-    }
-    #endif
-}
-
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -464,23 +407,6 @@ void OTG_HS_WKUP_IRQHandler(void) {
 /*void PPP_IRQHandler(void)
 {
 }*/
-
-// Handle a flash (erase/program) interrupt.
-void FLASH_IRQHandler(void) {
-    IRQ_ENTER(FLASH_IRQn);
-    // This calls the real flash IRQ handler, if needed
-    /*
-    uint32_t flash_cr = FLASH->CR;
-    if ((flash_cr & FLASH_IT_EOP) || (flash_cr & FLASH_IT_ERR)) {
-        HAL_FLASH_IRQHandler();
-    }
-    */
-    #if MICROPY_HW_ENABLE_STORAGE
-    // This call the storage IRQ handler, to check if the flash cache needs flushing
-    storage_irq_handler();
-    #endif
-    IRQ_EXIT(FLASH_IRQn);
-}
 
 /**
   * @brief  These functions handle the EXTI interrupt requests.

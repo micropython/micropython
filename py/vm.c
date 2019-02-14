@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -604,7 +604,7 @@ dispatch_loop:
                         sp -= 2;
                         mp_call_method_n_kw(3, 0, sp);
                         SET_TOP(mp_const_none);
-                    } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
+                    } else if (mp_obj_is_small_int(TOP())) {
                         // Getting here there are two distinct cases:
                         //  - unwind return, stack: (..., __exit__, ctx_mgr, ret_val, SMALL_INT(-1))
                         //  - unwind jump, stack:   (..., __exit__, ctx_mgr, dest_ip, SMALL_INT(num_exc))
@@ -699,7 +699,7 @@ unwind_jump:;
                     // if TOS is an exception, reraises the exception
                     if (TOP() == mp_const_none) {
                         sp--;
-                    } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
+                    } else if (mp_obj_is_small_int(TOP())) {
                         // We finished "finally" coroutine and now dispatch back
                         // to our caller, based on TOS value
                         mp_int_t cause = MP_OBJ_SMALL_INT_VALUE(POP());
@@ -1116,7 +1116,7 @@ unwind_return:
                     mp_uint_t unum = *ip;
                     mp_obj_t obj;
                     if (unum == 2) {
-                        mp_warning("exception chaining not supported");
+                        mp_warning(NULL, "exception chaining not supported");
                         // ignore (pop) "from" argument
                         sp--;
                     }
@@ -1150,7 +1150,7 @@ yield:
 
                 ENTRY(MP_BC_YIELD_FROM): {
                     MARK_EXC_IP_SELECTIVE();
-//#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
+//#define EXC_MATCH(exc, type) mp_obj_is_type(exc, type)
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
 #define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) { mp_obj_t raise_t = mp_make_raise_obj(t); RAISE(raise_t); }
                     mp_vm_return_kind_t ret_kind;

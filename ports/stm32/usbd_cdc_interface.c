@@ -69,6 +69,7 @@ uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     // be filled (by usbd_cdc_tx_always) before the USB device is connected.
     cdc->rx_buf_put = 0;
     cdc->rx_buf_get = 0;
+    cdc->rx_buf_full = false;
     cdc->tx_buf_ptr_out = 0;
     cdc->tx_buf_ptr_out_shadow = 0;
     cdc->tx_need_empty_packet = 0;
@@ -236,6 +237,25 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     }
 }
 
+bool usbd_cdc_rx_buffer_full(usbd_cdc_itf_t *cdc) {
+    int get = cdc->rx_buf_get, put = cdc->rx_buf_put;
+    int remaining = (get - put) + (-((int) (get <= put)) & USBD_CDC_RX_DATA_SIZE);
+    return remaining < CDC_DATA_MAX_PACKET_SIZE + 1;
+}
+
+void usbd_cdc_rx_check_resume(usbd_cdc_itf_t *cdc) {
+    uint32_t irq_state = disable_irq();
+    if (cdc->rx_buf_full) {
+        if (!usbd_cdc_rx_buffer_full(cdc)) {
+            cdc->rx_buf_full = false;
+            enable_irq(irq_state);
+            USBD_CDC_ReceivePacket(&cdc->base, cdc->rx_packet_buf);
+            return;
+        }
+    }
+    enable_irq(irq_state);
+}
+
 // Data received over USB OUT endpoint is processed here.
 // len: number of bytes received into the buffer we passed to USBD_CDC_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
@@ -257,10 +277,14 @@ int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
         }
     }
 
-    // initiate next USB packet transfer
-    USBD_CDC_ReceivePacket(&cdc->base, cdc->rx_packet_buf);
-
-    return USBD_OK;
+    if ((cdc->flow & USBD_CDC_FLOWCONTROL_RTS) && (usbd_cdc_rx_buffer_full(cdc))) {
+        cdc->rx_buf_full = true;
+        return USBD_BUSY;
+    } else {
+        // initiate next USB packet transfer
+        cdc->rx_buf_full = false;
+        return USBD_CDC_ReceivePacket(&cdc->base, cdc->rx_packet_buf);
+    }
 }
 
 int usbd_cdc_tx_half_empty(usbd_cdc_itf_t *cdc) {
@@ -339,6 +363,7 @@ int usbd_cdc_rx_num(usbd_cdc_itf_t *cdc) {
     if (rx_waiting < 0) {
         rx_waiting += USBD_CDC_RX_DATA_SIZE;
     }
+    usbd_cdc_rx_check_resume(cdc);
     return rx_waiting;
 }
 
@@ -359,6 +384,7 @@ int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeou
                 // IRQs disabled so buffer will never be filled; return immediately
                 return i;
             }
+            usbd_cdc_rx_check_resume(cdc);
             __WFI(); // enter sleep mode, waiting for interrupt
         }
 
@@ -366,6 +392,7 @@ int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeou
         buf[i] = cdc->rx_user_buf[cdc->rx_buf_get];
         cdc->rx_buf_get = (cdc->rx_buf_get + 1) & (USBD_CDC_RX_DATA_SIZE - 1);
     }
+    usbd_cdc_rx_check_resume(cdc);
 
     // Success, return number of bytes read
     return len;

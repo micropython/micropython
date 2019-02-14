@@ -232,11 +232,15 @@ mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
     return mp_raw_code_load(&reader);
 }
 
+#if MICROPY_HAS_FILE_READER
+
 mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
     mp_reader_t reader;
     mp_reader_new_file(&reader, filename);
     return mp_raw_code_load(&reader);
 }
+
+#endif // MICROPY_HAS_FILE_READER
 
 #endif // MICROPY_PERSISTENT_CODE_LOAD
 
@@ -268,9 +272,9 @@ STATIC void save_qstr(mp_print_t *print, qstr qst) {
 }
 
 STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
-    if (MP_OBJ_IS_STR_OR_BYTES(o)) {
+    if (mp_obj_is_str_or_bytes(o)) {
         byte obj_type;
-        if (MP_OBJ_IS_STR(o)) {
+        if (mp_obj_is_str(o)) {
             obj_type = 's';
         } else {
             obj_type = 'b';
@@ -287,10 +291,10 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         // we save numbers using a simplistic text representation
         // TODO could be improved
         byte obj_type;
-        if (MP_OBJ_IS_TYPE(o, &mp_type_int)) {
+        if (mp_obj_is_type(o, &mp_type_int)) {
             obj_type = 'i';
         #if MICROPY_PY_BUILTINS_COMPLEX
-        } else if (MP_OBJ_IS_TYPE(o, &mp_type_complex)) {
+        } else if (mp_obj_is_type(o, &mp_type_complex)) {
             obj_type = 'c';
         #endif
         } else {

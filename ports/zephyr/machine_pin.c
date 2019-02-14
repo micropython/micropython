@@ -84,7 +84,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted port
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple)) {
+    if (!mp_obj_is_type(args[0], &mp_type_tuple)) {
         mp_raise_ValueError("Pin id must be tuple of (\"GPIO_x\", pin#)");
     }
     mp_obj_t *items;

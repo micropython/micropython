@@ -73,6 +73,14 @@ STATIC pyb_thread_t pyb_thread_main;
 STATIC fs_user_mount_t fs_user_mount_flash;
 #endif
 
+#if defined(MICROPY_HW_UART_REPL)
+#ifndef MICROPY_HW_UART_REPL_RXBUF
+#define MICROPY_HW_UART_REPL_RXBUF (64)
+#endif
+STATIC pyb_uart_obj_t pyb_uart_repl_obj;
+STATIC uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
+#endif
+
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
         led_state(PYB_LED_RED, 1);
@@ -124,7 +132,7 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         { MP_QSTR_opt, MP_ARG_INT, {.u_int = 0} }
     };
 
-    if (MP_OBJ_IS_STR(pos_args[0])) {
+    if (mp_obj_is_str(pos_args[0])) {
         MP_STATE_PORT(pyb_config_main) = pos_args[0];
 
         // parse args
@@ -195,7 +203,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         if (res == FR_OK) {
             // success creating fresh LFS
         } else {
-            printf("PYB: can't create flash filesystem\n");
+            printf("MPY: can't create flash filesystem\n");
             return false;
         }
 
@@ -221,13 +229,13 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         f_close(&fp);
 
         // keep LED on for at least 200ms
-        sys_tick_wait_at_least(start_tick, 200);
+        systick_wait_at_least(start_tick, 200);
         led_state(PYB_LED_GREEN, 0);
     } else if (res == FR_OK) {
         // mount sucessful
     } else {
     fail:
-        printf("PYB: can't mount flash\n");
+        printf("MPY: can't mount flash\n");
         return false;
     }
 
@@ -265,7 +273,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         f_close(&fp);
 
         // keep LED on for at least 200ms
-        sys_tick_wait_at_least(start_tick, 200);
+        systick_wait_at_least(start_tick, 200);
         led_state(PYB_LED_GREEN, 0);
     }
 
@@ -341,7 +349,7 @@ STATIC bool init_sdcard_fs(void) {
     }
 
     if (first_part) {
-        printf("PYB: can't mount SD card\n");
+        printf("MPY: can't mount SD card\n");
         return false;
     } else {
         return true;
@@ -539,6 +547,20 @@ void stm32_main(uint32_t reset_mode) {
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
     // So for now we only init the lwIP stack once on power-up.
     lwip_init();
+    systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
+
+    #if defined(MICROPY_HW_UART_REPL)
+    // Set up a UART REPL using a statically allocated object
+    pyb_uart_repl_obj.base.type = &pyb_uart_type;
+    pyb_uart_repl_obj.uart_id = MICROPY_HW_UART_REPL;
+    pyb_uart_repl_obj.is_static = true;
+    pyb_uart_repl_obj.timeout = 0;
+    pyb_uart_repl_obj.timeout_char = 2;
+    uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
+    uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
+    uart_attach_to_repl(&pyb_uart_repl_obj, true);
+    MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
     #endif
 
 soft_reset:
@@ -588,26 +610,16 @@ soft_reset:
     // we can run Python scripts (eg boot.py), but anything that is configurable
     // by boot.py must be set after boot.py is run.
 
+    #if defined(MICROPY_HW_UART_REPL)
+    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
+    #else
+    MP_STATE_PORT(pyb_stdio_uart) = NULL;
+    #endif
+
     readline_init0();
     pin_init0();
     extint_init0();
     timer_init0();
-
-    // Define MICROPY_HW_UART_REPL to be PYB_UART_6 and define
-    // MICROPY_HW_UART_REPL_BAUD in your mpconfigboard.h file if you want a
-    // REPL on a hardware UART as well as on USB VCP
-    #if defined(MICROPY_HW_UART_REPL)
-    {
-        mp_obj_t args[2] = {
-            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
-            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL_BAUD),
-        };
-        MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
-        uart_attach_to_repl(MP_STATE_PORT(pyb_stdio_uart), true);
-    }
-    #else
-    MP_STATE_PORT(pyb_stdio_uart) = NULL;
-    #endif
 
     #if MICROPY_HW_ENABLE_CAN
     can_init0();
@@ -751,11 +763,11 @@ soft_reset_exit:
     // soft reset
 
     #if MICROPY_HW_ENABLE_STORAGE
-    printf("PYB: sync filesystems\n");
+    printf("MPY: sync filesystems\n");
     storage_flush();
     #endif
 
-    printf("PYB: soft reboot\n");
+    printf("MPY: soft reboot\n");
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
     #endif

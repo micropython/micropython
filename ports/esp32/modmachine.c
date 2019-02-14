@@ -34,7 +34,8 @@
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
 #include "rom/rtc.h"
-#include "esp_system.h"
+#include "esp_clk.h"
+#include "esp_pm.h"
 #include "driver/touch_pad.h"
 
 #include "py/obj.h"
@@ -60,16 +61,24 @@ typedef enum {
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        return mp_obj_new_int(ets_get_cpu_frequency() * 1000000);
+        return mp_obj_new_int(esp_clk_cpu_freq());
     } else {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
-        if (freq != 80 && freq != 160 && freq != 240) {
-            mp_raise_ValueError("frequency can only be either 80Mhz, 160MHz or 240MHz");
+        if (freq != 20 && freq != 40 && freq != 80 && freq != 160 && freq != 240) {
+            mp_raise_ValueError("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz");
         }
-        /*
-        system_update_cpu_freq(freq);
-        */
+        esp_pm_config_esp32_t pm;
+        pm.max_freq_mhz = freq;
+        pm.min_freq_mhz = freq;
+        pm.light_sleep_enable = false;
+        esp_err_t ret = esp_pm_configure(&pm);
+        if (ret != ESP_OK) {
+            mp_raise_ValueError(NULL);
+        }
+        while (esp_clk_cpu_freq() != freq * 1000000) {
+            vTaskDelay(1);
+        }
         return mp_const_none;
     }
 }
@@ -119,10 +128,10 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
     return mp_const_none;
 }
 
-STATIC mp_obj_t machine_sleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, pos_args, kw_args);
 };
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_sleep_obj, 0,  machine_sleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_lightsleep_obj, 0, machine_lightsleep);
 
 STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, pos_args, kw_args);
@@ -214,7 +223,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep), MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
 

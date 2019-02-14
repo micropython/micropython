@@ -320,7 +320,7 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
     // get either a single note or a list of notes
     mp_uint_t len;
     mp_obj_t *items;
-    if (MP_OBJ_IS_STR_OR_BYTES(args[0].u_obj)) {
+    if (mp_obj_is_str_or_bytes(args[0].u_obj)) {
         len = 1;
         items = &args[0].u_obj;
     } else {

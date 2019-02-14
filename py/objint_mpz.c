@@ -90,7 +90,7 @@ mp_obj_int_t *mp_obj_int_new_mpz(void) {
 // This particular routine should only be called for the mpz representation of the int.
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    assert(mp_obj_is_type(self_in, &mp_type_int));
     const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
 
     size_t needed_size = mp_int_format_size(mpz_max_num_bits(&self->mpz), base, prefix, comma);
@@ -112,14 +112,14 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 }
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     memset(buf, 0, len);
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
 }
 
 int mp_obj_int_sign(mp_obj_t self_in) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+    if (mp_obj_is_small_int(self_in)) {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(self_in);
         if (val < 0) {
             return -1;
@@ -167,25 +167,25 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     mpz_dig_t z_int_dig[MPZ_NUM_DIG_FOR_INT];
 
     // lhs could be a small int (eg small-int + mpz)
-    if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
+    if (mp_obj_is_small_int(lhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(lhs_in));
         zlhs = &z_int;
     } else {
-        assert(MP_OBJ_IS_TYPE(lhs_in, &mp_type_int));
+        assert(mp_obj_is_type(lhs_in, &mp_type_int));
         zlhs = &((mp_obj_int_t*)MP_OBJ_TO_PTR(lhs_in))->mpz;
     }
 
     // if rhs is small int, then lhs was not (otherwise mp_binary_op handles it)
-    if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
+    if (mp_obj_is_small_int(rhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
         zrhs = &z_int;
-    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
+    } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t*)MP_OBJ_TO_PTR(rhs_in))->mpz;
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(rhs_in)) {
         return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
 #if MICROPY_PY_BUILTINS_COMPLEX
-    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
+    } else if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, mpz_as_float(zlhs), 0, rhs_in);
 #endif
 #endif
@@ -320,7 +320,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
 #if MICROPY_PY_BUILTINS_POW3
 STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
-    if (MP_OBJ_IS_SMALL_INT(arg)) {
+    if (mp_obj_is_small_int(arg)) {
         mpz_init_from_int(temp, MP_OBJ_SMALL_INT_VALUE(arg));
         return temp;
     } else {
@@ -330,7 +330,7 @@ STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
 }
 
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
-    if (!MP_OBJ_IS_INT(base) || !MP_OBJ_IS_INT(exponent) || !MP_OBJ_IS_INT(modulus)) {
+    if (!mp_obj_is_int(base) || !mp_obj_is_int(exponent) || !mp_obj_is_int(modulus)) {
         mp_raise_TypeError("pow() with 3 arguments requires integers");
     } else {
         mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
@@ -387,7 +387,7 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, uns
 }
 
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+    if (mp_obj_is_small_int(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
         const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
@@ -397,7 +397,7 @@ mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
 }
 
 mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+    if (mp_obj_is_small_int(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
         const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
@@ -413,7 +413,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     return mpz_as_float(&self->mpz);
 }

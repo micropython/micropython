@@ -2,7 +2,7 @@
 import socket
 import uos
 import network
-import websocket
+import uwebsocket
 import websocket_helper
 import _webrepl
 
@@ -40,7 +40,7 @@ def accept_conn(listen_sock):
     print("\nWebREPL connection from:", remote_addr)
     client_s = cl
     websocket_helper.server_handshake(cl)
-    ws = websocket.websocket(cl, True)
+    ws = uwebsocket.websocket(cl, True)
     ws = _webrepl._webrepl(ws)
     cl.setblocking(False)
     # notify REPL on socket incoming data

@@ -30,10 +30,9 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
+#include "lib/utils/gchelper.h"
 #include "gccollect.h"
 #include "systick.h"
-
-uintptr_t gc_helper_get_regs_and_sp(uintptr_t *regs);
 
 void gc_collect(void) {
     // get current time, in case we want to time the GC

@@ -28,7 +28,7 @@ See the :mod:`machine` module::
     machine.unique_id() # return the 6-byte unique id of the board (the WiPy's MAC address)
 
     machine.idle()        # average current decreases to (~12mA), any interrupts wake it up
-    machine.sleep()       # everything except for WLAN is powered down (~950uA avg. current)
+    machine.lightsleep()  # everything except for WLAN is powered down (~950uA avg. current)
                           # wakes from Pin, RTC or WLAN
     machine.deepsleep()   # deepest sleep mode, MCU starts from reset. Wakes from Pin and RTC.
 
@@ -163,7 +163,7 @@ See :ref:`machine.RTC <machine.RTC>` ::
     rtc_i = rtc.irq(trigger=RTC.ALARM0, handler=alarm_handler, wake=machine.SLEEP)
 
     # go into suspended mode waiting for the RTC alarm to expire and wake us up
-    machine.sleep()
+    machine.lightsleep()
 
 SD card
 -------
@@ -199,7 +199,7 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
     # enable wake on WLAN
     wlan.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
     # go to sleep
-    machine.sleep()
+    machine.lightsleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up
 
 Telnet and FTP server

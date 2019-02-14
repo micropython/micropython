@@ -38,9 +38,9 @@
 #include "py/stream.h" // for mp_obj_print
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
-    if (MP_OBJ_IS_SMALL_INT(o_in)) {
+    if (mp_obj_is_small_int(o_in)) {
         return (mp_obj_type_t*)&mp_type_int;
-    } else if (MP_OBJ_IS_QSTR(o_in)) {
+    } else if (mp_obj_is_qstr(o_in)) {
         return (mp_obj_type_t*)&mp_type_str;
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(o_in)) {
@@ -112,7 +112,7 @@ bool mp_obj_is_true(mp_obj_t arg) {
         return 1;
     } else if (arg == mp_const_none) {
         return 0;
-    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+    } else if (mp_obj_is_small_int(arg)) {
         if (MP_OBJ_SMALL_INT_VALUE(arg) == 0) {
             return 0;
         } else {
@@ -167,7 +167,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
         && !mp_obj_is_float(o1)
         #endif
         #if MICROPY_PY_BUILTINS_COMPLEX
-        && !MP_OBJ_IS_TYPE(o1, &mp_type_complex)
+        && !mp_obj_is_type(o1, &mp_type_complex)
         #endif
         ) {
         return true;
@@ -177,8 +177,8 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     }
 
     // fast path for small ints
-    if (MP_OBJ_IS_SMALL_INT(o1)) {
-        if (MP_OBJ_IS_SMALL_INT(o2)) {
+    if (mp_obj_is_small_int(o1)) {
+        if (mp_obj_is_small_int(o2)) {
             // both SMALL_INT, and not equal if we get here
             return false;
         } else {
@@ -189,20 +189,20 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     }
 
     // fast path for strings
-    if (MP_OBJ_IS_STR(o1)) {
-        if (MP_OBJ_IS_STR(o2)) {
+    if (mp_obj_is_str(o1)) {
+        if (mp_obj_is_str(o2)) {
             // both strings, use special function
             return mp_obj_str_equal(o1, o2);
         } else {
             // a string is never equal to anything else
             goto str_cmp_err;
         }
-    } else if (MP_OBJ_IS_STR(o2)) {
+    } else if (mp_obj_is_str(o2)) {
         // o1 is not a string (else caught above), so the objects are not equal
     str_cmp_err:
         #if MICROPY_PY_STR_BYTES_CMP_WARN
-        if (MP_OBJ_IS_TYPE(o1, &mp_type_bytes) || MP_OBJ_IS_TYPE(o2, &mp_type_bytes)) {
-            mp_warning("Comparison between bytes and str");
+        if (mp_obj_is_type(o1, &mp_type_bytes) || mp_obj_is_type(o2, &mp_type_bytes)) {
+            mp_warning(MP_WARN_CAT(BytesWarning), "Comparison between bytes and str");
         }
         #endif
         return false;
@@ -230,9 +230,9 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
         return 0;
     } else if (arg == mp_const_true) {
         return 1;
-    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+    } else if (mp_obj_is_small_int(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
+    } else if (mp_obj_is_type(arg, &mp_type_int)) {
         return mp_obj_int_get_checked(arg);
     } else {
         mp_obj_t res = mp_unary_op(MP_UNARY_OP_INT, (mp_obj_t)arg);
@@ -241,7 +241,7 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
 }
 
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg) {
-    if (MP_OBJ_IS_INT(arg)) {
+    if (mp_obj_is_int(arg)) {
         return mp_obj_int_get_truncated(arg);
     } else {
         return mp_obj_get_int(arg);
@@ -256,9 +256,9 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
         *value = 0;
     } else if (arg == mp_const_true) {
         *value = 1;
-    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+    } else if (mp_obj_is_small_int(arg)) {
         *value = MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
+    } else if (mp_obj_is_type(arg, &mp_type_int)) {
         *value = mp_obj_int_get_checked(arg);
     } else {
         return false;
@@ -274,10 +274,10 @@ bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
         val = 0;
     } else if (arg == mp_const_true) {
         val = 1;
-    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+    } else if (mp_obj_is_small_int(arg)) {
         val = MP_OBJ_SMALL_INT_VALUE(arg);
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
+    } else if (mp_obj_is_type(arg, &mp_type_int)) {
         val = mp_obj_int_as_float_impl(arg);
     #endif
     } else if (mp_obj_is_float(arg)) {
@@ -313,18 +313,18 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (arg == mp_const_true) {
         *real = 1;
         *imag = 0;
-    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
+    } else if (mp_obj_is_small_int(arg)) {
         *real = MP_OBJ_SMALL_INT_VALUE(arg);
         *imag = 0;
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
+    } else if (mp_obj_is_type(arg, &mp_type_int)) {
         *real = mp_obj_int_as_float_impl(arg);
         *imag = 0;
     #endif
     } else if (mp_obj_is_float(arg)) {
         *real = mp_obj_float_get(arg);
         *imag = 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_complex)) {
+    } else if (mp_obj_is_type(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -340,9 +340,9 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 
 // note: returned value in *items may point to the interior of a GC block
 void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
-    if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
+    if (mp_obj_is_type(o, &mp_type_tuple)) {
         mp_obj_tuple_get(o, len, items);
-    } else if (MP_OBJ_IS_TYPE(o, &mp_type_list)) {
+    } else if (mp_obj_is_type(o, &mp_type_list)) {
         mp_obj_list_get(o, len, items);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -371,7 +371,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
 // is_slice determines whether the index is a slice index
 size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool is_slice) {
     mp_int_t i;
-    if (MP_OBJ_IS_SMALL_INT(index)) {
+    if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -409,7 +409,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
 
 mp_obj_t mp_obj_id(mp_obj_t o_in) {
     mp_int_t id = (mp_int_t)o_in;
-    if (!MP_OBJ_IS_OBJ(o_in)) {
+    if (!mp_obj_is_obj(o_in)) {
         return mp_obj_new_int(id);
     } else if (id >= 0) {
         // Many OSes and CPUs have affinity for putting "user" memories
@@ -445,9 +445,9 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     if (
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
         // It's simple - unicode is slow, non-unicode is fast
-        MP_OBJ_IS_STR(o_in) ||
+        mp_obj_is_str(o_in) ||
 #endif
-        MP_OBJ_IS_TYPE(o_in, &mp_type_bytes)) {
+        mp_obj_is_type(o_in, &mp_type_bytes)) {
         GET_STR_LEN(o_in, l);
         return MP_OBJ_NEW_SMALL_INT(l);
     } else {

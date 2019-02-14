@@ -1,4 +1,5 @@
 # global options
+dist: xenial
 language:
   - c
 compiler:
@@ -23,9 +24,10 @@ jobs:
       env: NAME="stm32 port build"
       install:
         # need newer gcc version for Cortex-M7 support
-        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+        - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
         - sudo apt-get update -qq || true
-        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - sudo apt-get install gcc-arm-embedded
+        - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
@@ -38,12 +40,11 @@ jobs:
     - stage: test
       env: NAME="qemu-arm port build and tests"
       install:
-        # need newer gcc version for nano.specs
-        - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
-        - sudo apt-get update -qq || true
-        - sudo apt-get install --allow-unauthenticated gcc-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
         - sudo apt-get install qemu-system
         - arm-none-eabi-gcc --version
+        - qemu-system-arm --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
@@ -54,8 +55,6 @@ jobs:
     - stage: test
       env: NAME="unix coverage build and tests"
       install:
-        # a specific urllib3 version is needed for requests and cpp-coveralls to work together
-        - sudo pip install -Iv urllib3==1.22
         - sudo pip install cpp-coveralls
         - gcc --version
         - python3 --version
@@ -117,10 +116,8 @@ jobs:
     - stage: test
       env: NAME="nrf port build"
       install:
-        # need newer gcc version to support variables in linker script
-        - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
-        - sudo apt-get update -qq || true
-        - sudo apt-get install gcc-arm-embedded
+        - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C ports/nrf
@@ -130,6 +127,7 @@ jobs:
       env: NAME="bare-arm and minimal ports build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C ports/bare-arm
@@ -145,6 +143,7 @@ jobs:
       env: NAME="cc3200 port build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
@@ -154,5 +153,6 @@ jobs:
       env: NAME="teensy port build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/teensy

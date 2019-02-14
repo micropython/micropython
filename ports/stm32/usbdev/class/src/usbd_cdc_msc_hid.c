@@ -96,6 +96,20 @@
 #define HID_REQ_SET_IDLE        (0x0a)
 #define HID_REQ_GET_IDLE        (0x02)
 
+// Value used in the configuration descriptor for the bmAttributes entry
+#if MICROPY_HW_USB_SELF_POWERED
+#define CONFIG_DESC_ATTRIBUTES (0xc0) // self powered
+#else
+#define CONFIG_DESC_ATTRIBUTES (0x80) // bus powered
+#endif
+
+// Value used in the configuration descriptor for the bMaxPower entry
+#if defined(MICROPY_HW_USB_MAX_POWER_MA)
+#define CONFIG_DESC_MAXPOWER (MICROPY_HW_USB_MAX_POWER_MA / 2) // in units of 2mA
+#else
+#define CONFIG_DESC_MAXPOWER (0xfa) // 500mA in units of 2mA
+#endif
+
 #if USBD_SUPPORT_HS_MODE
 // USB Standard Device Descriptor
 __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END = {
@@ -123,8 +137,8 @@ static const uint8_t msc_template_config_desc[MSC_TEMPLATE_CONFIG_DESC_SIZE] = {
     0x01,   // bNumInterfaces: 1 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //==========================================================================
     // MSC only has 1 interface so doesn't need an IAD
@@ -171,8 +185,8 @@ static const uint8_t cdc_msc_template_config_desc[CDC_MSC_TEMPLATE_CONFIG_DESC_S
     0x03,   // bNumInterfaces: 3 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //==========================================================================
     // MSC only has 1 interface so doesn't need an IAD
@@ -308,8 +322,8 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     0x03,   // bNumInterfaces: 3 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //==========================================================================
     // HID only has 1 interface so doesn't need an IAD
@@ -455,8 +469,8 @@ static const uint8_t cdc_template_config_desc[CDC_TEMPLATE_CONFIG_DESC_SIZE] = {
     0x02,   // bNumInterfaces: 2 interface
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
-    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
-    0xfa,   // bMaxPower: in units of 2mA
+    CONFIG_DESC_ATTRIBUTES, // bmAttributes
+    CONFIG_DESC_MAXPOWER, // bMaxPower
 
     //--------------------------------------------------------------------------
     // Interface Descriptor
@@ -1114,14 +1128,13 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
 
         /* USB data will be immediately processed, this allow next USB traffic being
         NAKed till the end of the application Xfer */
-        usbd_cdc_receive(usbd->cdc, len);
+        return usbd_cdc_receive(usbd->cdc, len);
 
-        return USBD_OK;
     #if MICROPY_HW_USB_ENABLE_CDC2
     } else if ((usbd->usbd_mode & USBD_MODE_CDC2) && epnum == (CDC2_OUT_EP & 0x7f)) {
         size_t len = USBD_LL_GetRxDataSize(pdev, epnum);
-        usbd_cdc_receive(usbd->cdc2, len);
-        return USBD_OK;
+        return usbd_cdc_receive(usbd->cdc2, len);
+        
     #endif
     } else if ((usbd->usbd_mode & USBD_MODE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
         MSC_BOT_DataOut(pdev, epnum);

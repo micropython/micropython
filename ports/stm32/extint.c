@@ -163,7 +163,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
     const pin_obj_t *pin = NULL;
     uint v_line;
 
-    if (MP_OBJ_IS_INT(pin_obj)) {
+    if (mp_obj_is_int(pin_obj)) {
         // If an integer is passed in, then use it to identify lines 16 thru 22
         // We expect lines 0 thru 15 to be passed in as a pin, so that we can
         // get both the port number and line number.
@@ -234,7 +234,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
     // Check if the ExtInt line is already in use by another Pin/ExtInt
     mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
     if (*cb != mp_const_none && MP_OBJ_FROM_PTR(pin) != pyb_extint_callback_arg[line]) {
-        if (MP_OBJ_IS_SMALL_INT(pyb_extint_callback_arg[line])) {
+        if (mp_obj_is_small_int(pyb_extint_callback_arg[line])) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                 "ExtInt vector %d is already in use", line));
         } else {

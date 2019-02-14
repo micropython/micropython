@@ -157,7 +157,7 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     };
 
     mp_obj_t port = portx;
-    if (MP_OBJ_IS_SMALL_INT(port)) {
+    if (mp_obj_is_small_int(port)) {
         // This is perverse, because lwip_getaddrinfo promptly converts it back to an int, but
         // that's the API we have to work with ...
         port = mp_obj_str_binary_op(MP_BINARY_OP_MODULO, mp_obj_new_str_via_qstr("%s", 2), port);
@@ -178,12 +178,16 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     return res;
 }
 
-int _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
-    mp_uint_t len = 0;
+STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
     mp_obj_t *elem;
-    mp_obj_get_array(addrtuple, &len, &elem);
-    if (len != 2) return -1;
-    return _socket_getaddrinfo2(elem[0], elem[1], resp);
+    mp_obj_get_array_fixed_n(addrtuple, 2, &elem);
+    int res = _socket_getaddrinfo2(elem[0], elem[1], resp);
+    if (res != 0) {
+        mp_raise_OSError(res);
+    }
+    if (*resp == NULL) {
+        mp_raise_OSError(-2); // name or service not known
+    }
 }
 
 STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {

@@ -38,7 +38,7 @@
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_USE_INTERNAL_PRINTF (0)
+#define MICROPY_USE_INTERNAL_PRINTF (1)
 #define MICROPY_VFS                 (1)
 
 // type definitions for the specific machine
@@ -53,9 +53,6 @@
 typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
-
-#include <unistd.h>
-#define MP_PLAT_PRINT_STRN(str, len) write(1, str, len)
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
