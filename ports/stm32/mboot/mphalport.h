@@ -26,6 +26,8 @@
 
 #include <stdbool.h>
 
+#include "genhdr/pins.h"
+
 #define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
 #define MP_HAL_PIN_MODE_INPUT           (0)
