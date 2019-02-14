@@ -95,7 +95,7 @@ void filesystem_flush(void) {
 void filesystem_writable_by_python(bool writable) {
     fs_user_mount_t *vfs = &_internal_vfs;
 
-    if (writable) {
+    if (!writable) {
         vfs->flags |= FSUSER_USB_WRITABLE;
     } else {
         vfs->flags &= ~FSUSER_USB_WRITABLE;

@@ -123,7 +123,6 @@
 #define MICROPY_FATFS_USE_LABEL       (1)
 #define MICROPY_FATFS_RPATH           (2)
 #define MICROPY_FATFS_MULTI_PARTITION (1)
-#define MICROPY_FATFS_NUM_PERSISTENT  (1)
 
 // Only enable this if you really need it. It allocates a byte cache of this size.
 // #define MICROPY_FATFS_MAX_SS           (4096)

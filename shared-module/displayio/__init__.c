@@ -6,6 +6,7 @@
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
+#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/memory.h"
 #include "supervisor/usb.h"
@@ -18,7 +19,13 @@ static inline void swap(uint16_t* a, uint16_t* b) {
     *b = temp;
 }
 
+bool refreshing_displays = false;
+
 void displayio_refresh_displays(void) {
+    if (refreshing_displays) {
+        return;
+    }
+    refreshing_displays = true;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display.base.type == NULL || displays[i].display.base.type == &mp_type_NoneType) {
             continue;
@@ -27,6 +34,7 @@ void displayio_refresh_displays(void) {
         displayio_display_update_backlight(display);
 
         if (!displayio_display_frame_queued(display)) {
+            refreshing_displays = false;
             return;
         }
         if (displayio_display_refresh_queued(display)) {
@@ -89,8 +97,9 @@ void displayio_refresh_displays(void) {
                     index += 1;
                     // The buffer is full, send it.
                     if (index >= buffer_size) {
-                        if (!displayio_display_send_pixels(display, buffer, buffer_size / 2)) {
+                        if (!displayio_display_send_pixels(display, buffer, buffer_size / 2) || reload_requested) {
                             displayio_display_finish_region_update(display);
+                            refreshing_displays = false;
                             return;
                         }
                         // TODO(tannewt): Make refresh displays faster so we don't starve other
@@ -103,12 +112,14 @@ void displayio_refresh_displays(void) {
             // Send the remaining data.
             if (index && !displayio_display_send_pixels(display, buffer, index * 2)) {
                 displayio_display_finish_region_update(display);
+                refreshing_displays = false;
                 return;
             }
             displayio_display_finish_region_update(display);
         }
         displayio_display_finish_refresh(display);
     }
+    refreshing_displays = false;
 }
 
 void common_hal_displayio_release_displays(void) {
