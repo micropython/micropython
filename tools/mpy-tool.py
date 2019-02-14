@@ -403,7 +403,7 @@ def read_uint(f):
 def read_qstr(f):
     ln = read_uint(f)
     if ln == 0:
-        return f.read(1)[0]
+        return bytes_cons(f.read(1))[0]
     data = str_cons(f.read(ln), 'utf8')
     global_qstrs.append(QStrType(data))
     return len(global_qstrs) - 1
