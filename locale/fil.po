@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-12 22:32-0500\n"
+"POT-Creation-Date: 2019-02-14 15:42+0100\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -103,11 +103,11 @@ msgstr "walang laman ang heap"
 msgid "syntax error in JSON"
 msgstr "sintaks error sa JSON"
 
-#: extmod/modure.c:161
+#: extmod/modure.c:265
 msgid "Splitting with sub-captures"
 msgstr "Binibiyak gamit ang sub-captures"
 
-#: extmod/modure.c:207
+#: extmod/modure.c:428
 msgid "Error in regex"
 msgstr "May pagkakamali sa REGEX"
 
@@ -155,7 +155,7 @@ msgstr "script kompilasyon hindi supportado"
 msgid " output:\n"
 msgstr " output:\n"
 
-#: main.c:166 main.c:247
+#: main.c:166 main.c:248
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -167,7 +167,7 @@ msgstr ""
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
-#: main.c:170 main.c:249
+#: main.c:170 main.c:250
 msgid "Auto-reload is off.\n"
 msgstr "Awtomatikong pag re-reload ay OFF.\n"
 
@@ -185,13 +185,13 @@ msgid ""
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:254
+#: main.c:255
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Pindutin ang anumang key upang pumasok sa REPL. Gamitin ang CTRL-D upang i-"
 "reload."
 
-#: main.c:419
+#: main.c:420
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
@@ -357,12 +357,12 @@ msgstr "Nabigong ilaan ang RX buffer"
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/atmel-samd/common-hal/busio/UART.c:252
 #: ports/nrf/common-hal/busio/UART.c:230
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/atmel-samd/common-hal/busio/UART.c:311
 #: ports/nrf/common-hal/busio/UART.c:265
 msgid "No TX pin"
 msgstr "Walang TX pin"
@@ -1512,7 +1512,7 @@ msgstr "'%s' object hindi sumusuporta ng item assignment"
 msgid "object with buffer protocol required"
 msgstr "object na may buffer protocol kinakailangan"
 
-#: py/objarray.c:413 py/objstr.c:428 py/objstrunicode.c:191 py/objtuple.c:188
+#: py/objarray.c:413 py/objstr.c:437 py/objstrunicode.c:211 py/objtuple.c:188
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
@@ -1663,158 +1663,163 @@ msgstr "bytes value wala sa sakop"
 msgid "wrong number of arguments"
 msgstr "mali ang bilang ng argumento"
 
-#: py/objstr.c:468
+#: py/objstr.c:414 py/objstrunicode.c:118
+#, fuzzy
+msgid "offset out of bounds"
+msgstr "wala sa sakop ang address"
+
+#: py/objstr.c:477
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 "join umaaasang may listahan ng str/bytes objects na naalinsunod sa self "
 "object"
 
-#: py/objstr.c:543 py/objstr.c:648 py/objstr.c:1745
+#: py/objstr.c:552 py/objstr.c:657 py/objstr.c:1754
 msgid "empty separator"
 msgstr "walang laman na separator"
 
-#: py/objstr.c:642
+#: py/objstr.c:651
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: py/objstr.c:714
+#: py/objstr.c:723
 msgid "substring not found"
 msgstr "substring hindi nahanap"
 
-#: py/objstr.c:771
+#: py/objstr.c:780
 msgid "start/end indices"
 msgstr "start/end indeks"
 
-#: py/objstr.c:932
+#: py/objstr.c:941
 msgid "bad format string"
 msgstr "maling format ang string"
 
-#: py/objstr.c:954
+#: py/objstr.c:963
 msgid "single '}' encountered in format string"
 msgstr "isang '}' nasalubong sa format string"
 
-#: py/objstr.c:993
+#: py/objstr.c:1002
 msgid "bad conversion specifier"
 msgstr "masamang pag convert na specifier"
 
-#: py/objstr.c:997
+#: py/objstr.c:1006
 msgid "end of format while looking for conversion specifier"
 msgstr "sa huli ng format habang naghahanap sa conversion specifier"
 
-#: py/objstr.c:999
+#: py/objstr.c:1008
 #, c-format
 msgid "unknown conversion specifier %c"
 msgstr "hindi alam ang conversion specifier na %c"
 
-#: py/objstr.c:1030
+#: py/objstr.c:1039
 msgid "unmatched '{' in format"
 msgstr "hindi tugma ang '{' sa format"
 
-#: py/objstr.c:1037
+#: py/objstr.c:1046
 msgid "expected ':' after format specifier"
 msgstr "umaasa ng ':' pagkatapos ng format specifier"
 
-#: py/objstr.c:1051
+#: py/objstr.c:1060
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
 "hindi mapalitan ang awtomatikong field numbering sa manual field "
 "specification"
 
-#: py/objstr.c:1056 py/objstr.c:1084
+#: py/objstr.c:1065 py/objstr.c:1093
 msgid "tuple index out of range"
 msgstr "indeks ng tuple wala sa sakop"
 
-#: py/objstr.c:1072
+#: py/objstr.c:1081
 msgid "attributes not supported yet"
 msgstr "attributes hindi sinusuportahan"
 
-#: py/objstr.c:1080
+#: py/objstr.c:1089
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 "hindi mapalitan ang manual field specification sa awtomatikong field "
 "numbering"
 
-#: py/objstr.c:1172
+#: py/objstr.c:1181
 msgid "invalid format specifier"
 msgstr "mali ang format specifier"
 
-#: py/objstr.c:1193
+#: py/objstr.c:1202
 msgid "sign not allowed in string format specifier"
 msgstr "sign hindi maaring string format specifier"
 
-#: py/objstr.c:1201
+#: py/objstr.c:1210
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "sign hindi maari sa integer format specifier 'c'"
 
-#: py/objstr.c:1260
+#: py/objstr.c:1269
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "hindi alam ang format code '%c' para sa object na ang type ay '%s'"
 
-#: py/objstr.c:1332
+#: py/objstr.c:1341
 #, c-format
 msgid "unknown format code '%c' for object of type 'float'"
 msgstr "hindi alam ang format code '%c' sa object na ang type ay 'float'"
 
-#: py/objstr.c:1344
+#: py/objstr.c:1353
 msgid "'=' alignment not allowed in string format specifier"
 msgstr "'=' Gindi pinapayagan ang alignment sa pag specify ng string format"
 
-#: py/objstr.c:1368
+#: py/objstr.c:1377
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
 msgstr "hindi alam ang format ng code na '%c' para sa object ng type ay 'str'"
 
-#: py/objstr.c:1416
+#: py/objstr.c:1425
 msgid "format requires a dict"
 msgstr "kailangan ng format ng dict"
 
-#: py/objstr.c:1425
+#: py/objstr.c:1434
 msgid "incomplete format key"
 msgstr "hindi kumpleto ang format key"
 
-#: py/objstr.c:1483
+#: py/objstr.c:1492
 msgid "incomplete format"
 msgstr "hindi kumpleto ang format"
 
-#: py/objstr.c:1491
+#: py/objstr.c:1500
 msgid "not enough arguments for format string"
 msgstr "kulang sa arguments para sa format string"
 
-#: py/objstr.c:1501
+#: py/objstr.c:1510
 #, c-format
 msgid "%%c requires int or char"
 msgstr "%%c nangangailangan ng int o char"
 
-#: py/objstr.c:1508
+#: py/objstr.c:1517
 msgid "integer required"
 msgstr "kailangan ng int"
 
-#: py/objstr.c:1571
+#: py/objstr.c:1580
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "hindi sinusuportahan ang format character na '%c' (0x%x) sa index %d"
 
-#: py/objstr.c:1578
+#: py/objstr.c:1587
 msgid "not all arguments converted during string formatting"
 msgstr "hindi lahat ng arguments na i-convert habang string formatting"
 
-#: py/objstr.c:2103
+#: py/objstr.c:2112
 msgid "can't convert to str implicitly"
 msgstr "hindi ma i-convert sa string ng walang pahiwatig"
 
-#: py/objstr.c:2107
+#: py/objstr.c:2116
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "hindi maaaring i-convert ang '%q' na bagay sa %q nang walang pahiwatig"
 
-#: py/objstrunicode.c:134
+#: py/objstrunicode.c:154
 #, c-format
 msgid "string indices must be integers, not %s"
 msgstr "ang indeks ng string ay dapat na integer, hindi %s"
 
-#: py/objstrunicode.c:145 py/objstrunicode.c:164
+#: py/objstrunicode.c:165 py/objstrunicode.c:184
 msgid "string index out of range"
 msgstr "indeks ng string wala sa sakop"
 
@@ -2258,8 +2263,11 @@ msgid "timeout must be >= 0.0"
 msgstr "bits ay dapat walo (8)"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:79
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100 shared-bindings/displayio/Shape.c:69
+#: shared-bindings/displayio/Shape.c:73
 #, fuzzy
-msgid "buffer_size must be >= 1"
+msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:83
@@ -2422,12 +2430,6 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
-#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
-#: shared-bindings/displayio/Group.c:100
-#, fuzzy
-msgid "%q must be >= 1"
-msgstr "aarehas na haba dapat ang buffer slices"
-
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr "ang color buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
@@ -2449,16 +2451,16 @@ msgstr "color buffer ay dapat buffer or int"
 msgid "palette_index should be an int"
 msgstr "palette_index ay dapat na int"
 
-#: shared-bindings/displayio/Shape.c:88
+#: shared-bindings/displayio/Shape.c:97
 msgid "y should be an int"
 msgstr "y ay dapat int"
 
-#: shared-bindings/displayio/Shape.c:92
+#: shared-bindings/displayio/Shape.c:101
 #, fuzzy
 msgid "start_x should be an int"
 msgstr "y ay dapat int"
 
-#: shared-bindings/displayio/Shape.c:96
+#: shared-bindings/displayio/Shape.c:105
 #, fuzzy
 msgid "end_x should be an int"
 msgstr "y ay dapat int"
@@ -2889,60 +2891,36 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Group dapat ay hindi baba sa 1 na haba"
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART hindi available"
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Mali ang UUID parameter"
-
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-#~ msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
-
-#~ msgid "row data must be a buffer"
-#~ msgstr "row data ay dapat na buffer"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "ang keywords dapat strings"
-
-#~ msgid "index must be int"
-#~ msgstr "index ay dapat int"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Lahat ng PWM peripherals ay ginagamit"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
 
-#~ msgid "Group empty"
-#~ msgstr "Walang laman ang group"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mali ang address length"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Mali ang bilang ng bytes"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Mali ang UUID string length"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2951,33 +2929,61 @@ msgstr ""
 #~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
 #~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+#~ msgid "Can not add Service."
+#~ msgstr "Hindi maidaragdag ang serbisyo."
 
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Mali ang bilang ng bytes"
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Mali ang UUID string length"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
+#~ msgid "Invalid Service type"
+#~ msgstr "Mali ang tipo ng serbisyo"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
+#~ msgid "Wrong address length"
+#~ msgstr "Mali ang address length"
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgid "Group empty"
+#~ msgstr "Walang laman ang group"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Lahat ng PWM peripherals ay ginagamit"
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART hindi available"
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
+
+#~ msgid "index must be int"
+#~ msgstr "index ay dapat int"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "ang keywords dapat strings"
+
+#~ msgid "row data must be a buffer"
+#~ msgstr "row data ay dapat na buffer"
+
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Mali ang UUID parameter"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "ang palette ay dapat 32 bytes ang haba"
+
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Group dapat ay hindi baba sa 1 na haba"
+
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "aarehas na haba dapat ang buffer slices"
