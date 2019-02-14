@@ -41,6 +41,7 @@
 #include "common-hal/bleio/__init__.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
+#include "common-hal/busio/UART.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
@@ -84,6 +85,7 @@ void reset_port(void) {
 
     i2c_reset();
     spi_reset();
+    uart_reset();
     pwmout_reset();
     pulseout_reset();
     pulsein_reset();

@@ -39,8 +39,6 @@
 #include "nrfx_uarte.h"
 #include <string.h>
 
-#ifdef NRF52840_XXAA
-
 // expression to examine, and return value in case of failing
 #define _VERIFY_ERR(_exp) \
     do {\
@@ -50,7 +48,49 @@
       }\
     }while(0)
 
-static uint32_t get_nrf_baud (uint32_t baudrate);
+static nrfx_uarte_t nrfx_uartes[] = {
+#if NRFX_CHECK(NRFX_UARTE0_ENABLED)
+    NRFX_UARTE_INSTANCE(0),
+#endif
+#if NRFX_CHECK(NRFX_UARTE1_ENABLED)
+    NRFX_UARTE_INSTANCE(1),
+#endif
+};
+
+static uint32_t get_nrf_baud (uint32_t baudrate) {
+
+    static const struct {
+        const uint32_t boundary;
+        nrf_uarte_baudrate_t uarte_baudraute;
+    } baudrate_map[] = {
+        { 1200, NRF_UARTE_BAUDRATE_1200 },
+        { 2400, NRF_UARTE_BAUDRATE_2400 },
+        { 4800, NRF_UARTE_BAUDRATE_4800 },
+        { 9600, NRF_UARTE_BAUDRATE_9600 },
+        { 14400, NRF_UARTE_BAUDRATE_14400 },
+        { 19200, NRF_UARTE_BAUDRATE_19200 },
+        { 28800, NRF_UARTE_BAUDRATE_28800 },
+        { 38400, NRF_UARTE_BAUDRATE_38400 },
+        { 57600, NRF_UARTE_BAUDRATE_57600 },
+        { 76800, NRF_UARTE_BAUDRATE_76800 },
+        { 115200, NRF_UARTE_BAUDRATE_115200 },
+        { 230400, NRF_UARTE_BAUDRATE_230400 },
+        { 250000, NRF_UARTE_BAUDRATE_250000 },
+        { 460800, NRF_UARTE_BAUDRATE_460800 },
+        { 921600, NRF_UARTE_BAUDRATE_921600 },
+        { 0, NRF_UARTE_BAUDRATE_1000000 },
+    };
+
+    size_t i = 0;
+    uint32_t boundary;
+    do {
+        boundary = baudrate_map[i].boundary;
+        if (baudrate <= boundary || boundary == 0) {
+            return baudrate_map[i].uarte_baudraute;
+        }
+        i++;
+    } while (true);
+}
 
 static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context) {
     busio_uart_obj_t* self = (busio_uart_obj_t*) context;
@@ -60,7 +100,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
             ringbuf_put_n(&self->rbuf, event->data.rxtx.p_data, event->data.rxtx.bytes);
 
             // keep receiving
-            (void) nrfx_uarte_rx(&self->uarte, &self->rx_char, 1);
+            (void) nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
         break;
 
         case NRFX_UARTE_EVT_TX_DONE:
@@ -74,7 +114,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
             ringbuf_put_n(&self->rbuf, event->data.error.rxtx.p_data, event->data.error.rxtx.bytes);
 
             // Keep receiving
-            (void) nrfx_uarte_rx(&self->uarte, &self->rx_char, 1);
+            (void) nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
         break;
 
         default:
@@ -82,11 +122,29 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
     }
 }
 
+void uart_reset(void) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
+        nrf_uarte_disable(nrfx_uartes[i].p_reg);
+    }
+}
 
 void common_hal_busio_uart_construct (busio_uart_obj_t *self,
                                       const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
                                       uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
                                       uint8_t receiver_buffer_size) {
+    // Find a free UART peripheral.
+    self->uarte = NULL;
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
+        if ((nrfx_uartes[i].p_reg->ENABLE & UARTE_ENABLE_ENABLE_Msk) == 0) {
+            self->uarte = &nrfx_uartes[i];
+            break;
+        }
+    }
+
+    if (self->uarte == NULL) {
+        mp_raise_ValueError(translate("All UART peripherals are in use"));
+    }
+
     if ( (tx == mp_const_none) && (rx == mp_const_none) ) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -111,10 +169,8 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         .interrupt_priority = 7
     };
 
-    // support only 1 instance for now
-    self->uarte = (nrfx_uarte_t ) NRFX_UARTE_INSTANCE(0);
-    nrfx_uarte_uninit(&self->uarte);
-    _VERIFY_ERR(nrfx_uarte_init(&self->uarte, &config, uart_callback_irq));
+    nrfx_uarte_uninit(self->uarte);
+    _VERIFY_ERR(nrfx_uarte_init(self->uarte, &config, uart_callback_irq));
 
     // Init buffer for rx
     if ( rx != mp_const_none ) {
@@ -128,7 +184,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         ringbuf_alloc(&self->rbuf, receiver_buffer_size, true);
 
         if ( !self->rbuf.buf ) {
-            nrfx_uarte_uninit(&self->uarte);
+            nrfx_uarte_uninit(self->uarte);
             mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
         }
 
@@ -147,7 +203,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     self->timeout_ms = timeout * 1000;
 
     // Initial wait for incoming byte
-    _VERIFY_ERR(nrfx_uarte_rx(&self->uarte, &self->rx_char, 1));
+    _VERIFY_ERR(nrfx_uarte_rx(self->uarte, &self->rx_char, 1));
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -156,7 +212,7 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if ( !common_hal_busio_uart_deinited(self) ) {
-        nrfx_uarte_uninit(&self->uarte);
+        nrfx_uarte_uninit(self->uarte);
         reset_pin_number(self->tx_pin_number);
         reset_pin_number(self->rx_pin_number);
         self->tx_pin_number = NO_PIN;
@@ -170,7 +226,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    if ( nrf_uarte_rx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
+    if ( nrf_uarte_rx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
         mp_raise_ValueError(translate("No RX pin"));
     }
 
@@ -189,7 +245,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     // prevent conflict with uart irq
-    NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
+    NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 
     // copy received data
     rx_bytes = ringbuf_count(&self->rbuf);
@@ -198,14 +254,14 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         data[i] = ringbuf_get(&self->rbuf);
     }
 
-    NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
+    NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 
     return rx_bytes;
 }
 
 // Write characters.
 size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    if ( nrf_uarte_tx_pin_get(self->uarte.p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
+    if ( nrf_uarte_tx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
         mp_raise_ValueError(translate("No TX pin"));
     }
 
@@ -214,7 +270,7 @@ size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data,
     uint64_t start_ticks = ticks_ms;
 
     // Wait for on-going transfer to complete
-    while ( nrfx_uarte_tx_in_progress(&self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    while ( nrfx_uarte_tx_in_progress(self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
@@ -229,15 +285,16 @@ size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data,
     // EasyDMA can only access SRAM
     uint8_t * tx_buf = (uint8_t*) data;
     if ( !nrfx_is_in_ram(data) ) {
+        // TODO: If this is not too big, we could allocate it on the stack.
         tx_buf = (uint8_t *) gc_alloc(len, false, false);
         memcpy(tx_buf, data, len);
     }
 
-    (*errcode) = nrfx_uarte_tx(&self->uarte, tx_buf, len);
+    (*errcode) = nrfx_uarte_tx(self->uarte, tx_buf, len);
     _VERIFY_ERR(*errcode);
     (*errcode) = 0;
 
-    while ( nrfx_uarte_tx_in_progress(&self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    while ( nrfx_uarte_tx_in_progress(self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
 #ifdef MICROPY_VM_HOOK_LOOP
         MICROPY_VM_HOOK_LOOP
 #endif
@@ -256,7 +313,7 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
     self->baudrate = baudrate;
-    nrf_uarte_baudrate_set(self->uarte.p_reg, get_nrf_baud(baudrate));
+    nrf_uarte_baudrate_set(self->uarte->p_reg, get_nrf_baud(baudrate));
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
@@ -265,116 +322,11 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
     // prevent conflict with uart irq
-    NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
+    NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
     ringbuf_clear(&self->rbuf);
-    NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte.p_reg));
+    NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
-    return !nrfx_uarte_tx_in_progress(&self->uarte);
+    return !nrfx_uarte_tx_in_progress(self->uarte);
 }
-
-static uint32_t get_nrf_baud (uint32_t baudrate)
-{
-    if ( baudrate <= 1200 ) {
-        return NRF_UARTE_BAUDRATE_1200;
-    }
-    else if ( baudrate <= 2400 ) {
-        return NRF_UARTE_BAUDRATE_2400;
-    }
-    else if ( baudrate <= 4800 ) {
-        return NRF_UARTE_BAUDRATE_4800;
-    }
-    else if ( baudrate <= 9600 ) {
-        return NRF_UARTE_BAUDRATE_9600;
-    }
-    else if ( baudrate <= 14400 ) {
-        return NRF_UARTE_BAUDRATE_14400;
-    }
-    else if ( baudrate <= 19200 ) {
-        return NRF_UARTE_BAUDRATE_19200;
-    }
-    else if ( baudrate <= 28800 ) {
-        return NRF_UARTE_BAUDRATE_28800;
-    }
-    else if ( baudrate <= 38400 ) {
-        return NRF_UARTE_BAUDRATE_38400;
-    }
-    else if ( baudrate <= 57600 ) {
-        return NRF_UARTE_BAUDRATE_57600;
-    }
-    else if ( baudrate <= 76800 ) {
-        return NRF_UARTE_BAUDRATE_76800;
-    }
-    else if ( baudrate <= 115200 ) {
-        return NRF_UARTE_BAUDRATE_115200;
-    }
-    else if ( baudrate <= 230400 ) {
-        return NRF_UARTE_BAUDRATE_230400;
-    }
-    else if ( baudrate <= 250000 ) {
-        return NRF_UARTE_BAUDRATE_250000;
-    }
-    else if ( baudrate <= 460800 ) {
-        return NRF_UARTE_BAUDRATE_460800;
-    }
-    else if ( baudrate <= 921600 ) {
-        return NRF_UARTE_BAUDRATE_921600;
-    }
-    else {
-        return NRF_UARTE_BAUDRATE_1000000;
-    }
-}
-
-#else
-
-void common_hal_busio_uart_construct (busio_uart_obj_t *self,
-                                      const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-                                      uint8_t bits, uart_parity_t parity, uint8_t stop, float timeout,
-                                      uint8_t receiver_buffer_size) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-}
-
-bool common_hal_busio_uart_deinited (busio_uart_obj_t *self) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-    return true;
-}
-
-void common_hal_busio_uart_deinit (busio_uart_obj_t *self) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-}
-
-// Read characters.
-size_t common_hal_busio_uart_read (busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-    return 0;
-}
-
-// Write characters.
-size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-    return 0;
-}
-
-uint32_t common_hal_busio_uart_get_baudrate (busio_uart_obj_t *self) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-    return self->baudrate;
-}
-
-void common_hal_busio_uart_set_baudrate (busio_uart_obj_t *self, uint32_t baudrate) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-}
-
-uint32_t common_hal_busio_uart_rx_characters_available (busio_uart_obj_t *self) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-}
-
-void common_hal_busio_uart_clear_rx_buffer (busio_uart_obj_t *self) {
-
-}
-
-bool common_hal_busio_uart_ready_to_tx (busio_uart_obj_t *self) {
-    mp_raise_NotImplementedError(translate("busio.UART not available"));
-    return false;
-}
-#endif
