@@ -34,8 +34,13 @@
 // Use the following constants for the internal sources:
 
 #define EXTI_PVD_OUTPUT         (16)
+#if defined(STM32L4)
+#define EXTI_RTC_ALARM          (18)
+#define EXTI_USB_OTG_FS_WAKEUP  (17)
+#else
 #define EXTI_RTC_ALARM          (17)
 #define EXTI_USB_OTG_FS_WAKEUP  (18)
+#endif
 #define EXTI_ETH_WAKEUP         (19)
 #define EXTI_USB_OTG_HS_WAKEUP  (20)
 #if defined(STM32F0) || defined(STM32L4)
