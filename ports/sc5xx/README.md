@@ -9,19 +9,20 @@ under the clear BSD license. This port support the following boards:
 Supported Features
 ------------------
 
+* ExtInt (machine.ExtInt)
 * I2C (machine.I2C)
 * Pins (machine.Pin)
-* SDcard (mounted on boot)
+* SDcard (machine.SD, auto-mount on boot)
 * SPI (machine.SPI)
-* RTC (access through utime module)
+* RTC (utime)
 
 Build instructions
 ------------------
 
 ADI's CrossCore Embedded Studio (CCES) is required to build this specific port
-of MicroPython. Both Windows version and Linux version of CCES are supported. (Note: Linux version could only generate ELF file, but not the LDR file. ELF file can only be loaded onto the board using ICE-1000/2000 and running in the RAM, while the LDR file can be flashed into the SPI Flash. This is a limitation of the CCES Linux version.)
+of MicroPython. Both Windows version and Linux version of CCES are supported. (Note: Linux version could only generate ELF file, but not the LDR file. ELF file can only be loaded onto the board using ICE-1000/2000 and running in the RAM, while the LDR file can be flashed into the SPI Flash. This is a limitation of the CCES Linux version as Linux version was designed for developing Linux applications rather than bare-metal applictions.)
 
-To build the project: Open this directory as an project in the CCES and click
+To build the project: Open this directory (ports/sc5xx) as an project in the CCES and click
 build.
 
 Accessing the Python prompt
