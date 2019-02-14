@@ -256,7 +256,7 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
 
         if (value == MP_OBJ_SENTINEL) {
             // load
-            return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_group_get(self, index));
+            return common_hal_displayio_group_get(self, index);
         } else if (value == mp_const_none) {
             common_hal_displayio_group_pop(self, index);
         } else {

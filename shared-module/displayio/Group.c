@@ -98,7 +98,7 @@ size_t common_hal_displayio_group_get_len(displayio_group_t* self) {
 }
 
 mp_obj_t common_hal_displayio_group_get(displayio_group_t* self, size_t index) {
-    return self->children[index];
+    return MP_OBJ_FROM_PTR(self->children[index]);
 }
 
 void common_hal_displayio_group_set(displayio_group_t* self, size_t index, mp_obj_t layer) {

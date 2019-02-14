@@ -248,14 +248,20 @@ void reset_cpu(void) {
     reset();
 }
 
-extern uint32_t _ebss;
-// Place the word to save just after our BSS section that gets blanked.
+// Place the word to save 8k from the end of RAM so we and the bootloader don't clobber it.
+#ifdef SAMD21
+uint32_t* safe_word = (uint32_t*) (HMCRAMC0_ADDR + HMCRAMC0_SIZE - 0x2000);
+#endif
+#ifdef SAMD51
+uint32_t* safe_word = (uint32_t*) (HSRAM_ADDR + HSRAM_SIZE - 0x2000);
+#endif
+
 void port_set_saved_word(uint32_t value) {
-    _ebss = value;
+    *safe_word = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return _ebss;
+    return *safe_word;
 }
 
 /**
