@@ -53,6 +53,7 @@ Additional components:
 - ports/esp8266/ -- a version of MicroPython that runs on Espressif's ESP8266 SoC.
 - ports/esp32/ -- a version of MicroPython that runs on Espressif's ESP32 SoC.
 - ports/nrf/ -- a version of MicroPython that runs on Nordic's nRF51 and nRF52 MCUs.
+- ports/sc5xx/ -- a version of MicroPython that runs on Analog Devices' SC5xx processors.
 - extmod/ -- additional (non-core) modules implemented in C.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
