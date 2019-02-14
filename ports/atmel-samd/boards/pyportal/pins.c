@@ -14,10 +14,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // STEMMA connectors
     { MP_OBJ_NEW_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PB02) }, // SDA
     { MP_OBJ_NEW_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PB03) }, // SCL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_PB00) }, // D3
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_PB00) }, // D3
-    { MP_OBJ_NEW_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PB01) }, // D4
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PB01) }, // D4
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_PA04) }, // D3
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_PA04) }, // D3
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PA05) }, // D4
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PA05) }, // D4
 
     // Indicator LED
     { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA27) },
@@ -42,8 +42,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_LCD_DATA7), MP_ROM_PTR(&pin_PA23) },
 
     // Touch pins
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TOUCH_YD), MP_ROM_PTR(&pin_PA04) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TOUCH_XL), MP_ROM_PTR(&pin_PA05) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TOUCH_YD), MP_ROM_PTR(&pin_PB00) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TOUCH_XL), MP_ROM_PTR(&pin_PB01) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TOUCH_YU), MP_ROM_PTR(&pin_PA06) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TOUCH_XR), MP_ROM_PTR(&pin_PB08) },
 
