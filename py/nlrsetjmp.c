@@ -38,6 +38,11 @@ void nlr_jump(void *val) {
     MP_NLR_RESTORE_PYSTACK(top);
     *top_ptr = top->prev;
     longjmp(top->jmpbuf, 1);
+#if defined(__GNUC__)
+    __builtin_unreachable();
+#else
+    for (;;); // needed to silence compiler warning
+#endif
 }
 
 #endif
