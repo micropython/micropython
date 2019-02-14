@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-12 22:32-0500\n"
+"POT-Creation-Date: 2019-02-14 15:42+0100\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -104,11 +104,11 @@ msgstr "heap vacío"
 msgid "syntax error in JSON"
 msgstr "error de sintaxis en JSON"
 
-#: extmod/modure.c:161
+#: extmod/modure.c:265
 msgid "Splitting with sub-captures"
 msgstr "Dividiendo con sub-capturas"
 
-#: extmod/modure.c:207
+#: extmod/modure.c:428
 msgid "Error in regex"
 msgstr "Error en regex"
 
@@ -156,7 +156,7 @@ msgstr "script de compilación no soportado"
 msgid " output:\n"
 msgstr " salida:\n"
 
-#: main.c:166 main.c:247
+#: main.c:166 main.c:248
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -168,7 +168,7 @@ msgstr ""
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 
-#: main.c:170 main.c:249
+#: main.c:170 main.c:250
 msgid "Auto-reload is off.\n"
 msgstr "Auto-recarga deshabilitada.\n"
 
@@ -186,12 +186,12 @@ msgid ""
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:254
+#: main.c:255
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
 
-#: main.c:419
+#: main.c:420
 msgid "soft reboot\n"
 msgstr "reinicio suave\n"
 
@@ -359,12 +359,12 @@ msgstr "Ha fallado la asignación del buffer RX"
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/atmel-samd/common-hal/busio/UART.c:252
 #: ports/nrf/common-hal/busio/UART.c:230
 msgid "No RX pin"
 msgstr "Sin pin RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/atmel-samd/common-hal/busio/UART.c:311
 #: ports/nrf/common-hal/busio/UART.c:265
 msgid "No TX pin"
 msgstr "Sin pin TX"
@@ -1511,7 +1511,7 @@ msgstr "el objeto '%s' no soporta la asignación de elementos"
 msgid "object with buffer protocol required"
 msgstr "objeto con protocolo de buffer requerido"
 
-#: py/objarray.c:413 py/objstr.c:428 py/objstrunicode.c:191 py/objtuple.c:188
+#: py/objarray.c:413 py/objstr.c:437 py/objstrunicode.c:211 py/objtuple.c:188
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo se admiten segmentos con step=1 (alias None)"
@@ -1662,158 +1662,163 @@ msgstr "valor de bytes fuera de rango"
 msgid "wrong number of arguments"
 msgstr "numero erroneo de argumentos"
 
-#: py/objstr.c:468
+#: py/objstr.c:414 py/objstrunicode.c:118
+#, fuzzy
+msgid "offset out of bounds"
+msgstr "address fuera de límites"
+
+#: py/objstr.c:477
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 "join espera una lista de objetos str/bytes consistentes con el mismo objeto"
 
-#: py/objstr.c:543 py/objstr.c:648 py/objstr.c:1745
+#: py/objstr.c:552 py/objstr.c:657 py/objstr.c:1754
 msgid "empty separator"
 msgstr "separator vacío"
 
-#: py/objstr.c:642
+#: py/objstr.c:651
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: py/objstr.c:714
+#: py/objstr.c:723
 msgid "substring not found"
 msgstr "substring no encontrado"
 
-#: py/objstr.c:771
+#: py/objstr.c:780
 msgid "start/end indices"
 msgstr "índices inicio/final"
 
-#: py/objstr.c:932
+#: py/objstr.c:941
 msgid "bad format string"
 msgstr "formato de string erroneo"
 
-#: py/objstr.c:954
+#: py/objstr.c:963
 msgid "single '}' encountered in format string"
 msgstr "un solo '}' encontrado en format string"
 
-#: py/objstr.c:993
+#: py/objstr.c:1002
 msgid "bad conversion specifier"
 msgstr "especificador de conversion erroneo"
 
-#: py/objstr.c:997
+#: py/objstr.c:1006
 msgid "end of format while looking for conversion specifier"
 msgstr "el final del formato mientras se busca el especificador de conversión"
 
-#: py/objstr.c:999
+#: py/objstr.c:1008
 #, c-format
 msgid "unknown conversion specifier %c"
 msgstr "especificador de conversión %c desconocido"
 
-#: py/objstr.c:1030
+#: py/objstr.c:1039
 msgid "unmatched '{' in format"
 msgstr "No coinciden '{' en format"
 
-#: py/objstr.c:1037
+#: py/objstr.c:1046
 msgid "expected ':' after format specifier"
 msgstr "se espera ':' despues de un especificaro de tipo format"
 
-#: py/objstr.c:1051
+#: py/objstr.c:1060
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
 "no se puede cambiar de la numeración automática de campos a la "
 "especificación de campo manual"
 
-#: py/objstr.c:1056 py/objstr.c:1084
+#: py/objstr.c:1065 py/objstr.c:1093
 msgid "tuple index out of range"
 msgstr "tuple index fuera de rango"
 
-#: py/objstr.c:1072
+#: py/objstr.c:1081
 msgid "attributes not supported yet"
 msgstr "atributos aún no soportados"
 
-#: py/objstr.c:1080
+#: py/objstr.c:1089
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 "no se puede cambiar de especificación de campo manual a numeración "
 "automática de campos"
 
-#: py/objstr.c:1172
+#: py/objstr.c:1181
 msgid "invalid format specifier"
 msgstr "especificador de formato inválido"
 
-#: py/objstr.c:1193
+#: py/objstr.c:1202
 msgid "sign not allowed in string format specifier"
 msgstr "signo no permitido en el espeficador de string format"
 
-#: py/objstr.c:1201
+#: py/objstr.c:1210
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr "signo no permitido con el especificador integer format 'c'"
 
-#: py/objstr.c:1260
+#: py/objstr.c:1269
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "codigo format desconocido '%c' para el typo de objeto '%s'"
 
-#: py/objstr.c:1332
+#: py/objstr.c:1341
 #, c-format
 msgid "unknown format code '%c' for object of type 'float'"
 msgstr "codigo format desconocido '%c' para el typo de objeto 'float'"
 
-#: py/objstr.c:1344
+#: py/objstr.c:1353
 msgid "'=' alignment not allowed in string format specifier"
 msgstr "'=' alineación no permitida en el especificador string format"
 
-#: py/objstr.c:1368
+#: py/objstr.c:1377
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
 msgstr "codigo format desconocido '%c' para objeto de tipo 'str'"
 
-#: py/objstr.c:1416
+#: py/objstr.c:1425
 msgid "format requires a dict"
 msgstr "format requiere un dict"
 
-#: py/objstr.c:1425
+#: py/objstr.c:1434
 msgid "incomplete format key"
 msgstr ""
 
-#: py/objstr.c:1483
+#: py/objstr.c:1492
 msgid "incomplete format"
 msgstr "formato incompleto"
 
-#: py/objstr.c:1491
+#: py/objstr.c:1500
 msgid "not enough arguments for format string"
 msgstr "no suficientes argumentos para format string"
 
-#: py/objstr.c:1501
+#: py/objstr.c:1510
 #, c-format
 msgid "%%c requires int or char"
 msgstr "%%c requiere int o char"
 
-#: py/objstr.c:1508
+#: py/objstr.c:1517
 msgid "integer required"
 msgstr "Entero requerido"
 
-#: py/objstr.c:1571
+#: py/objstr.c:1580
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "carácter no soportado '%c' (0x%x) en índice %d"
 
-#: py/objstr.c:1578
+#: py/objstr.c:1587
 msgid "not all arguments converted during string formatting"
 msgstr ""
 "no todos los argumentos fueron convertidos durante el formato de string"
 
-#: py/objstr.c:2103
+#: py/objstr.c:2112
 msgid "can't convert to str implicitly"
 msgstr "no se puede convertir a str implícitamente"
 
-#: py/objstr.c:2107
+#: py/objstr.c:2116
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "no se puede convertir el objeto '%q' a %q implícitamente"
 
-#: py/objstrunicode.c:134
+#: py/objstrunicode.c:154
 #, c-format
 msgid "string indices must be integers, not %s"
 msgstr "índices de string deben ser enteros, no %s"
 
-#: py/objstrunicode.c:145 py/objstrunicode.c:164
+#: py/objstrunicode.c:165 py/objstrunicode.c:184
 msgid "string index out of range"
 msgstr "string index fuera de rango"
 
@@ -2253,8 +2258,11 @@ msgid "timeout must be >= 0.0"
 msgstr "bits debe ser 8"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:79
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100 shared-bindings/displayio/Shape.c:69
+#: shared-bindings/displayio/Shape.c:73
 #, fuzzy
-msgid "buffer_size must be >= 1"
+msgid "%q must be >= 1"
 msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:83
@@ -2417,12 +2425,6 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Bytes debe estar entre 0 y 255."
 
-#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
-#: shared-bindings/displayio/Group.c:100
-#, fuzzy
-msgid "%q must be >= 1"
-msgstr "los buffers deben de tener la misma longitud"
-
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr "color buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
@@ -2444,16 +2446,16 @@ msgstr "color buffer deber ser un buffer o un int"
 msgid "palette_index should be an int"
 msgstr "palette_index deberia ser un int"
 
-#: shared-bindings/displayio/Shape.c:88
+#: shared-bindings/displayio/Shape.c:97
 msgid "y should be an int"
 msgstr "y deberia ser un int"
 
-#: shared-bindings/displayio/Shape.c:92
+#: shared-bindings/displayio/Shape.c:101
 #, fuzzy
 msgid "start_x should be an int"
 msgstr "y deberia ser un int"
 
-#: shared-bindings/displayio/Shape.c:96
+#: shared-bindings/displayio/Shape.c:105
 #, fuzzy
 msgid "end_x should be an int"
 msgstr "y deberia ser un int"
@@ -2883,85 +2885,11 @@ msgstr ""
 "El botón reset fue presionado mientras arrancaba CircuitPython. Presiona "
 "otra vez para salir del modo seguro.\n"
 
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Group debe tener size de minimo 1"
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART no disponible"
 
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parámetro UUID inválido"
-
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-#~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
-
-#~ msgid "row data must be a buffer"
-#~ msgstr "row data debe ser un buffer"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "palabras clave deben ser strings"
-
-#~ msgid "index must be int"
-#~ msgstr "indice debe ser int"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Todos los periféricos PWM en uso"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
-
-#~ msgid "Group empty"
-#~ msgstr "Group vacío"
-
-#~ msgid "Wrong address length"
-#~ msgstr "Longitud de address erronea"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longitud de string UUID inválida"
-
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio todavia esta en desarrollo"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "suficiente poder para todo el circuito y presiona reset (después de "
-#~ "expulsar CIRCUITPY).\n"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Falló la asignación del buffer RX de %d bytes"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Numero erroneo de bytes dados"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
 
 #, fuzzy
 #~ msgid ""
@@ -2970,8 +2898,86 @@ msgstr ""
 #~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
 #~ "unidad de almacenamiento CIRCUITPY:\n"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART no disponible"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Numero erroneo de bytes dados"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Falló la asignación del buffer RX de %d bytes"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "suficiente poder para todo el circuito y presiona reset (después de "
+#~ "expulsar CIRCUITPY).\n"
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio todavia esta en desarrollo"
+
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longitud de string UUID inválida"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+
+#~ msgid "Wrong address length"
+#~ msgstr "Longitud de address erronea"
+
+#~ msgid "Group empty"
+#~ msgstr "Group vacío"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Todos los periféricos PWM en uso"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#~ msgid "index must be int"
+#~ msgstr "indice debe ser int"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "palabras clave deben ser strings"
+
+#~ msgid "row data must be a buffer"
+#~ msgstr "row data debe ser un buffer"
+
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parámetro UUID inválido"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Group debe tener size de minimo 1"
+
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "los buffers deben de tener la misma longitud"

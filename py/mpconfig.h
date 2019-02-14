@@ -1164,6 +1164,18 @@ typedef double mp_float_t;
 #define MICROPY_PY_URE (0)
 #endif
 
+#ifndef MICROPY_PY_URE_MATCH_GROUPS
+#define MICROPY_PY_URE_MATCH_GROUPS (0)
+#endif
+
+#ifndef MICROPY_PY_URE_MATCH_SPAN_START_END
+#define MICROPY_PY_URE_MATCH_SPAN_START_END (0)
+#endif
+
+#ifndef MICROPY_PY_URE_SUB
+#define MICROPY_PY_URE_SUB (0)
+#endif
+
 #ifndef MICROPY_PY_UHEAPQ
 #define MICROPY_PY_UHEAPQ (0)
 #endif
