@@ -15,9 +15,9 @@ of boards which feature a relatively large external flash. With Express boards,
 its easy to copy them all onto the filesystem. However, if you don't have
 enough space simply copy things over as they are needed.
 
-- The Adafruit bundles are available `on GitHub <https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases>`_.
+- The Adafruit bundles are available on GitHub: <https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases>.
 
-- Documentation for each library is available `here <https://circuitpython.readthedocs.io/projects/bundle/en/latest/>`_.
+- Documentation for each library is available here: <https://circuitpython.readthedocs.io/projects/bundle/en/latest/>.
 
 
 CircuitPython Community Bundle
@@ -26,7 +26,7 @@ CircuitPython Community Bundle
 This bundle contains non-Adafruit sponsored libraries, that are written and submitted
 by members of the community.
 
-- The Community bundles are available `on GitHub <https://github.com/adafruit/CircuitPython_Community_Bundle/releases>`_.
+- The Community bundles are available on GitHub: <https://github.com/adafruit/CircuitPython_Community_Bundle/releases>.
 
 - Documentation is not available on ReadTheDocs at this time. See each library for any
   included documentation.
