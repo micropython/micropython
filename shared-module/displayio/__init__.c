@@ -2,6 +2,7 @@
 #include <string.h>
 #include "shared-module/displayio/__init__.h"
 
+#include "py/reload.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"
@@ -22,6 +23,12 @@ static inline void swap(uint16_t* a, uint16_t* b) {
 bool refreshing_displays = false;
 
 void displayio_refresh_displays(void) {
+    // Somehow reloads from the sdcard are being lost. So, cheat and reraise.
+    if (reload_requested) {
+        mp_raise_reload_exception();
+        return;
+    }
+
     if (refreshing_displays) {
         return;
     }
