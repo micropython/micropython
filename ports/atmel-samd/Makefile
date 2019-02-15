@@ -1,3 +1,27 @@
+# This file is part of the MicroPython project, http://micropython.org/
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2019 Dan Halbert for Adafruit Industries
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 # Select the board to build for.
 ifeq ($(BOARD),)
   $(error You must provide a BOARD parameter)
@@ -7,13 +31,16 @@ else
   endif
 endif
 
-
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
 include ../../py/mkenv.mk
+# Board-specific
 include boards/$(BOARD)/mpconfigboard.mk
--include mpconfigport.mk
+# Port-specific
+include mpconfigport.mk
+# CircuitPython-specific
+include ../circuitpy-common/mpconfig_circuitpy.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -24,8 +51,6 @@ include $(TOP)/py/py.mk
 include $(TOP)/supervisor/supervisor.mk
 
 CROSS_COMPILE = arm-none-eabi-
-
-BOSSAC := tools/bossac_osx
 
 HAL_DIR=hal/$(MCU_SERIES)
 
@@ -191,10 +216,6 @@ LDFLAGS += -mthumb -mcpu=cortex-m4
 BOOTLOADER_SIZE := 0x4000
 endif
 
-ifdef EXCLUDE_PIXELBUF
-CFLAGS += -DEXCLUDE_PIXELBUF
-endif
-
 SRC_ASF := \
 	gcc/gcc/startup_$(CHIP_FAMILY).c \
 	gcc/system_$(CHIP_FAMILY).c \
@@ -243,29 +264,14 @@ SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 SRC_C = \
 	audio_dma.c \
 	background.c \
-	fatfs_port.c \
-	mphalport.c \
-	reset.c \
-	peripherals/samd/clocks.c \
-	peripherals/samd/dma.c \
-	peripherals/samd/events.c \
-	peripherals/samd/external_interrupts.c \
-	peripherals/samd/sercom.c \
-	peripherals/samd/timers.c \
-	peripherals/samd/$(CHIP_FAMILY)/adc.c \
-	peripherals/samd/$(CHIP_FAMILY)/cache.c \
-	peripherals/samd/$(CHIP_FAMILY)/clocks.c \
-	peripherals/samd/$(CHIP_FAMILY)/dma.c \
-	peripherals/samd/$(CHIP_FAMILY)/events.c \
-	peripherals/samd/$(CHIP_FAMILY)/external_interrupts.c \
-	peripherals/samd/$(CHIP_FAMILY)/pins.c \
-	peripherals/samd/$(CHIP_FAMILY)/sercom.c \
-	peripherals/samd/$(CHIP_FAMILY)/timers.c \
-	tick.c \
-	bindings/samd/__init__.c \
 	bindings/samd/Clock.c \
+	bindings/samd/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
+	fatfs_port.c \
+	freetouch/adafruit_ptc.c \
+	lib/libc/string0.c \
+	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
@@ -276,13 +282,28 @@ SRC_C = \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
-	freetouch/adafruit_ptc.c \
-	supervisor/shared/memory.c
+	mphalport.c \
+	peripherals/samd/$(CHIP_FAMILY)/adc.c \
+	peripherals/samd/$(CHIP_FAMILY)/cache.c \
+	peripherals/samd/$(CHIP_FAMILY)/clocks.c \
+	peripherals/samd/$(CHIP_FAMILY)/dma.c \
+	peripherals/samd/$(CHIP_FAMILY)/events.c \
+	peripherals/samd/$(CHIP_FAMILY)/external_interrupts.c \
+	peripherals/samd/$(CHIP_FAMILY)/pins.c \
+	peripherals/samd/$(CHIP_FAMILY)/sercom.c \
+	peripherals/samd/$(CHIP_FAMILY)/timers.c \
+	peripherals/samd/clocks.c \
+	peripherals/samd/dma.c \
+	peripherals/samd/events.c \
+	peripherals/samd/external_interrupts.c \
+	peripherals/samd/sercom.c \
+	peripherals/samd/timers.c \
+	reset.c \
+	supervisor/shared/memory.c \
+	tick.c \
 
-ifeq ($(MICROPY_PY_NETWORK),1)
-CFLAGS += -DMICROPY_PY_NETWORK=1
+ifeq ($(CIRCUITPY_NETWORK),1)
+CFLAGS += -DCIRCUITPY_NETWORK=1 -DMICROPY_PY_NETWORK=1
 
 SRC_MOD += lib/netutils/netutils.c
 
@@ -299,45 +320,208 @@ SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
         )
 
 endif # MICROPY_PY_WIZNET5K
-endif # MICROPY_PY_NETWORK
+endif # CIRCUITPY_NETWORK
 
+ifeq ($(CIRCUITPY_ANALOGIO),1)
+SRC_DIRS += analogio/
+endif
+ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
+SRC_DIRS += audiobusio/
+endif
+ifeq ($(CIRCUITPY_BITBANGIO),1)
+SRC_DIRS += bitbangio/
+endif
+ifeq ($(CIRCUITPY_BOARD),1)
+SRC_DIRS += board/
+endif
+ifeq ($(CIRCUITPY_BUSIO),1)
+SRC_DIRS += busio/ bitbangio/OneWire
+endif
+ifeq ($(CIRCUITPY_DIGITALIO),1)
+SRC_DIRS += digitalio/
+endif
+ifeq ($(CIRCUITPY_DISPLAYIO),1)
+SRC_DIRS += displayio/
+endif
+ifeq ($(CIRCUITPY_GAMEPAD),1)
+SRC_DIRS += gamepad/
+endif
+ifeq ($(CIRCUITPY_I2CSLAVE),1)
+SRC_DIRS += i2cslave/
+endif
+ifeq ($(CIRCUITPY_MATH),1)
+SRC_DIRS += math/
+endif
+ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
+SRC_DIRS += microcontroller/
+endif
+ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
+SRC_DIRS += neopixel_write/
+endif
+ifeq ($(CIRCUITPY_NETWORK),1)
+SRC_DIRS += network/
+endif
+ifeq ($(CIRCUITPY_NVM),1)
+SRC_DIRS += nvm/
+endif
+ifeq ($(CIRCUITPY_OS),1)
+SRC_DIRS += os/
+endif
+ifeq ($(CIRCUITPY_PIXELBUF),1)
+SRC_DIRS += _pixelbuf/
+endif
+ifeq ($(CIRCUITPY_PULSEIO),1)
+SRC_DIRS += pulseio/
+endif
+ifeq ($(CIRCUITPY_RANDOM),1)
+SRC_DIRS += random/
+endif
+ifeq ($(CIRCUITPY_ROTARYIO),1)
+SRC_DIRS += rotaryio/
+endif
+ifeq ($(CIRCUITPY_RTC),1)
+SRC_DIRS += rtc/
+endif
+ifeq ($(CIRCUITPY_SAMD),1)
+SRC_DIRS += samd/
+endif
+ifeq ($(CIRCUITPY_STAGE),1)
+SRC_DIRS += _stage/
+endif
+ifeq ($(CIRCUITPY_STORAGE),1)
+SRC_DIRS += storage/
+endif
+ifeq ($(CIRCUITPY_STRUCT),1)
+SRC_DIRS += struct/
+endif
+ifeq ($(CIRCUITPY_SUPERVISOR),1)
+SRC_DIRS += supervisor/
+endif
+ifeq ($(CIRCUITPY_TIME),1)
+SRC_DIRS += time/
+endif
+ifeq ($(CIRCUITPY_TOUCHIO),1)
+SRC_DIRS += touchio/
+endif
+ifeq ($(CIRCUITPY_UHEAP),1)
+SRC_DIRS += uheap/
+endif
+ifeq ($(CIRCUITPY_USB_HID),1)
+SRC_DIRS += usb_hid/
+endif
+ifeq ($(CIRCUITPY_USB_MIDI),1)
+SRC_DIRS += usb_midi/
+endif
+ifeq ($(CIRCUITPY_USTACK),1)
+SRC_DIRS += ustack/
+endif
+
+# All possible sources are listed here, and are filtered by SRC_DIRS.
 SRC_COMMON_HAL = \
+$(filter $(patsubst %,%%,$(SRC_DIRS)), \
+	analogio/AnalogIn.c \
+	analogio/AnalogOut.c \
+	analogio/__init__.c \
+	audioio/__init__.c \
+	audioio/AudioOut.c \
 	board/__init__.c \
-	busio/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
-	digitalio/__init__.c \
+	busio/__init__.c \
 	digitalio/DigitalInOut.c \
+	digitalio/__init__.c \
 	displayio/ParallelBus.c \
-	i2cslave/__init__.c \
 	i2cslave/I2CSlave.c \
-	microcontroller/__init__.c \
+	i2cslave/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
+	microcontroller/__init__.c \
 	neopixel_write/__init__.c \
-	os/__init__.c \
-	rotaryio/__init__.c \
-	rotaryio/IncrementalEncoder.c \
-	rtc/__init__.c \
-	rtc/RTC.c \
-	supervisor/__init__.c \
-	supervisor/Runtime.c \
-	time/__init__.c \
-	analogio/__init__.c \
-	analogio/AnalogIn.c \
-	analogio/AnalogOut.c \
-	nvm/__init__.c \
 	nvm/ByteArray.c \
-	pulseio/__init__.c \
+	nvm/__init__.c \
+	os/__init__.c \
+	pulseio/PWMOut.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
-	pulseio/PWMOut.c \
+	pulseio/__init__.c \
+	rotaryio/IncrementalEncoder.c \
+	rotaryio/__init__.c \
+	rtc/RTC.c \
+	rtc/__init__.c \
+	supervisor/Runtime.c \
+	supervisor/__init__.c \
+	time/__init__.c \
+	touchio/TouchIn.c \
 	touchio/__init__.c \
-	touchio/TouchIn.c
+)
+
+# These don't have corresponding files in each port but are still located in
+# shared-bindings to make it clear what the contents of the modules are.
+# All possible sources are listed here, and are filtered by SRC_DIRS.
+SRC_BINDINGS_ENUMS = \
+$(filter $(patsubst %,%%,$(SRC_DIRS)), \
+	digitalio/Direction.c \
+	digitalio/DriveMode.c \
+	digitalio/Pull.c \
+	displayio/Glyph.c \
+	microcontroller/RunMode.c \
+	math/__init__.c \
+	supervisor/__init__.c \
+)
+
+SRC_BINDINGS_ENUMS += \
+	help.c \
+	util.c
+
+# All possible sources are listed here, and are filtered by SRC_DIRS.
+SRC_SHARED_MODULE = \
+$(filter $(patsubst %,%%,$(SRC_DIRS)), \
+	_pixelbuf/PixelBuf.c \
+	_pixelbuf/__init__.c \
+	_stage/Layer.c \
+	_stage/Text.c \
+	_stage/__init__.c \
+	audiobusio/__init__.c \
+	audiobusio/I2SOut.c \
+	audiobusio/PDMIn.c \
+	audioio/__init__.c \
+	audioio/Mixer.c \
+	audioio/RawSample.c \
+	audioio/WaveFile.c \
+	bitbangio/I2C.c \
+	bitbangio/OneWire.c \
+	bitbangio/SPI.c \
+	bitbangio/__init__.c \
+	busio/OneWire.c \
+	displayio/Bitmap.c \
+	displayio/BuiltinFont.c \
+	displayio/ColorConverter.c \
+	displayio/Display.c \
+	displayio/FourWire.c \
+	displayio/Group.c \
+	displayio/OnDiskBitmap.c \
+	displayio/Palette.c \
+	displayio/Shape.c \
+	displayio/TileGrid.c \
+	displayio/__init__.c \
+	gamepad/GamePad.c \
+	gamepad/__init__.c \
+	os/__init__.c \
+	random/__init__.c \
+	socket/__init__.c \
+	network/__init__.c \
+	storage/__init__.c \
+	struct/__init__.c \
+	terminalio/Terminal.c \
+	terminalio/__init__.c \
+	uheap/__init__.c \
+	ustack/__init__.c \
+)
 
 ifeq ($(INTERNAL_LIBM),1)
-SRC_LIBM = $(addprefix lib/,\
+SRC_LIBM = \
+$(addprefix lib/,\
 	libm/math.c \
 	libm/roundf.c \
 	libm/fmodf.c \
@@ -360,91 +544,15 @@ SRC_LIBM = $(addprefix lib/,\
 	)
 endif
 
-# These don't have corresponding files in each port but are still located in
-# shared-bindings to make it clear what the contents of the modules are.
-SRC_BINDINGS_ENUMS = \
-	digitalio/Direction.c \
-	digitalio/DriveMode.c \
-	digitalio/Pull.c \
-	displayio/Glyph.c \
-	microcontroller/RunMode.c \
-	help.c \
-	math/__init__.c \
-	supervisor/__init__.c \
-	util.c
-
-
-SRC_SHARED_MODULE = \
-	bitbangio/__init__.c \
-	bitbangio/I2C.c \
-	bitbangio/OneWire.c \
-	bitbangio/SPI.c \
-	busio/OneWire.c \
-	displayio/__init__.c \
-	displayio/Bitmap.c \
-	displayio/BuiltinFont.c \
-	displayio/ColorConverter.c \
-	displayio/Display.c \
-	displayio/FourWire.c \
-	displayio/Group.c \
-	displayio/OnDiskBitmap.c \
-	displayio/Palette.c \
-	displayio/Shape.c \
-	displayio/TileGrid.c \
-	gamepad/__init__.c \
-	gamepad/GamePad.c \
-	_stage/__init__.c \
-	_stage/Layer.c \
-	_stage/Text.c \
-	storage/__init__.c \
-	os/__init__.c \
-	random/__init__.c \
-	struct/__init__.c \
-	terminalio/__init__.c \
-	terminalio/Terminal.c \
-	uheap/__init__.c \
-	ustack/__init__.c \
-	usb_hid/__init__.c \
-	usb_hid/Device.c
-
-	# usb_midi/__init__.c
-	# usb_midi/Port.c
-
-ifeq ($(MICROPY_PY_NETWORK),1)
-SRC_SHARED_MODULE += socket/__init__.c network/__init__.c
+ifeq ($(CIRCUITPY_NETWORK),1)
 ifneq ($(MICROPY_PY_WIZNET5K),0)
 SRC_SHARED_MODULE += wiznet/__init__.c wiznet/wiznet5k.c
 endif
 endif
 
-# SAMRs don't have a DAC
-ifneq ($(CHIP_VARIANT),SAMR21G18A)
-	SRC_COMMON_HAL += \
-		audioio/__init__.c \
-		audioio/AudioOut.c
-	SRC_SHARED_MODULE += \
-		audioio/__init__.c \
-		audioio/Mixer.c \
-		audioio/RawSample.c \
-		audioio/WaveFile.c
-endif
-
-ifndef EXCLUDE_PIXELBUF
-	SRC_SHARED_MODULE += _pixelbuf/__init__.c \
-    	_pixelbuf/PixelBuf.c
-endif
-
 # The smallest SAMD51 packages don't have I2S. Everything else does.
-ifneq ($(CHIP_VARIANT),SAMD51G18A)
-	ifneq ($(CHIP_VARIANT),SAMD51G19A)
-		ifneq ($(CHIP_VARIANT),SAMR21G18A)
-			SRC_COMMON_HAL += \
-				audiobusio/__init__.c \
-				audiobusio/I2SOut.c \
-				audiobusio/PDMIn.c
-			SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
-		endif
-	endif
+ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
+SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
 endif
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
@@ -484,21 +592,5 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(STEPECHO) "Create $@"
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
-
-deploy: $(BUILD)/firmware.bin
-	$(ECHO) "Writing $< to the board"
-	$(BOSSAC) -u $<
-
-# Run emulation build on a POSIX system with suitable terminal settings
-run:
-	stty raw opost -echo
-	build/firmware.elf
-	@echo Resetting terminal...
-# This sleep is useful to spot segfaults
-	sleep 1
-	reset
-
-test: $(BUILD)/firmware.elf
-	$(Q)/bin/echo -e "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\x04" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"
 
 include $(TOP)/py/mkrules.mk

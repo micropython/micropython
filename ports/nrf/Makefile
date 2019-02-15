@@ -210,6 +210,8 @@ SRC_BINDINGS_ENUMS += \
 endif
 
 SRC_SHARED_MODULE = \
+	_pixelbuf/__init__.c \
+	_pixelbuf/PixelBuf.c
 	os/__init__.c \
 	random/__init__.c \
 	struct/__init__.c \
@@ -237,8 +239,6 @@ SRC_SHARED_MODULE = \
 
 
 ifndef EXCLUDE_PIXELBUF
-       SRC_SHARED_MODULE += _pixelbuf/__init__.c \
-       _pixelbuf/PixelBuf.c
 endif
 
 #	uheap/__init__.c \

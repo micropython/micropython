@@ -58,7 +58,7 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
-#ifdef MICROPY_PY_NETWORK
+#if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
 #endif
 
@@ -118,13 +118,13 @@ void start_mp(supervisor_allocation* heap) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 
-    #if MICROPY_PY_NETWORK
+    #if CIRCUITPY_NETWORK
     network_module_init();
     #endif
 }
 
 void stop_mp(void) {
-    #if MICROPY_PY_NETWORK
+    #if CIRCUITPY_NETWORK
     network_module_deinit();
     #endif
 }
@@ -201,7 +201,9 @@ bool run_code_py(safe_mode_t safe_mode) {
             }
         }
         // Turn off the display before the heap disappears.
+        #if CIRCUITPY_DISPLAYIO
         reset_displays();
+        #endif
         stop_mp();
         free_memory(heap);
         supervisor_move_memory();

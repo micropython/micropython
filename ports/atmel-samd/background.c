@@ -46,11 +46,11 @@ void run_background_tasks(void) {
     #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
     audio_dma_background();
     #endif
-    #ifdef CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_DISPLAYIO
     displayio_refresh_displays();
     #endif
 
-    #if MICROPY_PY_NETWORK
+    #if CIRCUITPY_NETWORK
     network_module_background();
     #endif
     usb_background();

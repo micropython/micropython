@@ -36,7 +36,7 @@
 
 #include "shared-bindings/network/__init__.h"
 
-#if MICROPY_PY_NETWORK
+#if CIRCUITPY_NETWORK
 
 //| :mod:`network` --- Network Interface Management
 //| ===============================================
@@ -71,4 +71,4 @@ const mp_obj_module_t network_module = {
     .globals = (mp_obj_dict_t*)&mp_module_network_globals,
 };
 
-#endif  // MICROPY_PY_NETWORK
+#endif  // CIRCUITPY_NETWORK
