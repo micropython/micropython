@@ -54,6 +54,7 @@ CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
+CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
 
 LDFLAGS = -nostdlib -L . -T stm32_generic.ld -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -70,12 +71,20 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-SRC_LIB = $(addprefix lib/,\
-	libc/string0.c \
-	)
+SRC_LIB = \
+	lib/libc/string0.c \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/unicode.c \
+	extmod/uzlib/crc32.c \
+	extmod/uzlib/adler32.c \
+	extmod/uzlib/tinflate.c \
+	extmod/uzlib/tinfgzip.c
 
 SRC_C = \
 	main.c \
+	elem.c \
+	fsload.c \
+	diskio.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \

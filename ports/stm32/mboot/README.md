@@ -4,7 +4,9 @@ Mboot - MicroPython boot loader
 Mboot is a custom bootloader for STM32 MCUs, and currently supports the
 STM32F4xx and STM32F7xx families.  It can provide a standard USB DFU interface
 on either the FS or HS peripherals, as well as a sophisticated, custom I2C
-interface.  It fits in 16k of flash space.
+interface.  It can also load and program firmware in .dfu.gz format from a
+filesystem.  It can fit in 16k of flash space, but all features enabled requires
+32k.
 
 How to use
 ----------
@@ -57,6 +59,10 @@ How to use
    second one use the same configuration names as above but with
    `SPIFLASH2`, ie `MBOOT_SPIFLASH2_ADDR` etc.
 
+   To enable loading firmware from a filesystem use:
+
+    #define MBOOT_FSLOAD (1)
+
 2. Build the board's main application firmware as usual.
 
 3. Build mboot via:
@@ -76,6 +82,53 @@ How to use
 5. Use either USB DFU or I2C to download firmware.  The script mboot.py shows how
    to communicate with the I2C boot loader interface.  It should be run on a
    pyboard connected via I2C to the target board.
+
+Entering Mboot from application code
+------------------------------------
+
+To enter Mboot from a running application do the following:
+
+1. Make sure I and D caches are disabled.
+
+2. Load register r0 with the value 0x70ad0000.  The lower 7 bits can be
+   optionally or'd with the desired I2C address.
+
+3. Load the MSP with the value held at 0x08000000.
+
+4. Jump to the value held at 0x08000004.
+
+Additional data can be passed to Mboot from application code by storing this
+data in a special region of RAM.  This region begins at the address held at
+location 0x08000000 (which will point to just after Mboot's stack).  A
+maximum of 1024 bytes can be stored here.  To indicate to Mboot that this
+region is valid load register r0 with 0x70ad0080 (instead of step 2 above),
+optionally or'd with the desired I2C address.
+
+Data in this region is a sequence of elements.  Each element has the form:
+
+    <type:u8> <len:u8> <payload...>
+
+where `type` and `len` are bytes (designated by `u8`) and `payload` is 0 or
+more bytes.  `len` must be the number of bytes in `payload`.
+
+The last element in the data sequence must be the end element:
+
+* END: type=1, len=0
+
+Loading firmware from a filesystem
+----------------------------------
+
+To get Mboot to load firmware from a filesystem and automatically program it
+requires passing data elements (see above) which tell where the filesystems
+are located and what filename to program.  The elements to use are:
+
+* MOUNT: type=2, len=10, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u32> <byte-len:u32>)
+
+* FSLOAD: type=3, len=1+n, payload=(<mount-point:u8> <filename...>)
+
+`u32` means unsigned 32-bit little-endian integer.
+
+The firmware to load must be a gzip'd DfuSe file (.dfu.gz).
 
 Example: Mboot on PYBv1.x
 -------------------------

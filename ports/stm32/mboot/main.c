@@ -32,6 +32,7 @@
 #include "usbd_core.h"
 #include "storage.h"
 #include "i2cslave.h"
+#include "mboot.h"
 
 // Using polling is about 10% faster than not using it (and using IRQ instead)
 // This DFU code with polling runs in about 70% of the time of the ST bootloader
@@ -76,7 +77,7 @@
 
 static void do_reset(void);
 
-static uint32_t get_le32(const uint8_t *b) {
+uint32_t get_le32(const uint8_t *b) {
     return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
 }
 
@@ -382,7 +383,7 @@ static const flash_layout_t flash_layout[] = {
 
 #endif
 
-static uint32_t flash_get_sector_index(uint32_t addr) {
+static uint32_t flash_get_sector_index(uint32_t addr, uint32_t *sector_size) {
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
         for (int i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
@@ -390,6 +391,7 @@ static uint32_t flash_get_sector_index(uint32_t addr) {
                 uint32_t sector_start_next = flash_layout[i].base_address
                     + (j + 1) * flash_layout[i].sector_size;
                 if (addr < sector_start_next) {
+                    *sector_size = flash_layout[i].sector_size;
                     return sector_index;
                 }
                 ++sector_index;
@@ -404,12 +406,15 @@ static int flash_mass_erase(void) {
     return -1;
 }
 
-static int flash_page_erase(uint32_t addr) {
-    uint32_t sector = flash_get_sector_index(addr);
+static int flash_page_erase(uint32_t addr, uint32_t *next_addr) {
+    uint32_t sector_size = 0;
+    uint32_t sector = flash_get_sector_index(addr, &sector_size);
     if (sector == 0) {
         // Don't allow to erase the sector with this bootloader in it
         return -1;
     }
+
+    *next_addr = addr + sector_size;
 
     HAL_FLASH_Unlock();
 
@@ -484,11 +489,12 @@ static int spiflash_page_erase(mp_spiflash_t *spif, uint32_t addr, uint32_t n_bl
 }
 #endif
 
-static int do_page_erase(uint32_t addr) {
+int do_page_erase(uint32_t addr, uint32_t *next_addr) {
     led_state(LED0, 1);
 
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
+        *next_addr = addr + MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE * MP_SPIFLASH_ERASE_BLOCK_SIZE;
         return spiflash_page_erase(MBOOT_SPIFLASH_SPIFLASH,
             addr - MBOOT_SPIFLASH_ADDR, MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE);
     }
@@ -496,15 +502,16 @@ static int do_page_erase(uint32_t addr) {
 
     #if defined(MBOOT_SPIFLASH2_ADDR)
     if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
+        *next_addr = addr + MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE * MP_SPIFLASH_ERASE_BLOCK_SIZE;
         return spiflash_page_erase(MBOOT_SPIFLASH2_SPIFLASH,
             addr - MBOOT_SPIFLASH2_ADDR, MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE);
     }
     #endif
 
-    return flash_page_erase(addr);
+    return flash_page_erase(addr, next_addr);
 }
 
-static void do_read(uint32_t addr, int len, uint8_t *buf) {
+void do_read(uint32_t addr, int len, uint8_t *buf) {
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         mp_spiflash_read(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, buf);
@@ -522,7 +529,7 @@ static void do_read(uint32_t addr, int len, uint8_t *buf) {
     memcpy(buf, (void*)addr, len);
 }
 
-static int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
     static uint32_t led_tog = 0;
     led_state(LED0, (led_tog++) & 4);
 
@@ -634,7 +641,8 @@ void i2c_slave_process_rx_end(void) {
     } else if (buf[0] == I2C_CMD_MASSERASE && len == 0) {
         len = do_mass_erase();
     } else if (buf[0] == I2C_CMD_PAGEERASE && len == 4) {
-        len = do_page_erase(get_le32(buf + 1));
+        uint32_t next_addr;
+        len = do_page_erase(get_le32(buf + 1), &next_addr);
     } else if (buf[0] == I2C_CMD_SETRDADDR && len == 4) {
         i2c_obj.cmd_rdaddr = get_le32(buf + 1);
         len = 0;
@@ -764,7 +772,8 @@ static int dfu_process_dnload(void) {
                 ret = do_mass_erase();
             } else if (dfu_state.wLength == 5) {
                 // erase page
-                ret = do_page_erase(get_le32(&dfu_state.buf[1]));
+                uint32_t next_addr;
+                ret = do_page_erase(get_le32(&dfu_state.buf[1]), &next_addr);
             }
         } else if (dfu_state.wLength >= 1 && dfu_state.buf[0] == 0x21) {
             if (dfu_state.wLength == 5) {
@@ -1253,6 +1262,19 @@ enter_bootloader:
     #if defined(MBOOT_SPIFLASH2_ADDR)
     MBOOT_SPIFLASH2_SPIFLASH->config = MBOOT_SPIFLASH2_CONFIG;
     mp_spiflash_init(MBOOT_SPIFLASH2_SPIFLASH);
+    #endif
+
+    #if MBOOT_FSLOAD
+    if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
+        // Application passed through elements, validate then process them
+        const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
+        if (elem_end != NULL && elem_end[-1] == 0) {
+            fsload_process();
+        }
+        // Always reset because the application is expecting to resume
+        led_state_all(0);
+        NVIC_SystemReset();
+    }
     #endif
 
     dfu_init();
