@@ -754,7 +754,7 @@ typedef struct _dfu_state_t {
     uint8_t buf[DFU_XFER_SIZE] __attribute__((aligned(4)));
 } dfu_state_t;
 
-static dfu_state_t dfu_state;
+static dfu_state_t dfu_state SECTION_NOZERO_BSS;
 
 static void dfu_init(void) {
     dfu_state.status = DFU_STATUS_IDLE;
@@ -1070,7 +1070,7 @@ static const USBD_ClassTypeDef pyb_usbdd_class = {
     pyb_usbdd_GetDeviceQualifierDescriptor,
 };
 
-static pyb_usbdd_obj_t pyb_usbdd;
+static pyb_usbdd_obj_t pyb_usbdd SECTION_NOZERO_BSS;
 
 static int pyb_usbdd_detect_port(void) {
     #if MBOOT_USB_AUTODETECT_PORT
@@ -1096,6 +1096,7 @@ static int pyb_usbdd_detect_port(void) {
 
 static void pyb_usbdd_init(pyb_usbdd_obj_t *self, int phy_id) {
     self->started = false;
+    self->tx_pending = false;
     USBD_HandleTypeDef *usbd = &self->hUSBDDevice;
     usbd->id = phy_id;
     usbd->dev_state = USBD_STATE_DEFAULT;

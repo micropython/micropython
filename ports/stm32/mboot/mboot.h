@@ -27,6 +27,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+// Use this to tag global static data in RAM that doesn't need to be zeroed on startup
+#define SECTION_NOZERO_BSS __attribute__((section(".nozero_bss")))
+
 #define ELEM_DATA_START (&_estack)
 #define ELEM_DATA_MAX (ELEM_DATA_START + 1024)
 

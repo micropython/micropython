@@ -53,16 +53,23 @@ SECTIONS
         _edata = .;
     } >RAM AT> FLASH_BL
 
-    /* Uninitialized data section */
+    /* Zeroed-out data section */
     .bss :
     {
         . = ALIGN(4);
         _sbss = .;
         *(.bss*)
         *(COMMON)
-
         . = ALIGN(4);
         _ebss = .;
+    } >RAM
+
+    /* Uninitialized data section */
+    .nozero_bss (NOLOAD) :
+    {
+        . = ALIGN(4);
+        *(.nozero_bss*)
+        . = ALIGN(4);
     } >RAM
 
     /* this just checks there is enough RAM for the stack */

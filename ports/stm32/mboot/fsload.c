@@ -42,7 +42,7 @@ typedef struct _gz_stream_t {
     uint8_t dict[DICT_SIZE];
 } gz_stream_t;
 
-static gz_stream_t gz_stream;
+static gz_stream_t gz_stream SECTION_NOZERO_BSS;
 
 static int gz_stream_read_src(TINF_DATA *tinf) {
     UINT n;
