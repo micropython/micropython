@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 08:46-0500\n"
+"POT-Creation-Date: 2019-02-15 18:56-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -320,11 +320,7 @@ msgstr "Alle event Kanäle werden benutzt"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Abtastrate zu hoch. Wert muss unter %d liegen"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:71
-msgid "Not enough pins available"
-msgstr "Nicht genug Pins vorhanden"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c:78
+#: ports/atmel-samd/common-hal/busio/I2C.c:74
 #: ports/atmel-samd/common-hal/busio/SPI.c:176
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
@@ -332,11 +328,11 @@ msgstr "Nicht genug Pins vorhanden"
 msgid "Invalid pins"
 msgstr "Ungültige Pins"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:101
+#: ports/atmel-samd/common-hal/busio/I2C.c:97
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA oder SCL brauchen pull up"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:121
+#: ports/atmel-samd/common-hal/busio/I2C.c:117
 msgid "Unsupported baudrate"
 msgstr "Baudrate wird nicht unterstützt"
 
@@ -2839,19 +2835,22 @@ msgstr ""
 "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
 "erneut um den abgesicherten Modus zu verlassen. \n"
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART nicht verfügbar"
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Alle PWM-Peripheriegeräte werden verwendet"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "name muss ein String sein"
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "Puffergröße muss >= 1 sein"
 
 #, fuzzy
 #~ msgid "Group must have %q at least 1"
 #~ msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
 
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "Puffergröße muss >= 1 sein"
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "name muss ein String sein"
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Alle PWM-Peripheriegeräte werden verwendet"
+
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART nicht verfügbar"
+
+#~ msgid "Not enough pins available"
+#~ msgstr "Nicht genug Pins vorhanden"

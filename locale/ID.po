@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 08:46-0500\n"
+"POT-Creation-Date: 2019-02-15 18:56-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -322,11 +322,7 @@ msgstr "Semua channel event sedang digunakan"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:71
-msgid "Not enough pins available"
-msgstr "Pin yang tersedia tidak cukup"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c:78
+#: ports/atmel-samd/common-hal/busio/I2C.c:74
 #: ports/atmel-samd/common-hal/busio/SPI.c:176
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
@@ -334,11 +330,11 @@ msgstr "Pin yang tersedia tidak cukup"
 msgid "Invalid pins"
 msgstr "Pin-pin tidak valid"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:101
+#: ports/atmel-samd/common-hal/busio/I2C.c:97
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA atau SCL membutuhkan pull up"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:121
+#: ports/atmel-samd/common-hal/busio/I2C.c:117
 msgid "Unsupported baudrate"
 msgstr "Baudrate tidak didukung"
 
@@ -2842,24 +2838,19 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART tidak tersedia"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "buffers harus mempunyai panjang yang sama"
 
 #, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "keyword harus berupa string"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parameter UUID tidak valid"
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Semua perangkat PWM sedang digunakan"
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Panjang string UUID tidak valid"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2868,16 +2859,24 @@ msgstr ""
 #~ "tegangan cukup untuk semua sirkuit dan tekan reset (setelah mencabut "
 #~ "CIRCUITPY).\n"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Panjang string UUID tidak valid"
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Semua perangkat PWM sedang digunakan"
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parameter UUID tidak valid"
 
 #, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "keyword harus berupa string"
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
 
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "buffers harus mempunyai panjang yang sama"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
+
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART tidak tersedia"
+
+#~ msgid "Not enough pins available"
+#~ msgstr "Pin yang tersedia tidak cukup"

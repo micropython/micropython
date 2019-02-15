@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 08:46-0500\n"
+"POT-Creation-Date: 2019-02-15 18:56-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -315,11 +315,7 @@ msgstr ""
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:71
-msgid "Not enough pins available"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/I2C.c:78
+#: ports/atmel-samd/common-hal/busio/I2C.c:74
 #: ports/atmel-samd/common-hal/busio/SPI.c:176
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
@@ -327,11 +323,11 @@ msgstr ""
 msgid "Invalid pins"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:101
+#: ports/atmel-samd/common-hal/busio/I2C.c:97
 msgid "SDA or SCL needs a pull up"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:121
+#: ports/atmel-samd/common-hal/busio/I2C.c:117
 msgid "Unsupported baudrate"
 msgstr ""
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 08:46-0500\n"
+"POT-Creation-Date: 2019-02-15 18:56-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -321,11 +321,7 @@ msgstr "Todos los canales de eventos en uso"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:71
-msgid "Not enough pins available"
-msgstr "No hay suficientes pines disponibles"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c:78
+#: ports/atmel-samd/common-hal/busio/I2C.c:74
 #: ports/atmel-samd/common-hal/busio/SPI.c:176
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
@@ -333,11 +329,11 @@ msgstr "No hay suficientes pines disponibles"
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:101
+#: ports/atmel-samd/common-hal/busio/I2C.c:97
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA o SCL necesitan una pull up"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:121
+#: ports/atmel-samd/common-hal/busio/I2C.c:117
 msgid "Unsupported baudrate"
 msgstr "Baudrate no soportado"
 
@@ -2880,37 +2876,63 @@ msgstr ""
 "El botón reset fue presionado mientras arrancaba CircuitPython. Presiona "
 "otra vez para salir del modo seguro.\n"
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART no disponible"
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "los buffers deben de tener la misma longitud"
 
 #, fuzzy
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Group debe tener size de minimo 1"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parámetro UUID inválido"
+
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
+
+#~ msgid "row data must be a buffer"
+#~ msgstr "row data debe ser un buffer"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "palabras clave deben ser strings"
+
+#~ msgid "index must be int"
+#~ msgstr "indice debe ser int"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Todos los periféricos PWM en uso"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
-#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
-#~ "unidad de almacenamiento CIRCUITPY:\n"
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
+#~ msgid "Group empty"
+#~ msgstr "Group vacío"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+#~ msgid "Wrong address length"
+#~ msgstr "Longitud de address erronea"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
 
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Numero erroneo de bytes dados"
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longitud de string UUID inválida"
 
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Falló la asignación del buffer RX de %d bytes"
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio todavia esta en desarrollo"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2919,60 +2941,37 @@ msgstr ""
 #~ "suficiente poder para todo el circuito y presiona reset (después de "
 #~ "expulsar CIRCUITPY).\n"
 
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio todavia esta en desarrollo"
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Falló la asignación del buffer RX de %d bytes"
 
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longitud de string UUID inválida"
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Numero erroneo de bytes dados"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
 
-#~ msgid "Wrong address length"
-#~ msgstr "Longitud de address erronea"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
 
-#~ msgid "Group empty"
-#~ msgstr "Group vacío"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#, fuzzy
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+#~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
+#~ "unidad de almacenamiento CIRCUITPY:\n"
 
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Todos los periféricos PWM en uso"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART no disponible"
 
-#~ msgid "index must be int"
-#~ msgstr "indice debe ser int"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "palabras clave deben ser strings"
-
-#~ msgid "row data must be a buffer"
-#~ msgstr "row data debe ser un buffer"
-
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-#~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parámetro UUID inválido"
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
-
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Group debe tener size de minimo 1"
-
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "los buffers deben de tener la misma longitud"
+#~ msgid "Not enough pins available"
+#~ msgstr "No hay suficientes pines disponibles"
