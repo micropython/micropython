@@ -64,13 +64,6 @@ First prepare the bluetooth folder by downloading Bluetooth LE stacks and header
 
      ./drivers/bluetooth/download_ble_stack.sh
 
-Note : The recent change to Nordic Website made it so that the links in the script might not work.  To manually install softdevice:
-
-* Download it from https://www.nordicsemi.com/Software-and-Tools/Software/S132/Download#infotabs
-* Unzip the it.
-* rename the unzipped folder to sxx_nrf52_x.y.z, where sxx = softdevice name (s110, s132 or s140), x.y.z = softdevice version
-* Copy the whole folder to drivers/bluetooth  
-
 If the Bluetooth stacks has been downloaded, compile the target with the following command:
 
     make BOARD=pca10040 SD=s132
