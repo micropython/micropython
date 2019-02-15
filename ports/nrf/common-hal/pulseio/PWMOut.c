@@ -58,7 +58,7 @@ STATIC uint16_t pwm_seq[MP_ARRAY_SIZE(pwms)][CHANNELS_PER_PWM];
 static uint8_t never_reset_pwm[MP_ARRAY_SIZE(pwms)];
 
 void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
-    for(int i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
         NRF_PWM_Type* pwm = pwms[i];
         if (pwm == self->pwm) {
             never_reset_pwm[i] += 1;
@@ -69,7 +69,7 @@ void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
 }
 
 void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
-    for(int i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
         NRF_PWM_Type* pwm = pwms[i];
         if (pwm == self->pwm) {
             never_reset_pwm[i] -= 1;
@@ -78,7 +78,7 @@ void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
 }
 
 void pwmout_reset(void) {
-    for(int i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
         if (never_reset_pwm[i] > 0) {
             continue;
         }

@@ -13,6 +13,7 @@ else
 CIRCUITPY_FULL_BUILD = 1
 CFLAGS += -DCIRCUITPY_FULL_BUILD=1
 endif
+endif
 
 # All builtin modules are listed below, with default values (0 for off, 1 for on)
 # Some are always on, some are always off, and some depend on CIRCUITPY_FULL_BUILD.
@@ -34,10 +35,16 @@ CIRCUITPY_AUDIOIO = $(CIRCUITPY_FULL_BUILD)
 endif
 CFLAGS += -DCIRCUITPY_AUDIOIO=$(CIRCUITPY_AUDIOIO)
 
-#ifndef CIRCUITPY_BITBANGIO
+ifndef CIRCUITPY_BITBANGIO
 CIRCUITPY_BITBANGIO = $(CIRCUITPY_FULL_BUILD)
 endif
 CFLAGS += -DCIRCUITPY_BITBANGIO=$(CIRCUITPY_BITBANGIO)
+
+# Explicitly enabled for boards that support bleio.
+ifndef CIRCUITPY_BLEIO
+CIRCUITPY_BLEIO = 0
+endif
+CFLAGS += -DCIRCUITPY_BLEIO=$(CIRCUITPY_BLEIO)
 
 ifndef CIRCUITPY_BOARD
 CIRCUITPY_BOARD = 1
@@ -127,7 +134,7 @@ CFLAGS += -DCIRCUITPY_RTC=$(CIRCUITPY_RTC)
 
 # Only for SAMD chips.
 ifndef CIRCUITPY_SAMD
-ifneq ($findstring sam,$(CHIP_FAMILY),)
+ifneq ($(findstring sam,$(CHIP_FAMILY)),)
 CIRCUITPY_SAMD = $(CIRCUITPY_FULL_BUILD)
 else
 # Not a SAMD build.

@@ -86,7 +86,7 @@ static NRF_PWM_Type* find_free_pwm (void) {
 #endif
     };
 
-    for ( int device = 0; device < ARRAY_SIZE(PWM); device++ ) {
+    for ( size_t device = 0; device < ARRAY_SIZE(PWM); device++ ) {
         if ( (PWM[device]->ENABLE == 0) &&
              (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
              (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk) ) {

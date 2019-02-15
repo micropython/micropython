@@ -79,7 +79,7 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, co
                 len == 36 && chars[8] == '-' && chars[13] == '-' && chars[18] == '-' && chars[23] == '-';
             if (good_uuid) {
                 size_t hex_idx = 0;
-                for (int i = 0; i < len; i++) {
+                for (size_t i = 0; i < len; i++) {
                     if (unichar_isxdigit(chars[i])) {
                         hex[hex_idx] = chars[i];
                         hex_idx++;

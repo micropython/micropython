@@ -64,9 +64,10 @@
 #ifdef SAMD51
 #define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
-// 128KiB
+// 128KiB heap
 #define PORT_HEAP_SIZE                              (0x20000)
 #define SPI_FLASH_MAX_BAUDRATE 24000000
+// 24kiB stack
 #define CIRCUITPY_DEFAULT_STACK_SIZE                0x6000
 #define MICROPY_CPYTHON_COMPAT                      (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
@@ -85,7 +86,8 @@
 
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
-    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT]; \
+    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT] \
+    ;
 
 #include "ports/circuitpy-common/mpconfig_circuitpy.h"
 

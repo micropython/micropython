@@ -235,6 +235,13 @@ extern const struct _mp_obj_module_t bitbangio_module;
 #define BITBANGIO_MODULE
 #endif
 
+#if CIRCUITPY_BLEIO
+#define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_bleio), (mp_obj_t)&bleio_module },
+extern const struct _mp_obj_module_t bleio_module;
+#else
+#define BLEIO_MODULE
+#endif
+
 #if CIRCUITPY_BOARD
 #define BOARD_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module },
 extern const struct _mp_obj_module_t board_module;
@@ -461,6 +468,7 @@ extern const struct _mp_obj_module_t ustack_module;
     AUDIOBUSIO_MODULE \
     AUDIOIO_MODULE \
     BITBANGIO_MODULE \
+    BLEIO_MODULE \
     BOARD_MODULE \
     BUSIO_MODULE \
     DIGITALIO_MODULE \

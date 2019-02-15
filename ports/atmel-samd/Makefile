@@ -40,7 +40,7 @@ include boards/$(BOARD)/mpconfigboard.mk
 # Port-specific
 include mpconfigport.mk
 # CircuitPython-specific
-include ../circuitpy-common/mpconfig_circuitpy.mk
+include $(TOP)/ports/circuitpy-common/mpconfig_circuitpy.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -49,6 +49,9 @@ QSTR_DEFS = qstrdefsport.h
 include $(TOP)/py/py.mk
 
 include $(TOP)/supervisor/supervisor.mk
+
+# Include make rules and variables common across CircuitPython builds.
+include $(TOP)/ports/circuitpy-common/circuitpy_defns.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -79,36 +82,6 @@ INC += -I. \
        -I../../supervisor/shared/usb \
        -I$(BUILD)
 
-BASE_CFLAGS = \
-	-fsingle-precision-constant \
-	-fno-strict-aliasing \
-	-Wdouble-promotion \
-	-Wno-endif-labels \
-	-Wstrict-prototypes \
-	-Werror-implicit-function-declaration \
-	-Wfloat-equal \
-	-Wundef \
-	-Wshadow \
-	-Wwrite-strings \
-	-Wsign-compare \
-	-Wmissing-format-attribute \
-	-Wno-deprecated-declarations \
-	-Wnested-externs \
-	-Wunreachable-code \
-	-Wcast-align \
-	-Wno-error=lto-type-mismatch \
-	-D__$(CHIP_VARIANT)__ \
-	-ffunction-sections \
-	-fdata-sections \
-	-fshort-enums \
-	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
-	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
-	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
-	--param max-inline-insns-single=500
-
-#        Use these flags to debug build times and header includes.
-#        -ftime-report
-#        -H
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
@@ -169,22 +142,7 @@ CFLAGS += \
 	-DSAMD51
 endif
 
-ifneq ($(FROZEN_DIR),)
-# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
-# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -Wno-error=lto-type-mismatch
-endif
 
-# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
-# then invoke make with FROZEN_MPY_DIR=frozen or FROZEN_MPY_DIRS="dir1 dir2"
-# (be sure to build from scratch).
-
-ifneq ($(FROZEN_MPY_DIRS),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -Wno-error=lto-type-mismatch
-endif
 
 LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
@@ -192,20 +150,6 @@ LIBS := -lgcc -lc
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
 LIBS += -lm
-endif
-
-# Propagate longint choice from .mk to C. There's no easy string comparison
-# in cpp coniditionals, so we #define separate names for each.
-ifeq ($(LONGINT_IMPL),NONE)
-CFLAGS += -DLONGINT_IMPL_NONE
-endif
-
-ifeq ($(LONGINT_IMPL),MPZ)
-CFLAGS += -DLONGINT_IMPL_MPZ
-endif
-
-ifeq ($(LONGINT_IMPL),LONGLONG)
-CFLAGS += -DLONGINT_IMPL_LONGLONG
 endif
 
 ifeq ($(CHIP_FAMILY), samd21)
@@ -302,6 +246,7 @@ SRC_C = \
 	supervisor/shared/memory.c \
 	tick.c \
 
+
 ifeq ($(CIRCUITPY_NETWORK),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1
 
@@ -321,231 +266,6 @@ SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 
 endif # MICROPY_PY_WIZNET5K
 endif # CIRCUITPY_NETWORK
-
-ifeq ($(CIRCUITPY_ANALOGIO),1)
-SRC_PATTERNS += analogio/%
-endif
-ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
-SRC_PATTERNS += audiobusio/%
-endif
-ifeq ($(CIRCUITPY_AUDIOIO),1)
-SRC_PATTERNS += audioio/%
-endif
-ifeq ($(CIRCUITPY_BITBANGIO),1)
-SRC_PATTERNS += bitbangio/%
-endif
-ifeq ($(CIRCUITPY_BOARD),1)
-SRC_PATTERNS += board/%
-endif
-ifeq ($(CIRCUITPY_BUSIO),1)
-SRC_PATTERNS += busio/% bitbangio/OneWire.%
-endif
-ifeq ($(CIRCUITPY_DIGITALIO),1)
-SRC_PATTERNS += digitalio/%
-endif
-ifeq ($(CIRCUITPY_DISPLAYIO),1)
-SRC_PATTERNS += displayio/% terminalio/%
-endif
-ifeq ($(CIRCUITPY_GAMEPAD),1)
-SRC_PATTERNS += gamepad/%
-endif
-ifeq ($(CIRCUITPY_I2CSLAVE),1)
-SRC_PATTERNS += i2cslave/%
-endif
-ifeq ($(CIRCUITPY_MATH),1)
-SRC_PATTERNS += math/%
-endif
-ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
-SRC_PATTERNS += microcontroller/%
-endif
-ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
-SRC_PATTERNS += neopixel_write/%
-endif
-ifeq ($(CIRCUITPY_NETWORK),1)
-SRC_PATTERNS += network/% socket/%
-endif
-ifeq ($(CIRCUITPY_NVM),1)
-SRC_PATTERNS += nvm/%
-endif
-ifeq ($(CIRCUITPY_OS),1)
-SRC_PATTERNS += os/%
-endif
-ifeq ($(CIRCUITPY_PIXELBUF),1)
-SRC_PATTERNS += _pixelbuf/%
-endif
-ifeq ($(CIRCUITPY_PULSEIO),1)
-SRC_PATTERNS += pulseio/%
-endif
-ifeq ($(CIRCUITPY_RANDOM),1)
-SRC_PATTERNS += random/%
-endif
-ifeq ($(CIRCUITPY_ROTARYIO),1)
-SRC_PATTERNS += rotaryio/%
-endif
-ifeq ($(CIRCUITPY_RTC),1)
-SRC_PATTERNS += rtc/%
-endif
-ifeq ($(CIRCUITPY_SAMD),1)
-SRC_PATTERNS += samd/%
-endif
-ifeq ($(CIRCUITPY_STAGE),1)
-SRC_PATTERNS += _stage/%
-endif
-ifeq ($(CIRCUITPY_STORAGE),1)
-SRC_PATTERNS += storage/%
-endif
-ifeq ($(CIRCUITPY_STRUCT),1)
-SRC_PATTERNS += struct/%
-endif
-ifeq ($(CIRCUITPY_SUPERVISOR),1)
-SRC_PATTERNS += supervisor/%
-endif
-ifeq ($(CIRCUITPY_TIME),1)
-SRC_PATTERNS += time/%
-endif
-ifeq ($(CIRCUITPY_TOUCHIO),1)
-SRC_PATTERNS += touchio/%
-endif
-ifeq ($(CIRCUITPY_UHEAP),1)
-SRC_PATTERNS += uheap/%
-endif
-ifeq ($(CIRCUITPY_USB_HID),1)
-SRC_PATTERNS += usb_hid/%
-endif
-ifeq ($(CIRCUITPY_USB_MIDI),1)
-SRC_PATTERNS += usb_midi/%
-endif
-ifeq ($(CIRCUITPY_USTACK),1)
-SRC_PATTERNS += ustack/%
-endif
-
-# All possible sources are listed here, and are filtered by SRC_PATTERNS.
-SRC_COMMON_HAL = \
-$(filter $(SRC_PATTERNS), \
-	analogio/AnalogIn.c \
-	analogio/AnalogOut.c \
-	analogio/__init__.c \
-	audiobusio/__init__.c \
-	audiobusio/I2SOut.c \
-	audiobusio/PDMIn.c \
-	audioio/__init__.c \
-	audioio/AudioOut.c \
-	board/__init__.c \
-	busio/I2C.c \
-	busio/SPI.c \
-	busio/UART.c \
-	busio/__init__.c \
-	digitalio/DigitalInOut.c \
-	digitalio/__init__.c \
-	displayio/ParallelBus.c \
-	i2cslave/I2CSlave.c \
-	i2cslave/__init__.c \
-	microcontroller/Pin.c \
-	microcontroller/Processor.c \
-	microcontroller/__init__.c \
-	neopixel_write/__init__.c \
-	nvm/ByteArray.c \
-	nvm/__init__.c \
-	os/__init__.c \
-	pulseio/PWMOut.c \
-	pulseio/PulseIn.c \
-	pulseio/PulseOut.c \
-	pulseio/__init__.c \
-	rotaryio/IncrementalEncoder.c \
-	rotaryio/__init__.c \
-	rtc/RTC.c \
-	rtc/__init__.c \
-	supervisor/Runtime.c \
-	supervisor/__init__.c \
-	time/__init__.c \
-	touchio/TouchIn.c \
-	touchio/__init__.c \
-)
-
-# These don't have corresponding files in each port but are still located in
-# shared-bindings to make it clear what the contents of the modules are.
-# All possible sources are listed here, and are filtered by SRC_PATTERNS.
-SRC_BINDINGS_ENUMS = \
-$(filter $(SRC_PATTERNS), \
-	digitalio/Direction.c \
-	digitalio/DriveMode.c \
-	digitalio/Pull.c \
-	displayio/Glyph.c \
-	microcontroller/RunMode.c \
-	math/__init__.c \
-	supervisor/__init__.c \
-)
-
-SRC_BINDINGS_ENUMS += \
-	help.c \
-	util.c
-
-# All possible sources are listed here, and are filtered by SRC_PATTERNS.
-SRC_SHARED_MODULE = \
-$(filter $(SRC_PATTERNS), \
-	_pixelbuf/PixelBuf.c \
-	_pixelbuf/__init__.c \
-	_stage/Layer.c \
-	_stage/Text.c \
-	_stage/__init__.c \
-	audioio/__init__.c \
-	audioio/Mixer.c \
-	audioio/RawSample.c \
-	audioio/WaveFile.c \
-	bitbangio/I2C.c \
-	bitbangio/OneWire.c \
-	bitbangio/SPI.c \
-	bitbangio/__init__.c \
-	busio/OneWire.c \
-	displayio/Bitmap.c \
-	displayio/BuiltinFont.c \
-	displayio/ColorConverter.c \
-	displayio/Display.c \
-	displayio/FourWire.c \
-	displayio/Group.c \
-	displayio/OnDiskBitmap.c \
-	displayio/Palette.c \
-	displayio/Shape.c \
-	displayio/TileGrid.c \
-	displayio/__init__.c \
-	gamepad/GamePad.c \
-	gamepad/__init__.c \
-	os/__init__.c \
-	random/__init__.c \
-	socket/__init__.c \
-	network/__init__.c \
-	storage/__init__.c \
-	struct/__init__.c \
-	terminalio/Terminal.c \
-	terminalio/__init__.c \
-	uheap/__init__.c \
-	ustack/__init__.c \
-)
-
-ifeq ($(INTERNAL_LIBM),1)
-SRC_LIBM = \
-$(addprefix lib/,\
-	libm/math.c \
-	libm/roundf.c \
-	libm/fmodf.c \
-	libm/nearbyintf.c \
-	libm/ef_sqrt.c \
-	libm/kf_rem_pio2.c \
-	libm/kf_sin.c \
-	libm/kf_cos.c \
-	libm/kf_tan.c \
-	libm/ef_rem_pio2.c \
-	libm/sf_sin.c \
-	libm/sf_cos.c \
-	libm/sf_tan.c \
-	libm/sf_frexp.c \
-	libm/sf_modf.c \
-	libm/sf_ldexp.c \
-	libm/asinfacosf.c \
-	libm/atanf.c \
-	libm/atan2f.c \
-	)
-endif
 
 ifeq ($(CIRCUITPY_NETWORK),1)
 ifneq ($(MICROPY_PY_WIZNET5K),0)
@@ -577,7 +297,7 @@ endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR += peripherals/samd/$(CHIP_FAMILY)/clocks.c
 

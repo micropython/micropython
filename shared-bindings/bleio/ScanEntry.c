@@ -108,7 +108,7 @@ STATIC mp_obj_t scanentry_get_name(mp_obj_t self_in);
 
 STATIC void bleio_scanentry_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_scanentry_obj_t *self = (bleio_scanentry_obj_t *)self_in;
-    mp_printf(print, "ScanEntry(address: "HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT"",
+    mp_printf(print, "ScanEntry(address: %02x:%02x:%02x:%02x:%02x:%02x",
         self->address.value[5], self->address.value[4], self->address.value[3],
         self->address.value[1], self->address.value[1], self->address.value[0]);
 
