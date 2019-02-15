@@ -30,6 +30,7 @@
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
@@ -272,6 +273,20 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
         #endif
         __set_MSP(*(volatile uint32_t*)0x08000000);
         ((void (*)(uint32_t)) *((volatile uint32_t*)(0x08000000 + 4)))(0x70ad0000);
+    }
+
+    if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
+        // With a string/bytes given, pass its data to the custom bootloader
+        size_t len;
+        const char *data = mp_obj_str_get_data(args[0], &len);
+        void *mboot_region = (void*)*((volatile uint32_t*)0x08000000);
+        memmove(mboot_region, data, len);
+        #if __DCACHE_PRESENT == 1
+        SCB_DisableICache();
+        SCB_DisableDCache();
+        #endif
+        __set_MSP(*(volatile uint32_t*)0x08000000);
+        ((void (*)(uint32_t)) *((volatile uint32_t*)(0x08000000 + 4)))(0x70ad0080);
     }
     #endif
 
