@@ -1211,6 +1211,10 @@ void stm32_main(int initial_r0) {
     SCB_EnableDCache();
     #endif
 
+    #if defined(MBOOT_BOARD_EARLY_INIT)
+    MBOOT_BOARD_EARLY_INIT();
+    #endif
+
     #ifdef MBOOT_BOOTPIN_PIN
     mp_hal_pin_config(MBOOT_BOOTPIN_PIN, MP_HAL_PIN_MODE_INPUT, MBOOT_BOOTPIN_PULL, 0);
     if (mp_hal_pin_read(MBOOT_BOOTPIN_PIN) == MBOOT_BOOTPIN_ACTIVE) {
