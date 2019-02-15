@@ -34,6 +34,8 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
   * [Thingy:52](http://www.nordicsemi.com/eng/Products/Nordic-Thingy-52)
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
+  * [IBK-BLYST-NANO breakout board](https://www.crowdsupply.com/i-syst/blyst-nano)
+  * [BLUEIO-TAG-EVIM BLYST Nano Sensor board](https://www.crowdsupply.com/i-syst/blyst-nano)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
 
@@ -61,6 +63,13 @@ Alternatively the target board could be defined:
 First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
 
      ./drivers/bluetooth/download_ble_stack.sh
+
+Note : The recent change to Nordic Website made it so that the links in the script might not work.  To manually install softdevice:
+
+* Download it from https://www.nordicsemi.com/Software-and-Tools/Software/S132/Download#infotabs
+* Unzip the it.
+* rename the unzipped folder to sxx_nrf52_x.y.z, where sxx = softdevice name (s110, s132 or s140), x.y.z = softdevice version
+* Copy the whole folder to drivers/bluetooth  
 
 If the Bluetooth stacks has been downloaded, compile the target with the following command:
 
@@ -106,7 +115,19 @@ wt51822_s4at         | s110                    | Peripheral             | Manual
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
+ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-targets)
+idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-targets)
+blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
+
+## IDAP-M/IDAP-Link Targets
+
+Download the IDAPnRFProg flashing tool
+
+[IDAPnRFProg Linux](https://sourceforge.net/projects/idaplinkfirmware/files/Linux/IDAPnRFProg_1_6_190113.zip/download)
+[IDAPnRFProg OSX](https://sourceforge.net/projects/idaplinkfirmware/files/OSX/IDAPnRFProg_1_6_190113.zip/download)
+[IDAPnRFProg Windows](https://sourceforge.net/projects/idaplinkfirmware/files/Windows/IDAPnRFProg_1_6_190113.zip/download)
+
 
 ## Segger Targets
 

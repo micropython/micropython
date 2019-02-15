@@ -296,6 +296,14 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_VARIANT) $(SOFTDEV_HEX)
 	pyocd-flashtool -t $(MCU_VARIANT) $<
 
+else ifeq ($(FLASHER), idap)
+
+flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+	IDAPnRFPRog $<
+
+sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	IDAPnRFPRog $(SOFTDEV_HEX) $<
+
 endif
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
