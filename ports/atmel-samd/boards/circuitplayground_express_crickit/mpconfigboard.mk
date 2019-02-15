@@ -10,6 +10,9 @@ EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
 # Turn off longints for Crickit build to make room for additional frozen libs.
 LONGINT_IMPL = NONE
 
+CIRCUITPY_DISPLAYIO = 0
+CIRCUITPY_PIXELBUF = 0
+
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 

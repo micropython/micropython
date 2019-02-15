@@ -446,8 +446,7 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
-// (u)json depends on MICROPY_PY_IO
-#if MICROPY_PY_IO && MICROPY_PY_UJSON
+#if MICROPY_PY_UJSON
 #define JSON_MODULE { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
 #else
 #define JSON_MODULE

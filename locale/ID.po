@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-12 22:32-0500\n"
+"POT-Creation-Date: 2019-02-15 08:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -155,7 +155,7 @@ msgstr "kompilasi script tidak didukung"
 msgid " output:\n"
 msgstr "output:\n"
 
-#: main.c:166 main.c:247
+#: main.c:166 main.c:250
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -167,7 +167,7 @@ msgstr ""
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Berjalan di mode aman(safe mode)! Auto-reload tidak aktif.\n"
 
-#: main.c:170 main.c:249
+#: main.c:170 main.c:252
 msgid "Auto-reload is off.\n"
 msgstr "Auto-reload tidak aktif.\n"
 
@@ -180,19 +180,19 @@ msgstr ""
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "PERINGATAN: Nama file kode anda mempunyai dua ekstensi\n"
 
-#: main.c:221
+#: main.c:223
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:254
+#: main.c:257
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Tekan tombol apa saja untuk masuk ke dalam REPL. Gunakan CTRL+D untuk reset "
 "(Reload)"
 
-#: main.c:419
+#: main.c:422
 msgid "soft reboot\n"
 msgstr "memulai ulang software(soft reboot)\n"
 
@@ -360,12 +360,12 @@ msgstr "Gagal untuk mengalokasikan buffer RX"
 msgid "Could not initialize UART"
 msgstr "Tidak dapat menginisialisasi UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/atmel-samd/common-hal/busio/UART.c:252
 #: ports/nrf/common-hal/busio/UART.c:230
 msgid "No RX pin"
 msgstr "Tidak pin RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/atmel-samd/common-hal/busio/UART.c:311
 #: ports/nrf/common-hal/busio/UART.c:265
 msgid "No TX pin"
 msgstr "Tidak ada pin TX"
@@ -2233,8 +2233,11 @@ msgid "timeout must be >= 0.0"
 msgstr "bits harus memilki nilai 8"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:79
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100 shared-bindings/displayio/Shape.c:69
+#: shared-bindings/displayio/Shape.c:73
 #, fuzzy
-msgid "buffer_size must be >= 1"
+msgid "%q must be >= 1"
 msgstr "buffers harus mempunyai panjang yang sama"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:83
@@ -2393,12 +2396,6 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr ""
 
-#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
-#: shared-bindings/displayio/Group.c:100
-#, fuzzy
-msgid "%q must be >= 1"
-msgstr "buffers harus mempunyai panjang yang sama"
-
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
@@ -2420,15 +2417,15 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c:88
+#: shared-bindings/displayio/Shape.c:97
 msgid "y should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c:92
+#: shared-bindings/displayio/Shape.c:101
 msgid "start_x should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c:96
+#: shared-bindings/displayio/Shape.c:105
 msgid "end_x should be an int"
 msgstr ""
 
@@ -2845,15 +2842,24 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART tidak tersedia"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
+
 #, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "keyword harus berupa string"
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
 
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Semua perangkat PWM sedang digunakan"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Panjang string UUID tidak valid"
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parameter UUID tidak valid"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2862,21 +2868,16 @@ msgstr ""
 #~ "tegangan cukup untuk semua sirkuit dan tekan reset (setelah mencabut "
 #~ "CIRCUITPY).\n"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parameter UUID tidak valid"
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Panjang string UUID tidak valid"
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Semua perangkat PWM sedang digunakan"
 
 #, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "keyword harus berupa string"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
-
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART tidak tersedia"
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "buffers harus mempunyai panjang yang sama"

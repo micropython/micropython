@@ -127,14 +127,14 @@ CFLAGS += -DCIRCUITPY_RTC=$(CIRCUITPY_RTC)
 
 # Only for SAMD chips.
 ifndef CIRCUITPY_SAMD
-ifneq ($findstring samd,$(CHIP_FAMILY),)
+ifneq ($findstring sam,$(CHIP_FAMILY),)
 CIRCUITPY_SAMD = $(CIRCUITPY_FULL_BUILD)
 else
 # Not a SAMD build.
 CIRCUITPY_SAMD = 0
 endif
-CFLAGS += -DCIRCUITPY_SAMD=$(CIRCUITPY_SAMD)
 endif
+CFLAGS += -DCIRCUITPY_SAMD=$(CIRCUITPY_SAMD)
 
 # Currently always off.
 ifndef CIRCUITPY_STAGE

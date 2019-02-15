@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-12 22:32-0500\n"
+"POT-Creation-Date: 2019-02-15 08:46-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -156,7 +156,7 @@ msgstr "script de compilación no soportado"
 msgid " output:\n"
 msgstr " salida:\n"
 
-#: main.c:166 main.c:247
+#: main.c:166 main.c:250
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -168,7 +168,7 @@ msgstr ""
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 
-#: main.c:170 main.c:249
+#: main.c:170 main.c:252
 msgid "Auto-reload is off.\n"
 msgstr "Auto-recarga deshabilitada.\n"
 
@@ -180,18 +180,18 @@ msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ADVERTENCIA: El nombre de archivo de tu código tiene dos extensiones\n"
 
-#: main.c:221
+#: main.c:223
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:254
+#: main.c:257
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
 
-#: main.c:419
+#: main.c:422
 msgid "soft reboot\n"
 msgstr "reinicio suave\n"
 
@@ -359,12 +359,12 @@ msgstr "Ha fallado la asignación del buffer RX"
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/atmel-samd/common-hal/busio/UART.c:252
 #: ports/nrf/common-hal/busio/UART.c:230
 msgid "No RX pin"
 msgstr "Sin pin RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/atmel-samd/common-hal/busio/UART.c:311
 #: ports/nrf/common-hal/busio/UART.c:265
 msgid "No TX pin"
 msgstr "Sin pin TX"
@@ -2253,8 +2253,11 @@ msgid "timeout must be >= 0.0"
 msgstr "bits debe ser 8"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:79
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100 shared-bindings/displayio/Shape.c:69
+#: shared-bindings/displayio/Shape.c:73
 #, fuzzy
-msgid "buffer_size must be >= 1"
+msgid "%q must be >= 1"
 msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:83
@@ -2417,12 +2420,6 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Bytes debe estar entre 0 y 255."
 
-#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
-#: shared-bindings/displayio/Group.c:100
-#, fuzzy
-msgid "%q must be >= 1"
-msgstr "los buffers deben de tener la misma longitud"
-
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr "color buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
@@ -2444,16 +2441,16 @@ msgstr "color buffer deber ser un buffer o un int"
 msgid "palette_index should be an int"
 msgstr "palette_index deberia ser un int"
 
-#: shared-bindings/displayio/Shape.c:88
+#: shared-bindings/displayio/Shape.c:97
 msgid "y should be an int"
 msgstr "y deberia ser un int"
 
-#: shared-bindings/displayio/Shape.c:92
+#: shared-bindings/displayio/Shape.c:101
 #, fuzzy
 msgid "start_x should be an int"
 msgstr "y deberia ser un int"
 
-#: shared-bindings/displayio/Shape.c:96
+#: shared-bindings/displayio/Shape.c:105
 #, fuzzy
 msgid "end_x should be an int"
 msgstr "y deberia ser un int"
@@ -2883,85 +2880,11 @@ msgstr ""
 "El botón reset fue presionado mientras arrancaba CircuitPython. Presiona "
 "otra vez para salir del modo seguro.\n"
 
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Group debe tener size de minimo 1"
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART no disponible"
 
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Baud rate demasiado alto para este periférico SPI"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parámetro UUID inválido"
-
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-#~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
-
-#~ msgid "row data must be a buffer"
-#~ msgstr "row data debe ser un buffer"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "palabras clave deben ser strings"
-
-#~ msgid "index must be int"
-#~ msgstr "indice debe ser int"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "No se puede consultar la dirección del dispositivo."
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Todos los periféricos PWM en uso"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
-
-#~ msgid "Group empty"
-#~ msgstr "Group vacío"
-
-#~ msgid "Wrong address length"
-#~ msgstr "Longitud de address erronea"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de Servicio inválido"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longitud de string UUID inválida"
-
-#~ msgid "Can not add Service."
-#~ msgstr "No se puede agregar el Servicio."
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio todavia esta en desarrollo"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "suficiente poder para todo el circuito y presiona reset (después de "
-#~ "expulsar CIRCUITPY).\n"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Falló la asignación del buffer RX de %d bytes"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Numero erroneo de bytes dados"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "No se pueden aplicar los parámetros GAP."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "No se pueden establecer los parámetros PPCP."
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
 
 #, fuzzy
 #~ msgid ""
@@ -2970,8 +2893,86 @@ msgstr ""
 #~ "Por favor registra un issue en la siguiente URL con el contenidos de tu "
 #~ "unidad de almacenamiento CIRCUITPY:\n"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "No se puede aplicar los datos de anuncio. status: 0x%02x"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "No se pueden establecer los parámetros PPCP."
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART no disponible"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "No se puede aplicar el nombre del dispositivo en el stack."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "No se pueden aplicar los parámetros GAP."
+
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Numero erroneo de bytes dados"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "No se puede codificar el UUID, para revisar la longitud."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Falló la asignación del buffer RX de %d bytes"
+
+#~ msgid ""
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "suficiente poder para todo el circuito y presiona reset (después de "
+#~ "expulsar CIRCUITPY).\n"
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio todavia esta en desarrollo"
+
+#~ msgid "Can not add Service."
+#~ msgstr "No se puede agregar el Servicio."
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longitud de string UUID inválida"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de Servicio inválido"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Se puede codificar el UUID en el paquete de anuncio."
+
+#~ msgid "Wrong address length"
+#~ msgstr "Longitud de address erronea"
+
+#~ msgid "Group empty"
+#~ msgstr "Group vacío"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Parece que nuestro código CircuitPython dejó de funcionar. Whoops!\n"
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Todos los periféricos PWM en uso"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "No se puede consultar la dirección del dispositivo."
+
+#~ msgid "index must be int"
+#~ msgstr "indice debe ser int"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "palabras clave deben ser strings"
+
+#~ msgid "row data must be a buffer"
+#~ msgstr "row data debe ser un buffer"
+
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr "row buffer deberia ser un bytearray o array de tipo 'b' o 'B'"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parámetro UUID inválido"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Baud rate demasiado alto para este periférico SPI"
+
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Group debe tener size de minimo 1"
+
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "los buffers deben de tener la misma longitud"

@@ -303,7 +303,7 @@ SRC_C = \
 	tick.c \
 
 ifeq ($(CIRCUITPY_NETWORK),1)
-CFLAGS += -DCIRCUITPY_NETWORK=1 -DMICROPY_PY_NETWORK=1
+CFLAGS += -DMICROPY_PY_NETWORK=1
 
 SRC_MOD += lib/netutils/netutils.c
 
@@ -323,105 +323,111 @@ endif # MICROPY_PY_WIZNET5K
 endif # CIRCUITPY_NETWORK
 
 ifeq ($(CIRCUITPY_ANALOGIO),1)
-SRC_DIRS += analogio/
+SRC_PATTERNS += analogio/%
 endif
 ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
-SRC_DIRS += audiobusio/
+SRC_PATTERNS += audiobusio/%
+endif
+ifeq ($(CIRCUITPY_AUDIOIO),1)
+SRC_PATTERNS += audioio/%
 endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
-SRC_DIRS += bitbangio/
+SRC_PATTERNS += bitbangio/%
 endif
 ifeq ($(CIRCUITPY_BOARD),1)
-SRC_DIRS += board/
+SRC_PATTERNS += board/%
 endif
 ifeq ($(CIRCUITPY_BUSIO),1)
-SRC_DIRS += busio/ bitbangio/OneWire
+SRC_PATTERNS += busio/% bitbangio/OneWire.%
 endif
 ifeq ($(CIRCUITPY_DIGITALIO),1)
-SRC_DIRS += digitalio/
+SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
-SRC_DIRS += displayio/
+SRC_PATTERNS += displayio/% terminalio/%
 endif
 ifeq ($(CIRCUITPY_GAMEPAD),1)
-SRC_DIRS += gamepad/
+SRC_PATTERNS += gamepad/%
 endif
 ifeq ($(CIRCUITPY_I2CSLAVE),1)
-SRC_DIRS += i2cslave/
+SRC_PATTERNS += i2cslave/%
 endif
 ifeq ($(CIRCUITPY_MATH),1)
-SRC_DIRS += math/
+SRC_PATTERNS += math/%
 endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
-SRC_DIRS += microcontroller/
+SRC_PATTERNS += microcontroller/%
 endif
 ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
-SRC_DIRS += neopixel_write/
+SRC_PATTERNS += neopixel_write/%
 endif
 ifeq ($(CIRCUITPY_NETWORK),1)
-SRC_DIRS += network/
+SRC_PATTERNS += network/% socket/%
 endif
 ifeq ($(CIRCUITPY_NVM),1)
-SRC_DIRS += nvm/
+SRC_PATTERNS += nvm/%
 endif
 ifeq ($(CIRCUITPY_OS),1)
-SRC_DIRS += os/
+SRC_PATTERNS += os/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
-SRC_DIRS += _pixelbuf/
+SRC_PATTERNS += _pixelbuf/%
 endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
-SRC_DIRS += pulseio/
+SRC_PATTERNS += pulseio/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
-SRC_DIRS += random/
+SRC_PATTERNS += random/%
 endif
 ifeq ($(CIRCUITPY_ROTARYIO),1)
-SRC_DIRS += rotaryio/
+SRC_PATTERNS += rotaryio/%
 endif
 ifeq ($(CIRCUITPY_RTC),1)
-SRC_DIRS += rtc/
+SRC_PATTERNS += rtc/%
 endif
 ifeq ($(CIRCUITPY_SAMD),1)
-SRC_DIRS += samd/
+SRC_PATTERNS += samd/%
 endif
 ifeq ($(CIRCUITPY_STAGE),1)
-SRC_DIRS += _stage/
+SRC_PATTERNS += _stage/%
 endif
 ifeq ($(CIRCUITPY_STORAGE),1)
-SRC_DIRS += storage/
+SRC_PATTERNS += storage/%
 endif
 ifeq ($(CIRCUITPY_STRUCT),1)
-SRC_DIRS += struct/
+SRC_PATTERNS += struct/%
 endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
-SRC_DIRS += supervisor/
+SRC_PATTERNS += supervisor/%
 endif
 ifeq ($(CIRCUITPY_TIME),1)
-SRC_DIRS += time/
+SRC_PATTERNS += time/%
 endif
 ifeq ($(CIRCUITPY_TOUCHIO),1)
-SRC_DIRS += touchio/
+SRC_PATTERNS += touchio/%
 endif
 ifeq ($(CIRCUITPY_UHEAP),1)
-SRC_DIRS += uheap/
+SRC_PATTERNS += uheap/%
 endif
 ifeq ($(CIRCUITPY_USB_HID),1)
-SRC_DIRS += usb_hid/
+SRC_PATTERNS += usb_hid/%
 endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
-SRC_DIRS += usb_midi/
+SRC_PATTERNS += usb_midi/%
 endif
 ifeq ($(CIRCUITPY_USTACK),1)
-SRC_DIRS += ustack/
+SRC_PATTERNS += ustack/%
 endif
 
-# All possible sources are listed here, and are filtered by SRC_DIRS.
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_COMMON_HAL = \
-$(filter $(patsubst %,%%,$(SRC_DIRS)), \
+$(filter $(SRC_PATTERNS), \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
+	audiobusio/__init__.c \
+	audiobusio/I2SOut.c \
+	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
 	board/__init__.c \
@@ -458,9 +464,9 @@ $(filter $(patsubst %,%%,$(SRC_DIRS)), \
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
-# All possible sources are listed here, and are filtered by SRC_DIRS.
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_BINDINGS_ENUMS = \
-$(filter $(patsubst %,%%,$(SRC_DIRS)), \
+$(filter $(SRC_PATTERNS), \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -474,17 +480,14 @@ SRC_BINDINGS_ENUMS += \
 	help.c \
 	util.c
 
-# All possible sources are listed here, and are filtered by SRC_DIRS.
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = \
-$(filter $(patsubst %,%%,$(SRC_DIRS)), \
+$(filter $(SRC_PATTERNS), \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
-	audiobusio/__init__.c \
-	audiobusio/I2SOut.c \
-	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/Mixer.c \
 	audioio/RawSample.c \
@@ -594,3 +597,8 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 include $(TOP)/py/mkrules.mk
+
+# Print out the value of a make variable.
+# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
+print-%:
+	@echo $* = $($*)

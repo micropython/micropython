@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-12 22:32-0500\n"
+"POT-Creation-Date: 2019-02-15 08:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -155,7 +155,7 @@ msgstr ""
 msgid " output:\n"
 msgstr ""
 
-#: main.c:166 main.c:247
+#: main.c:166 main.c:250
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -165,7 +165,7 @@ msgstr ""
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr ""
 
-#: main.c:170 main.c:249
+#: main.c:170 main.c:252
 msgid "Auto-reload is off.\n"
 msgstr ""
 
@@ -177,17 +177,17 @@ msgstr ""
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 
-#: main.c:221
+#: main.c:223
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:254
+#: main.c:257
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 
-#: main.c:419
+#: main.c:422
 msgid "soft reboot\n"
 msgstr ""
 
@@ -353,12 +353,12 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:241
+#: ports/atmel-samd/common-hal/busio/UART.c:252
 #: ports/nrf/common-hal/busio/UART.c:230
 msgid "No RX pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c:300
+#: ports/atmel-samd/common-hal/busio/UART.c:311
 #: ports/nrf/common-hal/busio/UART.c:265
 msgid "No TX pin"
 msgstr ""
@@ -2197,7 +2197,10 @@ msgid "timeout must be >= 0.0"
 msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:79
-msgid "buffer_size must be >= 1"
+#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
+#: shared-bindings/displayio/Group.c:100 shared-bindings/displayio/Shape.c:69
+#: shared-bindings/displayio/Shape.c:73
+msgid "%q must be >= 1"
 msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:83
@@ -2354,11 +2357,6 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr ""
 
-#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
-#: shared-bindings/displayio/Group.c:100
-msgid "%q must be >= 1"
-msgstr ""
-
 #: shared-bindings/displayio/Palette.c:91
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
@@ -2380,15 +2378,15 @@ msgstr ""
 msgid "palette_index should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c:88
+#: shared-bindings/displayio/Shape.c:97
 msgid "y should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c:92
+#: shared-bindings/displayio/Shape.c:101
 msgid "start_x should be an int"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c:96
+#: shared-bindings/displayio/Shape.c:105
 msgid "end_x should be an int"
 msgstr ""
 
