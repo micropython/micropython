@@ -1916,7 +1916,7 @@ STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t exc
             prev_finally->unwind_label = UNWIND_LABEL_DO_FINAL_UNWIND;
             ASM_MOV_REG_PCREL(emit->as, REG_RET, label & ~MP_EMIT_BREAK_FROM_FOR);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_RET);
-            // Cancel any active exception (see also emit_native_pop_except)
+            // Cancel any active exception (see also emit_native_pop_except_jump)
             emit_native_mov_reg_const(emit, REG_RET, MP_F_CONST_NONE_OBJ);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_RET);
             // Jump to the innermost active finally
@@ -2111,18 +2111,15 @@ STATIC void emit_native_for_iter_end(emit_t *emit) {
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_block(emit_t *emit) {
-    emit_native_pre(emit);
-    if (!emit->exc_stack[emit->exc_stack_size - 1].is_finally) {
+STATIC void emit_native_pop_except_jump(emit_t *emit, mp_uint_t label, bool within_exc_handler) {
+    if (within_exc_handler) {
+        // Cancel any active exception so subsequent handlers don't see it
+        emit_native_mov_reg_const(emit, REG_TEMP0, MP_F_CONST_NONE_OBJ);
+        ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+    } else {
         emit_native_leave_exc_stack(emit, false);
     }
-    emit_post(emit);
-}
-
-STATIC void emit_native_pop_except(emit_t *emit) {
-    // Cancel any active exception so subsequent handlers don't see it
-    emit_native_mov_reg_const(emit, REG_TEMP0, MP_F_CONST_NONE_OBJ);
-    ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
+    emit_native_jump(emit, label);
 }
 
 STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
@@ -2726,8 +2723,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_get_iter,
     emit_native_for_iter,
     emit_native_for_iter_end,
-    emit_native_pop_block,
-    emit_native_pop_except,
+    emit_native_pop_except_jump,
     emit_native_unary_op,
     emit_native_binary_op,
     emit_native_build,
