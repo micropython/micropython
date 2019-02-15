@@ -1534,8 +1534,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
     compile_increase_except_level(comp, l1, MP_EMIT_SETUP_BLOCK_EXCEPT);
 
     compile_node(comp, pn_body); // body
-    EMIT(pop_block);
-    EMIT_ARG(jump, success_label); // jump over exception handler
+    EMIT_ARG(pop_except_jump, success_label, false); // jump over exception handler
 
     EMIT_ARG(label_assign, l1); // start of exception handler
     EMIT(start_except_handler);
@@ -1606,8 +1605,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
             compile_decrease_except_level(comp);
         }
 
-        EMIT(pop_except);
-        EMIT_ARG(jump, l2);
+        EMIT_ARG(pop_except_jump, l2, true);
         EMIT_ARG(label_assign, end_finally_label);
         EMIT_ARG(adjust_stack_size, 1); // stack adjust for the exception instance
     }
@@ -1740,8 +1738,7 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     compile_load_id(comp, context);
     compile_await_object_method(comp, MP_QSTR___anext__);
     c_assign(comp, pns->nodes[0], ASSIGN_STORE); // variable
-    EMIT(pop_block);
-    EMIT_ARG(jump, try_else_label);
+    EMIT_ARG(pop_except_jump, try_else_label, false);
 
     EMIT_ARG(label_assign, try_exception_label);
     EMIT(start_except_handler);
@@ -1750,8 +1747,7 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     EMIT_ARG(binary_op, MP_BINARY_OP_EXCEPTION_MATCH);
     EMIT_ARG(pop_jump_if, false, try_finally_label);
     EMIT(pop_top); // pop exception instance
-    EMIT(pop_except);
-    EMIT_ARG(jump, while_else_label);
+    EMIT_ARG(pop_except_jump, while_else_label, true);
 
     EMIT_ARG(label_assign, try_finally_label);
     EMIT_ARG(adjust_stack_size, 1); // if we jump here, the exc is on the stack

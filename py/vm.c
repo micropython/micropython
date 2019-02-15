@@ -759,17 +759,13 @@ unwind_jump:;
                 }
 
                 // matched against: SETUP_EXCEPT, SETUP_FINALLY, SETUP_WITH
-                ENTRY(MP_BC_POP_BLOCK):
-                    // we are exiting an exception handler, so pop the last one of the exception-stack
+                ENTRY(MP_BC_POP_EXCEPT_JUMP): {
                     assert(exc_sp >= exc_stack);
                     POP_EXC_BLOCK();
-                    DISPATCH();
-
-                // matched against: SETUP_EXCEPT
-                ENTRY(MP_BC_POP_EXCEPT):
-                    assert(exc_sp >= exc_stack);
-                    POP_EXC_BLOCK();
-                    DISPATCH();
+                    DECODE_ULABEL;
+                    ip += ulab;
+                    DISPATCH_WITH_PEND_EXC_CHECK();
+                }
 
                 ENTRY(MP_BC_BUILD_TUPLE): {
                     MARK_EXC_IP_SELECTIVE();
