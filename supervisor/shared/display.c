@@ -172,9 +172,9 @@ displayio_tilegrid_t blinka_sprite = {
     .inline_tiles = true
 };
 
-mp_obj_t splash_children[2] = {
-    &blinka_sprite,
-    &supervisor_terminal_text_grid
+displayio_group_child_t splash_children[2] = {
+    {&blinka_sprite, &blinka_sprite},
+    {&supervisor_terminal_text_grid, &supervisor_terminal_text_grid}
 };
 
 displayio_group_t circuitpython_splash = {
