@@ -12,9 +12,6 @@
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE  0
 
-// A number of modules are removed for pIRKey to make room for frozen libraries.
-#define PIRKEY_M0 (1)
-
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
 
 #define IGNORE_PIN_PA02     1

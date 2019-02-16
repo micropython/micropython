@@ -164,7 +164,7 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
-#ifndef PIRKEY_M0
+#if CIRCUITPY_RTC
     rtc_init();
 #endif
 
@@ -209,9 +209,11 @@ void reset_port(void) {
     pulseout_reset();
     pwmout_reset();
 
-#ifndef PIRKEY_M0
+#if CIRCUITPY_ANALOGIO
     analogin_reset();
     analogout_reset();
+#endif
+#if CIRCUITPY_RTC
     rtc_reset();
 #endif
 

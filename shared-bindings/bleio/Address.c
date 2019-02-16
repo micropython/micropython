@@ -88,7 +88,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
         GET_STR_DATA_LEN(address, str, str_len);
 
         size_t value_index = 0;
-        size_t str_index = str_len;
+        int str_index = str_len;
         bool error = false;
 
         // Loop until fewer than two characters left.
@@ -138,7 +138,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(print, "Address('"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT"')",
+    mp_printf(print, "Address('%02x:%02x:%02x:%02x:%02x:%02x')",
         self->value[5], self->value[4], self->value[3],
         self->value[2], self->value[1], self->value[0]);
 }

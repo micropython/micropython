@@ -30,7 +30,6 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "SFE_NRF52840_Mini"
 
-#define PORT_HEAP_SIZE              (128 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_11)
@@ -65,4 +64,3 @@
 #define SPI_FLASH_SCK_PIN &pin_P0_19
 #define SPI_FLASH_CS_PIN &pin_P0_17
 #endif*/
-

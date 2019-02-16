@@ -87,6 +87,8 @@ void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
     }
 }
 
+extern void tusb_hal_nrf_power_event (uint32_t event);
+
 void SD_EVT_IRQHandler(void) {
     uint32_t evt_id;
     while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {
@@ -101,7 +103,6 @@ void SD_EVT_IRQHandler(void) {
                                  (evt_id == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
                                  (evt_id == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
 
-                extern void tusb_hal_nrf_power_event (uint32_t event);
                 tusb_hal_nrf_power_event(usbevt);
             }
             break;

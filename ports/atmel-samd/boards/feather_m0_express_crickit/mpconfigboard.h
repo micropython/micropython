@@ -32,5 +32,3 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_PA11)
 #define DEFAULT_UART_BUS_TX (&pin_PA10)
-
-#define CIRCUITPY_DISPLAYIO (0)

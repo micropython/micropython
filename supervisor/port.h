@@ -29,10 +29,6 @@
 
 #include "py/mpconfig.h"
 
-#ifndef PORT_HEAP_SIZE
-#error "Please define PORT_HEAP_SIZE to specify heap size in bytes."
-#endif
-
 #include "supervisor/shared/safe_mode.h"
 
 // Provided by the linker;

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-14 15:42+0100\n"
+"POT-Creation-Date: 2019-02-15 19:19-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -155,7 +155,7 @@ msgstr "compilação de script não suportada"
 msgid " output:\n"
 msgstr " saída:\n"
 
-#: main.c:166 main.c:248
+#: main.c:166 main.c:250
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -165,7 +165,7 @@ msgstr ""
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Rodando em modo seguro! Atualização automática está desligada.\n"
 
-#: main.c:170 main.c:250
+#: main.c:170 main.c:252
 msgid "Auto-reload is off.\n"
 msgstr "A atualização automática está desligada.\n"
 
@@ -177,17 +177,17 @@ msgstr "Rodando em modo seguro! Não está executando o código salvo.\n"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "AVISO: Seu arquivo de código tem duas extensões\n"
 
-#: main.c:221
+#: main.c:223
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:255
+#: main.c:257
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 
-#: main.c:420
+#: main.c:422
 msgid "soft reboot\n"
 msgstr ""
 
@@ -315,11 +315,7 @@ msgstr "Todos os canais de eventos em uso"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taxa de amostragem muito alta. Deve ser menor que %d"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:71
-msgid "Not enough pins available"
-msgstr "Não há pinos suficientes disponíveis"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c:78
+#: ports/atmel-samd/common-hal/busio/I2C.c:74
 #: ports/atmel-samd/common-hal/busio/SPI.c:176
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
@@ -327,11 +323,11 @@ msgstr "Não há pinos suficientes disponíveis"
 msgid "Invalid pins"
 msgstr "Pinos inválidos"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:101
+#: ports/atmel-samd/common-hal/busio/I2C.c:97
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL precisa de um pull up"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:121
+#: ports/atmel-samd/common-hal/busio/I2C.c:117
 msgid "Unsupported baudrate"
 msgstr "Taxa de transmissão não suportada"
 
@@ -2835,61 +2831,64 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART não disponível"
-
 #, fuzzy
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Todos os temporizadores em uso"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Não é possível consultar o endereço do dispositivo."
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Falha ao alocar buffer RX de %d bytes"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parâmetro UUID inválido"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "heap deve ser uma lista"
-
-#~ msgid "Group empty"
-#~ msgstr "Grupo vazio"
-
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Grupo deve ter tamanho pelo menos 1"
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "buffers devem ser o mesmo tamanho"
 
 #~ msgid "index must be int"
 #~ msgstr "index deve ser int"
 
 #, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "buffers devem ser o mesmo tamanho"
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Grupo deve ter tamanho pelo menos 1"
+
+#~ msgid "Group empty"
+#~ msgstr "Grupo vazio"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "heap deve ser uma lista"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parâmetro UUID inválido"
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Falha ao alocar buffer RX de %d bytes"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Não é possível consultar o endereço do dispositivo."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de serviço inválido"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."
+
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
+
+#, fuzzy
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Todos os temporizadores em uso"
+
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART não disponível"
+
+#~ msgid "Not enough pins available"
+#~ msgstr "Não há pinos suficientes disponíveis"

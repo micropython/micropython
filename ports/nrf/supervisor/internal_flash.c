@@ -71,7 +71,7 @@ uint32_t supervisor_flash_get_block_count(void) {
 }
 
 #ifdef BLUETOOTH_SD
-STATIC bool wait_for_flash_operation() {
+STATIC bool wait_for_flash_operation(void) {
     do {
         sd_app_evt_wait();
         uint32_t evt_id;

@@ -148,11 +148,6 @@ SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
 	struct/__init__.c
-	
-ifndef EXCLUDE_PIXELBUF
-       SRC_SHARED_MODULE += _pixelbuf/__init__.c \
-       _pixelbuf/PixelBuf.c
-endif
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

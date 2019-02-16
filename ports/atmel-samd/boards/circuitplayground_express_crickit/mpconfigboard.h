@@ -3,9 +3,6 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA17)
 
-// No framebuf on CRICKit version to save space.
-#define MICROPY_PY_FRAMEBUF         (0)
-
 // Don't allow touch on A0 (PA02), because it's connected to the speaker.
 #define PA02_NO_TOUCH       (true)
 
@@ -49,5 +46,3 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
-
-#define CIRCUITPY_DISPLAYIO (0)

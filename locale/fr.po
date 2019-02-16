@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-14 15:42+0100\n"
+"POT-Creation-Date: 2019-02-15 19:19-0500\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -154,7 +154,7 @@ msgstr "compilation de script non supporté"
 msgid " output:\n"
 msgstr " sortie:\n"
 
-#: main.c:166 main.c:248
+#: main.c:166 main.c:250
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
@@ -166,7 +166,7 @@ msgstr ""
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Mode sans-échec. Auto-rechargement désactivé.\n"
 
-#: main.c:170 main.c:250
+#: main.c:170 main.c:252
 msgid "Auto-reload is off.\n"
 msgstr "Auto-rechargement désactivé.\n"
 
@@ -178,17 +178,17 @@ msgstr "Mode sans-échec! Le code sauvegardé ne s'éxecute pas.\n"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION: le nom de fichier de votre code a deux extensions\n"
 
-#: main.c:221
+#: main.c:223
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:255
+#: main.c:257
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
-#: main.c:420
+#: main.c:422
 msgid "soft reboot\n"
 msgstr "redémarrage logiciel\n"
 
@@ -316,11 +316,7 @@ msgstr "Tous les canaux d'événements sont utilisés"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taux d'échantillonage trop élevé. Doit être inf. à %d"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:71
-msgid "Not enough pins available"
-msgstr "Pas assez de broches disponibles"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c:78
+#: ports/atmel-samd/common-hal/busio/I2C.c:74
 #: ports/atmel-samd/common-hal/busio/SPI.c:176
 #: ports/atmel-samd/common-hal/busio/UART.c:120
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
@@ -328,11 +324,11 @@ msgstr "Pas assez de broches disponibles"
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:101
+#: ports/atmel-samd/common-hal/busio/I2C.c:97
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:121
+#: ports/atmel-samd/common-hal/busio/I2C.c:117
 msgid "Unsupported baudrate"
 msgstr "Débit non supporté"
 
@@ -2914,30 +2910,75 @@ msgstr ""
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
 #, fuzzy
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART n'est pas disponible"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "les slices de tampon doivent être de longueurs égales"
 
 #, fuzzy
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "mauvais nombre d'octets fourni'"
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Le tampon doit être de longueur au moins 1"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Paramètre UUID invalide"
+
+#, fuzzy
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr ""
+#~ "le tampon de ligne doit être un bytearray ou un tableau de type 'b' ou 'B'"
+
+#, fuzzy
+#~ msgid "row data must be a buffer"
+#~ msgstr "les données de ligne doivent être un tampon"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "les noms doivent être des chaînes de caractère"
+
+#~ msgid "index must be int"
+#~ msgstr "l'index doit être un entier"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être une displayio.Palette"
+
+#, fuzzy
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Tous les périphériques PWM sont utilisés"
+
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
+
+#, fuzzy
+#~ msgid "Group empty"
+#~ msgstr "Groupe vide"
+
+#~ msgid "Wrong address length"
+#~ msgstr "Mauvaise longueur d'adresse"
+
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
+
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
+
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longeur de chaîne UUID invalide"
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
+
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio est en cours de développement"
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2947,72 +2988,30 @@ msgstr ""
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
 #, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "mauvais nombre d'octets fourni'"
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio est en cours de développement"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longeur de chaîne UUID invalide"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
-
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
-
-#, fuzzy
-#~ msgid "Group empty"
-#~ msgstr "Groupe vide"
-
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
-
-#, fuzzy
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Tous les périphériques PWM sont utilisés"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
-
-#~ msgid "index must be int"
-#~ msgstr "l'index doit être un entier"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "les noms doivent être des chaînes de caractère"
-
-#, fuzzy
-#~ msgid "row data must be a buffer"
-#~ msgstr "les données de ligne doivent être un tampon"
-
-#, fuzzy
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
-#~ "le tampon de ligne doit être un bytearray ou un tableau de type 'b' ou 'B'"
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Paramètre UUID invalide"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
+
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
 
 #, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Le tampon doit être de longueur au moins 1"
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART n'est pas disponible"
 
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "les slices de tampon doivent être de longueurs égales"
+#~ msgid "Not enough pins available"
+#~ msgstr "Pas assez de broches disponibles"

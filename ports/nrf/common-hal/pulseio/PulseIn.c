@@ -44,7 +44,7 @@ static pulseio_pulsein_obj_t* _objs[GPIOTE_CH_NUM];
 
 // return index of the object in array
 static int _find_pulsein_obj(pulseio_pulsein_obj_t* obj) {
-    for(int i = 0; i < NRFX_ARRAY_SIZE(_objs); i++ ) {
+    for(size_t i = 0; i < NRFX_ARRAY_SIZE(_objs); i++ ) {
         if ( _objs[i] == obj) {
             return i;
         }
@@ -63,7 +63,7 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     current_us = 1000 - current_us;
 
     pulseio_pulsein_obj_t* self = NULL;
-    for(int i = 0; i < NRFX_ARRAY_SIZE(_objs); i++ ) {
+    for(size_t i = 0; i < NRFX_ARRAY_SIZE(_objs); i++ ) {
         if ( _objs[i] && _objs[i]->pin == pin ) {
             self = _objs[i];
             break;

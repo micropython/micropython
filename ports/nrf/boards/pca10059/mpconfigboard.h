@@ -30,5 +30,4 @@
 
 #define MICROPY_HW_LED_STATUS          (&pin_P0_06)
 
-#define PORT_HEAP_SIZE              (128 * 1024)
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
