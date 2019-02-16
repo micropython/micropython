@@ -468,16 +468,19 @@ STATIC mp_obj_t stream_tell(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_tell_obj, stream_tell);
 
-STATIC mp_obj_t stream_flush(mp_obj_t self) {
+mp_obj_t mp_stream_flush(mp_obj_t self) {
     const mp_stream_p_t *stream_p = mp_get_stream(self);
     int error;
+    if (stream_p->ioctl == NULL) {
+        mp_raise_OSError(MP_EINVAL);
+    }
     mp_uint_t res = stream_p->ioctl(self, MP_STREAM_FLUSH, 0, &error);
     if (res == MP_STREAM_ERROR) {
         mp_raise_OSError(error);
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_flush_obj, stream_flush);
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_flush_obj, mp_stream_flush);
 
 STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;

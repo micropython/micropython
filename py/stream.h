@@ -113,6 +113,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
+mp_obj_t mp_stream_flush(mp_obj_t self);
 
 #if MICROPY_STREAMS_POSIX_API
 // Functions with POSIX-compatible signatures

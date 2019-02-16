@@ -371,10 +371,11 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
 STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_sep, ARG_end, ARG_file };
+    enum { ARG_sep, ARG_end, ARG_flush, ARG_file };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__space_)} },
         { MP_QSTR_end, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__0x0a_)} },
+        { MP_QSTR_flush, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
         { MP_QSTR_file, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_sys_stdout_obj)} },
         #endif
@@ -414,6 +415,9 @@ STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map
     }
     #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     mp_stream_write_adaptor(print.data, end_data, u.len[1]);
+    if (u.args[ARG_flush].u_bool) {
+        mp_stream_flush(MP_OBJ_FROM_PTR(print.data));
+    }
     #else
     mp_print_strn(&mp_plat_print, end_data, u.len[1], 0, 0, 0);
     #endif
