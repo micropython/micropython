@@ -42,9 +42,6 @@
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code
-#define PORT_HEAP_SIZE              (128 * 1024)
 // TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)

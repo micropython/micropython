@@ -33,7 +33,6 @@
 #ifdef SAMD21
 #define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
-#define PORT_HEAP_SIZE                              (16384 + 4096)
 #define SPI_FLASH_MAX_BAUDRATE 8000000
 #define CIRCUITPY_DEFAULT_STACK_SIZE                4096
 
@@ -64,8 +63,6 @@
 #ifdef SAMD51
 #define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
-// 128KiB heap
-#define PORT_HEAP_SIZE                              (0x20000)
 #define SPI_FLASH_MAX_BAUDRATE 24000000
 // 24kiB stack
 #define CIRCUITPY_DEFAULT_STACK_SIZE                0x6000
@@ -89,6 +86,6 @@
     mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT] \
     ;
 
-#include "ports/circuitpy-common/mpconfig_circuitpy.h"
+#include "py/circuitpy_mpconfig.h"
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

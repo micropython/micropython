@@ -46,7 +46,7 @@ include boards/$(BOARD)/mpconfigboard.mk
 # Port-specific
 include mpconfigport.mk
 # CircuitPython-specific
-include $(TOP)/ports/circuitpy-common/mpconfig_circuitpy.mk
+include $(TOP)/py/circuitpy_mpconfig.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -57,7 +57,7 @@ include $(TOP)/py/py.mk
 include $(TOP)/supervisor/supervisor.mk
 
 # Include make rules and variables common across CircuitPython builds.
-include $(TOP)/ports/circuitpy-common/circuitpy_defns.mk
+include $(TOP)/py/circuitpy_defns.mk
 
 ifneq ($(SD), )
 	include bluetooth/bluetooth_common.mk

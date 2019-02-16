@@ -56,6 +56,6 @@
     CIRCUITPY_COMMON_ROOT_POINTERS \
     ;
 
-#include "ports/circuitpy-common/mpconfig_circuitpy.h"
+#include "py/circuitpy_mpconfig.h"
 
 #endif  // NRF5_MPCONFIGPORT_H__
