@@ -204,6 +204,7 @@ typedef long mp_off_t;
 
 #ifdef LONGINT_IMPL_LONGLONG
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MP_SSIZE_MAX (0x7fffffff)
 #endif
 
 
