@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 18:56-0500\n"
+"POT-Creation-Date: 2019-02-15 19:19-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -103,11 +103,11 @@ msgstr ""
 msgid "syntax error in JSON"
 msgstr ""
 
-#: extmod/modure.c:161
+#: extmod/modure.c:265
 msgid "Splitting with sub-captures"
 msgstr ""
 
-#: extmod/modure.c:207
+#: extmod/modure.c:428
 msgid "Error in regex"
 msgstr ""
 
@@ -1470,7 +1470,7 @@ msgstr ""
 msgid "object with buffer protocol required"
 msgstr ""
 
-#: py/objarray.c:413 py/objstr.c:428 py/objstrunicode.c:191 py/objtuple.c:188
+#: py/objarray.c:413 py/objstr.c:437 py/objstrunicode.c:211 py/objtuple.c:188
 #: shared-bindings/nvm/ByteArray.c:85
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
@@ -1620,152 +1620,156 @@ msgstr ""
 msgid "wrong number of arguments"
 msgstr ""
 
-#: py/objstr.c:468
+#: py/objstr.c:414 py/objstrunicode.c:118
+msgid "offset out of bounds"
+msgstr ""
+
+#: py/objstr.c:477
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 
-#: py/objstr.c:543 py/objstr.c:648 py/objstr.c:1745
+#: py/objstr.c:552 py/objstr.c:657 py/objstr.c:1754
 msgid "empty separator"
 msgstr ""
 
-#: py/objstr.c:642
+#: py/objstr.c:651
 msgid "rsplit(None,n)"
 msgstr ""
 
-#: py/objstr.c:714
+#: py/objstr.c:723
 msgid "substring not found"
 msgstr ""
 
-#: py/objstr.c:771
+#: py/objstr.c:780
 msgid "start/end indices"
 msgstr ""
 
-#: py/objstr.c:932
+#: py/objstr.c:941
 msgid "bad format string"
 msgstr ""
 
-#: py/objstr.c:954
+#: py/objstr.c:963
 msgid "single '}' encountered in format string"
 msgstr ""
 
-#: py/objstr.c:993
+#: py/objstr.c:1002
 msgid "bad conversion specifier"
 msgstr ""
 
-#: py/objstr.c:997
+#: py/objstr.c:1006
 msgid "end of format while looking for conversion specifier"
 msgstr ""
 
-#: py/objstr.c:999
+#: py/objstr.c:1008
 #, c-format
 msgid "unknown conversion specifier %c"
 msgstr ""
 
-#: py/objstr.c:1030
+#: py/objstr.c:1039
 msgid "unmatched '{' in format"
 msgstr ""
 
-#: py/objstr.c:1037
+#: py/objstr.c:1046
 msgid "expected ':' after format specifier"
 msgstr ""
 
-#: py/objstr.c:1051
+#: py/objstr.c:1060
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
 
-#: py/objstr.c:1056 py/objstr.c:1084
+#: py/objstr.c:1065 py/objstr.c:1093
 msgid "tuple index out of range"
 msgstr ""
 
-#: py/objstr.c:1072
+#: py/objstr.c:1081
 msgid "attributes not supported yet"
 msgstr ""
 
-#: py/objstr.c:1080
+#: py/objstr.c:1089
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 
-#: py/objstr.c:1172
+#: py/objstr.c:1181
 msgid "invalid format specifier"
 msgstr ""
 
-#: py/objstr.c:1193
+#: py/objstr.c:1202
 msgid "sign not allowed in string format specifier"
 msgstr ""
 
-#: py/objstr.c:1201
+#: py/objstr.c:1210
 msgid "sign not allowed with integer format specifier 'c'"
 msgstr ""
 
-#: py/objstr.c:1260
+#: py/objstr.c:1269
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr ""
 
-#: py/objstr.c:1332
+#: py/objstr.c:1341
 #, c-format
 msgid "unknown format code '%c' for object of type 'float'"
 msgstr ""
 
-#: py/objstr.c:1344
+#: py/objstr.c:1353
 msgid "'=' alignment not allowed in string format specifier"
 msgstr ""
 
-#: py/objstr.c:1368
+#: py/objstr.c:1377
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
 msgstr ""
 
-#: py/objstr.c:1416
+#: py/objstr.c:1425
 msgid "format requires a dict"
 msgstr ""
 
-#: py/objstr.c:1425
+#: py/objstr.c:1434
 msgid "incomplete format key"
 msgstr ""
 
-#: py/objstr.c:1483
+#: py/objstr.c:1492
 msgid "incomplete format"
 msgstr ""
 
-#: py/objstr.c:1491
+#: py/objstr.c:1500
 msgid "not enough arguments for format string"
 msgstr ""
 
-#: py/objstr.c:1501
+#: py/objstr.c:1510
 #, c-format
 msgid "%%c requires int or char"
 msgstr ""
 
-#: py/objstr.c:1508
+#: py/objstr.c:1517
 msgid "integer required"
 msgstr ""
 
-#: py/objstr.c:1571
+#: py/objstr.c:1580
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr ""
 
-#: py/objstr.c:1578
+#: py/objstr.c:1587
 msgid "not all arguments converted during string formatting"
 msgstr ""
 
-#: py/objstr.c:2103
+#: py/objstr.c:2112
 msgid "can't convert to str implicitly"
 msgstr ""
 
-#: py/objstr.c:2107
+#: py/objstr.c:2116
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
-#: py/objstrunicode.c:134
+#: py/objstrunicode.c:154
 #, c-format
 msgid "string indices must be integers, not %s"
 msgstr ""
 
-#: py/objstrunicode.c:145 py/objstrunicode.c:164
+#: py/objstrunicode.c:165 py/objstrunicode.c:184
 msgid "string index out of range"
 msgstr ""
 
