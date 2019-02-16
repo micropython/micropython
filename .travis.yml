@@ -56,7 +56,6 @@ notifications:
 before_script:
   # Expand the git tree back to 4.0.0-alpha.1 and then fetch the latest tag.
   - LAST_TAG=`git ls-remote --quiet --tags --sort=version:refname | egrep -o "refs/tags/[0-9]+.*\$" | tail -n 1`
-  - git fetch --shallow-exclude=4.0.0-alpha.1 || git fetch --unshallow
   - git fetch --depth 1 origin $LAST_TAG:$LAST_TAG
   - git describe --dirty --always --tags
   - function var_search () { case "$1" in *$2*) true;; *) false;; esac; }
