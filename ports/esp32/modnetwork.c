@@ -190,6 +190,24 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         }
         break;
     }
+    case SYSTEM_EVENT_GOT_IP6:
+        ESP_LOGI("network", "Got IPv6");
+        break;
+    case SYSTEM_EVENT_ETH_START:
+        ESP_LOGI("ethernet", "start");
+        break;
+    case SYSTEM_EVENT_ETH_STOP:
+        ESP_LOGI("ethernet", "stop");
+        break;
+    case SYSTEM_EVENT_ETH_CONNECTED:
+        ESP_LOGI("ethernet", "LAN cable connected");
+        break;
+    case SYSTEM_EVENT_ETH_DISCONNECTED:
+        ESP_LOGI("ethernet", "LAN cable disconnected");
+        break;
+    case SYSTEM_EVENT_ETH_GOT_IP:
+        ESP_LOGI("ethernet", "Got IP");
+        break;
     default:
         ESP_LOGI("network", "event %d", event->event_id);
         break;
