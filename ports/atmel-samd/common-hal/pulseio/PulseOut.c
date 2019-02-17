@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "supervisor/shared/translate.h"
+#include "timer_handler.h"
 
 // This timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
@@ -115,10 +116,10 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
         // We use GCLK0 for SAMD21 and GCLK1 for SAMD51 because they both run at 48mhz making our
         // math the same across the boards.
         #ifdef SAMD21
-        turn_on_clocks(true, index, 0);
+        turn_on_clocks(true, index, 0, TC_HANDLER_PULSEOUT);
         #endif
         #ifdef SAMD51
-        turn_on_clocks(true, index, 1);
+        turn_on_clocks(true, index, 1, TC_HANDLER_PULSEOUT);
         #endif
 
 

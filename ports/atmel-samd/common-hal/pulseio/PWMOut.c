@@ -31,6 +31,7 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "timer_handler.h"
 
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
@@ -235,7 +236,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         }
 
         // We use the zeroeth clock on either port to go full speed.
-        turn_on_clocks(timer->is_tc, timer->index, 0);
+        turn_on_clocks(timer->is_tc, timer->index, 0, TC_HANDLER_NO_INTERRUPT);
 
         if (timer->is_tc) {
             tc_periods[timer->index] = top;
