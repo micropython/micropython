@@ -190,6 +190,34 @@ STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp
     }
 }
 
+STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 3, false);
+
+    socket_obj_t *sock = m_new_obj_with_finaliser(socket_obj_t);
+    sock->base.type = type_in;
+    sock->domain = AF_INET;
+    sock->type = SOCK_STREAM;
+    sock->proto = 0;
+    sock->peer_closed = false;
+    if (n_args > 0) {
+        sock->domain = mp_obj_get_int(args[0]);
+        if (n_args > 1) {
+            sock->type = mp_obj_get_int(args[1]);
+            if (n_args > 2) {
+                sock->proto = mp_obj_get_int(args[2]);
+            }
+        }
+    }
+
+    sock->fd = lwip_socket(sock->domain, sock->type, sock->proto);
+    if (sock->fd < 0) {
+        exception_from_errno(errno);
+    }
+    _socket_settimeout(sock, UINT64_MAX);
+
+    return MP_OBJ_FROM_PTR(sock);
+}
+
 STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {
     socket_obj_t *self = MP_OBJ_TO_PTR(arg0);
     struct addrinfo *res;
@@ -622,36 +650,10 @@ STATIC const mp_stream_p_t socket_stream_p = {
 STATIC const mp_obj_type_t socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
+    .make_new = socket_make_new,
     .protocol = &socket_stream_p,
     .locals_dict = (mp_obj_t)&socket_locals_dict,
 };
-
-STATIC mp_obj_t get_socket(size_t n_args, const mp_obj_t *args) {
-    socket_obj_t *sock = m_new_obj_with_finaliser(socket_obj_t);
-    sock->base.type = &socket_type;
-    sock->domain = AF_INET;
-    sock->type = SOCK_STREAM;
-    sock->proto = 0;
-    sock->peer_closed = false;
-    if (n_args > 0) {
-        sock->domain = mp_obj_get_int(args[0]);
-        if (n_args > 1) {
-            sock->type = mp_obj_get_int(args[1]);
-            if (n_args > 2) {
-                sock->proto = mp_obj_get_int(args[2]);
-            }
-        }
-    }
-
-    sock->fd = lwip_socket(sock->domain, sock->type, sock->proto);
-    if (sock->fd < 0) {
-        exception_from_errno(errno);
-    }
-    _socket_settimeout(sock, UINT64_MAX);
-
-    return MP_OBJ_FROM_PTR(sock);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_socket_obj, 0, 3, get_socket);
 
 STATIC mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     // TODO support additional args beyond the first two
@@ -703,7 +705,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_socket_initialize_obj, esp_socket_initializ
 STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_socket_initialize_obj) },
-    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&get_socket_obj) },
+    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_type) },
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&esp_socket_getaddrinfo_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_AF_INET), MP_ROM_INT(AF_INET) },
