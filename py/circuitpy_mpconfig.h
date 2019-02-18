@@ -191,19 +191,6 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
 
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&os_module) }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
-
-#if MICROPY_MODULE_WEAK_LINKS
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINK_ALTERNATES \
-    { MP_ROM_QSTR(MP_QSTR__os), MP_ROM_PTR(&os_module) }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module },
-#else
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINK_ALTERNATES
-#endif
-
-
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
 #ifdef LONGINT_IMPL_NONE
@@ -353,8 +340,10 @@ extern const struct _mp_obj_module_t nvm_module;
 #if CIRCUITPY_OS
 extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module },
+#define OS_MODULE_ALT_NAME     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&os_module },
 #else
 #define OS_MODULE
+#define OS_MODULE_ALT_NAME
 #endif
 
 #if CIRCUITPY_PIXELBUF
@@ -430,8 +419,10 @@ extern const struct _mp_obj_module_t supervisor_module;
 #if CIRCUITPY_TIME
 extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
+#define TIME_MODULE_ALT_NAME   { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module },
 #else
 #define TIME_MODULE
+#define TIME_MODULE_ALT_NAME
 #endif
 
 #if CIRCUITPY_TOUCHIO
@@ -475,12 +466,25 @@ extern const struct _mp_obj_module_t ustack_module;
 #define JSON_MODULE
 #endif
 
+// Define certain native modules with weak links so they can be replaced with Python
+// implementations. This list may grow over time.
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    OS_MODULE \
+    TIME_MODULE \
+
+// Native modules that are weak links can be accessed directly
+// by prepending their name with an underscore. This list should correspond to
+// MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS, assuming you want the native modules
+// to be accessible when overriden.
+#define MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES \
+    OS_MODULE_ALT_NAME \
+    TIME_MODULE_ALT_NAME \
 
 // This is an inclusive list that should correspond to the CIRCUITPY_XXX list above,
-// including dependendencies such as TERMINALIO depending on DISPLAYIO (shown by indentation).
+// including dependencies such as TERMINALIO depending on DISPLAYIO (shown by indentation).
 // Some of these definitions will be blank depending on what is turned on and off.
-//
-#define MICROPY_PORT_BUILTIN_MODULES \
+// Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
+#define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOIO_MODULE \
@@ -500,7 +504,6 @@ extern const struct _mp_obj_module_t ustack_module;
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
-    OS_MODULE \
     PIXELBUF_MODULE \
     PULSEIO_MODULE \
     RANDOM_MODULE \
@@ -510,13 +513,24 @@ extern const struct _mp_obj_module_t ustack_module;
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
-    TIME_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
-    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINK_ALTERNATES
+
+// If weak links are enabled, just include strong links in the main list of modules,
+// and also include the underscore alternate names.
+#if MICROPY_MODULE_WEAK_LINKS
+#define MICROPY_PORT_BUILTIN_MODULES \
+    MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
+    MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES
+#else
+// If weak links are disabled, included both strong and potentially weak lines
+#define MICROPY_PORT_BUILTIN_MODULES \
+    MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
+#endif
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
