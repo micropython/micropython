@@ -36,8 +36,6 @@
 #define SPI_FLASH_MAX_BAUDRATE 8000000
 #define CIRCUITPY_DEFAULT_STACK_SIZE                4096
 
-#define CIRCUITPY_I2C_SLAVE                         (0)
-
 #define MICROPY_CPYTHON_COMPAT                      (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)

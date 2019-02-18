@@ -192,8 +192,6 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
-    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
     { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&os_module) }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
 

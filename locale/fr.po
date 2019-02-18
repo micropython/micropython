@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 19:19-0500\n"
+"POT-Creation-Date: 2019-02-17 23:36-0500\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -1337,7 +1337,7 @@ msgstr "ord() attend un caractère mais une chaîne de longueur %d a été trouv
 msgid "3-arg pow() not supported"
 msgstr "pow() avec 3 arguments non supporté"
 
-#: py/modbuiltins.c:517
+#: py/modbuiltins.c:521
 msgid "must use keyword argument for key function"
 msgstr "il faut utiliser un argument nommé pour une fonction key"
 
@@ -2759,7 +2759,7 @@ msgstr "type de bitmap non supporté"
 msgid "Group full"
 msgstr "Groupe plein"
 
-#: shared-module/displayio/Group.c:73
+#: shared-module/displayio/Group.c:73 shared-module/displayio/Group.c:112
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2909,76 +2909,34 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer denouveau pour quitter de le mode sans-échec.\n"
 
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "les slices de tampon doivent être de longueurs égales"
+#~ msgid "Not enough pins available"
+#~ msgstr "Pas assez de broches disponibles"
 
 #, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Le tampon doit être de longueur au moins 1"
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART n'est pas disponible"
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+#~ msgid "Can not query for the device address."
+#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Paramètre UUID invalide"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
 
-#, fuzzy
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres GAP"
+
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
-#~ "le tampon de ligne doit être un bytearray ou un tableau de type 'b' ou 'B'"
+#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgstr ""
+#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
 
 #, fuzzy
-#~ msgid "row data must be a buffer"
-#~ msgstr "les données de ligne doivent être un tampon"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "les noms doivent être des chaînes de caractère"
-
-#~ msgid "index must be int"
-#~ msgstr "l'index doit être un entier"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
-
-#, fuzzy
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Tous les périphériques PWM sont utilisés"
-
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"
-
-#, fuzzy
-#~ msgid "Group empty"
-#~ msgstr "Groupe vide"
-
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
-
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longeur de chaîne UUID invalide"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio est en cours de développement"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "mauvais nombre d'octets fourni'"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2988,30 +2946,72 @@ msgstr ""
 #~ "'reset' (après avoir éjecter CIRCUITPY).\n"
 
 #, fuzzy
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "mauvais nombre d'octets fourni'"
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
 
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
+#~ msgid "Invalid Service type"
+#~ msgstr "Type de service invalide"
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio est en cours de développement"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Longeur de chaîne UUID invalide"
 
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Impossible d'ajouter la Characteristic."
+
+#~ msgid "Can not add Service."
+#~ msgstr "Impossible d'ajouter le Service"
+
+#~ msgid "Wrong address length"
+#~ msgstr "Mauvaise longueur d'adresse"
 
 #, fuzzy
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART n'est pas disponible"
+#~ msgid "Group empty"
+#~ msgstr "Groupe vide"
 
-#~ msgid "Not enough pins available"
-#~ msgstr "Pas assez de broches disponibles"
+#, fuzzy
+#~ msgid "value_size must be power of two"
+#~ msgstr "value_size doit être une puissance de 2"
+
+#, fuzzy
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Tous les périphériques PWM sont utilisés"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "la palette doit être une displayio.Palette"
+
+#~ msgid "index must be int"
+#~ msgstr "l'index doit être un entier"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "les noms doivent être des chaînes de caractère"
+
+#, fuzzy
+#~ msgid "row data must be a buffer"
+#~ msgstr "les données de ligne doivent être un tampon"
+
+#, fuzzy
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr ""
+#~ "le tampon de ligne doit être un bytearray ou un tableau de type 'b' ou 'B'"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Paramètre UUID invalide"
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Impossible d'appliquer les paramètres PPCP"
+
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Le tampon doit être de longueur au moins 1"
+
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "les slices de tampon doivent être de longueurs égales"
