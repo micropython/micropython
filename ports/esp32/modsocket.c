@@ -466,9 +466,9 @@ int _socket_send(socket_obj_t *sock, const char *data, size_t datalen) {
 
 STATIC mp_obj_t socket_send(const mp_obj_t arg0, const mp_obj_t arg1) {
     socket_obj_t *sock = MP_OBJ_TO_PTR(arg0);
-    mp_uint_t datalen;
-    const char *data = mp_obj_str_get_data(arg1, &datalen);
-    int r = _socket_send(sock, data, datalen);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg1, &bufinfo, MP_BUFFER_READ);
+    int r = _socket_send(sock, bufinfo.buf, bufinfo.len);
     return mp_obj_new_int(r);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
