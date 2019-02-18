@@ -168,7 +168,6 @@ typedef long mp_off_t;
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
-
 // board specific definitions
 #include "mpconfigboard.h"
 
@@ -176,20 +175,36 @@ typedef long mp_off_t;
 
 // Remove some lesser-used functionality to make small builds fit.
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_ALL_SPECIAL_METHODS (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_COMPLEX (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_FROZENSET (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_REVERSED (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_STR_CENTER (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_STR_PARTITION (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_STR_SPLITLINES (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_UERRNO (CIRCUITPY_FULL_BUILD)
+#define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_FROZENSET         (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_REVERSED          (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_STR_CENTER        (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_STR_PARTITION     (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES    (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 // Opposite setting is deliberate.
-#define MICROPY_PY_UERRNO_ERRORCODE (!CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_MATCH_GROUPS (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_SUB (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE                        (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
+    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
+    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&os_module) }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+
+#if MICROPY_MODULE_WEAK_LINKS
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINK_ALTERNATES \
+    { MP_ROM_QSTR(MP_QSTR__os), MP_ROM_PTR(&os_module) }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module },
+#else
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINK_ALTERNATES
+#endif
+
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -462,6 +477,7 @@ extern const struct _mp_obj_module_t ustack_module;
 #define JSON_MODULE
 #endif
 
+
 // This is an inclusive list that should correspond to the CIRCUITPY_XXX list above,
 // including dependendencies such as TERMINALIO depending on DISPLAYIO (shown by indentation).
 // Some of these definitions will be blank depending on what is turned on and off.
@@ -502,6 +518,7 @@ extern const struct _mp_obj_module_t ustack_module;
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINK_ALTERNATES
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

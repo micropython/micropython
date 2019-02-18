@@ -7,6 +7,9 @@ INTERNAL_LIBM = 1
 
 USB_SERIAL_NUMBER_LENGTH = 16
 
+# All nRF ports have longints.
+LONGINT_IMPL = MPZ
+
 # No DAC, so no regular audio.
 CIRCUITPY_AUDIOIO = 0
 
