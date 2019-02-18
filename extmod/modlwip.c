@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2015 Galen Hazelwood
  * Copyright (c) 2015-2017 Paul Sokolovsky
  *
@@ -308,6 +308,14 @@ static inline void poll_sockets(void) {
 #endif
 }
 
+STATIC struct tcp_pcb *volatile *lwip_socket_incoming_array(lwip_socket_obj_t *socket) {
+    if (socket->incoming.connection.alloc == 0) {
+        return &socket->incoming.connection.tcp.item;
+    } else {
+        return &socket->incoming.connection.tcp.array[0];
+    }
+}
+
 /*******************************************************************************/
 // Callback functions for the lwIP raw API.
 
@@ -381,15 +389,10 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
     tcp_recv(newpcb, _lwip_tcp_recv_unaccepted);
 
     // Search for an empty slot to store the new connection
-    struct tcp_pcb *volatile *tcp_array;
-    if (socket->incoming.connection.alloc == 0) {
-        tcp_array = &socket->incoming.connection.tcp.item;
-    } else {
-        tcp_array = socket->incoming.connection.tcp.array;
-    }
-    if (tcp_array[socket->incoming.connection.iput] == NULL) {
+    struct tcp_pcb *volatile *slot = &lwip_socket_incoming_array(socket)[socket->incoming.connection.iput];
+    if (*slot == NULL) {
         // Have an empty slot to store waiting connection
-        tcp_array[socket->incoming.connection.iput] = newpcb;
+        *slot = newpcb;
         if (++socket->incoming.connection.iput >= socket->incoming.connection.alloc) {
             socket->incoming.connection.iput = 0;
         }
@@ -782,12 +785,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     }
 
     // accept incoming connection
-    struct tcp_pcb *volatile *incoming_connection;
-    if (socket->incoming.connection.alloc == 0) {
-        incoming_connection = &socket->incoming.connection.tcp.item;
-    } else {
-        incoming_connection = &socket->incoming.connection.tcp.array[socket->incoming.connection.iget];
-    }
+    struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(socket)[socket->incoming.connection.iget];
     if (*incoming_connection == NULL) {
         if (socket->timeout == 0) {
             mp_raise_OSError(MP_EAGAIN);
@@ -1218,10 +1216,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         if (flags & MP_STREAM_POLL_RD) {
             if (socket->state == STATE_LISTENING) {
                 // Listening TCP socket may have one or multiple connections waiting
-                if ((socket->incoming.connection.alloc == 0
-                    && socket->incoming.connection.tcp.item != NULL)
-                    || socket->incoming.connection.tcp.array[socket->incoming.connection.iget] != NULL) {
-                        ret |= MP_STREAM_POLL_RD;
+                if (lwip_socket_incoming_array(socket)[socket->incoming.connection.iget] != NULL) {
+                    ret |= MP_STREAM_POLL_RD;
                 }
             } else {
                 // Otherwise there is just one slot for incoming data
@@ -1292,12 +1288,7 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             }
         } else {
             uint8_t alloc = socket->incoming.connection.alloc;
-            struct tcp_pcb *volatile *tcp_array;
-            if (alloc == 0) {
-                tcp_array = &socket->incoming.connection.tcp.item;
-            } else {
-                tcp_array = socket->incoming.connection.tcp.array;
-            }
+            struct tcp_pcb *volatile *tcp_array = lwip_socket_incoming_array(socket);
             for (uint8_t i = 0; i < alloc; ++i) {
                 // Deregister callback and abort
                 if (tcp_array[i] != NULL) {
