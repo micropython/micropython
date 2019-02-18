@@ -462,14 +462,13 @@ extern const struct _mp_obj_module_t ustack_module;
 
 // These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
 #if MICROPY_PY_UERRNO
-#define ERRNO_MODULE
-    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
 #else
 #define ERRNO_MODULE
 #endif
 
 #if MICROPY_PY_UJSON
-#define JSON_MODULE { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
 #else
 #define JSON_MODULE
 #endif
