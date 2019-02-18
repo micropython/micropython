@@ -460,10 +460,24 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
+// These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
+#if MICROPY_PY_UERRNO
+#define ERRNO_MODULE
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+#else
+#define ERRNO_MODULE
+#endif
+
 #if MICROPY_PY_UJSON
 #define JSON_MODULE { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
 #else
 #define JSON_MODULE
+#endif
+
+#if MICROPY_PY_URE
+#define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
+#else
+#define RE_MODULE
 #endif
 
 // Define certain native modules with weak links so they can be replaced with Python
@@ -495,6 +509,7 @@ extern const struct _mp_obj_module_t ustack_module;
     DIGITALIO_MODULE \
       TERMINALIO_MODULE \
     DISPLAYIO_MODULE \
+    ERRNO_MODULE \
     GAMEPAD_MODULE \
     I2CSLAVE_MODULE \
     JSON_MODULE \
@@ -507,6 +522,7 @@ extern const struct _mp_obj_module_t ustack_module;
     PIXELBUF_MODULE \
     PULSEIO_MODULE \
     RANDOM_MODULE \
+    RE_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
     STAGE_MODULE \
