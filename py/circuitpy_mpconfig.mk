@@ -158,14 +158,11 @@ CIRCUITPY_RTC = 1
 endif
 CFLAGS += -DCIRCUITPY_RTC=$(CIRCUITPY_RTC)
 
+# CIRCUITPY_SAMD is handled in the atmel-samd tree.
 # Only for SAMD chips.
+# Assume not a SAMD build.
 ifndef CIRCUITPY_SAMD
-ifneq ($(findstring sam,$(CHIP_FAMILY)),)
-CIRCUITPY_SAMD = $(CIRCUITPY_FULL_BUILD)
-else
-# Not a SAMD build.
 CIRCUITPY_SAMD = 0
-endif
 endif
 CFLAGS += -DCIRCUITPY_SAMD=$(CIRCUITPY_SAMD)
 

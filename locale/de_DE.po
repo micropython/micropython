@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 19:19-0500\n"
+"POT-Creation-Date: 2019-02-17 23:36-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Sebastian Plamauer\n"
 "Language-Team: \n"
@@ -1321,7 +1321,7 @@ msgstr ""
 msgid "3-arg pow() not supported"
 msgstr ""
 
-#: py/modbuiltins.c:517
+#: py/modbuiltins.c:521
 msgid "must use keyword argument for key function"
 msgstr ""
 
@@ -2695,7 +2695,7 @@ msgstr "Nicht unterstützter display bus type"
 msgid "Group full"
 msgstr ""
 
-#: shared-module/displayio/Group.c:73
+#: shared-module/displayio/Group.c:73 shared-module/displayio/Group.c:112
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2840,22 +2840,22 @@ msgstr ""
 "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
 "erneut um den abgesicherten Modus zu verlassen. \n"
 
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "Puffergröße muss >= 1 sein"
+#~ msgid "Not enough pins available"
+#~ msgstr "Nicht genug Pins vorhanden"
 
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART nicht verfügbar"
+
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Alle PWM-Peripheriegeräte werden verwendet"
 
 #, fuzzy
 #~ msgid "unicode_characters must be a string"
 #~ msgstr "name muss ein String sein"
 
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Alle PWM-Peripheriegeräte werden verwendet"
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART nicht verfügbar"
-
-#~ msgid "Not enough pins available"
-#~ msgstr "Nicht genug Pins vorhanden"
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "Puffergröße muss >= 1 sein"

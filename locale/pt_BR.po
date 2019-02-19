@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 19:19-0500\n"
+"POT-Creation-Date: 2019-02-17 23:36-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1320,7 +1320,7 @@ msgstr ""
 msgid "3-arg pow() not supported"
 msgstr ""
 
-#: py/modbuiltins.c:517
+#: py/modbuiltins.c:521
 msgid "must use keyword argument for key function"
 msgstr ""
 
@@ -2703,7 +2703,7 @@ msgstr "Taxa de transmissão não suportada"
 msgid "Group full"
 msgstr "Grupo cheio"
 
-#: shared-module/displayio/Group.c:73
+#: shared-module/displayio/Group.c:73 shared-module/displayio/Group.c:112
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2831,64 +2831,64 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "buffers devem ser o mesmo tamanho"
+#~ msgid "Not enough pins available"
+#~ msgstr "Não há pinos suficientes disponíveis"
 
-#~ msgid "index must be int"
-#~ msgstr "index deve ser int"
-
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Grupo deve ter tamanho pelo menos 1"
-
-#~ msgid "Group empty"
-#~ msgstr "Grupo vazio"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "heap deve ser uma lista"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parâmetro UUID inválido"
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Falha ao alocar buffer RX de %d bytes"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Não é possível consultar o endereço do dispositivo."
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART não disponível"
 
 #, fuzzy
 #~ msgid "All PWM peripherals are in use"
 #~ msgstr "Todos os temporizadores em uso"
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART não disponível"
+#~ msgid "Can not add Characteristic."
+#~ msgstr "Não é possível adicionar Característica."
 
-#~ msgid "Not enough pins available"
-#~ msgstr "Não há pinos suficientes disponíveis"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
+
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Não é possível aplicar parâmetros GAP."
+
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
+
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Não é possível definir parâmetros PPCP."
+
+#~ msgid "Invalid Service type"
+#~ msgstr "Tipo de serviço inválido"
+
+#~ msgid "Can not query for the device address."
+#~ msgstr "Não é possível consultar o endereço do dispositivo."
+
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Falha ao alocar buffer RX de %d bytes"
+
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Pode codificar o UUID no pacote de anúncios."
+
+#~ msgid "Baud rate too high for this SPI peripheral"
+#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Parâmetro UUID inválido"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "heap deve ser uma lista"
+
+#~ msgid "Group empty"
+#~ msgstr "Grupo vazio"
+
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Grupo deve ter tamanho pelo menos 1"
+
+#~ msgid "index must be int"
+#~ msgstr "index deve ser int"
+
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "buffers devem ser o mesmo tamanho"
