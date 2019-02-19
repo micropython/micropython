@@ -391,18 +391,16 @@ class RawCode:
         print('    .kind = MP_CODE_BYTECODE,')
         print('    .scope_flags = 0x%02x,' % self.prelude[2])
         print('    .n_pos_args = %u,' % self.prelude[3])
-        print('    .data.u_byte = {')
-        print('        .bytecode = bytecode_data_%s,' % self.escaped_name)
+        print('    .fun_data = bytecode_data_%s,' % self.escaped_name)
         if const_table_len:
-            print('        .const_table = (mp_uint_t*)const_table_data_%s,' % self.escaped_name)
+            print('    .const_table = (mp_uint_t*)const_table_data_%s,' % self.escaped_name)
         else:
-            print('        .const_table = NULL,')
-        print('        #if MICROPY_PERSISTENT_CODE_SAVE')
-        print('        .bc_len = %u,' % len(self.bytecode))
-        print('        .n_obj = %u,' % len(self.objs))
-        print('        .n_raw_code = %u,' % len(self.raw_codes))
-        print('        #endif')
-        print('    },')
+            print('    .const_table = NULL,')
+        print('    #if MICROPY_PERSISTENT_CODE_SAVE')
+        print('    .fun_data_len = %u,' % len(self.bytecode))
+        print('    .n_obj = %u,' % len(self.objs))
+        print('    .n_raw_code = %u,' % len(self.raw_codes))
+        print('    #endif')
         print('};')
 
 class BytecodeBuffer:

@@ -52,22 +52,16 @@ typedef struct _mp_raw_code_t {
     mp_uint_t kind : 3; // of type mp_raw_code_kind_t
     mp_uint_t scope_flags : 7;
     mp_uint_t n_pos_args : 11;
-    union {
-        struct {
-            const byte *bytecode;
-            const mp_uint_t *const_table;
-            #if MICROPY_PERSISTENT_CODE_SAVE
-            mp_uint_t bc_len;
-            uint16_t n_obj;
-            uint16_t n_raw_code;
-            #endif
-        } u_byte;
-        struct {
-            void *fun_data;
-            const mp_uint_t *const_table;
-            mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
-        } u_native;
-    } data;
+    const void *fun_data;
+    const mp_uint_t *const_table;
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    size_t fun_data_len;
+    uint16_t n_obj;
+    uint16_t n_raw_code;
+    #endif
+    #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+    mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
+    #endif
 } mp_raw_code_t;
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);

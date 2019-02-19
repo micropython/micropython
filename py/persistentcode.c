@@ -449,16 +449,16 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
     }
 
     // extract prelude
-    const byte *ip = rc->data.u_byte.bytecode;
+    const byte *ip = rc->fun_data;
     const byte *ip2;
     bytecode_prelude_t prelude;
     extract_prelude(&ip, &ip2, &prelude);
 
     // save prelude
-    size_t prelude_len = ip - rc->data.u_byte.bytecode;
-    const byte *ip_top = rc->data.u_byte.bytecode + rc->data.u_byte.bc_len;
-    mp_print_uint(print, rc->data.u_byte.bc_len);
-    mp_print_bytes(print, rc->data.u_byte.bytecode, prelude_len);
+    size_t prelude_len = ip - rc->fun_data;
+    const byte *ip_top = rc->fun_data + rc->fun_data_len;
+    mp_print_uint(print, rc->fun_data_len);
+    mp_print_bytes(print, rc->fun_data, prelude_len);
 
     // save bytecode
     save_bytecode(print, qstr_window, ip, ip_top);
@@ -468,17 +468,17 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
     save_qstr(print, qstr_window, ip2[2] | (ip2[3] << 8)); // source_file
 
     // save constant table
-    mp_print_uint(print, rc->data.u_byte.n_obj);
-    mp_print_uint(print, rc->data.u_byte.n_raw_code);
-    const mp_uint_t *const_table = rc->data.u_byte.const_table;
+    mp_print_uint(print, rc->n_obj);
+    mp_print_uint(print, rc->n_raw_code);
+    const mp_uint_t *const_table = rc->const_table;
     for (uint i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
         mp_obj_t o = (mp_obj_t)*const_table++;
         save_qstr(print, qstr_window, MP_OBJ_QSTR_VALUE(o));
     }
-    for (uint i = 0; i < rc->data.u_byte.n_obj; ++i) {
+    for (uint i = 0; i < rc->n_obj; ++i) {
         save_obj(print, (mp_obj_t)*const_table++);
     }
-    for (uint i = 0; i < rc->data.u_byte.n_raw_code; ++i) {
+    for (uint i = 0; i < rc->n_raw_code; ++i) {
         save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++, qstr_window);
     }
 }
