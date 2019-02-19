@@ -1088,7 +1088,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                 char_data.decl_handle  = p_char->handle_decl;
                 char_data.value_handle = p_char->handle_value;
 
-                char_data.props |= (p_char->char_props.broadcast) ? UBLUEPY_PROP_BROADCAST : 0;
+                char_data.props  = (p_char->char_props.broadcast) ? UBLUEPY_PROP_BROADCAST : 0;
                 char_data.props |= (p_char->char_props.read) ? UBLUEPY_PROP_READ : 0;
                 char_data.props |= (p_char->char_props.write_wo_resp) ? UBLUEPY_PROP_WRITE_WO_RESP : 0;
                 char_data.props |= (p_char->char_props.write) ? UBLUEPY_PROP_WRITE : 0;
