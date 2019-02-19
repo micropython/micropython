@@ -33,26 +33,6 @@
 
 #define PART1_START_BLOCK (0x1)
 
-void supervisor_flash_set_usb_writable(bool usb_writable) {
-    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
-    for (uint8_t i = 0; current_mount != NULL; i++) {
-        if (i == VFS_INDEX) {
-            break;
-        }
-        current_mount = current_mount->next;
-    }
-    if (current_mount == NULL) {
-        return;
-    }
-    fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
-
-    if (usb_writable) {
-        vfs->flags |= FSUSER_USB_WRITABLE;
-    } else {
-        vfs->flags &= ~FSUSER_USB_WRITABLE;
-    }
-}
-
 // there is a singleton Flash object
 const mp_obj_type_t supervisor_flash_type;
 STATIC const mp_obj_base_t supervisor_flash_obj = {&supervisor_flash_type};
