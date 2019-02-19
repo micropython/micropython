@@ -39,7 +39,7 @@
 #define MICROPY_HW_RGB_LED_GREEN       (&pin_P0_14)
 #define MICROPY_HW_RGB_LED_BLUE        (&pin_P0_15)
 
-#ifdef QSPI_FLASH_FILESYSTEM
+#if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 20)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 21)
 #define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 22)
@@ -48,7 +48,7 @@
 #define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(0, 17)
 #endif
 
-#ifdef SPI_FLASH_FILESYSTEM
+#if SPI_FLASH_FILESYSTEM
 #define SPI_FLASH_MOSI_PIN &pin_P0_20
 #define SPI_FLASH_MISO_PIN &pin_P0_21
 #define SPI_FLASH_SCK_PIN &pin_P0_19

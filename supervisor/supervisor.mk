@@ -17,6 +17,17 @@ ifndef $(NO_USB)
 NO_USB = $(wildcard supervisor/usb.c)
 endif
 
+ifneq ($(INTERNAL_FLASH_FILESYSTEM),)
+	CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
+endif
+ifneq ($(QSPI_FLASH_FILESYSTEM),)
+# EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
+	CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
+endif
+ifneq ($(SPI_FLASH_FILESYSTEM),)
+# EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
+	CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
+endif
 
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
@@ -27,11 +38,10 @@ ifdef EXTERNAL_FLASH_DEVICES
 
 	SRC_SUPERVISOR += supervisor/shared/external_flash/external_flash.c
 	ifeq ($(SPI_FLASH_FILESYSTEM),1)
-		CFLAGS += -DSPI_FLASH_FILESYSTEM
 		SRC_SUPERVISOR += supervisor/shared/external_flash/spi_flash.c
+	else
 	endif
 	ifeq ($(QSPI_FLASH_FILESYSTEM),1)
-		CFLAGS += -DQSPI_FLASH_FILESYSTEM
 		SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
 	endif
 else
