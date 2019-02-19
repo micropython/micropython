@@ -129,8 +129,8 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     }
     bool mono = args[ARG_mono].u_bool;
 
-    float startup_delay = (args[ARG_startup_delay].u_obj == MP_OBJ_NULL)
-        ? STARTUP_DELAY_DEFAULT
+    mp_float_t startup_delay = (args[ARG_startup_delay].u_obj == MP_OBJ_NULL)
+        ? (mp_float_t)STARTUP_DELAY_DEFAULT
         : mp_obj_get_float(args[ARG_startup_delay].u_obj);
     if (startup_delay < 0.0 || startup_delay > 1.0) {
         mp_raise_ValueError(translate("Microphone startup delay must be in range 0.0 to 1.0"));

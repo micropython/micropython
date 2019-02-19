@@ -116,7 +116,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     }
 
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
-    if (timeout > 100.0f) {
+    if (timeout > (mp_float_t)100.0) {
         mp_raise_ValueError(translate("timeout >100 (units are now seconds, not msecs)"));
     }
 
