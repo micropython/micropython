@@ -127,6 +127,20 @@ void stop_mp(void) {
     #if CIRCUITPY_NETWORK
     network_module_deinit();
     #endif
+
+    #if MICROPY_VFS
+    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+
+    // Unmount all heap allocated vfs mounts.
+    while (gc_nbytes(vfs) > 0) {
+        vfs = vfs->next;
+    }
+    MP_STATE_VM(vfs_mount_table) = vfs;
+    MP_STATE_VM(vfs_cur) = vfs;
+    #endif
+
+    // Run any finalizers before we stop using the heap.
+    gc_sweep_all();
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
