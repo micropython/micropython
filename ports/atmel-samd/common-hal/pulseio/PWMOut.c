@@ -235,8 +235,9 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             }
         }
 
+        set_timer_handler(timer->is_tc, timer->index, TC_HANDLER_NO_INTERRUPT);
         // We use the zeroeth clock on either port to go full speed.
-        turn_on_clocks(timer->is_tc, timer->index, 0, TC_HANDLER_NO_INTERRUPT);
+        turn_on_clocks(timer->is_tc, timer->index, 0);
 
         if (timer->is_tc) {
             tc_periods[timer->index] = top;

@@ -34,8 +34,10 @@
 
 static uint8_t tc_handler[TC_INST_NUM];
 
-void set_timer_handler(uint8_t index, uint8_t timer_handler) {
-    tc_handler[index] = timer_handler;
+void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler) {
+    if (is_tc) {
+        tc_handler[index] = timer_handler;
+    }
 }
 
 void shared_timer_handler(bool is_tc, uint8_t index) {

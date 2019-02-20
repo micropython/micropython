@@ -30,7 +30,7 @@
 #define TC_HANDLER_PULSEOUT 0x1
 #define TC_HANDLER_FREQUENCYIN 0x2
 
-void set_timer_handler(uint8_t index, uint8_t timer_handler);
+void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
 void shared_timer_handler(bool is_tc, uint8_t index);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
