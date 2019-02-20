@@ -429,7 +429,7 @@ mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const
 typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
     size_t n_args;
-    void *fun_data; // GC must be able to trace this pointer
+    const void *fun_data; // GC must be able to trace this pointer
     mp_uint_t type_sig;
 } mp_obj_fun_asm_t;
 
@@ -488,7 +488,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
 
-    void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
+    const void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
 
     mp_uint_t ret;
     if (n_args == 0) {
@@ -520,7 +520,7 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
     .unary_op = mp_generic_unary_op,
 };
 
-mp_obj_t mp_obj_new_fun_asm(size_t n_args, void *fun_data, mp_uint_t type_sig) {
+mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {
     mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
     o->base.type = &mp_type_fun_asm;
     o->n_args = n_args;
