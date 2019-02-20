@@ -70,8 +70,6 @@ STATIC const nrfx_pwm_t machine_hard_pwm_instances[] = {
 #if NRF52840
     NRFX_PWM_INSTANCE(3),
 #endif
-#else
-    NULL
 #endif
 };
 
