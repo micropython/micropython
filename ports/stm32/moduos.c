@@ -38,6 +38,7 @@
 #include "extmod/vfs_fat.h"
 #include "genhdr/mpversion.h"
 #include "rng.h"
+#include "usb.h"
 #include "uart.h"
 #include "portmodules.h"
 
@@ -108,13 +109,25 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
+bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
+    mp_obj_type_t *type = mp_obj_get_type(stream);
+    return type == &pyb_uart_type || type == &pyb_usb_vcp_type;
+}
+
 STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_obj_t prev_obj = mp_uos_dupterm_obj.fun.var(n_args, args);
     if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
     }
+    if (mp_obj_get_type(prev_obj) == &pyb_usb_vcp_type) {
+        usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
+    }
+
     if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
+    }
+    if (mp_obj_get_type(args[0]) == &pyb_usb_vcp_type) {
+        usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
     }
     return prev_obj;
 }
