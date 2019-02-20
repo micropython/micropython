@@ -130,8 +130,10 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         usbd->pClass = &USBD_CDC_MSC_HID;
         usb_dev->usbd_cdc_msc_hid_state.pdev = usbd;
         usb_dev->usbd_cdc_msc_hid_state.cdc = &usb_dev->usbd_cdc_itf.base;
+        usbd_cdc_defaults(usb_dev->usbd_cdc_msc_hid_state.cdc);
         #if MICROPY_HW_USB_ENABLE_CDC2
         usb_dev->usbd_cdc_msc_hid_state.cdc2 = &usb_dev->usbd_cdc2_itf.base;
+        usbd_cdc_defaults(usb_dev->usbd_cdc_msc_hid_state.cdc2);
         #endif
         usb_dev->usbd_cdc_msc_hid_state.hid = &usb_dev->usbd_hid_itf.base;
         usbd->pClassData = &usb_dev->usbd_cdc_msc_hid_state;
@@ -390,6 +392,11 @@ STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, "USB_VCP(%u)", id);
 }
 
+void usb_vcp_attach_to_repl(mp_obj_t self_in, bool attached) {
+    pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->cdc_itf->attached_to_repl = attached;
+}
+
 /// \classmethod \constructor()
 /// Create a new USB_VCP object.
 STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -549,6 +556,7 @@ STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_RTS) },
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_CTS) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_table);
@@ -566,13 +574,18 @@ STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
 
 STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    int ret = usbd_cdc_tx(self->cdc_itf, (const byte*)buf, size, 0);
-    if (ret == 0) {
-        // return EAGAIN error to indicate non-blocking
-        *errcode = MP_EAGAIN;
-        return MP_STREAM_ERROR;
+    if (self->cdc_itf->flow && USBD_CDC_FLOWCONTROL_CTS) {
+        usbd_cdc_tx_always(self->cdc_itf, (const byte*)buf, size);
+        return size;
+    } else {
+        int ret = usbd_cdc_tx(self->cdc_itf, (const byte*)buf, size, 0);
+        if (ret == 0) {
+            // return EAGAIN error to indicate non-blocking
+            *errcode = MP_EAGAIN;
+            return MP_STREAM_ERROR;
+        }
+        return ret;
     }
-    return ret;
 }
 
 STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {

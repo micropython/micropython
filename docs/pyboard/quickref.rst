@@ -36,7 +36,6 @@ See :mod:`pyb`. ::
 
     import pyb
 
-    pyb.repl_uart(pyb.UART(1, 9600)) # duplicate REPL on UART(1)
     pyb.wfi() # pause CPU, waiting for interrupt
     pyb.freq() # get CPU and bus frequencies
     pyb.freq(60000000) # set CPU freq to 60MHz

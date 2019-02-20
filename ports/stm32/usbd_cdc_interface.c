@@ -61,6 +61,13 @@
 // Used to control the connect_state variable when USB host opens the serial port
 static uint8_t usbd_cdc_connect_tx_timer;
 
+
+void usbd_cdc_defaults(usbd_cdc_state_t *cdc_in) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+    cdc->flow = USBD_CDC_FLOWCONTROL_CTS;
+    usbd_cdc_init(cdc_in);
+}
+
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
 
@@ -74,11 +81,6 @@ uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     cdc->tx_buf_ptr_out_shadow = 0;
     cdc->tx_need_empty_packet = 0;
     cdc->connect_state = USBD_CDC_CONNECT_STATE_DISCONNECTED;
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    cdc->attached_to_repl = &cdc->base == cdc->base.usbd->cdc;
-    #else
-    cdc->attached_to_repl = 1;
-    #endif
 
     // Return the buffer to place the first USB OUT packet
     return cdc->rx_packet_buf;

@@ -123,10 +123,10 @@ Terminal redirection and duplication
    After calling this function all terminal output is repeated on this stream,
    and any input that is available on the stream is passed on to the terminal input.
 
-   The *index* parameter should be a non-negative integer and specifies which
-   duplication slot is set.  A given port may implement more than one slot (slot 0
-   will always be available) and in that case terminal input and output is
-   duplicated on all the slots that are set.
+   The *index* parameter should be a non-negative integer to specify which
+   duplication slot is set, or ``None`` to use first free slot.  
+   A given port may implement more than one slot (slot 0 will always be available) and 
+   in that case terminal input and output is duplicated on all the slots that are set.
 
    If ``None`` is passed as the *stream_object* then duplication is cancelled on
    the slot given by *index*.

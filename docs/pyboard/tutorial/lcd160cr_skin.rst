@@ -121,7 +121,8 @@ use ``uart = pyb.UART('YA', 115200)`` instead.
 
 Now, connect the REPL output to this UART::
 
-    >>> pyb.repl_uart(uart)
+    >>> import uos
+    >>> uos.dupterm(uart, None)
 
 From now on anything you type at the MicroPython prompt, and any output you
 receive, will appear on the display.

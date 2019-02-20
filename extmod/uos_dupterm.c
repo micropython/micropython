@@ -52,16 +52,31 @@ void mp_uos_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     }
 }
 
+/// Port can override this function and report if the type of the stream
+/// is builtin and safe to use without extra error handling
+MP_WEAK uint8_t mp_uos_dupterm_is_builtin_stream(const mp_obj_t stream) {
+    return false;
+}
+
 int mp_uos_dupterm_rx_chr(void) {
     for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
         }
+        byte buf[1];
+        int errcode = 0;
+        if (mp_uos_dupterm_is_builtin_stream((MP_STATE_VM(dupterm_objs[idx])))) {
+            const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
+            mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
+            if (errcode == 0 && out_sz) {
+                return buf[0];
+             } else {
+                continue;
+             }
+        }
 
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            byte buf[1];
-            int errcode;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (out_sz == 0) {
@@ -98,6 +113,12 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
         }
+        if (mp_uos_dupterm_is_builtin_stream((MP_STATE_VM(dupterm_objs[idx])))) {
+            int errcode = 0;
+            const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
+            stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
+            continue;
+        }
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
             mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
@@ -111,7 +132,15 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
 STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_int_t idx = 0;
     if (n_args == 2) {
-        idx = mp_obj_get_int(args[1]);
+        if (args[1] == mp_const_none) {
+            // Find first available slot
+            for (idx = 0; idx < MICROPY_PY_OS_DUPTERM && MP_STATE_VM(dupterm_objs[idx]) != MP_OBJ_NULL; idx++) ;
+            if (idx >= MICROPY_PY_OS_DUPTERM) {
+                mp_raise_ValueError("no free dupterm slots");
+            }
+        } else {
+            idx = mp_obj_get_int(args[1]);
+        }
     }
 
     if (idx < 0 || idx >= MICROPY_PY_OS_DUPTERM) {

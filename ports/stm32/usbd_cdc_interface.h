@@ -42,6 +42,7 @@
 // Flow control settings
 #define USBD_CDC_FLOWCONTROL_NONE (0)
 #define USBD_CDC_FLOWCONTROL_RTS (1)
+#define USBD_CDC_FLOWCONTROL_CTS (2)
 
 typedef struct _usbd_cdc_itf_t {
     usbd_cdc_state_t base; // state for the base CDC layer

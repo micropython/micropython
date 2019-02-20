@@ -243,10 +243,6 @@ Miscellaneous functions
    If ``mkfs`` is ``True``, then a new filesystem is created if one does not
    already exist.
 
-.. function:: repl_uart(uart)
-
-   Get or set the UART object where the REPL is repeated on.
-
 .. function:: rng()
 
    Return a 30-bit hardware generated random number.

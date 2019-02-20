@@ -184,6 +184,7 @@ uint8_t USBD_HID_SetNAK(usbd_hid_state_t *usbd);
 uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *usbd);
 
 // These are provided externally to implement the CDC interface
+void usbd_cdc_defaults(usbd_cdc_state_t *cdc);
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc);
 void usbd_cdc_deinit(usbd_cdc_state_t *cdc);
 void usbd_cdc_tx_ready(usbd_cdc_state_t *cdc);

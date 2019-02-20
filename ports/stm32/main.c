@@ -34,6 +34,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
+#include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
@@ -65,6 +66,7 @@
 #include "dac.h"
 #include "can.h"
 #include "modnetwork.h"
+#include "portmodules.h"
 
 void SystemClock_Config(void);
 
@@ -562,7 +564,8 @@ void stm32_main(uint32_t reset_mode) {
     pyb_uart_repl_obj.timeout_char = 2;
     uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
     uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
-    uart_attach_to_repl(&pyb_uart_repl_obj, true);
+    mp_obj_t args[2] = { pyb_uart_repl_obj, mp_const_none };
+    mp_uos_dupterm_obj.fun.var(2, args);
     MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
     #endif
 
@@ -612,12 +615,6 @@ soft_reset:
     // zeroing out memory and resetting any of the sub-systems.  Following this
     // we can run Python scripts (eg boot.py), but anything that is configurable
     // by boot.py must be set after boot.py is run.
-
-    #if defined(MICROPY_HW_UART_REPL)
-    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
-    #else
-    MP_STATE_PORT(pyb_stdio_uart) = NULL;
-    #endif
 
     readline_init0();
     pin_init0();
@@ -705,6 +702,16 @@ soft_reset:
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
         pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, NULL);
+    }
+
+    if (usb_vcp_is_enabled()) {
+        // Activate VCP(0) in dupterm for REPL
+        mp_obj_t args[2] = {
+            MP_OBJ_NEW_SMALL_INT(0),
+            mp_const_none
+        };
+        args[0] = pyb_usb_vcp_type.make_new((mp_obj_t)&pyb_usb_vcp_type, 1, 0, args);
+        uos_dupterm_obj.fun.var(2, args);
     }
     #endif
 
