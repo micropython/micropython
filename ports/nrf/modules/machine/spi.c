@@ -134,12 +134,11 @@ STATIC int spi_find(mp_obj_t id) {
     if (mp_obj_is_str(id)) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
-        if (0) {
         #ifdef MICROPY_HW_SPI0_NAME
-        } else if (strcmp(port, MICROPY_HW_SPI0_NAME) == 0) {
+        if (strcmp(port, MICROPY_HW_SPI0_NAME) == 0) {
             return 1;
-        #endif
         }
+        #endif
         mp_raise_ValueError("SPI doesn't exist");
     } else {
         // given an integer id
