@@ -48,7 +48,7 @@
 //| directly.
 //|
 
-//| .. function:: mount(filesystem, mount_path, \*, readonly=False, disable_concurrent_write_protection=False)
+//| .. function:: mount(filesystem, mount_path, \*, readonly=False)
 //|
 //|   Mounts the given filesystem object at the given path.
 //|
