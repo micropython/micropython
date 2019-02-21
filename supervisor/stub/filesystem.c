@@ -26,13 +26,17 @@
 
 #include "supervisor/filesystem.h"
 
-void filesystem_init(void) {
+void filesystem_init(bool create_allowed, bool force_create) {
+    (void) create_allowed;
+    (void) force_create;
 }
 
 void filesystem_flush(void) {
 }
 
-void filesystem_writable_by_python(bool writable) {
+bool filesystem_is_writable_by_python(fs_user_mount_t *vfs) {
+    (void) vfs;
+    return true;
 }
 
 bool filesystem_present(void) {
