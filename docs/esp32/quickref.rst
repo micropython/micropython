@@ -101,6 +101,44 @@ Once the network is established the :mod:`socket <usocket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
 convenient HTTP requests.
 
+In the IoT solution `WPS Control <https://en.wikipedia.org/wiki/Wi-Fi_Protected_Setup>`_ is a common solution for connectivity problems.
+Method `start_wps` of the :ref:`network.WLAN <network.WLAN>` object turns on discovery mode and starts WPS probing on ESP32. Once an access point with WPS turned on would be found, connection would be established.
+
+You can check the status of WPS connections, using :ref:`network.STA_WPS_PROBING <network.STA_WPS_PROBING>`, :ref:`network.STA_WPS_SUCCESS <network.STA_WPS_SUCCESS>`, :ref:`network.STA_WPS_FAILED <network.STA_WPS_FAILED>` and :ref:`network.STA_WPS_TIMEOUT <network.STA_WPS_TIMEOUT>` values of the `status` method of the `network.WLAN` object.
+
+Here is an example of WPS connection implementation using the button connected to one of the PINs::
+
+    import machine
+    import time
+    import network
+
+    button = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    while True:
+        if button.value() == 0:
+            wlan.start_wps()
+            print('start_wps')
+            while wlan.status() == network.STA_WPS_PROBING:
+                print("probing with WPS")
+                time.sleep(0.5)
+
+            if wlan.status() == network.STA_WPS_SUCCESS:
+                print("WPS successful")
+                print("   ESSID:    ", wlan.config('essid'))
+                print("   Password: ", wlan.config('password'))
+                wlan.connect(wlan.config('essid'), wlan.config('password'))
+                print("Waiting for connection...")
+                while not wlan.isconnected():
+                    machine.idle()
+                print("Connected.")
+
+            elif wlan.status() == network.STA_WPS_FAILED:
+                print("WPS failed")
+
+            elif wlan.status() == network.STA_WPS_TIMEOUT:
+                print("WPS timeout")
+
 Delay and timing
 ----------------
 

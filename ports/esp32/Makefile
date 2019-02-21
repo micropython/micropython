@@ -652,8 +652,21 @@ ESPIDF_WPA_SUPPLICANT_O = $(addprefix $(ESPCOMP)/wpa_supplicant/,\
 	src/crypto/crypto_internal-cipher.o \
 	src/fast_crypto/fast_aes-unwrap.o \
 	src/fast_crypto/fast_aes-wrap.o \
+	src/fast_crypto/fast_aes-cbc.o \
 	src/fast_crypto/fast_sha256.o \
 	src/fast_crypto/fast_sha256-internal.o \
+	src/fast_crypto/fast_crypto_internal-modexp.o \
+	src/wps/wps.o \
+	src/wps/wps_validate.o \
+	src/wps/wps_registrar.o \
+	src/wps/wps_enrollee.o \
+	src/wps/wps_dev_attr.o \
+	src/wps/wps_common.o \
+	src/wps/wps_attr_process.o \
+	src/wps/wps_attr_parse.o \
+	src/wps/wps_attr_build.o \
+	src/wps/uuid.o \
+	src/wps/eap_common.o \
 	port/os_xtensa.o \
 	)
 
