@@ -405,7 +405,7 @@ STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
 STATIC const mp_obj_type_t re_type = {
     { &mp_type_type },
-    .name = MP_QSTR_ure,
+    .name = MP_QSTR_re,
     .print = re_print,
     .locals_dict = (void*)&re_locals_dict,
 };
@@ -462,7 +462,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_re) },
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
