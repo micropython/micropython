@@ -29,7 +29,7 @@
 
 #include "ble_drv.h"
 #include "ble_gatts.h"
-#include "sd_mutex.h"
+#include "nrf_nvic.h"
 
 #include "lib/utils/interrupt_char.h"
 #include "py/runtime.h"
@@ -47,14 +47,14 @@ STATIC void characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
         ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
         // Event handle must match the handle for my characteristic.
         if (evt_write->handle == self->characteristic->handle) {
-            // Push all the data onto the ring buffer, but wait for any reads to finish.
-            sd_mutex_acquire_wait_no_vm(&self->ringbuf_mutex);
+            // Push all the data onto the ring buffer.
+            uint8_t is_nested_critical_region;
+            sd_nvic_critical_region_enter(&is_nested_critical_region);
             for (size_t i = 0; i < evt_write->len; i++) {
                 ringbuf_put(&self->ringbuf, evt_write->data[i]);
             }
-            // Don't check for errors: we're in an event handler.
-            sd_mutex_release(&self->ringbuf_mutex);
-        break;
+            sd_nvic_critical_region_exit(is_nested_critical_region);
+            break;
         }
     }
     }
@@ -72,7 +72,6 @@ void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffe
     // This is a macro.
     // true means long-lived, so it won't be moved.
     ringbuf_alloc(&self->ringbuf, buffer_size, true);
-    sd_mutex_new(&self->ringbuf_mutex);
 
     ble_drv_add_event_handler(characteristic_buffer_on_ble_evt, self);
 
@@ -92,8 +91,9 @@ int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_
 #endif
     }
 
-    // Copy received data. Lock out writes while copying.
-    sd_mutex_acquire_wait(&self->ringbuf_mutex);
+    // Copy received data. Lock out write interrupt handler while copying.
+    uint8_t is_nested_critical_region;
+    sd_nvic_critical_region_enter(&is_nested_critical_region);
 
     size_t rx_bytes = MIN(ringbuf_count(&self->ringbuf), len);
     for ( size_t i = 0; i < rx_bytes; i++ ) {
@@ -101,20 +101,25 @@ int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_
     }
 
     // Writes now OK.
-    sd_mutex_release_check(&self->ringbuf_mutex);
+    sd_nvic_critical_region_exit(is_nested_critical_region);
 
     return rx_bytes;
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_rx_characters_available(bleio_characteristic_buffer_obj_t *self) {
-    return ringbuf_count(&self->ringbuf);
+    uint8_t is_nested_critical_region;
+    sd_nvic_critical_region_enter(&is_nested_critical_region);
+    uint16_t count = ringbuf_count(&self->ringbuf);
+    sd_nvic_critical_region_exit(is_nested_critical_region);
+    return count;
 }
 
 void common_hal_bleio_characteristic_buffer_clear_rx_buffer(bleio_characteristic_buffer_obj_t *self) {
     // prevent conflict with uart irq
-    sd_mutex_acquire_wait(&self->ringbuf_mutex);
+    uint8_t is_nested_critical_region;
+    sd_nvic_critical_region_enter(&is_nested_critical_region);
     ringbuf_clear(&self->ringbuf);
-    sd_mutex_release_check(&self->ringbuf_mutex);
+    sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
 bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer_obj_t *self) {

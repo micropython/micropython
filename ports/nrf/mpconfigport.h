@@ -28,6 +28,8 @@
 #ifndef NRF5_MPCONFIGPORT_H__
 #define NRF5_MPCONFIGPORT_H__
 
+#include "ble_drv.h"
+
 #define MICROPY_CPYTHON_COMPAT                   (1)
 //#define MICROPY_MODULE_BUILTIN_INIT              (1)  // TODO check this
 //#define MICROPY_MODULE_WEAK_LINKS                (1)  // TODO check this
@@ -52,10 +54,11 @@
 // 24kiB stack
 #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
 
+#include "py/circuitpy_mpconfig.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
-    ;
+    ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
 
-#include "py/circuitpy_mpconfig.h"
 
 #endif  // NRF5_MPCONFIGPORT_H__
