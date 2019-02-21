@@ -169,7 +169,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         }
         ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
 
-        bool reconnected = false;
+        wifi_sta_connected = false;
         if (wifi_sta_connect_requested) {
             wifi_mode_t mode;
             if (esp_wifi_get_mode(&mode) == ESP_OK) {
@@ -178,15 +178,9 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                     esp_err_t e = esp_wifi_connect();
                     if (e != ESP_OK) {
                         ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
-                    } else {
-                        reconnected = true;
                     }
                 }
             }
-        }
-        if (wifi_sta_connected && !reconnected) {
-            // If already connected and we fail to reconnect
-            wifi_sta_connected = false;
         }
         break;
     }
