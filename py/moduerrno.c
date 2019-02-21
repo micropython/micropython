@@ -84,7 +84,11 @@ STATIC const mp_obj_dict_t errorcode_dict = {
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_uerrno_globals_table[] = {
+#if CIRCUITPY
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_errno) },
+#else
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uerrno) },
+#endif
     #if MICROPY_PY_UERRNO_ERRORCODE
     { MP_ROM_QSTR(MP_QSTR_errorcode), MP_ROM_PTR(&errorcode_dict) },
     #endif
