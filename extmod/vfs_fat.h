@@ -38,6 +38,8 @@
 #define FSUSER_NO_FILESYSTEM (0x0008) // the block device has no filesystem on it
 // Device is writable over USB and read-only to MicroPython.
 #define FSUSER_USB_WRITABLE  (0x0010)
+// Bit set when the above flag is checked before opening a file for write.
+#define FSUSER_CONCURRENT_WRITE_PROTECTED (0x0020)
 
 typedef struct _fs_user_mount_t {
     mp_obj_base_t base;

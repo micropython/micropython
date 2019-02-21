@@ -323,12 +323,12 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
             mp_hal_delay_ms(1500);
 
             // USB isn't up, so we can write the file.
-            filesystem_writable_by_python(true);
+            filesystem_set_internal_writable_by_usb(false);
             f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
 
             // Switch the filesystem back to non-writable by Python now instead of later,
             // since boot.py might change it back to writable.
-            filesystem_writable_by_python(false);
+            filesystem_set_internal_writable_by_usb(true);
 
             // Write version info to boot_out.txt.
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
@@ -416,7 +416,8 @@ int __attribute__((used)) main(void) {
 
     // By default our internal flash is readonly to local python code and
     // writable over USB. Set it here so that boot.py can change it.
-    filesystem_writable_by_python(false);
+    filesystem_set_internal_concurrent_write_protection(true);
+    filesystem_set_internal_writable_by_usb(true);
 
     run_boot_py(safe_mode);
 

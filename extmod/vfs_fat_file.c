@@ -34,6 +34,7 @@
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
+#include "supervisor/filesystem.h"
 
 // this table converts from FRESULT to POSIX errno
 const byte fresult_to_errno_table[20] = {
@@ -187,7 +188,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
         }
     }
     assert(vfs != NULL);
-    if ((vfs->flags & FSUSER_USB_WRITABLE) != 0 && (mode & FA_WRITE) != 0) {
+    if ((mode & FA_WRITE) != 0 && !filesystem_is_writable_by_python(vfs)) {
         mp_raise_OSError(MP_EROFS);
     }
 
