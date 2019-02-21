@@ -2219,8 +2219,8 @@ msgid "timeout must be >= 0.0"
 msgstr "timeout muss >= 0.0 sein"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:79
-msgid "buffer_size must be >= 1"
-msgstr "Puffergröße muss >= 1 sein"
+msgid  "%q must be >= 1"
+msgstr "%q muss >= 1 sein"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c:83
 msgid "Expected a Characteristic"
@@ -2324,16 +2324,25 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:84 shared-bindings/displayio/Shape.c:88
-msgid "y should be an int"
+#: shared-bindings/displayio/Bitmap.c:131 shared-bindings/pulseio/PulseIn.c:272
+msgid "Cannot delete values"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:89
-msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:253
+#: shared-bindings/pulseio/PulseIn.c:278
+msgid "Slices not supported"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c:94
-msgid "row data must be a buffer"
+#: shared-bindings/displayio/Bitmap.c:156
+msgid "pixel coordinates out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c:166
+msgid "pixel value requires too many bits"
+msgstr ""
+
+#: shared-bindings/displayio/BuiltinFont.c:93
+msgid "%q should be an int"
 msgstr ""
 
 #: shared-bindings/displayio/ColorConverter.c:72
@@ -2390,6 +2399,10 @@ msgstr ""
 #: shared-bindings/displayio/Palette.c:120
 #: shared-bindings/displayio/Palette.c:134
 msgid "palette_index should be an int"
+msgstr ""
+
+#: shared-bindings/displayio/Shape.c:97
+msgid "y should be an int"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c:92
@@ -2680,6 +2693,10 @@ msgstr ""
 #: shared-module/displayio/Bitmap.c:69
 msgid "row must be packed and word aligned"
 msgstr ""
+
+#: shared-module/displayio/Bitmap.c:118
+msgid "Read-only object"
+msgstr "Schreibgeschützte Objekt"
 
 #: shared-module/displayio/Display.c:67
 msgid "Unsupported display bus type"
