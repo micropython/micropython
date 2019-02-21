@@ -55,3 +55,8 @@ Methods
 
    This method is NOT implemented. Use ``ubinascii.hexlify(hash.digest())``
    to achieve a similar effect.
+
+.. method:: hash.copy()
+
+   Return a copy (“clone”) of the hash object. Availability depends on `MicroPython port`.
+

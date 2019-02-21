@@ -1267,6 +1267,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_UHASHLIB_SHA256 (1)
 #endif
 
+// `hmac` module requires some attributes not always available from hash objects.
+#ifndef MICROPY_PY_UHASHLIB_SHA256_FOR_HMAC
+#define MICROPY_PY_UHASHLIB_SHA256_FOR_HMAC (0)
+#endif
+
 #ifndef MICROPY_PY_UCRYPTOLIB
 #define MICROPY_PY_UCRYPTOLIB (0)
 #endif

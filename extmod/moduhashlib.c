@@ -74,9 +74,11 @@ STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 #define mbedtls_sha256_finish_ret mbedtls_sha256_finish
 #endif
 
+#define SHA256_CONTEXT_SIZE sizeof(mbedtls_sha256_context)
+
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_sha256_context));
+    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, SHA256_CONTEXT_SIZE);
     o->base.type = type;
     mbedtls_sha256_init((mbedtls_sha256_context*)&o->state);
     mbedtls_sha256_starts_ret((mbedtls_sha256_context*)&o->state, 0);
@@ -106,9 +108,11 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 
 #include "crypto-algorithms/sha256.c"
 
+#define SHA256_CONTEXT_SIZE sizeof(CRYAL_SHA256_CTX)
+
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
+    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, SHA256_CONTEXT_SIZE);
     o->base.type = type;
     sha256_init((CRYAL_SHA256_CTX*)o->state);
     if (n_args == 1) {
@@ -137,9 +141,23 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_sha256_update_obj, uhashlib_sha256_update);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha256_digest_obj, uhashlib_sha256_digest);
 
+#if MICROPY_PY_UHASHLIB_SHA256_FOR_HMAC
+STATIC mp_obj_t uhashlib_sha256_copy(mp_obj_t self_in) {
+    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, SHA256_CONTEXT_SIZE);
+    memcpy(o, self_in, sizeof(*o) + SHA256_CONTEXT_SIZE);
+    return MP_OBJ_FROM_PTR(o);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha256_copy_obj, uhashlib_sha256_copy);
+#endif
+
 STATIC const mp_rom_map_elem_t uhashlib_sha256_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_sha256_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_sha256_digest_obj) },
+#if MICROPY_PY_UHASHLIB_SHA256_FOR_HMAC
+    { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&uhashlib_sha256_copy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_digest_size), MP_ROM_INT(32) },
+    { MP_ROM_QSTR(MP_QSTR_block_size), MP_ROM_INT(64) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha256_locals_dict, uhashlib_sha256_locals_dict_table);
