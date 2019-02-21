@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_ASMXTENSA_H
 #define MICROPY_INCLUDED_PY_ASMXTENSA_H
 
+#include "py/misc.h"
 #include "py/asmbase.h"
 
 // calling conventions:
@@ -238,7 +239,8 @@ void asm_xtensa_j_label(asm_xtensa_t *as, uint label);
 void asm_xtensa_bccz_reg_label(asm_xtensa_t *as, uint cond, uint reg, uint label);
 void asm_xtensa_bcc_reg_reg_label(asm_xtensa_t *as, uint cond, uint reg1, uint reg2, uint label);
 void asm_xtensa_setcc_reg_reg_reg(asm_xtensa_t *as, uint cond, uint reg_dest, uint reg_src1, uint reg_src2);
-void asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32);
+size_t asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32);
+void asm_xtensa_mov_reg_i32_optimised(asm_xtensa_t *as, uint reg_dest, uint32_t i32);
 void asm_xtensa_mov_local_reg(asm_xtensa_t *as, int local_num, uint reg_src);
 void asm_xtensa_mov_reg_local(asm_xtensa_t *as, uint reg_dest, int local_num);
 void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_num);
@@ -289,7 +291,9 @@ void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx);
 #define ASM_CALL_IND(as, idx) asm_xtensa_call_ind((as), (idx))
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_xtensa_mov_local_reg((as), (local_num), (reg_src))
-#define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_xtensa_mov_reg_i32((as), (reg_dest), (imm))
+#define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_xtensa_mov_reg_i32_optimised((as), (reg_dest), (imm))
+#define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_xtensa_mov_reg_i32((as), (reg_dest), (imm))
+#define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_xtensa_mov_reg_i32((as), (reg_dest), (imm))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_xtensa_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_mov_n((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_xtensa_mov_reg_local_addr((as), (reg_dest), (local_num))

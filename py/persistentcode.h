@@ -30,6 +30,19 @@
 #include "py/reader.h"
 #include "py/emitglue.h"
 
+enum {
+    MP_NATIVE_ARCH_NONE = 0,
+    MP_NATIVE_ARCH_X86,
+    MP_NATIVE_ARCH_X64,
+    MP_NATIVE_ARCH_ARMV6,
+    MP_NATIVE_ARCH_ARMV6M,
+    MP_NATIVE_ARCH_ARMV7M,
+    MP_NATIVE_ARCH_ARMV7EM,
+    MP_NATIVE_ARCH_ARMV7EMSP,
+    MP_NATIVE_ARCH_ARMV7EMDP,
+    MP_NATIVE_ARCH_XTENSA,
+};
+
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
 mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
 mp_raw_code_t *mp_raw_code_load_file(const char *filename);

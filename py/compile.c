@@ -3266,7 +3266,11 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             void *f = mp_asm_base_get_code((mp_asm_base_t*)comp->emit_inline_asm);
             mp_emit_glue_assign_native(comp->scope_cur->raw_code, MP_CODE_NATIVE_ASM,
                 f, mp_asm_base_get_code_size((mp_asm_base_t*)comp->emit_inline_asm),
-                NULL, comp->scope_cur->num_pos_args, 0, type_sig);
+                NULL,
+                #if MICROPY_PERSISTENT_CODE_SAVE
+                0, 0, 0, 0, NULL,
+                #endif
+                comp->scope_cur->num_pos_args, 0, type_sig);
         }
     }
 

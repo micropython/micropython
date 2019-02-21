@@ -241,14 +241,14 @@ static inline void asm_thumb_ldrh_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uin
 #define ASM_THUMB_OP_MOVT (0xf2c0)
 
 void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src);
-void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src);
+size_t asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src);
 
 // these return true if the destination is in range, false otherwise
 bool asm_thumb_b_n_label(asm_thumb_t *as, uint label);
 bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide);
 bool asm_thumb_bl_label(asm_thumb_t *as, uint label);
 
-void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32_src); // convenience
+size_t asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32_src); // convenience
 void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32_src); // convenience
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num_dest, uint rlo_src); // convenience
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
@@ -315,6 +315,8 @@ void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenien
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg) asm_thumb_mov_local_reg((as), (local_num), (reg))
 #define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_thumb_mov_reg_i32_optimised((as), (reg_dest), (imm))
+#define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_thumb_mov_reg_i16((as), ASM_THUMB_OP_MOVW, (reg_dest), (imm))
+#define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_thumb_mov_reg_i32((as), (reg_dest), (imm))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_thumb_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_thumb_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_thumb_mov_reg_local_addr((as), (reg_dest), (local_num))

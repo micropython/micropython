@@ -236,9 +236,11 @@ void asm_x86_mov_i8_to_r8(asm_x86_t *as, int src_i8, int dest_r32) {
 }
 #endif
 
-void asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32) {
+size_t asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32) {
     asm_x86_write_byte_1(as, OPCODE_MOV_I32_TO_R32 | dest_r32);
+    size_t loc = mp_asm_base_get_code_pos(&as->base);
     asm_x86_write_word32(as, src_i32);
+    return loc;
 }
 
 void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {

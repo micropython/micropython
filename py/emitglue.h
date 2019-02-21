@@ -48,6 +48,11 @@ typedef enum {
     MP_CODE_NATIVE_ASM,
 } mp_raw_code_kind_t;
 
+typedef struct _mp_qstr_link_entry_t {
+    uint16_t off;
+    uint16_t qst;
+} mp_qstr_link_entry_t;
+
 typedef struct _mp_raw_code_t {
     mp_uint_t kind : 3; // of type mp_raw_code_kind_t
     mp_uint_t scope_flags : 7;
@@ -58,6 +63,11 @@ typedef struct _mp_raw_code_t {
     size_t fun_data_len;
     uint16_t n_obj;
     uint16_t n_raw_code;
+    #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+    uint16_t prelude_offset;
+    uint16_t n_qstr;
+    mp_qstr_link_entry_t *qstr_link;
+    #endif
     #endif
     #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
     mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
@@ -75,7 +85,15 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     uint16_t n_obj, uint16_t n_raw_code,
     #endif
     mp_uint_t scope_flags);
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table, mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig);
+
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
+    const mp_uint_t *const_table,
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    uint16_t prelude_offset,
+    uint16_t n_obj, uint16_t n_raw_code,
+    uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
+    #endif
+    mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig);
 
 mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);
