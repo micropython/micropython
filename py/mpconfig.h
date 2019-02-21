@@ -45,6 +45,11 @@
 #include <mpconfigport.h>
 #endif
 
+// Is this a CircuitPython build?
+#ifndef CIRCUITPY
+#define CIRCUITPY 0
+#endif
+
 // Any options not explicitly set in mpconfigport.h will get default
 // values below.
 

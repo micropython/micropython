@@ -33,6 +33,9 @@
 #ifndef __INCLUDED_MPCONFIG_CIRCUITPY_H
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H
 
+// This is CircuitPython.
+#define CIRCUITPY 1
+
 // REPR_C encodes qstrs, 31-bit ints, and 30-bit floats in a single 32-bit word.
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 
