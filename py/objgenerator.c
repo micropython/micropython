@@ -252,7 +252,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
+    // Python allows the following variations on the arguments:
+    //  1. args[1]=exception instance; args[2]=None
+    //  2. args[1]=exception class; args[2]=None
+    //  3. args[1]=exception class; args[2]=exception instance (same class as args[1])
+    //  4. args[1]=exception class; args[2]=value -> create instance via args[1](args[2])
+    // MicroPython only supports 1-3, with no checking of the class being the same in 3
+
+    mp_obj_t exc = args[1];
+    if (n_args > 2 && args[2] != mp_const_none) {
+        // Handle case 3 without any further checks
+        exc = args[2];
+    }
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_STOP_ITERATION) {
