@@ -405,7 +405,11 @@ STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
 STATIC const mp_obj_type_t re_type = {
     { &mp_type_type },
+#if CIRCUITPY
     .name = MP_QSTR_re,
+#else
+    .name = MP_QSTR_ure,
+#endif
     .print = re_print,
     .locals_dict = (void*)&re_locals_dict,
 };
