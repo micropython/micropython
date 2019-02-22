@@ -57,7 +57,9 @@ STATIC void pyb_lwip_poll(void) {
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif->flags & NETIF_FLAG_LINK_UP) {
             mod_network_nic_type_t *nic = netif->state;
-            nic->poll_callback(nic, netif);
+            if (nic->poll_callback) {
+                nic->poll_callback(nic, netif);
+            }
         }
     }
     // Run the lwIP internal updates
