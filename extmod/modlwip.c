@@ -447,9 +447,12 @@ STATIC mp_uint_t lwip_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         len = 0xffff;
     }
 
+    MICROPY_PY_LWIP_ENTER
+
     // FIXME: maybe PBUF_ROM?
     struct pbuf *p = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
     if (p == NULL) {
+        MICROPY_PY_LWIP_EXIT
         *_errno = MP_ENOMEM;
         return -1;
     }
@@ -466,6 +469,8 @@ STATIC mp_uint_t lwip_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
     }
 
     pbuf_free(p);
+
+    MICROPY_PY_LWIP_EXIT
 
     // udp_sendto can return 1 on occasion for ESP8266 port.  It's not known why
     // but it seems that the send actually goes through without error in this case.
@@ -505,9 +510,13 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
     struct pbuf *p = socket->incoming.pbuf;
 
+    MICROPY_PY_LWIP_ENTER
+
     u16_t result = pbuf_copy_partial(p, buf, ((p->tot_len > len) ? len : p->tot_len), 0);
     pbuf_free(p);
     socket->incoming.pbuf = NULL;
+
+    MICROPY_PY_LWIP_EXIT
 
     return (mp_uint_t) result;
 }
@@ -526,11 +535,14 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
     // Check for any pending errors
     STREAM_ERROR_CHECK(socket);
 
+    MICROPY_PY_LWIP_ENTER
+
     u16_t available = tcp_sndbuf(socket->pcb.tcp);
 
     if (available == 0) {
         // Non-blocking socket
         if (socket->timeout == 0) {
+            MICROPY_PY_LWIP_EXIT
             *_errno = MP_EAGAIN;
             return MP_STREAM_ERROR;
         }
@@ -543,11 +555,13 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         // reset) by error callback.
         // Avoid sending too small packets, so wait until at least 16 bytes available
         while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
+            MICROPY_PY_LWIP_EXIT
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
                 return MP_STREAM_ERROR;
             }
             poll_sockets();
+            MICROPY_PY_LWIP_REENTER
         }
 
         // While we waited, something could happen
@@ -562,6 +576,8 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
     if (err == ERR_OK && tcp_sndbuf(socket->pcb.tcp) < TCP_SND_BUF / 4) {
         err = tcp_output(socket->pcb.tcp);
     }
+
+    MICROPY_PY_LWIP_EXIT
 
     if (err != ERR_OK) {
         *_errno = error_lookup_table[-err];
@@ -608,6 +624,8 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
         }
     }
 
+    MICROPY_PY_LWIP_ENTER
+
     assert(socket->pcb.tcp != NULL);
 
     struct pbuf *p = socket->incoming.pbuf;
@@ -632,6 +650,8 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
         socket->recv_offset += len;
     }
     tcp_recved(socket->pcb.tcp, len);
+
+    MICROPY_PY_LWIP_EXIT
 
     return len;
 }
@@ -865,16 +885,21 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                     mp_raise_OSError(MP_EALREADY);
                 }
             }
+
             // Register our receive callback.
+            MICROPY_PY_LWIP_ENTER
             tcp_recv(socket->pcb.tcp, _lwip_tcp_recv);
             socket->state = STATE_CONNECTING;
             err = tcp_connect(socket->pcb.tcp, &dest, port, _lwip_tcp_connected);
             if (err != ERR_OK) {
+                MICROPY_PY_LWIP_EXIT
                 socket->state = STATE_NEW;
                 mp_raise_OSError(error_lookup_table[-err]);
             }
             socket->peer_port = (mp_uint_t)port;
             memcpy(socket->peer, &dest, sizeof(socket->peer));
+            MICROPY_PY_LWIP_EXIT
+
             // And now we wait...
             if (socket->timeout != -1) {
                 for (mp_uint_t retries = socket->timeout / 100; retries--;) {
@@ -1209,6 +1234,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
 
+    MICROPY_PY_LWIP_ENTER
+
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
         ret = 0;
@@ -1259,6 +1286,7 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         bool socket_is_listener = false;
 
         if (socket->pcb.tcp == NULL) {
+            MICROPY_PY_LWIP_EXIT
             return 0;
         }
 
@@ -1304,6 +1332,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
     }
+
+    MICROPY_PY_LWIP_EXIT
 
     return ret;
 }
@@ -1452,7 +1482,10 @@ STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     getaddrinfo_state_t state;
     state.status = 0;
 
+    MICROPY_PY_LWIP_ENTER
     err_t ret = dns_gethostbyname(host, (ip_addr_t*)&state.ipaddr, lwip_getaddrinfo_cb, &state);
+    MICROPY_PY_LWIP_EXIT
+
     switch (ret) {
         case ERR_OK:
             // cached
