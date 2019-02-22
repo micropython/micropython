@@ -110,6 +110,7 @@ SRC_LIB = $(addprefix lib/,\
 	oofatfs/option/unicode.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
+	netutils/trace.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
@@ -240,6 +241,7 @@ SRC_C = \
 	can.c \
 	usb.c \
 	wdt.c \
+	eth.c \
 	gccollect.c \
 	help.c \
 	machine_i2c.c \
