@@ -46,6 +46,8 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
         uint8_t handler = tc_handler[index];
         if (handler == TC_HANDLER_PULSEOUT) {
             pulseout_interrupt_handler(index);
+        } else if (handler == TC_HANDLER_FREQUENCYIN) {
+            frequencyin_interrupt_handler(index);
         }
     }
 }

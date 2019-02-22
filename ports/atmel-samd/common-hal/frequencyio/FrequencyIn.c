@@ -154,7 +154,8 @@ void frequencyin_reference_tc_init() {
     if (dpll_gclk == 0xff) {
         frequencyin_samd51_start_dpll();
     }
-    turn_on_clocks(true, reference_tc, dpll_gclk, TC_HANDLER_FREQUENCYIN);
+    set_timer_handler(reference_tc, dpll_gclk, TC_HANDLER_FREQUENCYIN);
+    turn_on_clocks(true, reference_tc, dpll_gclk);
     #endif
 
     Tc *tc = tc_insts[reference_tc];
@@ -289,7 +290,8 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     // SAMD21: We use GCLK0 generated from DFLL running at 48mhz
     // SAMD51: We use a GCLK generated from DPLL1 running at <100mhz
     #ifdef SAMD21
-    turn_on_clocks(true, timer_index, 0, TC_HANDLER_NO_INTERRUPT);
+    set_timer_handler(timer_index, 0, TC_HANDLER_NO_INTERRUPT);
+    turn_on_clocks(true, timer_index, 0);
     #endif
     #ifdef SAMD51
     frequencyin_samd51_start_dpll();
@@ -297,7 +299,8 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
         common_hal_frequencyio_frequencyin_deinit(self);
         mp_raise_RuntimeError(translate("No available clocks"));
     }
-    turn_on_clocks(true, timer_index, dpll_gclk, TC_HANDLER_NO_INTERRUPT);
+    set_timer_handler(timer_index, dpll_gclk, TC_HANDLER_NO_INTERRUPT);
+    turn_on_clocks(true, timer_index, dpll_gclk);
     #endif
 
     // Ensure EIC is on
