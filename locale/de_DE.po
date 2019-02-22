@@ -2845,3 +2845,9 @@ msgid ""
 msgstr ""
 "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
 "erneut um den abgesicherten Modus zu verlassen. \n"
+
+msgid "All UART peripherals are in use"
+msgstr "Alle UART-Peripheriegeräte sind in Benutzung"
+
+msgid "offset out of bounds"
+msgstr ""
