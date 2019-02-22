@@ -253,6 +253,7 @@ SRC_C = \
 	moduos.c \
 	modutime.c \
 	modusocket.c \
+	network_lan.c \
 	modnetwork.c \
 	extint.c \
 	usrsw.c \
