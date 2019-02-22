@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 13:06-0800\n"
+"POT-Creation-Date: 2019-02-22 15:26-0800\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -939,7 +939,7 @@ msgid "Traceback (most recent call last):\n"
 msgstr ""
 
 msgid "Tuple or struct_time argument required"
-msgstr "Tuple or struct_time argument required"
+msgstr ""
 
 #, c-format
 msgid "UART(%d) does not exist"
@@ -2110,65 +2110,3 @@ msgstr ""
 
 msgid "zero step"
 msgstr "passo zero"
-
-#, fuzzy
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Todos os temporizadores em uso"
-
-#~ msgid "Baud rate too high for this SPI peripheral"
-#~ msgstr "Taxa de transmissão muito alta para esse periférico SPI"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Pode codificar o UUID no pacote de anúncios."
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Não é possível adicionar Característica."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Não é possível aplicar dados de anúncio. status: 0x%02x"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Não é possível aplicar o nome do dispositivo na pilha."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Não é possível consultar o endereço do dispositivo."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Não é possível aplicar parâmetros GAP."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Não é possível definir parâmetros PPCP."
-
-#~ msgid "Group empty"
-#~ msgstr "Grupo vazio"
-
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Grupo deve ter tamanho pelo menos 1"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Tipo de serviço inválido"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parâmetro UUID inválido"
-
-#~ msgid "Not enough pins available"
-#~ msgstr "Não há pinos suficientes disponíveis"
-
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "buffers devem ser o mesmo tamanho"
-
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART não disponível"
-
-#~ msgid "index must be int"
-#~ msgstr "index deve ser int"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "heap deve ser uma lista"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Falha ao alocar buffer RX de %d bytes"

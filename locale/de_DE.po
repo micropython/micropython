@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 13:08-0800\n"
+"POT-Creation-Date: 2019-02-22 15:26-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -162,7 +162,7 @@ msgid "*x must be assignment target"
 msgstr "*x muss Zuordnungsziel sein"
 
 msgid ", in %q\n"
-msgstr ", in %q\n"
+msgstr ""
 
 msgid "0.0 to a complex power"
 msgstr ""
@@ -863,10 +863,10 @@ msgstr "Slices werden nicht unterstützt"
 
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr ""
 
 msgid "Splitting with sub-captures"
-msgstr ""
+msgstr "Teilen mit unter-captures"
 
 msgid "Stack size must be at least 256"
 msgstr "Die Stackgröße sollte mindestens 256 sein"
@@ -1044,7 +1044,7 @@ msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
 
 #, c-format
 msgid "[addrinfo error %d]"
-msgstr "[addrinfo error %d]"
+msgstr ""
 
 msgid "__init__() should return None"
 msgstr ""
@@ -1385,7 +1385,7 @@ msgstr ""
 
 #, c-format
 msgid "error = 0x%08lX"
-msgstr "error = 0x%08lX"
+msgstr ""
 
 msgid "exceptions must derive from BaseException"
 msgstr "Exceptions müssen von BaseException abgeleitet sein"
@@ -1641,7 +1641,7 @@ msgid "map buffer too small"
 msgstr ""
 
 msgid "math domain error"
-msgstr "math domain error"
+msgstr ""
 
 msgid "maximum recursion depth exceeded"
 msgstr "maximale Rekursionstiefe überschritten"
@@ -1917,7 +1917,7 @@ msgid "small int overflow"
 msgstr "small int Überlauf"
 
 msgid "soft reboot\n"
-msgstr "soft reboot\n"
+msgstr "weicher reboot\n"
 
 msgid "start/end indices"
 msgstr ""
@@ -2127,16 +2127,3 @@ msgstr ""
 
 msgid "zero step"
 msgstr ""
-
-#~ msgid "Not enough pins available"
-#~ msgstr "Nicht genug Pins vorhanden"
-
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART nicht verfügbar"
-
-#~ msgid "index must be int"
-#~ msgstr "index muss ein int sein"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "unicode_characters muss eine Zeichenfolge sein"

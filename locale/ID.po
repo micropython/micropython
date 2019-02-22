@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 13:06-0800\n"
+"POT-Creation-Date: 2019-02-22 15:26-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2122,46 +2122,3 @@ msgstr ""
 
 msgid "zero step"
 msgstr ""
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Semua perangkat PWM sedang digunakan"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Parameter UUID tidak valid"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Panjang string UUID tidak valid"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Sepertinya inti kode CircuitPython kita crash dengan sangat keras. Ups!\n"
-
-#~ msgid "Not enough pins available"
-#~ msgstr "Pin yang tersedia tidak cukup"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Silahkan taruh masalah disini dengan isi dari CIRCUITPY drive: anda \n"
-
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "buffers harus mempunyai panjang yang sama"
-
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART tidak tersedia"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "tegangan cukup untuk semua sirkuit dan tekan reset (setelah mencabut "
-#~ "CIRCUITPY).\n"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "keyword harus berupa string"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"

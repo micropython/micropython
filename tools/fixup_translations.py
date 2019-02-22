@@ -33,20 +33,47 @@ for po_filename in po_filenames:
             continue
         print(commit.authored_date, commit)
         first_translations.metadata = current_file.metadata
+        first_translations.header = current_file.header
         for entry in first_translations:
-            if entry.msgid == "soft reboot\n":
-                continue
             newer_entry = current_file.find(entry.msgid)
-            if newer_entry and entry.msgstr != newer_entry.msgstr:
+
+            if newer_entry and entry.msgid == "":
+                entry.merge(newer_entry)
+                print(entry)
+            elif newer_entry and entry.msgstr != newer_entry.msgstr:
                 if newer_entry.msgstr != "" and (newer_entry.msgstr != entry.msgid or entry.msgid in NO_TRANSLATION_WHITELIST):
                     entry.merge(newer_entry)
                     entry.msgstr = newer_entry.msgstr
+                    if "fuzzy" not in newer_entry.flags and "fuzzy" in entry.flags:
+                        entry.flags.remove("fuzzy")
                 elif entry.msgid not in fixed_ids:
                     if commit not in bad_commits:
                         bad_commits[commit] = set()
                     bad_commits[commit].add(po_filename)
                     fixed_ids.add(entry.msgid)
-                    print(entry.msgid, "\"" + entry.msgstr + "\"", "\"" + newer_entry.msgstr + "\"")
+                    #print(entry.msgid, "\"" + entry.msgstr + "\"", "\"" + newer_entry.msgstr + "\"",)
+            elif newer_entry and newer_entry.flags != entry.flags:
+                entry.flags = newer_entry.flags
+            elif newer_entry and newer_entry.obsolete != entry.obsolete:
+                entry.obsolete = newer_entry.obsolete
+            elif not newer_entry:
+                entry.obsolete = True
+
+        # Add new entries to the modified pofile.
+        for entry in current_file:
+            old_entry = first_translations.find(entry.msgid, include_obsolete_entries=True)
+            if old_entry:
+                continue
+            first_translations.append(entry)
+
+    # Remove obsolete translations. We can always use this script to revive them from the git history.
+    to_remove = []
+    for entry in first_translations:
+        if entry.obsolete:
+            to_remove.append(entry)
+
+    for remove in to_remove:
+        first_translations.remove(remove)
 
     first_translations.save(po_filename)
 

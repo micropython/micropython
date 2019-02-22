@@ -197,7 +197,7 @@ locale/circuitpython.pot: all-source
 	find . -iname "*.c" | xargs xgettext -L C -s --no-location --keyword=translate -o circuitpython.pot -p locale
 
 translate: locale/circuitpython.pot
-	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-location locale/circuitpython.pot; done
+	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-fuzzy-matching --no-location locale/circuitpython.pot; done
 
 check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^

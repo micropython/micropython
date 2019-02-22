@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 13:06-0800\n"
+"POT-Creation-Date: 2019-02-22 15:26-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -604,8 +604,9 @@ msgstr "Broche invalide pour 'bit clock'"
 msgid "Invalid buffer size"
 msgstr "longueur de tampon invalide"
 
+#, fuzzy
 msgid "Invalid channel count"
-msgstr ""
+msgstr "Argument invalide"
 
 msgid "Invalid clock pin"
 msgstr "Broche d'horloge invalide"
@@ -830,8 +831,9 @@ msgstr "Broche invalide pour le SPI"
 msgid "Pixel beyond bounds of buffer"
 msgstr ""
 
+#, fuzzy
 msgid "Plus any modules on the filesystem\n"
-msgstr ""
+msgstr "Impossible de remonter le système de fichiers"
 
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
@@ -1743,7 +1745,7 @@ msgid "name reused for argument"
 msgstr "nom réutilisé comme argument"
 
 msgid "native yield"
-msgstr "native yield"
+msgstr ""
 
 #, c-format
 msgid "need more than %d values to unpack"
@@ -1933,7 +1935,7 @@ msgid "row must be packed and word aligned"
 msgstr ""
 
 msgid "rsplit(None,n)"
-msgstr "rsplit(None,n)"
+msgstr ""
 
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
@@ -2188,110 +2190,3 @@ msgstr "adresse hors limites"
 
 msgid "zero step"
 msgstr "'step' nul"
-
-#, fuzzy
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Tous les périphériques PWM sont utilisés"
-
-#~ msgid "Can not add Characteristic."
-#~ msgstr "Impossible d'ajouter la Characteristic."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Impossible d'ajouter le Service"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Impossible d'appliquer le nom de périphérique dans la pile"
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Impossible d'encoder l'UUID pour vérifier la longueur."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Impossible d'obtenir l'adresse du périphérique"
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres GAP"
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Impossible d'appliquer les paramètres PPCP"
-
-#, fuzzy
-#~ msgid "Group empty"
-#~ msgstr "Groupe vide"
-
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Le tampon doit être de longueur au moins 1"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Type de service invalide"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Paramètre UUID invalide"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Longeur de chaîne UUID invalide"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Il semblerait que votre code CircuitPython a durement planté. Oups!\n"
-
-#~ msgid "Not enough pins available"
-#~ msgstr "Pas assez de broches disponibles"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "SVP, remontez le problème là avec le contenu du lecteur CIRCUITPY:\n"
-
-#~ msgid "Wrong address length"
-#~ msgstr "Mauvaise longueur d'adresse"
-
-#, fuzzy
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "mauvais nombre d'octets fourni'"
-
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "les slices de tampon doivent être de longueurs égales"
-
-#, fuzzy
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART n'est pas disponible"
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio est en cours de développement"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "assez de puissance pour l'ensemble du circuit et appuyez sur "
-#~ "'reset' (après avoir éjecter CIRCUITPY).\n"
-
-#~ msgid "index must be int"
-#~ msgstr "l'index doit être un entier"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "la palette doit être une displayio.Palette"
-
-#, fuzzy
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-#~ msgstr ""
-#~ "le tampon de ligne doit être un bytearray ou un tableau de type 'b' ou 'B'"
-
-#, fuzzy
-#~ msgid "row data must be a buffer"
-#~ msgstr "les données de ligne doivent être un tampon"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "les noms doivent être des chaînes de caractère"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
-
-#, fuzzy
-#~ msgid "value_size must be power of two"
-#~ msgstr "value_size doit être une puissance de 2"

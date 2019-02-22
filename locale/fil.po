@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 13:06-0800\n"
+"POT-Creation-Date: 2019-02-22 15:26-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -890,7 +890,7 @@ msgstr "Hindi suportado ang Slices"
 
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr ""
 
 msgid "Splitting with sub-captures"
 msgstr "Binibiyak gamit ang sub-captures"
@@ -1423,7 +1423,7 @@ msgstr "y ay dapat int"
 
 #, c-format
 msgid "error = 0x%08lX"
-msgstr "error = 0x%08lX"
+msgstr ""
 
 msgid "exceptions must derive from BaseException"
 msgstr "ang mga exceptions ay dapat makuha mula sa BaseException"
@@ -2166,103 +2166,3 @@ msgstr "wala sa sakop ang address"
 
 msgid "zero step"
 msgstr "zero step"
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Lahat ng PWM peripherals ay ginagamit"
-
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
-
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
-
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
-
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
-
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
-
-#~ msgid "Group empty"
-#~ msgstr "Walang laman ang group"
-
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Group dapat ay hindi baba sa 1 na haba"
-
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
-
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Mali ang UUID parameter"
-
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Mali ang UUID string length"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
-#~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
-
-#~ msgid "Not enough pins available"
-#~ msgstr "Hindi sapat ang magagamit na pins"
-
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
-#~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
-
-#~ msgid "Wrong address length"
-#~ msgstr "Mali ang address length"
-
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Mali ang bilang ng bytes"
-
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "aarehas na haba dapat ang buffer slices"
-
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART hindi available"
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
-
-#~ msgid ""
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
-#~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
-
-#~ msgid "index must be int"
-#~ msgstr "index ay dapat int"
-
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
-
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-#~ msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
-
-#~ msgid "row data must be a buffer"
-#~ msgstr "row data ay dapat na buffer"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "ang keywords dapat strings"
-
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
