@@ -162,3 +162,12 @@ void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed) {
     uint32_t pin = pin_obj->pin;
     gpio->OSPEEDR = (gpio->OSPEEDR & ~(3 << (2 * pin))) | (speed << (2 * pin));
 }
+
+MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    buf[0] = 'H';
+    buf[1] = 'J';
+    buf[2] = '0';
+    buf[3] = 0;
+    buf[4] = 0;
+    buf[5] = ((uint8_t*)MP_HAL_UNIQUE_ID_ADDRESS)[0] << 2 | idx;
+}
