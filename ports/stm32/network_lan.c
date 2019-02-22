@@ -30,6 +30,8 @@
 #include "modnetwork.h"
 #include "eth.h"
 
+#if defined(MICROPY_HW_ETH_MDC)
+
 typedef struct _network_lan_obj_t {
     mp_obj_base_t base;
     eth_t *eth;
@@ -158,3 +160,5 @@ const mp_obj_type_t network_lan_type = {
     .make_new = network_lan_make_new,
     .locals_dict = (mp_obj_dict_t*)&network_lan_locals_dict,
 };
+
+#endif // defined(MICROPY_HW_ETH_MDC)
