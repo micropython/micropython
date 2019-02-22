@@ -245,6 +245,7 @@ SRC_C = \
 	reset.c \
 	supervisor/shared/memory.c \
 	tick.c \
+	timer_handler.c \
 
 
 ifeq ($(CIRCUITPY_NETWORK),1)
