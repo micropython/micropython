@@ -38,7 +38,6 @@ typedef struct {
     uint32_t timeout_ms;
     // Ring buffer storing consecutive incoming values.
     ringbuf_t ringbuf;
-    nrf_mutex_t ringbuf_mutex;
 } bleio_characteristic_buffer_obj_t;
 
 #endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTICBUFFER_H

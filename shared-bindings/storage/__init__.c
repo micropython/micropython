@@ -54,10 +54,12 @@
 //|
 //|   This is the CircuitPython analog to the UNIX ``mount`` command.
 //|
+//|   :param bool readonly: True when the filesystem should be readonly to CircuitPython.
+//|
 mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_readonly };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_false} },
+        { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // parse args
@@ -77,7 +79,7 @@ mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         mp_raise_ValueError(translate("filesystem must provide mount method"));
     }
 
-    common_hal_storage_mount(vfs_obj, mnt_str, mp_obj_is_true(args[ARG_readonly].u_obj));
+    common_hal_storage_mount(vfs_obj, mnt_str, args[ARG_readonly].u_bool);
 
     return mp_const_none;
 }
@@ -101,14 +103,21 @@ mp_obj_t storage_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 
-//| .. function:: remount(mount_path, readonly=False)
+//| .. function:: remount(mount_path, readonly=False, *, disable_concurrent_write_protection=False)
 //|
 //|   Remounts the given path with new parameters.
 //|
+//|   :param bool readonly: True when the filesystem should be readonly to CircuitPython.
+//|   :param bool disable_concurrent_write_protection: When True, the check that makes sure the
+//|     underlying filesystem data is written by one computer is disabled. Disabling the protection
+//|     allows CircuitPython and a host to write to the same filesystem with the risk that the
+//|     filesystem will be corrupted.
+//|
 mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_readonly };
+    enum { ARG_readonly, ARG_disable_concurrent_write_protection };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_readonly, MP_ARG_BOOL | MP_ARG_REQUIRED, {.u_bool = false} },
+        { MP_QSTR_readonly, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_disable_concurrent_write_protection, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // get the mount point
@@ -118,7 +127,7 @@ mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    common_hal_storage_remount(mnt_str, args[ARG_readonly].u_bool);
+    common_hal_storage_remount(mnt_str, args[ARG_readonly].u_bool, args[ARG_disable_concurrent_write_protection].u_bool);
 
     return mp_const_none;
 }

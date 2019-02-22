@@ -33,6 +33,9 @@
 #ifndef __INCLUDED_MPCONFIG_CIRCUITPY_H
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H
 
+// This is CircuitPython.
+#define CIRCUITPY 1
+
 // REPR_C encodes qstrs, 31-bit ints, and 30-bit floats in a single 32-bit word.
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 
@@ -123,7 +126,6 @@
 #define MICROPY_FATFS_USE_LABEL       (1)
 #define MICROPY_FATFS_RPATH           (2)
 #define MICROPY_FATFS_MULTI_PARTITION (1)
-#define MICROPY_FATFS_NUM_PERSISTENT  (1)
 
 // Only enable this if you really need it. It allocates a byte cache of this size.
 // #define MICROPY_FATFS_MAX_SS           (4096)
@@ -168,7 +170,6 @@ typedef long mp_off_t;
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
-
 // board specific definitions
 #include "mpconfigboard.h"
 
@@ -176,20 +177,21 @@ typedef long mp_off_t;
 
 // Remove some lesser-used functionality to make small builds fit.
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_ALL_SPECIAL_METHODS (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_COMPLEX (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_FROZENSET (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_REVERSED (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_STR_CENTER (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_STR_PARTITION (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_STR_SPLITLINES (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_UERRNO (CIRCUITPY_FULL_BUILD)
+#define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_FROZENSET         (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_REVERSED          (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_STR_CENTER        (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_STR_PARTITION     (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES    (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 // Opposite setting is deliberate.
-#define MICROPY_PY_UERRNO_ERRORCODE (!CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_MATCH_GROUPS (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_SUB (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE                        (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -204,6 +206,7 @@ typedef long mp_off_t;
 
 #ifdef LONGINT_IMPL_LONGLONG
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MP_SSIZE_MAX (0x7fffffff)
 #endif
 
 
@@ -340,8 +343,10 @@ extern const struct _mp_obj_module_t nvm_module;
 #if CIRCUITPY_OS
 extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module },
+#define OS_MODULE_ALT_NAME     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&os_module },
 #else
 #define OS_MODULE
+#define OS_MODULE_ALT_NAME
 #endif
 
 #if CIRCUITPY_PIXELBUF
@@ -417,8 +422,10 @@ extern const struct _mp_obj_module_t supervisor_module;
 #if CIRCUITPY_TIME
 extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
+#define TIME_MODULE_ALT_NAME   { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module },
 #else
 #define TIME_MODULE
+#define TIME_MODULE_ALT_NAME
 #endif
 
 #if CIRCUITPY_TOUCHIO
@@ -456,17 +463,44 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
+// These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
+#if MICROPY_PY_UERRNO
+#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+#else
+#define ERRNO_MODULE
+#endif
+
 #if MICROPY_PY_UJSON
-#define JSON_MODULE { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
 #else
 #define JSON_MODULE
 #endif
 
+#if MICROPY_PY_URE
+#define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
+#else
+#define RE_MODULE
+#endif
+
+// Define certain native modules with weak links so they can be replaced with Python
+// implementations. This list may grow over time.
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    OS_MODULE \
+    TIME_MODULE \
+
+// Native modules that are weak links can be accessed directly
+// by prepending their name with an underscore. This list should correspond to
+// MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS, assuming you want the native modules
+// to be accessible when overriden.
+#define MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES \
+    OS_MODULE_ALT_NAME \
+    TIME_MODULE_ALT_NAME \
+
 // This is an inclusive list that should correspond to the CIRCUITPY_XXX list above,
-// including dependendencies such as TERMINALIO depending on DISPLAYIO (shown by indentation).
+// including dependencies such as TERMINALIO depending on DISPLAYIO (shown by indentation).
 // Some of these definitions will be blank depending on what is turned on and off.
-//
-#define MICROPY_PORT_BUILTIN_MODULES \
+// Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
+#define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOIO_MODULE \
@@ -477,6 +511,7 @@ extern const struct _mp_obj_module_t ustack_module;
     DIGITALIO_MODULE \
       TERMINALIO_MODULE \
     DISPLAYIO_MODULE \
+    ERRNO_MODULE \
     GAMEPAD_MODULE \
     I2CSLAVE_MODULE \
     JSON_MODULE \
@@ -486,22 +521,34 @@ extern const struct _mp_obj_module_t ustack_module;
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
-    OS_MODULE \
     PIXELBUF_MODULE \
     PULSEIO_MODULE \
     RANDOM_MODULE \
+    RE_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
-    TIME_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
+
+// If weak links are enabled, just include strong links in the main list of modules,
+// and also include the underscore alternate names.
+#if MICROPY_MODULE_WEAK_LINKS
+#define MICROPY_PORT_BUILTIN_MODULES \
+    MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
+    MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES
+#else
+// If weak links are disabled, included both strong and potentially weak lines
+#define MICROPY_PORT_BUILTIN_MODULES \
+    MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
+#endif
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

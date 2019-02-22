@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 19:19-0500\n"
+"POT-Creation-Date: 2019-02-17 23:36-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1340,7 +1340,7 @@ msgstr "ord() umaasa ng character pero string ng %d haba ang nakita"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() hindi suportado"
 
-#: py/modbuiltins.c:517
+#: py/modbuiltins.c:521
 msgid "must use keyword argument for key function"
 msgstr "dapat gumamit ng keyword argument para sa key function"
 
@@ -2743,7 +2743,7 @@ msgstr "Hindi supportadong tipo ng bitmap"
 msgid "Group full"
 msgstr "Puno ang group"
 
-#: shared-module/displayio/Group.c:73
+#: shared-module/displayio/Group.c:73 shared-module/displayio/Group.c:112
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
@@ -2887,64 +2887,39 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#, fuzzy
-#~ msgid "buffer_size must be >= 1"
-#~ msgstr "aarehas na haba dapat ang buffer slices"
+#~ msgid "Not enough pins available"
+#~ msgstr "Hindi sapat ang magagamit na pins"
 
-#, fuzzy
-#~ msgid "Group must have %q at least 1"
-#~ msgstr "Group dapat ay hindi baba sa 1 na haba"
+#~ msgid "busio.UART not available"
+#~ msgstr "busio.UART hindi available"
 
-#, fuzzy
-#~ msgid "palette must be displayio.Palette"
-#~ msgstr "ang palette ay dapat 32 bytes ang haba"
+#~ msgid "Can not apply advertisement data. status: 0x%02x"
+#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
 
-#~ msgid "Invalid UUID parameter"
-#~ msgstr "Mali ang UUID parameter"
-
-#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
-#~ msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
-
-#~ msgid "row data must be a buffer"
-#~ msgstr "row data ay dapat na buffer"
-
-#, fuzzy
-#~ msgid "unicode_characters must be a string"
-#~ msgstr "ang keywords dapat strings"
-
-#~ msgid "index must be int"
-#~ msgstr "index ay dapat int"
-
-#~ msgid "Can not query for the device address."
-#~ msgstr "Hindi maaaring mag-query para sa address ng device."
-
-#~ msgid "All PWM peripherals are in use"
-#~ msgstr "Lahat ng PWM peripherals ay ginagamit"
-
-#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ msgid ""
+#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
 #~ msgstr ""
-#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
+#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
+#~ "drive:\n"
 
-#~ msgid "Group empty"
-#~ msgstr "Walang laman ang group"
+#~ msgid "Cannot set PPCP parameters."
+#~ msgstr "Hindi ma-set ang PPCP parameters."
 
-#~ msgid "Wrong address length"
-#~ msgstr "Mali ang address length"
+#~ msgid "Can not apply device name in the stack."
+#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
 
-#~ msgid "Can encode UUID into the advertisement packet."
-#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
+#~ msgid "Cannot apply GAP parameters."
+#~ msgstr "Hindi ma-apply ang GAP parameters."
 
-#~ msgid "Invalid Service type"
-#~ msgstr "Mali ang tipo ng serbisyo"
+#~ msgid "Wrong number of bytes provided"
+#~ msgstr "Mali ang bilang ng bytes"
 
-#~ msgid "Invalid UUID string length"
-#~ msgstr "Mali ang UUID string length"
+#~ msgid "Can not encode UUID, to check length."
+#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
 
-#~ msgid "Can not add Service."
-#~ msgstr "Hindi maidaragdag ang serbisyo."
-
-#~ msgid "displayio is a work in progress"
-#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
+#, fuzzy
+#~ msgid "unpack requires a buffer of %d bytes"
+#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
 
 #~ msgid ""
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -2953,36 +2928,61 @@ msgstr ""
 #~ "ay nagbibigay ng sapat na power para sa buong circuit at i-press ang "
 #~ "reset (pagkatapos i-eject ang CIRCUITPY).\n"
 
-#, fuzzy
-#~ msgid "unpack requires a buffer of %d bytes"
-#~ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
+#~ msgid "displayio is a work in progress"
+#~ msgstr "displayio ay nasa gitna ng konstruksiyon"
 
-#~ msgid "Can not encode UUID, to check length."
-#~ msgstr "Hindi ma-encode UUID, para suriin ang haba."
+#~ msgid "Can not add Service."
+#~ msgstr "Hindi maidaragdag ang serbisyo."
 
-#~ msgid "Wrong number of bytes provided"
-#~ msgstr "Mali ang bilang ng bytes"
+#~ msgid "Invalid UUID string length"
+#~ msgstr "Mali ang UUID string length"
 
-#~ msgid "Cannot apply GAP parameters."
-#~ msgstr "Hindi ma-apply ang GAP parameters."
+#~ msgid "Invalid Service type"
+#~ msgstr "Mali ang tipo ng serbisyo"
 
-#~ msgid "Can not apply device name in the stack."
-#~ msgstr "Hindi maaaring ma-aplay ang device name sa stack."
+#~ msgid "Can encode UUID into the advertisement packet."
+#~ msgstr "Maaring i-encode ang UUID sa advertisement packet."
 
-#~ msgid "Cannot set PPCP parameters."
-#~ msgstr "Hindi ma-set ang PPCP parameters."
+#~ msgid "Wrong address length"
+#~ msgstr "Mali ang address length"
 
-#~ msgid ""
-#~ "Please file an issue here with the contents of your CIRCUITPY drive:\n"
+#~ msgid "Group empty"
+#~ msgstr "Walang laman ang group"
+
+#~ msgid "Looks like our core CircuitPython code crashed hard. Whoops!\n"
 #~ msgstr ""
-#~ "Mag-file ng isang isyu dito gamit ang mga nilalaman ng iyong CIRCUITPY "
-#~ "drive:\n"
+#~ "Mukhang ang core CircuitPython code ay nag-crash ng malakas. Aray!\n"
 
-#~ msgid "Can not apply advertisement data. status: 0x%02x"
-#~ msgstr "Hindi ma i-apply ang advertisement data. status: 0x%02x"
+#~ msgid "All PWM peripherals are in use"
+#~ msgstr "Lahat ng PWM peripherals ay ginagamit"
 
-#~ msgid "busio.UART not available"
-#~ msgstr "busio.UART hindi available"
+#~ msgid "Can not query for the device address."
+#~ msgstr "Hindi maaaring mag-query para sa address ng device."
 
-#~ msgid "Not enough pins available"
-#~ msgstr "Hindi sapat ang magagamit na pins"
+#~ msgid "index must be int"
+#~ msgstr "index ay dapat int"
+
+#, fuzzy
+#~ msgid "unicode_characters must be a string"
+#~ msgstr "ang keywords dapat strings"
+
+#~ msgid "row data must be a buffer"
+#~ msgstr "row data ay dapat na buffer"
+
+#~ msgid "row buffer must be a bytearray or array of type 'b' or 'B'"
+#~ msgstr "ang row buffer ay dapat bytearray o array na type ‘b’ or ‘B’"
+
+#~ msgid "Invalid UUID parameter"
+#~ msgstr "Mali ang UUID parameter"
+
+#, fuzzy
+#~ msgid "palette must be displayio.Palette"
+#~ msgstr "ang palette ay dapat 32 bytes ang haba"
+
+#, fuzzy
+#~ msgid "Group must have %q at least 1"
+#~ msgstr "Group dapat ay hindi baba sa 1 na haba"
+
+#, fuzzy
+#~ msgid "buffer_size must be >= 1"
+#~ msgstr "aarehas na haba dapat ang buffer slices"

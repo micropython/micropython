@@ -24,21 +24,28 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/filesystem.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-void filesystem_init(bool create_allowed, bool force_create) {
-    (void) create_allowed;
-    (void) force_create;
+#include "timer_handler.h"
+
+#include "common-hal/pulseio/PulseOut.h"
+
+static uint8_t tc_handler[TC_INST_NUM];
+
+void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler) {
+    if (is_tc) {
+        tc_handler[index] = timer_handler;
+    }
 }
 
-void filesystem_flush(void) {
-}
-
-bool filesystem_is_writable_by_python(fs_user_mount_t *vfs) {
-    (void) vfs;
-    return true;
-}
-
-bool filesystem_present(void) {
-    return false;
+void shared_timer_handler(bool is_tc, uint8_t index) {
+    // Add calls to interrupt handlers for specific functionality here.
+    // Make sure to add the handler #define to timer_handler.h
+    if (is_tc) {
+        uint8_t handler = tc_handler[index];
+        if (handler == TC_HANDLER_PULSEOUT) {
+            pulseout_interrupt_handler(index);
+        }
+    }
 }

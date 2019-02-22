@@ -102,9 +102,9 @@ ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
   # You may want to disable -flto if it interferes with debugging.
-  # CFLAGS += -flto
+  CFLAGS += -flto
   # You may want to enable these flags to make setting breakpoints easier.
-  CFLAGS += -fno-inline -fno-ipa-sra
+  # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -112,7 +112,7 @@ else
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
-  ifdef INTERNAL_FLASH_FILESYSTEM
+  ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
     CFLAGS += -finline-limit=50
   endif
   ifdef CFLAGS_INLINE_LIMIT
@@ -245,6 +245,7 @@ SRC_C = \
 	reset.c \
 	supervisor/shared/memory.c \
 	tick.c \
+	timer_handler.c \
 
 
 ifeq ($(CIRCUITPY_NETWORK),1)

@@ -194,20 +194,23 @@ safe_mode_t port_init(void) {
 void reset_port(void) {
     reset_sercoms();
 
-#if defined(EXPRESS_BOARD) && !defined(__SAMR21G18A__)
+#if CIRCUITPY_AUDIOIO
     audio_dma_reset();
     audioout_reset();
-    #if !defined(__SAMD51G19A__) && !defined(__SAMD51G18A__)
+#endif
+#if CIRCUITPY_AUDIOBUSIO
     i2sout_reset();
-    #endif
     //pdmin_reset();
 #endif
-#ifdef SAMD21
+
+#if CIRCUITPY_TOUCHIO
     touchin_reset();
 #endif
     eic_reset();
+#if CIRCUITPY_PULSEIO
     pulseout_reset();
     pwmout_reset();
+#endif
 
 #if CIRCUITPY_ANALOGIO
     analogin_reset();

@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/analogio/AnalogOut.h"
+#include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
@@ -138,5 +139,17 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
 }
 
 void analogout_reset(void) {
-    // AudioOut resets the DAC in case its been used for audio which requires special handling.
+    // audioout_reset also resets the DAC, and does a smooth ramp down to avoid clicks
+    // if it was enabled, so do that instead if AudioOut is enabled.
+#if CIRCUITPY_AUDIOIO
+    audioout_reset();
+#else
+    #ifdef SAMD21
+    while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
+    #endif
+    #ifdef SAMD51
+    while (DAC->SYNCBUSY.reg & DAC_SYNCBUSY_SWRST) {}
+    #endif
+    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
+#endif
 }

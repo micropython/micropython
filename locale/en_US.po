@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 19:19-0500\n"
+"POT-Creation-Date: 2019-02-17 23:36-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1302,7 +1302,7 @@ msgstr ""
 msgid "3-arg pow() not supported"
 msgstr ""
 
-#: py/modbuiltins.c:517
+#: py/modbuiltins.c:521
 msgid "must use keyword argument for key function"
 msgstr ""
 
@@ -2667,7 +2667,7 @@ msgstr ""
 msgid "Group full"
 msgstr ""
 
-#: shared-module/displayio/Group.c:73
+#: shared-module/displayio/Group.c:73 shared-module/displayio/Group.c:112
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 

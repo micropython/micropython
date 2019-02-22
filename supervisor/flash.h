@@ -37,7 +37,6 @@
 #include "supervisor/internal_flash.h"
 #endif
 
-void supervisor_flash_set_usb_writable(bool usb_writable);
 void supervisor_flash_init(void);
 uint32_t supervisor_flash_get_block_size(void);
 uint32_t supervisor_flash_get_block_count(void);
