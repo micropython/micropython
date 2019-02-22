@@ -105,7 +105,7 @@ msgstr "Syntaxfehler in JSON"
 
 #: extmod/modure.c:161
 msgid "Splitting with sub-captures"
-msgstr "Splitting with sub-captures"
+msgstr ""
 
 #: extmod/modure.c:207
 msgid "Error in regex"
@@ -1062,15 +1062,15 @@ msgstr "mehrere **x sind nicht gestattet"
 
 #: py/compile.c:2271
 msgid "LHS of keyword arg must be an id"
-msgstr "LHS of keyword arg must be an id"
+msgstr ""
 
 #: py/compile.c:2287
 msgid "non-keyword arg after */**"
-msgstr "non-keyword arg after */**"
+msgstr ""
 
 #: py/compile.c:2291
 msgid "non-keyword arg after keyword arg"
-msgstr "non-keyword arg after keyword arg"
+msgstr ""
 
 #: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
 #: py/parse.c:1176
@@ -2322,15 +2322,6 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c:340
 msgid "Unsupported pull value."
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c:131 shared-bindings/pulseio/PulseIn.c:272
-msgid "Cannot delete values"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:253
-#: shared-bindings/pulseio/PulseIn.c:278
-msgid "Slices not supported"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c:156
