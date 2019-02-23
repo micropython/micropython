@@ -35,7 +35,7 @@ msgstr " Ausgabe:\n"
 
 #, c-format
 msgid "%%c requires int or char"
-msgstr ""
+msgstr "%%c erwartet int oder char"
 
 msgid "%q in use"
 msgstr "%q in Benutzung"
@@ -50,7 +50,7 @@ msgid "%q must be >= 1"
 msgstr "%q muss >= 1 sein"
 
 msgid "%q should be an int"
-msgstr ""
+msgstr "%q sollte ein int sein"
 
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
@@ -92,7 +92,7 @@ msgstr "'%s' erwartet {r0, r1, ...}"
 
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
+msgstr "'%s' integer %d ist nicht im Bereich %d..%d"
 
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
@@ -115,7 +115,7 @@ msgstr "'%s' Objekt ist kein Iterator"
 
 #, c-format
 msgid "'%s' object is not callable"
-msgstr ""
+msgstr "'%s' object ist nicht callable"
 
 #, c-format
 msgid "'%s' object is not iterable"
@@ -126,10 +126,10 @@ msgid "'%s' object is not subscriptable"
 msgstr "'%s' Objekt hat keine '__getitem__'-Methode (not subscriptable)"
 
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "'='-Ausrichtung ist im String-Formatbezeichner nicht zulässig"
 
 msgid "'S' and 'O' are not supported format types"
-msgstr ""
+msgstr "'S' und 'O' sind keine unterstützten Formattypen"
 
 msgid "'align' requires 1 argument"
 msgstr "'align' erfordert genau ein Argument"
@@ -209,7 +209,7 @@ msgid "AnalogOut functionality not supported"
 msgstr "AnalogOut-Funktion wird nicht unterstützt"
 
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr ""
+msgstr "AnalogOut kann nur 16 Bit. Der Wert muss unter 65536 liegen."
 
 msgid "AnalogOut not supported on given pin"
 msgstr "AnalogOut ist an diesem Pin nicht unterstützt"
@@ -218,7 +218,7 @@ msgid "Another send is already active"
 msgstr "Ein anderer Sendevorgang ist schon aktiv"
 
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "Array muss Halbwörter enthalten (type 'H')"
 
 msgid "Array values should be single bytes."
 msgstr "Array-Werte sollten aus Einzelbytes bestehen."
@@ -237,7 +237,7 @@ msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock und word select müssen eine clock unit teilen"
 
 msgid "Bit depth must be multiple of 8."
-msgstr ""
+msgstr "Bit depth muss ein Vielfaches von 8 sein."
 
 msgid "Both pins must support hardware interrupts"
 msgstr "Beide pins müssen Hardware Interrupts unterstützen"
@@ -246,7 +246,7 @@ msgid "Brightness must be between 0 and 255"
 msgstr "Die Helligkeit muss zwischen 0 und 255 liegen"
 
 msgid "Brightness not adjustable"
-msgstr ""
+msgstr "Die Helligkeit ist nicht einstellbar"
 
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
@@ -270,19 +270,19 @@ msgstr "C-Level Assert"
 
 #, c-format
 msgid "Can not use dotstar with %s"
-msgstr ""
+msgstr "Kann dotstar nicht mit %s verwenden"
 
 msgid "Can't add services in Central mode"
-msgstr ""
+msgstr "Im Central mode können Dienste nicht hinzugefügt werden"
 
 msgid "Can't advertise in Central mode"
-msgstr ""
+msgstr "Im Central mode kann advertise nicht gemacht werden"
 
 msgid "Can't change the name in Central mode"
-msgstr ""
+msgstr "Im Central mode kann name nicht geändert werden"
 
 msgid "Can't connect in Peripheral mode"
-msgstr ""
+msgstr "Im Peripheral mode kann keine Verbindung hergestellt werden"
 
 msgid "Cannot connect to AP"
 msgstr "Kann nicht zu AP verbinden"
@@ -303,10 +303,10 @@ msgid "Cannot output both channels on the same pin"
 msgstr "Kann nicht beite Kanäle auf dem gleichen Pin ausgeben"
 
 msgid "Cannot read without MISO pin."
-msgstr ""
+msgstr "Kann ohne MISO-Pin nicht lesen."
 
 msgid "Cannot record to a file"
-msgstr ""
+msgstr "Aufnahme in eine Datei nicht möglich"
 
 msgid "Cannot remount '/' when USB is active."
 msgstr "Kann '/' nicht remounten when USB aktiv ist"
@@ -318,13 +318,13 @@ msgid "Cannot set STA config"
 msgstr "Kann STA Konfiguration nicht setzen"
 
 msgid "Cannot set value when direction is input."
-msgstr ""
+msgstr "Der Wert kann nicht gesetzt werden, wenn die Richtung input ist."
 
 msgid "Cannot subclass slice"
 msgstr ""
 
 msgid "Cannot transfer without MOSI and MISO pins."
-msgstr ""
+msgstr "Übertragung ohne MOSI- und MISO-Pins nicht möglich."
 
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "sizeof scalar kann nicht eindeutig bestimmt werden"
@@ -333,10 +333,10 @@ msgid "Cannot update i/f status"
 msgstr "Kann i/f Status nicht updaten"
 
 msgid "Cannot write without MOSI pin."
-msgstr ""
+msgstr "Kann nicht ohne MOSI-Pin schreiben."
 
 msgid "Characteristic UUID doesn't match Service UUID"
-msgstr ""
+msgstr "Characteristic UUID stimmt nicht mit der Service-UUID überein"
 
 msgid "Characteristic already in use by another Service."
 msgstr "Characteristic wird bereits von einem anderen Dienst verwendet."
@@ -345,16 +345,16 @@ msgid "CharacteristicBuffer writing not provided"
 msgstr "Schreiben von CharacteristicBuffer ist nicht vorgesehen"
 
 msgid "Clock pin init failed."
-msgstr ""
+msgstr "Clock pin init fehlgeschlagen."
 
 msgid "Clock stretch too long"
-msgstr ""
+msgstr "Clock stretch zu lang"
 
 msgid "Clock unit in use"
 msgstr "Clock unit wird benutzt"
 
 msgid "Command must be an int between 0 and 255"
-msgstr ""
+msgstr "Der Befehl muss ein int zwischen 0 und 255 sein"
 
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"
@@ -364,13 +364,13 @@ msgid "Could not initialize UART"
 msgstr "Konnte UART nicht initialisieren"
 
 msgid "Couldn't allocate first buffer"
-msgstr ""
+msgstr "Konnte first buffer nicht zuteilen"
 
 msgid "Couldn't allocate second buffer"
-msgstr ""
+msgstr "Konnte second buffer nicht zuteilen"
 
 msgid "Crash into the HardFault_Handler.\n"
-msgstr ""
+msgstr "Absturz in HardFault_Handler.\n"
 
 msgid "DAC already in use"
 msgstr "DAC wird schon benutzt"
@@ -388,17 +388,16 @@ msgid "Data too large for the advertisement packet"
 msgstr "Daten sind zu groß für das advertisement packet"
 
 msgid "Destination capacity is smaller than destination_length."
-msgstr ""
+msgstr "Die Zielkapazität ist kleiner als destination_length."
 
 msgid "Display rotation must be in 90 degree increments"
-msgstr ""
+msgstr "Die Rotation der Anzeige muss in 90-Grad-Schritten erfolgen"
 
 msgid "Don't know how to pass object to native function"
-msgstr ""
-"Ich weiß nicht, wie man das Objekt an die native Funktion übergeben kann"
+msgstr "Ich weiß nicht, wie man das Objekt an die native Funktion übergeben kann"
 
 msgid "Drive mode not used when direction is input."
-msgstr ""
+msgstr "Drive mode wird nicht verwendet, wenn die Richtung input ist."
 
 msgid "ESP8226 does not support safe mode."
 msgstr "ESP8226 hat keinen Sicherheitsmodus"
@@ -547,7 +546,7 @@ msgid "GPIO16 does not support pull up."
 msgstr "GPIO16 unterstützt pull up nicht"
 
 msgid "Group full"
-msgstr ""
+msgstr "Gruppe voll"
 
 msgid "I/O operation on closed file"
 msgstr "Lese/Schreibe-operation an geschlossener Datei"
@@ -590,13 +589,13 @@ msgid "Invalid data pin"
 msgstr "Ungültiger data pin"
 
 msgid "Invalid direction."
-msgstr ""
+msgstr "Ungültige Richtung"
 
 msgid "Invalid file"
-msgstr ""
+msgstr "Ungültige Datei"
 
 msgid "Invalid format chunk size"
-msgstr ""
+msgstr "Ungültige format chunk size"
 
 msgid "Invalid number of bits"
 msgstr "Ungültige Anzahl von Bits"
@@ -626,19 +625,19 @@ msgid "Invalid voice count"
 msgstr "Ungültige Anzahl von Stimmen"
 
 msgid "Invalid wave file"
-msgstr ""
+msgstr "Ungültige wave Datei"
 
 msgid "LHS of keyword arg must be an id"
-msgstr ""
+msgstr "LHS des Schlüsselwortarguments muss eine id sein"
 
 msgid "Layer must be a Group or TileGrid subclass."
-msgstr ""
+msgstr "Layer muss eine Group- oder TileGrid-Unterklasse sein."
 
 msgid "Length must be an int"
-msgstr ""
+msgstr "Länge muss ein int sein"
 
 msgid "Length must be non-negative"
-msgstr ""
+msgstr "Länge darf nicht negativ sein"
 
 msgid ""
 "Looks like our core CircuitPython code crashed hard. Whoops!\n"
@@ -651,10 +650,10 @@ msgstr ""
 "mit dem Inhalt deines CIRCUITPY-Laufwerks und dieser Nachricht:\n"
 
 msgid "MISO pin init failed."
-msgstr ""
+msgstr "MISO pin Initialisierung fehlgeschlagen"
 
 msgid "MOSI pin init failed."
-msgstr ""
+msgstr "MOSI pin Initialisierung fehlgeschlagen"
 
 #, c-format
 msgid "Maximum PWM frequency is %dhz."
@@ -662,31 +661,29 @@ msgstr "Maximale PWM Frequenz ist %dHz"
 
 #, c-format
 msgid "Maximum x value when mirrored is %d"
-msgstr ""
+msgstr "Maximaler x-Wert beim Spiegeln ist %d"
 
 msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
-msgstr ""
+msgstr "MicroPython-NLR-Sprung ist fehlgeschlagen. Wahrscheinlich Speicherbeschädigung.\n"
 
 msgid "MicroPython fatal error.\n"
 msgstr "Schwerwiegender MicroPython-Fehler\n"
 
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr ""
+msgstr "Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
 
 msgid "Minimum PWM frequency is 1hz."
 msgstr "Minimale PWM Frequenz ist %dHz"
 
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr ""
-"Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf %dHz "
-"gesetzt."
+msgstr "Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf %dHz gesetzt."
 
 msgid "Must be a Group subclass."
 msgstr ""
 
 msgid "No DAC on chip"
-msgstr "Kein DAC vorhanden"
+msgstr "Kein DAC im Chip vorhanden"
 
 msgid "No DMA channel found"
 msgstr "Kein DMA Kanal gefunden"
@@ -731,10 +728,10 @@ msgid "Not connected"
 msgstr "Nicht verbunden"
 
 msgid "Not connected."
-msgstr ""
+msgstr "Nicht verbunden."
 
 msgid "Not playing"
-msgstr ""
+msgstr "Spielt nicht"
 
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -755,15 +752,16 @@ msgstr "Nur 8 oder 16 bit mono mit "
 
 #, c-format
 msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr ""
+msgstr "Nur unkomprimiertes Windows-Format (BMP) unterstützt %d"
 
 msgid "Only bit maps of 8 bit color or less are supported"
-msgstr ""
+msgstr "Es werden nur Bitmaps mit einer Farbtiefe von 8 Bit oder weniger unterstützt"
 
 msgid "Only slices with step=1 (aka None) are supported"
 msgstr ""
 
 #, c-format
+
 msgid ""
 "Only true color (24 bpp or higher), 16bpp 565 and 555, and 8bpp grayscale "
 "BMP supported %d"
@@ -773,15 +771,17 @@ msgid "Only tx supported on UART1 (GPIO2)."
 msgstr "UART1 (GPIO2) unterstützt nur tx"
 
 msgid "Oversample must be multiple of 8."
-msgstr ""
+msgstr "Oversample muss ein Vielfaches von 8 sein."
 
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr "PWM duty_cycle muss zwischen 0 und 65535 (16 Bit Auflösung) liegen"
+msgstr ""
+"PWM duty_cycle muss zwischen 0 und 65535 (16 Bit Auflösung) liegen"
 
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
-msgstr "Die PWM-Frequenz ist nicht schreibbar wenn variable_Frequenz = False."
+msgstr ""
+"Die PWM-Frequenz ist nicht schreibbar wenn variable_Frequenz = False."
 
 #, c-format
 msgid "PWM not supported on pin %d"
@@ -803,18 +803,16 @@ msgid "Pins not valid for SPI"
 msgstr "Pins nicht gültig für SPI"
 
 msgid "Pixel beyond bounds of buffer"
-msgstr ""
+msgstr "Pixel außerhalb der Puffergrenzen"
 
 msgid "Plus any modules on the filesystem\n"
 msgstr "und alle Module im Dateisystem \n"
 
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-msgstr ""
-"Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
-"laden"
+msgstr "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu laden"
 
 msgid "Pull not used when direction is output."
-msgstr ""
+msgstr "Pull wird nicht verwendet, wenn die Richtung output ist."
 
 msgid "RTC calibration is not supported on this board"
 msgstr "Die RTC-Kalibrierung wird auf diesem Board nicht unterstützt"
@@ -873,7 +871,7 @@ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr ""
 
 msgid "Splitting with sub-captures"
-msgstr "Teilen mit unter-captures"
+msgstr "Splitting mit sub-captures"
 
 msgid "Stack size must be at least 256"
 msgstr "Die Stackgröße sollte mindestens 256 sein"
@@ -941,13 +939,13 @@ msgid "Too many display busses"
 msgstr ""
 
 msgid "Too many displays"
-msgstr ""
+msgstr "Zu viele displays"
 
 msgid "Traceback (most recent call last):\n"
 msgstr "Zurückverfolgung (jüngste Aufforderung zuletzt):\n"
 
 msgid "Tuple or struct_time argument required"
-msgstr ""
+msgstr "Tuple- oder struct_time-Argument erforderlich"
 
 #, c-format
 msgid "UART(%d) does not exist"
@@ -978,10 +976,10 @@ msgid "Unable to find free GCLK"
 msgstr "Konnte keinen freien GCLK finden"
 
 msgid "Unable to init parser"
-msgstr ""
+msgstr "Parser konnte nicht gestartet werden"
 
 msgid "Unable to remount filesystem"
-msgstr "Dateisystem kann nicht wieder gemounted werden."
+msgstr "Dateisystem konnte nicht wieder eingebunden werden."
 
 msgid "Unable to write to nvm."
 msgstr "Schreiben in nvm nicht möglich."
@@ -994,7 +992,7 @@ msgstr "Unbekannter Typ"
 
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
-msgstr ""
+msgstr "Nicht übereinstimmende Anzahl von Elementen auf der rechten Seite (erwartet %d, %d erhalten)."
 
 msgid "Unsupported baudrate"
 msgstr "Baudrate wird nicht unterstützt"
@@ -1003,27 +1001,25 @@ msgid "Unsupported display bus type"
 msgstr "Nicht unterstützter display bus type"
 
 msgid "Unsupported format"
-msgstr ""
+msgstr "Nicht unterstütztes Format"
 
 msgid "Unsupported operation"
 msgstr "Nicht unterstützte Operation"
 
 msgid "Unsupported pull value."
-msgstr ""
+msgstr "Nicht unterstützter Pull-Wert"
 
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
-"Benutze das esptool um den flash zu löschen und Python erneut hochzuladen"
+msgstr "Benutze das esptool um den flash zu löschen und Python erneut hochzuladen"
 
 msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
+msgstr "Viper-Funktionen unterstützen derzeit nicht mehr als 4 Argumente"
 
 msgid "Voice index too high"
-msgstr ""
+msgstr "Voice index zu hoch"
 
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr ""
-"WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
+msgstr "WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
 
 #, c-format
 msgid ""
@@ -1054,14 +1050,14 @@ msgid "[addrinfo error %d]"
 msgstr ""
 
 msgid "__init__() should return None"
-msgstr ""
+msgstr "__init__() sollte None zurückgeben"
 
 #, c-format
 msgid "__init__() should return None, not '%s'"
-msgstr ""
+msgstr "__init__() sollte None zurückgeben, nicht '%s'"
 
 msgid "__new__ arg must be a user-type"
-msgstr ""
+msgstr "__new__ arg muss user-type sein"
 
 msgid "a bytes-like object is required"
 msgstr "ein Byte-ähnliches Objekt ist erforderlich"
@@ -1083,25 +1079,25 @@ msgid "arg is an empty sequence"
 msgstr "arg ist eine leere Sequenz"
 
 msgid "argument has wrong type"
-msgstr ""
+msgstr "Argument hat falschen Typ"
 
 msgid "argument num/types mismatch"
 msgstr "Anzahl/Type der Argumente passen nicht"
 
 msgid "argument should be a '%q' not a '%q'"
-msgstr ""
+msgstr "Argument sollte '%q' sein, nicht '%q'"
 
 msgid "array/bytes required on right side"
-msgstr ""
+msgstr "Array/Bytes auf der rechten Seite erforderlich"
 
 msgid "attributes not supported yet"
-msgstr ""
+msgstr "Attribute werden noch nicht unterstützt"
 
 msgid "bad GATT role"
-msgstr "schlechte GATT role"
+msgstr ""
 
 msgid "bad compile mode"
-msgstr "schlechter compile mode"
+msgstr ""
 
 msgid "bad conversion specifier"
 msgstr ""
@@ -1110,7 +1106,7 @@ msgid "bad format string"
 msgstr ""
 
 msgid "bad typecode"
-msgstr "schlechter typecode"
+msgstr ""
 
 msgid "binary op %q not implemented"
 msgstr "Der binäre Operator %q ist nicht implementiert"
@@ -1129,7 +1125,7 @@ msgstr "Zweig ist außerhalb der Reichweite"
 
 #, c-format
 msgid "buf is too small. need %d bytes"
-msgstr ""
+msgstr "buf ist zu klein. brauche %d Bytes"
 
 msgid "buffer must be a bytes-like object"
 msgstr "Puffer muss ein bytes-artiges Objekt sein"
@@ -1202,7 +1198,7 @@ msgid "can't convert %s to int"
 msgstr "kann %s nicht nach int konvertieren"
 
 msgid "can't convert '%q' object to %q implicitly"
-msgstr ""
+msgstr "Kann '%q' Objekt nicht implizit nach %q konvertieren"
 
 msgid "can't convert NaN to int"
 msgstr "kann NaN nicht nach int konvertieren"
@@ -1223,7 +1219,7 @@ msgid "can't convert to int"
 msgstr "kann nicht nach int konvertieren"
 
 msgid "can't convert to str implicitly"
-msgstr ""
+msgstr "Kann nicht implizit nach str konvertieren"
 
 msgid "can't declare nonlocal in outer code"
 msgstr "kann im äußeren Code nicht als nonlocal deklarieren"
@@ -1235,7 +1231,7 @@ msgid "can't do binary op between '%q' and '%q'"
 msgstr "Eine binäre Operation zwischen '%q' und '%q' ist nicht möglich"
 
 msgid "can't do truncated division of a complex number"
-msgstr ""
+msgstr "kann mit einer komplexen Zahl keine abgeschnittene Division ausführen"
 
 msgid "can't get AP config"
 msgstr ""
@@ -1253,7 +1249,7 @@ msgid "can't implicitly convert '%q' to 'bool'"
 msgstr "Kann '%q' nicht implizit nach 'bool' konvertieren"
 
 msgid "can't load from '%q'"
-msgstr ""
+msgstr "Laden von '%q' nicht möglich"
 
 msgid "can't load with '%q' index"
 msgstr ""
@@ -1274,13 +1270,13 @@ msgid "can't set attribute"
 msgstr ""
 
 msgid "can't store '%q'"
-msgstr ""
+msgstr "Speichern von '%q' nicht möglich"
 
 msgid "can't store to '%q'"
-msgstr ""
+msgstr "Speichern in/nach '%q' nicht möglich"
 
 msgid "can't store with '%q' index"
-msgstr ""
+msgstr "Speichern mit '%q' Index nicht möglich"
 
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
@@ -1373,13 +1369,13 @@ msgid "either pos or kw args are allowed"
 msgstr ""
 
 msgid "empty"
-msgstr ""
+msgstr "leer"
 
 msgid "empty heap"
 msgstr "leerer heap"
 
 msgid "empty separator"
-msgstr ""
+msgstr "leeres Trennzeichen"
 
 msgid "empty sequence"
 msgstr "leere Sequenz"
@@ -1398,10 +1394,10 @@ msgid "exceptions must derive from BaseException"
 msgstr "Exceptions müssen von BaseException abgeleitet sein"
 
 msgid "expected ':' after format specifier"
-msgstr ""
+msgstr "erwarte ':' nach format specifier"
 
 msgid "expected a DigitalInOut"
-msgstr ""
+msgstr "erwarte DigitalInOut"
 
 msgid "expected tuple/list"
 msgstr "erwarte tuple/list"
@@ -1437,10 +1433,10 @@ msgid "filesystem must provide mount method"
 msgstr "Das Dateisystem muss eine Mount-Methode bereitstellen"
 
 msgid "first argument to super() must be type"
-msgstr ""
+msgstr "Das erste Argument für super() muss type sein"
 
 msgid "firstbit must be MSB"
-msgstr "das erste Bit muss MSB sein"
+msgstr "Erstes Bit muss das höchstwertigste Bit (MSB) sein"
 
 msgid "flash location must be below 1MByte"
 msgstr "flash location muss unter 1MByte sein"
@@ -1449,7 +1445,7 @@ msgid "float too big"
 msgstr "float zu groß"
 
 msgid "font must be 2048 bytes long"
-msgstr ""
+msgstr "Die Schriftart (font) muss 2048 Byte lang sein"
 
 msgid "format requires a dict"
 msgstr ""
@@ -1458,7 +1454,7 @@ msgid "frequency can only be either 80Mhz or 160MHz"
 msgstr "Die Frequenz kann nur 80Mhz oder 160Mhz sein"
 
 msgid "full"
-msgstr ""
+msgstr "voll"
 
 msgid "function does not take keyword arguments"
 msgstr "Funktion akzeptiert keine Keyword-Argumente"
@@ -1486,20 +1482,19 @@ msgstr "Funktion vermisst benötigtes Argumente ohne Keyword #%d"
 
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
-"Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
+msgstr "Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 
 msgid "function takes exactly 9 arguments"
-msgstr ""
+msgstr "Funktion benötigt genau 9 Argumente"
 
 msgid "generator already executing"
-msgstr ""
+msgstr "Generator läuft bereits"
 
 msgid "generator ignored GeneratorExit"
-msgstr ""
+msgstr "Generator ignoriert GeneratorExit"
 
 msgid "graphic must be 2048 bytes long"
-msgstr ""
+msgstr "graphic muss 2048 Byte lang sein"
 
 msgid "heap must be a list"
 msgstr "heap muss eine Liste sein"
@@ -1514,10 +1509,10 @@ msgid "impossible baudrate"
 msgstr "Unmögliche Baudrate"
 
 msgid "incomplete format"
-msgstr ""
+msgstr "unvollständiges Format"
 
 msgid "incomplete format key"
-msgstr ""
+msgstr "unvollständiger Formatschlüssel"
 
 msgid "incorrect padding"
 msgstr "padding ist inkorrekt"
@@ -1532,10 +1527,10 @@ msgid "inline assembler must be a function"
 msgstr "inline assembler muss eine function sein"
 
 msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr ""
+msgstr "int() arg 2 muss >= 2 und <= 36 sein"
 
 msgid "integer required"
-msgstr ""
+msgstr "integer erforderlich"
 
 msgid "interval not in range 0.0020 to 10.24"
 msgstr "Das Interval ist nicht im Bereich 0.0020 bis 10.24"
@@ -1547,19 +1542,19 @@ msgid "invalid SPI peripheral"
 msgstr "ungültige SPI Schnittstelle"
 
 msgid "invalid alarm"
-msgstr "Ungültiger Alarm"
+msgstr "ungültiger Alarm"
 
 msgid "invalid arguments"
 msgstr "ungültige argumente"
 
 msgid "invalid buffer length"
-msgstr ""
+msgstr "ungültige Pufferlänge"
 
 msgid "invalid cert"
 msgstr "ungültiges cert"
 
 msgid "invalid data bits"
-msgstr "Ungültige Datenbits"
+msgstr "ungültige Datenbits"
 
 msgid "invalid dupterm index"
 msgstr "ungültiger dupterm index"
@@ -1568,7 +1563,7 @@ msgid "invalid format"
 msgstr "ungültiges Format"
 
 msgid "invalid format specifier"
-msgstr ""
+msgstr "ungültiger Formatbezeichner"
 
 msgid "invalid key"
 msgstr "ungültiger Schlüssel"
@@ -1577,40 +1572,38 @@ msgid "invalid micropython decorator"
 msgstr "ungültiger micropython decorator"
 
 msgid "invalid pin"
-msgstr "Ungültiger Pin"
+msgstr "ungültiger Pin"
 
 msgid "invalid step"
 msgstr "ungültiger Schritt (step)"
 
 msgid "invalid stop bits"
-msgstr "Ungültige Stopbits"
+msgstr "ungültige Stopbits"
 
 msgid "invalid syntax"
 msgstr "ungültige Syntax"
 
 msgid "invalid syntax for integer"
-msgstr ""
+msgstr "ungültige Syntax für integer"
 
 #, c-format
 msgid "invalid syntax for integer with base %d"
-msgstr ""
+msgstr "ungültige Syntax für integer mit Basis %d"
 
 msgid "invalid syntax for number"
-msgstr ""
+msgstr "ungültige Syntax für number"
 
 msgid "issubclass() arg 1 must be a class"
-msgstr ""
+msgstr "issubclass() arg 1 muss eine Klasse sein"
 
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
-msgstr ""
+msgstr "issubclass() arg 2 muss eine Klasse oder ein Tupel von Klassen sein"
 
 msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr ""
+msgstr "join erwartet eine Liste von str/bytes-Objekten, die mit dem self-Objekt übereinstimmen"
 
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr ""
-"Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen "
-"normale Argumente"
+msgstr "Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen normale Argumente"
 
 msgid "keywords must be strings"
 msgstr "Schlüsselwörter müssen Zeichenfolgen sein"
@@ -1628,24 +1621,22 @@ msgid "length argument not allowed for this type"
 msgstr "Für diesen Typ ist length nicht zulässig"
 
 msgid "lhs and rhs should be compatible"
-msgstr ""
+msgstr "lhs und rhs sollten kompatibel sein"
 
 msgid "local '%q' has type '%q' but source is '%q'"
-msgstr ""
+msgstr "Lokales '%q' hat den Typ '%q', aber die Quelle ist '%q'"
 
 msgid "local '%q' used before type known"
-msgstr ""
+msgstr "Lokales '%q' verwendet bevor Typ bekannt"
 
 msgid "local variable referenced before assignment"
-msgstr ""
-"Es wurde versucht auf eine Variable zuzugreifen, die es (noch) nicht gibt. "
-"Variablen immer zuerst Zuweisen!"
+msgstr "Es wurde versucht auf eine Variable zuzugreifen, die es (noch) nicht gibt. Variablen immer zuerst Zuweisen!"
 
 msgid "long int not supported in this build"
 msgstr "long int wird in diesem Build nicht unterstützt"
 
 msgid "map buffer too small"
-msgstr ""
+msgstr "map buffer zu klein"
 
 msgid "math domain error"
 msgstr ""
@@ -1659,8 +1650,7 @@ msgstr "Speicherzuordnung fehlgeschlagen, Zuweisung von %u Bytes"
 
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
-"Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
+msgstr "Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
 
 msgid "memory allocation failed, heap is locked"
 msgstr "Speicherzuweisung fehlgeschlagen, der Heap ist gesperrt"
@@ -1790,7 +1780,7 @@ msgid "odd-length string"
 msgstr "String mit ungerader Länge"
 
 msgid "offset out of bounds"
-msgstr ""
+msgstr "offset außerhalb der Grenzen"
 
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
@@ -1800,9 +1790,7 @@ msgstr "ord erwartet ein Zeichen"
 
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
-msgstr ""
-"ord() erwartet ein Zeichen aber es wurde eine Zeichenfolge mit Länge %d "
-"gefunden"
+msgstr "ord() erwartet ein Zeichen aber es wurde eine Zeichenfolge mit Länge %d gefunden"
 
 msgid "overflow converting long int to machine word"
 msgstr ""
@@ -1826,31 +1814,31 @@ msgid "pin does not have IRQ capabilities"
 msgstr "Pin hat keine IRQ Fähigkeiten"
 
 msgid "pixel coordinates out of bounds"
-msgstr ""
+msgstr "Pixelkoordinaten außerhalb der Grenzen"
 
 msgid "pixel value requires too many bits"
 msgstr ""
 
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
+msgstr "pixel_shader muss displayio.Palette oder displayio.ColorConverter sein"
 
 msgid "pop from an empty PulseIn"
 msgstr "pop von einem leeren PulseIn"
 
 msgid "pop from an empty set"
-msgstr ""
+msgstr "pop von einer leeren Menge (set)"
 
 msgid "pop from empty list"
-msgstr ""
+msgstr "pop von einer leeren Liste"
 
 msgid "popitem(): dictionary is empty"
-msgstr ""
+msgstr "popitem(): dictionary ist leer"
 
 msgid "position must be 2-tuple"
 msgstr ""
 
 msgid "pow() 3rd argument cannot be 0"
-msgstr ""
+msgstr "pow() drittes Argument darf nicht 0 sein"
 
 msgid "pow() with 3 arguments requires integers"
 msgstr ""
@@ -1859,10 +1847,10 @@ msgid "queue overflow"
 msgstr "Warteschlangenüberlauf"
 
 msgid "rawbuf is not the same size as buf"
-msgstr ""
+msgstr "rawbuf hat nicht die gleiche Größe wie buf"
 
 msgid "readonly attribute"
-msgstr ""
+msgstr "Readonly-Attribut"
 
 msgid "relative import"
 msgstr "relativer Import"
@@ -1965,7 +1953,7 @@ msgid "struct: no fields"
 msgstr "struct: keine Felder"
 
 msgid "substring not found"
-msgstr ""
+msgstr "substring nicht gefunden"
 
 msgid "super() can't find self"
 msgstr "super() kann self nicht finden"
@@ -2049,9 +2037,7 @@ msgid "unicode name escapes"
 msgstr ""
 
 msgid "unindent does not match any outer indentation level"
-msgstr ""
-"Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen am "
-"Zeilenanfang kontrollieren!"
+msgstr "Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen am Zeilenanfang kontrollieren!"
 
 msgid "unknown config param"
 msgstr ""
@@ -2079,13 +2065,13 @@ msgid "unknown type"
 msgstr "unbekannter Typ"
 
 msgid "unknown type '%q'"
-msgstr ""
+msgstr "unbekannter Typ '%q'"
 
 msgid "unmatched '{' in format"
 msgstr ""
 
 msgid "unreadable attribute"
-msgstr ""
+msgstr "nicht lesbares Attribut"
 
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
@@ -2103,34 +2089,46 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr ""
 
 msgid "unsupported type for %q: '%s'"
-msgstr ""
+msgstr "nicht unterstützter Type für %q: '%s'"
 
 msgid "unsupported type for operator"
-msgstr ""
+msgstr "nicht unterstützter Typ für Operator"
 
 msgid "unsupported types for %q: '%s', '%s'"
-msgstr ""
+msgstr "nicht unterstützte Typen für %q: '%s', '%s'"
 
 msgid "wifi_set_ip_info() failed"
 msgstr "wifi_set_ip_info() fehlgeschlagen"
 
 msgid "write_args must be a list, tuple, or None"
-msgstr ""
+msgstr "write_args muss eine Liste, ein Tupel oder None sein"
 
 msgid "wrong number of arguments"
-msgstr ""
+msgstr "falsche Anzahl an Argumenten"
 
 msgid "wrong number of values to unpack"
-msgstr ""
+msgstr "falsche Anzahl zu entpackender Werte"
 
 msgid "x value out of bounds"
-msgstr ""
+msgstr "x Wert außerhalb der Grenzen"
 
 msgid "y should be an int"
-msgstr ""
+msgstr "y sollte ein int sein"
 
 msgid "y value out of bounds"
-msgstr ""
+msgstr "y Wert außerhalb der Grenzen"
 
 msgid "zero step"
 msgstr ""
+
+#, c-format
+msgid ""
+"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%d G:%d B:%d"
+msgstr ""
+
+#, c-format
+msgid ""
+"Only true color (24 bpp or higher), 16bpp 565 , and 8bpp grayscale BMP "
+"supported %x"
+msgstr ""
+
