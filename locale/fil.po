@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 15:26-0800\n"
+"POT-Creation-Date: 2019-02-23 10:51-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -768,6 +768,11 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Odd na parity ay hindi supportado"
 
+#, c-format
+msgid ""
+"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%x G:%x B:%x"
+msgstr ""
+
 msgid "Only 8 or 16 bit mono with "
 msgstr "Tanging 8 o 16 na bit mono na may "
 
@@ -783,8 +788,10 @@ msgid "Only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
 #, c-format
-msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"
+msgid ""
+"Only true color (24 bpp or higher), 16bpp 565 and 555, and 8bpp grayscale "
+"BMP supported %d"
+msgstr ""
 
 msgid "Only tx supported on UART1 (GPIO2)."
 msgstr "Tanging suportado ang TX sa UART1 (GPIO2)."
@@ -2166,3 +2173,6 @@ msgstr "wala sa sakop ang address"
 
 msgid "zero step"
 msgstr "zero step"
+
+#~ msgid "Only true color (24 bpp or higher) BMP supported %x"
+#~ msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"

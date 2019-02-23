@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 15:26-0800\n"
+"POT-Creation-Date: 2019-02-23 10:51-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -772,6 +772,11 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "parité impaire non supportée"
 
+#, c-format
+msgid ""
+"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%x G:%x B:%x"
+msgstr ""
+
 msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
@@ -787,8 +792,10 @@ msgid "Only slices with step=1 (aka None) are supported"
 msgstr "seuls les slices avec 'step=1' (cad None) sont supportées"
 
 #, c-format
-msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr "Seul les BMP 24bits ou plus sont supportés %x"
+msgid ""
+"Only true color (24 bpp or higher), 16bpp 565 and 555, and 8bpp grayscale "
+"BMP supported %d"
+msgstr ""
 
 msgid "Only tx supported on UART1 (GPIO2)."
 msgstr "Seul le tx est supporté sur l'UART1 (GPIO2)."
@@ -2190,3 +2197,6 @@ msgstr "adresse hors limites"
 
 msgid "zero step"
 msgstr "'step' nul"
+
+#~ msgid "Only true color (24 bpp or higher) BMP supported %x"
+#~ msgstr "Seul les BMP 24bits ou plus sont supportés %x"
