@@ -2112,3 +2112,15 @@ msgstr "y Wert außerhalb der Grenzen"
 
 msgid "zero step"
 msgstr ""
+
+#, c-format
+msgid ""
+"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%d G:%d B:%d"
+msgstr ""
+
+#, c-format
+msgid ""
+"Only true color (24 bpp or higher), 16bpp 565 , and 8bpp grayscale BMP "
+"supported %x"
+msgstr ""
+
