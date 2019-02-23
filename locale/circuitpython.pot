@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-17 23:36-0500\n"
+"POT-Creation-Date: 2019-02-22 15:26-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,936 +17,976 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: extmod/machine_i2c.c:299
-msgid "invalid I2C peripheral"
-msgstr ""
-
-#: extmod/machine_i2c.c:338 extmod/machine_i2c.c:352 extmod/machine_i2c.c:366
-#: extmod/machine_i2c.c:390
-msgid "I2C operation not supported"
-msgstr ""
-
-#: extmod/machine_mem.c:45 ports/unix/modmachine.c:53
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr ""
-
-#: extmod/machine_spi.c:57
-msgid "invalid SPI peripheral"
-msgstr ""
-
-#: extmod/machine_spi.c:124
-msgid "buffers must be the same length"
-msgstr ""
-
-#: extmod/machine_spi.c:207
-msgid "bits must be 8"
-msgstr ""
-
-#: extmod/machine_spi.c:210
-msgid "firstbit must be MSB"
-msgstr ""
-
-#: extmod/machine_spi.c:215
-msgid "must specify all of sck/mosi/miso"
-msgstr ""
-
-#: extmod/modframebuf.c:299
-msgid "invalid format"
-msgstr ""
-
-#: extmod/modubinascii.c:38 extmod/moduhashlib.c:102
-msgid "a bytes-like object is required"
-msgstr ""
-
-#: extmod/modubinascii.c:90
-msgid "odd-length string"
-msgstr ""
-
-#: extmod/modubinascii.c:101
-msgid "non-hex digit found"
-msgstr ""
-
-#: extmod/modubinascii.c:169
-msgid "incorrect padding"
-msgstr ""
-
-#: extmod/moductypes.c:122
-msgid "syntax error in uctypes descriptor"
-msgstr ""
-
-#: extmod/moductypes.c:219
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr ""
-
-#: extmod/moductypes.c:397
-msgid "struct: no fields"
-msgstr ""
-
-#: extmod/moductypes.c:530
-msgid "struct: cannot index"
-msgstr ""
-
-#: extmod/moductypes.c:544
-msgid "struct: index out of range"
-msgstr ""
-
-#: extmod/moduheapq.c:38
-msgid "heap must be a list"
-msgstr ""
-
-#: extmod/moduheapq.c:86 extmod/modutimeq.c:147 extmod/modutimeq.c:172
-msgid "empty heap"
-msgstr ""
-
-#: extmod/modujson.c:281
-msgid "syntax error in JSON"
-msgstr ""
-
-#: extmod/modure.c:265
-msgid "Splitting with sub-captures"
-msgstr ""
-
-#: extmod/modure.c:428
-msgid "Error in regex"
-msgstr ""
-
-#: extmod/modussl_axtls.c:81
-msgid "invalid key"
-msgstr ""
-
-#: extmod/modussl_axtls.c:87
-msgid "invalid cert"
-msgstr ""
-
-#: extmod/modutimeq.c:131
-msgid "queue overflow"
-msgstr ""
-
-#: extmod/moduzlib.c:98
-msgid "compression header"
-msgstr ""
-
-#: extmod/uos_dupterm.c:120
-msgid "invalid dupterm index"
-msgstr ""
-
-#: extmod/vfs_fat.c:426 py/moduerrno.c:155
-msgid "Read-only filesystem"
-msgstr ""
-
-#: extmod/vfs_posix_file.c:48 ports/unix/file.c:50 py/objstringio.c:43
-msgid "I/O operation on closed file"
-msgstr ""
-
-#: lib/embed/abort_.c:8
-msgid "abort() called"
-msgstr ""
-
-#: lib/netutils/netutils.c:83
-msgid "invalid arguments"
-msgstr ""
-
-#: lib/utils/pyexec.c:97 py/builtinimport.c:251
-msgid "script compilation not supported"
-msgstr ""
-
-#: main.c:152
-msgid " output:\n"
-msgstr ""
-
-#: main.c:166 main.c:250
-msgid ""
-"Auto-reload is on. Simply save files over USB to run them or enter REPL to "
-"disable.\n"
-msgstr ""
-
-#: main.c:168
-msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr ""
-
-#: main.c:170 main.c:252
-msgid "Auto-reload is off.\n"
-msgstr ""
-
-#: main.c:184
-msgid "Running in safe mode! Not running saved code.\n"
-msgstr ""
-
-#: main.c:200
-msgid "WARNING: Your code filename has two extensions\n"
-msgstr ""
-
-#: main.c:223
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
-#: main.c:257
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "  File \"%q\""
 msgstr ""
 
-#: main.c:422
-msgid "soft reboot\n"
+msgid "  File \"%q\", line %d"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c:209
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:361
-msgid "All sync event channels in use"
+msgid " output:\n"
 msgstr ""
 
-#: ports/atmel-samd/bindings/samd/Clock.c:135
-msgid "calibration is read only"
+#, c-format
+msgid "%%c requires int or char"
 msgstr ""
 
-#: ports/atmel-samd/bindings/samd/Clock.c:137
-msgid "calibration is out of range"
+msgid "%q in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/analogio/AnalogIn.c:63
-#: ports/nrf/common-hal/analogio/AnalogIn.c:39
-msgid "Pin does not have ADC capabilities"
+msgid "%q index out of range"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/analogio/AnalogOut.c:49
-msgid "No DAC on chip"
+msgid "%q indices must be integers, not %s"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/analogio/AnalogOut.c:56
-msgid "AnalogOut not supported on given pin"
+msgid "%q must be >= 1"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:147
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:150
-msgid "Invalid bit clock pin"
+msgid "%q should be an int"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:153
-msgid "Bit clock and word select must share a clock unit"
+msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:156
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:130
-msgid "Invalid data pin"
+msgid "'%q' argument required"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:169
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:174
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:145
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:150
-msgid "Serializer in use"
+#, c-format
+msgid "'%s' expects a label"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:230
-msgid "Clock unit in use"
+#, c-format
+msgid "'%s' expects a register"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:240
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:172
-msgid "Unable to find free GCLK"
+#, c-format
+msgid "'%s' expects a special register"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:254
-msgid "Too many channels in sample."
+#, c-format
+msgid "'%s' expects an FPU register"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:305
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:417
-msgid "No DMA channel found"
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c:308
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:419
-msgid "Unable to allocate buffers for signed conversion"
+#, c-format
+msgid "'%s' expects an integer"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:109
-msgid "Invalid clock pin"
+#, c-format
+msgid "'%s' expects at most r%d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:134
-msgid "Only 8 or 16 bit mono with "
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c:167
-msgid "sampling rate out of range"
+#, c-format
+msgid "'%s' integer %d is not within range %d..%d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:132
-msgid "DAC already in use"
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:136
-msgid "Right channel unsupported"
+#, c-format
+msgid "'%s' object does not support item assignment"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:139
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c:65
-#: shared-bindings/pulseio/PWMOut.c:113
-msgid "Invalid pin"
+#, c-format
+msgid "'%s' object does not support item deletion"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:147
-msgid "Invalid pin for left channel"
+msgid "'%s' object has no attribute '%q'"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:151
-msgid "Invalid pin for right channel"
+#, c-format
+msgid "'%s' object is not an iterator"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:154
-msgid "Cannot output both channels on the same pin"
+#, c-format
+msgid "'%s' object is not callable"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:243
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c:110
-#: ports/nrf/common-hal/pulseio/PulseOut.c:107
-#: shared-bindings/pulseio/PWMOut.c:119
-msgid "All timers in use"
+#, c-format
+msgid "'%s' object is not iterable"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:285
+#, c-format
+msgid "'%s' object is not subscriptable"
+msgstr ""
+
+msgid "'=' alignment not allowed in string format specifier"
+msgstr ""
+
+msgid "'S' and 'O' are not supported format types"
+msgstr ""
+
+msgid "'align' requires 1 argument"
+msgstr ""
+
+msgid "'await' outside function"
+msgstr ""
+
+msgid "'break' outside loop"
+msgstr ""
+
+msgid "'continue' outside loop"
+msgstr ""
+
+msgid "'data' requires at least 2 arguments"
+msgstr ""
+
+msgid "'data' requires integer arguments"
+msgstr ""
+
+msgid "'label' requires 1 argument"
+msgstr ""
+
+msgid "'return' outside function"
+msgstr ""
+
+msgid "'yield' outside function"
+msgstr ""
+
+msgid "*x must be assignment target"
+msgstr ""
+
+msgid ", in %q\n"
+msgstr ""
+
+msgid "0.0 to a complex power"
+msgstr ""
+
+msgid "3-arg pow() not supported"
+msgstr ""
+
+msgid "A hardware interrupt channel is already in use"
+msgstr ""
+
+msgid "AP required"
+msgstr ""
+
+#, c-format
+msgid "Address is not %d bytes long or is in wrong format"
+msgstr ""
+
+#, c-format
+msgid "Address must be %d bytes long"
+msgstr ""
+
+msgid "All I2C peripherals are in use"
+msgstr ""
+
+msgid "All SPI peripherals are in use"
+msgstr ""
+
+msgid "All UART peripherals are in use"
+msgstr ""
+
 msgid "All event channels in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c:375
+msgid "All sync event channels in use"
+msgstr ""
+
+msgid "All timers for this pin are in use"
+msgstr ""
+
+msgid "All timers in use"
+msgstr ""
+
+msgid "AnalogOut functionality not supported"
+msgstr ""
+
+msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+msgstr ""
+
+msgid "AnalogOut not supported on given pin"
+msgstr ""
+
+msgid "Another send is already active"
+msgstr ""
+
+msgid "Array must contain halfwords (type 'H')"
+msgstr ""
+
+msgid "Array values should be single bytes."
+msgstr ""
+
+msgid "Auto-reload is off.\n"
+msgstr ""
+
+msgid ""
+"Auto-reload is on. Simply save files over USB to run them or enter REPL to "
+"disable.\n"
+msgstr ""
+
+msgid "Bit clock and word select must share a clock unit"
+msgstr ""
+
+msgid "Bit depth must be multiple of 8."
+msgstr ""
+
+msgid "Both pins must support hardware interrupts"
+msgstr ""
+
+msgid "Brightness must be between 0 and 255"
+msgstr ""
+
+msgid "Brightness not adjustable"
+msgstr ""
+
 #, c-format
-msgid "Sample rate too high. It must be less than %d"
+msgid "Buffer incorrect size. Should be %d bytes."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:74
-#: ports/atmel-samd/common-hal/busio/SPI.c:176
-#: ports/atmel-samd/common-hal/busio/UART.c:120
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c:45
-#: ports/nrf/common-hal/busio/I2C.c:84
-msgid "Invalid pins"
+msgid "Buffer must be at least length 1"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c:97
-msgid "SDA or SCL needs a pull up"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/I2C.c:117
-msgid "Unsupported baudrate"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c:67
-msgid "bytes > 8 bits not supported"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c:73
-#: ports/nrf/common-hal/busio/UART.c:149
-msgid "tx and rx cannot both be None"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c:146
-#: ports/nrf/common-hal/busio/UART.c:188
-msgid "Failed to allocate RX buffer"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c:154
-msgid "Could not initialize UART"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c:252
-#: ports/nrf/common-hal/busio/UART.c:230
-msgid "No RX pin"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c:311
-#: ports/nrf/common-hal/busio/UART.c:265
-msgid "No TX pin"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c:170
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c:147
-msgid "Cannot get pull while in output mode"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c:43
-#: ports/nrf/common-hal/displayio/ParallelBus.c:43
-msgid "Data 0 pin must be byte aligned"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c:47
-#: ports/nrf/common-hal/displayio/ParallelBus.c:47
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/microcontroller/__init__.c:74
-#: ports/esp8266/common-hal/microcontroller/__init__.c:64
-msgid "Cannot reset into bootloader because no bootloader is present."
+msgid "Byte buffer must be 16 bytes."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c:394
-#: ports/nrf/common-hal/pulseio/PWMOut.c:259
-#: shared-bindings/pulseio/PWMOut.c:115
-msgid "Invalid PWM frequency"
+msgid "Bytes must be between 0 and 255."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:110
-msgid "No hardware support on pin"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:113
-msgid "EXTINT channel already in use"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:118
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:86
-#: ports/nrf/common-hal/pulseio/PulseIn.c:129
-#, c-format
-msgid "Failed to allocate RX buffer of %d bytes"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:205
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:151
-#: ports/nrf/common-hal/pulseio/PulseIn.c:254
-msgid "pop from an empty PulseIn"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c:237
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:182
-#: ports/nrf/common-hal/pulseio/PulseIn.c:241 py/obj.c:422
-msgid "index out of range"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c:178
-msgid "Another send is already active"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:38
-msgid "Both pins must support hardware interrupts"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c:46
-msgid "A hardware interrupt channel is already in use"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/rtc/RTC.c:101
-msgid "calibration value out of range +/-127"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c:75
-msgid "No free GCLKs"
-msgstr ""
-
-#: ports/esp8266/common-hal/analogio/AnalogIn.c:43
-msgid "Pin %q does not have ADC capabilities"
-msgstr ""
-
-#: ports/esp8266/common-hal/analogio/AnalogOut.c:39
-msgid "No hardware support for analog out."
-msgstr ""
-
-#: ports/esp8266/common-hal/busio/SPI.c:72
-msgid "Pins not valid for SPI"
-msgstr ""
-
-#: ports/esp8266/common-hal/busio/UART.c:45
-msgid "Only tx supported on UART1 (GPIO2)."
-msgstr ""
-
-#: ports/esp8266/common-hal/busio/UART.c:67 ports/esp8266/machine_uart.c:108
-msgid "invalid data bits"
-msgstr ""
-
-#: ports/esp8266/common-hal/busio/UART.c:91 ports/esp8266/machine_uart.c:144
-msgid "invalid stop bits"
-msgstr ""
-
-#: ports/esp8266/common-hal/digitalio/DigitalInOut.c:200
-msgid "ESP8266 does not support pull down."
-msgstr ""
-
-#: ports/esp8266/common-hal/digitalio/DigitalInOut.c:210
-msgid "GPIO16 does not support pull up."
-msgstr ""
-
-#: ports/esp8266/common-hal/microcontroller/__init__.c:66
-msgid "ESP8226 does not support safe mode."
-msgstr ""
-
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:54
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:113
-#, c-format
-msgid "Maximum PWM frequency is %dhz."
-msgstr ""
-
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:57
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:116
-msgid "Minimum PWM frequency is 1hz."
-msgstr ""
-
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:68
-#, c-format
-msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr ""
-
-#: ports/esp8266/common-hal/pulseio/PWMOut.c:77 ports/esp8266/machine_pwm.c:70
-#, c-format
-msgid "PWM not supported on pin %d"
-msgstr ""
-
-#: ports/esp8266/common-hal/pulseio/PulseIn.c:78
-msgid "No PulseIn support for %q"
-msgstr ""
-
-#: ports/esp8266/common-hal/storage/__init__.c:34
-msgid "Unable to remount filesystem"
-msgstr ""
-
-#: ports/esp8266/common-hal/storage/__init__.c:38
-msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
-
-#: ports/esp8266/esp_mphal.c:154
 msgid "C-level assert"
 msgstr ""
 
-#: ports/esp8266/machine_adc.c:57
 #, c-format
-msgid "not a valid ADC Channel: %d"
+msgid "Can not use dotstar with %s"
 msgstr ""
 
-#: ports/esp8266/machine_hspi.c:131 ports/esp8266/machine_hspi.c:137
-msgid "impossible baudrate"
+msgid "Can't add services in Central mode"
 msgstr ""
 
-#: ports/esp8266/machine_pin.c:129
-msgid "expecting a pin"
+msgid "Can't advertise in Central mode"
 msgstr ""
 
-#: ports/esp8266/machine_pin.c:284
-msgid "Pin(16) doesn't support pull"
+msgid "Can't change the name in Central mode"
 msgstr ""
 
-#: ports/esp8266/machine_pin.c:323
-msgid "invalid pin"
+msgid "Can't connect in Peripheral mode"
 msgstr ""
 
-#: ports/esp8266/machine_pin.c:389
-msgid "pin does not have IRQ capabilities"
-msgstr ""
-
-#: ports/esp8266/machine_rtc.c:185
-msgid "buffer too long"
-msgstr ""
-
-#: ports/esp8266/machine_rtc.c:209 ports/esp8266/machine_rtc.c:223
-#: ports/esp8266/machine_rtc.c:246
-msgid "invalid alarm"
-msgstr ""
-
-#: ports/esp8266/machine_uart.c:169
-#, c-format
-msgid "UART(%d) does not exist"
-msgstr ""
-
-#: ports/esp8266/machine_uart.c:219
-msgid "UART(1) can't read"
-msgstr ""
-
-#: ports/esp8266/modesp.c:119
-msgid "len must be multiple of 4"
-msgstr ""
-
-#: ports/esp8266/modesp.c:274
-#, c-format
-msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
-
-#: ports/esp8266/modesp.c:317
-msgid "flash location must be below 1MByte"
-msgstr ""
-
-#: ports/esp8266/modmachine.c:63
-msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr ""
-
-#: ports/esp8266/modnetwork.c:61
-msgid "AP required"
-msgstr ""
-
-#: ports/esp8266/modnetwork.c:61
-msgid "STA required"
-msgstr ""
-
-#: ports/esp8266/modnetwork.c:87
-msgid "Cannot update i/f status"
-msgstr ""
-
-#: ports/esp8266/modnetwork.c:142
-msgid "Cannot set STA config"
-msgstr ""
-
-#: ports/esp8266/modnetwork.c:144
 msgid "Cannot connect to AP"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:152
+msgid "Cannot delete values"
+msgstr ""
+
 msgid "Cannot disconnect from AP"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:173
-msgid "unknown status param"
+msgid "Cannot get pull while in output mode"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:222
-msgid "STA must be active"
+msgid "Cannot get temperature"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:239
-msgid "scan failed"
+msgid "Cannot output both channels on the same pin"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:306
-msgid "wifi_set_ip_info() failed"
+msgid "Cannot read without MISO pin."
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:319
-msgid "either pos or kw args are allowed"
+msgid "Cannot record to a file"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:329
-msgid "can't get STA config"
+msgid "Cannot remount '/' when USB is active."
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:331
-msgid "can't get AP config"
+msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:346
-msgid "invalid buffer length"
+msgid "Cannot set STA config"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:405
-msgid "can't set STA config"
+msgid "Cannot set value when direction is input."
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:407
-msgid "can't set AP config"
+msgid "Cannot subclass slice"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:416
-msgid "can query only one param"
+msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
 
-#: ports/esp8266/modnetwork.c:469
-msgid "unknown config param"
+msgid "Cannot unambiguously get sizeof scalar"
 msgstr ""
 
-#: ports/nrf/common-hal/analogio/AnalogOut.c:37
-msgid "AnalogOut functionality not supported"
+msgid "Cannot update i/f status"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Adapter.c:43
-#, c-format
-msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgid "Cannot write without MOSI pin."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Adapter.c:119
-msgid "Failed to change softdevice state"
+msgid "Characteristic UUID doesn't match Service UUID"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Adapter.c:128
-msgid "Failed to get softdevice state"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Adapter.c:147
-msgid "Failed to get local address"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Broadcaster.c:48
-msgid "interval not in range 0.0020 to 10.24"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Broadcaster.c:58
-#: ports/nrf/common-hal/bleio/Peripheral.c:56
-msgid "Data too large for advertisement packet"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Broadcaster.c:83
-#: ports/nrf/common-hal/bleio/Peripheral.c:332
-#, c-format
-msgid "Failed to start advertising, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Broadcaster.c:96
-#: ports/nrf/common-hal/bleio/Peripheral.c:344
-#, c-format
-msgid "Failed to stop advertising, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:59
-#, c-format
-msgid "Failed to read CCCD value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:89
-#, c-format
-msgid "Failed to read gatts value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:106
-#, c-format
-msgid "Failed to write gatts value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:132
-#, c-format
-msgid "Failed to notify or indicate attribute value, err %0x04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:144
-#, c-format
-msgid "Failed to read attribute value, err %0x04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:172 ports/nrf/sd_mutex.c:34
-#, c-format
-msgid "Failed to acquire mutex, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:178
-#, c-format
-msgid "Failed to write attribute value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:189 ports/nrf/sd_mutex.c:54
-#, c-format
-msgid "Failed to release mutex, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c:251
-#: ports/nrf/common-hal/bleio/Characteristic.c:284
-msgid "bad GATT role"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:80
-#: ports/nrf/common-hal/bleio/Device.c:112
-msgid "Data too large for the advertisement packet"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:262
-msgid "Failed to discover services"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:268
-#: ports/nrf/common-hal/bleio/Device.c:302
-msgid "Failed to acquire mutex"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:280
-#: ports/nrf/common-hal/bleio/Device.c:313
-#: ports/nrf/common-hal/bleio/Device.c:344
-#: ports/nrf/common-hal/bleio/Device.c:378
-msgid "Failed to release mutex"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:389
-msgid "Failed to continue scanning"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:421
-msgid "Failed to connect:"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:491
-msgid "Failed to add service"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:508
-msgid "Failed to start advertising"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:525
-msgid "Failed to stop advertising"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:550
-msgid "Failed to start scanning"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Device.c:566
-msgid "Failed to create mutex"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Peripheral.c:312
-#, c-format
-msgid "Failed to add service, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Scanner.c:75
-#, c-format
-msgid "Failed to continue scanning, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Scanner.c:101
-#, c-format
-msgid "Failed to start scanning, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Service.c:88
-#, c-format
-msgid "Failed to add characteristic, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Service.c:92
 msgid "Characteristic already in use by another Service."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/UUID.c:54
-#, c-format
-msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+msgid "CharacteristicBuffer writing not provided"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/UUID.c:73
+msgid "Clock pin init failed."
+msgstr ""
+
+msgid "Clock stretch too long"
+msgstr ""
+
+msgid "Clock unit in use"
+msgstr ""
+
+msgid "Command must be an int between 0 and 255"
+msgstr ""
+
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/UUID.c:88
-msgid "Unexpected nrfx uuid type"
+msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c:98
-msgid "All I2C peripherals are in use"
+msgid "Couldn't allocate first buffer"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/SPI.c:133
-msgid "All SPI peripherals are in use"
+msgid "Couldn't allocate second buffer"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:47
-#, c-format
-msgid "error = 0x%08lX"
+msgid "Crash into the HardFault_Handler.\n"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:145
-msgid "All UART peripherals are in use"
+msgid "DAC already in use"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:153
-msgid "Invalid buffer size"
+msgid "Data 0 pin must be byte aligned"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c:157
-msgid "Odd parity is not supported"
+msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
-#: ports/nrf/common-hal/microcontroller/Processor.c:48
-msgid "Cannot get temperature"
+msgid "Data too large for advertisement packet"
 msgstr ""
 
-#: ports/unix/modffi.c:138
-msgid "Unknown type"
+msgid "Data too large for the advertisement packet"
 msgstr ""
 
-#: ports/unix/modffi.c:207 ports/unix/modffi.c:265
-msgid "Error in ffi_prep_cif"
+msgid "Destination capacity is smaller than destination_length."
 msgstr ""
 
-#: ports/unix/modffi.c:270
-msgid "ffi_prep_closure_loc"
+msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
-#: ports/unix/modffi.c:413
 msgid "Don't know how to pass object to native function"
 msgstr ""
 
-#: ports/unix/modusocket.c:474
+msgid "Drive mode not used when direction is input."
+msgstr ""
+
+msgid "ESP8226 does not support safe mode."
+msgstr ""
+
+msgid "ESP8266 does not support pull down."
+msgstr ""
+
+msgid "EXTINT channel already in use"
+msgstr ""
+
+msgid "Error in ffi_prep_cif"
+msgstr ""
+
+msgid "Error in regex"
+msgstr ""
+
+msgid "Expected a %q"
+msgstr ""
+
+msgid "Expected a Characteristic"
+msgstr ""
+
+msgid "Expected a UUID"
+msgstr ""
+
 #, c-format
-msgid "[addrinfo error %d]"
+msgid "Expected tuple of length %d, got %d"
 msgstr ""
 
-#: py/argcheck.c:53
-msgid "function does not take keyword arguments"
+msgid "Failed to acquire mutex"
 msgstr ""
 
-#: py/argcheck.c:63 py/bc.c:85 py/objnamedtuple.c:108
 #, c-format
-msgid "function takes %d positional arguments but %d were given"
+msgid "Failed to acquire mutex, err 0x%04x"
 msgstr ""
 
-#: py/argcheck.c:73
 #, c-format
-msgid "function missing %d required positional arguments"
+msgid "Failed to add characteristic, err 0x%04x"
 msgstr ""
 
-#: py/argcheck.c:81
+msgid "Failed to add service"
+msgstr ""
+
 #, c-format
-msgid "function expected at most %d arguments, got %d"
+msgid "Failed to add service, err 0x%04x"
 msgstr ""
 
-#: py/argcheck.c:106
-msgid "'%q' argument required"
+msgid "Failed to allocate RX buffer"
 msgstr ""
 
-#: py/argcheck.c:131
-msgid "extra positional arguments given"
-msgstr ""
-
-#: py/argcheck.c:139
-msgid "extra keyword arguments given"
-msgstr ""
-
-#: py/argcheck.c:151
-msgid "argument num/types mismatch"
-msgstr ""
-
-#: py/argcheck.c:156
-msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr ""
-
-#: py/bc.c:88 py/objnamedtuple.c:112
-msgid "%q() takes %d positional arguments but %d were given"
-msgstr ""
-
-#: py/bc.c:197 py/bc.c:215
-msgid "unexpected keyword argument"
-msgstr ""
-
-#: py/bc.c:199
-msgid "keywords must be strings"
-msgstr ""
-
-#: py/bc.c:206 py/objnamedtuple.c:142
-msgid "function got multiple values for argument '%q'"
-msgstr ""
-
-#: py/bc.c:218 py/objnamedtuple.c:134
-msgid "unexpected keyword argument '%q'"
-msgstr ""
-
-#: py/bc.c:244
 #, c-format
-msgid "function missing required positional argument #%d"
+msgid "Failed to allocate RX buffer of %d bytes"
 msgstr ""
 
-#: py/bc.c:260
-msgid "function missing required keyword argument '%q'"
+msgid "Failed to change softdevice state"
 msgstr ""
 
-#: py/bc.c:269
-msgid "function missing keyword-only argument"
+msgid "Failed to connect:"
 msgstr ""
 
-#: py/binary.c:112
-msgid "bad typecode"
+msgid "Failed to continue scanning"
 msgstr ""
 
-#: py/builtinevex.c:99
-msgid "bad compile mode"
+#, c-format
+msgid "Failed to continue scanning, err 0x%04x"
 msgstr ""
 
-#: py/builtinhelp.c:137
+msgid "Failed to create mutex"
+msgstr ""
+
+msgid "Failed to discover services"
+msgstr ""
+
+msgid "Failed to get local address"
+msgstr ""
+
+msgid "Failed to get softdevice state"
+msgstr ""
+
+#, c-format
+msgid "Failed to notify or indicate attribute value, err %0x04x"
+msgstr ""
+
+#, c-format
+msgid "Failed to read CCCD value, err 0x%04x"
+msgstr ""
+
+#, c-format
+msgid "Failed to read attribute value, err %0x04x"
+msgstr ""
+
+#, c-format
+msgid "Failed to read gatts value, err 0x%04x"
+msgstr ""
+
+#, c-format
+msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+msgstr ""
+
+msgid "Failed to release mutex"
+msgstr ""
+
+#, c-format
+msgid "Failed to release mutex, err 0x%04x"
+msgstr ""
+
+msgid "Failed to start advertising"
+msgstr ""
+
+#, c-format
+msgid "Failed to start advertising, err 0x%04x"
+msgstr ""
+
+msgid "Failed to start scanning"
+msgstr ""
+
+#, c-format
+msgid "Failed to start scanning, err 0x%04x"
+msgstr ""
+
+msgid "Failed to stop advertising"
+msgstr ""
+
+#, c-format
+msgid "Failed to stop advertising, err 0x%04x"
+msgstr ""
+
+#, c-format
+msgid "Failed to write attribute value, err 0x%04x"
+msgstr ""
+
+#, c-format
+msgid "Failed to write gatts value, err 0x%04x"
+msgstr ""
+
+msgid "File exists"
+msgstr ""
+
+msgid "Function requires lock"
+msgstr ""
+
+msgid "Function requires lock."
+msgstr ""
+
+msgid "GPIO16 does not support pull up."
+msgstr ""
+
+msgid "Group full"
+msgstr ""
+
+msgid "I/O operation on closed file"
+msgstr ""
+
+msgid "I2C operation not supported"
+msgstr ""
+
+msgid ""
+"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
+"mpy-update for more info."
+msgstr ""
+
+msgid "Input/output error"
+msgstr ""
+
+msgid "Invalid BMP file"
+msgstr ""
+
+msgid "Invalid PWM frequency"
+msgstr ""
+
+msgid "Invalid argument"
+msgstr ""
+
+msgid "Invalid bit clock pin"
+msgstr ""
+
+msgid "Invalid buffer size"
+msgstr ""
+
+msgid "Invalid channel count"
+msgstr ""
+
+msgid "Invalid clock pin"
+msgstr ""
+
+msgid "Invalid data pin"
+msgstr ""
+
+msgid "Invalid direction."
+msgstr ""
+
+msgid "Invalid file"
+msgstr ""
+
+msgid "Invalid format chunk size"
+msgstr ""
+
+msgid "Invalid number of bits"
+msgstr ""
+
+msgid "Invalid phase"
+msgstr ""
+
+msgid "Invalid pin"
+msgstr ""
+
+msgid "Invalid pin for left channel"
+msgstr ""
+
+msgid "Invalid pin for right channel"
+msgstr ""
+
+msgid "Invalid pins"
+msgstr ""
+
+msgid "Invalid polarity"
+msgstr ""
+
+msgid "Invalid run mode."
+msgstr ""
+
+msgid "Invalid voice count"
+msgstr ""
+
+msgid "Invalid wave file"
+msgstr ""
+
+msgid "LHS of keyword arg must be an id"
+msgstr ""
+
+msgid "Layer must be a Group or TileGrid subclass."
+msgstr ""
+
+msgid "Length must be an int"
+msgstr ""
+
+msgid "Length must be non-negative"
+msgstr ""
+
+msgid ""
+"Looks like our core CircuitPython code crashed hard. Whoops!\n"
+"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+" with the contents of your CIRCUITPY drive and this message:\n"
+msgstr ""
+
+msgid "MISO pin init failed."
+msgstr ""
+
+msgid "MOSI pin init failed."
+msgstr ""
+
+#, c-format
+msgid "Maximum PWM frequency is %dhz."
+msgstr ""
+
+#, c-format
+msgid "Maximum x value when mirrored is %d"
+msgstr ""
+
+msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgstr ""
+
+msgid "MicroPython fatal error.\n"
+msgstr ""
+
+msgid "Microphone startup delay must be in range 0.0 to 1.0"
+msgstr ""
+
+msgid "Minimum PWM frequency is 1hz."
+msgstr ""
+
+#, c-format
+msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
+msgstr ""
+
+msgid "Must be a Group subclass."
+msgstr ""
+
+msgid "No DAC on chip"
+msgstr ""
+
+msgid "No DMA channel found"
+msgstr ""
+
+msgid "No PulseIn support for %q"
+msgstr ""
+
+msgid "No RX pin"
+msgstr ""
+
+msgid "No TX pin"
+msgstr ""
+
+msgid "No default I2C bus"
+msgstr ""
+
+msgid "No default SPI bus"
+msgstr ""
+
+msgid "No default UART bus"
+msgstr ""
+
+msgid "No free GCLKs"
+msgstr ""
+
+msgid "No hardware random available"
+msgstr ""
+
+msgid "No hardware support for analog out."
+msgstr ""
+
+msgid "No hardware support on pin"
+msgstr ""
+
+msgid "No space left on device"
+msgstr ""
+
+msgid "No such file/directory"
+msgstr ""
+
+msgid "Not connected"
+msgstr ""
+
+msgid "Not connected."
+msgstr ""
+
+msgid "Not playing"
+msgstr ""
+
+msgid ""
+"Object has been deinitialized and can no longer be used. Create a new object."
+msgstr ""
+
+msgid "Odd parity is not supported"
+msgstr ""
+
+msgid "Only 8 or 16 bit mono with "
+msgstr ""
+
+#, c-format
+msgid "Only Windows format, uncompressed BMP supported %d"
+msgstr ""
+
+msgid "Only bit maps of 8 bit color or less are supported"
+msgstr ""
+
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr ""
+
+#, c-format
+msgid "Only true color (24 bpp or higher) BMP supported %x"
+msgstr ""
+
+msgid "Only tx supported on UART1 (GPIO2)."
+msgstr ""
+
+msgid "Oversample must be multiple of 8."
+msgstr ""
+
+msgid ""
+"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+msgstr ""
+
+msgid ""
+"PWM frequency not writable when variable_frequency is False on construction."
+msgstr ""
+
+#, c-format
+msgid "PWM not supported on pin %d"
+msgstr ""
+
+msgid "Permission denied"
+msgstr ""
+
+msgid "Pin %q does not have ADC capabilities"
+msgstr ""
+
+msgid "Pin does not have ADC capabilities"
+msgstr ""
+
+msgid "Pin(16) doesn't support pull"
+msgstr ""
+
+msgid "Pins not valid for SPI"
+msgstr ""
+
+msgid "Pixel beyond bounds of buffer"
+msgstr ""
+
 msgid "Plus any modules on the filesystem\n"
 msgstr ""
 
-#: py/builtinhelp.c:183
+msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgstr ""
+
+msgid "Pull not used when direction is output."
+msgstr ""
+
+msgid "RTC calibration is not supported on this board"
+msgstr ""
+
+msgid "RTC is not supported on this board"
+msgstr ""
+
+msgid "Range out of bounds"
+msgstr ""
+
+msgid "Read-only"
+msgstr ""
+
+msgid "Read-only filesystem"
+msgstr ""
+
+msgid "Read-only object"
+msgstr ""
+
+msgid "Right channel unsupported"
+msgstr ""
+
+msgid "Running in safe mode! Auto-reload is off.\n"
+msgstr ""
+
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr ""
+
+msgid "SDA or SCL needs a pull up"
+msgstr ""
+
+msgid "STA must be active"
+msgstr ""
+
+msgid "STA required"
+msgstr ""
+
+msgid "Sample rate must be positive"
+msgstr ""
+
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
+msgstr ""
+
+msgid "Serializer in use"
+msgstr ""
+
+msgid "Slice and value different lengths."
+msgstr ""
+
+msgid "Slices not supported"
+msgstr ""
+
+#, c-format
+msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr ""
+
+msgid "Splitting with sub-captures"
+msgstr ""
+
+msgid "Stack size must be at least 256"
+msgstr ""
+
+msgid "Stream missing readinto() or write() method."
+msgstr ""
+
+msgid ""
+"The CircuitPython heap was corrupted because the stack was too small.\n"
+"Please increase stack size limits and press reset (after ejecting "
+"CIRCUITPY).\n"
+"If you didn't change the stack, then file an issue here with the contents of "
+"your CIRCUITPY drive:\n"
+msgstr ""
+
+msgid ""
+"The microcontroller's power dipped. Please make sure your power supply "
+"provides\n"
+"enough power for the whole circuit and press reset (after ejecting "
+"CIRCUITPY).\n"
+msgstr ""
+
+msgid ""
+"The reset button was pressed while booting CircuitPython. Press again to "
+"exit safe mode.\n"
+msgstr ""
+
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr ""
+
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+msgid "The sample's sample rate does not match the mixer's"
+msgstr ""
+
+msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
+msgid "Tile height must exactly divide bitmap height"
+msgstr ""
+
+msgid "Tile width must exactly divide bitmap width"
+msgstr ""
+
+msgid "To exit, please reset the board without "
+msgstr ""
+
+msgid "Too many channels in sample."
+msgstr ""
+
+msgid "Too many display busses"
+msgstr ""
+
+msgid "Too many displays"
+msgstr ""
+
+msgid "Traceback (most recent call last):\n"
+msgstr ""
+
+msgid "Tuple or struct_time argument required"
+msgstr ""
+
+#, c-format
+msgid "UART(%d) does not exist"
+msgstr ""
+
+msgid "UART(1) can't read"
+msgstr ""
+
+msgid "USB Busy"
+msgstr ""
+
+msgid "USB Error"
+msgstr ""
+
+msgid "UUID integer value not in range 0 to 0xffff"
+msgstr ""
+
+msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+msgstr ""
+
+msgid "UUID value is not str, int or byte buffer"
+msgstr ""
+
+msgid "Unable to allocate buffers for signed conversion"
+msgstr ""
+
+msgid "Unable to find free GCLK"
+msgstr ""
+
+msgid "Unable to init parser"
+msgstr ""
+
+msgid "Unable to remount filesystem"
+msgstr ""
+
+msgid "Unable to write to nvm."
+msgstr ""
+
+msgid "Unexpected nrfx uuid type"
+msgstr ""
+
+msgid "Unknown type"
+msgstr ""
+
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+msgid "Unsupported baudrate"
+msgstr ""
+
+msgid "Unsupported display bus type"
+msgstr ""
+
+msgid "Unsupported format"
+msgstr ""
+
+msgid "Unsupported operation"
+msgstr ""
+
+msgid "Unsupported pull value."
+msgstr ""
+
+msgid "Use esptool to erase flash and re-upload Python instead"
+msgstr ""
+
+msgid "Viper functions don't currently support more than 4 arguments"
+msgstr ""
+
+msgid "Voice index too high"
+msgstr ""
+
+msgid "WARNING: Your code filename has two extensions\n"
+msgstr ""
+
 #, c-format
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
@@ -956,1840 +996,1080 @@ msgid ""
 "To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
 
-#: py/builtinimport.c:336
-msgid "cannot perform relative import"
-msgstr ""
-
-#: py/builtinimport.c:420 py/builtinimport.c:532
-msgid "module not found"
-msgstr ""
-
-#: py/builtinimport.c:423 py/builtinimport.c:535
-msgid "no module named '%q'"
-msgstr ""
-
-#: py/builtinimport.c:510
-msgid "relative import"
-msgstr ""
-
-#: py/compile.c:397 py/compile.c:542
-msgid "can't assign to expression"
-msgstr ""
-
-#: py/compile.c:416
-msgid "multiple *x in assignment"
-msgstr ""
-
-#: py/compile.c:642
-msgid "non-default argument follows default argument"
-msgstr ""
-
-#: py/compile.c:771 py/compile.c:789
-msgid "invalid micropython decorator"
-msgstr ""
-
-#: py/compile.c:943
-msgid "can't delete expression"
-msgstr ""
-
-#: py/compile.c:955
-msgid "'break' outside loop"
-msgstr ""
-
-#: py/compile.c:958
-msgid "'continue' outside loop"
-msgstr ""
-
-#: py/compile.c:969
-msgid "'return' outside function"
-msgstr ""
-
-#: py/compile.c:1169
-msgid "identifier redefined as global"
-msgstr ""
-
-#: py/compile.c:1185
-msgid "no binding for nonlocal found"
-msgstr ""
-
-#: py/compile.c:1188
-msgid "identifier redefined as nonlocal"
-msgstr ""
-
-#: py/compile.c:1197
-msgid "can't declare nonlocal in outer code"
-msgstr ""
-
-#: py/compile.c:1542
-msgid "default 'except' must be last"
-msgstr ""
-
-#: py/compile.c:2095
-msgid "*x must be assignment target"
-msgstr ""
-
-#: py/compile.c:2193
-msgid "super() can't find self"
-msgstr ""
-
-#: py/compile.c:2256
-msgid "can't have multiple *x"
-msgstr ""
-
-#: py/compile.c:2263
-msgid "can't have multiple **x"
-msgstr ""
-
-#: py/compile.c:2271
-msgid "LHS of keyword arg must be an id"
-msgstr ""
-
-#: py/compile.c:2287
-msgid "non-keyword arg after */**"
-msgstr ""
-
-#: py/compile.c:2291
-msgid "non-keyword arg after keyword arg"
-msgstr ""
-
-#: py/compile.c:2463 py/compile.c:2473 py/compile.c:2712 py/compile.c:2742
-#: py/parse.c:1176
-msgid "invalid syntax"
-msgstr ""
-
-#: py/compile.c:2465
-msgid "expecting key:value for dict"
-msgstr ""
-
-#: py/compile.c:2475
-msgid "expecting just a value for set"
-msgstr ""
-
-#: py/compile.c:2600
-msgid "'yield' outside function"
-msgstr ""
-
-#: py/compile.c:2619
-msgid "'await' outside function"
-msgstr ""
-
-#: py/compile.c:2774
-msgid "name reused for argument"
-msgstr ""
-
-#: py/compile.c:2827
-msgid "parameter annotation must be an identifier"
-msgstr ""
-
-#: py/compile.c:2969 py/compile.c:3137
-msgid "return annotation must be an identifier"
-msgstr ""
-
-#: py/compile.c:3097
-msgid "inline assembler must be a function"
-msgstr ""
-
-#: py/compile.c:3134
-msgid "unknown type"
-msgstr ""
-
-#: py/compile.c:3154
-msgid "expecting an assembler instruction"
-msgstr ""
-
-#: py/compile.c:3184
-msgid "'label' requires 1 argument"
-msgstr ""
-
-#: py/compile.c:3190
-msgid "label redefined"
-msgstr ""
-
-#: py/compile.c:3196
-msgid "'align' requires 1 argument"
-msgstr ""
-
-#: py/compile.c:3205
-msgid "'data' requires at least 2 arguments"
-msgstr ""
-
-#: py/compile.c:3212
-msgid "'data' requires integer arguments"
-msgstr ""
-
-#: py/emitinlinethumb.c:102
-msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr ""
-
-#: py/emitinlinethumb.c:107 py/emitinlinethumb.c:112
-msgid "parameters must be registers in sequence r0 to r3"
-msgstr ""
-
-#: py/emitinlinethumb.c:188 py/emitinlinethumb.c:230
-#, c-format
-msgid "'%s' expects at most r%d"
-msgstr ""
-
-#: py/emitinlinethumb.c:197 py/emitinlinextensa.c:162
-#, c-format
-msgid "'%s' expects a register"
-msgstr ""
-
-#: py/emitinlinethumb.c:211
-#, c-format
-msgid "'%s' expects a special register"
-msgstr ""
-
-#: py/emitinlinethumb.c:239
-#, c-format
-msgid "'%s' expects an FPU register"
-msgstr ""
-
-#: py/emitinlinethumb.c:292
-#, c-format
-msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
-
-#: py/emitinlinethumb.c:299 py/emitinlinextensa.c:169
-#, c-format
-msgid "'%s' expects an integer"
-msgstr ""
-
-#: py/emitinlinethumb.c:304
-#, c-format
-msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr ""
-
-#: py/emitinlinethumb.c:328
-#, c-format
-msgid "'%s' expects an address of the form [a, b]"
-msgstr ""
-
-#: py/emitinlinethumb.c:334 py/emitinlinextensa.c:182
-#, c-format
-msgid "'%s' expects a label"
-msgstr ""
-
-#: py/emitinlinethumb.c:345 py/emitinlinextensa.c:193
-msgid "label '%q' not defined"
-msgstr ""
-
-#: py/emitinlinethumb.c:806
-#, c-format
-msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr ""
-
-#: py/emitinlinethumb.c:810
-msgid "branch not in range"
-msgstr ""
-
-#: py/emitinlinextensa.c:86
-msgid "can only have up to 4 parameters to Xtensa assembly"
-msgstr ""
-
-#: py/emitinlinextensa.c:91 py/emitinlinextensa.c:96
-msgid "parameters must be registers in sequence a2 to a5"
-msgstr ""
-
-#: py/emitinlinextensa.c:174
-#, c-format
-msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
-
-#: py/emitinlinextensa.c:327
-#, c-format
-msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr ""
-
-#: py/emitnative.c:183
-msgid "unknown type '%q'"
-msgstr ""
-
-#: py/emitnative.c:260
-msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-
-#: py/emitnative.c:742
-msgid "conversion to object"
-msgstr ""
-
-#: py/emitnative.c:921
-msgid "local '%q' used before type known"
-msgstr ""
-
-#: py/emitnative.c:1118 py/emitnative.c:1156
-msgid "can't load from '%q'"
-msgstr ""
-
-#: py/emitnative.c:1128
-msgid "can't load with '%q' index"
-msgstr ""
-
-#: py/emitnative.c:1188
-msgid "local '%q' has type '%q' but source is '%q'"
-msgstr ""
-
-#: py/emitnative.c:1289 py/emitnative.c:1379
-msgid "can't store '%q'"
-msgstr ""
-
-#: py/emitnative.c:1358 py/emitnative.c:1419
-msgid "can't store to '%q'"
-msgstr ""
-
-#: py/emitnative.c:1369
-msgid "can't store with '%q' index"
-msgstr ""
-
-#: py/emitnative.c:1540
-msgid "can't implicitly convert '%q' to 'bool'"
-msgstr ""
-
-#: py/emitnative.c:1774
-msgid "unary op %q not implemented"
-msgstr ""
-
-#: py/emitnative.c:1930
-msgid "binary op %q not implemented"
-msgstr ""
-
-#: py/emitnative.c:1951
-msgid "can't do binary op between '%q' and '%q'"
-msgstr ""
-
-#: py/emitnative.c:2126
-msgid "casting"
-msgstr ""
-
-#: py/emitnative.c:2173
-msgid "return expected '%q' but got '%q'"
-msgstr ""
-
-#: py/emitnative.c:2191
-msgid "must raise an object"
-msgstr ""
-
-#: py/emitnative.c:2201
-msgid "native yield"
-msgstr ""
-
-#: py/lexer.c:345
-msgid "unicode name escapes"
-msgstr ""
-
-#: py/modbuiltins.c:162
-msgid "chr() arg not in range(0x110000)"
-msgstr ""
-
-#: py/modbuiltins.c:171
-msgid "chr() arg not in range(256)"
-msgstr ""
-
-#: py/modbuiltins.c:285
-msgid "arg is an empty sequence"
-msgstr ""
-
-#: py/modbuiltins.c:350
-msgid "ord expects a character"
-msgstr ""
-
-#: py/modbuiltins.c:353
-#, c-format
-msgid "ord() expected a character, but string of length %d found"
-msgstr ""
-
-#: py/modbuiltins.c:363
-msgid "3-arg pow() not supported"
-msgstr ""
-
-#: py/modbuiltins.c:521
-msgid "must use keyword argument for key function"
-msgstr ""
-
-#: py/modmath.c:41 shared-bindings/math/__init__.c:53
-msgid "math domain error"
-msgstr ""
-
-#: py/modmath.c:196 py/objfloat.c:270 py/objint_longlong.c:222
-#: py/objint_mpz.c:230 py/runtime.c:619 shared-bindings/math/__init__.c:346
-msgid "division by zero"
-msgstr ""
-
-#: py/modmicropython.c:155
-msgid "schedule stack full"
-msgstr ""
-
-#: py/modstruct.c:148 py/modstruct.c:156 py/modstruct.c:244 py/modstruct.c:254
-#: shared-bindings/struct/__init__.c:102 shared-bindings/struct/__init__.c:161
-#: shared-module/struct/__init__.c:128 shared-module/struct/__init__.c:183
-msgid "buffer too small"
-msgstr ""
-
-#: py/modthread.c:240
-msgid "expecting a dict for keyword args"
-msgstr ""
-
-#: py/moduerrno.c:147 py/moduerrno.c:150
-msgid "Permission denied"
-msgstr ""
-
-#: py/moduerrno.c:148
-msgid "No such file/directory"
-msgstr ""
-
-#: py/moduerrno.c:149
-msgid "Input/output error"
-msgstr ""
-
-#: py/moduerrno.c:151
-msgid "File exists"
-msgstr ""
-
-#: py/moduerrno.c:152
-msgid "Unsupported operation"
-msgstr ""
-
-#: py/moduerrno.c:153
-msgid "Invalid argument"
-msgstr ""
-
-#: py/moduerrno.c:154
-msgid "No space left on device"
-msgstr ""
-
-#: py/obj.c:92
-msgid "Traceback (most recent call last):\n"
-msgstr ""
-
-#: py/obj.c:96
-msgid "  File \"%q\", line %d"
-msgstr ""
-
-#: py/obj.c:98
-msgid "  File \"%q\""
-msgstr ""
-
-#: py/obj.c:102
-msgid ", in %q\n"
-msgstr ""
-
-#: py/obj.c:259
-msgid "can't convert to int"
-msgstr ""
-
-#: py/obj.c:262
-#, c-format
-msgid "can't convert %s to int"
-msgstr ""
-
-#: py/obj.c:322
-msgid "can't convert to float"
-msgstr ""
-
-#: py/obj.c:325
-#, c-format
-msgid "can't convert %s to float"
-msgstr ""
-
-#: py/obj.c:355
-msgid "can't convert to complex"
-msgstr ""
-
-#: py/obj.c:358
-#, c-format
-msgid "can't convert %s to complex"
-msgstr ""
-
-#: py/obj.c:373
-msgid "expected tuple/list"
-msgstr ""
-
-#: py/obj.c:376
-#, c-format
-msgid "object '%s' is not a tuple or list"
-msgstr ""
-
-#: py/obj.c:387
-msgid "tuple/list has wrong length"
-msgstr ""
-
-#: py/obj.c:389
-#, c-format
-msgid "requested length %d but object has length %d"
-msgstr ""
-
-#: py/obj.c:402
-msgid "indices must be integers"
-msgstr ""
-
-#: py/obj.c:405
-msgid "%q indices must be integers, not %s"
-msgstr ""
-
-#: py/obj.c:425
-msgid "%q index out of range"
-msgstr ""
-
-#: py/obj.c:457
-msgid "object has no len"
-msgstr ""
-
-#: py/obj.c:460
-#, c-format
-msgid "object of type '%s' has no len()"
-msgstr ""
-
-#: py/obj.c:500
-msgid "object does not support item deletion"
-msgstr ""
-
-#: py/obj.c:503
-#, c-format
-msgid "'%s' object does not support item deletion"
-msgstr ""
-
-#: py/obj.c:507
-msgid "object is not subscriptable"
-msgstr ""
-
-#: py/obj.c:510
-#, c-format
-msgid "'%s' object is not subscriptable"
-msgstr ""
-
-#: py/obj.c:514
-msgid "object does not support item assignment"
-msgstr ""
-
-#: py/obj.c:517
-#, c-format
-msgid "'%s' object does not support item assignment"
-msgstr ""
-
-#: py/obj.c:548
-msgid "object with buffer protocol required"
-msgstr ""
-
-#: py/objarray.c:413 py/objstr.c:437 py/objstrunicode.c:211 py/objtuple.c:188
-#: shared-bindings/nvm/ByteArray.c:85
-msgid "only slices with step=1 (aka None) are supported"
-msgstr ""
-
-#: py/objarray.c:426
-msgid "lhs and rhs should be compatible"
-msgstr ""
-
-#: py/objarray.c:444 shared-bindings/nvm/ByteArray.c:107
-msgid "array/bytes required on right side"
-msgstr ""
-
-#: py/objcomplex.c:203
-msgid "can't do truncated division of a complex number"
-msgstr ""
-
-#: py/objcomplex.c:209
-msgid "complex division by zero"
-msgstr ""
-
-#: py/objcomplex.c:237
-msgid "0.0 to a complex power"
-msgstr ""
-
-#: py/objdeque.c:107
-msgid "full"
-msgstr ""
-
-#: py/objdeque.c:127
-msgid "empty"
-msgstr ""
-
-#: py/objdict.c:315
-msgid "popitem(): dictionary is empty"
-msgstr ""
-
-#: py/objdict.c:358
-msgid "dict update sequence has wrong length"
-msgstr ""
-
-#: py/objfloat.c:308 py/parsenum.c:331
-msgid "complex values not supported"
-msgstr ""
-
-#: py/objgenerator.c:108
-msgid "can't send non-None value to a just-started generator"
-msgstr ""
-
-#: py/objgenerator.c:126
-msgid "generator already executing"
-msgstr ""
-
-#: py/objgenerator.c:229
-msgid "generator ignored GeneratorExit"
-msgstr ""
-
-#: py/objgenerator.c:251
-msgid "can't pend throw to just-started generator"
-msgstr ""
-
-#: py/objint.c:144
-msgid "can't convert inf to int"
-msgstr ""
-
-#: py/objint.c:146
-msgid "can't convert NaN to int"
-msgstr ""
-
-#: py/objint.c:163
-msgid "float too big"
-msgstr ""
-
-#: py/objint.c:328
-msgid "long int not supported in this build"
-msgstr ""
-
-#: py/objint.c:334 py/objint.c:340 py/objint.c:350 py/objint.c:358
-#: py/sequence.c:41
-msgid "small int overflow"
-msgstr ""
-
-#: py/objint_longlong.c:189 py/objint_mpz.c:283 py/runtime.c:486
-msgid "negative power with no float support"
-msgstr ""
-
-#: py/objint_longlong.c:251
-msgid "ulonglong too large"
-msgstr ""
-
-#: py/objint_mpz.c:267 py/runtime.c:396 py/runtime.c:411
-msgid "negative shift count"
-msgstr ""
-
-#: py/objint_mpz.c:336
-msgid "pow() with 3 arguments requires integers"
-msgstr ""
-
-#: py/objint_mpz.c:347
-msgid "pow() 3rd argument cannot be 0"
-msgstr ""
-
-#: py/objint_mpz.c:415
-msgid "overflow converting long int to machine word"
-msgstr ""
-
-#: py/objlist.c:274
-msgid "pop from empty list"
-msgstr ""
-
-#: py/objnamedtuple.c:92
-msgid "can't set attribute"
-msgstr ""
-
-#: py/objobject.c:55
-msgid "__new__ arg must be a user-type"
-msgstr ""
-
-#: py/objrange.c:110
-msgid "zero step"
-msgstr ""
-
-#: py/objset.c:371
-msgid "pop from an empty set"
-msgstr ""
-
-#: py/objslice.c:66
-msgid "Length must be an int"
-msgstr ""
-
-#: py/objslice.c:71
-msgid "Length must be non-negative"
-msgstr ""
-
-#: py/objslice.c:86 py/sequence.c:66
-msgid "slice step cannot be zero"
-msgstr ""
-
-#: py/objslice.c:159
-msgid "Cannot subclass slice"
-msgstr ""
-
-#: py/objstr.c:261
-msgid "bytes value out of range"
-msgstr ""
-
-#: py/objstr.c:270
-msgid "wrong number of arguments"
-msgstr ""
-
-#: py/objstr.c:414 py/objstrunicode.c:118
-msgid "offset out of bounds"
-msgstr ""
-
-#: py/objstr.c:477
-msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr ""
-
-#: py/objstr.c:552 py/objstr.c:657 py/objstr.c:1754
-msgid "empty separator"
-msgstr ""
-
-#: py/objstr.c:651
-msgid "rsplit(None,n)"
-msgstr ""
-
-#: py/objstr.c:723
-msgid "substring not found"
-msgstr ""
-
-#: py/objstr.c:780
-msgid "start/end indices"
-msgstr ""
-
-#: py/objstr.c:941
-msgid "bad format string"
-msgstr ""
-
-#: py/objstr.c:963
-msgid "single '}' encountered in format string"
-msgstr ""
-
-#: py/objstr.c:1002
-msgid "bad conversion specifier"
-msgstr ""
-
-#: py/objstr.c:1006
-msgid "end of format while looking for conversion specifier"
-msgstr ""
-
-#: py/objstr.c:1008
-#, c-format
-msgid "unknown conversion specifier %c"
-msgstr ""
-
-#: py/objstr.c:1039
-msgid "unmatched '{' in format"
-msgstr ""
-
-#: py/objstr.c:1046
-msgid "expected ':' after format specifier"
-msgstr ""
-
-#: py/objstr.c:1060
 msgid ""
-"can't switch from automatic field numbering to manual field specification"
+"You are running in safe mode which means something unanticipated happened.\n"
 msgstr ""
 
-#: py/objstr.c:1065 py/objstr.c:1093
-msgid "tuple index out of range"
+msgid "You requested starting safe mode by "
 msgstr ""
 
-#: py/objstr.c:1081
-msgid "attributes not supported yet"
-msgstr ""
-
-#: py/objstr.c:1089
-msgid ""
-"can't switch from manual field specification to automatic field numbering"
-msgstr ""
-
-#: py/objstr.c:1181
-msgid "invalid format specifier"
-msgstr ""
-
-#: py/objstr.c:1202
-msgid "sign not allowed in string format specifier"
-msgstr ""
-
-#: py/objstr.c:1210
-msgid "sign not allowed with integer format specifier 'c'"
-msgstr ""
-
-#: py/objstr.c:1269
 #, c-format
-msgid "unknown format code '%c' for object of type '%s'"
+msgid "[addrinfo error %d]"
 msgstr ""
 
-#: py/objstr.c:1341
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr ""
-
-#: py/objstr.c:1353
-msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
-
-#: py/objstr.c:1377
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr ""
-
-#: py/objstr.c:1425
-msgid "format requires a dict"
-msgstr ""
-
-#: py/objstr.c:1434
-msgid "incomplete format key"
-msgstr ""
-
-#: py/objstr.c:1492
-msgid "incomplete format"
-msgstr ""
-
-#: py/objstr.c:1500
-msgid "not enough arguments for format string"
-msgstr ""
-
-#: py/objstr.c:1510
-#, c-format
-msgid "%%c requires int or char"
-msgstr ""
-
-#: py/objstr.c:1517
-msgid "integer required"
-msgstr ""
-
-#: py/objstr.c:1580
-#, c-format
-msgid "unsupported format character '%c' (0x%x) at index %d"
-msgstr ""
-
-#: py/objstr.c:1587
-msgid "not all arguments converted during string formatting"
-msgstr ""
-
-#: py/objstr.c:2112
-msgid "can't convert to str implicitly"
-msgstr ""
-
-#: py/objstr.c:2116
-msgid "can't convert '%q' object to %q implicitly"
-msgstr ""
-
-#: py/objstrunicode.c:154
-#, c-format
-msgid "string indices must be integers, not %s"
-msgstr ""
-
-#: py/objstrunicode.c:165 py/objstrunicode.c:184
-msgid "string index out of range"
-msgstr ""
-
-#: py/objtype.c:371
 msgid "__init__() should return None"
 msgstr ""
 
-#: py/objtype.c:373
 #, c-format
 msgid "__init__() should return None, not '%s'"
 msgstr ""
 
-#: py/objtype.c:636 py/objtype.c:1290 py/runtime.c:1065
-msgid "unreadable attribute"
+msgid "__new__ arg must be a user-type"
 msgstr ""
 
-#: py/objtype.c:881 py/runtime.c:653
-msgid "object not callable"
+msgid "a bytes-like object is required"
 msgstr ""
 
-#: py/objtype.c:883 py/runtime.c:655
+msgid "abort() called"
+msgstr ""
+
 #, c-format
-msgid "'%s' object is not callable"
+msgid "address %08x is not aligned to %d bytes"
 msgstr ""
 
-#: py/objtype.c:991
-msgid "type takes 1 or 3 arguments"
+msgid "address out of bounds"
 msgstr ""
 
-#: py/objtype.c:1002
-msgid "cannot create instance"
+msgid "addresses is empty"
 msgstr ""
 
-#: py/objtype.c:1004
-msgid "cannot create '%q' instances"
+msgid "arg is an empty sequence"
 msgstr ""
 
-#: py/objtype.c:1062
-msgid "can't add special method to already-subclassed class"
-msgstr ""
-
-#: py/objtype.c:1106 py/objtype.c:1112
-msgid "type is not an acceptable base type"
-msgstr ""
-
-#: py/objtype.c:1115
-msgid "type '%q' is not an acceptable base type"
-msgstr ""
-
-#: py/objtype.c:1152
-msgid "multiple inheritance not supported"
-msgstr ""
-
-#: py/objtype.c:1179
-msgid "multiple bases have instance lay-out conflict"
-msgstr ""
-
-#: py/objtype.c:1220
-msgid "first argument to super() must be type"
-msgstr ""
-
-#: py/objtype.c:1385
-msgid "issubclass() arg 2 must be a class or a tuple of classes"
-msgstr ""
-
-#: py/objtype.c:1399
-msgid "issubclass() arg 1 must be a class"
-msgstr ""
-
-#: py/parse.c:726
-msgid "constant must be an integer"
-msgstr ""
-
-#: py/parse.c:868
-msgid "Unable to init parser"
-msgstr ""
-
-#: py/parse.c:1170
-msgid "unexpected indent"
-msgstr ""
-
-#: py/parse.c:1173
-msgid "unindent does not match any outer indentation level"
-msgstr ""
-
-#: py/parsenum.c:60
-msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr ""
-
-#: py/parsenum.c:151
-msgid "invalid syntax for integer"
-msgstr ""
-
-#: py/parsenum.c:155
-#, c-format
-msgid "invalid syntax for integer with base %d"
-msgstr ""
-
-#: py/parsenum.c:339
-msgid "invalid syntax for number"
-msgstr ""
-
-#: py/parsenum.c:342
-msgid "decimal numbers not supported"
-msgstr ""
-
-#: py/persistentcode.c:223
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-
-#: py/persistentcode.c:326
-msgid "can only save bytecode"
-msgstr ""
-
-#: py/runtime.c:206
-msgid "name not defined"
-msgstr ""
-
-#: py/runtime.c:209
-msgid "name '%q' is not defined"
-msgstr ""
-
-#: py/runtime.c:304 py/runtime.c:611
-msgid "unsupported type for operator"
-msgstr ""
-
-#: py/runtime.c:307
-msgid "unsupported type for %q: '%s'"
-msgstr ""
-
-#: py/runtime.c:614
-msgid "unsupported types for %q: '%s', '%s'"
-msgstr ""
-
-#: py/runtime.c:881 py/runtime.c:888 py/runtime.c:945
-msgid "wrong number of values to unpack"
-msgstr ""
-
-#: py/runtime.c:883 py/runtime.c:947
-#, c-format
-msgid "need more than %d values to unpack"
-msgstr ""
-
-#: py/runtime.c:890
-#, c-format
-msgid "too many values to unpack (expected %d)"
-msgstr ""
-
-#: py/runtime.c:984
 msgid "argument has wrong type"
 msgstr ""
 
-#: py/runtime.c:986
+msgid "argument num/types mismatch"
+msgstr ""
+
 msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
-#: py/runtime.c:1123 py/runtime.c:1197 shared-bindings/_pixelbuf/__init__.c:106
-msgid "no such attribute"
+msgid "array/bytes required on right side"
 msgstr ""
 
-#: py/runtime.c:1128
-msgid "type object '%q' has no attribute '%q'"
+msgid "attributes not supported yet"
 msgstr ""
 
-#: py/runtime.c:1132 py/runtime.c:1200
-msgid "'%s' object has no attribute '%q'"
+msgid "bad GATT role"
 msgstr ""
 
-#: py/runtime.c:1238
-msgid "object not iterable"
+msgid "bad compile mode"
 msgstr ""
 
-#: py/runtime.c:1241
-#, c-format
-msgid "'%s' object is not iterable"
+msgid "bad conversion specifier"
 msgstr ""
 
-#: py/runtime.c:1260 py/runtime.c:1296
-msgid "object not an iterator"
+msgid "bad format string"
 msgstr ""
 
-#: py/runtime.c:1262 py/runtime.c:1298
-#, c-format
-msgid "'%s' object is not an iterator"
+msgid "bad typecode"
 msgstr ""
 
-#: py/runtime.c:1401
-msgid "exceptions must derive from BaseException"
+msgid "binary op %q not implemented"
 msgstr ""
 
-#: py/runtime.c:1430
-msgid "cannot import name %q"
+msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: py/runtime.c:1535
-msgid "memory allocation failed, heap is locked"
+msgid "bits must be 8"
 msgstr ""
 
-#: py/runtime.c:1539
-#, c-format
-msgid "memory allocation failed, allocating %u bytes"
+msgid "bits_per_sample must be 8 or 16"
 msgstr ""
 
-#: py/runtime.c:1620
-msgid "maximum recursion depth exceeded"
+msgid "branch not in range"
 msgstr ""
 
-#: py/sequence.c:273
-msgid "object not in sequence"
-msgstr ""
-
-#: py/stream.c:96
-msgid "stream operation not supported"
-msgstr ""
-
-#: py/stream.c:254
-msgid "string not supported; use bytes or bytearray"
-msgstr ""
-
-#: py/stream.c:289
-msgid "length argument not allowed for this type"
-msgstr ""
-
-#: py/vm.c:255
-msgid "local variable referenced before assignment"
-msgstr ""
-
-#: py/vm.c:1142
-msgid "no active exception to reraise"
-msgstr ""
-
-#: py/vm.c:1284
-msgid "byte code not implemented"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c:99
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c:104
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c:116
-msgid "rawbuf is not the same size as buf"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c:121
 #, c-format
 msgid "buf is too small. need %d bytes"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:127
-msgid "write_args must be a list, tuple, or None"
+msgid "buffer must be a bytes-like object"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:392
-msgid "Only slices with step=1 (aka None) are supported"
+msgid "buffer size must match format"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:394
-msgid "Range out of bounds"
+msgid "buffer slices must be of equal length"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:403
-msgid "tuple/list required on RHS"
+msgid "buffer too long"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:419
+msgid "buffer too small"
+msgstr ""
+
+msgid "buffers must be the same length"
+msgstr ""
+
+msgid "byte code not implemented"
+msgstr ""
+
 #, c-format
-msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c:442
-msgid "Pixel beyond bounds of buffer"
+msgid "bytes > 8 bits not supported"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/__init__.c:112
-msgid "readonly attribute"
+msgid "bytes value out of range"
 msgstr ""
 
-#: shared-bindings/_stage/Layer.c:71
-msgid "graphic must be 2048 bytes long"
+msgid "calibration is out of range"
 msgstr ""
 
-#: shared-bindings/_stage/Layer.c:77 shared-bindings/_stage/Text.c:75
-msgid "palette must be 32 bytes long"
+msgid "calibration is read only"
 msgstr ""
 
-#: shared-bindings/_stage/Layer.c:84
-msgid "map buffer too small"
+msgid "calibration value out of range +/-127"
 msgstr ""
 
-#: shared-bindings/_stage/Text.c:69
-msgid "font must be 2048 bytes long"
+msgid "can only have up to 4 parameters to Thumb assembly"
 msgstr ""
 
-#: shared-bindings/_stage/Text.c:81
+msgid "can only have up to 4 parameters to Xtensa assembly"
+msgstr ""
+
+msgid "can only save bytecode"
+msgstr ""
+
+msgid "can query only one param"
+msgstr ""
+
+msgid "can't add special method to already-subclassed class"
+msgstr ""
+
+msgid "can't assign to expression"
+msgstr ""
+
+#, c-format
+msgid "can't convert %s to complex"
+msgstr ""
+
+#, c-format
+msgid "can't convert %s to float"
+msgstr ""
+
+#, c-format
+msgid "can't convert %s to int"
+msgstr ""
+
+msgid "can't convert '%q' object to %q implicitly"
+msgstr ""
+
+msgid "can't convert NaN to int"
+msgstr ""
+
+msgid "can't convert address to int"
+msgstr ""
+
+msgid "can't convert inf to int"
+msgstr ""
+
+msgid "can't convert to complex"
+msgstr ""
+
+msgid "can't convert to float"
+msgstr ""
+
+msgid "can't convert to int"
+msgstr ""
+
+msgid "can't convert to str implicitly"
+msgstr ""
+
+msgid "can't declare nonlocal in outer code"
+msgstr ""
+
+msgid "can't delete expression"
+msgstr ""
+
+msgid "can't do binary op between '%q' and '%q'"
+msgstr ""
+
+msgid "can't do truncated division of a complex number"
+msgstr ""
+
+msgid "can't get AP config"
+msgstr ""
+
+msgid "can't get STA config"
+msgstr ""
+
+msgid "can't have multiple **x"
+msgstr ""
+
+msgid "can't have multiple *x"
+msgstr ""
+
+msgid "can't implicitly convert '%q' to 'bool'"
+msgstr ""
+
+msgid "can't load from '%q'"
+msgstr ""
+
+msgid "can't load with '%q' index"
+msgstr ""
+
+msgid "can't pend throw to just-started generator"
+msgstr ""
+
+msgid "can't send non-None value to a just-started generator"
+msgstr ""
+
+msgid "can't set AP config"
+msgstr ""
+
+msgid "can't set STA config"
+msgstr ""
+
+msgid "can't set attribute"
+msgstr ""
+
+msgid "can't store '%q'"
+msgstr ""
+
+msgid "can't store to '%q'"
+msgstr ""
+
+msgid "can't store with '%q' index"
+msgstr ""
+
+msgid ""
+"can't switch from automatic field numbering to manual field specification"
+msgstr ""
+
+msgid ""
+"can't switch from manual field specification to automatic field numbering"
+msgstr ""
+
+msgid "cannot create '%q' instances"
+msgstr ""
+
+msgid "cannot create instance"
+msgstr ""
+
+msgid "cannot import name %q"
+msgstr ""
+
+msgid "cannot perform relative import"
+msgstr ""
+
+msgid "casting"
+msgstr ""
+
+msgid "characteristics includes an object that is not a Characteristic"
+msgstr ""
+
 msgid "chars buffer too small"
 msgstr ""
 
-#: shared-bindings/analogio/AnalogOut.c:118
-msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+msgid "chr() arg not in range(0x110000)"
 msgstr ""
 
-#: shared-bindings/audiobusio/I2SOut.c:222
-#: shared-bindings/audioio/AudioOut.c:223
-msgid "Not playing"
+msgid "chr() arg not in range(256)"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:124
-msgid "Bit depth must be multiple of 8."
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:128
-msgid "Oversample must be multiple of 8."
+msgid "color buffer must be a buffer or int"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:136
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
+msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:193
-msgid "destination_length must be an int >= 0"
+msgid "color must be between 0x000000 and 0xffffff"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:199
-msgid "Cannot record to a file"
+msgid "color should be an int"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:202
-msgid "Destination capacity is smaller than destination_length."
+msgid "complex division by zero"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:206
-msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
+msgid "complex values not supported"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c:208
+msgid "compression header"
+msgstr ""
+
+msgid "constant must be an integer"
+msgstr ""
+
+msgid "conversion to object"
+msgstr ""
+
+msgid "decimal numbers not supported"
+msgstr ""
+
+msgid "default 'except' must be last"
+msgstr ""
+
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c:91
-msgid "Invalid voice count"
+msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c:96
-msgid "Invalid channel count"
+msgid "destination_length must be an int >= 0"
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c:100
-msgid "Sample rate must be positive"
+msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c:104
-msgid "bits_per_sample must be 8 or 16"
+msgid "division by zero"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c:95
+msgid "either pos or kw args are allowed"
+msgstr ""
+
+msgid "empty"
+msgstr ""
+
+msgid "empty heap"
+msgstr ""
+
+msgid "empty separator"
+msgstr ""
+
+msgid "empty sequence"
+msgstr ""
+
+msgid "end of format while looking for conversion specifier"
+msgstr ""
+
+msgid "end_x should be an int"
+msgstr ""
+
+#, c-format
+msgid "error = 0x%08lX"
+msgstr ""
+
+msgid "exceptions must derive from BaseException"
+msgstr ""
+
+msgid "expected ':' after format specifier"
+msgstr ""
+
+msgid "expected a DigitalInOut"
+msgstr ""
+
+msgid "expected tuple/list"
+msgstr ""
+
+msgid "expecting a dict for keyword args"
+msgstr ""
+
+msgid "expecting a pin"
+msgstr ""
+
+msgid "expecting an assembler instruction"
+msgstr ""
+
+msgid "expecting just a value for set"
+msgstr ""
+
+msgid "expecting key:value for dict"
+msgstr ""
+
+msgid "extra keyword arguments given"
+msgstr ""
+
+msgid "extra positional arguments given"
+msgstr ""
+
+msgid "ffi_prep_closure_loc"
+msgstr ""
+
+msgid "file must be a file opened in byte mode"
+msgstr ""
+
+msgid "filesystem must provide mount method"
+msgstr ""
+
+msgid "first argument to super() must be type"
+msgstr ""
+
+msgid "firstbit must be MSB"
+msgstr ""
+
+msgid "flash location must be below 1MByte"
+msgstr ""
+
+msgid "float too big"
+msgstr ""
+
+msgid "font must be 2048 bytes long"
+msgstr ""
+
+msgid "format requires a dict"
+msgstr ""
+
+msgid "frequency can only be either 80Mhz or 160MHz"
+msgstr ""
+
+msgid "full"
+msgstr ""
+
+msgid "function does not take keyword arguments"
+msgstr ""
+
+#, c-format
+msgid "function expected at most %d arguments, got %d"
+msgstr ""
+
+msgid "function got multiple values for argument '%q'"
+msgstr ""
+
+#, c-format
+msgid "function missing %d required positional arguments"
+msgstr ""
+
+msgid "function missing keyword-only argument"
+msgstr ""
+
+msgid "function missing required keyword argument '%q'"
+msgstr ""
+
+#, c-format
+msgid "function missing required positional argument #%d"
+msgstr ""
+
+#, c-format
+msgid "function takes %d positional arguments but %d were given"
+msgstr ""
+
+msgid "function takes exactly 9 arguments"
+msgstr ""
+
+msgid "generator already executing"
+msgstr ""
+
+msgid "generator ignored GeneratorExit"
+msgstr ""
+
+msgid "graphic must be 2048 bytes long"
+msgstr ""
+
+msgid "heap must be a list"
+msgstr ""
+
+msgid "identifier redefined as global"
+msgstr ""
+
+msgid "identifier redefined as nonlocal"
+msgstr ""
+
+msgid "impossible baudrate"
+msgstr ""
+
+msgid "incomplete format"
+msgstr ""
+
+msgid "incomplete format key"
+msgstr ""
+
+msgid "incorrect padding"
+msgstr ""
+
+msgid "index out of range"
+msgstr ""
+
+msgid "indices must be integers"
+msgstr ""
+
+msgid "inline assembler must be a function"
+msgstr ""
+
+msgid "int() arg 2 must be >= 2 and <= 36"
+msgstr ""
+
+msgid "integer required"
+msgstr ""
+
+msgid "interval not in range 0.0020 to 10.24"
+msgstr ""
+
+msgid "invalid I2C peripheral"
+msgstr ""
+
+msgid "invalid SPI peripheral"
+msgstr ""
+
+msgid "invalid alarm"
+msgstr ""
+
+msgid "invalid arguments"
+msgstr ""
+
+msgid "invalid buffer length"
+msgstr ""
+
+msgid "invalid cert"
+msgstr ""
+
+msgid "invalid data bits"
+msgstr ""
+
+msgid "invalid dupterm index"
+msgstr ""
+
+msgid "invalid format"
+msgstr ""
+
+msgid "invalid format specifier"
+msgstr ""
+
+msgid "invalid key"
+msgstr ""
+
+msgid "invalid micropython decorator"
+msgstr ""
+
+msgid "invalid pin"
+msgstr ""
+
+msgid "invalid step"
+msgstr ""
+
+msgid "invalid stop bits"
+msgstr ""
+
+msgid "invalid syntax"
+msgstr ""
+
+msgid "invalid syntax for integer"
+msgstr ""
+
+#, c-format
+msgid "invalid syntax for integer with base %d"
+msgstr ""
+
+msgid "invalid syntax for number"
+msgstr ""
+
+msgid "issubclass() arg 1 must be a class"
+msgstr ""
+
+msgid "issubclass() arg 2 must be a class or a tuple of classes"
+msgstr ""
+
+msgid "join expects a list of str/bytes objects consistent with self object"
+msgstr ""
+
+msgid "keyword argument(s) not yet implemented - use normal args instead"
+msgstr ""
+
+msgid "keywords must be strings"
+msgstr ""
+
+msgid "label '%q' not defined"
+msgstr ""
+
+msgid "label redefined"
+msgstr ""
+
+msgid "len must be multiple of 4"
+msgstr ""
+
+msgid "length argument not allowed for this type"
+msgstr ""
+
+msgid "lhs and rhs should be compatible"
+msgstr ""
+
+msgid "local '%q' has type '%q' but source is '%q'"
+msgstr ""
+
+msgid "local '%q' used before type known"
+msgstr ""
+
+msgid "local variable referenced before assignment"
+msgstr ""
+
+msgid "long int not supported in this build"
+msgstr ""
+
+msgid "map buffer too small"
+msgstr ""
+
+msgid "math domain error"
+msgstr ""
+
+msgid "maximum recursion depth exceeded"
+msgstr ""
+
+#, c-format
+msgid "memory allocation failed, allocating %u bytes"
+msgstr ""
+
+#, c-format
+msgid "memory allocation failed, allocating %u bytes for native code"
+msgstr ""
+
+msgid "memory allocation failed, heap is locked"
+msgstr ""
+
+msgid "module not found"
+msgstr ""
+
+msgid "multiple *x in assignment"
+msgstr ""
+
+msgid "multiple bases have instance lay-out conflict"
+msgstr ""
+
+msgid "multiple inheritance not supported"
+msgstr ""
+
+msgid "must raise an object"
+msgstr ""
+
+msgid "must specify all of sck/mosi/miso"
+msgstr ""
+
+msgid "must use keyword argument for key function"
+msgstr ""
+
+msgid "name '%q' is not defined"
+msgstr ""
+
+msgid "name must be a string"
+msgstr ""
+
+msgid "name not defined"
+msgstr ""
+
+msgid "name reused for argument"
+msgstr ""
+
+msgid "native yield"
+msgstr ""
+
+#, c-format
+msgid "need more than %d values to unpack"
+msgstr ""
+
+msgid "negative power with no float support"
+msgstr ""
+
+msgid "negative shift count"
+msgstr ""
+
+msgid "no active exception to reraise"
+msgstr ""
+
+msgid "no available NIC"
+msgstr ""
+
+msgid "no binding for nonlocal found"
+msgstr ""
+
+msgid "no module named '%q'"
+msgstr ""
+
+msgid "no such attribute"
+msgstr ""
+
+msgid "non-default argument follows default argument"
+msgstr ""
+
+msgid "non-hex digit found"
+msgstr ""
+
+msgid "non-keyword arg after */**"
+msgstr ""
+
+msgid "non-keyword arg after keyword arg"
+msgstr ""
+
+msgid "not a 128-bit UUID"
+msgstr ""
+
+#, c-format
+msgid "not a valid ADC Channel: %d"
+msgstr ""
+
+msgid "not all arguments converted during string formatting"
+msgstr ""
+
+msgid "not enough arguments for format string"
+msgstr ""
+
+#, c-format
+msgid "object '%s' is not a tuple or list"
+msgstr ""
+
+msgid "object does not support item assignment"
+msgstr ""
+
+msgid "object does not support item deletion"
+msgstr ""
+
+msgid "object has no len"
+msgstr ""
+
+msgid "object is not subscriptable"
+msgstr ""
+
+msgid "object not an iterator"
+msgstr ""
+
+msgid "object not callable"
+msgstr ""
+
+msgid "object not in sequence"
+msgstr ""
+
+msgid "object not iterable"
+msgstr ""
+
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr ""
+
+msgid "object with buffer protocol required"
+msgstr ""
+
+msgid "odd-length string"
+msgstr ""
+
+msgid "offset out of bounds"
+msgstr ""
+
+msgid "only slices with step=1 (aka None) are supported"
+msgstr ""
+
+msgid "ord expects a character"
+msgstr ""
+
+#, c-format
+msgid "ord() expected a character, but string of length %d found"
+msgstr ""
+
+msgid "overflow converting long int to machine word"
+msgstr ""
+
+msgid "palette must be 32 bytes long"
+msgstr ""
+
+msgid "palette_index should be an int"
+msgstr ""
+
+msgid "parameter annotation must be an identifier"
+msgstr ""
+
+msgid "parameters must be registers in sequence a2 to a5"
+msgstr ""
+
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr ""
+
+msgid "pin does not have IRQ capabilities"
+msgstr ""
+
+msgid "pixel coordinates out of bounds"
+msgstr ""
+
+msgid "pixel value requires too many bits"
+msgstr ""
+
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+msgstr ""
+
+msgid "pop from an empty PulseIn"
+msgstr ""
+
+msgid "pop from an empty set"
+msgstr ""
+
+msgid "pop from empty list"
+msgstr ""
+
+msgid "popitem(): dictionary is empty"
+msgstr ""
+
+msgid "position must be 2-tuple"
+msgstr ""
+
+msgid "pow() 3rd argument cannot be 0"
+msgstr ""
+
+msgid "pow() with 3 arguments requires integers"
+msgstr ""
+
+msgid "queue overflow"
+msgstr ""
+
+msgid "rawbuf is not the same size as buf"
+msgstr ""
+
+msgid "readonly attribute"
+msgstr ""
+
+msgid "relative import"
+msgstr ""
+
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr ""
+
+msgid "return annotation must be an identifier"
+msgstr ""
+
+msgid "return expected '%q' but got '%q'"
+msgstr ""
+
+msgid "row must be packed and word aligned"
+msgstr ""
+
+msgid "rsplit(None,n)"
+msgstr ""
+
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c:101
-msgid "buffer must be a bytes-like object"
+msgid "sampling rate out of range"
 msgstr ""
 
-#: shared-bindings/audioio/WaveFile.c:78
-#: shared-bindings/displayio/OnDiskBitmap.c:85
-msgid "file must be a file opened in byte mode"
+msgid "scan failed"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c:109 shared-bindings/bitbangio/SPI.c:119
-#: shared-bindings/busio/SPI.c:130
-msgid "Function requires lock"
+msgid "schedule stack full"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c:193 shared-bindings/busio/I2C.c:207
-msgid "Buffer must be at least length 1"
+msgid "script compilation not supported"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c:149 shared-bindings/busio/SPI.c:172
-msgid "Invalid polarity"
-msgstr ""
-
-#: shared-bindings/bitbangio/SPI.c:153 shared-bindings/busio/SPI.c:176
-msgid "Invalid phase"
-msgstr ""
-
-#: shared-bindings/bitbangio/SPI.c:157 shared-bindings/busio/SPI.c:180
-msgid "Invalid number of bits"
-msgstr ""
-
-#: shared-bindings/bitbangio/SPI.c:282 shared-bindings/busio/SPI.c:345
-msgid "buffer slices must be of equal length"
-msgstr ""
-
-#: shared-bindings/bleio/Address.c:115
-#, c-format
-msgid "Address is not %d bytes long or is in wrong format"
-msgstr ""
-
-#: shared-bindings/bleio/Address.c:122
-#, c-format
-msgid "Address must be %d bytes long"
-msgstr ""
-
-#: shared-bindings/bleio/Characteristic.c:74
-#: shared-bindings/bleio/Descriptor.c:86 shared-bindings/bleio/Service.c:66
-msgid "Expected a UUID"
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c:39
-msgid "Not connected"
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c:74
-msgid "timeout must be >= 0.0"
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c:79
-#: shared-bindings/displayio/Group.c:63 shared-bindings/displayio/Group.c:68
-#: shared-bindings/displayio/Group.c:100 shared-bindings/displayio/Shape.c:69
-#: shared-bindings/displayio/Shape.c:73
-msgid "%q must be >= 1"
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c:83
-msgid "Expected a Characteristic"
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c:138
-msgid "CharacteristicBuffer writing not provided"
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c:147
-msgid "Not connected."
-msgstr ""
-
-#: shared-bindings/bleio/Device.c:213
-msgid "Can't add services in Central mode"
-msgstr ""
-
-#: shared-bindings/bleio/Device.c:229
-msgid "Can't connect in Peripheral mode"
-msgstr ""
-
-#: shared-bindings/bleio/Device.c:259
-msgid "Can't change the name in Central mode"
-msgstr ""
-
-#: shared-bindings/bleio/Device.c:280 shared-bindings/bleio/Device.c:316
-msgid "Can't advertise in Central mode"
-msgstr ""
-
-#: shared-bindings/bleio/Peripheral.c:106
 msgid "services includes an object that is not a Service"
 msgstr ""
 
-#: shared-bindings/bleio/Peripheral.c:119
-msgid "name must be a string"
+msgid "sign not allowed in string format specifier"
 msgstr ""
 
-#: shared-bindings/bleio/Service.c:84
-msgid "characteristics includes an object that is not a Characteristic"
+msgid "sign not allowed with integer format specifier 'c'"
 msgstr ""
 
-#: shared-bindings/bleio/Service.c:90
-msgid "Characteristic UUID doesn't match Service UUID"
+msgid "single '}' encountered in format string"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c:66
-msgid "UUID integer value not in range 0 to 0xffff"
-msgstr ""
-
-#: shared-bindings/bleio/UUID.c:91
-msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
-
-#: shared-bindings/bleio/UUID.c:103
-msgid "UUID value is not str, int or byte buffer"
-msgstr ""
-
-#: shared-bindings/bleio/UUID.c:107
-msgid "Byte buffer must be 16 bytes."
-msgstr ""
-
-#: shared-bindings/bleio/UUID.c:151
-msgid "not a 128-bit UUID"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c:117
-msgid "Function requires lock."
-msgstr ""
-
-#: shared-bindings/busio/UART.c:103
-msgid "bits must be 7, 8 or 9"
-msgstr ""
-
-#: shared-bindings/busio/UART.c:115
-msgid "stop must be 1 or 2"
-msgstr ""
-
-#: shared-bindings/busio/UART.c:120
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr ""
-
-#: shared-bindings/digitalio/DigitalInOut.c:211
-msgid "Invalid direction."
-msgstr ""
-
-#: shared-bindings/digitalio/DigitalInOut.c:240
-msgid "Cannot set value when direction is input."
-msgstr ""
-
-#: shared-bindings/digitalio/DigitalInOut.c:266
-#: shared-bindings/digitalio/DigitalInOut.c:281
-msgid "Drive mode not used when direction is input."
-msgstr ""
-
-#: shared-bindings/digitalio/DigitalInOut.c:314
-#: shared-bindings/digitalio/DigitalInOut.c:331
-msgid "Pull not used when direction is output."
-msgstr ""
-
-#: shared-bindings/digitalio/DigitalInOut.c:340
-msgid "Unsupported pull value."
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c:131 shared-bindings/pulseio/PulseIn.c:272
-msgid "Cannot delete values"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c:139 shared-bindings/displayio/Group.c:253
-#: shared-bindings/pulseio/PulseIn.c:278
-msgid "Slices not supported"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c:156
-msgid "pixel coordinates out of bounds"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c:166
-msgid "pixel value requires too many bits"
-msgstr ""
-
-#: shared-bindings/displayio/BuiltinFont.c:93
-msgid "%q should be an int"
-msgstr ""
-
-#: shared-bindings/displayio/ColorConverter.c:70
-msgid "color should be an int"
-msgstr ""
-
-#: shared-bindings/displayio/Display.c:129
-msgid "Display rotation must be in 90 degree increments"
-msgstr ""
-
-#: shared-bindings/displayio/Display.c:141
-msgid "Too many displays"
-msgstr ""
-
-#: shared-bindings/displayio/Display.c:165
-msgid "Must be a Group subclass."
-msgstr ""
-
-#: shared-bindings/displayio/Display.c:207
-#: shared-bindings/displayio/Display.c:217
-msgid "Brightness not adjustable"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:91
-#: shared-bindings/displayio/ParallelBus.c:96
-msgid "Too many display busses"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c:107
-#: shared-bindings/displayio/ParallelBus.c:111
-msgid "Command must be an int between 0 and 255"
-msgstr ""
-
-#: shared-bindings/displayio/Palette.c:91
-msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-
-#: shared-bindings/displayio/Palette.c:97
-msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
-
-#: shared-bindings/displayio/Palette.c:101
-msgid "color must be between 0x000000 and 0xffffff"
-msgstr ""
-
-#: shared-bindings/displayio/Palette.c:105
-msgid "color buffer must be a buffer or int"
-msgstr ""
-
-#: shared-bindings/displayio/Palette.c:118
-#: shared-bindings/displayio/Palette.c:132
-msgid "palette_index should be an int"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c:97
-msgid "y should be an int"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c:101
-msgid "start_x should be an int"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c:105
-msgid "end_x should be an int"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c:49
-msgid "position must be 2-tuple"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c:115
-msgid "unsupported bitmap type"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c:126
-msgid "Tile width must exactly divide bitmap width"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c:129
-msgid "Tile height must exactly divide bitmap height"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c:196
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-
-#: shared-bindings/gamepad/GamePad.c:100
-msgid "too many arguments"
-msgstr ""
-
-#: shared-bindings/gamepad/GamePad.c:104
-msgid "expected a DigitalInOut"
-msgstr ""
-
-#: shared-bindings/i2cslave/I2CSlave.c:95
-msgid "can't convert address to int"
-msgstr ""
-
-#: shared-bindings/i2cslave/I2CSlave.c:98
-msgid "address out of bounds"
-msgstr ""
-
-#: shared-bindings/i2cslave/I2CSlave.c:104
-msgid "addresses is empty"
-msgstr ""
-
-#: shared-bindings/microcontroller/Pin.c:89
-#: shared-bindings/neopixel_write/__init__.c:67
-#: shared-bindings/pulseio/PulseOut.c:76
-#: shared-bindings/terminalio/Terminal.c:63
-#: shared-bindings/terminalio/Terminal.c:68
-msgid "Expected a %q"
-msgstr ""
-
-#: shared-bindings/microcontroller/Pin.c:100
-msgid "%q in use"
-msgstr ""
-
-#: shared-bindings/microcontroller/__init__.c:126
-msgid "Invalid run mode."
-msgstr ""
-
-#: shared-bindings/multiterminal/__init__.c:68
-msgid "Stream missing readinto() or write() method."
-msgstr ""
-
-#: shared-bindings/nvm/ByteArray.c:99
-msgid "Slice and value different lengths."
-msgstr ""
-
-#: shared-bindings/nvm/ByteArray.c:104
-msgid "Array values should be single bytes."
-msgstr ""
-
-#: shared-bindings/nvm/ByteArray.c:111 shared-bindings/nvm/ByteArray.c:141
-msgid "Unable to write to nvm."
-msgstr ""
-
-#: shared-bindings/nvm/ByteArray.c:137
-msgid "Bytes must be between 0 and 255."
-msgstr ""
-
-#: shared-bindings/os/__init__.c:200
-msgid "No hardware random available"
-msgstr ""
-
-#: shared-bindings/pulseio/PWMOut.c:117
-msgid "All timers for this pin are in use"
-msgstr ""
-
-#: shared-bindings/pulseio/PWMOut.c:171
-msgid ""
-"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr ""
-
-#: shared-bindings/pulseio/PWMOut.c:202
-msgid ""
-"PWM frequency not writable when variable_frequency is False on construction."
-msgstr ""
-
-#: shared-bindings/pulseio/PulseIn.c:285
-msgid "Read-only"
-msgstr ""
-
-#: shared-bindings/pulseio/PulseOut.c:135
-msgid "Array must contain halfwords (type 'H')"
-msgstr ""
-
-#: shared-bindings/random/__init__.c:92 shared-bindings/random/__init__.c:100
-msgid "stop not reachable from start"
-msgstr ""
-
-#: shared-bindings/random/__init__.c:111
-msgid "step must be non-zero"
-msgstr ""
-
-#: shared-bindings/random/__init__.c:114
-msgid "invalid step"
-msgstr ""
-
-#: shared-bindings/random/__init__.c:146
-msgid "empty sequence"
-msgstr ""
-
-#: shared-bindings/rtc/RTC.c:40 shared-bindings/rtc/RTC.c:44
-#: shared-bindings/time/__init__.c:190
-msgid "RTC is not supported on this board"
-msgstr ""
-
-#: shared-bindings/rtc/RTC.c:52
-msgid "RTC calibration is not supported on this board"
-msgstr ""
-
-#: shared-bindings/socket/__init__.c:516 shared-module/network/__init__.c:81
-msgid "no available NIC"
-msgstr ""
-
-#: shared-bindings/storage/__init__.c:77
-msgid "filesystem must provide mount method"
-msgstr ""
-
-#: shared-bindings/supervisor/__init__.c:93
-msgid "Brightness must be between 0 and 255"
-msgstr ""
-
-#: shared-bindings/supervisor/__init__.c:119
-msgid "Stack size must be at least 256"
-msgstr ""
-
-#: shared-bindings/time/__init__.c:78
 msgid "sleep length must be non-negative"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:88
-msgid "time.struct_time() takes exactly 1 argument"
+msgid "slice step cannot be zero"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:91
-msgid "time.struct_time() takes a 9-sequence"
+msgid "small int overflow"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:169 shared-bindings/time/__init__.c:263
-msgid "Tuple or struct_time argument required"
+msgid "soft reboot\n"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:174 shared-bindings/time/__init__.c:268
-msgid "function takes exactly 9 arguments"
+msgid "start/end indices"
 msgstr ""
 
-#: shared-bindings/time/__init__.c:239 shared-bindings/time/__init__.c:272
-msgid "timestamp out of range for platform time_t"
+msgid "start_x should be an int"
 msgstr ""
 
-#: shared-bindings/touchio/TouchIn.c:173
+msgid "step must be non-zero"
+msgstr ""
+
+msgid "stop must be 1 or 2"
+msgstr ""
+
+msgid "stop not reachable from start"
+msgstr ""
+
+msgid "stream operation not supported"
+msgstr ""
+
+msgid "string index out of range"
+msgstr ""
+
+#, c-format
+msgid "string indices must be integers, not %s"
+msgstr ""
+
+msgid "string not supported; use bytes or bytearray"
+msgstr ""
+
+msgid "struct: cannot index"
+msgstr ""
+
+msgid "struct: index out of range"
+msgstr ""
+
+msgid "struct: no fields"
+msgstr ""
+
+msgid "substring not found"
+msgstr ""
+
+msgid "super() can't find self"
+msgstr ""
+
+msgid "syntax error in JSON"
+msgstr ""
+
+msgid "syntax error in uctypes descriptor"
+msgstr ""
+
 msgid "threshold must be in the range 0-65536"
 msgstr ""
 
-#: shared-bindings/util.c:38
-msgid ""
-"Object has been deinitialized and can no longer be used. Create a new object."
+msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-module/_pixelbuf/PixelBuf.c:69
-#, c-format
-msgid "Expected tuple of length %d, got %d"
+msgid "time.struct_time() takes exactly 1 argument"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c:47 shared-module/audioio/WaveFile.c:117
-msgid "Couldn't allocate first buffer"
+msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c:53 shared-module/audioio/WaveFile.c:123
-msgid "Couldn't allocate second buffer"
+msgid "timeout must be >= 0.0"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c:82
-msgid "Voice index too high"
+msgid "timestamp out of range for platform time_t"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c:85
-msgid "The sample's sample rate does not match the mixer's"
+msgid "too many arguments"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c:88
-msgid "The sample's channel count does not match the mixer's"
-msgstr ""
-
-#: shared-module/audioio/Mixer.c:91
-msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr ""
-
-#: shared-module/audioio/Mixer.c:100
-msgid "The sample's signedness does not match the mixer's"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:61
-msgid "Invalid wave file"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:69
-msgid "Invalid format chunk size"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:83
-msgid "Unsupported format"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:99
-msgid "Data chunk must follow fmt chunk"
-msgstr ""
-
-#: shared-module/audioio/WaveFile.c:107
-msgid "Invalid file"
-msgstr ""
-
-#: shared-module/bitbangio/I2C.c:58
-msgid "Clock stretch too long"
-msgstr ""
-
-#: shared-module/bitbangio/SPI.c:44
-msgid "Clock pin init failed."
-msgstr ""
-
-#: shared-module/bitbangio/SPI.c:50
-msgid "MOSI pin init failed."
-msgstr ""
-
-#: shared-module/bitbangio/SPI.c:61
-msgid "MISO pin init failed."
-msgstr ""
-
-#: shared-module/bitbangio/SPI.c:121
-msgid "Cannot write without MOSI pin."
-msgstr ""
-
-#: shared-module/bitbangio/SPI.c:176
-msgid "Cannot read without MISO pin."
-msgstr ""
-
-#: shared-module/bitbangio/SPI.c:240
-msgid "Cannot transfer without MOSI and MISO pins."
-msgstr ""
-
-#: shared-module/displayio/Bitmap.c:49
-msgid "Only bit maps of 8 bit color or less are supported"
-msgstr ""
-
-#: shared-module/displayio/Bitmap.c:81
-msgid "row must be packed and word aligned"
-msgstr ""
-
-#: shared-module/displayio/Bitmap.c:118
-msgid "Read-only object"
-msgstr ""
-
-#: shared-module/displayio/Display.c:67
-msgid "Unsupported display bus type"
-msgstr ""
-
-#: shared-module/displayio/Group.c:66
-msgid "Group full"
-msgstr ""
-
-#: shared-module/displayio/Group.c:73 shared-module/displayio/Group.c:112
-msgid "Layer must be a Group or TileGrid subclass."
-msgstr ""
-
-#: shared-module/displayio/OnDiskBitmap.c:49
-msgid "Invalid BMP file"
-msgstr ""
-
-#: shared-module/displayio/OnDiskBitmap.c:59
-#, c-format
-msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr ""
-
-#: shared-module/displayio/OnDiskBitmap.c:64
-#, c-format
-msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr ""
-
-#: shared-module/displayio/Shape.c:60
-msgid "y value out of bounds"
-msgstr ""
-
-#: shared-module/displayio/Shape.c:63
-msgid "x value out of bounds"
-msgstr ""
-
-#: shared-module/displayio/Shape.c:67
-#, c-format
-msgid "Maximum x value when mirrored is %d"
-msgstr ""
-
-#: shared-module/storage/__init__.c:155
-msgid "Cannot remount '/' when USB is active."
-msgstr ""
-
-#: shared-module/struct/__init__.c:39
-msgid "'S' and 'O' are not supported format types"
-msgstr ""
-
-#: shared-module/struct/__init__.c:136
 msgid "too many arguments provided with the given format"
 msgstr ""
 
-#: shared-module/struct/__init__.c:179
-msgid "buffer size must match format"
-msgstr ""
-
-#: shared-module/usb_hid/Device.c:45
 #, c-format
-msgid "Buffer incorrect size. Should be %d bytes."
+msgid "too many values to unpack (expected %d)"
 msgstr ""
 
-#: shared-module/usb_hid/Device.c:53
-msgid "USB Busy"
+msgid "tuple index out of range"
 msgstr ""
 
-#: shared-module/usb_hid/Device.c:59
-msgid "USB Error"
+msgid "tuple/list has wrong length"
 msgstr ""
 
-#: supervisor/shared/board_busses.c:62
-msgid "No default I2C bus"
+msgid "tuple/list required on RHS"
 msgstr ""
 
-#: supervisor/shared/board_busses.c:91
-msgid "No default SPI bus"
+msgid "tx and rx cannot both be None"
 msgstr ""
 
-#: supervisor/shared/board_busses.c:118
-msgid "No default UART bus"
+msgid "type '%q' is not an acceptable base type"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:97
-msgid "You requested starting safe mode by "
+msgid "type is not an acceptable base type"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:100
-msgid "To exit, please reset the board without "
+msgid "type object '%q' has no attribute '%q'"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:107
-msgid ""
-"You are running in safe mode which means something unanticipated happened.\n"
+msgid "type takes 1 or 3 arguments"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:109
-msgid ""
-"Looks like our core CircuitPython code crashed hard. Whoops!\n"
-"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
-" with the contents of your CIRCUITPY drive and this message:\n"
+msgid "ulonglong too large"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:111
-msgid "Crash into the HardFault_Handler.\n"
+msgid "unary op %q not implemented"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:113
-msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgid "unexpected indent"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:115
-msgid "MicroPython fatal error.\n"
+msgid "unexpected keyword argument"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:118
-msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
-"enough power for the whole circuit and press reset (after ejecting "
-"CIRCUITPY).\n"
+msgid "unexpected keyword argument '%q'"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:120
-msgid ""
-"The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase stack size limits and press reset (after ejecting "
-"CIRCUITPY).\n"
-"If you didn't change the stack, then file an issue here with the contents of "
-"your CIRCUITPY drive:\n"
+msgid "unicode name escapes"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c:123
-msgid ""
-"The reset button was pressed while booting CircuitPython. Press again to "
-"exit safe mode.\n"
+msgid "unindent does not match any outer indentation level"
+msgstr ""
+
+msgid "unknown config param"
+msgstr ""
+
+#, c-format
+msgid "unknown conversion specifier %c"
+msgstr ""
+
+#, c-format
+msgid "unknown format code '%c' for object of type '%s'"
+msgstr ""
+
+#, c-format
+msgid "unknown format code '%c' for object of type 'float'"
+msgstr ""
+
+#, c-format
+msgid "unknown format code '%c' for object of type 'str'"
+msgstr ""
+
+msgid "unknown status param"
+msgstr ""
+
+msgid "unknown type"
+msgstr ""
+
+msgid "unknown type '%q'"
+msgstr ""
+
+msgid "unmatched '{' in format"
+msgstr ""
+
+msgid "unreadable attribute"
+msgstr ""
+
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr ""
+
+#, c-format
+msgid "unsupported Xtensa instruction '%s' with %d arguments"
+msgstr ""
+
+msgid "unsupported bitmap type"
+msgstr ""
+
+#, c-format
+msgid "unsupported format character '%c' (0x%x) at index %d"
+msgstr ""
+
+msgid "unsupported type for %q: '%s'"
+msgstr ""
+
+msgid "unsupported type for operator"
+msgstr ""
+
+msgid "unsupported types for %q: '%s', '%s'"
+msgstr ""
+
+msgid "wifi_set_ip_info() failed"
+msgstr ""
+
+msgid "write_args must be a list, tuple, or None"
+msgstr ""
+
+msgid "wrong number of arguments"
+msgstr ""
+
+msgid "wrong number of values to unpack"
+msgstr ""
+
+msgid "x value out of bounds"
+msgstr ""
+
+msgid "y should be an int"
+msgstr ""
+
+msgid "y value out of bounds"
+msgstr ""
+
+msgid "zero step"
 msgstr ""
