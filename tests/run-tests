@@ -121,7 +121,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
-                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', test_file])
+                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
                 cmdlist.extend(['-m', 'mpytest'])
             else:
                 cmdlist.append(test_file)
