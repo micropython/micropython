@@ -43,6 +43,9 @@
 #include "shared-module/bleio/Device.h"
 #include "shared-module/bleio/ScanEntry.h"
 
+// Work-in-progress: orphaned for now.
+//| :orphan:
+//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`Device` -- BLE device

@@ -37,6 +37,9 @@
 #include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/ScanEntry.h"
 
+// Work-in-progress: orphaned for now.
+//| :orphan:
+//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`ScanEntry` -- BLE scan response entry
