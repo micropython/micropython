@@ -16,3 +16,6 @@ CHIP_FAMILY = samd21
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+
+# To keep the build small
+CFLAGS_INLINE_LIMIT = 50
