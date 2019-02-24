@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-22 15:26-0800\n"
+"POT-Creation-Date: 2019-02-23 19:57-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -394,7 +394,8 @@ msgid "Display rotation must be in 90 degree increments"
 msgstr "Die Rotation der Anzeige muss in 90-Grad-Schritten erfolgen"
 
 msgid "Don't know how to pass object to native function"
-msgstr "Ich weiß nicht, wie man das Objekt an die native Funktion übergeben kann"
+msgstr ""
+"Ich weiß nicht, wie man das Objekt an die native Funktion übergeben kann"
 
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode wird nicht verwendet, wenn die Richtung input ist."
@@ -664,20 +665,25 @@ msgid "Maximum x value when mirrored is %d"
 msgstr "Maximaler x-Wert beim Spiegeln ist %d"
 
 msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
-msgstr "MicroPython-NLR-Sprung ist fehlgeschlagen. Wahrscheinlich Speicherbeschädigung.\n"
+msgstr ""
+"MicroPython-NLR-Sprung ist fehlgeschlagen. Wahrscheinlich "
+"Speicherbeschädigung.\n"
 
 msgid "MicroPython fatal error.\n"
 msgstr "Schwerwiegender MicroPython-Fehler\n"
 
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr "Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
+msgstr ""
+"Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
 
 msgid "Minimum PWM frequency is 1hz."
 msgstr "Minimale PWM Frequenz ist %dHz"
 
 #, c-format
 msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr "Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf %dHz gesetzt."
+msgstr ""
+"Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf %dHz "
+"gesetzt."
 
 msgid "Must be a Group subclass."
 msgstr ""
@@ -742,6 +748,11 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Eine ungerade Parität wird nicht unterstützt"
 
+#, c-format
+msgid ""
+"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%x G:%x B:%x"
+msgstr ""
+
 msgid "Only 8 or 16 bit mono with "
 msgstr "Nur 8 oder 16 bit mono mit "
 
@@ -750,14 +761,17 @@ msgid "Only Windows format, uncompressed BMP supported %d"
 msgstr "Nur unkomprimiertes Windows-Format (BMP) unterstützt %d"
 
 msgid "Only bit maps of 8 bit color or less are supported"
-msgstr "Es werden nur Bitmaps mit einer Farbtiefe von 8 Bit oder weniger unterstützt"
+msgstr ""
+"Es werden nur Bitmaps mit einer Farbtiefe von 8 Bit oder weniger unterstützt"
 
 msgid "Only slices with step=1 (aka None) are supported"
 msgstr ""
 
 #, c-format
-msgid "Only true color (24 bpp or higher) BMP supported %x"
-msgstr "Es werden nur true color (24 bpp oder höher) BMP unterstützt %x"
+msgid ""
+"Only true color (24 bpp or higher), 16bpp 565 and 555, and 8bpp grayscale "
+"BMP supported %d"
+msgstr ""
 
 msgid "Only tx supported on UART1 (GPIO2)."
 msgstr "UART1 (GPIO2) unterstützt nur tx"
@@ -767,13 +781,11 @@ msgstr "Oversample muss ein Vielfaches von 8 sein."
 
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr ""
-"PWM duty_cycle muss zwischen 0 und 65535 (16 Bit Auflösung) liegen"
+msgstr "PWM duty_cycle muss zwischen 0 und 65535 (16 Bit Auflösung) liegen"
 
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
-msgstr ""
-"Die PWM-Frequenz ist nicht schreibbar wenn variable_Frequenz = False."
+msgstr "Die PWM-Frequenz ist nicht schreibbar wenn variable_Frequenz = False."
 
 #, c-format
 msgid "PWM not supported on pin %d"
@@ -801,7 +813,9 @@ msgid "Plus any modules on the filesystem\n"
 msgstr "und alle Module im Dateisystem \n"
 
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-msgstr "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu laden"
+msgstr ""
+"Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
+"laden"
 
 msgid "Pull not used when direction is output."
 msgstr "Pull wird nicht verwendet, wenn die Richtung output ist."
@@ -984,7 +998,9 @@ msgstr "Unbekannter Typ"
 
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
-msgstr "Nicht übereinstimmende Anzahl von Elementen auf der rechten Seite (erwartet %d, %d erhalten)."
+msgstr ""
+"Nicht übereinstimmende Anzahl von Elementen auf der rechten Seite (erwartet "
+"%d, %d erhalten)."
 
 msgid "Unsupported baudrate"
 msgstr "Baudrate wird nicht unterstützt"
@@ -1002,7 +1018,8 @@ msgid "Unsupported pull value."
 msgstr "Nicht unterstützter Pull-Wert"
 
 msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr "Benutze das esptool um den flash zu löschen und Python erneut hochzuladen"
+msgstr ""
+"Benutze das esptool um den flash zu löschen und Python erneut hochzuladen"
 
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Viper-Funktionen unterstützen derzeit nicht mehr als 4 Argumente"
@@ -1011,7 +1028,8 @@ msgid "Voice index too high"
 msgstr "Voice index zu hoch"
 
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr "WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
+msgstr ""
+"WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
 
 #, c-format
 msgid ""
@@ -1474,7 +1492,8 @@ msgstr "Funktion vermisst benötigtes Argumente ohne Keyword #%d"
 
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr "Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
+msgstr ""
+"Funktion nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 
 msgid "function takes exactly 9 arguments"
 msgstr "Funktion benötigt genau 9 Argumente"
@@ -1592,10 +1611,14 @@ msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr "issubclass() arg 2 muss eine Klasse oder ein Tupel von Klassen sein"
 
 msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr "join erwartet eine Liste von str/bytes-Objekten, die mit dem self-Objekt übereinstimmen"
+msgstr ""
+"join erwartet eine Liste von str/bytes-Objekten, die mit dem self-Objekt "
+"übereinstimmen"
 
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr "Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen normale Argumente"
+msgstr ""
+"Keyword-Argument(e) noch nicht implementiert - verwenden Sie stattdessen "
+"normale Argumente"
 
 msgid "keywords must be strings"
 msgstr "Schlüsselwörter müssen Zeichenfolgen sein"
@@ -1622,7 +1645,9 @@ msgid "local '%q' used before type known"
 msgstr "Lokales '%q' verwendet bevor Typ bekannt"
 
 msgid "local variable referenced before assignment"
-msgstr "Es wurde versucht auf eine Variable zuzugreifen, die es (noch) nicht gibt. Variablen immer zuerst Zuweisen!"
+msgstr ""
+"Es wurde versucht auf eine Variable zuzugreifen, die es (noch) nicht gibt. "
+"Variablen immer zuerst Zuweisen!"
 
 msgid "long int not supported in this build"
 msgstr "long int wird in diesem Build nicht unterstützt"
@@ -1642,7 +1667,8 @@ msgstr "Speicherzuordnung fehlgeschlagen, Zuweisung von %u Bytes"
 
 #, c-format
 msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr "Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
+msgstr ""
+"Speicherallozierung fehlgeschlagen, alloziere %u Bytes für nativen Code"
 
 msgid "memory allocation failed, heap is locked"
 msgstr "Speicherzuweisung fehlgeschlagen, der Heap ist gesperrt"
@@ -1782,7 +1808,9 @@ msgstr "ord erwartet ein Zeichen"
 
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
-msgstr "ord() erwartet ein Zeichen aber es wurde eine Zeichenfolge mit Länge %d gefunden"
+msgstr ""
+"ord() erwartet ein Zeichen aber es wurde eine Zeichenfolge mit Länge %d "
+"gefunden"
 
 msgid "overflow converting long int to machine word"
 msgstr ""
@@ -2029,7 +2057,9 @@ msgid "unicode name escapes"
 msgstr ""
 
 msgid "unindent does not match any outer indentation level"
-msgstr "Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen am Zeilenanfang kontrollieren!"
+msgstr ""
+"Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen am "
+"Zeilenanfang kontrollieren!"
 
 msgid "unknown config param"
 msgstr ""
@@ -2112,15 +2142,3 @@ msgstr "y Wert außerhalb der Grenzen"
 
 msgid "zero step"
 msgstr ""
-
-#, c-format
-msgid ""
-"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%d G:%d B:%d"
-msgstr ""
-
-#, c-format
-msgid ""
-"Only true color (24 bpp or higher), 16bpp 565 , and 8bpp grayscale BMP "
-"supported %x"
-msgstr ""
-

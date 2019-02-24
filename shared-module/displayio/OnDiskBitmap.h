@@ -40,6 +40,11 @@ typedef struct {
     uint16_t height;
     uint16_t data_offset;
     uint16_t stride;
+    uint32_t r_bitmask;
+    uint32_t g_bitmask;
+    uint32_t b_bitmask;
+    bool bitfield_compressed;
+    bool grayscale;
     pyb_file_obj_t* file;
     uint8_t bytes_per_pixel;
 } displayio_ondiskbitmap_t;
