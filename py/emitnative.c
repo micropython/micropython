@@ -2574,6 +2574,7 @@ STATIC void emit_native_return_value(emit_t *emit) {
 }
 
 STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
+    (void)n_args;
     assert(n_args == 1);
     vtype_kind_t vtype_exc;
     emit_pre_pop_reg(emit, &vtype_exc, REG_ARG_1); // arg1 = object to raise

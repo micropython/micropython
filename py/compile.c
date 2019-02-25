@@ -2776,6 +2776,8 @@ STATIC int compile_viper_type_annotation(compiler_t *comp, mp_parse_node_t pn_an
 #endif
 
 STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star) {
+    (void)pn_dbl_star;
+
     // check that **kw is last
     if ((comp->scope_cur->scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
         compile_syntax_error(comp, pn, "invalid syntax");
