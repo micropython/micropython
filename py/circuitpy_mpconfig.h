@@ -281,6 +281,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
+#if CIRCUITPY_FREQUENCYIO
+extern const struct _mp_obj_module_t frequencyio_module;
+#define FREQUENCYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_frequencyio), (mp_obj_t)&frequencyio_module },
+#else
+#define FREQUENCYIO_MODULE
+#endif
+
 #if CIRCUITPY_GAMEPAD
 extern const struct _mp_obj_module_t gamepad_module;
 // Scan gamepad every 32ms
@@ -512,6 +519,7 @@ extern const struct _mp_obj_module_t ustack_module;
       TERMINALIO_MODULE \
     DISPLAYIO_MODULE \
     ERRNO_MODULE \
+    FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     I2CSLAVE_MODULE \
     JSON_MODULE \

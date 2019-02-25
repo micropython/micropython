@@ -126,6 +126,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/% terminalio/%
 endif
+ifeq ($(CIRCUITPY_FREQUENCYIO),1)
+SRC_PATTERNS += frequencyio/%
+endif
 ifeq ($(CIRCUITPY_GAMEPAD),1)
 SRC_PATTERNS += gamepad/%
 endif
@@ -228,6 +231,8 @@ $(filter $(SRC_PATTERNS), \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
+	frequencyio/__init__.c \
+	frequencyio/FrequencyIn.c \
 	i2cslave/I2CSlave.c \
 	i2cslave/__init__.c \
 	microcontroller/Pin.c \
