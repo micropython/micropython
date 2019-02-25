@@ -42,8 +42,8 @@
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs_fat.h"
 
-#if _MAX_SS == _MIN_SS
-#define SECSIZE(fs) (_MIN_SS)
+#if FF_MAX_SS == FF_MIN_SS
+#define SECSIZE(fs) (FF_MIN_SS)
 #else
 #define SECSIZE(fs) ((fs)->ssize)
 #endif
@@ -194,7 +194,7 @@ DRESULT disk_ioctl (
             } else {
                 *((WORD*)buff) = mp_obj_get_int(ret);
             }
-            #if _MAX_SS != _MIN_SS
+            #if FF_MAX_SS != FF_MIN_SS
             // need to store ssize because we use it in disk_read/disk_write
             vfs->fatfs.ssize = *((WORD*)buff);
             #endif
