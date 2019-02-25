@@ -164,10 +164,13 @@ void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed) {
 }
 
 MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
-    buf[0] = 'H';
-    buf[1] = 'J';
-    buf[2] = '0';
-    buf[3] = 0;
-    buf[4] = 0;
-    buf[5] = ((uint8_t*)MP_HAL_UNIQUE_ID_ADDRESS)[0] << 2 | idx;
+    // Generate a random locally administered MAC address (LAA)
+    // The algorithm here to is based on the DFU USB serial number algorithm
+    uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
+    buf[0] = 0x02; // LAA range
+    buf[1] = id[10] + id[2];
+    buf[2] = id[9];
+    buf[3] = id[8] + id[0];
+    buf[4] = id[6];
+    buf[5] = (id[7] & 0xfc) | idx;
 }
