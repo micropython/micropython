@@ -140,7 +140,7 @@ APP_MAIN_SRC_C = \
 	
 APP_LIB_SRC_C = $(addprefix lib/,\
 	oofatfs/ff.c \
-	oofatfs/option/unicode.c \
+	oofatfs/ffunicode.c \
 	libc/string0.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \

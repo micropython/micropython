@@ -127,7 +127,7 @@ LIB_SRC_C = $(addprefix lib/,\
 ifeq ($(MICROPY_FATFS), 1)
 LIB_SRC_C += \
 	lib/oofatfs/ff.c \
-	lib/oofatfs/option/unicode.c
+	lib/oofatfs/ffunicode.c
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\

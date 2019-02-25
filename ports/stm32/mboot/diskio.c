@@ -31,8 +31,8 @@
 
 #if MBOOT_FSLOAD
 
-#if _MAX_SS == _MIN_SS
-#define SECSIZE (_MIN_SS)
+#if FF_MAX_SS == FF_MIN_SS
+#define SECSIZE (FF_MIN_SS)
 #else
 #error Unsupported
 #endif
