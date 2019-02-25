@@ -41,7 +41,11 @@
 // The current version of .mpy files
 #define MPY_VERSION (3)
 
-// The feature flags byte encodes the compile-time config options that
+// Macros to encode/decode flags to/from the feature byte
+#define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
+#define MPY_FEATURE_DECODE_FLAGS(feat) ((feat) & 3)
+
+// The feature flag bits encode the compile-time config options that
 // affect the generate bytecode.
 #define MPY_FEATURE_FLAGS ( \
     ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) << 0) \
@@ -66,6 +70,57 @@ STATIC int mp_small_int_bits(void) {
     }
     return n;
 }
+#endif
+
+#define QSTR_WINDOW_SIZE (32)
+
+typedef struct _qstr_window_t {
+    uint16_t idx; // indexes the head of the window
+    uint16_t window[QSTR_WINDOW_SIZE];
+} qstr_window_t;
+
+// Push a qstr to the head of the window, and the tail qstr is overwritten
+STATIC void qstr_window_push(qstr_window_t *qw, qstr qst) {
+    qw->idx = (qw->idx + 1) % QSTR_WINDOW_SIZE;
+    qw->window[qw->idx] = qst;
+}
+
+// Pull an existing qstr from within the window to the head of the window
+STATIC qstr qstr_window_pull(qstr_window_t *qw, size_t idx) {
+    qstr qst = qw->window[idx];
+    if (idx > qw->idx) {
+        memmove(&qw->window[idx], &qw->window[idx + 1], (QSTR_WINDOW_SIZE - idx - 1) * sizeof(uint16_t));
+        qw->window[QSTR_WINDOW_SIZE - 1] = qw->window[0];
+        idx = 0;
+    }
+    memmove(&qw->window[idx], &qw->window[idx + 1], (qw->idx - idx) * sizeof(uint16_t));
+    qw->window[qw->idx] = qst;
+    return qst;
+}
+
+#if MICROPY_PERSISTENT_CODE_LOAD
+
+// Access a qstr at the given index, relative to the head of the window (0=head)
+STATIC qstr qstr_window_access(qstr_window_t *qw, size_t idx) {
+    return qstr_window_pull(qw, (qw->idx + QSTR_WINDOW_SIZE - idx) % QSTR_WINDOW_SIZE);
+}
+
+#endif
+
+#if MICROPY_PERSISTENT_CODE_SAVE
+
+// Insert a qstr at the head of the window, either by pulling an existing one or pushing a new one
+STATIC size_t qstr_window_insert(qstr_window_t *qw, qstr qst) {
+    for (size_t idx = 0; idx < QSTR_WINDOW_SIZE; ++idx) {
+        if (qw->window[idx] == qst) {
+            qstr_window_pull(qw, idx);
+            return (qw->idx + QSTR_WINDOW_SIZE - idx) % QSTR_WINDOW_SIZE;
+        }
+    }
+    qstr_window_push(qw, qst);
+    return QSTR_WINDOW_SIZE;
+}
+
 #endif
 
 typedef struct _bytecode_prelude_t {
@@ -122,12 +177,18 @@ STATIC size_t read_uint(mp_reader_t *reader) {
     return unum;
 }
 
-STATIC qstr load_qstr(mp_reader_t *reader) {
+STATIC qstr load_qstr(mp_reader_t *reader, qstr_window_t *qw) {
     size_t len = read_uint(reader);
+    if (len & 1) {
+        // qstr in window
+        return qstr_window_access(qw, len >> 1);
+    }
+    len >>= 1;
     char *str = m_new(char, len);
     read_bytes(reader, (byte*)str, len);
     qstr qst = qstr_from_strn(str, len);
     m_del(char, str, len);
+    qstr_window_push(qw, qst);
     return qst;
 }
 
@@ -151,12 +212,12 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     }
 }
 
-STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
+STATIC void load_bytecode_qstrs(mp_reader_t *reader, qstr_window_t *qw, byte *ip, byte *ip_top) {
     while (ip < ip_top) {
         size_t sz;
         uint f = mp_opcode_format(ip, &sz);
         if (f == MP_OPCODE_QSTR) {
-            qstr qst = load_qstr(reader);
+            qstr qst = load_qstr(reader, qw);
             ip[1] = qst;
             ip[2] = qst >> 8;
         }
@@ -164,7 +225,7 @@ STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
     }
 }
 
-STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
+STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     // load bytecode
     size_t bc_len = read_uint(reader);
     byte *bytecode = m_new(byte, bc_len);
@@ -177,11 +238,11 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
     extract_prelude(&ip, &ip2, &prelude);
 
     // load qstrs and link global qstr ids into bytecode
-    qstr simple_name = load_qstr(reader);
-    qstr source_file = load_qstr(reader);
+    qstr simple_name = load_qstr(reader, qw);
+    qstr source_file = load_qstr(reader, qw);
     ((byte*)ip2)[0] = simple_name; ((byte*)ip2)[1] = simple_name >> 8;
     ((byte*)ip2)[2] = source_file; ((byte*)ip2)[3] = source_file >> 8;
-    load_bytecode_qstrs(reader, (byte*)ip, bytecode + bc_len);
+    load_bytecode_qstrs(reader, qw, (byte*)ip, bytecode + bc_len);
 
     // load constant table
     size_t n_obj = read_uint(reader);
@@ -189,13 +250,13 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
     mp_uint_t *const_table = m_new(mp_uint_t, prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code);
     mp_uint_t *ct = const_table;
     for (size_t i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
-        *ct++ = (mp_uint_t)MP_OBJ_NEW_QSTR(load_qstr(reader));
+        *ct++ = (mp_uint_t)MP_OBJ_NEW_QSTR(load_qstr(reader, qw));
     }
     for (size_t i = 0; i < n_obj; ++i) {
         *ct++ = (mp_uint_t)load_obj(reader);
     }
     for (size_t i = 0; i < n_raw_code; ++i) {
-        *ct++ = (mp_uint_t)(uintptr_t)load_raw_code(reader);
+        *ct++ = (mp_uint_t)(uintptr_t)load_raw_code(reader, qw);
     }
 
     // create raw_code and return it
@@ -217,11 +278,14 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     read_bytes(reader, header, sizeof(header));
     if (header[0] != 'M'
         || header[1] != MPY_VERSION
-        || header[2] != MPY_FEATURE_FLAGS
-        || header[3] > mp_small_int_bits()) {
+        || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
+        || header[3] > mp_small_int_bits()
+        || read_uint(reader, NULL) > QSTR_WINDOW_SIZE) {
         mp_raise_ValueError("incompatible .mpy file");
     }
-    mp_raw_code_t *rc = load_raw_code(reader);
+    qstr_window_t qw;
+    qw.idx = 0;
+    mp_raw_code_t *rc = load_raw_code(reader, &qw);
     reader->close(reader->data);
     return rc;
 }
@@ -264,10 +328,16 @@ STATIC void mp_print_uint(mp_print_t *print, size_t n) {
     print->print_strn(print->data, (char*)p, buf + sizeof(buf) - p);
 }
 
-STATIC void save_qstr(mp_print_t *print, qstr qst) {
+STATIC void save_qstr(mp_print_t *print, qstr_window_t *qw, qstr qst) {
+    size_t idx = qstr_window_insert(qw, qst);
+    if (idx < QSTR_WINDOW_SIZE) {
+        // qstr found in window, encode index to it
+        mp_print_uint(print, idx << 1 | 1);
+        return;
+    }
     size_t len;
     const byte *str = qstr_data(qst, &len);
-    mp_print_uint(print, len);
+    mp_print_uint(print, len << 1);
     mp_print_bytes(print, str, len);
 }
 
@@ -312,19 +382,19 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
     }
 }
 
-STATIC void save_bytecode_qstrs(mp_print_t *print, const byte *ip, const byte *ip_top) {
+STATIC void save_bytecode_qstrs(mp_print_t *print, qstr_window_t *qw, const byte *ip, const byte *ip_top) {
     while (ip < ip_top) {
         size_t sz;
         uint f = mp_opcode_format(ip, &sz);
         if (f == MP_OPCODE_QSTR) {
             qstr qst = ip[1] | (ip[2] << 8);
-            save_qstr(print, qst);
+            save_qstr(print, qw, qst);
         }
         ip += sz;
     }
 }
 
-STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
+STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *qstr_window) {
     if (rc->kind != MP_CODE_BYTECODE) {
         mp_raise_ValueError("can only save bytecode");
     }
@@ -340,9 +410,9 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
     extract_prelude(&ip, &ip2, &prelude);
 
     // save qstrs
-    save_qstr(print, ip2[0] | (ip2[1] << 8)); // simple_name
-    save_qstr(print, ip2[2] | (ip2[3] << 8)); // source_file
-    save_bytecode_qstrs(print, ip, rc->data.u_byte.bytecode + rc->data.u_byte.bc_len);
+    save_qstr(print, qstr_window, ip2[0] | (ip2[1] << 8)); // simple_name
+    save_qstr(print, qstr_window, ip2[2] | (ip2[3] << 8)); // source_file
+    save_bytecode_qstrs(print, qstr_window, ip, rc->data.u_byte.bytecode + rc->data.u_byte.bc_len);
 
     // save constant table
     mp_print_uint(print, rc->data.u_byte.n_obj);
@@ -350,13 +420,13 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
     const mp_uint_t *const_table = rc->data.u_byte.const_table;
     for (uint i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
         mp_obj_t o = (mp_obj_t)*const_table++;
-        save_qstr(print, MP_OBJ_QSTR_VALUE(o));
+        save_qstr(print, qstr_window, MP_OBJ_QSTR_VALUE(o));
     }
     for (uint i = 0; i < rc->data.u_byte.n_obj; ++i) {
         save_obj(print, (mp_obj_t)*const_table++);
     }
     for (uint i = 0; i < rc->data.u_byte.n_raw_code; ++i) {
-        save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++);
+        save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++, qstr_window);
     }
 }
 
@@ -366,7 +436,11 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     //  byte  version
     //  byte  feature flags
     //  byte  number of bits in a small int
-    byte header[4] = {'M', MPY_VERSION, MPY_FEATURE_FLAGS_DYNAMIC,
+    //  uint  size of qstr window
+    byte header[4] = {
+        'M',
+        MPY_VERSION,
+        MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS_DYNAMIC),
         #if MICROPY_DYNAMIC_COMPILER
         mp_dynamic_compiler.small_int_bits,
         #else
@@ -374,8 +448,12 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
         #endif
     };
     mp_print_bytes(print, header, sizeof(header));
+    mp_print_uint(print, QSTR_WINDOW_SIZE);
 
-    save_raw_code(print, rc);
+    qstr_window_t qw;
+    qw.idx = 0;
+    memset(qw.window, 0, sizeof(qw.window));
+    save_raw_code(print, rc, &qw);
 }
 
 // here we define mp_raw_code_save_file depending on the port
