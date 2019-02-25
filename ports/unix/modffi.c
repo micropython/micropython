@@ -349,6 +349,7 @@ STATIC void ffifunc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 }
 
 STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void)n_kw;
     mp_obj_ffifunc_t *self = MP_OBJ_TO_PTR(self_in);
     assert(n_kw == 0);
     assert(n_args == self->cif.nargs);
