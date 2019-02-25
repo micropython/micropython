@@ -121,3 +121,7 @@ Constants
 .. data:: version_info
 
    Python language version that this implementation conforms to, as a tuple of ints.
+
+.. data:: builtin_module_names
+
+   A tuple of strings giving the names of all mdoules that are compiled into this Python interpreter.

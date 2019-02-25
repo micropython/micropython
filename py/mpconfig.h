@@ -1166,6 +1166,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #endif
 
+// Whether to provide the sys.builtin_module_names tuple
+#ifndef MICROPY_PY_SYS_BUILTIN_MODULE_NAMES
+#define MICROPY_PY_SYS_BUILTIN_MODULE_NAMES (0)
+#endif
+
 // Whether to provide "uerrno" module
 #ifndef MICROPY_PY_UERRNO
 #define MICROPY_PY_UERRNO (0)

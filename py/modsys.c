@@ -34,6 +34,7 @@
 #include "py/stream.h"
 #include "py/smallint.h"
 #include "py/runtime.h"
+#include "py/objmodule.h"
 
 #if MICROPY_PY_SYS
 
@@ -146,6 +147,33 @@ STATIC mp_obj_t mp_sys_getsizeof(mp_obj_t obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
 #endif
 
+#if MICROPY_MODULE_LAZY_GLOBALS
+STATIC mp_obj_t mp_module_sys_lazy_globals(mp_obj_module_t *self, qstr attr)
+{
+    (void)self;
+
+    switch (attr) {
+#if MICROPY_PY_SYS_BUILTIN_MODULE_NAMES
+    case MP_QSTR_builtin_module_names: ;
+        static mp_obj_tuple_t *mp_sys_builtin_module_names_obj;
+
+        if (NULL == mp_sys_builtin_module_names_obj) {
+            mp_sys_builtin_module_names_obj = mp_obj_new_tuple(mp_builtin_module_map.used, NULL);
+            for (size_t i = 0; i < mp_sys_builtin_module_names_obj->len; ++i) {
+                mp_sys_builtin_module_names_obj->items[i] = mp_builtin_module_map.table[i].key;
+            }
+        }
+
+        return mp_sys_builtin_module_names_obj;
+#endif
+
+    default:
+        // shouldn't happen, all attributes should be handled.
+        return mp_const_none;
+    }
+}
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
@@ -196,6 +224,13 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getsizeof), MP_ROM_PTR(&mp_sys_getsizeof_obj) },
     #endif
 
+    #if MICROPY_PY_SYS_BUILTIN_MODULE_NAMES
+    #if !MICROPY_MODULE_LAZY_GLOBALS
+    #error MICROPY_PY_SYS_BUILTIN_MODULE_NAMES requires MICROPY_MODULE_LAZY_GLOBALS
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_builtin_module_names), MP_ROM_PTR(MP_OBJ_SENTINEL) },
+    #endif
+
     /*
      * Extensions to CPython
      */
@@ -208,6 +243,9 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_sys_globals, mp_module_sys_globals_table);
 const mp_obj_module_t mp_module_sys = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_sys_globals,
+#if MICROPY_MODULE_LAZY_GLOBALS
+    .lazy_globals = mp_module_sys_lazy_globals,
+#endif
 };
 
 #endif
