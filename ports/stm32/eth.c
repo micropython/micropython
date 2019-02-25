@@ -467,9 +467,6 @@ void ETH_IRQHandler(void) {
 #define TRACE_ETH_RX (0x0004)
 #define TRACE_ETH_FULL (0x0008)
 
-#define ETH_ENTER() uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV)
-#define ETH_EXIT() restore_irq_pri(irq_state)
-
 STATIC void eth_trace(eth_t *self, size_t len, const void *data, unsigned int flags) {
     if (((flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_TX))
         || (!(flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_RX))) {
@@ -528,7 +525,7 @@ STATIC void eth_lwip_init(eth_t *self) {
     IP4_ADDR(&ipconfig[1], 255, 255, 255, 0);
     IP4_ADDR(&ipconfig[3], 8, 8, 8, 8);
 
-    ETH_ENTER();
+    MICROPY_PY_LWIP_ENTER
 
     struct netif *n = &self->netif;
     n->name[0] = 'e';
@@ -544,11 +541,11 @@ STATIC void eth_lwip_init(eth_t *self) {
 
     netif_set_link_up(n);
 
-    ETH_EXIT();
+    MICROPY_PY_LWIP_EXIT
 }
 
 STATIC void eth_lwip_deinit(eth_t *self) {
-    ETH_ENTER();
+    MICROPY_PY_LWIP_ENTER
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif == &self->netif) {
             netif_remove(netif);
@@ -556,7 +553,7 @@ STATIC void eth_lwip_deinit(eth_t *self) {
             netif->flags = 0;
         }
     }
-    ETH_EXIT();
+    MICROPY_PY_LWIP_EXIT
 }
 
 STATIC void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf) {
