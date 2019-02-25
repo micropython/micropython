@@ -30,6 +30,7 @@
 #include "timer_handler.h"
 
 #include "common-hal/pulseio/PulseOut.h"
+#include "common-hal/frequencyio/FrequencyIn.h"
 
 static uint8_t tc_handler[TC_INST_NUM];
 
