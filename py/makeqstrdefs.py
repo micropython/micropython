@@ -108,7 +108,7 @@ if __name__ == "__main__":
         pass
 
     if args.command == "split":
-        with open(args.input_filename) as infile:
+        with open(args.input_filename, encoding="utf-8") as infile:
             process_file(infile)
 
     if args.command == "cat":
