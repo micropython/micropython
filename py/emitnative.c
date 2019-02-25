@@ -299,7 +299,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->pass = pass;
     emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
     emit->stack_size = 0;
-    emit->const_table_cur_obj = 1; // first entry is for mp_fun_table
+    emit->const_table_cur_obj = 0;
     emit->const_table_cur_raw_code = 0;
     emit->last_emit_was_return_value = false;
     emit->scope = scope;
@@ -588,7 +588,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     assert(emit->pass <= MP_PASS_STACK_SIZE || (emit->const_table_num_obj == emit->const_table_cur_obj));
     emit->const_table_num_obj = emit->const_table_cur_obj;
     if (emit->pass == MP_PASS_CODE_SIZE) {
-        size_t const_table_alloc = emit->const_table_num_obj + emit->const_table_cur_raw_code;
+        size_t const_table_alloc = 1 + emit->const_table_num_obj + emit->const_table_cur_raw_code;
         size_t nqstr = 0;
         if (!emit->do_viper_types) {
             // Add room for qstr names of arguments
@@ -1013,12 +1013,14 @@ STATIC void emit_load_reg_with_ptr(emit_t *emit, int reg, mp_uint_t ptr, size_t 
 }
 
 STATIC void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
-    size_t table_off = emit->const_table_cur_obj++;
+    // First entry is for mp_fun_table
+    size_t table_off = 1 + emit->const_table_cur_obj++;
     emit_load_reg_with_ptr(emit, reg, (mp_uint_t)obj, table_off);
 }
 
 STATIC void emit_load_reg_with_raw_code(emit_t *emit, int reg, mp_raw_code_t *rc) {
-    size_t table_off = emit->const_table_num_obj + emit->const_table_cur_raw_code++;
+    // First entry is for mp_fun_table, then constant objects
+    size_t table_off = 1 + emit->const_table_num_obj + emit->const_table_cur_raw_code++;
     emit_load_reg_with_ptr(emit, reg, (mp_uint_t)rc, table_off);
 }
 
