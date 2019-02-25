@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Michael Schroeder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/frequencyio/__init__.h"
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 
 //| :mod:`frequencyio` --- Support for frequency based protocols
@@ -77,7 +78,7 @@
 
 STATIC const mp_rom_map_elem_t frequencyio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_frequencyio) },
-    { MP_ROM_QSTR(MP_QSTR_FrequencyIn), MP_ROM_PTR(&pulseio_frequencyin_type) },
+    { MP_ROM_QSTR(MP_QSTR_FrequencyIn), MP_ROM_PTR(&frequencyio_frequencyin_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(frequencyio_module_globals, frequencyio_module_globals_table);
