@@ -62,7 +62,8 @@ CFLAGS = $(Z_CFLAGS) \
 
 include $(TOP)/py/mkrules.mk
 
-GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
+GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver \
+	ram_report rom_report
 KCONFIG_TARGETS = \
 	initconfig config nconfig menuconfig xconfig gconfig \
 	oldconfig silentoldconfig defconfig savedefconfig \
