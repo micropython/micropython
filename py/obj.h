@@ -804,10 +804,18 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
 mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
 
 // module
-typedef struct _mp_obj_module_t {
+typedef struct _mp_obj_module_t mp_obj_module_t;
+
+// lazily initialize and return attribute `attr`.
+typedef mp_obj_t (*mp_obj_module_lazy_globals)(mp_obj_module_t *self, qstr attr);
+
+struct _mp_obj_module_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
-} mp_obj_module_t;
+#ifdef MICROPY_MODULE_LAZY_GLOBALS
+    mp_obj_module_lazy_globals lazy_globals;
+#endif
+};
 static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
     return ((mp_obj_module_t*)MP_OBJ_TO_PTR(module))->globals;
 }

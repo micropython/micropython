@@ -679,6 +679,14 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_GETATTR (0)
 #endif
 
+// Whether to support lazy globals.
+// Lazy globals are set to MP_OBJ_SENTINEL in the ->globals table,
+// and a ->lazy_globals acts as an initializer & getter for them whenever
+// they are accessed.
+#ifndef MICROPY_MODULE_LAZY_GLOBALS
+#define MICROPY_MODULE_LAZY_GLOBALS (0)
+#endif
+
 // Whether module weak links are supported
 #ifndef MICROPY_MODULE_WEAK_LINKS
 #define MICROPY_MODULE_WEAK_LINKS (0)

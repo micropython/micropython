@@ -61,6 +61,11 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+            #if MICROPY_MODULE_LAZY_GLOBALS
+            if (MP_OBJ_SENTINEL == dest[0]) {
+                dest[0] = self->lazy_globals(self, attr);
+            }
+            #endif
         #if MICROPY_MODULE_GETATTR
         } else if (attr != MP_QSTR___getattr__) {
             elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
