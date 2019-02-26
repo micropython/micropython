@@ -59,6 +59,9 @@ bool displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixe
 bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self);
 void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness);
 
+mp_int_t common_hal_displayio_display_get_width(displayio_display_obj_t* self);
+mp_int_t common_hal_displayio_display_get_height(displayio_display_obj_t* self);
+
 mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self);
 bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness);
 
