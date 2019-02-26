@@ -32,6 +32,9 @@
 #define DEFAULT_INTERVAL 100
 #define DEFAULT_WINDOW 100
 
+// Work-in-progress: orphaned for now.
+//| :orphan:
+//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`Scanner` -- scan for nearby BLE devices
