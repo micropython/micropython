@@ -1830,7 +1830,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
 
         // Detect if TOS an exception or not
         EMIT(dup_top);
-        EMIT_LOAD_GLOBAL(MP_QSTR_Exception);
+        EMIT_LOAD_GLOBAL(MP_QSTR_BaseException);
         EMIT_ARG(binary_op, MP_BINARY_OP_EXCEPTION_MATCH);
         EMIT_ARG(pop_jump_if, false, l_ret_unwind_jump); // if not an exception then we have case 3
 
