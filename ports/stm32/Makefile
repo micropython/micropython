@@ -299,6 +299,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_flash_ex.c \
 	hal_gpio.c \
 	hal_i2c.c \
+	hal_qspi.c \
 	hal_pcd.c \
 	hal_pcd_ex.c \
 	hal_pwr.c \
