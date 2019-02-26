@@ -164,6 +164,7 @@ STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const cha
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra);
 STATIC void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind);
+STATIC void compile_atom_brace_helper(compiler_t *comp, mp_parse_node_struct_t *pns, bool create_map);
 STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn);
 
 STATIC uint comp_next_label(compiler_t *comp) {
@@ -2247,6 +2248,20 @@ STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *p
             EMIT_ARG(call_function, 2, 0, 0);
             i = 1;
         }
+
+    #if MICROPY_COMP_CONST_LITERAL && MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    // handle special OrderedDict constructor
+    } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0])
+        && MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]) == MP_QSTR_OrderedDict
+        && MP_PARSE_NODE_STRUCT_KIND(pns_trail[0]) == PN_trailer_paren
+        && MP_PARSE_NODE_IS_STRUCT_KIND(pns_trail[0]->nodes[0], PN_atom_brace)) {
+        // at this point we have matched "OrderedDict({...})"
+
+        EMIT_ARG(call_function, 0, 0, 0);
+        mp_parse_node_struct_t *pns_dict = (mp_parse_node_struct_t*)pns_trail[0]->nodes[0];
+        compile_atom_brace_helper(comp, pns_dict, false);
+        i = 1;
+    #endif
     }
 
     // compile the remaining trailers
@@ -2455,16 +2470,20 @@ STATIC void compile_atom_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) 
     }
 }
 
-STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
+STATIC void compile_atom_brace_helper(compiler_t *comp, mp_parse_node_struct_t *pns, bool create_map) {
     mp_parse_node_t pn = pns->nodes[0];
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // empty dict
-        EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
+        if (create_map) {
+            EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
+        }
     } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dictorsetmaker_item) {
             // dict with one element
-            EMIT_ARG(build, 1, MP_EMIT_BUILD_MAP);
+            if (create_map) {
+                EMIT_ARG(build, 1, MP_EMIT_BUILD_MAP);
+            }
             compile_node(comp, pn);
             EMIT(store_map);
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dictorsetmaker) {
@@ -2481,7 +2500,9 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 bool is_dict;
                 if (!MICROPY_PY_BUILTINS_SET || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
                     // a dictionary
-                    EMIT_ARG(build, 1 + n, MP_EMIT_BUILD_MAP);
+                    if (create_map) {
+                        EMIT_ARG(build, 1 + n, MP_EMIT_BUILD_MAP);
+                    }
                     compile_node(comp, pns->nodes[0]);
                     EMIT(store_map);
                     is_dict = true;
@@ -2549,6 +2570,10 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
         assert(0);
         #endif
     }
+}
+
+STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    compile_atom_brace_helper(comp, pns, true);
 }
 
 STATIC void compile_trailer_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
