@@ -146,7 +146,8 @@ void frequencyin_reference_tc_init() {
         return;
     }
     #ifdef SAMD21
-    turn_on_clocks(true, reference_tc, 0, TC_HANDLER_FREQUENCYIN);
+    set_timer_handler(reference_tc, dpll_gclk, TC_HANDLER_FREQUENCYIN);
+    turn_on_clocks(true, reference_tc, 0);
     #endif
     // use the DPLL we setup so that the reference_tc and freqin_tc(s)
     // are using the same clock frequency.
@@ -384,7 +385,7 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
     if (common_hal_frequencyio_frequencyin_deinited(self)) {
         return;
     }
-    reset_pin(self->pin);
+    reset_pin_number(self->pin);
 
     // turn off EIC & EVSYS utilized by this TC
     disable_event_channel(self->event_channel);
@@ -480,11 +481,11 @@ void common_hal_frequencyio_frequencyin_pause(frequencyio_frequencyin_obj_t* sel
 
     #ifdef SAMD21
     uint32_t masked_value = EIC->EVCTRL.vec.EXTINTEO;
-    EIC->EVCTRL.vec.EXTINTEO = masked_value | (0 << self->channel);
+    EIC->EVCTRL.vec.EXTINTEO = masked_value ^ (1 << self->channel);
     #endif
     #ifdef SAMD51
     uint32_t masked_value = EIC->EVCTRL.bit.EXTINTEO;
-    EIC->EVCTRL.bit.EXTINTEO = masked_value | (0 << self->channel);
+    EIC->EVCTRL.bit.EXTINTEO = masked_value ^ (1 << self->channel);
     #endif
     return;
 }
