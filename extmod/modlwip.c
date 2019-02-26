@@ -69,6 +69,13 @@
 #define ip_reset_option(pcb, opt) ((pcb)->so_options &= ~(opt))
 #endif
 
+// A port can define these hooks to provide concurrency protection
+#ifndef MICROPY_PY_LWIP_ENTER
+#define MICROPY_PY_LWIP_ENTER
+#define MICROPY_PY_LWIP_REENTER
+#define MICROPY_PY_LWIP_EXIT
+#endif
+
 #ifdef MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
 #include "lwip/sio.h"
