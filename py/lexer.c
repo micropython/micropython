@@ -590,6 +590,8 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 }
                 vstr_add_char(&lex->vstr, CUR_CHAR(lex));
                 next_char(lex);
+            } else if (is_char(lex, '_')) {
+                next_char(lex);
             } else {
                 break;
             }

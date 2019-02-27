@@ -41,6 +41,7 @@
 #define MP_STREAM_SET_OPTS      (7)  // Set stream options
 #define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
+#define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD  (0x0001)
@@ -62,6 +63,16 @@ struct mp_stream_seek_t {
 #define MP_SEEK_CUR (1)
 #define MP_SEEK_END (2)
 
+// Stream protocol
+typedef struct _mp_stream_p_t {
+    // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
+    // are implementation-dependent, but will be exposed to user, e.g. via exception).
+    mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
+    mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
+    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
+    mp_uint_t is_text : 1; // default is bytes, set this for text stream
+} mp_stream_p_t;
+
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj);
@@ -79,6 +90,11 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 #define MP_STREAM_OP_READ (1)
 #define MP_STREAM_OP_WRITE (2)
 #define MP_STREAM_OP_IOCTL (4)
+
+// Object is assumed to have a non-NULL stream protocol with valid r/w/ioctl methods
+static inline const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
+    return (const mp_stream_p_t*)((const mp_obj_base_t*)MP_OBJ_TO_PTR(self))->type->protocol;
+}
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
 mp_obj_t mp_stream_close(mp_obj_t stream);
@@ -100,10 +116,11 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
 
 #if MICROPY_STREAMS_POSIX_API
 // Functions with POSIX-compatible signatures
-ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len);
-ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len);
-off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence);
-int mp_stream_posix_fsync(mp_obj_t stream);
+// "stream" is assumed to be a pointer to a concrete object with the stream protocol
+ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len);
+ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len);
+off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence);
+int mp_stream_posix_fsync(void *stream);
 #endif
 
 #if MICROPY_STREAMS_NON_BLOCK

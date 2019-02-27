@@ -97,7 +97,7 @@ class SDCard:
         csd = bytearray(16)
         self.readinto(csd)
         if csd[0] & 0xc0 == 0x40: # CSD version 2.0
-            self.sectors = ((csd[8] << 8 | csd[9]) + 1) * 2014
+            self.sectors = ((csd[8] << 8 | csd[9]) + 1) * 1024
         elif csd[0] & 0xc0 == 0x00: # CSD version 1.0 (old, <=2GB)
             c_size = csd[6] & 0b11 | csd[7] << 2 | (csd[8] & 0b11000000) << 4
             c_size_mult = ((csd[9] & 0b11) << 1) | csd[10] >> 7
@@ -174,7 +174,7 @@ class SDCard:
         # read until start byte (0xff)
         while True:
             self.spi.readinto(self.tokenbuf, 0xff)
-            if self.tokenbuf[0] == 0xfe:
+            if self.tokenbuf[0] == _TOKEN_DATA:
                 break
 
         # read data
@@ -223,25 +223,27 @@ class SDCard:
         self.cs(1)
         self.spi.write(b'\xff')
 
-    def count(self):
-        return self.sectors
-
     def readblocks(self, block_num, buf):
         nblocks = len(buf) // 512
         assert nblocks and not len(buf) % 512, 'Buffer length is invalid'
         if nblocks == 1:
             # CMD17: set read address for single block
-            if self.cmd(17, block_num * self.cdv, 0) != 0:
+            if self.cmd(17, block_num * self.cdv, 0, release=False) != 0:
+                # release the card
+                self.cs(1)
                 raise OSError(5) # EIO
-            # receive the data
+            # receive the data and release card
             self.readinto(buf)
         else:
             # CMD18: set read address for multiple blocks
-            if self.cmd(18, block_num * self.cdv, 0) != 0:
+            if self.cmd(18, block_num * self.cdv, 0, release=False) != 0:
+                # release the card
+                self.cs(1)
                 raise OSError(5) # EIO
             offset = 0
             mv = memoryview(buf)
             while nblocks:
+                # receive the data and release card
                 self.readinto(mv[offset : offset + 512])
                 offset += 512
                 nblocks -= 1
@@ -270,3 +272,7 @@ class SDCard:
                 offset += 512
                 nblocks -= 1
             self.write_token(_TOKEN_STOP_TRAN)
+
+    def ioctl(self, op, arg):
+        if op == 4: # get number of blocks
+            return self.sectors

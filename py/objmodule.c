@@ -61,6 +61,13 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+        #if MICROPY_MODULE_GETATTR
+        } else if (attr != MP_QSTR___getattr__) {
+            elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
+            }
+        #endif
         }
     } else {
         // delete/store attribute
@@ -84,7 +91,6 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
         } else {
             // store attribute
-            // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
             mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), dest[1]);
         }
         dest[0] = MP_OBJ_NULL; // indicate success
@@ -120,12 +126,6 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 
     // return the new module
     return MP_OBJ_FROM_PTR(o);
-}
-
-mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
-    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->globals;
 }
 
 /******************************************************************************/
@@ -193,6 +193,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_UHASHLIB
     { MP_ROM_QSTR(MP_QSTR_uhashlib), MP_ROM_PTR(&mp_module_uhashlib) },
 #endif
+#if MICROPY_PY_UCRYPTOLIB
+    { MP_ROM_QSTR(MP_QSTR_ucryptolib), MP_ROM_PTR(&mp_module_ucryptolib) },
+#endif
 #if MICROPY_PY_UBINASCII
     { MP_ROM_QSTR(MP_QSTR_ubinascii), MP_ROM_PTR(&mp_module_ubinascii) },
 #endif
@@ -208,8 +211,8 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_LWIP
     { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
 #endif
-#if MICROPY_PY_WEBSOCKET
-    { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&mp_module_websocket) },
+#if MICROPY_PY_UWEBSOCKET
+    { MP_ROM_QSTR(MP_QSTR_uwebsocket), MP_ROM_PTR(&mp_module_uwebsocket) },
 #endif
 #if MICROPY_PY_WEBREPL
     { MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&mp_module_webrepl) },

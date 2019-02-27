@@ -6,6 +6,7 @@
     <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
+    <ClCompile Include="$(PyBaseDir)lib\utils\printf.c" />
     <ClCompile Include="$(PyBaseDir)ports\unix\file.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>

@@ -16,7 +16,7 @@ functions = [
     ('log10', log10, test_values),
     ('cosh', cosh, test_values),
     ('sinh', sinh, test_values),
-    ('tanh', tanh, test_values),
+    ('tanh', tanh, [-1e6, -100] + test_values + [100, 1e6]),
     ('acosh', acosh, [1.0, 5.0, 1.0]),
     ('asinh', asinh, test_values),
     ('atanh', atanh, [-0.99, -0.5, 0.0, 0.5, 0.99]),

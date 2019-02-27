@@ -1,4 +1,4 @@
-.. _tutorial-index:
+.. _esp8266_tutorial:
 
 MicroPython tutorial for ESP8266
 ================================

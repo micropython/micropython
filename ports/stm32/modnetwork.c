@@ -32,6 +32,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
+#include "systick.h"
+#include "pendsv.h"
 #include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK
@@ -43,20 +45,31 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 
+// Poll lwIP every 128ms
+#define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
+
 u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-void pyb_lwip_poll(void) {
+STATIC void pyb_lwip_poll(void) {
     // Poll all the NICs for incoming data
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif->flags & NETIF_FLAG_LINK_UP) {
             mod_network_nic_type_t *nic = netif->state;
-            nic->poll_callback(nic, netif);
+            if (nic->poll_callback) {
+                nic->poll_callback(nic, netif);
+            }
         }
     }
     // Run the lwIP internal updates
     sys_check_timeouts();
+}
+
+void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
+    if (LWIP_TICK(ticks_ms)) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, pyb_lwip_poll);
+    }
 }
 
 #endif
@@ -80,7 +93,7 @@ void mod_network_register_nic(mp_obj_t nic) {
         }
     }
     // nic not registered so add to list
-    mp_obj_list_append(&MP_STATE_PORT(mod_network_nic_list), nic);
+    mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list)), nic);
 }
 
 mp_obj_t mod_network_find_nic(const uint8_t *ip) {
@@ -96,12 +109,16 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
 }
 
 STATIC mp_obj_t network_route(void) {
-    return &MP_STATE_PORT(mod_network_nic_list);
+    return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
+
+    #if defined(MICROPY_HW_ETH_MDC)
+    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+    #endif
 
     #if MICROPY_PY_WIZNET5K
     { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
@@ -133,10 +150,10 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
             netutils_format_ipv4_addr((uint8_t*)&netif->ip_addr, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&netif->netmask, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&netif->gw, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&dns, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t*)dns, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
-    } else if (args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
+    } else if (args[0] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
         // Start the DHCP client
         if (dhcp_supplied_address(netif)) {
             dhcp_renew(netif);
@@ -161,7 +178,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
         dhcp_stop(netif);
         // Set static IP addresses
         mp_obj_t *items;
-        mp_obj_get_array_fixed_n(args[1], 4, &items);
+        mp_obj_get_array_fixed_n(args[0], 4, &items);
         netutils_parse_ipv4_addr(items[0], (uint8_t*)&netif->ip_addr, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[1], (uint8_t*)&netif->netmask, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[2], (uint8_t*)&netif->gw, NETUTILS_BIG);

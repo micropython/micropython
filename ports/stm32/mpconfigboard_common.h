@@ -67,6 +67,11 @@
 #define MICROPY_HW_ENABLE_DAC (0)
 #endif
 
+// Whether to enable the DCMI peripheral
+#ifndef MICROPY_HW_ENABLE_DCMI
+#define MICROPY_HW_ENABLE_DCMI (0)
+#endif
+
 // Whether to enable USB support
 #ifndef MICROPY_HW_ENABLE_USB
 #define MICROPY_HW_ENABLE_USB (0)
@@ -92,6 +97,11 @@
 #define MICROPY_HW_HAS_SDCARD (0)
 #endif
 
+// Whether to automatically mount (and boot from) the SD card if it's present
+#ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
+#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_HAS_SDCARD)
+#endif
+
 // Whether to enable the MMA7660 driver, exposed as pyb.Accel
 #ifndef MICROPY_HW_HAS_MMA7660
 #define MICROPY_HW_HAS_MMA7660 (0)
@@ -109,6 +119,14 @@
 
 /*****************************************************************************/
 // General configuration
+
+// Heap start / end definitions
+#ifndef MICROPY_HEAP_START
+#define MICROPY_HEAP_START &_heap_start
+#endif
+#ifndef MICROPY_HEAP_END
+#define MICROPY_HEAP_END &_heap_end
+#endif
 
 // Configuration for STM32F0 series
 #if defined(STM32F0)

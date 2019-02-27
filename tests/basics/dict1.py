@@ -27,7 +27,7 @@ print({1:1} == {2:1})
 try:
     {}[0]
 except KeyError as er:
-    print('KeyError', er, repr(er), er.args)
+    print('KeyError', er, er.args)
 
 # unsupported unary op
 try:

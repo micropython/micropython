@@ -76,6 +76,9 @@ LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
+# Flags to link with pthread library
+LIBPTHREAD = -lpthread
+
 ifeq ($(MICROPY_FORCE_32BIT),1)
 # Note: you may need to install i386 versions of dependency packages,
 # starting with linux-libc-dev:i386
@@ -101,17 +104,17 @@ SRC_MOD += modusocket.c
 endif
 ifeq ($(MICROPY_PY_THREAD),1)
 CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
-LDFLAGS_MOD += -lpthread
+LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
-LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(TOP)/lib/libffi/build_dir/out/lib/libffi-*/include)
+LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS_MOD = $(TOP)/lib/libffi/build_dir/out/lib32/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib32/libffi.a
  else
-  LIBFFI_LDFLAGS_MOD = $(TOP)/lib/libffi/build_dir/out/lib/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib/libffi.a
  endif
 else
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
@@ -221,8 +224,7 @@ nanbox:
 	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_nanbox.h>"' \
 	BUILD=build-nanbox \
 	PROG=micropython_nanbox \
-	MICROPY_FORCE_32BIT=1 \
-	MICROPY_PY_USSL=0
+	MICROPY_FORCE_32BIT=1
 
 freedos:
 	$(MAKE) \
@@ -271,23 +273,19 @@ endif
 
 deplibs: libffi axtls
 
+libffi: $(BUILD)/lib/libffi/include/ffi.h
+
+$(TOP)/lib/libffi/configure: $(TOP)/lib/libffi/autogen.sh
+	cd $(TOP)/lib/libffi; ./autogen.sh
+
 # install-exec-recursive & install-data-am targets are used to avoid building
 # docs and depending on makeinfo
-libffi:
-	cd $(TOP)/lib/libffi; git clean -d -x -f
-	cd $(TOP)/lib/libffi; ./autogen.sh
-	mkdir -p $(TOP)/lib/libffi/build_dir; cd $(TOP)/lib/libffi/build_dir; \
-	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
+$(BUILD)/lib/libffi/include/ffi.h: $(TOP)/lib/libffi/configure
+	mkdir -p $(BUILD)/lib/libffi; cd $(BUILD)/lib/libffi; \
+	$(abspath $(TOP))/lib/libffi/configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
-axtls: $(BUILD)/libaxtls.a
-
-$(BUILD)/libaxtls.a: $(TOP)/lib/axtls/README | $(OBJ_DIRS)
-	cd $(TOP)/lib/axtls; cp config/upyconfig config/.config
-	cd $(TOP)/lib/axtls; $(MAKE) oldconfig -B
-	cd $(TOP)/lib/axtls; $(MAKE) clean
-	cd $(TOP)/lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)"
-	cp $(TOP)/lib/axtls/_stage/libaxtls.a $@
+axtls: $(TOP)/lib/axtls/README
 
 $(TOP)/lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."

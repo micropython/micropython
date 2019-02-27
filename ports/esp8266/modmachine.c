@@ -30,6 +30,10 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+
+// This needs to be set before we include the RTOS headers
+#define USE_US_TIMER 1
+
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
@@ -92,13 +96,29 @@ STATIC mp_obj_t machine_idle(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
-STATIC mp_obj_t machine_sleep(void) {
-    printf("Warning: not yet implemented\n");
+STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    uint32_t max_us = 0xffffffff;
+    if (n_args == 1) {
+        mp_int_t max_ms = mp_obj_get_int(args[0]);
+        if (max_ms < 0) {
+            max_ms = 0;
+        }
+        max_us = max_ms * 1000;
+    }
+    uint32_t wifi_mode = wifi_get_opmode();
+    uint32_t start = system_get_time();
+    while (system_get_time() - start <= max_us) {
+        ets_event_poll();
+        if (wifi_mode == NULL_MODE) {
+            // Can only idle if the wifi is off
+            asm("waiti 0");
+        }
+    }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(void) {
+STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     // default to sleep forever
     uint32_t sleep_us = 0;
 
@@ -119,6 +139,18 @@ STATIC mp_obj_t machine_deepsleep(void) {
         }
     }
 
+    // if an argument is given then that's the maximum time to sleep for
+    if (n_args == 1) {
+        mp_int_t max_ms = mp_obj_get_int(args[0]);
+        if (max_ms <= 0) {
+            max_ms = 1;
+        }
+        uint32_t max_us = max_ms * 1000;
+        if (sleep_us == 0 || max_us < sleep_us) {
+            sleep_us = max_us;
+        }
+    }
+
     // prepare for RTC reset at wake up
     rtc_prepare_deepsleep(sleep_us);
     // put the device in a deep-sleep state
@@ -132,7 +164,7 @@ STATIC mp_obj_t machine_deepsleep(void) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
 typedef struct _esp_timer_obj_t {
     mp_obj_base_t base;
@@ -160,22 +192,65 @@ STATIC void esp_timer_cb(void *arg) {
 }
 
 STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {
+        ARG_mode,
+        ARG_callback,
+        ARG_period,
+        ARG_tick_hz,
+        ARG_freq,
+    };
     static const mp_arg_t allowed_args[] = {
-//        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+#if MICROPY_PY_BUILTINS_FLOAT
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+#else
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+#endif
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    self->callback = args[2].u_obj;
+    self->callback = args[ARG_callback].u_obj;
     // Be sure to disarm timer before making any changes
     os_timer_disarm(&self->timer);
     os_timer_setfn(&self->timer, esp_timer_cb, self);
-    os_timer_arm(&self->timer, args[0].u_int, args[1].u_int);
+
+#if MICROPY_PY_BUILTINS_FLOAT
+    if (args[ARG_freq].u_obj != mp_const_none) {
+        mp_float_t freq = mp_obj_get_float(args[ARG_freq].u_obj);
+        if (freq < 0.001) {
+            os_timer_arm(&self->timer, (mp_int_t)(1000 / freq), args[ARG_mode].u_int);
+        } else {
+            os_timer_arm_us(&self->timer, (mp_int_t)(1000000 / freq), args[ARG_mode].u_int);
+        }
+    }
+#else
+    if (args[ARG_freq].u_int != 0xffffffff) {
+        os_timer_arm_us(&self->timer, 1000000 / args[ARG_freq].u_int, args[ARG_mode].u_int);
+    }
+#endif
+    else {
+        mp_int_t period = args[ARG_period].u_int;
+        mp_int_t hz = args[ARG_tick_hz].u_int;
+        if (hz == 1000) {
+            os_timer_arm(&self->timer, period, args[ARG_mode].u_int);
+        } else if (hz == 1000000) {
+            os_timer_arm_us(&self->timer, period, args[ARG_mode].u_int);
+        } else {
+            // Use a long long to ensure that we don't either overflow or loose accuracy
+            uint64_t period_us = (((uint64_t)period) * 1000000) / hz;
+            if (period_us < 0x80000000ull) {
+                os_timer_arm_us(&self->timer, (mp_int_t)period_us, args[ARG_mode].u_int);
+            } else {
+                os_timer_arm(&self->timer, (mp_int_t)(period_us / 1000), args[ARG_mode].u_int);
+            }
+        }
+    }
 
     return mp_const_none;
 }
@@ -239,7 +314,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep), MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },

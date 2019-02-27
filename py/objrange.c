@@ -140,7 +140,7 @@ STATIC mp_obj_t range_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_RANGE_BINOP
 STATIC mp_obj_t range_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    if (!MP_OBJ_IS_TYPE(rhs_in, &mp_type_range) || op != MP_BINARY_OP_EQUAL) {
+    if (!mp_obj_is_type(rhs_in, &mp_type_range) || op != MP_BINARY_OP_EQUAL) {
         return MP_OBJ_NULL; // op not supported
     }
     mp_obj_range_t *lhs = MP_OBJ_TO_PTR(lhs_in);
@@ -162,7 +162,7 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_range_t *self = MP_OBJ_TO_PTR(self_in);
         mp_int_t len = range_len(self);
 #if MICROPY_PY_BUILTINS_SLICE
-        if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
+        if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             mp_seq_get_fast_slice_indexes(len, index, &slice);
             mp_obj_range_t *o = m_new_obj(mp_obj_range_t);

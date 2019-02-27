@@ -29,7 +29,10 @@
 
 #include <time.h>
 #include <sys/time.h>
+#include "soc/rtc_cntl_reg.h"
+#include "soc/sens_reg.h"
 #include "driver/gpio.h"
+#include "driver/adc.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -120,17 +123,41 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
 
+STATIC mp_obj_t esp32_raw_temperature(void) {
+    SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_FORCE_XPD_SAR, 3, SENS_FORCE_XPD_SAR_S);
+    SET_PERI_REG_BITS(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_CLK_DIV, 10, SENS_TSENS_CLK_DIV_S);
+    CLEAR_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_POWER_UP);
+    CLEAR_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_DUMP_OUT);
+    SET_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_POWER_UP_FORCE);
+    SET_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_POWER_UP);
+    ets_delay_us(100);
+    SET_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_DUMP_OUT);
+    ets_delay_us(5);
+    int res = GET_PERI_REG_BITS2(SENS_SAR_SLAVE_ADDR3_REG, SENS_TSENS_OUT, SENS_TSENS_OUT_S);
+
+    return mp_obj_new_int(res);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperature);
+
+STATIC mp_obj_t esp32_hall_sensor(void) {
+    adc1_config_width(ADC_WIDTH_12Bit);
+    return MP_OBJ_NEW_SMALL_INT(hall_sensor_read());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
+
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_on_touch), (mp_obj_t)&esp32_wake_on_touch_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_on_ext0), (mp_obj_t)&esp32_wake_on_ext0_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_on_ext1), (mp_obj_t)&esp32_wake_on_ext1_obj },
+    { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
+    { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WAKEUP_ALL_LOW), mp_const_false },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), mp_const_true },
+    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_PTR(&mp_const_false_obj) },
+    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), MP_ROM_PTR(&mp_const_true_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);

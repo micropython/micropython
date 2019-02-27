@@ -428,9 +428,9 @@ class LCD160CR:
         self._send(self.buf19)
 
     def fast_spi(self, flush=True):
+        self._send(b'\x02\x12')
         if flush:
             self.oflush()
-        self._send(b'\x02\x12')
         return self.spi
 
     def show_framebuf(self, buf):

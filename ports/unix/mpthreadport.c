@@ -36,6 +36,7 @@
 
 #include <signal.h>
 #include <sched.h>
+#include <semaphore.h>
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
@@ -53,7 +54,7 @@ STATIC thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
 // it's needed because we can't use any pthread calls in a signal handler
-STATIC volatile int thread_signal_done;
+STATIC sem_t thread_signal_done;
 
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
@@ -70,7 +71,7 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
         gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
         #endif
-        thread_signal_done = 1;
+        sem_post(&thread_signal_done);
     }
 }
 
@@ -84,6 +85,7 @@ void mp_thread_init(void) {
     thread->ready = 1;
     thread->arg = NULL;
     thread->next = NULL;
+    sem_init(&thread_signal_done, 0, 0);
 
     // enable signal handler for garbage collection
     struct sigaction sa;
@@ -91,6 +93,19 @@ void mp_thread_init(void) {
     sa.sa_sigaction = mp_thread_gc;
     sigemptyset(&sa.sa_mask);
     sigaction(SIGUSR1, &sa, NULL);
+}
+
+void mp_thread_deinit(void) {
+    pthread_mutex_lock(&thread_mutex);
+    while (thread->next != NULL) {
+        thread_t *th = thread;
+        thread = thread->next;
+        pthread_cancel(th->id);
+        free(th);
+    }
+    pthread_mutex_unlock(&thread_mutex);
+    assert(thread->id == pthread_self());
+    free(thread);
 }
 
 // This function scans all pointers that are external to the current thread.
@@ -109,11 +124,8 @@ void mp_thread_gc_others(void) {
         if (!th->ready) {
             continue;
         }
-        thread_signal_done = 0;
         pthread_kill(th->id, SIGUSR1);
-        while (thread_signal_done == 0) {
-            sched_yield();
-        }
+        sem_wait(&thread_signal_done);
     }
     pthread_mutex_unlock(&thread_mutex);
 }
@@ -127,6 +139,7 @@ void mp_thread_set_state(void *state) {
 }
 
 void mp_thread_start(void) {
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
     pthread_mutex_lock(&thread_mutex);
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
@@ -155,6 +168,11 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
         goto er;
     }
     ret = pthread_attr_setstacksize(&attr, *stack_size);
+    if (ret != 0) {
+        goto er;
+    }
+
+    ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     if (ret != 0) {
         goto er;
     }
@@ -191,12 +209,18 @@ er:
 
 void mp_thread_finish(void) {
     pthread_mutex_lock(&thread_mutex);
-    // TODO unlink from list
+    thread_t *prev = NULL;
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
-            th->ready = 0;
+            if (prev == NULL) {
+                thread = th->next;
+            } else {
+                prev->next = th->next;
+            }
+            free(th);
             break;
         }
+        prev = th;
     }
     pthread_mutex_unlock(&thread_mutex);
 }

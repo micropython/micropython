@@ -338,7 +338,7 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
         #else
         *o = (mp_obj_t)pns->nodes[0];
         #endif
-        return MP_OBJ_IS_INT(*o);
+        return mp_obj_is_int(*o);
     } else {
         return false;
     }
@@ -477,7 +477,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_map_elem_t *elem;
         if (rule_id == RULE_atom
             && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
-            if (MP_OBJ_IS_SMALL_INT(elem->value)) {
+            if (mp_obj_is_small_int(elem->value)) {
                 pn = mp_parse_node_new_small_int_checked(parser, elem->value);
             } else {
                 pn = make_node_const_object(parser, lex->tok_line, elem->value);
@@ -491,7 +491,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         #endif
     } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
-        if (MP_OBJ_IS_SMALL_INT(o)) {
+        if (mp_obj_is_small_int(o)) {
             pn = mp_parse_node_new_small_int_checked(parser, o);
         } else {
             pn = make_node_const_object(parser, lex->tok_line, o);
@@ -768,7 +768,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         mp_obj_t dest[2];
         mp_load_method_maybe(elem->value, q_attr, dest);
-        if (!(dest[0] != MP_OBJ_NULL && MP_OBJ_IS_INT(dest[0]) && dest[1] == MP_OBJ_NULL)) {
+        if (!(dest[0] != MP_OBJ_NULL && mp_obj_is_int(dest[0]) && dest[1] == MP_OBJ_NULL)) {
             return false;
         }
         arg0 = dest[0];
@@ -783,7 +783,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     for (size_t i = num_args; i > 0; i--) {
         pop_result(parser);
     }
-    if (MP_OBJ_IS_SMALL_INT(arg0)) {
+    if (mp_obj_is_small_int(arg0)) {
         push_result_node(parser, mp_parse_node_new_small_int_checked(parser, arg0));
     } else {
         // TODO reuse memory for parse node struct?
@@ -1145,7 +1145,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 "unexpected indent");
         } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                "unindent does not match any outer indentation level");
+                "unindent doesn't match any outer indent level");
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 "invalid syntax");

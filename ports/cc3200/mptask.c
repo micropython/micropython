@@ -50,8 +50,8 @@
 #include "pybpin.h"
 #include "pybrtc.h"
 #include "lib/utils/pyexec.h"
+#include "lib/utils/gchelper.h"
 #include "gccollect.h"
-#include "gchelper.h"
 #include "mperror.h"
 #include "simplelink.h"
 #include "modnetwork.h"
@@ -234,7 +234,7 @@ soft_reset_exit:
 
     // soft reset
     pyb_sleep_signal_soft_reset();
-    mp_printf(&mp_plat_print, "PYB: soft reboot\n");
+    mp_printf(&mp_plat_print, "MPY: soft reboot\n");
 
     // disable all callbacks to avoid undefined behaviour
     // when coming out of a soft reset

@@ -316,7 +316,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, uint n_args, uint n
     // work out port
     o->uart_id = 0;
 #if 0
-    if (MP_OBJ_IS_STR(args[0])) {
+    if (mp_obj_is_str(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
 #if defined(PYBV10)

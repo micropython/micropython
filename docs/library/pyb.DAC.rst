@@ -79,7 +79,7 @@ Methods
 .. method:: DAC.init(bits=8, \*, buffering=None)
 
    Reinitialise the DAC.  *bits* can be 8 or 12.  *buffering* can be
-   ``None``, ``False`` or ``True`; see above constructor for the meaning
+   ``None``, ``False`` or ``True``; see above constructor for the meaning
    of this parameter.
 
 .. method:: DAC.deinit()

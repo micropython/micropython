@@ -38,11 +38,7 @@ except OSError:
 stream.set_error(0)
 print(stream.ioctl(0, bytearray(10))) # successful ioctl call
 
-stream2 = data[3] # is textio and sets .write = NULL
-try:
-    print(stream2.write(b'1')) # attempt to call NULL implementation
-except OSError:
-    print('OSError')
+stream2 = data[3] # is textio
 print(stream2.read(1)) # read 1 byte encounters non-blocking error with textio stream
 
 # test BufferedWriter with stream errors

@@ -73,9 +73,9 @@ MP_BC_MAKE_CLOSURE = 0x62
 MP_BC_MAKE_CLOSURE_DEFARGS = 0x63
 MP_BC_RAISE_VARARGS = 0x5c
 # extra byte if caching enabled:
-MP_BC_LOAD_NAME = 0x1c
-MP_BC_LOAD_GLOBAL = 0x1d
-MP_BC_LOAD_ATTR = 0x1e
+MP_BC_LOAD_NAME = 0x1b
+MP_BC_LOAD_GLOBAL = 0x1c
+MP_BC_LOAD_ATTR = 0x1d
 MP_BC_STORE_ATTR = 0x26
 
 def make_opcode_format():
@@ -166,18 +166,18 @@ def mp_opcode_format(bytecode, ip, opcode_format=make_opcode_format()):
     ip_start = ip
     f = (opcode_format[opcode >> 2] >> (2 * (opcode & 3))) & 3
     if f == MP_OPCODE_QSTR:
+        if config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
+            if (opcode == MP_BC_LOAD_NAME
+                or opcode == MP_BC_LOAD_GLOBAL
+                or opcode == MP_BC_LOAD_ATTR
+                or opcode == MP_BC_STORE_ATTR):
+                ip += 1
         ip += 3
     else:
         extra_byte = (
             opcode == MP_BC_RAISE_VARARGS
             or opcode == MP_BC_MAKE_CLOSURE
             or opcode == MP_BC_MAKE_CLOSURE_DEFARGS
-            or config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE and (
-                opcode == MP_BC_LOAD_NAME
-                or opcode == MP_BC_LOAD_GLOBAL
-                or opcode == MP_BC_LOAD_ATTR
-                or opcode == MP_BC_STORE_ATTR
-            )
         )
         ip += 1
         if f == MP_OPCODE_VAR_UINT:
@@ -278,7 +278,8 @@ class RawCode:
             f, sz = mp_opcode_format(self.bytecode, ip)
             if f == 1:
                 qst = self._unpack_qstr(ip + 1).qstr_id
-                print('   ', '0x%02x,' % self.bytecode[ip], qst, '& 0xff,', qst, '>> 8,')
+                extra = '' if sz == 3 else ' 0x%02x,' % self.bytecode[ip + 3]
+                print('   ', '0x%02x,' % self.bytecode[ip], qst, '& 0xff,', qst, '>> 8,', extra)
             else:
                 print('   ', ''.join('0x%02x, ' % self.bytecode[ip + i] for i in range(sz)))
             ip += sz
@@ -319,8 +320,8 @@ class RawCode:
                     ndigs = len(digs)
                     digs = ','.join(('%#x' % d) for d in digs)
                     print('STATIC const mp_obj_int_t %s = {{&mp_type_int}, '
-                        '{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t[]){%s}}};'
-                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, digs))
+                        '{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t*)(const uint%u_t[]){%s}}};'
+                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, bits_per_dig, digs))
             elif type(obj) is float:
                 print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
                 print('STATIC const mp_obj_float_t %s = {{&mp_type_float}, %.16g};'
@@ -347,8 +348,10 @@ class RawCode:
                     n = struct.unpack('<I', struct.pack('<f', self.objs[i]))[0]
                     n = ((n & ~0x3) | 2) + 0x80800000
                     print('    (mp_rom_obj_t)(0x%08x),' % (n,))
-                    print('#else')
-                    print('#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"')
+                    print('#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D')
+                    n = struct.unpack('<Q', struct.pack('<d', self.objs[i]))[0]
+                    n += 0x8004000000000000
+                    print('    (mp_rom_obj_t)(0x%016x),' % (n,))
                     print('#endif')
                 else:
                     print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
@@ -507,20 +510,24 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#endif')
     print()
 
-    print('enum {')
-    for i in range(len(new)):
-        if i == 0:
-            print('    MP_QSTR_%s = MP_QSTRnumber_of,' % new[i][1])
-        else:
-            print('    MP_QSTR_%s,' % new[i][1])
-    print('};')
+    if len(new) > 0:
+        print('enum {')
+        for i in range(len(new)):
+            if i == 0:
+                print('    MP_QSTR_%s = MP_QSTRnumber_of,' % new[i][1])
+            else:
+                print('    MP_QSTR_%s,' % new[i][1])
+        print('};')
+
+    # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
+    qstr_pool_alloc = min(len(new), 10)
 
     print()
     print('extern const qstr_pool_t mp_qstr_const_pool;');
     print('const qstr_pool_t mp_qstr_frozen_const_pool = {')
     print('    (qstr_pool_t*)&mp_qstr_const_pool, // previous pool')
     print('    MP_QSTRnumber_of, // previous pool size')
-    print('    %u, // allocated entries' % len(new))
+    print('    %u, // allocated entries' % qstr_pool_alloc)
     print('    %u, // used entries' % len(new))
     print('    {')
     for _, _, qstr in new:

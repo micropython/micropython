@@ -112,3 +112,18 @@ Classes
     .. method:: getvalue()
 
         Get the current contents of the underlying buffer which holds data.
+
+.. class:: StringIO(alloc_size)
+.. class:: BytesIO(alloc_size)
+
+    Create an empty `StringIO`/`BytesIO` object, preallocated to hold up
+    to *alloc_size* number of bytes. That means that writing that amount
+    of bytes won't lead to reallocation of the buffer, and thus won't hit
+    out-of-memory situation or lead to memory fragmentation. These constructors
+    are a MicroPython extension and are recommended for usage only in special
+    cases and in system-level libraries, not for end-user applications.
+
+    .. admonition:: Difference to CPython
+        :class: attention
+
+        These constructors are a MicroPython extension.

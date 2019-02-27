@@ -280,7 +280,7 @@ void led_debug(int n, int delay) {
 /* MicroPython bindings                                                       */
 
 void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_led_obj_t *self = self_in;
+    pyb_led_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "LED(%u)", self->led_id);
 }
 
@@ -301,13 +301,13 @@ STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
 
     // return static led object
-    return (mp_obj_t)&pyb_led_obj[led_id - 1];
+    return MP_OBJ_FROM_PTR(&pyb_led_obj[led_id - 1]);
 }
 
 /// \method on()
 /// Turn the LED on.
 mp_obj_t led_obj_on(mp_obj_t self_in) {
-    pyb_led_obj_t *self = self_in;
+    pyb_led_obj_t *self = MP_OBJ_TO_PTR(self_in);
     led_state(self->led_id, 1);
     return mp_const_none;
 }
@@ -315,7 +315,7 @@ mp_obj_t led_obj_on(mp_obj_t self_in) {
 /// \method off()
 /// Turn the LED off.
 mp_obj_t led_obj_off(mp_obj_t self_in) {
-    pyb_led_obj_t *self = self_in;
+    pyb_led_obj_t *self = MP_OBJ_TO_PTR(self_in);
     led_state(self->led_id, 0);
     return mp_const_none;
 }
@@ -323,7 +323,7 @@ mp_obj_t led_obj_off(mp_obj_t self_in) {
 /// \method toggle()
 /// Toggle the LED between on and off.
 mp_obj_t led_obj_toggle(mp_obj_t self_in) {
-    pyb_led_obj_t *self = self_in;
+    pyb_led_obj_t *self = MP_OBJ_TO_PTR(self_in);
     led_toggle(self->led_id);
     return mp_const_none;
 }
@@ -333,7 +333,7 @@ mp_obj_t led_obj_toggle(mp_obj_t self_in) {
 /// If no argument is given, return the LED intensity.
 /// If an argument is given, set the LED intensity and return `None`.
 mp_obj_t led_obj_intensity(size_t n_args, const mp_obj_t *args) {
-    pyb_led_obj_t *self = args[0];
+    pyb_led_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         return mp_obj_new_int(led_get_intensity(self->led_id));
     } else {

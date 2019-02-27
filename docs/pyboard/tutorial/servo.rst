@@ -3,7 +3,7 @@ Controlling hobby servo motors
 
 There are 4 dedicated connection points on the pyboard for connecting up
 hobby servo motors (see eg
-[Wikipedia](http://en.wikipedia.org/wiki/Servo_%28radio_control%29)).
+`Wikipedia <http://en.wikipedia.org/wiki/Servo_%28radio_control%29>`__).
 These motors have 3 wires: ground, power and signal.  On the pyboard you
 can connect them in the bottom right corner, with the signal pin on the
 far right.  Pins X1, X2, X3 and X4 are the 4 dedicated servo signal pins.

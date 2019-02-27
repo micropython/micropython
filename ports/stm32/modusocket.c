@@ -48,7 +48,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     // create socket object (not bound to any NIC yet)
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
-    s->base.type = (mp_obj_t)&socket_type;
+    s->base.type = &socket_type;
     s->nic = MP_OBJ_NULL;
     s->nic_type = NULL;
     s->u_param.domain = MOD_NETWORK_AF_INET;
@@ -64,7 +64,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         }
     }
 
-    return s;
+    return MP_OBJ_FROM_PTR(s);
 }
 
 STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
@@ -83,7 +83,7 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
 
 // method socket.bind(address)
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // get address
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
@@ -104,7 +104,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
 // method socket.listen(backlog)
 STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->nic == MP_OBJ_NULL) {
         // not connected
@@ -123,12 +123,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
 
 // method socket.accept()
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // create new socket object
     // starts with empty NIC so that finaliser doesn't run close() method if accept() fails
     mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
-    socket2->base.type = (mp_obj_t)&socket_type;
+    socket2->base.type = &socket_type;
     socket2->nic = MP_OBJ_NULL;
     socket2->nic_type = NULL;
 
@@ -145,17 +145,17 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->nic_type = self->nic_type;
 
     // make the return value
-    mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
-    client->items[0] = socket2;
+    mp_obj_tuple_t *client = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    client->items[0] = MP_OBJ_FROM_PTR(socket2);
     client->items[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
 
-    return client;
+    return MP_OBJ_FROM_PTR(client);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
 // method socket.connect(address)
 STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // get address
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
@@ -176,7 +176,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
 // method socket.send(bytes)
 STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
         // not connected
         mp_raise_OSError(MP_EPIPE);
@@ -194,7 +194,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
 // method socket.recv(bufsize)
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
         // not connected
         mp_raise_OSError(MP_ENOTCONN);
@@ -217,7 +217,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
 // method socket.sendto(bytes, address)
 STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // get the data
     mp_buffer_info_t bufinfo;
@@ -243,7 +243,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(socket_sendto_obj, socket_sendto);
 
 // method socket.recvfrom(bufsize)
 STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
         // not connected
         mp_raise_OSError(MP_ENOTCONN);
@@ -271,7 +271,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
 
 // method socket.setsockopt(level, optname, value)
 STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
-    mod_network_socket_obj_t *self = args[0];
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     mp_int_t level = mp_obj_get_int(args[1]);
     mp_int_t opt = mp_obj_get_int(args[2]);
@@ -304,7 +304,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_s
 // timeout=None means blocking
 // otherwise, timeout is in seconds
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
-    mod_network_socket_obj_t *self = self_in;
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->nic == MP_OBJ_NULL) {
         // not connected
         mp_raise_OSError(MP_ENOTCONN);
@@ -355,8 +355,8 @@ STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
-mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    mod_network_socket_obj_t *self = self_in;
+mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (request == MP_STREAM_CLOSE) {
         if (self->nic != MP_OBJ_NULL) {
             self->nic_type->close(self);
@@ -423,7 +423,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
     }
 
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);

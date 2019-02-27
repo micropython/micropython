@@ -3,7 +3,9 @@ Fading LEDs
 
 In addition to turning LEDs on and off, it is also possible to control the brightness of an LED using `Pulse-Width Modulation (PWM) <http://en.wikipedia.org/wiki/Pulse-width_modulation>`_, a common technique for obtaining variable output from a digital pin. This allows us to fade an LED:
 
-.. image:: http://upload.wikimedia.org/wikipedia/commons/a/a9/Fade.gif
+.. only:: not latex
+
+   .. image:: http://upload.wikimedia.org/wikipedia/commons/a/a9/Fade.gif
 
 Components
 ----------
@@ -24,7 +26,7 @@ For this tutorial, we will use the ``X1`` pin. Connect one end of the resistor t
 
 Code
 ----
-By examining the :ref:`quickref`, we see that ``X1`` is connected to channel 1 of timer 5 (``TIM5 CH1``). Therefore we will first create a ``Timer`` object for timer 5, then create a ``TimerChannel`` object for channel 1::
+By examining the :ref:`pyboard_quickref`, we see that ``X1`` is connected to channel 1 of timer 5 (``TIM5 CH1``). Therefore we will first create a ``Timer`` object for timer 5, then create a ``TimerChannel`` object for channel 1::
     
     from pyb import Timer
     from time import sleep

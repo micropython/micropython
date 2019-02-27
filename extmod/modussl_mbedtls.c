@@ -36,7 +36,6 @@
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"
-#include "mbedtls/net.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/pk.h"
@@ -76,7 +75,7 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t*)ctx;
 
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_WRITE);
+    const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
     mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
@@ -93,7 +92,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t*)ctx;
 
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_READ);
+    const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
     mp_uint_t out_sz = sock_stream->read(sock, buf, len, &err);
@@ -109,6 +108,9 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
+    // Verify the socket object has the full stream protocol
+    mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+
 #if MICROPY_PY_USSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
 #else
@@ -267,23 +269,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
-    (void)arg;
-    switch (request) {
-        case MP_STREAM_CLOSE:
-            mbedtls_pk_free(&self->pkey);
-            mbedtls_x509_crt_free(&self->cert);
-            mbedtls_x509_crt_free(&self->cacert);
-            mbedtls_ssl_free(&self->ssl);
-            mbedtls_ssl_config_free(&self->conf);
-            mbedtls_ctr_drbg_free(&self->ctr_drbg);
-            mbedtls_entropy_free(&self->entropy);
-            mp_stream_close(self->sock);
-            return 0;
-
-        default:
-            *errcode = MP_EINVAL;
-            return MP_STREAM_ERROR;
+    if (request == MP_STREAM_CLOSE) {
+        mbedtls_pk_free(&self->pkey);
+        mbedtls_x509_crt_free(&self->cert);
+        mbedtls_x509_crt_free(&self->cacert);
+        mbedtls_ssl_free(&self->ssl);
+        mbedtls_ssl_config_free(&self->conf);
+        mbedtls_ctr_drbg_free(&self->ctr_drbg);
+        mbedtls_entropy_free(&self->entropy);
     }
+    // Pass all requests down to the underlying socket
+    return mp_get_stream(self->sock)->ioctl(self->sock, request, arg, errcode);
 }
 
 STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {

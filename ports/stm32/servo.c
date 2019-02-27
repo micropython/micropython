@@ -63,8 +63,6 @@ typedef struct _pyb_servo_obj_t {
 STATIC pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
 
 void servo_init(void) {
-    timer_tim5_init();
-
     // reset servo objects
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
         pyb_servo_obj[i].base.type = &pyb_servo_type;
@@ -133,6 +131,10 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
     // GPIO configuration
     mp_hal_pin_config(s->pin, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF2_TIM5);
 
+    if (__HAL_RCC_TIM5_IS_CLK_DISABLED()) {
+        timer_tim5_init();
+    }
+
     // PWM mode configuration
     TIM_OC_InitTypeDef oc_init;
     oc_init.OCMode = TIM_OCMODE_PWM1;
@@ -175,7 +177,7 @@ STATIC mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_pwm_set_obj, pyb_pwm_set);
 
 STATIC void pyb_servo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_servo_obj_t *self = self_in;
+    pyb_servo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<Servo %u at %uus>", self - &pyb_servo_obj[0] + 1, 10 * self->pulse_cur);
 }
 
@@ -199,13 +201,13 @@ STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, siz
     s->time_left = 0;
     servo_init_channel(s);
 
-    return s;
+    return MP_OBJ_FROM_PTR(s);
 }
 
 /// \method pulse_width([value])
 /// Get or set the pulse width in milliseconds.
 STATIC mp_obj_t pyb_servo_pulse_width(size_t n_args, const mp_obj_t *args) {
-    pyb_servo_obj_t *self = args[0];
+    pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get pulse width, in us
         return mp_obj_new_int(10 * self->pulse_cur);
@@ -223,7 +225,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_
 /// Get or set the calibration of the servo timing.
 // TODO should accept 1 arg, a 5-tuple of values to set
 STATIC mp_obj_t pyb_servo_calibration(size_t n_args, const mp_obj_t *args) {
-    pyb_servo_obj_t *self = args[0];
+    pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get calibration values
         mp_obj_t tuple[5];
@@ -258,7 +260,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_
 ///   - `angle` is the angle to move to in degrees.
 ///   - `time` is the number of milliseconds to take to get to the specified angle.
 STATIC mp_obj_t pyb_servo_angle(size_t n_args, const mp_obj_t *args) {
-    pyb_servo_obj_t *self = args[0];
+    pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get angle
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 90 / self->pulse_angle_90);
@@ -288,7 +290,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_
 ///   - `speed` is the speed to move to change to, between -100 and 100.
 ///   - `time` is the number of milliseconds to take to get to the specified speed.
 STATIC mp_obj_t pyb_servo_speed(size_t n_args, const mp_obj_t *args) {
-    pyb_servo_obj_t *self = args[0];
+    pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get speed
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 100 / self->pulse_speed_100);

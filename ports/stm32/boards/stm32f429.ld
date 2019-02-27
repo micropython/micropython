@@ -26,4 +26,4 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
-_heap_end = 0x2001c000; /* tunable */
+_heap_end = 0x2002c000; /* tunable */

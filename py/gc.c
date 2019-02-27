@@ -362,6 +362,13 @@ void gc_collect_end(void) {
     GC_EXIT();
 }
 
+void gc_sweep_all(void) {
+    GC_ENTER();
+    MP_STATE_MEM(gc_lock_depth)++;
+    MP_STATE_MEM(gc_stack_overflow) = 0;
+    gc_collect_end();
+}
+
 void gc_info(gc_info_t *info) {
     GC_ENTER();
     info->total = MP_STATE_MEM(gc_pool_end) - MP_STATE_MEM(gc_pool_start);
@@ -426,7 +433,8 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
-void *gc_alloc(size_t n_bytes, bool has_finaliser) {
+void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
+    bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
@@ -446,7 +454,7 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     size_t i;
     size_t end_block;
     size_t start_block;
-    size_t n_free = 0;
+    size_t n_free;
     int collected = !MP_STATE_MEM(gc_auto_collect_enabled);
 
     #if MICROPY_GC_ALLOC_THRESHOLD
@@ -461,6 +469,7 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     for (;;) {
 
         // look for a run of n_blocks available blocks
+        n_free = 0;
         for (i = MP_STATE_MEM(gc_last_free_atb_index); i < MP_STATE_MEM(gc_alloc_table_byte_len); i++) {
             byte a = MP_STATE_MEM(gc_alloc_table_start)[i];
             if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
@@ -903,7 +912,8 @@ void gc_dump_alloc_table(void) {
     GC_EXIT();
 }
 
-#if DEBUG_PRINT
+#if 0
+// For testing the GC functions
 void gc_test(void) {
     mp_uint_t len = 500;
     mp_uint_t *heap = malloc(len);

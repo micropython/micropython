@@ -307,11 +307,11 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     machine_i2c_obj_init_helper(self, n_args, args, &kw_args);
-    return (mp_obj_t)self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC mp_obj_t machine_i2c_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    machine_i2c_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    machine_i2c_obj_init_helper(MP_OBJ_TO_PTR(args[0]), n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_init_obj, 1, machine_i2c_obj_init);

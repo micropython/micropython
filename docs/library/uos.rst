@@ -115,7 +115,8 @@ Terminal redirection and duplication
 .. function:: dupterm(stream_object, index=0)
 
    Duplicate or switch the MicroPython terminal (the REPL) on the given `stream`-like
-   object. The *stream_object* argument must implement the ``readinto()`` and
+   object. The *stream_object* argument must be a native stream object, or derive
+   from ``uio.IOBase`` and implement the ``readinto()`` and
    ``write()`` methods.  The stream should be in non-blocking mode and
    ``readinto()`` should return ``None`` if there is no data available for reading.
 
@@ -193,14 +194,16 @@ used by a particular filesystem driver to store the data for its filesystem.
 
     .. method:: readblocks(block_num, buf)
 
-        Starting at *block_num*, read blocks from the device into *buf* (an array
-        of bytes).  The number of blocks to read is given by the length of *buf*,
+        Starting at the block given by the index *block_num*, read blocks from
+        the device into *buf* (an array of bytes).
+        The number of blocks to read is given by the length of *buf*,
         which will be a multiple of the block size.
 
     .. method:: writeblocks(block_num, buf)
 
-        Starting at *block_num*, write blocks from *buf* (an array of bytes) to
-        the device.  The number of blocks to write is given by the length of *buf*,
+        Starting at the block given by the index *block_num*, write blocks from
+        *buf* (an array of bytes) to the device.
+        The number of blocks to write is given by the length of *buf*,
         which will be a multiple of the block size.
 
     .. method:: ioctl(op, arg)

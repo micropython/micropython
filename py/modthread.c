@@ -242,7 +242,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
         th_args->n_kw = map->used;
         // copy across the keyword arguments
         for (size_t i = 0, n = pos_args_len; i < map->alloc; ++i) {
-            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+            if (mp_map_slot_is_filled(map, i)) {
                 th_args->args[n++] = map->table[i].key;
                 th_args->args[n++] = map->table[i].value;
             }

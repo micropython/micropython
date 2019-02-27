@@ -23,3 +23,11 @@ def g():
     if y:
         print("y", y)
 g()
+
+# using an int as a conditional that has the lower 16-bits clear
+@micropython.viper
+def h():
+    z = 0x10000
+    if z:
+        print("z", z)
+h()

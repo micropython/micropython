@@ -38,7 +38,6 @@
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_WARNINGS                    (1)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
-#define MICROPY_PY_BUILTINS_COMPLEX         (1)
 #define MICROPY_CPYTHON_COMPAT              (1)
 #define MICROPY_STREAMS_NON_BLOCK           (1)
 #define MICROPY_STREAMS_POSIX_API           (1)
@@ -57,6 +56,7 @@
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
+#define MICROPY_PY_DESCRIPTORS              (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -98,6 +98,7 @@
 #define MICROPY_PY_CMATH                    (1)
 #define MICROPY_PY_GC                       (1)
 #define MICROPY_PY_IO                       (1)
+#define MICROPY_PY_IO_IOBASE                (1)
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO_BYTESIO               (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
@@ -120,10 +121,13 @@
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UJSON                    (1)
 #define MICROPY_PY_URE                      (1)
+#define MICROPY_PY_URE_SUB                  (1)
 #define MICROPY_PY_UHEAPQ                   (1)
 #define MICROPY_PY_UTIMEQ                   (1)
-#define MICROPY_PY_UHASHLIB                 (0) // We use the ESP32 version
-#define MICROPY_PY_UHASHLIB_SHA1            (MICROPY_PY_USSL && MICROPY_SSL_AXTLS)
+#define MICROPY_PY_UHASHLIB                 (1)
+#define MICROPY_PY_UHASHLIB_SHA1            (1)
+#define MICROPY_PY_UHASHLIB_SHA256          (1)
+#define MICROPY_PY_UCRYPTOLIB               (1)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
@@ -142,7 +146,7 @@
 #define MICROPY_PY_USSL                     (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_USSL_FINALISER           (1)
-#define MICROPY_PY_WEBSOCKET                (1)
+#define MICROPY_PY_UWEBSOCKET               (1)
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
@@ -152,8 +156,8 @@
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define mp_type_fileio                      fatfs_type_fileio
-#define mp_type_textio                      fatfs_type_textio
+#define mp_type_fileio                      mp_type_vfs_fat_fileio
+#define mp_type_textio                      mp_type_vfs_fat_textio
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
@@ -206,9 +210,12 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+struct _machine_timer_obj_t;
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
+    struct _machine_timer_obj_t *machine_timer_obj_head; \
 
 // type definitions for the specific machine
 

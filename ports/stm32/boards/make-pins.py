@@ -7,6 +7,7 @@ import argparse
 import sys
 import csv
 
+# Must have matching entries in AF_FN_* enum in ../pin_defs_stm32.h
 SUPPORTED_FN = {
     'TIM'   : ['CH1',  'CH2',  'CH3',  'CH4',
                'CH1N', 'CH2N', 'CH3N', 'CH1_ETR', 'ETR', 'BKIN'],
@@ -164,11 +165,28 @@ class Pin(object):
     def parse_adc(self, adc_str):
         if (adc_str[:3] != 'ADC'):
             return
-        (adc,channel) = adc_str.split('_')
+
+        if adc_str.find('_INP') != -1:
+            # STM32H7xx, entries have the form: ADCxx_IN[PN]yy/...
+            # for now just pick the entry with the most ADC periphs
+            adc, channel = None, None
+            for ss in adc_str.split('/'):
+                if ss.find('_INP') != -1:
+                    a, c = ss.split('_')
+                    if adc is None or len(a) > len(adc):
+                        adc, channel = a, c
+            if adc is None:
+                return
+            channel = channel[3:]
+        else:
+            # all other MCUs, entries have the form: ADCxx_INyy
+            adc, channel = adc_str.split('_')
+            channel = channel[2:]
+
         for idx in range(3, len(adc)):
             adc_num = int(adc[idx]) # 1, 2, or 3
             self.adc_num |= (1 << (adc_num - 1))
-        self.adc_channel = int(channel[2:])
+        self.adc_channel = int(channel)
 
     def parse_af(self, af_idx, af_strs_in):
         if len(af_strs_in) == 0:
@@ -291,7 +309,7 @@ class Pins(object):
             if pin.is_board_pin():
                 print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}_obj) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
         print('};')
-        print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
+        print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label))
 
     def print(self):
         for named_pin in self.cpu_pins:
@@ -303,7 +321,7 @@ class Pins(object):
         self.print_named('board', self.board_pins)
 
     def print_adc(self, adc_num):
-        print('');
+        print('')
         print('const pin_obj_t * const pin_adc{:d}[] = {{'.format(adc_num))
         for channel in range(17):
             if channel == 16:
@@ -323,15 +341,16 @@ class Pins(object):
         print('};')
 
 
-    def print_header(self, hdr_filename):
+    def print_header(self, hdr_filename, obj_decls):
         with open(hdr_filename, 'wt') as hdr_file:
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if pin.is_board_pin():
-                    pin.print_header(hdr_file)
-            hdr_file.write('extern const pin_obj_t * const pin_adc1[];\n')
-            hdr_file.write('extern const pin_obj_t * const pin_adc2[];\n')
-            hdr_file.write('extern const pin_obj_t * const pin_adc3[];\n')
+            if obj_decls:
+                for named_pin in self.cpu_pins:
+                    pin = named_pin.pin()
+                    if pin.is_board_pin():
+                        pin.print_header(hdr_file)
+                hdr_file.write('extern const pin_obj_t * const pin_adc1[];\n')
+                hdr_file.write('extern const pin_obj_t * const pin_adc2[];\n')
+                hdr_file.write('extern const pin_obj_t * const pin_adc3[];\n')
             # provide #define's mapping board to cpu name
             for named_pin in self.board_pins:
                 hdr_file.write("#define pyb_pin_{:s} pin_{:s}\n".format(named_pin.name(), named_pin.pin().cpu_pin_name()))
@@ -378,9 +397,37 @@ class Pins(object):
                       file=af_const_file)
                 print_conditional_endif(cond_var, file=af_const_file)
 
+    def print_af_defs(self, af_defs_filename, cmp_strings):
+        with open(af_defs_filename,  'wt') as af_defs_file:
+
+            STATIC_AF_TOKENS = {}
+            for named_pin in self.board_pins:
+                for af in named_pin.pin().alt_fn:
+                    func = "%s%d" % (af.func, af.fn_num) if af.fn_num else af.func
+                    pin_type = (af.pin_type or "NULL").split('(')[0]
+                    tok = "#define STATIC_AF_%s_%s(pin_obj) ( \\" % (func, pin_type)
+                    if tok not in STATIC_AF_TOKENS:
+                        STATIC_AF_TOKENS[tok] = []
+                    if cmp_strings:
+                        pin_name = named_pin.pin().cpu_pin_name()
+                        cmp_str = '    ((strcmp( #pin_obj , "(&pin_%s_obj)") ' \
+                            ' & strcmp( #pin_obj , "((&pin_%s_obj))")) == 0) ? (%d) : \\' % (
+                                pin_name, pin_name, af.idx
+                            )
+                    else:
+                        cmp_str = '    ((pin_obj) == (pin_%s)) ? (%d) : \\' % (
+                                named_pin.pin().cpu_pin_name(), af.idx
+                            )
+                    STATIC_AF_TOKENS[tok].append(cmp_str)
+
+            for tok, pins in STATIC_AF_TOKENS.items():
+                print(tok, file=af_defs_file)
+                print("\n".join(sorted(pins)), file=af_defs_file)
+                print("    (0xffffffffffffffffULL))\n", file=af_defs_file)
+
     def print_af_py(self, af_py_filename):
         with open(af_py_filename,  'wt') as af_py_file:
-            print('PINS_AF = (', file=af_py_file);
+            print('PINS_AF = (', file=af_py_file)
             for named_pin in self.board_pins:
                 print("  ('%s', " % named_pin.name(), end='', file=af_py_file)
                 for af in named_pin.pin().alt_fn:
@@ -415,6 +462,18 @@ def main():
         default="build/pins_af.py"
     )
     parser.add_argument(
+        "--af-defs",
+        dest="af_defs_filename",
+        help="Specifies the filename for the alternate function defines.",
+        default="build/pins_af_defs.h"
+    )
+    parser.add_argument(
+        "--af-defs-cmp-strings",
+        dest="af_defs_cmp_strings",
+        help="Whether to compare pin name strings for the alternate function defines instead of object values",
+        action="store_true",
+    )
+    parser.add_argument(
         "-b", "--board",
         dest="board_filename",
         help="Specifies the board file",
@@ -436,6 +495,12 @@ def main():
         dest="hdr_filename",
         help="Specifies name of generated pin header file",
         default="build/pins.h"
+    )
+    parser.add_argument(
+        "--hdr-obj-decls",
+        dest="hdr_obj_decls",
+        help="Whether to include declarations for pin objects in pin header file",
+        action="store_true"
     )
     args = parser.parse_args(sys.argv[1:])
 
@@ -460,10 +525,11 @@ def main():
     pins.print_adc(1)
     pins.print_adc(2)
     pins.print_adc(3)
-    pins.print_header(args.hdr_filename)
+    pins.print_header(args.hdr_filename, args.hdr_obj_decls)
     pins.print_qstr(args.qstr_filename)
     pins.print_af_hdr(args.af_const_filename)
     pins.print_af_py(args.af_py_filename)
+    pins.print_af_defs(args.af_defs_filename, args.af_defs_cmp_strings)
 
 
 if __name__ == "__main__":

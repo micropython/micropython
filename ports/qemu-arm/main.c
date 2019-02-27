@@ -30,7 +30,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 int main(int argc, char **argv) {
     mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
-    void *heap = malloc(16 * 1024);
+    uint32_t heap[16*1024 / 4];
     gc_init(heap, (char*)heap + 16 * 1024);
     mp_init();
     do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);

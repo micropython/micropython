@@ -48,8 +48,8 @@ class Lexer:
         ('{', re.compile(r'{$')),
         ('}', re.compile(r'}$')),
         ('} TypeDef', re.compile(r'} *(?P<id>[A-Z][A-Za-z0-9_]+)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$')),
-        ('IO reg', re.compile(re_io_reg + r'; +/\*!< ' + re_comment + r', +' + re_addr_offset + r' *\*/')),
-        ('IO reg array', re.compile(re_io_reg + r'\[(?P<array>[2-8])\]; +/\*!< ' + re_comment + r', +' + re_addr_offset + r'-(0x[0-9A-Z]{2,3}) *\*/')),
+        ('IO reg', re.compile(re_io_reg + r'; */\*!< *' + re_comment + r', +' + re_addr_offset + r' *\*/')),
+        ('IO reg array', re.compile(re_io_reg + r'\[(?P<array>[2-8])\]; */\*!< *' + re_comment + r', +' + re_addr_offset + r'-(0x[0-9A-Z]{2,3}) *\*/')),
     )
 
     def __init__(self, filename):

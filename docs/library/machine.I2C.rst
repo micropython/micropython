@@ -79,17 +79,15 @@ The following methods implement the primitive I2C master bus operations and can
 be combined to make any I2C transaction.  They are provided if you need more
 control over the bus, otherwise the standard methods (see below) can be used.
 
+These methods are available on software I2C only.
+
 .. method:: I2C.start()
 
    Generate a START condition on the bus (SDA transitions to low while SCL is high).
 
-   Availability: ESP8266.
-
 .. method:: I2C.stop()
 
    Generate a STOP condition on the bus (SDA transitions to high while SCL is high).
-
-   Availability: ESP8266.
 
 .. method:: I2C.readinto(buf, nack=True)
 
@@ -99,15 +97,11 @@ control over the bus, otherwise the standard methods (see below) can be used.
    is true then a NACK will be sent, otherwise an ACK will be sent (and in this
    case the slave assumes more bytes are going to be read in a later call).
 
-   Availability: ESP8266.
-
 .. method:: I2C.write(buf)
 
    Write the bytes from *buf* to the bus.  Checks that an ACK is received
    after each byte and stops transmitting the remaining bytes if a NACK is
    received.  The function returns the number of ACKs that were received.
-
-   Availability: ESP8266.
 
 Standard bus operations
 -----------------------

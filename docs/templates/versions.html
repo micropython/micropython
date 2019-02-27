@@ -1,16 +1,10 @@
 <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
   <span class="rst-current-version" data-toggle="rst-current-version">
-    <span class="fa fa-book"> Ports and Versions</span>
-    {{ port }} ({{ port_version }})
+    <span class="fa fa-book"> Versions and Downloads</span>
+    {{ cur_version }}
     <span class="fa fa-caret-down"></span>
   </span>
   <div class="rst-other-versions">
-    <dl>
-      <dt>Ports</dt>
-      {% for slug, url in all_ports %}
-        <dd><a href="{{ url }}">{{ slug }}</a></dd>
-      {% endfor %}
-    </dl>
     <dl>
       <dt>Versions</dt>
       {% for slug, url in all_versions %}
@@ -27,7 +21,7 @@
     <dl>
       <dt>External links</dt>
         <dd>
-          <a href="http://www.micropython.org">micropython.org</a>
+          <a href="https://www.micropython.org">micropython.org</a>
         </dd>
         <dd>
           <a href="https://github.com/micropython/micropython">GitHub</a>

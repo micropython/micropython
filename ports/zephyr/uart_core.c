@@ -36,7 +36,7 @@
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
-#ifdef CONFIG_CONSOLE_PULL
+#ifdef CONFIG_CONSOLE_SUBSYS
     return console_getchar();
 #else
     return zephyr_getchar();
@@ -45,7 +45,7 @@ int mp_hal_stdin_rx_chr(void) {
 
 // Send string of given length
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-#ifdef CONFIG_CONSOLE_PULL
+#ifdef CONFIG_CONSOLE_SUBSYS
     while (len--) {
         char c = *str++;
         while (console_putchar(c) == -1) {

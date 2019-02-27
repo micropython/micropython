@@ -1,15 +1,20 @@
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
 BOARD ?= PYBV10
-ifeq ($(wildcard ../boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
-endif
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+# Allow the directory containing the board configuration to be specified
+BOARD_DIR ?= $(abspath ../boards/$(BOARD))
+
+# Sanity check that the board configuration directory exists
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 include ../../../py/mkenv.mk
-include ../boards/$(BOARD)/mpconfigboard.mk
+include $(BOARD_DIR)/mpconfigboard.mk
 
 CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
@@ -45,10 +50,11 @@ CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
-CFLAGS += -I../boards/$(BOARD)
+CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
+CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
 
 LDFLAGS = -nostdlib -L . -T stm32_generic.ld -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -65,12 +71,20 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-SRC_LIB = $(addprefix lib/,\
-	libc/string0.c \
-	)
+SRC_LIB = \
+	lib/libc/string0.c \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/unicode.c \
+	extmod/uzlib/crc32.c \
+	extmod/uzlib/adler32.c \
+	extmod/uzlib/tinflate.c \
+	extmod/uzlib/tinfgzip.c
 
 SRC_C = \
 	main.c \
+	elem.c \
+	fsload.c \
+	diskio.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \
@@ -79,12 +93,13 @@ SRC_C = \
 	ports/stm32/flashbdev.c \
 	ports/stm32/spibdev.c \
 	ports/stm32/usbd_conf.c \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/ports/stm32/boards/$(BOARD)/*.c))
+	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O = \
 	ports/stm32/boards/startup_stm32$(MCU_SERIES).o \
 	ports/stm32/resethandler.o \
 
+$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_cortex.c \
 	hal_flash.c \
@@ -114,13 +129,17 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-.PHONY: deploy
+.PHONY: deploy deploy-stlink
+
+FLASH_ADDR = 0x08000000
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(PYDFU) -u $<
 
-FLASH_ADDR = 0x08000000
+deploy-stlink: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $< to the board via ST-LINK"
+	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(FLASH_ADDR)
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -135,6 +154,36 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
+
+#########################################
+# Rules to generate header files
+
+MAKE_PINS = ../boards/make-pins.py
+PREFIX_FILE = ../boards/stm32f4xx_prefix.c
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+HEADER_BUILD = $(BUILD)/genhdr
+GEN_QSTRDEFS_GENERATED = $(HEADER_BUILD)/qstrdefs.generated.h
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+
+$(BUILD)/main.o: $(GEN_QSTRDEFS_GENERATED) $(GEN_PINS_AF_DEFS)
+
+$(HEADER_BUILD):
+	$(MKDIR) -p $(BUILD)/genhdr
+
+$(GEN_QSTRDEFS_GENERATED): | $(HEADER_BUILD)
+	$(Q)echo "// empty" > $@
+
+$(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af ../$(AF_FILE) \
+		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) \
+		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
+		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 #########################################
 
@@ -179,11 +228,5 @@ clean:
 .PHONY: clean
 
 ###########################################
-
-$(BUILD)/main.o: $(BUILD)/genhdr/qstrdefs.generated.h
-
-$(BUILD)/genhdr/qstrdefs.generated.h:
-	$(MKDIR) -p $(BUILD)/genhdr
-	$(Q)echo "// empty" > $@
 
 -include $(OBJ:.o=.P)

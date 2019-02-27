@@ -34,9 +34,12 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "modmachine.h"
+#include "mphalport.h"
 
 #define TIMER_INTR_SEL TIMER_INTR_LEVEL
-#define TIMER_DIVIDER  40000
+#define TIMER_DIVIDER  8
+
+// TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
 #define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)
 
 #define TIMER_FLAGS    0
@@ -47,14 +50,19 @@ typedef struct _machine_timer_obj_t {
     mp_uint_t index;
 
     mp_uint_t repeat;
-    mp_uint_t period;
+    // ESP32 timers are 64-bit
+    uint64_t period;
 
     mp_obj_t callback;
 
     intr_handle_t handle;
+
+    struct _machine_timer_obj_t *next;
 } machine_timer_obj_t;
 
 const mp_obj_type_t machine_timer_type;
+
+STATIC void machine_timer_disable(machine_timer_obj_t *self);
 
 STATIC esp_err_t check_esp_err(esp_err_t code) {
     if (code) {
@@ -62,6 +70,12 @@ STATIC esp_err_t check_esp_err(esp_err_t code) {
     }
 
     return code;
+}
+
+void machine_timer_deinit_all(void) {
+    while (MP_STATE_PORT(machine_timer_obj_head) != NULL) {
+        machine_timer_disable(MP_STATE_PORT(machine_timer_obj_head));
+    }
 }
 
 STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -84,6 +98,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 
     self->group = (mp_obj_get_int(args[0]) >> 1) & 1;
     self->index = mp_obj_get_int(args[0]) & 1;
+    self->next = NULL;
 
     return self;
 }
@@ -93,6 +108,14 @@ STATIC void machine_timer_disable(machine_timer_obj_t *self) {
         timer_pause(self->group, self->index);
         esp_intr_free(self->handle);
         self->handle = NULL;
+    }
+
+    // Remove the timer from the linked-list of active timers
+    for (machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head); *t; t = &(*t)->next) {
+        if (*t == self) {
+            *t = (*t)->next;
+            break;
+        }
     }
 }
 
@@ -109,6 +132,7 @@ STATIC void machine_timer_isr(void *self_in) {
     device->hw_timer[self->index].config.alarm_en = self->repeat;
 
     mp_sched_schedule(self->callback, self);
+    mp_hal_wake_main_task_from_isr();
 }
 
 STATIC void machine_timer_enable(machine_timer_obj_t *self) {
@@ -126,13 +150,30 @@ STATIC void machine_timer_enable(machine_timer_obj_t *self) {
     check_esp_err(timer_enable_intr(self->group, self->index));
     check_esp_err(timer_isr_register(self->group, self->index, machine_timer_isr, (void*)self, TIMER_FLAGS, &self->handle));
     check_esp_err(timer_start(self->group, self->index));
+
+    // Add the timer to the linked-list of active timers
+    self->next = MP_STATE_PORT(machine_timer_obj_head);
+    MP_STATE_PORT(machine_timer_obj_head) = self;
 }
 
 STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {
+        ARG_mode,
+        ARG_callback,
+        ARG_period,
+        ARG_tick_hz,
+        ARG_freq,
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+#if MICROPY_PY_BUILTINS_FLOAT
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+#else
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+#endif
     };
 
     machine_timer_disable(self);
@@ -140,10 +181,21 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Timer uses an 80MHz base clock, which is divided by the divider/scalar, we then convert to ms.
-    self->period = (args[0].u_int * TIMER_BASE_CLK) / (1000 * TIMER_DIVIDER);
-    self->repeat = args[1].u_int;
-    self->callback = args[2].u_obj;
+#if MICROPY_PY_BUILTINS_FLOAT
+    if (args[ARG_freq].u_obj != mp_const_none) {
+        self->period = (uint64_t)(TIMER_SCALE / mp_obj_get_float(args[ARG_freq].u_obj));
+    }
+#else
+    if (args[ARG_freq].u_int != 0xffffffff) {
+        self->period = TIMER_SCALE / ((uint64_t)args[ARG_freq].u_int);
+    }
+#endif
+    else {
+        self->period = (((uint64_t)args[ARG_period].u_int) * TIMER_SCALE) / args[ARG_tick_hz].u_int;
+    }
+
+    self->repeat = args[ARG_mode].u_int;
+    self->callback = args[ARG_callback].u_obj;
     self->handle = NULL;
 
     machine_timer_enable(self);

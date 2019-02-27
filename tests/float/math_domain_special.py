@@ -26,7 +26,7 @@ for name, f, args in (
     ('gamma', math.gamma, (-2, -1, 0, 1)),
     ('lgamma', math.lgamma, (-2, -1, 0, 1)),
     ):
-    for x in args + (inf, nan):
+    for x in args + (inf, -inf, nan):
         try:
             ans = f(x)
             print('%.4f' % ans)

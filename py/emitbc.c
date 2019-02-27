@@ -331,6 +331,10 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
             // the highest slot in the state (fastn[0], see vm.c).
             n_state = 1;
         }
+        #if MICROPY_DEBUG_VM_STACK_OVERFLOW
+        // An extra slot in the stack is needed to detect VM stack overflow
+        n_state += 1;
+        #endif
         emit_write_code_info_uint(emit, n_state);
         emit_write_code_info_uint(emit, scope->exc_stack_size);
     }
@@ -910,7 +914,6 @@ void mp_emit_bc_end_except_handler(emit_t *emit) {
 
 #if MICROPY_EMIT_NATIVE
 const emit_method_table_t emit_bc_method_table = {
-    NULL, // set_native_type is never called when emitting bytecode
     mp_emit_bc_start_pass,
     mp_emit_bc_end_pass,
     mp_emit_bc_last_emit_was_return_value,

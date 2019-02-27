@@ -21,6 +21,9 @@ Timer callbacks.
     :func:`micropython.alloc_emergency_exception_buf` for how to get around this
     limitation.
 
+If you are using a WiPy board please refer to :ref:`machine.TimerWiPy <machine.TimerWiPy>`
+instead of this class.
+
 Constructors
 ------------
 
@@ -32,129 +35,30 @@ Constructors
 Methods
 -------
 
-.. only:: port_wipy
+.. method:: Timer.init(\*, mode=Timer.PERIODIC, period=-1, callback=None)
 
-    .. method:: Timer.init(mode, \*, width=16)
+   Initialise the timer. Example::
 
-       Initialise the timer. Example::
+       tim.init(period=100)                         # periodic with 100ms period
+       tim.init(mode=Timer.ONE_SHOT, period=1000)   # one shot firing after 1000ms
 
-           tim.init(Timer.PERIODIC)             # periodic 16-bit timer
-           tim.init(Timer.ONE_SHOT, width=32)   # one shot 32-bit timer
+   Keyword arguments:
 
-       Keyword arguments:
-       
-         - ``mode`` can be one of:
-         
-           - ``Timer.ONE_SHOT`` - The timer runs once until the configured 
-             period of the channel expires.
-           - ``Timer.PERIODIC`` - The timer runs periodically at the configured 
-             frequency of the channel.
-           - ``Timer.PWM``      - Output a PWM signal on a pin.
+     - ``mode`` can be one of:
 
-         - ``width`` must be either 16 or 32 (bits). For really low frequencies < 5Hz
-           (or large periods), 32-bit timers should be used. 32-bit mode is only available
-           for ``ONE_SHOT`` AND ``PERIODIC`` modes.
+       - ``Timer.ONE_SHOT`` - The timer runs once until the configured
+         period of the channel expires.
+       - ``Timer.PERIODIC`` - The timer runs periodically at the configured
+         frequency of the channel.
 
 .. method:: Timer.deinit()
 
    Deinitialises the timer. Stops the timer, and disables the timer peripheral.
 
-.. only:: port_wipy
-
-    .. method:: Timer.channel(channel, \**, freq, period, polarity=Timer.POSITIVE, duty_cycle=0)
-    
-       If only a channel identifier passed, then a previously initialized channel
-       object is returned (or ``None`` if there is no previous channel).
-
-       Otherwise, a TimerChannel object is initialized and returned.
-       
-       The operating mode is is the one configured to the Timer object that was used to
-       create the channel.
-
-       - ``channel`` if the width of the timer is 16-bit, then must be either ``TIMER.A``, ``TIMER.B``. 
-         If the width is 32-bit then it **must be** ``TIMER.A | TIMER.B``.
-
-       Keyword only arguments:
-
-         - ``freq`` sets the frequency in Hz.
-         - ``period`` sets the period in microseconds.
-
-         .. note::
-
-            Either ``freq`` or ``period`` must be given, never both.
-
-         - ``polarity`` this is applicable for ``PWM``, and defines the polarity of the duty cycle
-         - ``duty_cycle`` only applicable to ``PWM``. It's a percentage (0.00-100.00). Since the WiPy
-           doesn't support floating point numbers the duty cycle must be specified in the range 0-10000,
-           where 10000 would represent 100.00, 5050 represents 50.50, and so on.
-
-       .. note::
-
-          When the channel is in PWM mode, the corresponding pin is assigned automatically, therefore
-          there's no need to assign the alternate function of the pin via the ``Pin`` class. The pins which
-          support PWM functionality are the following:
-
-          - ``GP24`` on Timer 0 channel A.
-          - ``GP25`` on Timer 1 channel A.
-          - ``GP9``  on Timer 2 channel B.
-          - ``GP10`` on Timer 3 channel A.
-          - ``GP11`` on Timer 3 channel B.
-
-.. only:: port_wipy
-
-    class TimerChannel --- setup a channel for a timer
-    ==================================================
-
-    Timer channels are used to generate/capture a signal using a timer.
-
-    TimerChannel objects are created using the Timer.channel() method.
-
-    Methods
-    -------
-
-    .. method:: timerchannel.irq(\*, trigger, priority=1, handler=None)
-
-        The behavior of this callback is heavily dependent on the operating
-        mode of the timer channel:
-
-            - If mode is ``Timer.PERIODIC`` the callback is executed periodically
-              with the configured frequency or period.
-            - If mode is ``Timer.ONE_SHOT`` the callback is executed once when
-              the configured timer expires.
-            - If mode is ``Timer.PWM`` the callback is executed when reaching the duty
-              cycle value.
-
-        The accepted params are:
-
-            - ``priority`` level of the interrupt. Can take values in the range 1-7.
-              Higher values represent higher priorities.
-            - ``handler`` is an optional function to be called when the interrupt is triggered.
-            - ``trigger`` must be ``Timer.TIMEOUT`` when the operating mode is either ``Timer.PERIODIC`` or
-              ``Timer.ONE_SHOT``. In the case that mode is ``Timer.PWM`` then trigger must be equal to
-              ``Timer.MATCH``.
-
-        Returns a callback object.
-
-.. only:: port_wipy
-
-    .. method:: timerchannel.freq([value])
-
-       Get or set the timer channel frequency (in Hz).
-
-    .. method:: timerchannel.period([value])
-
-       Get or set the timer channel period (in microseconds).
-
-    .. method:: timerchannel.duty_cycle([value])
-
-       Get or set the duty cycle of the PWM signal. It's a percentage (0.00-100.00). Since the WiPy
-       doesn't support floating point numbers the duty cycle must be specified in the range 0-10000,
-       where 10000 would represent 100.00, 5050 represents 50.50, and so on.
-
 Constants
 ---------
 
 .. data:: Timer.ONE_SHOT
-.. data:: Timer.PERIODIC
+          Timer.PERIODIC
 
    Timer operating mode.

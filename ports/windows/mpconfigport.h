@@ -26,7 +26,7 @@
 
 // options to control how MicroPython is built
 
-// Linking with GNU readline (MICROPY_USE_READLINE == 2) causes binary to be licensed under GPL
+// By default use MicroPython version of readline
 #ifndef MICROPY_USE_READLINE
 #define MICROPY_USE_READLINE        (1)
 #endif
@@ -45,8 +45,8 @@
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
+#define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)
 #define MICROPY_DEBUG_PRINTERS      (1)
-#define MICROPY_DEBUG_PRINTER_DEST  mp_stderr_print
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
@@ -121,6 +121,7 @@ extern const struct _mp_print_t mp_stderr_print;
 
 #ifdef _MSC_VER
 #define MICROPY_GCREGS_SETJMP       (1)
+#define MICROPY_USE_INTERNAL_PRINTF (0)
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)

@@ -1,11 +1,7 @@
 # test VFS functionality without any particular filesystem type
 
 try:
-    try:
-        import uos_vfs as uos
-        open = uos.vfs_open
-    except ImportError:
-        import uos
+    import uos
     uos.mount
 except (ImportError, AttributeError):
     print("SKIP")

@@ -1,0 +1,12 @@
+open /data.txt r
+b'some data in a text file\n'
+stat /usermod1
+stat /usermod1.py
+open /usermod1.py r
+ioctl 4 0
+in usermod1
+stat /usermod2
+stat /usermod2.py
+open /usermod2.py r
+ioctl 4 0
+in usermod2

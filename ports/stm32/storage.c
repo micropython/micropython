@@ -30,11 +30,15 @@
 #include "py/runtime.h"
 #include "extmod/vfs_fat.h"
 
+#include "systick.h"
 #include "led.h"
 #include "storage.h"
 #include "irq.h"
 
 #if MICROPY_HW_ENABLE_STORAGE
+
+#define STORAGE_SYSTICK_MASK    (0x1ff) // 512ms
+#define STORAGE_IDLE_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & STORAGE_SYSTICK_MASK) == 0)
 
 #define FLASH_PART1_START_BLOCK (0x100)
 
@@ -44,9 +48,13 @@
 
 static bool storage_is_initialised = false;
 
+static void storage_systick_callback(uint32_t ticks_ms);
+
 void storage_init(void) {
     if (!storage_is_initialised) {
         storage_is_initialised = true;
+
+        systick_enable_dispatch(SYSTICK_DISPATCH_STORAGE, storage_systick_callback);
 
         MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_INIT, 0);
 
@@ -55,8 +63,7 @@ void storage_init(void) {
         #endif
 
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
-        // It needs to go at a higher priority than all those components that rely on
-        // the flash storage (eg higher than USB MSC).
+        // It must go at the same priority as USB (see comment in irq.h).
         NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH);
         HAL_NVIC_EnableIRQ(FLASH_IRQn);
     }
@@ -74,11 +81,20 @@ uint32_t storage_get_block_count(void) {
     #endif
 }
 
-void storage_irq_handler(void) {
+static void storage_systick_callback(uint32_t ticks_ms) {
+    if (STORAGE_IDLE_TICK(ticks_ms)) {
+        // Trigger a FLASH IRQ to execute at a lower priority
+        NVIC->STIR = FLASH_IRQn;
+    }
+}
+
+void FLASH_IRQHandler(void) {
+    IRQ_ENTER(FLASH_IRQn);
     MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_IRQ_HANDLER, 0);
     #if defined(MICROPY_HW_BDEV2_IOCTL)
     MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_IRQ_HANDLER, 0);
     #endif
+    IRQ_EXIT(FLASH_IRQn);
 }
 
 void storage_flush(void) {
@@ -225,7 +241,7 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // return singleton object
-    return (mp_obj_t)&pyb_flash_obj;
+    return MP_OBJ_FROM_PTR(&pyb_flash_obj);
 }
 
 STATIC mp_obj_t pyb_flash_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
@@ -277,14 +293,14 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
     vfs->fatfs.part = 1; // flash filesystem lives on first partition
-    vfs->readblocks[0] = (mp_obj_t)&pyb_flash_readblocks_obj;
-    vfs->readblocks[1] = (mp_obj_t)&pyb_flash_obj;
-    vfs->readblocks[2] = (mp_obj_t)storage_read_blocks; // native version
-    vfs->writeblocks[0] = (mp_obj_t)&pyb_flash_writeblocks_obj;
-    vfs->writeblocks[1] = (mp_obj_t)&pyb_flash_obj;
-    vfs->writeblocks[2] = (mp_obj_t)storage_write_blocks; // native version
-    vfs->u.ioctl[0] = (mp_obj_t)&pyb_flash_ioctl_obj;
-    vfs->u.ioctl[1] = (mp_obj_t)&pyb_flash_obj;
+    vfs->readblocks[0] = MP_OBJ_FROM_PTR(&pyb_flash_readblocks_obj);
+    vfs->readblocks[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
+    vfs->readblocks[2] = MP_OBJ_FROM_PTR(storage_read_blocks); // native version
+    vfs->writeblocks[0] = MP_OBJ_FROM_PTR(&pyb_flash_writeblocks_obj);
+    vfs->writeblocks[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
+    vfs->writeblocks[2] = MP_OBJ_FROM_PTR(storage_write_blocks); // native version
+    vfs->u.ioctl[0] = MP_OBJ_FROM_PTR(&pyb_flash_ioctl_obj);
+    vfs->u.ioctl[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
 }
 
 #endif
