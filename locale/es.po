@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-23 10:51-0800\n"
+"POT-Creation-Date: 2019-02-28 23:07-0800\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -770,11 +770,6 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
 
-#, c-format
-msgid ""
-"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%x G:%x B:%x"
-msgstr ""
-
 msgid "Only 8 or 16 bit mono with "
 msgstr "Solo mono de 8 o 16 bit con "
 
@@ -785,15 +780,13 @@ msgstr "Solo formato Windows, BMP sin comprimir soportado %d"
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr "Solo se admiten bit maps de color de 8 bits o menos"
 
+#, c-format
+msgid "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d"
+msgstr ""
+
 #, fuzzy
 msgid "Only slices with step=1 (aka None) are supported"
 msgstr "solo se admiten segmentos con step=1 (alias None)"
-
-#, c-format
-msgid ""
-"Only true color (24 bpp or higher), 16bpp 565 and 555, and 8bpp grayscale "
-"BMP supported %d"
-msgstr ""
 
 msgid "Only tx supported on UART1 (GPIO2)."
 msgstr "Solo tx soportada en UART1 (GPIO2)"
@@ -1002,6 +995,9 @@ msgstr "No se pudo encontrar un GCLK libre"
 
 msgid "Unable to init parser"
 msgstr "Incapaz de inicializar el parser"
+
+msgid "Unable to read color palette data"
+msgstr ""
 
 msgid "Unable to remount filesystem"
 msgstr "Incapaz de montar de nuevo el sistema de archivos"

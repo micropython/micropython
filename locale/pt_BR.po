@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-23 10:51-0800\n"
+"POT-Creation-Date: 2019-02-28 23:07-0800\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -756,11 +756,6 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "I2C operação não suportada"
 
-#, c-format
-msgid ""
-"Only 16bpp RGB 565 supported for bitfield compressed BMPs;  R:%x G:%x B:%x"
-msgstr ""
-
 msgid "Only 8 or 16 bit mono with "
 msgstr ""
 
@@ -771,13 +766,11 @@ msgstr "Apenas formato Windows, BMP descomprimido suportado"
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr "Apenas bit maps de cores de 8 bit ou menos são suportados"
 
-msgid "Only slices with step=1 (aka None) are supported"
+#, c-format
+msgid "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d"
 msgstr ""
 
-#, c-format
-msgid ""
-"Only true color (24 bpp or higher), 16bpp 565 and 555, and 8bpp grayscale "
-"BMP supported %d"
+msgid "Only slices with step=1 (aka None) are supported"
 msgstr ""
 
 msgid "Only tx supported on UART1 (GPIO2)."
@@ -977,6 +970,9 @@ msgid "Unable to find free GCLK"
 msgstr "Não é possível encontrar GCLK livre"
 
 msgid "Unable to init parser"
+msgstr ""
+
+msgid "Unable to read color palette data"
 msgstr ""
 
 msgid "Unable to remount filesystem"
