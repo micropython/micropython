@@ -92,6 +92,7 @@ STATIC mp_obj_t machine_idle(void) {
     uint32_t t = mp_hal_ticks_cpu();
     asm("waiti 0");
     t = mp_hal_ticks_cpu() - t;
+    ets_event_poll(); // handle any events after possibly a long wait (eg feed WDT)
     return MP_OBJ_NEW_SMALL_INT(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
