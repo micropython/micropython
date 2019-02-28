@@ -11,6 +11,11 @@ controlling ESP32 modules.
 Functions
 ---------
 
+.. function:: gpio_hold(pin, hold)
+
+    Configure IO hold functionality on the given *pin*.
+    *hold* should be a boolean value: true to enable and false to disable the hold.
+
 .. function:: wake_on_touch(wake)
 
     Configure whether or not a touch will wake the device from sleep.

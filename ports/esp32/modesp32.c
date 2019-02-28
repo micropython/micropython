@@ -43,6 +43,17 @@
 #include "machine_rtc.h"
 #include "modesp32.h"
 
+STATIC mp_obj_t esp32_gpio_hold(mp_obj_t pin_obj, mp_obj_t hold) {
+    gpio_num_t pin = machine_pin_get_id(pin_obj);
+    if (mp_obj_is_true(hold)) {
+        gpio_hold_en(pin);
+    } else {
+        gpio_hold_dis(pin);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_gpio_hold_obj, esp32_gpio_hold);
+
 STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
     if (machine_rtc_config.ext0_pin != -1) {
@@ -148,6 +159,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
+    { MP_ROM_QSTR(MP_QSTR_gpio_hold), MP_ROM_PTR(&esp32_gpio_hold_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
