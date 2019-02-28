@@ -38,6 +38,7 @@ Here is an example of registering SDL drivers on Micropython unix port:
 
 ```python
 import SDL
+SDL.init()
 
 # Register SDL display driver.
 
