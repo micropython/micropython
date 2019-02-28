@@ -146,8 +146,8 @@
     { MP_ROM_QSTR(MP_QSTR_open),  MP_ROM_PTR(&mp_builtin_open_obj) },   \
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t machine_module;
-extern const struct _mp_obj_module_t wipy_module;
+extern const struct _mp_obj_module_t mp_module_umachine;
+extern const struct _mp_obj_module_t mp_module_wipy;
 extern const struct _mp_obj_module_t mp_module_ure;
 extern const struct _mp_obj_module_t mp_module_ujson;
 extern const struct _mp_obj_module_t mp_module_uos;
@@ -159,15 +159,15 @@ extern const struct _mp_obj_module_t mp_module_ubinascii;
 extern const struct _mp_obj_module_t mp_module_ussl;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_umachine),    MP_ROM_PTR(&machine_module) },      \
-    { MP_ROM_QSTR(MP_QSTR_wipy),        MP_ROM_PTR(&wipy_module) },         \
-    { MP_ROM_QSTR(MP_QSTR_uos),         MP_ROM_PTR(&mp_module_uos) },       \
-    { MP_ROM_QSTR(MP_QSTR_utime),       MP_ROM_PTR(&mp_module_utime) },     \
-    { MP_ROM_QSTR(MP_QSTR_uselect),     MP_ROM_PTR(&mp_module_uselect) },   \
-    { MP_ROM_QSTR(MP_QSTR_usocket),     MP_ROM_PTR(&mp_module_usocket) },   \
-    { MP_ROM_QSTR(MP_QSTR_network),     MP_ROM_PTR(&mp_module_network) },   \
-    { MP_ROM_QSTR(MP_QSTR_ubinascii),   MP_ROM_PTR(&mp_module_ubinascii) }, \
-    { MP_ROM_QSTR(MP_QSTR_ussl),        MP_ROM_PTR(&mp_module_ussl) },      \
+    MP_BUILTIN_MODULE(umachine),     \
+    MP_BUILTIN_MODULE(wipy),         \
+    MP_BUILTIN_MODULE(uos),          \
+    MP_BUILTIN_MODULE(utime),        \
+    MP_BUILTIN_MODULE(uselect),      \
+    MP_BUILTIN_MODULE(usocket),      \
+    MP_BUILTIN_MODULE(network),      \
+    MP_BUILTIN_MODULE(ubinascii),    \
+    MP_BUILTIN_MODULE(ussl),         \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_ROM_QSTR(MP_QSTR_errno),       MP_ROM_PTR(&mp_module_uerrno) },    \
@@ -180,11 +180,11 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     { MP_ROM_QSTR(MP_QSTR_socket),      MP_ROM_PTR(&mp_module_usocket) },   \
     { MP_ROM_QSTR(MP_QSTR_binascii),    MP_ROM_PTR(&mp_module_ubinascii) }, \
     { MP_ROM_QSTR(MP_QSTR_ssl),         MP_ROM_PTR(&mp_module_ussl) },      \
-    { MP_ROM_QSTR(MP_QSTR_machine),     MP_ROM_PTR(&machine_module) },      \
+    { MP_ROM_QSTR(MP_QSTR_machine),     MP_ROM_PTR(&mp_module_umachine) },  \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&machine_module) },      \
+    { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&mp_module_umachine) }, \
 
 // vm state and root pointers for the gc
 #define MP_STATE_PORT MP_STATE_VM
