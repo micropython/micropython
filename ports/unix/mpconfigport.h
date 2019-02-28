@@ -173,47 +173,47 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
 extern const struct _mp_obj_module_t mp_module_machine;
-extern const struct _mp_obj_module_t mp_module_os;
+extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_uos_vfs;
 extern const struct _mp_obj_module_t mp_module_uselect;
-extern const struct _mp_obj_module_t mp_module_time;
+extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_termios;
-extern const struct _mp_obj_module_t mp_module_socket;
+extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_ffi;
 extern const struct _mp_obj_module_t mp_module_jni;
 
 #if MICROPY_PY_UOS_VFS
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos_vfs) },
+#define MICROPY_PY_UOS_DEF MP_BUILTIN_MODULE2(uos, uos_vfs),
 #else
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) },
+#define MICROPY_PY_UOS_DEF MP_BUILTIN_MODULE(uos),
 #endif
 #if MICROPY_PY_FFI
-#define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
+#define MICROPY_PY_FFI_DEF MP_BUILTIN_MODULE(ffi),
 #else
 #define MICROPY_PY_FFI_DEF
 #endif
 #if MICROPY_PY_JNI
-#define MICROPY_PY_JNI_DEF { MP_ROM_QSTR(MP_QSTR_jni), MP_ROM_PTR(&mp_module_jni) },
+#define MICROPY_PY_JNI_DEF MP_BUILTIN_MODULE(jni),
 #else
 #define MICROPY_PY_JNI_DEF
 #endif
 #if MICROPY_PY_UTIME
-#define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
+#define MICROPY_PY_UTIME_DEF MP_BUILTIN_MODULE(utime),
 #else
 #define MICROPY_PY_UTIME_DEF
 #endif
 #if MICROPY_PY_TERMIOS
-#define MICROPY_PY_TERMIOS_DEF { MP_ROM_QSTR(MP_QSTR_termios), MP_ROM_PTR(&mp_module_termios) },
+#define MICROPY_PY_TERMIOS_DEF MP_BUILTIN_MODULE(termios),
 #else
 #define MICROPY_PY_TERMIOS_DEF
 #endif
 #if MICROPY_PY_SOCKET
-#define MICROPY_PY_SOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_socket) },
+#define MICROPY_PY_SOCKET_DEF MP_BUILTIN_MODULE(usocket),
 #else
 #define MICROPY_PY_SOCKET_DEF
 #endif
 #if MICROPY_PY_USELECT_POSIX
-#define MICROPY_PY_USELECT_DEF { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
+#define MICROPY_PY_USELECT_DEF MP_BUILTIN_MODULE(uselect),
 #else
 #define MICROPY_PY_USELECT_DEF
 #endif
@@ -223,7 +223,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_JNI_DEF \
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_SOCKET_DEF \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
+    MP_BUILTIN_MODULE2(umachine, machine), \
     MICROPY_PY_UOS_DEF \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
