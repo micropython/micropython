@@ -6,7 +6,7 @@ ARG TARGET=esp32
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-  && --assume-yes apt-utils \
+#  && --assume-yes apt-utils \
   && apt-get install -y make unrar-free autoconf automake libtool gcc g++ gperf \
     flex bison texinfo gawk ncurses-dev libexpat-dev python-dev python3 python-serial python3-pip\
     sed git unzip bash help2man wget bzip2 curl zip jq
