@@ -15,7 +15,7 @@ RUN apt-get clean \
   && useradd --no-create-home micropython
 
 RUN git clone https://github.com/espressif/esp-idf.git \
-  && cd esp-idf && git checkout <Current supported ESP-IDF commit hash> \
+  && cd esp-idf && git checkout master \
   && git submodule update --init --recursive
 
 RUN git clone https://github.com/ilyamordasov/micropython.git \
