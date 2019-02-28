@@ -91,9 +91,9 @@ typedef int mp_off_t;
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 // extra builtin modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
+extern const struct _mp_obj_module_t mp_module_pyb;
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
+    MP_BUILTIN_MODULE(pyb), \
 
 #define MP_STATE_PORT MP_STATE_VM
 
