@@ -504,7 +504,7 @@ STATIC const mp_rom_map_elem_t microbit_music_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(microbit_music_locals_dict, microbit_music_locals_dict_table);
 
-const mp_obj_module_t music_module = {
+const mp_obj_module_t mp_module_music = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&microbit_music_locals_dict,
 };

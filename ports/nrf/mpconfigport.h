@@ -212,28 +212,28 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t board_module;
-extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t mp_module_board;
+extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
-extern const struct _mp_obj_module_t music_module;
-extern const struct _mp_obj_module_t random_module;
+extern const struct _mp_obj_module_t mp_module_music;
+extern const struct _mp_obj_module_t mp_module_random;
 
 #if MICROPY_PY_UBLUEPY
-#define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
+#define UBLUEPY_MODULE MP_BUILTIN_MODULE(ubluepy),
 #else
 #define UBLUEPY_MODULE
 #endif
 
 #if MICROPY_PY_MUSIC
-#define MUSIC_MODULE                        { MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module) },
+#define MUSIC_MODULE MP_BUILTIN_MODULE(music),
 #else
 #define MUSIC_MODULE
 #endif
 
 #if MICROPY_PY_RANDOM_HW_RNG
-#define RANDOM_MODULE                       { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&random_module) },
+#define RANDOM_MODULE MP_BUILTIN_MODULE(random)
 #else
 #define RANDOM_MODULE
 #endif
@@ -245,20 +245,23 @@ extern const struct _mp_obj_module_t random_module;
 #define MICROPY_BOARD_BUILTINS
 #endif // BOARD_SPECIFIC_MODULES
 
+#define COMMON_MODULES          \
+    MP_BUILTIN_MODULE(board),   \
+    MP_BUILTIN_MODULE(machine), \
+    MP_BUILTIN_MODULE(utime),   \
+    MP_BUILTIN_MODULE(uos),     \
+
 #if BLUETOOTH_SD
 
 #if MICROPY_PY_BLE
-extern const struct _mp_obj_module_t ble_module;
-#define BLE_MODULE                        { MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&ble_module) },
+extern const struct _mp_obj_module_t mp_module_ble;
+#define BLE_MODULE MP_BUILTIN_MODULE(ble)
 #else
 #define BLE_MODULE
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
+    COMMON_MODULES \
     BLE_MODULE \
     MUSIC_MODULE \
     UBLUEPY_MODULE \
@@ -267,12 +270,9 @@ extern const struct _mp_obj_module_t ble_module;
 
 
 #else
-extern const struct _mp_obj_module_t ble_module;
+
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
+    COMMON_MODULES \
     MUSIC_MODULE \
     RANDOM_MODULE \
     MICROPY_BOARD_BUILTINS \
@@ -291,8 +291,8 @@ extern const struct _mp_obj_module_t ble_module;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&mp_module_board) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     BLE_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
