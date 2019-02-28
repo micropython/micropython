@@ -3,6 +3,6 @@ ESPIDF = /esp-idf
 #FLASH_MODE = qio
 #FLASH_SIZE = 4MB
 #CROSS_COMPILE = xtensa-esp32-elf-
-SDKCONFIG = boards/sdkconfig.spiram
+SDKCONFIG = sdkconfig.myboard
 
 include Makefile
