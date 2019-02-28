@@ -146,7 +146,7 @@ void frequencyin_reference_tc_init() {
         return;
     }
     #ifdef SAMD21
-    set_timer_handler(reference_tc, dpll_gclk, TC_HANDLER_FREQUENCYIN);
+    set_timer_handler(true, reference_tc, TC_HANDLER_FREQUENCYIN);
     turn_on_clocks(true, reference_tc, 0);
     #endif
     // use the DPLL we setup so that the reference_tc and freqin_tc(s)
@@ -155,7 +155,7 @@ void frequencyin_reference_tc_init() {
     if (dpll_gclk == 0xff) {
         frequencyin_samd51_start_dpll();
     }
-    set_timer_handler(reference_tc, dpll_gclk, TC_HANDLER_FREQUENCYIN);
+    set_timer_handler(true, reference_tc, TC_HANDLER_FREQUENCYIN);
     turn_on_clocks(true, reference_tc, dpll_gclk);
     #endif
 
