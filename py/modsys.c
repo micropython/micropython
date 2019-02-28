@@ -146,6 +146,10 @@ STATIC mp_obj_t mp_sys_getsizeof(mp_obj_t obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
 #endif
 
+#if MICROPY_PY_SYS_BUILTIN_MODULE_NAMES
+extern mp_obj_tuple_t mp_sys_builtin_module_names_obj; // see py/objmodule.c
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
@@ -194,6 +198,9 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #endif
     #if MICROPY_PY_SYS_GETSIZEOF
     { MP_ROM_QSTR(MP_QSTR_getsizeof), MP_ROM_PTR(&mp_sys_getsizeof_obj) },
+    #endif
+    #if MICROPY_PY_SYS_BUILTIN_MODULE_NAMES
+    { MP_ROM_QSTR(MP_QSTR_builtin_module_names), MP_ROM_PTR(&mp_sys_builtin_module_names_obj) },
     #endif
 
     /*

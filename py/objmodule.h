@@ -28,10 +28,22 @@
 
 #include "py/obj.h"
 
+#if MICROPY_PY_SYS_BUILTIN_MODULE_NAMES
+
+#include "py/objtuple.h"
+
+extern const mp_rom_obj_tuple_t mp_sys_builtin_module_names_obj;
+#define mp_builtin_module_names mp_sys_builtin_module_names_obj.items
+#define mp_builtin_module_names_len mp_sys_builtin_module_names_obj.len
+
+#else
+
 #if MICROPY_PY_BUILTINS_HELP && MICROPY_PY_BUILTINS_HELP_MODULES
 extern const size_t mp_builtin_module_names_len;
 #endif
 extern const mp_rom_obj_t mp_builtin_module_names[];
+
+#endif
 
 extern const mp_map_t mp_builtin_module_weak_links_map;
 

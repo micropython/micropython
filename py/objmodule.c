@@ -352,6 +352,17 @@ STATIC const mp_rom_obj_t mp_builtin_modules[] = {
 #define MP_BUILTIN_MODULE2(name, objname) MP_ROM_QSTR(MP_QSTR_##name)
 
 
+#if MICROPY_PY_SYS_BUILTIN_MODULE_NAMES
+const mp_rom_obj_tuple_t mp_sys_builtin_module_names_obj = {
+    .base = { &mp_type_tuple },
+    .len = MP_ARRAY_SIZE(mp_builtin_modules),
+    .items = {
+        ALL_BUILTIN_MODULES
+    },
+};
+
+#else
+
 #if MICROPY_PY_BUILTINS_HELP && MICROPY_PY_BUILTINS_HELP_MODULES
 const size_t mp_builtin_module_names_len = MP_ARRAY_SIZE(mp_builtin_modules);
 #endif
@@ -359,6 +370,8 @@ const size_t mp_builtin_module_names_len = MP_ARRAY_SIZE(mp_builtin_modules);
 const mp_rom_obj_t mp_builtin_module_names[] = {
     ALL_BUILTIN_MODULES
 };
+
+#endif
 
 #undef MP_BUILTIN_MODULE
 #undef MP_BUILTIN_MODULE2
