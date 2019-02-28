@@ -62,8 +62,8 @@ typedef long mp_off_t;
 extern const struct _mp_obj_module_t mp_module_uos;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
+    MP_BUILTIN_MODULE(uos), \
+    MP_BUILTIN_MODULE2(umachine, machine), \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
