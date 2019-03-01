@@ -428,8 +428,6 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         #endif
         #ifdef SAMD51
         while (tc->COUNT16.SYNCBUSY.reg != 0) {}
-            /* Wait for sync */
-        }
         tc->COUNT16.CCBUF[0].reg = new_top;
         #endif
     } else {
