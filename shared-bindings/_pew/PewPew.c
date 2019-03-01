@@ -75,7 +75,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_obj_get_array(args[ARG_cols].u_obj, &cols_size, &cols);
 
     if (bufinfo.len != rows_size * cols_size) {
-        mp_raise_TypeError(translate(""));
+        mp_raise_ValueError(translate(""));
     }
 
     for (size_t i = 0; i < rows_size; ++i) {
