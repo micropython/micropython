@@ -321,6 +321,8 @@ $(filter $(SRC_PATTERNS), \
 	terminalio/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
+	_pew/__init__.c \
+	_pew/PewPew.c \
 )
 
 ifeq ($(INTERNAL_LIBM),1)

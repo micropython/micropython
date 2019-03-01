@@ -35,6 +35,8 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
 #include "samd/timers.h"
+#include "supervisor/shared/translate.h"
+#include "timer_handler.h"
 
 
 static uint8_t pewpew_tc_index = 0xff;
@@ -77,10 +79,11 @@ void pew_init() {
             }
         }
         if (tc == NULL) {
-            mp_raise_RuntimeError("All timers in use");
+            mp_raise_RuntimeError(translate(""));
         }
 
         pewpew_tc_index = index;
+        set_timer_handler(true, index, TC_HANDLER_PEW);
 
         // We use GCLK0 for SAMD21 and GCLK1 for SAMD51 because they both run
         // at 48mhz making our math the same across the boards.
@@ -106,7 +109,6 @@ void pew_init() {
         #endif
 
         tc_set_enable(tc, true);
-        //tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;
         tc->COUNT16.CC[0].reg = 160;
 
         // Clear our interrupt in case it was set earlier
@@ -117,7 +119,9 @@ void pew_init() {
 }
 
 void pew_reset(void) {
-    tc_insts[pewpew_tc_index]->COUNT16.CTRLA.bit.ENABLE = 0;
-    pewpew_tc_index = 0xff;
+    if (pewpew_tc_index != 0xff) {
+        tc_reset(tc_insts[pewpew_tc_index]);
+        pewpew_tc_index = 0xff;
+    }
     MP_STATE_VM(pew_singleton) = NULL;
 }

@@ -543,6 +543,7 @@ extern const struct _mp_obj_module_t pew_module;
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
+    PEW_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.
@@ -569,6 +570,7 @@ extern const struct _mp_obj_module_t pew_module;
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
     mp_obj_t gamepad_singleton; \
+    mp_obj_t pew_singleton; \
     mp_obj_t terminal_tilegrid_tiles; \
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \

@@ -32,6 +32,7 @@
 #include "shared-bindings/util.h"
 #include "PewPew.h"
 #include "shared-module/_pew/PewPew.h"
+#include "supervisor/shared/translate.h"
 
 
 //| .. currentmodule:: _pew
@@ -49,10 +50,8 @@
 //|
 //|
 STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
-        size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 4, 4, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+        const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 4, 4, true);
     enum { ARG_buffer, ARG_rows, ARG_cols, ARG_buttons };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -61,7 +60,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
         { MP_QSTR_buttons, MP_ARG_OBJ | MP_ARG_REQUIRED },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args),
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
                      allowed_args, args);
 
     mp_buffer_info_t bufinfo;
@@ -76,12 +75,12 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_obj_get_array(args[ARG_cols].u_obj, &cols_size, &cols);
 
     if (bufinfo.len != rows_size * cols_size) {
-        mp_raise_TypeError("wrong buffer size");
+        mp_raise_TypeError(translate(""));
     }
 
     for (size_t i = 0; i < rows_size; ++i) {
         if (!MP_OBJ_IS_TYPE(rows[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError("expected a DigitalInOut");
+            mp_raise_TypeError(translate(""));
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(rows[i]);
         raise_error_if_deinited(
@@ -90,7 +89,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
 
     for (size_t i = 0; i < cols_size; ++i) {
         if (!MP_OBJ_IS_TYPE(cols[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError("expected a DigitalInOut");
+            mp_raise_TypeError(translate(""));
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(cols[i]);
         raise_error_if_deinited(
@@ -99,7 +98,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
 
     if (!MP_OBJ_IS_TYPE(args[ARG_buttons].u_obj,
                         &digitalio_digitalinout_type)) {
-        mp_raise_TypeError("expected a DigitalInOut");
+        mp_raise_TypeError(translate(""));
     }
     digitalio_digitalinout_obj_t *buttons = MP_OBJ_TO_PTR(
             args[ARG_buttons].u_obj);
