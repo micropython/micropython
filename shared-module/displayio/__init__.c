@@ -2,7 +2,9 @@
 #include <string.h>
 #include "shared-module/displayio/__init__.h"
 
+#include "lib/utils/interrupt_char.h"
 #include "py/reload.h"
+#include "py/runtime.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"
@@ -23,8 +25,12 @@ static inline void swap(uint16_t* a, uint16_t* b) {
 bool refreshing_displays = false;
 
 void displayio_refresh_displays(void) {
+    if (mp_hal_is_interrupted()) {
+        return;
+    }
     // Somehow reloads from the sdcard are being lost. So, cheat and reraise.
-    if (reload_requested) {
+    // But don't re-raise if already pending.
+    if (reload_requested && MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
         mp_raise_reload_exception();
         return;
     }
