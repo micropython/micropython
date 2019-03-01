@@ -44,4 +44,8 @@ typedef uint8_t mp_bt_adv_type_t;
 #define MP_BT_ADV_TYPE_ADV_NONCONN_IND BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED
 #endif
 
+typedef ble_uuid_t mp_bt_uuid_t;
+
+typedef uint16_t mp_bt_service_handle_t;
+
 #endif // MICROPY_PY_BLUETOOTH

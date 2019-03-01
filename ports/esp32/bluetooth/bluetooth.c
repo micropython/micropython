@@ -34,14 +34,21 @@
 #include "freertos/semphr.h"
 
 #include "py/mperrno.h"
+#include "py/runtime.h"
 #include "extmod/modbluetooth.h"
 
 // Semaphore to serialze asynchronous calls.
 STATIC SemaphoreHandle_t mp_bt_call_complete;
 STATIC esp_bt_status_t mp_bt_call_status;
+STATIC union {
+    // Ugly hack to return values from an event handler back to a caller.
+    esp_gatt_if_t gatts_if;
+    uint16_t      service_handle;
+} mp_bt_call_result;
 
 STATIC mp_bt_adv_type_t bluetooth_adv_type;
 STATIC uint16_t bluetooth_adv_interval;
+STATIC uint16_t bluetooth_app_id = 0; // provide unique number for each application profile
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
@@ -91,10 +98,6 @@ int mp_bt_enable(void) {
         return mp_bt_esp_errno(err);
     }
     err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
-    if (err != 0) {
-        return mp_bt_esp_errno(err);
-    }
-    err = esp_ble_gatts_app_register(0);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -159,6 +162,62 @@ void mp_bt_advertise_stop(void) {
     xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 }
 
+int mp_bt_add_service(mp_bt_service_t *service) {
+    // In ESP-IDF, a service is more than just a service, it's an
+    // "application profile". One application profile contains exactly one
+    // service. For details, see:
+    // https://github.com/espressif/esp-idf/blob/master/examples/bluetooth/gatt_server/tutorial/Gatt_Server_Example_Walkthrough.md
+
+    // Register an application profile.
+    esp_err_t err = esp_ble_gatts_app_register(bluetooth_app_id);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    bluetooth_app_id++;
+    // Wait for ESP_GATTS_REG_EVT
+    xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+    if (mp_bt_call_status != 0) {
+        return mp_bt_status_errno();
+    }
+    esp_gatt_if_t gatts_if = mp_bt_call_result.gatts_if;
+
+    // Create the service.
+    esp_gatt_srvc_id_t bluetooth_service_id;
+    bluetooth_service_id.is_primary = true;
+    bluetooth_service_id.id.inst_id = 0;
+    bluetooth_service_id.id.uuid = service->uuid;
+    err = esp_ble_gatts_create_service(gatts_if, &bluetooth_service_id, 1);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    // Wait for ESP_GATTS_CREATE_EVT
+    xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+    if (mp_bt_call_status != 0) {
+        return mp_bt_status_errno();
+    }
+    service->handle = mp_bt_call_result.service_handle;
+
+    // Start the service.
+    err = esp_ble_gatts_start_service(service->handle);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    // Wait for ESP_GATTS_START_EVT
+    xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+    return mp_bt_status_errno();
+}
+
+// Parse a UUID object from the caller.
+void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
+    if (MP_OBJ_IS_SMALL_INT(obj) && MP_OBJ_SMALL_INT_VALUE(obj) == (uint32_t)(uint16_t)MP_OBJ_SMALL_INT_VALUE(obj)) {
+        // Integer fits inside 16 bits, assume it's a standard UUID.
+        uuid->len = ESP_UUID_LEN_16;
+        uuid->uuid.uuid16 = MP_OBJ_SMALL_INT_VALUE(obj);
+    } else {
+        mp_raise_ValueError("cannot parse UUID");
+    }
+}
+
 // Event callbacks. Most API calls generate an event here to report the
 // result.
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -188,13 +247,28 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
 
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
     switch (event) {
-        case ESP_GATTS_REG_EVT:
-            break;
         case ESP_GATTS_CONNECT_EVT:
             break;
         case ESP_GATTS_DISCONNECT_EVT:
             // restart advertisement
             mp_bt_advertise_start_internal();
+            break;
+        case ESP_GATTS_REG_EVT:
+            // Application profile created.
+            mp_bt_call_status = param->reg.status;
+            mp_bt_call_result.gatts_if = gatts_if;
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GATTS_CREATE_EVT:
+            // Service created.
+            mp_bt_call_status = param->create.status;
+            mp_bt_call_result.service_handle = param->create.service_handle;
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GATTS_START_EVT:
+            // Service started.
+            mp_bt_call_status = param->start.status;
+            xSemaphoreGive(mp_bt_call_complete);
             break;
         default:
             ESP_LOGI("bluetooth", "GATTS: unknown event: %d", event);

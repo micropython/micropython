@@ -31,6 +31,7 @@
 #if MICROPY_PY_BLUETOOTH
 
 STATIC const mp_obj_type_t bluetooth_type;
+STATIC const mp_obj_type_t service_type;
 
 typedef struct _mp_obj_bluetooth_t {
     mp_obj_base_t base;
@@ -166,10 +167,33 @@ STATIC mp_obj_t bluetooth_advertise_raw(size_t n_args, const mp_obj_t *pos_args,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_advertise_raw_obj, 1, bluetooth_advertise_raw);
 
+STATIC mp_obj_t bluetooth_add_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_interval, ARG_adv_data, ARG_sr_data, ARG_connectable };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_uuid, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = mp_const_none } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_bt_service_t *service = m_new_obj(mp_bt_service_t);
+    service->base.type = &service_type;
+    bluetooth_parse_uuid(args[0].u_obj, &service->uuid);
+    int errno_ = mp_bt_add_service(service);
+    bluetooth_handle_errno(errno_);
+    return service;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_add_service_obj, 1, bluetooth_add_service);
+
+STATIC const mp_obj_type_t service_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Service,
+};
+
 STATIC const mp_rom_map_elem_t bluetooth_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&bluetooth_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise), MP_ROM_PTR(&bluetooth_advertise_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise_raw), MP_ROM_PTR(&bluetooth_advertise_raw_obj) },
+    { MP_ROM_QSTR(MP_QSTR_add_service), MP_ROM_PTR(&bluetooth_add_service_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_locals_dict, bluetooth_locals_dict_table);
 
@@ -183,6 +207,7 @@ STATIC const mp_obj_type_t bluetooth_type = {
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bluetooth) },
     { MP_ROM_QSTR(MP_QSTR_Bluetooth), MP_ROM_PTR(&bluetooth_type) },
+    { MP_ROM_QSTR(MP_QSTR_Service), MP_ROM_PTR(&service_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(mp_module_bluetooth_globals, mp_module_bluetooth_globals_table);
 
