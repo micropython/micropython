@@ -192,26 +192,26 @@ def init():
     _tick = time.monotonic()
 
     _rows = (
-        digitalio.DigitalInOut(board.R1),
-        digitalio.DigitalInOut(board.R2),
-        digitalio.DigitalInOut(board.R3),
-        digitalio.DigitalInOut(board.R4),
-        digitalio.DigitalInOut(board.R5),
-        digitalio.DigitalInOut(board.R6),
-        digitalio.DigitalInOut(board.R7),
-        digitalio.DigitalInOut(board.R8),
+        digitalio.DigitalInOut(board._R1),
+        digitalio.DigitalInOut(board._R2),
+        digitalio.DigitalInOut(board._R3),
+        digitalio.DigitalInOut(board._R4),
+        digitalio.DigitalInOut(board._R5),
+        digitalio.DigitalInOut(board._R6),
+        digitalio.DigitalInOut(board._R7),
+        digitalio.DigitalInOut(board._R8),
     )
 
     _cols = (
-        digitalio.DigitalInOut(board.C1),
-        digitalio.DigitalInOut(board.C2),
-        digitalio.DigitalInOut(board.C3),
-        digitalio.DigitalInOut(board.C4),
-        digitalio.DigitalInOut(board.C5),
-        digitalio.DigitalInOut(board.C6),
-        digitalio.DigitalInOut(board.C7),
-        digitalio.DigitalInOut(board.C8),
+        digitalio.DigitalInOut(board._C1),
+        digitalio.DigitalInOut(board._C2),
+        digitalio.DigitalInOut(board._C3),
+        digitalio.DigitalInOut(board._C4),
+        digitalio.DigitalInOut(board._C5),
+        digitalio.DigitalInOut(board._C6),
+        digitalio.DigitalInOut(board._C7),
+        digitalio.DigitalInOut(board._C8),
     )
-    _buttons = digitalio.DigitalInOut(board.BUTTONS)
+    _buttons = digitalio.DigitalInOut(board._BUTTONS)
     _pew.PewPew(_screen.buffer, _rows, _cols, _buttons)
     keys = _pew.get_pressed
