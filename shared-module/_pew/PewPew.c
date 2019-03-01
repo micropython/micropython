@@ -43,9 +43,13 @@ static uint8_t pewpew_tc_index = 0xff;
 
 
 void pewpew_interrupt_handler(uint8_t index) {
-    if (index != pewpew_tc_index) return;
+    if (index != pewpew_tc_index) {
+        return;
+    }
     Tc* tc = tc_insts[index];
-    if (!tc->COUNT16.INTFLAG.bit.MC0) return;
+    if (!tc->COUNT16.INTFLAG.bit.MC0) {
+        return;
+    }
 
     pew_tick();
 
