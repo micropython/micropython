@@ -328,32 +328,29 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         #endif
         #ifdef SAMD51
         Tc* tc = tc_insts[t->index];
-        while (tc->COUNT16.SYNCBUSY.bit.CC1 != 0) {
-            // Wait for a previous value to be written. This can wait up to one period so we do
-            // other stuff in the meantime.
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
-        }
+        while (tc->COUNT16.SYNCBUSY.bit.CC1 != 0) {}
         tc->COUNT16.CCBUF[1].reg = adjusted_duty;
         #endif
     } else {
         uint32_t adjusted_duty = ((uint64_t) tcc_periods[t->index]) * duty / 0xffff;
         uint8_t channel = tcc_channel(t);
         Tcc* tcc = tcc_insts[t->index];
-        while ((tcc->SYNCBUSY.vec.CC & (1 << channel)) != 0) {
-            // Wait for a previous value to be written. This can wait up to one period so we do
-            // other stuff in the meantime.
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
-        }
+
+        // Write into the CC buffer register, which will be transferred to the
+        // CC register on an UPDATE (when period is finished).
+        // Do clock domain syncing as necessary.
+
+        while (tcc->SYNCBUSY.reg != 0) {}
+
+        // Lock out double-buffering while updating the CCB value.
+        tcc->CTRLBSET.bit.LUPD = 1;
         #ifdef SAMD21
         tcc->CCB[channel].reg = adjusted_duty;
         #endif
         #ifdef SAMD51
         tcc->CCBUF[channel].reg = adjusted_duty;
         #endif
+        tcc->CTRLBCLR.bit.LUPD = 1;
     }
 }
 
@@ -368,7 +365,12 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
         Tcc* tcc = tcc_insts[t->index];
         uint8_t channel = tcc_channel(t);
         uint32_t cv = 0;
+
+        while (tcc->SYNCBUSY.bit.CTRLB) {}
+
         #ifdef SAMD21
+        // If CCBV (CCB valid) is set, the CCB value hasn't yet been copied
+        // to the CC value.
         if ((tcc->STATUS.vec.CCBV & (1 << channel)) != 0) {
             cv = tcc->CCB[channel].reg;
         } else {
@@ -425,7 +427,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         tc->COUNT16.CC[0].reg = new_top;
         #endif
         #ifdef SAMD51
-        while (tc->COUNT16.SYNCBUSY.reg != 0) {
+        while (tc->COUNT16.SYNCBUSY.reg != 0) {}
             /* Wait for sync */
         }
         tc->COUNT16.CCBUF[0].reg = new_top;
@@ -438,14 +440,12 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
             tcc->CTRLA.bit.PRESCALER = new_divisor;
             tcc_set_enable(tcc, true);
         }
+        while (tcc->SYNCBUSY.reg != 0) {}
         tcc_periods[t->index] = new_top;
         #ifdef SAMD21
         tcc->PERB.bit.PERB = new_top;
         #endif
         #ifdef SAMD51
-        while (tcc->SYNCBUSY.reg != 0) {
-            /* Wait for sync */
-        }
         tcc->PERBUF.bit.PERBUF = new_top;
         #endif
     }
