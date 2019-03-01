@@ -398,7 +398,14 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
             }
             return list;
         }
+        case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_rssi): {
+            // return signal of AP, only in STA mode
+            require_if(args[0], WIFI_IF_STA);
 
+            wifi_ap_record_t info;
+            ESP_EXCEPTIONS(esp_wifi_sta_get_ap_info(&info));
+            return MP_OBJ_NEW_SMALL_INT(info.rssi);
+        }
         default:
             mp_raise_ValueError("unknown status param");
     }
