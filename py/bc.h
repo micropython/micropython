@@ -114,7 +114,7 @@ const byte *mp_bytecode_print_str(const byte *ip);
 #define MP_OPCODE_VAR_UINT (2)
 #define MP_OPCODE_OFFSET (3)
 
-uint mp_opcode_format(const byte *ip, size_t *opcode_size);
+uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
 
 #endif
 

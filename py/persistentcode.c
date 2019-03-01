@@ -133,6 +133,8 @@ typedef struct _bytecode_prelude_t {
     uint code_info_size;
 } bytecode_prelude_t;
 
+#if MICROPY_PERSISTENT_CODE_SAVE
+
 // ip will point to start of opcodes
 // ip2 will point to simple_name, source_file qstrs
 STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_t *prelude) {
@@ -148,6 +150,8 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
     while (*(*ip)++ != 255) {
     }
 }
+
+#endif
 
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -165,10 +169,14 @@ STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     }
 }
 
-STATIC size_t read_uint(mp_reader_t *reader) {
+STATIC size_t read_uint(mp_reader_t *reader, byte **out) {
     size_t unum = 0;
     for (;;) {
         byte b = reader->readbyte(reader->data);
+        if (out != NULL) {
+            **out = b;
+            ++*out;
+        }
         unum = (unum << 7) | (b & 0x7f);
         if ((b & 0x80) == 0) {
             break;
@@ -178,7 +186,7 @@ STATIC size_t read_uint(mp_reader_t *reader) {
 }
 
 STATIC qstr load_qstr(mp_reader_t *reader, qstr_window_t *qw) {
-    size_t len = read_uint(reader);
+    size_t len = read_uint(reader, NULL);
     if (len & 1) {
         // qstr in window
         return qstr_window_access(qw, len >> 1);
@@ -197,7 +205,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     if (obj_type == 'e') {
         return MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj);
     } else {
-        size_t len = read_uint(reader);
+        size_t len = read_uint(reader, NULL);
         vstr_t vstr;
         vstr_init_len(&vstr, len);
         read_bytes(reader, (byte*)vstr.buf, len);
@@ -212,41 +220,66 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     }
 }
 
-STATIC void load_bytecode_qstrs(mp_reader_t *reader, qstr_window_t *qw, byte *ip, byte *ip_top) {
+STATIC void load_prelude(mp_reader_t *reader, byte **ip, byte **ip2, bytecode_prelude_t *prelude) {
+    prelude->n_state = read_uint(reader, ip);
+    prelude->n_exc_stack = read_uint(reader, ip);
+    read_bytes(reader, *ip, 4);
+    prelude->scope_flags = *(*ip)++;
+    prelude->n_pos_args = *(*ip)++;
+    prelude->n_kwonly_args = *(*ip)++;
+    prelude->n_def_pos_args = *(*ip)++;
+    *ip2 = *ip;
+    prelude->code_info_size = read_uint(reader, ip2);
+    read_bytes(reader, *ip2, prelude->code_info_size - (*ip2 - *ip));
+    *ip += prelude->code_info_size;
+    while ((*(*ip)++ = read_byte(reader)) != 255) {
+    }
+}
+
+STATIC void load_bytecode(mp_reader_t *reader, qstr_window_t *qw, byte *ip, byte *ip_top) {
     while (ip < ip_top) {
+        *ip = read_byte(reader);
         size_t sz;
-        uint f = mp_opcode_format(ip, &sz);
+        uint f = mp_opcode_format(ip, &sz, false);
+        ++ip;
+        --sz;
         if (f == MP_OPCODE_QSTR) {
             qstr qst = load_qstr(reader, qw);
-            ip[1] = qst;
-            ip[2] = qst >> 8;
+            *ip++ = qst;
+            *ip++ = qst >> 8;
+            sz -= 2;
+        } else if (f == MP_OPCODE_VAR_UINT) {
+            while ((*ip++ = read_byte(reader)) & 0x80) {
+            }
         }
+        read_bytes(reader, ip, sz);
         ip += sz;
     }
 }
 
 STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
-    // load bytecode
-    size_t bc_len = read_uint(reader);
+    // get bytecode size and allocate memory for it
+    size_t bc_len = read_uint(reader, NULL);
     byte *bytecode = m_new(byte, bc_len);
-    read_bytes(reader, bytecode, bc_len);
 
-    // extract prelude
-    const byte *ip = bytecode;
-    const byte *ip2;
+    // load prelude
+    byte *ip = bytecode;
+    byte *ip2;
     bytecode_prelude_t prelude;
-    extract_prelude(&ip, &ip2, &prelude);
+    load_prelude(reader, &ip, &ip2, &prelude);
+
+    // load bytecode
+    load_bytecode(reader, qw, ip, bytecode + bc_len);
 
     // load qstrs and link global qstr ids into bytecode
     qstr simple_name = load_qstr(reader, qw);
     qstr source_file = load_qstr(reader, qw);
     ((byte*)ip2)[0] = simple_name; ((byte*)ip2)[1] = simple_name >> 8;
     ((byte*)ip2)[2] = source_file; ((byte*)ip2)[3] = source_file >> 8;
-    load_bytecode_qstrs(reader, qw, (byte*)ip, bytecode + bc_len);
 
     // load constant table
-    size_t n_obj = read_uint(reader);
-    size_t n_raw_code = read_uint(reader);
+    size_t n_obj = read_uint(reader, NULL);
+    size_t n_raw_code = read_uint(reader, NULL);
     mp_uint_t *const_table = m_new(mp_uint_t, prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code);
     mp_uint_t *ct = const_table;
     for (size_t i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
@@ -382,14 +415,18 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
     }
 }
 
-STATIC void save_bytecode_qstrs(mp_print_t *print, qstr_window_t *qw, const byte *ip, const byte *ip_top) {
+STATIC void save_bytecode(mp_print_t *print, qstr_window_t *qw, const byte *ip, const byte *ip_top) {
     while (ip < ip_top) {
         size_t sz;
-        uint f = mp_opcode_format(ip, &sz);
+        uint f = mp_opcode_format(ip, &sz, true);
         if (f == MP_OPCODE_QSTR) {
+            mp_print_bytes(print, ip, 1);
             qstr qst = ip[1] | (ip[2] << 8);
             save_qstr(print, qw, qst);
+            ip += 3;
+            sz -= 3;
         }
+        mp_print_bytes(print, ip, sz);
         ip += sz;
     }
 }
@@ -399,20 +436,24 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
         mp_raise_ValueError("can only save bytecode");
     }
 
-    // save bytecode
-    mp_print_uint(print, rc->data.u_byte.bc_len);
-    mp_print_bytes(print, rc->data.u_byte.bytecode, rc->data.u_byte.bc_len);
-
     // extract prelude
     const byte *ip = rc->data.u_byte.bytecode;
     const byte *ip2;
     bytecode_prelude_t prelude;
     extract_prelude(&ip, &ip2, &prelude);
 
+    // save prelude
+    size_t prelude_len = ip - rc->data.u_byte.bytecode;
+    const byte *ip_top = rc->data.u_byte.bytecode + rc->data.u_byte.bc_len;
+    mp_print_uint(print, rc->data.u_byte.bc_len);
+    mp_print_bytes(print, rc->data.u_byte.bytecode, prelude_len);
+
+    // save bytecode
+    save_bytecode(print, qstr_window, ip, ip_top);
+
     // save qstrs
     save_qstr(print, qstr_window, ip2[0] | (ip2[1] << 8)); // simple_name
     save_qstr(print, qstr_window, ip2[2] | (ip2[3] << 8)); // source_file
-    save_bytecode_qstrs(print, qstr_window, ip, rc->data.u_byte.bytecode + rc->data.u_byte.bc_len);
 
     // save constant table
     mp_print_uint(print, rc->data.u_byte.n_obj);
