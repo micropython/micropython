@@ -33,21 +33,37 @@
 
 #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
 
+#ifndef MICROPY_HW_QSPI_PRESCALER
+#define MICROPY_HW_QSPI_PRESCALER       3  // F_CLK = F_AHB/3 (72MHz when CPU is 216MHz)
+#endif
+
+#ifndef MICROPY_HW_QSPI_SAMPLE_SHIFT
+#define MICROPY_HW_QSPI_SAMPLE_SHIFT    1  // sample shift enabled
+#endif
+
+#ifndef MICROPY_HW_QSPI_TIMEOUT_COUNTER
+#define MICROPY_HW_QSPI_TIMEOUT_COUNTER 0  // timeout counter disabled (see F7 errata)
+#endif
+
+#ifndef MICROPY_HW_QSPI_CS_HIGH_CYCLES
+#define MICROPY_HW_QSPI_CS_HIGH_CYCLES  2  // nCS stays high for 2 cycles
+#endif
+
 void qspi_init(void) {
     // Configure pins
-    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_NCS);
-    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_CLK);
-    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO0);
-    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO1);
-    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO2);
-    mp_hal_pin_config_alt_static(MICROPY_HW_QSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_QUADSPI_BK1_IO3);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_QSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_QUADSPI_BK1_NCS);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_QSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_QUADSPI_CLK);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_QSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_QUADSPI_BK1_IO0);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_QSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_QUADSPI_BK1_IO1);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_QSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_QUADSPI_BK1_IO2);
+    mp_hal_pin_config_alt_static_speed(MICROPY_HW_QSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_SPEED_VERY_HIGH, STATIC_AF_QUADSPI_BK1_IO3);
 
     // Bring up the QSPI peripheral
 
     __HAL_RCC_QSPI_CLK_ENABLE();
 
     QUADSPI->CR =
-        2 << QUADSPI_CR_PRESCALER_Pos // F_CLK = F_AHB/3 (72MHz when CPU is 216MHz)
+        (MICROPY_HW_QSPI_PRESCALER - 1) << QUADSPI_CR_PRESCALER_Pos
         | 3 << QUADSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
         #if defined(QUADSPI_CR_FSEL_Pos)
         | 0 << QUADSPI_CR_FSEL_Pos // FLASH 1 selected
@@ -55,14 +71,14 @@ void qspi_init(void) {
         #if defined(QUADSPI_CR_DFM_Pos)
         | 0 << QUADSPI_CR_DFM_Pos // dual-flash mode disabled
         #endif
-        | 1 << QUADSPI_CR_SSHIFT_Pos // do sample shift
-        | 0 << QUADSPI_CR_TCEN_Pos // timeout counter disabled (see F7 errata)
+        | MICROPY_HW_QSPI_SAMPLE_SHIFT << QUADSPI_CR_SSHIFT_Pos
+        | MICROPY_HW_QSPI_TIMEOUT_COUNTER << QUADSPI_CR_TCEN_Pos
         | 1 << QUADSPI_CR_EN_Pos // enable the peripheral
         ;
 
     QUADSPI->DCR =
         (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) << QUADSPI_DCR_FSIZE_Pos
-        | 1 << QUADSPI_DCR_CSHT_Pos // nCS stays high for 2 cycles
+        | (MICROPY_HW_QSPI_CS_HIGH_CYCLES - 1) << QUADSPI_DCR_CSHT_Pos
         | 0 << QUADSPI_DCR_CKMODE_Pos // CLK idles at low state
         ;
 }
