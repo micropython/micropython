@@ -25,6 +25,7 @@
  */
 
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
 
@@ -49,6 +50,41 @@ STATIC mp_obj_t bluetooth_handle_errno(int errno_) {
         mp_raise_OSError(errno_);
     }
     return mp_const_none;
+}
+
+// Parse string UUIDs, which are probably 128-bit UUIDs.
+void bluetooth_parse_uuid_str(mp_obj_t obj, uint8_t *uuid) {
+    GET_STR_DATA_LEN(obj, str_data, str_len);
+    int uuid_i = 32;
+    for (int i = 0; i < str_len; i++) {
+        char c = str_data[i];
+        if (c == '-') {
+            continue;
+        }
+        if (c >= '0' && c <= '9') {
+            c = c - '0';
+        } else if (c >= 'a' && c <= 'f') {
+            c = c - 'a' + 10;
+        } else if (c >= 'A' && c <= 'F') {
+            c = c - 'A' + 10;
+        } else {
+            mp_raise_ValueError("unknown char in UUID");
+        }
+        uuid_i--;
+        if (uuid_i < 0) {
+            mp_raise_ValueError("UUID too long");
+        }
+        if (uuid_i % 2 == 0) {
+            // lower nibble
+            uuid[uuid_i/2] |= c;
+        } else {
+            // upper nibble
+            uuid[uuid_i/2] = c << 4;
+        }
+    }
+    if (uuid_i > 0) {
+        mp_raise_ValueError("UUID too short");
+    }
 }
 
 STATIC mp_obj_t bluetooth_make_new() {

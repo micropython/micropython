@@ -111,6 +111,8 @@ STATIC const ble_gap_conn_params_t gap_conn_params = {
 STATIC int mp_bt_errno(uint32_t err_code) {
     if (err_code == NRF_ERROR_INVALID_PARAM) {
         return MP_EINVAL;
+    } else if (err_code == NRF_ERROR_NO_MEM) {
+        return MP_ENOMEM;
     } else if (err_code != 0) {
         return MP_EPERM;
     }
@@ -278,6 +280,16 @@ void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
         // Integer fits inside 16 bits.
         uuid->type = BLE_UUID_TYPE_BLE;
         uuid->uuid = MP_OBJ_SMALL_INT_VALUE(obj);
+    } else if (mp_obj_is_str(obj)) {
+        // Guessing this is a 128-bit (proprietary) UUID.
+        uuid->type = BLE_UUID_TYPE_BLE;
+        ble_uuid128_t buf;
+        bluetooth_parse_uuid_str(obj, &buf.uuid128[0]);
+        uint32_t err_code = sd_ble_uuid_vs_add(&buf, &uuid->type);
+        if (err_code != 0) {
+            mp_raise_OSError(mp_bt_errno(err_code));
+        }
+        uuid->uuid = (uint16_t)(buf.uuid128[12]) | ((uint16_t)(buf.uuid128[13]) << 8);
     } else {
         mp_raise_ValueError("cannot parse UUID");
     }

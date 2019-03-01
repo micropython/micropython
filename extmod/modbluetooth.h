@@ -59,6 +59,10 @@ int mp_bt_add_service(mp_bt_service_t *service);
 // UUIDs.
 void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid);
 
+// Parse a string UUID object into the 16-byte buffer. The string must be
+// the correct size, otherwise this function will throw an error.
+void bluetooth_parse_uuid_str(mp_obj_t obj, uint8_t *uuid);
+
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
 #define MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME   (0x09)

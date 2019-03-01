@@ -213,6 +213,10 @@ void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
         // Integer fits inside 16 bits, assume it's a standard UUID.
         uuid->len = ESP_UUID_LEN_16;
         uuid->uuid.uuid16 = MP_OBJ_SMALL_INT_VALUE(obj);
+    } else if (mp_obj_is_str(obj)) {
+        // Guessing this is a 128-bit (proprietary) UUID.
+        uuid->len = ESP_UUID_LEN_128;
+        bluetooth_parse_uuid_str(obj, &uuid->uuid.uuid128[0]);
     } else {
         mp_raise_ValueError("cannot parse UUID");
     }
