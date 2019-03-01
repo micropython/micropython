@@ -528,6 +528,7 @@ extern const struct _mp_obj_module_t pew_module;
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
+    PEW_MODULE \
     PIXELBUF_MODULE \
     PULSEIO_MODULE \
     RANDOM_MODULE \
@@ -543,7 +544,6 @@ extern const struct _mp_obj_module_t pew_module;
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
-    PEW_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.
