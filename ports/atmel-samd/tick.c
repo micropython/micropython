@@ -30,7 +30,6 @@
 
 #include "supervisor/shared/autoreload.h"
 #include "shared-module/gamepad/__init__.h"
-#include "shared-module/_pew/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
