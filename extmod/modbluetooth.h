@@ -28,6 +28,13 @@
 
 #include <stdbool.h>
 #include "bluetooth/bluetooth.h"
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t          base;
+    mp_bt_uuid_t           uuid;
+    mp_bt_service_handle_t handle;
+} mp_bt_service_t;
 
 // Enables the Bluetooth stack. Returns errno on failure.
 int mp_bt_enable(void);
@@ -44,6 +51,13 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_
 
 // Stop advertisement. No-op when already stopped.
 void mp_bt_advertise_stop(void);
+
+int mp_bt_add_service(mp_bt_service_t *service);
+
+// Parse an UUID object from the caller and stores the result in the uuid
+// parameter. Must accept both strings and integers for 128-bit and 16-bit
+// UUIDs.
+void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid);
 
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)

@@ -34,3 +34,7 @@ typedef esp_ble_adv_type_t mp_bt_adv_type_t;
 #define MP_BT_ADV_TYPE_ADV_NONCONN_IND ADV_TYPE_NONCONN_IND
 
 void mp_bt_init(void);
+
+typedef esp_bt_uuid_t mp_bt_uuid_t;
+
+typedef uint16_t mp_bt_service_handle_t;

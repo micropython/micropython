@@ -267,6 +267,22 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
     }
 }
 
+int mp_bt_add_service(mp_bt_service_t *service) {
+    uint32_t err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &service->uuid, &service->handle);
+    return mp_bt_errno(err_code);
+}
+
+// Parse a UUID object from the caller.
+void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
+    if (MP_OBJ_IS_SMALL_INT(obj) && MP_OBJ_SMALL_INT_VALUE(obj) == (uint32_t)(uint16_t)MP_OBJ_SMALL_INT_VALUE(obj)) {
+        // Integer fits inside 16 bits.
+        uuid->type = BLE_UUID_TYPE_BLE;
+        uuid->uuid = MP_OBJ_SMALL_INT_VALUE(obj);
+    } else {
+        mp_raise_ValueError("cannot parse UUID");
+    }
+}
+
 static void sd_evt_handler(uint32_t evt_id) {
     switch (evt_id) {
 #if MICROPY_MBFS
