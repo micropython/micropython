@@ -133,7 +133,7 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
     // We don't cache here because the underlying FS caches sectors.
     f_lseek(&self->file->fp, location);
     UINT bytes_read;
-    uint32_t pixel_data = 0; // this name is stale
+    uint32_t pixel_data = 0;
     uint32_t result = f_read(&self->file->fp, &pixel_data, bytes_per_pixel, &bytes_read);
     if (result == FR_OK) {
         uint32_t tmp = 0;
