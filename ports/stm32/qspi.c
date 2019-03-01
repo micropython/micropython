@@ -55,8 +55,8 @@ void qspi_init(void) {
         #if defined(QUADSPI_CR_DFM_Pos)
         | 0 << QUADSPI_CR_DFM_Pos // dual-flash mode disabled
         #endif
-        | 0 << QUADSPI_CR_SSHIFT_Pos // no sample shift
-        | 1 << QUADSPI_CR_TCEN_Pos // timeout counter enabled
+        | 1 << QUADSPI_CR_SSHIFT_Pos // do sample shift
+        | 0 << QUADSPI_CR_TCEN_Pos // timeout counter disabled (see F7 errata)
         | 1 << QUADSPI_CR_EN_Pos // enable the peripheral
         ;
 
@@ -71,7 +71,6 @@ void qspi_memory_map(void) {
     // Enable memory-mapped mode
 
     QUADSPI->ABR = 0; // disable continuous read mode
-    QUADSPI->LPTR = 100; // to tune
     QUADSPI->CCR =
         0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
         | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
