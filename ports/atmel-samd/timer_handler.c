@@ -50,7 +50,9 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
                 pulseout_interrupt_handler(index);
                 break;
             case TC_HANDLER_PEW:
+#if CIRCUITPY_PEW
                 pewpew_interrupt_handler(index);
+#endif
                 break;
             default:
                 break;

@@ -226,7 +226,7 @@ void reset_port(void) {
 #if CIRCUITPY_GAMEPAD
     gamepad_reset();
 #endif
-#ifdef CIRCUITPY_PEW
+#if CIRCUITPY_PEW
     pew_reset();
 #endif
 
