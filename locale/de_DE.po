@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-28 23:07-0800\n"
+"POT-Creation-Date: 2019-03-01 07:16-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -752,15 +752,18 @@ msgid "Only 8 or 16 bit mono with "
 msgstr "Nur 8 oder 16 bit mono mit "
 
 #, c-format
-msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr "Nur unkomprimiertes Windows-Format (BMP) unterstützt %d"
+msgid ""
+"Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr ""
 
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr ""
 "Es werden nur Bitmaps mit einer Farbtiefe von 8 Bit oder weniger unterstützt"
 
 #, c-format
-msgid "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d"
+msgid ""
+"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
+"given"
 msgstr ""
 
 msgid "Only slices with step=1 (aka None) are supported"
@@ -2138,3 +2141,6 @@ msgstr "y Wert außerhalb der Grenzen"
 
 msgid "zero step"
 msgstr ""
+
+#~ msgid "Only Windows format, uncompressed BMP supported %d"
+#~ msgstr "Nur unkomprimiertes Windows-Format (BMP) unterstützt %d"

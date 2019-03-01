@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-28 23:07-0800\n"
+"POT-Creation-Date: 2019-03-01 07:16-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -772,14 +772,17 @@ msgid "Only 8 or 16 bit mono with "
 msgstr "Tanging 8 o 16 na bit mono na may "
 
 #, c-format
-msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr "Tanging Windows format, uncompressed BMP lamang ang supportado %d"
+msgid ""
+"Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr ""
 
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
 
 #, c-format
-msgid "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d"
+msgid ""
+"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
+"given"
 msgstr ""
 
 #, fuzzy
@@ -2169,6 +2172,9 @@ msgstr "wala sa sakop ang address"
 
 msgid "zero step"
 msgstr "zero step"
+
+#~ msgid "Only Windows format, uncompressed BMP supported %d"
+#~ msgstr "Tanging Windows format, uncompressed BMP lamang ang supportado %d"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"

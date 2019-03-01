@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-28 23:07-0800\n"
+"POT-Creation-Date: 2019-03-01 07:16-0800\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -776,14 +776,17 @@ msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
 #, c-format
-msgid "Only Windows format, uncompressed BMP supported %d"
-msgstr "Seul les BMP non-compressé au format Windows sont supportés %d"
+msgid ""
+"Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr ""
 
 msgid "Only bit maps of 8 bit color or less are supported"
 msgstr "Seules les bitmaps de 8bits par couleur ou moins sont supportées"
 
 #, c-format
-msgid "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d"
+msgid ""
+"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
+"given"
 msgstr ""
 
 #, fuzzy
@@ -2193,6 +2196,9 @@ msgstr "adresse hors limites"
 
 msgid "zero step"
 msgstr "'step' nul"
+
+#~ msgid "Only Windows format, uncompressed BMP supported %d"
+#~ msgstr "Seul les BMP non-compressé au format Windows sont supportés %d"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Seul les BMP 24bits ou plus sont supportés %x"
