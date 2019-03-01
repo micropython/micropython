@@ -38,6 +38,8 @@
 
 #include "py/smallint.h"
 
+#define QSTR_LAST_STATIC MP_QSTR_zip
+
 // The current version of .mpy files
 #define MPY_VERSION (3)
 
@@ -187,6 +189,10 @@ STATIC size_t read_uint(mp_reader_t *reader, byte **out) {
 
 STATIC qstr load_qstr(mp_reader_t *reader, qstr_window_t *qw) {
     size_t len = read_uint(reader, NULL);
+    if (len == 0) {
+        // static qstr
+        return read_byte(reader);
+    }
     if (len & 1) {
         // qstr in window
         return qstr_window_access(qw, len >> 1);
@@ -362,6 +368,12 @@ STATIC void mp_print_uint(mp_print_t *print, size_t n) {
 }
 
 STATIC void save_qstr(mp_print_t *print, qstr_window_t *qw, qstr qst) {
+    if (qst <= QSTR_LAST_STATIC) {
+        // encode static qstr
+        byte buf[2] = {0, qst & 0xff};
+        mp_print_bytes(print, buf, 2);
+        return;
+    }
     size_t idx = qstr_window_insert(qw, qst);
     if (idx < QSTR_WINDOW_SIZE) {
         // qstr found in window, encode index to it

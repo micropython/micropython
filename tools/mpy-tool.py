@@ -63,6 +63,17 @@ class Config:
     MICROPY_LONGINT_IMPL_MPZ = 2
 config = Config()
 
+class QStrType:
+    def __init__(self, str):
+        self.str = str
+        self.qstr_esc = qstrutil.qstr_escape(self.str)
+        self.qstr_id = 'MP_QSTR_' + self.qstr_esc
+
+# Initialise global list of qstrs with static qstrs
+global_qstrs = [None] # MP_QSTR_NULL should never be referenced
+for n in qstrutil.static_qstr_list:
+    global_qstrs.append(QStrType(n))
+
 class QStrWindow:
     def __init__(self, size_log2):
         self.window = []
@@ -421,17 +432,17 @@ def read_uint(f, out=None):
             break
     return i
 
-global_qstrs = []
-qstr_type = namedtuple('qstr', ('str', 'qstr_esc', 'qstr_id'))
 def read_qstr(f, qstr_win):
     ln = read_uint(f)
+    if ln == 0:
+        # static qstr
+        return bytes_cons(f.read(1))[0]
     if ln & 1:
         # qstr in table
         return qstr_win.access(ln >> 1)
     ln >>= 1
     data = str_cons(f.read(ln), 'utf8')
-    qstr_esc = qstrutil.qstr_escape(data)
-    global_qstrs.append(qstr_type(data, qstr_esc, 'MP_QSTR_' + qstr_esc))
+    global_qstrs.append(QStrType(data))
     qstr_win.push(len(global_qstrs) - 1)
     return len(global_qstrs) - 1
 
@@ -476,6 +487,7 @@ def read_qstr_and_pack(f, bytecode, qstr_win):
     bytecode.append(qst >> 8)
 
 def read_bytecode(file, bytecode, qstr_win):
+    QSTR_LAST_STATIC = len(qstrutil.static_qstr_list)
     while not bytecode.is_full():
         op = read_byte(file, bytecode)
         f, sz = mp_opcode_format(bytecode.buf, bytecode.idx - 1, False)
@@ -528,7 +540,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     new = {}
     for q in global_qstrs:
         # don't add duplicates
-        if q.qstr_esc in base_qstrs or q.qstr_esc in new:
+        if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str)
     new = sorted(new.values(), key=lambda x: x[0])
