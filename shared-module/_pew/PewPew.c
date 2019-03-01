@@ -74,17 +74,11 @@ void pew_init() {
     }
     if (pewpew_tc_index == 0xff) {
         // Find a spare timer.
-        Tc *tc = NULL;
-        int8_t index = TC_INST_NUM - 1;
-        for (; index >= 0; index--) {
-            if (tc_insts[index]->COUNT16.CTRLA.bit.ENABLE == 0) {
-                tc = tc_insts[index];
-                break;
-            }
-        }
-        if (tc == NULL) {
+        uint8_t index = find_free_timer();
+        if (index == 0xff) {
             mp_raise_RuntimeError(translate(""));
         }
+        Tc *tc = tc_insts[index];
 
         pewpew_tc_index = index;
         set_timer_handler(true, index, TC_HANDLER_PEW);
