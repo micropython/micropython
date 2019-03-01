@@ -24,38 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "boards/board.h"
 
-#include "timer_handler.h"
-
-#include "common-hal/pulseio/PulseOut.h"
-#include "shared-module/_pew/PewPew.h"
-
-static uint8_t tc_handler[TC_INST_NUM];
-
-void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler) {
-    if (is_tc) {
-        tc_handler[index] = timer_handler;
-    }
+void board_init(void) {
 }
 
-void shared_timer_handler(bool is_tc, uint8_t index) {
-    // Add calls to interrupt handlers for specific functionality here.
-    // Make sure to add the handler #define to timer_handler.h
-    if (is_tc) {
-        uint8_t handler = tc_handler[index];
-        switch(handler) {
-            case TC_HANDLER_PULSEOUT:
-                pulseout_interrupt_handler(index);
-                break;
-            case TC_HANDLER_PEW:
-#if CIRCUITPY_PEW
-                pewpew_interrupt_handler(index);
-#endif
-                break;
-            default:
-                break;
-        }
-    }
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
 }
