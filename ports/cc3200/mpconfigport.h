@@ -39,6 +39,7 @@
 #define MICROPY_PERSISTENT_CODE_LOAD                (1)
 #define MICROPY_EMIT_THUMB                          (0)
 #define MICROPY_EMIT_INLINE_THUMB                   (0)
+#define MICROPY_COMP_CONST_LITERAL                  (0)
 #define MICROPY_COMP_MODULE_CONST                   (1)
 #define MICROPY_ENABLE_GC                           (1)
 #define MICROPY_ENABLE_FINALISER                    (1)
