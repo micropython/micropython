@@ -24,3 +24,6 @@ CIRCUITPY_NVM = 0
 
 # rtc not yet implemented
 CIRCUITPY_RTC = 0
+
+# frequencyio not yet implemented
+CIRCUITPY_FREQUENCYIO = 0

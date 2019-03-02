@@ -19,3 +19,4 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 
 # To keep the build small
 CIRCUITPY_I2CSLAVE = 0
+CIRCUITPY_FREQUENCYIO = 0
