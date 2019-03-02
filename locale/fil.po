@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 19:40+0100\n"
+"POT-Creation-Date: 2019-03-02 22:09+1100\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1149,6 +1149,9 @@ msgstr "RTC calibration ay hindi supportado ng board na ito"
 #: shared-bindings/rtc/RTC.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Hindi supportado ang RTC sa board na ito"
+
+msgid "RTC set is not supported on this board"
+msgstr "Hindi sinusuportahan ang pagbabago ng RTC sa board na ito"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, fuzzy

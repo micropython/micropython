@@ -1136,6 +1136,9 @@ msgstr ""
 msgid "RTC is not supported on this board"
 msgstr ""
 
+msgid "RTC set is not supported on this board"
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Range out of bounds"
 msgstr ""

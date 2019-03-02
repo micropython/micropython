@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 19:40+0100\n"
+"POT-Creation-Date: 2019-03-02 22:09+1100\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -1152,6 +1152,9 @@ msgstr "calibrazione RTC non supportata su questa scheda"
 #: shared-bindings/rtc/RTC.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "RTC non supportato su questa scheda"
+
+msgid "RTC set is not supported on this board"
+msgstr "La modifica RTC non è supportata su questa scheda"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, fuzzy

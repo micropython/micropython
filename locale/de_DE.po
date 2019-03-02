@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 19:40+0100\n"
+"POT-Creation-Date: 2019-03-02 22:09+1100\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -1128,6 +1128,9 @@ msgstr "Die RTC-Kalibrierung wird auf diesem Board nicht unterstützt"
 #: shared-bindings/rtc/RTC.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Eine RTC wird auf diesem Board nicht unterstützt"
+
+msgid "RTC set is not supported on this board"
+msgstr "Die RTC-Änderung wird auf diesem Board nicht unterstützt"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Range out of bounds"

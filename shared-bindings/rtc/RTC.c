@@ -37,7 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 void MP_WEAK common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
-    mp_raise_NotImplementedError(translate("RTC get is not supported on this board"));
+    mp_raise_NotImplementedError(translate("RTC is not supported on this board"));
 }
 
 void MP_WEAK common_hal_rtc_set_time(timeutils_struct_time_t *tm) {

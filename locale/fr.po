@@ -1157,6 +1157,9 @@ msgstr "calibration de la RTC non supportée sur cette carte"
 msgid "RTC is not supported on this board"
 msgstr "RTC non supportée sur cette carte"
 
+msgid "RTC set is not supported on this board"
+msgstr "Le changement de RTC non supportée sur cette carte"
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, fuzzy
 msgid "Range out of bounds"
