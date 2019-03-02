@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Radomir Dopieralski
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <stdint.h>
 
-#include "timer_handler.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PEW_PEWPEW_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_PEW_PEWPEW_H
 
-#include "common-hal/pulseio/PulseOut.h"
-#include "shared-module/_pew/PewPew.h"
+extern const mp_obj_type_t pewpew_type;
 
-static uint8_t tc_handler[TC_INST_NUM];
-
-void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler) {
-    if (is_tc) {
-        tc_handler[index] = timer_handler;
-    }
-}
-
-void shared_timer_handler(bool is_tc, uint8_t index) {
-    // Add calls to interrupt handlers for specific functionality here.
-    // Make sure to add the handler #define to timer_handler.h
-    if (is_tc) {
-        uint8_t handler = tc_handler[index];
-        switch(handler) {
-            case TC_HANDLER_PULSEOUT:
-                pulseout_interrupt_handler(index);
-                break;
-            case TC_HANDLER_PEW:
-#if CIRCUITPY_PEW
-                pewpew_interrupt_handler(index);
-#endif
-                break;
-            default:
-                break;
-        }
-    }
-}
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PEW_PEWPEW_H

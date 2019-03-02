@@ -68,9 +68,10 @@
 
 #include "tusb.h"
 
-#ifdef CIRCUITPY_GAMEPAD_TICKS
+#if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
 #endif
+#include "shared-module/_pew/PewPew.h"
 
 extern volatile bool mp_msc_enabled;
 
@@ -222,8 +223,11 @@ void reset_port(void) {
 
     reset_gclks();
 
-#ifdef CIRCUITPY_GAMEPAD_TICKS
+#if CIRCUITPY_GAMEPAD
     gamepad_reset();
+#endif
+#if CIRCUITPY_PEW
+    pew_reset();
 #endif
 
     reset_event_system();

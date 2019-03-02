@@ -11,18 +11,21 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_AUDIO_OUT), MP_ROM_PTR(&pin_PA02) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) }, // analog out/in
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPEAKER_ENABLE), MP_ROM_PTR(&pin_PA27) },
+
+    // Light sensor
     { MP_OBJ_NEW_QSTR(MP_QSTR_LIGHT), MP_ROM_PTR(&pin_PA07) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PA07) },
 
     // STEMMA connectors
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_PA04) }, // D3
-    { MP_OBJ_NEW_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PA04) }, // A1/D3
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PA05) }, // D4
-    { MP_OBJ_NEW_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PA05) }, // A4/D4
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_PA04) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PA04) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PA05) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PA05) },
 
     // Indicator LED
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA27) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_PA27) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PB23) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_PB23) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL),MP_ROM_PTR(&pin_PB22) },
 
     // LCD pins

@@ -470,6 +470,13 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
+#if CIRCUITPY_PEW
+extern const struct _mp_obj_module_t pew_module;
+#define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
+#else
+#define PEW_MODULE
+#endif
+
 // These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
 #if MICROPY_PY_UERRNO
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
@@ -529,6 +536,7 @@ extern const struct _mp_obj_module_t ustack_module;
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
+    PEW_MODULE \
     PIXELBUF_MODULE \
     PULSEIO_MODULE \
     RANDOM_MODULE \
@@ -570,6 +578,7 @@ extern const struct _mp_obj_module_t ustack_module;
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
     mp_obj_t gamepad_singleton; \
+    mp_obj_t pew_singleton; \
     mp_obj_t terminal_tilegrid_tiles; \
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \

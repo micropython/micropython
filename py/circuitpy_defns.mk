@@ -201,6 +201,9 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
+ifeq ($(CIRCUITPY_PEW),1)
+SRC_PATTERNS += _pew/%
+endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_COMMON_HAL = \
@@ -323,6 +326,8 @@ $(filter $(SRC_PATTERNS), \
 	terminalio/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
+	_pew/__init__.c \
+	_pew/PewPew.c \
 )
 
 ifeq ($(INTERNAL_LIBM),1)
