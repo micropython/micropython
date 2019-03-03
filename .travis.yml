@@ -47,6 +47,7 @@ jobs:
         - git submodule update --init --recursive
         - export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
       script:
+        - pwd
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
       
