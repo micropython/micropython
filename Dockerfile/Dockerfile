@@ -9,6 +9,7 @@ RUN apt-get update \
   && apt-get install -y make unrar-free autoconf automake libtool gcc g++ gperf \
     flex bison texinfo gawk ncurses-dev libexpat-dev python-dev python3 python-serial python3-pip \
     sed git unzip bash help2man wget bzip2 curl zip jq
+  && pip3 install pyparsing
 
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
