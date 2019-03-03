@@ -41,9 +41,12 @@
 //| ========================================================
 //|
 //| FrequencyIn is used to measure the frequency, in hertz, of a digital signal
-//| on an incoming pin. Accuracy has shown to be within 1kHz, if not better.
-//| Current maximum detectable frequency is ~512kHz.
-//| It will not determine pulse width (use ``PulseIn``).
+//| on an incoming pin. Accuracy has shown to be within 10%, if not better. It
+//| is recommended to utilize an average of multiple samples to smooth out readings.
+//|
+//| Frequencies below 1KHz are not currently detectable.
+//|
+//| FrequencyIn will not determine pulse width (use ``PulseIn``).
 //|
 //| .. class:: FrequencyIn(pin, capture_period=10)
 //|
@@ -51,7 +54,7 @@
 //|
 //|   :param ~microcontroller.Pin pin: Pin to read frequency from.
 //|   :param int capture_period: Keyword argument to set the measurement period, in
-//|                              milliseconds. Default is 10ms; maximum is 500ms.
+//|                              milliseconds. Default is 10ms; range is 1ms - 500ms.
 //|
 //|   Read the incoming frequency from a pin::
 //|
@@ -166,7 +169,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_clear_obj, frequencyio_frequen
 
 //|   .. attribute:: capture_period
 //|
-//|     The capture measurement period.
+//|     The capture measurement period. Lower incoming frequencies will be measured
+//|     more accurately with longer capture periods. Higher frequencies are more
+//|     accurate with shorter capture periods.
 //|
 //|   .. note:: When setting a new ``capture_period``, all previous capture information is
 //|             cleared with a call to ``clear()``.
