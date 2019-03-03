@@ -44,7 +44,6 @@ jobs:
         - tar -xzf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - export PATH="$HOME/esp/xtensa-esp32-elf/bin:$PATH"
         - git clone https://github.com/espressif/esp-idf.git
-        - git checkout master
         - git submodule update --init --recursive
         - export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
       script:
