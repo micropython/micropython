@@ -109,14 +109,24 @@ STATIC const ble_gap_conn_params_t gap_conn_params = {
 };
 
 STATIC int mp_bt_errno(uint32_t err_code) {
-    if (err_code == NRF_ERROR_INVALID_PARAM) {
+    switch (err_code) {
+    case 0:
+        return 0; // no error
+    case NRF_ERROR_INVALID_PARAM:
         return MP_EINVAL;
-    } else if (err_code == NRF_ERROR_NO_MEM) {
+    case NRF_ERROR_NO_MEM:
         return MP_ENOMEM;
-    } else if (err_code != 0) {
-        return MP_EPERM;
+    case NRF_ERROR_INVALID_ADDR:
+        return MP_EFAULT; // bad address
+    case NRF_ERROR_NOT_FOUND:
+        return MP_ENOENT;
+    case NRF_ERROR_DATA_SIZE:
+        return MP_E2BIG;
+    case NRF_ERROR_FORBIDDEN:
+        return MP_EACCES;
+    default:
+        return MP_EPERM; // catch-all
     }
-    return 0;
 }
 
 int mp_bt_enable(void) {
@@ -269,22 +279,93 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
     }
 }
 
-int mp_bt_add_service(mp_bt_service_t *service) {
+int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_bt_characteristic_t **characteristics) {
     uint32_t err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &service->uuid, &service->handle);
+    if (err_code != 0) {
+        return mp_bt_errno(err_code);
+    }
+
+    // Add each characteristic.
+    for (size_t i = 0; i < num_characteristics; i++) {
+        mp_bt_characteristic_t *characteristic = characteristics[i];
+
+        // Create characteristic metadata.
+        ble_gatts_char_md_t char_md = {0};
+        char_md.char_props.read = (characteristic->flags & MP_BLE_FLAG_READ) ? 1 : 0;
+        char_md.char_props.write = (characteristic->flags & MP_BLE_FLAG_WRITE) ? 1 : 0;
+        char_md.char_props.notify = (characteristic->flags & MP_BLE_FLAG_NOTIFY) ? 1 : 0;
+
+        // Create attribute metadata.
+        ble_gatts_attr_md_t attr_md = {0};
+        attr_md.vlen = 1;
+        attr_md.vloc = BLE_GATTS_VLOC_STACK;
+        attr_md.rd_auth = 0;
+        attr_md.wr_auth = 0;
+        if (characteristic->flags & MP_BLE_FLAG_READ) {
+            BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+        }
+        if (characteristic->flags & MP_BLE_FLAG_WRITE) {
+            BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+        }
+
+        // Create characteristic value.
+        ble_gatts_attr_t attr_char_value = {0};
+        attr_char_value.p_uuid = &characteristic->uuid;
+        attr_char_value.p_attr_md = &attr_md;
+        attr_char_value.init_len = 0;
+        attr_char_value.init_offs = 0;
+        attr_char_value.max_len = MP_BT_MAX_ATTR_SIZE;
+        attr_char_value.p_value = NULL;
+
+        // Output handles.
+        ble_gatts_char_handles_t handles;
+
+        // BLE_GATT_HANDLE_INVALID: add to previously added service.
+        uint32_t err_code = sd_ble_gatts_characteristic_add(BLE_GATT_HANDLE_INVALID, &char_md, &attr_char_value, &handles);
+        if (err_code != 0) {
+            return mp_bt_errno(err_code);
+        }
+
+        // Now that the characteristic has been added successfully to the
+        // service, update the characteristic's service.
+        // Note that the caller has already ensured that
+        // characteristic->service is NULL.
+        characteristic->service = service;
+        characteristic->value_handle = handles.value_handle;
+    }
+
+    return 0;
+}
+
+int mp_bt_characteristic_value_set(mp_bt_characteristic_handle_t handle, const void *value, size_t value_len) {
+    ble_gatts_value_t data = {0};
+    data.len = value_len;
+    data.offset = 0;
+    data.p_value = (void*)value; // value is only read so we can discard const
+    uint32_t err_code = sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID, handle, &data);
+    return mp_bt_errno(err_code);
+}
+
+int mp_bt_characteristic_value_get(mp_bt_characteristic_handle_t handle, void *value, size_t *value_len) {
+    ble_gatts_value_t data = {0};
+    data.len = *value_len;
+    data.offset = 0;
+    data.p_value = value;
+    uint32_t err_code = sd_ble_gatts_value_get(BLE_CONN_HANDLE_INVALID, handle, &data);
+    *value_len = data.len;
     return mp_bt_errno(err_code);
 }
 
 // Parse a UUID object from the caller.
-void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
+void mp_bt_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
     if (MP_OBJ_IS_SMALL_INT(obj) && MP_OBJ_SMALL_INT_VALUE(obj) == (uint32_t)(uint16_t)MP_OBJ_SMALL_INT_VALUE(obj)) {
         // Integer fits inside 16 bits.
         uuid->type = BLE_UUID_TYPE_BLE;
         uuid->uuid = MP_OBJ_SMALL_INT_VALUE(obj);
     } else if (mp_obj_is_str(obj)) {
         // Guessing this is a 128-bit (proprietary) UUID.
-        uuid->type = BLE_UUID_TYPE_BLE;
         ble_uuid128_t buf;
-        bluetooth_parse_uuid_str(obj, &buf.uuid128[0]);
+        mp_bt_parse_uuid_str(obj, &buf.uuid128[0]);
         uint32_t err_code = sd_ble_uuid_vs_add(&buf, &uuid->type);
         if (err_code != 0) {
             mp_raise_OSError(mp_bt_errno(err_code));
@@ -292,6 +373,22 @@ void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
         uuid->uuid = (uint16_t)(buf.uuid128[12]) | ((uint16_t)(buf.uuid128[13]) << 8);
     } else {
         mp_raise_ValueError("cannot parse UUID");
+    }
+}
+
+mp_obj_t mp_bt_format_uuid(mp_bt_uuid_t *uuid) {
+    uint8_t raw[16];
+    uint8_t raw_len;
+    if (sd_ble_uuid_encode(uuid, &raw_len, raw) != 0) {
+        return mp_const_none;
+    }
+    switch (raw_len) {
+    case 2:
+        return MP_OBJ_NEW_SMALL_INT((int)(raw[0]) | ((int)(raw[1]) << 8));
+    case 16:
+        return mp_bt_format_uuid_str(raw);
+    default:
+        return mp_const_none;
     }
 }
 

@@ -32,6 +32,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include <string.h>
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
@@ -44,6 +45,7 @@ STATIC union {
     // Ugly hack to return values from an event handler back to a caller.
     esp_gatt_if_t gatts_if;
     uint16_t      service_handle;
+    uint16_t      attr_handle;
 } mp_bt_call_result;
 
 STATIC mp_bt_adv_type_t bluetooth_adv_type;
@@ -62,7 +64,7 @@ STATIC int mp_bt_esp_errno(esp_err_t err) {
 }
 
 // Convert the result of an asynchronous call to an errno value.
-STATIC int mp_bt_status_errno() {
+STATIC int mp_bt_status_errno(void) {
     if (mp_bt_call_status != ESP_BT_STATUS_SUCCESS) {
         return MP_EPERM;
     }
@@ -162,7 +164,7 @@ void mp_bt_advertise_stop(void) {
     xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 }
 
-int mp_bt_add_service(mp_bt_service_t *service) {
+int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_bt_characteristic_t **characteristics) {
     // In ESP-IDF, a service is more than just a service, it's an
     // "application profile". One application profile contains exactly one
     // service. For details, see:
@@ -181,12 +183,17 @@ int mp_bt_add_service(mp_bt_service_t *service) {
     }
     esp_gatt_if_t gatts_if = mp_bt_call_result.gatts_if;
 
+    // Calculate the number of required handles.
+    // This formula is a guess. I can't seem to find any documentation for
+    // the required number of handles.
+    uint16_t num_handle = 1 + num_characteristics * 2;
+
     // Create the service.
     esp_gatt_srvc_id_t bluetooth_service_id;
     bluetooth_service_id.is_primary = true;
     bluetooth_service_id.id.inst_id = 0;
     bluetooth_service_id.id.uuid = service->uuid;
-    err = esp_ble_gatts_create_service(gatts_if, &bluetooth_service_id, 1);
+    err = esp_ble_gatts_create_service(gatts_if, &bluetooth_service_id, num_handle);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -204,11 +211,79 @@ int mp_bt_add_service(mp_bt_service_t *service) {
     }
     // Wait for ESP_GATTS_START_EVT
     xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+    if (mp_bt_call_status != 0) {
+        return mp_bt_status_errno();
+    }
+
+    // Add each characteristic.
+    for (size_t i = 0; i < num_characteristics; i++) {
+        mp_bt_characteristic_t *characteristic = characteristics[i];
+
+        esp_gatt_perm_t perm = 0;
+        perm |= (characteristic->flags & MP_BLE_FLAG_READ) ? ESP_GATT_PERM_READ : 0;
+        perm |= (characteristic->flags & MP_BLE_FLAG_WRITE) ? ESP_GATT_PERM_WRITE : 0;
+
+        esp_gatt_char_prop_t property = 0;
+        property |= (characteristic->flags & MP_BLE_FLAG_READ) ? ESP_GATT_CHAR_PROP_BIT_READ : 0;
+        property |= (characteristic->flags & MP_BLE_FLAG_WRITE) ? ESP_GATT_CHAR_PROP_BIT_WRITE : 0;
+        property |= (characteristic->flags & MP_BLE_FLAG_NOTIFY) ? ESP_GATT_CHAR_PROP_BIT_NOTIFY : 0;
+
+        esp_attr_value_t char_val = {0};
+        char_val.attr_max_len = MP_BT_MAX_ATTR_SIZE;
+        char_val.attr_len = 0;
+        char_val.attr_value = NULL;
+
+        esp_attr_control_t control = {0};
+        control.auto_rsp = ESP_GATT_AUTO_RSP;
+
+        esp_err_t err = esp_ble_gatts_add_char(service->handle, &characteristic->uuid, perm, property, &char_val, &control);
+        if (err != 0) {
+            return mp_bt_esp_errno(err);
+        }
+        // Wait for ESP_GATTS_ADD_CHAR_EVT
+        xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+        if (mp_bt_call_status != 0) {
+            return mp_bt_status_errno();
+        }
+
+        // Now that the characteristic has been added successfully to the
+        // service, update the characteristic's service.
+        // Note that the caller has already ensured that
+        // characteristic->service is NULL.
+        characteristic->service = service;
+        characteristic->value_handle = mp_bt_call_result.attr_handle;
+    }
+
+    return 0;
+}
+
+int mp_bt_characteristic_value_set(mp_bt_characteristic_handle_t handle, const void *value, size_t value_len) {
+    esp_err_t err = esp_ble_gatts_set_attr_value(handle, value_len, value);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    // Wait for ESP_GATTS_SET_ATTR_VAL_EVT
+    xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
     return mp_bt_status_errno();
 }
 
+int mp_bt_characteristic_value_get(mp_bt_characteristic_handle_t handle, void *value, size_t *value_len) {
+    uint16_t bt_len;
+    const uint8_t *bt_ptr;
+    esp_err_t err = esp_ble_gatts_get_attr_value(handle, &bt_len, &bt_ptr);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    if (*value_len > bt_len) {
+        // Copy up to *value_len bytes.
+        *value_len = bt_len;
+    }
+    memcpy(value, bt_ptr, *value_len);
+    return 0;
+}
+
 // Parse a UUID object from the caller.
-void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
+void mp_bt_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
     if (MP_OBJ_IS_SMALL_INT(obj) && MP_OBJ_SMALL_INT_VALUE(obj) == (uint32_t)(uint16_t)MP_OBJ_SMALL_INT_VALUE(obj)) {
         // Integer fits inside 16 bits, assume it's a standard UUID.
         uuid->len = ESP_UUID_LEN_16;
@@ -216,9 +291,21 @@ void bluetooth_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
     } else if (mp_obj_is_str(obj)) {
         // Guessing this is a 128-bit (proprietary) UUID.
         uuid->len = ESP_UUID_LEN_128;
-        bluetooth_parse_uuid_str(obj, &uuid->uuid.uuid128[0]);
+        mp_bt_parse_uuid_str(obj, &uuid->uuid.uuid128[0]);
     } else {
         mp_raise_ValueError("cannot parse UUID");
+    }
+}
+
+// Format a UUID object to be returned from a .uuid() call.
+mp_obj_t mp_bt_format_uuid(mp_bt_uuid_t *uuid) {
+    switch (uuid->len) {
+    case ESP_UUID_LEN_16:
+        return MP_OBJ_NEW_SMALL_INT(uuid->uuid.uuid16);
+    case ESP_UUID_LEN_128:
+        return mp_bt_format_uuid_str(uuid->uuid.uuid128);
+    default:
+        return mp_const_none;
     }
 }
 
@@ -273,6 +360,23 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
             // Service started.
             mp_bt_call_status = param->start.status;
             xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GATTS_ADD_CHAR_EVT:
+            // Characteristic added.
+            mp_bt_call_status = param->add_char.status;
+            mp_bt_call_result.attr_handle = param->add_char.attr_handle;
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GATTS_SET_ATTR_VAL_EVT:
+            // Characteristic value set by application.
+            mp_bt_call_status = param->set_attr_val.status;
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GATTS_READ_EVT:
+            // Characteristic value read by connected device.
+            break;
+        case ESP_GATTS_WRITE_EVT:
+            // Characteristic value written by connected device.
             break;
         default:
             ESP_LOGI("bluetooth", "GATTS: unknown event: %d", event);

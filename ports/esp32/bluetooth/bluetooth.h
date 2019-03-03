@@ -33,8 +33,12 @@ typedef esp_ble_adv_type_t mp_bt_adv_type_t;
 #define MP_BT_ADV_TYPE_ADV_IND         ADV_TYPE_IND
 #define MP_BT_ADV_TYPE_ADV_NONCONN_IND ADV_TYPE_NONCONN_IND
 
+#define MP_BT_MAX_ATTR_SIZE (20)
+
 void mp_bt_init(void);
 
 typedef esp_bt_uuid_t mp_bt_uuid_t;
 
 typedef uint16_t mp_bt_service_handle_t;
+
+typedef uint16_t mp_bt_characteristic_handle_t;

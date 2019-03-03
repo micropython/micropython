@@ -33,6 +33,7 @@
 
 STATIC const mp_obj_type_t bluetooth_type;
 STATIC const mp_obj_type_t service_type;
+STATIC const mp_obj_type_t characteristic_type;
 
 typedef struct _mp_obj_bluetooth_t {
     mp_obj_base_t base;
@@ -53,7 +54,7 @@ STATIC mp_obj_t bluetooth_handle_errno(int errno_) {
 }
 
 // Parse string UUIDs, which are probably 128-bit UUIDs.
-void bluetooth_parse_uuid_str(mp_obj_t obj, uint8_t *uuid) {
+void mp_bt_parse_uuid_str(mp_obj_t obj, uint8_t *uuid) {
     GET_STR_DATA_LEN(obj, str_data, str_len);
     int uuid_i = 32;
     for (int i = 0; i < str_len; i++) {
@@ -87,7 +88,36 @@ void bluetooth_parse_uuid_str(mp_obj_t obj, uint8_t *uuid) {
     }
 }
 
-STATIC mp_obj_t bluetooth_make_new() {
+// Format string UUID. Example output:
+// '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+mp_obj_t mp_bt_format_uuid_str(uint8_t *uuid) {
+    char str[36];
+    char *s = str;
+    for (int i = 15; i >= 0; i--) {
+        char nibble = uuid[i] >> 4;
+        if (nibble >= 10) {
+            nibble += 'a' - 10;
+        } else {
+            nibble += '0';
+        }
+        *(s++) = nibble;
+
+        nibble = uuid[i] & 0xf;
+        if (nibble >= 10) {
+            nibble += 'a' - 10;
+        } else {
+            nibble += '0';
+        }
+        *(s++) = nibble;
+
+        if (i == 12 || i == 10 || i == 8 || i == 6) {
+            *(s++) = '-';
+        }
+    }
+    return mp_obj_new_str(str, MP_ARRAY_SIZE(str));
+}
+
+STATIC mp_obj_t bluetooth_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     return MP_OBJ_FROM_PTR(&bluetooth_obj);
 }
 
@@ -204,32 +234,130 @@ STATIC mp_obj_t bluetooth_advertise_raw(size_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_advertise_raw_obj, 1, bluetooth_advertise_raw);
 
 STATIC mp_obj_t bluetooth_add_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_interval, ARG_adv_data, ARG_sr_data, ARG_connectable };
+    enum { ARG_uuid, ARG_characteristics };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_uuid, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = mp_const_none } },
+        { MP_QSTR_uuid,            MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_characteristics, MP_ARG_OBJ | MP_ARG_REQUIRED },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    mp_obj_list_t *characteristics = args[ARG_characteristics].u_obj;
+    if (characteristics == NULL || !mp_obj_is_type(args[ARG_characteristics].u_obj, &mp_type_list)) {
+        mp_raise_ValueError("characteristics must be a list");
+    }
+    for (int i = 0; i < characteristics->len; i++) {
+        mp_obj_t characteristic = characteristics->items[i];
+        if (characteristic == NULL || !mp_obj_is_type(characteristic, &characteristic_type)) {
+            mp_raise_ValueError("not a Characteristic");
+        }
+        if (((mp_bt_characteristic_t*)characteristic)->service != NULL) {
+            mp_raise_ValueError("Characteristic already added to Service");
+        }
+    }
+
     mp_bt_service_t *service = m_new_obj(mp_bt_service_t);
     service->base.type = &service_type;
-    bluetooth_parse_uuid(args[0].u_obj, &service->uuid);
-    int errno_ = mp_bt_add_service(service);
+    mp_bt_parse_uuid(args[ARG_uuid].u_obj, &service->uuid);
+    int errno_ = mp_bt_add_service(service, characteristics->len, (mp_bt_characteristic_t**)characteristics->items);
     bluetooth_handle_errno(errno_);
     return service;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_add_service_obj, 1, bluetooth_add_service);
 
+STATIC mp_obj_t service_uuid(mp_obj_t self_in) {
+    mp_bt_service_t *service = self_in;
+    return mp_bt_format_uuid(&service->uuid);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(service_uuid_obj, service_uuid);
+
+STATIC const mp_rom_map_elem_t service_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_uuid), MP_ROM_PTR(&service_uuid_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(service_locals_dict, service_locals_dict_table);
+
 STATIC const mp_obj_type_t service_type = {
     { &mp_type_type },
     .name = MP_QSTR_Service,
+    .locals_dict = (void*)&service_locals_dict,
+};
+
+STATIC mp_obj_t characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_uuid, ARG_flags };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_uuid,  MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_flags, MP_ARG_INT | MP_ARG_REQUIRED },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if ((uint8_t)(args[ARG_flags].u_int) != args[ARG_flags].u_int) {
+        // Flags don't fit in 8 bits.
+        mp_raise_ValueError("invalid flags");
+    }
+
+    mp_bt_characteristic_t *characteristic = m_new_obj(mp_bt_characteristic_t);
+    characteristic->base.type = &characteristic_type;
+    mp_bt_parse_uuid(args[0].u_obj, &characteristic->uuid);
+    characteristic->flags = (uint8_t)(args[ARG_flags].u_int);
+    return characteristic;
+}
+
+STATIC mp_obj_t characteristic_service(mp_obj_t self_in) {
+    mp_bt_characteristic_t *characteristic = self_in;
+    if (characteristic->service == NULL) {
+        return mp_const_none;
+    }
+    return characteristic->service;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(characteristic_service_obj, characteristic_service);
+
+STATIC mp_obj_t characteristic_uuid(mp_obj_t self_in) {
+    mp_bt_characteristic_t *characteristic = self_in;
+    return mp_bt_format_uuid(&characteristic->uuid);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(characteristic_uuid_obj, characteristic_uuid);
+
+STATIC mp_obj_t characteristic_write(mp_obj_t self_in, mp_obj_t value_in) {
+    mp_bt_characteristic_t *characteristic = self_in;
+    GET_STR_DATA_LEN(value_in, str_data, str_len);
+    int errno_ = mp_bt_characteristic_value_set(characteristic->value_handle, str_data, str_len);
+    return bluetooth_handle_errno(errno_);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(characteristic_write_obj, characteristic_write);
+
+STATIC mp_obj_t characteristic_read(mp_obj_t self_in) {
+    mp_bt_characteristic_t *characteristic = self_in;
+    uint8_t data[MP_BT_MAX_ATTR_SIZE];
+    size_t value_len = MP_BT_MAX_ATTR_SIZE;
+    int errno_ = mp_bt_characteristic_value_get(characteristic->value_handle, data, &value_len);
+    if (errno_ != 0) {
+        mp_raise_OSError(errno_);
+    }
+    return mp_obj_new_bytes(data, value_len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(characteristic_read_obj, characteristic_read);
+
+STATIC const mp_rom_map_elem_t characteristic_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_service), MP_ROM_PTR(&characteristic_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid),    MP_ROM_PTR(&characteristic_uuid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write),   MP_ROM_PTR(&characteristic_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read),    MP_ROM_PTR(&characteristic_read_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(characteristic_locals_dict, characteristic_locals_dict_table);
+
+STATIC const mp_obj_type_t characteristic_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Characteristic,
+    .make_new = characteristic_make_new,
+    .locals_dict = (void*)&characteristic_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t bluetooth_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&bluetooth_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_advertise), MP_ROM_PTR(&bluetooth_advertise_obj) },
+    { MP_ROM_QSTR(MP_QSTR_active),        MP_ROM_PTR(&bluetooth_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_advertise),     MP_ROM_PTR(&bluetooth_advertise_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise_raw), MP_ROM_PTR(&bluetooth_advertise_raw_obj) },
-    { MP_ROM_QSTR(MP_QSTR_add_service), MP_ROM_PTR(&bluetooth_add_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_add_service),   MP_ROM_PTR(&bluetooth_add_service_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_locals_dict, bluetooth_locals_dict_table);
 
@@ -241,9 +369,13 @@ STATIC const mp_obj_type_t bluetooth_type = {
 };
 
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bluetooth) },
-    { MP_ROM_QSTR(MP_QSTR_Bluetooth), MP_ROM_PTR(&bluetooth_type) },
-    { MP_ROM_QSTR(MP_QSTR_Service), MP_ROM_PTR(&service_type) },
+    { MP_ROM_QSTR(MP_QSTR___name__),       MP_ROM_QSTR(MP_QSTR_bluetooth) },
+    { MP_ROM_QSTR(MP_QSTR_Bluetooth),      MP_ROM_PTR(&bluetooth_type) },
+    { MP_ROM_QSTR(MP_QSTR_Service),        MP_ROM_PTR(&service_type) },
+    { MP_ROM_QSTR(MP_QSTR_Characteristic), MP_ROM_PTR(&characteristic_type) },
+    { MP_ROM_QSTR(MP_QSTR_FLAG_READ),      MP_ROM_INT(MP_BLE_FLAG_READ) },
+    { MP_ROM_QSTR(MP_QSTR_FLAG_WRITE),     MP_ROM_INT(MP_BLE_FLAG_WRITE) },
+    { MP_ROM_QSTR(MP_QSTR_FLAG_NOTIFY),    MP_ROM_INT(MP_BLE_FLAG_NOTIFY) },
 };
 STATIC MP_DEFINE_CONST_DICT(mp_module_bluetooth_globals, mp_module_bluetooth_globals_table);
 
