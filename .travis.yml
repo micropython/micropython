@@ -38,6 +38,7 @@ jobs:
         - sudo apt-get install python-cryptography
         - sudo apt-get install python-future
         - sudo apt-get install python-pyparsing
+        - pip install pyparsing
         - cd ports/esp32
         - git clone https://github.com/espressif/esp-idf.git
         - cd esp-idf
