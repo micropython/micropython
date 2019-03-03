@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-01 07:16-0800\n"
+"POT-Creation-Date: 2019-03-03 00:16+0000\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -559,6 +559,9 @@ msgstr "Impossible d'écrire la valeur de gatts. status: 0x%08lX"
 msgid "File exists"
 msgstr "Le fichier existe"
 
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr ""
+
 msgid "Function requires lock"
 msgstr "La fonction nécessite un verrou"
 
@@ -603,6 +606,9 @@ msgstr "Broche invalide pour 'bit clock'"
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "longueur de tampon invalide"
+
+msgid "Invalid capture period. Valid range: 1 - 500"
+msgstr ""
 
 #, fuzzy
 msgid "Invalid channel count"
@@ -724,6 +730,9 @@ msgstr "Pas de broche RX"
 
 msgid "No TX pin"
 msgstr "Pas de broche TX"
+
+msgid "No available clocks"
+msgstr ""
 
 msgid "No default I2C bus"
 msgstr "Pas de bus I2C par défaut"

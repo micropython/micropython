@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-01 07:16-0800\n"
+"POT-Creation-Date: 2019-03-03 00:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -557,6 +557,9 @@ msgstr "Gagal untuk menulis nilai gatts, status: 0x%08lX"
 msgid "File exists"
 msgstr ""
 
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr ""
+
 msgid "Function requires lock"
 msgstr ""
 
@@ -597,6 +600,9 @@ msgstr "Bit clock pada pin tidak valid"
 
 msgid "Invalid buffer size"
 msgstr "Ukuran buffer tidak valid"
+
+msgid "Invalid capture period. Valid range: 1 - 500"
+msgstr ""
 
 msgid "Invalid channel count"
 msgstr ""
@@ -711,6 +717,9 @@ msgstr "Tidak pin RX"
 
 msgid "No TX pin"
 msgstr "Tidak ada pin TX"
+
+msgid "No available clocks"
+msgstr ""
 
 msgid "No default I2C bus"
 msgstr "Tidak ada standar bus I2C"

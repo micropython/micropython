@@ -252,8 +252,7 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
         mp_raise_RuntimeError(translate("No hardware support on pin"));
     }
     if ((capture_period == 0) || (capture_period > 500)) {
-        // TODO: find a sutiable message that is already translated
-        mp_raise_ValueError(translate("Invalid something"));
+        mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
     }
     uint32_t mask = 1 << pin->extint_channel;
     if (eic_get_enable() == 1 &&
@@ -539,8 +538,7 @@ uint16_t common_hal_frequencyio_frequencyin_get_capture_period(frequencyio_frequ
 
 void common_hal_frequencyio_frequencyin_set_capture_period(frequencyio_frequencyin_obj_t *self, uint16_t capture_period) {
     if ((capture_period == 0) || (capture_period > 500)) {
-        // TODO: find a sutiable message that is already translated
-        mp_raise_ValueError(translate("Invalid something"));
+        mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
     }
 
     self->capture_period = capture_period;
