@@ -41,7 +41,7 @@ jobs:
         - cd ports/esp32
         - git clone https://github.com/espressif/esp-idf.git
         - cd esp-idf
-        - git checkout 3ede9f011b50999b0560683f9419538c066dd09e
+        - git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26
         - git submodule update --init
         - cd /home/travis/build/ilyamordasov/micropython/ports/esp32
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
@@ -51,7 +51,6 @@ jobs:
         - tar -zxvf ../xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - export PATH=/home/travis/build/ilyamordasov/micropython/ports/esp32/esp/xtensa-esp32-elf/bin:$PATH
       script:
-        - pwd
         - cd /home/travis/build/ilyamordasov/micropython/mpy-cross
         - make ${MAKEOPTS} -C mpy-cross
         - cd ..
