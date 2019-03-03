@@ -23,9 +23,30 @@ jobs:
     - stage: test
       env: NAME="esp32 port build"
       install:
+        - sudo apt-get install gcc
+        - sudo apt-get install git
+        - sudo apt-get install wget
+        - sudo apt-get install make
+        - sudo apt-get install libncurses-dev
+        - sudo apt-get install flex
+        - sudo apt-get install bison
+        - sudo apt-get install gperf
+        - sudo apt-get install python
+        - sudo apt-get install python-pip
+        - sudo apt-get install python-setuptools
+        - sudo apt-get install python-serial
+        - sudo apt-get install python-cryptography
+        - sudo apt-get install python-future
+        - sudo apt-get install python-pyparsing
+        - mkdir -p ~/esp32
+        - cd ~/esp32
+        - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - tar -xzf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - export PATH="$HOME/esp/xtensa-esp32-elf/bin:$PATH"
         - git clone https://github.com/espressif/esp-idf.git
         - git checkout master
         - git submodule update --init --recursive
+        - export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
