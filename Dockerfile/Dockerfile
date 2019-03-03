@@ -18,6 +18,9 @@ RUN git clone https://github.com/espressif/esp-idf.git \
   && cd esp-idf && git checkout master \
   && git submodule update --init --recursive
 
+RUN wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
+&& tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+
 RUN git clone https://github.com/ilyamordasov/micropython.git \
   && cd micropython && git checkout $VERSION && git pull && git submodule update --init \
   && chown -R micropython:micropython ../micropython
@@ -27,7 +30,7 @@ RUN apt-get update \
 
 USER micropython
 
-ENV PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
+ENV PATH=/xtensa-esp32-elf/bin:$PATH
 
 RUN cd /micropython/mpy-cross && make -C mpy-cross
 
