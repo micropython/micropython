@@ -46,7 +46,6 @@
 #include "esp_wifi_types.h"
 #include "esp_log.h"
 #include "esp_event_loop.h"
-#include "esp_log.h"
 #include "lwip/dns.h"
 #include "tcpip_adapter.h"
 
