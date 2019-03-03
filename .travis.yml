@@ -23,7 +23,6 @@ jobs:
     - stage: test
       env: NAME="esp32 port build"
       install:
-        - pwd
         - sudo apt-get install gcc
         - sudo apt-get install git
         - sudo apt-get install wget
@@ -39,17 +38,23 @@ jobs:
         - sudo apt-get install python-cryptography
         - sudo apt-get install python-future
         - sudo apt-get install python-pyparsing
-        - mkdir -p ~/esp32
-        - cd ~/esp32
-        - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-        - tar -xzf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-        - export PATH="$HOME/esp/xtensa-esp32-elf/bin:$PATH"
+        - cd ports/esp32
         - git clone https://github.com/espressif/esp-idf.git
-        - git submodule update --init --recursive
-        - export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
+        - cd esp-idf
+        - git checkout 3ede9f011b50999b0560683f9419538c066dd09e
+        - git submodule update --init
+        - cd /home/travis/build/ilyamordasov/micropython/ports/esp32
+        - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - cd /home/travis/build/ilyamordasov/micropython/ports/esp32
+        - mkdir esp
+        - cd esp
+        - tar -zxvf ../xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - export PATH=/home/travis/build/ilyamordasov/micropython/ports/esp32/esp/xtensa-esp32-elf/bin:$PATH
       script:
         - pwd
         - make ${MAKEOPTS} -C mpy-cross
+        - git submodule init lib/berkeley-db-1.xx
+        - git submodule update
         - make ${MAKEOPTS} -C ports/esp32
       
     
