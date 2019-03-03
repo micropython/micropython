@@ -23,6 +23,7 @@ jobs:
     - stage: test
       env: NAME="esp32 port build"
       install:
+        - pwd
         - sudo apt-get install gcc
         - sudo apt-get install git
         - sudo apt-get install wget
