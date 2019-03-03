@@ -52,7 +52,9 @@ jobs:
         - export PATH=/home/travis/build/ilyamordasov/micropython/ports/esp32/esp/xtensa-esp32-elf/bin:$PATH
       script:
         - pwd
+        - cd /home/travis/build/ilyamordasov/micropython/mpy-cross
         - make ${MAKEOPTS} -C mpy-cross
+        - cd ..
         - git submodule init lib/berkeley-db-1.xx
         - git submodule update
         - make ${MAKEOPTS} -C ports/esp32
