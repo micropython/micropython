@@ -1,3 +1,6 @@
+[submodule "lib/esp-idf"]
+	path = lib/esp-idf
+	url = https://github.com/espressif/esp-idf.git
 [submodule "lib/axtls"]
 	path = lib/axtls
 	url = https://github.com/pfalcon/axtls
