@@ -1,8 +1,6 @@
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-F429ZI"
 #define MICROPY_HW_MCU_NAME         "STM32F429"
 
-#define MICROPY_PY_LWIP             (1)
-
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RNG       (1)

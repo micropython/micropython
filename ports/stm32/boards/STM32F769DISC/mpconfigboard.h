@@ -5,8 +5,6 @@
 #define MICROPY_HW_BOARD_NAME       "F769DISC"
 #define MICROPY_HW_MCU_NAME         "STM32F769"
 
-#define MICROPY_PY_LWIP             (1)
-
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_HAS_SDCARD       (1)
