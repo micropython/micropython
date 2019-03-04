@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-01 07:16-0800\n"
+"POT-Creation-Date: 2019-03-03 00:16+0000\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -559,6 +559,9 @@ msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
 msgid "File exists"
 msgstr "File esistente"
 
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr ""
+
 msgid "Function requires lock"
 msgstr ""
 
@@ -602,6 +605,9 @@ msgstr "Pin del clock di bit non valido"
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "lunghezza del buffer non valida"
+
+msgid "Invalid capture period. Valid range: 1 - 500"
+msgstr ""
 
 #, fuzzy
 msgid "Invalid channel count"
@@ -719,6 +725,9 @@ msgstr "Nessun pin RX"
 
 msgid "No TX pin"
 msgstr "Nessun pin TX"
+
+msgid "No available clocks"
+msgstr ""
 
 msgid "No default I2C bus"
 msgstr "Nessun bus I2C predefinito"

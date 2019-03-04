@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Michael Schroeder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
 
-#define TC_HANDLER_NO_INTERRUPT 0x0
-#define TC_HANDLER_PULSEOUT 0x1
-#define TC_HANDLER_PEW 0x2
-#define TC_HANDLER_FREQUENCYIN 0x3
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_FREQUENCYIO___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_FREQUENCYIO___INIT___H
 
-void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
-void shared_timer_handler(bool is_tc, uint8_t index);
+#include "py/obj.h"
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
+// Nothing now.
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_FREQUENCYIO___INIT___H

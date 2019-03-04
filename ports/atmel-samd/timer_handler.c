@@ -31,6 +31,7 @@
 
 #include "common-hal/pulseio/PulseOut.h"
 #include "shared-module/_pew/PewPew.h"
+#include "common-hal/frequencyio/FrequencyIn.h"
 
 static uint8_t tc_handler[TC_INST_NUM];
 
@@ -50,9 +51,14 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
                 pulseout_interrupt_handler(index);
                 break;
             case TC_HANDLER_PEW:
-#if CIRCUITPY_PEW
+            #if CIRCUITPY_PEW
                 pewpew_interrupt_handler(index);
-#endif
+            #endif
+                break;
+            case TC_HANDLER_FREQUENCYIN:
+            #if CIRCUITPY_FREQUENCYIO
+                frequencyin_interrupt_handler(index);
+            #endif
                 break;
             default:
                 break;

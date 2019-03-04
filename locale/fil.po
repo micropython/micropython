@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-01 07:16-0800\n"
+"POT-Creation-Date: 2019-03-03 00:16+0000\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -560,6 +560,9 @@ msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 msgid "File exists"
 msgstr "Mayroong file"
 
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr ""
+
 msgid "Function requires lock"
 msgstr "Function nangangailangan ng lock"
 
@@ -602,6 +605,9 @@ msgstr "Mali ang bit clock pin"
 
 msgid "Invalid buffer size"
 msgstr "Mali ang buffer size"
+
+msgid "Invalid capture period. Valid range: 1 - 500"
+msgstr ""
 
 msgid "Invalid channel count"
 msgstr "Maling bilang ng channel"
@@ -721,6 +727,9 @@ msgstr "Walang RX pin"
 
 msgid "No TX pin"
 msgstr "Walang TX pin"
+
+msgid "No available clocks"
+msgstr ""
 
 msgid "No default I2C bus"
 msgstr "Walang default na I2C bus"

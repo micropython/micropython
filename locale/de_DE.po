@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-01 07:16-0800\n"
+"POT-Creation-Date: 2019-03-03 00:16+0000\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -537,6 +537,9 @@ msgstr "gatts value konnte nicht geschrieben werden. Status: 0x%04x"
 msgid "File exists"
 msgstr "Datei existiert"
 
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr ""
+
 msgid "Function requires lock"
 msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 
@@ -579,6 +582,9 @@ msgstr "Ungültiges bit clock pin"
 
 msgid "Invalid buffer size"
 msgstr "Ungültige Puffergröße"
+
+msgid "Invalid capture period. Valid range: 1 - 500"
+msgstr ""
 
 msgid "Invalid channel count"
 msgstr "Ungültige Anzahl von Kanälen"
@@ -702,6 +708,9 @@ msgstr "Kein RX Pin"
 
 msgid "No TX pin"
 msgstr "Kein TX Pin"
+
+msgid "No available clocks"
+msgstr ""
 
 msgid "No default I2C bus"
 msgstr "Kein Standard I2C Bus"

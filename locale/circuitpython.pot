@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-01 07:16-0800\n"
+"POT-Creation-Date: 2019-03-03 00:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -532,6 +532,9 @@ msgstr ""
 msgid "File exists"
 msgstr ""
 
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr ""
+
 msgid "Function requires lock"
 msgstr ""
 
@@ -571,6 +574,9 @@ msgid "Invalid bit clock pin"
 msgstr ""
 
 msgid "Invalid buffer size"
+msgstr ""
+
+msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
 msgid "Invalid channel count"
@@ -685,6 +691,9 @@ msgid "No RX pin"
 msgstr ""
 
 msgid "No TX pin"
+msgstr ""
+
+msgid "No available clocks"
 msgstr ""
 
 msgid "No default I2C bus"
