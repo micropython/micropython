@@ -23,6 +23,8 @@ jobs:
     # esp32
     - stage: staging
       env: NAME="esp32 port build"
+      before_install:
+        - git submodule update --init --recursive
       install:
         - sudo apt-get install gcc
         - sudo apt-get install git
@@ -38,9 +40,6 @@ jobs:
         - sudo apt-get install python-serial
         - sudo apt-get install python3-pyparsing
         - pip3 install pyparsing
-      before_install:
-        - cd $HOME/build
-      install:
         - pwd
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
