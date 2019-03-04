@@ -51,6 +51,7 @@ jobs:
         - git submodule update --init
         - git submodule init lib/berkeley-db-1.xx
         - git submodule init lib/ESP-IDF
+        - git checkout ${IDF_HASH}
         - git submodule update
         - export ESPIDF=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF
         - make ${MAKEOPTS} -C mpy-cross
