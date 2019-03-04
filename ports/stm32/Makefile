@@ -490,6 +490,8 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
+TEXT0_SECTIONS ?= .isr_vector .text .data
+
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(TEXT0_ADDR)
@@ -500,11 +502,14 @@ deploy-openocd: $(BUILD)/firmware.dfu
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(TEXT0_SECTIONS)) $^ $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(DFU) -b $(TEXT0_ADDR):$(BUILD)/firmware.bin $@
 
 else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
+
+TEXT0_SECTIONS ?= .isr_vector
+TEXT1_SECTIONS ?= .text .data
 
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
@@ -518,8 +523,8 @@ deploy-openocd: $(BUILD)/firmware.dfu
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "GEN $@"
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
-	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
+	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(TEXT0_SECTIONS)) $^ $(BUILD)/firmware0.bin
+	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(TEXT1_SECTIONS)) $^ $(BUILD)/firmware1.bin
 	$(Q)$(PYTHON) $(DFU) -b $(TEXT0_ADDR):$(BUILD)/firmware0.bin -b $(TEXT1_ADDR):$(BUILD)/firmware1.bin $@
 
 endif
