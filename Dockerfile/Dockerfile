@@ -21,11 +21,10 @@ RUN git clone https://github.com/ilyamordasov/micropython.git \
 RUN apt-get update \
   && apt-get install -y mc libtool-bin
 
-RUN cd && mkdir ESP-IDF && cd ESP-IDF
-
 USER micropython
 
-RUN git clone https://github.com/espressif/esp-idf.git . \
+RUN cd && mkdir ESP-IDF && cd ESP-IDF \
+    && git clone https://github.com/espressif/esp-idf.git . \
     && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
     && git submodule update --init
 
