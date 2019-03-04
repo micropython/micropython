@@ -39,16 +39,22 @@ jobs:
         - sudo apt-get install python-serial
         - sudo apt-get install python3-pyparsing
         - pip3 install pyparsing
+      before_install:
         - cd ${ROOT} && mkdir ESP-IDF && cd ESP-IDF
+      install:
         - git clone https://github.com/espressif/esp-idf.git .
         - git checkout ${IDF_HASH}
         - git submodule update --init
+      before_install:
         - cd ${ROOT}
+      install:
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - export PATH=${ROOT}/xtensa-esp32-elf/bin:$PATH
         - export ESPIDF=${ROOT}/ESP-IDF
       script:
+        - pwd
+        - echo $HOME
         - cd ${ROOT}/micropython
         - git submodule update --init
         - make ${MAKEOPTS} -C mpy-cross
