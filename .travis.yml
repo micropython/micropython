@@ -58,7 +58,7 @@ jobs:
       script:
         - pwd
         - ls
-        - cd $HOME/build/micropython
+        - cd $HOME/build/ilyamordasov/micropython
         - git submodule update --init
         - make ${MAKEOPTS} -C mpy-cross
         - git submodule init lib/berkeley-db-1.xx
