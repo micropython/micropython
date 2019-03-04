@@ -22,3 +22,6 @@
 [submodule "lib/nrfx"]
 	path = lib/nrfx
 	url = https://github.com/NordicSemiconductor/nrfx.git
+[submodule "lib/ESP-IDF"]
+	path = lib/ESP-IDF
+	url = https://github.com/espressif/esp-idf.git
