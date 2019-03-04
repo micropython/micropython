@@ -42,9 +42,7 @@ jobs:
         - cd $HOME/build
       install:
         - pwd
-        - mkdir ESP-IDF
-        - cd ESP-IDF
-        - git clone https://github.com/espressif/esp-idf.git .
+        - git clone https://github.com/espressif/esp-idf.git ESP-IDF
         - git checkout ${IDF_HASH}
         - git submodule update --init
       before_install:
