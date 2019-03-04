@@ -10,17 +10,19 @@ cache:
 env:
   global:
     - MAKEOPTS="-j4"
+    - ROOT="/home/travis/build"
+    - IDF_HASH="5c88c5996dbde6208e3bec05abc21ff6cd822d26"
 
 # define the successive stages
 stages:
-  - name: test
+  - name: staging
 
 # define the jobs for the stages
 # order of the jobs has longest running first to optimise total time
 jobs:
   include:
     # esp32
-    - stage: test
+    - stage: staging
       env: NAME="esp32 port build"
       install:
         - sudo apt-get install gcc
@@ -31,37 +33,32 @@ jobs:
         - sudo apt-get install flex
         - sudo apt-get install bison
         - sudo apt-get install gperf
-        - sudo apt-get install python
-        - sudo apt-get install python-pip
-        - sudo apt-get install python-setuptools
+        - sudo apt-get install python-dev
+        - sudo apt-get install python3
+        - sudo apt-get install python3-pip
         - sudo apt-get install python-serial
-        - sudo apt-get install python-cryptography
-        - sudo apt-get install python-future
-        - sudo apt-get install python-pyparsing
-        - pip install pyparsing
-        - cd ports/esp32
-        - git clone https://github.com/espressif/esp-idf.git
-        - cd esp-idf
-        - git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26
+        - sudo apt-get install python3-pyparsing
+        - pip3 install pyparsing
+        - cd ${ROOT} && mkdir ESP-IDF && cd ESP-IDF
+        - git clone https://github.com/espressif/esp-idf.git .
+        - git checkout ${IDF_HASH}
         - git submodule update --init
-        - cd /home/travis/build/ilyamordasov/micropython/ports/esp32
+        - cd ${ROOT}
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-        - cd /home/travis/build/ilyamordasov/micropython/ports/esp32
-        - mkdir esp
-        - cd esp
-        - tar -zxvf ../xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-        - export PATH=/home/travis/build/ilyamordasov/micropython/ports/esp32/esp/xtensa-esp32-elf/bin:$PATH
+        - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - export PATH=${ROOT}/xtensa-esp32-elf/bin:$PATH
+        - export ESPIDF=${ROOT}/ESP-IDF
       script:
-        - cd /home/travis/build/ilyamordasov/micropython/mpy-cross
+        - cd ${ROOT}/micropython
+        - git submodule update --init
         - make ${MAKEOPTS} -C mpy-cross
-        - cd ..
         - git submodule init lib/berkeley-db-1.xx
         - git submodule update
         - make ${MAKEOPTS} -C ports/esp32
       
     
 #     # stm32 port
-#     - stage: test
+#     - stage: staging
 #       env: NAME="stm32 port build"
 #       install:
 #         # need newer gcc version for Cortex-M7 support
@@ -78,7 +75,7 @@ jobs:
 #         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
 
 #     # qemu-arm port
-#     - stage: test
+#     - stage: staging
 #       env: NAME="qemu-arm port build and tests"
 #       install:
 #         - sudo apt-get install gcc-arm-none-eabi
@@ -93,7 +90,7 @@ jobs:
 #         - grep "FAIL" ports/qemu-arm/build/console.out
 
 #     # standard unix port
-#     - stage: test
+#     - stage: staging
 #       env: NAME="unix port build and tests"
 #       script:
 #         - make ${MAKEOPTS} -C mpy-cross
@@ -102,7 +99,7 @@ jobs:
 #         - make ${MAKEOPTS} -C ports/unix test
 
 #     # unix nanbox
-#     - stage: test
+#     - stage: staging
 #       env: NAME="unix nanbox port build and tests"
 #       install:
 #         - sudo apt-get install gcc-multilib libffi-dev:i386
@@ -113,7 +110,7 @@ jobs:
 #         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_nanbox ./run-tests)
 
 #     # unix stackless
-#     - stage: test
+#     - stage: staging
 #       env: NAME="unix stackless port build and tests"
 #       script:
 #         - make ${MAKEOPTS} -C mpy-cross
@@ -122,7 +119,7 @@ jobs:
 #         - make ${MAKEOPTS} -C ports/unix test
 
 #     # nrf port
-#     - stage: test
+#     - stage: staging
 #       env: NAME="nrf port build"
 #       install:
 #         - sudo apt-get install gcc-arm-none-eabi
