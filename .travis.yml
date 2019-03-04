@@ -55,6 +55,7 @@ jobs:
         - export ESPIDF=$HOME/build/ESP-IDF
       script:
         - pwd
+        - ls
         - echo $HOME
         - cd $HOME/build/micropython
         - git submodule update --init
