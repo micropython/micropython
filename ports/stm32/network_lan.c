@@ -26,11 +26,12 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lwip/netif.h"
 #include "modnetwork.h"
 #include "eth.h"
 
 #if defined(MICROPY_HW_ETH_MDC)
+
+#include "lwip/netif.h"
 
 typedef struct _network_lan_obj_t {
     mp_obj_base_t base;

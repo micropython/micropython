@@ -28,15 +28,16 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "lib/netutils/netutils.h"
-#include "lwip/etharp.h"
-#include "lwip/dns.h"
-#include "lwip/dhcp.h"
-#include "netif/ethernet.h"
 #include "pin_static_af.h"
 #include "modnetwork.h"
 #include "eth.h"
 
 #if defined(MICROPY_HW_ETH_MDC)
+
+#include "lwip/etharp.h"
+#include "lwip/dns.h"
+#include "lwip/dhcp.h"
+#include "netif/ethernet.h"
 
 // ETH PHY register definitions (for LAN8742)
 

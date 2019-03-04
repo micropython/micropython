@@ -34,9 +34,12 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
-#include "lwip/init.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#endif
 
 #include "systick.h"
 #include "pendsv.h"
