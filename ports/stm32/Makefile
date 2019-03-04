@@ -347,10 +347,6 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_data.c \
 	)
 
-ifeq ($(MICROPY_HW_CLK_SRC_HSI),1)
-CFLAGS_MOD += -DMICROPY_HW_CLK_SRC_HSI=1
-endif
-
 ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)

@@ -6,10 +6,12 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 
 // HSE is 8MHz, HSI is 16MHz CPU freq set to 84MHz
-// Default source for the clock is HSE, for revisions greater than C-01
-// Revision C-01 of the board isn't configured to use HSE
-// and must use HSI as a clock source
-#if MICROPY_HW_CLK_SRC_HSI
+// Default source for the clock is HSI.
+// For revissions of the board greater than C-01, HSE can be used
+// as a clock source by removing the #define MICROPY_HW_CLK_USE_HSE line
+#define MICROPY_HW_CLK_USE_HSI
+
+#ifdef MICROPY_HW_CLK_USE_HSI
 #define MICROPY_HW_CLK_PLLM (16)
 #else
 #define MICROPY_HW_CLK_PLLM (8)

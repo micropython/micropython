@@ -111,7 +111,7 @@ void __fatal_error(const char *msg);
 #if defined(STM32F4) || defined(STM32F7)
 
 #define CONFIG_RCC_CR_1ST (RCC_CR_HSION)
-#define CONFIG_RCC_CR_2ND (MICROPY_RCC_CR_HSxON | RCC_CR_CSSON | RCC_CR_PLLON)
+#define CONFIG_RCC_CR_2ND (MICROPY_HW_RCC_CR_HSxON | RCC_CR_CSSON | RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x24003010)
 
 #if defined(STM32F4)
@@ -413,13 +413,13 @@ void SystemClock_Config(void)
 
     /* Enable HSE Oscillator and activate PLL with HSE as source */
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
-    RCC_OscInitStruct.OscillatorType = MICROPY_RCC_OSCILLATOR_TYPE;
+    RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
     RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
-    RCC_OscInitStruct.HSIState = MICROPY_RCC_HSI_STATE;
+    RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
     #if defined(STM32H7)
     RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
     #endif
-    RCC_OscInitStruct.PLL.PLLSource = MICROPY_RCC_PLL_SRC;
+    RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
     #elif defined(STM32L4)
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -540,7 +540,7 @@ void SystemClock_Config(void)
   }
 #endif
 
-    uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (HSI_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
+    uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (MICROPY_HW_CLK_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
     uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
     bool need_pllsai = vco_out % 48 != 0;
     if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai) != 0) {

@@ -333,12 +333,12 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
     PLL as system clock source (HSE/HSI and PLL are disabled in STOP mode) */
 
     __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
-#ifdef MICROPY_HW_CLK_SRC_HSI
+#ifdef MICROPY_HW_CLK_USE_HSI
     __HAL_RCC_HSI_ENABLE();
 #endif
 
     /* Wait till HSE/HSI is ready */
-    while(__HAL_RCC_GET_FLAG(MICROPY_RCC_FLAG_HSxRDY) == RESET)
+    while(__HAL_RCC_GET_FLAG(MICROPY_HW_RCC_FLAG_HSxRDY) == RESET)
     {}
 
     /* Enable the main PLL. */

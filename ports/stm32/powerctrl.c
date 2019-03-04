@@ -215,10 +215,10 @@ set_clk:
     // Re-configure PLL
     // Even if we don't use the PLL for the system clock, we still need it for USB, RNG and SDIO
     RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_OscInitStruct.OscillatorType = MICROPY_RCC_OSCILLATOR_TYPE;
+    RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
     RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = MICROPY_RCC_PLL_SRC;
+    RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
     RCC_OscInitStruct.PLL.PLLM = m;
     RCC_OscInitStruct.PLL.PLLN = n;
     RCC_OscInitStruct.PLL.PLLP = p;
@@ -299,10 +299,10 @@ void powerctrl_enter_stop_mode(void) {
     #if !defined(STM32L4)
     // enable clock
     __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
-#ifdef MICROPY_HW_CLK_SRC_HSI
+#ifdef MICROPY_HW_CLK_USE_HSI
     __HAL_RCC_HSI_ENABLE();
 #endif
-    while (!__HAL_RCC_GET_FLAG(MICROPY_RCC_FLAG_HSxRDY)) {
+    while (!__HAL_RCC_GET_FLAG(MICROPY_HW_RCC_FLAG_HSxRDY)) {
     }
     #endif
 
