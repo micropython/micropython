@@ -39,9 +39,11 @@ jobs:
         - sudo apt-get install python3-pyparsing
         - pip3 install pyparsing
       before_install:
-        - cd $HOME/build && mkdir ESP-IDF && cd ESP-IDF
+        - cd $HOME/build
       install:
         - pwd
+        - mkdir ESP-IDF
+        - cd ESP-IDF
         - git clone https://github.com/espressif/esp-idf.git .
         - git checkout ${IDF_HASH}
         - git submodule update --init
@@ -56,7 +58,6 @@ jobs:
       script:
         - pwd
         - ls
-        - echo $HOME
         - cd $HOME/build/micropython
         - git submodule update --init
         - make ${MAKEOPTS} -C mpy-cross
