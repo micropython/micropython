@@ -50,9 +50,9 @@ jobs:
         - cd $HOME/build/ilyamordasov/micropython
         - git submodule update --init
         - git submodule init lib/berkeley-db-1.xx
-        - git submodule init lib/esp-idf
+        - git submodule init lib/ESP-IDF
         - git submodule update
-        - export ESPIDF=$HOME/build/ilyamordasov/micropython/lib/esp-idf
+        - export ESPIDF=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
       
