@@ -34,7 +34,7 @@ ENV ESPIDF=/ESP-IDF
 RUN cd \
   && wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
   && tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
-  && export PATH=${ROOT}/xtensa-esp32-elf/bin:$PATH
+  && export PATH=/xtensa-esp32-elf/bin:$PATH
 
 RUN cd /micropython \
   && git submodule update --init \
@@ -49,11 +49,5 @@ RUN cd /micropython \
 #   && zip -R assets '*.bin' '*.elf' \
 #   && curl -H "Content-Type: application/zip" --data-binary @assets.zip "https://uploads.github.com/repos/ilyamordasov/micropython/releases/$GITHUB_RELEASE_ID/assets?name=assets.zip&access_token=$GITHUB_ACCESS_TOKEN"
 
-RUN cd /micropython/ports/$TARGET/build \
-    && zip -r -j $TARGET_v.1.9.4_$(date +%d%m%Y) /esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df/bin/*.bin *.bin *.elf
-
-USER root
-RUN mkdir /mnt/dev
-ENV PATH=/micropython/mpy-cross:$PATH
-
-RUN apt-get update && apt-get install -y usbutils picocom
+# RUN cd /micropython/ports/$TARGET/build \
+#     && zip -r -j $TARGET_v.1.9.4_$(date +%d%m%Y) /esp-open-sdk/ESP8266_NONOS_SDK-2.1.0-18-g61248df/bin/*.bin *.bin *.elf
