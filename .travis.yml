@@ -15,6 +15,13 @@ env:
 stages:
   - name: staging
 
+notifications:
+  slack: 
+    rooms:
+      - $slack_token
+    on_success: always
+    on_failure: always
+
 # define the jobs for the stages
 # order of the jobs has longest running first to optimise total time
 jobs:
@@ -128,9 +135,3 @@ jobs:
 #         - arm-none-eabi-gcc --version
 #       script:
 #         - make ${MAKEOPTS} -C ports/nrf
-notifications:
-  slack: 
-    rooms:
-      - $slack_token
-    on_success: always
-    on_failure: always
