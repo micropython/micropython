@@ -15,13 +15,6 @@ env:
 stages:
   - name: staging
 
-notifications:
-  slack: 
-    rooms:
-      - $slack_token
-    on_success: always
-    on_failure: always
-
 # define the jobs for the stages
 # order of the jobs has longest running first to optimise total time
 jobs:
@@ -67,6 +60,12 @@ jobs:
 #         provider: heroku
 #         app: micropython
 #         api_key: $HEROKU_AUTH_TOKEN
+        notifications:
+          slack:
+            rooms:
+              - $slack_token
+            on_success: always
+            on_failure: always
       
     
 #     # stm32 port
