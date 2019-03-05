@@ -60,12 +60,12 @@ jobs:
 #         provider: heroku
 #         app: micropython
 #         api_key: $HEROKU_AUTH_TOKEN
-        notifications:
-          slack:
-            rooms:
-              - $slack_token
-            on_success: always
-            on_failure: always
+      notifications:
+        slack:
+          rooms:
+            - $slack_token
+          on_success: always
+          on_failure: always
       
     
 #     # stm32 port
