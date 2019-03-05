@@ -25,6 +25,9 @@ jobs:
       env: NAME="esp32 port build"
       before_install:
         - git submodule update --init --recursive
+        - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - export PATH=$HOME/build/xtensa-esp32-elf/bin:$PATH
       install:
         - sudo apt-get install gcc
         - sudo apt-get install git
@@ -41,17 +44,15 @@ jobs:
         - sudo apt-get install python3-pyparsing
         - pip3 install pyparsing
         - pwd
-        - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-        - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-        - export PATH=$HOME/build/xtensa-esp32-elf/bin:$PATH
       script:
         - pwd
         - ls
         - cd $HOME/build/ilyamordasov/micropython
         - git submodule update --init
         - git submodule init lib/berkeley-db-1.xx
-        - git submodule init lib/ESP-IDF
+        - cd lib/ESP-IDF
         - git checkout ${IDF_HASH}
+        - cd ../..
         - git submodule update
         - export ESPIDF=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF
         - make ${MAKEOPTS} -C mpy-cross
