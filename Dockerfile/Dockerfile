@@ -24,7 +24,7 @@ RUN apt-get update \
 
 USER micropython
 
-RUN cd /
+RUN cd / \
     && mkdir ESP-IDF && cd ESP-IDF \
     && git clone https://github.com/espressif/esp-idf.git . \
     && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
