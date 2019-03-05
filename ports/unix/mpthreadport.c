@@ -37,6 +37,10 @@
 #include <signal.h>
 #include <sched.h>
 #include <semaphore.h>
+#if defined (__APPLE__)
+#include <time.h>
+#endif
+
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
     pthread_t id;           // system id of thread
@@ -53,8 +57,20 @@ STATIC thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
 // it's needed because we can't use any pthread calls in a signal handler
-STATIC sem_t *thread_signal_done;
-STATIC const char *thread_semaphore_name = "ts";
+STATIC sem_t thread_signal_done;
+
+#if defined (__APPLE__)
+STATIC char thread_semaphore_name[3] = {"tsn"};
+#define GEN_SEM_NAME(sem_name)                              \
+    {                                                       \
+        srand(time(NULL));                                  \
+        for (int i = 0; i < 3; i++)                         \
+        {                                                   \
+            sem_name[i] = (char)(rand() % (126 - 32)) + 32; \
+        }                                                   \
+    }
+#endif
+
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
     (void)info; // unused
@@ -70,7 +86,7 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
         gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
         #endif
-        sem_post(thread_signal_done);
+        sem_post(&thread_signal_done);
     }
 }
 
@@ -84,8 +100,14 @@ void mp_thread_init(void) {
     thread->ready = 1;
     thread->arg = NULL;
     thread->next = NULL;
-    thread_signal_done = sem_open(thread_semaphore_name, 0);
 
+#if defined (__APPLE__)
+    GEN_SEM_NAME(thread_semaphore_name);
+    sem_t * thread_signal_done_p = &thread_signal_done;
+    thread_signal_done_p = sem_open(thread_semaphore_name, O_CREAT | O_EXCL, 0666, 1);
+#else
+    sem_init(&thread_signal_done, 0, 0);
+#endif
     // enable signal handler for garbage collection
     struct sigaction sa;
     sa.sa_flags = SA_SIGINFO;
@@ -103,8 +125,10 @@ void mp_thread_deinit(void) {
         free(th);
     }
     pthread_mutex_unlock(&thread_mutex);
-    sem_close(thread_signal_done);
+    sem_close(&thread_signal_done);
+#if defined (__APPLE__)
     sem_unlink(thread_semaphore_name);
+#endif
     assert(thread->id == pthread_self());
     free(thread);
 }
@@ -126,7 +150,7 @@ void mp_thread_gc_others(void) {
             continue;
         }
         pthread_kill(th->id, SIGUSR1);
-        sem_wait(thread_signal_done);
+        sem_wait(&thread_signal_done);
     }
     pthread_mutex_unlock(&thread_mutex);
 }
