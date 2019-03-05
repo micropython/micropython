@@ -13,7 +13,7 @@ RUN apt-get update \
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && useradd --no-create-home micropython \
-  && chown -R micropython:micropython /home
+  && chown -R micropython /home /ESP-IDF
 
 RUN git clone https://github.com/ilyamordasov/micropython.git \
   && cd micropython \
@@ -25,7 +25,7 @@ RUN apt-get update \
 USER micropython
 
 RUN cd / \
-    && mkdir ESP-IDF && cd ESP-IDF \
+    && mkdir -p ESP-IDF && cd ESP-IDF \
     && git clone https://github.com/espressif/esp-idf.git . \
     && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
     && git submodule update --init
