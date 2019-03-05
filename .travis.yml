@@ -63,6 +63,10 @@ jobs:
         - export ESPIDF=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
+      deploy: &heroku
+        provider: heroku
+        app: micropython
+        api_key: $HEROKU_AUTH_TOKEN
       
     
 #     # stm32 port
