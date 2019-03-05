@@ -23,19 +23,19 @@ RUN apt-get update \
 
 USER micropython
 
-RUN cd && mkdir ESP-IDF && cd ESP-IDF \
+RUN cd / && mkdir ESP-IDF && cd ESP-IDF \
     && git clone https://github.com/espressif/esp-idf.git . \
     && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
     && git submodule update --init
 
 ENV ESPIDF=/ESP-IDF
 
-RUN cd \
+RUN cd / \
   && wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
   && tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
   && export PATH=/xtensa-esp32-elf/bin:$PATH
 
-RUN cd /micropython \
+RUN cd ilyamordasov/micropython \
   && git submodule update --init \
   && make -j4 -C mpy-cross \
   && git submodule init lib/berkeley-db-1.xx \
