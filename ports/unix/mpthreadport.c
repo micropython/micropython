@@ -125,8 +125,8 @@ void mp_thread_deinit(void) {
         free(th);
     }
     pthread_mutex_unlock(&thread_mutex);
-    sem_close(&thread_signal_done);
 #if defined (__APPLE__)
+    sem_close(&thread_signal_done);
     sem_unlink(thread_semaphore_name);
 #endif
     assert(thread->id == pthread_self());
