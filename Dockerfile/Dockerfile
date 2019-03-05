@@ -9,6 +9,14 @@ RUN apt-get update \
 #  && --assume-yes apt-utils \
   && apt-get install -y gcc git wget make libncurses-dev flex bison gperf python-dev python3 python3-pip python-serial python3-pyparsing \
   && pip3 install pyparsing
+  
+USER micropython
+
+RUN cd / \
+    && mkdir -p ESP-IDF && cd ESP-IDF \
+    && git clone https://github.com/espressif/esp-idf.git . \
+    && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
+    && git submodule update --init
 
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
@@ -21,14 +29,6 @@ RUN git clone https://github.com/ilyamordasov/micropython.git \
 
 RUN apt-get update \
   && apt-get install -y mc libtool-bin
-
-USER micropython
-
-RUN cd / \
-    && mkdir -p ESP-IDF && cd ESP-IDF \
-    && git clone https://github.com/espressif/esp-idf.git . \
-    && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
-    && git submodule update --init
 
 ENV ESPIDF=/ESP-IDF
 
