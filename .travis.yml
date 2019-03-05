@@ -129,4 +129,8 @@ jobs:
 #       script:
 #         - make ${MAKEOPTS} -C ports/nrf
 notifications:
-  slack: $slack_token
+  slack: 
+    rooms:
+      - $slack_token
+    on_success: always
+    on_failure: always
