@@ -12,7 +12,7 @@ RUN apt-get update \
 
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
-  && useradd --no-create-home micropython
+  && useradd --no-create-home micropython \
   && chown -R micropython:micropython /home
 
 RUN git clone https://github.com/ilyamordasov/micropython.git \
