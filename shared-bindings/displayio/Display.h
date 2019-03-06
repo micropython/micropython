@@ -48,7 +48,7 @@ void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_
 
 void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self);
 
-void displayio_display_start_region_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+bool displayio_display_start_region_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void displayio_display_finish_region_update(displayio_display_obj_t* self);
 bool displayio_display_frame_queued(displayio_display_obj_t* self);
 

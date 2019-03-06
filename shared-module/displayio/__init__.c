@@ -60,7 +60,11 @@ void displayio_refresh_displays(void) {
             if (display->transpose_xy) {
                 swap(&c1, &r1);
             }
-            displayio_display_start_region_update(display, c0, r0, c1, r1);
+            // Someone else is holding the bus used to talk to the display,
+            // so skip update for now.
+            if (!displayio_display_start_region_update(display, c0, r0, c1, r1)) {
+                return;
+            }
 
             uint16_t x0 = 0;
             uint16_t x1 = display->width - 1;
