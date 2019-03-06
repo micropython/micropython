@@ -888,16 +888,39 @@ typedef struct _pyb_usbdd_obj_t {
     __ALIGN_BEGIN uint8_t usbd_str_desc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
 } pyb_usbdd_obj_t;
 
-#define USBD_LANGID_STRING (0x409)
+#ifndef MBOOT_USBD_LANGID_STRING
+#define MBOOT_USBD_LANGID_STRING (0x409)
+#endif
+
+#ifndef MBOOT_USBD_MANUFACTURER_STRING
+#define MBOOT_USBD_MANUFACTURER_STRING      "MicroPython"
+#endif
+
+#ifndef MBOOT_USBD_PRODUCT_STRING
+#define MBOOT_USBD_PRODUCT_STRING        "Pyboard DFU"
+#endif
+
+#ifndef MBOOT_USB_VID
+#define MBOOT_USB_VID 0x0483
+#endif
+
+#ifndef MBOOT_USB_PID
+#define MBOOT_USB_PID 0xDF11
+#endif
 
 __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
     USB_LEN_LANGID_STR_DESC,
     USB_DESC_TYPE_STRING,
-    LOBYTE(USBD_LANGID_STRING),
-    HIBYTE(USBD_LANGID_STRING),
+    LOBYTE(MBOOT_USBD_LANGID_STRING),
+    HIBYTE(MBOOT_USBD_LANGID_STRING),
 };
 
-static const uint8_t dev_descr[0x12] = "\x12\x01\x00\x01\x00\x00\x00\x40\x83\x04\x11\xdf\x00\x22\x01\x02\x03\x01";
+static const uint8_t dev_descr[0x12] = {
+    0x12, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x40,
+    LOBYTE(MBOOT_USB_VID), HIBYTE(MBOOT_USB_VID),
+    LOBYTE(MBOOT_USB_PID), HIBYTE(MBOOT_USB_PID),
+    0x00, 0x22, 0x01, 0x02, 0x03, 0x01
+};
 
 // This may be modified by USBD_GetDescriptor
 static uint8_t cfg_descr[9 + 9 + 9] =
@@ -934,11 +957,11 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             return (uint8_t*)USBD_LangIDDesc; // the data should only be read from this buf
 
         case USBD_IDX_MFC_STR:
-            USBD_GetString((uint8_t*)"USBDevice Manuf", str_desc, length);
+            USBD_GetString((uint8_t*)MBOOT_USBD_MANUFACTURER_STRING, str_desc, length);
             return str_desc;
 
         case USBD_IDX_PRODUCT_STR:
-            USBD_GetString((uint8_t*)"USBDevice Product", str_desc, length);
+            USBD_GetString((uint8_t*)MBOOT_USBD_PRODUCT_STRING, str_desc, length);
             return str_desc;
 
         case USBD_IDX_SERIAL_STR: {
