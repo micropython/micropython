@@ -260,8 +260,7 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
 //|
 STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
     displayio_display_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t width = common_hal_displayio_display_get_width(self);
-    return mp_obj_new_int(width);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_width_obj, displayio_display_obj_get_width);
 
@@ -279,8 +278,7 @@ const mp_obj_property_t displayio_display_width_obj = {
 //|
 STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
     displayio_display_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_float_t height = common_hal_displayio_display_get_height(self);
-    return mp_obj_new_int(height);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_height_obj, displayio_display_obj_get_height);
 
