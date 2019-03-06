@@ -24,40 +24,42 @@
  * THE SOFTWARE.
  */
 
-#define _FFCONF 68020
+#define FFCONF_DEF 86604
 
-#define _FS_READONLY    1
-#define _FS_MINIMIZE    0
-#define _USE_STRFUNC    0
+#define FF_FS_READONLY      1
+#define FF_FS_MINIMIZE      0
+#define FF_USE_STRFUNC      0
 
-#define _USE_FIND       0
-#define _USE_MKFS       0
-#define _USE_FASTSEEK   0
-#define _USE_EXPAND     0
-#define _USE_CHMOD      0
-#define _USE_LABEL      0
-#define _USE_FORWARD    0
+#define FF_USE_FIND         0
+#define FF_USE_MKFS         0
+#define FF_USE_FASTSEEK     0
+#define FF_USE_EXPAND       0
+#define FF_USE_CHMOD        0
+#define FF_USE_LABEL        0
+#define FF_USE_FORWARD      0
 
-#define _CODE_PAGE      437
-#define _USE_LFN        1
-#define _MAX_LFN        255
-#define _LFN_UNICODE    0
-#define _STRF_ENCODE    3
-#define _FS_RPATH       0
+#define FF_CODE_PAGE        437
+#define FF_USE_LFN          1
+#define FF_MAX_LFN          255
+#define FF_LFN_UNICODE      0
+#define FF_LFN_BUF          255
+#define FF_SFN_BUF          12
+#define FF_STRF_ENCODE      3
+#define FF_FS_RPATH         0
 
-#define _VOLUMES        1
-#define _STR_VOLUME_ID  0
-#define _MULTI_PARTITION 0
-#define _MIN_SS         512
-#define _MAX_SS         512
-#define _USE_TRIM       0
-#define _FS_NOFSINFO    0
+#define FF_VOLUMES          1
+#define FF_STR_VOLUME_ID    0
+#define FF_MULTI_PARTITION  0
+#define FF_MIN_SS           512
+#define FF_MAX_SS           512
+#define FF_USE_TRIM         0
+#define FF_FS_NOFSINFO      0
 
-#define _FS_TINY        1
-#define _FS_EXFAT       0
-#define _FS_NORTC       1
-#define _NORTC_MON      1
-#define _NORTC_MDAY     1
-#define _NORTC_YEAR     2019
-#define _FS_LOCK        0
-#define _FS_REENTRANT   0
+#define FF_FS_TINY          1
+#define FF_FS_EXFAT         0
+#define FF_FS_NORTC         1
+#define FF_NORTC_MON        1
+#define FF_NORTC_MDAY       1
+#define FF_NORTC_YEAR       2019
+#define FF_FS_LOCK          0
+#define FF_FS_REENTRANT     0
