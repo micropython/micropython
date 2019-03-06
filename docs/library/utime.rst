@@ -57,6 +57,8 @@ Functions
    which expresses a time as per localtime. It returns an integer which is
    the number of seconds since Jan 1, 2000.
 
+   Availability: Not every port implements this function.
+
 .. function:: sleep(seconds)
 
    Sleep for the given number of seconds. Some boards may accept *seconds* as a
