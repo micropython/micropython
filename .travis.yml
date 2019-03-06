@@ -57,7 +57,7 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
-        - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$(date +%d%m%Y) /$HOME/build/ilyamordasov/micropython/ports/esp32/build/*.bin *.bin *.elf
+        - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$(date +%d%m%Y) $HOME/build/ilyamordasov/micropython/ports/esp32/build/*.bin *.bin *.elf
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "Ilya Mordasov"
