@@ -59,16 +59,16 @@ jobs:
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
         - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$(date +%d%m%Y) /$HOME/build/ilyamordasov/micropython/ports/esp32/build/*.bin *.bin *.elf
       before_deploy:
-      # Set up git user name and tag this commit
-      - git config --local user.name "Ilya Mordasov"
-      - git config --local user.email "carlogulliani@gmail.com"
-      - export TRAVIS_TAG="1.10"
-      - git tag $TRAVIS_TAG
-    deploy:
-      provider: releases
-      api_key: "d4d83b61e05085deb221ebb8fcd0adad8412bb5f"
-      file: $HOME + "/build/ilyamordasov/micropython/ports/esp32/build/ESP32_v.1.10." + $TRAVIS_BUILD_NUMBER_$(date +%d%m%Y) + ".zip"
-      skip_cleanup: true
+        # Set up git user name and tag this commit
+        - git config --local user.name "Ilya Mordasov"
+        - git config --local user.email "carlogulliani@gmail.com"
+        - export TRAVIS_TAG="1.10"
+        - git tag $TRAVIS_TAG
+      deploy:
+        provider: releases
+        api_key: "d4d83b61e05085deb221ebb8fcd0adad8412bb5f"
+        file: $HOME + "/build/ilyamordasov/micropython/ports/esp32/build/ESP32_v.1.10." + $TRAVIS_BUILD_NUMBER_$(date +%d%m%Y) + ".zip"
+        skip_cleanup: true
       notifications:
         slack:
           rooms:
