@@ -74,7 +74,7 @@ endif
 SRC_LIB = \
 	lib/libc/string0.c \
 	lib/oofatfs/ff.c \
-	lib/oofatfs/option/unicode.c \
+	lib/oofatfs/ffunicode.c \
 	extmod/uzlib/crc32.c \
 	extmod/uzlib/adler32.c \
 	extmod/uzlib/tinflate.c \
