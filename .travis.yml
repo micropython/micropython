@@ -62,7 +62,7 @@ jobs:
         - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER.zip)
       before_deploy:
         # Set up git user name and tag this commit
-        - git config --local user.name "Ilya Mordasov"
+        - git config --local user.name "ilyamordasov"
         - git config --local user.email "carlogulliani@gmail.com"
         - export TRAVIS_TAG="1.10"
         - git tag $TRAVIS_TAG
