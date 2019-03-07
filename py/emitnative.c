@@ -1250,6 +1250,7 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qst) {
 }
 
 STATIC void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj) {
+    emit->scope->scope_flags |= MP_SCOPE_FLAG_HASCONSTS;
     emit_native_pre(emit);
     need_reg_single(emit, REG_RET, 0);
     emit_load_reg_with_object(emit, REG_RET, obj);
