@@ -71,8 +71,6 @@ jobs:
         api_key: $GITHUB_OAUTH_TOKEN
         file: $ZIP
         skip_cleanup: true
-        on:
-          tags: true
       notifications:
         slack:
           rooms:
