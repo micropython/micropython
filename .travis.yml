@@ -68,7 +68,8 @@ jobs:
         #- git tag $TRAVIS_TAG
       deploy:
         provider: pages #releases
-        api_key: $GITHUB_OAUTH_TOKEN
+        #api_key: $GITHUB_OAUTH_TOKEN
+        github-token: $GITHUB_OAUTH_TOKEN
         local-dir: esp32-builds
         #file: $ZIP
         keep-history: true
