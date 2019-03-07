@@ -22,7 +22,8 @@ static inline void swap(uint16_t* a, uint16_t* b) {
     *b = temp;
 }
 
-bool refreshing_displays = false;
+// Check for recursive calls to displayio_refresh_displays.
+bool refresh_displays_in_progress = false;
 
 void displayio_refresh_displays(void) {
     if (mp_hal_is_interrupted()) {
@@ -35,20 +36,25 @@ void displayio_refresh_displays(void) {
         return;
     }
 
-    if (refreshing_displays) {
+    if (refresh_displays_in_progress) {
+        // Don't allow recursive calls to this routine.
         return;
     }
-    refreshing_displays = true;
+
+    refresh_displays_in_progress = true;
+
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display.base.type == NULL || displays[i].display.base.type == &mp_type_NoneType) {
+            // Skip null display.
             continue;
         }
         displayio_display_obj_t* display = &displays[i].display;
         displayio_display_update_backlight(display);
 
+        // Time to refresh at specified frame rate?
         if (!displayio_display_frame_queued(display)) {
-            refreshing_displays = false;
-            return;
+            // Too soon. Try next display.
+            continue;
         }
         if (displayio_display_refresh_queued(display)) {
             // We compute the pixels. r and c are row and column to match the display memory
@@ -60,11 +66,13 @@ void displayio_refresh_displays(void) {
             if (display->transpose_xy) {
                 swap(&c1, &r1);
             }
-            // Someone else is holding the bus used to talk to the display,
-            // so skip update for now.
-            if (!displayio_display_start_region_update(display, c0, r0, c1, r1)) {
-                return;
+
+            if (!displayio_display_begin_transaction(display)) {
+                // Can't acquire display bus; skip updating this display. Try next display.
+                continue;
             }
+            displayio_display_set_region_to_update(display, c0, r0, c1, r1);
+            displayio_display_end_transaction(display);
 
             uint16_t x0 = 0;
             uint16_t x1 = display->width - 1;
@@ -98,6 +106,8 @@ void displayio_refresh_displays(void) {
             size_t index = 0;
             uint16_t buffer_size = 256;
             uint32_t buffer[buffer_size / 2];
+            bool skip_this_display = false;
+
             for (uint16_t y = starty; y0 <= y && y <= y1; y += dy) {
                 for (uint16_t x = startx; x0 <= x && x <= x1; x += dx) {
                     uint16_t* pixel = &(((uint16_t*)buffer)[index]);
@@ -114,11 +124,14 @@ void displayio_refresh_displays(void) {
                     index += 1;
                     // The buffer is full, send it.
                     if (index >= buffer_size) {
-                        if (!displayio_display_send_pixels(display, buffer, buffer_size / 2) || reload_requested) {
-                            displayio_display_finish_region_update(display);
-                            refreshing_displays = false;
-                            return;
+                        if (!displayio_display_begin_transaction(display)) {
+                            // Can't acquire display bus; skip the rest of the data. Try next display.
+                            index = 0;
+                            skip_this_display = true;
+                            break;
                         }
+                        displayio_display_send_pixels(display, buffer, buffer_size / 2);
+                        displayio_display_end_transaction(display);
                         // TODO(tannewt): Make refresh displays faster so we don't starve other
                         // background tasks.
                         usb_background();
@@ -126,17 +139,26 @@ void displayio_refresh_displays(void) {
                     }
                 }
             }
-            // Send the remaining data.
-            if (index && !displayio_display_send_pixels(display, buffer, index * 2)) {
-                displayio_display_finish_region_update(display);
-                refreshing_displays = false;
-                return;
+
+            if (skip_this_display) {
+                // Go on to next display.
+                continue;
             }
-            displayio_display_finish_region_update(display);
+            // Send the remaining data.
+            if (index) {
+                if (!displayio_display_begin_transaction(display)) {
+                    // Can't get display bus. Skip the rest of the data. Try next display.
+                    continue;
+                }
+                displayio_display_send_pixels(display, buffer, index * 2);
+            }
+            displayio_display_end_transaction(display);
         }
         displayio_display_finish_refresh(display);
     }
-    refreshing_displays = false;
+
+    // All done.
+    refresh_displays_in_progress = false;
 }
 
 void common_hal_displayio_release_displays(void) {
