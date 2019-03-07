@@ -3356,7 +3356,7 @@ static FRESULT validate (   /* Returns FR_OK or FR_INVALID_OBJECT */
             res = FR_TIMEOUT;
         }
 #else
-        if (disk_ioctl(obj->fs->drv, IOCTL_STATUS, &stat) == RES_OK && (!stat & STA_NOINIT)) { /* Test if the phsical drive is kept initialized */
+        if (disk_ioctl(obj->fs->drv, IOCTL_STATUS, &stat) == RES_OK && !(stat & STA_NOINIT)) { /* Test if the phsical drive is kept initialized */
             res = FR_OK;
         }
 #endif
