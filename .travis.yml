@@ -67,9 +67,11 @@ jobs:
         - export TRAVIS_TAG="1.10"
         - git tag $TRAVIS_TAG
       deploy:
-        provider: releases
+        provider: pages #releases
         api_key: $GITHUB_OAUTH_TOKEN
-        file: $ZIP
+        local-dir: esp32-builds
+        #file: $ZIP
+        keep-history: true
         skip_cleanup: true
       notifications:
         slack:
