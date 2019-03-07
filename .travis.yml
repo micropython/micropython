@@ -68,10 +68,11 @@ jobs:
         - git tag $TRAVIS_TAG
       deploy:
         provider: releases
-        api_key: 
-          secure: $GITHUB_OAUTH_TOKEN
+        api_key: $GITHUB_OAUTH_TOKEN
         file: $ZIP
         skip_cleanup: true
+        on:
+          tags: true
       notifications:
         slack:
           rooms:
