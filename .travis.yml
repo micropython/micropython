@@ -65,7 +65,7 @@ jobs:
         - git config --local user.name "ilyamordasov"
         - git config --local user.email "carlogulliani@gmail.com"
         - export TRAVIS_TAG="1.10"
-        - git tag $TRAVIS_TAG
+        #- git tag $TRAVIS_TAG
       deploy:
         provider: pages #releases
         api_key: $GITHUB_OAUTH_TOKEN
