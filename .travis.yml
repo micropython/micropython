@@ -66,7 +66,7 @@ jobs:
         - git tag $TRAVIS_TAG
       deploy:
         provider: releases
-        api_key: "d4d83b61e05085deb221ebb8fcd0adad8412bb5f"
+        api_key: $GITHUB_OAUTH_TOKEN
         file: $HOME/build/ilyamordasov/micropython/ports/esp32/build/ESP32_v.1.10.$TRAVIS_BUILD_NUMBER.zip
         skip_cleanup: true
       notifications:
