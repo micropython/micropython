@@ -69,7 +69,11 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->bus = bus;
 
     uint32_t i = 0;
-    self->begin_transaction(self->bus);
+    while (!self->begin_transaction(self->bus)) {
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP ;
+#endif
+    }
     while (i < init_sequence_len) {
         uint8_t *cmd = init_sequence + i;
         uint8_t data_size = *(cmd + 1);
@@ -198,9 +202,16 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
     return ok;
 }
 
-void displayio_display_start_region_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+bool displayio_display_begin_transaction(displayio_display_obj_t* self) {
+    return self->begin_transaction(self->bus);
+}
+
+void displayio_display_end_transaction(displayio_display_obj_t* self) {
+    self->end_transaction(self->bus);
+}
+
+void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     // TODO(tannewt): Handle displays with single byte bounds.
-    self->begin_transaction(self->bus);
     uint16_t data[2];
     self->send(self->bus, true, &self->set_column_command, 1);
     data[0] = __builtin_bswap16(x0 + self->colstart);
@@ -211,10 +222,6 @@ void displayio_display_start_region_update(displayio_display_obj_t* self, uint16
     data[1] = __builtin_bswap16(y1 - 1 + self->rowstart);
     self->send(self->bus, false, (uint8_t*) data, 4);
     self->send(self->bus, true, &self->write_ram_command, 1);
-}
-
-void displayio_display_finish_region_update(displayio_display_obj_t* self) {
-    self->end_transaction(self->bus);
 }
 
 bool displayio_display_frame_queued(displayio_display_obj_t* self) {
@@ -234,9 +241,8 @@ void displayio_display_finish_refresh(displayio_display_obj_t* self) {
     self->last_refresh = ticks_ms;
 }
 
-bool displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length) {
+void displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length) {
     self->send(self->bus, false, (uint8_t*) pixels, length * 4);
-    return true;
 }
 
 void displayio_display_update_backlight(displayio_display_obj_t* self) {
