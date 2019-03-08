@@ -71,7 +71,7 @@ jobs:
         provider: pages #releases
         #api_key: $GITHUB_OAUTH_TOKEN
         github-token: $GITHUB_OAUTH_TOKEN
-        local-dir: esp32-builds
+        #local-dir: esp32-builds
         #file: $ZIP
         # keep-history: true
         skip_cleanup: true
