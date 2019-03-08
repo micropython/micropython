@@ -2094,12 +2094,12 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_1, MP_OBJ_ITER_BUF_NSLOTS);
     adjust_stack(emit, MP_OBJ_ITER_BUF_NSLOTS);
     emit_call(emit, MP_F_NATIVE_ITERNEXT);
-    #ifdef NDEBUG
-    MP_STATIC_ASSERT(MP_OBJ_STOP_ITERATION == 0);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, false);
-    #else
+    #if MICROPY_DEBUG_MP_OBJ_SENTINELS
     ASM_MOV_REG_IMM(emit->as, REG_TEMP1, (mp_uint_t)MP_OBJ_STOP_ITERATION);
     ASM_JUMP_IF_REG_EQ(emit->as, REG_RET, REG_TEMP1, label);
+    #else
+    MP_STATIC_ASSERT(MP_OBJ_STOP_ITERATION == 0);
+    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label, false);
     #endif
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }

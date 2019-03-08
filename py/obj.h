@@ -65,14 +65,14 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // For debugging purposes they are all different.  For non-debug mode, we alias
 // as many as we can to MP_OBJ_NULL because it's cheaper to load/compare 0.
 
-#ifdef NDEBUG
-#define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
-#define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)0))
-#define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)4))
-#else
+#if MICROPY_DEBUG_MP_OBJ_SENTINELS
 #define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
 #define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)4))
 #define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)8))
+#else
+#define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
+#define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)0))
+#define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)4))
 #endif
 
 // These macros/inline functions operate on objects and depend on the

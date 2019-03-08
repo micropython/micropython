@@ -414,6 +414,11 @@
 #define MICROPY_DEBUG_VERBOSE (0)
 #endif
 
+// Whether to enable debugging versions of MP_OBJ_NULL/STOP_ITERATION/SENTINEL
+#ifndef MICROPY_DEBUG_MP_OBJ_SENTINELS
+#define MICROPY_DEBUG_MP_OBJ_SENTINELS (0)
+#endif
+
 // Whether to enable a simple VM stack overflow check
 #ifndef MICROPY_DEBUG_VM_STACK_OVERFLOW
 #define MICROPY_DEBUG_VM_STACK_OVERFLOW (0)
