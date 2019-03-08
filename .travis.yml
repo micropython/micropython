@@ -68,6 +68,8 @@ jobs:
         #- git tag $TRAVIS_TAG
       deploy:
         provider: pages #releases
+        edge:
+          branch: v1.8.47
         #api_key: $GITHUB_OAUTH_TOKEN
         github-token: $GITHUB_OAUTH_TOKEN
         local-dir: esp32-builds/$TRAVIS_BUILD_NUMBER
