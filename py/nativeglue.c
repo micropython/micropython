@@ -56,8 +56,8 @@ int mp_native_type_from_qstr(qstr qst) {
 }
 
 // convert a MicroPython object to a valid native value based on type
-mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
-    DEBUG_printf("mp_convert_obj_to_native(%p, " UINT_FMT ")\n", obj, type);
+mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
+    DEBUG_printf("mp_native_from_obj(%p, " UINT_FMT ")\n", obj, type);
     switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
         case MP_NATIVE_TYPE_BOOL:
@@ -80,8 +80,8 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
 #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
 
 // convert a native value to a MicroPython object based on type
-mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
-    DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
+mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
+    DEBUG_printf("mp_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
     switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
         case MP_NATIVE_TYPE_BOOL: return mp_obj_new_bool(val);
@@ -192,8 +192,8 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     &mp_const_none_obj,
     &mp_const_false_obj,
     &mp_const_true_obj,
-    mp_convert_obj_to_native,
-    mp_convert_native_to_obj,
+    mp_native_from_obj,
+    mp_native_to_obj,
     mp_native_swap_globals,
     mp_load_name,
     mp_load_global,

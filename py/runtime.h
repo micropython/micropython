@@ -170,8 +170,8 @@ NORETURN void mp_raise_recursion_depth(void);
 
 // helper functions for native/viper code
 int mp_native_type_from_qstr(qstr qst);
-mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
-mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
+mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type);
+mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type);
 mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals);
 mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args);
 void mp_native_raise(mp_obj_t o);

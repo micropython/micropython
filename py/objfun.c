@@ -510,7 +510,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         );
     }
 
-    return mp_convert_native_to_obj(ret, self->type_sig);
+    return mp_native_to_obj(ret, self->type_sig);
 }
 
 STATIC const mp_obj_type_t mp_type_fun_asm = {
