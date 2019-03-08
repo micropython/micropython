@@ -1,10 +1,11 @@
 # global options
-dist: trusty #xenial
+dist: xenial
 language:
   - c
 compiler:
   - gcc
 cache:
+  edge: true
   directories:
     - "${HOME}/persist"
 env:
