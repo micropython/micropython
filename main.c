@@ -139,8 +139,7 @@ void stop_mp(void) {
     MP_STATE_VM(vfs_cur) = vfs;
     #endif
 
-    // Run any finalizers before we stop using the heap.
-    gc_sweep_all();
+    gc_deinit();
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
