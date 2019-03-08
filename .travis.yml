@@ -76,9 +76,7 @@ jobs:
         # keep-history: true
         skip_cleanup: true
       notifications:
-        slack:
-          rooms:
-            - $slack_token
+        slack: $slack_token
 #     # stm32 port
 #     - stage: staging
 #       env: NAME="stm32 port build"
