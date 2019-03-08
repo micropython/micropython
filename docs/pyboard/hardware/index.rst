@@ -4,7 +4,7 @@ The pyboard hardware
 For the pyboard:
 
 * v1.1
-    * `PYBv1.1 schematics <https://micropython.org/resources/PYBv11-schematics.pdf>`_ (261KiB PDF)
+    * `PYBv1.1 schematics and layout <https://micropython.org/resources/PYBv11.pdf>`_ (261KiB PDF)
 * v1.0
     * `PYBv1.0 schematics and layout <http://micropython.org/resources/PYBv10b.pdf>`_ (2.4MiB PDF)
     * `PYBv1.0 metric dimensions <http://micropython.org/resources/PYBv10b-metric-dimensions.pdf>`_ (360KiB PDF)
