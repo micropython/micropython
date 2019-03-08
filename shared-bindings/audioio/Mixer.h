@@ -32,6 +32,7 @@
 #include "shared-bindings/audioio/RawSample.h"
 
 extern const mp_obj_type_t audioio_mixer_type;
+extern const mp_obj_type_t audioio_mixervoice_type;
 
 void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
                                         uint8_t voice_count,
@@ -43,8 +44,6 @@ void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
 
 void common_hal_audioio_mixer_deinit(audioio_mixer_obj_t* self);
 bool common_hal_audioio_mixer_deinited(audioio_mixer_obj_t* self);
-void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, uint8_t voice, bool loop);
-void common_hal_audioio_mixer_stop_voice(audioio_mixer_obj_t* self, uint8_t voice);
 
 bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self);
 uint32_t common_hal_audioio_mixer_get_sample_rate(audioio_mixer_obj_t* self);

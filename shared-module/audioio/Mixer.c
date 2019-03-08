@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/audioio/Mixer.h"
+#include "shared-bindings/audioio/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -58,10 +59,6 @@ void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
     self->channel_count = channel_count;
     self->sample_rate = sample_rate;
     self->voice_count = voice_count;
-
-    for (uint8_t i = 0; i < self->voice_count; i++) {
-        self->voice[i].sample = NULL;
-    }
 }
 
 void common_hal_audioio_mixer_deinit(audioio_mixer_obj_t* self) {
@@ -77,46 +74,9 @@ uint32_t common_hal_audioio_mixer_get_sample_rate(audioio_mixer_obj_t* self) {
     return self->sample_rate;
 }
 
-void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, uint8_t v, bool loop) {
-    if (v >= self->voice_count) {
-        mp_raise_ValueError(translate("Voice index too high"));
-    }
-    if (audiosample_sample_rate(sample) != self->sample_rate) {
-        mp_raise_ValueError(translate("The sample's sample rate does not match the mixer's"));
-    }
-    if (audiosample_channel_count(sample) != self->channel_count) {
-        mp_raise_ValueError(translate("The sample's channel count does not match the mixer's"));
-    }
-    if (audiosample_bits_per_sample(sample) != self->bits_per_sample) {
-        mp_raise_ValueError(translate("The sample's bits_per_sample does not match the mixer's"));
-    }
-    bool single_buffer;
-    bool samples_signed;
-    uint32_t max_buffer_length;
-    uint8_t spacing;
-    audiosample_get_buffer_structure(sample, false, &single_buffer, &samples_signed,
-                                     &max_buffer_length, &spacing);
-    if (samples_signed != self->samples_signed) {
-        mp_raise_ValueError(translate("The sample's signedness does not match the mixer's"));
-    }
-    audioio_mixer_voice_t* voice = &self->voice[v];
-    voice->sample = sample;
-    voice->loop = loop;
-
-    audiosample_reset_buffer(sample, false, 0);
-    audioio_get_buffer_result_t result = audiosample_get_buffer(sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
-    // Track length in terms of words.
-    voice->buffer_length /= sizeof(uint32_t);
-    voice->more_data = result == GET_BUFFER_MORE_DATA;
-}
-
-void common_hal_audioio_mixer_stop_voice(audioio_mixer_obj_t* self, uint8_t voice) {
-    self->voice[voice].sample = NULL;
-}
-
 bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self) {
     for (int32_t v = 0; v < self->voice_count; v++) {
-        if (self->voice[v].sample != NULL) {
+        if (common_hal_audioio_mixervoice_get_playing(MP_OBJ_TO_PTR(self->voice[v]))) {
             return true;
         }
     }
@@ -126,9 +86,11 @@ bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self) {
 void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
                                 bool single_channel,
                                 uint8_t channel) {
+#if 0
     for (int32_t i = 0; i < self->voice_count; i++) {
         self->voice[i].sample = NULL;
     }
+#endif
 }
 
 uint32_t add8signed(uint32_t a, uint32_t b) {
@@ -215,6 +177,68 @@ uint32_t add16unsigned(uint32_t a, uint32_t b) {
     #endif
 }
 
+//TODO:
+static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
+	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    return val;
+    val = __USUB8(val, 0x80808080);
+	#else
+	uint32_t result = 0;
+	for (int8_t i = 0; i < 4; i++) {
+		int8_t ai = (val >> (sizeof(uint8_t) * 8 * i)) - 128;
+	}
+	return result;
+	#endif
+}
+
+//TODO:
+static inline uint32_t mult8signed(uint32_t val, int32_t mul) {
+	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+	return val;
+	#else
+	uint32_t result = 0;
+	for (int8_t i = 0; i < 4; i++) {
+		int8_t ai = val >> (sizeof(int8_t) * 8 * i);
+	}
+	return result;
+	#endif
+}
+
+//TODO:
+static inline uint32_t mult16unsigned(uint32_t val, int32_t mul) {
+	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    return val;
+	val = __USUB16(val, 0x80008000);
+	#else
+	uint32_t result = 0;
+	for (int8_t i = 0; i < 2; i++) {
+		int16_t ai = (val >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
+	}
+	return result;
+	#endif
+}
+
+static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
+	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+	int32_t hi, lo;
+	int32_t bits = 16; // saturate to 16 bits
+	int32_t shift = 0; // shift is done automatically
+	asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
+	asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
+	asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
+	asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
+	asm volatile("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
+    return val;
+	#else
+	uint32_t result = 0;
+	//TODO:
+	for (int8_t i = 0; i < 2; i++) {
+		int16_t ai = val >> (sizeof(int16_t) * 8 * i);
+	}
+	return result;
+	#endif
+}
+
 audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
                                                      bool single_channel,
                                                      uint8_t channel,
@@ -243,7 +267,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
         self->use_first_buffer = !self->use_first_buffer;
         bool voices_active = false;
         for (int32_t v = 0; v < self->voice_count; v++) {
-            audioio_mixer_voice_t* voice = &self->voice[v];
+            audioio_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
 
             uint32_t j = 0;
             bool voice_done = voice->sample == NULL;
@@ -284,6 +308,22 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
                 } else {
                     sample_value = voice->remaining_buffer[j];
                 }
+
+                // apply the mixer gain
+            	if (!self->samples_signed) {
+					if (self->bits_per_sample == 8) {
+						sample_value = mult8unsigned(sample_value, voice->gain);
+					} else {
+						sample_value = mult16unsigned(sample_value, voice->gain);
+					}
+				}
+				else{
+					if (self->bits_per_sample == 8) {
+						sample_value = mult8signed(sample_value, voice->gain);
+					} else {
+						sample_value = mult16signed(sample_value, voice->gain);
+					}
+				}
 
                 if (!voices_active) {
                     word_buffer[i] = sample_value;

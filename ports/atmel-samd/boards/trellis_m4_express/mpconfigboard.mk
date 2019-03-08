@@ -1,4 +1,4 @@
-LD_FILE = boards/samd51x19-bootloader-external-flash.ld
+LD_FILE = boards/samd51x19-external-flash.ld
 USB_VID = 0x239A
 USB_PID = 0x8030
 USB_PRODUCT = "Trellis M4 Express"
