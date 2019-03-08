@@ -109,6 +109,7 @@ STATIC int usage(char **argv) {
 "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
 "-mno-unicode : don't support unicode in compiled strings\n"
 "-mcache-lookup-bc : cache map lookups in the bytecode\n"
+"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa\n"
 "\n"
 "Implementation specific options:\n", argv[0]
 );
@@ -193,6 +194,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_dynamic_compiler.small_int_bits = 31;
     mp_dynamic_compiler.opt_cache_map_lookup_in_bytecode = 0;
     mp_dynamic_compiler.py_builtins_str_unicode = 1;
+    #if defined(__i386__)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+    #elif defined(__x86_64__)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+    #else
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
+    #endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
@@ -240,6 +248,21 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 mp_dynamic_compiler.py_builtins_str_unicode = 0;
             } else if (strcmp(argv[a], "-municode") == 0) {
                 mp_dynamic_compiler.py_builtins_str_unicode = 1;
+            } else if (strncmp(argv[a], "-march=", sizeof("-march=") - 1) == 0) {
+                const char *arch = argv[a] + sizeof("-march=") - 1;
+                if (strcmp(arch, "x86") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+                } else if (strcmp(arch, "x64") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+                } else if (strcmp(arch, "armv6") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
+                } else if (strcmp(arch, "armv7m") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7M;
+                } else if (strcmp(arch, "xtensa") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSA;
+                } else {
+                    return usage(argv);
+                }
             } else {
                 return usage(argv);
             }
