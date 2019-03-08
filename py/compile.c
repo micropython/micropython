@@ -35,6 +35,7 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/asmbase.h"
+#include "py/persistentcode.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -78,7 +79,25 @@ typedef enum {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
+
+#define NATIVE_EMITTER(f) emit_native_table[mp_dynamic_compiler.native_arch]->emit_##f
+#define NATIVE_EMITTER_TABLE emit_native_table[mp_dynamic_compiler.native_arch]
+
+STATIC const emit_method_table_t *emit_native_table[] = {
+    NULL,
+    &emit_native_x86_method_table,
+    &emit_native_x64_method_table,
+    &emit_native_arm_method_table,
+    &emit_native_thumb_method_table,
+    &emit_native_thumb_method_table,
+    &emit_native_thumb_method_table,
+    &emit_native_thumb_method_table,
+    &emit_native_thumb_method_table,
+    &emit_native_xtensa_method_table,
+};
+
+#elif MICROPY_EMIT_NATIVE
 // define a macro to access external native emitter
 #if MICROPY_EMIT_X64
 #define NATIVE_EMITTER(f) emit_native_x64_##f
@@ -93,6 +112,7 @@ typedef enum {
 #else
 #error "unknown native emitter"
 #endif
+#define NATIVE_EMITTER_TABLE &NATIVE_EMITTER(method_table)
 #endif
 
 #if MICROPY_EMIT_INLINE_ASM
@@ -3470,7 +3490,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
                     if (emit_native == NULL) {
                         emit_native = NATIVE_EMITTER(new)(&comp->compile_error, &comp->next_label, max_num_labels);
                     }
-                    comp->emit_method_table = &NATIVE_EMITTER(method_table);
+                    comp->emit_method_table = NATIVE_EMITTER_TABLE;
                     comp->emit = emit_native;
                     break;
 #endif // MICROPY_EMIT_NATIVE

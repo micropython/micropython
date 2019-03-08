@@ -98,6 +98,11 @@ typedef struct _mp_emit_method_table_id_ops_t {
 } mp_emit_method_table_id_ops_t;
 
 typedef struct _emit_method_table_t {
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_t *(*emit_new)(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+    void (*emit_free)(emit_t *emit);
+    #endif
+
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_t *emit);
     bool (*last_emit_was_return_value)(emit_t *emit);

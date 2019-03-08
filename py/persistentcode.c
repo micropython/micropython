@@ -78,6 +78,12 @@
 #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
 
+#if MICROPY_DYNAMIC_COMPILER
+#define MPY_FEATURE_ARCH_DYNAMIC mp_dynamic_compiler.native_arch
+#else
+#define MPY_FEATURE_ARCH_DYNAMIC MPY_FEATURE_ARCH
+#endif
+
 #if MICROPY_PERSISTENT_CODE_LOAD || (MICROPY_PERSISTENT_CODE_SAVE && !MICROPY_DYNAMIC_COMPILER)
 // The bytecode will depend on the number of bits in a small-int, and
 // this function computes that (could make it a fixed constant, but it
@@ -731,7 +737,7 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
         #endif
     };
     if (mp_raw_code_has_native(rc)) {
-        header[2] |= MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH);
+        header[2] |= MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH_DYNAMIC);
     }
     mp_print_bytes(print, header, sizeof(header));
     mp_print_uint(print, QSTR_WINDOW_SIZE);

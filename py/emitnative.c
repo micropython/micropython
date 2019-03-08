@@ -2727,6 +2727,11 @@ STATIC void emit_native_end_except_handler(emit_t *emit) {
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
+    #if MICROPY_DYNAMIC_COMPILER
+    EXPORT_FUN(new),
+    EXPORT_FUN(free),
+    #endif
+
     emit_native_start_pass,
     emit_native_end_pass,
     emit_native_last_emit_was_return_value,
