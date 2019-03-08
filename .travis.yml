@@ -73,7 +73,7 @@ jobs:
         github-token: $GITHUB_OAUTH_TOKEN
         local-dir: esp32-builds/$TRAVIS_BUILD_NUMBER
         #file: $ZIP
-        keep-history: true
+        # keep-history: true
         skip_cleanup: true
       notifications:
         slack:
