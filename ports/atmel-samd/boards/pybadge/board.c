@@ -27,6 +27,7 @@
 #include "boards/board.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
+#include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
@@ -50,7 +51,7 @@ uint8_t display_init_sequence[] = {
     0xc4, 2, 0x8a, 0xee,
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
-    0x36, 1, 0x18, // _MADCTL bottom to top refresh
+    0x36, 1, 0x00, // _MADCTL top to bottom refresh in vsync aligned order.
     // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
@@ -68,11 +69,16 @@ uint8_t display_init_sequence[] = {
     0x29, 0 | DELAY, 100, // _DISPON
 };
 
+STATIC busio_spi_obj_t display_spi_obj;
+
 void board_init(void) {
+    common_hal_busio_spi_construct(&display_spi_obj, &pin_PB13, &pin_PB12, NULL);
+    common_hal_busio_spi_never_reset(&display_spi_obj);
+
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
-        board_spi(),
+        &display_spi_obj,
         &pin_PB05, // TFT_DC Command or data
         &pin_PB07, // TFT_CS Chip select
         &pin_PA01); // TFT_RST Reset
@@ -81,11 +87,11 @@ void board_init(void) {
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
-        128, // Width
+        160, // Width
         128, // Height
-        2, // column start
-        1, // row start
-        0, // rotation
+        0, // column start
+        0, // row start
+        270, // rotation
         16, // Color depth
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
