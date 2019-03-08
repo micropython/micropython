@@ -171,6 +171,9 @@ safe_mode_t port_init(void) {
 
     init_shared_dma();
 
+    // Reset everything into a known state before board_init.
+    reset_port();
+
     // Init the board last so everything else is ready
     board_init();
 
