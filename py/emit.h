@@ -156,8 +156,6 @@ typedef struct _emit_method_table_t {
     void (*end_except_handler)(emit_t *emit);
 } emit_method_table_t;
 
-int mp_native_type_from_qstr(qstr qst);
-
 static inline void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
     scope_find_or_add_id(scope, qst, ID_INFO_KIND_GLOBAL_IMPLICIT);
 }

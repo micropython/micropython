@@ -41,6 +41,20 @@
 
 #if MICROPY_EMIT_NATIVE
 
+int mp_native_type_from_qstr(qstr qst) {
+    switch (qst) {
+        case MP_QSTR_object: return MP_NATIVE_TYPE_OBJ;
+        case MP_QSTR_bool: return MP_NATIVE_TYPE_BOOL;
+        case MP_QSTR_int: return MP_NATIVE_TYPE_INT;
+        case MP_QSTR_uint: return MP_NATIVE_TYPE_UINT;
+        case MP_QSTR_ptr: return MP_NATIVE_TYPE_PTR;
+        case MP_QSTR_ptr8: return MP_NATIVE_TYPE_PTR8;
+        case MP_QSTR_ptr16: return MP_NATIVE_TYPE_PTR16;
+        case MP_QSTR_ptr32: return MP_NATIVE_TYPE_PTR32;
+        default: return -1;
+    }
+}
+
 // convert a MicroPython object to a valid native value based on type
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
     DEBUG_printf("mp_convert_obj_to_native(%p, " UINT_FMT ")\n", obj, type);

@@ -136,20 +136,6 @@ typedef enum {
     VTYPE_BUILTIN_CAST = 0x70 | MP_NATIVE_TYPE_OBJ,
 } vtype_kind_t;
 
-int mp_native_type_from_qstr(qstr qst) {
-    switch (qst) {
-        case MP_QSTR_object: return MP_NATIVE_TYPE_OBJ;
-        case MP_QSTR_bool: return MP_NATIVE_TYPE_BOOL;
-        case MP_QSTR_int: return MP_NATIVE_TYPE_INT;
-        case MP_QSTR_uint: return MP_NATIVE_TYPE_UINT;
-        case MP_QSTR_ptr: return MP_NATIVE_TYPE_PTR;
-        case MP_QSTR_ptr8: return MP_NATIVE_TYPE_PTR8;
-        case MP_QSTR_ptr16: return MP_NATIVE_TYPE_PTR16;
-        case MP_QSTR_ptr32: return MP_NATIVE_TYPE_PTR32;
-        default: return -1;
-    }
-}
-
 STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
     switch (vtype) {
         case VTYPE_PYOBJ: return MP_QSTR_object;
