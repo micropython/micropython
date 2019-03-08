@@ -1,5 +1,5 @@
 # global options
-dist: Trusty #xenial
+dist: trusty #xenial
 language:
   - c
 compiler:
