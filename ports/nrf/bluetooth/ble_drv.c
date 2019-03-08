@@ -35,27 +35,20 @@
 #include "nrf_soc.h"
 #include "nrfx_power.h"
 #include "py/misc.h"
+#include "py/mpstate.h"
 
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
 __attribute__((aligned(4)))
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)];
 
-typedef struct event_handler {
-    struct event_handler *next;
-    void *param;
-    ble_drv_evt_handler_t func;
-} event_handler_t;
-
-static event_handler_t *m_event_handlers = NULL;
-
 void ble_drv_reset() {
     // Linked list items will be gc'd.
-    m_event_handlers = NULL;
+    MP_STATE_VM(ble_drv_evt_handler_entries) = NULL;
 }
 
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
-    event_handler_t *it = m_event_handlers;
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
     while (it != NULL) {
         // If event handler and its corresponding param are already on the list, don't add again.
         if ((it->func == func) && (it->param == param)) {
@@ -65,17 +58,17 @@ void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
     }
 
     // Add a new handler to the front of the list
-    event_handler_t *handler = m_new_ll(event_handler_t, 1);
-    handler->next = m_event_handlers;
+    ble_drv_evt_handler_entry_t *handler = m_new_ll(ble_drv_evt_handler_entry_t, 1);
+    handler->next = MP_STATE_VM(ble_drv_evt_handler_entries);
     handler->param = param;
     handler->func = func;
 
-    m_event_handlers = handler;
+    MP_STATE_VM(ble_drv_evt_handler_entries) = handler;
 }
 
 void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
-    event_handler_t *it = m_event_handlers;
-    event_handler_t **prev = &m_event_handlers;
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+    ble_drv_evt_handler_entry_t **prev = &MP_STATE_VM(ble_drv_evt_handler_entries);
     while (it != NULL) {
         if ((it->func == func) && (it->param == param)) {
             // Splice out the matching handler.
@@ -122,7 +115,7 @@ void SD_EVT_IRQHandler(void) {
             break;
         }
 
-        event_handler_t *it = m_event_handlers;
+        ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
         while (it != NULL) {
             it->func((ble_evt_t *)m_ble_evt_buf, it->param);
             it = it->next;

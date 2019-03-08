@@ -32,8 +32,8 @@ extension_by_board = {
     "arduino_zero": BIN,
     "feather_m0_adalogger": BIN_UF2,
     "feather_m0_basic": BIN_UF2,
-    "feather_m0_rfm69": BIN,
-    "feather_m0_rfm9x": BIN,
+    "feather_m0_rfm69": BIN_UF2,
+    "feather_m0_rfm9x": BIN_UF2,
 
     # nRF52840 dev kits that may not have UF2 bootloaders,
     "makerdiary_nrf52840_mdk": HEX,

@@ -92,3 +92,6 @@
 [submodule "tools/Tecate-bitmap-fonts"]
 	path = tools/Tecate-bitmap-fonts
 	url = https://github.com/Tecate/bitmap-fonts.git
+[submodule "frozen/pew-pewpew-standalone-10.x"]
+	path = frozen/pew-pewpew-standalone-10.x
+	url = https://github.com/pewpew-game/pew-pewpew-standalone-10.x.git

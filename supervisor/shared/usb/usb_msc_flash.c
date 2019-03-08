@@ -34,6 +34,7 @@
 #include "lib/oofatfs/ff.h"
 #include "py/mpstate.h"
 
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
 
 #define MSC_FLASH_BLOCK_SIZE    512
@@ -148,8 +149,7 @@ bool tud_msc_is_writable_cb(uint8_t lun) {
     if (vfs == NULL) {
         return false;
     }
-    if (vfs->writeblocks[0] == MP_OBJ_NULL ||
-        (vfs->flags & FSUSER_USB_WRITABLE) == 0) {
+    if (vfs->writeblocks[0] == MP_OBJ_NULL || !filesystem_is_writable_by_usb(vfs)) {
         return false;
     }
     return true;

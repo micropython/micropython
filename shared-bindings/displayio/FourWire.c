@@ -110,7 +110,12 @@ STATIC mp_obj_t displayio_fourwire_obj_send(mp_obj_t self, mp_obj_t command_obj,
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);
 
-    common_hal_displayio_fourwire_begin_transaction(self);
+    // Wait for display bus to be available.
+    while (!common_hal_displayio_fourwire_begin_transaction(self)) {
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP ;
+#endif
+    }
     common_hal_displayio_fourwire_send(self, true, &command, 1);
     common_hal_displayio_fourwire_send(self, false, ((uint8_t*) bufinfo.buf), bufinfo.len);
     common_hal_displayio_fourwire_end_transaction(self);

@@ -253,6 +253,42 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: width
+//|
+//|	Gets the width of the board
+//|
+//|
+STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
+    displayio_display_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_width(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_width_obj, displayio_display_obj_get_width);
+
+const mp_obj_property_t displayio_display_width_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_display_get_width_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: height
+//|
+//|	Gets the height of the board
+//|
+//|
+STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
+    displayio_display_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_height(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_height_obj, displayio_display_obj_get_height);
+
+const mp_obj_property_t displayio_display_height_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_display_get_height_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_display_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh_soon), MP_ROM_PTR(&displayio_display_refresh_soon_obj) },
@@ -260,6 +296,9 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&displayio_display_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&displayio_display_auto_brightness_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_display_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_display_locals_dict, displayio_display_locals_dict_table);
 

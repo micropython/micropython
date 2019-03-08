@@ -79,11 +79,10 @@
 
 #include "peripherals/samd/dma.h"
 
+#include "py/circuitpy_mpconfig.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
-    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT] \
-    ;
-
-#include "py/circuitpy_mpconfig.h"
+    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT];
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

@@ -48,16 +48,21 @@ void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_
 
 void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self);
 
-void displayio_display_start_region_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-void displayio_display_finish_region_update(displayio_display_obj_t* self);
+bool displayio_display_begin_transaction(displayio_display_obj_t* self);
+void displayio_display_end_transaction(displayio_display_obj_t* self);
+
+void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 bool displayio_display_frame_queued(displayio_display_obj_t* self);
 
 bool displayio_display_refresh_queued(displayio_display_obj_t* self);
 void displayio_display_finish_refresh(displayio_display_obj_t* self);
-bool displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length);
+void displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length);
 
 bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self);
 void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness);
+
+uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self);
+uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self);
 
 mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self);
 bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness);

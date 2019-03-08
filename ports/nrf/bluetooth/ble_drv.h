@@ -50,6 +50,12 @@
 
 typedef void (*ble_drv_evt_handler_t)(ble_evt_t*, void*);
 
+typedef struct ble_drv_evt_handler_entry {
+    struct ble_drv_evt_handler_entry *next;
+    void *param;
+    ble_drv_evt_handler_t func;
+} ble_drv_evt_handler_entry_t;
+
 void ble_drv_reset(void);
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param);
 void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param);
