@@ -37,10 +37,6 @@
 #include <signal.h>
 #include <sched.h>
 #include <semaphore.h>
-#if defined (__APPLE__)
-#include <string.h>
-#endif
-
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
