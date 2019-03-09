@@ -115,7 +115,25 @@ STATIC const emit_method_table_t *emit_native_table[] = {
 #define NATIVE_EMITTER_TABLE &NATIVE_EMITTER(method_table)
 #endif
 
-#if MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_INLINE_ASM && MICROPY_DYNAMIC_COMPILER
+
+#define ASM_EMITTER(f) emit_asm_table[mp_dynamic_compiler.native_arch]->asm_##f
+#define ASM_EMITTER_TABLE emit_asm_table[mp_dynamic_compiler.native_arch]
+
+STATIC const emit_inline_asm_method_table_t *emit_asm_table[] = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    &emit_inline_thumb_method_table,
+    &emit_inline_thumb_method_table,
+    &emit_inline_thumb_method_table,
+    &emit_inline_thumb_method_table,
+    &emit_inline_thumb_method_table,
+    &emit_inline_xtensa_method_table,
+};
+
+#elif MICROPY_EMIT_INLINE_ASM
 // define macros for inline assembler
 #if MICROPY_EMIT_INLINE_THUMB
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_thumb
@@ -126,6 +144,7 @@ STATIC const emit_method_table_t *emit_native_table[] = {
 #else
 #error "unknown asm emitter"
 #endif
+#define ASM_EMITTER_TABLE &ASM_EMITTER(method_table)
 #endif
 
 #define EMIT_INLINE_ASM(fun) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm))
@@ -819,8 +838,15 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
         *emit_options = MP_EMIT_OPT_VIPER;
 #endif
     #if MICROPY_EMIT_INLINE_ASM
+    #if MICROPY_DYNAMIC_COMPILER
+    } else if (attr == MP_QSTR_asm_thumb) {
+        *emit_options = MP_EMIT_OPT_ASM;
+    } else if (attr == MP_QSTR_asm_xtensa) {
+        *emit_options = MP_EMIT_OPT_ASM;
+    #else
     } else if (attr == ASM_DECORATOR_QSTR) {
         *emit_options = MP_EMIT_OPT_ASM;
+    #endif
     #endif
     } else {
         compile_syntax_error(comp, name_nodes[1], "invalid micropython decorator");
@@ -3465,13 +3491,18 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
                 comp->emit_inline_asm = ASM_EMITTER(new)(max_num_labels);
             }
             comp->emit = NULL;
-            comp->emit_inline_asm_method_table = &ASM_EMITTER(method_table);
+            comp->emit_inline_asm_method_table = ASM_EMITTER_TABLE;
             compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
             #if MICROPY_EMIT_INLINE_XTENSA
             // Xtensa requires an extra pass to compute size of l32r const table
             // TODO this can be improved by calculating it during SCOPE pass
             // but that requires some other structural changes to the asm emitters
-            compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
+            #if MICROPY_DYNAMIC_COMPILER
+            if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_XTENSA)
+            #endif
+            {
+                compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
+            }
             #endif
             if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope_inline_asm(comp, s, MP_PASS_EMIT);

@@ -335,6 +335,11 @@ branch_not_in_range:
 }
 
 const emit_inline_asm_method_table_t emit_inline_xtensa_method_table = {
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_inline_xtensa_new,
+    emit_inline_xtensa_free,
+    #endif
+
     emit_inline_xtensa_start_pass,
     emit_inline_xtensa_end_pass,
     emit_inline_xtensa_count_params,
