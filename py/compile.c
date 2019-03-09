@@ -852,6 +852,18 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
         compile_syntax_error(comp, name_nodes[1], "invalid micropython decorator");
     }
 
+    #if MICROPY_DYNAMIC_COMPILER
+    if (*emit_options == MP_EMIT_OPT_NATIVE_PYTHON || *emit_options == MP_EMIT_OPT_VIPER) {
+        if (emit_native_table[mp_dynamic_compiler.native_arch] == NULL) {
+            compile_syntax_error(comp, name_nodes[1], "invalid arch");
+        }
+    } else if (*emit_options == MP_EMIT_OPT_ASM) {
+        if (emit_asm_table[mp_dynamic_compiler.native_arch] == NULL) {
+            compile_syntax_error(comp, name_nodes[1], "invalid arch");
+        }
+    }
+    #endif
+
     return true;
 }
 
