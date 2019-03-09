@@ -38,8 +38,9 @@
 #include <sched.h>
 #include <semaphore.h>
 #if defined (__APPLE__)
-#include <time.h>
+#include <string.h>
 #endif
+
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
@@ -60,15 +61,8 @@ STATIC thread_t *thread;
 STATIC sem_t thread_signal_done;
 
 #if defined (__APPLE__)
-STATIC char thread_semaphore_name[3] = {"tsn"};
-#define GEN_SEM_NAME(sem_name)                              \
-    {                                                       \
-        srand(time(NULL));                                  \
-        for (int i = 0; i < 3; i++)                         \
-        {                                                   \
-            sem_name[i] = (char)(rand() % (126 - 32)) + 32; \
-        }                                                   \
-    }
+STATIC sem_t *thread_signal_done_p = &thread_signal_done;
+STATIC char thread_semaphore_name[25];
 #endif
 
 // this signal handler is used to scan the regs and stack of a thread
@@ -102,8 +96,7 @@ void mp_thread_init(void) {
     thread->next = NULL;
 
 #if defined (__APPLE__)
-    GEN_SEM_NAME(thread_semaphore_name);
-    sem_t * thread_signal_done_p = &thread_signal_done;
+    snprintf(thread_semaphore_name, sizeof(thread_semaphore_name), "micropython_sem_%d", (int)thread->id);
     thread_signal_done_p = sem_open(thread_semaphore_name, O_CREAT | O_EXCL, 0666, 1);
 #else
     sem_init(&thread_signal_done, 0, 0);
@@ -126,7 +119,7 @@ void mp_thread_deinit(void) {
     }
     pthread_mutex_unlock(&thread_mutex);
 #if defined (__APPLE__)
-    sem_close(&thread_signal_done);
+    sem_close(thread_signal_done_p);
     sem_unlink(thread_semaphore_name);
 #endif
     assert(thread->id == pthread_self());
