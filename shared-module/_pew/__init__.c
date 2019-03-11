@@ -51,7 +51,7 @@ void pew_tick(void) {
         pressed = 0;
         col = 0;
         ++turn;
-        if (turn >= 8) {
+        if (turn > 11) {
             turn = 0;
         }
     }
@@ -68,13 +68,15 @@ void pew_tick(void) {
                 value = true;
                 break;
             case 2:
-                if (turn == 2 || turn == 4 || turn == 6) {
-                    value = true;
+                if (turn == 2 || turn == 5 || turn == 8 || turn == 11) {
+                        value = true;
                 }
+                break;
             case 1:
                 if (turn == 0) {
                     value = true;
                 }
+                break;
             case 0:
                 break;
         }

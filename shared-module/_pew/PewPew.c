@@ -107,7 +107,7 @@ void pew_init() {
         #endif
 
         tc_set_enable(tc, true);
-        tc->COUNT16.CC[0].reg = 160;
+        tc->COUNT16.CC[0].reg = 64;
 
         // Clear our interrupt in case it was set earlier
         tc->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
