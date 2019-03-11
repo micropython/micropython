@@ -296,6 +296,7 @@ $(filter $(SRC_PATTERNS), \
 	_stage/__init__.c \
 	audioio/__init__.c \
 	audioio/Mixer.c \
+	audioio/MixerVoice.c \
 	audioio/RawSample.c \
 	audioio/WaveFile.c \
 	bitbangio/I2C.c \

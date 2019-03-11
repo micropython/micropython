@@ -33,8 +33,8 @@
 //|   :param int buffer_size: The total size in bytes of the buffers to mix into
 //|
 // TODO: support mono or stereo voices
-STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-	audioio_mixervoice_obj_t *self = m_new(audioio_mixervoice_obj_t, 1);
+STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+	audioio_mixervoice_obj_t *self = m_new_obj(audioio_mixervoice_obj_t);
     self->base.type = &audioio_mixervoice_type;
     self->sample = NULL;
     self->gain = ((1 << 15)-1);
@@ -188,8 +188,7 @@ STATIC MP_DEFINE_CONST_DICT(audioio_mixervoice_locals_dict, audioio_mixervoice_l
 
 const mp_obj_type_t audioio_mixervoice_type = {
     { &mp_type_type },
-    .name = MP_QSTR_mixervoice,
+    .name = MP_QSTR_MixerVoice,
     .make_new = audioio_mixervoice_make_new,
     .locals_dict = (mp_obj_dict_t*)&audioio_mixervoice_locals_dict,
 };
-
