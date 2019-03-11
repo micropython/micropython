@@ -135,6 +135,7 @@ LDFLAGS += -L$(ESPCOMP)/esp32/ld
 LDFLAGS += -T $(BUILD)/esp32_out.ld
 LDFLAGS += -T $(BUILD)/esp32.common.ld
 LDFLAGS += -T esp32.rom.ld
+LDFLAGS += -T esp32.rom.libgcc.ld
 LDFLAGS += -T esp32.peripherals.ld
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -265,10 +266,16 @@ $(BUILD)/$(ESPCOMP)/esp32/dport_access.o: CFLAGS += -Wno-array-bounds
 ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	brownout.o \
 	cache_sram_mmu.o \
+	coexist.o \
 	dbg_stubs.o \
+	dport_panic_highint_hdl.o \
 	esp_err_to_name.o \
+	esp_himem.o \
 	panic.o \
+	pm_trace.o \
 	reset_reason.o \
+	restore.o \
+	stack_check.o \
 	esp_timer.o \
 	esp_timer_esp32.o \
 	ets_timer_legacy.o \
@@ -362,6 +369,7 @@ $(BUILD)/$(ESPCOMP)/freertos/portasm.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_context.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_intr_asm.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vectors.o: CFLAGS = $(CFLAGS_ASM)
+$(BUILD)/$(ESPCOMP)/freertos/xtensa_vector_defaults.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
 ESPIDF_FREERTOS_O = $(addprefix $(ESPCOMP)/freertos/,\
 	croutine.o \
@@ -914,16 +922,38 @@ $(BOOTLOADER_LIB_DIR)/libmicro-ecc.a: $(BOOTLOADER_LIB_MICRO_ECC_OBJ)
 	$(ECHO) "AR $@"
 	$(Q)$(AR) cr $@ $^
 
-# remaining object files
-BOOTLOADER_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
-	soc/esp32/rtc_clk.o \
-	soc/esp32/rtc_clk_init.o \
-	soc/esp32/rtc_init.o \
-	soc/esp32/rtc_time.o \
-	soc/esp32/rtc_wdt.o \
-	soc/esp32/cpu_util.o \
+# libsoc.a
+$(BUILD)/bootloader/$(ESPCOMP)/soc/esp32/rtc_clk.o: CFLAGS += -fno-jump-tables -fno-tree-switch-conversion
+BOOTLOADER_LIB_ALL += soc
+BOOTLOADER_LIB_SOC_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/soc/,\
+	esp32/cpu_util.o \
+	esp32/gpio_periph.o \
+	esp32/rtc_clk.o \
+	esp32/rtc_clk_init.o \
+	esp32/rtc_init.o \
+	esp32/rtc_periph.o \
+	esp32/rtc_pm.o \
+	esp32/rtc_sleep.o \
+	esp32/rtc_time.o \
+	esp32/rtc_wdt.o \
+	esp32/sdio_slave_periph.o \
+	esp32/sdmmc_periph.o \
+	esp32/soc_memory_layout.o \
+	esp32/spi_periph.o \
+	src/memory_layout_utils.o \
+	)
+$(BOOTLOADER_LIB_DIR)/libsoc.a: $(BOOTLOADER_LIB_SOC_OBJ)
+	$(ECHO) "AR $@"
+	$(Q)$(AR) cr $@ $^
+
+# libmain.a
+BOOTLOADER_LIB_ALL += main
+BOOTLOADER_LIB_MAIN_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	bootloader/subproject/main/bootloader_start.o \
 	)
+$(BOOTLOADER_LIB_DIR)/libmain.a: $(BOOTLOADER_LIB_MAIN_OBJ)
+	$(ECHO) "AR $@"
+	$(Q)$(AR) cr $@ $^
 
 # all objects files
 BOOTLOADER_OBJ_ALL = \
@@ -931,7 +961,8 @@ BOOTLOADER_OBJ_ALL = \
 	$(BOOTLOADER_LIB_LOG_OBJ) \
 	$(BOOTLOADER_LIB_SPI_FLASH_OBJ) \
 	$(BOOTLOADER_LIB_MICRO_ECC_OBJ) \
-	$(BOOTLOADER_OBJ)
+	$(BOOTLOADER_LIB_SOC_OBJ) \
+	$(BOOTLOADER_LIB_MAIN_OBJ)
 
 $(BOOTLOADER_OBJ_ALL): $(SDKCONFIG_H)
 
