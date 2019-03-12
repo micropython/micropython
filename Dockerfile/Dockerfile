@@ -13,8 +13,8 @@ RUN useradd --no-create-home micropython
   
 USER micropython
 
-RUN apt-get clean
-  # && rm -rf /var/lib/apt/lists/*
+#RUN apt-get clean \
+#  && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/ilyamordasov/micropython.git \
   && cd micropython \
