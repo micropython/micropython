@@ -1,6 +1,11 @@
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-F091RC"
 #define MICROPY_HW_MCU_NAME         "STM32F091RCT6"
 
+#define MICROPY_BOARD_EARLY_INIT    STM32F091RC_board_early_init
+void STM32F091RC_board_early_init(void);
+
+#define MICROPY_HW_MCO              (1)
+
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_PY_USOCKET          (0)
