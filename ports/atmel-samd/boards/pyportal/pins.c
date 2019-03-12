@@ -8,6 +8,7 @@
 // out on connectors are labeled with their MCU name available from
 // microcontroller.pin.
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SPEAKER), MP_ROM_PTR(&pin_PA02) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_AUDIO_OUT), MP_ROM_PTR(&pin_PA02) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) }, // analog out/in
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPEAKER_ENABLE), MP_ROM_PTR(&pin_PA27) },
