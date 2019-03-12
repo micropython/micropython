@@ -96,13 +96,25 @@ def get_current_info():
     response = response.json()
 
     git_info = commit_sha, response["sha"]
-    return git_info, json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    current_info = {}
+    for info in current_list:
+        current_info[info["id"]] = info
+    return git_info, current_info
 
 def create_pr(changes, updated, git_info):
     commit_sha, original_blob_sha = git_info
     branch_name = "new_release_" + changes["new_release"]
 
-    updated = json.dumps(updated, sort_keys=True, indent=4).encode("utf-8") + b"\n"
+    # Convert the dictionary to a list of boards. Liquid templates only handle arrays.
+    updated_list = []
+    all_ids = sorted(updated.keys())
+    for id in all_ids:
+        info = updated[id]
+        info["id"] = id
+        updated_list.append(info)
+
+    updated = json.dumps(updated_list, sort_keys=True, indent=4).encode("utf-8") + b"\n"
     print(updated.decode("utf-8"))
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
