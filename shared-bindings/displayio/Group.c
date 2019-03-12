@@ -41,19 +41,23 @@
 //|
 //| Manage a group of sprites and groups and how they are inter-related.
 //|
-//| .. class:: Group(*, max_size=4, scale=1)
+//| .. class:: Group(*, max_size=4, scale=1, x=0, y=0)
 //|
 //|   Create a Group of a given size and scale. Scale is in one dimension. For example, scale=2
 //|   leads to a layer's pixel being 2x2 pixels when in the group.
 //|
 //|   :param int max_size: The maximum group size.
 //|   :param int scale: Scale of layer pixels in one dimension.
+//|   :param int x: Initial x position within the parent.
+//|   :param int y: Initial y position within the parent.
 //|
 STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_max_size, ARG_scale };
+    enum { ARG_max_size, ARG_scale, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_max_size, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 4} },
         { MP_QSTR_scale, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
+        { MP_QSTR_x, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
+        { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -70,7 +74,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 
     displayio_group_t *self = m_new_obj(displayio_group_t);
     self->base.type = &displayio_group_type;
-    common_hal_displayio_group_construct(self, max_size, scale);
+    common_hal_displayio_group_construct(self, max_size, scale, args[ARG_x].u_int, args[ARG_y].u_int);
 
     return MP_OBJ_FROM_PTR(self);
 }
