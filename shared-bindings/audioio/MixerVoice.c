@@ -37,7 +37,7 @@ STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_
 	audioio_mixervoice_obj_t *self = m_new_obj(audioio_mixervoice_obj_t);
     self->base.type = &audioio_mixervoice_type;
     self->sample = NULL;
-    self->gain = ((1 << 15)-1);
+    self->level = ((1 << 15)-1);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -119,35 +119,35 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_stop_obj, 1, audioio_mixervoice_ob
 //|
 //|     gain must be a floating point number between 0 and 1
 //|
-STATIC mp_obj_t audioio_mixervoice_obj_set_gain(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_gain };
+STATIC mp_obj_t audioio_mixervoice_obj_set_level(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_level };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_gain,     MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_level,     MP_ARG_OBJ | MP_ARG_REQUIRED },
     };
     audioio_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
 	#if MICROPY_PY_BUILTINS_FLOAT
-	float gain = mp_obj_get_float(args[ARG_gain].u_obj);
+	float level = mp_obj_get_float(args[ARG_level].u_obj);
 	#else
 	#error "floating point not supported"
 	#endif
 
-    if (gain > 1 || gain < 0) {
-        mp_raise_ValueError(translate("gain must be between 0 and 1"));
+    if (level > 1 || level < 0) {
+        mp_raise_ValueError(translate("level must be between 0 and 1"));
     }
 
-    common_hal_audioio_mixervoice_set_gain(self, gain);
+    common_hal_audioio_mixervoice_set_level(self, level);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_set_gain_obj, 1, audioio_mixervoice_obj_set_gain);
+MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_set_level_obj, 1, audioio_mixervoice_obj_set_level);
 
-const mp_obj_property_t audioio_mixervoice_gain_obj = {
+const mp_obj_property_t audioio_mixervoice_level_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&audioio_mixervoice_set_gain_obj,
+              (mp_obj_t)&audioio_mixervoice_set_level_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
@@ -182,7 +182,7 @@ STATIC const mp_rom_map_elem_t audioio_mixervoice_locals_dict_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audioio_mixervoice_playing_obj) },
-    { MP_ROM_QSTR(MP_QSTR_gain), MP_ROM_PTR(&audioio_mixervoice_gain_obj) },
+    { MP_ROM_QSTR(MP_QSTR_level), MP_ROM_PTR(&audioio_mixervoice_level_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_mixervoice_locals_dict, audioio_mixervoice_locals_dict_table);
 

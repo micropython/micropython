@@ -309,19 +309,19 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
                     sample_value = voice->remaining_buffer[j];
                 }
 
-                // apply the mixer gain
+                // apply the mixer level
             	if (!self->samples_signed) {
 					if (self->bits_per_sample == 8) {
-						sample_value = mult8unsigned(sample_value, voice->gain);
+						sample_value = mult8unsigned(sample_value, voice->level);
 					} else {
-						sample_value = mult16unsigned(sample_value, voice->gain);
+						sample_value = mult16unsigned(sample_value, voice->level);
 					}
 				}
 				else{
 					if (self->bits_per_sample == 8) {
-						sample_value = mult8signed(sample_value, voice->gain);
+						sample_value = mult8signed(sample_value, voice->level);
 					} else {
-						sample_value = mult16signed(sample_value, voice->gain);
+						sample_value = mult16signed(sample_value, voice->level);
 					}
 				}
 

@@ -18,8 +18,8 @@ void common_hal_audioio_mixervoice_set_parent(audioio_mixervoice_obj_t* self, au
 	self->parent = parent;
 }
 
-void common_hal_audioio_mixervoice_set_gain(audioio_mixervoice_obj_t* self, float gain) {
-	self->gain = gain * ((1 << 15)-1);
+void common_hal_audioio_mixervoice_set_level(audioio_mixervoice_obj_t* self, float level) {
+	self->level = level * ((1 << 15)-1);
 }
 
 void common_hal_audioio_mixervoice_play(audioio_mixervoice_obj_t* self, mp_obj_t sample, bool loop) {
