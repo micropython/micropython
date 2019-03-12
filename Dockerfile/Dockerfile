@@ -14,15 +14,6 @@ RUN useradd --no-create-home micropython
   
 USER micropython
 
-RUN cd / \
-    && mkdir -p ESP-IDF \
-    && chown -R micropython /home /ESP-IDF \
-    && cd ESP-IDF \
-    && pwd \
-    && git clone https://github.com/espressif/esp-idf.git . \
-    && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
-    && git submodule update --init
-
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
 
@@ -33,12 +24,23 @@ RUN git clone https://github.com/ilyamordasov/micropython.git \
 RUN apt-get update \
   && apt-get install -y mc libtool-bin
 
-ENV ESPIDF=/ESP-IDF
+RUN cd /micropython \
+    && mkdir -p tmp \
+    && cd tmp \
+    && mkdir -p ESP-IDF \
+    && chown -R micropython /home /micropython/tmp/ESP-IDF \
+    && cd ESP-IDF \
+    && pwd \
+    && git clone https://github.com/espressif/esp-idf.git . \
+    && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
+    && git submodule update --init
 
-RUN cd / \
+ENV ESPIDF=/micropython/tmp/ESP-IDF
+
+RUN cd /micropython/tmp \
   && wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
   && tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
-  && export PATH=/xtensa-esp32-elf/bin:$PATH
+  && export PATH=/micropython/tmp/xtensa-esp32-elf/bin:$PATH
 
 RUN cd ilyamordasov/micropython \
   && git submodule update --init \
@@ -54,4 +56,4 @@ RUN cd ilyamordasov/micropython \
 #   && curl -H "Content-Type: application/zip" --data-binary @assets.zip "https://uploads.github.com/repos/ilyamordasov/micropython/releases/$GITHUB_RELEASE_ID/assets?name=assets.zip&access_token=$GITHUB_ACCESS_TOKEN"
 
 RUN cd /micropython/ports/$TARGET/build \
-     && zip -r -j $TARGET_v.1.9.4_$(date +%d%m%Y) /ilyamordasov/micropython/ports/esp32/build/*.bin *.bin *.elf
+     && zip -r -j $TARGET_v.1.10_$(date +%d%m%Y).zip *.bin *.elf
