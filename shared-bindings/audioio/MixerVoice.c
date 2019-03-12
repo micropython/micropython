@@ -113,6 +113,22 @@ STATIC mp_obj_t audioio_mixervoice_obj_stop(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_stop_obj, 1, audioio_mixervoice_obj_stop);
 
+//|   .. method:: get_gain(voice, gain)
+//|
+//|     Get the gain of a voice.
+//|
+//|     Returns as a floating point number between 0 and 1
+//|
+STATIC mp_obj_t audioio_mixervoice_obj_get_level(mp_obj_t self_in) {
+
+	#if !MICROPY_PY_BUILTINS_FLOAT
+	#error "floating point not supported"
+	#endif
+
+    return mp_obj_new_float(common_hal_audioio_mixervoice_get_level(self_in));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixervoice_get_level_obj, audioio_mixervoice_obj_get_level);
+
 //|   .. method:: set_gain(voice, gain)
 //|
 //|     Set the gain of a voice.
@@ -146,7 +162,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_set_level_obj, 1, audioio_mixervoi
 
 const mp_obj_property_t audioio_mixervoice_level_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mp_const_none_obj,
+    .proxy = {(mp_obj_t)&audioio_mixervoice_get_level_obj,
               (mp_obj_t)&audioio_mixervoice_set_level_obj,
               (mp_obj_t)&mp_const_none_obj},
 };

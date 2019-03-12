@@ -21,6 +21,7 @@ void common_hal_audioio_mixervoice_deinit(audioio_mixervoice_obj_t* self);
 void common_hal_audioio_mixervoice_set_parent(audioio_mixervoice_obj_t* self, audioio_mixer_obj_t *parent);
 void common_hal_audioio_mixervoice_play(audioio_mixervoice_obj_t* self, mp_obj_t sample, bool loop);
 void common_hal_audioio_mixervoice_stop(audioio_mixervoice_obj_t* self);
+float common_hal_audioio_mixervoice_get_level(audioio_mixervoice_obj_t* self);
 void common_hal_audioio_mixervoice_set_level(audioio_mixervoice_obj_t* self, float gain);
 
 bool common_hal_audioio_mixervoice_get_playing(audioio_mixervoice_obj_t* self);
