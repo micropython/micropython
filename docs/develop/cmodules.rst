@@ -74,7 +74,7 @@ Directory::
     #define MODULE_EXAMPLE_ENABLED (1)
 
     // This is the function which will be called from Python as example.add_ints(a, b).
-    STATIC mp_obj_t example_add_ints(mp_obj_t a_obj, mp_obj_tab_obj) {
+    STATIC mp_obj_t example_add_ints(mp_obj_t a_obj, mp_obj_t b_obj) {
         // Extract the ints from the micropython input objects
         int a = mp_obj_get_int(a_obj);
         int b = mp_obj_get_int(b_obj);
@@ -83,7 +83,7 @@ Directory::
         return mp_obj_new_int(a + b);
     }
     // Define a Python reference to the function above
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(example_add_ints_obj, example_add_ints);
+    STATIC MP_DEFINE_CONST_FUN_OBJ_2(example_add_ints_obj, example_add_ints);
 
     // Define all properties of the example module.
     // Table entries are key/value pairs of the attribute name (a string)
