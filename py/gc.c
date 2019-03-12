@@ -184,7 +184,7 @@ void gc_init(void *start, void *end) {
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
-void gc_deinit() {
+void gc_deinit(void) {
     // Run any finalizers before we stop using the heap.
     gc_sweep_all();
 
