@@ -536,6 +536,15 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
         } \
         assert(socket->pcb.tcp);
 
+// Version of above for use when lock is held
+#define STREAM_ERROR_CHECK_WITH_LOCK(socket) \
+        if (socket->state < 0) { \
+            *_errno = error_lookup_table[-socket->state]; \
+            MICROPY_PY_LWIP_EXIT \
+            return MP_STREAM_ERROR; \
+        } \
+        assert(socket->pcb.tcp);
+
 
 // Helper function for send/sendto to handle TCP packets
 STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
@@ -572,7 +581,7 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         }
 
         // While we waited, something could happen
-        STREAM_ERROR_CHECK(socket);
+        STREAM_ERROR_CHECK_WITH_LOCK(socket);
     }
 
     u16_t write_len = MIN(available, len);
