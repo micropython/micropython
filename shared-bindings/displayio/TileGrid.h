@@ -35,13 +35,20 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
         uint16_t bitmap_width_in_tiles, mp_obj_t pixel_shader, uint16_t width, uint16_t height,
         uint16_t tile_width, uint16_t tile_height, uint16_t x, uint16_t y, uint8_t default_tile);
 
-void common_hal_displayio_tilegrid_get_position(displayio_tilegrid_t *self, int16_t* x, int16_t* y);
-void common_hal_displayio_tilegrid_set_position(displayio_tilegrid_t *self, int16_t x, int16_t y);
-
+mp_int_t common_hal_displayio_tilegrid_get_x(displayio_tilegrid_t *self);
+void common_hal_displayio_tilegrid_set_x(displayio_tilegrid_t *self, mp_int_t x);
+mp_int_t common_hal_displayio_tilegrid_get_y(displayio_tilegrid_t *self);
+void common_hal_displayio_tilegrid_set_y(displayio_tilegrid_t *self, mp_int_t y);
 mp_obj_t common_hal_displayio_tilegrid_get_pixel_shader(displayio_tilegrid_t *self);
 void common_hal_displayio_tilegrid_set_pixel_shader(displayio_tilegrid_t *self, mp_obj_t pixel_shader);
 
-void common_hal_displayio_textgrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index);
-void common_hal_displayio_textgrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y);
+uint16_t common_hal_displayio_tilegrid_get_width(displayio_tilegrid_t *self);
+uint16_t common_hal_displayio_tilegrid_get_height(displayio_tilegrid_t *self);
+
+uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y);
+void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index);
+
+// Private API for scrolling the TileGrid.
+void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_TILEGRID_H

@@ -172,7 +172,7 @@ const mp_obj_property_t displayio_group_y_obj = {
 //|     Append a layer to the group. It will be drawn above other layers.
 //|
 STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
     common_hal_displayio_group_insert(self, common_hal_displayio_group_get_len(self), layer);
     return mp_const_none;
 }
@@ -183,7 +183,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append
 //|     Insert a layer into the group.
 //|
 STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t layer) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
     size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
     common_hal_displayio_group_insert(self, index, layer);
     return mp_const_none;
@@ -202,7 +202,7 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_group_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    displayio_group_t *self = native_group(pos_args[0]);
 
     size_t index = mp_get_index(&displayio_group_type,
                                 common_hal_displayio_group_get_len(self),
@@ -217,7 +217,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_pop_obj, 1, displayio_group_obj_pop);
 //|     Returns the number of layers in a Group
 //|
 STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
     uint16_t len = common_hal_displayio_group_get_len(self);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
@@ -251,7 +251,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|       del group[0]
 //|
 STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
 
     if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
         mp_raise_NotImplementedError(translate("Slices not supported"));
