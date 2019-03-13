@@ -203,6 +203,7 @@ SRC_C = \
 	modmachine.c \
 	modnetwork.c \
 	bluetooth/bluetooth.c \
+	bluetooth/pygatt.c \
 	network_lan.c \
 	network_ppp.c \
 	modsocket.c \
