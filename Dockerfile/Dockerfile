@@ -28,7 +28,7 @@ ENV ESPIDF=/micropython/tmp/ESP-IDF
 WORKDIR /tmp
 RUN wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
   && tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-ENV PATH=/micropython/tmp/xtensa-esp32-elf/bin:$PATH
+ENV PATH=/tmp/xtensa-esp32-elf/bin:$PATH
 
 WORKDIR /micropython
 RUN git submodule update --init \
