@@ -16,38 +16,31 @@ USER micropython
 #RUN apt-get clean \
 #  && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/ilyamordasov/micropython.git \
-  && cd micropython \
-  && git submodule update --init
-
 RUN apt-get update \
   && apt-get install -y mc libtool-bin
-
-RUN cd /micropython \
-    && mkdir -p tmp \
-    && cd tmp \
-    && mkdir -p ESP-IDF \
-    && chown -R micropython /home /micropython/tmp/ESP-IDF \
-    && cd ESP-IDF \
-    && pwd \
-    && git clone https://github.com/espressif/esp-idf.git . \
+  
+WORKDIR /micropython
+RUN git clone https://github.com/ilyamordasov/micropython.git .\
+  && git submodule update --init
+  
+WORKDIR /tmp/ESP-IDF
+RUN git clone https://github.com/espressif/esp-idf.git . \
     && git checkout 5c88c5996dbde6208e3bec05abc21ff6cd822d26 \
     && git submodule update --init
-
 ENV ESPIDF=/micropython/tmp/ESP-IDF
 
-RUN cd /micropython/tmp \
-  && wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
-  && tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
-  && export PATH=/micropython/tmp/xtensa-esp32-elf/bin:$PATH
+WORKDIR /tmp
+RUN wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
+  && tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+ENV PATH=/micropython/tmp/xtensa-esp32-elf/bin:$PATH
 
-RUN cd ilyamordasov/micropython \
-  && git submodule update --init \
+WORKDIR /micropython
+RUN git submodule update --init \
   && make -j4 -C mpy-cross \
   && git submodule init lib/berkeley-db-1.xx \
   && git submodule init lib/esp-idf \
   && git submodule update \
   make -j4 -C ports/$TARGET
-
-RUN cd /micropython/ports/$TARGET/build \
-     && zip -r -j $TARGET_v.$TAG_$(date +%d%m%Y).zip *.bin *.elf
+  
+WORKDIR /micropython/ports/$TARGET/build
+RUN zip -r -j $TARGET_v.$TAG_$(date +%d%m%Y).zip *.bin *.elf
