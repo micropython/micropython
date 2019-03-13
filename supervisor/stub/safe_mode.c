@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
-#define MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
+#include "supervisor/shared/safe_mode.h"
 
-typedef enum {
-  NO_SAFE_MODE = 0,
-  BROWNOUT,
-  HARD_CRASH,
-  USER_SAFE_MODE,
-  HEAP_OVERWRITTEN,
-  MANUAL_SAFE_MODE,
-  MICROPY_NLR_JUMP_FAIL,
-  MICROPY_FATAL_ERROR,
-  GC_ALLOC_OUTSIDE_VM
-} safe_mode_t;
+safe_mode_t wait_for_safe_mode_reset(void) {
+    return NO_SAFE_MODE;
+}
 
-safe_mode_t wait_for_safe_mode_reset(void);
+void reset_into_safe_mode(safe_mode_t reason) {
+    (void) reason;
+}
 
-void reset_into_safe_mode(safe_mode_t reason);
-
-void print_safe_mode_message(safe_mode_t reason);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
+void print_safe_mode_message(safe_mode_t reason) {
+    (void) reason;
+}

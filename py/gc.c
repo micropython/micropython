@@ -31,6 +31,8 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/safe_mode.h"
+
 #if MICROPY_ENABLE_GC
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -180,6 +182,13 @@ void gc_init(void *start, void *end) {
     DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
 #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
+}
+
+void gc_deinit(void) {
+    // Run any finalizers before we stop using the heap.
+    gc_sweep_all();
+
+    MP_STATE_MEM(gc_pool_start) = 0;
 }
 
 void gc_lock(void) {
@@ -461,6 +470,10 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
     // check for 0 allocation
     if (n_blocks == 0) {
         return NULL;
+    }
+
+    if (MP_STATE_MEM(gc_pool_start) == 0) {
+        reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
     }
 
     GC_ENTER();

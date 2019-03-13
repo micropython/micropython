@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-08 12:45-0800\n"
+"POT-Creation-Date: 2019-03-12 11:17-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -285,6 +285,10 @@ msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Attempted heap allocation when MicroPython VM not running.\n"
 msgstr ""
 
 #: main.c
