@@ -103,7 +103,7 @@ STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args
 
     uint16_t duty_cycle = parsed_args[ARG_duty_cycle].u_int;
     uint32_t frequency = parsed_args[ARG_frequency].u_int;
-    bool variable_frequency = parsed_args[ARG_variable_frequency].u_int;
+    bool variable_frequency = parsed_args[ARG_variable_frequency].u_bool;
 
     // create PWM object from the given pin
     pulseio_pwmout_obj_t *self = m_new_obj(pulseio_pwmout_obj_t);
