@@ -17,7 +17,7 @@ RUN apt-get update \
   
 WORKDIR /micropython
 RUN git clone https://github.com/ilyamordasov/micropython.git . \
-  && git submodule update --init
+  && git submodule update --init --recursive
   
 WORKDIR /tmp/ESP-IDF
 RUN git clone https://github.com/espressif/esp-idf.git . \
