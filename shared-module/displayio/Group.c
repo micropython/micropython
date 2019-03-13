@@ -29,9 +29,9 @@
 #include "py/runtime.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale) {
+void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y) {
     displayio_group_child_t* children = m_new(displayio_group_child_t, max_size);
-    displayio_group_construct(self, children, max_size, scale);
+    displayio_group_construct(self, children, max_size, scale, x, y);
 }
 
 uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self) {
@@ -116,9 +116,9 @@ void common_hal_displayio_group_set(displayio_group_t* self, size_t index, mp_ob
     self->needs_refresh = true;
 }
 
-void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale) {
-    self->x = 0;
-    self->y = 0;
+void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y) {
+    self->x = x;
+    self->y = y;
     self->children = child_array;
     self->max_size = max_size;
     self->needs_refresh = false;

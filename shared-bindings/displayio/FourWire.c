@@ -46,14 +46,19 @@
 //| Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //| It doesn't handle display initialization.
 //|
-//| .. class:: FourWire(spi_bus, *, command, chip_select, reset)
+//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None)
 //|
 //|   Create a FourWire object associated with the given pins.
+//|
+//|   The SPI bus and pins are then in use by the display until `displayio.release_displays()` is
+//|   called even after a reload. (It does this so CircuitPython can use the display after your code
+//|   is done.) So, the first time you initialize a display bus in code.py you should call
+//|   :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
 //|
 //|   :param busio.SPI spi_bus: The SPI bus that make up the clock and data lines
 //|   :param microcontroller.Pin command: Data or command pin
 //|   :param microcontroller.Pin chip_select: Chip select pin
-//|   :param microcontroller.Pin reset: Reset pin
+//|   :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
 //|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset };

@@ -71,8 +71,6 @@
 //|     Shape
 //|     TileGrid
 //|
-//| All libraries change hardware state but are never deinit
-//|
 
 
 //| .. method:: release_displays()
@@ -80,6 +78,9 @@
 //|   Releases any actively used displays so their busses and pins can be used again. This will also
 //|   release the builtin display on boards that have one. You will need to reinitialize it yourself
 //|   afterwards.
+//|
+//|   Use this once in your code.py if you initialize a display. Place it right before the
+//|   initialization so the display is active as long as possible.
 //|
 STATIC mp_obj_t displayio_release_displays(void) {
     common_hal_displayio_release_displays();

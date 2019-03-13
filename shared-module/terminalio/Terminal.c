@@ -48,7 +48,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         if (c < 128) {
             if (c >= 0x20 && c <= 0x7e) {
                 uint8_t tile_index = displayio_builtinfont_get_glyph_index(self->font, c);
-                common_hal_displayio_textgrid_set_tile(self->tilegrid, self->cursor_x, self->cursor_y, tile_index);
+                common_hal_displayio_tilegrid_set_tile(self->tilegrid, self->cursor_x, self->cursor_y, tile_index);
                 self->cursor_x++;
             } else if (c == '\r') {
                 self->cursor_x = 0;
@@ -64,7 +64,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                     if (i[1] == 'K') {
                         // Clear the rest of the line.
                         for (uint16_t j = self->cursor_x; j < self->tilegrid->width_in_tiles; j++) {
-                            common_hal_displayio_textgrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
+                            common_hal_displayio_tilegrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
                         }
                         i += 2;
                     } else {
@@ -94,7 +94,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         } else {
             uint8_t tile_index = displayio_builtinfont_get_glyph_index(self->font, c);
             if (tile_index != 0xff) {
-                common_hal_displayio_textgrid_set_tile(self->tilegrid, self->cursor_x, self->cursor_y, tile_index);
+                common_hal_displayio_tilegrid_set_tile(self->tilegrid, self->cursor_x, self->cursor_y, tile_index);
                 self->cursor_x++;
 
             }
@@ -109,10 +109,10 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         if (self->cursor_y != start_y) {
             // clear the new row
             for (uint16_t j = 0; j < self->tilegrid->width_in_tiles; j++) {
-                common_hal_displayio_textgrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
+                common_hal_displayio_tilegrid_set_tile(self->tilegrid, j, self->cursor_y, 0);
                 start_y = self->cursor_y;
             }
-            common_hal_displayio_textgrid_set_top_left(self->tilegrid, 0, (start_y + self->tilegrid->height_in_tiles + 1) % self->tilegrid->height_in_tiles);
+            common_hal_displayio_tilegrid_set_top_left(self->tilegrid, 0, (start_y + self->tilegrid->height_in_tiles + 1) % self->tilegrid->height_in_tiles);
         }
     }
     return i - data;

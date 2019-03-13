@@ -48,7 +48,7 @@ typedef struct {
     bool needs_refresh;
 } displayio_group_t;
 
-void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale);
+void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y);
 bool displayio_group_get_pixel(displayio_group_t *group, int16_t x, int16_t y, uint16_t *pixel);
 bool displayio_group_needs_refresh(displayio_group_t *self);
 void displayio_group_finish_refresh(displayio_group_t *self);
