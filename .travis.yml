@@ -12,6 +12,13 @@ env:
   global:
     - MAKEOPTS="-j4"
 
+notifications:
+  slack: $slack_token
+    # rooms:
+    #   - secure: JHXzIOoErQS63tVQFvllpgYFQPv2vxanQfUuMdRaXbD70zMdQc5haIb6TO2tHR8zGK51ep6t2lKlyzYSNl+HwIpDT0/hAyvvDZ4iWzsnE6vF3OhMQgxKmqFqNdc8CWh+fRBchmtu3NAY7L+pTGUy8o/OkurhlTC/yjHg4PY8xnW4CV/O1h+eNHN+L2dJvh7Lf8/DTJNZfiMzcwkwchYHcr/MlcUg6pgQdKVg3GoI13UosHd7PsK/1pNL3HGPkCvZ7n3PYb0tPvRkAssmeYVZE2dBm7wNrfoqIeItfLzFGYL8EjNmuE+O4wT3G8jZ9qkhxJB8P9hNeK3z9N2d7KJPVoN8JuOW0Ln3sPJVfYY5ICa1hewBQhGBY3CzXbJJpQ499atb5/ZJ3zrTTJZlNLoMz4mkk3GznZSBaAeEa0Jp253vzOIQtAwZ0YblBd9LXLTVRjAZWF/XQxyrQaNL1TM1Hr0CPPdWCmILOdimwbjWLrGkIWgRICIBeHuI4xKNaNoTbKmt1grRfxu+6ZmUf6jv9ECp8yxAHDMHvOOh/gC2kMvNxQiPJyirBd4kFVSQKSclkvJkMddKAMKmX0V5EacfZC46OTRBK6tZZb7uKGu+RlCwAxrLiaD9ia8JG3gigARpHrHl27lzyA05pUBbrAfoou5xtTrds7UTaOFNp5csNZs=
+    # on_success: always  # change: send a notification when the build status changes.
+    # on_failure: always  # always: always send a notification.
+
 # define the successive stages
 stages:
   - name: staging
@@ -58,15 +65,8 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
-        - echo ESP32_v.1.10.$TRAVIS_BUILD_NUMBER.zip
-        - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER.zip *.bin *.elf
-        - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER.zip)
-      notifications:
-        slack: $slack_token
-          # rooms:
-          #   - secure: JHXzIOoErQS63tVQFvllpgYFQPv2vxanQfUuMdRaXbD70zMdQc5haIb6TO2tHR8zGK51ep6t2lKlyzYSNl+HwIpDT0/hAyvvDZ4iWzsnE6vF3OhMQgxKmqFqNdc8CWh+fRBchmtu3NAY7L+pTGUy8o/OkurhlTC/yjHg4PY8xnW4CV/O1h+eNHN+L2dJvh7Lf8/DTJNZfiMzcwkwchYHcr/MlcUg6pgQdKVg3GoI13UosHd7PsK/1pNL3HGPkCvZ7n3PYb0tPvRkAssmeYVZE2dBm7wNrfoqIeItfLzFGYL8EjNmuE+O4wT3G8jZ9qkhxJB8P9hNeK3z9N2d7KJPVoN8JuOW0Ln3sPJVfYY5ICa1hewBQhGBY3CzXbJJpQ499atb5/ZJ3zrTTJZlNLoMz4mkk3GznZSBaAeEa0Jp253vzOIQtAwZ0YblBd9LXLTVRjAZWF/XQxyrQaNL1TM1Hr0CPPdWCmILOdimwbjWLrGkIWgRICIBeHuI4xKNaNoTbKmt1grRfxu+6ZmUf6jv9ECp8yxAHDMHvOOh/gC2kMvNxQiPJyirBd4kFVSQKSclkvJkMddKAMKmX0V5EacfZC46OTRBK6tZZb7uKGu+RlCwAxrLiaD9ia8JG3gigARpHrHl27lzyA05pUBbrAfoou5xtTrds7UTaOFNp5csNZs=
-          # on_success: always  # change: send a notification when the build status changes.
-          # on_failure: always  # always: always send a notification.
+        - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip *.bin *.elf
+        - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip)
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
@@ -81,3 +81,4 @@ jobs:
         file: $ZIP
         # keep-history: true
         skip_cleanup: true
+        on: master

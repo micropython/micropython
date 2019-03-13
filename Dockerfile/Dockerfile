@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-ARG VERSION=master
+ARG VERSION=esp32-bluetooth
 ARG TARGET=esp32
 ARG TAG=1.10
 
@@ -16,7 +16,7 @@ RUN apt-get update \
 # USER micropython
   
 WORKDIR /micropython
-RUN git clone https://github.com/ilyamordasov/micropython.git . \
+RUN git clone -b $VERSION https://github.com/ilyamordasov/micropython.git . \
   && git submodule update --init --recursive
   
 WORKDIR /tmp/ESP-IDF
