@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: shared-bindings/_pew/PewPew.c shared-module/_pew/PewPew.c
 #, fuzzy
 msgid ""
 msgstr ""
@@ -262,6 +261,7 @@ msgstr "Semua timer untuk pin ini sedang digunakan"
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
+#: shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr "Semua timer sedang digunakan"
 
@@ -472,6 +472,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Clock unit sedang digunakan"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Column entry must be digitalio.DigitalInOut"
+msgstr ""
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -769,6 +773,10 @@ msgstr "operasi I2C tidak didukung"
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
+msgstr ""
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Incorrect buffer size"
 msgstr ""
 
 #: py/moduerrno.c
@@ -1137,6 +1145,10 @@ msgstr "sistem file (filesystem) bersifat Read-only"
 msgid "Right channel unsupported"
 msgstr "Channel Kanan tidak didukung"
 
+#: shared-bindings/_pew/PewPew.c
+msgid "Row entry must be digitalio.DigitalInOut"
+msgstr ""
+
 #: main.c
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Berjalan di mode aman(safe mode)! Auto-reload tidak aktif.\n"
@@ -1177,7 +1189,7 @@ msgid "Slice and value different lengths."
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -1242,6 +1254,10 @@ msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile indices must be 0 - 255"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
@@ -1540,6 +1556,10 @@ msgstr ""
 #: extmod/machine_spi.c
 msgid "buffers must be the same length"
 msgstr "buffers harus mempunyai panjang yang sama"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "buttons must be digitalio.DigitalInOut"
+msgstr ""
 
 #: py/vm.c
 msgid "byte code not implemented"
@@ -2461,10 +2481,6 @@ msgstr ""
 msgid "popitem(): dictionary is empty"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "position must be 2-tuple"
-msgstr ""
-
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr ""
@@ -2631,6 +2647,10 @@ msgstr "sintaksis error pada pendeskripsi uctypes"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "tile index out of bounds"
 msgstr ""
 
 #: shared-bindings/time/__init__.c

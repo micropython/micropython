@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: shared-bindings/_pew/PewPew.c shared-module/_pew/PewPew.c
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
@@ -264,6 +263,7 @@ msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
+#: shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr "Lahat ng timer ginagamit"
 
@@ -470,6 +470,10 @@ msgstr "Masyadong mahaba ang Clock stretch"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Clock unit ginagamit"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Column entry must be digitalio.DigitalInOut"
+msgstr ""
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 #, fuzzy
@@ -775,6 +779,10 @@ msgid ""
 msgstr ""
 ".mpy file hindi compatible. Maaring i-update lahat ng .mpy files. See http://"
 "adafru.it/mpy-update for more info."
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Incorrect buffer size"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Input/output error"
@@ -1152,6 +1160,10 @@ msgstr "Basahin-lamang"
 msgid "Right channel unsupported"
 msgstr "Hindi supportado ang kanang channel"
 
+#: shared-bindings/_pew/PewPew.c
+msgid "Row entry must be digitalio.DigitalInOut"
+msgstr ""
+
 #: main.c
 msgid "Running in safe mode! Auto-reload is off.\n"
 msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
@@ -1191,7 +1203,7 @@ msgid "Slice and value different lengths."
 msgstr "Slice at value iba't ibang haba."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
 
@@ -1263,6 +1275,10 @@ msgstr "Ang signedness ng sample hindi tugma sa mixer"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile indices must be 0 - 255"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
@@ -1560,6 +1576,10 @@ msgstr "masyadong maliit ang buffer"
 #: extmod/machine_spi.c
 msgid "buffers must be the same length"
 msgstr "ang buffers ay dapat parehas sa haba"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "buttons must be digitalio.DigitalInOut"
+msgstr ""
 
 #: py/vm.c
 msgid "byte code not implemented"
@@ -2499,10 +2519,6 @@ msgstr "pop galing sa walang laman na list"
 msgid "popitem(): dictionary is empty"
 msgstr "popitem(): dictionary ay walang laman"
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "position must be 2-tuple"
-msgstr "position ay dapat 2-tuple"
-
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "pow() 3rd argument ay hindi maaring 0"
@@ -2674,6 +2690,10 @@ msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
 msgstr "ang threshold ay dapat sa range 0-65536"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "tile index out of bounds"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -2883,3 +2903,6 @@ msgstr "zero step"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"
+
+#~ msgid "position must be 2-tuple"
+#~ msgstr "position ay dapat 2-tuple"
