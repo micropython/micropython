@@ -6,18 +6,15 @@ ARG TAG=1.10
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-  && apt-get install -y gcc git wget make libncurses-dev flex bison gperf python-dev python3 python3-pip python-serial python3-pyparsing \
+  && apt-get install -y gcc git wget make libncurses-dev flex bison gperf python-dev python3 python3-pip python-serial python3-pyparsing mc libtool-bin\
   && pip3 install pyparsing
-  
-RUN useradd --no-create-home micropython
-  
-USER micropython
+  && apt-get u
 
 #RUN apt-get clean \
 #  && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update \
-  && apt-get install -y mc libtool-bin
+  
+# RUN useradd --no-create-home micropython
+# USER micropython
   
 WORKDIR /micropython
 RUN git clone https://github.com/ilyamordasov/micropython.git .\
