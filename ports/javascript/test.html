@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="build/micropython.js"></script>
+    <script type="script/micropython">
+import js
+
+print("Hello World")
+
+# change this value for a different result
+nterms = 20
+
+# first two terms
+n1 = 0
+n2 = 1
+count = 0
+
+# evali returns an integer from JS
+# Can be used to implement a object registry etc.
+nterms = js.evali("(function() { return prompt('N iters of Fibonacci'); })();")
+
+# check if the number of terms is valid
+if nterms <= 0:
+   print("Please enter a positive integer")
+elif nterms == 1:
+   print("Fibonacci sequence upto", nterms, ":")
+   print(n1)
+elif nterms > 400:
+   print("This number is a little bit too high (> 400).")
+else:
+   print("Fibonacci sequence upto", nterms, ":")
+   while count < nterms:
+       print(n1, end=', ')
+       nth = n1 + n2
+       # update values
+       n1 = n2
+       n2 = nth
+       count += 1
+
+# js.eval("alert('hallo');")
+    </script>
+  </head>
+  <body>
+    <div id="mp_js_stdout"></div>
+  </body>
+</html>

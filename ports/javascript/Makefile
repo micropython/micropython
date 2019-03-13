@@ -36,6 +36,7 @@ SRC_C = \
 	main.c \
 	mphalport.c \
 	modutime.c \
+	js_module.c \
 
 SRC_QSTR += $(SRC_C)
 
@@ -59,5 +60,9 @@ min: $(BUILD)/micropython.js
 test: $(BUILD)/micropython.js $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests
+
+server: $(BUILD)/micropython.js
+	xdg-open http://localhost:8000/test.html
+	python3 -m http.server
 
 include $(TOP)/py/mkrules.mk

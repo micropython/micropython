@@ -71,7 +71,42 @@ var mainProgram = function()
       } else {
           mp_js_do_str(contents);
       }
-  }
+   } else {
+     initBrowser();
+   }
 }
 
 Module["onRuntimeInitialized"] = mainProgram;
+
+var __initBrowserCount = 2;
+
+function initBrowser(e)
+{
+  __initBrowserCount--;
+  // window.onLoad and wasm have loaded...
+  if (__initBrowserCount == 0)
+  {
+    var mp_js_stdout = document.getElementById('mp_js_stdout');
+    mp_js_stdout.addEventListener('print', function(e) {
+      if (e.data == '\n') {
+        mp_js_stdout.innerHTML += "<br/>"
+      } else {
+        mp_js_stdout.innerHTML += e.data;
+      }
+    }, false);
+
+    mp_js_init(64 * 1024);
+    for (var i = 0; i < document.scripts.length; i++)
+    {
+      if (document.scripts[i].type == 'script/micropython')
+      {
+        mp_js_do_str(document.scripts[i].innerText);
+      }
+    }
+  }
+}
+
+if (typeof window !== 'undefined')
+{
+  window.onload = initBrowser;
+}
