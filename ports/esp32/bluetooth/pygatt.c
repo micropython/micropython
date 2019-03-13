@@ -25,3 +25,5 @@ STATIC const mp_map_elem_t pygatt_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_GATTToolBackend), (mp_obj_t)&pygatt_GATTToolBackend_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(pygatt_globals, pygatt_globals_table);
+
+#endif // MICROPY_PY_BLUETOOTH
