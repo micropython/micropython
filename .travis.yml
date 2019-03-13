@@ -75,9 +75,6 @@ jobs:
         file: $ZIP
         # keep-history: true
         skip_cleanup: true
-        on:
-          all_branches: true
-          tags: true
       notifications:
         slack: $slack_token
           # rooms:
