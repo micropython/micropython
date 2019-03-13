@@ -161,6 +161,9 @@ Notes:
 
 * Pins 34-39 are input only, and also do not have internal pull-up resistors
 
+* The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
+  consumption during deepsleep.
+
 PWM (pulse width modulation)
 ----------------------------
 
