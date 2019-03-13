@@ -36,10 +36,10 @@ RUN git submodule update --init \
 
 WORKDIR /micropython/lib/ESP-IDF
 RUN git checkout $IDF_HASH
+ENV ESPIDF=/micropython/lib/ESP-IDF
 
 WORKDIR /micropython
 RUN git submodule update
-ENV ESPIDF=/micropython/lib/ESP-IDF
 
 RUN make ${MAKEOPTS} -C mpy-cross
 RUN make ${MAKEOPTS} -C ports/$TARGET
