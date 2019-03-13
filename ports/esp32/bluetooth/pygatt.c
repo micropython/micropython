@@ -20,6 +20,13 @@ typedef struct _pygatt_GATTToolBackend_obj_t {
     uint8_t hello_number;
 } pygatt_GATTToolBackend_obj_t;
 
+STATIC mp_obj_t pygatt_GATTToolBackend(void)
+{
+    printf("Hello GATTToolBackend!\n");
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pygatt_GATTToolBackend_obj, pygatt_GATTToolBackend);
+
 STATIC const mp_map_elem_t pygatt_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pygatt) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_GATTToolBackend), (mp_obj_t)&pygatt_GATTToolBackend_obj },
