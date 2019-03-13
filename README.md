@@ -1,10 +1,10 @@
-[![Build Status](https://travis-ci.org/micropython/micropython.png?branch=master)](https://travis-ci.org/micropython/micropython) [![Coverage Status](https://coveralls.io/repos/micropython/micropython/badge.png?branch=master)](https://coveralls.io/r/micropython/micropython?branch=master)
+[![Build Status](https://travis-ci.org/ilyamordasov/micropython.png?branch=master)](https://travis-ci.org/ilyamordasov/micropython) [![Coverage Status](https://coveralls.io/repos/github/ilyamordasov/micropython/badge.svg?branch=master)](https://coveralls.io/github/ilyamordasov/micropython?branch=master)
 
 The MicroPython project
 =======================
-<p align="center">
+<!--<p align="center">
   <img src="https://raw.githubusercontent.com/micropython/micropython/master/logo/upython-with-micro.jpg" alt="MicroPython Logo"/>
-</p>
+</p>-->
 
 This is the MicroPython project, which aims to put an implementation
 of Python 3.x on microcontrollers and small embedded systems.
