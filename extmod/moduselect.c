@@ -111,7 +111,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, size_t *rwx_num) {
 }
 
 /// \function select(rlist, wlist, xlist[, timeout])
-STATIC mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     // get array data from tuple/list arguments
     size_t rwx_len[3];
     mp_obj_t *r_array, *w_array, *x_array;
@@ -190,7 +190,7 @@ typedef struct _mp_obj_poll_t {
 } mp_obj_poll_t;
 
 /// \method register(obj[, eventmask])
-STATIC mp_obj_t poll_register(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_uint_t flags;
     if (n_args == 3) {
