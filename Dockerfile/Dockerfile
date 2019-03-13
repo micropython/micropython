@@ -32,11 +32,17 @@ ENV PATH=/micropython/tmp/xtensa-esp32-elf/bin:$PATH
 
 WORKDIR /micropython
 RUN git submodule update --init \
-  && make -j4 -C mpy-cross \
-  && git submodule init lib/berkeley-db-1.xx \
-  && git submodule init lib/esp-idf \
-  && git submodule update \
-  make -j4 -C ports/$TARGET
+  && git submodule init lib/berkeley-db-1.xx
+
+WORKDIR /micropython/lib/ESP-IDF
+RUN git checkout $IDF_HASH
+
+WORKDIR /micropython
+RUN git submodule update
+ENV ESPIDF=/micropython/lib/ESP-IDF
+
+RUN make ${MAKEOPTS} -C mpy-cross
+RUN make ${MAKEOPTS} -C ports/$TARGET
   
 WORKDIR /micropython/ports/$TARGET/build
 RUN zip -r -j $TARGET_v.$TAG_$(date +%d%m%Y).zip *.bin *.elf
