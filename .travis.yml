@@ -70,8 +70,8 @@ jobs:
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
         - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip *.bin *.elf
         - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip)
-      after_success:
-        coveralls
+      # after_success:
+      #   coveralls
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
@@ -84,5 +84,5 @@ jobs:
         file: $ZIP
         skip_cleanup: true
         on:
-          branch: master
+          # branch: master
           tags: true
