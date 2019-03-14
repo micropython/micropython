@@ -44,12 +44,12 @@ jobs:
         - sudo apt-get install flex
         - sudo apt-get install bison
         - sudo apt-get install gperf
-        - sudo apt-get install python-dev
+        - sudo apt-get install python3-dev
         - sudo apt-get install python3
         - sudo apt-get install python3-pip
         - sudo apt-get install python-serial
         - sudo apt-get install python3-pyparsing
-        - sudo apt-get install -y python-setuptools
+        - sudo apt-get install -y python3-setuptools
         - pip3 install pyparsing
         - pip3 install coveralls
         - pip3 install --user cpp-coveralls
