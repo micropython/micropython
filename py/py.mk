@@ -149,6 +149,7 @@ endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SRC_MOD += extmod/modupygatt.c
+SRC_MOD += extmod/modbluetooth.c
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 endif
 
