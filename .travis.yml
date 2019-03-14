@@ -50,6 +50,7 @@ jobs:
         - sudo apt-get install python-serial
         - sudo apt-get install python3-pyparsing
         - pip3 install pyparsing
+        - pip install coveralls
         - pwd
       script:
         - pwd
@@ -67,6 +68,8 @@ jobs:
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
         - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip *.bin *.elf
         - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip)
+      after_success:
+        coveralls
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
