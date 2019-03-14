@@ -187,6 +187,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
 extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_lvindev;
 extern const struct _mp_obj_module_t mp_module_SDL;
+extern const struct _mp_obj_module_t mp_module_fb;
 
 #if MICROPY_PY_UOS_VFS
 #define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos_vfs) },
@@ -228,7 +229,8 @@ extern const struct _mp_obj_module_t mp_module_SDL;
 #define MICROPY_PY_LVGL_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvindev), (mp_obj_t)&mp_module_lvindev},\
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },\
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fb), (mp_obj_t)&mp_module_fb },
 #else
 #define LV_ROOTS 
 #define MICROPY_PY_LVGL_DEF 
