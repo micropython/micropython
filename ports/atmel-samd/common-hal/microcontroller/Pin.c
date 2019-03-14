@@ -45,13 +45,25 @@ bool speaker_enable_in_use;
 
 #define PORT_COUNT (PORT_BITS / 32 + 1)
 
+#ifdef SAMD51
+#define SWD_MUX GPIO_PIN_FUNCTION_H
+#endif
+#ifdef SAMD21
+#define SWD_MUX GPIO_PIN_FUNCTION_G
+#endif
+
 STATIC uint32_t never_reset_pins[PORT_COUNT];
 
 void reset_all_pins(void) {
     uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;
 
-    // Do not full reset USB or SWD lines.
-    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30 | PORT_PA31);
+    // Do not full reset USB lines.
+    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25);
+
+    // Do not reset SWD when a debugger is present.
+    if (DSU->STATUSB.bit.DBGPRES == 1) {
+        pin_mask[0] &= ~(PORT_PA30 | PORT_PA31);
+    }
 
     for (uint32_t i = 0; i < PORT_COUNT; i++) {
         pin_mask[i] &= ~never_reset_pins[i];
@@ -66,16 +78,14 @@ void reset_all_pins(void) {
     gpio_set_port_direction(GPIO_PORTD, pin_mask[3] & ~MICROPY_PORT_D, GPIO_DIRECTION_OFF);
     #endif
 
-    // Configure SWD
+    // Configure SWD. SWDIO will be automatically switched on PA31 when a signal is input on
+    // SWCLK.
     #ifdef SAMD51
     gpio_set_pin_function(PIN_PA30, MUX_PA30H_CM4_SWCLK);
-    // SWDIO will be automatically switched on PA31 when a signal is input on
-    // SWCLK.
     #endif
     #ifdef SAMD21
-    //gpio_set_pin_function(PIN_PA30, GPIO_PIN_FUNCTION_G);
-    //gpio_set_pin_direction(PIN_PA31, GPIO_DIRECTION_OUT);
-    //gpio_set_pin_function(PIN_PA31, GPIO_PIN_FUNCTION_G);
+    gpio_set_pin_function(PIN_PA30, GPIO_PIN_FUNCTION_G);
+    gpio_set_pin_function(PIN_PA31, GPIO_PIN_FUNCTION_G);
     #endif
 
     #ifdef MICROPY_HW_NEOPIXEL
@@ -128,12 +138,11 @@ void reset_pin_number(uint8_t pin_number) {
     if (pin_number == PIN_PA30
         #ifdef SAMD51
         ) {
-        gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_H);
         #endif
         #ifdef SAMD21
         || pin_number == PIN_PA31) {
-        gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_G);
         #endif
+        gpio_set_pin_function(pin_number, SWD_MUX);
     } else {
         gpio_set_pin_direction(pin_number, GPIO_DIRECTION_OFF);
         gpio_set_pin_function(pin_number, GPIO_PIN_FUNCTION_OFF);
@@ -178,7 +187,18 @@ bool pin_number_is_free(uint8_t pin_number) {
     volatile PORT_PMUX_Type *pmux = &port->PMUX[pin_index / 2];
 
     if (pin_number == PIN_PA30 || pin_number == PIN_PA31) {
-        return state->bit.PMUXEN == 1 && ((pmux->reg >> (4 * pin_index % 2)) & 0xf) == 0x6;
+        if (DSU->STATUSB.bit.DBGPRES == 1) {
+            return false;
+        }
+        if (pin_number == PIN_PA30
+            #ifdef SAMD51
+            ) {
+            #endif
+            #ifdef SAMD21
+            || pin_number == PIN_PA31) {
+            #endif) {
+            return state->bit.PMUXEN == 1 && ((pmux->reg >> (4 * pin_index % 2)) & 0xf) == SWD_MUX;
+        }
     }
 
     return state->bit.PMUXEN == 0 && state->bit.INEN == 0 &&
@@ -188,6 +208,10 @@ bool pin_number_is_free(uint8_t pin_number) {
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
+        // Special case for Metro M0 where the NeoPixel is also SWCLK
+        if (MICROPY_HW_NEOPIXEL == &pin_PA30 && DSU->STATUSB.bit.DBGPRES == 1) {
+            return false;
+        }
         return !neopixel_in_use;
     }
     #endif
