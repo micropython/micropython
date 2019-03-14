@@ -27,7 +27,7 @@
 #pragma once
 
 #include <stdbool.h>
-#include "bluetooth/bluetooth.h"
+//#include "bluetooth/bluetooth.h"
 #include "py/obj.h"
 
 typedef struct {
