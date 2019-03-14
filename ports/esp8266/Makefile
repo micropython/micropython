@@ -59,6 +59,9 @@ COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
+# Options for mpy-cross
+MPY_CROSS_FLAGS += -march=xtensa
+
 SRC_C = \
 	strtoll.c \
 	main.c \

@@ -105,6 +105,9 @@ else
 COPT += -Os -DNDEBUG
 endif
 
+# Options for mpy-cross
+MPY_CROSS_FLAGS += -march=armv7m
+
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	oofatfs/ff.c \
