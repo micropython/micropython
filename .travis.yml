@@ -49,8 +49,10 @@ jobs:
         - sudo apt-get install python3-pip
         - sudo apt-get install python-serial
         - sudo apt-get install python3-pyparsing
+        - sudo apt-get install -y python-setuptools
         - pip3 install pyparsing
         - pip3 install coveralls
+        - pip3 install --user cpp-coveralls
         - pwd
       script:
         - pwd
@@ -69,7 +71,7 @@ jobs:
         - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip *.bin *.elf
         - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip)
       after_success:
-        make check-coverage
+        # make check-coverage
         coveralls
       before_deploy:
         # Set up git user name and tag this commit
