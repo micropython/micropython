@@ -47,7 +47,7 @@ STATIC mp_obj_t i2c_singleton = NULL;
 mp_obj_t board_i2c(void) {
 
     if (i2c_singleton == NULL) {
-        busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
+        busio_i2c_obj_t *self = m_new_ll_obj(busio_i2c_obj_t);
         self->base.type = &busio_i2c_type;
 
         assert_pin_free(DEFAULT_I2C_BUS_SDA);
@@ -99,7 +99,7 @@ STATIC mp_obj_t uart_singleton = NULL;
 
 mp_obj_t board_uart(void) {
     if (uart_singleton == NULL) {
-        busio_uart_obj_t *self = m_new_obj(busio_uart_obj_t);
+        busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
         self->base.type = &busio_uart_type;
 
         assert_pin_free(DEFAULT_UART_BUS_RX);
