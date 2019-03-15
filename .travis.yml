@@ -75,6 +75,7 @@ jobs:
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
         - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip *.bin *.elf
         - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip)
+        - export ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.short')
       # after_success:
       #   coveralls
       before_deploy:
@@ -83,7 +84,6 @@ jobs:
         - git config --local user.email "carlogulliani@gmail.com"
         - export TRAVIS_TAG="bluetooth-init"
         - git tag $TRAVIS_TAG
-        - export ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.short')
       deploy:
         provider: releases
         api_key: $GITHUB_OAUTH_TOKEN
