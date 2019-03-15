@@ -42,7 +42,7 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  printf("scan: %d timeout=%d, run_as_root=%s\r\n", n_args, args[ARG_timeout].u_int, (args[ARG_run_as_root].u_bool ? "True" : "False"));
+  //printf("scan: %d timeout=%d, run_as_root=%s\r\n", n_args, args[ARG_timeout].u_int, (args[ARG_run_as_root].u_bool ? "True" : "False"));
   return mp_const_none;
 }
 
