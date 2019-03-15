@@ -36,13 +36,13 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
 
   const mp_arg_t allowed_args[] = {
       { MP_QSTR_timeout, MP_ARG_INT, { .u_int = 10 } },
-      { MP_QSTR_run_as_root, MP_ARG_OBJ, {.u_obj = mp_const_true} },
+      { MP_QSTR_run_as_root, MP_ARG_BOOL, { .u_bool = true } },
   };
 
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  printf("scan: %d timeout=%d, run_as_root=%s\r\n", n_args, args[ARG_timeout].u_int, (mp_obj_is_true(args[ARG_run_as_root].u_obj) ? "True" : "False"));
+  printf("scan: %d timeout=%d, run_as_root=%s\r\n", n_args, args[ARG_timeout].u_int, (args[ARG_run_as_root].u_bool ? "True" : "False"));
   return mp_const_none;
 }
 
