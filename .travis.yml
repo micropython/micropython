@@ -42,6 +42,7 @@ jobs:
         - export ARTEFACTS_URL="none"
       install:
         - sudo apt-get install gcc
+        - sudo apt-get install jq
         - sudo apt-get install git
         - sudo apt-get install wget
         - sudo apt-get install make
