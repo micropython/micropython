@@ -188,7 +188,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bluetooth), (mp_obj_t)&mp_module_upygatt }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_upygatt), (mp_obj_t)&mp_module_upygatt }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib }, \
 
