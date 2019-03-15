@@ -21,7 +21,7 @@ notifications:
     template:
       - "Repo `%{repository_slug}` *%{result}* build (<%{build_url}|#%{build_number}>) for commit (<%{compare_url}|%{commit}>) on branch `%{branch}`."
       - "Execution time: *%{duration}*"
-      - "Artefacts: <$ARTEFACTS_URL|$ARTEFACTS_URL>"
+      - "Artefacts: %{ARTEFACTS_URL}"
 
 # define the successive stages
 stages:
