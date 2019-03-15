@@ -74,8 +74,8 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
-        - zip -r -j ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip *.bin *.elf
-        - export ZIP=$(readlink -f ESP32_v.1.10.$TRAVIS_BUILD_NUMBER_$TRAVIS_BRANCH.zip)
+        - zip -r -j ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.bin *.elf
+        - export ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
         - export ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
         - echo $ARTEFACTS_URL
       # after_success:
