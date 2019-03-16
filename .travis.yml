@@ -79,10 +79,10 @@ jobs:
           echo $ARTEFACTS_URL
       after_success:
         - |
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo `$TRAVIS_REPO_SLUG` *passed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts. Expired $(date -v +5d)\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo `$TRAVIS_REPO_SLUG` *passed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\nGet artefacts until $(date -v +5d)\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
       after_failure:
         - |
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo `$TRAVIS_REPO_SLUG` *failed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts. Expired $(date -v +5d)\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo `$TRAVIS_REPO_SLUG` *failed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\",\"color\":\"danger\",\"attachment_type\":\"default\"}]}" $SLACK_WEBHOOK_URL
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
