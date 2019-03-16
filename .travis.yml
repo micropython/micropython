@@ -77,9 +77,7 @@ jobs:
         - zip -r -j ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.bin *.elf
         - export ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
 #        - export ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
-        - curl -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP) >> url
-        - export ARTEFACTS_URL=$(cat url)
-        - rm -rf url
+        - export ARTEFACTS_URL="curl -s -H \"Max-Days: 5\" --upload-file $ZIP https://transfer.sh/$(basename $ZIP)"
         - echo $ARTEFACTS_URL
       # after_success:
       #   coveralls
