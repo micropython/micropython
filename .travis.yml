@@ -12,16 +12,16 @@ env:
   global:
     - MAKEOPTS="-j4"
 
-notifications:
-  slack:
-    rooms:
-      - secure: JHXzIOoErQS63tVQFvllpgYFQPv2vxanQfUuMdRaXbD70zMdQc5haIb6TO2tHR8zGK51ep6t2lKlyzYSNl+HwIpDT0/hAyvvDZ4iWzsnE6vF3OhMQgxKmqFqNdc8CWh+fRBchmtu3NAY7L+pTGUy8o/OkurhlTC/yjHg4PY8xnW4CV/O1h+eNHN+L2dJvh7Lf8/DTJNZfiMzcwkwchYHcr/MlcUg6pgQdKVg3GoI13UosHd7PsK/1pNL3HGPkCvZ7n3PYb0tPvRkAssmeYVZE2dBm7wNrfoqIeItfLzFGYL8EjNmuE+O4wT3G8jZ9qkhxJB8P9hNeK3z9N2d7KJPVoN8JuOW0Ln3sPJVfYY5ICa1hewBQhGBY3CzXbJJpQ499atb5/ZJ3zrTTJZlNLoMz4mkk3GznZSBaAeEa0Jp253vzOIQtAwZ0YblBd9LXLTVRjAZWF/XQxyrQaNL1TM1Hr0CPPdWCmILOdimwbjWLrGkIWgRICIBeHuI4xKNaNoTbKmt1grRfxu+6ZmUf6jv9ECp8yxAHDMHvOOh/gC2kMvNxQiPJyirBd4kFVSQKSclkvJkMddKAMKmX0V5EacfZC46OTRBK6tZZb7uKGu+RlCwAxrLiaD9ia8JG3gigARpHrHl27lzyA05pUBbrAfoou5xtTrds7UTaOFNp5csNZs=
-    on_success: always  # change: send a notification when the build status changes.
-    on_failure: always  # always: always send a notification.
-    template:
-      - "Repo `%{repository_slug}` *%{result}* build (<%{build_url}|#%{build_number}>) for commit (<%{compare_url}|%{commit}>) on branch `%{branch}`."
-      - "Execution time: *%{duration}*"
-      - "Artefacts: %{$ARTEFACTS_URL} valid until $(date -v +5d)"
+#notifications:
+#  slack:
+#    rooms:
+#      - secure: $SLACK_TOKEN
+#    on_success: always  # change: send a notification when the build status changes.
+#    on_failure: always  # always: always send a notification.
+#    template:
+      # - "Repo `%{repository_slug}` *%{result}* build (<%{build_url}|#%{build_number}>) for commit (<%{compare_url}|%{commit}>) on branch `%{branch}`."
+      # - "Execution time: *%{duration}*"
+      # - "Artefacts: %{$ARTEFACTS_URL} valid until $(date -v +5d)"
 
 # define the successive stages
 stages:
@@ -35,6 +35,8 @@ jobs:
     - stage: staging
       env: NAME="esp32 port build"
       before_install:
+        - |
+          export StartDate=$(date -u -d "$(date +\"%H:%M:%S\")" +"%s")
         - git submodule update --init --recursive
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
@@ -77,8 +79,13 @@ jobs:
         - |
           export ARTEFACTS_URL=$(curl -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
           echo $ARTEFACTS_URL
-      # after_success:
-      #   coveralls
+          export EndDate=$(date -u -d "$(date +\"%H:%M:%S\")" +"%s")
+      after_success:
+        - |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Repo `$TRAVIS_REPO_SLUG` *passed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\r\nExecution time: *$(date -u -d "0 $EndDate sec - $StartDate sec" +"%M min %S sec")*\r\nArtefacts: $ARTEFACTS_URL valid until $(date -v +5d)}' $SLACK_WEBHOOK_URL
+      after_failure:
+        - |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Repo `$TRAVIS_REPO_SLUG` *failed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\r\nExecution time: *$(date -u -d "0 $EndDate sec - $StartDate sec" +"%M min %S sec")*\r\nArtefacts: $ARTEFACTS_URL valid until $(date -v +5d)}' $SLACK_WEBHOOK_URL
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
