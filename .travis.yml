@@ -79,10 +79,10 @@ jobs:
           echo $ARTEFACTS_URL
       after_success:
         - |
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for commit (<https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|link>) on branch \`${TRAVIS_BRANCH}\`\n\`curl $ARTEFACTS_URL -o tmp.zip && unzip tmp.zip && rm -rf *.zip\`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|commit> on branch *${TRAVIS_BRANCH}*\n\`\`\`curl $ARTEFACTS_URL -o tmp.zip && unzip tmp.zip && rm -rf *.zip\`\`\`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
       after_failure:
         - |
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *failed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for commit (<https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|$(cut -c1-7 ${TRAVIS_COMMIT})>) on branch \`${TRAVIS_BRANCH}\`\",\"color\":\"danger\",\"attachment_type\":\"default\"}]}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *failed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for commit (<https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|$(cut -c1-7 ${TRAVIS_COMMIT})>) on branch *${TRAVIS_BRANCH}*\",\"color\":\"danger\",\"attachment_type\":\"default\"}]}" $SLACK_WEBHOOK_URL
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
