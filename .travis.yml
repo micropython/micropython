@@ -59,10 +59,7 @@ jobs:
         - pip3 install pyparsing
         - pip3 install coveralls
         - pip3 install --user cpp-coveralls
-        - pwd
       script:
-        - pwd
-        - ls
         - cd $HOME/build/ilyamordasov/micropython
         - git submodule update --init
         - git submodule init lib/berkeley-db-1.xx
@@ -77,8 +74,9 @@ jobs:
         - zip -r -j ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.bin *.elf
         - export ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
 #        - export ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
-        - export ARTEFACTS_URL="curl -s -H \"Max-Days: 5\" --upload-file $ZIP https://transfer.sh/$(basename $ZIP)"
-        - echo $ARTEFACTS_URL
+        - |
+          export ARTEFACTS_URL=$(curl -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
+          echo $ARTEFACTS_URL
       # after_success:
       #   coveralls
       before_deploy:
