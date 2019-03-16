@@ -56,8 +56,29 @@ STATIC mp_obj_t gatt_tool_backend(void)
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_obj, gatt_tool_backend);
 
 STATIC const mp_rom_map_elem_t gatt_tool_backend_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_start),        MP_ROM_PTR(&gatt_tool_backend_start_obj) },
-    { MP_ROM_QSTR(MP_QSTR_scan),        MP_ROM_PTR(&gatt_tool_backend_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendline),                              MP_ROM_PTR(&gatt_tool_backend_sendline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_supports_unbonded,                      MP_ROM_PTR(&gatt_tool_backend_supports_unbonded_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start),                                 MP_ROM_PTR(&gatt_tool_backend_start_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop),                                  MP_ROM_PTR(&gatt_tool_backend_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan),                                  MP_ROM_PTR(&gatt_tool_backend_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),                               MP_ROM_PTR(&gatt_tool_backend_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear_bond),                            MP_ROM_PTR(&gatt_tool_backend_clear_bond_obj) },
+    { MP_ROM_QSTR(MP_QSTR__disconnect),                           MP_ROM_PTR(&gatt_tool_backend__disconnect_obj) },
+    //@at_most_one_device
+    { MP_ROM_QSTR(MP_QSTR_disconnect),                            MP_ROM_PTR(&gatt_tool_backend_disconnect_obj) },
+    //@at_most_one_device
+    { MP_ROM_QSTR(MP_QSTR_bond),                                  MP_ROM_PTR(&gatt_tool_backend_bond_obj) },
+    { MP_ROM_QSTR(MP_QSTR__save_charecteristic_callback),         MP_ROM_PTR(&gatt_tool_backend__save_charecteristic_callback_obj) },
+    //@at_most_one_device
+    { MP_ROM_QSTR(MP_QSTR_discover_characteristics),              MP_ROM_PTR(&gatt_tool_backend_discover_characteristics_obj) },
+    { MP_ROM_QSTR(MP_QSTR__handle_notification_string),           MP_ROM_PTR(&gatt_tool_backend__handle_notification_string_obj) },
+    //@at_most_one_device
+    { MP_ROM_QSTR(MP_QSTR_char_write_handle),                     MP_ROM_PTR(&gatt_tool_backend_char_write_handle_obj) },
+    //@at_most_one_device
+    { MP_ROM_QSTR(MP_QSTR_char_read),                             MP_ROM_PTR(&gatt_tool_backend_char_read_obj) },
+    //@at_most_one_device
+    { MP_ROM_QSTR(MP_QSTR_char_read_handle),                      MP_ROM_PTR(&gatt_tool_backend_char_read_handle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_char_reset),                            MP_ROM_PTR(&gatt_tool_backend_char_reset_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(gatt_tool_backend_locals_dict, gatt_tool_backend_locals_dict_table);
 
