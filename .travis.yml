@@ -35,8 +35,6 @@ jobs:
     - stage: staging
       env: NAME="esp32 port build"
       before_install:
-        - |
-          export StartDate=$(date -u -d "$(date +\"%H:%M:%S\")" +"%s")
         - git submodule update --init --recursive
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
@@ -79,13 +77,12 @@ jobs:
         - |
           export ARTEFACTS_URL=$(curl -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
           echo $ARTEFACTS_URL
-          export EndDate=$(date -u -d "$(date +\"%H:%M:%S\")" +"%s")
       after_success:
         - |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"Repo `$TRAVIS_REPO_SLUG` *passed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\r\nExecution time: *$(date -u -d "0 $EndDate sec - $StartDate sec" +"%M min %S sec")*\r\nArtefacts: $ARTEFACTS_URL valid until $(date -v +5d)}' $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Repo `$TRAVIS_REPO_SLUG` *passed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\r\nArtefacts: $ARTEFACTS_URL valid until $(date -v +5d)}' $SLACK_WEBHOOK_URL
       after_failure:
         - |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"Repo `$TRAVIS_REPO_SLUG` *failed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\r\nExecution time: *$(date -u -d "0 $EndDate sec - $StartDate sec" +"%M min %S sec")*\r\nArtefacts: $ARTEFACTS_URL valid until $(date -v +5d)}' $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Repo `$TRAVIS_REPO_SLUG` *failed* build (<$TRAVIS_BUILD_WEB_URL|#$TRAVIS_BUILD_NUMBER>) for commit ($TRAVIS_COMMIT) on branch `$TRAVIS_BRANCH`\r\nArtefacts: $ARTEFACTS_URL valid until $(date -v +5d)}' $SLACK_WEBHOOK_URL
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
