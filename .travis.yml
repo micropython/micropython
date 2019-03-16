@@ -20,8 +20,8 @@ notifications:
     on_failure: always  # always: always send a notification.
     template:
       - "Repo `%{repository_slug}` *%{result}* build (<%{build_url}|#%{build_number}>) for commit (<%{compare_url}|%{commit}>) on branch `%{branch}`."
-      - "Execution time: *%{duration}*"
-      - "Artefacts: %{ARTEFACTS_URL}"
+      - "Execution time: *%{duration}* $ZIP"
+      - "Artefacts: %{ARTEFACTS_URL} until $(date -v +5d)"
 
 # define the successive stages
 stages:
