@@ -21,7 +21,7 @@ notifications:
     template:
       - "Repo `%{repository_slug}` *%{result}* build (<%{build_url}|#%{build_number}>) for commit (<%{compare_url}|%{commit}>) on branch `%{branch}`."
       - "Execution time: *%{duration}* $ZIP"
-      - "Artefacts: %{ARTEFACTS_URL} until $(date -v +5d)"
+      - "Artefacts: %{$ARTEFACTS_URL} until $(date -v +5d)"
 
 # define the successive stages
 stages:
@@ -75,8 +75,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/esp32
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
         - zip -r -j ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.bin *.elf
-        - export ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
-        #- export ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
+        - export ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip) #- export ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
         - export ARTEFACTS_URL=$(curl -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
         - echo $ARTEFACTS_URL
       # after_success:
