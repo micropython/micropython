@@ -376,6 +376,7 @@ int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
+    filesystem_flush();
     reset_port();
     reset_board();
     stop_mp();
