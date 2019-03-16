@@ -213,10 +213,11 @@ bool run_code_py(safe_mode_t safe_mode) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
-        // Turn off the display before the heap disappears.
+        // Turn off the display and flush the fileystem before the heap disappears.
         #if CIRCUITPY_DISPLAYIO
         reset_displays();
         #endif
+        filesystem_flush();
         stop_mp();
         free_memory(heap);
         supervisor_move_memory();
