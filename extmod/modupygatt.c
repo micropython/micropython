@@ -18,6 +18,7 @@ typedef struct _mp_obj_upygatt_t {
 // instantiated Bluetooth object
 STATIC const mp_obj_upygatt_t upygatt_obj = {
     { &gatt_tool_backend_type },
+    { &gatt_tool_receiver_type },
 };
 
 STATIC mp_obj_t upygatt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -28,7 +29,6 @@ STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *args) {
   printf("start %d\r\n", n_args);
   return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gatt_tool_backend_start_obj, 1, 2, gatt_tool_backend_start);
 
 STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -45,12 +45,18 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
   //printf("scan: %d timeout=%d, run_as_root=%s\r\n", n_args, args[ARG_timeout].u_int, (args[ARG_run_as_root].u_bool ? "True" : "False"));
   return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_scan_obj, 0, gatt_tool_backend_scan);
 
 STATIC mp_obj_t gatt_tool_backend(void)
 {
   printf("GATTToolBackend init\r\n");
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_obj, gatt_tool_backend);
+
+STATIC mp_obj_t gatt_tool_receiver(void)
+{
+  printf("GATTToolReceiver init\r\n");
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_obj, gatt_tool_backend);
@@ -93,6 +99,7 @@ STATIC const mp_rom_map_elem_t mp_module_upygatt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_upygatt) },
 
     { MP_ROM_QSTR(MP_QSTR_GATTToolBackend), MP_ROM_PTR(&gatt_tool_backend_type) },
+    { MP_ROM_QSTR(MP_QSTR_GATTToolReceiver, MP_ROM_PTR(&gatt_tool_receiver_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_upygatt_globals, mp_module_upygatt_globals_table);
