@@ -4,6 +4,15 @@
 #include "bluetooth/bluetooth.h"
 #include "py/obj.h"
 
+// Enables the Bluetooth stack. Returns errno on failure.
+int mp_bt_enable(void);
+
+// Disables the Bluetooth stack. Is a no-op when not enabled.
+void mp_bt_disable(void);
+
+// Returns true when the Bluetooth stack is enabled.
+bool mp_bt_is_enabled(void);
+
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
 #define MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME   (0x09)

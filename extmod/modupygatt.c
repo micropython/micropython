@@ -32,11 +32,29 @@ STATIC mp_obj_t upygatt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(&upygatt_obj);
 }
 
-STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_reset_on_start, ARG_initialization_timeout };
+
+  const mp_arg_t allowed_args[] = {
+      { MP_QSTR_reset_on_start, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_true } },
+      { MP_QSTR_initialization_timeout, MP_ARG_INT, { .u_int = 3 } },
+  };
+
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  if (mp_obj_is_true(args[ARG_reset_on_start].u_obj)) {
+      int errno_ = mp_bt_enable();
+      if (errno_ != 0) {
+          mp_raise_OSError(errno_);
+      }
+  } else {
+      mp_bt_disable();
+  }
   printf("start %d\r\n", n_args);
-  return mp_const_none;
+  return mp_obj_new_bool(mp_bt_is_enabled());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gatt_tool_backend_start_obj, 1, 2, gatt_tool_backend_start);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_start_obj, 0, gatt_tool_backend_start);
 
 STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   enum { ARG_timeout, ARG_run_as_root };
