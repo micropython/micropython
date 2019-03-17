@@ -225,7 +225,7 @@ extern const struct _mp_obj_module_t mp_module_fb;
 #define MICROPY_PY_USELECT_DEF
 #endif
 #if MICROPY_PY_LVGL
-#include "lib/lv_bindings/lvgl/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
 #define MICROPY_PY_LVGL_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvindev), (mp_obj_t)&mp_module_lvindev},\

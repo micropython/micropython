@@ -123,7 +123,7 @@ endif
 LVGL_BINDING_DIR = $(TOP)/lib/lv_bindings
 LVGL_DIR = $(LVGL_BINDING_DIR)/lvgl
 LVGL_GENERIC_DRV_DIR = $(LVGL_BINDING_DIR)/driver/generic
-INC += -I$(LVGL_DIR) -I$(LVGL_BINDING_DIR)/include
+INC += -I$(LVGL_DIR)/src -I$(LVGL_BINDING_DIR)/include
 ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f) $(TOP)/lib/lv_conf.h
 LVGL_PP = $(BUILD)/lvgl/lvgl.pp.c
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
@@ -137,7 +137,7 @@ $(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -X anim -X group -X task -E $(LVGL_PP) $(LVGL_DIR)/lvgl.h > $@
 
 CFLAGS_MOD += -Wno-unused-function
-SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR) $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
+SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
 
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
