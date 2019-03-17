@@ -42,9 +42,8 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
   mp_int_t timeout = args[ARG_timeout].u_int;
-  mp_
 
-  printf("scan: %d timeout=%d, run_as_root=%s\r\n", n_args, timeout, mp_obj_is_true(args[ARG_run_as_root].u_obj) ? "True" : "False"));
+  printf("scan: %d timeout=" UINT_FMT " - %d, run_as_root=%s\r\n", n_args, timeout, timeout, mp_obj_is_true(args[ARG_run_as_root].u_obj) ? "True" : "False"));
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_scan_obj, 0, gatt_tool_backend_scan);

@@ -205,6 +205,7 @@ SRC_C = \
 	machine_pwm.c \
 	machine_uart.c \
 	modmachine.c \
+	bluetooth/bluetooth.c \
 	modnetwork.c \
 	network_lan.c \
 	network_ppp.c \
