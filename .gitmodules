@@ -97,4 +97,4 @@
 	url = https://github.com/pewpew-game/pew-pewpew-standalone-10.x.git
 [submodule "frozen/circuitpython-stage"]
 	path = frozen/circuitpython-stage
-	url = https://github.com/python-ugame/circuitpython-stage
+	url = https://github.com/python-ugame/circuitpython-stage.git

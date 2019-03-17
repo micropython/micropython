@@ -29,10 +29,8 @@ void displayio_refresh_displays(void) {
     if (mp_hal_is_interrupted()) {
         return;
     }
-    // Somehow reloads from the sdcard are being lost. So, cheat and reraise.
-    // But don't re-raise if already pending.
-    if (reload_requested && MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
-        mp_raise_reload_exception();
+    if (reload_requested) {
+        // Reload is about to happen, so don't redisplay.
         return;
     }
 
