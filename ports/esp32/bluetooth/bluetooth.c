@@ -39,7 +39,7 @@ STATIC int mp_bt_status_errno(void) {
 }
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+//STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 // Initialize at early boot.
 void mp_bt_init(void) {
@@ -70,10 +70,18 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-    err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
-    if (err != 0) {
-        return mp_bt_esp_errno(err);
-    }
+    // err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
+    // if (err != 0) {
+    //     return mp_bt_esp_errno(err);
+    // }
+    // err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
+    // if (err != 0) {
+    //     return mp_bt_esp_errno(err);
+    // }
+    // err = esp_ble_gatt_set_local_mtu(500);
+    // if (err != 0) {
+    //     return mp_bt_esp_errno(err);
+    // }
     return 0;
 }
 
@@ -86,6 +94,31 @@ void mp_bt_disable(void) {
 
 bool mp_bt_is_enabled(void) {
     return esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED;
+}
+
+STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
+    switch (event) {
+        case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
+            mp_bt_call_status = param->adv_start_cmpl.status;
+            // May return an error (queue full) when called from
+            // mp_bt_gatts_callback, but that's OK.
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
+            break;
+        default:
+            ESP_LOGI("bluetooth", "GAP: unknown event: %d", event);
+            break;
+    }
 }
 
 #endif //MICROPY_PY_BLUETOOTH
