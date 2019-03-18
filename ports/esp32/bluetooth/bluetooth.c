@@ -121,7 +121,7 @@ int mp_bt_scan(void) {
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     switch (event) {
-        case ESP_GAP_SEARCH_INQ_RES_EVT:
+        case ESP_GAP_SEARCH_DISC_BLE_RES_EVT:
             param->scan_rst.ble_adv[2]  = 0x00;
 
         		printf("BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
