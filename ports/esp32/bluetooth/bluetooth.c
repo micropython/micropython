@@ -100,7 +100,7 @@ int mp_bt_scan(void) {
   esp_err_t err;
   static esp_ble_scan_params_t ble_scan_params = {
 		.scan_type              = BLE_SCAN_TYPE_ACTIVE,
-		.own_addr_type          = ESP_PUBLIC_ADDR,
+		.own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
 		.scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
 		.scan_interval          = 0x50,
 		.scan_window            = 0x30
@@ -122,21 +122,16 @@ int mp_bt_scan(void) {
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     switch (event) {
         case ESP_GAP_SEARCH_INQ_RES_EVT:
-            esp_ble_gap_cb_param_t *p = (esp_ble_gap_cb_param_t *)param;
-            p->scan_rst.ble_adv[2]  = 0x00;
-        		for (int i=0; i < sizeof(ibeacon_prefix); i++) {
-        			if (p->scan_rst.ble_adv[i] != ibeacon_prefix[i]) {
-        				return;
-        			}
-        		}
+            param->scan_rst.ble_adv[2]  = 0x00;
+
         		printf("BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
-        			p->scan_rst.bda[0],
-        			p->scan_rst.bda[1],
-        			p->scan_rst.bda[2],
-        			p->scan_rst.bda[3],
-        			p->scan_rst.bda[4],
-        			p->scan_rst.bda[5],
-        			p->scan_rst.rssi);
+        			param->scan_rst.bda[0],
+        			param->scan_rst.bda[1],
+        			param->scan_rst.bda[2],
+        			param->scan_rst.bda[3],
+        			param->scan_rst.bda[4],
+        			param->scan_rst.bda[5],
+        			param->scan_rst.rssi);
 
             xSemaphoreGive(mp_bt_call_complete);
             break;
