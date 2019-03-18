@@ -13,6 +13,9 @@ void mp_bt_disable(void);
 // Returns true when the Bluetooth stack is enabled.
 bool mp_bt_is_enabled(void);
 
+// Enables the Bluetooth scan. Returns errno on failure.
+int mp_bt_scan(void);
+
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
 #define MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME   (0x09)

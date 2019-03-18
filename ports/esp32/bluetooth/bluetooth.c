@@ -96,8 +96,50 @@ bool mp_bt_is_enabled(void) {
     return esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED;
 }
 
+int mp_bt_scan(void) {
+  esp_err_t err;
+  static esp_ble_scan_params_t ble_scan_params = {
+		.scan_type              = BLE_SCAN_TYPE_ACTIVE,
+		.own_addr_type          = ESP_PUBLIC_ADDR,
+		.scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
+		.scan_interval          = 0x50,
+		.scan_window            = 0x30
+	};
+
+  err = esp_ble_gap_set_scan_params(&ble_scan_params);
+	if (err != 0) {
+		return mp_bt_esp_errno(err);
+	}
+  err = esp_ble_gap_start_scanning(60);
+	if (err != 0) {
+		return mp_bt_esp_errno(err);
+	}
+  printf("Wait for scans...\r\n");
+
+  return 0;
+}
+
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     switch (event) {
+        case ESP_GAP_SEARCH_INQ_RES_EVT:
+            esp_ble_gap_cb_param_t *p = (esp_ble_gap_cb_param_t *)param;
+            p->scan_rst.ble_adv[2]  = 0x00;
+        		for (int i=0; i < sizeof(ibeacon_prefix); i++) {
+        			if (p->scan_rst.ble_adv[i] != ibeacon_prefix[i]) {
+        				return;
+        			}
+        		}
+        		printf("BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
+        			p->scan_rst.bda[0],
+        			p->scan_rst.bda[1],
+        			p->scan_rst.bda[2],
+        			p->scan_rst.bda[3],
+        			p->scan_rst.bda[4],
+        			p->scan_rst.bda[5],
+        			p->scan_rst.rssi);
+
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
         case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
             xSemaphoreGive(mp_bt_call_complete);
             break;

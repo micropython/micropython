@@ -32,6 +32,18 @@ STATIC mp_obj_t upygatt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(&upygatt_obj);
 }
 
+STATIC mp_obj_t gatt_tool_backend_scan(void) {
+  mp_bt_scan();
+  printf("Bluetooth scan\r\n");
+}
+STATIC MP_DECLARE_CONST_FUN_OBJ_0(gatt_tool_backend_scan_obj, gatt_tool_backend_scan);
+
+STATIC mp_obj_t gatt_tool_backend_stop(void) {
+  mp_bt_disable();
+  printf("Bluetooth stop\r\n");
+}
+STATIC MP_DECLARE_CONST_FUN_OBJ_0(gatt_tool_backend_stop_obj, gatt_tool_backend_stop);
+
 STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   enum { ARG_reset_on_start, ARG_initialization_timeout };
 
@@ -43,15 +55,12 @@ STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *pos_args,
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  if (mp_obj_is_true(args[ARG_reset_on_start].u_obj)) {
-      int errno_ = mp_bt_enable();
-      if (errno_ != 0) {
-          mp_raise_OSError(errno_);
-      }
-  } else {
-      mp_bt_disable();
+  int errno_ = mp_bt_enable();
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
   }
-  printf("start %d\r\n", n_args);
+
+  printf("Bluetooth start %d\r\n", n_args);
   return mp_obj_new_bool(mp_bt_is_enabled());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_start_obj, 0, gatt_tool_backend_start);
@@ -85,7 +94,7 @@ STATIC const mp_rom_map_elem_t gatt_tool_backend_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_sendline),                              MP_ROM_PTR(&gatt_tool_backend_sendline_obj) },
     // { MP_ROM_QSTR(MP_QSTR_supports_unbonded,                      MP_ROM_PTR(&gatt_tool_backend_supports_unbonded_obj) },
     { MP_ROM_QSTR(MP_QSTR_start),                                 MP_ROM_PTR(&gatt_tool_backend_start_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_stop),                                  MP_ROM_PTR(&gatt_tool_backend_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop),                                  MP_ROM_PTR(&gatt_tool_backend_stop_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                                  MP_ROM_PTR(&gatt_tool_backend_scan_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect),                               MP_ROM_PTR(&gatt_tool_backend_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_clear_bond),                            MP_ROM_PTR(&gatt_tool_backend_clear_bond_obj) },
