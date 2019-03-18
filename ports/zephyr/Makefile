@@ -43,6 +43,7 @@ SRC_C = main.c \
 	modzephyr.c \
 	modzsensor.c \
 	modmachine.c \
+	machine_i2c.c \
 	machine_pin.c \
 	uart_core.c \
 	lib/utils/stdout_helpers.c \
