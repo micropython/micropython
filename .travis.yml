@@ -74,11 +74,10 @@ jobs:
         - zip -r -j ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.bin *.elf
         - export ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
         - |
-          ARTEFACTS_URL=$(curl --connect-timeout 5 --max-time 10 -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
-          if [ $ARTEFACTS_URL != 200 ]; then
-            ARTEFACTS_URL=$(curl -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
-          fi
-          export $ARTEFACTS_URL
+          export ARTEFACTS_URL=$(curl --connect-timeout 5 --max-time 10 -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
+          # if [ $ARTEFACTS_URL != 200 ]; then
+          #   export ARTEFACTS_URL=$(curl -w %{http_code} $1 -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
+          # fi
       after_success:
         - |
           curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|commit> on branch *${TRAVIS_BRANCH}*\n\`\`\`curl --connect-timeout 5 --max-time 10 $ARTEFACTS_URL -o tmp.zip && unzip tmp.zip && rm -rf *.zip\`\`\`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL

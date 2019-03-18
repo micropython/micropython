@@ -12,6 +12,8 @@
 #include "py/runtime.h"
 #include "extmod/modupygatt.h"
 
+#define GATTC_TAG "uPygatt"
+
 // Semaphore to serialze asynchronous calls.
 STATIC SemaphoreHandle_t mp_bt_call_complete;
 STATIC esp_bt_status_t mp_bt_call_status;
@@ -21,6 +23,10 @@ STATIC union {
     uint16_t      service_handle;
     uint16_t      attr_handle;
 } mp_bt_call_result;
+
+STATIC mp_bt_adv_type_t bluetooth_adv_type;
+STATIC uint16_t bluetooth_adv_interval;
+STATIC uint16_t bluetooth_app_id = 0; // provide unique number for each application profile
 
 // Convert an esp_err_t into an errno number.
 STATIC int mp_bt_esp_errno(esp_err_t err) {
@@ -98,19 +104,22 @@ bool mp_bt_is_enabled(void) {
 
 int mp_bt_scan(void) {
   esp_err_t err;
+  bluetooth_adv_interval = 10;
+  bluetooth_adv_type = ;
   static esp_ble_scan_params_t ble_scan_params = {
-		.scan_type              = BLE_SCAN_TYPE_ACTIVE,
-		.own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
-		.scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
-		.scan_interval          = 0x50,
-		.scan_window            = 0x30
+    .scan_type              = BLE_SCAN_TYPE_ACTIVE,
+    .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
+    .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
+    .scan_interval          = 0x50,
+    .scan_window            = 0x30,
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
 	};
 
   err = esp_ble_gap_set_scan_params(&ble_scan_params);
 	if (err != 0) {
 		return mp_bt_esp_errno(err);
 	}
-  err = esp_ble_gap_start_scanning(60);
+  err = esp_ble_gap_start_scanning(30);
 	if (err != 0) {
 		return mp_bt_esp_errno(err);
 	}
@@ -121,40 +130,64 @@ int mp_bt_scan(void) {
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     switch (event) {
-        case ESP_GAP_SEARCH_DISC_BLE_RES_EVT:
-            param->scan_rst.ble_adv[2]  = 0x00;
+      case ESP_GAP_BLE_SCAN_START_COMPLETE_EVT:
+        //scan start complete event to indicate scan start successfully or failed
+        if (param->scan_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
+            ESP_LOGE(GATTC_TAG, "scan start failed, error status = %x", param->scan_start_cmpl.status);
+            break;
+        }
+        ESP_LOGI(GATTC_TAG, "scan start success");
+        xSemaphoreGive(mp_bt_call_complete);
+        break;
+      case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
+        if (param->scan_stop_cmpl.status != ESP_BT_STATUS_SUCCESS){
+            ESP_LOGE(GATTC_TAG, "scan stop failed, error status = %x", param->scan_stop_cmpl.status);
+            break;
+        }
+        ESP_LOGI(GATTC_TAG, "stop scan successfully");
+        break;
+      case ESP_GAP_BLE_SCAN_RESULT_EVT:
+        param->scan_rst.ble_adv[2]  = 0x00;
 
-        		printf("BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
-        			param->scan_rst.bda[0],
-        			param->scan_rst.bda[1],
-        			param->scan_rst.bda[2],
-        			param->scan_rst.bda[3],
-        			param->scan_rst.bda[4],
-        			param->scan_rst.bda[5],
-        			param->scan_rst.rssi);
+    		ESP_LOGE(GATTC_TAG, "BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
+    			param->scan_rst.bda[0],
+    			param->scan_rst.bda[1],
+    			param->scan_rst.bda[2],
+    			param->scan_rst.bda[3],
+    			param->scan_rst.bda[4],
+    			param->scan_rst.bda[5],
+    			param->scan_rst.rssi);
 
-            xSemaphoreGive(mp_bt_call_complete);
-            break;
-        case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
-            xSemaphoreGive(mp_bt_call_complete);
-            break;
-        case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
-            xSemaphoreGive(mp_bt_call_complete);
-            break;
-        case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
-            mp_bt_call_status = param->adv_start_cmpl.status;
-            // May return an error (queue full) when called from
-            // mp_bt_gatts_callback, but that's OK.
-            xSemaphoreGive(mp_bt_call_complete);
-            break;
-        case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
-            xSemaphoreGive(mp_bt_call_complete);
-            break;
-        case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-            break;
-        default:
-            ESP_LOGI("bluetooth", "GAP: unknown event: %d", event);
-            break;
+        xSemaphoreGive(mp_bt_call_complete);
+        break;
+      case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
+        xSemaphoreGive(mp_bt_call_complete);
+        break;
+      case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
+        xSemaphoreGive(mp_bt_call_complete);
+        break;
+      case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
+        mp_bt_call_status = param->adv_start_cmpl.status;
+        // May return an error (queue full) when called from
+        // mp_bt_gatts_callback, but that's OK.
+        xSemaphoreGive(mp_bt_call_complete);
+        break;
+      case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
+        xSemaphoreGive(mp_bt_call_complete);
+        break;
+      case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
+        ESP_LOGI(GATTC_TAG, "update connection params status = %d, min_int = %d, max_int = %d,conn_int = %d,latency = %d, timeout = %d",
+            param->update_conn_params.status,
+            param->update_conn_params.min_int,
+            param->update_conn_params.max_int,
+            param->update_conn_params.conn_int,
+            param->update_conn_params.latency,
+            param->update_conn_params.timeout);
+        xSemaphoreGive(mp_bt_call_complete);
+        break;
+      default:
+          ESP_LOGI(GATTC_TAG, "GAP: unknown event: %d", event);
+          break;
     }
 }
 
