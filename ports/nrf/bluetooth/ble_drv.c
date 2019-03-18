@@ -39,12 +39,16 @@
 
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
+// Flag indicating progress of internal flash operation.
+sd_flash_operation_status_t sd_flash_operation_status;
+
 __attribute__((aligned(4)))
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)];
 
 void ble_drv_reset() {
     // Linked list items will be gc'd.
     MP_STATE_VM(ble_drv_evt_handler_entries) = NULL;
+    sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
 }
 
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
@@ -85,22 +89,29 @@ extern void tusb_hal_nrf_power_event (uint32_t event);
 void SD_EVT_IRQHandler(void) {
     uint32_t evt_id;
     while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {
-//        sd_evt_handler(evt_id);
-
         switch (evt_id) {
             // usb power event
-            case NRF_EVT_POWER_USB_DETECTED:
-            case NRF_EVT_POWER_USB_POWER_READY:
-            case NRF_EVT_POWER_USB_REMOVED: {
-                int32_t usbevt = (evt_id == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
-                                 (evt_id == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
-                                 (evt_id == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
+        case NRF_EVT_POWER_USB_DETECTED:
+        case NRF_EVT_POWER_USB_POWER_READY:
+        case NRF_EVT_POWER_USB_REMOVED: {
+            int32_t usbevt = (evt_id == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
+                (evt_id == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
+                (evt_id == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
 
-                tusb_hal_nrf_power_event(usbevt);
-            }
+            tusb_hal_nrf_power_event(usbevt);
+        }
             break;
 
-            default: break;
+            // Set flag indicating that a flash operation has finished.
+        case NRF_EVT_FLASH_OPERATION_SUCCESS:
+            sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
+            break;
+        case NRF_EVT_FLASH_OPERATION_ERROR:
+            sd_flash_operation_status = SD_FLASH_OPERATION_ERROR;
+            break;
+
+        default:
+            break;
         }
     }
 
