@@ -41,7 +41,7 @@ STATIC int mp_bt_status_errno(void) {
 }
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-//STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 // Initialize at early boot.
 void mp_bt_init(void) {
@@ -72,18 +72,18 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-    // err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
-    // if (err != 0) {
-    //     return mp_bt_esp_errno(err);
-    // }
-    // err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
-    // if (err != 0) {
-    //     return mp_bt_esp_errno(err);
-    // }
-    // err = esp_ble_gatt_set_local_mtu(500);
-    // if (err != 0) {
-    //     return mp_bt_esp_errno(err);
-    // }
+    err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    err = esp_ble_gatt_set_local_mtu(500);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
     return 0;
 }
 
@@ -120,6 +120,14 @@ int mp_bt_scan(void) {
   printf("Wait for scans...\r\n");
 
   return 0;
+}
+
+bool mp_bt_connect(void) {
+  ESP_LOGI(GATTC_TAG, "connect to the remote device.");
+  esp_ble_gap_stop_scanning();
+  esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
+
+  return 1;
 }
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -191,6 +199,27 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
           ESP_LOGI(GATTC_TAG, "GAP: unknown event: %d", event);
           break;
     }
+}
+
+STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
+  esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
+
+  switch (event) {
+    case ESP_GATTC_CONNECT_EVT:
+        ESP_LOGI(GATTC_TAG, "ESP_GATTC_CONNECT_EVT conn_id %d, if %d", p_data->connect.conn_id, gattc_if);
+        gl_profile_tab[PROFILE_A_APP_ID].conn_id = p_data->connect.conn_id;
+        memcpy(gl_profile_tab[PROFILE_A_APP_ID].remote_bda, p_data->connect.remote_bda, sizeof(esp_bd_addr_t));
+        ESP_LOGI(GATTC_TAG, "REMOTE BDA:");
+        esp_log_buffer_hex(GATTC_TAG, gl_profile_tab[PROFILE_A_APP_ID].remote_bda, sizeof(esp_bd_addr_t));
+        break;
+    case ESP_GATTC_OPEN_EVT:
+        if (param->open.status != ESP_GATT_OK){
+            ESP_LOGE(GATTC_TAG, "open failed, status %d", p_data->open.status);
+            break;
+        }
+        ESP_LOGI(GATTC_TAG, "open success");
+        break;
+  }
 }
 
 #endif //MICROPY_PY_BLUETOOTH

@@ -79,8 +79,25 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_scan_obj, 0, gatt_tool_backend_scan);
 
-STATIC mp_obj_t gatt_tool_backend(void)
-{
+STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_device, ARG_address_type };
+
+  const mp_arg_t allowed_args[] = {
+      { MP_QSTR_device, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = mp_const_none } },
+      { MP_QSTR_address_type, MP_ARG_INT, {.u_int = 2 } },
+  };
+
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
+
+  mp_bt_connect(device);
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
+
+STATIC mp_obj_t gatt_tool_backend(void) {
   printf("GATTToolBackend init\r\n");
   return mp_const_none;
 }
@@ -92,7 +109,7 @@ STATIC const mp_rom_map_elem_t gatt_tool_backend_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_start),                                 MP_ROM_PTR(&gatt_tool_backend_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop),                                  MP_ROM_PTR(&gatt_tool_backend_stop_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                                  MP_ROM_PTR(&gatt_tool_backend_scan_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_connect),                               MP_ROM_PTR(&gatt_tool_backend_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),                               MP_ROM_PTR(&gatt_tool_backend_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_clear_bond),                            MP_ROM_PTR(&gatt_tool_backend_clear_bond_obj) },
     // { MP_ROM_QSTR(MP_QSTR__disconnect),                           MP_ROM_PTR(&gatt_tool_backend__disconnect_obj) },
     // //@at_most_one_device

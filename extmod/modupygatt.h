@@ -16,6 +16,9 @@ bool mp_bt_is_enabled(void);
 // Enables the Bluetooth scan. Returns errno on failure.
 int mp_bt_scan(void);
 
+// Try to connect to address. Returns errno on failure.
+bool mp_bt_connect(void);
+
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
 #define MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME   (0x09)
