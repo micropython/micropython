@@ -113,7 +113,7 @@ int mp_bt_scan(void) {
 	if (err != 0) {
 		return mp_bt_esp_errno(err);
 	}
-  err = esp_ble_gap_start_scanning(30);
+  err = esp_ble_gap_start_scanning(10);
 	if (err != 0) {
 		return mp_bt_esp_errno(err);
 	}
@@ -141,16 +141,37 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         ESP_LOGI(GATTC_TAG, "stop scan successfully");
         break;
       case ESP_GAP_BLE_SCAN_RESULT_EVT:
-        param->scan_rst.ble_adv[2]  = 0x00;
-
-    		ESP_LOGE(GATTC_TAG, "BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
-    			param->scan_rst.bda[0],
-    			param->scan_rst.bda[1],
-    			param->scan_rst.bda[2],
-    			param->scan_rst.bda[3],
-    			param->scan_rst.bda[4],
-    			param->scan_rst.bda[5],
-    			param->scan_rst.rssi);
+        esp_ble_gap_cb_param_t *scan_result = (esp_ble_gap_cb_param_t *)param;
+        switch (scan_result->scan_rst.search_evt) {
+          case ESP_GAP_SEARCH_INQ_RES_EVT:
+            esp_log_buffer_hex(GATTC_TAG, scan_result->scan_rst.bda, 6);
+            ESP_LOGI(GATTC_TAG, "searched Adv Data Len %d, Scan Response Len %d", scan_result->scan_rst.adv_data_len, scan_result->scan_rst.scan_rsp_len);
+            adv_name = esp_ble_resolve_adv_data(scan_result->scan_rst.ble_adv, ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
+            ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
+            esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
+            #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
+              if (scan_result->scan_rst.adv_data_len > 0) {
+                ESP_LOGI(GATTC_TAG, "adv data:");
+                esp_log_buffer_hex(GATTC_TAG, &scan_result->scan_rst.ble_adv[0], scan_result->scan_rst.adv_data_len);
+              }
+              if (scan_result->scan_rst.scan_rsp_len > 0) {
+                ESP_LOGI(GATTC_TAG, "scan resp:");
+                esp_log_buffer_hex(GATTC_TAG, &scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
+              }
+            #endif
+            ESP_LOGI(GATTC_TAG, "\n");
+            break;
+        }
+        // param->scan_rst.ble_adv[2]  = 0x00;
+        //
+    		// ESP_LOGE(GATTC_TAG, "BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
+    		// 	param->scan_rst.bda[0],
+    		// 	param->scan_rst.bda[1],
+    		// 	param->scan_rst.bda[2],
+    		// 	param->scan_rst.bda[3],
+    		// 	param->scan_rst.bda[4],
+    		// 	param->scan_rst.bda[5],
+    		// 	param->scan_rst.rssi);
 
         xSemaphoreGive(mp_bt_call_complete);
         break;
