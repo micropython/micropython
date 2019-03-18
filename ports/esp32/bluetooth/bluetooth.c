@@ -106,7 +106,7 @@ int mp_bt_scan(void) {
     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
     .scan_interval          = 0x50,
     .scan_window            = 0x30,
-    .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
 	};
 
   err = esp_ble_gap_set_scan_params(&ble_scan_params);
@@ -159,16 +159,6 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
           }
         #endif
         ESP_LOGI(GATTC_TAG, "\n");
-        // param->scan_rst.ble_adv[2]  = 0x00;
-        //
-    		// ESP_LOGE(GATTC_TAG, "BDA: %02x:%02x:%02x:%02x:%02x:%02x, RSSI %d",
-    		// 	param->scan_rst.bda[0],
-    		// 	param->scan_rst.bda[1],
-    		// 	param->scan_rst.bda[2],
-    		// 	param->scan_rst.bda[3],
-    		// 	param->scan_rst.bda[4],
-    		// 	param->scan_rst.bda[5],
-    		// 	param->scan_rst.rssi);
 
         xSemaphoreGive(mp_bt_call_complete);
         break;
