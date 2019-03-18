@@ -13,6 +13,10 @@
 #include "extmod/modupygatt.h"
 
 #define GATTC_TAG "uPygatt"
+#define PROFILE_A_APP_ID 0
+
+static bool connect    = false;
+char remote_device_name[] = "RK-G201S";
 
 // Semaphore to serialze asynchronous calls.
 STATIC SemaphoreHandle_t mp_bt_call_complete;
@@ -122,12 +126,9 @@ int mp_bt_scan(void) {
   return 0;
 }
 
-bool mp_bt_connect(void) {
-  ESP_LOGI(GATTC_TAG, "connect to the remote device.");
-  esp_ble_gap_stop_scanning();
-  esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
-
-  return 1;
+void mp_bt_connect(char* device) {
+  connect = true;
+  mp_bt_scan();
 }
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -167,6 +168,18 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
           }
         #endif
         ESP_LOGI(GATTC_TAG, "\n");
+
+        ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
+        if (adv_name != NULL) {
+            if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
+                ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
+                if (connect == true) {
+                    ESP_LOGI(GATTC_TAG, "connect to the remote device.");
+                    esp_ble_gap_stop_scanning();
+                    esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
+                }
+            }
+        }
 
         xSemaphoreGive(mp_bt_call_complete);
         break;
