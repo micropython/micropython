@@ -24,10 +24,6 @@ STATIC union {
     uint16_t      attr_handle;
 } mp_bt_call_result;
 
-STATIC mp_bt_adv_type_t bluetooth_adv_type;
-STATIC uint16_t bluetooth_adv_interval;
-STATIC uint16_t bluetooth_app_id = 0; // provide unique number for each application profile
-
 // Convert an esp_err_t into an errno number.
 STATIC int mp_bt_esp_errno(esp_err_t err) {
     if (err != 0) {
@@ -104,8 +100,6 @@ bool mp_bt_is_enabled(void) {
 
 int mp_bt_scan(void) {
   esp_err_t err;
-  bluetooth_adv_interval = 10;
-  bluetooth_adv_type = ;
   static esp_ble_scan_params_t ble_scan_params = {
     .scan_type              = BLE_SCAN_TYPE_ACTIVE,
     .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
