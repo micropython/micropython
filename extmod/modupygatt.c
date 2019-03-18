@@ -36,13 +36,13 @@ STATIC mp_obj_t gatt_tool_backend_scan(void) {
   mp_bt_scan();
   printf("Bluetooth scan\r\n");
 }
-STATIC MP_DECLARE_CONST_FUN_OBJ_0(gatt_tool_backend_scan_obj, gatt_tool_backend_scan);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_scan_obj, gatt_tool_backend_scan);
 
 STATIC mp_obj_t gatt_tool_backend_stop(void) {
   mp_bt_disable();
   printf("Bluetooth stop\r\n");
 }
-STATIC MP_DECLARE_CONST_FUN_OBJ_0(gatt_tool_backend_stop_obj, gatt_tool_backend_stop);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_stop_obj, gatt_tool_backend_stop);
 
 STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   enum { ARG_reset_on_start, ARG_initialization_timeout };
