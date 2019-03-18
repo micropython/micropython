@@ -32,15 +32,10 @@ STATIC mp_obj_t upygatt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(&upygatt_obj);
 }
 
-STATIC mp_obj_t gatt_tool_backend_scan(void) {
-  mp_bt_scan();
-  printf("Bluetooth scan\r\n");
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_scan_obj, gatt_tool_backend_scan);
-
 STATIC mp_obj_t gatt_tool_backend_stop(void) {
   mp_bt_disable();
   printf("Bluetooth stop\r\n");
+  return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_stop_obj, gatt_tool_backend_stop);
 
@@ -79,6 +74,7 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
   mp_int_t timeout = args[ARG_timeout].u_int;
 
   printf("scan: %d timeout=" UINT_FMT " - %d, run_as_root=%s\r\n", n_args, timeout, timeout, mp_obj_is_true(args[ARG_run_as_root].u_obj) ? "True" : "False");
+  mp_bt_scan();
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_scan_obj, 0, gatt_tool_backend_scan);
