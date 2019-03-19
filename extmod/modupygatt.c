@@ -84,14 +84,14 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
   enum { ARG_device, ARG_address_type };
 
   const mp_arg_t allowed_args[] = {
-      { MP_QSTR_device, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = mp_const_none } },
+      { MP_QSTR_device, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = mp_const_none } },
       { MP_QSTR_address_type, MP_ARG_INT, {.u_int = 2 } },
   };
 
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  //char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_int);
+  //char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
   esp_bd_addr_t device = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
   mp_bt_connect(device);
   return mp_const_none;
