@@ -169,7 +169,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         #endif
         ESP_LOGI(GATTC_TAG, "\n");
 
-        ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
+        /*ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
         if (adv_name != NULL) {
             if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
@@ -179,7 +179,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
                     esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
                 }
             }
-        }
+        }*/
 
         xSemaphoreGive(mp_bt_call_complete);
         break;
@@ -214,7 +214,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
     }
 }
 
-STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
+/* STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
   esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
 
   switch (event) {
@@ -233,6 +233,6 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
         ESP_LOGI(GATTC_TAG, "open success");
         break;
   }
-}
+} */
 
 #endif //MICROPY_PY_BLUETOOTH
