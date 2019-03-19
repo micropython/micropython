@@ -240,7 +240,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
                 ESP_LOGI(GATTC_TAG, "connect to the remote device.");
                 esp_ble_gap_stop_scanning();
-                ESP_LOGI(GATTC_TAG, "gattc_if: %u, bda: %hhu, ble_addr_type: %d\r\n", gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type);
+                ESP_LOGI(GATTC_TAG, "gattc_if: %u, bda: %s, ble_addr_type: %d\r\n", gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type);
                 esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type, true);
             }
         }
