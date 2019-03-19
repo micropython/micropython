@@ -36,7 +36,7 @@ STATIC esp_gattc_descr_elem_t *descr_elem_result = NULL;
 
 /* Declare static functions */
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+STATIC void mp_bt_gattc_callback(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 
 // Semaphore to serialze asynchronous calls.
@@ -128,18 +128,18 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-    err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
+    err = esp_ble_gattс_register_callback(mp_bt_gattc_callback);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-/*    err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
+    err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
     err = esp_ble_gatt_set_local_mtu(500);
     if (err != 0) {
         return mp_bt_esp_errno(err);
-    } */
+    }
     return 0;
 }
 
@@ -231,7 +231,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
                 ESP_LOGI(GATTC_TAG, "connect to the remote device.");
                 esp_ble_gap_stop_scanning();
-                esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
+                esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type, true);
             }
         }
 
@@ -268,7 +268,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
     }
 }
 
-STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
+STATIC void mp_bt_gattc_callback(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
   esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
 
   /* If event is register event, store the gattc_if for each profile */
