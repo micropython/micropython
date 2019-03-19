@@ -92,7 +92,7 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
 
   char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
 
-  //mp_bt_connect(device);
+  mp_bt_connect(device);
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
