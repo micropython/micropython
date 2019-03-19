@@ -28,6 +28,15 @@
 #define PROFILE_A_APP_ID 0
 #define INVALID_HANDLE   0
 
+/*
+enum {
+  BLE_ADDR_TYPE_PUBLIC = 0x00
+  BLE_ADDR_TYPE_RANDOM = 0x01
+  BLE_ADDR_TYPE_RPA_PUBLIC = 0x02
+  BLE_ADDR_TYPE_RPA_RANDOM = 0x03
+}
+*/
+
 char remote_device_name[] = "RK-G201S";
 STATIC bool connect    = false;
 STATIC bool get_server = false;
@@ -231,6 +240,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
                 ESP_LOGI(GATTC_TAG, "connect to the remote device.");
                 esp_ble_gap_stop_scanning();
+                ESP_LOGI(GATTC_TAG, "gattc_if: %u, bda: %x, ble_addr_type: %d\r\n", gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type);
                 esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type, true);
             }
         }
