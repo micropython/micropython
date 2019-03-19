@@ -452,7 +452,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
             esp_bd_addr_t device3 = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
             uint8_t device2[] = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
             ESP_LOGI(GATTC_TAG, "[ ATTEMPT 1 ]: Addresses are the same: %d", strcmp(device, (char* )param->scan_rst.bda));
-            ESP_LOGI(GATTC_TAG, "[ ATTEMPT 2 ]: Addresses are the same: %d", strcmp(device2, param->scan_rst.bda));
+            //ESP_LOGI(GATTC_TAG, "[ ATTEMPT 2 ]: Addresses are the same: %d", strcmp(device2, param->scan_rst.bda));
             ESP_LOGI(GATTC_TAG, "[ ATTEMPT 3 ]: Addresses are the same: %d", (device3 == param->scan_rst.bda));
             if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
