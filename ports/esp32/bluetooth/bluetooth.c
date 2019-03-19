@@ -63,7 +63,7 @@ struct gattc_profile_inst {
 /* One gatt-based profile one app_id and one gattc_if, this array will store the gattc_if returned by ESP_GATTS_REG_EVT */
 static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
     [PROFILE_A_APP_ID] = {
-        .gattc_cb = gattc_profile_event_handler,
+        //.gattc_cb = gattc_profile_event_handler,
         .gattc_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
     },
 };
@@ -132,14 +132,14 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-    err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
+/*    err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
     err = esp_ble_gatt_set_local_mtu(500);
     if (err != 0) {
         return mp_bt_esp_errno(err);
-    }
+    } */
     return 0;
 }
 
@@ -182,7 +182,7 @@ void mp_bt_connect(char* device) {
   connect = true;
   mp_bt_scan();
 }
-
+/*
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
     esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
 
@@ -393,7 +393,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             break;
     }
 }
-
+*/
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
   uint8_t *adv_name = NULL;
   uint8_t adv_name_len = 0;
