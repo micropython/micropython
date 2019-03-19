@@ -1,5 +1,12 @@
 #if MICROPY_PY_BLUETOOTH
 
+#include <stdint.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include "nvs.h"
+#include "nvs_flash.h"
+
 #include "esp_bt.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gattc_api.h"
@@ -9,7 +16,6 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-#include <string.h>
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
