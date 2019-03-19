@@ -194,9 +194,9 @@ int mp_bt_connect(esp_bd_addr_t device) {
   ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
   ESP_LOGI(GATTC_TAG, "connect to the remote device.");
 
-  err = esp_ble_gap_stop_scanning();
-  if (err != ESP_OK) {}
-  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  // err = esp_ble_gap_stop_scanning();
+  // if (err != ESP_OK) {}
+  // xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 
   err = esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
   if (err != ESP_OK) {
