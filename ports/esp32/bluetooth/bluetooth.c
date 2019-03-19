@@ -45,7 +45,7 @@ STATIC int mp_bt_status_errno(void) {
 }
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+//STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 // Initialize at early boot.
 void mp_bt_init(void) {
@@ -76,7 +76,7 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-    err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
+    /*err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -87,7 +87,7 @@ int mp_bt_enable(void) {
     err = esp_ble_gatt_set_local_mtu(500);
     if (err != 0) {
         return mp_bt_esp_errno(err);
-    }
+    }*/
     return 0;
 }
 
@@ -128,7 +128,7 @@ int mp_bt_scan(void) {
 
 void mp_bt_connect(char* device) {
   connect = true;
-  mp_bt_scan();
+  //mp_bt_scan();
 }
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {

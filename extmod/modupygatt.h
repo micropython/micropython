@@ -17,7 +17,7 @@ bool mp_bt_is_enabled(void);
 int mp_bt_scan(void);
 
 // Try to connect to address. Returns errno on failure.
-void mp_bt_connect(void);
+void mp_bt_connect(char* device);
 
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
