@@ -36,7 +36,7 @@ STATIC esp_gattc_descr_elem_t *descr_elem_result = NULL;
 
 /* Declare static functions */
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-//STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 
 // Semaphore to serialze asynchronous calls.
@@ -63,7 +63,7 @@ struct gattc_profile_inst {
 /* One gatt-based profile one app_id and one gattc_if, this array will store the gattc_if returned by ESP_GATTS_REG_EVT */
 static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
     [PROFILE_A_APP_ID] = {
-        //.gattc_cb = gattc_profile_event_handler,
+        .gattc_cb = gattc_profile_event_handler,
         .gattc_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
     },
 };
@@ -128,11 +128,11 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-/*    err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
+    err = esp_ble_gatts_register_callback(mp_bt_gatts_callback);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-    err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
+/*    err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -183,6 +183,10 @@ void mp_bt_connect(char* device) {
   mp_bt_scan();
 }
 
+STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
+    esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
+}
+
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
   uint8_t *adv_name = NULL;
   uint8_t adv_name_len = 0;
@@ -222,14 +226,14 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         ESP_LOGI(GATTC_TAG, "\n");
 
         ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
-        /*if (adv_name != NULL && connect) {
+        if (adv_name != NULL && connect) {
             if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
                 ESP_LOGI(GATTC_TAG, "connect to the remote device.");
                 esp_ble_gap_stop_scanning();
                 esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
             }
-        }*/
+        }
 
         xSemaphoreGive(mp_bt_call_complete);
         break;
@@ -263,11 +267,11 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
           break;
     }
 }
-/*
+
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
   esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
 
-  // If event is register event, store the gattc_if for each profile
+  /* If event is register event, store the gattc_if for each profile */
   if (event == ESP_GATTC_REG_EVT) {
       if (param->reg.status == ESP_GATT_OK) {
           gl_profile_tab[param->reg.app_id].gattc_if = gattc_if;
@@ -279,11 +283,12 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
       }
   }
 
-  // If the gattc_if equal to profile A, call profile A cb handler, so here call each profile's callback
+  /* If the gattc_if equal to profile A, call profile A cb handler,
+   * so here call each profile's callback */
   do {
       int idx;
       for (idx = 0; idx < PROFILE_NUM; idx++) {
-          if (gattc_if == ESP_GATT_IF_NONE || // ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function
+          if (gattc_if == ESP_GATT_IF_NONE || /* ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function */
                   gattc_if == gl_profile_tab[idx].gattc_if) {
               if (gl_profile_tab[idx].gattc_cb) {
                   gl_profile_tab[idx].gattc_cb(event, gattc_if, param);
@@ -292,5 +297,5 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
       }
   } while (0);
 }
-*/
+
 #endif //MICROPY_PY_BLUETOOTH
