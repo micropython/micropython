@@ -111,11 +111,6 @@ void mp_init(void) {
     }
     #endif
 
-    #if MICROPY_FSUSERMOUNT
-    // zero out the pointers to the user-mounted devices
-    memset(MP_STATE_VM(fs_user_mount), 0, sizeof(MP_STATE_VM(fs_user_mount)));
-    #endif
-
     #if MICROPY_VFS
     // initialise the VFS sub-system
     MP_STATE_VM(vfs_cur) = NULL;
