@@ -128,7 +128,7 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
-    err = esp_ble_gattс_register_callback(mp_bt_gattc_callback);
+    err = esp_ble_gattc_register_callback(mp_bt_gattc_callback);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
