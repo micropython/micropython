@@ -182,6 +182,7 @@ int mp_bt_scan(void) {
 	if (err != 0) {
 		return mp_bt_esp_errno(err);
 	}
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
   printf("Wait for scans...\r\n");
 
   return 0;
@@ -207,6 +208,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             if (mtu_ret){
                 ESP_LOGE(GATTC_TAG, "config MTU error, error code = %x", mtu_ret);
             }
+            xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
 
         case ESP_GATTC_OPEN_EVT:
@@ -222,6 +224,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             }
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
             esp_ble_gattc_search_service(gattc_if, param->cfg_mtu.conn_id, &remote_filter_service_uuid);
+            xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
         case ESP_GATTC_SEARCH_RES_EVT: {
             ESP_LOGI(GATTC_TAG, "SEARCH RES: conn_id = %x is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
@@ -260,7 +263,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 if (status != ESP_GATT_OK) {
                     ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
                 }
-
+                xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
                 if (count > 0) {
                     char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t) * count);
                     if (!char_elem_result){
@@ -276,11 +279,12 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                         if (status != ESP_GATT_OK) {
                             ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_char_by_uuid error");
                         }
-
+                        xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
                         /*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
                         if (count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)) {
                             gl_profile_tab[PROFILE_A_APP_ID].char_handle = char_elem_result[0].char_handle;
                             esp_ble_gattc_register_for_notify (gattc_if, gl_profile_tab[PROFILE_A_APP_ID].remote_bda, char_elem_result[0].char_handle);
+                            xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
                         }
                     }
                     /* free char_elem_result */
@@ -307,6 +311,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 if (ret_status != ESP_GATT_OK) {
                     ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
                 }
+                xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
                 if (count > 0) {
                     descr_elem_result = malloc(sizeof(esp_gattc_descr_elem_t) * count);
                     if (!descr_elem_result) {
@@ -321,6 +326,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                         if (ret_status != ESP_GATT_OK) {
                             ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_descr_by_char_handle error");
                         }
+                        xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
                         /* Every char has only one descriptor in our 'ESP_GATTS_DEMO' demo, so we used first 'descr_elem_result' */
                         if (count > 0 && descr_elem_result[0].uuid.len == ESP_UUID_LEN_16 && descr_elem_result[0].uuid.uuid.uuid16 == ESP_GATT_UUID_CHAR_CLIENT_CONFIG) {
                             ret_status = esp_ble_gattc_write_char_descr( gattc_if,
@@ -335,7 +341,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                         if (ret_status != ESP_GATT_OK) {
                             ESP_LOGE(GATTC_TAG, "esp_ble_gattc_write_char_descr error");
                         }
-
+                        xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
                         /* free descr_elem_result */
                         free(descr_elem_result);
                     }
@@ -373,6 +379,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                                       write_char_data,
                                       ESP_GATT_WRITE_TYPE_RSP,
                                       ESP_GATT_AUTH_REQ_NONE);
+            xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
         case ESP_GATTC_SRVC_CHG_EVT: {
             esp_bd_addr_t bda;
@@ -419,6 +426,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
             break;
         }
         ESP_LOGI(GATTC_TAG, "stop scan successfully");
+        xSemaphoreGive(mp_bt_call_complete);
         break;
       case ESP_GAP_BLE_SCAN_RESULT_EVT:
         esp_log_buffer_hex(GATTC_TAG, param->scan_rst.bda, 6);
@@ -440,6 +448,9 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
 
         ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
         if (adv_name != NULL && connect) {
+            char* device = "E5:FB:01:09:F7:B4";
+            char* device = "00:00:00:00:00:00";
+            ESP_LOGI(GATTC_TAG, "Addresses are the same: %d", strncmp(device, (char* )param->scan_rst.bda), strncmp(device2, (char* )param->scan_rst.bda));
             if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
                 ESP_LOGI(GATTC_TAG, "connect to the remote device.");
@@ -510,6 +521,7 @@ STATIC void mp_bt_gattc_callback(esp_gattc_cb_event_t event, esp_gatt_if_t gattc
           }
       }
   } while (0);
+  xSemaphoreGive(mp_bt_call_complete);
 }
 
 #endif //MICROPY_PY_BLUETOOTH
