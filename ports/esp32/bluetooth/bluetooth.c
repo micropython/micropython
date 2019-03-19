@@ -28,9 +28,13 @@
 #define PROFILE_A_APP_ID 0
 #define INVALID_HANDLE   0
 
-static bool connect    = false;
 char remote_device_name[] = "RK-G201S";
+STATIC bool connect    = false;
+STATIC bool get_server = false;
+STATIC esp_gattc_char_elem_t *char_elem_result   = NULL;
+STATIC esp_gattc_descr_elem_t *descr_elem_result = NULL;
 
+/* Declare static functions */
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
@@ -404,7 +408,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         xSemaphoreGive(mp_bt_call_complete);
         break;
       case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
-        if (param->scan_stop_cmpl.status != ESP_BT_STATUS_SUCCESS){
+        if (param->scan_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
             ESP_LOGE(GATTC_TAG, "scan stop failed, error status = %x", param->scan_stop_cmpl.status);
             break;
         }
