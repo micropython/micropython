@@ -188,7 +188,7 @@ int mp_bt_scan(void) {
   return 0;
 }
 
-int mp_bt_connect(esp_bd_addr_t device) {
+void mp_bt_connect(esp_bd_addr_t device) {
   esp_err_t err;
 
   ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
@@ -198,13 +198,13 @@ int mp_bt_connect(esp_bd_addr_t device) {
   // if (err != ESP_OK) {}
   // xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 
-  err = esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
-  if (err != ESP_OK) {
-		return mp_bt_esp_errno(err);
-	}
-  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-
-  return 0;
+  esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
+  // if (err != ESP_OK) {
+	// 	return mp_bt_esp_errno(err);
+	// }
+  // xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  //
+  // return 0;
 }
 
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
