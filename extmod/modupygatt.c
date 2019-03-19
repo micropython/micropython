@@ -93,7 +93,12 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
 
   //char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
   esp_bd_addr_t device = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
-  mp_bt_connect(device);
+
+  int errno_ = mp_bt_connect(device);
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
+
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
