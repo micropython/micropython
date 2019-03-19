@@ -188,10 +188,13 @@ int mp_bt_scan(void) {
   return 0;
 }
 
-void mp_bt_connect(char* device) {
+void mp_bt_connect(esp_bd_addr_t device) {
   connect = true;
   ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
-  mp_bt_scan();
+  ESP_LOGI(GATTC_TAG, "connect to the remote device.");
+  esp_ble_gap_stop_scanning();
+  ESP_LOGI(GATTC_TAG, "gattc_if: %u, bda: %s, ble_addr_type: %d\r\n", gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type);
+  esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
 }
 
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
@@ -445,23 +448,6 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
           }
         #endif
         ESP_LOGI(GATTC_TAG, "\n");
-
-        ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
-        if (adv_name != NULL && connect) {
-            char* device = "e5:fb:01:09:f7:b4";
-            esp_bd_addr_t device3 = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
-            uint8_t device2[] = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
-            ESP_LOGI(GATTC_TAG, "[ ATTEMPT 1 ]: Addresses are the same: %d", strcmp(device, (char* )param->scan_rst.bda));
-            //ESP_LOGI(GATTC_TAG, "[ ATTEMPT 2 ]: Addresses are the same: %d", strcmp(device2, param->scan_rst.bda));
-            ESP_LOGI(GATTC_TAG, "[ ATTEMPT 3 ]: Addresses are the same: %d", (device3 == param->scan_rst.bda));
-            if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
-                ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
-                ESP_LOGI(GATTC_TAG, "connect to the remote device.");
-                esp_ble_gap_stop_scanning();
-                ESP_LOGI(GATTC_TAG, "gattc_if: %u, bda: %s, ble_addr_type: %d\r\n", gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type);
-                esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type, true);
-            }
-        }
 
         xSemaphoreGive(mp_bt_call_complete);
         break;
