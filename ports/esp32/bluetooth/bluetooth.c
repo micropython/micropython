@@ -193,7 +193,6 @@ void mp_bt_connect(esp_bd_addr_t device) {
   ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
   ESP_LOGI(GATTC_TAG, "connect to the remote device.");
   esp_ble_gap_stop_scanning();
-  ESP_LOGI(GATTC_TAG, "gattc_if: %u, bda: %s, ble_addr_type: %d\r\n", gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type);
   esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
 }
 
