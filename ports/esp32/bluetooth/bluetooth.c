@@ -79,7 +79,7 @@ static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
 
 // Convert an esp_err_t into an errno number.
 STATIC int mp_bt_esp_errno(esp_err_t err) {
-    if (err != 0) {
+    if (err != ESP_OK) {
         return MP_EPERM;
     }
     return 0;
@@ -118,35 +118,35 @@ void mp_bt_init(void) {
 int mp_bt_enable(void) {
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     esp_err_t err = esp_bt_controller_init(&bt_cfg);
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     err = esp_bt_controller_enable(ESP_BT_MODE_BLE);
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     err = esp_bluedroid_init();
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     err = esp_bluedroid_enable();
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     err = esp_ble_gap_register_callback(mp_bt_gap_callback);
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     err = esp_ble_gattc_register_callback(mp_bt_gattc_callback);
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     err = esp_ble_gatt_set_local_mtu(500);
-    if (err != 0) {
+    if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
     return 0;
@@ -175,11 +175,11 @@ int mp_bt_scan(void) {
 	};
 
   err = esp_ble_gap_set_scan_params(&ble_scan_params);
-	if (err != 0) {
+	if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
 	}
   err = esp_ble_gap_start_scanning(10);
-	if (err != 0) {
+	if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
 	}
   xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
@@ -189,11 +189,20 @@ int mp_bt_scan(void) {
 }
 
 void mp_bt_connect(esp_bd_addr_t device) {
-  connect = true;
+  esp_err_t err;
+
   ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
   ESP_LOGI(GATTC_TAG, "connect to the remote device.");
-  esp_ble_gap_stop_scanning();
-  esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
+
+  err = esp_ble_gap_stop_scanning();
+  if (err != ESP_OK) {}
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+
+  err = esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
+  if (err != ESP_OK) {
+		return mp_bt_esp_errno(err);
+	}
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 }
 
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
