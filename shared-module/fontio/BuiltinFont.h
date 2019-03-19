@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BUILTINFONT_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BUILTINFONT_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_FONTIO_BUILTINFONT_H
+#define MICROPY_INCLUDED_SHARED_MODULE_FONTIO_BUILTINFONT_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -40,8 +40,8 @@ typedef struct {
     uint8_t height;
     const byte* unicode_characters;
     uint16_t unicode_characters_len;
-} displayio_builtinfont_t;
+} fontio_builtinfont_t;
 
-uint8_t displayio_builtinfont_get_glyph_index(const displayio_builtinfont_t *self, mp_uint_t codepoint);
+uint8_t fontio_builtinfont_get_glyph_index(const fontio_builtinfont_t *self, mp_uint_t codepoint);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BUILTINFONT_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_FONTIO_BUILTINFONT_H

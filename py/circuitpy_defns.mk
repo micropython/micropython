@@ -124,7 +124,7 @@ ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
-SRC_PATTERNS += displayio/% terminalio/%
+SRC_PATTERNS += displayio/% terminalio/% fontio/%
 endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
@@ -268,7 +268,7 @@ $(filter $(SRC_PATTERNS), \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
-	displayio/Glyph.c \
+	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
 	supervisor/__init__.c \
@@ -304,7 +304,6 @@ $(filter $(SRC_PATTERNS), \
 	bitbangio/__init__.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
-	displayio/BuiltinFont.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
 	displayio/FourWire.c \
@@ -314,6 +313,8 @@ $(filter $(SRC_PATTERNS), \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/__init__.c \
+	fontio/BuiltinFont.c \
+	fontio/__init__.c \
 	gamepad/GamePad.c \
 	gamepad/__init__.c \
 	os/__init__.c \

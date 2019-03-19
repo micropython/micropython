@@ -26,11 +26,10 @@
 
 #include "shared-module/terminalio/Terminal.h"
 
-#include "shared-module/displayio/__init__.h"
-#include "shared-module/displayio/BuiltinFont.h"
+#include "shared-module/fontio/BuiltinFont.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t* tilegrid, const displayio_builtinfont_t* font) {
+void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t* tilegrid, const fontio_builtinfont_t* font) {
     self->cursor_x = 0;
     self->cursor_y = 0;
     self->font = font;
@@ -47,7 +46,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
         // Always handle ASCII.
         if (c < 128) {
             if (c >= 0x20 && c <= 0x7e) {
-                uint8_t tile_index = displayio_builtinfont_get_glyph_index(self->font, c);
+                uint8_t tile_index = fontio_builtinfont_get_glyph_index(self->font, c);
                 common_hal_displayio_tilegrid_set_tile(self->tilegrid, self->cursor_x, self->cursor_y, tile_index);
                 self->cursor_x++;
             } else if (c == '\r') {
@@ -92,7 +91,7 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
                 }
             }
         } else {
-            uint8_t tile_index = displayio_builtinfont_get_glyph_index(self->font, c);
+            uint8_t tile_index = fontio_builtinfont_get_glyph_index(self->font, c);
             if (tile_index != 0xff) {
                 common_hal_displayio_tilegrid_set_tile(self->tilegrid, self->cursor_x, self->cursor_y, tile_index);
                 self->cursor_x++;

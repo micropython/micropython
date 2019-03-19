@@ -34,7 +34,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "shared-bindings/displayio/BuiltinFont.h"
+#include "shared-bindings/fontio/BuiltinFont.h"
 #include "supervisor/shared/translate.h"
 
 
@@ -64,8 +64,8 @@ STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n
     }
 
     mp_obj_t font = args[ARG_font].u_obj;
-    if (!MP_OBJ_IS_TYPE(font, &displayio_builtinfont_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), displayio_builtinfont_type.name);
+    if (!MP_OBJ_IS_TYPE(font, &fontio_builtinfont_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), fontio_builtinfont_type.name);
     }
     terminalio_terminal_obj_t *self = m_new_obj(terminalio_terminal_obj_t);
     self->base.type = &terminalio_terminal_type;

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_FONTIO_GLYPH_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_FONTIO_GLYPH_H
 
-#include "shared-module/terminalio/Terminal.h"
+#include "py/objnamedtuple.h"
 
-#include "shared-bindings/displayio/TileGrid.h"
+extern const mp_obj_namedtuple_type_t fontio_glyph_type;
 
-extern const mp_obj_type_t terminalio_terminal_type;
-
-extern void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self,
-    displayio_tilegrid_t* tilegrid, const fontio_builtinfont_t* font);
-
-// Write characters. len is in characters NOT bytes!
-extern size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self,
-                              const uint8_t *data, size_t len, int *errcode);
-
-extern bool common_hal_terminalio_terminal_ready_to_tx(terminalio_terminal_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TERMINALIO_TERMINAL_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_FONTIO_GLYPH_H
