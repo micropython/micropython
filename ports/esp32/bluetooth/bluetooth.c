@@ -18,6 +18,10 @@
 static bool connect    = false;
 char remote_device_name[] = "RK-G201S";
 
+STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
+STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
+
 // Semaphore to serialze asynchronous calls.
 STATIC SemaphoreHandle_t mp_bt_call_complete;
 STATIC esp_bt_status_t mp_bt_call_status;
@@ -63,8 +67,20 @@ STATIC int mp_bt_status_errno(void) {
     return 0;
 }
 
-STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+STATIC esp_bt_uuid_t remote_filter_service_uuid = {
+    .len = ESP_UUID_LEN_16,
+    .uuid = {.uuid16 = REMOTE_SERVICE_UUID,},
+};
+
+STATIC esp_bt_uuid_t remote_filter_char_uuid = {
+    .len = ESP_UUID_LEN_16,
+    .uuid = {.uuid16 = REMOTE_NOTIFY_CHAR_UUID,},
+};
+
+STATIC esp_bt_uuid_t notify_descr_uuid = {
+    .len = ESP_UUID_LEN_16,
+    .uuid = {.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG,},
+};
 
 // Initialize at early boot.
 void mp_bt_init(void) {
@@ -445,22 +461,31 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
   esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
 
-  switch (event) {
-    case ESP_GATTC_CONNECT_EVT:
-        ESP_LOGI(GATTC_TAG, "ESP_GATTC_CONNECT_EVT conn_id %d, if %d", p_data->connect.conn_id, gattc_if);
-        gl_profile_tab[PROFILE_A_APP_ID].conn_id = p_data->connect.conn_id;
-        memcpy(gl_profile_tab[PROFILE_A_APP_ID].remote_bda, p_data->connect.remote_bda, sizeof(esp_bd_addr_t));
-        ESP_LOGI(GATTC_TAG, "REMOTE BDA:");
-        esp_log_buffer_hex(GATTC_TAG, gl_profile_tab[PROFILE_A_APP_ID].remote_bda, sizeof(esp_bd_addr_t));
-        break;
-    case ESP_GATTC_OPEN_EVT:
-        if (param->open.status != ESP_GATT_OK){
-            ESP_LOGE(GATTC_TAG, "open failed, status %d", p_data->open.status);
-            break;
-        }
-        ESP_LOGI(GATTC_TAG, "open success");
-        break;
+  /* If event is register event, store the gattc_if for each profile */
+  if (event == ESP_GATTC_REG_EVT) {
+      if (param->reg.status == ESP_GATT_OK) {
+          gl_profile_tab[param->reg.app_id].gattc_if = gattc_if;
+      } else {
+          ESP_LOGI(GATTC_TAG, "reg app failed, app_id %04x, status %d",
+                  param->reg.app_id,
+                  param->reg.status);
+          return;
+      }
   }
+
+  /* If the gattc_if equal to profile A, call profile A cb handler,
+   * so here call each profile's callback */
+  do {
+      int idx;
+      for (idx = 0; idx < PROFILE_NUM; idx++) {
+          if (gattc_if == ESP_GATT_IF_NONE || /* ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function */
+                  gattc_if == gl_profile_tab[idx].gattc_if) {
+              if (gl_profile_tab[idx].gattc_cb) {
+                  gl_profile_tab[idx].gattc_cb(event, gattc_if, param);
+              }
+          }
+      }
+  } while (0);
 }
 
 #endif //MICROPY_PY_BLUETOOTH
