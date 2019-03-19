@@ -374,13 +374,13 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                                       ESP_GATT_WRITE_TYPE_RSP,
                                       ESP_GATT_AUTH_REQ_NONE);
             break;
-        case ESP_GATTC_SRVC_CHG_EVT:
+        case ESP_GATTC_SRVC_CHG_EVT: {
             esp_bd_addr_t bda;
             memcpy(bda, p_data->srvc_chg.remote_bda, sizeof(esp_bd_addr_t));
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_SRVC_CHG_EVT, bd_addr:");
             esp_log_buffer_hex(GATTC_TAG, bda, sizeof(esp_bd_addr_t));
             break;
-
+          }
         case ESP_GATTC_WRITE_CHAR_EVT:
             if (p_data->write.status != ESP_GATT_OK) {
                 ESP_LOGE(GATTC_TAG, "write char failed, error status = %x", p_data->write.status);
