@@ -189,6 +189,7 @@ int mp_bt_scan(void) {
 
 void mp_bt_connect(char* device) {
   connect = true;
+  ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
   mp_bt_scan();
 }
 
@@ -196,13 +197,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
     esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
 
     switch (event) {
-        case ESP_GATTC_REG_EVT:
-            ESP_LOGI(GATTC_TAG, "REG_EVT");
-            esp_err_t scan_ret = esp_ble_gap_set_scan_params(&ble_scan_params);
-            if (scan_ret) {
-                ESP_LOGE(GATTC_TAG, "set scan params error, error code = %x", scan_ret);
-            }
-            break;
         case ESP_GATTC_CONNECT_EVT: {
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_CONNECT_EVT conn_id %d, if %d", p_data->connect.conn_id, gattc_if);
             gl_profile_tab[PROFILE_A_APP_ID].conn_id = p_data->connect.conn_id;
