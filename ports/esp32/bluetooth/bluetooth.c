@@ -450,7 +450,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         if (adv_name != NULL && connect) {
             char* device = "E5:FB:01:09:F7:B4";
             char* device = "00:00:00:00:00:00";
-            ESP_LOGI(GATTC_TAG, "Addresses are the same: %d", strncmp(device, (char* )param->scan_rst.bda), strncmp(device2, (char* )param->scan_rst.bda));
+            ESP_LOGI(GATTC_TAG, "Addresses are the same: %d <-> %d", strncmp(device, (char* )param->scan_rst.bda), strncmp(device2, (char* )param->scan_rst.bda));
             if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
                 ESP_LOGI(GATTC_TAG, "connect to the remote device.");
