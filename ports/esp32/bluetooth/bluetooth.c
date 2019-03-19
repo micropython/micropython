@@ -223,19 +223,19 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 ESP_LOGE(GATTC_TAG,"config mtu failed, error status = %x", param->cfg_mtu.status);
             }
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
-            esp_ble_gattc_search_service(gattc_if, param->cfg_mtu.conn_id, &remote_filter_service_uuid);
+            esp_ble_gattc_search_service(gattc_if, param->cfg_mtu.conn_id, NULL); //&remote_filter_service_uuid);
             xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
         case ESP_GATTC_SEARCH_RES_EVT: {
             ESP_LOGI(GATTC_TAG, "SEARCH RES: conn_id = %x is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
             ESP_LOGI(GATTC_TAG, "start handle %d end handle %d current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
-            if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_16 && p_data->search_res.srvc_id.uuid.uuid.uuid16 == REMOTE_SERVICE_UUID) {
+            //if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_16 && p_data->search_res.srvc_id.uuid.uuid.uuid16 == REMOTE_SERVICE_UUID) {
                 ESP_LOGI(GATTC_TAG, "service found");
                 get_server = true;
                 gl_profile_tab[PROFILE_A_APP_ID].service_start_handle = p_data->search_res.start_handle;
                 gl_profile_tab[PROFILE_A_APP_ID].service_end_handle = p_data->search_res.end_handle;
                 ESP_LOGI(GATTC_TAG, "UUID16: %x", p_data->search_res.srvc_id.uuid.uuid.uuid16);
-            }
+            //}
             break;
         }
         case ESP_GATTC_SEARCH_CMPL_EVT:
@@ -449,7 +449,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
         if (adv_name != NULL && connect) {
             char* device = "e5:fb:01:09:f7:b4";
-            char* device2 = "00:00:00:00:00:00";
+            char device2[] = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
             ESP_LOGI(GATTC_TAG, "Addresses are the same: %d <-> %d", strcmp(device, (char* )param->scan_rst.bda), strcmp(device2, (char* )param->scan_rst.bda));
             if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
                 ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
