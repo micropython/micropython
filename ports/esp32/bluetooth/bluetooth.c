@@ -13,7 +13,11 @@
 #include "extmod/modupygatt.h"
 
 #define GATTC_TAG "uPygatt"
+#define REMOTE_SERVICE_UUID        0x00FF
+#define REMOTE_NOTIFY_CHAR_UUID    0xFF01
+#define PROFILE_NUM      1
 #define PROFILE_A_APP_ID 0
+#define INVALID_HANDLE   0
 
 static bool connect    = false;
 char remote_device_name[] = "RK-G201S";
