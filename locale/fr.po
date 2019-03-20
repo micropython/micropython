@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 14:08+0100\n"
+"POT-Creation-Date: 2019-03-25 19:40+0100\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -764,13 +764,9 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
-#: shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
 msgstr "La fonction nécessite un verrou"
-
-#: shared-bindings/busio/I2C.c
-msgid "Function requires lock."
-msgstr "La fonction nécessite un verrou."
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c
 msgid "GPIO16 does not support pull up."
@@ -2902,6 +2898,10 @@ msgstr "type non supporté pour l'opérateur"
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "type non supporté pour %q: '%s', '%s'"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "value_count must be > 0"
+msgstr ""
+
 #: ports/esp8266/modnetwork.c
 msgid "wifi_set_ip_info() failed"
 msgstr "wifi_set_ip_info() a échoué"
@@ -2944,6 +2944,9 @@ msgstr "'step' nul"
 #, fuzzy
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Impossible de lire la valeur de l'attribut. status: 0x%08lX"
+
+#~ msgid "Function requires lock."
+#~ msgstr "La fonction nécessite un verrou."
 
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Seul les BMP non-compressé au format Windows sont supportés %d"

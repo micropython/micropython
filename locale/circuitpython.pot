@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 14:08+0100\n"
+"POT-Creation-Date: 2019-03-25 19:40+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -737,12 +737,8 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
-#: shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "Function requires lock."
 msgstr ""
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c
@@ -2787,6 +2783,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "value_count must be > 0"
 msgstr ""
 
 #: ports/esp8266/modnetwork.c
