@@ -108,18 +108,18 @@ wt51822_s4at         | s110                    | Peripheral             | Manual
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
-ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-targets)
-idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-targets)
-blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-targets)
+ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
+idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
+blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
 
 ## IDAP-M/IDAP-Link Targets
 
 Install the necessary tools to flash and debug using IDAP-M/IDAP-Link CMSIS-DAP Debug JTAG:
 
-[IDAPnRFProg Linux](https://sourceforge.net/projects/idaplinkfirmware/files/Linux/IDAPnRFProg_1_7_190320.zip/download)
-[IDAPnRFProg OSX](https://sourceforge.net/projects/idaplinkfirmware/files/OSX/IDAPnRFProg_1_7_190320.zip/download)
-[IDAPnRFProg Windows](https://sourceforge.net/projects/idaplinkfirmware/files/Windows/IDAPnRFProg_1_7_190320.zip/download)
+[IDAPnRFProg for Linux](https://sourceforge.net/projects/idaplinkfirmware/files/Linux/IDAPnRFProg_1_7_190320.zip/download)  
+[IDAPnRFProg for OSX](https://sourceforge.net/projects/idaplinkfirmware/files/OSX/IDAPnRFProg_1_7_190320.zip/download)  
+[IDAPnRFProg for Windows](https://sourceforge.net/projects/idaplinkfirmware/files/Windows/IDAPnRFProg_1_7_190320.zip/download)  
 
 
 ## Segger Targets
