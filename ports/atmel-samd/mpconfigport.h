@@ -35,8 +35,6 @@
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define SPI_FLASH_MAX_BAUDRATE 8000000
 #define CIRCUITPY_DEFAULT_STACK_SIZE                4096
-
-#define MICROPY_CPYTHON_COMPAT                      (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
@@ -64,7 +62,6 @@
 #define SPI_FLASH_MAX_BAUDRATE 24000000
 // 24kiB stack
 #define CIRCUITPY_DEFAULT_STACK_SIZE                0x6000
-#define MICROPY_CPYTHON_COMPAT                      (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
