@@ -36,7 +36,7 @@ typedef struct {
     mp_obj_base_t base;
     uint32_t* opaque;
     uint32_t* colors;
-    uint8_t color_count;
+    uint32_t color_count;
     bool needs_refresh;
 } displayio_palette_t;
 
