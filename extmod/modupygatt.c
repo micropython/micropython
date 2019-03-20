@@ -120,11 +120,11 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  uint16_t handle = 0x000e;
-  uint8_t value[] = {0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43};
-  bool wait_for_response = mp_const_true;
+  //uint16_t handle = 0x000e;
+  //uint8_t value[] = {0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43};
+  //bool wait_for_response = mp_const_true;
 
-  int errno_ = mp_bt_char_write_handle(handle, value, wait_for_response);
+  int errno_ = mp_bt_char_write_handle(/*handle, value, wait_for_response*/);
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
   }
