@@ -18,7 +18,10 @@ bool mp_bt_is_enabled(void);
 int mp_bt_scan(void);
 
 // Try to connect to address. Returns errno on failure.
-void mp_bt_connect(esp_bd_addr_t device);
+int mp_bt_connect(esp_bd_addr_t device);
+
+// Write to characteristic. Returns errno on failure.
+int mp_bt_char_write_handle(uint16_t handle, uint8_t value[], bool wait_for_response);
 
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)

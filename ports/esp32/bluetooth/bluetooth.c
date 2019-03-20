@@ -39,6 +39,7 @@ enum {
 
 char remote_device_name[] = "RK-G201S";
 STATIC bool connect    = false;
+STATIC bool is_scanning    = false;
 STATIC bool get_server = false;
 STATIC esp_gattc_char_elem_t *char_elem_result   = NULL;
 STATIC esp_gattc_descr_elem_t *descr_elem_result = NULL;
@@ -173,7 +174,7 @@ int mp_bt_scan(void) {
     .scan_window            = 0x30,
     .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
 	};
-
+  is_scanning = true;
   err = esp_ble_gap_set_scan_params(&ble_scan_params);
 	if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
@@ -188,23 +189,39 @@ int mp_bt_scan(void) {
   return 0;
 }
 
-void mp_bt_connect(esp_bd_addr_t device) {
+int mp_bt_connect(esp_bd_addr_t device) {
   esp_err_t err;
 
   ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
   ESP_LOGI(GATTC_TAG, "connect to the remote device.");
 
-  // err = esp_ble_gap_stop_scanning();
-  // if (err != ESP_OK) {}
-  // xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  if (is_scanning) {
+    err = esp_ble_gap_stop_scanning();
+    if (err != ESP_OK) {}
+    xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  }
 
-  esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
+  err = esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
   // if (err != ESP_OK) {
 	// 	return mp_bt_esp_errno(err);
 	// }
   // xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
   //
-  // return 0;
+  return 0;
+}
+
+int mp_bt_char_write_handle(uint16_t handle, uint8_t value[], bool wait_for_response) {
+  esp_err_t err;
+  esp_gatt_if_t gattc_if = 3;
+  err = esp_ble_gattc_write_char( gattc_if,
+                            gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+                            handle,
+                            sizeof(value),
+                            value,
+                            ESP_GATT_WRITE_TYPE_RSP,
+                            ESP_GATT_AUTH_REQ_NONE);
+  ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC");
+  return 0;
 }
 
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
@@ -380,7 +397,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 break;
             }
             ESP_LOGI(GATTC_TAG, "write descr success ");
-            uint8_t write_char_data[35];
+            /* uint8_t write_char_data[35];
             for (int i = 0; i < sizeof(write_char_data); ++i)
             {
                 write_char_data[i] = i % 256;
@@ -391,7 +408,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                                       sizeof(write_char_data),
                                       write_char_data,
                                       ESP_GATT_WRITE_TYPE_RSP,
-                                      ESP_GATT_AUTH_REQ_NONE);
+                                      ESP_GATT_AUTH_REQ_NONE);*/
             xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
         case ESP_GATTC_SRVC_CHG_EVT: {

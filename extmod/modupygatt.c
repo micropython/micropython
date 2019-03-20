@@ -75,7 +75,10 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
   mp_int_t timeout = args[ARG_timeout].u_int;
 
   printf("scan: %d timeout=" UINT_FMT " - %d, run_as_root=%s\r\n", n_args, timeout, timeout, mp_obj_is_true(args[ARG_run_as_root].u_obj) ? "True" : "False");
-  mp_bt_scan();
+  int errno_ = mp_bt_scan();
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_scan_obj, 0, gatt_tool_backend_scan);
@@ -92,16 +95,42 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
   //char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
-  esp_bd_addr_t device = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
+  //esp_bd_addr_t device = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
+  mp_uint_t device = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
 
-  mp_bt_connect(device);
-  // if (errno_ != 0) {
-  //     mp_raise_OSError(errno_);
-  // }
+  int errno_ = mp_bt_connect(device);
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
 
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
+
+STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
+
+  const mp_arg_t allowed_args[] = {
+      { MP_QSTR_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+      { MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+      { MP_QSTR_wait_for_response, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_false } },
+      { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 1 } },
+  };
+
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  mp_uint_t handle = {0x00, 0x0e};
+  mp_uint_t value = {0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43};
+
+  int errno_ = mp_bt_char_write_handle(handle, value, wait_for_response);
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
+
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_write_handle_obj, 2, gatt_tool_backend_char_write_handle);
 
 STATIC mp_obj_t gatt_tool_backend(void) {
   printf("GATTToolBackend init\r\n");
@@ -127,7 +156,7 @@ STATIC const mp_rom_map_elem_t gatt_tool_backend_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_discover_characteristics),              MP_ROM_PTR(&gatt_tool_backend_discover_characteristics_obj) },
     // { MP_ROM_QSTR(MP_QSTR__handle_notification_string),           MP_ROM_PTR(&gatt_tool_backend__handle_notification_string_obj) },
     // //@at_most_one_device
-    // { MP_ROM_QSTR(MP_QSTR_char_write_handle),                     MP_ROM_PTR(&gatt_tool_backend_char_write_handle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_char_write_handle),                     MP_ROM_PTR(&gatt_tool_backend_char_write_handle_obj) },
     // //@at_most_one_device
     // { MP_ROM_QSTR(MP_QSTR_char_read),                             MP_ROM_PTR(&gatt_tool_backend_char_read_obj) },
     // //@at_most_one_device
