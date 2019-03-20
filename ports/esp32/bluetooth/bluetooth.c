@@ -210,10 +210,10 @@ int mp_bt_connect(esp_bd_addr_t device) {
   return 0;
 }
 
-int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, bool wait_for_response) {
+int mp_bt_char_write_handle(uint16_t handle, /*uint8_t* value,*/ bool wait_for_response) {
   esp_err_t err;
   esp_gatt_if_t gattc_if = 3;
-  //uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
+  uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
   err = esp_ble_gattc_write_char( gattc_if,
                             gl_profile_tab[PROFILE_A_APP_ID].conn_id,
                             handle,
