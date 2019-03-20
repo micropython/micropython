@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
+#include <stdbool.h>
 
 #include "py/obj.h"
 #include "py/objstr.h"
@@ -121,9 +122,9 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
 
   //uint16_t handle = 0x000e;
   //uint8_t value[] = {0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43};
-  //bool wait_for_response = mp_const_true;
+  bool wait_for_response = args[ARG_wait_for_response].u_obj;
 
-  int errno_ = mp_bt_char_write_handle(/*handle, value, wait_for_response*/);
+  int errno_ = mp_bt_char_write_handle(/*handle, value, */wait_for_response);
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
   }
