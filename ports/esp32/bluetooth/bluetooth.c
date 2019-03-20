@@ -210,7 +210,7 @@ int mp_bt_connect(esp_bd_addr_t device) {
   return 0;
 }
 
-int mp_bt_char_write_handle(uint16_t handle, /*uint8_t* value,*/ bool wait_for_response) {
+int mp_bt_char_write_handle(uint16_t handle, /*uint8_t* value, */bool wait_for_response) {
   esp_err_t err;
   esp_gatt_if_t gattc_if = 3;
   uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
@@ -300,7 +300,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                     if (!char_elem_result){
                         ESP_LOGE(GATTC_TAG, "gattc no mem");
                     } else {
-                        status = esp_ble_gattc_get_char_by_uuid( gattc_if,
+                        /* status = esp_ble_gattc_get_char_by_uuid( gattc_if,
                                                                  p_data->search_cmpl.conn_id,
                                                                  gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,
                                                                  gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
@@ -309,7 +309,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                                                                  &count);
                         if (status != ESP_GATT_OK) {
                             ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_char_by_uuid error");
-                        }
+                        } */
                         xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
                         /*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
                         if (count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)) {
