@@ -66,8 +66,8 @@ STATIC uint16_t bluetooth_adv_interval;
 #include "nrf_nvic.h"
 nrf_nvic_state_t nrf_nvic_state = {0};
 static uint8_t bluetooth_adv_handle;
-static uint8_t bluetooth_adv_data[31];
-static uint8_t bluetooth_sr_data[31];
+static uint8_t bluetooth_adv_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
+static uint8_t bluetooth_sr_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
 #endif
 
 #if NRF51
@@ -113,6 +113,7 @@ STATIC int mp_bt_errno(uint32_t err_code) {
     case 0:
         return 0; // no error
     case NRF_ERROR_INVALID_PARAM:
+    case NRF_ERROR_INVALID_LENGTH:
         return MP_EINVAL;
     case NRF_ERROR_NO_MEM:
         return MP_ENOMEM;
@@ -221,6 +222,9 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_
     return mp_bt_errno(err_code);
 
 #elif NRF52
+    if (adv_data_len > sizeof(bluetooth_adv_data) || sr_data_len > sizeof(bluetooth_sr_data)) {
+        return MP_EINVAL;
+    }
     if (adv_data_len) {
         memcpy(bluetooth_adv_data, adv_data, adv_data_len);
     }
