@@ -57,11 +57,9 @@
 //|     :maxdepth: 3
 //|
 //|     Bitmap
-//|     BuiltinFont
 //|     ColorConverter
 //|     Display
 //|     FourWire
-//|     Glyph
 //|     Group
 //|     OnDiskBitmap
 //|     Palette

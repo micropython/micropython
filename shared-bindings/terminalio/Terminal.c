@@ -46,7 +46,7 @@
 //| .. class:: Terminal(tilegrid, font)
 //|
 //|   Terminal manages tile indices and cursor position based on VT100 commands. The font should be
-//|   a `displayio.BuiltinFont` and the TileGrid's bitmap should match the font's bitmap.
+//|   a `fontio.BuiltinFont` and the TileGrid's bitmap should match the font's bitmap.
 //|
 
 STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
