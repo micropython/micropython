@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/usb.h"
 #include "supervisor/shared/stack.h"
 
@@ -33,6 +34,7 @@
 #endif
 
 void run_background_tasks(void) {
+    filesystem_background();
     usb_background();
 
     #ifdef CIRCUITPY_DISPLAYIO

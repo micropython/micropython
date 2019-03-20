@@ -27,6 +27,7 @@
 
 #include "audio_dma.h"
 #include "tick.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/usb.h"
 
 #include "py/runtime.h"
@@ -53,6 +54,7 @@ void run_background_tasks(void) {
     #if CIRCUITPY_NETWORK
     network_module_background();
     #endif
+    filesystem_background();
     usb_background();
     assert_heap_ok();
 
