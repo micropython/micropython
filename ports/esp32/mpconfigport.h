@@ -216,7 +216,7 @@ extern const struct _mp_obj_module_t mp_module_rtch;
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvesp32), (mp_obj_t)&mp_module_lvesp32 }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341), (mp_obj_t)&mp_module_ILI9341 }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341), (mp_obj_t)&mp_module_xpt2046 }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_xpt2046), (mp_obj_t)&mp_module_xpt2046 }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_rtch), (mp_obj_t)&mp_module_rtch }, \
 
 #define MP_STATE_PORT MP_STATE_VM
