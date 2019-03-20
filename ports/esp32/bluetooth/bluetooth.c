@@ -57,18 +57,30 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
 
 // Convert an esp_err_t into an errno number.
 STATIC int mp_bt_esp_errno(esp_err_t err) {
-    if (err != 0) {
-        return MP_EPERM;
+    switch (err) {
+    case 0:
+        return 0;
+    case ESP_ERR_NO_MEM:
+        return MP_ENOMEM;
+    case ESP_ERR_INVALID_ARG:
+        return MP_EINVAL;
+    default:
+        return MP_EPERM; // fallback
     }
-    return 0;
 }
 
 // Convert the result of an asynchronous call to an errno value.
 STATIC int mp_bt_status_errno(void) {
-    if (mp_bt_call_status != ESP_BT_STATUS_SUCCESS) {
-        return MP_EPERM;
+    switch (mp_bt_call_status) {
+    case ESP_BT_STATUS_SUCCESS:
+        return 0;
+    case ESP_BT_STATUS_NOMEM:
+        return MP_ENOMEM;
+    case ESP_BT_STATUS_PARM_INVALID:
+        return MP_EINVAL;
+    default:
+        return MP_EPERM; // fallback
     }
-    return 0;
 }
 
 // Initialize at early boot.
@@ -135,7 +147,11 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_
         if (err != 0) {
             return mp_bt_esp_errno(err);
         }
+        // Wait for ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT
         xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+        if (mp_bt_call_status != 0) {
+            return mp_bt_status_errno();
+        }
     }
 
     if (sr_data != NULL) {
@@ -143,7 +159,11 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_
         if (err != 0) {
             return mp_bt_esp_errno(err);
         }
+        // Wait for ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT
         xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+        if (mp_bt_call_status != 0) {
+            return mp_bt_status_errno();
+        }
     }
 
     bluetooth_adv_type = type;
@@ -152,6 +172,7 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
+    // Wait for ESP_GAP_BLE_ADV_START_COMPLETE_EVT
     xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
     return mp_bt_status_errno();
 }
@@ -161,6 +182,7 @@ void mp_bt_advertise_stop(void) {
     if (err != 0) {
         return;
     }
+    // Wait for ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT
     xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 }
 
@@ -314,9 +336,11 @@ mp_obj_t mp_bt_format_uuid(mp_bt_uuid_t *uuid) {
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     switch (event) {
         case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
+            mp_bt_call_status = param->adv_data_raw_cmpl.status;
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
+            mp_bt_call_status = param->scan_rsp_data_raw_cmpl.status;
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
