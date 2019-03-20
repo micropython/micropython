@@ -272,12 +272,15 @@ extern const struct _mp_obj_module_t digitalio_module;
 
 #if CIRCUITPY_DISPLAYIO
 extern const struct _mp_obj_module_t displayio_module;
+extern const struct _mp_obj_module_t fontio_module;
 extern const struct _mp_obj_module_t terminalio_module;
 #define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
+#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
 #define TERMINALIO_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
 #define CIRCUITPY_DISPLAY_LIMIT (3)
 #else
 #define DISPLAYIO_MODULE
+#define FONTIO_MODULE
 #define TERMINALIO_MODULE
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
@@ -524,8 +527,9 @@ extern const struct _mp_obj_module_t pew_module;
     BOARD_MODULE \
     BUSIO_MODULE \
     DIGITALIO_MODULE \
-      TERMINALIO_MODULE \
     DISPLAYIO_MODULE \
+      FONTIO_MODULE \
+      TERMINALIO_MODULE \
     ERRNO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \

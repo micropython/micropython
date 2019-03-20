@@ -165,8 +165,8 @@ const displayio_bitmap_t supervisor_terminal_font_bitmap = {{
 
 
 c_file.write("""\
-const displayio_builtinfont_t supervisor_terminal_font = {{
-    .base = {{.type = &displayio_builtinfont_type }},
+const fontio_builtinfont_t supervisor_terminal_font = {{
+    .base = {{.type = &fontio_builtinfont_type }},
     .bitmap = &supervisor_terminal_font_bitmap,
     .width = {},
     .height = {},

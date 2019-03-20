@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/displayio/Glyph.h"
+#include "shared-bindings/fontio/Glyph.h"
 
 #include <stdint.h>
 
-//| .. currentmodule:: displayio
+//| .. currentmodule:: fontio
 //|
 //| :class:`Glyph` -- Storage of glyph info
 //| ==========================================================================
@@ -37,7 +37,7 @@
 //|
 //|   Named tuple used to capture a single glyph and its attributes.
 //|
-//|   :param displayio.Bitmap bitmap: the bitmap including the glyph
+//|   :param fontio.Bitmap bitmap: the bitmap including the glyph
 //|   :param int tile_index: the tile index within the bitmap
 //|   :param int width: the width of the glyph's bitmap
 //|   :param int height: the height of the glyph's bitmap
@@ -46,7 +46,7 @@
 //|   :param int shift_x: the x difference to the next glyph
 //|   :param int shift_y: the y difference to the next glyph
 //|
-const mp_obj_namedtuple_type_t displayio_glyph_type = {
+const mp_obj_namedtuple_type_t fontio_glyph_type = {
     .base = {
         .base = {
             .type = &mp_type_type

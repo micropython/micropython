@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_TERMINALIO_TERMINAL_H
-#define SHARED_MODULE_TERMINALIO_TERMINAL_H
-
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "py/obj.h"
-#include "shared-module/fontio/BuiltinFont.h"
-#include "shared-module/displayio/TileGrid.h"
+#include "py/runtime.h"
 
-typedef struct  {
-    mp_obj_base_t base;
-    const fontio_builtinfont_t* font;
-    uint16_t cursor_x;
-    uint16_t cursor_y;
-    displayio_tilegrid_t* tilegrid;
-    uint16_t first_row;
-} terminalio_terminal_obj_t;
+#include "shared-bindings/fontio/__init__.h"
+#include "shared-bindings/fontio/BuiltinFont.h"
+#include "shared-bindings/fontio/Glyph.h"
 
-#endif /* SHARED_MODULE_TERMINALIO_TERMINAL_H */
+//| :mod:`fontio` --- Core font related data structures
+//| =========================================================================
+//|
+//| .. module:: fontio
+//|   :synopsis: Core font related data structures
+//|   :platform: SAMD21, SAMD51, nRF52
+//|
+//| The `fontio` module contains classes to store font related information.
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     BuiltinFont
+//|     Glyph
+//|
+
+STATIC const mp_rom_map_elem_t fontio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_fontio) },
+    { MP_ROM_QSTR(MP_QSTR_BuiltinFont), MP_ROM_PTR(&fontio_builtinfont_type) },
+    { MP_ROM_QSTR(MP_QSTR_Glyph), MP_ROM_PTR(&fontio_glyph_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(fontio_module_globals, fontio_module_globals_table);
+
+const mp_obj_module_t fontio_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&fontio_module_globals,
+};
