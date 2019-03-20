@@ -22,8 +22,8 @@
 #include "extmod/modupygatt.h"
 
 #define GATTC_TAG "uPygatt"
-#define REMOTE_SERVICE_UUID        0x00FF
-#define REMOTE_NOTIFY_CHAR_UUID    0xFF01
+#define REMOTE_SERVICE_UUID        0xCA9E
+#define REMOTE_NOTIFY_CHAR_UUID    0x000B //0xFF01
 #define PROFILE_NUM      1
 #define PROFILE_A_APP_ID 0
 #define INVALID_HANDLE   0
@@ -37,8 +37,6 @@ enum {
 }
 */
 
-char remote_device_name[] = "RK-G201S";
-STATIC bool connect    = false;
 STATIC bool is_scanning    = false;
 STATIC bool get_server = false;
 STATIC esp_gattc_char_elem_t *char_elem_result   = NULL;
@@ -54,7 +52,7 @@ STATIC SemaphoreHandle_t mp_bt_call_complete;
 STATIC esp_bt_status_t mp_bt_call_status;
 STATIC union {
     // Ugly hack to return values from an event handler back to a caller.
-    esp_gatt_if_t gatts_if;
+    esp_gatt_if_t gattc_if;
     uint16_t      service_handle;
     uint16_t      attr_handle;
 } mp_bt_call_result;
@@ -212,15 +210,20 @@ int mp_bt_connect(esp_bd_addr_t device) {
 
 int mp_bt_char_write_handle(uint16_t handle, /*uint8_t* value, */bool wait_for_response) {
   esp_err_t err;
-  esp_gatt_if_t gattc_if = 3;
-  uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
-  err = esp_ble_gattc_write_char( gattc_if,
-                            gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                            handle,
-                            sizeof(&value),
-                            value,
-                            ESP_GATT_WRITE_TYPE_RSP,
-                            ESP_GATT_AUTH_REQ_NONE);
+  //esp_gatt_if_t gattc_if = 3;
+  //uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
+  //err = esp_ble_gattc_write_char( gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, sizeof(value), value, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
+  uint8_t a0[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
+  uint8_t a1[] = {0x55, 0x00, 0x01, 0x00, 0xaa};
+  uint8_t a2[] = {0x55, 0x01, 0x01, 0xaa};
+  uint8_t a3[] = {0x55, 0x02, 0x05, 0x00, 0x00, 0x64, 0x00, 0xaa};
+  uint8_t a4[] = {0x55, 0x03, 0x03, 0xaa};
+  //gl_profile_tab[PROFILE_A_APP_ID].char_handle = 0x000E;
+  esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(a0), a0, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
+  esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000c, sizeof(a1), a1, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
+  esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(a2), a2, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
+  esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(a3), a3, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
+  esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(a4), a4, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC");
   return 0;
 }
@@ -239,6 +242,8 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             if (mtu_ret){
                 ESP_LOGE(GATTC_TAG, "config MTU error, error code = %x", mtu_ret);
             }
+            mp_bt_call_result.gattc_if = gattc_if;
+            mp_bt_call_result.service_handle = 0xCA9E;
             xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
 
@@ -282,47 +287,47 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 ESP_LOGI(GATTC_TAG, "unknown service source");
             }
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_SEARCH_CMPL_EVT");
-            // if (get_server){
-            //     uint16_t count = 0;
-            //     esp_gatt_status_t status = esp_ble_gattc_get_attr_count( gattc_if,
-            //                                                              p_data->search_cmpl.conn_id,
-            //                                                              ESP_GATT_DB_CHARACTERISTIC,
-            //                                                              gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,
-            //                                                              gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
-            //                                                              INVALID_HANDLE,
-            //                                                              &count);
-            //     if (status != ESP_GATT_OK) {
-            //         ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
-            //     }
+            if (get_server){
+                uint16_t count = 0;
+                esp_gatt_status_t status = esp_ble_gattc_get_attr_count( gattc_if,
+                                                                         p_data->search_cmpl.conn_id,
+                                                                         ESP_GATT_DB_CHARACTERISTIC,
+                                                                         gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,
+                                                                         gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
+                                                                         INVALID_HANDLE,
+                                                                         &count);
+                if (status != ESP_GATT_OK) {
+                    ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
+                }
                  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-            //     if (count > 0) {
-            //         char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t) * count);
-            //         if (!char_elem_result){
-            //             ESP_LOGE(GATTC_TAG, "gattc no mem");
-            //         } else {
-            //            status = esp_ble_gattc_get_char_by_uuid( gattc_if,
-            //                                                      p_data->search_cmpl.conn_id,
-            //                                                      gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,
-            //                                                      gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
-            //                                                      remote_filter_char_uuid,
-            //                                                      char_elem_result,
-            //                                                      &count);
-            //             if (status != ESP_GATT_OK) {
-            //                 ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_char_by_uuid error");
-            //             }
-            //             xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-            //             /*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
-            //             if (count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)) {
-            //                 gl_profile_tab[PROFILE_A_APP_ID].char_handle = char_elem_result[0].char_handle;
-            //                 esp_ble_gattc_register_for_notify (gattc_if, gl_profile_tab[PROFILE_A_APP_ID].remote_bda, char_elem_result[0].char_handle);
-            //                 xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-            //             }
-            //         }
-            //         /* free char_elem_result */
-            //         free(char_elem_result);
-            //     } else {
-            //         ESP_LOGE(GATTC_TAG, "no char found");
-            //     }
+                if (count > 0) {
+                    char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t) * count);
+                    if (!char_elem_result){
+                        ESP_LOGE(GATTC_TAG, "gattc no mem");
+                    } else {
+                       status = esp_ble_gattc_get_char_by_uuid( gattc_if,
+                                                                 p_data->search_cmpl.conn_id,
+                                                                 gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,
+                                                                 gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
+                                                                 remote_filter_char_uuid,
+                                                                 char_elem_result,
+                                                                 &count);
+                        if (status != ESP_GATT_OK) {
+                            ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_char_by_uuid error");
+                        }
+                        xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+                        /*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
+                        if (count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)) {
+                            gl_profile_tab[PROFILE_A_APP_ID].char_handle = char_elem_result[0].char_handle;
+                            esp_ble_gattc_register_for_notify (gattc_if, gl_profile_tab[PROFILE_A_APP_ID].remote_bda, char_elem_result[0].char_handle);
+                            xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+                        }
+                    }
+                    /* free char_elem_result */
+                    free(char_elem_result);
+                } else {
+                    ESP_LOGE(GATTC_TAG, "no char found");
+                }
             }
              break;
         case ESP_GATTC_REG_FOR_NOTIFY_EVT:
@@ -398,16 +403,13 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 break;
             }
             ESP_LOGI(GATTC_TAG, "write descr success ");
-            /* uint8_t write_char_data[35];
-            for (int i = 0; i < sizeof(write_char_data); ++i)
-            {
-                write_char_data[i] = i % 256;
-            }
+
+            /*uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
             esp_ble_gattc_write_char( gattc_if,
                                       gl_profile_tab[PROFILE_A_APP_ID].conn_id,
                                       gl_profile_tab[PROFILE_A_APP_ID].char_handle,
-                                      sizeof(write_char_data),
-                                      write_char_data,
+                                      sizeof(value),
+                                      value,
                                       ESP_GATT_WRITE_TYPE_RSP,
                                       ESP_GATT_AUTH_REQ_NONE);*/
             xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
@@ -427,7 +429,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             ESP_LOGI(GATTC_TAG, "write char success ");
             break;
         case ESP_GATTC_DISCONNECT_EVT:
-            connect = false;
             get_server = false;
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_DISCONNECT_EVT, reason = %d", p_data->disconnect.reason);
             break;

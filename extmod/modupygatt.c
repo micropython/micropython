@@ -107,8 +107,8 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
 
-STATIC mp_obj_t gatt_tool_backend_char_write_handle(void/*size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args*/) {
-  /*enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
+STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
 
   const mp_arg_t allowed_args[] = {
       { MP_QSTR_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
@@ -122,7 +122,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(void/*size_t n_args, const m
 
   uint16_t handle = 0x000e;
   //uint8_t* value = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xAA};
-  bool wait_for_response = args[ARG_wait_for_response].u_obj;*/
+  bool wait_for_response = args[ARG_wait_for_response].u_obj;
 
   int errno_ = mp_bt_char_write_handle(handle, /* value, */wait_for_response);
   if (errno_ != 0) {
@@ -131,8 +131,8 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(void/*size_t n_args, const m
 
   return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_char_write_handle_obj, gatt_tool_backend_char_write_handle);
-//STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_write_handle_obj, 2, gatt_tool_backend_char_write_handle);
+//STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_char_write_handle_obj, gatt_tool_backend_char_write_handle);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_write_handle_obj, 2, gatt_tool_backend_char_write_handle);
 
 STATIC mp_obj_t gatt_tool_backend(void) {
   printf("GATTToolBackend init\r\n");
