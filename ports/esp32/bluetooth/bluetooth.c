@@ -190,7 +190,6 @@ int mp_bt_scan(void) {
 int mp_bt_connect(esp_bd_addr_t device) {
   esp_err_t err;
 
-  ESP_LOGI(GATTC_TAG, "MPY WANTS TO CONNECT TO %s\r\n", &device[0]);
   ESP_LOGI(GATTC_TAG, "connect to the remote device.");
 
   if (is_scanning) {
