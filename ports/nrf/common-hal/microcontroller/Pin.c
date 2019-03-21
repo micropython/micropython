@@ -168,5 +168,15 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     }
     #endif
 
+    #ifdef NRF52840
+    // If NFC pins are enabled for NFC, don't allow them to be used for GPIO.
+    if (((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) ==
+         (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) &&
+        (pin->number == 9 || pin->number == 10)) {
+        return false;
+    }
+    #endif
+
     return pin_number_is_free(pin->number);
+
 }
