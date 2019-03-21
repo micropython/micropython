@@ -70,7 +70,7 @@ void mp_handle_pending_tail(mp_uint_t atomic_state);
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
-static inline unsigned int mp_sched_num_pending(void) { return MP_STATE_VM(sched_sp); }
+static inline unsigned int mp_sched_num_pending(void) { return MP_STATE_VM(sched_len); }
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 #endif
 
