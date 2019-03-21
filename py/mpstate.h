@@ -209,7 +209,8 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_ENABLE_SCHEDULER
     volatile int16_t sched_state;
-    uint16_t sched_sp;
+    uint8_t sched_len;
+    uint8_t sched_idx;
     #endif
 
     #if MICROPY_PY_THREAD_GIL
