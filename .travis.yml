@@ -79,13 +79,13 @@ jobs:
           #   ARTEFACTS_URL=$(curl -w %{http_code} $1 -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
           # fi
           D_DIFF="$(($(date -u +%s)-$D_START))"
-          TIME_EXEC="Execution time: *$((D_DIFF / 60 % 60)) min $((D_DIFF % 60)) sec*"
+          TIME_EXEC="$((D_DIFF / 60 % 60)) min $((D_DIFF % 60)) sec"
       after_success:
         - |
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|commit> on branch *${TRAVIS_BRANCH}*\nExecution time: $TIME_EXEC\n\`\`\`curl --connect-timeout 5 --max-time 10 $ARTEFACTS_URL -o tmp.zip && unzip tmp.zip && rm -rf *.zip\`\`\`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|commit> on branch *${TRAVIS_BRANCH}*\nExecution time: *$TIME_EXEC*\n\`\`\`curl --connect-timeout 5 --max-time 10 $ARTEFACTS_URL -o tmp.zip && unzip tmp.zip && rm -rf *.zip\`\`\`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
       after_failure:
         - |
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *failed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|commit> on branch *${TRAVIS_BRANCH}*\nExecution time: $TIME_EXEC\",\"color\":\"danger\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Show log\",\"type\":\"button\",\"url\":\"$TRAVIS_JOB_WEB_URL\"}]}]}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *failed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|commit> on branch *${TRAVIS_BRANCH}*\nExecution time: *$TIME_EXEC*\",\"color\":\"danger\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Show log\",\"type\":\"button\",\"url\":\"$TRAVIS_JOB_WEB_URL\"}]}]}" $SLACK_WEBHOOK_URL
       before_deploy:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
