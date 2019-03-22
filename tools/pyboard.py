@@ -423,6 +423,7 @@ def main():
                 pyb.close()
                 sys.exit(1)
             except KeyboardInterrupt:
+                pyb.exit_raw_repl()
                 sys.exit(1)
             if ret_err:
                 pyb.exit_raw_repl()
