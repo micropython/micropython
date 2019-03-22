@@ -98,8 +98,8 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
   //char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
   esp_bd_addr_t device;// = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
   GET_STR_DATA_LEN(mp_obj_str_get_str(args[ARG_device].u_obj), str, str_len);
-  printf("%s\r\n", str);
-  for (uint8_t i=0; i<6; i+=3) {
+  printf("%s\r\n", mp_obj_str_get_str(args[ARG_device].u_obj));
+  for (uint8_t i=0; i<12; i+=3) {
     char c = (str[i]%32+9)%25*16+(str[i+1]%32+9)%25;
     if (c != 0x3a) {
       device[i] = c;
@@ -122,8 +122,8 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
 
   const mp_arg_t allowed_args[] = {
-      { MP_QSTR_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
-      { MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+      { MP_QSTR_handle, /*MP_ARG_REQUIRED | */MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+      { MP_QSTR_value, /*MP_ARG_REQUIRED | */MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
       { MP_QSTR_wait_for_response, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_false } },
       { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 1 } },
   };
@@ -143,7 +143,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   return mp_const_none;
 }
 //STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_char_write_handle_obj, gatt_tool_backend_char_write_handle);
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_write_handle_obj, 2, gatt_tool_backend_char_write_handle);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_write_handle_obj, /*2*/0, gatt_tool_backend_char_write_handle);
 
 STATIC mp_obj_t gatt_tool_backend(void) {
   printf("GATTToolBackend init\r\n");

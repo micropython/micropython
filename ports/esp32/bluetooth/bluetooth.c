@@ -209,6 +209,7 @@ int mp_bt_connect(esp_bd_addr_t device) {
 
 int mp_bt_char_write_handle(uint16_t handle, /*uint8_t* value, */bool wait_for_response) {
   esp_err_t err;
+  ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC");
   //esp_gatt_if_t gattc_if = 3;
   //uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
   //err = esp_ble_gattc_write_char( gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, sizeof(value), value, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
@@ -223,7 +224,7 @@ int mp_bt_char_write_handle(uint16_t handle, /*uint8_t* value, */bool wait_for_r
   esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(a2), a2, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
   esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(a3), a3, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
   esp_ble_gattc_write_char( mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(a4), a4, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-  ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC");
+
   return 0;
 }
 
