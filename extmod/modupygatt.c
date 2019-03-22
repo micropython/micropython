@@ -96,16 +96,16 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
   char *addr_str = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
-  esp_bd_addr_t device;
+  esp_bd_addr_t addr;
 
-  for (int i = 0, j = 0; i < strlen(str); i += 3) {
-    if (strncmp(&str[i], ":", 1) != 0) {
-      device[j++] = (((str[i]%32+9)%25*16+(str[i+1]%32+9)%25) & 0xFF);
+  for (int i = 0, j = 0; i < strlen(addr_str); i += 3) {
+    if (strncmp(&addr_str[i], ":", 1) != 0) {
+      addr[j++] = (((addr_str[i]%32+9)%25*16+(addr_str[i+1]%32+9)%25) & 0xFF);
     }
     else i--;
   }
 
-  int errno_ = mp_bt_connect(device);
+  int errno_ = mp_bt_connect(addr);
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
   }
