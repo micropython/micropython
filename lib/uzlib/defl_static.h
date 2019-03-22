@@ -30,6 +30,9 @@
    They may be altered/distinct from the originals used in PuTTY source
    code. */
 
+#ifndef DEFL_STATIC_H_INCLUDED
+#define DEFL_STATIC_H_INCLUDED
+
 struct Outbuf {
     unsigned char *outbuf;
     int outlen, outsize;
@@ -43,3 +46,5 @@ void zlib_start_block(struct Outbuf *ctx);
 void zlib_finish_block(struct Outbuf *ctx);
 void zlib_literal(struct Outbuf *ectx, unsigned char c);
 void zlib_match(struct Outbuf *ectx, int distance, int len);
+
+#endif /* DEFL_STATIC_H_INCLUDED */

@@ -25,6 +25,13 @@ Functions
    * Otherwise *data* is assumed to be zlib stream (with zlib header). 
    *bufsize* parameter is for compatibility with CPython and is ignored.
 
+.. function:: compress(data, wbits=15 /)
+
+   Return gzip DEFLATE compressed *data* as bytearray. *wbits* is DEFLATE dictionary window
+   size used during compression (8-15, the dictionary size is power of 2 of
+   that value). *data* can be decompressed with *DecompIO()* or *decompess()* 
+   in gzip mode (*wbits=31*)
+
 .. class:: DecompIO(stream, wbits=0, /)
 
    Create a `stream` wrapper which allows transparent decompression of
