@@ -102,11 +102,13 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
     char c = (str[i]%32+9)%25*16+(str[i+1]%32+9)%25;
     if (c != 0x3a) {
       device[i] = c;
+      printf("0x%02x ", device[i]);
     }
     else i--;
   }
-
-  int errno_ = mp_bt_connect(device);
+  printf("\r\n");
+  esp_bd_addr_t device2 = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
+  int errno_ = mp_bt_connect(device2);
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
   }

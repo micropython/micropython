@@ -202,7 +202,7 @@ int mp_bt_connect(esp_bd_addr_t device) {
   // if (err != ESP_OK) {
 	// 	return mp_bt_esp_errno(err);
 	// }
-  // xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
   //
   return 0;
 }
