@@ -35,12 +35,11 @@ jobs:
     - stage: staging
       env: NAME="esp32 port build"
       before_install:
-        - export D_START=$(date +%s)
+        - export D_START=$(date -u +%s)
         - git submodule update --init --recursive
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - tar -zxvf xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - export PATH=$HOME/build/ilyamordasov/micropython/xtensa-esp32-elf/bin:$PATH
-        - export ARTEFACTS_URL="none"
       install:
         - sudo apt-get install gcc
         - sudo apt-get install jq
@@ -73,14 +72,14 @@ jobs:
         - make ${MAKEOPTS} -C ports/esp32
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
         - zip -r -j ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.bin *.elf
-        - export ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
+        - ZIP=$(readlink -f ESP32_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
         - |
-          export ARTEFACTS_URL=$(curl --connect-timeout 5 --max-time 10 -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
+          ARTEFACTS_URL=$(curl --connect-timeout 5 --max-time 10 -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
           # if [ $ARTEFACTS_URL != 200 ]; then
-          #   export ARTEFACTS_URL=$(curl -w %{http_code} $1 -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
+          #   ARTEFACTS_URL=$(curl -w %{http_code} $1 -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
           # fi
-          D_DIFF = $(($date +%s) - $D_START)
-          export TIME_EXEC=$(echo `(($D_DIFF / 60) % 60) min ($D_DIFF % 60) sec`)
+          D_DIFF="$(($(date -u +%s)-$D_START))"
+          TIME_EXEC="Execution time: *$((diff / 60 % 60)) min $((diff % 60)) sec*"
       after_success:
         - |
           curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <https://github.com/${TRAVIS_REPO_SLUG}/compare/${TRAVIS_COMMIT}|commit> on branch *${TRAVIS_BRANCH}*\nExecution time: *$TIME_EXEC*\n\`\`\`curl --connect-timeout 5 --max-time 10 $ARTEFACTS_URL -o tmp.zip && unzip tmp.zip && rm -rf *.zip\`\`\`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}]}]}" $SLACK_WEBHOOK_URL
