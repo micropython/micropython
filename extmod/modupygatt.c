@@ -98,7 +98,8 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
   //char *device = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
   esp_bd_addr_t device;// = {0xe5, 0xfb, 0x01, 0x09, 0xf7, 0xb4};
   GET_STR_DATA_LEN(mp_obj_str_get_str(args[ARG_device].u_obj), str, str_len);
-  for (uint8_t i=0; i<str_len; i+=3) {
+  printf("%s\r\n", str);
+  for (uint8_t i=0; i<6; i+=3) {
     char c = (str[i]%32+9)%25*16+(str[i+1]%32+9)%25;
     if (c != 0x3a) {
       device[i] = c;
