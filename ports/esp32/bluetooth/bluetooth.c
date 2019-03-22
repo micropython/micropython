@@ -23,7 +23,7 @@
 
 #define GATTC_TAG "uPygatt"
 #define REMOTE_SERVICE_UUID        0xca9e //0xCA9E
-#define REMOTE_NOTIFY_CHAR_UUID    0x000B //0xFF01
+#define REMOTE_NOTIFY_CHAR_UUID    0xca9e //0xFF01
 #define PROFILE_NUM      1
 #define PROFILE_A_APP_ID 0
 #define INVALID_HANDLE   0
@@ -314,6 +314,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                                                                  remote_filter_char_uuid,
                                                                  char_elem_result,
                                                                  &count);
+
                         if (status != ESP_GATT_OK) {
                             ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_char_by_uuid error");
                         }
@@ -346,10 +347,12 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                                                                              gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
                                                                              gl_profile_tab[PROFILE_A_APP_ID].char_handle,
                                                                              &count);
+
                 if (ret_status != ESP_GATT_OK) {
                     ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
                 }
                 xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+
                 if (count > 0) {
                     descr_elem_result = malloc(sizeof(esp_gattc_descr_elem_t) * count);
                     if (!descr_elem_result) {
@@ -361,6 +364,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                                                                              notify_descr_uuid,
                                                                              descr_elem_result,
                                                                              &count);
+
                         if (ret_status != ESP_GATT_OK) {
                             ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_descr_by_char_handle error");
                         }
