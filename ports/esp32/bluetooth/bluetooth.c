@@ -22,7 +22,7 @@
 #include "extmod/modupygatt.h"
 
 #define GATTC_TAG "uPygatt"
-#define REMOTE_SERVICE_UUID        0x6e400001b5a3f393e0a9e50e24dcca9e //0xCA9E
+#define REMOTE_SERVICE_UUID        0xca9e //0xCA9E
 #define REMOTE_NOTIFY_CHAR_UUID    0x000B //0xFF01
 #define PROFILE_NUM      1
 #define PROFILE_A_APP_ID 0
