@@ -589,9 +589,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         { MP_QSTR_div,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_deadtime,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_break_mode,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_break_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-
+        { MP_QSTR_break_mode,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BRK_MODE_DISABLED} },
     };
 
     // parse args
