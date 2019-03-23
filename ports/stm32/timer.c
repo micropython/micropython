@@ -112,6 +112,12 @@ STATIC const struct {
     { MP_QSTR_ENC_AB,             TIM_ENCODERMODE_TI12 },
 };
 
+typedef enum {
+    BRK_MODE_DISABLED,
+    BRK_MODE_ENABLED_ACTIVE_LOW,
+    BRK_MODE_ENABLED_ACTIVE_HIGH,
+} pyb_brk_mode;
+
 typedef struct _pyb_timer_channel_obj_t {
     mp_obj_base_t base;
     struct _pyb_timer_obj_t *timer;
