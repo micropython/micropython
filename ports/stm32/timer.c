@@ -468,14 +468,14 @@ STATIC mp_int_t compute_ticks_from_dtg(uint32_t dtg) {
     return 512 + ((dtg & 0x1F) * 16);
 }
 
-STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk_mode, mp_int_t brk_pol) {
+STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk_mode) {
     TIM_BreakDeadTimeConfigTypeDef deadTimeConfig;
     deadTimeConfig.OffStateRunMode  = TIM_OSSR_DISABLE;
     deadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
     deadTimeConfig.LockLevel        = TIM_LOCKLEVEL_OFF;
     deadTimeConfig.DeadTime         = compute_dtg_from_ticks(ticks);
-    deadTimeConfig.BreakState       = (brk_mode == 0) ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
-    deadTimeConfig.BreakPolarity    = (brk_pol == 0) ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
+    deadTimeConfig.BreakState       = (brk_mode == BRK_MODE_DISABLED) ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
+    deadTimeConfig.BreakPolarity    = (((brk_mode >> 1) & 0x01) == 0) ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
     deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
 }
