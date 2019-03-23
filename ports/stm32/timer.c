@@ -571,10 +571,11 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///       measures ticks of `source_freq` divided by `div` clock ticks.
 ///       `deadtime` is only available on timers 1 and 8.
 ///
-///   - `break_mode` - specifies if the break mode is used to kill the output of the PWM
-///       when the BRK_IN input is asserted.
+///   - `break_mode` - specifies if the break mode is used to kill the output of
+///       the PWM when the BRK_IN input is asserted. The polarity set how the
+///       BRK_IN input is triggered. It can be set to `DISABLED`, `ENABLED_LOW`
+///       and `ENABLED_HIGH`.
 ///
-///   - `break_polarity` sets how the BRK_IN input is triggered.
 ///
 ///  You must either specify freq or both of period and prescaler.
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
