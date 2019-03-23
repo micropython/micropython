@@ -519,7 +519,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
             mp_printf(print, ", deadtime=%u",
                 compute_ticks_from_dtg(self->tim.Instance->BDTR & TIM_BDTR_DTG));
             if ((self->tim.Instance->BDTR & TIM_BDTR_BKE) == TIM_BDTR_BKE) {
-                mp_printf(print, ", break_mode=enabled, break_polarity=%s",
+                mp_printf(print, ", break_mode=ENABLED with polarity=%s",
                     ((self->tim.Instance->BDTR & TIM_BDTR_BKP) == TIM_BDTR_BKP) ? "HIGH" : "LOW");
             }
         }
