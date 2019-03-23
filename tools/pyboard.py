@@ -47,6 +47,7 @@ Or:
 Then:
 
     pyb.enter_raw_repl()
+    pyb.exec('import pyb')
     pyb.exec('pyb.LED(1).on()')
     pyb.exit_raw_repl()
 
