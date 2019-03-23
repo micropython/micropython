@@ -696,7 +696,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     #else
     if (0) {
     #endif
-        config_deadtime(self, args[ARG_deadtime].u_int, args[ARG_break_mode].u_int, args[ARG_break_polarity].u_int);
+        config_deadtime(self, args[ARG_deadtime].u_int, args[ARG_break_mode].u_int);
 
     }
 
