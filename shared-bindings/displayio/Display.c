@@ -50,7 +50,7 @@
 //| Most people should not use this class directly. Use a specific display driver instead that will
 //| contain the initialization sequence at minimum.
 //|
-//| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, rotation=0, color_depth=16, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c, set_vertical_scroll=0, backlight_pin=None, init_cs_toggle=False)
+//| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, rotation=0, color_depth=16, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c, set_vertical_scroll=0, backlight_pin=None, init_cs_toggle=True)
 //|
 //|   Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
@@ -91,7 +91,7 @@
 //|   :param int write_ram_command: Command used to write pixels values into the update region
 //|   :param int set_vertical_scroll: Command used to set the first row to show
 //|   :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
-//|   :param bool init_cs_toggle: Toggle the Chip Select between each initialization command.
+//|   :param bool init_cs_toggle: Toggle the Chip Select between each initialization command
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin, ARG_init_cs_toggle };
