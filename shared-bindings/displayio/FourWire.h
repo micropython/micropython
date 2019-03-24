@@ -47,4 +47,6 @@ void common_hal_displayio_fourwire_send(mp_obj_t self, bool command, uint8_t *da
 
 void common_hal_displayio_fourwire_end_transaction(mp_obj_t self);
 
+void common_hal_displayio_fourwire_set_cs(mp_obj_t self, bool high);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_FOURWIRE_H

@@ -87,3 +87,8 @@ void common_hal_displayio_fourwire_end_transaction(mp_obj_t obj) {
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
     common_hal_busio_spi_unlock(self->bus);
 }
+
+void common_hal_displayio_fourwire_set_cs(mp_obj_t obj, bool high) {
+    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    common_hal_digitalio_digitalinout_set_value(&self->chip_select, high);
+}
