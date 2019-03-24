@@ -114,6 +114,27 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
 
+STATIC mp_obj_t gatt_tool_backend_discover_characteristics(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_timeout };
+
+  const mp_arg_t allowed_args[] = {
+      { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5 } },
+  };
+
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+
+
+  int errno_ = mp_bt_discover_characteristics();
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
+
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_discover_characteristics_obj, 0, gatt_tool_backend_discover_characteristics);
+
 STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
 
@@ -162,7 +183,7 @@ STATIC const mp_rom_map_elem_t gatt_tool_backend_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_bond),                                  MP_ROM_PTR(&gatt_tool_backend_bond_obj) },
     // { MP_ROM_QSTR(MP_QSTR__save_charecteristic_callback),         MP_ROM_PTR(&gatt_tool_backend__save_charecteristic_callback_obj) },
     // //@at_most_one_device
-    // { MP_ROM_QSTR(MP_QSTR_discover_characteristics),              MP_ROM_PTR(&gatt_tool_backend_discover_characteristics_obj) },
+    { MP_ROM_QSTR(MP_QSTR_discover_characteristics),              MP_ROM_PTR(&gatt_tool_backend_discover_characteristics_obj) },
     // { MP_ROM_QSTR(MP_QSTR__handle_notification_string),           MP_ROM_PTR(&gatt_tool_backend__handle_notification_string_obj) },
     // //@at_most_one_device
     { MP_ROM_QSTR(MP_QSTR_char_write_handle),                     MP_ROM_PTR(&gatt_tool_backend_char_write_handle_obj) },

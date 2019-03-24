@@ -20,6 +20,9 @@ int mp_bt_scan(void);
 // Try to connect to address. Returns errno on failure.
 int mp_bt_connect(esp_bd_addr_t device);
 
+// Discover BT characteristics and display them. Returns errno on failure.
+int mp_bt_discover_characteristics(void);
+
 // Write to characteristic. Returns errno on failure.
 int mp_bt_char_write_handle(uint16_t handle, /* uint8_t* value, */ bool wait_for_response);
 
