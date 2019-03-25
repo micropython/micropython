@@ -155,7 +155,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   if (args[ARG_value].u_obj != mp_const_none)
   {
     uint8_t* value = args[ARG_value].u_obj;
-    printf("\r\n\r\nchar_write_handle() value, arrays size is :\r\n", sizeof(value));
+    printf("\r\n\r\nchar_write_handle() value, arrays size is %d:\r\n", sizeof(value));
     for (uint8_t i=0; i<sizeof(value); i++)
     {
       printf("%d -> 0x%02x [ %d ]\r\n", i, value[i], value[i]);
