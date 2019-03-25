@@ -142,7 +142,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
 
   const mp_arg_t allowed_args[] = {
-      { MP_QSTR_handle, /*MP_ARG_REQUIRED |*/ MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = mp_const_none } },
+      { MP_QSTR_handle, /*MP_ARG_REQUIRED |*/ MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0x000e } },
       { MP_QSTR_value, /*MP_ARG_REQUIRED |*/ MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
       { MP_QSTR_wait_for_response, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_false } },
       { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 1 } },
