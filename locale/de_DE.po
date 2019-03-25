@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 09:19+0100\n"
+"POT-Creation-Date: 2019-03-25 14:08+0100\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -644,7 +644,7 @@ msgstr "Fehler beim Abrufen des Softdevice-Status"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to notify or indicate attribute value, err x0%04x"
+msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
@@ -654,7 +654,7 @@ msgstr "Kann CCCD value nicht lesen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to read attribute value, err x0%04x"
+msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
