@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 18:37-0700\n"
+"POT-Creation-Date: 2019-03-25 09:19+0100\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -52,8 +52,8 @@ msgstr "%q indeks wala sa sakop"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
@@ -63,7 +63,7 @@ msgstr "aarehas na haba dapat ang buffer slices"
 msgid "%q should be an int"
 msgstr "y ay dapat int"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
 "Ang %q() ay kumukuha ng %d positional arguments pero %d lang ang binigay"
@@ -72,12 +72,12 @@ msgstr ""
 msgid "'%q' argument required"
 msgstr "'%q' argument kailangan"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr "'%s' umaasa ng label"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "Inaasahan ng '%s' ang isang rehistro"
@@ -97,7 +97,7 @@ msgstr "Inaasahan ng '%s' ang isang FPU register"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "Inaasahan ng '%s' ang isang address sa [a, b]"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "Inaasahan ng '%s' ang isang integer"
@@ -251,7 +251,7 @@ msgstr "Lahat ng I2C peripherals ginagamit"
 msgid "All event channels in use"
 msgstr "Lahat ng event channels ginagamit"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Lahat ng sync event channels ay ginagamit"
 
@@ -259,9 +259,9 @@ msgstr "Lahat ng sync event channels ay ginagamit"
 msgid "All timers for this pin are in use"
 msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -564,9 +564,8 @@ msgstr "Pagkakamali sa ffi_prep_cif"
 msgid "Error in regex"
 msgstr "May pagkakamali sa REGEX"
 
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/terminalio/Terminal.c
+#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
 
@@ -575,8 +574,8 @@ msgstr "Umasa ng %q"
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Umasa ng %q"
@@ -616,8 +615,8 @@ msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
@@ -663,9 +662,9 @@ msgid "Failed to get softdevice state"
 msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to notify or indicate attribute value, err %0x04x"
-msgstr "Hindi mabalitaan ang attribute value, status: 0x%08lX"
+#, c-format
+msgid "Failed to notify or indicate attribute value, err x0%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -673,9 +672,9 @@ msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to read attribute value, err %0x04x"
-msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
+#, c-format
+msgid "Failed to read attribute value, err x0%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -765,7 +764,7 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
 #: shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Function nangangailangan ng lock"
@@ -782,7 +781,7 @@ msgstr "Walang pull down support ang GPI016."
 msgid "Group full"
 msgstr "Puno ang group"
 
-#: extmod/vfs_posix_file.c ports/unix/file.c py/objstringio.c
+#: ports/unix/file.c extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "I/O operasyon sa saradong file"
 
@@ -878,11 +877,10 @@ msgstr "Mali ang pin para sa kaliwang channel"
 msgid "Invalid pin for right channel"
 msgstr "Mali ang pin para sa kanang channel"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -1220,8 +1218,8 @@ msgstr "Serializer ginagamit"
 msgid "Slice and value different lengths."
 msgstr "Slice at value iba't ibang haba."
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
 
@@ -1487,7 +1485,7 @@ msgstr "a bytes-like object ay kailangan"
 msgid "abort() called"
 msgstr "abort() tinawag"
 
-#: extmod/machine_mem.c ports/unix/modmachine.c
+#: ports/unix/modmachine.c extmod/machine_mem.c
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
 msgstr "address %08x ay hindi pantay sa %d bytes"
@@ -1516,7 +1514,7 @@ msgstr "hindi tugma ang argument num/types"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argument ay dapat na '%q' hindi '%q'"
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/nvm/ByteArray.c py/objarray.c
 msgid "array/bytes required on right side"
 msgstr "array/bytes kinakailangan sa kanang bahagi"
 
@@ -1586,8 +1584,8 @@ msgstr "aarehas na haba dapat ang buffer slices"
 msgid "buffer too long"
 msgstr "masyadong mahaba ng buffer"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+#: py/modstruct.c
 msgid "buffer too small"
 msgstr "masyadong maliit ang buffer"
 
@@ -1851,7 +1849,7 @@ msgstr "color ay dapat na int"
 msgid "complex division by zero"
 msgstr "kumplikadong dibisyon sa pamamagitan ng zero"
 
-#: py/objfloat.c py/parsenum.c
+#: py/parsenum.c py/objfloat.c
 msgid "complex values not supported"
 msgstr "kumplikadong values hindi sinusuportahan"
 
@@ -1896,8 +1894,8 @@ msgstr "ang destination_length ay dapat na isang int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "may mali sa haba ng dict update sequence"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: shared-bindings/math/__init__.c py/runtime.c py/modmath.c py/objint_mpz.c
+#: py/objint_longlong.c py/objfloat.c
 msgid "division by zero"
 msgstr "dibisyon ng zero"
 
@@ -1909,7 +1907,7 @@ msgstr "pos o kw args ang pinahihintulutan"
 msgid "empty"
 msgstr "walang laman"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "walang laman ang heap"
 
@@ -1983,7 +1981,7 @@ msgstr "dagdag na positional argument na ibinigay"
 msgid "ffi_prep_closure_loc"
 msgstr "ffi_prep_closure_loc"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
 msgid "file must be a file opened in byte mode"
 msgstr "file ay dapat buksan sa byte mode"
 
@@ -2032,7 +2030,7 @@ msgstr "ang function ay hindi kumukuha ng mga argumento ng keyword"
 msgid "function expected at most %d arguments, got %d"
 msgstr "function na inaasahang %d ang argumento, ngunit %d ang nakuha"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "function got multiple values for argument '%q'"
 msgstr "ang function ay nakakuha ng maraming values para sa argument '%q'"
 
@@ -2054,7 +2052,7 @@ msgstr "function nangangailangan ng keyword argument '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "function nangangailangan ng positional argument #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/objnamedtuple.c py/bc.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2105,8 +2103,8 @@ msgid "incorrect padding"
 msgstr "mali ang padding"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index wala sa sakop"
 
@@ -2231,7 +2229,7 @@ msgstr ""
 msgid "keywords must be strings"
 msgstr "ang keywords dapat strings"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 msgid "label '%q' not defined"
 msgstr "label '%d' kailangan na i-define"
 
@@ -2271,7 +2269,7 @@ msgstr "long int hindi sinusuportahan sa build na ito"
 msgid "map buffer too small"
 msgstr "masyadong maliit ang buffer map"
 
-#: py/modmath.c shared-bindings/math/__init__.c
+#: shared-bindings/math/__init__.c py/modmath.c
 msgid "math domain error"
 msgstr "may pagkakamali sa math domain"
 
@@ -2348,11 +2346,11 @@ msgstr "native yield"
 msgid "need more than %d values to unpack"
 msgstr "kailangan ng higit sa %d na halaga upang i-unpack"
 
-#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
 msgid "negative power with no float support"
 msgstr "negatibong power na walang float support"
 
-#: py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c
 msgid "negative shift count"
 msgstr "negative shift count"
 
@@ -2372,7 +2370,7 @@ msgstr "no binding para sa nonlocal, nahanap"
 msgid "no module named '%q'"
 msgstr "walang module na '%q'"
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: shared-bindings/_pixelbuf/__init__.c py/runtime.c
 msgid "no such attribute"
 msgstr "walang ganoon na attribute"
 
@@ -2459,13 +2457,13 @@ msgstr "object na may buffer protocol kinakailangan"
 msgid "odd-length string"
 msgstr "odd-length string"
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstrunicode.c py/objstr.c
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "wala sa sakop ang address"
 
-#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/nvm/ByteArray.c py/objarray.c py/objtuple.c
+#: py/objstrunicode.c py/objstr.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
@@ -2482,7 +2480,7 @@ msgstr "ord() umaasa ng character pero string ng %d haba ang nakita"
 msgid "overflow converting long int to machine word"
 msgstr "overflow nagcoconvert ng long int sa machine word"
 
-#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
 msgid "palette must be 32 bytes long"
 msgstr "ang palette ay dapat 32 bytes ang haba"
 
@@ -2520,8 +2518,8 @@ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader ay dapat displayio.Palette o displayio.ColorConverter"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "pop mula sa walang laman na PulseIn"
 
@@ -2631,7 +2629,7 @@ msgstr "sleep length ay dapat hindi negatibo"
 msgid "slice step cannot be zero"
 msgstr "slice step ay hindi puedeng 0"
 
-#: py/objint.c py/sequence.c
+#: py/sequence.c py/objint.c
 msgid "small int overflow"
 msgstr "small int overflow"
 
@@ -2795,7 +2793,7 @@ msgstr "hindi inaasahang indent"
 msgid "unexpected keyword argument"
 msgstr "hindi inaasahang argumento ng keyword"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "unexpected keyword argument '%q'"
 msgstr "hindi inaasahang argumento ng keyword na '%q'"
 
@@ -2915,6 +2913,14 @@ msgstr "wala sa sakop ang address"
 #: py/objrange.c
 msgid "zero step"
 msgstr "zero step"
+
+#, fuzzy
+#~ msgid "Failed to notify or indicate attribute value, err %0x04x"
+#~ msgstr "Hindi mabalitaan ang attribute value, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to read attribute value, err %0x04x"
+#~ msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
 
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Tanging Windows format, uncompressed BMP lamang ang supportado %d"

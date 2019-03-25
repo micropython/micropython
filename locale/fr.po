@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 18:37-0700\n"
+"POT-Creation-Date: 2019-03-25 09:19+0100\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -51,8 +51,8 @@ msgstr "index %q hors gamme"
 msgid "%q indices must be integers, not %s"
 msgstr "les indices %q doivent être des entiers, pas %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "les slices de tampon doivent être de longueurs égales"
@@ -62,7 +62,7 @@ msgstr "les slices de tampon doivent être de longueurs égales"
 msgid "%q should be an int"
 msgstr "y doit être un entier (int)"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() prend %d arguments mais %d ont été donnés"
 
@@ -70,12 +70,12 @@ msgstr "%q() prend %d arguments mais %d ont été donnés"
 msgid "'%q' argument required"
 msgstr "'%q' argument requis"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr "'%s' attend un label"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' attend un registre"
@@ -95,7 +95,7 @@ msgstr "'%s' attend un registre FPU"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' attend une adresse de la forme [a, b]"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' attend un entier"
@@ -251,7 +251,7 @@ msgstr "Tous les périphériques I2C sont utilisés"
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Tous les canaux d'événements de synchro sont utilisés"
 
@@ -259,9 +259,9 @@ msgstr "Tous les canaux d'événements de synchro sont utilisés"
 msgid "All timers for this pin are in use"
 msgstr "Tous les timers pour cette broche sont utilisés"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -563,9 +563,8 @@ msgstr "Erreur dans ffi_prep_cif"
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
 
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/terminalio/Terminal.c
+#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
 msgid "Expected a %q"
 msgstr "Attendu : %q"
 
@@ -574,8 +573,8 @@ msgstr "Attendu : %q"
 msgid "Expected a Characteristic"
 msgstr "Impossible d'ajouter la Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Attendu : %q"
@@ -615,8 +614,8 @@ msgid "Failed to allocate RX buffer"
 msgstr "Echec de l'allocation du tampon RX"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
@@ -662,9 +661,9 @@ msgid "Failed to get softdevice state"
 msgstr "Echec de l'obtention de l'état du périph., erreur: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to notify or indicate attribute value, err %0x04x"
-msgstr "Impossible de notifier la valeur de l'attribut. status: 0x%08lX"
+#, c-format
+msgid "Failed to notify or indicate attribute value, err x0%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -672,9 +671,9 @@ msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Impossible de lire la valeur de l'attribut. status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to read attribute value, err %0x04x"
-msgstr "Impossible de lire la valeur de l'attribut. status: 0x%08lX"
+#, c-format
+msgid "Failed to read attribute value, err x0%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -764,7 +763,7 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
 #: shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "La fonction nécessite un verrou"
@@ -781,7 +780,7 @@ msgstr "le GPIO16 ne supporte pas le tirage (pull-up)"
 msgid "Group full"
 msgstr "Groupe plein"
 
-#: extmod/vfs_posix_file.c ports/unix/file.c py/objstringio.c
+#: ports/unix/file.c extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "opération d'E/S sur un fichier fermé"
 
@@ -880,11 +879,10 @@ msgstr "Broche invalide pour le canal gauche"
 msgid "Invalid pin for right channel"
 msgstr "Broche invalide pour le canal droit"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
@@ -1228,8 +1226,8 @@ msgstr "Sérialiseur en cours d'utilisation"
 msgid "Slice and value different lengths."
 msgstr "Slice et valeur de tailles différentes"
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Slices non supportées"
 
@@ -1497,7 +1495,7 @@ msgstr "un objet 'bytes-like' est requis"
 msgid "abort() called"
 msgstr "abort() appelé"
 
-#: extmod/machine_mem.c ports/unix/modmachine.c
+#: ports/unix/modmachine.c extmod/machine_mem.c
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
 msgstr "l'adresse %08x n'est pas alignée sur %d octets"
@@ -1526,7 +1524,7 @@ msgstr "argument num/types ne correspond pas"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "l'argument devrait être un(e) '%q', pas '%q'"
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/nvm/ByteArray.c py/objarray.c
 msgid "array/bytes required on right side"
 msgstr "tableau/octets requis à droite"
 
@@ -1598,8 +1596,8 @@ msgstr "les slices de tampon doivent être de longueurs égales"
 msgid "buffer too long"
 msgstr "tampon trop long"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+#: py/modstruct.c
 msgid "buffer too small"
 msgstr "tampon trop petit"
 
@@ -1870,7 +1868,7 @@ msgstr "la couleur doit être un entier (int)"
 msgid "complex division by zero"
 msgstr "division complexe par zéro"
 
-#: py/objfloat.c py/parsenum.c
+#: py/parsenum.c py/objfloat.c
 msgid "complex values not supported"
 msgstr "valeurs complexes non supportées"
 
@@ -1913,8 +1911,8 @@ msgstr "destination_length doit être un entier >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: shared-bindings/math/__init__.c py/runtime.c py/modmath.c py/objint_mpz.c
+#: py/objint_longlong.c py/objfloat.c
 msgid "division by zero"
 msgstr "division par zéro"
 
@@ -1926,7 +1924,7 @@ msgstr "soit 'pos', soit 'kw' est permis en argument"
 msgid "empty"
 msgstr "vide"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "'heap' vide"
 
@@ -2000,7 +1998,7 @@ msgstr "argument positionnel donné en plus"
 msgid "ffi_prep_closure_loc"
 msgstr ""
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -2049,7 +2047,7 @@ msgstr "la fonction ne prend pas d'arguments nommés"
 msgid "function expected at most %d arguments, got %d"
 msgstr "la fonction attendait au plus %d arguments, reçu %d"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 
@@ -2071,7 +2069,7 @@ msgstr "il manque l'argument nommé obligatoire '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "il manque l'argument obligatoire #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/objnamedtuple.c py/bc.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "la fonction prend %d argument(s) mais %d ont été donné(s)"
@@ -2121,8 +2119,8 @@ msgid "incorrect padding"
 msgstr "espacement incorrect"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index hors gamme"
 
@@ -2245,7 +2243,7 @@ msgstr ""
 msgid "keywords must be strings"
 msgstr "les noms doivent être des chaînes de caractère"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 msgid "label '%q' not defined"
 msgstr "label '%q' non supporté"
 
@@ -2285,7 +2283,7 @@ msgstr "entiers longs non supportés dans cette build"
 msgid "map buffer too small"
 msgstr "tampon trop petit"
 
-#: py/modmath.c shared-bindings/math/__init__.c
+#: shared-bindings/math/__init__.c py/modmath.c
 msgid "math domain error"
 msgstr "erreur de domaine math"
 
@@ -2362,11 +2360,11 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr "nécessite plus de %d valeur à dégrouper"
 
-#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
 msgid "negative power with no float support"
 msgstr "puissance négative sans support des nombres flottants"
 
-#: py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c
 msgid "negative shift count"
 msgstr "compte de décalage négatif"
 
@@ -2387,7 +2385,7 @@ msgstr "pas de lien trouvé pour nonlocal"
 msgid "no module named '%q'"
 msgstr "pas de module '%q'"
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: shared-bindings/_pixelbuf/__init__.c py/runtime.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
@@ -2476,13 +2474,13 @@ msgstr "un objet avec un protocol de tampon est nécessaire"
 msgid "odd-length string"
 msgstr "chaîne de longueur impaire"
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstrunicode.c py/objstr.c
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "adresse hors limites"
 
-#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/nvm/ByteArray.c py/objarray.c py/objtuple.c
+#: py/objstrunicode.c py/objstr.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seuls les slices avec 'step=1' (cad None) sont supportées"
 
@@ -2499,7 +2497,7 @@ msgstr "ord() attend un caractère mais une chaîne de longueur %d a été trouv
 msgid "overflow converting long int to machine word"
 msgstr "dépassement de capacité en convertissant un entier long en mot machine"
 
-#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
 msgid "palette must be 32 bytes long"
 msgstr "la palette doit être longue de 32 octets"
 
@@ -2540,8 +2538,8 @@ msgstr ""
 "pixel_shader doit être un objet displayio.Palette ou displayio.ColorConverter"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "'pop' d'une entrée PulseIn vide"
 
@@ -2651,7 +2649,7 @@ msgstr "la longueur de sleep ne doit pas être négative"
 msgid "slice step cannot be zero"
 msgstr "le pas 'step' de slice ne peut être zéro"
 
-#: py/objint.c py/sequence.c
+#: py/sequence.c py/objint.c
 msgid "small int overflow"
 msgstr "dépassement de capacité d'un entier court"
 
@@ -2816,7 +2814,7 @@ msgstr "indentation inattendue"
 msgid "unexpected keyword argument"
 msgstr "argument nommé imprévu"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argument nommé '%q' imprévu"
 
@@ -2938,6 +2936,14 @@ msgstr "adresse hors limites"
 #: py/objrange.c
 msgid "zero step"
 msgstr "'step' nul"
+
+#, fuzzy
+#~ msgid "Failed to notify or indicate attribute value, err %0x04x"
+#~ msgstr "Impossible de notifier la valeur de l'attribut. status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to read attribute value, err %0x04x"
+#~ msgstr "Impossible de lire la valeur de l'attribut. status: 0x%08lX"
 
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Seul les BMP non-compressé au format Windows sont supportés %d"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 18:37-0700\n"
+"POT-Creation-Date: 2019-03-25 09:19+0100\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -54,8 +54,8 @@ msgstr "Der Index %q befindet sich außerhalb der Reihung"
 msgid "%q indices must be integers, not %s"
 msgstr "%q Indizes müssen ganze Zahlen sein, nicht %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "%q must be >= 1"
 msgstr "%q muss >= 1 sein"
 
@@ -63,7 +63,7 @@ msgstr "%q muss >= 1 sein"
 msgid "%q should be an int"
 msgstr "%q sollte ein int sein"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 
@@ -71,12 +71,12 @@ msgstr "%q() nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 msgid "'%q' argument required"
 msgstr "'%q' Argument erforderlich"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr "'%s' erwartet ein Label"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' erwartet ein Register"
@@ -96,7 +96,7 @@ msgstr "'%s' erwartet ein FPU-Register"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' erwartet eine Adresse in der Form [a, b]"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' erwartet ein Integer"
@@ -249,7 +249,7 @@ msgstr "Alle UART-Peripheriegeräte sind in Benutzung"
 msgid "All event channels in use"
 msgstr "Alle event Kanäle werden benutzt"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Alle sync event Kanäle werden benutzt"
 
@@ -257,9 +257,9 @@ msgstr "Alle sync event Kanäle werden benutzt"
 msgid "All timers for this pin are in use"
 msgstr "Alle timer für diesen Pin werden bereits benutzt"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -556,9 +556,8 @@ msgstr "Fehler in ffi_prep_cif"
 msgid "Error in regex"
 msgstr "Fehler in regex"
 
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/terminalio/Terminal.c
+#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
 msgid "Expected a %q"
 msgstr "Erwartet ein(e) %q"
 
@@ -566,8 +565,8 @@ msgstr "Erwartet ein(e) %q"
 msgid "Expected a Characteristic"
 msgstr "Characteristic wird erwartet"
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 msgid "Expected a UUID"
 msgstr "Eine UUID wird erwartet"
 
@@ -604,8 +603,8 @@ msgid "Failed to allocate RX buffer"
 msgstr "Konnte keinen RX Buffer allozieren"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Konnte keine RX Buffer mit %d allozieren"
@@ -645,8 +644,8 @@ msgstr "Fehler beim Abrufen des Softdevice-Status"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to notify or indicate attribute value, err %0x04x"
-msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%04x"
+msgid "Failed to notify or indicate attribute value, err x0%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
@@ -655,8 +654,8 @@ msgstr "Kann CCCD value nicht lesen. Status: 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to read attribute value, err %0x04x"
-msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
+msgid "Failed to read attribute value, err x0%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
@@ -742,7 +741,7 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
 #: shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
@@ -759,7 +758,7 @@ msgstr "GPIO16 unterstützt pull up nicht"
 msgid "Group full"
 msgstr "Gruppe voll"
 
-#: extmod/vfs_posix_file.c ports/unix/file.c py/objstringio.c
+#: ports/unix/file.c extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "Lese/Schreibe-operation an geschlossener Datei"
 
@@ -855,11 +854,10 @@ msgstr "Ungültiger Pin für linken Kanal"
 msgid "Invalid pin for right channel"
 msgstr "Ungültiger Pin für rechten Kanal"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Ungültige Pins"
 
@@ -1197,8 +1195,8 @@ msgstr "Serializer wird benutzt"
 msgid "Slice and value different lengths."
 msgstr "Slice und Wert (value) haben unterschiedliche Längen."
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Slices werden nicht unterstützt"
 
@@ -1467,7 +1465,7 @@ msgstr "ein Byte-ähnliches Objekt ist erforderlich"
 msgid "abort() called"
 msgstr "abort() wurde aufgerufen"
 
-#: extmod/machine_mem.c ports/unix/modmachine.c
+#: ports/unix/modmachine.c extmod/machine_mem.c
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
 msgstr "Addresse %08x ist nicht an %d bytes ausgerichtet"
@@ -1496,7 +1494,7 @@ msgstr "Anzahl/Type der Argumente passen nicht"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "Argument sollte '%q' sein, nicht '%q'"
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: shared-bindings/nvm/ByteArray.c py/objarray.c
 msgid "array/bytes required on right side"
 msgstr "Array/Bytes auf der rechten Seite erforderlich"
 
@@ -1565,8 +1563,8 @@ msgstr "Puffersegmente müssen gleich lang sein"
 msgid "buffer too long"
 msgstr "Buffer zu lang"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+#: py/modstruct.c
 msgid "buffer too small"
 msgstr "Der Puffer ist zu klein"
 
@@ -1824,7 +1822,7 @@ msgstr ""
 msgid "complex division by zero"
 msgstr ""
 
-#: py/objfloat.c py/parsenum.c
+#: py/parsenum.c py/objfloat.c
 msgid "complex values not supported"
 msgstr ""
 
@@ -1865,8 +1863,8 @@ msgstr ""
 msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
-#: shared-bindings/math/__init__.c
+#: shared-bindings/math/__init__.c py/runtime.c py/modmath.c py/objint_mpz.c
+#: py/objint_longlong.c py/objfloat.c
 msgid "division by zero"
 msgstr "Division durch Null"
 
@@ -1878,7 +1876,7 @@ msgstr ""
 msgid "empty"
 msgstr "leer"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "leerer heap"
 
@@ -1951,7 +1949,7 @@ msgstr "Es wurden zusätzliche Argumente ohne Keyword angegeben"
 msgid "ffi_prep_closure_loc"
 msgstr "ffi_prep_closure_loc"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
 msgid "file must be a file opened in byte mode"
 msgstr "Die Datei muss eine im Byte-Modus geöffnete Datei sein"
 
@@ -2000,7 +1998,7 @@ msgstr "Funktion akzeptiert keine Keyword-Argumente"
 msgid "function expected at most %d arguments, got %d"
 msgstr "Funktion erwartet maximal %d Argumente, aber hat %d erhalten"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "function got multiple values for argument '%q'"
 msgstr "Funktion hat mehrere Werte für Argument '%q'"
 
@@ -2022,7 +2020,7 @@ msgstr "Funktion vermisst benötigtes Keyword-Argumente '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "Funktion vermisst benötigtes Argumente ohne Keyword #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/objnamedtuple.c py/bc.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2073,8 +2071,8 @@ msgid "incorrect padding"
 msgstr "padding ist inkorrekt"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index außerhalb der Reichweite"
 
@@ -2199,7 +2197,7 @@ msgstr ""
 msgid "keywords must be strings"
 msgstr "Schlüsselwörter müssen Zeichenfolgen sein"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 msgid "label '%q' not defined"
 msgstr "Label '%q' nicht definiert"
 
@@ -2241,7 +2239,7 @@ msgstr "long int wird in diesem Build nicht unterstützt"
 msgid "map buffer too small"
 msgstr "map buffer zu klein"
 
-#: py/modmath.c shared-bindings/math/__init__.c
+#: shared-bindings/math/__init__.c py/modmath.c
 msgid "math domain error"
 msgstr ""
 
@@ -2317,11 +2315,11 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr ""
 
-#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
 msgid "negative power with no float support"
 msgstr ""
 
-#: py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c
 msgid "negative shift count"
 msgstr ""
 
@@ -2341,7 +2339,7 @@ msgstr ""
 msgid "no module named '%q'"
 msgstr "Kein Modul mit dem Namen '%q'"
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: shared-bindings/_pixelbuf/__init__.c py/runtime.c
 msgid "no such attribute"
 msgstr ""
 
@@ -2428,12 +2426,12 @@ msgstr "Objekt mit Pufferprotokoll (buffer protocol) erforderlich"
 msgid "odd-length string"
 msgstr "String mit ungerader Länge"
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstrunicode.c py/objstr.c
 msgid "offset out of bounds"
 msgstr "offset außerhalb der Grenzen"
 
-#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/nvm/ByteArray.c py/objarray.c py/objtuple.c
+#: py/objstrunicode.c py/objstr.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
@@ -2452,7 +2450,7 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr ""
 
-#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
 msgid "palette must be 32 bytes long"
 msgstr ""
 
@@ -2489,8 +2487,8 @@ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader muss displayio.Palette oder displayio.ColorConverter sein"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/esp8266/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "pop von einem leeren PulseIn"
 
@@ -2599,7 +2597,7 @@ msgstr ""
 msgid "slice step cannot be zero"
 msgstr ""
 
-#: py/objint.c py/sequence.c
+#: py/sequence.c py/objint.c
 msgid "small int overflow"
 msgstr "small int Überlauf"
 
@@ -2764,7 +2762,7 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr "unerwartetes Keyword-Argument"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "unexpected keyword argument '%q'"
 msgstr "unerwartetes Keyword-Argument '%q'"
 
@@ -2884,6 +2882,12 @@ msgstr "y Wert außerhalb der Grenzen"
 #: py/objrange.c
 msgid "zero step"
 msgstr ""
+
+#~ msgid "Failed to notify or indicate attribute value, err %0x04x"
+#~ msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%04x"
+
+#~ msgid "Failed to read attribute value, err %0x04x"
+#~ msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Nur unkomprimiertes Windows-Format (BMP) unterstützt %d"
