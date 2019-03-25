@@ -154,7 +154,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   uint16_t handle = args[ARG_handle].u_int;
   mp_buffer_info_t buffer;
   mp_get_buffer_raise(args[ARG_value].u_obj, &buffer, MP_BUFFER_READ);
-  uint8_t* value = uint8_t *value = malloc(sizeof(buffer.len));
+  uint8_t* value = malloc(sizeof(buffer.len));
   memcpy(value, buffer.buf, buffer.len);
   bool wait_for_response = args[ARG_wait_for_response].u_obj;
 
