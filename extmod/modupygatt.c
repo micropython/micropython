@@ -136,6 +136,9 @@ STATIC mp_obj_t gatt_tool_backend_discover_characteristics(size_t n_args, const 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_discover_characteristics_obj, 0, gatt_tool_backend_discover_characteristics);
 
 STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  /*
+  Usage: bytearray(b'\x55\xFF\xAD\x00\x00') or [0x55, 0xff, 0xad, 0x00, 0x00]
+  */
   enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
 
   const mp_arg_t allowed_args[] = {
@@ -149,7 +152,16 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
   uint16_t handle = 0x000e;
-  //uint8_t* value = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xAA};
+  if (args[ARG_value].u_obj != mp_const_none)
+  {
+    uint8_t* value = args[ARG_value].u_obj;
+    printf("\r\n\r\nchar_write_handle() value, arrays size is :\r\n", sizeof(value));
+    for (uint8_t i=0; i<sizeof(value); i++)
+    {
+      printf("%d -> 0x%02x [ %d ]\r\n", i, value[i], value[i]);
+    }
+    printf("\r\n\r\n");
+  }
   bool wait_for_response = args[ARG_wait_for_response].u_obj;
 
   int errno_ = mp_bt_char_write_handle(handle, /* value, */wait_for_response);
