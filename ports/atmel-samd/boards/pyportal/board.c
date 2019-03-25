@@ -91,7 +91,9 @@ void board_init(void) {
         display_init_sequence,
         sizeof(display_init_sequence),
         &pin_PB31,
-        true);
+        true,   // init_cs_toggle
+        false); // single_byte_bounds
+
     common_hal_displayio_display_set_auto_brightness(display, true);
 }
 
