@@ -142,7 +142,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
 
   const mp_arg_t allowed_args[] = {
-      { MP_QSTR_handle, /*MP_ARG_REQUIRED |*/ MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+      { MP_QSTR_handle, /*MP_ARG_REQUIRED |*/ MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = mp_const_none } },
       { MP_QSTR_value, /*MP_ARG_REQUIRED |*/ MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
       { MP_QSTR_wait_for_response, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_false } },
       { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 1 } },
@@ -151,7 +151,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  uint16_t handle = 0x000e;
+  uint16_t handle = args[ARG_handle].u_int;
   mp_buffer_info_t buffer;
   mp_get_buffer_raise(args[ARG_value].u_obj, &buffer, MP_BUFFER_READ);
   uint8_t* value = buffer.buf;
