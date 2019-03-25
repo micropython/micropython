@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 09:19+0100\n"
+"POT-Creation-Date: 2019-03-25 14:08+0100\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -663,7 +663,7 @@ msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to notify or indicate attribute value, err x0%04x"
+msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
@@ -673,7 +673,7 @@ msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to read attribute value, err x0%04x"
+msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c

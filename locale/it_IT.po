@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 09:19+0100\n"
+"POT-Creation-Date: 2019-03-25 14:08+0100\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -662,7 +662,7 @@ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to notify or indicate attribute value, err x0%04x"
+msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
@@ -672,7 +672,7 @@ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
-msgid "Failed to read attribute value, err x0%04x"
+msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
