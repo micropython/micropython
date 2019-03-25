@@ -228,17 +228,8 @@ int mp_bt_discover_characteristics(void) {
 
 int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, bool wait_for_response) {
   esp_err_t err;
-  ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC");
-  //esp_gatt_if_t gattc_if = 3;
-  //uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
-  //err = esp_ble_gattc_write_char( gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, sizeof(value), value, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-  // uint8_t a0[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
-  // uint8_t a1[] = {0x55, 0x00, 0x01, 0x00, 0xaa};
-  // uint8_t a2[] = {0x55, 0x01, 0x01, 0xaa};
-  // uint8_t a3[] = {0x55, 0x02, 0x05, 0x00, 0x00, 0x64, 0x00, 0xaa};
-  // uint8_t a4[] = {0x55, 0x03, 0x03, 0xaa};
-  //gl_profile_tab[PROFILE_A_APP_ID].char_handle = 0x000E;
-  printf("0x%02x\r\n", handle);
+  ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC in HANDLE 0x%04x", handle);
+  esp_log_buffer_hex(GATTC_TAG, value, sizeof(value));
   err = esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, sizeof(value), value, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
@@ -264,7 +255,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             if (mtu_ret){
                 ESP_LOGE(GATTC_TAG, "config MTU error, error code = %x", mtu_ret);
             }
-            //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
 
         case ESP_GATTC_OPEN_EVT:
@@ -429,16 +419,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 break;
             }
             ESP_LOGI(GATTC_TAG, "write descr success ");
-
-            /*uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
-            esp_ble_gattc_write_char( gattc_if,
-                                      gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                                      gl_profile_tab[PROFILE_A_APP_ID].char_handle,
-                                      sizeof(value),
-                                      value,
-                                      ESP_GATT_WRITE_TYPE_RSP,
-                                      ESP_GATT_AUTH_REQ_NONE);*/
-            //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
             break;
         case ESP_GATTC_SRVC_CHG_EVT: {
             esp_bd_addr_t bda;
