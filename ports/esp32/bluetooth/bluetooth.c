@@ -453,6 +453,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 break;
             }
             ESP_LOGI(GATTC_TAG, "write char success ");
+            vTaskDelay( 500 / portTICK_PERIOD_MS );
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
