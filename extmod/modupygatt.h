@@ -24,7 +24,7 @@ int mp_bt_connect(esp_bd_addr_t device);
 int mp_bt_discover_characteristics(void);
 
 // Write to characteristic. Returns errno on failure.
-int mp_bt_char_write_handle(uint16_t handle, /* uint8_t* value, */ bool wait_for_response);
+int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, bool wait_for_response);
 
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)

@@ -215,34 +215,35 @@ int mp_bt_discover_characteristics(void) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "discovering characteristics of the remote device.");
 
-  err = esp_ble_gattc_search_service(mp_bt_call_result.gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, NULL); //&remote_filter_service_uuid);
+  err = esp_ble_gattc_search_service(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, NULL); //&remote_filter_service_uuid);
 
   if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
 	}
-  //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  //Wait for ESP_GATTC_SEARCH_CMPL_EVT
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 
   return 0;
 }
 
-int mp_bt_char_write_handle(uint16_t handle, /*uint8_t* value, */bool wait_for_response) {
+int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, bool wait_for_response) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC");
   //esp_gatt_if_t gattc_if = 3;
   //uint8_t value[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
   //err = esp_ble_gattc_write_char( gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, sizeof(value), value, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-  uint8_t a0[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
-  uint8_t a1[] = {0x55, 0x00, 0x01, 0x00, 0xaa};
-  uint8_t a2[] = {0x55, 0x01, 0x01, 0xaa};
-  uint8_t a3[] = {0x55, 0x02, 0x05, 0x00, 0x00, 0x64, 0x00, 0xaa};
-  uint8_t a4[] = {0x55, 0x03, 0x03, 0xaa};
+  // uint8_t a0[] = {0x55, 0x00, 0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43, 0xaa};
+  // uint8_t a1[] = {0x55, 0x00, 0x01, 0x00, 0xaa};
+  // uint8_t a2[] = {0x55, 0x01, 0x01, 0xaa};
+  // uint8_t a3[] = {0x55, 0x02, 0x05, 0x00, 0x00, 0x64, 0x00, 0xaa};
+  // uint8_t a4[] = {0x55, 0x03, 0x03, 0xaa};
   //gl_profile_tab[PROFILE_A_APP_ID].char_handle = 0x000E;
-  esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000e, sizeof(a0), a0, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-  esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000c, sizeof(a1), a1, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-  esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000e, sizeof(a2), a2, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-  esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000e, sizeof(a3), a3, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-  esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000e, sizeof(a4), a4, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
-
+  err = esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000e, sizeof(value), value, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
+  if (err != ESP_OK) {
+		return mp_bt_esp_errno(err);
+	}
+  //Wait for ESP_GATTC_WRITE_CHAR_EVT
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
   return 0;
 }
 
@@ -277,8 +278,8 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 ESP_LOGE(GATTC_TAG,"config mtu failed, error status = %x", param->cfg_mtu.status);
             }
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
-            //mp_bt_discover_characteristics();
-            //mp_bt_char_write_handle(0x000c, true);
+            //Return for esp_ble_gattc_open
+            xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_SEARCH_RES_EVT: {
             ESP_LOGI(GATTC_TAG, "SEARCH RES: conn_id = %x is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
@@ -348,7 +349,9 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                     ESP_LOGE(GATTC_TAG, "no char found");
                 }
             }
-             break;
+            //Return for esp_ble_gattc_search_service
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
         case ESP_GATTC_REG_FOR_NOTIFY_EVT:
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_REG_FOR_NOTIFY_EVT");
             if (p_data->reg_for_notify.status != ESP_GATT_OK) {
@@ -449,6 +452,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 break;
             }
             ESP_LOGI(GATTC_TAG, "write char success ");
+            xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
             get_server = false;
