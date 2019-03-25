@@ -113,6 +113,9 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     // make the filesystem
     uint8_t working_buf[FF_MAX_SS];
     FRESULT res = f_mkfs(&vfs->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
+    if (res == FR_MKFS_ABORTED) { // Probably doesn't support FAT16
+        res = f_mkfs(&vfs->fatfs, FM_FAT32, 0, working_buf, sizeof(working_buf));
+    }
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
