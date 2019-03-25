@@ -149,7 +149,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
   };
 
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-  mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+  mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
   uint16_t handle = 0x000e;
   mp_buffer_info_t buffer;
