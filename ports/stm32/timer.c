@@ -113,9 +113,9 @@ STATIC const struct {
 };
 
 typedef enum {
-    BRK_MODE_DISABLED,
-    BRK_MODE_ENABLED_ACTIVE_LOW,
-    BRK_MODE_ENABLED_ACTIVE_HIGH,
+    BRK_OFF,
+    BRK_LOW,
+    BRK_HIGH,
 } pyb_brk_mode;
 
 typedef struct _pyb_timer_channel_obj_t {
@@ -474,7 +474,7 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk_
     deadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
     deadTimeConfig.LockLevel        = TIM_LOCKLEVEL_OFF;
     deadTimeConfig.DeadTime         = compute_dtg_from_ticks(ticks);
-    deadTimeConfig.BreakState       = (brk_mode == BRK_MODE_DISABLED) ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
+    deadTimeConfig.BreakState       = (brk_mode == BRK_OFF) ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
     deadTimeConfig.BreakPolarity    = (((brk_mode >> 1) & 0x01) == 0) ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
     deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
@@ -573,8 +573,8 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 ///   - `break_mode` - specifies if the break mode is used to kill the output of
 ///       the PWM when the BRK_IN input is asserted. The polarity set how the
-///       BRK_IN input is triggered. It can be set to `DISABLED`, `ENABLED_LOW`
-///       and `ENABLED_HIGH`.
+///       BRK_IN input is triggered. It can be set to `BRK_OFF`, `BRK_LOW`
+///       and `BRK_HIGH`.
 ///
 ///
 ///  You must either specify freq or both of period and prescaler.
@@ -589,7 +589,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         { MP_QSTR_div,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_deadtime,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_break_mode,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BRK_MODE_DISABLED} },
+        { MP_QSTR_break_mode,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BRK_OFF} },
     };
 
     // parse args
@@ -1325,9 +1325,9 @@ STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RISING), MP_ROM_INT(TIM_ICPOLARITY_RISING) },
     { MP_ROM_QSTR(MP_QSTR_FALLING), MP_ROM_INT(TIM_ICPOLARITY_FALLING) },
     { MP_ROM_QSTR(MP_QSTR_BOTH), MP_ROM_INT(TIM_ICPOLARITY_BOTHEDGE) },
-    { MP_ROM_QSTR(MP_QSTR_DISABLED), MP_ROM_INT(BRK_MODE_DISABLED) },
-    { MP_ROM_QSTR(MP_QSTR_ENABLED_LOW), MP_ROM_INT(BRK_MODE_ENABLED_ACTIVE_LOW) },
-    { MP_ROM_QSTR(MP_QSTR_ENABLED_HIGH), MP_ROM_INT(BRK_MODE_ENABLED_ACTIVE_HIGH) },
+    { MP_ROM_QSTR(MP_QSTR_BRK_OFF), MP_ROM_INT(BRK_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_BRK_LOW), MP_ROM_INT(BRK_LOW) },
+    { MP_ROM_QSTR(MP_QSTR_BRK_HIGH), MP_ROM_INT(BRK_HIGH) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
 
