@@ -107,7 +107,8 @@ jobs:
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
-        - zip -r -j QEMU-ARM_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.bin *.elf
+        - cd $HOME/build/ilyamordasov/micropython/ports/qemu-arm/build
+        - zip -r -j QEMU-ARM_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.elf
         - ZIP=$(readlink -f QEMU-ARM_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
         - |
           ARTEFACTS_URL=$(curl --connect-timeout 5 --max-time 10 -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
