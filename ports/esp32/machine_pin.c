@@ -39,8 +39,10 @@
 #include "machine_rtc.h"
 #include "modesp32.h"
 
-// Used to implement gpio_hold_en() functionality; value should be distinct from all IDF pull modes
-#define GPIO_PULLHOLD (8)
+// Used to implement a range of pull capabilities
+#define GPIO_PULL_DOWN (1)
+#define GPIO_PULL_UP   (2)
+#define GPIO_PULL_HOLD (4)
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
@@ -168,18 +170,24 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 
     // configure pull
     if (args[ARG_pull].u_obj != MP_OBJ_NEW_SMALL_INT(-1)) {
-        if (args[ARG_pull].u_obj == mp_const_none) {
-            gpio_set_pull_mode(self->id, GPIO_FLOATING);
+        int mode = 0;
+        if (args[ARG_pull].u_obj != mp_const_none) {
+            mode = mp_obj_get_int(args[ARG_pull].u_obj);
+        }
+        if (mode & GPIO_PULL_DOWN) {
+            gpio_pulldown_en(self->id);
         } else {
-            int mode = mp_obj_get_int(args[ARG_pull].u_obj);
-            if (mode == GPIO_PULLHOLD) {
-                gpio_hold_en(self->id);
-            } else {
-                if (GPIO_IS_VALID_OUTPUT_GPIO(self->id)) {
-                    gpio_hold_dis(self->id);
-                }
-                gpio_set_pull_mode(self->id, mode);
-            }
+            gpio_pulldown_dis(self->id);
+        }
+        if (mode & GPIO_PULL_UP) {
+            gpio_pullup_en(self->id);
+        } else {
+            gpio_pullup_dis(self->id);
+        }
+        if (mode & GPIO_PULL_HOLD) {
+            gpio_hold_en(self->id);
+        } else if (GPIO_IS_VALID_OUTPUT_GPIO(self->id)) {
+            gpio_hold_dis(self->id);
         }
     }
 
@@ -329,9 +337,9 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_INPUT) },
     { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(GPIO_MODE_INPUT_OUTPUT) },
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_INPUT_OUTPUT_OD) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULLUP_ONLY) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULLDOWN_ONLY) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(GPIO_PULLHOLD) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULL_UP) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(GPIO_PULL_HOLD) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
     { MP_ROM_QSTR(MP_QSTR_WAKE_LOW), MP_ROM_INT(GPIO_PIN_INTR_LOLEVEL) },
