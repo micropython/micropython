@@ -211,6 +211,25 @@ int mp_bt_connect(esp_bd_addr_t device) {
   return 0;
 }
 
+int mp_bt_disconnect(esp_bd_addr_t device) {
+  esp_err_t err;
+  ESP_LOGI(GATTC_TAG, "disconnect from remote device");
+
+  err = esp_ble_gattc_close(3, gl_profile_tab[PROFILE_A_APP_ID].conn_id);
+
+  if (err != ESP_OK) {
+    return mp_bt_esp_errno(err);
+  }
+
+  err = esp_ble_gap_disconnect(device);
+
+  if (err != ESP_OK) {
+    return mp_bt_esp_errno(err);
+  }
+
+  return 0;
+}
+
 int mp_bt_discover_characteristics(void) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "discovering characteristics of the remote device.");
