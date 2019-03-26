@@ -67,9 +67,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         }
 
         #if MICROPY_PY___FILE__
-        if (input_kind == MP_PARSE_FILE_INPUT) {
-            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-        }
+        mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
