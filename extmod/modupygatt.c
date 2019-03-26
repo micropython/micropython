@@ -114,6 +114,36 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
 
+STATIC mp_obj_t gatt_tool_backend_disconnect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_device, ARG_address_type };
+
+  const mp_arg_t allowed_args[] = {
+      { MP_QSTR_device, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = mp_const_none } },
+      { MP_QSTR_address_type, MP_ARG_INT, {.u_int = 2 } },
+  };
+
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  char *addr_str = (char *)mp_obj_str_get_str(args[ARG_device].u_obj);
+  esp_bd_addr_t addr;
+
+  for (int i = 0, j = 0; i < strlen(addr_str); i += 3) {
+    if (strncmp(&addr_str[i], ":", 1) != 0) {
+      addr[j++] = (((addr_str[i]%32+9)%25*16+(addr_str[i+1]%32+9)%25) & 0xFF);
+    }
+    else i--;
+  }
+
+  int errno_ = mp_bt_disconnect(addr);
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
+
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_disconnect_obj, 1, gatt_tool_backend_disconnect);
+
 STATIC mp_obj_t gatt_tool_backend_discover_characteristics(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   enum { ARG_timeout };
 
@@ -184,7 +214,7 @@ STATIC const mp_rom_map_elem_t gatt_tool_backend_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_clear_bond),                            MP_ROM_PTR(&gatt_tool_backend_clear_bond_obj) },
     // { MP_ROM_QSTR(MP_QSTR__disconnect),                           MP_ROM_PTR(&gatt_tool_backend__disconnect_obj) },
     // //@at_most_one_device
-    // { MP_ROM_QSTR(MP_QSTR_disconnect),                            MP_ROM_PTR(&gatt_tool_backend_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),                            MP_ROM_PTR(&gatt_tool_backend_disconnect_obj) },
     // //@at_most_one_device
     // { MP_ROM_QSTR(MP_QSTR_bond),                                  MP_ROM_PTR(&gatt_tool_backend_bond_obj) },
     // { MP_ROM_QSTR(MP_QSTR__save_charecteristic_callback),         MP_ROM_PTR(&gatt_tool_backend__save_charecteristic_callback_obj) },
