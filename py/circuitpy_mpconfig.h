@@ -597,6 +597,7 @@ void run_background_tasks(void);
 #define MICROPY_VM_HOOK_RETURN run_background_tasks();
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+#define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

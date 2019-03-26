@@ -29,9 +29,10 @@
 #include "py/mphal.h"
 #include "py/reload.h"
 
-volatile uint32_t autoreload_delay_ms = 0;
-bool autoreload_enabled = false;
+static volatile uint32_t autoreload_delay_ms = 0;
+static bool autoreload_enabled = false;
 static bool autoreload_suspended = false;
+
 volatile bool reload_requested = false;
 
 inline void autoreload_tick() {
