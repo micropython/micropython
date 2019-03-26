@@ -86,6 +86,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t *data = cmd + 2;
         if (self->init_cs_toggle && self->set_cs != NULL) {
             self->set_cs(self->bus, true);
+            common_hal_time_delay_ms(1);
             self->set_cs(self->bus, false);
         }
         self->send(self->bus, true, cmd, 1);
