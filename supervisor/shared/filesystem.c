@@ -115,6 +115,8 @@ void filesystem_init(bool create_allowed, bool force_create) {
 }
 
 void filesystem_flush(void) {
+    // Reset interval before next flush.
+    filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
     supervisor_flash_flush();
 }
 
