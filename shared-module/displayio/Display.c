@@ -222,7 +222,7 @@ void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint1
     uint16_t data[2];
     self->send(self->bus, true, &self->set_column_command, 1);
     if (self->single_byte_bounds) {
-        data[0] = __builtin_bswap16((x0 + self->colstart) << 8 | (x1 - 1 + self->colstart) && 0xFF);
+        data[0] = __builtin_bswap16(((x0 + self->colstart) << 8) | ((x1 - 1 + self->colstart) & 0xFF));
         self->send(self->bus, false, (uint8_t*) data, 2);
     } else {
         data[0] = __builtin_bswap16(x0 + self->colstart);
@@ -231,7 +231,7 @@ void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint1
     }
     self->send(self->bus, true, &self->set_row_command, 1);
     if (self->single_byte_bounds) {
-        data[0] = __builtin_bswap16((y0 + self->rowstart) << 8 | (y1 - 1 + self->rowstart) && 0xFF);
+        data[0] = __builtin_bswap16(((y0 + self->rowstart) << 8) | ((y1 - 1 + self->rowstart) & 0xFF));
         self->send(self->bus, false, (uint8_t*) data, 2);
     } else {
         data[0] = __builtin_bswap16(y0  + self->rowstart);
