@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 14:08+0100\n"
+"POT-Creation-Date: 2019-03-25 19:40+0100\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -767,12 +767,8 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
-#: shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
-msgstr "La función requiere lock"
-
-#: shared-bindings/busio/I2C.c
-msgid "Function requires lock."
 msgstr "La función requiere lock"
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c
@@ -2874,6 +2870,10 @@ msgstr "tipo de operador no soportado"
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "tipos no soportados para %q: '%s', '%s'"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "value_count must be > 0"
+msgstr ""
+
 #: ports/esp8266/modnetwork.c
 msgid "wifi_set_ip_info() failed"
 msgstr "wifi_set_ip_info() ha fallado"
@@ -2915,6 +2915,9 @@ msgstr "paso cero"
 #, fuzzy
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "No se puede leer el valor del atributo. status 0x%02x"
+
+#~ msgid "Function requires lock."
+#~ msgstr "La función requiere lock"
 
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Solo formato Windows, BMP sin comprimir soportado %d"

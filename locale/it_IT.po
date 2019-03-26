@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 14:08+0100\n"
+"POT-Creation-Date: 2019-03-25 19:40+0100\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -764,12 +764,8 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
-#: shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
-msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "Function requires lock."
 msgstr ""
 
 #: ports/esp8266/common-hal/digitalio/DigitalInOut.c
@@ -2875,6 +2871,10 @@ msgstr "tipo non supportato per l'operando"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "tipi non supportati per %q: '%s', '%s'"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "value_count must be > 0"
+msgstr ""
 
 #: ports/esp8266/modnetwork.c
 msgid "wifi_set_ip_info() failed"
