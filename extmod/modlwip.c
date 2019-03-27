@@ -859,15 +859,28 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_listen_obj, lwip_socket_listen);
 STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
 
-    if (socket->pcb.tcp == NULL) {
-        mp_raise_OSError(MP_EBADF);
-    }
     if (socket->type != MOD_NETWORK_SOCK_STREAM) {
         mp_raise_OSError(MP_EOPNOTSUPP);
     }
+
+    // Create new socket object, do it here because we must not raise an out-of-memory
+    // exception when the LWIP concurrency lock is held
+    lwip_socket_obj_t *socket2 = m_new_obj_with_finaliser(lwip_socket_obj_t);
+    socket2->base.type = &lwip_socket_type;
+
+    MICROPY_PY_LWIP_ENTER
+
+    if (socket->pcb.tcp == NULL) {
+        MICROPY_PY_LWIP_EXIT
+        m_del_obj(lwip_socket_obj_t, socket2);
+        mp_raise_OSError(MP_EBADF);
+    }
+
     // I need to do this because "tcp_accepted", later, is a macro.
     struct tcp_pcb *listener = socket->pcb.tcp;
     if (listener->state != LISTEN) {
+        MICROPY_PY_LWIP_EXIT
+        m_del_obj(lwip_socket_obj_t, socket2);
         mp_raise_OSError(MP_EINVAL);
     }
 
@@ -875,25 +888,28 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     struct tcp_pcb *volatile *incoming_connection = &lwip_socket_incoming_array(socket)[socket->incoming.connection.iget];
     if (*incoming_connection == NULL) {
         if (socket->timeout == 0) {
+            MICROPY_PY_LWIP_EXIT
+            m_del_obj(lwip_socket_obj_t, socket2);
             mp_raise_OSError(MP_EAGAIN);
         } else if (socket->timeout != -1) {
-            for (mp_uint_t retries = socket->timeout / 100; retries--;) {
+            mp_uint_t retries = socket->timeout / 100;
+            while (*incoming_connection == NULL) {
+                MICROPY_PY_LWIP_EXIT
+                if (retries-- == 0) {
+                    m_del_obj(lwip_socket_obj_t, socket2);
+                    mp_raise_OSError(MP_ETIMEDOUT);
+                }
                 mp_hal_delay_ms(100);
-                if (*incoming_connection != NULL) break;
-            }
-            if (*incoming_connection == NULL) {
-                mp_raise_OSError(MP_ETIMEDOUT);
+                MICROPY_PY_LWIP_REENTER
             }
         } else {
             while (*incoming_connection == NULL) {
+                MICROPY_PY_LWIP_EXIT
                 poll_sockets();
+                MICROPY_PY_LWIP_REENTER
             }
         }
     }
-
-    // create new socket object
-    lwip_socket_obj_t *socket2 = m_new_obj_with_finaliser(lwip_socket_obj_t);
-    socket2->base.type = &lwip_socket_type;
 
     // We get a new pcb handle...
     socket2->pcb.tcp = *incoming_connection;
@@ -915,6 +931,8 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     tcp_recv(socket2->pcb.tcp, _lwip_tcp_recv);
 
     tcp_accepted(listener);
+
+    MICROPY_PY_LWIP_EXIT
 
     // make the return value
     uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
