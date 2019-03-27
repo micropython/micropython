@@ -429,6 +429,11 @@ STATIC err_t _lwip_tcp_accept_finished(void *arg, struct tcp_pcb *pcb)
 
 // Callback for incoming tcp connections.
 STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
+    // err can be ERR_MEM to notify us that there was no memory for an incoming connection
+    if (err != ERR_OK) {
+        return ERR_OK;
+    }
+
     lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
     tcp_recv(newpcb, _lwip_tcp_recv_unaccepted);
 
