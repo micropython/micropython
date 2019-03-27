@@ -10,3 +10,11 @@ except OSError:
     vfs = inisetup.setup()
 
 gc.collect()
+
+station = network.WLAN(network.STA_IF)
+station.active(True)
+station.connect(SSID, PW)
+while station.isconnected() == False:
+  pass
+print('Connection successful')
+print(station.ifconfig())
