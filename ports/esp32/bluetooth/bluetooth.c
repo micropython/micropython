@@ -245,11 +245,13 @@ int mp_bt_discover_characteristics(void) {
   return 0;
 }
 
-int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, bool wait_for_response) {
+int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, uint8_t length, bool wait_for_response) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC in HANDLE 0x%04x", handle);
-  esp_log_buffer_hex(GATTC_TAG, value, sizeof(value));
-  err = esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, sizeof(value), value, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
+  uint8_t data[length];
+  memcpy(data, value, length);
+  esp_log_buffer_hex(GATTC_TAG, data, length);
+  err = esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, length, data, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
 	}

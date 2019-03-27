@@ -184,17 +184,17 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
 
   uint16_t handle = args[ARG_handle].u_int;
   bool wait_for_response = args[ARG_wait_for_response].u_obj;
-
+  
   mp_buffer_info_t buffer;
   mp_get_buffer_raise(args[ARG_value].u_obj, &buffer, MP_BUFFER_READ);
-  uint8_t value[buffer.len];
+  uint8_t* value = (uint8_t*)malloc(buffer.len);
   memcpy(value, buffer.buf, buffer.len);
 
-  int errno_ = mp_bt_char_write_handle(handle, value, wait_for_response);
+  int errno_ = mp_bt_char_write_handle(handle, value, buffer.len, wait_for_response);
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
   }
-  
+  free(value);
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_write_handle_obj, 0, gatt_tool_backend_char_write_handle);
