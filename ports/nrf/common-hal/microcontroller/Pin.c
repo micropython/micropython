@@ -53,7 +53,7 @@ void reset_all_pins(void) {
     }
 
     for (uint32_t pin = 0; pin < NUMBER_OF_PINS; ++pin) {
-        if (!(never_reset_pins[nrf_pin_port(pin)] & (1 << nrf_relative_pin_number(pin)))) {
+        if ((never_reset_pins[nrf_pin_port(pin)] & (1 << nrf_relative_pin_number(pin))) != 0) {
             continue;
         }
         nrf_gpio_cfg_default(pin);
@@ -142,6 +142,11 @@ void claim_pin(const mcu_pin_obj_t* pin) {
     #endif
 }
 
+
+bool pin_number_is_free(uint8_t pin_number) {
+    return !(claimed_pins[nrf_pin_port(pin_number)] & (1 << nrf_relative_pin_number(pin_number)));
+}
+
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
@@ -163,5 +168,15 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     }
     #endif
 
-    return !(claimed_pins[nrf_pin_port(pin->number)] & (1 << nrf_relative_pin_number(pin->number)));
+    #ifdef NRF52840
+    // If NFC pins are enabled for NFC, don't allow them to be used for GPIO.
+    if (((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) ==
+         (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) &&
+        (pin->number == 9 || pin->number == 10)) {
+        return false;
+    }
+    #endif
+
+    return pin_number_is_free(pin->number);
+
 }

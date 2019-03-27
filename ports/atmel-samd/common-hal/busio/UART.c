@@ -164,24 +164,35 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // 0x1: TX pad 2; no RTS/CTS
     // 0x2: TX pad 0; RTS: pad 2, CTS: pad 3 (not used by us right now)
     // So divide by 2 to map pad to value.
-    hri_sercomusart_write_CTRLA_TXPO_bf(sercom, tx_pad / 2);
     // RXPO:
     // 0x0: RX pad 0
     // 0x1: RX pad 1
     // 0x2: RX pad 2
     // 0x3: RX pad 3
-    hri_sercomusart_write_CTRLA_RXPO_bf(sercom, rx_pad);
+
+    // Doing a group mask and set of the registers saves 60 bytes over setting the bitfields individually.
+
+    sercom->USART.CTRLA.reg &= ~(SERCOM_USART_CTRLA_TXPO_Msk |
+                                 SERCOM_USART_CTRLA_RXPO_Msk |
+                                 SERCOM_USART_CTRLA_FORM_Msk);
+    sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(tx_pad / 2) |
+                               SERCOM_USART_CTRLA_RXPO(rx_pad) |
+                               (parity == PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
 
     // Enable tx and/or rx based on whether the pins were specified.
-    hri_sercomusart_write_CTRLB_TXEN_bit(sercom, have_tx);
-    hri_sercomusart_write_CTRLB_RXEN_bit(sercom, have_rx);
+    // CHSIZE is 0 for 8 bits, 5, 6, 7 for 5, 6, 7 bits. 1 for 9 bits, but we don't support that.
+    sercom->USART.CTRLB.reg &= ~(SERCOM_USART_CTRLB_TXEN |
+                                 SERCOM_USART_CTRLB_RXEN |
+                                 SERCOM_USART_CTRLB_PMODE |
+                                 SERCOM_USART_CTRLB_SBMODE |
+                                 SERCOM_USART_CTRLB_CHSIZE_Msk);
+    sercom->USART.CTRLB.reg |= (have_tx ? SERCOM_USART_CTRLB_TXEN : 0) |
+                               (have_rx ? SERCOM_USART_CTRLB_RXEN : 0) |
+                               (parity == PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
+                               (stop > 1 ? SERCOM_USART_CTRLB_SBMODE : 0) |
+                               SERCOM_USART_CTRLB_CHSIZE(bits % 8);
 
-    // Set parity, baud rate, stop bits, etc. 9-bit bytes not supported.
-    usart_async_set_parity(usart_desc_p, parity == PARITY_NONE ? USART_PARITY_NONE :
-                           (parity == PARITY_ODD ? USART_PARITY_ODD : USART_PARITY_EVEN));
-    usart_async_set_stopbits(usart_desc_p, stop == 1 ? USART_STOP_BITS_ONE : USART_STOP_BITS_TWO);
-    // This field is 0 for 8 bits, 5, 6, 7 for 5, 6, 7 bits. 1 for 9 bits, but we don't support that.
-    usart_async_set_character_size(usart_desc_p, bits % 8);
+    // Set baud rate
     common_hal_busio_uart_set_baudrate(self, baudrate);
 
     // Turn on rx interrupt handling. The UART async driver has its own set of internal callbacks,

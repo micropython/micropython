@@ -59,9 +59,6 @@
 //|         has been established at any point.  Will not reset if
 //|         USB is disconnected but power remains (e.g. battery connected)
 //|
-//|         Feather52 (nRF52832): Currently returns ``True`` regardless
-//|         of USB connection status.
-//|
 
 STATIC mp_obj_t supervisor_get_serial_connected(mp_obj_t self){
     if (!common_hal_get_serial_connected()) {

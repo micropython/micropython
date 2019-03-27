@@ -44,11 +44,13 @@
 #include "lib/utils/pyexec.h"
 
 #include "mpconfigboard.h"
+#include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/board_busses.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
@@ -56,7 +58,7 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
-#ifdef MICROPY_PY_NETWORK
+#if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
 #endif
 
@@ -116,15 +118,28 @@ void start_mp(supervisor_allocation* heap) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 
-    #if MICROPY_PY_NETWORK
+    #if CIRCUITPY_NETWORK
     network_module_init();
     #endif
 }
 
 void stop_mp(void) {
-    #if MICROPY_PY_NETWORK
+    #if CIRCUITPY_NETWORK
     network_module_deinit();
     #endif
+
+    #if MICROPY_VFS
+    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+
+    // Unmount all heap allocated vfs mounts.
+    while (gc_nbytes(vfs) > 0) {
+        vfs = vfs->next;
+    }
+    MP_STATE_VM(vfs_mount_table) = vfs;
+    MP_STATE_VM(vfs_cur) = vfs;
+    #endif
+
+    gc_deinit();
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
@@ -183,8 +198,8 @@ bool run_code_py(safe_mode_t safe_mode) {
     } else {
         new_status_color(MAIN_RUNNING);
 
-        const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
-        const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+        static const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        static const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
 
         stack_resize();
@@ -198,10 +213,17 @@ bool run_code_py(safe_mode_t safe_mode) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
+        // Turn off the display and flush the fileystem before the heap disappears.
+        #if CIRCUITPY_DISPLAYIO
+        reset_displays();
+        #endif
+        filesystem_flush();
         stop_mp();
         free_memory(heap);
+        supervisor_move_memory();
 
         reset_port();
+        reset_board_busses();
         reset_board();
         reset_status_led();
 
@@ -211,6 +233,10 @@ bool run_code_py(safe_mode_t safe_mode) {
     }
 
     // Wait for connection or character.
+    if (!serial_connected_at_start) {
+        serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
+    }
+
     bool serial_connected_before_animation = false;
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
@@ -219,6 +245,7 @@ bool run_code_py(safe_mode_t safe_mode) {
             MICROPY_VM_HOOK_LOOP
         #endif
         if (reload_requested) {
+            reload_requested = false;
             return true;
         }
 
@@ -296,12 +323,12 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
             mp_hal_delay_ms(1500);
 
             // USB isn't up, so we can write the file.
-            filesystem_writable_by_python(true);
+            filesystem_set_internal_writable_by_usb(false);
             f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
 
             // Switch the filesystem back to non-writable by Python now instead of later,
             // since boot.py might change it back to writable.
-            filesystem_writable_by_python(false);
+            filesystem_set_internal_writable_by_usb(true);
 
             // Write version info to boot_out.txt.
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
@@ -332,6 +359,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         reset_board();
         stop_mp();
         free_memory(heap);
+        supervisor_move_memory();
     }
 }
 
@@ -348,10 +376,12 @@ int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
+    filesystem_flush();
     reset_port();
     reset_board();
     stop_mp();
     free_memory(heap);
+    supervisor_move_memory();
     autoreload_resume();
     return exit_code;
 }
@@ -387,7 +417,8 @@ int __attribute__((used)) main(void) {
 
     // By default our internal flash is readonly to local python code and
     // writable over USB. Set it here so that boot.py can change it.
-    filesystem_writable_by_python(false);
+    filesystem_set_internal_concurrent_write_protection(true);
+    filesystem_set_internal_writable_by_usb(true);
 
     run_boot_py(safe_mode);
 

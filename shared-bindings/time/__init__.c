@@ -83,8 +83,8 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
 #if MICROPY_PY_COLLECTIONS
-mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    if (n_args != 1) {
+mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
         mp_raise_TypeError(translate("time.struct_time() takes exactly 1 argument"));
     }
     if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
@@ -92,7 +92,7 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
 
     mp_obj_tuple_t* tuple = MP_OBJ_TO_PTR(args[0]);
-    return namedtuple_make_new(type, 9, 0, tuple->items);
+    return namedtuple_make_new(type, 9, tuple->items, NULL);
 }
 
 //| .. class:: struct_time((tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst))
@@ -158,7 +158,7 @@ mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
         mp_obj_new_int(-1), // tm_isdst is not supported
     };
 
-    return namedtuple_make_new((const mp_obj_type_t*)&struct_time_type_obj, 9, 0, elems);
+    return namedtuple_make_new((const mp_obj_type_t*)&struct_time_type_obj, 9, elems, NULL);
 };
 
 void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {

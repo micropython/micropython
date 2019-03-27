@@ -28,6 +28,8 @@
 
 #include <stddef.h>
 
+#include "supervisor/shared/display.h"
+
 #define CIRCUITPY_SUPERVISOR_ALLOC_COUNT 8
 
 static supervisor_allocation allocations[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
@@ -113,4 +115,8 @@ supervisor_allocation* allocate_memory(uint32_t length, bool high) {
     }
     alloc->length = length;
     return alloc;
+}
+
+void supervisor_move_memory(void) {
+    supervisor_display_move_memory();
 }

@@ -27,6 +27,7 @@
 #include "tick.h"
 
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/filesystem.h"
 #include "shared-module/gamepad/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "nrf.h"
@@ -39,14 +40,17 @@ void SysTick_Handler(void) {
     // (every millisecond).
     ticks_ms += 1;
 
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
-        autoreload_tick();
-    #endif
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
+#if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
+    filesystem_tick();
+#endif
+#ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+    autoreload_tick();
+#endif
+#ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(ticks_ms & CIRCUITPY_GAMEPAD_TICKS)) {
         gamepad_tick();
     }
-    #endif
+#endif
 }
 
 void tick_init() {

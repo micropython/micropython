@@ -81,7 +81,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     }
 }
 
-STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_t dict_out = mp_obj_new_dict(0);
     mp_obj_dict_t *dict = MP_OBJ_TO_PTR(dict_out);
     dict->base.type = type;
@@ -90,11 +90,12 @@ STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         dict->map.is_ordered = 1;
     }
     #endif
-    if (n_args > 0 || n_kw > 0) {
-        mp_obj_t args2[2] = {dict_out, args[0]}; // args[0] is always valid, even if it's not a positional arg
-        mp_map_t kwargs;
-        mp_map_init_fixed_table(&kwargs, n_kw, args + n_args);
-        dict_update(n_args + 1, args2, &kwargs); // dict_update will check that n_args + 1 == 1 or 2
+    if (n_args > 0 || kw_args != NULL) {
+        mp_obj_t args2[2] = {dict_out, NULL}; // args[0] is always valid, even if it's not a positional arg
+        if (n_args > 0) {
+            args2[1] = args[0];
+        }
+        dict_update(n_args + 1, args2, kw_args); // dict_update will check that n_args + 1 == 1 or 2
     }
     return dict_out;
 }
@@ -328,7 +329,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_ensure_not_fixed(self);
 
-    mp_arg_check_num(n_args, kwargs->used, 1, 2, true);
+    mp_arg_check_num(n_args, kwargs, 1, 2, true);
 
     if (n_args == 2) {
         // given a positional argument

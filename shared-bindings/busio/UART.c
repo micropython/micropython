@@ -62,23 +62,20 @@
 //|
 //|   *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
 //|   The new upper limit on ``timeout`` is meant to catch mistaken use of milliseconds.
-
+//|
 typedef struct {
     mp_obj_base_t base;
 } busio_uart_parity_obj_t;
 extern const busio_uart_parity_obj_t busio_uart_parity_even_obj;
 extern const busio_uart_parity_obj_t busio_uart_parity_odd_obj;
 
-STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // Always initially allocate the UART object within the long-lived heap.
     // This is needed to avoid crashes with certain UART implementations which
     // cannot accomodate being moved after creation. (See
     // https://github.com/adafruit/circuitpython/issues/1056)
     busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
     self->base.type = &busio_uart_type;
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -91,7 +88,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         { MP_QSTR_receiver_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     assert_pin(args[ARG_rx].u_obj, true);
     const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(args[ARG_rx].u_obj);
@@ -119,7 +116,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     }
 
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
-    if (timeout > 100.0f) {
+    if (timeout > (mp_float_t)100.0) {
         mp_raise_ValueError(translate("timeout >100 (units are now seconds, not msecs)"));
     }
 
@@ -175,7 +172,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|     Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|     :return: number of bytes read and stored into ``buf``
-//|     :rtype: bytes or None
+//|     :rtype: int or None (on a non-blocking error)
 //|
 //|     *New in CircuitPython 4.0:* No length parameter is permitted.
 

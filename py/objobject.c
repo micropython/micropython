@@ -35,9 +35,9 @@ typedef struct _mp_obj_object_t {
     mp_obj_base_t base;
 } mp_obj_object_t;
 
-STATIC mp_obj_t object_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t object_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)args;
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
     mp_obj_object_t *o = m_new_obj(mp_obj_object_t);
     o->base.type = type;
     return MP_OBJ_FROM_PTR(o);

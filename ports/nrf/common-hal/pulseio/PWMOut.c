@@ -55,8 +55,33 @@ STATIC NRF_PWM_Type* pwms[] = {
 
 STATIC uint16_t pwm_seq[MP_ARRAY_SIZE(pwms)][CHANNELS_PER_PWM];
 
+static uint8_t never_reset_pwm[MP_ARRAY_SIZE(pwms)];
+
+void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+        NRF_PWM_Type* pwm = pwms[i];
+        if (pwm == self->pwm) {
+            never_reset_pwm[i] += 1;
+        }
+    }
+
+    never_reset_pin_number(self->pin_number);
+}
+
+void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+        NRF_PWM_Type* pwm = pwms[i];
+        if (pwm == self->pwm) {
+            never_reset_pwm[i] -= 1;
+        }
+    }
+}
+
 void pwmout_reset(void) {
-    for(int i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+        if (never_reset_pwm[i] > 0) {
+            continue;
+        }
         NRF_PWM_Type* pwm = pwms[i];
 
         pwm->ENABLE          = 0;
@@ -104,11 +129,11 @@ bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *
     return false;
 }
 
-void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
-                                         const mcu_pin_obj_t* pin,
-                                         uint16_t duty,
-                                         uint32_t frequency,
-                                         bool variable_frequency) {
+pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+                                                    const mcu_pin_obj_t* pin,
+                                                    uint16_t duty,
+                                                    uint32_t frequency,
+                                                    bool variable_frequency) {
 
     // We don't use the nrfx driver here because we want to dynamically allocate channels
     // as needed in an already-enabled PWM.
@@ -116,7 +141,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     uint16_t countertop;
     nrf_pwm_clk_t base_clock;
     if (frequency == 0 || !convert_frequency(frequency, &countertop, &base_clock)) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        return PWMOUT_INVALID_FREQUENCY;
     }
 
     self->pwm = NULL;
@@ -158,7 +183,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     }
 
     if (self->pwm == NULL) {
-        mp_raise_ValueError(translate("All PWM peripherals are in use"));
+        return PWMOUT_ALL_TIMERS_IN_USE;
     }
 
     self->pin_number = pin->number;
@@ -183,6 +208,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     nrf_pwm_enable(pwm);
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    return PWMOUT_OK;
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {

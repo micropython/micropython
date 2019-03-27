@@ -46,22 +46,22 @@
 #include "shared-module/wiznet/wiznet5k.h"
 
 //| .. currentmodule:: wiznet
-//| 
+//|
 //| :class:`WIZNET5K` -- wrapper for Wiznet 5500 Ethernet interface
 //| ===============================================================
 //|
 //| .. class:: WIZNET5K(spi, cs, rst)
 //|
 //|   Create a new WIZNET5500 interface using the specified pins
-//|   
+//|
 //|   :param spi: spi bus to use
 //|   :param cs: pin to use for Chip Select
-//|   :param rst: pin to sue for Reset 
+//|   :param rst: pin to sue for Reset
 //|
 
-STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 3, 3, false);
+    mp_arg_check_num(n_args, kw_args, 3, 3, false);
 
     return wiznet5k_create(args[0], args[1], args[2]);
 }

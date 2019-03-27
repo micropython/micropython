@@ -16,6 +16,7 @@ ifeq ($(SD),)
 	LD_FILE = boards/nrf52840_1M_256k.ld
 else
 	LD_FILE = boards/adafruit_$(MCU_SUB_VARIANT)_$(SD_LOWER)_v$(firstword $(subst ., ,$(SOFTDEV_VERSION))).ld
+	CIRCUITPY_BLEIO = 1
 endif
 
 NRF_DEFINES += -DNRF52840_XXAA -DNRF52840

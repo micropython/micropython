@@ -407,4 +407,21 @@ typedef struct {
     .write_status_register_split = false, \
 }
 
+// Settings for the Winbond W25Q32FV 4MiB SPI flash.
+// Datasheet:http://www.winbond.com/resource-files/w25q32fv%20revj%2006032016.pdf?__locale=en
+#define W25Q32FV {\
+    .total_size = (1 << 22), /* 4 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x40, \
+    .capacity = 0x16, \
+    .max_clock_speed_mhz = 104, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H

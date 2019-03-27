@@ -33,20 +33,22 @@
 #include "py/obj.h"
 
 typedef struct {
+    mp_obj_t native;
+    mp_obj_t original;
+} displayio_group_child_t;
+
+typedef struct {
     mp_obj_base_t base;
     int16_t x;
     int16_t y;
+    uint16_t scale;
     uint16_t size;
     uint16_t max_size;
-    mp_obj_t* children;
+    displayio_group_child_t* children;
     bool needs_refresh;
 } displayio_group_t;
 
-
-void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size);
-void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer);
-
-void displayio_group_construct(displayio_group_t* self, mp_obj_t* child_array, uint32_t max_size);
+void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y);
 bool displayio_group_get_pixel(displayio_group_t *group, int16_t x, int16_t y, uint16_t *pixel);
 bool displayio_group_needs_refresh(displayio_group_t *self);
 void displayio_group_finish_refresh(displayio_group_t *self);

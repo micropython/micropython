@@ -28,12 +28,15 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUID_H
 
 #include "common-hal/bleio/UUID.h"
-#include "shared-bindings/bleio/UUIDType.h"
+
+void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 extern const mp_obj_type_t bleio_uuid_type;
 
-extern void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, const mp_obj_t *uuid);
-extern void common_hal_bleio_uuid_print(bleio_uuid_obj_t *self, const mp_print_t *print);
-extern bleio_uuid_type_t common_hal_bleio_uuid_get_type(bleio_uuid_obj_t *self);
+extern void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, mp_int_t uuid16, uint8_t uuid128[]);
+extern uint32_t common_hal_bleio_uuid_get_uuid16(bleio_uuid_obj_t *self);
+extern bool common_hal_bleio_uuid_get_uuid128(bleio_uuid_obj_t *self, uint8_t uuid128[16]);
+extern uint32_t common_hal_bleio_uuid_get_uuid128_reference(bleio_uuid_obj_t *self);
+extern uint32_t common_hal_bleio_uuid_get_size(bleio_uuid_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_UUID_H

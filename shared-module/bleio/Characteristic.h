@@ -27,26 +27,15 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 
-#include "shared-module/bleio/Service.h"
-#include "common-hal/bleio/UUID.h"
-
+// Flags for each characteristic property. Common across ports.
 typedef struct {
-    mp_obj_base_t base;
-    bleio_service_obj_t *service;
-    bleio_uuid_obj_t *uuid;
-    mp_obj_t value_data;
-    uint16_t handle;
-    struct {
         bool broadcast : 1;
         bool read : 1;
-        bool write_wo_resp : 1;
+        bool write_no_response : 1;
         bool write : 1;
         bool notify : 1;
         bool indicate : 1;
-    } props;
-    uint16_t user_desc_handle;
-    uint16_t cccd_handle;
-    uint16_t sccd_handle;
-} bleio_characteristic_obj_t;
+} bleio_characteristic_properties_t;
+
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H

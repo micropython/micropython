@@ -32,49 +32,87 @@
 #include "ble_drv.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
+#include "nrf_soc.h"
+#include "nrfx_power.h"
 #include "py/misc.h"
+#include "py/mpstate.h"
 
 nrf_nvic_state_t nrf_nvic_state = { 0 };
+
+// Flag indicating progress of internal flash operation.
+sd_flash_operation_status_t sd_flash_operation_status;
 
 __attribute__((aligned(4)))
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)];
 
-typedef struct event_handler {
-    struct event_handler *next;
-    void *param;
-    ble_drv_evt_handler_t func;
-} event_handler_t;
-
-static event_handler_t *m_event_handlers;
+void ble_drv_reset() {
+    // Linked list items will be gc'd.
+    MP_STATE_VM(ble_drv_evt_handler_entries) = NULL;
+    sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
+}
 
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
-    event_handler_t *handler = m_new_ll(event_handler_t, 1);
-    handler->next = NULL;
-    handler->param = param;
-    handler->func = func;
-
-    if (m_event_handlers == NULL) {
-        m_event_handlers = handler;
-        return;
-    }
-
-    event_handler_t *it = m_event_handlers;
-    while (it->next != NULL) {
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+    while (it != NULL) {
+        // If event handler and its corresponding param are already on the list, don't add again.
         if ((it->func == func) && (it->param == param)) {
-            m_free(handler);
             return;
         }
-
         it = it->next;
     }
 
-    it->next = handler;
+    // Add a new handler to the front of the list
+    ble_drv_evt_handler_entry_t *handler = m_new_ll(ble_drv_evt_handler_entry_t, 1);
+    handler->next = MP_STATE_VM(ble_drv_evt_handler_entries);
+    handler->param = param;
+    handler->func = func;
+
+    MP_STATE_VM(ble_drv_evt_handler_entries) = handler;
 }
+
+void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+    ble_drv_evt_handler_entry_t **prev = &MP_STATE_VM(ble_drv_evt_handler_entries);
+    while (it != NULL) {
+        if ((it->func == func) && (it->param == param)) {
+            // Splice out the matching handler.
+            *prev = it->next;
+            return;
+        }
+        prev = &(it->next);
+        it = it->next;
+    }
+}
+
+extern void tusb_hal_nrf_power_event (uint32_t event);
 
 void SD_EVT_IRQHandler(void) {
     uint32_t evt_id;
     while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {
-//        sd_evt_handler(evt_id);
+        switch (evt_id) {
+            // usb power event
+        case NRF_EVT_POWER_USB_DETECTED:
+        case NRF_EVT_POWER_USB_POWER_READY:
+        case NRF_EVT_POWER_USB_REMOVED: {
+            int32_t usbevt = (evt_id == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
+                (evt_id == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
+                (evt_id == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
+
+            tusb_hal_nrf_power_event(usbevt);
+        }
+            break;
+
+            // Set flag indicating that a flash operation has finished.
+        case NRF_EVT_FLASH_OPERATION_SUCCESS:
+            sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
+            break;
+        case NRF_EVT_FLASH_OPERATION_ERROR:
+            sd_flash_operation_status = SD_FLASH_OPERATION_ERROR;
+            break;
+
+        default:
+            break;
+        }
     }
 
     while (1) {
@@ -88,7 +126,7 @@ void SD_EVT_IRQHandler(void) {
             break;
         }
 
-        event_handler_t *it = m_event_handlers;
+        ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
         while (it != NULL) {
             it->func((ble_evt_t *)m_ble_evt_buf, it->param);
             it = it->next;

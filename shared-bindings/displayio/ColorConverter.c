@@ -43,8 +43,6 @@
 //|
 //| Converts one color format to another.
 //|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: ColorConverter()
 //|
 //|   Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
@@ -52,8 +50,8 @@
 //|
 // TODO(tannewt): Add support for other color formats.
 //|
-STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 0, true);
+STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
 
     displayio_colorconverter_t *self = m_new_obj(displayio_colorconverter_t);
     self->base.type = &displayio_colorconverter_type;

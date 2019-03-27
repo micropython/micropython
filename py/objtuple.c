@@ -59,10 +59,10 @@ void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     }
 }
 
-STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
 
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     switch (n_args) {
         case 0:
@@ -160,7 +160,8 @@ mp_obj_t mp_obj_tuple_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (n <= 0) {
                 return mp_const_empty_tuple;
             }
-            mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(o->len * n, NULL));
+            size_t new_len = mp_seq_multiply_len(o->len, n);
+            mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(new_len, NULL));
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return MP_OBJ_FROM_PTR(s);
         }

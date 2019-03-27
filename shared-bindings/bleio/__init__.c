@@ -29,14 +29,15 @@
 #include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/AddressType.h"
 #include "shared-bindings/bleio/AdvertisementData.h"
+#include "shared-bindings/bleio/Broadcaster.h"
 #include "shared-bindings/bleio/Characteristic.h"
+#include "shared-bindings/bleio/CharacteristicBuffer.h"
 #include "shared-bindings/bleio/Descriptor.h"
-#include "shared-bindings/bleio/Device.h"
+#include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Scanner.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
-#include "shared-bindings/bleio/UUIDType.h"
 
 //| :mod:`bleio` --- Bluetooth Low Energy functionality
 //| ================================================================
@@ -56,14 +57,17 @@
 //|     AddressType
 //|     AdvertisementData
 //|     Adapter
+//|     Broadcaster
 //|     Characteristic
-//|     Descriptor
-//|     Device
-//|     ScanEntry
-//|     Scanner
+//|     CharacteristicBuffer
+// Work-in-progress classes are omitted, and marked as :orphan: in their files.
+//     Descriptor
+//     Device
+//|     Peripheral
+//    ScanEntry
+//    Scanner
 //|     Service
 //|     UUID
-//|     UUIDType
 //|
 //| .. attribute:: adapter
 //|
@@ -76,11 +80,14 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),          MP_ROM_QSTR(MP_QSTR_bleio) },
     { MP_ROM_QSTR(MP_QSTR_Address),           MP_ROM_PTR(&bleio_address_type) },
     { MP_ROM_QSTR(MP_QSTR_AdvertisementData), MP_ROM_PTR(&bleio_advertisementdata_type) },
+    { MP_ROM_QSTR(MP_QSTR_Broadcaster),       MP_ROM_PTR(&bleio_broadcaster_type) },
     { MP_ROM_QSTR(MP_QSTR_Characteristic),    MP_ROM_PTR(&bleio_characteristic_type) },
-    { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
-    { MP_ROM_QSTR(MP_QSTR_Device),            MP_ROM_PTR(&bleio_device_type) },
-    { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
-    { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
+    { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer),    MP_ROM_PTR(&bleio_characteristic_buffer_type) },
+//    { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
+    { MP_ROM_QSTR(MP_QSTR_Peripheral),        MP_ROM_PTR(&bleio_peripheral_type) },
+// Hide work-in-progress.
+//    { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
+//    { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
     { MP_ROM_QSTR(MP_QSTR_Service),           MP_ROM_PTR(&bleio_service_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),              MP_ROM_PTR(&bleio_uuid_type) },
 
@@ -89,7 +96,6 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
     // Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_AddressType),       MP_ROM_PTR(&bleio_addresstype_type) },
-    { MP_ROM_QSTR(MP_QSTR_UUIDType),          MP_ROM_PTR(&bleio_uuidtype_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);

@@ -44,8 +44,6 @@
 //| Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
 //| save memory.
 //|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: Palette(color_count)
 //|
 //|   Create a Palette object to store a set number of colors.
@@ -54,16 +52,13 @@
 // TODO(tannewt): Add support for other color formats.
 // TODO(tannewt): Add support for 8-bit alpha blending.
 //|
-STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_color_count };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_color_count, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_color_count, MP_ARG_REQUIRED | MP_ARG_INT },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     displayio_palette_t *self = m_new_obj(displayio_palette_t);
     self->base.type = &displayio_palette_type;

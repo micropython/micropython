@@ -27,12 +27,12 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
 
-#include "shared-module/bleio/Characteristic.h"
+#include "common-hal/bleio/Characteristic.h"
 
 extern const mp_obj_type_t bleio_characteristic_type;
 
-extern void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self);
-extern void common_hal_bleio_characteristic_read_value(bleio_characteristic_obj_t *self);
-extern void common_hal_bleio_characteristic_write_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo);
+extern void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props);
+extern void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self);
+extern void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H

@@ -205,9 +205,9 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
+    mp_arg_parse_all(n_args, args, kw_args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return fdfile_open(type, arg_vals);
 }
 

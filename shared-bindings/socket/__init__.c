@@ -39,20 +39,20 @@
 
 //| :mod:`socket` --- TCP, UDP and RAW socket support
 //| =================================================
-//| 
+//|
 //| .. module:: socket
 //|   :synopsis: TCP, UDP and RAW sockets
 //|   :platform: SAMD21, SAMD51
 //|
 //| Create TCP, UDP and RAW sockets for communicating over the Internet.
-//|   
+//|
 
 STATIC const mp_obj_type_t socket_type;
 
 //| .. currentmodule:: socket
 //|
 //| .. class:: socket(family, type, proto, ...)
-//|   
+//|
 //|   Create a new socket
 //|
 //|   :param ~int family: AF_INET or AF_INET6
@@ -60,8 +60,8 @@ STATIC const mp_obj_type_t socket_type;
 //|   :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)
 //|
 
-STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 4, false);
+STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 4, false);
 
     // create socket object (not bound to any NIC yet)
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
@@ -240,13 +240,59 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
+
+// helper function for socket_recv and socket_recv_into to handle common operations of both
+STATIC mp_int_t _socket_recv_into(mod_network_socket_obj_t *sock, byte *buf, mp_int_t len) {
+    int _errno;
+    mp_int_t ret = sock->nic_type->recv(sock, buf, len, &_errno);
+    if (ret == -1) {
+        mp_raise_OSError(_errno);
+    }
+    return len;
+}
+
+
+//| .. method:: recv_into(buffer[, bufsize])
+//|
+//|   Reads some bytes from the connected remote address, writing
+//|   into the provided buffer. If bufsize <= len(buffer) is given,
+//|   a maximum of bufsize bytes will be read into the buffer. If no
+//|   valid value is given for bufsize, the default is the length of 
+//|   the given buffer.
+//|
+//|   Suits sockets of type SOCK_STREAM
+//|   Returns an int of number of bytes read.
+//|
+//|   :param bytearray buffer: buffer to receive into
+//|   :param int bufsize: optionally, a maximum number of bytes to read.
+
+STATIC mp_obj_t socket_recv_into(size_t n_args, const mp_obj_t *args) {
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (self->nic == MP_OBJ_NULL) {
+        // not connected
+        mp_raise_OSError(MP_ENOTCONN);
+    }
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
+    mp_int_t len;
+    if (n_args == 3) {
+        len = mp_obj_get_int(args[2]);
+    }
+    if (n_args == 2 || (size_t) len > bufinfo.len) {
+        len = bufinfo.len;
+    }
+    mp_int_t ret = _socket_recv_into(self, (byte*)bufinfo.buf, len);
+    return mp_obj_new_int_from_uint(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_into_obj, 2, 3, socket_recv_into);
+
 //| .. method:: recv(bufsize)
 //|
 //|   Reads some bytes from the connected remote address.
 //|   Suits sockets of type SOCK_STREAM
 //|   Returns a bytes() of length <= bufsize
-//| 
-//|   :param ~int bufsize: maximum number of bytes to receive  
+//|
+//|   :param ~int bufsize: maximum number of bytes to receive
 
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -257,11 +303,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mp_int_t len = mp_obj_get_int(len_in);
     vstr_t vstr;
     vstr_init_len(&vstr, len);
-    int _errno;
-    mp_int_t ret = self->nic_type->recv(self, (byte*)vstr.buf, len, &_errno);
-    if (ret == -1) {
-        mp_raise_OSError(_errno);
-    }
+    mp_int_t ret = _socket_recv_into(self, (byte*)vstr.buf, len);
     if (ret == 0) {
         return mp_const_empty_bytes;
     }
@@ -313,7 +355,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(socket_sendto_obj, socket_sendto);
 //|   * a bytes() of length <= bufsize
 //|   * a remote_address, which is a tuple of ip address and port number
 //|
-//|   :param ~int bufsize: maximum number of bytes to receive  
+//|   :param ~int bufsize: maximum number of bytes to receive
 //|
 
 STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
@@ -436,6 +478,7 @@ STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv_into), MP_ROM_PTR(&socket_recv_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socket_settimeout_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
@@ -469,10 +512,10 @@ STATIC const mp_obj_type_t socket_type = {
 };
 
 //| .. function:: getaddrinfo(host, port)
-//| 
+//|
 //|   Gets the address information for a hostname and port
 //|
-//|   Returns the appropriate family, socket type, socket protocol and 
+//|   Returns the appropriate family, socket type, socket protocol and
 //|   address information to call socket.socket() and socket.connect() with,
 //|   as a tuple.
 //|

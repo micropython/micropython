@@ -42,6 +42,7 @@ Module             Supported Ports
 `bleio`            **nRF**
 `busio`            **All Supported**
 `digitalio`        **All Supported**
+`frequencyio`      **SAMD51**
 `gamepad`          **SAMD Express, nRF**
 `hashlib`          **ESP8266**
 `i2cslave`         **SAMD Express**
@@ -61,4 +62,6 @@ Module             Supported Ports
 `touchio`          **SAMD/SAMD Express**
 `uheap`            **Debug (All)**
 `usb_hid`          **SAMD/SAMD Express**
+`_pixelbuf`        **SAMD Express**
+`_stage`           **SAMD/SAMD Express**
 =================  ==============================

@@ -55,8 +55,7 @@ STATIC const mp_rom_map_elem_t nvm_module_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(nvm_module_globals, nvm_module_globals_table);
 
-// cpy prefix is used to prevent collision with nvm_module global in ASF.
-const mp_obj_module_t cpy_nvm_module = {
+const mp_obj_module_t nvm_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&nvm_module_globals,
 };

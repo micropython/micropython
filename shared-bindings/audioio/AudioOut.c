@@ -93,10 +93,7 @@
 //|       pass
 //|     print("stopped")
 //|
-STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_left_channel, ARG_right_channel, ARG_quiescent_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_left_channel, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -104,7 +101,7 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
         { MP_QSTR_quiescent_value, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x8000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t left_channel_obj = args[ARG_left_channel].u_obj;
     assert_pin(left_channel_obj, false);

@@ -87,12 +87,12 @@
 //|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000, bit_depth=16) as mic:
 //|         mic.record(b, len(b))
 //|
-STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    enum { ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_clock_pin, ARG_data_pin, ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sample_rate,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16000} },
+        { MP_QSTR_clock_pin,     MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_data_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_sample_rate,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16000} },
         { MP_QSTR_bit_depth,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_mono,          MP_ARG_KW_ONLY | MP_ARG_BOOL,{.u_bool = true} },
         { MP_QSTR_oversample,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
@@ -102,14 +102,14 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     static const float STARTUP_DELAY_DEFAULT = 0.110F;
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 2, pos_args + 2, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t clock_pin_obj = pos_args[0];
+    mp_obj_t clock_pin_obj = args[ARG_clock_pin].u_obj;
     assert_pin(clock_pin_obj, false);
     const mcu_pin_obj_t *clock_pin = MP_OBJ_TO_PTR(clock_pin_obj);
     assert_pin_free(clock_pin);
 
-    mp_obj_t data_pin_obj = pos_args[1];
+    mp_obj_t data_pin_obj = args[ARG_data_pin].u_obj;
     assert_pin(data_pin_obj, false);
     const mcu_pin_obj_t *data_pin = MP_OBJ_TO_PTR(data_pin_obj);
     assert_pin_free(data_pin);
@@ -129,8 +129,8 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     }
     bool mono = args[ARG_mono].u_bool;
 
-    float startup_delay = (args[ARG_startup_delay].u_obj == MP_OBJ_NULL)
-        ? STARTUP_DELAY_DEFAULT
+    mp_float_t startup_delay = (args[ARG_startup_delay].u_obj == MP_OBJ_NULL)
+        ? (mp_float_t)STARTUP_DELAY_DEFAULT
         : mp_obj_get_float(args[ARG_startup_delay].u_obj);
     if (startup_delay < 0.0 || startup_delay > 1.0) {
         mp_raise_ValueError(translate("Microphone startup delay must be in range 0.0 to 1.0"));

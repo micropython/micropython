@@ -68,9 +68,9 @@ STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     return list;
 }
 
-STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     switch (n_args) {
         case 0:
@@ -126,7 +126,8 @@ STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (n < 0) {
                 n = 0;
             }
-            mp_obj_list_t *s = list_new(o->len * n);
+            size_t new_len = mp_seq_multiply_len(o->len, n);
+            mp_obj_list_t *s = list_new(new_len);
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return MP_OBJ_FROM_PTR(s);
         }

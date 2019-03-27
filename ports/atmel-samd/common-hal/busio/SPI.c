@@ -54,6 +54,17 @@ void never_reset_sercom(Sercom* sercom) {
     }
 }
 
+void allow_reset_sercom(Sercom* sercom) {
+    // Reset all SERCOMs except the ones being used by on-board devices.
+    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+        if (sercom_instances[i] == sercom) {
+            never_reset_sercoms[i] = false;
+            break;
+        }
+    }
+}
+
 void reset_sercoms(void) {
     // Reset all SERCOMs except the ones being used by on-board devices.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
@@ -63,12 +74,6 @@ void reset_sercoms(void) {
         }
     #ifdef MICROPY_HW_APA102_SERCOM
         if (sercom_instances[i] == MICROPY_HW_APA102_SERCOM) {
-            continue;
-        }
-    #endif
-    #ifdef CIRCUITPY_DISPLAYIO
-        // TODO(tannewt): Make this dynamic.
-        if (sercom_instances[i] == board_display_obj.bus.spi_desc.dev.prvt) {
             continue;
         }
     #endif
@@ -84,14 +89,16 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     Sercom* sercom = NULL;
     uint8_t sercom_index;
     uint32_t clock_pinmux = 0;
-    bool mosi_none = mosi == mp_const_none;
-    bool miso_none = miso == mp_const_none;
+    bool mosi_none = mosi == mp_const_none || mosi == NULL;
+    bool miso_none = miso == mp_const_none || miso == NULL;
     uint32_t mosi_pinmux = 0;
     uint32_t miso_pinmux = 0;
     uint8_t clock_pad = 0;
     uint8_t mosi_pad = 0;
     uint8_t miso_pad = 0;
     uint8_t dopo = 255;
+
+    // Special case for SAMR boards.
     #ifdef PIN_PC19
     if (miso == &pin_PC19) {
         if (mosi == &pin_PB30 && clock == &pin_PC18) {
@@ -241,6 +248,8 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         return;
     }
+    allow_reset_sercom(self->spi_desc.dev.prvt);
+
     spi_m_sync_disable(&self->spi_desc);
     spi_m_sync_deinit(&self->spi_desc);
     reset_pin_number(self->clock_pin);

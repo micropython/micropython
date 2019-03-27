@@ -1,6 +1,6 @@
 #include "shared-bindings/board/__init__.h"
 
-#include "board_busses.h"
+#include "supervisor/shared/board_busses.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_P0_03) },
@@ -59,6 +59,14 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_UBLOX_POWER_MONITOR), MP_ROM_PTR(&pin_P0_02) },
     { MP_ROM_QSTR(MP_QSTR_UBLOX_RESET), MP_ROM_PTR(&pin_P0_12) },
     { MP_ROM_QSTR(MP_QSTR_UBLOX_POWER_ON), MP_ROM_PTR(&pin_P0_16) },
+
+
+    { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
+
+
+
 };
 
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

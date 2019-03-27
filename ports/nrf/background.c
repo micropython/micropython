@@ -24,15 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifdef NRF52840
+#include "py/runtime.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/usb.h"
-#endif
-
 #include "supervisor/shared/stack.h"
 
+#ifdef CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
+
 void run_background_tasks(void) {
-    #ifdef NRF52840
-        usb_background();
+    filesystem_background();
+    usb_background();
+
+    #ifdef CIRCUITPY_DISPLAYIO
+    displayio_refresh_displays();
     #endif
+
     assert_heap_ok();
 }

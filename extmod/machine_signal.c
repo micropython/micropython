@@ -42,7 +42,7 @@ typedef struct _machine_signal_t {
     bool invert;
 } machine_signal_t;
 
-STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_t pin = args[0];
     bool invert = false;
 
@@ -96,9 +96,9 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     // Otherwise there should be 1 or 2 args
     {
         if (n_args == 1) {
-            if (n_kw == 0) {
-            } else if (n_kw == 1 && args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_invert)) {
-                invert = mp_obj_is_true(args[2]);
+            if (kw_args == NULL || kw_args->used == 0) {
+            } else if (kw_args->used == 1 && kw_args->table[0].key == MP_OBJ_NEW_QSTR(MP_QSTR_invert)) {
+                invert = mp_obj_is_true(kw_args->table[0].value);
             } else {
                 goto error;
             }
@@ -133,7 +133,7 @@ STATIC mp_uint_t signal_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg
 
 // fast method for getting/setting signal value
 STATIC mp_obj_t signal_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, 0, 1, false);
     if (n_args == 0) {
         // get pin
         return MP_OBJ_NEW_SMALL_INT(mp_virtual_pin_read(self_in));

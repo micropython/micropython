@@ -32,8 +32,18 @@
 extern const mp_obj_type_t displayio_group_type;
 
 
-void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size);
+void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y);
+uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self);
+void common_hal_displayio_group_set_scale(displayio_group_t* self, uint32_t scale);
+mp_int_t common_hal_displayio_group_get_x(displayio_group_t* self);
+void common_hal_displayio_group_set_x(displayio_group_t* self, mp_int_t x);
+mp_int_t common_hal_displayio_group_get_y(displayio_group_t* self);
+void common_hal_displayio_group_set_y(displayio_group_t* self, mp_int_t y);
 void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer);
-mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self);
+void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp_obj_t layer);
+size_t common_hal_displayio_group_get_len(displayio_group_t* self);
+mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self, size_t index);
+mp_obj_t common_hal_displayio_group_get(displayio_group_t* self, size_t index);
+void common_hal_displayio_group_set(displayio_group_t* self, size_t index, mp_obj_t layer);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_GROUP_H

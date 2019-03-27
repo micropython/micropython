@@ -50,7 +50,7 @@
 #define TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
 
-STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 
 /******************************************************************************/
 // instance object
@@ -90,14 +90,14 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
 
 // This wrapper function is allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
-STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args) {
-    mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
+STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_obj_instance_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     const mp_obj_type_t *native_base = NULL;
     instance_count_native_bases(self->base.type, &native_base);
-    self->subobj[0] = native_base->make_new(native_base, n_args - 1, 0, args + 1);
+    self->subobj[0] = native_base->make_new(native_base, n_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(native_base_init_wrapper_obj, 1, MP_OBJ_FUN_ARGS_MAX, native_base_init_wrapper);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(native_base_init_wrapper_obj, 1, native_base_init_wrapper);
 
 #if !MICROPY_CPYTHON_COMPAT
 STATIC
@@ -171,6 +171,9 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     // do a lookup, not a (base) type in which we found the class method.
                     const mp_obj_type_t *org_type = (const mp_obj_type_t*)lookup->obj;
                     mp_convert_member_lookup(MP_OBJ_NULL, org_type, elem->value, lookup->dest);
+                } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_property)) {
+                    lookup->dest[0] = elem->value;
+                    return;
                 } else {
                     mp_obj_instance_t *obj = lookup->obj;
                     mp_obj_t obj_obj;
@@ -281,7 +284,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "<%s object at %p>", mp_obj_get_type_str(self_in), self);
 }
 
-mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     assert(mp_obj_is_instance_type(self));
 
     // look for __new__ function
@@ -297,6 +300,10 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
 
     const mp_obj_type_t *native_base = NULL;
     mp_obj_instance_t *o;
+    size_t n_kw = 0;
+    if (kw_args != 0) {
+        n_kw = kw_args->used;
+    }
     if (init_fn[0] == MP_OBJ_NULL || init_fn[0] == MP_OBJ_SENTINEL) {
         // Either there is no __new__() method defined or there is a native
         // constructor.  In both cases create a blank instance.
@@ -315,9 +322,12 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
             mp_obj_t args2[1] = {MP_OBJ_FROM_PTR(self)};
             new_ret = mp_call_function_n_kw(init_fn[0], 1, 0, args2);
         } else {
+            // TODO(tannewt): Could this be on the stack? It's deleted below.
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
             args2[0] = MP_OBJ_FROM_PTR(self);
-            memcpy(args2 + 1, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+            memcpy(args2 + 1, args, n_args * sizeof(mp_obj_t));
+            // copy in kwargs
+            memcpy(args2 + 1 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
             new_ret = mp_call_function_n_kw(init_fn[0], n_args + 1, n_kw, args2);
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
@@ -343,13 +353,16 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     mp_obj_class_lookup(&lookup, self);
     if (init_fn[0] != MP_OBJ_NULL) {
         mp_obj_t init_ret;
-        if (n_args == 0 && n_kw == 0) {
+        if (n_args == 0 && kw_args == NULL) {
             init_ret = mp_call_method_n_kw(0, 0, init_fn);
         } else {
+            // TODO(tannewt): Could this be on the stack? It's deleted below.
             mp_obj_t *args2 = m_new(mp_obj_t, 2 + n_args + 2 * n_kw);
             args2[0] = init_fn[0];
             args2[1] = init_fn[1];
-            memcpy(args2 + 2, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+            // copy in kwargs
+            memcpy(args2 + 2, args, n_args * sizeof(mp_obj_t));
+            memcpy(args2 + 2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
             init_ret = mp_call_method_n_kw(n_args, n_kw, args2);
             m_del(mp_obj_t, args2, 2 + n_args + 2 * n_kw);
         }
@@ -367,7 +380,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     // If the type had a native base that was not explicitly initialised
     // (constructed) by the Python __init__() method then construct it now.
     if (native_base != NULL && o->subobj[0] == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
-        o->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args);
+        o->subobj[0] = native_base->make_new(native_base, n_args, args, kw_args);
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -959,10 +972,10 @@ STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     mp_printf(print, "<class '%q'>", self->name);
 }
 
-STATIC mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
 
-    mp_arg_check_num(n_args, n_kw, 1, 3, false);
+    mp_arg_check_num(n_args, kw_args, 1, 3, false);
 
     switch (n_args) {
         case 1:
@@ -992,8 +1005,10 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
         }
     }
 
-    // make new instance
-    mp_obj_t o = self->make_new(self, n_args, n_kw, args);
+    // create a map directly from the given args array and make a new instance
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    mp_obj_t o = self->make_new(self, n_args, args, &kw_args);
 
     // return new instance
     return o;
@@ -1053,7 +1068,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
                 // store attribute
                 mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-                elem->value = make_obj_long_lived(dest[1], 10);
+                elem->value = dest[1];
                 dest[0] = MP_OBJ_NULL; // indicate success
             }
         }
@@ -1170,7 +1185,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         // __new__ slot exists; check if it is a function
         if (MP_OBJ_IS_FUN(elem->value)) {
             // __new__ is a function, wrap it in a staticmethod decorator
-            elem->value = static_class_method_make_new(&mp_type_staticmethod, 1, 0, &elem->value);
+            elem->value = static_class_method_make_new(&mp_type_staticmethod, 1, &elem->value, NULL);
         }
     }
 
@@ -1196,11 +1211,11 @@ STATIC void super_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
     mp_print_str(print, ">");
 }
 
-STATIC mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
     // 0 arguments are turned into 2 in the compiler
     // 1 argument is not yet implemented
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+    mp_arg_check_num(n_args, kw_args, 2, 2, false);
     if(!MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
         mp_raise_TypeError(translate("first argument to super() must be type"));
     }
@@ -1394,10 +1409,13 @@ STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
 
-mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type) {
+mp_obj_t mp_instance_cast_to_native_base(mp_obj_t self_in, mp_const_obj_t native_type) {
     mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     if (!mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(self_type), native_type)) {
         return MP_OBJ_NULL;
+    }
+    if (MP_OBJ_FROM_PTR(self_type) == native_type) {
+        return self_in;
     }
     mp_obj_instance_t *self = (mp_obj_instance_t*)MP_OBJ_TO_PTR(self_in);
     return self->subobj[0];
@@ -1406,10 +1424,10 @@ mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t 
 /******************************************************************************/
 // staticmethod and classmethod types (probably should go in a different file)
 
-STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     assert(self == &mp_type_staticmethod || self == &mp_type_classmethod);
 
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     mp_obj_static_class_method_t *o = m_new_obj(mp_obj_static_class_method_t);
     *o = (mp_obj_static_class_method_t){{self}, args[0]};

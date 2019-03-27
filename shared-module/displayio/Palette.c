@@ -47,9 +47,9 @@ void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, ui
 void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t palette_index, uint32_t color) {
     uint32_t shift = (palette_index % 2) * 16;
     uint32_t masked = self->colors[palette_index / 2] & ~(0xffff << shift);
-    uint32_t b5 = (color >> 19);
+    uint32_t r5 = (color >> 19);
     uint32_t g6 = (color >> 10) & 0x3f;
-    uint32_t r5 = (color >> 3) & 0x1f;
+    uint32_t b5 = (color >> 3) & 0x1f;
     uint32_t packed = r5 << 11 | g6 << 5 | b5;
     // swap bytes
     packed = __builtin_bswap16(packed);

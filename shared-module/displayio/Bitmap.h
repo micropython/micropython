@@ -42,6 +42,7 @@ typedef struct {
     uint8_t x_shift;
     uint8_t x_mask;
     uint16_t bitmask;
+    bool read_only;
 } displayio_bitmap_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H

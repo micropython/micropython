@@ -10,12 +10,9 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE  0
+#define CIRCUITPY_INTERNAL_NVM_SIZE  256
 
-// A number of modules are removed for pIRKey to make room for frozen libraries.
-#define PIRKEY_M0 (1)
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
+#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define IGNORE_PIN_PA02     1
 #define IGNORE_PIN_PA03     1

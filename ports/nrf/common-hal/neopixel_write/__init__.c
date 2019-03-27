@@ -65,7 +65,7 @@
 //
 // If there is no device available an alternative cycle-counter
 // implementation is tried.
-// The nRF52832 runs with a fixed clock of 64Mhz. The alternative
+// The nRF52840 runs with a fixed clock of 64Mhz. The alternative
 // implementation is the same as the one used for the Teensy 3.0/1/2 but
 // with the Nordic SDK HAL & registers syntax.
 // The number of cycles was hand picked and is guaranteed to be 100%
@@ -86,7 +86,7 @@ static NRF_PWM_Type* find_free_pwm (void) {
 #endif
     };
 
-    for ( int device = 0; device < ARRAY_SIZE(PWM); device++ ) {
+    for ( size_t device = 0; device < ARRAY_SIZE(PWM); device++ ) {
         if ( (PWM[device]->ENABLE == 0) &&
              (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
              (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk) ) {
@@ -141,7 +141,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         for ( uint16_t n = 0; n < numBytes; n++ ) {
             uint8_t pix = pixels[n];
 
-            for ( uint8_t mask = 0x80, i = 0; mask > 0; mask >>= 1, i++ ) {
+            for ( uint8_t mask = 0x80; mask > 0; mask >>= 1 ) {
                 pixels_pattern[pos] = (pix & mask) ? MAGIC_T1H : MAGIC_T0H;
                 pos++;
             }

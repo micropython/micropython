@@ -43,19 +43,25 @@
 #include "shared-module/bleio/Device.h"
 #include "shared-module/bleio/ScanEntry.h"
 
+// Work-in-progress: orphaned for now.
+//| :orphan:
+//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`Device` -- BLE device
 //| =========================================================
 //|
+//| **IGNORE ``Device`` and all its documentation.
+//| It is being replaced by `Peripheral` and other classes.**
+//|
 //| Provides access a to BLE device, either in a Peripheral or Central role.
 //| When a device is created without any parameter passed to the constructor,
 //| it will be set to the Peripheral role. If a address is passed, the device
 //| will be a Central. For a Peripheral you can set the `name`, add services
-//| via `add_service` and then start and stop advertising via `start_advertising`
-//| and `stop_advertising`. For the Central, you can `bleio.Device.connect` and `bleio.Device.disconnect`
+//| via `add_service` and then start and stop advertising via `bleio.Device.start_advertising`
+//| and `bleio.Device.stop_advertising`. For the Central, you can `bleio.Device.connect` and `bleio.Device.disconnect`
 //| to the device, once a connection is established, the device's services can
-//| be accessed using `services`.
+//| be accessed using `bleio.Device.services`.
 //|
 //| Usage::
 //|
@@ -171,7 +177,7 @@ STATIC mp_obj_t bleio_device_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     enum { ARG_address, ARG_scan_entry };
     static const mp_arg_t allowed_args[] = {
-        { ARG_address, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_address, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_scan_entry, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
 

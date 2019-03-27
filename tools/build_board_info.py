@@ -12,7 +12,7 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "esp8266", "atmel-samd"]
+SUPPORTED_PORTS = ["nrf", "atmel-samd"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
@@ -22,7 +22,6 @@ HEX = ('hex',)
 # Default extensions
 extension_by_port = {
     "nrf": UF2,
-    "esp8266": BIN,
     "atmel-samd": UF2,
 }
 
@@ -33,15 +32,12 @@ extension_by_board = {
     "arduino_zero": BIN,
     "feather_m0_adalogger": BIN_UF2,
     "feather_m0_basic": BIN_UF2,
-    "feather_m0_rfm69": BIN,
-    "feather_m0_rfm9x": BIN,
-
-    # nrf52832
-    "feather_nrf52832": BIN,
-    "pca10040": BIN,
+    "feather_m0_rfm69": BIN_UF2,
+    "feather_m0_rfm9x": BIN_UF2,
 
     # nRF52840 dev kits that may not have UF2 bootloaders,
     "makerdiary_nrf52840_mdk": HEX,
+    "makerdiary_nrf52840_mdk_usb_dongle": HEX,
     "pca10056": BIN_UF2,
     "pca10059": BIN_UF2
 }
@@ -100,13 +96,25 @@ def get_current_info():
     response = response.json()
 
     git_info = commit_sha, response["sha"]
-    return git_info, json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    current_info = {}
+    for info in current_list:
+        current_info[info["id"]] = info
+    return git_info, current_info
 
 def create_pr(changes, updated, git_info):
     commit_sha, original_blob_sha = git_info
     branch_name = "new_release_" + changes["new_release"]
 
-    updated = json.dumps(updated, sort_keys=True, indent=4).encode("utf-8") + b"\n"
+    # Convert the dictionary to a list of boards. Liquid templates only handle arrays.
+    updated_list = []
+    all_ids = sorted(updated.keys())
+    for id in all_ids:
+        info = updated[id]
+        info["id"] = id
+        updated_list.append(info)
+
+    updated = json.dumps(updated_list, sort_keys=True, indent=4).encode("utf-8") + b"\n"
     print(updated.decode("utf-8"))
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
@@ -166,7 +174,10 @@ def update_downloads(boards, release):
 
     assets = response.json()["assets"]
     for asset in assets:
-        boards[asset["name"].split("-")[2]]["download_count"] += asset["download_count"]
+        board_name = asset["name"].split("-")[2]
+        if board_name not in boards:
+            continue
+        boards[board_name]["download_count"] += asset["download_count"]
 
 
 def print_active_user():

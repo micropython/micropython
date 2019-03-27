@@ -37,6 +37,9 @@
 #include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/ScanEntry.h"
 
+// Work-in-progress: orphaned for now.
+//| :orphan:
+//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`ScanEntry` -- BLE scan response entry
@@ -108,7 +111,7 @@ STATIC mp_obj_t scanentry_get_name(mp_obj_t self_in);
 
 STATIC void bleio_scanentry_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_scanentry_obj_t *self = (bleio_scanentry_obj_t *)self_in;
-    mp_printf(print, "ScanEntry(address: "HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT":"HEX2_FMT"",
+    mp_printf(print, "ScanEntry(address: %02x:%02x:%02x:%02x:%02x:%02x",
         self->address.value[5], self->address.value[4], self->address.value[3],
         self->address.value[1], self->address.value[1], self->address.value[0]);
 
@@ -248,7 +251,7 @@ STATIC mp_obj_t scanentry_get_service_uuids(mp_obj_t self_in) {
     mp_obj_t entries = mp_obj_new_list(0, NULL);
     for (size_t i = 0; i < uuids_len / sizeof(uint16_t); ++i) {
         const mp_obj_t uuid_int = mp_obj_new_int(uuids[sizeof(uint16_t) * i] | (uuids[sizeof(uint16_t) * i + 1] << 8));
-        const mp_obj_t uuid_obj = bleio_uuid_type.make_new(&bleio_uuid_type, 1, 0, &uuid_int);
+        const mp_obj_t uuid_obj = bleio_uuid_type.make_new(&bleio_uuid_type, 1, &uuid_int, NULL);
 
         mp_obj_list_append(entries, uuid_obj);
     }

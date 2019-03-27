@@ -86,3 +86,15 @@
 [submodule "tools/adabot"]
 	path = tools/adabot
 	url = https://github.com/adafruit/adabot.git
+[submodule "tools/bitmap_font"]
+	path = tools/bitmap_font
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BitmapFont.git
+[submodule "tools/Tecate-bitmap-fonts"]
+	path = tools/Tecate-bitmap-fonts
+	url = https://github.com/Tecate/bitmap-fonts.git
+[submodule "frozen/pew-pewpew-standalone-10.x"]
+	path = frozen/pew-pewpew-standalone-10.x
+	url = https://github.com/pewpew-game/pew-pewpew-standalone-10.x.git
+[submodule "frozen/circuitpython-stage"]
+	path = frozen/circuitpython-stage
+	url = https://github.com/python-ugame/circuitpython-stage.git

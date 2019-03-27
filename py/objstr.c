@@ -132,14 +132,14 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
 #if MICROPY_CPYTHON_COMPAT
-    if (n_kw != 0) {
+    if (kw_args != NULL && kw_args->used != 0) {
         mp_arg_error_unimpl_kw();
     }
 #endif
 
-    mp_arg_check_num(n_args, n_kw, 0, 3, false);
+    mp_arg_check_num(n_args, kw_args, 0, 3, false);
 
     switch (n_args) {
         case 0:
@@ -190,15 +190,15 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     }
 }
 
-STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
 
     #if MICROPY_CPYTHON_COMPAT
-    if (n_kw != 0) {
+    if (kw_args != NULL && kw_args->used != 0) {
         mp_arg_error_unimpl_kw();
     }
     #else
-    (void)n_kw;
+    (void)kw_args;
     #endif
 
     if (n_args == 0) {
@@ -332,8 +332,9 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return mp_const_empty_bytes;
             }
         }
+        size_t new_len = mp_seq_multiply_len(lhs_len, n);
         vstr_t vstr;
-        vstr_init_len(&vstr, lhs_len * n);
+        vstr_init_len(&vstr, new_len);
         mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, vstr.buf);
         return mp_obj_new_str_from_vstr(lhs_type, &vstr);
     }
@@ -407,6 +408,15 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 // objstrunicode defines own version
+size_t str_offset_to_index(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
+                           size_t offset) {
+    if (offset > self_len) {
+        mp_raise_ValueError(translate("offset out of bounds"));
+    }
+
+    return offset;
+}
+
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice) {
     size_t index_val = mp_get_index(type, self_len, index, is_slice);
@@ -455,7 +465,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     if (!MP_OBJ_IS_TYPE(arg, &mp_type_list) && !MP_OBJ_IS_TYPE(arg, &mp_type_tuple)) {
         // arg is not a list nor a tuple, try to convert it to a list
         // TODO: Try to optimize?
-        arg = mp_type_list.make_new(&mp_type_list, 1, 0, &arg);
+        arg = mp_type_list.make_new(&mp_type_list, 1, &arg, NULL);
     }
     mp_obj_get_array(arg, &seq_len, &seq_items);
 
@@ -1875,7 +1885,7 @@ STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
+    return mp_obj_str_make_new(&mp_type_str, n_args, args, NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
 
@@ -1888,7 +1898,7 @@ STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return bytes_make_new(NULL, n_args, 0, args);
+    return bytes_make_new(NULL, n_args, args, NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
 #endif

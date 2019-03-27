@@ -81,10 +81,7 @@
 //|     # Resume with an 80 microsecond active pulse
 //|     pulses.resume(80)
 //|
-STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pin, ARG_maxlen, ARG_idle_state };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -92,7 +89,7 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
         { MP_QSTR_idle_state, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     assert_pin(args[ARG_pin].u_obj, false);
     const mcu_pin_obj_t* pin = MP_OBJ_TO_PTR(args[ARG_pin].u_obj);
     assert_pin_free(pin);
@@ -260,7 +257,7 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|   .. method:: __get__(index)
+//|   .. method:: __getitem__(index)
 //|
 //|     Returns the value at the given index or values in slice.
 //|
@@ -280,12 +277,7 @@ STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t va
         if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
             mp_raise_NotImplementedError(translate("Slices not supported"));
         } else {
-            uint16_t index = 0;
-            if (MP_OBJ_IS_SMALL_INT(index_obj)) {
-                index = MP_OBJ_SMALL_INT_VALUE(index_obj);
-            } else {
-                mp_raise_TypeError(translate("index must be int"));
-            }
+            size_t index = mp_get_index(&pulseio_pulsein_type, common_hal_pulseio_pulsein_get_len(self), index_obj, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pulsein_get_item(self, index));

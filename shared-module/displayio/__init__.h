@@ -27,6 +27,24 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
 
-void displayio_refresh_display(void);
+#include "shared-bindings/displayio/Display.h"
+#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/displayio/Group.h"
+#include "shared-bindings/displayio/ParallelBus.h"
+
+typedef struct {
+    union {
+        displayio_fourwire_obj_t fourwire_bus;
+        displayio_parallelbus_obj_t parallel_bus;
+    };
+    displayio_display_obj_t display;
+} primary_display_t;
+
+extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
+
+extern displayio_group_t circuitpython_splash;
+
+void displayio_refresh_displays(void);
+void reset_displays(void);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H

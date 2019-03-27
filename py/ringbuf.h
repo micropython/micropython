@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_RINGBUF_H
 #define MICROPY_INCLUDED_PY_RINGBUF_H
 
+#include "py/gc.h"
+
 #include <stdint.h>
 
 typedef struct _ringbuf_t {
@@ -40,9 +42,9 @@ typedef struct _ringbuf_t {
 // ringbuf_t buf = {buf_array, sizeof(buf_array)};
 
 // Dynamic initialization. This creates root pointer!
-#define ringbuf_alloc(r, sz) \
+#define ringbuf_alloc(r, sz, long_lived)                   \
 { \
-    (r)->buf = m_new(uint8_t, sz); \
+    (r)->buf = gc_alloc(sz, false, long_lived);   \
     (r)->size = sz; \
     (r)->iget = (r)->iput = 0; \
 }
@@ -71,4 +73,30 @@ static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
     return 0;
 }
 
+static inline uint16_t ringbuf_count(ringbuf_t *r)
+{
+    volatile int count = r->iput - r->iget;
+    if ( count < 0 ) {
+        count += r->size;
+    }
+
+    return (uint16_t) count;
+}
+
+static inline void ringbuf_clear(ringbuf_t *r)
+{
+    r->iput = r->iget = 0;
+}
+
+// will overwrite old data
+static inline void ringbuf_put_n(ringbuf_t* r, uint8_t* buf, uint8_t bufsize)
+{
+    for(uint8_t i=0; i < bufsize; i++) {
+        if ( ringbuf_put(r, buf[i]) < 0 ) {
+            // if full overwrite old data
+            (void) ringbuf_get(r);
+            ringbuf_put(r, buf[i]);
+        }
+    }
+}
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

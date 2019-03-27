@@ -42,7 +42,8 @@ void mp_hal_delay_ms(mp_uint_t delay) {
             MICROPY_VM_HOOK_LOOP
         #endif
         // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
+           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
             break;
         }
         duration = (ticks_ms - start_tick);

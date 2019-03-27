@@ -287,14 +287,14 @@ STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, size_t n_args, 
     mp_hal_i2c_init(self, args[ARG_freq].u_int);
 }
 
-STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check the id argument, if given
     if (n_args > 0) {
         if (args[0] != MP_OBJ_NEW_SMALL_INT(-1)) {
             #if defined(MICROPY_PY_MACHINE_I2C_MAKE_NEW)
             // dispatch to port-specific constructor
-            extern mp_obj_t MICROPY_PY_MACHINE_I2C_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
-            return MICROPY_PY_MACHINE_I2C_MAKE_NEW(type, n_args, n_kw, args);
+            extern mp_obj_t MICROPY_PY_MACHINE_I2C_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args);
+            return MICROPY_PY_MACHINE_I2C_MAKE_NEW(type, n_args, args, kw_args);
             #else
             mp_raise_ValueError(translate("invalid I2C peripheral"));
             #endif
@@ -306,9 +306,7 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
     // create new soft I2C object
     machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
     self->base.type = &machine_i2c_type;
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    machine_i2c_obj_init_helper(self, n_args, args, &kw_args);
+    machine_i2c_obj_init_helper(self, n_args, args, kw_args);
     return (mp_obj_t)self;
 }
 

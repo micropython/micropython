@@ -45,6 +45,11 @@
 #include <mpconfigport.h>
 #endif
 
+// Is this a CircuitPython build?
+#ifndef CIRCUITPY
+#define CIRCUITPY 0
+#endif
+
 // Any options not explicitly set in mpconfigport.h will get default
 // values below.
 
@@ -1162,6 +1167,18 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE (0)
+#endif
+
+#ifndef MICROPY_PY_URE_MATCH_GROUPS
+#define MICROPY_PY_URE_MATCH_GROUPS (0)
+#endif
+
+#ifndef MICROPY_PY_URE_MATCH_SPAN_START_END
+#define MICROPY_PY_URE_MATCH_SPAN_START_END (0)
+#endif
+
+#ifndef MICROPY_PY_URE_SUB
+#define MICROPY_PY_URE_SUB (0)
 #endif
 
 #ifndef MICROPY_PY_UHEAPQ

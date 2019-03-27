@@ -33,28 +33,21 @@
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "shared-bindings/bleio/Adapter.h"
 
+#include "supervisor/usb.h"
+
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AssertionError,
-         translate("Soft device assert, id: 0x%08lX, pc: 0x%08lX"), id, pc));
+    mp_raise_msg_varg(&mp_type_AssertionError,
+                      translate("Soft device assert, id: 0x%08lX, pc: 0x%08lX"), id, pc);
 }
 
 STATIC uint32_t ble_stack_enable(void) {
     nrf_clock_lf_cfg_t clock_config = {
         .source = NRF_CLOCK_LF_SRC_XTAL,
-#if (BLE_API_VERSION == 4)
         .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM
-#else
-        .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
-#endif
     };
-
-#if (BLUETOOTH_SD == 140)
-    // The SD takes over the POWER IRQ and will fail if the IRQ is already in use
-    nrfx_power_uninit();
-#endif
 
     uint32_t err_code = sd_softdevice_enable(&clock_config, softdevice_assert_handler);
     if (err_code != NRF_SUCCESS)
@@ -64,17 +57,10 @@ STATIC uint32_t ble_stack_enable(void) {
     if (err_code != NRF_SUCCESS)
         return err_code;
 
-    uint32_t app_ram_start;
-#if (BLE_API_VERSION == 2)
-    ble_enable_params_t ble_enable_params = {
-        .gatts_enable_params.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT,
-        .gap_enable_params.central_conn_count = 1,
-        .gap_enable_params.periph_conn_count = 1,
-    };
+    // Start with no event handlers, etc.
+    ble_drv_reset();
 
-    app_ram_start = 0x200039c0;
-    err_code = sd_ble_enable(&ble_enable_params, &app_ram_start);
-#else
+    uint32_t app_ram_start;
     app_ram_start = 0x20004000;
 
     ble_cfg_t ble_conf;
@@ -100,7 +86,6 @@ STATIC uint32_t ble_stack_enable(void) {
         return err_code;
 
     err_code = sd_ble_enable(&app_ram_start);
-#endif
 
     return err_code;
 }
@@ -115,14 +100,23 @@ void common_hal_bleio_adapter_set_enabled(bool enabled) {
 
     uint32_t err_code;
     if (enabled) {
+        // The SD takes over the POWER module and will fail if the module is already in use.
+        // Occurs when USB is initialized previously
+        nrfx_power_uninit();
+
         err_code = ble_stack_enable();
+
+        // Re-init USB hardware
+        init_usb_hardware();
     } else {
         err_code = sd_softdevice_disable();
+
+        // Re-init USB hardware
+        init_usb_hardware();
     }
 
     if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-             translate("Failed to change softdevice state, error: 0x%08lX"), err_code));
+        mp_raise_OSError_msg(translate("Failed to change softdevice state"));
     }
 }
 
@@ -131,8 +125,7 @@ bool common_hal_bleio_adapter_get_enabled(void) {
 
     const uint32_t err_code = sd_softdevice_is_enabled(&is_enabled);
     if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            translate("Failed to get softdevice state, error: 0x%08lX"), err_code));
+        mp_raise_OSError_msg(translate("Failed to get softdevice state"));
     }
 
     return is_enabled;
@@ -151,8 +144,7 @@ void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address) {
 #endif
 
     if (err_code != NRF_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            translate("Failed to get local address, error: 0x%08lX"), err_code));
+        mp_raise_OSError_msg(translate("Failed to get local address"));
     }
 
     address->type = local_address.addr_type;

@@ -157,7 +157,7 @@ Behavior
 API
 ~~~
 
--  Unified hardware APIs: `audioio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html>`_, `analogio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html>`_, `busio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html>`_, `digitalio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html>`_, `pulseio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html>`_, `touchio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html>`_, `microcontroller <https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html>`_, `board <https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html>`_, `bitbangio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html>`_
+-  Unified hardware APIs: `audioio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html>`_, `analogio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html>`_, `bleio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bleio/__init__.html>`_, `busio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html>`_, `digitalio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html>`_, `pulseio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html>`_, `touchio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html>`_, `microcontroller <https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html>`_, `board <https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html>`_, `bitbangio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html>`_
 -  No ``machine`` API on Atmel SAMD21 port.
 
 Modules
@@ -271,6 +271,6 @@ project.
 .. |Doc Status| image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
    :target: http://circuitpython.readthedocs.io/
 .. |Discord| image:: https://img.shields.io/discord/327254708534116352.svg
-   :target: https://discord.gg/nBQh6qu
+   :target: https://adafru.it/discord
 .. |License| image:: https://github.com/adafruit/circuitpython/blob/master/logo/license-MIT-brightgreen.svg
    :target: https://opensource.org/licenses/MIT

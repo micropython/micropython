@@ -32,7 +32,15 @@
 
 extern const mp_obj_type_t pulseio_pwmout_type;
 
-extern void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+typedef enum {
+    PWMOUT_OK,
+    PWMOUT_INVALID_PIN,
+    PWMOUT_INVALID_FREQUENCY,
+    PWMOUT_ALL_TIMERS_ON_PIN_IN_USE,
+    PWMOUT_ALL_TIMERS_IN_USE
+} pwmout_result_t;
+
+extern pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     const mcu_pin_obj_t* pin, uint16_t duty, uint32_t frequency,
     bool variable_frequency);
 extern void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self);
@@ -42,5 +50,9 @@ extern uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* s
 extern void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency);
 extern uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self);
 extern bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self);
+
+// This is used by the supervisor to claim PWMOut devices indefinitely.
+extern void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self);
+extern void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PWMOUT_H

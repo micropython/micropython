@@ -71,12 +71,9 @@
 //|
 
 // TODO(tannewt): Support LSB SPI.
-STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
     self->base.type = &busio_spi_type;
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
     enum { ARG_clock, ARG_MOSI, ARG_MISO };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -84,7 +81,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     assert_pin(args[ARG_clock].u_obj, false);
     assert_pin(args[ARG_MOSI].u_obj, true);
     assert_pin(args[ARG_MISO].u_obj, true);
@@ -150,8 +147,8 @@ static void check_lock(busio_spi_obj_t *self) {
 //|      speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
 //|      within spec for the SAMD21.
 //|
-//|   .. note:: On the nRF52832, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
-//|      and 8MHz. On the nRF52840, 16MHz and 32MHz are also available, but only on the first
+//|   .. note:: On the nRF52840, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
+//|      and 8MHz. 16MHz and 32MHz are also available, but only on the first
 //|      `busio.SPI` object you create. Two more ``busio.SPI`` objects can be created, but they are restricted
 //|      to 8MHz maximum. This is a hardware restriction: there is only one high-speed SPI peripheral.
 //|      If you pick a a baudrate other than one of these, the nearest lower
