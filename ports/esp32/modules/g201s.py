@@ -30,7 +30,7 @@ class G201S():
         val = []
         if handle == 0x000e:
             val.append(0x55)
-            val.append(index)
+            val.append(self.index)
             for i in value:
                 val.append(i)
             val.append(0xAA)
@@ -47,8 +47,8 @@ class G201S():
         self.index = 0
         try:
             self.adapter.start()
-            self.adapter.scan()
-            #self.adapter.connect(self.address)
+            #self.adapter.scan()
+            self.adapter.connect(self.address)
             self.write_handle(self.adapter, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(self.adapter, 0x000c, [0x01, 0x00])
             self.write_handle(self.adapter, 0x000e, [0x01])
