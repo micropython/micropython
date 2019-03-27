@@ -190,7 +190,6 @@ int mp_bt_scan(void) {
 
 int mp_bt_connect(esp_bd_addr_t device) {
   esp_err_t err;
-  ESP_LOGI(GATTC_TAG, "connect to the remote device.");
 
   if (is_scanning) {
     err = esp_ble_gap_stop_scanning();
@@ -200,8 +199,8 @@ int mp_bt_connect(esp_bd_addr_t device) {
     //Wait for ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT
     xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
   }
-
-  err = esp_ble_gattc_open(3, device, BLE_ADDR_TYPE_RANDOM, true);
+  ESP_LOGI(GATTC_TAG, "connect to the remote device.");
+  err = esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, device, BLE_ADDR_TYPE_RANDOM, true);
   if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
 	}
@@ -215,7 +214,7 @@ int mp_bt_disconnect(esp_bd_addr_t device) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "disconnect from remote device");
 
-  err = esp_ble_gattc_close(3, gl_profile_tab[PROFILE_A_APP_ID].conn_id);
+  err = esp_ble_gattc_close(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id);
 
   if (err != ESP_OK) {
     return mp_bt_esp_errno(err);
@@ -494,6 +493,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         esp_log_buffer_hex(GATTC_TAG, param->scan_rst.bda, 6);
         ESP_LOGI(GATTC_TAG, "searched Adv Data Len %d, Scan Response Len %d", param->scan_rst.adv_data_len, param->scan_rst.scan_rsp_len);
         adv_name = esp_ble_resolve_adv_data(param->scan_rst.ble_adv, ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
+        ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
         ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
         esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
         #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP

@@ -10,7 +10,7 @@ Example usage on ESP8266:
     #device.get_temperature()
 """
 
-import pygatt
+import upygatt
 from binascii import hexlify
 import time
 
@@ -20,7 +20,7 @@ import time
 class G201S():
     def __init__(self, address):
         self.address = address
-        self.adapter = pygatt.GATTToolBackend()
+        self.adapter = upygatt.GATTToolBackend()
         self.index = 0
         self.cur_temp = 0
         #super(G201S, self).__init__(update_callback = self._update_sensor_data)
@@ -47,6 +47,7 @@ class G201S():
         self.index = 0
         try:
             self.adapter.start()
+            self.adapter.scan()
             self.adapter.connect(self.address)
             self.write_handle(device, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(device, 0x000c, [0x01, 0x00])
