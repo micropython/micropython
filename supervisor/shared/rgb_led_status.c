@@ -197,6 +197,12 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
 void set_rgb_status_brightness(uint8_t level){
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
     rgb_status_brightness = level;
+    uint32_t current_color = current_status_color;
+    // Temporarily change the current color global to force the new_status_color call to update the
+    // LED. Usually duplicate calls of the same color are ignored without regard to brightness
+    // changes.
+    current_status_color = 0;
+    new_status_color(current_color);
     #endif
 }
 
