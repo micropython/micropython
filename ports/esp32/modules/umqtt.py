@@ -1,4 +1,7 @@
-import usocket as socket
+try:
+    import usocket as socket
+except:
+    import socket
 import ustruct as struct
 from ubinascii import hexlify
 
@@ -13,7 +16,8 @@ class MQTTClient:
             port = 8883 if ssl else 1883
         self.client_id = client_id
         self.sock = None
-        self.addr = socket.getaddrinfo(server, port)[0][-1]
+        self.server = server
+        self.port = port
         self.ssl = ssl
         self.ssl_params = ssl_params
         self.pid = 0
@@ -53,24 +57,36 @@ class MQTTClient:
 
     def connect(self, clean_session=True):
         self.sock = socket.socket()
-        self.sock.connect(self.addr)
+        addr = socket.getaddrinfo(self.server, self.port)[0][-1]
+        self.sock.connect(addr)
         if self.ssl:
             import ussl
             self.sock = ussl.wrap_socket(self.sock, **self.ssl_params)
-        msg = bytearray(b"\x10\0\0\x04MQTT\x04\x02\0\0")
-        msg[1] = 10 + 2 + len(self.client_id)
-        msg[9] = clean_session << 1
+        premsg = bytearray(b"\x10\0\0\0\0\0")
+        msg = bytearray(b"\x04MQTT\x04\x02\0\0")
+
+        sz = 10 + 2 + len(self.client_id)
+        msg[6] = clean_session << 1
         if self.user is not None:
-            msg[1] += 2 + len(self.user) + 2 + len(self.pswd)
-            msg[9] |= 0xC0
+            sz += 2 + len(self.user) + 2 + len(self.pswd)
+            msg[6] |= 0xC0
         if self.keepalive:
             assert self.keepalive < 65536
-            msg[10] |= self.keepalive >> 8
-            msg[11] |= self.keepalive & 0x00FF
+            msg[7] |= self.keepalive >> 8
+            msg[8] |= self.keepalive & 0x00FF
         if self.lw_topic:
-            msg[1] += 2 + len(self.lw_topic) + 2 + len(self.lw_msg)
-            msg[9] |= 0x4 | (self.lw_qos & 0x1) << 3 | (self.lw_qos & 0x2) << 3
-            msg[9] |= self.lw_retain << 5
+            sz += 2 + len(self.lw_topic) + 2 + len(self.lw_msg)
+            msg[6] |= 0x4 | (self.lw_qos & 0x1) << 3 | (self.lw_qos & 0x2) << 3
+            msg[6] |= self.lw_retain << 5
+
+        i = 1
+        while sz > 0x7f:
+            premsg[i] = (sz & 0x7f) | 0x80
+            sz >>= 7
+            i += 1
+        premsg[i] = sz
+
+        self.sock.write(premsg, i + 2)
         self.sock.write(msg)
         #print(hex(len(msg)), hexlify(msg, ":"))
         self._send_str(self.client_id)
