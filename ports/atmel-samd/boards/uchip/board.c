@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,55 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include "autoreload.h"
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#include "py/mphal.h"
-#include "py/reload.h"
-
-static volatile uint32_t autoreload_delay_ms = 0;
-static bool autoreload_enabled = false;
-static bool autoreload_suspended = false;
-
-volatile bool reload_requested = false;
-
-inline void autoreload_tick() {
-    if (autoreload_delay_ms == 0) {
-        return;
-    }
-    if (autoreload_delay_ms == 1 && autoreload_enabled &&
-        !autoreload_suspended && !reload_requested) {
-        mp_raise_reload_exception();
-        reload_requested = true;
-    }
-    autoreload_delay_ms--;
+void board_init(void) {
 }
 
-void autoreload_enable() {
-    autoreload_enabled = true;
-    reload_requested = false;
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void autoreload_disable() {
-    autoreload_enabled = false;
-}
-
-void autoreload_suspend() {
-    autoreload_suspended = true;
-}
-
-void autoreload_resume() {
-    autoreload_suspended = false;
-}
-
-inline bool autoreload_is_enabled() {
-    return autoreload_enabled;
-}
-
-void autoreload_start() {
-    autoreload_delay_ms = CIRCUITPY_AUTORELOAD_DELAY_MS;
-}
-
-void autoreload_stop() {
-    autoreload_delay_ms = 0;
-    reload_requested = false;
+void reset_board(void) {
 }

@@ -58,14 +58,22 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
     uint32_t width = mp_obj_get_int(pos_args[0]);
     uint32_t height = mp_obj_get_int(pos_args[1]);
     uint32_t value_count = mp_obj_get_int(pos_args[2]);
-    uint32_t power_of_two = 1;
-    while (value_count > (1U << power_of_two)) {
-        power_of_two <<= 1;
+    uint32_t bits = 1;
+
+    if (value_count == 0) {
+        mp_raise_ValueError(translate("value_count must be > 0"));
+    }
+    while ((value_count - 1) >> bits) {
+        if (bits < 8) {
+            bits <<= 1;
+        } else {
+            bits += 8;
+        }
     }
 
     displayio_bitmap_t *self = m_new_obj(displayio_bitmap_t);
     self->base.type = &displayio_bitmap_type;
-    common_hal_displayio_bitmap_construct(self, width, height, power_of_two);
+    common_hal_displayio_bitmap_construct(self, width, height, bits);
 
     return MP_OBJ_FROM_PTR(self);
 }
