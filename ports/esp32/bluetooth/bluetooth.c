@@ -507,6 +507,18 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
           }
         #endif
         ESP_LOGI(GATTC_TAG, "\n");
+        static const char remote_device_name[] = "RK-G201S";
+        if (adv_name != NULL) {
+                if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
+                    ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
+                    if (connect == false) {
+                        connect = true;
+                        ESP_LOGI(GATTC_TAG, "connect to the remote device.");
+                        esp_ble_gap_stop_scanning();
+                        esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
+                    }
+                }
+            }
         // Return for esp_ble_gap_start_scanning
         xSemaphoreGive(mp_bt_call_complete);
         break;

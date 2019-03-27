@@ -48,7 +48,7 @@ class G201S():
         try:
             self.adapter.start()
             self.adapter.scan()
-            self.adapter.connect(self.address)
+            #self.adapter.connect(self.address)
             self.write_handle(device, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(device, 0x000c, [0x01, 0x00])
             self.write_handle(device, 0x000e, [0x01])
