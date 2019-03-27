@@ -170,12 +170,24 @@ bool displayio_tilegrid_get_pixel(displayio_tilegrid_t *self, int16_t x, int16_t
 }
 
 bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self) {
-    return self->needs_refresh || displayio_palette_needs_refresh(self->pixel_shader);
+    if (self->needs_refresh) {
+        return true;
+    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
+        return displayio_palette_needs_refresh(self->pixel_shader);
+    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
+        return displayio_colorconverter_needs_refresh(self->pixel_shader);
+    }
+
+    return false;
 }
 
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
     self->needs_refresh = false;
-    displayio_palette_finish_refresh(self->pixel_shader);
+    if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
+        displayio_palette_finish_refresh(self->pixel_shader);
+    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
+        displayio_colorconverter_finish_refresh(self->pixel_shader);
+    }
     // TODO(tannewt): We could double buffer changes to position and move them over here.
     // That way they won't change during a refresh and tear.
 }
