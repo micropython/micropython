@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-25 19:40+0100\n"
+"POT-Creation-Date: 2019-03-27 16:28-0400\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -51,7 +51,7 @@ msgstr "index %q hors gamme"
 msgid "%q indices must be integers, not %s"
 msgstr "les indices %q doivent être des entiers, pas %s"
 
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
@@ -62,7 +62,7 @@ msgstr "les slices de tampon doivent être de longueurs égales"
 msgid "%q should be an int"
 msgstr "y doit être un entier (int)"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() prend %d arguments mais %d ont été donnés"
 
@@ -218,10 +218,6 @@ msgstr "pow() avec 3 arguments non supporté"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Un canal d'interruptions est déjà utilisé"
 
-#: ports/esp8266/modnetwork.c
-msgid "AP required"
-msgstr "'AP' requis"
-
 #: shared-bindings/bleio/Address.c
 #, c-format
 msgid "Address is not %d bytes long or is in wrong format"
@@ -251,7 +247,7 @@ msgstr "Tous les périphériques I2C sont utilisés"
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
+#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
 msgstr "Tous les canaux d'événements de synchro sont utilisés"
 
@@ -259,8 +255,8 @@ msgstr "Tous les canaux d'événements de synchro sont utilisés"
 msgid "All timers for this pin are in use"
 msgstr "Tous les timers pour cette broche sont utilisés"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -333,7 +329,7 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tampon de taille incorrect. Devrait être de %d octets."
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
 
@@ -351,10 +347,6 @@ msgstr "le tampon doit être un objet bytes-like"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Les octets 'bytes' doivent être entre 0 et 255"
-
-#: ports/esp8266/esp_mphal.c
-msgid "C-level assert"
-msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -377,17 +369,9 @@ msgstr "Modification du nom impossible en mode Central"
 msgid "Can't connect in Peripheral mode"
 msgstr "Impossible de se connecter en mode Peripheral"
 
-#: ports/esp8266/modnetwork.c
-msgid "Cannot connect to AP"
-msgstr "Impossible de se connecter à 'AP'"
-
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
 msgid "Cannot delete values"
 msgstr "Impossible de supprimer les valeurs"
-
-#: ports/esp8266/modnetwork.c
-msgid "Cannot disconnect from AP"
-msgstr "Impossible de se déconnecter de 'AP'"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
@@ -416,14 +400,9 @@ msgid "Cannot remount '/' when USB is active."
 msgstr "'/' ne peut être remonté quand l'USB est actif."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
-#: ports/esp8266/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
-
-#: ports/esp8266/modnetwork.c
-msgid "Cannot set STA config"
-msgstr "Impossible de configurer STA"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -440,10 +419,6 @@ msgstr "Pas de transfert sans broches MOSI et MISO"
 #: extmod/moductypes.c
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Impossible d'obtenir la taille du scalaire sans ambigüité"
-
-#: ports/esp8266/modnetwork.c
-msgid "Cannot update i/f status"
-msgstr "le status i/f ne peut être mis à jour"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -477,7 +452,7 @@ msgstr "Horloge en cours d'utilisation"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Les octets 'bytes' doivent être entre 0 et 255"
@@ -517,8 +492,8 @@ msgstr "le graphic doit être long de 2048 octets"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Un bloc de données doit suivre un bloc de format"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 msgid "Data too large for advertisement packet"
 msgstr ""
 
@@ -534,37 +509,22 @@ msgstr "La capacité de la cible est plus petite que destination_length."
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
-#: ports/unix/modffi.c
-msgid "Don't know how to pass object to native function"
-msgstr "Ne sais pas comment passer l'objet à une fonction native"
-
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Le mode Drive n'est pas utilisé quand la direction est 'input'."
 
-#: ports/esp8266/common-hal/microcontroller/__init__.c
-msgid "ESP8226 does not support safe mode."
-msgstr "l'ESP8266 ne supporte pas le mode sans-échec"
-
-#: ports/esp8266/common-hal/digitalio/DigitalInOut.c
-msgid "ESP8266 does not support pull down."
-msgstr "L'ESP8266 ne supporte pas le rappel (pull-down)"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "EXTINT channel already in use"
 msgstr "Canal EXTINT déjà utilisé"
-
-#: ports/unix/modffi.c
-msgid "Error in ffi_prep_cif"
-msgstr "Erreur dans ffi_prep_cif"
 
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
 
-#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Attendu : %q"
 
@@ -615,7 +575,6 @@ msgstr "Echec de l'allocation du tampon RX"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
@@ -700,8 +659,8 @@ msgstr "Impossible de libérer mutex, status: 0x%08lX"
 msgid "Failed to start advertising"
 msgstr "Echec de l'ajout de service, statut: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Impossible de commencer à scanner, statut: 0x%0xlX"
@@ -721,8 +680,8 @@ msgstr "Impossible de commencer à scanner, statut: 0x%0xlX"
 msgid "Failed to stop advertising"
 msgstr "Echec de l'ajout de service, statut: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Echec de l'ajout de service, statut: 0x%08lX"
@@ -763,20 +722,16 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
-#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 msgid "Function requires lock"
 msgstr "La fonction nécessite un verrou"
-
-#: ports/esp8266/common-hal/digitalio/DigitalInOut.c
-msgid "GPIO16 does not support pull up."
-msgstr "le GPIO16 ne supporte pas le tirage (pull-up)"
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
 msgstr "Groupe plein"
 
-#: ports/unix/file.c extmod/vfs_posix_file.c py/objstringio.c
+#: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "opération d'E/S sur un fichier fermé"
 
@@ -853,16 +808,16 @@ msgstr "Fichier invalide"
 msgid "Invalid format chunk size"
 msgstr "Taille de bloc de formatage invalide"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid number of bits"
 msgstr "Nombre de bits invalide"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid phase"
 msgstr "Phase invalide"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: shared-bindings/pulseio/PWMOut.c
 msgid "Invalid pin"
 msgstr "Broche invalide"
@@ -875,14 +830,15 @@ msgstr "Broche invalide pour le canal gauche"
 msgid "Invalid pin for right channel"
 msgstr "Broche invalide pour le canal droit"
 
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid polarity"
 msgstr "Polarité invalide"
 
@@ -934,11 +890,6 @@ msgstr "Echec de l'init. de la broche MISO"
 msgid "MOSI pin init failed."
 msgstr "Echec de l'init. de la broche MOSI"
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c
-#, c-format
-msgid "Maximum PWM frequency is %dhz."
-msgstr "La fréquence de PWM maximale est %dHz"
-
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
@@ -956,16 +907,6 @@ msgstr "Erreur fatale de MicroPython.\n"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c
-msgid "Minimum PWM frequency is 1hz."
-msgstr "La fréquence de PWM minimale est 1Hz"
-
-#: ports/esp8266/common-hal/pulseio/PWMOut.c
-#, c-format
-msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr ""
-"Les fréquences de PWM multiples ne sont pas supportées. PWM réglé à %dHz"
-
 #: shared-bindings/displayio/Display.c
 msgid "Must be a Group subclass."
 msgstr ""
@@ -978,10 +919,6 @@ msgstr "Pas de DAC sur la puce"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
-
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
-msgid "No PulseIn support for %q"
-msgstr "Pas de support de PulseIn pour %q"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "No RX pin"
@@ -1015,12 +952,8 @@ msgstr "Pas de GCLK libre"
 msgid "No hardware random available"
 msgstr "Pas de source matérielle d'aléa disponible"
 
-#: ports/esp8266/common-hal/analogio/AnalogOut.c
-msgid "No hardware support for analog out."
-msgstr "Pas de support matériel pour une sortie analogique"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No hardware support on pin"
 msgstr "Pas de support matériel pour cette broche"
 
@@ -1036,10 +969,6 @@ msgstr "Fichier/dossier introuvable"
 #, fuzzy
 msgid "Not connected"
 msgstr "Impossible de se connecter à 'AP'"
-
-#: shared-bindings/bleio/CharacteristicBuffer.c
-msgid "Not connected."
-msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 msgid "Not playing"
@@ -1083,10 +1012,6 @@ msgstr ""
 msgid "Only slices with step=1 (aka None) are supported"
 msgstr "seuls les slices avec 'step=1' (cad None) sont supportées"
 
-#: ports/esp8266/common-hal/busio/UART.c
-msgid "Only tx supported on UART1 (GPIO2)."
-msgstr "Seul le tx est supporté sur l'UART1 (GPIO2)."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Le sur-échantillonage doit être un multiple de 8."
@@ -1106,31 +1031,14 @@ msgstr ""
 "La fréquence de PWM n'est pas modifiable quand variable_frequency est False "
 "à la construction."
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c ports/esp8266/machine_pwm.c
-#, c-format
-msgid "PWM not supported on pin %d"
-msgstr "La broche %d ne supporte pas le PWM"
-
 #: py/moduerrno.c
 msgid "Permission denied"
 msgstr "Permission refusée"
-
-#: ports/esp8266/common-hal/analogio/AnalogIn.c
-msgid "Pin %q does not have ADC capabilities"
-msgstr "La broche %q n'a pas de convertisseur analogique-digital"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "la broche ne peut être utilisé pour l'ADC"
-
-#: ports/esp8266/machine_pin.c
-msgid "Pin(16) doesn't support pull"
-msgstr "Pin(16) ne supporte pas le tirage (pull)"
-
-#: ports/esp8266/common-hal/busio/SPI.c
-msgid "Pins not valid for SPI"
-msgstr "Broche invalide pour le SPI"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Pixel beyond bounds of buffer"
@@ -1153,7 +1061,7 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
 msgid "RTC calibration is not supported on this board"
 msgstr "calibration de la RTC non supportée sur cette carte"
 
-#: shared-bindings/rtc/RTC.c shared-bindings/time/__init__.c
+#: shared-bindings/time/__init__.c shared-bindings/rtc/RTC.c
 msgid "RTC is not supported on this board"
 msgstr "RTC non supportée sur cette carte"
 
@@ -1195,14 +1103,6 @@ msgstr "Mode sans-échec! Le code sauvegardé ne s'éxecute pas.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
-#: ports/esp8266/modnetwork.c
-msgid "STA must be active"
-msgstr "'STA' doit être actif"
-
-#: ports/esp8266/modnetwork.c
-msgid "STA required"
-msgstr "'STA' requis"
-
 #: shared-bindings/audioio/Mixer.c
 #, fuzzy
 msgid "Sample rate must be positive"
@@ -1222,8 +1122,8 @@ msgstr "Sérialiseur en cours d'utilisation"
 msgid "Slice and value different lengths."
 msgstr "Slice et valeur de tailles différentes"
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
-#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/displayio/Group.c
 msgid "Slices not supported"
 msgstr "Slices non supportées"
 
@@ -1316,7 +1216,7 @@ msgstr "Pour quitter, redémarrez la carte SVP sans "
 msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
 msgid "Too many display busses"
 msgstr ""
 
@@ -1331,15 +1231,6 @@ msgstr "Trace (appels les plus récents en dernier):\n"
 #: shared-bindings/time/__init__.c
 msgid "Tuple or struct_time argument required"
 msgstr "Argument de type tuple ou struct_time nécessaire"
-
-#: ports/esp8266/machine_uart.c
-#, c-format
-msgid "UART(%d) does not exist"
-msgstr "UART(%d) n'existe pas"
-
-#: ports/esp8266/machine_uart.c
-msgid "UART(1) can't read"
-msgstr "UART(1) ne peut pas lire"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -1379,10 +1270,6 @@ msgstr "Impossible d'initialiser le parser"
 msgid "Unable to read color palette data"
 msgstr ""
 
-#: ports/esp8266/common-hal/storage/__init__.c
-msgid "Unable to remount filesystem"
-msgstr "Impossible de remonter le système de fichiers"
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Impossible d'écrire sur la nvm."
@@ -1391,10 +1278,6 @@ msgstr "Impossible d'écrire sur la nvm."
 #, fuzzy
 msgid "Unexpected nrfx uuid type"
 msgstr "indentation inattendue"
-
-#: ports/unix/modffi.c
-msgid "Unknown type"
-msgstr "Type inconnu"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1421,11 +1304,6 @@ msgstr "Opération non supportée"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
 msgstr "Valeur de tirage 'pull' non supportée."
-
-#: ports/esp8266/common-hal/storage/__init__.c
-msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
-"Utilisez 'esptool' pour effacer la flash et rechargez Python à la place"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -1465,11 +1343,6 @@ msgstr ""
 msgid "You requested starting safe mode by "
 msgstr "Vous avez demandé à démarrer en mode sans-échec par "
 
-#: ports/unix/modusocket.c
-#, c-format
-msgid "[addrinfo error %d]"
-msgstr ""
-
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr "__init__() doit retourner None"
@@ -1491,7 +1364,7 @@ msgstr "un objet 'bytes-like' est requis"
 msgid "abort() called"
 msgstr "abort() appelé"
 
-#: ports/unix/modmachine.c extmod/machine_mem.c
+#: extmod/machine_mem.c
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
 msgstr "l'adresse %08x n'est pas alignée sur %d octets"
@@ -1520,7 +1393,7 @@ msgstr "argument num/types ne correspond pas"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "l'argument devrait être un(e) '%q', pas '%q'"
 
-#: shared-bindings/nvm/ByteArray.c py/objarray.c
+#: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "tableau/octets requis à droite"
 
@@ -1584,16 +1457,12 @@ msgstr "le tampon doit être un objet bytes-like"
 msgid "buffer size must match format"
 msgstr "les slices de tampon doivent être de longueurs égales"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "buffer slices must be of equal length"
 msgstr "les slices de tampon doivent être de longueurs égales"
 
-#: ports/esp8266/machine_rtc.c
-msgid "buffer too long"
-msgstr "tampon trop long"
-
-#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
-#: py/modstruct.c
+#: py/modstruct.c shared-bindings/struct/__init__.c
+#: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "tampon trop petit"
 
@@ -1645,10 +1514,6 @@ msgstr "Maximum 4 paramètres pour l'assembleur Xtensa"
 #: py/persistentcode.c
 msgid "can only save bytecode"
 msgstr "ne peut sauvegarder que du bytecode"
-
-#: ports/esp8266/modnetwork.c
-msgid "can query only one param"
-msgstr "ne peut demander qu'un seul paramètre"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -1723,14 +1588,6 @@ msgstr "opération binaire impossible entre '%q' et '%q'"
 msgid "can't do truncated division of a complex number"
 msgstr "on ne peut pas faire de division tronquée de nombres complexes"
 
-#: ports/esp8266/modnetwork.c
-msgid "can't get AP config"
-msgstr "impossible de récupérer la config de 'AP'"
-
-#: ports/esp8266/modnetwork.c
-msgid "can't get STA config"
-msgstr "impossible de récupérer la config de 'STA'"
-
 #: py/compile.c
 msgid "can't have multiple **x"
 msgstr "il ne peut y avoir de **x multiples"
@@ -1760,14 +1617,6 @@ msgid "can't send non-None value to a just-started generator"
 msgstr ""
 "on ne peut envoyer une valeur autre que None à un générateur fraîchement "
 "démarré"
-
-#: ports/esp8266/modnetwork.c
-msgid "can't set AP config"
-msgstr "impossible de régler la config de 'AP'"
-
-#: ports/esp8266/modnetwork.c
-msgid "can't set STA config"
-msgstr "impossible de régler la config de 'STA'"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -1864,7 +1713,7 @@ msgstr "la couleur doit être un entier (int)"
 msgid "complex division by zero"
 msgstr "division complexe par zéro"
 
-#: py/parsenum.c py/objfloat.c
+#: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "valeurs complexes non supportées"
 
@@ -1907,14 +1756,10 @@ msgstr "destination_length doit être un entier >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
 
-#: shared-bindings/math/__init__.c py/runtime.c py/modmath.c py/objint_mpz.c
-#: py/objint_longlong.c py/objfloat.c
+#: py/objfloat.c py/runtime.c py/modmath.c py/objint_longlong.c py/objint_mpz.c
+#: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "division par zéro"
-
-#: ports/esp8266/modnetwork.c
-msgid "either pos or kw args are allowed"
-msgstr "soit 'pos', soit 'kw' est permis en argument"
 
 #: py/objdeque.c
 msgid "empty"
@@ -1966,10 +1811,6 @@ msgstr "un tuple ou une liste est attendu"
 msgid "expecting a dict for keyword args"
 msgstr "un dict est attendu pour les arguments nommés"
 
-#: ports/esp8266/machine_pin.c
-msgid "expecting a pin"
-msgstr "une broche (Pin) est attendue"
-
 #: py/compile.c
 msgid "expecting an assembler instruction"
 msgstr "une instruction assembleur est attendue"
@@ -1990,10 +1831,6 @@ msgstr "argument nommé donné en plus"
 msgid "extra positional arguments given"
 msgstr "argument positionnel donné en plus"
 
-#: ports/unix/modffi.c
-msgid "ffi_prep_closure_loc"
-msgstr ""
-
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
@@ -2010,10 +1847,6 @@ msgstr "le premier argument de super() doit être un type"
 msgid "firstbit must be MSB"
 msgstr "le 1er bit doit être le MSB"
 
-#: ports/esp8266/modesp.c
-msgid "flash location must be below 1MByte"
-msgstr "l'emplacement en mémoire flash doit être inférieure à 1Mo"
-
 #: py/objint.c
 msgid "float too big"
 msgstr "nombre flottant trop grand"
@@ -2025,10 +1858,6 @@ msgstr "la fonte doit être longue de 2048 octets"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "le format nécessite un dict"
-
-#: ports/esp8266/modmachine.c
-msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr "la fréquence doit être soit 80MHz soit 160MHz"
 
 #: py/objdeque.c
 msgid "full"
@@ -2043,7 +1872,7 @@ msgstr "la fonction ne prend pas d'arguments nommés"
 msgid "function expected at most %d arguments, got %d"
 msgstr "la fonction attendait au plus %d arguments, reçu %d"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 
@@ -2065,7 +1894,7 @@ msgstr "il manque l'argument nommé obligatoire '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "il manque l'argument obligatoire #%d"
 
-#: py/argcheck.c py/objnamedtuple.c py/bc.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "la fonction prend %d argument(s) mais %d ont été donné(s)"
@@ -2098,10 +1927,6 @@ msgstr "identifiant redéfini comme global"
 msgid "identifier redefined as nonlocal"
 msgstr "identifiant redéfini comme nonlocal"
 
-#: ports/esp8266/machine_hspi.c
-msgid "impossible baudrate"
-msgstr "débit impossible"
-
 #: py/objstr.c
 msgid "incomplete format"
 msgstr "format incomplet"
@@ -2115,8 +1940,7 @@ msgid "incorrect padding"
 msgstr "espacement incorrect"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index hors gamme"
 
@@ -2148,25 +1972,13 @@ msgstr "périphérique I2C invalide"
 msgid "invalid SPI peripheral"
 msgstr "périphérique SPI invalide"
 
-#: ports/esp8266/machine_rtc.c
-msgid "invalid alarm"
-msgstr "alarme invalide"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "arguments invalides"
 
-#: ports/esp8266/modnetwork.c
-msgid "invalid buffer length"
-msgstr "longueur de tampon invalide"
-
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "certificat invalide"
-
-#: ports/esp8266/common-hal/busio/UART.c ports/esp8266/machine_uart.c
-msgid "invalid data bits"
-msgstr "bits de données invalides"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
@@ -2188,19 +2000,11 @@ msgstr "clé invalide"
 msgid "invalid micropython decorator"
 msgstr "décorateur micropython invalide"
 
-#: ports/esp8266/machine_pin.c
-msgid "invalid pin"
-msgstr "broche invalide"
-
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr "pas invalide"
 
-#: ports/esp8266/common-hal/busio/UART.c ports/esp8266/machine_uart.c
-msgid "invalid stop bits"
-msgstr "bits d'arrêt invalides"
-
-#: py/compile.c py/parse.c
+#: py/parse.c py/compile.c
 msgid "invalid syntax"
 msgstr "syntaxe invalide"
 
@@ -2247,10 +2051,6 @@ msgstr "label '%q' non supporté"
 msgid "label redefined"
 msgstr "label redéfini"
 
-#: ports/esp8266/modesp.c
-msgid "len must be multiple of 4"
-msgstr "'len' doit être un multiple de 4"
-
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr "argument lenght non permis pour ce type"
@@ -2279,7 +2079,7 @@ msgstr "entiers longs non supportés dans cette build"
 msgid "map buffer too small"
 msgstr "tampon trop petit"
 
-#: shared-bindings/math/__init__.c py/modmath.c
+#: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
 msgstr "erreur de domaine math"
 
@@ -2291,12 +2091,6 @@ msgstr "profondeur maximale de récursivité dépassée"
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
 msgstr "l'allocation de mémoire a échoué en allouant %u octets"
-
-#: ports/esp8266/modesp.c
-#, c-format
-msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr ""
-"l'allocation de mémoire a échoué en allouant %u octets pour un code natif"
 
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
@@ -2356,7 +2150,7 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr "nécessite plus de %d valeur à dégrouper"
 
-#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
+#: py/runtime.c py/objint_longlong.c py/objint_mpz.c
 msgid "negative power with no float support"
 msgstr "puissance négative sans support des nombres flottants"
 
@@ -2381,7 +2175,7 @@ msgstr "pas de lien trouvé pour nonlocal"
 msgid "no module named '%q'"
 msgstr "pas de module '%q'"
 
-#: shared-bindings/_pixelbuf/__init__.c py/runtime.c
+#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
@@ -2405,11 +2199,6 @@ msgstr "argument non-nommé après argument nommé"
 #: shared-bindings/bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr ""
-
-#: ports/esp8266/machine_adc.c
-#, c-format
-msgid "not a valid ADC Channel: %d"
-msgstr "canal ADC non valide : %d"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -2470,13 +2259,13 @@ msgstr "un objet avec un protocol de tampon est nécessaire"
 msgid "odd-length string"
 msgstr "chaîne de longueur impaire"
 
-#: py/objstrunicode.c py/objstr.c
+#: py/objstr.c py/objstrunicode.c
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "adresse hors limites"
 
-#: shared-bindings/nvm/ByteArray.c py/objarray.c py/objtuple.c
-#: py/objstrunicode.c py/objstr.c
+#: py/objstr.c py/objarray.c py/objstrunicode.c py/objtuple.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seuls les slices avec 'step=1' (cad None) sont supportées"
 
@@ -2493,7 +2282,7 @@ msgstr "ord() attend un caractère mais une chaîne de longueur %d a été trouv
 msgid "overflow converting long int to machine word"
 msgstr "dépassement de capacité en convertissant un entier long en mot machine"
 
-#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
+#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr "la palette doit être longue de 32 octets"
 
@@ -2515,10 +2304,6 @@ msgstr "les paramètres doivent être des registres dans la séquence a2 à a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "les paramètres doivent être des registres dans la séquence r0 à r3"
 
-#: ports/esp8266/machine_pin.c
-msgid "pin does not have IRQ capabilities"
-msgstr "la broche ne supporte pas les interruptions (IRQ)"
-
 #: shared-bindings/displayio/Bitmap.c
 #, fuzzy
 msgid "pixel coordinates out of bounds"
@@ -2535,7 +2320,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "'pop' d'une entrée PulseIn vide"
 
@@ -2608,10 +2392,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
 msgstr "taux d'échantillonage hors gamme"
-
-#: ports/esp8266/modnetwork.c
-msgid "scan failed"
-msgstr "échec du scan"
 
 #: py/modmicropython.c
 msgid "schedule stack full"
@@ -2810,7 +2590,7 @@ msgstr "indentation inattendue"
 msgid "unexpected keyword argument"
 msgstr "argument nommé imprévu"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argument nommé '%q' imprévu"
 
@@ -2821,10 +2601,6 @@ msgstr "échappements de nom unicode"
 #: py/parse.c
 msgid "unindent does not match any outer indentation level"
 msgstr "la désindentation ne correspond à aucune indentation"
-
-#: ports/esp8266/modnetwork.c
-msgid "unknown config param"
-msgstr "paramètre de config. inconnu"
 
 #: py/objstr.c
 #, c-format
@@ -2845,10 +2621,6 @@ msgstr "code de format '%c' inconnu pour un objet de type 'float'"
 #, c-format
 msgid "unknown format code '%c' for object of type 'str'"
 msgstr "code de format '%c' inconnu pour un objet de type 'str'"
-
-#: ports/esp8266/modnetwork.c
-msgid "unknown status param"
-msgstr "paramètre de status inconnu"
 
 #: py/compile.c
 msgid "unknown type"
@@ -2902,10 +2674,6 @@ msgstr "type non supporté pour %q: '%s', '%s'"
 msgid "value_count must be > 0"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c
-msgid "wifi_set_ip_info() failed"
-msgstr "wifi_set_ip_info() a échoué"
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "write_args must be a list, tuple, or None"
 msgstr ""
@@ -2937,6 +2705,33 @@ msgstr "adresse hors limites"
 msgid "zero step"
 msgstr "'step' nul"
 
+#~ msgid "AP required"
+#~ msgstr "'AP' requis"
+
+#~ msgid "Cannot connect to AP"
+#~ msgstr "Impossible de se connecter à 'AP'"
+
+#~ msgid "Cannot disconnect from AP"
+#~ msgstr "Impossible de se déconnecter de 'AP'"
+
+#~ msgid "Cannot set STA config"
+#~ msgstr "Impossible de configurer STA"
+
+#~ msgid "Cannot update i/f status"
+#~ msgstr "le status i/f ne peut être mis à jour"
+
+#~ msgid "Don't know how to pass object to native function"
+#~ msgstr "Ne sais pas comment passer l'objet à une fonction native"
+
+#~ msgid "ESP8226 does not support safe mode."
+#~ msgstr "l'ESP8266 ne supporte pas le mode sans-échec"
+
+#~ msgid "ESP8266 does not support pull down."
+#~ msgstr "L'ESP8266 ne supporte pas le rappel (pull-down)"
+
+#~ msgid "Error in ffi_prep_cif"
+#~ msgstr "Erreur dans ffi_prep_cif"
+
 #, fuzzy
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Impossible de notifier la valeur de l'attribut. status: 0x%08lX"
@@ -2948,12 +2743,141 @@ msgstr "'step' nul"
 #~ msgid "Function requires lock."
 #~ msgstr "La fonction nécessite un verrou."
 
+#~ msgid "GPIO16 does not support pull up."
+#~ msgstr "le GPIO16 ne supporte pas le tirage (pull-up)"
+
+#~ msgid "Maximum PWM frequency is %dhz."
+#~ msgstr "La fréquence de PWM maximale est %dHz"
+
+#~ msgid "Minimum PWM frequency is 1hz."
+#~ msgstr "La fréquence de PWM minimale est 1Hz"
+
+#~ msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
+#~ msgstr ""
+#~ "Les fréquences de PWM multiples ne sont pas supportées. PWM réglé à %dHz"
+
+#~ msgid "No PulseIn support for %q"
+#~ msgstr "Pas de support de PulseIn pour %q"
+
+#~ msgid "No hardware support for analog out."
+#~ msgstr "Pas de support matériel pour une sortie analogique"
+
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Seul les BMP non-compressé au format Windows sont supportés %d"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Seul les BMP 24bits ou plus sont supportés %x"
 
+#~ msgid "Only tx supported on UART1 (GPIO2)."
+#~ msgstr "Seul le tx est supporté sur l'UART1 (GPIO2)."
+
+#~ msgid "PWM not supported on pin %d"
+#~ msgstr "La broche %d ne supporte pas le PWM"
+
+#~ msgid "Pin %q does not have ADC capabilities"
+#~ msgstr "La broche %q n'a pas de convertisseur analogique-digital"
+
+#~ msgid "Pin(16) doesn't support pull"
+#~ msgstr "Pin(16) ne supporte pas le tirage (pull)"
+
+#~ msgid "Pins not valid for SPI"
+#~ msgstr "Broche invalide pour le SPI"
+
+#~ msgid "STA must be active"
+#~ msgstr "'STA' doit être actif"
+
+#~ msgid "STA required"
+#~ msgstr "'STA' requis"
+
+#~ msgid "UART(%d) does not exist"
+#~ msgstr "UART(%d) n'existe pas"
+
+#~ msgid "UART(1) can't read"
+#~ msgstr "UART(1) ne peut pas lire"
+
+#~ msgid "Unable to remount filesystem"
+#~ msgstr "Impossible de remonter le système de fichiers"
+
+#~ msgid "Unknown type"
+#~ msgstr "Type inconnu"
+
+#~ msgid "Use esptool to erase flash and re-upload Python instead"
+#~ msgstr ""
+#~ "Utilisez 'esptool' pour effacer la flash et rechargez Python à la place"
+
+#~ msgid "buffer too long"
+#~ msgstr "tampon trop long"
+
+#~ msgid "can query only one param"
+#~ msgstr "ne peut demander qu'un seul paramètre"
+
+#~ msgid "can't get AP config"
+#~ msgstr "impossible de récupérer la config de 'AP'"
+
+#~ msgid "can't get STA config"
+#~ msgstr "impossible de récupérer la config de 'STA'"
+
+#~ msgid "can't set AP config"
+#~ msgstr "impossible de régler la config de 'AP'"
+
+#~ msgid "can't set STA config"
+#~ msgstr "impossible de régler la config de 'STA'"
+
+#~ msgid "either pos or kw args are allowed"
+#~ msgstr "soit 'pos', soit 'kw' est permis en argument"
+
+#~ msgid "expecting a pin"
+#~ msgstr "une broche (Pin) est attendue"
+
+#~ msgid "flash location must be below 1MByte"
+#~ msgstr "l'emplacement en mémoire flash doit être inférieure à 1Mo"
+
+#~ msgid "frequency can only be either 80Mhz or 160MHz"
+#~ msgstr "la fréquence doit être soit 80MHz soit 160MHz"
+
+#~ msgid "impossible baudrate"
+#~ msgstr "débit impossible"
+
+#~ msgid "invalid alarm"
+#~ msgstr "alarme invalide"
+
+#~ msgid "invalid buffer length"
+#~ msgstr "longueur de tampon invalide"
+
+#~ msgid "invalid data bits"
+#~ msgstr "bits de données invalides"
+
+#~ msgid "invalid pin"
+#~ msgstr "broche invalide"
+
+#~ msgid "invalid stop bits"
+#~ msgstr "bits d'arrêt invalides"
+
+#~ msgid "len must be multiple of 4"
+#~ msgstr "'len' doit être un multiple de 4"
+
+#~ msgid "memory allocation failed, allocating %u bytes for native code"
+#~ msgstr ""
+#~ "l'allocation de mémoire a échoué en allouant %u octets pour un code natif"
+
+#~ msgid "not a valid ADC Channel: %d"
+#~ msgstr "canal ADC non valide : %d"
+
+#~ msgid "pin does not have IRQ capabilities"
+#~ msgstr "la broche ne supporte pas les interruptions (IRQ)"
+
 #, fuzzy
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position doit être un 2-tuple"
+
+#~ msgid "scan failed"
+#~ msgstr "échec du scan"
+
+#~ msgid "unknown config param"
+#~ msgstr "paramètre de config. inconnu"
+
+#~ msgid "unknown status param"
+#~ msgstr "paramètre de status inconnu"
+
+#~ msgid "wifi_set_ip_info() failed"
+#~ msgstr "wifi_set_ip_info() a échoué"

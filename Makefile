@@ -29,6 +29,8 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(BASEOPTS)
 
+TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/nrf py shared-bindings shared-module supervisor
+
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
 help:
@@ -194,7 +196,7 @@ pseudoxml:
 all-source:
 
 locale/circuitpython.pot: all-source
-	find . -iname "*.c" | xargs xgettext -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
+	find $(TRANSLATE_SOURCES) -iname "*.c" | xargs xgettext -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
 
 translate: locale/circuitpython.pot
 	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-fuzzy-matching --add-location=file locale/circuitpython.pot; done

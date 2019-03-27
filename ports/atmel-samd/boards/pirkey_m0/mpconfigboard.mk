@@ -22,7 +22,7 @@ CIRCUITPY_FREQUENCYIO = 0
 CHIP_VARIANT = SAMD21E18A
 CHIP_FAMILY = samd21
 
-CFLAGS_INLINE_LIMIT = 45
+CFLAGS_INLINE_LIMIT = 35
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
