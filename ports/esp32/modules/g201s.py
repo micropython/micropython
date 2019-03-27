@@ -49,11 +49,11 @@ class G201S():
             self.adapter.start()
             self.adapter.scan()
             #self.adapter.connect(self.address)
-            self.write_handle(device, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
-            self.write_handle(device, 0x000c, [0x01, 0x00])
-            self.write_handle(device, 0x000e, [0x01])
-            self.write_handle(device, 0x000e, [0x05, 0x00, 0x00, int(hex(100), 16), 0x00])
-            self.write_handle(device, 0x000e, [0x03])
+            self.write_handle(self.adapter, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
+            self.write_handle(self.adapter, 0x000c, [0x01, 0x00])
+            self.write_handle(self.adapter, 0x000e, [0x01])
+            self.write_handle(self.adapter, 0x000e, [0x05, 0x00, 0x00, int(hex(100), 16), 0x00])
+            self.write_handle(self.adapter, 0x000e, [0x03])
 
         finally:
             self.adapter.disconnect(self.address)
@@ -64,10 +64,10 @@ class G201S():
         try:
             self.adapter.start()
             self.adapter.connect(self.address)
-            self.write_handle(device, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
-            self.write_handle(device, 0x000c, [0x01, 0x00])
-            self.write_handle(device, 0x000e, [0x01])
-            self.write_handle(device, 0x000e, [0x04])
+            self.write_handle(self.adapter, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
+            self.write_handle(self.adapter, 0x000c, [0x01, 0x00])
+            self.write_handle(self.adapter, 0x000e, [0x01])
+            self.write_handle(self.adapter, 0x000e, [0x04])
             self.cur_temp = self.get_temperature()
             print("Tried to switch off, returned {}".format(self.cur_temp))
 
