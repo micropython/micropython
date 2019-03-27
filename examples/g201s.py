@@ -4,12 +4,12 @@ import machine
 from umqtt import MQTTClient
 import micropython
 from machine import Pin
-import upygatt
+import upygatt, g201s
 
 # ESP8266 ESP-12 modules have blue, active-low LED on GPIO2, replace
 # with something else if needed.
 led = Pin(2, Pin.OUT, value=0)
-adapter = upygatt.GATTToolBackend()
+device = g201s.G201S("E5:FB:01:09:F7:B")
 
 SERVER = "m24.cloudmqtt.com"
 PORT = 18489
@@ -38,18 +38,11 @@ def sub_cb(topic, msg):
     if msg == b"on":
         led.value(1)
         state = 0
-        adapter = upygatt.GATTToolBackend()
-        adapter.start()
-        adapter.connect("E5:FB:01:09:F7:B4")
-        # adapter.char_write_handle(handle=0x000e, value=bytearray(b'\x55\x00\xFF\xDF\x24\x0E\xC6\x94\xD1\x97\x43\xaa'), wait_for_response=True)
-        # adapter.char_write_handle(handle=0x000c, value=bytearray(b'\x01\x00'), wait_for_response=True)
-        # adapter.char_write_handle(handle=0x000e, value=bytearray(b'\x55\x01\x01\xaa'), wait_for_response=True)
-        # adapter.char_write_handle(handle=0x000e, value=bytearray(b'\x55\x02\x05\x00\x00\x64\x00\xaa'), wait_for_response=True)
-        # adapter.char_write_handle(handle=0x000e, value=bytearray(b'\x55\x03\x03\xaa'), wait_for_response=True)
-        # adapter.disconnect("E5:FB:01:09:F7:B4")
+        device.turn_on()
     elif msg == b"off":
         led.value(0)
         state = 1
+        device.turn_off()
     elif msg == b"toggle":
         # LED is inversed, so setting it to current state
         # value will make it toggle
