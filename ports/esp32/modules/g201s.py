@@ -39,7 +39,7 @@ class G201S():
                 val.append(i)
 
         val = bytearray(val)
-        self.adapter.char_write_handle(handle, val, True)
+        self.adapter.char_write_handle(handle=handle, value=val, wait_for_response=True)
         if increment: self.index += 1
 
     def turn_on(self):
