@@ -370,6 +370,43 @@ STATIC err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
     return ERR_OK;
 }
 
+// Handle errors (eg connection aborted) on TCP PCBs that have been put on the
+// accept queue but are not yet actually accepted.
+STATIC void _lwip_tcp_err_unaccepted(void *arg, err_t err) {
+    struct tcp_pcb *pcb = (struct tcp_pcb*)arg;
+
+    // The ->connected entry is repurposed to store the parent socket; this is safe
+    // because it's only ever used by lwIP if tcp_connect is called on the TCP PCB.
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)pcb->connected;
+
+    // Array is not volatile because thiss callback is executed within the lwIP context
+    uint8_t alloc = socket->incoming.connection.alloc;
+    struct tcp_pcb **tcp_array = (struct tcp_pcb**)lwip_socket_incoming_array(socket);
+
+    // Search for PCB on the accept queue of the parent socket
+    struct tcp_pcb **shift_down = NULL;
+    uint8_t i = socket->incoming.connection.iget;
+    do {
+        if (shift_down == NULL) {
+            if (tcp_array[i] == pcb) {
+                shift_down = &tcp_array[i];
+            }
+        } else {
+            *shift_down = tcp_array[i];
+            shift_down = &tcp_array[i];
+        }
+        if (++i >= alloc) {
+            i = 0;
+        }
+    } while (i != socket->incoming.connection.iput);
+
+    // PCB found in queue, remove it
+    if (shift_down != NULL) {
+        *shift_down = NULL;
+        socket->incoming.connection.iput = shift_down - tcp_array;
+    }
+}
+
 // By default, a child socket of listen socket is created with recv
 // handler which discards incoming pbuf's. We don't want to do that,
 // so set this handler which requests lwIP to keep pbuf's and deliver
@@ -409,6 +446,15 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
             // is idle.
             tcp_poll(newpcb, _lwip_tcp_accept_finished, 1);
         }
+
+        // Set the error callback to handle the case of a dropped connection before we
+        // have a chance to take it off the accept queue.
+        // The ->connected entry is repurposed to store the parent socket; this is safe
+        // because it's only ever used by lwIP if tcp_connect is called on the TCP PCB.
+        newpcb->connected = (void*)socket;
+        tcp_arg(newpcb, newpcb);
+        tcp_err(newpcb, _lwip_tcp_err_unaccepted);
+
         return ERR_OK;
     }
 
