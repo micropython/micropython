@@ -44,7 +44,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t color_depth, uint8_t set_column_command, uint8_t set_row_command,
         uint8_t write_ram_command, uint8_t set_vertical_scroll, uint8_t* init_sequence, uint16_t init_sequence_len,
-        const mcu_pin_obj_t* backlight_pin, bool init_cs_toggle, bool single_byte_bounds) {
+        const mcu_pin_obj_t* backlight_pin, bool single_byte_bounds) {
     self->color_depth = color_depth;
     self->set_column_command = set_column_command;
     self->set_row_command = set_row_command;
@@ -54,7 +54,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->colstart = colstart;
     self->rowstart = rowstart;
     self->auto_brightness = false;
-    self->init_cs_toggle = init_cs_toggle;
     self->single_byte_bounds = single_byte_bounds;
 
     if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
@@ -84,7 +83,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         bool delay = (data_size & DELAY) != 0;
         data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
-        if (self->init_cs_toggle && self->set_cs != NULL) {
+        if (self->set_cs != NULL) {
             self->set_cs(self->bus, true);
             common_hal_time_delay_ms(1);
             self->set_cs(self->bus, false);
