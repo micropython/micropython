@@ -344,9 +344,11 @@ Notes:
   To further reduce power consumption it is possible to disable the internal pullups::
 
     p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
-    # or
-    p2 = Pin(4, Pin.IN)
-    esp32.gpio_hold(p2, True)
+    
+  After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if it is an output pin) via::
+    
+    p1 = Pin(4, Pin.OUT, Pin.PULL_HOLD)
+
 
 OneWire driver
 --------------
