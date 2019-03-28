@@ -39,3 +39,11 @@ bool common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *sel
     *output_color = __builtin_bswap16(packed);
     return true;
 }
+
+// Currently no refresh logic is needed for a ColorConverter.
+bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self) {
+    return false;
+}
+
+void displayio_colorconverter_finish_refresh(displayio_colorconverter_t *self) {
+}

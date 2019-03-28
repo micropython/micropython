@@ -36,4 +36,7 @@ typedef struct {
     mp_obj_base_t base;
 } displayio_colorconverter_t;
 
+bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self);
+void displayio_colorconverter_finish_refresh(displayio_colorconverter_t *self);
+
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_COLORCONVERTER_H
