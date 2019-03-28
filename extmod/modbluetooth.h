@@ -34,6 +34,9 @@ typedef struct {
     mp_obj_base_t          base;
     mp_bt_uuid_t           uuid;
     mp_bt_service_handle_t handle;
+    #if ESP_PLATFORM
+    uint8_t                esp_gatts_if; /* Only for ESP-IDF */
+    #endif
 } mp_bt_service_t;
 
 // A characteristic.
@@ -62,15 +65,25 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_
 // Stop advertisement. No-op when already stopped.
 void mp_bt_advertise_stop(void);
 
+// Call this when a central disconnects.
+void mp_bt_connected(uint16_t conn_handle);
+
+// Call this when a central connects.
+void mp_bt_disconnected(uint16_t conn_handle);
+
 // Add a service with the given list of characteristics.
 int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_bt_characteristic_t **characteristics);
 
 // Set the given characteristic to the given value.
-int mp_bt_characteristic_value_set(mp_bt_characteristic_handle_t handle, const void *value, size_t value_len);
+int mp_bt_characteristic_value_set(mp_bt_characteristic_t *characteristic, const void *value, size_t value_len);
+
+// Set the given characteristic and notify a central using the given
+// connection handle.
+int mp_bt_characteristic_value_notify(mp_bt_characteristic_t *characteristic, uint16_t conn_handle, const void *value, size_t value_len);
 
 // Read the characteristic value. The size of the buffer must be given in
 // value_len, which will be updated with the actual value.
-int mp_bt_characteristic_value_get(mp_bt_characteristic_handle_t handle, void *value, size_t *value_len);
+int mp_bt_characteristic_value_get(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len);
 
 // Parse an UUID object from the caller and stores the result in the uuid
 // parameter. Must accept both strings and integers for 128-bit and 16-bit
