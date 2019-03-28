@@ -34,7 +34,6 @@
 typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
 typedef void (*display_bus_send)(mp_obj_t bus, bool command, uint8_t *data, uint32_t data_length);
 typedef void (*display_bus_end_transaction)(mp_obj_t bus);
-typedef void (*display_bus_set_cs)(mp_obj_t bus, bool high);
 
 typedef struct {
     mp_obj_base_t base;
@@ -53,7 +52,6 @@ typedef struct {
     display_bus_begin_transaction begin_transaction;
     display_bus_send send;
     display_bus_end_transaction end_transaction;
-    display_bus_set_cs set_cs;
     union {
         digitalio_digitalinout_obj_t backlight_inout;
         pulseio_pwmout_obj_t backlight_pwm;

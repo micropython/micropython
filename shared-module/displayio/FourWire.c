@@ -30,6 +30,7 @@
 
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "tick.h"
 
@@ -78,6 +79,11 @@ bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
 
 void common_hal_displayio_fourwire_send(mp_obj_t obj, bool command, uint8_t *data, uint32_t data_length) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    if (command) {
+        common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
+        common_hal_time_delay_ms(1);
+        common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
+    }
     common_hal_digitalio_digitalinout_set_value(&self->command, !command);
     common_hal_busio_spi_write(self->bus, data, data_length);
 }
@@ -86,9 +92,4 @@ void common_hal_displayio_fourwire_end_transaction(mp_obj_t obj) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
     common_hal_busio_spi_unlock(self->bus);
-}
-
-void common_hal_displayio_fourwire_set_cs(mp_obj_t obj, bool high) {
-    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->chip_select, high);
 }

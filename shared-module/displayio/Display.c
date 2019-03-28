@@ -59,12 +59,10 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         self->begin_transaction = common_hal_displayio_parallelbus_begin_transaction;
         self->send = common_hal_displayio_parallelbus_send;
         self->end_transaction = common_hal_displayio_parallelbus_end_transaction;
-        self->set_cs = NULL;
     } else if (MP_OBJ_IS_TYPE(bus, &displayio_fourwire_type)) {
         self->begin_transaction = common_hal_displayio_fourwire_begin_transaction;
         self->send = common_hal_displayio_fourwire_send;
         self->end_transaction = common_hal_displayio_fourwire_end_transaction;
-        self->set_cs = common_hal_displayio_fourwire_set_cs;
     } else {
         mp_raise_ValueError(translate("Unsupported display bus type"));
     }
@@ -82,11 +80,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         bool delay = (data_size & DELAY) != 0;
         data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
-        if (self->set_cs != NULL) {
-            self->set_cs(self->bus, true);
-            common_hal_time_delay_ms(1);
-            self->set_cs(self->bus, false);
-        }
         self->send(self->bus, true, cmd, 1);
         self->send(self->bus, false, data, data_size);
         uint16_t delay_length_ms = 10;
