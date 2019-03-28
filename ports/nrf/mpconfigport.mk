@@ -22,7 +22,7 @@ CIRCUITPY_I2CSLAVE = 0
 # nvm not yet implemented
 CIRCUITPY_NVM = 0
 
-# rtc not yet implemented
+# enable RTC
 CIRCUITPY_RTC = 1
 
 # frequencyio not yet implemented
