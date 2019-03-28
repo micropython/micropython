@@ -109,7 +109,7 @@ STATIC esp_bt_uuid_t notify_descr_uuid = {
 
 // Initialize at early boot.
 void mp_bt_init(void) {
-    printf("mp_bt_init\r\n");
+    printf("mp_bt_init on core %d\r\n", xPortGetCoreID());
     esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
     mp_bt_call_complete = xSemaphoreCreateBinary();
 }

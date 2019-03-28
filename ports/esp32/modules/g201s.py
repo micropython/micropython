@@ -62,7 +62,7 @@ class G201S():
         #global index
         self.index = 0
         try:
-            self.adapter.start()
+            #self.adapter.start()
             self.adapter.connect(self.address)
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
