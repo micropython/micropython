@@ -3,6 +3,11 @@
 
 CONFIG_IDF_TARGET="esp32"
 
+# WiFi/BT Coexist
+#define CONFIG_SW_COEXIST_ENABLE=y
+#define CONFIG_SW_COEXIST_PREFERENCE_VALUE=2
+#define CONFIG_SW_COEXIST_PREFERENCE_BALANCE=y
+
 # Application manager
 CONFIG_APP_EXCLUDE_PROJECT_VER_VAR=y
 CONFIG_APP_EXCLUDE_PROJECT_NAME_VAR=y
@@ -32,5 +37,13 @@ CONFIG_PPP_CHAP_SUPPORT=y
 # Bluetooth
 CONFIG_BT_ENABLED=y
 CONFIG_BLUEDROID_PINNED_TO_CORE=0
+CONFIG_BTDM_CONTROLLER_PINNED_TO_CORE=0     ###
+CONFIG_BLUEDROID_PINNED_TO_CORE_0=1         ###
+CONFIG_BTDM_CONTROLLER_PINNED_TO_CORE_0=1   ###
+CONFIG_ESP32_WIFI_TASK_PINNED_TO_CORE_0=1   ###
+
+# But, you can also try make Bluetooth (BTDM_CONTROLLER_PINNED_TO_CORE and BLUEDROID_PINNED_TO_CORE) to the different core from Wifi.
+# You know ESP32 share the RF between Bluetooth and WIFI, so when they use simultaneously, the performance will decrease, but it will keep working. What's the performance you want ESP32 to reach?
+
 CONFIG_BT_ACL_CONNECTIONS=4
 CONFIG_GATTS_ENABLE=y

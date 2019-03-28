@@ -53,7 +53,8 @@ jobs:
         - git submodule update --init
         - git submodule init lib/berkeley-db-1.xx
         - cd lib/ESP-IDF
-        - git checkout $IDF_HASH
+        #- git checkout $IDF_HASH
+        - git checkout b9b401ee39bb8390bcbff4a80ba7eddcdbf7d1c1
         - cd ../..
         - git submodule update
         - export ESPIDF=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF
@@ -92,38 +93,3 @@ jobs:
         on:
           # branch: master
           tags: true
-    # qemu-arm
-    - stage: staging
-      env: NAME="qemu-arm port build"
-      before_install:
-        - export D_START=$(date -u +%s)
-        - git submodule update --init --recursive
-      install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
-        - sudo apt-get install qemu-system
-        - arm-none-eabi-gcc --version
-        - qemu-system-arm --version
-      script:
-        - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
-        - cd $HOME/build/ilyamordasov/micropython/ports/qemu-arm/build
-        - zip -r -j QEMU-ARM_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip *.elf
-        - ZIP=$(readlink -f QEMU-ARM_v.1.10.${TRAVIS_BUILD_NUMBER}_${TRAVIS_BRANCH}.zip)
-        - |
-          ARTEFACTS_URL=$(curl --connect-timeout 5 --max-time 10 -s -H "Max-Days: 5" --upload-file $ZIP https://transfer.sh/$(basename $ZIP))
-          # if [ $ARTEFACTS_URL != 200 ]; then
-          #   ARTEFACTS_URL=$(curl -w %{http_code} $1 -F "file=@$ZIP" https://anonfile.com/api/upload | jq -r '.data.file.url.short')
-          # fi
-          D_DIFF="$(($(date -u +%s)-$D_START))"
-          TIME_EXEC="$((D_DIFF / 60 % 60)) min $((D_DIFF % 60)) sec"
-      after_success:
-        - |
-          COMPARE_URL=$(curl -s -X GET https://api.travis-ci.org/repo/${TRAVIS_REPO_SLUG}/requests -H 'Authorization: token $TRAVIS_API_TOKEN' -H 'Travis-API-Version: 3' -H 'User-Agent: API Explorer' | jq .requests[0].commit.compare_url)
-          echo $COMPARE_URL
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"[QEMU-ARM] Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <$COMPARE_URL|commit> on branch *${TRAVIS_BRANCH}*\n\`\`\`curl --connect-timeout 5 --max-time 10 $ARTEFACTS_URL -o tmp.zip && unzip tmp.zip && rm -rf *.zip\`\`\`\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Download artefacts\",\"type\":\"button\",\"url\":\"$ARTEFACTS_URL\"}], \"footer\": \"Execution time: *$TIME_EXEC*\"}]}" $SLACK_WEBHOOK_URL
-      after_failure:
-        - |
-          grep "FAIL" ports/qemu-arm/build/console.out
-          COMPARE_URL=$(curl -s -X GET https://api.travis-ci.org/repo/${TRAVIS_REPO_SLUG}/requests -H 'Authorization: token $TRAVIS_API_TOKEN' -H 'Travis-API-Version: 3' -H 'User-Agent: API Explorer' | jq .requests[0].commit.compare_url)
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"[QEMU-ARM] Repo \`${TRAVIS_REPO_SLUG}\` *failed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <$COMPARE_URL|commit> on branch *${TRAVIS_BRANCH}*\",\"color\":\"danger\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"Show log\",\"type\":\"button\",\"url\":\"$TRAVIS_JOB_WEB_URL\"}], \"footer\": \"Execution time: *$TIME_EXEC*\"}]}" $SLACK_WEBHOOK_URL
