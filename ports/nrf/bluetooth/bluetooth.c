@@ -116,6 +116,11 @@ STATIC int mp_bt_errno(uint32_t err_code) {
     case NRF_ERROR_INVALID_LENGTH:
         return MP_EINVAL;
     case NRF_ERROR_NO_MEM:
+    #if NRF51
+    case BLE_ERROR_NO_TX_BUFFERS:
+    #else
+    case NRF_ERROR_RESOURCES:
+    #endif
         return MP_ENOMEM;
     case NRF_ERROR_INVALID_ADDR:
         return MP_EFAULT; // bad address
@@ -267,7 +272,11 @@ void mp_bt_advertise_stop(void) {
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
     switch (p_ble_evt->header.evt_id) {
+        case BLE_GAP_EVT_CONNECTED:
+            mp_bt_connected(p_ble_evt->evt.gap_evt.conn_handle);
+            break;
         case BLE_GAP_EVT_DISCONNECTED:
+            mp_bt_disconnected(p_ble_evt->evt.gap_evt.conn_handle);
 #if NRF51
             mp_bt_advertise_start_internal();
 #else
@@ -341,21 +350,36 @@ int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_b
     return 0;
 }
 
-int mp_bt_characteristic_value_set(mp_bt_characteristic_handle_t handle, const void *value, size_t value_len) {
+int mp_bt_characteristic_value_set(mp_bt_characteristic_t *characteristic, const void *value, size_t value_len) {
     ble_gatts_value_t data = {0};
     data.len = value_len;
     data.offset = 0;
     data.p_value = (void*)value; // value is only read so we can discard const
-    uint32_t err_code = sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID, handle, &data);
+    uint32_t err_code = sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID, characteristic->value_handle, &data);
     return mp_bt_errno(err_code);
 }
 
-int mp_bt_characteristic_value_get(mp_bt_characteristic_handle_t handle, void *value, size_t *value_len) {
+int mp_bt_characteristic_value_notify(mp_bt_characteristic_t *characteristic, uint16_t conn_handle, const void *value, size_t value_len) {
+    uint16_t len = value_len;
+    ble_gatts_hvx_params_t hvx_params = {0};
+    hvx_params.handle = characteristic->value_handle;
+    hvx_params.type = BLE_GATT_HVX_NOTIFICATION;
+    hvx_params.p_len = &len;
+    hvx_params.p_data = (void*)value;
+    uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
+    if (err_code == BLE_ERROR_GATTS_SYS_ATTR_MISSING) {
+        // may happen when not subscribed
+        err_code = 0;
+    }
+    return mp_bt_errno(err_code);
+}
+
+int mp_bt_characteristic_value_get(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len) {
     ble_gatts_value_t data = {0};
     data.len = *value_len;
     data.offset = 0;
     data.p_value = value;
-    uint32_t err_code = sd_ble_gatts_value_get(BLE_CONN_HANDLE_INVALID, handle, &data);
+    uint32_t err_code = sd_ble_gatts_value_get(BLE_CONN_HANDLE_INVALID, characteristic->value_handle, &data);
     *value_len = data.len;
     return mp_bt_errno(err_code);
 }

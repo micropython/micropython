@@ -55,6 +55,12 @@ STATIC uint16_t bluetooth_app_id = 0; // provide unique number for each applicat
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
+STATIC const esp_bt_uuid_t notify_descr_uuid = {
+    .len = ESP_UUID_LEN_16,
+    .uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG
+};
+STATIC const uint8_t descr_value_buf[2];
+
 // Convert an esp_err_t into an errno number.
 STATIC int mp_bt_esp_errno(esp_err_t err) {
     switch (err) {
@@ -204,18 +210,25 @@ int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_b
         return mp_bt_status_errno();
     }
     esp_gatt_if_t gatts_if = mp_bt_call_result.gatts_if;
+    service->esp_gatts_if = gatts_if;
 
     // Calculate the number of required handles.
     // This formula is a guess. I can't seem to find any documentation for
     // the required number of handles.
     uint16_t num_handle = 1 + num_characteristics * 2;
+    for (size_t i = 0; i < num_characteristics; i++) {
+        mp_bt_characteristic_t *characteristic = characteristics[i];
+        if ((characteristic->flags & MP_BLE_FLAG_NOTIFY) != 0) {
+            num_handle += 1;
+        }
+    }
 
     // Create the service.
     esp_gatt_srvc_id_t bluetooth_service_id;
     bluetooth_service_id.is_primary = true;
     bluetooth_service_id.id.inst_id = 0;
     bluetooth_service_id.id.uuid = service->uuid;
-    err = esp_ble_gatts_create_service(gatts_if, &bluetooth_service_id, num_handle);
+    err = esp_ble_gatts_create_service(service->esp_gatts_if, &bluetooth_service_id, num_handle);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -268,6 +281,23 @@ int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_b
             return mp_bt_status_errno();
         }
 
+        // Add descriptor if needed.
+        if ((characteristic->flags & MP_BLE_FLAG_NOTIFY) != 0) {
+            esp_attr_value_t descr_value = {0};
+            descr_value.attr_max_len = 2;
+            descr_value.attr_len = 2;
+            descr_value.attr_value = (uint8_t*)descr_value_buf; // looks like this buffer is never written to
+            esp_err_t err = esp_ble_gatts_add_char_descr(service->handle, (esp_bt_uuid_t*)&notify_descr_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, &descr_value, &control);
+            if (err != 0) {
+                return mp_bt_esp_errno(err);
+            }
+            // Wait for ESP_GATTS_ADD_CHAR_DESCR_EVT
+            xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+            if (mp_bt_call_status != 0) {
+                return mp_bt_status_errno();
+            }
+        }
+
         // Now that the characteristic has been added successfully to the
         // service, update the characteristic's service.
         // Note that the caller has already ensured that
@@ -279,8 +309,8 @@ int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_b
     return 0;
 }
 
-int mp_bt_characteristic_value_set(mp_bt_characteristic_handle_t handle, const void *value, size_t value_len) {
-    esp_err_t err = esp_ble_gatts_set_attr_value(handle, value_len, value);
+int mp_bt_characteristic_value_set(mp_bt_characteristic_t *characteristic, const void *value, size_t value_len) {
+    esp_err_t err = esp_ble_gatts_set_attr_value(characteristic->value_handle, value_len, value);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -289,10 +319,15 @@ int mp_bt_characteristic_value_set(mp_bt_characteristic_handle_t handle, const v
     return mp_bt_status_errno();
 }
 
-int mp_bt_characteristic_value_get(mp_bt_characteristic_handle_t handle, void *value, size_t *value_len) {
+int mp_bt_characteristic_value_notify(mp_bt_characteristic_t *characteristic, uint16_t conn_handle, const void *value, size_t value_len) {
+    esp_err_t err = esp_ble_gatts_send_indicate(characteristic->service->esp_gatts_if, conn_handle, characteristic->value_handle, value_len, (void*)value, false);
+    return mp_bt_esp_errno(err);
+}
+
+int mp_bt_characteristic_value_get(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len) {
     uint16_t bt_len;
     const uint8_t *bt_ptr;
-    esp_err_t err = esp_ble_gatts_get_attr_value(handle, &bt_len, &bt_ptr);
+    esp_err_t err = esp_ble_gatts_get_attr_value(characteristic->value_handle, &bt_len, &bt_ptr);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -363,8 +398,10 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
     switch (event) {
         case ESP_GATTS_CONNECT_EVT:
+            mp_bt_connected(param->connect.conn_id);
             break;
         case ESP_GATTS_DISCONNECT_EVT:
+            mp_bt_disconnected(param->disconnect.conn_id);
             // restart advertisement
             mp_bt_advertise_start_internal();
             break;
@@ -391,6 +428,11 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
             mp_bt_call_result.attr_handle = param->add_char.attr_handle;
             xSemaphoreGive(mp_bt_call_complete);
             break;
+        case ESP_GATTS_ADD_CHAR_DESCR_EVT:
+            // Characteristic descriptor added.
+            mp_bt_call_status = param->add_char_descr.status;
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
         case ESP_GATTS_SET_ATTR_VAL_EVT:
             // Characteristic value set by application.
             mp_bt_call_status = param->set_attr_val.status;
@@ -401,6 +443,9 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
             break;
         case ESP_GATTS_WRITE_EVT:
             // Characteristic value written by connected device.
+            break;
+        case ESP_GATTS_CONF_EVT:
+            // Characteristic notify confirmation received.
             break;
         default:
             ESP_LOGI("bluetooth", "GATTS: unknown event: %d", event);

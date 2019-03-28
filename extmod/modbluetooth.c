@@ -35,6 +35,8 @@ STATIC const mp_obj_type_t bluetooth_type;
 STATIC const mp_obj_type_t service_type;
 STATIC const mp_obj_type_t characteristic_type;
 
+STATIC volatile uint16_t active_connections[MP_BT_MAX_CONNECTED_DEVICES];
+
 typedef struct _mp_obj_bluetooth_t {
     mp_obj_base_t base;
 } mp_obj_bluetooth_t;
@@ -117,6 +119,26 @@ mp_obj_t mp_bt_format_uuid_str(uint8_t *uuid) {
     return mp_obj_new_str(str, MP_ARRAY_SIZE(str));
 }
 
+// Add this connection handle to the list of connected centrals.
+void mp_bt_connected(uint16_t conn_handle) {
+    for (size_t i = 0; i < MP_BT_MAX_CONNECTED_DEVICES; i++) {
+        if (active_connections[i] == MP_BT_INVALID_CONN_HANDLE) {
+            active_connections[i] = conn_handle;
+            break;
+        }
+    }
+}
+
+// Remove this connection handle from the list of connected centrals.
+void mp_bt_disconnected(uint16_t conn_handle) {
+    for (size_t i = 0; i < MP_BT_MAX_CONNECTED_DEVICES; i++) {
+        if (active_connections[i] == conn_handle) {
+            active_connections[i] = MP_BT_INVALID_CONN_HANDLE;
+            break;
+        }
+    }
+}
+
 STATIC mp_obj_t bluetooth_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     return MP_OBJ_FROM_PTR(&bluetooth_obj);
 }
@@ -124,6 +146,9 @@ STATIC mp_obj_t bluetooth_make_new(const mp_obj_type_t *type, size_t n_args, siz
 STATIC mp_obj_t bluetooth_active(size_t n_args, const mp_obj_t *args) {
     if (n_args == 2) { // boolean enable/disable argument supplied
         if (mp_obj_is_true(args[1])) {
+            for (size_t i = 0; i < MP_BT_MAX_CONNECTED_DEVICES; i++) {
+                active_connections[i] = MP_BT_INVALID_CONN_HANDLE;
+            }
             int errno_ = mp_bt_enable();
             if (errno_ != 0) {
                 mp_raise_OSError(errno_);
@@ -321,7 +346,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(characteristic_uuid_obj, characteristic_uuid);
 STATIC mp_obj_t characteristic_write(mp_obj_t self_in, mp_obj_t value_in) {
     mp_bt_characteristic_t *characteristic = self_in;
     GET_STR_DATA_LEN(value_in, str_data, str_len);
-    int errno_ = mp_bt_characteristic_value_set(characteristic->value_handle, str_data, str_len);
+    int errno_;
+    if ((characteristic->flags & MP_BLE_FLAG_NOTIFY) != 0) {
+        bool updated = false;
+        for (size_t i = 0; i < MP_BT_MAX_CONNECTED_DEVICES; i++) {
+            uint16_t conn_handle = active_connections[i];
+            if (conn_handle == MP_BT_INVALID_CONN_HANDLE) {
+                continue;
+            }
+            errno_ = mp_bt_characteristic_value_notify(characteristic, conn_handle, str_data, str_len);
+            if (errno_ != 0) {
+                break;
+            }
+            updated = true;
+        }
+        if (!updated) {
+            errno_ = mp_bt_characteristic_value_set(characteristic, str_data, str_len);
+        }
+    } else {
+        errno_ = mp_bt_characteristic_value_set(characteristic, str_data, str_len);
+    }
     return bluetooth_handle_errno(errno_);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(characteristic_write_obj, characteristic_write);
@@ -330,7 +374,7 @@ STATIC mp_obj_t characteristic_read(mp_obj_t self_in) {
     mp_bt_characteristic_t *characteristic = self_in;
     uint8_t data[MP_BT_MAX_ATTR_SIZE];
     size_t value_len = MP_BT_MAX_ATTR_SIZE;
-    int errno_ = mp_bt_characteristic_value_get(characteristic->value_handle, data, &value_len);
+    int errno_ = mp_bt_characteristic_value_get(characteristic, data, &value_len);
     if (errno_ != 0) {
         mp_raise_OSError(errno_);
     }
