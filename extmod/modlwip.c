@@ -323,6 +323,30 @@ STATIC struct tcp_pcb *volatile *lwip_socket_incoming_array(lwip_socket_obj_t *s
     }
 }
 
+STATIC void lwip_socket_free_incoming(lwip_socket_obj_t *socket) {
+    bool socket_is_listener =
+        socket->type == MOD_NETWORK_SOCK_STREAM
+        && socket->pcb.tcp->state == LISTEN;
+
+    if (!socket_is_listener) {
+        if (socket->incoming.pbuf != NULL) {
+            pbuf_free(socket->incoming.pbuf);
+            socket->incoming.pbuf = NULL;
+        }
+    } else {
+        uint8_t alloc = socket->incoming.connection.alloc;
+        struct tcp_pcb *volatile *tcp_array = lwip_socket_incoming_array(socket);
+        for (uint8_t i = 0; i < alloc; ++i) {
+            // Deregister callback and abort
+            if (tcp_array[i] != NULL) {
+                tcp_poll(tcp_array[i], NULL, 0);
+                tcp_abort(tcp_array[i]);
+                tcp_array[i] = NULL;
+            }
+        }
+    }
+}
+
 /*******************************************************************************/
 // Callback functions for the lwIP raw API.
 
@@ -356,6 +380,8 @@ STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, 
 STATIC void _lwip_tcp_error(void *arg, err_t err) {
     lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
+    // Free any incoming buffers or connections that are stored
+    lwip_socket_free_incoming(socket);
     // Pass the error code back via the connection variable.
     socket->state = err;
     // If we got here, the lwIP stack either has deallocated or will deallocate the pcb.
@@ -1368,8 +1394,6 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         }
 
     } else if (request == MP_STREAM_CLOSE) {
-        bool socket_is_listener = false;
-
         if (socket->pcb.tcp == NULL) {
             MICROPY_PY_LWIP_EXIT
             return 0;
@@ -1380,9 +1404,6 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 
         switch (socket->type) {
             case MOD_NETWORK_SOCK_STREAM: {
-                if (socket->pcb.tcp->state == LISTEN) {
-                    socket_is_listener = true;
-                }
                 if (tcp_close(socket->pcb.tcp) != ERR_OK) {
                     DEBUG_printf("lwip_close: had to call tcp_abort()\n");
                     tcp_abort(socket->pcb.tcp);
@@ -1392,25 +1413,9 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
             //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
         }
+        lwip_socket_free_incoming(socket);
         socket->pcb.tcp = NULL;
         socket->state = _ERR_BADF;
-        if (!socket_is_listener) {
-            if (socket->incoming.pbuf != NULL) {
-                pbuf_free(socket->incoming.pbuf);
-                socket->incoming.pbuf = NULL;
-            }
-        } else {
-            uint8_t alloc = socket->incoming.connection.alloc;
-            struct tcp_pcb *volatile *tcp_array = lwip_socket_incoming_array(socket);
-            for (uint8_t i = 0; i < alloc; ++i) {
-                // Deregister callback and abort
-                if (tcp_array[i] != NULL) {
-                    tcp_poll(tcp_array[i], NULL, 0);
-                    tcp_abort(tcp_array[i]);
-                    tcp_array[i] = NULL;
-                }
-            }
-        }
         ret = 0;
 
     } else {
