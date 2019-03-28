@@ -42,7 +42,8 @@ OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 STARTUP_FILE ?= boards/startup_stm32$(MCU_SERIES).o
 
-CROSS_COMPILE = arm-none-eabi-
+# Select the cross compile prefix
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I$(TOP)
