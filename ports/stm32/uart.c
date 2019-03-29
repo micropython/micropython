@@ -745,6 +745,16 @@ void uart_irq_handler(mp_uint_t uart_id) {
             }
         }
     }
+    // If RXNE is clear but ORE set then clear the ORE flag (it's tied to RXNE IRQ)
+    #if defined(STM32F4)
+    else if (self->uartx->SR & USART_SR_ORE) {
+        (void)self->uartx->DR;
+    }
+    #else
+    else if (self->uartx->ISR & USART_ISR_ORE) {
+        self->uartx->ICR = USART_ICR_ORECF;
+    }
+    #endif
 
     // Set user IRQ flags
     self->mp_irq_flags = 0;
