@@ -1,9 +1,6 @@
 Developing and building MicroPython
 ===================================
 
-This chapter describes modules (function and class libraries) which are built
-into MicroPython. There are a few categories of such modules:
-
 This chapter describes some options for extending MicroPython in C. Note
 that it doesn't aim to be a complete guide for developing with MicroPython.
 See the `getting started guide
