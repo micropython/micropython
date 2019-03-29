@@ -163,7 +163,7 @@ SRC_LIB += $(addprefix lib/,\
 ifeq ($(MICROPY_FATFS), 1)
 SRC_LIB += $(addprefix lib/,\
         oofatfs/ff.c \
-        oofatfs/option/unicode.c \
+        oofatfs/ffunicode.c \
         )
 endif
 
