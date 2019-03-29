@@ -23,6 +23,8 @@ msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
+"\n"
+"Código en ejecución. Esperando para recargar.\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -47,7 +49,7 @@ msgstr "%q está siendo utilizado"
 
 #: py/obj.c
 msgid "%q index out of range"
-msgstr "%w indice fuera de rango"
+msgstr "%q indice fuera de rango"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
@@ -57,12 +59,12 @@ msgstr "%q indices deben ser enteros, no %s"
 #: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
 #, fuzzy
 msgid "%q must be >= 1"
-msgstr "los buffers deben de tener la misma longitud"
+msgstr "%q debe ser >= 1"
 
 #: shared-bindings/fontio/BuiltinFont.c
 #, fuzzy
 msgid "%q should be an int"
-msgstr "y deberia ser un int"
+msgstr "%q deberia ser un int"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -85,7 +87,7 @@ msgstr "'%s' espera un registro"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr "ord espera un carácter"
+msgstr "'%s' espera un carácter"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -510,7 +512,7 @@ msgstr "Capacidad de destino es mas pequeña que destination_length."
 
 #: shared-bindings/displayio/Display.c
 msgid "Display rotation must be in 90 degree increments"
-msgstr ""
+msgstr "Rotación de display debe ser en incrementos de 90 grados"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
@@ -545,7 +547,7 @@ msgstr "Se espera un %q"
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
-msgstr ""
+msgstr "Se esperaba un tuple de %d, se obtuvo %d"
 
 #: ports/nrf/common-hal/bleio/Device.c
 #, fuzzy
@@ -625,7 +627,7 @@ msgstr "No se puede obtener el estado del softdevice, error: 0x%08lX"
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
-msgstr ""
+msgstr "Error al notificar o indicar el valor del atributo, err 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -635,7 +637,7 @@ msgstr "No se puede leer el valor del atributo. status 0x%02x"
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
-msgstr ""
+msgstr "Error al leer valor del atributo, err 0x%04"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -705,25 +707,25 @@ msgstr "El archivo ya existe"
 
 #: ports/nrf/supervisor/internal_flash.c
 msgid "Flash erase failed"
-msgstr ""
+msgstr "Falló borrado de flash"
 
 #: ports/nrf/supervisor/internal_flash.c
 #, c-format
 msgid "Flash erase failed to start, err 0x%04x"
-msgstr ""
+msgstr "Falló el iniciar borrado de flash, err 0x%04x"
 
 #: ports/nrf/supervisor/internal_flash.c
 msgid "Flash write failed"
-msgstr ""
+msgstr "Falló la escritura"
 
 #: ports/nrf/supervisor/internal_flash.c
 #, c-format
 msgid "Flash write failed to start, err 0x%04x"
-msgstr ""
+msgstr "Falló el iniciar la escritura de flash, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
-msgstr ""
+msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
@@ -752,7 +754,7 @@ msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
-msgstr ""
+msgstr "Tamaño incorrecto del buffer"
 
 #: py/moduerrno.c
 msgid "Input/output error"
@@ -860,7 +862,7 @@ msgstr "LHS del agumento por palabra clave deberia ser un identificador"
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
-msgstr ""
+msgstr "Layer debe ser una subclase de Group o TileGrid."
 
 #: py/objslice.c
 msgid "Length must be an int"
@@ -892,7 +894,7 @@ msgstr "MOSI pin init fallido."
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
-msgstr ""
+msgstr "Valor máximo de x cuando se refleja es %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
@@ -900,7 +902,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython fatal error.\n"
-msgstr ""
+msgstr "Error fatal de MicroPython.\n"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -908,7 +910,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Must be a Group subclass."
-msgstr ""
+msgstr "Debe ser una subclase de Group."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
@@ -929,7 +931,7 @@ msgstr "Sin pin TX"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
-msgstr ""
+msgstr "Relojes no disponibles"
 
 #: supervisor/shared/board_busses.c
 msgid "No default I2C bus"
@@ -958,7 +960,7 @@ msgstr "Sin soporte de hardware en pin"
 
 #: py/moduerrno.c
 msgid "No space left on device"
-msgstr ""
+msgstr "No queda espacio en el dispositivo"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -968,6 +970,10 @@ msgstr "No existe el archivo/directorio"
 #, fuzzy
 msgid "Not connected"
 msgstr "No se puede conectar a AP"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c
+msgid "Not connected."
+msgstr "No conectado."
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 msgid "Not playing"
@@ -1189,11 +1195,11 @@ msgstr "El signo del sample no iguala al del mixer"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
-msgstr ""
+msgstr "La altura del Tile debe dividir exacto la altura del bitmap"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile indices must be 0 - 255"
-msgstr ""
+msgstr "Los índices de Tile deben ser 0 - 255"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -1213,7 +1219,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Too many displays"
-msgstr ""
+msgstr "Muchos displays"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -1259,7 +1265,7 @@ msgstr "Incapaz de inicializar el parser"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
+msgstr "No se pudo leer los datos de la paleta de colores"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
