@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-28 14:48+1100\n"
+"POT-Creation-Date: 2019-03-27 16:28-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,8 +52,8 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "buffers harus mempunyai panjang yang sama"
@@ -70,12 +70,12 @@ msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
 msgid "'%q' argument required"
 msgstr "'%q' argumen dibutuhkan"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr ""
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' mengharapkan sebuah register"
@@ -95,7 +95,7 @@ msgstr "'%s' mengharapkan sebuah FPU register"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' mengharapkan sebuah alamat dengan bentuk [a, b]"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' mengharapkan integer"
@@ -253,9 +253,9 @@ msgstr "Semua channel event yang disinkronisasi sedang digunakan"
 msgid "All timers for this pin are in use"
 msgstr "Semua timer untuk pin ini sedang digunakan"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -326,7 +326,7 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr ""
 
@@ -366,7 +366,7 @@ msgstr ""
 msgid "Can't connect in Peripheral mode"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
 msgid "Cannot delete values"
 msgstr ""
 
@@ -452,7 +452,7 @@ msgstr "Clock unit sedang digunakan"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
 msgid "Command must be an int between 0 and 255"
 msgstr ""
 
@@ -490,8 +490,8 @@ msgstr ""
 msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Tidak bisa menyesuaikan data ke dalam paket advertisment"
@@ -522,8 +522,8 @@ msgstr "Channel EXTINT sedang digunakan"
 msgid "Error in regex"
 msgstr "Error pada regex"
 
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/microcontroller/Pin.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr ""
@@ -532,8 +532,8 @@ msgstr ""
 msgid "Expected a Characteristic"
 msgstr ""
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Service.c
-#: shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 msgid "Expected a UUID"
 msgstr ""
 
@@ -657,8 +657,8 @@ msgstr "Gagal untuk melepaskan mutex, status: 0x%08lX"
 msgid "Failed to start advertising"
 msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
@@ -678,8 +678,8 @@ msgstr "Gagal untuk melakukan scanning, status: 0x%08lX"
 msgid "Failed to stop advertising"
 msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
@@ -720,8 +720,8 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
 msgstr ""
 
@@ -801,16 +801,16 @@ msgstr ""
 msgid "Invalid format chunk size"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid number of bits"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid phase"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: shared-bindings/pulseio/PWMOut.c
 msgid "Invalid pin"
 msgstr "Pin tidak valid"
@@ -824,14 +824,14 @@ msgid "Invalid pin for right channel"
 msgstr "Pin untuk channel kanan tidak valid"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Pin-pin tidak valid"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid polarity"
 msgstr ""
 
@@ -1041,12 +1041,8 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
-#: shared-bindings/rtc/RTC.c shared-bindings/time/__init__.c
+#: shared-bindings/time/__init__.c shared-bindings/rtc/RTC.c
 msgid "RTC is not supported on this board"
-msgstr ""
-
-#: shared-bindings/rtc/RTC.c
-msgid "RTC set is not supported on this board"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -1105,8 +1101,8 @@ msgstr "Serializer sedang digunakan"
 msgid "Slice and value different lengths."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
-#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/displayio/Group.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -1189,7 +1185,7 @@ msgstr "Untuk keluar, silahkan reset board tanpa "
 msgid "Too many channels in sample."
 msgstr "Terlalu banyak channel dalam sampel"
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
 msgid "Too many display busses"
 msgstr ""
 
@@ -1429,7 +1425,7 @@ msgstr ""
 msgid "buffer size must match format"
 msgstr "buffers harus mempunyai panjang yang sama"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "buffer slices must be of equal length"
 msgstr ""
 
@@ -1713,7 +1709,7 @@ msgstr ""
 msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/objfloat.c py/runtime.c py/modmath.c py/objint_longlong.c py/objint_mpz.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr ""
@@ -1722,7 +1718,7 @@ msgstr ""
 msgid "empty"
 msgstr ""
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "heap kosong"
 
@@ -1787,7 +1783,7 @@ msgstr "argumen keyword ekstra telah diberikan"
 msgid "extra positional arguments given"
 msgstr "argumen posisi ekstra telah diberikan"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -1960,7 +1956,7 @@ msgstr "micropython decorator tidak valid"
 msgid "invalid step"
 msgstr ""
 
-#: py/compile.c py/parse.c
+#: py/parse.c py/compile.c
 msgid "invalid syntax"
 msgstr "syntax tidak valid"
 
@@ -1997,7 +1993,7 @@ msgstr "argumen keyword belum diimplementasi - gunakan args normal"
 msgid "keywords must be strings"
 msgstr "keyword harus berupa string"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 msgid "label '%q' not defined"
 msgstr ""
 
@@ -2104,11 +2100,11 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr ""
 
-#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_longlong.c py/objint_mpz.c
 msgid "negative power with no float support"
 msgstr ""
 
-#: py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c
 msgid "negative shift count"
 msgstr ""
 
@@ -2215,7 +2211,7 @@ msgstr "panjang data string memiliki keganjilan (odd-length)"
 msgid "offset out of bounds"
 msgstr "modul tidak ditemukan"
 
-#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
+#: py/objstr.c py/objarray.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
@@ -2369,7 +2365,7 @@ msgstr ""
 msgid "slice step cannot be zero"
 msgstr ""
 
-#: py/objint.c py/sequence.c
+#: py/sequence.c py/objint.c
 msgid "small int overflow"
 msgstr ""
 

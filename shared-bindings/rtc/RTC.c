@@ -41,7 +41,7 @@ void MP_WEAK common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
 }
 
 void MP_WEAK common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
-    mp_raise_NotImplementedError(translate("RTC set is not supported on this board"));
+    mp_raise_NotImplementedError(translate("RTC is not supported on this board"));
 }
 
 int MP_WEAK common_hal_rtc_get_calibration(void) {
@@ -51,7 +51,6 @@ int MP_WEAK common_hal_rtc_get_calibration(void) {
 void MP_WEAK common_hal_rtc_set_calibration(int calibration) {
     mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
 }
-
 
 const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 
