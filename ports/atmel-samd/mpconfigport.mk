@@ -14,6 +14,12 @@ ifeq ($(LONGINT_IMPL),LONGLONG)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
 endif
 
+# Put samd21-only choices here.
+ifeq ($(CHIP_FAMILY),samd21)
+# frequencyio not yet verified as working on SAMD21.
+CIRCUITPY_FRQUENCYIO = 0
+endif
+
 # Put samd51-only choices here.
 ifeq ($(CHIP_FAMILY),samd51)
 CIRCUITPY_SAMD = 1
