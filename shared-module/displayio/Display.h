@@ -49,6 +49,7 @@ typedef struct {
     uint64_t last_refresh;
     int16_t colstart;
     int16_t rowstart;
+    bool single_byte_bounds;
     display_bus_begin_transaction begin_transaction;
     display_bus_send send;
     display_bus_end_transaction end_transaction;
