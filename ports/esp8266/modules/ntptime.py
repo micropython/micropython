@@ -7,8 +7,13 @@ try:
 except:
     import struct
 
+# Following the 'Time Epoch' difference described in:
+# http://docs.micropython.org/en/v1.9.3/wipy/library/utime.html
+# the NTP_DELTA value should be:
+# (date(2000, 1, 1) - date(1970, 1, 1)).days * 24*60*60
+NTP_DELTA = 946684800
 # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
-NTP_DELTA = 3155673600
+#NTP_DELTA = 3155673600
 
 host = "pool.ntp.org"
 
