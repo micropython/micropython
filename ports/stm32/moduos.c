@@ -111,7 +111,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     mp_obj_type_t *type = mp_obj_get_type(stream);
-    return type == &pyb_uart_type || type == &pyb_usb_vcp_type;
+    return type == &pyb_uart_type
+        #if MICROPY_HW_ENABLE_USB
+        || type == &pyb_usb_vcp_type
+        #endif
+        ;
 }
 
 STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
@@ -119,16 +123,20 @@ STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
     if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
     }
+    #if MICROPY_HW_ENABLE_USB
     if (mp_obj_get_type(prev_obj) == &pyb_usb_vcp_type) {
         usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
     }
+    #endif
 
     if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
     }
+    #if MICROPY_HW_ENABLE_USB
     if (mp_obj_get_type(args[0]) == &pyb_usb_vcp_type) {
         usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
     }
+    #endif
     return prev_obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uos_dupterm_obj, 1, 2, uos_dupterm);
