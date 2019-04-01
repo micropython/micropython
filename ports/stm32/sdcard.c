@@ -38,7 +38,7 @@
 #include "dma.h"
 #include "irq.h"
 
-#if MICROPY_HW_HAS_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
 
 #if defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
 
@@ -602,4 +602,4 @@ void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
     vfs->u.ioctl[1] = MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
 }
 
-#endif // MICROPY_HW_HAS_SDCARD
+#endif // MICROPY_HW_ENABLE_SDCARD

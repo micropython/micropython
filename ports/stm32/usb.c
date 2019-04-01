@@ -147,11 +147,11 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         }
 
         switch (pyb_usb_storage_medium) {
-#if MICROPY_HW_HAS_SDCARD
+            #if MICROPY_HW_ENABLE_SDCARD
             case PYB_USB_STORAGE_MEDIUM_SDCARD:
                 USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
                 break;
-#endif
+            #endif
             default:
                 USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
                 break;
