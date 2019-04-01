@@ -360,6 +360,13 @@ extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE_ALT_NAME
 #endif
 
+#if CIRCUITPY_PEW
+extern const struct _mp_obj_module_t pew_module;
+#define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
+#else
+#define PEW_MODULE
+#endif
+
 #if CIRCUITPY_PIXELBUF
 extern const struct _mp_obj_module_t pixelbuf_module;
 #define PIXELBUF_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
@@ -474,13 +481,6 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
-#if CIRCUITPY_PEW
-extern const struct _mp_obj_module_t pew_module;
-#define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
-#else
-#define PEW_MODULE
-#endif
-
 // These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
 #if MICROPY_PY_UERRNO
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
@@ -546,6 +546,7 @@ extern const struct _mp_obj_module_t pew_module;
     PULSEIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
+    ROTARYIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
     STAGE_MODULE \
