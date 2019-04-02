@@ -57,7 +57,7 @@ jobs:
         - git checkout b9b401ee39bb8390bcbff4a80ba7eddcdbf7d1c1
         - cd ../..
         - git submodule update
-        - export ESPIDF=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF
+        - export IDF_PATH=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32
         - cd $HOME/build/ilyamordasov/micropython/ports/esp32/build
