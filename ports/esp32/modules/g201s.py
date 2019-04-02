@@ -23,6 +23,7 @@ class G201S():
         self.adapter = upygatt.GATTToolBackend()
         self.index = 0
         self.cur_temp = 0
+        self.bt_is_started = False
         #super(G201S, self).__init__(update_callback = self._update_sensor_data)
 
     def write_handle(self, handle, value, increment=True):
@@ -46,7 +47,9 @@ class G201S():
         #global index
         self.index = 0
         try:
-            self.adapter.start()
+            if self.bt_is_started == False:
+                self.adapter.start()
+                self.bt_is_started = True
             #self.adapter.scan()
             self.adapter.connect(self.address)
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
@@ -62,7 +65,9 @@ class G201S():
         #global index
         self.index = 0
         try:
-            #self.adapter.start()
+            if self.bt_is_started == False:
+                self.adapter.start()
+                self.bt_is_started = True
             self.adapter.connect(self.address)
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
@@ -103,7 +108,9 @@ class G201S():
         #global index
         self.index = 0
         try:
-            self.adapter.start()
+            if self.bt_is_started == False:
+                self.adapter.start()
+                self.bt_is_started = True
             self.adapter.connect(self.address)
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
