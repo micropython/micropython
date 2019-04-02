@@ -43,7 +43,7 @@
 
 volatile static uint32_t rtc_offset = 0;
 
-const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(0);
+const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
 
 const nrfx_rtc_config_t rtc_config = {
 	.prescaler = RTC_FREQ_TO_PRESCALER(RTC_CLOCK_HZ),
