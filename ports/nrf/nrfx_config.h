@@ -70,6 +70,11 @@
 #define NRFX_PWM3_ENABLED 0
 #endif
 
+#define NRFX_RTC_ENABLED 1
+#define NRFX_RTC0_ENABLED 1
+#define NRFX_RTC1_ENABLED 1
+#define NRFX_RTC2_ENABLED 1
+
 // TIMERS
 #define NRFX_TIMER_ENABLED 1
 // Don't enable TIMER0: it's used by the SoftDevice.
