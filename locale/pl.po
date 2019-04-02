@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-29 18:58+0100\n"
+"POT-Creation-Date: 2019-04-02 13:43+1100\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -53,8 +53,8 @@ msgstr "%q poza zakresem"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
 
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
 msgid "%q must be >= 1"
 msgstr "%q musi być >= 1"
 
@@ -62,7 +62,7 @@ msgstr "%q musi być >= 1"
 msgid "%q should be an int"
 msgstr "%q powinno być typu int"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() bierze %d argumentów pozycyjnych, lecz podano %d"
 
@@ -70,12 +70,12 @@ msgstr "%q() bierze %d argumentów pozycyjnych, lecz podano %d"
 msgid "'%q' argument required"
 msgstr "'%q' wymaga argumentu"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr "'%s' oczekuje etykiety"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' oczekuje rejestru"
@@ -95,7 +95,7 @@ msgstr "'%s' oczekuje rejestru FPU"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' oczekuje adresu w postaci [a, b]"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' oczekuje liczby całkowitej"
@@ -244,7 +244,7 @@ msgstr "Wszystkie peryferia UART są w użyciu"
 msgid "All event channels in use"
 msgstr "Wszystkie kanały zdarzeń są w użyciu"
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
+#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
 msgstr "Wszystkie kanały zdarzeń synchronizacji są w użyciu"
 
@@ -252,9 +252,9 @@ msgstr "Wszystkie kanały zdarzeń synchronizacji są w użyciu"
 msgid "All timers for this pin are in use"
 msgstr "Wszystkie "
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -504,8 +504,8 @@ msgstr "Orientacja wyświetlacza musi być wielokrotnością 90 stopni"
 msgid "Drive mode not used when direction is input."
 msgstr "Tryb sterowania nie jest używany w trybie wejścia."
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "EXTINT channel already in use"
 msgstr "Kanał EXTINT jest już w użyciu"
 
@@ -513,8 +513,9 @@ msgstr "Kanał EXTINT jest już w użyciu"
 msgid "Error in regex"
 msgstr "Błąd w regex"
 
-#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Oczekiwano %q"
 
@@ -522,8 +523,8 @@ msgstr "Oczekiwano %q"
 msgid "Expected a Characteristic"
 msgstr "Oczekiwano charakterystyki"
 
-#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Descriptor.c
 msgid "Expected a UUID"
 msgstr "Oczekiwano UUID"
 
@@ -697,7 +698,7 @@ msgstr "Nie udało się rozpocząć zapisu do pamięci flash, błąd 0x%04x"
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr "Uzyskana częstotliwość jest poza możliwościami. Spauzowano."
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
 msgstr "Funkcja wymaga blokady"
@@ -802,10 +803,11 @@ msgstr "Niewłaściwa nóżka dla lewego kanału"
 msgid "Invalid pin for right channel"
 msgstr "Niewłaściwa nóżka dla prawego kanału"
 
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Niewłaściwe nóżki"
 
@@ -923,8 +925,8 @@ msgstr "Brak wolnych GLCK"
 msgid "No hardware random available"
 msgstr "Brak sprzętowego generatora liczb losowych"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No hardware support on pin"
 msgstr "Brak sprzętowej obsługi na nóżce"
 
@@ -1021,17 +1023,13 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "Podciągnięcie nieużywane w trybie wyjścia."
 
-#: shared-bindings/rtc/RTC.c
+#: ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "Ta płytka nie obsługuje kalibracji RTC"
 
-#: shared-bindings/rtc/RTC.c shared-bindings/time/__init__.c
+#: shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Ta płytka nie obsługuje RTC"
-
-#: shared-bindings/rtc/RTC.c
-msgid "RTC set is not supported on this board"
-msgstr "Ustawianie RTC nie jest obsługiwane na tej płytce"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Range out of bounds"
@@ -1656,7 +1654,7 @@ msgstr "kolor powinien być liczbą całkowitą"
 msgid "complex division by zero"
 msgstr "zespolone dzielenie przez zero"
 
-#: py/parsenum.c py/objfloat.c
+#: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr "wartości zespolone nieobsługiwane"
 
@@ -1698,7 +1696,7 @@ msgstr "destination_length musi być nieujemną liczbą całkowitą"
 msgid "dict update sequence has wrong length"
 msgstr "sekwencja ma złą długość"
 
-#: py/runtime.c py/modmath.c py/objint_mpz.c py/objint_longlong.c py/objfloat.c
+#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "dzielenie przez zero"
@@ -1707,7 +1705,7 @@ msgstr "dzielenie przez zero"
 msgid "empty"
 msgstr "puste"
 
-#: extmod/modutimeq.c extmod/moduheapq.c
+#: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "pusta sterta"
 
@@ -1772,7 +1770,7 @@ msgstr "nadmiarowe argumenty"
 msgid "extra positional arguments given"
 msgstr "nadmiarowe argumenty pozycyjne"
 
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
+#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "file musi być plikiem otwartym w trybie bajtowym"
 
@@ -1813,7 +1811,7 @@ msgstr "funkcja nie bierze argumentów nazwanych"
 msgid "function expected at most %d arguments, got %d"
 msgstr "funkcja oczekuje najwyżej %d argumentów, jest %d"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "funkcja dostała wiele wartości dla argumentu '%q'"
 
@@ -1835,7 +1833,7 @@ msgstr "brak wymaganego argumentu nazwanego '%q' funkcji"
 msgid "function missing required positional argument #%d"
 msgstr "brak wymaganego argumentu pozycyjnego #%d funkcji"
 
-#: py/argcheck.c py/objnamedtuple.c py/bc.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "funkcja wymaga %d argumentów pozycyjnych, ale jest %d"
@@ -1982,7 +1980,7 @@ msgstr "argumenty nazwane nieobsługiwane - proszę użyć zwykłych argumentów
 msgid "keywords must be strings"
 msgstr "słowa kluczowe muszą być łańcuchami"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
 msgstr "etykieta '%q' niezdefiniowana"
 
@@ -2088,11 +2086,11 @@ msgstr "natywny yield"
 msgid "need more than %d values to unpack"
 msgstr "potrzeba więcej niż %d do rozpakowania"
 
-#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
+#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "ujemna potęga, ale brak obsługi liczb zmiennoprzecinkowych"
 
-#: py/runtime.c py/objint_mpz.c
+#: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
 msgstr "ujemne przesunięcie"
 
@@ -2194,11 +2192,11 @@ msgstr "wymagany obiekt z protokołem buforu"
 msgid "odd-length string"
 msgstr "łańcuch o nieparzystej długości"
 
-#: py/objstrunicode.c py/objstr.c
+#: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "offset poza zakresem"
 
-#: py/objarray.c py/objtuple.c py/objstrunicode.c py/objstr.c
+#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "tylko fragmenty ze step=1 (lub None) są wspierane"
@@ -2216,7 +2214,7 @@ msgstr "ord() oczekuje znaku, a jest łańcuch od długości %d"
 msgid "overflow converting long int to machine word"
 msgstr "przepełnienie przy konwersji long in to słowa maszynowego"
 
-#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
+#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr "paleta musi mieć 32 bajty długości"
 
@@ -2354,7 +2352,7 @@ msgstr "okres snu musi być nieujemny"
 msgid "slice step cannot be zero"
 msgstr "krok fragmentu nie może być zerowy"
 
-#: py/sequence.c py/objint.c
+#: py/objint.c py/sequence.c
 msgid "small int overflow"
 msgstr "przepełnienie small int"
 
@@ -2516,7 +2514,7 @@ msgstr "nieoczekiwane wcięcie"
 msgid "unexpected keyword argument"
 msgstr "nieoczekiwany argument nazwany"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
 msgstr "nieoczekiwany argument nazwany '%q'"
 
@@ -2626,3 +2624,6 @@ msgstr "wartość y poza zakresem"
 #: py/objrange.c
 msgid "zero step"
 msgstr "zerowy krok"
+
+#~ msgid "RTC set is not supported on this board"
+#~ msgstr "Ustawianie RTC nie jest obsługiwane na tej płytce"
