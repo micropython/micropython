@@ -79,3 +79,12 @@ void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
     );
     nrfx_rtc_counter_clear(&rtc_instance);
 }
+
+int common_hal_rtc_get_calibration(void) {
+    return 0;
+}
+
+void common_hal_rtc_set_calibration(int calibration) {
+    mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
+}
+
