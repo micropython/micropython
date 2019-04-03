@@ -287,6 +287,8 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 }
 #endif
 
+#undef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
+#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT 0
 #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 STATIC bool init_sdcard_fs(void) {
     bool first_part = true;
@@ -672,7 +674,7 @@ soft_reset:
     }
     #endif
 
-    #if MICROPY_HW_ENABLE_USB
+    #if 0&&MICROPY_HW_ENABLE_USB
     // if the SD card isn't used as the USB MSC medium then use the internal flash
     if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
         pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
@@ -726,7 +728,7 @@ soft_reset:
     #if MICROPY_HW_ENABLE_USB
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
-        pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, NULL);
+        pyb_usb_dev_init(pyb_usb_detect_dev(), USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, NULL, NULL);
     }
     #endif
 

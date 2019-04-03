@@ -52,7 +52,7 @@ typedef enum {
 typedef struct _pyb_usb_vcp_obj_t pyb_usb_vcp_obj_t;
 
 extern mp_uint_t pyb_usb_flags;
-extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
+//extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
 extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_mouse_obj;
 extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_keyboard_obj;
 extern const mp_obj_type_t pyb_usb_vcp_type;
@@ -64,7 +64,8 @@ MP_DECLARE_CONST_FUN_OBJ_0(pyb_have_cdc_obj); // deprecated
 MP_DECLARE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj); // deprecated
 
 void pyb_usb_init0(void);
-bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+int pyb_usb_detect_dev(void);
+bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, usb_device_mode_t mode, void *msc_unit, USBD_HID_ModeInfoTypeDef *hid_info);
 void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
 int usb_vcp_recv_byte(uint8_t *c); // if a byte is available, return 1 and put the byte in *c, else return 0
