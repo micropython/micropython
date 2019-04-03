@@ -61,6 +61,8 @@ void qspi_init(void) {
     // Bring up the QSPI peripheral
 
     __HAL_RCC_QSPI_CLK_ENABLE();
+    __HAL_RCC_QSPI_FORCE_RESET();
+    __HAL_RCC_QSPI_RELEASE_RESET();
 
     QUADSPI->CR =
         (MICROPY_HW_QSPI_PRESCALER - 1) << QUADSPI_CR_PRESCALER_Pos
@@ -100,6 +102,67 @@ void qspi_memory_map(void) {
         | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
         | 0xeb << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
         ;
+
+    // Use the MPU to allow access to only the valid 2MiB of external SPI flash
+
+    // Disable MPU
+    __DMB();
+    SCB->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
+    MPU->CTRL = 0;
+
+    // Config MPU region
+    MPU->RNR = MPU_REGION_NUMBER1;
+    MPU->RBAR = 0x90000000;
+    MPU->RASR = MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos   |
+                MPU_REGION_NO_ACCESS            << MPU_RASR_AP_Pos   |
+                MPU_TEX_LEVEL0                  << MPU_RASR_TEX_Pos  |
+                MPU_ACCESS_NOT_SHAREABLE        << MPU_RASR_S_Pos    |
+                MPU_ACCESS_NOT_CACHEABLE        << MPU_RASR_C_Pos    |
+                MPU_ACCESS_NOT_BUFFERABLE       << MPU_RASR_B_Pos    |
+                0x01                            << MPU_RASR_SRD_Pos  |
+                MPU_REGION_SIZE_256MB           << MPU_RASR_SIZE_Pos |
+                MPU_REGION_ENABLE               << MPU_RASR_ENABLE_Pos;
+    __ISB();
+    __DSB();
+    __DMB();
+
+    // Config MPU region
+    MPU->RNR = MPU_REGION_NUMBER2;
+    MPU->RBAR = 0x90000000;
+    MPU->RASR = MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos   |
+                MPU_REGION_NO_ACCESS            << MPU_RASR_AP_Pos   |
+                MPU_TEX_LEVEL0                  << MPU_RASR_TEX_Pos  |
+                MPU_ACCESS_NOT_SHAREABLE        << MPU_RASR_S_Pos    |
+                MPU_ACCESS_NOT_CACHEABLE        << MPU_RASR_C_Pos    |
+                MPU_ACCESS_NOT_BUFFERABLE       << MPU_RASR_B_Pos    |
+                0x0f                            << MPU_RASR_SRD_Pos  |
+                MPU_REGION_SIZE_32MB            << MPU_RASR_SIZE_Pos |
+                MPU_REGION_ENABLE               << MPU_RASR_ENABLE_Pos;
+    __ISB();
+    __DSB();
+    __DMB();
+
+    // Config MPU region
+    MPU->RNR = MPU_REGION_NUMBER3;
+    MPU->RBAR = 0x90000000;
+    MPU->RASR = MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos   |
+                MPU_REGION_NO_ACCESS            << MPU_RASR_AP_Pos   |
+                MPU_TEX_LEVEL0                  << MPU_RASR_TEX_Pos  |
+                MPU_ACCESS_NOT_SHAREABLE        << MPU_RASR_S_Pos    |
+                MPU_ACCESS_NOT_CACHEABLE        << MPU_RASR_C_Pos    |
+                MPU_ACCESS_NOT_BUFFERABLE       << MPU_RASR_B_Pos    |
+                0x01                            << MPU_RASR_SRD_Pos  |
+                MPU_REGION_SIZE_16MB            << MPU_RASR_SIZE_Pos |
+                MPU_REGION_ENABLE               << MPU_RASR_ENABLE_Pos;
+    __ISB();
+    __DSB();
+    __DMB();
+
+    // Enable MPU
+    MPU->CTRL = MPU_PRIVILEGED_DEFAULT | MPU_CTRL_ENABLE_Msk;
+    SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
+    __DSB();
+    __ISB();
 }
 
 STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
