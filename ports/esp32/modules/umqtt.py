@@ -1,9 +1,10 @@
-try:
-    import usocket as socket
-except:
-    import socket
+import usocket as socket
 import ustruct as struct
 from ubinascii import hexlify
+import time
+
+
+RESPONSE_TIMEOUT = 120 # wait time in 0.5 seconds for SUBACK or PUBACK (with QoS=1)
 
 class MQTTException(Exception):
     pass
@@ -132,8 +133,9 @@ class MQTTClient:
             self.sock.write(pkt, 2)
         self.sock.write(msg)
         if qos == 1:
-            while 1:
-                op = self.wait_msg()
+            counter = 0
+            while counter < RESPONSE_TIMEOUT:   #added TIMEOUT raises exception -1 if no PUBACACK in time
+                op = self.check_msg()           #there is possibility to make subsequent calls to callback function if we receive new commands before receiving PUBACK,so we use a lock variable in main.py to avoid subsequent calls to callback from wait_msg
                 if op == 0x40:
                     sz = self.sock.read(1)
                     assert sz == b"\x02"
@@ -141,6 +143,9 @@ class MQTTClient:
                     rcv_pid = rcv_pid[0] << 8 | rcv_pid[1]
                     if pid == rcv_pid:
                         return
+                counter = counter + 1
+                time.sleep(0.5)
+            raise MQTTException(-1)
         elif qos == 2:
             assert 0
 
@@ -153,8 +158,10 @@ class MQTTClient:
         self.sock.write(pkt)
         self._send_str(topic)
         self.sock.write(qos.to_bytes(1, "little"))
-        while 1:
-            op = self.wait_msg()
+        counter = 0
+        while counter < RESPONSE_TIMEOUT : #added TIMEOUT raises exception -1 if no SUBACK in time
+
+            op = self.check_msg()
             if op == 0x90:
                 resp = self.sock.read(4)
                 #print(resp)
@@ -162,6 +169,9 @@ class MQTTClient:
                 if resp[3] == 0x80:
                     raise MQTTException(resp[3])
                 return
+            counter = counter + 1
+            time.sleep(0.5)
+        raise MQTTException(-1)
 
     # Wait for a single incoming MQTT message and process it.
     # Subscribed messages are delivered to a callback previously
@@ -177,7 +187,7 @@ class MQTTClient:
         if res == b"\xd0":  # PINGRESP
             sz = self.sock.read(1)[0]
             assert sz == 0
-            return None
+            return b"PINGRESP" #added for PINGRESP support
         op = res[0]
         if op & 0xf0 != 0x30:
             return op
@@ -195,7 +205,7 @@ class MQTTClient:
         if op & 6 == 2:
             pkt = bytearray(b"\x40\x02\0\0")
             struct.pack_into("!H", pkt, 2, pid)
-            self.sock.write(pkt)
+            self.sock.write(pkt) #propably for SUBACK
         elif op & 6 == 4:
             assert 0
 
