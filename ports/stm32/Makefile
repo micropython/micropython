@@ -96,6 +96,7 @@ endif
 
 LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LIBS += cyw43/libcyw43.a
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
@@ -119,6 +120,7 @@ SRC_LIB = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	netutils/trace.c \
+	netutils/dhcpserver.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
@@ -249,6 +251,7 @@ SRC_C = \
 	usb.c \
 	wdt.c \
 	eth.c \
+	sdio.c \
 	gccollect.c \
 	help.c \
 	machine_i2c.c \
@@ -261,6 +264,7 @@ SRC_C = \
 	modutime.c \
 	modusocket.c \
 	network_lan.c \
+	network_cyw43.c \
 	modnetwork.c \
 	extint.c \
 	usrsw.c \
@@ -278,6 +282,7 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
+	cyw43/cyw43_lwip.c \
 	mbedtls/mbedtls_port.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 

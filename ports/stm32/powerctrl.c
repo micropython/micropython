@@ -29,6 +29,7 @@
 #include "powerctrl.h"
 #include "rtc.h"
 #include "genhdr/pllfreqtable.h"
+#include "cyw43/cyw43.h"
 
 #if !defined(STM32F0)
 
@@ -260,6 +261,10 @@ set_clk:
 #endif
 
 void powerctrl_enter_stop_mode(void) {
+    #if MICROPY_HW_ENABLE_CYW43
+    cyw43_allow_sleep(&cyw43_state);
+    #endif
+
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();

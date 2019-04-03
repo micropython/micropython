@@ -117,6 +117,11 @@
 #define MICROPY_HW_HAS_LCD (0)
 #endif
 
+// Whether to enable the cyw43 driver, exposed as network.WLAN
+#ifndef MICROPY_HW_ENABLE_CYW43
+#define MICROPY_HW_ENABLE_CYW43 (0)
+#endif
+
 // The volume label used when creating the flash filesystem
 #ifndef MICROPY_HW_FLASH_FS_LABEL
 #define MICROPY_HW_FLASH_FS_LABEL "pybflash"

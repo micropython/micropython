@@ -65,6 +65,7 @@
 #include "servo.h"
 #include "dac.h"
 #include "can.h"
+#include "cyw43/cyw43.h"
 #include "modnetwork.h"
 
 void SystemClock_Config(void);
@@ -556,6 +557,18 @@ void stm32_main(uint32_t reset_mode) {
     mdns_resp_init();
     #endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
+
+    #if MICROPY_HW_ENABLE_CYW43
+    {
+        uint8_t buf[8];
+        mp_hal_get_mac(MP_HAL_MAC_WLAN0, buf);
+        cyw43_init(&cyw43_state, buf);
+        memcpy(&buf[0], "PYBD", 4);
+        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char*)&buf[4]);
+        cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
+        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t*)"pybd0123");
+    }
     #endif
 
     #if defined(MICROPY_HW_UART_REPL)
