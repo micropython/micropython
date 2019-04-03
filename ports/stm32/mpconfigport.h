@@ -224,6 +224,12 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define SOCKET_BUILTIN_MODULE_WEAK_LINKS
 #endif
 
+#if MICROPY_PY_USSL
+#define SSL_BUILTIN_MODULE_WEAK_LINKS       { MP_ROM_QSTR(MP_QSTR_ssl), MP_ROM_PTR(&mp_module_ussl) },
+#else
+#define SSL_BUILTIN_MODULE_WEAK_LINKS
+#endif
+
 #if MICROPY_PY_NETWORK
 #define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
 #else
@@ -254,6 +260,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_module_uselect) }, \
     SOCKET_BUILTIN_MODULE_WEAK_LINKS \
+    SSL_BUILTIN_MODULE_WEAK_LINKS \
     { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&mp_module_ustruct) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
@@ -295,6 +302,8 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
+    \
+    void **mbedtls_memory; \
 
 // type definitions for the specific machine
 
