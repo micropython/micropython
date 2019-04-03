@@ -52,7 +52,7 @@ STATIC mp_obj_t gatt_tool_backend_stop(size_t n_args, const mp_obj_t *pos_args, 
   printf("Bluetooth stop\r\n");
   return mp_obj_new_bool(mp_bt_is_enabled());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_stop_obj, 0, gatt_tool_backend_stop);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_stop_obj, 0, gatt_tool_backend_stop);
 
 STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   enum { ARG_reset_on_start, ARG_initialization_timeout };
