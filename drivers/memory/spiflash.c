@@ -159,6 +159,8 @@ void mp_spiflash_init(mp_spiflash_t *self) {
 
     mp_spiflash_acquire_bus(self);
 
+    mp_spiflash_deepsleep(self, 0);
+
     #if defined(CHECK_DEVID)
     // Validate device id
     uint32_t devid = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3);
@@ -481,4 +483,12 @@ int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, con
 
     mp_spiflash_release_bus(self);
     return 0;
+}
+
+void mp_spiflash_deepsleep(mp_spiflash_t *self, int value) {
+    if (value) {
+        mp_spiflash_write_cmd(self, 0xb9); // sleep
+    } else {
+        mp_spiflash_write_cmd(self, 0xab); // wake
+    }
 }

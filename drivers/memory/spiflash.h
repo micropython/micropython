@@ -79,4 +79,6 @@ void mp_spiflash_cache_flush(mp_spiflash_t *self);
 void mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest);
 int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src);
 
+void mp_spiflash_deepsleep(mp_spiflash_t *self, int value);
+
 #endif // MICROPY_INCLUDED_DRIVERS_MEMORY_SPIFLASH_H
