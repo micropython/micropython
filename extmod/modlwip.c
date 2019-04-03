@@ -352,7 +352,7 @@ STATIC void lwip_socket_free_incoming(lwip_socket_obj_t *socket) {
 
 static inline void exec_user_callback(lwip_socket_obj_t *socket) {
     if (socket->callback != MP_OBJ_NULL) {
-        mp_call_function_1_protected(socket->callback, MP_OBJ_FROM_PTR(socket));
+        mp_sched_schedule(socket->callback, MP_OBJ_FROM_PTR(socket));
     }
 }
 
