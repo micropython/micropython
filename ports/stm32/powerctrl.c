@@ -28,6 +28,8 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 #include "rtc.h"
+#include "qspi.h"
+#include "storage.h"
 #include "genhdr/pllfreqtable.h"
 #include "cyw43/cyw43.h"
 
@@ -269,6 +271,15 @@ void powerctrl_enter_stop_mode(void) {
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
 
+    #if defined(MICROPY_HW_BDEV2_IOCTL)
+    mp_spiflash_deepsleep(&spi_bdev.spiflash, 1);
+    mp_spiflash_deepsleep(&spi_bdev2.spiflash, 1);
+    #endif
+
+    #if defined(QUADSPI)
+    __HAL_RCC_QSPI_CLK_DISABLE();
+    #endif
+
     #if defined(STM32L4)
     // Configure the MSI as the clock source after waking up
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
@@ -344,11 +355,28 @@ void powerctrl_enter_stop_mode(void) {
 
     #endif
 
+    #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
+    qspi_init();
+    qspi_memory_map();
+    #endif
+
+    #if defined(MICROPY_HW_BDEV2_IOCTL)
+    mp_spiflash_deepsleep(&spi_bdev.spiflash, 0);
+    mp_spiflash_deepsleep(&spi_bdev2.spiflash, 0);
+    #endif
+
     // Enable IRQs now that all clocks are reconfigured
     enable_irq(irq_state);
 }
 
 void powerctrl_enter_standby_mode(void) {
+    #if defined(MICROPY_HW_BDEV2_IOCTL)
+    // TODO need proper configuration option to select this
+    // or maybe a bdev ioctl to do it
+    mp_spiflash_deepsleep(&spi_bdev.spiflash, 1);
+    mp_spiflash_deepsleep(&spi_bdev2.spiflash, 1);
+    #endif
+
     rtc_init_finalise();
 
     // We need to clear the PWR wake-up-flag before entering standby, since
