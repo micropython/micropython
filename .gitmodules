@@ -18,3 +18,6 @@
 [submodule "lib/nrfx"]
 	path = lib/nrfx
 	url = https://github.com/NordicSemiconductor/nrfx.git
+[submodule "lib/mbedtls"]
+	path = lib/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
