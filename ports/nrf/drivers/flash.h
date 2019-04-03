@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_LIB_FLASH_H__
 #define __MICROPY_INCLUDED_LIB_FLASH_H__
 
-#include "nrf_nvmc.h"
+#include "nrfx_nvmc.h"
 
 #if defined(NRF51)
 #define FLASH_PAGESIZE (1024)
@@ -55,9 +55,9 @@ void flash_operation_finished(flash_state_t result);
 
 #else
 
-#define flash_page_erase nrf_nvmc_page_erase
-#define flash_write_byte nrf_nvmc_write_byte
-#define flash_write_bytes nrf_nvmc_write_bytes
+#define flash_page_erase nrfx_nvmc_page_erase
+#define flash_write_byte nrfx_nvmc_byte_write
+#define flash_write_bytes nrfx_nvmc_bytes_write
 
 #endif
 
