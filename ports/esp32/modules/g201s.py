@@ -47,9 +47,8 @@ class G201S():
         #global index
         self.index = 0
         try:
-            if self.bt_is_started == False:
-                self.adapter.start()
-                self.bt_is_started = True
+            self.adapter.start()
+            self.bt_is_started = True
             #self.adapter.scan()
             self.adapter.connect(self.address)
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
@@ -60,24 +59,26 @@ class G201S():
 
         finally:
             self.adapter.disconnect(self.address)
+            self.adapter.stop()
 
     def turn_off(self):
         #global index
         self.index = 0
         try:
-            if self.bt_is_started == False:
-                self.adapter.start()
-                self.bt_is_started = True
+            #if self.bt_is_started == False:
+            self.adapter.start()
+            self.bt_is_started = True
             self.adapter.connect(self.address)
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
             self.write_handle(0x000e, [0x04])
-            self.cur_temp = self.get_temperature()
-            print("Tried to switch off, returned {}".format(self.cur_temp))
+            #self.cur_temp = self.get_temperature()
+            #print("Tried to switch off, returned {}".format(self.cur_temp))
 
         finally:
             self.adapter.disconnect(self.address)
+            self.adapter.stop()
 
     def set_temperature(self, value):
         #global index
@@ -108,9 +109,9 @@ class G201S():
         #global index
         self.index = 0
         try:
-            if self.bt_is_started == False:
-                self.adapter.start()
-                self.bt_is_started = True
+            #if self.bt_is_started == False:
+            self.adapter.start()
+            self.bt_is_started = True
             self.adapter.connect(self.address)
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
@@ -125,6 +126,7 @@ class G201S():
             return self.cur_temp
         finally:
             self.adapter.disconnect(self.address)
+            self.adapter.stop()
 
     def _update_sensor_data(self):
         print("update")
