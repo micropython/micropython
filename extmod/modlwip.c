@@ -633,11 +633,18 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
     u16_t available = tcp_sndbuf(socket->pcb.tcp);
 
-    if (available == 0) {
+    if (available == 0 || tcp_sndqueuelen(socket->pcb.tcp) >= TCP_SND_QUEUELEN) {
         // Non-blocking socket
         if (socket->timeout == 0) {
             MICROPY_PY_LWIP_EXIT
             *_errno = MP_EAGAIN;
+            return MP_STREAM_ERROR;
+        }
+
+        err_t err = tcp_output(socket->pcb.tcp);
+        if (err != ERR_OK) {
+            MICROPY_PY_LWIP_EXIT
+            *_errno = error_lookup_table[-err];
             return MP_STREAM_ERROR;
         }
 
@@ -648,7 +655,7 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         // If peer fully closed socket, we would have socket->state set to ERR_RST (connection
         // reset) by error callback.
         // Avoid sending too small packets, so wait until at least 16 bytes available
-        while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
+        while (socket->state >= STATE_CONNECTED && ((available = tcp_sndbuf(socket->pcb.tcp)) < 16 || tcp_sndqueuelen(socket->pcb.tcp) >= TCP_SND_QUEUELEN)) {
             MICROPY_PY_LWIP_EXIT
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
@@ -665,6 +672,15 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
     u16_t write_len = MIN(available, len);
 
     err_t err = tcp_write(socket->pcb.tcp, buf, write_len, TCP_WRITE_FLAG_COPY);
+    if (err == ERR_MEM) {
+        for (int i = 0; i < 100 && err == ERR_MEM; ++i) {
+            err = tcp_output(socket->pcb.tcp);
+            MICROPY_PY_LWIP_EXIT
+            poll_sockets();
+            MICROPY_PY_LWIP_REENTER
+            err = tcp_write(socket->pcb.tcp, buf, write_len, TCP_WRITE_FLAG_COPY);
+        }
+    }
 
     // If the output buffer is getting full then send the data to the lower layers
     if (err == ERR_OK && tcp_sndbuf(socket->pcb.tcp) < TCP_SND_BUF / 4) {
