@@ -392,6 +392,8 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	)
 endif
 
+SRC_MOD += lib/lwip/src/apps/mdns/mdns.c
+
 MBEDTLS_DIR = lib/mbedtls
 INC += -I$(TOP)/$(MBEDTLS_DIR)/include
 CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
