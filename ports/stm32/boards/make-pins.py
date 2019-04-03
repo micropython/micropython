@@ -300,7 +300,8 @@ class Pins(object):
                 pin = self.find_pin(port_num, pin_num)
                 if pin:
                     pin.set_is_board_pin()
-                    self.board_pins.append(NamedPin(row[0], pin))
+                    if row[0]:
+                        self.board_pins.append(NamedPin(row[0], pin))
 
     def print_named(self, label, named_pins):
         print('STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
