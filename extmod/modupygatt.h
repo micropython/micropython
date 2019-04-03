@@ -9,7 +9,7 @@
 int mp_bt_enable(void);
 
 // Disables the Bluetooth stack. Is a no-op when not enabled.
-void mp_bt_disable(void);
+int mp_bt_disable(void);
 
 // Returns true when the Bluetooth stack is enabled.
 bool mp_bt_is_enabled(void);

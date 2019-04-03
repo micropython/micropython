@@ -151,11 +151,25 @@ int mp_bt_enable(void) {
     return 0;
 }
 
-void mp_bt_disable(void) {
-    esp_bluedroid_disable();
-    esp_bluedroid_deinit();
-    esp_bt_controller_disable();
-    esp_bt_controller_deinit();
+int mp_bt_disable(void) {
+  esp_err_t err;
+    err = esp_bluedroid_disable();
+    if (err != ESP_OK) {
+        return mp_bt_esp_errno(err);
+    }
+    err = esp_bluedroid_deinit();
+    if (err != ESP_OK) {
+        return mp_bt_esp_errno(err);
+    }
+    err = esp_bt_controller_disable();
+    if (err != ESP_OK) {
+        return mp_bt_esp_errno(err);
+    }
+    err = esp_bt_controller_deinit();
+    if (err != ESP_OK) {
+        return mp_bt_esp_errno(err);
+    }
+    return 0;
 }
 
 bool mp_bt_is_enabled(void) {

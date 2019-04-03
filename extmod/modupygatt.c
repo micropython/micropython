@@ -34,12 +34,25 @@ STATIC mp_obj_t upygatt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(&upygatt_obj);
 }
 
-STATIC mp_obj_t gatt_tool_backend_stop(void) {
-  mp_bt_disable();
+STATIC mp_obj_t gatt_tool_backend_stop(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_initialization_timeout };
+
+  const mp_arg_t allowed_args[] = {
+      { MP_QSTR_initialization_timeout, MP_ARG_INT, { .u_int = 3 } },
+  };
+
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  int errno_ = mp_bt_disable();
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
+
   printf("Bluetooth stop\r\n");
-  return mp_const_none;
+  return mp_obj_new_bool(mp_bt_is_enabled());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_stop_obj, gatt_tool_backend_stop);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_stop_obj, 0, gatt_tool_backend_stop);
 
 STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   enum { ARG_reset_on_start, ARG_initialization_timeout };
@@ -184,7 +197,7 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
 
   uint16_t handle = args[ARG_handle].u_int;
   bool wait_for_response = args[ARG_wait_for_response].u_obj;
-  
+
   mp_buffer_info_t buffer;
   mp_get_buffer_raise(args[ARG_value].u_obj, &buffer, MP_BUFFER_READ);
   uint8_t* value = (uint8_t*)malloc(buffer.len);
