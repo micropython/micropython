@@ -447,7 +447,8 @@ STATIC err_t _lwip_tcp_recv_unaccepted(void *arg, struct tcp_pcb *pcb, struct pb
 // from accept callback itself.
 STATIC err_t _lwip_tcp_accept_finished(void *arg, struct tcp_pcb *pcb)
 {
-    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
+    // The ->connected entry of the pcb holds the listening socket of the accept
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)pcb->connected;
     tcp_poll(pcb, NULL, 0);
     exec_user_callback(socket);
     return ERR_OK;
