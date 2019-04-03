@@ -36,22 +36,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/translate.h"
 
-void MP_WEAK common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
-    mp_raise_NotImplementedError(translate("RTC is not supported on this board"));
-}
-
-void MP_WEAK common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
-    mp_raise_NotImplementedError(translate("RTC is not supported on this board"));
-}
-
-int MP_WEAK common_hal_rtc_get_calibration(void) {
-    return 0;
-}
-
-void MP_WEAK common_hal_rtc_set_calibration(int calibration) {
-    mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
-}
-
 const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 
 //| .. currentmodule:: rtc

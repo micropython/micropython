@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Glenn Ruben Bakke
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,36 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef NRF5_MPCONFIGPORT_H__
-#define NRF5_MPCONFIGPORT_H__
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#include "ble_drv.h"
+void board_init(void) {
+}
 
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
-#define MICROPY_PY_FUNCTION_ATTRS                (1)
-#define MICROPY_PY_IO                            (1)
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS       (1)
-#define MICROPY_PY_SYS_STDIO_BUFFER              (1)
-#define MICROPY_PY_UBINASCII                     (1)
-#define MICROPY_PY_UJSON                         (1)
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-// TODO this is old BLE stuff
-#if BLUETOOTH_SD
-    #define MICROPY_PY_BLEIO                     (1)
-    #define MICROPY_PY_BLE_NUS                   (0)
-#else
-    #ifndef MICROPY_PY_BLEIO
-        #define MICROPY_PY_BLEIO                 (0)
-    #endif
-#endif
-
-// 24kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
-
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-    ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
-
-#endif  // NRF5_MPCONFIGPORT_H__
+void reset_board(void) {
+}

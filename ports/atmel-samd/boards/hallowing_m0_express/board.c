@@ -93,7 +93,8 @@ void board_init(void) {
         0x37, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_PA00);
+        &pin_PA00,
+        false); // single_byte_bounds
     common_hal_displayio_display_set_auto_brightness(display, true);
 }
 
