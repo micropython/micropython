@@ -81,6 +81,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
 void supervisor_stop_terminal(void) {
     if (tilegrid_tiles != NULL) {
         free_memory(tilegrid_tiles);
+        tilegrid_tiles = NULL;
         supervisor_terminal_text_grid.inline_tiles = false;
         supervisor_terminal_text_grid.tiles = NULL;
     }
