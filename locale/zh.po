@@ -843,7 +843,7 @@ msgid ""
 msgstr ""
 "Kàn lái wǒmen de héxīn CircuitPython dàimǎ bēngkuì dé hěn lìhài. Āi yōu!\n"
 "Qǐng zài https://Github.Com/adafruit/circuitpython/issues\n"
-" shàng tíjiāo yīgè wèntí, qízhōng bāohán nín de CIRCUITPY qūdòngqì de nèiróng hé cǐ xiāoxī:\n"
+"shàng tíjiāo yīgè wèntí, qízhōng bāohán nín de CIRCUITPY qūdòngqì de nèiróng hé cǐ xiāoxī:\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
