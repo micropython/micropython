@@ -52,15 +52,13 @@ bool serial_bytes_available(void) {
 }
 
 void serial_write_substring(const char* text, uint32_t length) {
-    #if CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_DISPLAYIO
     int errcode;
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
-    #endif
-    if (!tud_cdc_connected()) {
-        return;
-    }
+#endif
+
     uint32_t count = 0;
-    while (count < length) {
+    while (count < length && tud_cdc_connected()) {
         count += tud_cdc_write(text + count, length - count);
         usb_background();
     }
