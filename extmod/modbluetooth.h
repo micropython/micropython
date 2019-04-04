@@ -49,6 +49,13 @@ typedef struct {
     uint8_t                       flags;
 } mp_bt_characteristic_t;
 
+// One entry in the linked list of write callbacks.
+typedef struct _mp_bt_characteristic_callback_t {
+    struct _mp_bt_characteristic_callback_t *next;
+    mp_bt_characteristic_t                  *characteristic;
+    mp_obj_t                                callback;
+} mp_bt_characteristic_callback_t;
+
 // Enables the Bluetooth stack. Returns errno on failure.
 int mp_bt_enable(void);
 
@@ -84,6 +91,9 @@ int mp_bt_characteristic_value_notify(mp_bt_characteristic_t *characteristic, ui
 // Read the characteristic value. The size of the buffer must be given in
 // value_len, which will be updated with the actual value.
 int mp_bt_characteristic_value_get(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len);
+
+// Call this when a characteristic is written to.
+void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, size_t value_len);
 
 // Parse an UUID object from the caller and stores the result in the uuid
 // parameter. Must accept both strings and integers for 128-bit and 16-bit

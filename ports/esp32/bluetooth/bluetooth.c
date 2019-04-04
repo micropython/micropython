@@ -443,6 +443,7 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
             break;
         case ESP_GATTS_WRITE_EVT:
             // Characteristic value written by connected device.
+            mp_bt_characteristic_on_write(param->write.handle, param->write.value, param->write.len);
             break;
         case ESP_GATTS_CONF_EVT:
             // Characteristic notify confirmation received.
