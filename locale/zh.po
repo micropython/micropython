@@ -164,19 +164,19 @@ msgstr "'S' hé 'O' bù zhīchí géshì lèixíng"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
-msgstr "\"duìqí\" xūyào 1 gè cānshù"
+msgstr "'align' xūyào 1 gè cānshù"
 
 #: py/compile.c
 msgid "'await' outside function"
-msgstr "\"děngdài\" wàibù gōngnéng"
+msgstr "'await' wàibù gōngnéng"
 
 #: py/compile.c
 msgid "'break' outside loop"
-msgstr "lí xúnhuán"
+msgstr "'break' wàibù xúnhuán"
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr "'jìxù' wàibù xúnhuán"
+msgstr "'continue' wàibù xúnhuán"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -192,11 +192,11 @@ msgstr "'label' xūyào 1 cānshù"
 
 #: py/compile.c
 msgid "'return' outside function"
-msgstr "fǎnhuí wàibù hánshù"
+msgstr "'return' wàibù gōngnéng"
 
 #: py/compile.c
 msgid "'yield' outside function"
-msgstr "\"shōuyì lǜ\" wàibù gōngnéng"
+msgstr "'yield' wàibù gōngnéng"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -278,7 +278,7 @@ msgstr "Lìng yīgè fāsòng yǐjīng jīhuó"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr "Shùzǔ bìxū bāohán bàn zìshù (lèixíng'H')"
+msgstr "Shùzǔ bìxū bāohán bàn zìshù (type 'H')"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
