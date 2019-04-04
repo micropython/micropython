@@ -25,7 +25,6 @@
  * THE SOFTWARE.
  */
 
-//#include "py/obj.h"
 #include "py/runtime.h"
 
 #include <stdio.h>
@@ -33,11 +32,11 @@
 
 #include "nrf_nvmc.h"
 
+#define FLASH_PAGE_SIZE (4096)
+
 #ifdef BLUETOOTH_SD
 #include "ble_drv.h"
 #include "nrf_sdm.h"
-
-#define FLASH_PAGE_SIZE (4096)
 
 STATIC void sd_flash_operation_start(void) {
     sd_flash_operation_status = SD_FLASH_OPERATION_IN_PROGRESS;
