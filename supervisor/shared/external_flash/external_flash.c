@@ -272,6 +272,9 @@ uint32_t supervisor_flash_get_block_count(void) {
 // Flush the cache that was written to the scratch portion of flash. Only used
 // when ram is tight.
 static bool flush_scratch_flash(void) {
+    if (current_sector == NO_SECTOR_LOADED) {
+        return true;
+    }
     // First, copy out any blocks that we haven't touched from the sector we've
     // cached.
     bool copy_to_scratch_ok = true;
@@ -360,9 +363,25 @@ static bool allocate_ram_cache(void) {
     return success;
 }
 
+static void release_ram_cache(void) {
+    if (supervisor_cache != NULL) {
+        free_memory(supervisor_cache);
+        supervisor_cache = NULL;
+    } else {
+        m_free(MP_STATE_VM(flash_ram_cache));
+    }
+    MP_STATE_VM(flash_ram_cache) = NULL;
+}
+
 // Flush the cached sector from ram onto the flash. We'll free the cache unless
 // keep_cache is true.
 static bool flush_ram_cache(bool keep_cache) {
+    if (current_sector == NO_SECTOR_LOADED) {
+        if (!keep_cache) {
+            release_ram_cache();
+        }
+        return true;
+    }
     // First, copy out any blocks that we haven't touched from the sector
     // we've cached. If we don't do this we'll erase the data during the sector
     // erase below.
@@ -403,22 +422,13 @@ static bool flush_ram_cache(bool keep_cache) {
     }
     // We're done with the cache for now so give it back.
     if (!keep_cache) {
-        if (supervisor_cache != NULL) {
-            free_memory(supervisor_cache);
-            supervisor_cache = NULL;
-        } else {
-            m_free(MP_STATE_VM(flash_ram_cache));
-        }
-        MP_STATE_VM(flash_ram_cache) = NULL;
+        release_ram_cache();
     }
     return true;
 }
 
 // Delegates to the correct flash flush method depending on the existing cache.
 static void spi_flash_flush_keep_cache(bool keep_cache) {
-    if (current_sector == NO_SECTOR_LOADED) {
-        return;
-    }
     #ifdef MICROPY_HW_LED_MSC
         port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
     #endif
@@ -436,9 +446,11 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
     #endif
 }
 
-// External flash function used. If called externally we assume we won't need
-// the cache after.
 void supervisor_flash_flush(void) {
+    spi_flash_flush_keep_cache(true);
+}
+
+void supervisor_flash_release_cache(void) {
     spi_flash_flush_keep_cache(false);
 }
 
@@ -502,7 +514,7 @@ bool external_flash_write_block(const uint8_t *data, uint32_t block) {
             return write_flash(address, data, FILESYSTEM_BLOCK_SIZE);
         }
         if (current_sector != NO_SECTOR_LOADED) {
-            spi_flash_flush_keep_cache(true);
+            supervisor_flash_flush();
         }
         if (MP_STATE_VM(flash_ram_cache) == NULL && !allocate_ram_cache()) {
             erase_sector(flash_device->total_size - SPI_FLASH_ERASE_SIZE);

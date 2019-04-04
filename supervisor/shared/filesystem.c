@@ -42,7 +42,9 @@ volatile bool filesystem_flush_requested = false;
 
 void filesystem_background(void) {
     if (filesystem_flush_requested) {
-        filesystem_flush();
+        filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
+        // Flush but keep caches
+        supervisor_flash_flush();
         filesystem_flush_requested = false;
     }
 }
@@ -118,6 +120,8 @@ void filesystem_flush(void) {
     // Reset interval before next flush.
     filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
     supervisor_flash_flush();
+    // Don't keep caches because this is called when starting or stopping the VM.
+    supervisor_flash_release_cache();
 }
 
 void filesystem_set_internal_writable_by_usb(bool writable) {
