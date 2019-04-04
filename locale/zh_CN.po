@@ -1,0 +1,2585 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: circuitpython-cn\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-27 16:28-0400\n"
+"PO-Revision-Date: 2019-04-04 14:38-0700\n"
+"Last-Translator: @hexthat#2155\n"
+"Language-Team: Simplified Chinese\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.2.1\n"
+"X-Crowdin-Project: circuitpython-cn\n"
+"X-Crowdin-Language: zh-CN\n"
+"X-Crowdin-File: circuitpython.pot\n"
+
+#: main.c
+msgid ""
+"\n"
+"Code done running. Waiting for reload.\n"
+msgstr ""
+"\n"
+"代码已完成运行。正在等待重新加载。\n"
+
+#: py/obj.c
+msgid "  File \"%q\""
+msgstr "  文件“%q”"
+
+#: py/obj.c
+msgid "  File \"%q\", line %d"
+msgstr "  文件 \"%q\", 第 %d 行"
+
+#: main.c
+msgid " output:\n"
+msgstr " 输出：\n"
+
+#: py/objstr.c
+#, c-format
+msgid "%%c requires int or char"
+msgstr "%%c 需要 int 或 char"
+
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q in use"
+msgstr "%q 正在使用"
+
+#: py/obj.c
+msgid "%q index out of range"
+msgstr "%q 索引超出范围"
+
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "%q 索引必须是整数, 而不是 %s"
+
+#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
+msgid "%q must be >= 1"
+msgstr "％q 必须 > = 1"
+
+#: shared-bindings/fontio/BuiltinFont.c
+msgid "%q should be an int"
+msgstr "%q 应该是一个 int"
+
+#: py/bc.c py/objnamedtuple.c
+msgid "%q() takes %d positional arguments but %d were given"
+msgstr "%q() 采用 %d 位置参数, 但给出 %d"
+
+#: py/argcheck.c
+msgid "'%q' argument required"
+msgstr "需要 '%q' 参数"
+
+#: py/emitinlinextensa.c py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects a label"
+msgstr "'%s' 期望标签"
+
+#: py/emitinlinextensa.c py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects a register"
+msgstr "'%s' 期望一个注册"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects a special register"
+msgstr "'%s' 需要一个特殊的寄存器"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects an FPU register"
+msgstr "'%s'  需要 FPU 寄存器"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr "'%s' 期望窗体 [a, b] 的地址"
+
+#: py/emitinlinextensa.c py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects an integer"
+msgstr "'%s' 期待一个整数"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects at most r%d"
+msgstr "'%s' 期望在大多数%d"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr "'%s' 预期 {r0, r1, ...}"
+
+#: py/emitinlinextensa.c
+#, c-format
+msgid "'%s' integer %d is not within range %d..%d"
+msgstr "'%s' 整数 %d 不在范围内 %d.%d"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr "'%s' 整数0x%x 不适用于掩码 0x%x"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object does not support item assignment"
+msgstr "'%s' 对象不支持项目分配"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object does not support item deletion"
+msgstr "'%s' 对象不支持删除项目"
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr "'%s' 对象没有属性 '%q'"
+
+#: py/runtime.c
+#, c-format
+msgid "'%s' object is not an iterator"
+msgstr "'%s' 对象不是一个迭代器"
+
+#: py/objtype.c py/runtime.c
+#, c-format
+msgid "'%s' object is not callable"
+msgstr "'%s' 对象无法调用"
+
+#: py/runtime.c
+#, c-format
+msgid "'%s' object is not iterable"
+msgstr "'%s' 对象不能迭代"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object is not subscriptable"
+msgstr "'%s' 对象不能分数"
+
+#: py/objstr.c
+msgid "'=' alignment not allowed in string format specifier"
+msgstr "'=' 不能在字符串格式示例中允许对齐"
+
+#: shared-module/struct/__init__.c
+msgid "'S' and 'O' are not supported format types"
+msgstr "'S' 和 'O' 不支持格式类型"
+
+#: py/compile.c
+msgid "'align' requires 1 argument"
+msgstr "'align' 需要1个参数"
+
+#: py/compile.c
+msgid "'await' outside function"
+msgstr "'await' 外部功能"
+
+#: py/compile.c
+msgid "'break' outside loop"
+msgstr "'break' 外部循环"
+
+#: py/compile.c
+msgid "'continue' outside loop"
+msgstr "'continue' 外部循环"
+
+#: py/compile.c
+msgid "'data' requires at least 2 arguments"
+msgstr "'data' 需要至少 2 个参数"
+
+#: py/compile.c
+msgid "'data' requires integer arguments"
+msgstr "'data' 需要整数参数"
+
+#: py/compile.c
+msgid "'label' requires 1 argument"
+msgstr "'label' 需要 1 参数"
+
+#: py/compile.c
+msgid "'return' outside function"
+msgstr "'return' 外部函数"
+
+#: py/compile.c
+msgid "'yield' outside function"
+msgstr "'yield' 外部功能"
+
+#: py/compile.c
+msgid "*x must be assignment target"
+msgstr "*x 必须是任务目标"
+
+#: py/obj.c
+msgid ", in %q\n"
+msgstr ", 在 %q\n"
+
+#: py/objcomplex.c
+msgid "0.0 to a complex power"
+msgstr "0.0 到复杂电源"
+
+#: py/modbuiltins.c
+msgid "3-arg pow() not supported"
+msgstr "不支持 3-arg pow ()"
+
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+msgid "A hardware interrupt channel is already in use"
+msgstr "硬件中断通道已在使用中"
+
+#: shared-bindings/bleio/Address.c
+#, c-format
+msgid "Address is not %d bytes long or is in wrong format"
+msgstr "地址不是 %d 字节长，或者格式错误"
+
+#: shared-bindings/bleio/Address.c
+#, c-format
+msgid "Address must be %d bytes long"
+msgstr "地址必须是 %d 字节长"
+
+#: ports/nrf/common-hal/busio/I2C.c
+msgid "All I2C peripherals are in use"
+msgstr "所有I2C外围器正在使用"
+
+#: ports/nrf/common-hal/busio/SPI.c
+msgid "All SPI peripherals are in use"
+msgstr "所有SPI 外围器正在使用"
+
+#: ports/nrf/common-hal/busio/UART.c
+msgid "All UART peripherals are in use"
+msgstr "所有 UART 外围正在使用"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "All event channels in use"
+msgstr "所有使用的事件频道"
+
+#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "All sync event channels in use"
+msgstr "正在使用的所有同步事件通道"
+
+#: shared-bindings/pulseio/PWMOut.c
+msgid "All timers for this pin are in use"
+msgstr "此引脚的所有计时器正在使用"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
+#: shared-module/_pew/PewPew.c
+msgid "All timers in use"
+msgstr "所有使用中的计时器"
+
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+msgid "AnalogOut functionality not supported"
+msgstr "不支持AnalogOut功能"
+
+#: shared-bindings/analogio/AnalogOut.c
+msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+msgstr "AnalogOut仅为16位。值必须小于65536。"
+
+#: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+msgid "AnalogOut not supported on given pin"
+msgstr "未支持指定的引脚AnalogOut"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+msgid "Another send is already active"
+msgstr "另一个发送已经激活"
+
+#: shared-bindings/pulseio/PulseOut.c
+msgid "Array must contain halfwords (type 'H')"
+msgstr "数组必须包含半字数 (type 'H')"
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Array values should be single bytes."
+msgstr "数组值应该是单个字节。"
+
+#: supervisor/shared/safe_mode.c
+msgid "Attempted heap allocation when MicroPython VM not running.\n"
+msgstr "在 MicroPython VM 未运行时尝试听到分配。\n"
+
+#: main.c
+msgid "Auto-reload is off.\n"
+msgstr "自动重新加载已关闭。\n"
+
+#: main.c
+msgid "Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"
+msgstr "自动重新加载。只需通过USB保存文件来运行它们或输入 REPL 禁用。\n"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Bit clock and word select must share a clock unit"
+msgstr "比特时钟和单字选择必须共享时钟单位"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Bit depth must be multiple of 8."
+msgstr "比特深度必须是8倍以上。"
+
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Both pins must support hardware interrupts"
+msgstr "两个粉红色都必须支持硬件中断"
+
+#: shared-bindings/supervisor/__init__.c
+msgid "Brightness must be between 0 and 255"
+msgstr "亮度必须介于 0 到 255 之间"
+
+#: shared-bindings/displayio/Display.c
+msgid "Brightness not adjustable"
+msgstr "亮度无法调整"
+
+#: shared-module/usb_hid/Device.c
+#, c-format
+msgid "Buffer incorrect size. Should be %d bytes."
+msgstr "缓冲区大小不正确。应该是 %d 字节。"
+
+#: shared-bindings/busio/I2C.c shared-bindings/bitbangio/I2C.c
+msgid "Buffer must be at least length 1"
+msgstr "缓冲区必须至少长度 1"
+
+#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/nrf/common-hal/displayio/ParallelBus.c
+#, c-format
+msgid "Bus pin %d is already in use"
+msgstr "Bus pin %d 已经在使用"
+
+#: shared-bindings/bleio/UUID.c
+msgid "Byte buffer must be 16 bytes."
+msgstr "字节缓冲区必须是16字节。"
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Bytes must be between 0 and 255."
+msgstr "字节必须介于 0 到 255 之间。"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+#, c-format
+msgid "Can not use dotstar with %s"
+msgstr "无法使用 %s 的点星"
+
+#: shared-bindings/bleio/Device.c
+msgid "Can't add services in Central mode"
+msgstr "无法在中央模式下添加服务"
+
+#: shared-bindings/bleio/Device.c
+msgid "Can't advertise in Central mode"
+msgstr "无法在中央模式中广告"
+
+#: shared-bindings/bleio/Device.c
+msgid "Can't change the name in Central mode"
+msgstr "无法更改中央模式的名称"
+
+#: shared-bindings/bleio/Device.c
+msgid "Can't connect in Peripheral mode"
+msgstr "无法在边缘模式中连接"
+
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
+msgid "Cannot delete values"
+msgstr "无法删除值"
+
+#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c
+msgid "Cannot get pull while in output mode"
+msgstr "在输出模式下无法获取拉动"
+
+#: ports/nrf/common-hal/microcontroller/Processor.c
+msgid "Cannot get temperature"
+msgstr "无法获取温度"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Cannot output both channels on the same pin"
+msgstr "无法输出同一个引脚上的两个频道"
+
+#: shared-module/bitbangio/SPI.c
+msgid "Cannot read without MISO pin."
+msgstr "无法读取没有 MISO 的引脚。"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Cannot record to a file"
+msgstr "无法记录到文件"
+
+#: shared-module/storage/__init__.c
+msgid "Cannot remount '/' when USB is active."
+msgstr "USB激活时无法重新绑定 '/' 。"
+
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c
+msgid "Cannot reset into bootloader because no bootloader is present."
+msgstr "无法重置为 bootloader，因为没有 bootloader 存在。"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Cannot set value when direction is input."
+msgstr "当方向输入时，无法设置值。"
+
+#: py/objslice.c
+msgid "Cannot subclass slice"
+msgstr "无法子分类"
+
+#: shared-module/bitbangio/SPI.c
+msgid "Cannot transfer without MOSI and MISO pins."
+msgstr "没有MOSI/MISO就无法转移。"
+
+#: extmod/moductypes.c
+msgid "Cannot unambiguously get sizeof scalar"
+msgstr "无法毫不含糊地获得星形"
+
+#: shared-module/bitbangio/SPI.c
+msgid "Cannot write without MOSI pin."
+msgstr "无法写入 MOSI 的引脚。"
+
+#: shared-bindings/bleio/Service.c
+msgid "Characteristic UUID doesn't match Service UUID"
+msgstr "字符 UUID 不符合服务 UUID"
+
+#: ports/nrf/common-hal/bleio/Service.c
+msgid "Characteristic already in use by another Service."
+msgstr "其他服务部门已经使用的特征。"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c
+msgid "CharacteristicBuffer writing not provided"
+msgstr "未提供字符缓存写入"
+
+#: shared-module/bitbangio/SPI.c
+msgid "Clock pin init failed."
+msgstr "时钟的引脚初始化失败。"
+
+#: shared-module/bitbangio/I2C.c
+msgid "Clock stretch too long"
+msgstr "时钟伸展太长"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Clock unit in use"
+msgstr "使用时钟单位"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Column entry must be digitalio.DigitalInOut"
+msgstr "列条目必须是 digitalio.DigitalInOut"
+
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
+msgid "Command must be an int between 0 and 255"
+msgstr "命令必须是0 到 255 之间的 int"
+
+#: ports/nrf/common-hal/bleio/UUID.c
+#, c-format
+msgid "Could not decode ble_uuid, err 0x%04x"
+msgstr "无法解码可读_uuid, err 0x%04x"
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "Could not initialize UART"
+msgstr "无法初始化 UART"
+
+#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+msgid "Couldn't allocate first buffer"
+msgstr "无法分配第一个缓冲区"
+
+#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+msgid "Couldn't allocate second buffer"
+msgstr "无法分配第二个缓冲区"
+
+#: supervisor/shared/safe_mode.c
+msgid "Crash into the HardFault_Handler.\n"
+msgstr "崩溃到硬件故障_手柄。\n"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "DAC already in use"
+msgstr "发援会已经使用"
+
+#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/nrf/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned"
+msgstr "数据 0 的引脚必须是字节对齐"
+
+#: shared-module/audioio/WaveFile.c
+msgid "Data chunk must follow fmt chunk"
+msgstr "数据块必须遵循 fmt 区块"
+
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
+msgid "Data too large for advertisement packet"
+msgstr "广告包的数据太大"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Data too large for the advertisement packet"
+msgstr "广告包的数据太大"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Destination capacity is smaller than destination_length."
+msgstr "目标容量小于目的地_长度。"
+
+#: shared-bindings/displayio/Display.c
+msgid "Display rotation must be in 90 degree increments"
+msgstr "显示旋转必须90度加薪"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Drive mode not used when direction is input."
+msgstr "方向输入时驱动模式没有使用。"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "EXTINT channel already in use"
+msgstr "EXT 频道已经使用"
+
+#: extmod/modure.c
+msgid "Error in regex"
+msgstr "正则表达式错误"
+
+#: shared-bindings/microcontroller/Pin.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c
+msgid "Expected a %q"
+msgstr "预期 %q"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c
+msgid "Expected a Characteristic"
+msgstr "预期的特点"
+
+#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
+msgid "Expected a UUID"
+msgstr "预期 UUID"
+
+#: shared-module/_pixelbuf/PixelBuf.c
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr "预期的长度长度 %d，获得了 %d"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to acquire mutex"
+msgstr "获取静音失败"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#, c-format
+msgid "Failed to acquire mutex, err 0x%04x"
+msgstr "获取静音，err 0x%04x 失败"
+
+#: ports/nrf/common-hal/bleio/Service.c
+#, c-format
+msgid "Failed to add characteristic, err 0x%04x"
+msgstr "添加特性失败，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to add service"
+msgstr "添加服务失败"
+
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to add service, err 0x%04x"
+msgstr "添加服务失败，err 0x%04x"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+msgid "Failed to allocate RX buffer"
+msgstr "分配 RX 缓冲失败"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#, c-format
+msgid "Failed to allocate RX buffer of %d bytes"
+msgstr "分配 RX 缓冲区 %d 字节失败"
+
+#: ports/nrf/common-hal/bleio/Adapter.c
+msgid "Failed to change softdevice state"
+msgstr "更改软设备状态失败"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to connect:"
+msgstr "连接失败："
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to continue scanning"
+msgstr "继续扫描失败"
+
+#: ports/nrf/common-hal/bleio/Scanner.c
+#, c-format
+msgid "Failed to continue scanning, err 0x%04x"
+msgstr "无法继续扫描，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to create mutex"
+msgstr "创建静音失败"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to discover services"
+msgstr "发现服务失败"
+
+#: ports/nrf/common-hal/bleio/Adapter.c
+msgid "Failed to get local address"
+msgstr "获取本地地址失败"
+
+#: ports/nrf/common-hal/bleio/Adapter.c
+msgid "Failed to get softdevice state"
+msgstr "获取软设备状态失败"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to notify or indicate attribute value, err 0x%04x"
+msgstr "通知或显示属性值，err 0x%04x 失败"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to read CCCD value, err 0x%04x"
+msgstr "读取 CCCD 值，err 0x%04x 失败"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to read attribute value, err 0x%04x"
+msgstr "读取属性值失败，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to read gatts value, err 0x%04x"
+msgstr "读取网格值失败，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/UUID.c
+#, c-format
+msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+msgstr "无法注册卖主特定的 UUID，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to release mutex"
+msgstr "发布静音失败"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#, c-format
+msgid "Failed to release mutex, err 0x%04x"
+msgstr "释放静音，err 0x%04x 失败"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to start advertising"
+msgstr "启动广告失败"
+
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
+#, c-format
+msgid "Failed to start advertising, err 0x%04x"
+msgstr "启动广告失败，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to start scanning"
+msgstr "启动扫描失败"
+
+#: ports/nrf/common-hal/bleio/Scanner.c
+#, c-format
+msgid "Failed to start scanning, err 0x%04x"
+msgstr "启动扫描失败，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Device.c
+msgid "Failed to stop advertising"
+msgstr "无法停止广告"
+
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
+#, c-format
+msgid "Failed to stop advertising, err 0x%04x"
+msgstr "无法停止广告，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to write attribute value, err 0x%04x"
+msgstr "写入属性值失败，err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to write gatts value, err 0x%04x"
+msgstr "写入gatts值，err 0x%04x 失败"
+
+#: py/moduerrno.c
+msgid "File exists"
+msgstr "文件存在"
+
+#: ports/nrf/supervisor/internal_flash.c
+msgid "Flash erase failed"
+msgstr "Flash 擦除失败"
+
+#: ports/nrf/supervisor/internal_flash.c
+#, c-format
+msgid "Flash erase failed to start, err 0x%04x"
+msgstr "Flash 擦除失败，错误 0x%04x"
+
+#: ports/nrf/supervisor/internal_flash.c
+msgid "Flash write failed"
+msgstr "Flash 写入失败"
+
+#: ports/nrf/supervisor/internal_flash.c
+#, c-format
+msgid "Flash write failed to start, err 0x%04x"
+msgstr "Flash 写入启动失败，err 0x%04x"
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr "抓取频率超过了容量。截获暂停。"
+
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+msgid "Function requires lock"
+msgstr "函数需要锁定"
+
+#: shared-module/displayio/Group.c
+msgid "Group full"
+msgstr "分组已满"
+
+#: extmod/vfs_posix_file.c py/objstringio.c
+msgid "I/O operation on closed file"
+msgstr "关闭文件上的 I/O 操作"
+
+#: extmod/machine_i2c.c
+msgid "I2C operation not supported"
+msgstr "I2C操作不支持"
+
+#: py/persistentcode.c
+msgid "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."
+msgstr "不兼容.mpy 文件。请更新所有 .mpy 文件。有关详细信息，请参阅http://adafru.it/mpy-update。"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Incorrect buffer size"
+msgstr "缓冲区大小不正确"
+
+#: py/moduerrno.c
+msgid "Input/output error"
+msgstr "输入/输出错误"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "Invalid BMP file"
+msgstr "无效的 BMP 文件"
+
+#: ports/atmel-samd/common-hal/pulseio/PWMOut.c
+#: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
+msgid "Invalid PWM frequency"
+msgstr "无效的 PWM 频率"
+
+#: py/moduerrno.c
+msgid "Invalid argument"
+msgstr "无效的参数"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Invalid bit clock pin"
+msgstr "无效的位时钟引脚"
+
+#: ports/nrf/common-hal/busio/UART.c
+msgid "Invalid buffer size"
+msgstr "无效的缓冲区大小"
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "Invalid capture period. Valid range: 1 - 500"
+msgstr "无效的捕获周期。有效范围: 1-500"
+
+#: shared-bindings/audioio/Mixer.c
+msgid "Invalid channel count"
+msgstr "无效的通道计数"
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Invalid clock pin"
+msgstr "无效的时钟引脚"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Invalid data pin"
+msgstr "无效的数据引脚"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Invalid direction."
+msgstr "无效的方向。"
+
+#: shared-module/audioio/WaveFile.c
+msgid "Invalid file"
+msgstr "无效的文件"
+
+#: shared-module/audioio/WaveFile.c
+msgid "Invalid format chunk size"
+msgstr "格式块大小无效"
+
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+msgid "Invalid number of bits"
+msgstr "无效的数字"
+
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+msgid "Invalid phase"
+msgstr "无效阶段"
+
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: shared-bindings/pulseio/PWMOut.c
+msgid "Invalid pin"
+msgstr "无效的引脚"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Invalid pin for left channel"
+msgstr "左通道的引脚无效"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Invalid pin for right channel"
+msgstr "正确通道的引脚无效"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/nrf/common-hal/busio/I2C.c
+msgid "Invalid pins"
+msgstr "无效的引脚"
+
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+msgid "Invalid polarity"
+msgstr "无效两极值"
+
+#: shared-bindings/microcontroller/__init__.c
+msgid "Invalid run mode."
+msgstr "无效的运行模式。"
+
+#: shared-bindings/audioio/Mixer.c
+msgid "Invalid voice count"
+msgstr "无效的语音计数"
+
+#: shared-module/audioio/WaveFile.c
+msgid "Invalid wave file"
+msgstr "无效的浪浪潮文件"
+
+#: py/compile.c
+msgid "LHS of keyword arg must be an id"
+msgstr "关键字arg的LHS必须是id"
+
+#: shared-module/displayio/Group.c
+msgid "Layer must be a Group or TileGrid subclass."
+msgstr "Layer必须是Group或TileGrid子类。"
+
+#: py/objslice.c
+msgid "Length must be an int"
+msgstr "长度必须是一个整数"
+
+#: py/objslice.c
+msgid "Length must be non-negative"
+msgstr "长度必须是非负数"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"Looks like our core CircuitPython code crashed hard. Whoops!\n"
+"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+" with the contents of your CIRCUITPY drive and this message:\n"
+msgstr ""
+"看来我们的核心 CircuitPython 代码崩溃得很厉害。哎 呦！\n"
+"请在 https://github.com/adafruit/circuitpython/issues\n"
+" 上提交一个问题, 其中包含您的 CIRCUITPY 驱动器的内容和此消息:\n"
+
+#: shared-module/bitbangio/SPI.c
+msgid "MISO pin init failed."
+msgstr "MISO 引脚初始化失败。"
+
+#: shared-module/bitbangio/SPI.c
+msgid "MOSI pin init failed."
+msgstr "MOSI 引脚输入失败。"
+
+#: shared-module/displayio/Shape.c
+#, c-format
+msgid "Maximum x value when mirrored is %d"
+msgstr "镜像时的最大 x 值为 %d"
+
+#: supervisor/shared/safe_mode.c
+msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgstr "MicroPython NLR 跳跃失败。可能内存腐败。\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "MicroPython fatal error.\n"
+msgstr "MicroPython 致命错误。\n"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Microphone startup delay must be in range 0.0 to 1.0"
+msgstr "麦克风启动延迟必须在0.0 到1.0 的范围内"
+
+#: shared-bindings/displayio/Display.c
+msgid "Must be a Group subclass."
+msgstr "必须是分组子类。"
+
+#: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+msgid "No DAC on chip"
+msgstr "没有DAC 在芯片上的"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "No DMA channel found"
+msgstr "未找到DMA频道"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+msgid "No RX pin"
+msgstr "没有 RX 的引脚"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+msgid "No TX pin"
+msgstr "没有TX 的引信"
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "No available clocks"
+msgstr "没有可用的时钟"
+
+#: supervisor/shared/board_busses.c
+msgid "No default I2C bus"
+msgstr "没有默认 I2C 公共汽车"
+
+#: supervisor/shared/board_busses.c
+msgid "No default SPI bus"
+msgstr "没有默认SPI 公共汽车"
+
+#: supervisor/shared/board_busses.c
+msgid "No default UART bus"
+msgstr "没有默认的 UART 公共汽车"
+
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+msgid "No free GCLKs"
+msgstr "没有免费的 GCLKs"
+
+#: shared-bindings/os/__init__.c
+msgid "No hardware random available"
+msgstr "没有可用的硬件随机"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "No hardware support on pin"
+msgstr "没有在引脚上的硬件支持"
+
+#: py/moduerrno.c
+msgid "No space left on device"
+msgstr "设备上没有空格"
+
+#: py/moduerrno.c
+msgid "No such file/directory"
+msgstr "没有此类文件/目录"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c
+msgid "Not connected"
+msgstr "未连接"
+
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+msgid "Not playing"
+msgstr "未播放"
+
+#: shared-bindings/util.c
+msgid "Object has been deinitialized and can no longer be used. Create a new object."
+msgstr "对象已经被删除，无法再使用。创建一个新对象。"
+
+#: ports/nrf/common-hal/busio/UART.c
+msgid "Odd parity is not supported"
+msgstr "不支持奇数"
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Only 8 or 16 bit mono with "
+msgstr "只有 8 或 16 位 单位 "
+
+#: shared-module/displayio/OnDiskBitmap.c
+#, c-format
+msgid "Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr "仅支持Windows 格式，不支持未处理的 BMP：给定的标题大小为 %d"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Only bit maps of 8 bit color or less are supported"
+msgstr "仅支持 8 位颜色或小于"
+
+#: shared-module/displayio/OnDiskBitmap.c
+#, c-format
+msgid "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp given"
+msgstr "仅支持单色器，索引8bpp，以及 16bpp 或更大的 BMP： %d bpp 提供"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Only slices with step=1 (aka None) are supported"
+msgstr "仅支持步长= 1（即无）的切片"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Oversample must be multiple of 8."
+msgstr "覆盖数必须是8种以上。"
+
+#: shared-bindings/pulseio/PWMOut.c
+msgid "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+msgstr "PWM义务周期必须介于 0 至 65535 的包容性 (16 位分辨率)"
+
+#: shared-bindings/pulseio/PWMOut.c
+msgid "PWM frequency not writable when variable_frequency is False on construction."
+msgstr "当变量_频率是 False 在建筑时PWM频率不可写。"
+
+#: py/moduerrno.c
+msgid "Permission denied"
+msgstr "权限被拒绝"
+
+#: ports/atmel-samd/common-hal/analogio/AnalogIn.c
+#: ports/nrf/common-hal/analogio/AnalogIn.c
+msgid "Pin does not have ADC capabilities"
+msgstr "Pin没有 ADC 能力"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Pixel beyond bounds of buffer"
+msgstr "像素超出缓冲区边界"
+
+#: py/builtinhelp.c
+msgid "Plus any modules on the filesystem\n"
+msgstr "在文件系统上添加任何模块\n"
+
+#: main.c
+msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgstr "按下任何键进入 REPL。使用CTRL-D 重新加载。"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pull not used when direction is output."
+msgstr "方向输出时Pull没有使用。"
+
+#: shared-bindings/rtc/RTC.c
+msgid "RTC calibration is not supported on this board"
+msgstr "此板不支持RTC 校准"
+
+#: shared-bindings/time/__init__.c shared-bindings/rtc/RTC.c
+msgid "RTC is not supported on this board"
+msgstr "此板不支持RTC"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Range out of bounds"
+msgstr "范围超出边界"
+
+#: shared-bindings/pulseio/PulseIn.c
+msgid "Read-only"
+msgstr "只读"
+
+#: extmod/vfs_fat.c py/moduerrno.c
+msgid "Read-only filesystem"
+msgstr "只读文件系统"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Read-only object"
+msgstr "只读对象"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Right channel unsupported"
+msgstr "不支持右通道"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Row entry must be digitalio.DigitalInOut"
+msgstr "行项必须是 digitalio.DigitalInOut"
+
+#: main.c
+msgid "Running in safe mode! Auto-reload is off.\n"
+msgstr "在安全模式下运行！自动重新加载已关闭。\n"
+
+#: main.c
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "在安全模式下运行！不运行已保存的代码。\n"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c
+msgid "SDA or SCL needs a pull up"
+msgstr "SDA或SCL需要拉动"
+
+#: shared-bindings/audioio/Mixer.c
+msgid "Sample rate must be positive"
+msgstr "采样率必须为正数"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
+msgstr "采样率太高。它必须小于 %d"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Serializer in use"
+msgstr "使用序列化"
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Slice and value different lengths."
+msgstr "切片和值不同长度。"
+
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/displayio/Group.c
+msgid "Slices not supported"
+msgstr "不支持Slides"
+
+#: ports/nrf/common-hal/bleio/Adapter.c
+#, c-format
+msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+msgstr "软设备维护，id：0x%08lX，pc：0x%08lX"
+
+#: extmod/modure.c
+msgid "Splitting with sub-captures"
+msgstr "分标题分割"
+
+#: shared-bindings/supervisor/__init__.c
+msgid "Stack size must be at least 256"
+msgstr "堆栈大小必须至少256"
+
+#: shared-bindings/multiterminal/__init__.c
+msgid "Stream missing readinto() or write() method."
+msgstr "流缺少 readinto() 或 write() 方法。"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"The CircuitPython heap was corrupted because the stack was too small.\n"
+"Please increase stack size limits and press reset (after ejecting CIRCUITPY).\n"
+"If you didn't change the stack, then file an issue here with the contents of your CIRCUITPY drive:\n"
+msgstr ""
+"CircuitPython堆已损坏，因为堆栈太小。\n"
+"请增加堆栈尺寸限制，然后重新设置(在弹出CIRCUITPY)。\n"
+"如果您没有改变堆栈，请在此处提出一个问题，并载入您的CIRCUITPY驱动器：\n"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"The microcontroller's power dipped. Please make sure your power supply provides\n"
+"enough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"
+msgstr ""
+"微控制器的电量被冲出。请确保您的供电提供\n"
+"足够的电力用于整个电路和新重置(在弹出CIRCUITPY 后)。\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "The reset button was pressed while booting CircuitPython. Press again to exit safe mode.\n"
+msgstr "启动 CircuitPython 时，重置按钮被按下。再次按下以退出安全模式。\n"
+
+#: shared-module/audioio/Mixer.c
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr "样本中的 bis_per_place 不匹配混凝器中的"
+
+#: shared-module/audioio/Mixer.c
+msgid "The sample's channel count does not match the mixer's"
+msgstr "样本的频道计数与混音器不相符"
+
+#: shared-module/audioio/Mixer.c
+msgid "The sample's sample rate does not match the mixer's"
+msgstr "样本的样本速度与混音器的相差不匹配"
+
+#: shared-module/audioio/Mixer.c
+msgid "The sample's signedness does not match the mixer's"
+msgstr "样本的标志与混凝器的相差不匹配"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile height must exactly divide bitmap height"
+msgstr "平铺高度必须完全分隔位图高度"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile indices must be 0 - 255"
+msgstr "平铺指数必须为 0 - 255"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile width must exactly divide bitmap width"
+msgstr "平铺宽度必须完全分隔比特图宽度"
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "要退出，请重置板块而不用 "
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Too many channels in sample."
+msgstr "抽样中的频道太多。"
+
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
+msgid "Too many display busses"
+msgstr "显示缓存太多"
+
+#: shared-bindings/displayio/Display.c
+msgid "Too many displays"
+msgstr "显示过多"
+
+#: py/obj.c
+msgid "Traceback (most recent call last):\n"
+msgstr "Traceback (最近一次呼叫):\n"
+
+#: shared-bindings/time/__init__.c
+msgid "Tuple or struct_time argument required"
+msgstr "需要Tuple或struct_time 参数"
+
+#: shared-module/usb_hid/Device.c
+msgid "USB Busy"
+msgstr "USB 忙"
+
+#: shared-module/usb_hid/Device.c
+msgid "USB Error"
+msgstr "USB 错误"
+
+#: shared-bindings/bleio/UUID.c
+msgid "UUID integer value not in range 0 to 0xffff"
+msgstr "UUID 整数值不在范围0 至 0xfffff"
+
+#: shared-bindings/bleio/UUID.c
+msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+msgstr "UUID字符串不是'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+
+#: shared-bindings/bleio/UUID.c
+msgid "UUID value is not str, int or byte buffer"
+msgstr "UUID 值不是str、int 或字节缓冲区"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Unable to allocate buffers for signed conversion"
+msgstr "无法分配缓冲区用于签名转换"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Unable to find free GCLK"
+msgstr "无法找到免费的 GCLK"
+
+#: py/parse.c
+msgid "Unable to init parser"
+msgstr "无法初始解析器"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "Unable to read color palette data"
+msgstr "无法读取色调数据"
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Unable to write to nvm."
+msgstr "无法写入 nvm。"
+
+#: ports/nrf/common-hal/bleio/UUID.c
+msgid "Unexpected nrfx uuid type"
+msgstr "意外的 nrfx uuid 类型"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr "RHS(预期 %d，获得 %d) 上未匹配的项目。"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c
+msgid "Unsupported baudrate"
+msgstr "不支持的 baudrat"
+
+#: shared-module/displayio/Display.c
+msgid "Unsupported display bus type"
+msgstr "不支持的公共汽车类型"
+
+#: shared-module/audioio/WaveFile.c
+msgid "Unsupported format"
+msgstr "不支持的格式"
+
+#: py/moduerrno.c
+msgid "Unsupported operation"
+msgstr "不支持的操作"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Unsupported pull value."
+msgstr "不支持的拉动值。"
+
+#: py/emitnative.c
+msgid "Viper functions don't currently support more than 4 arguments"
+msgstr "Viper 函数目前不支持超过4个参数"
+
+#: shared-module/audioio/Mixer.c
+msgid "Voice index too high"
+msgstr "语音索引太高"
+
+#: main.c
+msgid "WARNING: Your code filename has two extensions\n"
+msgstr "警告：你的代码文件名有两个扩展名\n"
+
+#: py/builtinhelp.c
+#, c-format
+msgid ""
+"Welcome to Adafruit CircuitPython %s!\n"
+"\n"
+"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"\n"
+"To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
+"欢迎来到 Adafruit CircuitPython %s!\n"
+"\n"
+"请访问学习 learn.adafruit.com/category/circuitpython。\n"
+"\n"
+"若要列出内在的模块，请请做以下 `help(\"modules\")`。\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "You are running in safe mode which means something unanticipated happened.\n"
+msgstr "你正在安全模式下运行，这意味着意外发生的事情。\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "You requested starting safe mode by "
+msgstr "您请求启动安全模式 "
+
+#: py/objtype.c
+msgid "__init__() should return None"
+msgstr "__init__() 应该返回None"
+
+#: py/objtype.c
+#, c-format
+msgid "__init__() should return None, not '%s'"
+msgstr "__init__() 应该返回None，而不是 '％s'"
+
+#: py/objobject.c
+msgid "__new__ arg must be a user-type"
+msgstr "__new__ 参数必须是用户类型"
+
+#: extmod/modubinascii.c extmod/moduhashlib.c
+msgid "a bytes-like object is required"
+msgstr "需要一个字节类对象"
+
+#: lib/embed/abort_.c
+msgid "abort() called"
+msgstr "abort() 调用"
+
+#: extmod/machine_mem.c
+#, c-format
+msgid "address %08x is not aligned to %d bytes"
+msgstr "地址 %08x 没有对 %d 字节进行调整"
+
+#: shared-bindings/i2cslave/I2CSlave.c
+msgid "address out of bounds"
+msgstr "地址超出边界"
+
+#: shared-bindings/i2cslave/I2CSlave.c
+msgid "addresses is empty"
+msgstr "地址为空"
+
+#: py/modbuiltins.c
+msgid "arg is an empty sequence"
+msgstr "参数是一个空的序列"
+
+#: py/runtime.c
+msgid "argument has wrong type"
+msgstr "参数类型错误"
+
+#: py/argcheck.c
+msgid "argument num/types mismatch"
+msgstr "参数num/类型不匹配"
+
+#: py/runtime.c
+msgid "argument should be a '%q' not a '%q'"
+msgstr "参数应该是 '%q', '不是 '%q'"
+
+#: py/objarray.c shared-bindings/nvm/ByteArray.c
+msgid "array/bytes required on right side"
+msgstr "右侧需要数组/字节"
+
+#: py/objstr.c
+msgid "attributes not supported yet"
+msgstr "属性尚未支持"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "bad GATT role"
+msgstr "总协定的不良角色"
+
+#: py/builtinevex.c
+msgid "bad compile mode"
+msgstr "编译模式错误"
+
+#: py/objstr.c
+msgid "bad conversion specifier"
+msgstr "错误转换标注"
+
+#: py/objstr.c
+msgid "bad format string"
+msgstr "格式错误字符串"
+
+#: py/binary.c
+msgid "bad typecode"
+msgstr "坏打字号"
+
+#: py/emitnative.c
+msgid "binary op %q not implemented"
+msgstr "二进制版前版 %q 未执行"
+
+#: shared-bindings/busio/UART.c
+msgid "bits must be 7, 8 or 9"
+msgstr "比特必须是 7、8 或 9"
+
+#: extmod/machine_spi.c
+msgid "bits must be 8"
+msgstr "比特必须是 8"
+
+#: shared-bindings/audioio/Mixer.c
+msgid "bits_per_sample must be 8 or 16"
+msgstr "每件样本必须为 8 或 16"
+
+#: py/emitinlinethumb.c
+msgid "branch not in range"
+msgstr "分支不在范围内"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+#, c-format
+msgid "buf is too small. need %d bytes"
+msgstr "buf 太小。需要 %d 字节"
+
+#: shared-bindings/audioio/RawSample.c
+msgid "buffer must be a bytes-like object"
+msgstr "缓冲区必须是字节类对象"
+
+#: shared-module/struct/__init__.c
+msgid "buffer size must match format"
+msgstr "缓冲区大小必须匹配格式"
+
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+msgid "buffer slices must be of equal length"
+msgstr "缓冲区切片必须长度相等"
+
+#: py/modstruct.c shared-bindings/struct/__init__.c
+#: shared-module/struct/__init__.c
+msgid "buffer too small"
+msgstr "缓冲区太小"
+
+#: extmod/machine_spi.c
+msgid "buffers must be the same length"
+msgstr "缓冲区必须是长度相同"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "buttons must be digitalio.DigitalInOut"
+msgstr "按钮必须是 digitalio.DigitalInOut"
+
+#: py/vm.c
+msgid "byte code not implemented"
+msgstr "字节代码未执行"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+#, c-format
+msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgstr "字节不是字节序实例 (有 %s)"
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "bytes > 8 bits not supported"
+msgstr "字节 > 8位"
+
+#: py/objstr.c
+msgid "bytes value out of range"
+msgstr "字节值超出范围"
+
+#: ports/atmel-samd/bindings/samd/Clock.c
+msgid "calibration is out of range"
+msgstr "校准范围超出范围"
+
+#: ports/atmel-samd/bindings/samd/Clock.c
+msgid "calibration is read only"
+msgstr "校准只读到"
+
+#: ports/atmel-samd/common-hal/rtc/RTC.c
+msgid "calibration value out of range +/-127"
+msgstr "校准值超出范围+/-127"
+
+#: py/emitinlinethumb.c
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr "只有 Thumb 组件最多 4 参数"
+
+#: py/emitinlinextensa.c
+msgid "can only have up to 4 parameters to Xtensa assembly"
+msgstr "只有 Xtensa 组件最多 4 参数"
+
+#: py/persistentcode.c
+msgid "can only save bytecode"
+msgstr "只能保存字节码记录"
+
+#: py/objtype.c
+msgid "can't add special method to already-subclassed class"
+msgstr "无法添加特殊方法到子分类类"
+
+#: py/compile.c
+msgid "can't assign to expression"
+msgstr "不能分配到表达式"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr "无法转换 %s 到复杂"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
+msgstr "无法转换 %s 到浮点型变量"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to int"
+msgstr "无法转换 %s 到 int"
+
+#: py/objstr.c
+msgid "can't convert '%q' object to %q implicitly"
+msgstr "无法将 '%q' 对象转换为 %q 隐含"
+
+#: py/objint.c
+msgid "can't convert NaN to int"
+msgstr "无法将导航转换为 int"
+
+#: shared-bindings/i2cslave/I2CSlave.c
+msgid "can't convert address to int"
+msgstr "无法将地址转换为 int"
+
+#: py/objint.c
+msgid "can't convert inf to int"
+msgstr "不能将inf 转换为 int"
+
+#: py/obj.c
+msgid "can't convert to complex"
+msgstr "不能转换为复杂"
+
+#: py/obj.c
+msgid "can't convert to float"
+msgstr "不能转换为浮点"
+
+#: py/obj.c
+msgid "can't convert to int"
+msgstr "不能转换为 int"
+
+#: py/objstr.c
+msgid "can't convert to str implicitly"
+msgstr "不能默示转换为str"
+
+#: py/compile.c
+msgid "can't declare nonlocal in outer code"
+msgstr "无法在外代码中声明非本地"
+
+#: py/compile.c
+msgid "can't delete expression"
+msgstr "不能删除表达式"
+
+#: py/emitnative.c
+msgid "can't do binary op between '%q' and '%q'"
+msgstr "不能在 '%q' 和 '%q' 之间执行二进制版"
+
+#: py/objcomplex.c
+msgid "can't do truncated division of a complex number"
+msgstr "不能分解复杂的数字"
+
+#: py/compile.c
+msgid "can't have multiple **x"
+msgstr "无法有多个 **x"
+
+#: py/compile.c
+msgid "can't have multiple *x"
+msgstr "无法有多个 *x"
+
+#: py/emitnative.c
+msgid "can't implicitly convert '%q' to 'bool'"
+msgstr "不能隐含地将 '%q' 转换为 'bool'"
+
+#: py/emitnative.c
+msgid "can't load from '%q'"
+msgstr "无法从 '%q' 加载"
+
+#: py/emitnative.c
+msgid "can't load with '%q' index"
+msgstr "无法用 '%q' 索引加载"
+
+#: py/objgenerator.c
+msgid "can't pend throw to just-started generator"
+msgstr "不能将扔到刚刚开始的发生器"
+
+#: py/objgenerator.c
+msgid "can't send non-None value to a just-started generator"
+msgstr "无法将非无-non 值发送到刚刚启动的发生器"
+
+#: py/objnamedtuple.c
+msgid "can't set attribute"
+msgstr "无法设置属性"
+
+#: py/emitnative.c
+msgid "can't store '%q'"
+msgstr "无法存储 '%q'"
+
+#: py/emitnative.c
+msgid "can't store to '%q'"
+msgstr "不能存储到 '%q'"
+
+#: py/emitnative.c
+msgid "can't store with '%q' index"
+msgstr "不能存储 '%q' 索引"
+
+#: py/objstr.c
+msgid "can't switch from automatic field numbering to manual field specification"
+msgstr "无法自动字段编号改为手动字段规格"
+
+#: py/objstr.c
+msgid "can't switch from manual field specification to automatic field numbering"
+msgstr "无法从手动字段规格切换到自动字段编号"
+
+#: py/objtype.c
+msgid "cannot create '%q' instances"
+msgstr "无法创建 '%q' 实例"
+
+#: py/objtype.c
+msgid "cannot create instance"
+msgstr "无法创建实例"
+
+#: py/runtime.c
+msgid "cannot import name %q"
+msgstr "无法导入名称 %q"
+
+#: py/builtinimport.c
+msgid "cannot perform relative import"
+msgstr "无法执行相关导入"
+
+#: py/emitnative.c
+msgid "casting"
+msgstr "投影"
+
+#: shared-bindings/bleio/Service.c
+msgid "characteristics includes an object that is not a Characteristic"
+msgstr "特性包括不是字符的物体"
+
+#: shared-bindings/_stage/Text.c
+msgid "chars buffer too small"
+msgstr "字符缓冲区太小"
+
+#: py/modbuiltins.c
+msgid "chr() arg not in range(0x110000)"
+msgstr "chr() 参数不在范围(0x110000)"
+
+#: py/modbuiltins.c
+msgid "chr() arg not in range(256)"
+msgstr "chr() 参数不在范围(256)"
+
+#: shared-bindings/displayio/Palette.c
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
+msgstr "颜色缓冲区必须为 3 字节 (RGB) 或 4 字节 (RGB + pad 字节)"
+
+#: shared-bindings/displayio/Palette.c
+msgid "color buffer must be a buffer or int"
+msgstr "颜色缓冲区必须是缓冲区或整数"
+
+#: shared-bindings/displayio/Palette.c
+msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr "颜色缓冲区必须是字眼泪或类型“b”或“B”的数组"
+
+#: shared-bindings/displayio/Palette.c
+msgid "color must be between 0x000000 and 0xffffff"
+msgstr "颜色必须介于 0x000000 和 0xffffff 之间"
+
+#: shared-bindings/displayio/ColorConverter.c
+msgid "color should be an int"
+msgstr "颜色应为整数"
+
+#: py/objcomplex.c
+msgid "complex division by zero"
+msgstr "复杂的分隔为 0"
+
+#: py/objfloat.c py/parsenum.c
+msgid "complex values not supported"
+msgstr "不支持复杂的值"
+
+#: extmod/moduzlib.c
+msgid "compression header"
+msgstr "压缩头部"
+
+#: py/parse.c
+msgid "constant must be an integer"
+msgstr "常数必须是一个整数"
+
+#: py/emitnative.c
+msgid "conversion to object"
+msgstr "转换为对象"
+
+#: py/parsenum.c
+msgid "decimal numbers not supported"
+msgstr "不支持小数数"
+
+#: py/compile.c
+msgid "default 'except' must be last"
+msgstr "默认“除外”必须是最后一个"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
+msgstr "目标缓冲区必须是字眼泪或类型“B”为位深度 = 8"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
+msgstr "目标缓冲区必须是位深度 'H' 类型的数组 = 16"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "destination_length must be an int >= 0"
+msgstr "目标长度必须是一个 int >= 0"
+
+#: py/objdict.c
+msgid "dict update sequence has wrong length"
+msgstr "语法更新序列的长度错误"
+
+#: py/objfloat.c py/runtime.c py/modmath.c py/objint_longlong.c py/objint_mpz.c
+#: shared-bindings/math/__init__.c
+msgid "division by zero"
+msgstr "分数：0"
+
+#: py/objdeque.c
+msgid "empty"
+msgstr "空闲"
+
+#: extmod/modutimeq.c extmod/moduheapq.c
+msgid "empty heap"
+msgstr "空音音效"
+
+#: py/objstr.c
+msgid "empty separator"
+msgstr "空分隔符"
+
+#: shared-bindings/random/__init__.c
+msgid "empty sequence"
+msgstr "空序列"
+
+#: py/objstr.c
+msgid "end of format while looking for conversion specifier"
+msgstr "寻找转换标注格式的结束"
+
+#: shared-bindings/displayio/Shape.c
+msgid "end_x should be an int"
+msgstr "end_x 应该是一个 int"
+
+#: ports/nrf/common-hal/busio/UART.c
+#, c-format
+msgid "error = 0x%08lX"
+msgstr "错误 = 0x%08lX"
+
+#: py/runtime.c
+msgid "exceptions must derive from BaseException"
+msgstr "例外必须来自 BaseException"
+
+#: py/objstr.c
+msgid "expected ':' after format specifier"
+msgstr "format specifier 后预期 ':'"
+
+#: shared-bindings/gamepad/GamePad.c
+msgid "expected a DigitalInOut"
+msgstr "预计数字输入"
+
+#: py/obj.c
+msgid "expected tuple/list"
+msgstr "预计拖车/列表"
+
+#: py/modthread.c
+msgid "expecting a dict for keyword args"
+msgstr "期待关键字 args 的预测"
+
+#: py/compile.c
+msgid "expecting an assembler instruction"
+msgstr "期待装配指令"
+
+#: py/compile.c
+msgid "expecting just a value for set"
+msgstr "仅期待设置的值"
+
+#: py/compile.c
+msgid "expecting key:value for dict"
+msgstr "期待关键：字典的价值"
+
+#: py/argcheck.c
+msgid "extra keyword arguments given"
+msgstr "额外的关键词参数"
+
+#: py/argcheck.c
+msgid "extra positional arguments given"
+msgstr "给出了额外的位置参数"
+
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
+msgid "file must be a file opened in byte mode"
+msgstr "文件必须是在字节模式下打开的文件"
+
+#: shared-bindings/storage/__init__.c
+msgid "filesystem must provide mount method"
+msgstr "文件系统必须提供挂载方法"
+
+#: py/objtype.c
+msgid "first argument to super() must be type"
+msgstr "super() 的第一个参数必须是类型"
+
+#: extmod/machine_spi.c
+msgid "firstbit must be MSB"
+msgstr "firstbit 必须是 MSB"
+
+#: py/objint.c
+msgid "float too big"
+msgstr "浮点太大"
+
+#: shared-bindings/_stage/Text.c
+msgid "font must be 2048 bytes long"
+msgstr "字体必须为 2048 字节"
+
+#: py/objstr.c
+msgid "format requires a dict"
+msgstr "格式要求一个语句"
+
+#: py/objdeque.c
+msgid "full"
+msgstr "完整"
+
+#: py/argcheck.c
+msgid "function does not take keyword arguments"
+msgstr "函数没有关键词参数"
+
+#: py/argcheck.c
+#, c-format
+msgid "function expected at most %d arguments, got %d"
+msgstr "函数预计最多 %d 参数，获得 %d"
+
+#: py/bc.c py/objnamedtuple.c
+msgid "function got multiple values for argument '%q'"
+msgstr "函数获得参数 '%q' 的多重值"
+
+#: py/argcheck.c
+#, c-format
+msgid "function missing %d required positional arguments"
+msgstr "函数丢失 %d 所需位置参数"
+
+#: py/bc.c
+msgid "function missing keyword-only argument"
+msgstr "函数缺少关键字参数"
+
+#: py/bc.c
+msgid "function missing required keyword argument '%q'"
+msgstr "函数缺少所需关键字参数 '%q'"
+
+#: py/bc.c
+#, c-format
+msgid "function missing required positional argument #%d"
+msgstr "函数缺少所需的位置参数 #%d"
+
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#, c-format
+msgid "function takes %d positional arguments but %d were given"
+msgstr "函数需要 %d 个位置参数，但 %d 被给出"
+
+#: shared-bindings/time/__init__.c
+msgid "function takes exactly 9 arguments"
+msgstr "函数需要完全9种参数"
+
+#: py/objgenerator.c
+msgid "generator already executing"
+msgstr "生成器已经执行"
+
+#: py/objgenerator.c
+msgid "generator ignored GeneratorExit"
+msgstr "生成器忽略生成器退出"
+
+#: shared-bindings/_stage/Layer.c
+msgid "graphic must be 2048 bytes long"
+msgstr "图形必须为 2048 字节"
+
+#: extmod/moduheapq.c
+msgid "heap must be a list"
+msgstr "热点必须是一个列表"
+
+#: py/compile.c
+msgid "identifier redefined as global"
+msgstr "识别特征重新定义为全球"
+
+#: py/compile.c
+msgid "identifier redefined as nonlocal"
+msgstr "标识符重新定义为非本地"
+
+#: py/objstr.c
+msgid "incomplete format"
+msgstr "格式不完整"
+
+#: py/objstr.c
+msgid "incomplete format key"
+msgstr "格式不完整"
+
+#: extmod/modubinascii.c
+msgid "incorrect padding"
+msgstr "不正确的填充"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
+msgid "index out of range"
+msgstr "索引超出范围"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "指数必须是集成"
+
+#: py/compile.c
+msgid "inline assembler must be a function"
+msgstr "内联集合必须是一个函数"
+
+#: py/parsenum.c
+msgid "int() arg 2 must be >= 2 and <= 36"
+msgstr "int() arg 2 必须是 >= 2 和 <= 36"
+
+#: py/objstr.c
+msgid "integer required"
+msgstr "需要整数"
+
+#: ports/nrf/common-hal/bleio/Broadcaster.c
+msgid "interval not in range 0.0020 to 10.24"
+msgstr "距离 0.0020 至 10.24 之间的间隔时间"
+
+#: extmod/machine_i2c.c
+msgid "invalid I2C peripheral"
+msgstr "无效的 I2C 外围器"
+
+#: extmod/machine_spi.c
+msgid "invalid SPI peripheral"
+msgstr "无效的 SPI 外围器"
+
+#: lib/netutils/netutils.c
+msgid "invalid arguments"
+msgstr "无效的参数"
+
+#: extmod/modussl_axtls.c
+msgid "invalid cert"
+msgstr "无效的盘子"
+
+#: extmod/uos_dupterm.c
+msgid "invalid dupterm index"
+msgstr "无效的杜普特指数"
+
+#: extmod/modframebuf.c
+msgid "invalid format"
+msgstr "无效格式"
+
+#: py/objstr.c
+msgid "invalid format specifier"
+msgstr "无效的格式标注"
+
+#: extmod/modussl_axtls.c
+msgid "invalid key"
+msgstr "无效的密钥"
+
+#: py/compile.c
+msgid "invalid micropython decorator"
+msgstr "无效的微字节装饰器"
+
+#: shared-bindings/random/__init__.c
+msgid "invalid step"
+msgstr "无效步骤"
+
+#: py/parse.c py/compile.c
+msgid "invalid syntax"
+msgstr "无效的语法"
+
+#: py/parsenum.c
+msgid "invalid syntax for integer"
+msgstr "整数无效的语法"
+
+#: py/parsenum.c
+#, c-format
+msgid "invalid syntax for integer with base %d"
+msgstr "使用基数 %d 整数语法无效"
+
+#: py/parsenum.c
+msgid "invalid syntax for number"
+msgstr "无效的号码语法"
+
+#: py/objtype.c
+msgid "issubclass() arg 1 must be a class"
+msgstr "isubclass() arg 1 必须是一个类"
+
+#: py/objtype.c
+msgid "issubclass() arg 2 must be a class or a tuple of classes"
+msgstr "issubclass() arg 2 必须是班级或图波"
+
+#: py/objstr.c
+msgid "join expects a list of str/bytes objects consistent with self object"
+msgstr "加入预期符合自物体的 str/字节对象列表"
+
+#: py/argcheck.c
+msgid "keyword argument(s) not yet implemented - use normal args instead"
+msgstr "关键字参数尚未实现-使用正常的 args 代替"
+
+#: py/bc.c
+msgid "keywords must be strings"
+msgstr "关键字必须是字符串"
+
+#: py/emitinlinextensa.c py/emitinlinethumb.c
+msgid "label '%q' not defined"
+msgstr "标签 '%q' 未定义"
+
+#: py/compile.c
+msgid "label redefined"
+msgstr "标签重新定义"
+
+#: py/stream.c
+msgid "length argument not allowed for this type"
+msgstr "不允许该类型的长度参数"
+
+#: py/objarray.c
+msgid "lhs and rhs should be compatible"
+msgstr "lhs 和 rhs 应该兼容"
+
+#: py/emitnative.c
+msgid "local '%q' has type '%q' but source is '%q'"
+msgstr "本地 '%q' 包含类型 '%q', '但源是 '%q'"
+
+#: py/emitnative.c
+msgid "local '%q' used before type known"
+msgstr "本地 '%q' 在未知类型之前使用"
+
+#: py/vm.c
+msgid "local variable referenced before assignment"
+msgstr "赋值前引用的局部变量"
+
+#: py/objint.c
+msgid "long int not supported in this build"
+msgstr "此版本中不支持长 int"
+
+#: shared-bindings/_stage/Layer.c
+msgid "map buffer too small"
+msgstr "地图缓冲区太小"
+
+#: py/modmath.c shared-bindings/math/__init__.c
+msgid "math domain error"
+msgstr "数学域错误"
+
+#: py/runtime.c
+msgid "maximum recursion depth exceeded"
+msgstr "超过重发深度"
+
+#: py/runtime.c
+#, c-format
+msgid "memory allocation failed, allocating %u bytes"
+msgstr "内存分配失败，分配 %u 字节"
+
+#: py/runtime.c
+msgid "memory allocation failed, heap is locked"
+msgstr "内存分配失败，听到被锁定"
+
+#: py/builtinimport.c
+msgid "module not found"
+msgstr "找不到模块"
+
+#: py/compile.c
+msgid "multiple *x in assignment"
+msgstr "多个 *x 在作业中"
+
+#: py/objtype.c
+msgid "multiple bases have instance lay-out conflict"
+msgstr "多个基地发生了场冲突"
+
+#: py/objtype.c
+msgid "multiple inheritance not supported"
+msgstr "不支持多个继承"
+
+#: py/emitnative.c
+msgid "must raise an object"
+msgstr "必须提出对象"
+
+#: extmod/machine_spi.c
+msgid "must specify all of sck/mosi/miso"
+msgstr "必须指定所有 sck/mosi/misco"
+
+#: py/modbuiltins.c
+msgid "must use keyword argument for key function"
+msgstr "必须使用关键词参数"
+
+#: py/runtime.c
+msgid "name '%q' is not defined"
+msgstr "名称 '%q' 未定义"
+
+#: shared-bindings/bleio/Peripheral.c
+msgid "name must be a string"
+msgstr "名称必须是一个字符串"
+
+#: py/runtime.c
+msgid "name not defined"
+msgstr "名称未定义"
+
+#: py/compile.c
+msgid "name reused for argument"
+msgstr "参数名称被重新使用"
+
+#: py/emitnative.c
+msgid "native yield"
+msgstr "本地收益"
+
+#: py/runtime.c
+#, c-format
+msgid "need more than %d values to unpack"
+msgstr "需要超过 %d 的值才能解读"
+
+#: py/runtime.c py/objint_longlong.c py/objint_mpz.c
+msgid "negative power with no float support"
+msgstr "没有浮点支持的消极功率"
+
+#: py/runtime.c py/objint_mpz.c
+msgid "negative shift count"
+msgstr "负转移计数"
+
+#: py/vm.c
+msgid "no active exception to reraise"
+msgstr "没有激活的异常来重新评价"
+
+#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
+msgid "no available NIC"
+msgstr "没有可用的 NIC"
+
+#: py/compile.c
+msgid "no binding for nonlocal found"
+msgstr "没有约束本地发现"
+
+#: py/builtinimport.c
+msgid "no module named '%q'"
+msgstr "没有模块 '%q'"
+
+#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+msgid "no such attribute"
+msgstr "没有此属性"
+
+#: py/compile.c
+msgid "non-default argument follows default argument"
+msgstr "默认参数遵循默认参数"
+
+#: extmod/modubinascii.c
+msgid "non-hex digit found"
+msgstr "找到非十六进制数字"
+
+#: py/compile.c
+msgid "non-keyword arg after */**"
+msgstr "*/** 之后的非关键词 arg"
+
+#: py/compile.c
+msgid "non-keyword arg after keyword arg"
+msgstr "关键字参数之后的非关键字参数"
+
+#: shared-bindings/bleio/UUID.c
+msgid "not a 128-bit UUID"
+msgstr "不是 128 位 UUID"
+
+#: py/objstr.c
+msgid "not all arguments converted during string formatting"
+msgstr "不是所有字符串格式转换的参数"
+
+#: py/objstr.c
+msgid "not enough arguments for format string"
+msgstr "格式字符串参数不足"
+
+#: py/obj.c
+#, c-format
+msgid "object '%s' is not a tuple or list"
+msgstr "对象 '%s' 不是一个图象或列表"
+
+#: py/obj.c
+msgid "object does not support item assignment"
+msgstr "对象不支持项目分配"
+
+#: py/obj.c
+msgid "object does not support item deletion"
+msgstr "对象不支持删除项目"
+
+#: py/obj.c
+msgid "object has no len"
+msgstr "对象没有 len"
+
+#: py/obj.c
+msgid "object is not subscriptable"
+msgstr "对象不能子描述"
+
+#: py/runtime.c
+msgid "object not an iterator"
+msgstr "对象不是迭代器"
+
+#: py/objtype.c py/runtime.c
+msgid "object not callable"
+msgstr "对象无法调用"
+
+#: py/sequence.c
+msgid "object not in sequence"
+msgstr "对象不是序列"
+
+#: py/runtime.c
+msgid "object not iterable"
+msgstr "对象不能迭代"
+
+#: py/obj.c
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr "类型 '%s' 的对象没有 len()"
+
+#: py/obj.c
+msgid "object with buffer protocol required"
+msgstr "需要缓冲区协议的对象"
+
+#: extmod/modubinascii.c
+msgid "odd-length string"
+msgstr "奇数字符串"
+
+#: py/objstr.c py/objstrunicode.c
+msgid "offset out of bounds"
+msgstr "偏移边界"
+
+#: py/objstr.c py/objarray.c py/objstrunicode.c py/objtuple.c
+#: shared-bindings/nvm/ByteArray.c
+msgid "only slices with step=1 (aka None) are supported"
+msgstr "仅支持步长= 1（即无）的切片"
+
+#: py/modbuiltins.c
+msgid "ord expects a character"
+msgstr "福音预期字符"
+
+#: py/modbuiltins.c
+#, c-format
+msgid "ord() expected a character, but string of length %d found"
+msgstr "ord() 预期一个字符，但长度字符串 %d"
+
+#: py/objint_mpz.c
+msgid "overflow converting long int to machine word"
+msgstr "超高转换长整数字时"
+
+#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+msgid "palette must be 32 bytes long"
+msgstr "色板必须是32字节"
+
+#: shared-bindings/displayio/Palette.c
+msgid "palette_index should be an int"
+msgstr "palette_index应该是一个整数"
+
+#: py/compile.c
+msgid "parameter annotation must be an identifier"
+msgstr "参数注释必须是标识符"
+
+#: py/emitinlinextensa.c
+msgid "parameters must be registers in sequence a2 to a5"
+msgstr "参数必须是序列 a2 至 a5 的登记数"
+
+#: py/emitinlinethumb.c
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr "参数必须是序列r0至 r3 的登记器"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "pixel coordinates out of bounds"
+msgstr "像素坐标超出边界"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "pixel value requires too many bits"
+msgstr "像素值需要太多位"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+msgstr "pixel_shader 须是 displayio.Palette 或 displayio.ColorConverter"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+msgid "pop from an empty PulseIn"
+msgstr "从空的PulseIn弹出弹出"
+
+#: py/objset.c
+msgid "pop from an empty set"
+msgstr "从空集合弹出窗口"
+
+#: py/objlist.c
+msgid "pop from empty list"
+msgstr "从空列表中弹出窗口"
+
+#: py/objdict.c
+msgid "popitem(): dictionary is empty"
+msgstr "popitem(): 字典为空"
+
+#: py/objint_mpz.c
+msgid "pow() 3rd argument cannot be 0"
+msgstr "pow() 3参数不能为 0"
+
+#: py/objint_mpz.c
+msgid "pow() with 3 arguments requires integers"
+msgstr "pow() 有3参数需要整数"
+
+#: extmod/modutimeq.c
+msgid "queue overflow"
+msgstr "队列溢出"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "rawbuf is not the same size as buf"
+msgstr "rawbuf 与buf的大小不同"
+
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "readonly attribute"
+msgstr "只读属性"
+
+#: py/builtinimport.c
+msgid "relative import"
+msgstr "相对导入"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "请求长度 %d ，但对象长度 %d"
+
+#: py/compile.c
+msgid "return annotation must be an identifier"
+msgstr "返回注释必须是标识符"
+
+#: py/emitnative.c
+msgid "return expected '%q' but got '%q'"
+msgstr "返回预期的 '%q', '但获得了 '%q'"
+
+#: shared-module/displayio/Bitmap.c
+msgid "row must be packed and word aligned"
+msgstr "行必须被包并显示对齐"
+
+#: py/objstr.c
+msgid "rsplit(None,n)"
+msgstr "rsplit(None,n)"
+
+#: shared-bindings/audioio/RawSample.c
+msgid "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"
+msgstr "样本源_源缓冲区必须是字眼泪或类型“h”、“H”、“b”或“B”的数组"
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "sampling rate out of range"
+msgstr "取样率超出范围"
+
+#: py/modmicropython.c
+msgid "schedule stack full"
+msgstr "计划堆栈已满"
+
+#: lib/utils/pyexec.c py/builtinimport.c
+msgid "script compilation not supported"
+msgstr "不支持脚本编译"
+
+#: shared-bindings/bleio/Peripheral.c
+msgid "services includes an object that is not a Service"
+msgstr "服务包括不是服务对象"
+
+#: py/objstr.c
+msgid "sign not allowed in string format specifier"
+msgstr "字符串格式示例不允许登录"
+
+#: py/objstr.c
+msgid "sign not allowed with integer format specifier 'c'"
+msgstr "不允许使用整数格式化标注“c”"
+
+#: py/objstr.c
+msgid "single '}' encountered in format string"
+msgstr "在格式字符串中遇到的单个 '}'"
+
+#: shared-bindings/time/__init__.c
+msgid "sleep length must be non-negative"
+msgstr "睡眠长度必须是非负数"
+
+#: py/objslice.c py/sequence.c
+msgid "slice step cannot be zero"
+msgstr "切片步不能为零"
+
+#: py/sequence.c py/objint.c
+msgid "small int overflow"
+msgstr "小整数溢出"
+
+#: main.c
+msgid "soft reboot\n"
+msgstr "软重启\n"
+
+#: py/objstr.c
+msgid "start/end indices"
+msgstr "开始/结束指数"
+
+#: shared-bindings/displayio/Shape.c
+msgid "start_x should be an int"
+msgstr "start_x 应该是一个 int"
+
+#: shared-bindings/random/__init__.c
+msgid "step must be non-zero"
+msgstr "步骤必须是非零"
+
+#: shared-bindings/busio/UART.c
+msgid "stop must be 1 or 2"
+msgstr "停止必须为 1 或 2"
+
+#: shared-bindings/random/__init__.c
+msgid "stop not reachable from start"
+msgstr "停止无法从开始中找到"
+
+#: py/stream.c
+msgid "stream operation not supported"
+msgstr "不支持流操作"
+
+#: py/objstrunicode.c
+msgid "string index out of range"
+msgstr "字符串索引超出范围"
+
+#: py/objstrunicode.c
+#, c-format
+msgid "string indices must be integers, not %s"
+msgstr "字符串指数必须是整数，而不是 %s"
+
+#: py/stream.c
+msgid "string not supported; use bytes or bytearray"
+msgstr "字符串不支持；使用字节或字眼泪"
+
+#: extmod/moductypes.c
+msgid "struct: cannot index"
+msgstr "结构：不能索引"
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "结构：索引超出范围"
+
+#: extmod/moductypes.c
+msgid "struct: no fields"
+msgstr "结构：没有字段"
+
+#: py/objstr.c
+msgid "substring not found"
+msgstr "未找到子字符串"
+
+#: py/compile.c
+msgid "super() can't find self"
+msgstr "super() 无法找到自己"
+
+#: extmod/modujson.c
+msgid "syntax error in JSON"
+msgstr "JSON语法错误"
+
+#: extmod/moductypes.c
+msgid "syntax error in uctypes descriptor"
+msgstr "导入描述符中的语法错误"
+
+#: shared-bindings/touchio/TouchIn.c
+msgid "threshold must be in the range 0-65536"
+msgstr "阈值必须在范围 0-65536"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "tile index out of bounds"
+msgstr "磁块索引超出边界"
+
+#: shared-bindings/time/__init__.c
+msgid "time.struct_time() takes a 9-sequence"
+msgstr "time.struct_time() 需要 9 序列"
+
+#: shared-bindings/time/__init__.c
+msgid "time.struct_time() takes exactly 1 argument"
+msgstr "time.struct_time() 需要完全 1 参数"
+
+#: shared-bindings/busio/UART.c
+msgid "timeout >100 (units are now seconds, not msecs)"
+msgstr "timeout >100（单位为秒，毫秒"
+
+#: shared-bindings/bleio/CharacteristicBuffer.c
+msgid "timeout must be >= 0.0"
+msgstr "超时必须是 >= 0.0"
+
+#: shared-bindings/time/__init__.c
+msgid "timestamp out of range for platform time_t"
+msgstr "time_t 时间戳超出平台范围"
+
+#: shared-bindings/gamepad/GamePad.c
+msgid "too many arguments"
+msgstr "太多参数"
+
+#: shared-module/struct/__init__.c
+msgid "too many arguments provided with the given format"
+msgstr "提供给定格式的参数太多"
+
+#: py/runtime.c
+#, c-format
+msgid "too many values to unpack (expected %d)"
+msgstr "无法解压缩的值 (预期 %d)"
+
+#: py/objstr.c
+msgid "tuple index out of range"
+msgstr "拖动索引超出范围"
+
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "拖机/列表长度错误"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "tuple/list required on RHS"
+msgstr "RHS 所需的tuple/list"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+msgid "tx and rx cannot both be None"
+msgstr "tx 和 rx 不能都是无"
+
+#: py/objtype.c
+msgid "type '%q' is not an acceptable base type"
+msgstr "类型 '%q' 不是可接受的基础类型"
+
+#: py/objtype.c
+msgid "type is not an acceptable base type"
+msgstr "类型不是可接受的基础类型"
+
+#: py/runtime.c
+msgid "type object '%q' has no attribute '%q'"
+msgstr "类型对象 '%q' 没有属性 '%q'"
+
+#: py/objtype.c
+msgid "type takes 1 or 3 arguments"
+msgstr "类型为 1 或 3 个参数"
+
+#: py/objint_longlong.c
+msgid "ulonglong too large"
+msgstr "太宽"
+
+#: py/emitnative.c
+msgid "unary op %q not implemented"
+msgstr "未执行 %q"
+
+#: py/parse.c
+msgid "unexpected indent"
+msgstr "未预料的缩进"
+
+#: py/bc.c
+msgid "unexpected keyword argument"
+msgstr "意外的关键词参数"
+
+#: py/bc.c py/objnamedtuple.c
+msgid "unexpected keyword argument '%q'"
+msgstr "意外的关键词参数 '%q'"
+
+#: py/lexer.c
+msgid "unicode name escapes"
+msgstr "unicode 名称逃跑"
+
+#: py/parse.c
+msgid "unindent does not match any outer indentation level"
+msgstr "未叉叉平不匹配任何外部缩进"
+
+#: py/objstr.c
+#, c-format
+msgid "unknown conversion specifier %c"
+msgstr "未知的转换标注 %c"
+
+#: py/objstr.c
+#, c-format
+msgid "unknown format code '%c' for object of type '%s'"
+msgstr "'%s' 类型的对象的未知格式代码 '%c'"
+
+#: py/objstr.c
+#, c-format
+msgid "unknown format code '%c' for object of type 'float'"
+msgstr "类型 'float' 对象未知的格式代码 '%c'"
+
+#: py/objstr.c
+#, c-format
+msgid "unknown format code '%c' for object of type 'str'"
+msgstr "类型 'str' 对象未知的格式代码 '%c'"
+
+#: py/compile.c
+msgid "unknown type"
+msgstr "未知类型"
+
+#: py/emitnative.c
+msgid "unknown type '%q'"
+msgstr "未知类型 '%q'"
+
+#: py/objstr.c
+msgid "unmatched '{' in format"
+msgstr "格式未匹配 '{'"
+
+#: py/objtype.c py/runtime.c
+msgid "unreadable attribute"
+msgstr "不可读属性"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr "不支持的 Thumb 指示 '%s', 使用 %d 参数"
+
+#: py/emitinlinextensa.c
+#, c-format
+msgid "unsupported Xtensa instruction '%s' with %d arguments"
+msgstr "不支持的 Xtensa 指令 '%s', 使用 %d 参数"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "unsupported bitmap type"
+msgstr "不支持的 bitmap 类型"
+
+#: py/objstr.c
+#, c-format
+msgid "unsupported format character '%c' (0x%x) at index %d"
+msgstr "不支持的格式字符 '%c' (0x%x) 索引 %d"
+
+#: py/runtime.c
+msgid "unsupported type for %q: '%s'"
+msgstr "不支持的类型 %q: '%s'"
+
+#: py/runtime.c
+msgid "unsupported type for operator"
+msgstr "不支持的操作者类型"
+
+#: py/runtime.c
+msgid "unsupported types for %q: '%s', '%s'"
+msgstr "不支持的类型为 %q: '%s', '%s'"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "value_count must be > 0"
+msgstr "值计数必须为 > 0"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "write_args must be a list, tuple, or None"
+msgstr "写入参数必须是列表，图或无"
+
+#: py/objstr.c
+msgid "wrong number of arguments"
+msgstr "参数数错误"
+
+#: py/runtime.c
+msgid "wrong number of values to unpack"
+msgstr "无法解包的值数"
+
+#: shared-module/displayio/Shape.c
+msgid "x value out of bounds"
+msgstr "x 值超出边界"
+
+#: shared-bindings/displayio/Shape.c
+msgid "y should be an int"
+msgstr "y 应该是一个整数"
+
+#: shared-module/displayio/Shape.c
+msgid "y value out of bounds"
+msgstr "y 值超出边界"
+
+#: py/objrange.c
+msgid "zero step"
+msgstr "零步"
