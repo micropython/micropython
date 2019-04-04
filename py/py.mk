@@ -123,7 +123,7 @@ endif
 LVGL_BINDING_DIR = $(TOP)/lib/lv_bindings
 LVGL_DIR = $(LVGL_BINDING_DIR)/lvgl
 LVGL_GENERIC_DRV_DIR = $(LVGL_BINDING_DIR)/driver/generic
-INC += -I$(LVGL_DIR)/src -I$(LVGL_BINDING_DIR)/include
+INC += -I$(LVGL_BINDING_DIR)
 ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f) $(TOP)/lib/lv_conf.h
 LVGL_PP = $(BUILD)/lvgl/lvgl.pp.c
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
