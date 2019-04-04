@@ -76,6 +76,9 @@ uint32_t supervisor_flash_get_block_count(void) {
 void supervisor_flash_flush(void) {
 }
 
+void supervisor_flash_release_cache(void) {
+}
+
 void flash_flush(void) {
     supervisor_flash_flush();
 }
