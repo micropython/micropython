@@ -57,6 +57,10 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+// Timeout between closing a TCP socket and doing a tcp_abort on that
+// socket, if the connection isn't closed cleanly in that time.
+#define MICROPY_PY_LWIP_TCP_CLOSE_TIMEOUT_MS (10000)
+
 // All socket options should be globally distinct,
 // because we ignore option levels for efficiency.
 #define IP_ADD_MEMBERSHIP 0x400
@@ -1342,6 +1346,13 @@ STATIC mp_uint_t lwip_socket_write(mp_obj_t self_in, const void *buf, mp_uint_t 
     return MP_STREAM_ERROR;
 }
 
+STATIC err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {
+    // Connection has not been cleanly closed so just abort it to free up memory
+    tcp_poll(pcb, NULL, 0);
+    tcp_abort(pcb);
+    return ERR_OK;
+}
+
 STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
@@ -1401,6 +1412,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         }
 
         // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
+        tcp_arg(socket->pcb.tcp, NULL);
+        tcp_err(socket->pcb.tcp, NULL);
         tcp_recv(socket->pcb.tcp, NULL);
 
         switch (socket->type) {
@@ -1408,6 +1421,9 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 if (tcp_close(socket->pcb.tcp) != ERR_OK) {
                     DEBUG_printf("lwip_close: had to call tcp_abort()\n");
                     tcp_abort(socket->pcb.tcp);
+                } else {
+                    // If connection not cleanly closed after timeout then abort the connection
+                    tcp_poll(socket->pcb.tcp, _lwip_tcp_close_poll, MICROPY_PY_LWIP_TCP_CLOSE_TIMEOUT_MS / 500);
                 }
                 break;
             }
