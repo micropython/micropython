@@ -11,7 +11,6 @@
 
     0x000ED000..0x000F3FFF (28KB ) Private Config Data (Bonding, Keys, etc.)
     0x000AD000..0x000ECFFF (256KB) User Filesystem
-
     0x00026000..0x000ACFFF (540KB) Application Code (including ISR vector)
     0x00001000..0x00025FFF (148KB) SoftDevice
     0x00000000..0x00000FFF   (4KB) Master Boot Record

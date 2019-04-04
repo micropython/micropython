@@ -67,7 +67,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return ((uint32_t) __fatfs_flash_length) / FILESYSTEM_BLOCK_SIZE ;
+    return ((uint32_t) __fatfs_flash_length - CIRCUITPY_INTERNVAL_NVM_SIZE) / FILESYSTEM_BLOCK_SIZE ;
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
