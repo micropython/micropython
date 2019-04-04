@@ -26,6 +26,8 @@
 
 #include "py/obj.h"
 #include "py/objstr.h"
+#include "py/objarray.h"
+#include "py/binary.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
 
@@ -136,6 +138,25 @@ void mp_bt_disconnected(uint16_t conn_handle) {
             active_connections[i] = MP_BT_INVALID_CONN_HANDLE;
             break;
         }
+    }
+}
+
+// Call the registered callback for this characteristic, if one has been
+// registered.
+void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, size_t value_len) {
+    // Iterate through the linked list to find to find the characteristic
+    // with the given handle.
+    mp_bt_characteristic_callback_t *item = MP_STATE_PORT(bt_characteristic_callbacks);
+    while (item != NULL) {
+        if (item->characteristic->value_handle == value_handle) {
+            // Pass the written data directly as a bytearray to the
+            // callback.
+            // WARNING: this array must not be modified by the callee.
+            mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, value_len, (void*)value};
+            mp_call_function_2_protected(item->callback, MP_OBJ_FROM_PTR(item->characteristic), MP_OBJ_FROM_PTR(&ar));
+            break;
+        }
+        item = item->next;
     }
 }
 
@@ -382,11 +403,53 @@ STATIC mp_obj_t characteristic_read(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(characteristic_read_obj, characteristic_read);
 
+STATIC mp_obj_t characteristic_on_update(mp_obj_t self_in, mp_obj_t callback) {
+    if (callback != mp_const_none && !mp_obj_is_fun(callback)) {
+        mp_raise_ValueError("invalid callback");
+    }
+    mp_bt_characteristic_t *characteristic = self_in;
+
+    // A singly linked list of callbacks. In pseudocode:
+    // If the new callback is none:
+    //   Find a registered callback for this characteristic and remove it.
+    // Else:
+    //   Replace a registered callback for this characteristic.
+    //   If none exists, add it at the end of the list.
+    mp_bt_characteristic_callback_t **entry = &MP_STATE_PORT(bt_characteristic_callbacks);
+    while (1) {
+        if (*entry == NULL) {
+            // found the end of the list
+            if (callback != mp_const_none) {
+                // add callback to the end of the list
+                *entry = m_new_obj(mp_bt_characteristic_callback_t);
+                (*entry)->characteristic = characteristic;
+                (*entry)->callback = callback;
+            }
+            break;
+        }
+        if ((*entry)->characteristic == characteristic) {
+            // found existing entry
+            if (callback == mp_const_none) {
+                // delete this callback
+                *entry = (*entry)->next;
+            } else {
+                // update the entry with the new callback
+                (*entry)->callback = callback;
+            }
+            break;
+        }
+        entry = &(*entry)->next;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(characteristic_on_update_obj, characteristic_on_update);
+
 STATIC const mp_rom_map_elem_t characteristic_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_service), MP_ROM_PTR(&characteristic_service_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uuid),    MP_ROM_PTR(&characteristic_uuid_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write),   MP_ROM_PTR(&characteristic_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read),    MP_ROM_PTR(&characteristic_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_service),   MP_ROM_PTR(&characteristic_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid),      MP_ROM_PTR(&characteristic_uuid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write),     MP_ROM_PTR(&characteristic_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read),      MP_ROM_PTR(&characteristic_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on_update), MP_ROM_PTR(&characteristic_on_update_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(characteristic_locals_dict, characteristic_locals_dict_table);
 

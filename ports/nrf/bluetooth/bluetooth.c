@@ -289,6 +289,9 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle, GATT_MTU_SIZE_DEFAULT);
             break;
 #endif
+        case BLE_GATTS_EVT_WRITE:
+            mp_bt_characteristic_on_write(p_ble_evt->evt.gatts_evt.params.write.handle, &p_ble_evt->evt.gatts_evt.params.write.data, p_ble_evt->evt.gatts_evt.params.write.len);
+            break;
     }
 }
 
