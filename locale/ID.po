@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-02 13:43+1100\n"
+"POT-Creation-Date: 2019-04-04 13:37-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,7 +53,7 @@ msgid "%q indices must be integers, not %s"
 msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "buffers harus mempunyai panjang yang sama"
@@ -254,8 +254,8 @@ msgid "All timers for this pin are in use"
 msgstr "Semua timer untuk pin ini sedang digunakan"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -513,8 +513,8 @@ msgstr ""
 msgid "Drive mode not used when direction is input."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Channel EXTINT sedang digunakan"
 
@@ -532,8 +532,8 @@ msgstr ""
 msgid "Expected a Characteristic"
 msgstr ""
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Service.c
-#: shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr ""
 
@@ -721,7 +721,7 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr ""
 
@@ -767,6 +767,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid bit clock pin"
 msgstr "Bit clock pada pin tidak valid"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Invalid bits per value"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -824,8 +828,8 @@ msgid "Invalid pin for right channel"
 msgstr "Pin untuk channel kanan tidak valid"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -940,8 +944,8 @@ msgstr "Tidak ada GCLK yang kosong"
 msgid "No hardware random available"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Tidak ada dukungan hardware untuk pin"
 
@@ -979,10 +983,6 @@ msgstr "Hanya 8 atau 16 bit mono dengan "
 #, c-format
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
-msgstr ""
-
-#: shared-module/displayio/Bitmap.c
-msgid "Only bit maps of 8 bit color or less are supported"
 msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
@@ -1101,8 +1101,8 @@ msgstr "Serializer sedang digunakan"
 msgid "Slice and value different lengths."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
-#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -2313,10 +2313,6 @@ msgstr "anotasi return harus sebuah identifier"
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr ""
-
-#: shared-module/displayio/Bitmap.c
-msgid "row must be packed and word aligned"
 msgstr ""
 
 #: py/objstr.c
