@@ -1342,6 +1342,13 @@ STATIC mp_uint_t lwip_socket_write(mp_obj_t self_in, const void *buf, mp_uint_t 
     return MP_STREAM_ERROR;
 }
 
+STATIC err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {
+    // Connection has not been cleanly closed so just abort it to free up memory
+    tcp_poll(pcb, NULL, 0);
+    tcp_abort(pcb);
+    return ERR_OK;
+}
+
 STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
@@ -1401,6 +1408,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         }
 
         // Deregister callback (pcb.tcp is set to NULL below so must deregister now)
+        tcp_arg(socket->pcb.tcp, NULL);
+        tcp_err(socket->pcb.tcp, NULL);
         tcp_recv(socket->pcb.tcp, NULL);
 
         switch (socket->type) {
@@ -1408,6 +1417,9 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 if (tcp_close(socket->pcb.tcp) != ERR_OK) {
                     DEBUG_printf("lwip_close: had to call tcp_abort()\n");
                     tcp_abort(socket->pcb.tcp);
+                } else {
+                    // If not cleanly closed after 2 seconds then abort the connection
+                    tcp_poll(socket->pcb.tcp, _lwip_tcp_close_poll, 4);
                 }
                 break;
             }
