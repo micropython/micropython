@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-02 13:43+1100\n"
+"POT-Creation-Date: 2019-04-04 13:37-0700\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -56,7 +56,7 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indices deben ser enteros, no %s"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "%q debe ser >= 1"
@@ -261,8 +261,8 @@ msgid "All timers for this pin are in use"
 msgstr "Todos los timers para este pin están siendo utilizados"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -518,8 +518,8 @@ msgstr "Rotación de display debe ser en incrementos de 90 grados"
 msgid "Drive mode not used when direction is input."
 msgstr "Modo Drive no se usa cuando la dirección es input."
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
 
@@ -538,8 +538,8 @@ msgstr "Se espera un %q"
 msgid "Expected a Characteristic"
 msgstr "No se puede agregar la Característica."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Service.c
-#: shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Se espera un %q"
@@ -728,7 +728,7 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "La función requiere lock"
 
@@ -776,6 +776,10 @@ msgstr "Argumento inválido"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid bit clock pin"
 msgstr "Pin bit clock inválido"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Invalid bits per value"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -833,8 +837,8 @@ msgid "Invalid pin for right channel"
 msgstr "Pin inválido para canal derecho"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -953,8 +957,8 @@ msgstr "Sin GCLKs libres"
 msgid "No hardware random available"
 msgstr "No hay hardware random disponible"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Sin soporte de hardware en pin"
 
@@ -995,10 +999,6 @@ msgstr "Solo mono de 8 o 16 bit con "
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
-
-#: shared-module/displayio/Bitmap.c
-msgid "Only bit maps of 8 bit color or less are supported"
-msgstr "Solo se admiten bit maps de color de 8 bits o menos"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1117,8 +1117,8 @@ msgstr "Serializer está siendo utilizado"
 msgid "Slice and value different lengths."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
-#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -2351,10 +2351,6 @@ msgstr "la anotación de retorno debe ser un identificador"
 msgid "return expected '%q' but got '%q'"
 msgstr "retorno esperado '%q' pero se obtuvo '%q'"
 
-#: shared-module/displayio/Bitmap.c
-msgid "row must be packed and word aligned"
-msgstr "la fila debe estar empacada y la palabra alineada"
-
 #: py/objstr.c
 msgid "rsplit(None,n)"
 msgstr ""
@@ -2743,6 +2739,9 @@ msgstr "paso cero"
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Solo formato Windows, BMP sin comprimir soportado %d"
 
+#~ msgid "Only bit maps of 8 bit color or less are supported"
+#~ msgstr "Solo se admiten bit maps de color de 8 bits o menos"
+
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Solo color verdadero (24 bpp o superior) BMP admitido %x"
 
@@ -2849,6 +2848,9 @@ msgstr "paso cero"
 
 #~ msgid "position must be 2-tuple"
 #~ msgstr "posición debe ser 2-tuple"
+
+#~ msgid "row must be packed and word aligned"
+#~ msgstr "la fila debe estar empacada y la palabra alineada"
 
 #~ msgid "scan failed"
 #~ msgstr "scan ha fallado"
