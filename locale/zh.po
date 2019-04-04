@@ -358,8 +358,7 @@ msgstr "Wúfǎ gēnggǎi zhōngyāng móshì de míngchēng"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't connect in Peripheral mode"
-msgstr ""
-"Wúfǎ zài biānyuán móshì zhōng liánjiē\n"
+msgstr "Wúfǎ zài biānyuán móshì zhōng liánjiē\n"
 
 #: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
 msgid "Cannot delete values"
