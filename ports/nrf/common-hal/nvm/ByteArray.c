@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "nrf_nvmc.h"
+#include "peripherals/nrf/nvm.h"
 
 uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
     return self->len;
@@ -38,18 +38,14 @@ uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
 static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_t *bytes) {
     // Write a whole page to flash, buffering it first and then erasing and rewriting 
     // it since we can only clear a whole page at a time.
-    // TODO (maybe) check if only clearing bits (don't need to erase)
-    // XXX should this suspend interrupts so erase/write is atomic?
 
     if (offset == 0 && len == FLASH_PAGE_SIZE) {
-        nrf_nvmc_page_erase(page_addr);
-        nrf_nvmc_write_bytes(page_addr, bytes, FLASH_PAGE_SIZE);
+        nrf_nvm_safe_flash_page_write(page_addr, bytes);
     } else {
         uint8_t buffer[FLASH_PAGE_SIZE];
         memcpy(buffer, (uint8_t *)page_addr, FLASH_PAGE_SIZE);
         memcpy(buffer + offset, bytes, len);
-        nrf_nvmc_page_erase(page_addr);
-        nrf_nvmc_write_bytes(page_addr, buffer, FLASH_PAGE_SIZE);
+        nrf_nvm_safe_flash_page_write(page_addr, buffer);
     }
 }
 
