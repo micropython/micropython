@@ -128,6 +128,14 @@ STATIC void wiznet5k_init(void) {
     // Seems we need a small delay after init
     mp_hal_delay_ms(250);
 
+    // If the device doesn't have a MAC address then set one
+    uint8_t mac[6];
+    getSHAR(mac);
+    if ((mac[0] | mac[1] | mac[2] | mac[3] | mac[4] | mac[5]) == 0) {
+        mp_hal_get_mac(MP_HAL_MAC_ETH0, mac);
+        setSHAR(mac);
+    }
+
     // Hook the Wiznet into lwIP
     wiznet5k_lwip_init(&wiznet5k_obj);
 }
