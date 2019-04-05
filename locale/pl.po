@@ -2561,8 +2561,8 @@ msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "niewspierana instrukcja Xtensa '%s' z %d argumentami"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "unsupported bitmap type"
-msgstr "niewspierany typ bitmapy"
+msgid "unsupported %q type"
+msgstr "niewspierany typ %q"
 
 #: py/objstr.c
 #, c-format
