@@ -212,6 +212,7 @@ SRC_C = \
 	bindings/samd/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
+	eic_handler.c \
 	fatfs_port.c \
 	freetouch/adafruit_ptc.c \
 	lib/libc/string0.c \
