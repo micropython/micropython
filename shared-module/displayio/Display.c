@@ -84,6 +84,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t *data = cmd + 2;
         self->send(self->bus, true, cmd, 1);
         if (self->data_as_commands) {
+            // Loop through each parameter to force a CS toggle
             for (uint32_t j=0; j < data_size; j++) {
                 self->send(self->bus, true, data + j, 1);
             }
