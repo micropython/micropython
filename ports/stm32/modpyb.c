@@ -194,12 +194,15 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&pyb_flash_type) },
 #endif
 
-#if MICROPY_HW_HAS_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
     #if MICROPY_PY_PYB_LEGACY
     { MP_ROM_QSTR(MP_QSTR_SD), MP_ROM_PTR(&pyb_sdcard_obj) }, // now obsolete
     #endif
     { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&pyb_sdcard_type) },
 #endif
+    #if MICROPY_HW_ENABLE_MMCARD
+    { MP_ROM_QSTR(MP_QSTR_MMCard), MP_ROM_PTR(&pyb_mmcard_type) },
+    #endif
 
 #if defined(MICROPY_HW_LED1)
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },

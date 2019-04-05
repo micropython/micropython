@@ -39,6 +39,8 @@
 #define DMA_IDLE_TICK_MAX   (8) // 8*8 = 64 msec
 #define DMA_IDLE_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & DMA_SYSTICK_MASK) == 0)
 
+#define ENABLE_SDIO (MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD)
+
 typedef enum {
     dma_id_not_defined=-1,
     dma_id_0,
@@ -100,7 +102,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #endif
 };
 
-#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD && !defined(STM32H7)
+#if ENABLE_SDIO && !defined(STM32H7)
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
@@ -256,7 +258,7 @@ const dma_descr_t dma_I2C_1_TX = { DMA1_Stream6, DMA_CHANNEL_1, dma_id_6,   &dma
 */
 
 // DMA2 streams
-#if defined(STM32F7) && defined(SDMMC2) && MICROPY_HW_HAS_SDCARD
+#if defined(STM32F7) && defined(SDMMC2) && ENABLE_SDIO
 const dma_descr_t dma_SDMMC_2 = { DMA2_Stream0, DMA_CHANNEL_11, dma_id_8,  &dma_init_struct_sdio };
 #endif
 #if MICROPY_HW_ENABLE_DCMI
@@ -264,7 +266,7 @@ const dma_descr_t dma_DCMI_0 = { DMA2_Stream1, DMA_CHANNEL_1, dma_id_9,  &dma_in
 #endif
 const dma_descr_t dma_SPI_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_5_RX = { DMA2_Stream3, DMA_CHANNEL_2, dma_id_11,  &dma_init_struct_spi_i2c };
-#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
+#if ENABLE_SDIO
 const dma_descr_t dma_SDIO_0 = { DMA2_Stream3, DMA_CHANNEL_4, dma_id_11,  &dma_init_struct_sdio };
 #endif
 const dma_descr_t dma_SPI_4_RX = { DMA2_Stream3, DMA_CHANNEL_5, dma_id_11,  &dma_init_struct_spi_i2c };
@@ -272,11 +274,11 @@ const dma_descr_t dma_SPI_5_TX = { DMA2_Stream4, DMA_CHANNEL_2, dma_id_12,  &dma
 const dma_descr_t dma_SPI_4_TX = { DMA2_Stream4, DMA_CHANNEL_5, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_6_TX = { DMA2_Stream5, DMA_CHANNEL_1, dma_id_13,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_1_TX = { DMA2_Stream5, DMA_CHANNEL_3, dma_id_13,  &dma_init_struct_spi_i2c };
-//#if defined(STM32F7) && defined(SDMMC2) && MICROPY_HW_HAS_SDCARD
+//#if defined(STM32F7) && defined(SDMMC2) && ENABLE_SDIO
 //const dma_descr_t dma_SDMMC_2 = { DMA2_Stream5, DMA_CHANNEL_11, dma_id_13,  &dma_init_struct_sdio };
 //#endif
 const dma_descr_t dma_SPI_6_RX = { DMA2_Stream6, DMA_CHANNEL_1, dma_id_14,  &dma_init_struct_spi_i2c };
-//#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
+//#if ENABLE_SDIO
 //const dma_descr_t dma_SDIO_0 = { DMA2_Stream6, DMA_CHANNEL_4, dma_id_14,  &dma_init_struct_sdio };
 //#endif
 /* not preferred streams
@@ -352,7 +354,7 @@ const dma_descr_t dma_ADC_2_RX = { DMA2_Channel4, DMA_REQUEST_0, dma_id_10,  NUL
 const dma_descr_t dma_DAC_1_TX = { DMA2_Channel4, DMA_REQUEST_3, dma_id_10,  &dma_init_struct_dac };
 const dma_descr_t dma_SPI_1_TX = { DMA2_Channel4, DMA_REQUEST_4, dma_id_10,  &dma_init_struct_spi_i2c };
 */
-#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
+#if ENABLE_SDIO
 const dma_descr_t dma_SDIO_0 = { DMA2_Channel4, DMA_REQUEST_7, dma_id_10,  &dma_init_struct_sdio };
 #endif
 /* not preferred streams

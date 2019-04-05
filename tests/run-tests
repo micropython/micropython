@@ -103,7 +103,16 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
                         send_get(b'\x04') # exit the REPL, so coverage info is saved
-                        p.kill()
+                        # At this point the process might have exited already, but trying to
+                        # kill it 'again' normally doesn't result in exceptions as Python and/or
+                        # the OS seem to try to handle this nicely. When running Linux on WSL
+                        # though, the situation differs and calling Popen.kill after the process
+                        # terminated results in a ProcessLookupError. Just catch that one here
+                        # since we just want the process to be gone and that's the case.
+                        try:
+                            p.kill()
+                        except ProcessLookupError:
+                            pass
                         os.close(master)
                         os.close(slave)
                 else:

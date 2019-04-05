@@ -145,7 +145,8 @@
 #define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
-#define MICROPY_PY_OS_DUPTERM       (1)
+#define MICROPY_PY_OS_DUPTERM       (3)
+#define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
@@ -364,14 +365,6 @@ static inline mp_uint_t disable_irq(void) {
 
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)
-
-// There is no classical C heap in bare-metal ports, only Python
-// garbage-collected heap. For completeness, emulate C heap via
-// GC heap. Note that MicroPython core never uses malloc() and friends,
-// so these defines are mostly to help extension module writers.
-#define malloc(n) m_malloc(n)
-#define free(p) m_free(p)
-#define realloc(p, n) m_realloc(p, n)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

@@ -112,6 +112,12 @@ STATIC const struct {
     { MP_QSTR_ENC_AB,             TIM_ENCODERMODE_TI12 },
 };
 
+enum {
+    BRK_OFF,
+    BRK_LOW,
+    BRK_HIGH,
+};
+
 typedef struct _pyb_timer_channel_obj_t {
     mp_obj_base_t base;
     struct _pyb_timer_obj_t *timer;
@@ -462,14 +468,14 @@ STATIC mp_int_t compute_ticks_from_dtg(uint32_t dtg) {
     return 512 + ((dtg & 0x1F) * 16);
 }
 
-STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks) {
+STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk) {
     TIM_BreakDeadTimeConfigTypeDef deadTimeConfig;
     deadTimeConfig.OffStateRunMode  = TIM_OSSR_DISABLE;
     deadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
     deadTimeConfig.LockLevel        = TIM_LOCKLEVEL_OFF;
     deadTimeConfig.DeadTime         = compute_dtg_from_ticks(ticks);
-    deadTimeConfig.BreakState       = TIM_BREAK_DISABLE;
-    deadTimeConfig.BreakPolarity    = TIM_BREAKPOLARITY_LOW;
+    deadTimeConfig.BreakState       = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
+    deadTimeConfig.BreakPolarity    = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
     deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
 }
@@ -512,6 +518,12 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
         {
             mp_printf(print, ", deadtime=%u",
                 compute_ticks_from_dtg(self->tim.Instance->BDTR & TIM_BDTR_DTG));
+            if ((self->tim.Instance->BDTR & TIM_BDTR_BKE) == TIM_BDTR_BKE) {
+                mp_printf(print, ", brk=%s",
+                    ((self->tim.Instance->BDTR & TIM_BDTR_BKP) == TIM_BDTR_BKP) ? "BRK_HIGH" : "BRK_LOW");
+            } else {
+                mp_printf(print, ", brk=BRK_OFF");
+            }
         }
         mp_print_str(print, ")");
     }
@@ -561,9 +573,15 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///       measures ticks of `source_freq` divided by `div` clock ticks.
 ///       `deadtime` is only available on timers 1 and 8.
 ///
+///   - `brk` - specifies if the break mode is used to kill the output of
+///       the PWM when the BRK_IN input is asserted. The polarity set how the
+///       BRK_IN input is triggered. It can be set to `BRK_OFF`, `BRK_LOW`
+///       and `BRK_HIGH`.
+///
+///
 ///  You must either specify freq or both of period and prescaler.
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime };
+    enum { ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime, ARG_brk };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_prescaler,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
@@ -573,6 +591,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         { MP_QSTR_div,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_deadtime,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_brk,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BRK_OFF} },
     };
 
     // parse args
@@ -679,7 +698,8 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     #else
     if (0) {
     #endif
-        config_deadtime(self, args[ARG_deadtime].u_int);
+        config_deadtime(self, args[ARG_deadtime].u_int, args[ARG_brk].u_int);
+
     }
 
     // Enable ARPE so that the auto-reload register is buffered.
@@ -1307,6 +1327,9 @@ STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RISING), MP_ROM_INT(TIM_ICPOLARITY_RISING) },
     { MP_ROM_QSTR(MP_QSTR_FALLING), MP_ROM_INT(TIM_ICPOLARITY_FALLING) },
     { MP_ROM_QSTR(MP_QSTR_BOTH), MP_ROM_INT(TIM_ICPOLARITY_BOTHEDGE) },
+    { MP_ROM_QSTR(MP_QSTR_BRK_OFF), MP_ROM_INT(BRK_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_BRK_LOW), MP_ROM_INT(BRK_LOW) },
+    { MP_ROM_QSTR(MP_QSTR_BRK_HIGH), MP_ROM_INT(BRK_HIGH) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
 

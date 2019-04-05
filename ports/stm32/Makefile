@@ -42,7 +42,8 @@ OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 STARTUP_FILE ?= boards/startup_stm32$(MCU_SERIES).o
 
-CROSS_COMPILE = arm-none-eabi-
+# Select the cross compile prefix
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I$(TOP)
@@ -328,6 +329,7 @@ endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
 SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_mmc.c \
 	hal_sdram.c \
 	hal_dma_ex.c \
 	hal_dcmi.c \

@@ -7,7 +7,7 @@
 // On the netuino, the sdcard appears to be wired up as a 1-bit
 // SPI, so the driver needs to be converted to support that before
 // we can turn this on.
-#define MICROPY_HW_HAS_SDCARD       (0)
+#define MICROPY_HW_ENABLE_SDCARD    (0)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)

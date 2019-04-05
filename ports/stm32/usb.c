@@ -111,6 +111,10 @@ const mp_rom_obj_tuple_t pyb_usb_hid_keyboard_obj = {
 };
 
 void pyb_usb_init0(void) {
+    usb_device.usbd_cdc_itf.attached_to_repl = false;
+    #if MICROPY_HW_USB_ENABLE_CDC2
+    usb_device.usbd_cdc2_itf.attached_to_repl = false;
+    #endif
     mp_hal_set_interrupt_char(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
@@ -143,11 +147,11 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         }
 
         switch (pyb_usb_storage_medium) {
-#if MICROPY_HW_HAS_SDCARD
+            #if MICROPY_HW_ENABLE_SDCARD
             case PYB_USB_STORAGE_MEDIUM_SDCARD:
                 USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
                 break;
-#endif
+            #endif
             default:
                 USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
                 break;
@@ -380,7 +384,7 @@ typedef struct _pyb_usb_vcp_obj_t {
     usbd_cdc_itf_t *cdc_itf;
 } pyb_usb_vcp_obj_t;
 
-STATIC const pyb_usb_vcp_obj_t pyb_usb_vcp_obj = {{&pyb_usb_vcp_type}, &usb_device.usbd_cdc_itf};
+const pyb_usb_vcp_obj_t pyb_usb_vcp_obj = {{&pyb_usb_vcp_type}, &usb_device.usbd_cdc_itf};
 #if MICROPY_HW_USB_ENABLE_CDC2
 STATIC const pyb_usb_vcp_obj_t pyb_usb_vcp2_obj = {{&pyb_usb_vcp_type}, &usb_device.usbd_cdc2_itf};
 #endif
@@ -388,6 +392,10 @@ STATIC const pyb_usb_vcp_obj_t pyb_usb_vcp2_obj = {{&pyb_usb_vcp_type}, &usb_dev
 STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     int id = ((pyb_usb_vcp_obj_t*)MP_OBJ_TO_PTR(self_in))->cdc_itf - &usb_device.usbd_cdc_itf;
     mp_printf(print, "USB_VCP(%u)", id);
+}
+
+void usb_vcp_attach_to_repl(const pyb_usb_vcp_obj_t *self, bool attached) {
+    self->cdc_itf->attached_to_repl = attached;
 }
 
 /// \classmethod \constructor()
@@ -566,13 +574,18 @@ STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
 
 STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    int ret = usbd_cdc_tx(self->cdc_itf, (const byte*)buf, size, 0);
-    if (ret == 0) {
-        // return EAGAIN error to indicate non-blocking
-        *errcode = MP_EAGAIN;
-        return MP_STREAM_ERROR;
+    if (self->cdc_itf->attached_to_repl) {
+        usbd_cdc_tx_always(self->cdc_itf, (const byte*)buf, size);
+        return size;
+    } else {
+        int ret = usbd_cdc_tx(self->cdc_itf, (const byte*)buf, size, 0);
+        if (ret == 0) {
+            // return EAGAIN error to indicate non-blocking
+            *errcode = MP_EAGAIN;
+            return MP_STREAM_ERROR;
+        }
+        return ret;
     }
-    return ret;
 }
 
 STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {

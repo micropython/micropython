@@ -539,7 +539,7 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
     #endif
-    #if MICROPY_HW_HAS_SDCARD
+    #if MICROPY_HW_ENABLE_SDCARD
     sdcard_init();
     #endif
     #if MICROPY_HW_ENABLE_STORAGE
@@ -630,6 +630,10 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
+
+    // Activate USB_VCP(0) on dupterm slot 1 for the REPL
+    MP_STATE_VM(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj);
+    usb_vcp_attach_to_repl(&pyb_usb_vcp_obj, true);
     #endif
 
     // Initialise the local flash filesystem.

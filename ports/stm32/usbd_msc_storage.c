@@ -44,7 +44,7 @@
 // can be unmounted, and won't be remounted automatically.
 static uint8_t flash_started = 0;
 
-#if MICROPY_HW_HAS_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
 static uint8_t sdcard_started = 0;
 #endif
 
@@ -175,7 +175,7 @@ const USBD_StorageTypeDef USBD_FLASH_STORAGE_fops = {
 /******************************************************************************/
 // Callback functions for when the SD card is the mass storage device
 
-#if MICROPY_HW_HAS_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
 
 static const int8_t SDCARD_STORAGE_Inquirydata[] = { // 36 bytes
     // LUN 0
@@ -303,4 +303,4 @@ const USBD_StorageTypeDef USBD_SDCARD_STORAGE_fops = {
     (int8_t *)SDCARD_STORAGE_Inquirydata,
 };
 
-#endif // MICROPY_HW_HAS_SDCARD
+#endif // MICROPY_HW_ENABLE_SDCARD
