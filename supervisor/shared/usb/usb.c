@@ -92,13 +92,15 @@ void tud_mount_cb(void) {
 void tud_umount_cb(void) {
 }
 
-uint32_t tusb_hal_millis(void) {
-    uint64_t ms;
-    uint32_t us;
-    current_tick(&ms, &us);
-    return (uint32_t) ms;
+// Invoked when usb bus is suspended
+// remote_wakeup_en : if host allows us to perform remote wakeup
+// USB Specs: Within 7ms, device must draw an average current less than 2.5 mA from bus
+void tud_suspend_cb(bool remote_wakeup_en) {
 }
 
+// Invoked when usb bus is resumed
+void tud_resume_cb(void) {
+}
 
 // Invoked when cdc when line state changed e.g connected/disconnected
 // Use to reset to DFU when disconnect with 1200 bps
