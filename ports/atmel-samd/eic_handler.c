@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#include "common-hal/pulseio/PulseIn.h"
+#include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "shared-bindings/microcontroller/__init__.h"
+//#include "samd/external_interrupts.h"
+#include "eic_handler.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+// Which handler should be called for a particular channel?
+static uint8_t eic_channel_handler[EIC_EXTINT_NUM];
 
-#include "py/obj.h"
+void set_eic_handler(uint8_t channel, uint8_t eic_handler) {
+    eic_channel_handler[channel] = eic_handler;
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    uint16_t width;
-    uint16_t height;
-    size_t* data;
-    uint16_t stride; // size_t's
-    uint8_t bits_per_value;
-    uint8_t x_shift;
-    size_t x_mask;
-    uint16_t bitmask;
-    bool read_only;
-} displayio_bitmap_t;
+void shared_eic_handler(uint8_t channel) {
+    uint8_t handler = eic_channel_handler[channel];
+    switch (handler) {
+#if CIRCUITPY_PULSEIO
+    case EIC_HANDLER_PULSEIN:
+        pulsein_interrupt_handler(channel);
+        break;
+#endif
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#if CIRCUITPY_ROTARYIO
+    case EIC_HANDLER_INCREMENTAL_ENCODER:
+        incrementalencoder_interrupt_handler(channel);
+        break;
+#endif
+
+    default:
+        break;
+    }
+}

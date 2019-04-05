@@ -28,6 +28,7 @@
 
 #include "atmel_start_pins.h"
 
+#include "eic_handler.h"
 #include "samd/external_interrupts.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
@@ -76,8 +77,11 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     claim_pin(pin_a);
     claim_pin(pin_b);
 
-    turn_on_eic_channel(self->eic_channel_a, EIC_CONFIG_SENSE0_BOTH_Val, EIC_HANDLER_INCREMENTAL_ENCODER);
-    turn_on_eic_channel(self->eic_channel_b, EIC_CONFIG_SENSE0_BOTH_Val, EIC_HANDLER_INCREMENTAL_ENCODER);
+    set_eic_handler(self->eic_channel_a, EIC_HANDLER_INCREMENTAL_ENCODER);
+    turn_on_eic_channel(self->eic_channel_a, EIC_CONFIG_SENSE0_BOTH_Val);
+
+    set_eic_handler(self->eic_channel_b, EIC_HANDLER_INCREMENTAL_ENCODER);
+    turn_on_eic_channel(self->eic_channel_b, EIC_CONFIG_SENSE0_BOTH_Val);
 }
 
 bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self) {
@@ -88,10 +92,16 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
+
+    set_eic_handler(self->eic_channel_a, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(self->eic_channel_a);
+
+    set_eic_handler(self->eic_channel_b, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(self->eic_channel_b);
+
     reset_pin_number(self->pin_a);
     self->pin_a = NO_PIN;
+
     reset_pin_number(self->pin_b);
     self->pin_b = NO_PIN;
 }

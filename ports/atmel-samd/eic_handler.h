@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#define EIC_HANDLER_NO_INTERRUPT 0x0
+#define EIC_HANDLER_PULSEIN 0x1
+#define EIC_HANDLER_INCREMENTAL_ENCODER 0x2
 
-#include <stdbool.h>
-#include <stdint.h>
+void set_eic_handler(uint8_t channel, uint8_t eic_handler);
+void shared_eic_handler(uint8_t channel);
 
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    uint16_t width;
-    uint16_t height;
-    size_t* data;
-    uint16_t stride; // size_t's
-    uint8_t bits_per_value;
-    uint8_t x_shift;
-    size_t x_mask;
-    uint16_t bitmask;
-    bool read_only;
-} displayio_bitmap_t;
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
