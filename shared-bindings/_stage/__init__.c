@@ -28,6 +28,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/_stage/__init__.h"
 #include "Layer.h"
 #include "Text.h"
@@ -85,12 +86,18 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t *buffer = bufinfo.buf;
     size_t buffer_size = bufinfo.len / 2; // 16-bit indexing
 
-    busio_spi_obj_t *spi = MP_OBJ_TO_PTR(args[6]);
+    displayio_fourwire_obj_t *bus = MP_OBJ_TO_PTR(args[6]);
 
+    while (!common_hal_displayio_fourwire_begin_transaction(bus)) {
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP ;
+#endif
+    }
     if (!render_stage(x0, y0, x1, y1, layers, layers_size,
-            buffer, buffer_size, spi)) {
+            buffer, buffer_size, bus->bus)) {
         mp_raise_OSError(MP_EIO);
     }
+    common_hal_displayio_fourwire_end_transaction(bus);
 
     return mp_const_none;
 }

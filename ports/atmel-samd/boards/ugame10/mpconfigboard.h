@@ -7,7 +7,7 @@
 #define SPI_FLASH_CS_PIN            &pin_PA18
 
 // These are pins not to reset.
-#define MICROPY_PORT_A        (0)
+#define MICROPY_PORT_A        (PORT_PA06 | PORT_PA07 | PORT_PA08 | PORT_PA09)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
@@ -19,10 +19,9 @@
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#define EXTRA_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module }
+#define DEFAULT_SPI_BUS_SCK (&pin_PA07)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA11)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA06)
 
 #define IGNORE_PIN_PB00     1
 #define IGNORE_PIN_PB01     1
