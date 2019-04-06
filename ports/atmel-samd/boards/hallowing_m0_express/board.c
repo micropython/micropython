@@ -72,7 +72,7 @@ void board_init(void) {
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
-        board_spi(),
+        common_hal_board_create_spi(),
         &pin_PA28, // Command or data
         &pin_PA01, // Chip select
         &pin_PA27); // Reset

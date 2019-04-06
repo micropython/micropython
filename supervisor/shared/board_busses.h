@@ -29,7 +29,8 @@
 
 #include "py/obj.h"
 
-mp_obj_t board_i2c(void);
+mp_obj_t common_hal_board_get_spi(void);
+mp_obj_t common_hal_board_create_spi(void);
 MP_DECLARE_CONST_FUN_OBJ_0(board_i2c_obj);
 
 mp_obj_t board_spi(void);

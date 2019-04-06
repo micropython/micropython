@@ -71,23 +71,42 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 STATIC busio_spi_obj_t spi_obj;
 STATIC mp_obj_t spi_singleton = NULL;
 
-mp_obj_t board_spi(void) {
-    if (spi_singleton == NULL) {
-        busio_spi_obj_t *self = &spi_obj;
-        self->base.type = &busio_spi_type;
-        assert_pin_free(DEFAULT_SPI_BUS_SCK);
-        assert_pin_free(DEFAULT_SPI_BUS_MOSI);
-        assert_pin_free(DEFAULT_SPI_BUS_MISO);
-        const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_SCK);
-        const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
-        const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
-        common_hal_busio_spi_construct(self, clock, mosi, miso);
-        spi_singleton = (mp_obj_t)self;
-    }
+// TODO(tannewt): Move this to shared-bindings/board/__init__.c and corresponding shared-module.
+mp_obj_t common_hal_board_get_spi(void) {
     return spi_singleton;
 }
-#else
+
+mp_obj_t common_hal_board_create_spi(void) {
+    if (spi_singleton != NULL) {
+        return spi_singleton;
+    }
+    busio_spi_obj_t *self = &spi_obj;
+    self->base.type = &busio_spi_type;
+    if (!common_hal_mcu_pin_is_free(DEFAULT_SPI_BUS_SCK) ||
+        !common_hal_mcu_pin_is_free(DEFAULT_SPI_BUS_MOSI) ||
+        !common_hal_mcu_pin_is_free(DEFAULT_SPI_BUS_MISO)) {
+        return NULL;
+    }
+    const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_SCK);
+    const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
+    const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
+    common_hal_busio_spi_construct(self, clock, mosi, miso);
+    spi_singleton = (mp_obj_t)self;
+    return spi_singleton;
+}
+
 mp_obj_t board_spi(void) {
+    mp_obj_t singleton = common_hal_board_get_spi();
+    if (singleton != NULL) {
+        return singleton;
+    }
+    assert_pin_free(DEFAULT_SPI_BUS_SCK);
+    assert_pin_free(DEFAULT_SPI_BUS_MOSI);
+    assert_pin_free(DEFAULT_SPI_BUS_MISO);
+    return common_hal_board_create_spi();
+}
+#else
+mp_obj_t common_hal_board_spi(void) {
     mp_raise_NotImplementedError(translate("No default SPI bus"));
     return NULL;
 }
