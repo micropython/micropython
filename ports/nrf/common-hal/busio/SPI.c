@@ -327,3 +327,13 @@ uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
         return 0;
     }
 }
+
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
+    // XXX(deshipu) implement
+    return 0;
+}
+
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
+    // XXX(deshipu) implement
+    return 0;
+}
