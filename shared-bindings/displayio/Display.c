@@ -295,6 +295,25 @@ const mp_obj_property_t displayio_display_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: bus
+//|
+//|	The bus being used by the display
+//|
+//|
+STATIC mp_obj_t displayio_display_obj_get_bus(mp_obj_t self_in) {
+    displayio_display_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return self->bus;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_bus_obj, displayio_display_obj_get_bus);
+
+const mp_obj_property_t displayio_display_bus_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_display_get_bus_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
 STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_display_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh_soon), MP_ROM_PTR(&displayio_display_refresh_soon_obj) },
@@ -305,6 +324,7 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_display_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_display_bus_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_display_locals_dict, displayio_display_locals_dict_table);
 
