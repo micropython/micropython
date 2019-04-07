@@ -116,34 +116,42 @@ void mp_bt_init(void) {
 
 int mp_bt_enable(void) {
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_bt_controller_init");
     esp_err_t err = esp_bt_controller_init(&bt_cfg);
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_bt_controller_enable");
     err = esp_bt_controller_enable(ESP_BT_MODE_BLE);
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_bluedroid_init");
     err = esp_bluedroid_init();
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_bluedroid_enable");
     err = esp_bluedroid_enable();
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_ble_gap_register_callback");
     err = esp_ble_gap_register_callback(mp_bt_gap_callback);
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_ble_gattc_register_callback");
     err = esp_ble_gattc_register_callback(mp_bt_gattc_callback);
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_ble_gattc_app_register");
     err = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
     }
+    ESP_LOGW(GATTC_TAG, "Attempting to call esp_ble_gatt_set_local_mtu");
     err = esp_ble_gatt_set_local_mtu(500);
     if (err != ESP_OK) {
         return mp_bt_esp_errno(err);
@@ -153,23 +161,23 @@ int mp_bt_enable(void) {
 
 int mp_bt_disable(void) {
   esp_err_t err;
-    err = esp_bluedroid_disable();
-    if (err != ESP_OK) {
-        return mp_bt_esp_errno(err);
-    }
-    err = esp_bluedroid_deinit();
-    if (err != ESP_OK) {
-        return mp_bt_esp_errno(err);
-    }
-    err = esp_bt_controller_disable();
-    if (err != ESP_OK) {
-        return mp_bt_esp_errno(err);
-    }
-    err = esp_bt_controller_deinit();
-    if (err != ESP_OK) {
-        return mp_bt_esp_errno(err);
-    }
-    return 0;
+  err = esp_bluedroid_disable();
+  if (err != ESP_OK) {
+      return mp_bt_esp_errno(err);
+  }
+  err = esp_bluedroid_deinit();
+  if (err != ESP_OK) {
+      return mp_bt_esp_errno(err);
+  }
+  err = esp_bt_controller_disable();
+  if (err != ESP_OK) {
+      return mp_bt_esp_errno(err);
+  }
+  err = esp_bt_controller_deinit();
+  if (err != ESP_OK) {
+      return mp_bt_esp_errno(err);
+  }
+  return 0;
 }
 
 bool mp_bt_is_enabled(void) {
