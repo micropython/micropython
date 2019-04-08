@@ -34,6 +34,7 @@
 #define CYW43_TRACE_MAC (0x0010)
 
 // For cyw43_ioctl
+#define CYW43_IOCTL_GET_SSID (0x32)
 #define CYW43_IOCTL_GET_CHANNEL (0x3a)
 #define CYW43_IOCTL_GET_ANTDIV (0x7e)
 #define CYW43_IOCTL_SET_ANTDIV (0x81)

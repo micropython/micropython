@@ -330,10 +330,16 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf));
             }
             case MP_QSTR_essid: {
-                size_t len;
-                const uint8_t *buf;
-                cyw43_wifi_ap_get_ssid(self->cyw, &len, &buf);
-                return mp_obj_new_bytes(buf, len);
+                if (self->itf == CYW43_ITF_STA) {
+                    uint8_t buf[36];
+                    cyw43_ioctl(self->cyw, CYW43_IOCTL_GET_SSID, 36, buf, self->itf);
+                    return mp_obj_new_str((const char*)buf + 4, nw_get_le32(buf));
+                } else {
+                    size_t len;
+                    const uint8_t *buf;
+                    cyw43_wifi_ap_get_ssid(self->cyw, &len, &buf);
+                    return mp_obj_new_str((const char*)buf, len);
+                }
             }
             case MP_QSTR_mac: {
                 uint8_t buf[6];
