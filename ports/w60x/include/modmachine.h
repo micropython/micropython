@@ -1,0 +1,20 @@
+#ifndef MICROPY_INCLUDED_W600_MODMACHINE_H
+#define MICROPY_INCLUDED_W600_MODMACHINE_H
+
+#include "py/obj.h"
+
+#define W600_YEAR_BASE 2000
+
+extern const mp_obj_type_t machine_timer_type;
+extern const mp_obj_type_t machine_wdt_type;
+extern const mp_obj_type_t machine_pin_type;
+extern const mp_obj_type_t machine_touchpad_type;
+extern const mp_obj_type_t machine_adc_type;
+extern const mp_obj_type_t machine_dac_type;
+extern const mp_obj_type_t machine_pwm_type;
+extern const mp_obj_type_t machine_hw_spi_type;
+extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_rtc_type;
+extern const mp_obj_type_t machine_i2c_type;
+
+#endif // MICROPY_INCLUDED_W600_MODMACHINE_H
