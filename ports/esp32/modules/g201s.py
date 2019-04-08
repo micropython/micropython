@@ -49,7 +49,7 @@ class G201S():
         try:
             self.adapter.start()
             self.bt_is_started = True
-            while self.adapter.connect(self.address) not 0:
+            while self.adapter.connect(self.address) != 0:
                 pass
 
         finally:
@@ -68,7 +68,7 @@ class G201S():
             #if self.bt_is_started == False:
             self.adapter.start()
             self.bt_is_started = True
-            while self.adapter.connect(self.address) not 0:
+            while self.adapter.connect(self.address) != 0:
                 pass
 
         finally:
@@ -113,7 +113,7 @@ class G201S():
             #if self.bt_is_started == False:
             self.adapter.start()
             self.bt_is_started = True
-            while self.adapter.connect(self.address) not 0:
+            while self.adapter.connect(self.address) != 0:
                 pass
         finally:
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
