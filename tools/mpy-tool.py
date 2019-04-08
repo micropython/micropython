@@ -259,7 +259,7 @@ def extract_prelude(bytecode, ip):
 class MPFunTable:
     pass
 
-class RawCode:
+class RawCode(object):
     # a set of all escaped names, to make sure they are unique
     escaped_names = set()
 
@@ -423,7 +423,7 @@ class RawCode:
 
 class RawCodeBytecode(RawCode):
     def __init__(self, bytecode, qstrs, objs, raw_codes):
-        super().__init__(MP_CODE_BYTECODE, bytecode, 0, qstrs, objs, raw_codes)
+        super(RawCodeBytecode, self).__init__(MP_CODE_BYTECODE, bytecode, 0, qstrs, objs, raw_codes)
 
     def freeze(self, parent_name):
         self.freeze_children(parent_name)
@@ -462,7 +462,7 @@ class RawCodeBytecode(RawCode):
 
 class RawCodeNative(RawCode):
     def __init__(self, code_kind, fun_data, prelude_offset, prelude, qstr_links, qstrs, objs, raw_codes, type_sig):
-        super().__init__(code_kind, fun_data, prelude_offset, qstrs, objs, raw_codes)
+        super(RawCodeNative, self).__init__(code_kind, fun_data, prelude_offset, qstrs, objs, raw_codes)
         self.prelude = prelude
         self.qstr_links = qstr_links
         self.type_sig = type_sig
