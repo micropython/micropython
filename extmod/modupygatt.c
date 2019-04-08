@@ -123,7 +123,7 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
       mp_raise_OSError(errno_);
   }
 
-  return errno_;//mp_const_none;
+  return MP_OBJ_NEW_SMALL_INT(errno_);//mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_connect_obj, 1, gatt_tool_backend_connect);
 
