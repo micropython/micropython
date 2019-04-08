@@ -104,10 +104,16 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
     else if (hpcd->Instance == USB_OTG_HS) {
         #if MICROPY_HW_USB_HS_IN_FS
 
+        #if defined(STM32H7)
+        const uint32_t otg_alt = GPIO_AF12_OTG2_FS;
+        #else
+        const uint32_t otg_alt = GPIO_AF12_OTG_HS_FS;
+        #endif
+
         // Configure USB FS GPIOs
-        mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF12_OTG_HS_FS);
+        mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
         mp_hal_pin_config_speed(pin_B14, GPIO_SPEED_FREQ_VERY_HIGH);
-        mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF12_OTG_HS_FS);
+        mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
         mp_hal_pin_config_speed(pin_B15, GPIO_SPEED_FREQ_VERY_HIGH);
 
         #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
@@ -117,7 +123,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         #if defined(MICROPY_HW_USB_OTG_ID_PIN)
         // Configure ID pin
-        mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, GPIO_AF12_OTG_HS_FS);
+        mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, otg_alt);
         #endif
 
         // Enable calling WFI and correct function of the embedded USB_FS_IN_HS phy
