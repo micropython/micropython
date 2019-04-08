@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
-
-#include "py/obj.h"
-
-mp_obj_t common_hal_board_get_spi(void);
-mp_obj_t common_hal_board_create_spi(void);
-MP_DECLARE_CONST_FUN_OBJ_0(board_i2c_obj);
-
-mp_obj_t board_spi(void);
-MP_DECLARE_CONST_FUN_OBJ_0(board_spi_obj);
-
-mp_obj_t board_uart(void);
-MP_DECLARE_CONST_FUN_OBJ_0(board_uart_obj);
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H
+#define MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H
 
 void reset_board_busses(void);
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_BOARD__INIT__H

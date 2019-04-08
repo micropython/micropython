@@ -31,7 +31,6 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "shared-module/displayio/Group.h"
-#include "supervisor/shared/board_busses.h"
 
 extern const mp_obj_type_t displayio_fourwire_type;
 

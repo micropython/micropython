@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+#include "py/gc.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/time/__init__.h"
@@ -40,6 +41,7 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
 
     self->bus = spi;
     common_hal_busio_spi_never_reset(self->bus);
+    gc_never_free(self->bus);
 
     common_hal_digitalio_digitalinout_construct(&self->command, command);
     common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);

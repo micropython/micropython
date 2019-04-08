@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-04 13:37-0700\n"
+"POT-Creation-Date: 2019-04-08 16:48-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -909,17 +909,9 @@ msgstr "Brak nóżki TX"
 msgid "No available clocks"
 msgstr "Brak dostępnych zegarów"
 
-#: supervisor/shared/board_busses.c
-msgid "No default I2C bus"
-msgstr "Nie ma domyślnej magistrali I2C"
-
-#: supervisor/shared/board_busses.c
-msgid "No default SPI bus"
-msgstr "Nie ma domyślnej magistrali SPI"
-
-#: supervisor/shared/board_busses.c
-msgid "No default UART bus"
-msgstr "Nie ma domyślnej magistrali UART"
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
+msgstr "Nie ma domyślnej magistrali %q"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"

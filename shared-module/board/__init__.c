@@ -37,35 +37,19 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
-#define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
-#define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
-#define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
-
-#if BOARD_I2C
-STATIC mp_obj_t i2c_singleton = NULL;
-
-mp_obj_t board_i2c(void) {
-
-    if (i2c_singleton == NULL) {
-        busio_i2c_obj_t *self = m_new_ll_obj(busio_i2c_obj_t);
-        self->base.type = &busio_i2c_type;
-
-        assert_pin_free(DEFAULT_I2C_BUS_SDA);
-        assert_pin_free(DEFAULT_I2C_BUS_SCL);
-        common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000, 0);
-        i2c_singleton = (mp_obj_t)self;
-    }
-    return i2c_singleton;
+mp_obj_t common_hal_board_get_i2c(void) {
+    return MP_STATE_VM(shared_i2c_bus);
 }
-#else
-mp_obj_t board_i2c(void) {
-    mp_raise_NotImplementedError(translate("No default I2C bus"));
-    return NULL;
-}
-#endif
-MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
-#if BOARD_SPI
+mp_obj_t common_hal_board_create_i2c(void) {
+    busio_i2c_obj_t *self = m_new_ll_obj(busio_i2c_obj_t);
+    self->base.type = &busio_i2c_type;
+
+    common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000, 0);
+    MP_STATE_VM(shared_i2c_bus) = MP_OBJ_FROM_PTR(self);
+    return MP_STATE_VM(shared_i2c_bus);
+}
+
 // Statically allocate the SPI object so it can live past the end of the heap and into the next VM.
 // That way it can be used by built-in FourWire displays and be accessible through board.SPI().
 STATIC busio_spi_obj_t spi_obj;
@@ -82,11 +66,7 @@ mp_obj_t common_hal_board_create_spi(void) {
     }
     busio_spi_obj_t *self = &spi_obj;
     self->base.type = &busio_spi_type;
-    if (!common_hal_mcu_pin_is_free(DEFAULT_SPI_BUS_SCK) ||
-        !common_hal_mcu_pin_is_free(DEFAULT_SPI_BUS_MOSI) ||
-        !common_hal_mcu_pin_is_free(DEFAULT_SPI_BUS_MISO)) {
-        return NULL;
-    }
+
     const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_SCK);
     const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
     const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
@@ -95,55 +75,25 @@ mp_obj_t common_hal_board_create_spi(void) {
     return spi_singleton;
 }
 
-mp_obj_t board_spi(void) {
-    mp_obj_t singleton = common_hal_board_get_spi();
-    if (singleton != NULL) {
-        return singleton;
-    }
-    assert_pin_free(DEFAULT_SPI_BUS_SCK);
-    assert_pin_free(DEFAULT_SPI_BUS_MOSI);
-    assert_pin_free(DEFAULT_SPI_BUS_MISO);
-    return common_hal_board_create_spi();
+mp_obj_t common_hal_board_get_uart(void) {
+    return MP_STATE_VM(shared_uart_bus);
 }
-#else
-mp_obj_t common_hal_board_spi(void) {
-    mp_raise_NotImplementedError(translate("No default SPI bus"));
-    return NULL;
+
+mp_obj_t common_hal_board_create_uart(void) {
+    busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
+    self->base.type = &busio_uart_type;
+
+    const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
+    const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
+
+    common_hal_busio_uart_construct(self, tx, rx, 9600, 8, PARITY_NONE, 1, 1000, 64);
+    MP_STATE_VM(shared_uart_bus) = MP_OBJ_FROM_PTR(self);
+    return MP_STATE_VM(shared_uart_bus);
 }
-#endif
-MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
-
-#if BOARD_UART
-STATIC mp_obj_t uart_singleton = NULL;
-
-mp_obj_t board_uart(void) {
-    if (uart_singleton == NULL) {
-        busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
-        self->base.type = &busio_uart_type;
-
-        assert_pin_free(DEFAULT_UART_BUS_RX);
-        assert_pin_free(DEFAULT_UART_BUS_TX);
-
-        const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
-        const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
-
-        common_hal_busio_uart_construct(self, tx, rx, 9600, 8, PARITY_NONE, 1, 1000, 64);
-        uart_singleton = (mp_obj_t)self;
-    }
-    return uart_singleton;
-}
-#else
-mp_obj_t board_uart(void) {
-    mp_raise_NotImplementedError(translate("No default UART bus"));
-    return NULL;
-}
-#endif
-MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart);
-
 
 void reset_board_busses(void) {
 #if BOARD_I2C
-    i2c_singleton = NULL;
+    MP_STATE_VM(shared_i2c_bus) = NULL;
 #endif
 #if BOARD_SPI
     bool display_using_spi = false;
@@ -160,6 +110,6 @@ void reset_board_busses(void) {
     }
 #endif
 #if BOARD_UART
-    uart_singleton = NULL;
+    MP_STATE_VM(shared_uart_bus) = NULL;
 #endif
 }

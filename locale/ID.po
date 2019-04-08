@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-04 13:37-0700\n"
+"POT-Creation-Date: 2019-04-08 16:48-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -924,17 +924,9 @@ msgstr "Tidak ada pin TX"
 msgid "No available clocks"
 msgstr ""
 
-#: supervisor/shared/board_busses.c
-msgid "No default I2C bus"
-msgstr "Tidak ada standar bus I2C"
-
-#: supervisor/shared/board_busses.c
-msgid "No default SPI bus"
-msgstr "Tidak ada standar bus SPI"
-
-#: supervisor/shared/board_busses.c
-msgid "No default UART bus"
-msgstr "Tidak ada standar bus UART"
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
+msgstr "Tidak ada standar bus %q"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
