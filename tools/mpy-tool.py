@@ -75,9 +75,9 @@ for n in qstrutil.static_qstr_list:
     global_qstrs.append(QStrType(n))
 
 class QStrWindow:
-    def __init__(self, size_log2):
+    def __init__(self, size):
         self.window = []
-        self.size = 1 << size_log2
+        self.size = size
 
     def push(self, val):
         self.window = [val] + self.window[:self.size - 1]
@@ -633,7 +633,6 @@ def read_qstr_and_pack(f, bytecode, qstr_win):
     bytecode.append(qst >> 8)
 
 def read_bytecode(file, bytecode, qstr_win):
-    QSTR_LAST_STATIC = len(qstrutil.static_qstr_list)
     while not bytecode.is_full():
         op = read_byte(file, bytecode)
         f, sz = mp_opcode_format(bytecode.buf, bytecode.idx - 1, False)
