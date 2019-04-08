@@ -49,15 +49,15 @@ class G201S():
         try:
             self.adapter.start()
             self.bt_is_started = True
-            #self.adapter.scan()
-            self.adapter.connect(self.address)
+            while self.adapter.connect(self.address) not 0:
+                pass
+
+        finally:
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
             self.write_handle(0x000e, [0x05, 0x00, 0x00, int(hex(100), 16), 0x00])
             self.write_handle(0x000e, [0x03])
-
-        finally:
             self.adapter.disconnect(self.address)
             self.adapter.stop()
 
@@ -68,15 +68,16 @@ class G201S():
             #if self.bt_is_started == False:
             self.adapter.start()
             self.bt_is_started = True
-            self.adapter.connect(self.address)
+            while self.adapter.connect(self.address) not 0:
+                pass
+
+        finally:
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
             self.write_handle(0x000e, [0x04])
             #self.cur_temp = self.get_temperature()
             #print("Tried to switch off, returned {}".format(self.cur_temp))
-
-        finally:
             self.adapter.disconnect(self.address)
             self.adapter.stop()
 
@@ -112,7 +113,9 @@ class G201S():
             #if self.bt_is_started == False:
             self.adapter.start()
             self.bt_is_started = True
-            self.adapter.connect(self.address)
+            while self.adapter.connect(self.address) not 0:
+                pass
+        finally:
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
@@ -123,10 +126,9 @@ class G201S():
             value = value[16:18]
             self.cur_temp = int(value, 16)
             print("Current temperature of kettle is {}".format(self.cur_temp))
-            return self.cur_temp
-        finally:
             self.adapter.disconnect(self.address)
             self.adapter.stop()
+            return self.cur_temp
 
     def _update_sensor_data(self):
         print("update")
