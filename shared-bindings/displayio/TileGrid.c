@@ -259,9 +259,10 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
             mp_obj_get_array_fixed_n(index_obj, 2, &items);
             x = mp_obj_get_int(items[0]);
             y = mp_obj_get_int(items[1]);
-            if (x >= common_hal_displayio_tilegrid_get_width(self) || y >= common_hal_displayio_tilegrid_get_height(self)) {
-                mp_raise_IndexError(translate("tile index out of bounds"));
-            }
+        }
+        if (x >= common_hal_displayio_tilegrid_get_width(self) ||
+                y >= common_hal_displayio_tilegrid_get_height(self)) {
+            mp_raise_IndexError(translate("tile index out of bounds"));
         }
 
         if (value_obj == MP_OBJ_SENTINEL) {

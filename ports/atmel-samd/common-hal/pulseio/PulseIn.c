@@ -32,6 +32,7 @@
 #include "hal/include/hal_gpio.h"
 
 #include "background.h"
+#include "eic_handler.h"
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/runtime.h"
@@ -54,7 +55,8 @@ static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
     } else {
         sense_setting = EIC_CONFIG_SENSE0_RISE_Val;
     }
-    turn_on_eic_channel(self->channel, sense_setting, EIC_HANDLER_PULSEIN);
+    set_eic_handler(self->channel, EIC_HANDLER_PULSEIN);
+    turn_on_eic_channel(self->channel, sense_setting);
 }
 
 void pulsein_interrupt_handler(uint8_t channel) {
@@ -153,6 +155,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
+    set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(self->channel);
     reset_pin_number(self->pin);
     self->pin = NO_PIN;

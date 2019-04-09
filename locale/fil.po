@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-02 13:43+1100\n"
+"POT-Creation-Date: 2019-04-04 13:37-0700\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -53,7 +53,7 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
@@ -256,8 +256,8 @@ msgid "All timers for this pin are in use"
 msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -514,8 +514,8 @@ msgstr ""
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode ay hindi ginagamit kapag ang direksyon ay input."
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Ginagamit na ang EXTINT channel"
 
@@ -534,8 +534,8 @@ msgstr "Umasa ng %q"
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Service.c
-#: shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Umasa ng %q"
@@ -724,7 +724,7 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Function nangangailangan ng lock"
 
@@ -772,6 +772,10 @@ msgstr "Maling argumento"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid bit clock pin"
 msgstr "Mali ang bit clock pin"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Invalid bits per value"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -829,8 +833,8 @@ msgid "Invalid pin for right channel"
 msgstr "Mali ang pin para sa kanang channel"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -949,8 +953,8 @@ msgstr "Walang libreng GCLKs"
 msgid "No hardware random available"
 msgstr "Walang magagamit na hardware random"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Walang support sa hardware ang pin"
 
@@ -991,10 +995,6 @@ msgstr "Tanging 8 o 16 na bit mono na may "
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
-
-#: shared-module/displayio/Bitmap.c
-msgid "Only bit maps of 8 bit color or less are supported"
-msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1114,8 +1114,8 @@ msgstr "Serializer ginagamit"
 msgid "Slice and value different lengths."
 msgstr "Slice at value iba't ibang haba."
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
-#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
 
@@ -2353,10 +2353,6 @@ msgstr "return annotation ay dapat na identifier"
 msgid "return expected '%q' but got '%q'"
 msgstr "return umasa ng '%q' pero ang nakuha ay ‘%q’"
 
-#: shared-module/displayio/Bitmap.c
-msgid "row must be packed and word aligned"
-msgstr "row ay dapat packed at ang word nakahanay"
-
 #: py/objstr.c
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
@@ -2746,6 +2742,9 @@ msgstr "zero step"
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
 #~ msgstr "Tanging Windows format, uncompressed BMP lamang ang supportado %d"
 
+#~ msgid "Only bit maps of 8 bit color or less are supported"
+#~ msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
+
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"
 
@@ -2855,6 +2854,9 @@ msgstr "zero step"
 
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position ay dapat 2-tuple"
+
+#~ msgid "row must be packed and word aligned"
+#~ msgstr "row ay dapat packed at ang word nakahanay"
 
 #~ msgid "scan failed"
 #~ msgstr "nabigo ang pag-scan"
