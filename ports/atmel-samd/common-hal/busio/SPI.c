@@ -361,3 +361,13 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
     return samd_peripherals_spi_baud_reg_value_to_baudrate(hri_sercomspi_read_BAUD_reg(self->spi_desc.dev.prvt));
 }
+
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
+    void * hw = self->spi_desc.dev.prvt;
+    return hri_sercomspi_get_CTRLA_CPHA_bit(hw);
+}
+
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
+    void * hw = self->spi_desc.dev.prvt;
+    return hri_sercomspi_get_CTRLA_CPOL_bit(hw);
+}
