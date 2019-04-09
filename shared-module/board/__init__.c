@@ -55,7 +55,6 @@ mp_obj_t common_hal_board_create_i2c(void) {
 STATIC busio_spi_obj_t spi_obj;
 STATIC mp_obj_t spi_singleton = NULL;
 
-// TODO(tannewt): Move this to shared-bindings/board/__init__.c and corresponding shared-module.
 mp_obj_t common_hal_board_get_spi(void) {
     return spi_singleton;
 }
