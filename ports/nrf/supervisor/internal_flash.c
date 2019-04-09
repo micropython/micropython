@@ -67,13 +67,21 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return ((uint32_t) __fatfs_flash_length - CIRCUITPY_INTERNVAL_NVM_SIZE) / FILESYSTEM_BLOCK_SIZE ;
+    return ((uint32_t) __fatfs_flash_length - CIRCUITPY_INTERNAL_NVM_SIZE) / FILESYSTEM_BLOCK_SIZE ;
+}
+
+void supervisor_flash_flush(void) {
+    if (_flash_page_addr == NO_CACHE) return;
+
+    // Skip if data is the same
+    if (memcmp(_flash_cache, (void *)_flash_page_addr, FLASH_PAGE_SIZE) != 0) {
+        nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache);
+    }
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     // Must write out anything in cache before trying to read.
-    nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache);
-    _flash_page_addr = NO_CACHE;
+    supervisor_flash_flush();
 
     uint32_t src = lba2addr(block);
     memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
@@ -107,3 +115,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
     return 0; // success
 }
+
+void supervisor_flash_release_cache(void) {
+}
+

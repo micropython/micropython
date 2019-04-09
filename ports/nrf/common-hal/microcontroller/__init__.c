@@ -74,11 +74,8 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
     },
-    .len = CIRCUITPY_INTERNAL_NVM_SIZE,
-    .start_address = FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE
 };
 #endif
-
 
 STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_P0_00), MP_ROM_PTR(&pin_P0_00) },
