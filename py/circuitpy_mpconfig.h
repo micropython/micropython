@@ -252,8 +252,29 @@ extern const struct _mp_obj_module_t bleio_module;
 #if CIRCUITPY_BOARD
 #define BOARD_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module },
 extern const struct _mp_obj_module_t board_module;
+
+#define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
+#define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
+#define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
+
+#if BOARD_I2C
+#define BOARD_I2C_ROOT_POINTER mp_obj_t shared_i2c_bus;
+#else
+#define BOARD_I2C_ROOT_POINTER
+#endif
+
+// SPI is always allocated off the heap.
+
+#if BOARD_UART
+#define BOARD_UART_ROOT_POINTER mp_obj_t shared_uart_bus;
+#else
+#define BOARD_UART_ROOT_POINTER
+#endif
+
 #else
 #define BOARD_MODULE
+#define BOARD_I2C_ROOT_POINTER
+#define BOARD_UART_ROOT_POINTER
 #endif
 
 #if CIRCUITPY_BUSIO
@@ -586,6 +607,8 @@ extern const struct _mp_obj_module_t ustack_module;
     mp_obj_t gamepad_singleton; \
     mp_obj_t pew_singleton; \
     mp_obj_t terminal_tilegrid_tiles; \
+    BOARD_I2C_ROOT_POINTER \
+    BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 

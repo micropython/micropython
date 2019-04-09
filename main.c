@@ -50,7 +50,6 @@
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/board_busses.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
@@ -60,6 +59,10 @@
 
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {

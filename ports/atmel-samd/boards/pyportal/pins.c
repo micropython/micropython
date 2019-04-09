@@ -2,7 +2,6 @@
 
 #include "boards/board.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/board_busses.h"
 
 // This mapping only includes functional names because pins broken
 // out on connectors are labeled with their MCU name available from

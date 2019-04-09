@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+#include "py/gc.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/time/__init__.h"
@@ -40,6 +41,10 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
 
     self->bus = spi;
     common_hal_busio_spi_never_reset(self->bus);
+    // Our object is statically allocated off the heap so make sure the bus object lives to the end
+    // of the heap as well.
+    gc_never_free(self->bus);
+
     self->frequency = common_hal_busio_spi_get_frequency(spi);
     self->polarity = common_hal_busio_spi_get_polarity(spi);
     self->phase = common_hal_busio_spi_get_phase(spi);

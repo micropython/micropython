@@ -103,6 +103,8 @@ typedef struct _mp_state_mem_t {
     // This is a global mutex used to make the GC thread-safe.
     mp_thread_mutex_t gc_mutex;
     #endif
+
+    void** permanent_pointers;
 } mp_state_mem_t;
 
 // This structure hold runtime and VM information.  It includes a section
