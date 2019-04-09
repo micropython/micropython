@@ -25,6 +25,7 @@
  */
 
 #include "py/obj.h"
+#include "py/runtime.h"
 
 #include "shared-bindings/board/__init__.h"
 

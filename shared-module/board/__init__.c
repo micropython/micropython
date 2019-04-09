@@ -37,6 +37,7 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if BOARD_I2C
 mp_obj_t common_hal_board_get_i2c(void) {
     return MP_STATE_VM(shared_i2c_bus);
 }
@@ -49,7 +50,10 @@ mp_obj_t common_hal_board_create_i2c(void) {
     MP_STATE_VM(shared_i2c_bus) = MP_OBJ_FROM_PTR(self);
     return MP_STATE_VM(shared_i2c_bus);
 }
+#endif
 
+
+#if BOARD_SPI
 // Statically allocate the SPI object so it can live past the end of the heap and into the next VM.
 // That way it can be used by built-in FourWire displays and be accessible through board.SPI().
 STATIC busio_spi_obj_t spi_obj;
@@ -73,7 +77,9 @@ mp_obj_t common_hal_board_create_spi(void) {
     spi_singleton = (mp_obj_t)self;
     return spi_singleton;
 }
+#endif
 
+#if BOARD_UART
 mp_obj_t common_hal_board_get_uart(void) {
     return MP_STATE_VM(shared_uart_bus);
 }
@@ -89,6 +95,7 @@ mp_obj_t common_hal_board_create_uart(void) {
     MP_STATE_VM(shared_uart_bus) = MP_OBJ_FROM_PTR(self);
     return MP_STATE_VM(shared_uart_bus);
 }
+#endif
 
 void reset_board_busses(void) {
 #if BOARD_I2C
