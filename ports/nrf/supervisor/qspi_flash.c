@@ -47,8 +47,7 @@ bool spi_flash_command(uint8_t command) {
         .wipwait = false,
         .wren = false
     };
-    nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
-    return true;
+    return nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL) == NRFX_SUCCESS;
 }
 
 bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length) {
