@@ -972,7 +972,7 @@ $(BUILD)/esp32.common.ld: $(ESPCOMP)/esp32/ld/esp32.common.ld.in $(LDGEN_FRAGMEN
 
 all: $(BUILD)/firmware.bin
 
-.PHONY: idf-version deploy erase
+.PHONY: menuconfig defconfig idf-version deploy erase
 
 idf-version:
 	$(ECHO) "ESP IDF supported hash: $(ESPIDF_SUPHASH)"
