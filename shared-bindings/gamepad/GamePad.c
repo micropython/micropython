@@ -35,6 +35,15 @@
 #include "supervisor/shared/translate.h"
 #include "GamePad.h"
 
+digitalio_digitalinout_obj_t *validate_pin(mp_obj_t obj) {
+    if (!MP_OBJ_IS_TYPE(obj, &digitalio_digitalinout_type)) {
+        mp_raise_TypeError(translate("expected a DigitalInOut"));
+    }
+    digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(obj);
+    raise_error_if_deinited(
+        common_hal_digitalio_digitalinout_deinited(pin));
+    return pin;
+}
 
 //| .. currentmodule:: gamepad
 //|
@@ -100,19 +109,52 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_TypeError(translate("too many arguments"));
     }
     for (size_t i = 0; i < n_args; ++i) {
-        if (!MP_OBJ_IS_TYPE(args[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError(translate("expected a DigitalInOut"));
-        }
-        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(args[i]);
-        raise_error_if_deinited(
-            common_hal_digitalio_digitalinout_deinited(pin));
+        validate_pin(args[i]);
     }
     if (!MP_STATE_VM(gamepad_singleton)) {
         gamepad_obj_t* gamepad_singleton = m_new_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepad_type;
         MP_STATE_VM(gamepad_singleton) = gc_make_long_lived(gamepad_singleton);
     }
-    gamepad_init(n_args, args);
+    gamepad_init_pins(n_args, args);
+    return MP_OBJ_FROM_PTR(MP_STATE_VM(gamepad_singleton));
+}
+
+
+//| .. class:: GamePadShift(data, clock, latch)
+//|
+//|     Initializes button scanning routines.
+//|
+//|     The ``data``, ``clock`` and ``latch`` parameters are ``DigitalInOut``
+//|     objects connected to the shift register controlling the buttons.
+//|
+//|     They button presses are accumulated, until the ``get_pressed`` method
+//|     is called, at which point the button state is cleared, and the new
+//|     button presses start to be recorded.
+//|
+STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
+        const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
+    enum { ARG_data, ARG_clock, ARG_latch };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        { MP_QSTR_latch, MP_ARG_REQUIRED | MP_ARG_OBJ},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
+                     allowed_args, args);
+
+    digitalio_digitalinout_obj_t *data_pin = validate_pin(args[ARG_data].u_obj);
+    digitalio_digitalinout_obj_t *clock_pin = validate_pin(args[ARG_clock].u_obj);
+    digitalio_digitalinout_obj_t *latch_pin = validate_pin(args[ARG_latch].u_obj);
+
+    if (!MP_STATE_VM(gamepad_singleton)) {
+        gamepad_obj_t* gamepad_singleton = m_new_obj(gamepad_obj_t);
+        gamepad_singleton->base.type = &gamepad_type;
+        MP_STATE_VM(gamepad_singleton) = gc_make_long_lived(gamepad_singleton);
+    }
+    gamepad_init_shift(data_pin, clock_pin, latch_pin);
     return MP_OBJ_FROM_PTR(MP_STATE_VM(gamepad_singleton));
 }
 
@@ -157,4 +199,16 @@ const mp_obj_type_t gamepad_type = {
     .name = MP_QSTR_GamePad,
     .make_new = gamepad_make_new,
     .locals_dict = (mp_obj_dict_t*)&gamepad_locals_dict,
+};
+
+STATIC const mp_rom_map_elem_t gamepadshift_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_pressed),  MP_ROM_PTR(&gamepad_get_pressed_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&gamepad_deinit_obj)},
+};
+STATIC MP_DEFINE_CONST_DICT(gamepadshift_locals_dict, gamepadshift_locals_dict_table);
+const mp_obj_type_t gamepadshift_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_GamePadShift,
+    .make_new = gamepadshift_make_new,
+    .locals_dict = (mp_obj_dict_t*)&gamepadshift_locals_dict,
 };

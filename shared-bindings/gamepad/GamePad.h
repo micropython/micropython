@@ -29,5 +29,6 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H
 
 extern const mp_obj_type_t gamepad_type;
+extern const mp_obj_type_t gamepadshift_type;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H

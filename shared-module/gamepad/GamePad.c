@@ -35,7 +35,7 @@
 #include "shared-bindings/util.h"
 
 
-void gamepad_init(size_t n_pins, const mp_obj_t* pins) {
+void gamepad_init_pins(size_t n_pins, const mp_obj_t* pins) {
     gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     for (size_t i = 0; i < 8; ++i) {
         gamepad_singleton->pins[i] = NULL;
@@ -57,4 +57,23 @@ void gamepad_init(size_t n_pins, const mp_obj_t* pins) {
         gamepad_singleton->pins[i] = pin;
     }
     gamepad_singleton->last = 0;
+    gamepad_singleton->kind = GAMEPAD_KIND_PINS;
+}
+
+void gamepad_init_shift(digitalio_digitalinout_obj_t *data_pin,
+                        digitalio_digitalinout_obj_t *clock_pin,
+                        digitalio_digitalinout_obj_t *latch_pin) {
+    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
+
+    common_hal_digitalio_digitalinout_switch_to_input(data_pin, PULL_NONE);
+    gamepad_singleton->pins[0] = data_pin;
+
+    common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 0, DRIVE_MODE_PUSH_PULL);
+    gamepad_singleton->pins[1] = clock_pin;
+
+    common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 1, DRIVE_MODE_PUSH_PULL);
+    gamepad_singleton->pins[2] = latch_pin;
+
+    gamepad_singleton->last = 0;
+    gamepad_singleton->kind = GAMEPAD_KIND_PINS;
 }

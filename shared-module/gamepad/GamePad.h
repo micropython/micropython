@@ -37,8 +37,15 @@ typedef struct {
     volatile uint8_t last;
     volatile uint8_t pressed;
     uint8_t pulls;
+    uint8_t kind;
 } gamepad_obj_t;
 
-void gamepad_init(size_t n_pins, const mp_obj_t* pins);
+#define GAMEPAD_KIND_PINS 0
+#define GAMEPAD_KIND_SHIFT 1
+
+void gamepad_init_pins(size_t n_pins, const mp_obj_t* pins);
+void gamepad_init_shift(digitalio_digitalinout_obj_t *data_pin,
+                        digitalio_digitalinout_obj_t *clock_pin,
+                        digitalio_digitalinout_obj_t *latch_pin);
 
 #endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H

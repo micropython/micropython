@@ -40,17 +40,37 @@ void gamepad_tick(void) {
     }
     uint8_t gamepad_current = 0;
     uint8_t bit = 1;
-    for (int i = 0; i < 8; ++i) {
-        digitalio_digitalinout_obj_t* pin = gamepad_singleton->pins[i];
-        if (!pin) {
-            break;
+    switch (gamepad_singleton->kind) {
+    case GAMEPAD_KIND_PINS:
+        for (int i = 0; i < 8; ++i) {
+            digitalio_digitalinout_obj_t* pin = gamepad_singleton->pins[i];
+            if (!pin) {
+                break;
+            }
+            if (common_hal_digitalio_digitalinout_get_value(pin)) {
+                gamepad_current |= bit;
+            }
+            bit <<= 1;
         }
-        if (common_hal_digitalio_digitalinout_get_value(pin)) {
-            gamepad_current |= bit;
+        gamepad_current ^= gamepad_singleton->pulls;
+        break;
+    case GAMEPAD_KIND_SHIFT:
+        bit = 1;
+        digitalio_digitalinout_obj_t* data_pin = gamepad_singleton->pins[0];
+        digitalio_digitalinout_obj_t* clock_pin = gamepad_singleton->pins[1];
+        digitalio_digitalinout_obj_t* latch_pin = gamepad_singleton->pins[2];
+        common_hal_digitalio_digitalinout_set_value(latch_pin, 0);
+        for (int i = 0; i < 8; ++i) {
+            common_hal_digitalio_digitalinout_set_value(clock_pin, 1);
+            if (common_hal_digitalio_digitalinout_get_value(data_pin)) {
+                gamepad_current |= bit;
+            }
+            bit <<= 1;
+            common_hal_digitalio_digitalinout_set_value(clock_pin, 0);
         }
-        bit <<= 1;
+        common_hal_digitalio_digitalinout_set_value(latch_pin, 1);
+        break;
     }
-    gamepad_current ^= gamepad_singleton->pulls;
     gamepad_singleton->pressed |= gamepad_singleton->last & gamepad_current;
     gamepad_singleton->last = gamepad_current;
 }
