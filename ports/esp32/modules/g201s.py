@@ -34,7 +34,7 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
-            while self.adapter.connect(self.address) not 0:
+            while self.adapter.connect(self.address) != 0:
                 print('Connection not 0')
                 pass
 
@@ -53,7 +53,7 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
-            while self.adapter.connect(self.address) not 0:
+            while self.adapter.connect(self.address) != 0:
                 print('Connection not 0')
                 pass
 
@@ -98,7 +98,7 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
-            while self.adapter.connect(self.address) not 0:
+            while self.adapter.connect(self.address) != 0:
                 print('Connection not 0')
                 pass
         finally:
