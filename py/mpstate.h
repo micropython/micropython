@@ -187,6 +187,10 @@ typedef struct _mp_state_vm_t {
     struct _mp_vfs_mount_t *vfs_mount_table;
     #endif
 
+    #if MICROPY_PY_BLUETOOTH
+    mp_bt_characteristic_callback_t *bt_characteristic_callbacks;
+    #endif
+
     //
     // END ROOT POINTER SECTION
     ////////////////////////////////////////////////////////////
@@ -220,10 +224,6 @@ typedef struct _mp_state_vm_t {
     #if MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the VM/runtime thread-safe.
     mp_thread_mutex_t gil_mutex;
-    #endif
-
-    #if MICROPY_PY_BLUETOOTH
-    mp_bt_characteristic_callback_t *bt_characteristic_callbacks;
     #endif
 } mp_state_vm_t;
 
