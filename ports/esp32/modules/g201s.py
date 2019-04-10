@@ -1,21 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Example usage on ESP8266:
-
-    import g201s
-    device = g201s.G201S("E5:FB:01:09:F7:B")
-    device.turn_on()
-    #device.turn_off()
-    #device.set_temperature(50)
-    #device.get_temperature()
-"""
-
 import upygatt
 from binascii import hexlify
 import time
-
-#self.address = "E5:FB:01:09:F7:B4"
-#ADDRESS_TYPE = pygatt.BLEAddressType.random
 
 class G201S():
     def __init__(self, address):
@@ -24,7 +10,6 @@ class G201S():
         self.index = 0
         self.cur_temp = 0
         self.bt_is_started = False
-        #super(G201S, self).__init__(update_callback = self._update_sensor_data)
 
     def write_handle(self, handle, value, increment=True):
         #global index
@@ -49,7 +34,8 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
-            while self.adapter.connect(self.address) != 0:
+            while self.adapter.connect(self.address) not 0:
+                print('Connection not 0')
                 pass
 
         finally:
@@ -67,7 +53,8 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
-            while self.adapter.connect(self.address) != 0:
+            while self.adapter.connect(self.address) not 0:
+                print('Connection not 0')
                 pass
 
         finally:
@@ -111,7 +98,8 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
-            while self.adapter.connect(self.address) != 0:
+            while self.adapter.connect(self.address) not 0:
+                print('Connection not 0')
                 pass
         finally:
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
