@@ -945,6 +945,10 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 #endif // Alternative gc_realloc impl
 
 bool gc_never_free(void *ptr) {
+    // Check to make sure the pointer is on the heap in the first place.
+    if (gc_nbytes(ptr) == 0) {
+        return false;
+    }
     // Pointers are stored in a linked list where each block is BYTES_PER_BLOCK long and the first
     // pointer is the next block of pointers.
     void ** current_reference_block = MP_STATE_MEM(permanent_pointers);

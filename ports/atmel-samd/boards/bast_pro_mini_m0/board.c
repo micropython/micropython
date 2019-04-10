@@ -24,34 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
-#include "supervisor/shared/stack.h"
+#include "boards/board.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
-
-static bool running_background_tasks = false;
-
-void background_tasks_reset(void) {
-    running_background_tasks = false;
+void board_init(void)
+{
 }
 
-void run_background_tasks(void) {
-    // Don't call ourselves recursively.
-    if (running_background_tasks) {
-        return;
-    }
-    running_background_tasks = true;
-    filesystem_background();
-    usb_background();
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-    #ifdef CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
-    #endif
-    running_background_tasks = false;
-
-    assert_heap_ok();
+void reset_board(void) {
 }
