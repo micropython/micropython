@@ -151,7 +151,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
 
     if (!MP_STATE_VM(gamepad_singleton)) {
         gamepad_obj_t* gamepad_singleton = m_new_obj(gamepad_obj_t);
-        gamepad_singleton->base.type = &gamepad_type;
+        gamepad_singleton->base.type = &gamepadshift_type;
         MP_STATE_VM(gamepad_singleton) = gc_make_long_lived(gamepad_singleton);
     }
     gamepad_init_shift(data_pin, clock_pin, latch_pin);

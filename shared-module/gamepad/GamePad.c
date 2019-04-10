@@ -56,7 +56,6 @@ void gamepad_init_pins(size_t n_pins, const mp_obj_t* pins) {
         }
         gamepad_singleton->pins[i] = pin;
     }
-    gamepad_singleton->last = 0;
     gamepad_singleton->kind = GAMEPAD_KIND_PINS;
 }
 
@@ -74,6 +73,5 @@ void gamepad_init_shift(digitalio_digitalinout_obj_t *data_pin,
     common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 1, DRIVE_MODE_PUSH_PULL);
     gamepad_singleton->pins[2] = latch_pin;
 
-    gamepad_singleton->last = 0;
     gamepad_singleton->kind = GAMEPAD_KIND_PINS;
 }
