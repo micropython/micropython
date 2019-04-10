@@ -39,6 +39,39 @@ STATIC const mp_obj_type_t characteristic_type;
 
 STATIC volatile uint16_t active_connections[MP_BT_MAX_CONNECTED_DEVICES];
 
+// This is a circular buffer of incoming packets.
+// Packets are length-prefixed chunks of data in the circular buffer. The
+// length is a single byte with the size of the packet excluding the
+// length byte itself.
+// The head/tail indices are like a normal ring buffer, except that they
+// do not wrap around at UPDATE_BUF_SIZE but instead continue to increase
+// in size. This means that the head/tail indices rely on unsigned
+// wraparound. That is, if there is no data in the buffer head equals
+// tail. If there is data in the queue, head is always ahead of tail
+// modulo 2**16.
+// If there is data in the buffer, this is the number of bytes currently
+// in the buffer:
+//   head - tail
+// and this is the size of the first packet:
+//   data[tail % UPDATE_BUF_SIZE]
+// Similarly, head always points to the first unused byte (or the same
+// byte if the buffer is exactly filled).
+//
+// Additionally, there is a counter of dropped packets. When packets are
+// dropped, it are always the oldest packets. So by incrementing the count
+// of dropped packets when the oldest packet is dropped, the next event
+// that is handled knows that its packet was dropped due to a buffer
+// overrun. This ensures that it is known exactly how many packets are
+// dropped and the buffer can keep on accepting new packets.
+//
+#define UPDATE_BUF_SIZE 32
+STATIC struct {
+    volatile uint16_t head;
+    volatile uint16_t tail;
+    volatile uint16_t dropped_packets;
+    volatile uint8_t data[UPDATE_BUF_SIZE];
+} update_buf;
+
 typedef struct _mp_obj_bluetooth_t {
     mp_obj_base_t base;
 } mp_obj_bluetooth_t;
@@ -141,6 +174,59 @@ void mp_bt_disconnected(uint16_t conn_handle) {
     }
 }
 
+STATIC mp_obj_t bluetooth_write_callback(mp_obj_t char_in) {
+    mp_bt_characteristic_t *characteristic = char_in;
+
+    // Copy the incoming buffer.
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    uint8_t value[20]; // maximum BLE packet size
+    uint16_t tail = update_buf.tail;
+    size_t value_len;
+    if (update_buf.dropped_packets) {
+        // Handle dropped packet.
+        update_buf.dropped_packets--;
+        value_len = (size_t)-1;
+    } else {
+        // Copy regular incoming packet.
+        value_len = update_buf.data[tail++ % UPDATE_BUF_SIZE];
+        if (value_len > sizeof(value)) {
+            update_buf.tail += value_len + 1; // skip this packet
+            mp_raise_ValueError("incoming BLE packet too big");
+        }
+        for (size_t i = 0; i < value_len; i++) {
+            value[i] = update_buf.data[tail++ % UPDATE_BUF_SIZE];
+        }
+        update_buf.tail = tail;
+    }
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+
+    // Look for the callback in the linked list of callbacks.
+    mp_bt_characteristic_callback_t *item = MP_STATE_PORT(bt_characteristic_callbacks);
+    while (item != NULL && item->characteristic->value_handle != characteristic->value_handle) {
+        item = item->next;
+    }
+    if (item == NULL) {
+        // Callback has been removed?
+        // This can happen when the callback is removed between the
+        // interrupt and handling the interrupt.
+        return mp_const_none;
+    }
+
+    if (value_len == (size_t)-1) {
+        // Unfortunately, there was a dropped packet.
+        // Report this event by passing None.
+        mp_call_function_2_protected(item->callback, MP_OBJ_FROM_PTR(item->characteristic), mp_const_none);
+    } else {
+        // Pass the written data directly as a bytearray to the callback.
+        // WARNING: this array must not be modified by the callee.
+        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, value_len, value};
+        mp_call_function_2_protected(item->callback, MP_OBJ_FROM_PTR(item->characteristic), MP_OBJ_FROM_PTR(&ar));
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_write_callback_obj, bluetooth_write_callback);
+
 // Call the registered callback for this characteristic, if one has been
 // registered.
 void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, size_t value_len) {
@@ -149,12 +235,31 @@ void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, siz
     mp_bt_characteristic_callback_t *item = MP_STATE_PORT(bt_characteristic_callbacks);
     while (item != NULL) {
         if (item->characteristic->value_handle == value_handle) {
-            // Pass the written data directly as a bytearray to the
-            // callback.
-            // WARNING: this array must not be modified by the callee.
-            mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, value_len, (void*)value};
-            mp_call_function_2_protected(item->callback, MP_OBJ_FROM_PTR(item->characteristic), MP_OBJ_FROM_PTR(&ar));
-            break;
+            // Queue callback.
+            if (!mp_sched_schedule(MP_OBJ_FROM_PTR(&bluetooth_write_callback_obj), item->characteristic)) {
+                // Failed to schedule a callback: the queue is full.
+                // There's not much we can do now.
+                return;
+            }
+
+            // Insert packet into queue.
+            uint16_t head = update_buf.head;
+            uint16_t tail = update_buf.tail;
+            size_t bytes_left = ((uint16_t)UPDATE_BUF_SIZE - (head - tail));
+            while (bytes_left < value_len + 1) {
+                // Drop oldest packet.
+                uint8_t packet_len = update_buf.data[tail % UPDATE_BUF_SIZE];
+                tail += packet_len + 1;
+                update_buf.tail = tail;
+                bytes_left = ((uint16_t)UPDATE_BUF_SIZE - (head - tail));
+                update_buf.dropped_packets++;
+            }
+            update_buf.data[head++ % UPDATE_BUF_SIZE] = (uint8_t)value_len;
+            for (size_t i=0; i<value_len; i++) {
+                update_buf.data[head++ % UPDATE_BUF_SIZE] = ((uint8_t*)value)[i];
+            }
+            update_buf.head = head;
+            return;
         }
         item = item->next;
     }
