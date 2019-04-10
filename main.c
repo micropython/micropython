@@ -43,6 +43,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 
+#include "background.h"
 #include "mpconfigboard.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
@@ -85,6 +86,8 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
+
+    background_tasks_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)

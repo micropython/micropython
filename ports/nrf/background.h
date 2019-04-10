@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
-#include "supervisor/shared/stack.h"
+#ifndef MICROPY_INCLUDED_NRF_BACKGROUND_H
+#define MICROPY_INCLUDED_NRF_BACKGROUND_H
 
-#ifdef CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+#include <stdbool.h>
 
-static bool running_background_tasks = false;
+void background_tasks_reset(void);
+void run_background_tasks(void);
 
-void background_tasks_reset(void) {
-    running_background_tasks = false;
-}
-
-void run_background_tasks(void) {
-    // Don't call ourselves recursively.
-    if (running_background_tasks) {
-        return;
-    }
-    running_background_tasks = true;
-    filesystem_background();
-    usb_background();
-
-    #ifdef CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
-    #endif
-    running_background_tasks = false;
-
-    assert_heap_ok();
-}
+#endif  // MICROPY_INCLUDED_NRF_BACKGROUND_H

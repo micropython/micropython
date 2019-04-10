@@ -42,8 +42,20 @@ volatile uint64_t last_finished_tick = 0;
 
 bool stack_ok_so_far = true;
 
+static bool running_background_tasks = false;
+
+void background_tasks_reset(void) {
+    running_background_tasks = false;
+}
+
 void run_background_tasks(void) {
+    // Don't call ourselves recursively.
+    if (running_background_tasks) {
+        return;
+    }
     assert_heap_ok();
+    running_background_tasks = true;
+
     #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
     audio_dma_background();
     #endif
@@ -56,6 +68,7 @@ void run_background_tasks(void) {
     #endif
     filesystem_background();
     usb_background();
+    running_background_tasks = false;
     assert_heap_ok();
 
     last_finished_tick = ticks_ms;
