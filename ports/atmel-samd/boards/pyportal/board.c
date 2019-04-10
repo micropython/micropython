@@ -25,7 +25,6 @@
  */
 
 #include "boards/board.h"
-#include "supervisor/shared/board_busses.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 

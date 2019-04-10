@@ -5,6 +5,7 @@
 #include "lib/utils/interrupt_char.h"
 #include "py/reload.h"
 #include "py/runtime.h"
+#include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"
@@ -190,9 +191,14 @@ void reset_displays(void) {
         if (((uint32_t) fourwire->bus) < ((uint32_t) &displays) ||
             ((uint32_t) fourwire->bus) > ((uint32_t) &displays + CIRCUITPY_DISPLAY_LIMIT)) {
             busio_spi_obj_t* original_spi = fourwire->bus;
-            if (original_spi == board_spi()) {
-                continue;
-            }
+            #if BOARD_SPI
+                // We don't need to move original_spi if it is the board.SPI object because it is
+                // statically allocated already. (Doing so would also make it impossible to reference in
+                // a subsequent VM run.)
+                if (original_spi == common_hal_board_get_spi()) {
+                    continue;
+                }
+            #endif
             memcpy(&fourwire->inline_bus, original_spi, sizeof(busio_spi_obj_t));
             fourwire->bus = &fourwire->inline_bus;
             // Check for other displays that use the same spi bus and swap them too.

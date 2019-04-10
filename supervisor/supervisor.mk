@@ -2,7 +2,6 @@ SRC_SUPERVISOR = \
 	main.c \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
-	supervisor/shared/board_busses.c \
 	supervisor/shared/display.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \

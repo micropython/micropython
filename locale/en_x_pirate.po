@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-04 13:37-0700\n"
+"POT-Creation-Date: 2019-04-08 16:48-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: @sommersoft, @MrCertainly\n"
@@ -903,16 +903,8 @@ msgstr ""
 msgid "No available clocks"
 msgstr ""
 
-#: supervisor/shared/board_busses.c
-msgid "No default I2C bus"
-msgstr ""
-
-#: supervisor/shared/board_busses.c
-msgid "No default SPI bus"
-msgstr ""
-
-#: supervisor/shared/board_busses.c
-msgid "No default UART bus"
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-04 13:37-0700\n"
+"POT-Creation-Date: 2019-04-08 16:48-0700\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -933,17 +933,9 @@ msgstr "Walang TX pin"
 msgid "No available clocks"
 msgstr ""
 
-#: supervisor/shared/board_busses.c
-msgid "No default I2C bus"
-msgstr "Walang default na I2C bus"
-
-#: supervisor/shared/board_busses.c
-msgid "No default SPI bus"
-msgstr "Walang default SPI bus"
-
-#: supervisor/shared/board_busses.c
-msgid "No default UART bus"
-msgstr "Walang default UART bus"
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
+msgstr "Walang default na %q bus"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"

@@ -162,6 +162,7 @@ NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg);
 NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);
+NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG

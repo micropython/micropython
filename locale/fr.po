@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-04 13:37-0700\n"
+"POT-Creation-Date: 2019-04-08 16:48-0700\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -936,17 +936,9 @@ msgstr "Pas de broche TX"
 msgid "No available clocks"
 msgstr ""
 
-#: supervisor/shared/board_busses.c
-msgid "No default I2C bus"
-msgstr "Pas de bus I2C par défaut"
-
-#: supervisor/shared/board_busses.c
-msgid "No default SPI bus"
-msgstr "Pas de bus SPI par défaut"
-
-#: supervisor/shared/board_busses.c
-msgid "No default UART bus"
-msgstr "Pas de bus UART par défaut"
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
+msgstr "Pas de bus %q par défaut"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
