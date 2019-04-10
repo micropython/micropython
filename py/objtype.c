@@ -966,6 +966,9 @@ STATIC bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
 }
 
 STATIC bool map_has_special_accessors(const mp_map_t *map) {
+    if (map == NULL) {
+        return false;
+    }
     for (size_t i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             const mp_map_elem_t *elem = &map->table[i];
@@ -1183,6 +1186,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     if (!(o->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS) &&
             (map_has_special_accessors(locals_map) ||
              (num_native_bases == 1 &&
+              native_base->locals_dict != NULL &&
               map_has_special_accessors(&native_base->locals_dict->map)))) {
         o->flags |= TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
     }
