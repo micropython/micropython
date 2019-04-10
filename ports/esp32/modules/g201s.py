@@ -44,10 +44,10 @@ class G201S():
         if increment: self.index += 1
 
     def turn_on(self):
-        #global index
         self.index = 0
         try:
             self.adapter.start()
+            time.sleep_ms(500)
             self.bt_is_started = True
             while self.adapter.connect(self.address) != 0:
                 pass
@@ -56,17 +56,16 @@ class G201S():
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
-            self.write_handle(0x000e, [0x05, 0x00, 0x00, int(hex(100), 16), 0x00])
+            self.write_handle(0x000e, [0x05, 0x00, 0x00, int(hex(95), 16), 0x00])
             self.write_handle(0x000e, [0x03])
             self.adapter.disconnect(self.address)
             self.adapter.stop()
 
     def turn_off(self):
-        #global index
         self.index = 0
         try:
-            #if self.bt_is_started == False:
             self.adapter.start()
+            time.sleep_ms(500)
             self.bt_is_started = True
             while self.adapter.connect(self.address) != 0:
                 pass
@@ -82,11 +81,11 @@ class G201S():
             self.adapter.stop()
 
     def set_temperature(self, value):
-        #global index
         self.index = 0
         print("set temperature {}".format(value))
         # try:
         #     adapter.start()
+        #     time.sleep_ms(500)
         #     device = adapter.connect(self.address, address_type=ADDRESS_TYPE)
         #     self.write_handle(device, 0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
         #     self.write_handle(device, 0x000c, [0x01, 0x00])
@@ -107,11 +106,10 @@ class G201S():
             print('{}°C'.format(self.get_temperature()))
 
     def get_temperature(self):
-        #global index
         self.index = 0
         try:
-            #if self.bt_is_started == False:
             self.adapter.start()
+            time.sleep_ms(500)
             self.bt_is_started = True
             while self.adapter.connect(self.address) != 0:
                 pass
