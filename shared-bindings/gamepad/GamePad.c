@@ -114,8 +114,9 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
     gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton) {
         gamepad_singleton = m_new_obj(gamepad_obj_t);
-        gamepad_singleton->base.type = &gamepadshift_type;
-        MP_STATE_VM(gamepad_singleton) = gc_make_long_lived(gamepad_singleton);
+        gamepad_singleton->base.type = &gamepad_type;
+        gamepad_singleton = gc_make_long_lived(gamepad_singleton);
+        MP_STATE_VM(gamepad_singleton) = gamepad_singleton;
     }
     for (size_t i = 0; i < 8; ++i) {
         gamepad_singleton->pins[i] = NULL;
@@ -172,7 +173,8 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
     if (!gamepad_singleton) {
         gamepad_singleton = m_new_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepadshift_type;
-        MP_STATE_VM(gamepad_singleton) = gc_make_long_lived(gamepad_singleton);
+        gamepad_singleton = gc_make_long_lived(gamepad_singleton);
+        MP_STATE_VM(gamepad_singleton) = gamepad_singleton;
     }
     gamepad_singleton->pins[0] = NULL;
     common_hal_digitalio_digitalinout_switch_to_input(data_pin, PULL_NONE);
