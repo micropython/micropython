@@ -13,6 +13,7 @@ Example usage on ESP8266:
 import upygatt
 from binascii import hexlify
 import time
+import gc
 
 #self.address = "E5:FB:01:09:F7:B4"
 #ADDRESS_TYPE = pygatt.BLEAddressType.random
@@ -24,10 +25,8 @@ class G201S():
         self.index = 0
         self.cur_temp = 0
         self.bt_is_started = False
-        #super(G201S, self).__init__(update_callback = self._update_sensor_data)
 
     def write_handle(self, handle, value, increment=True):
-        #global index
         val = []
         if handle == 0x000e:
             val.append(0x55)
@@ -61,6 +60,8 @@ class G201S():
             self.write_handle(0x000e, [0x03])
             self.adapter.disconnect(self.address)
             self.adapter.stop()
+            time.sleep_ms(500)
+            gc.collect()
 
     def turn_off(self):
         self.index = 0
@@ -81,6 +82,8 @@ class G201S():
             #print("Tried to switch off, returned {}".format(self.cur_temp))
             self.adapter.disconnect(self.address)
             self.adapter.stop()
+            time.sleep_ms(500)
+            gc.collect()
 
     def set_temperature(self, value):
         self.index = 0
@@ -98,6 +101,8 @@ class G201S():
 
         # finally:
         #     adapter.stop()
+        #     time.sleep_ms(500)
+        #     gc.collect()
         if self.get_temperature() < value:
             self.turn_on()
             while True:
@@ -122,6 +127,7 @@ class G201S():
             self.write_handle(0x000e, [0x01])
             self.write_handle(0x000e, [0x06])
             print("get temperature")
+            time.sleep_ms(500)
             value = self.adapter.char_read(uuid="6e400003-b5a3-f393-e0a9-e50e24dcca9e", value_handle=0x000b)
             value = hexlify(value)
             value = value[16:18]
@@ -129,8 +135,6 @@ class G201S():
             print("Current temperature of kettle is {}".format(self.cur_temp))
             self.adapter.disconnect(self.address)
             self.adapter.stop()
+            time.sleep_ms(500)
+            gc.collect()
             return self.cur_temp
-
-    def _update_sensor_data(self):
-        print("update")
-        return self.cur_temp
