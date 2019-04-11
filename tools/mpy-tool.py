@@ -75,9 +75,9 @@ for n in qstrutil.static_qstr_list:
     global_qstrs.append(QStrType(n))
 
 class QStrWindow:
-    def __init__(self, size_log2):
+    def __init__(self, size):
         self.window = []
-        self.size = 1 << size_log2
+        self.size = size
 
     def push(self, val):
         self.window = [val] + self.window[:self.size - 1]
@@ -259,7 +259,7 @@ def extract_prelude(bytecode, ip):
 class MPFunTable:
     pass
 
-class RawCode:
+class RawCode(object):
     # a set of all escaped names, to make sure they are unique
     escaped_names = set()
 
@@ -423,7 +423,7 @@ class RawCode:
 
 class RawCodeBytecode(RawCode):
     def __init__(self, bytecode, qstrs, objs, raw_codes):
-        super().__init__(MP_CODE_BYTECODE, bytecode, 0, qstrs, objs, raw_codes)
+        super(RawCodeBytecode, self).__init__(MP_CODE_BYTECODE, bytecode, 0, qstrs, objs, raw_codes)
 
     def freeze(self, parent_name):
         self.freeze_children(parent_name)
@@ -462,7 +462,7 @@ class RawCodeBytecode(RawCode):
 
 class RawCodeNative(RawCode):
     def __init__(self, code_kind, fun_data, prelude_offset, prelude, qstr_links, qstrs, objs, raw_codes, type_sig):
-        super().__init__(code_kind, fun_data, prelude_offset, qstrs, objs, raw_codes)
+        super(RawCodeNative, self).__init__(code_kind, fun_data, prelude_offset, qstrs, objs, raw_codes)
         self.prelude = prelude
         self.qstr_links = qstr_links
         self.type_sig = type_sig
@@ -633,7 +633,6 @@ def read_qstr_and_pack(f, bytecode, qstr_win):
     bytecode.append(qst >> 8)
 
 def read_bytecode(file, bytecode, qstr_win):
-    QSTR_LAST_STATIC = len(qstrutil.static_qstr_list)
     while not bytecode.is_full():
         op = read_byte(file, bytecode)
         f, sz = mp_opcode_format(bytecode.buf, bytecode.idx - 1, False)
