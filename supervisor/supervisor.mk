@@ -101,7 +101,7 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
 
-CIRCUITPY_DISPLAY_FONT ?= "../../tools/Tecate-bitmap-fonts/bitmap/terminus-font-4.39/ter-u12n.bdf"
+CIRCUITPY_DISPLAY_FONT ?= "../../tools/default-font/new-ter-u12n.bdf"
 
 $(BUILD)/autogen_display_resources.c: ../../tools/gen_display_resources.py $(HEADER_BUILD)/qstrdefs.generated.h Makefile | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
