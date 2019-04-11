@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-11 11:44+0200\n"
+"POT-Creation-Date: 2019-04-11 13:46+0200\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2593,6 +2593,10 @@ msgstr "No coinciden '{' en format"
 msgid "unreadable attribute"
 msgstr "atributo no legible"
 
+#: shared-bindings/displayio/TileGrid.c
+msgid "unsupported %q type"
+msgstr "tipo de %q no soportado"
+
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
@@ -2602,10 +2606,6 @@ msgstr "instrucción de tipo Thumb no admitida '%s' con %d argumentos"
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "instrucción Xtensa '%s' con %d argumentos no soportada"
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "unsupported %q type"
-msgstr "tipo de %q no soportado"
 
 #: py/objstr.c
 #, c-format

@@ -123,7 +123,7 @@ msgstr "'%s' liczba 0x%x nie pasuje do maski 0x%x"
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr "'%s' obiekt wspiera przypisania do elementów"
+msgstr "'%s' obiekt nie wspiera przypisania do elementów"
 
 #: py/obj.c
 #, c-format
@@ -2586,7 +2586,7 @@ msgstr "zła liczba wartości do rozpakowania"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
-msgstr "wartość c poza zakresem"
+msgstr "x poza zakresem"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
@@ -2594,7 +2594,7 @@ msgstr "y powinno być całkowite"
 
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
-msgstr "wartość y poza zakresem"
+msgstr "y poza zakresem"
 
 #: py/objrange.c
 msgid "zero step"
