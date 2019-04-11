@@ -5,34 +5,6 @@
 #include "py/obj.h"
 #include "esp_bt_defs.h"
 
-typedef struct {
-    mp_obj_base_t          base;
-    mp_bt_uuid_t           uuid;
-    mp_bt_service_handle_t handle;
-    #if ESP_PLATFORM
-    uint8_t                esp_gatts_if; /* Only for ESP-IDF */
-    #endif
-} mp_bt_service_t;
-
-// A characteristic.
-// Object fits in 4 words (1 GC object), with 1 byte unused at the end.
-typedef struct {
-    mp_obj_base_t                 base;
-    mp_bt_uuid_t                  uuid;
-    mp_bt_service_t               *service;
-    mp_bt_characteristic_handle_t value_handle;
-    uint8_t                       flags;
-} mp_bt_characteristic_t;
-
-// Parse an UUID object from the caller and stores the result in the uuid
-// parameter. Must accept both strings and integers for 128-bit and 16-bit
-// UUIDs.
-void mp_bt_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid);
-
-// Parse a string UUID object into the 16-byte buffer. The string must be
-// the correct size, otherwise this function will throw an error.
-void mp_bt_parse_uuid_str(mp_obj_t obj, uint8_t *uuid);
-
 // Enables the Bluetooth stack. Returns errno on failure.
 int mp_bt_enable(void);
 
