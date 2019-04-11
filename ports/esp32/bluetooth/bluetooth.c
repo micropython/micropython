@@ -10,7 +10,6 @@
 #include "esp_bt.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gattc_api.h"
-#include "esp_gatts_api.h"
 #include "esp_gatt_defs.h"
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
@@ -22,7 +21,7 @@
 #include "py/runtime.h"
 #include "extmod/modupygatt.h"
 
-#define GATTC_TAG "uPygatt"
+#define GATTC_TAG "APP"
 #define REMOTE_SERVICE_UUID        0xca9e //0xCA9E
 #define REMOTE_NOTIFY_CHAR_UUID    0xca9e //0xFF01
 #define PROFILE_NUM      1
@@ -107,23 +106,6 @@ STATIC esp_bt_uuid_t notify_descr_uuid = {
     .len = ESP_UUID_LEN_16,
     .uuid = {.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG,},
 };
-
-// Parse a UUID object from the caller.
-	void mp_bt_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
-	    if (MP_OBJ_IS_SMALL_INT(obj) && MP_OBJ_SMALL_INT_VALUE(obj) == (uint32_t)(uint16_t)MP_OBJ_SMALL_INT_VALUE(obj)) {
-	        // Integer fits inside 16 bits, assume it's a standard UUID.
-	        uuid->len = ESP_UUID_LEN_16;
-	        uuid->uuid.uuid16 = MP_OBJ_SMALL_INT_VALUE(obj);
-	    } else if (mp_obj_is_str(obj)) {
-	        // Guessing this is a 128-bit (proprietary) UUID.
-	        uuid->len = ESP_UUID_LEN_128;
-	        mp_bt_parse_uuid_str(obj, &uuid->uuid.uuid128[0]);
-	    } else {
-	        mp_raise_ValueError("cannot parse UUID");
-	    }
-	}
-
-
 
 // Initialize at early boot.
 void mp_bt_init(void) {
@@ -299,22 +281,21 @@ int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, uint8_t length, boo
   return 0;
 }
 
-int mp_bt_char_read(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len) {
+int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC");
 
   uint16_t bt_len;
   const uint8_t *bt_ptr;
   //Wait for ESP_GATTC_WRITE_CHAR_EVT
-  err = esp_ble_gatts_get_attr_value(characteristic->value_handle, &bt_len, &bt_ptr);
+  //err = esp_ble_gatts_get_attr_value(characteristic->value_handle, &bt_len, &bt_ptr);
+  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, value_handle, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
       return mp_bt_esp_errno(err);
   }
-  if (*value_len > bt_len) {
-      // Copy up to *value_len bytes.
-      *value_len = bt_len;
-  }
-  memcpy(value, bt_ptr, *value_len);
+
+  //Wait for ESP_GATTC_READ_CHAR_EVT
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
   return 0;
 }
 
@@ -512,6 +493,13 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 break;
             }
             ESP_LOGI(GATTC_TAG, "write char success ");
+            xSemaphoreGive(mp_bt_call_complete);
+            break;
+        case ESP_GATTC_READ_CHAR_EVT:
+            ESP_LOGI(GATTC_TAG, "ESP_GATTC_READ_CHAR_EVT");
+            ESP_LOGI(GATTC_TAG, "p_data->read.value %s",p_data->read.value);
+            ESP_LOGI(GATTC_TAG, "p_data->read.value_len %d",p_data->read.value_len);
+            esp_log_buffer_hex(GATTC_TAG, p_data->read.value, p_data->read.value_len);
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
