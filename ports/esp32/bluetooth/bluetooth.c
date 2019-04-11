@@ -295,7 +295,7 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
   }
 
   //Wait for ESP_GATTC_READ_CHAR_EVT
-  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
   return 0;
 }
 
@@ -500,7 +500,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             ESP_LOGI(GATTC_TAG, "p_data->read.value %s",p_data->read.value);
             ESP_LOGI(GATTC_TAG, "p_data->read.value_len %d",p_data->read.value_len);
             esp_log_buffer_hex(GATTC_TAG, p_data->read.value, p_data->read.value_len);
-            xSemaphoreGive(mp_bt_call_complete);
+            //xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
             get_server = false;
