@@ -35,7 +35,7 @@
 #include "supervisor/shared/translate.h"
 #include "GamePad.h"
 
-digitalio_digitalinout_obj_t *validate_pin(mp_obj_t obj) {
+STATIC digitalio_digitalinout_obj_t *validate_pin(mp_obj_t obj) {
     if (!MP_OBJ_IS_TYPE(obj, &digitalio_digitalinout_type)) {
         mp_raise_TypeError(translate("expected a DigitalInOut"));
     }
@@ -106,7 +106,7 @@ digitalio_digitalinout_obj_t *validate_pin(mp_obj_t obj) {
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *args, mp_map_t *kw_args) {
     if (n_args > 8) {
-        mp_raise_TypeError(translate("too many arguments"));
+        mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     for (size_t i = 0; i < n_args; ++i) {
         validate_pin(args[i]);
