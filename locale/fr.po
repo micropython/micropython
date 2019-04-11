@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-11 11:22+0200\n"
+"POT-Creation-Date: 2019-04-11 11:44+0200\n"
 "PO-Revision-Date: 2018-12-23 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -1789,10 +1789,6 @@ msgstr "les exceptions doivent dériver de BaseException"
 msgid "expected ':' after format specifier"
 msgstr "':' attendu après la spécification de format"
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "expected a DigitalInOut"
-msgstr "objet DigitalInOut attendu"
-
 #: py/obj.c
 msgid "expected tuple/list"
 msgstr "un tuple ou une liste est attendu"
@@ -2810,6 +2806,9 @@ msgstr "'step' nul"
 
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "soit 'pos', soit 'kw' est permis en argument"
+
+#~ msgid "expected a DigitalInOut"
+#~ msgstr "objet DigitalInOut attendu"
 
 #~ msgid "expecting a pin"
 #~ msgstr "une broche (Pin) est attendue"

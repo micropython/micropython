@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-11 11:22+0200\n"
+"POT-Creation-Date: 2019-04-11 11:44+0200\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -1728,10 +1728,6 @@ msgstr "wyjątki muszą dziedziczyć po BaseException"
 msgid "expected ':' after format specifier"
 msgstr "oczekiwano ':' po specyfikacji formatu"
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "expected a DigitalInOut"
-msgstr "oczekiwano DigitalInOut"
-
 #: py/obj.c
 msgid "expected tuple/list"
 msgstr "oczekiwano krotki/listy"
@@ -2612,6 +2608,9 @@ msgstr "zerowy krok"
 
 #~ msgid "RTC set is not supported on this board"
 #~ msgstr "Ustawianie RTC nie jest obsługiwane na tej płytce"
+
+#~ msgid "expected a DigitalInOut"
+#~ msgstr "oczekiwano DigitalInOut"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "row musi być upakowana i wyrównana do słowa"

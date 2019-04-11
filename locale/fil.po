@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-11 11:22+0200\n"
+"POT-Creation-Date: 2019-04-11 11:44+0200\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1772,10 +1772,6 @@ msgstr "ang mga exceptions ay dapat makuha mula sa BaseException"
 msgid "expected ':' after format specifier"
 msgstr "umaasa ng ':' pagkatapos ng format specifier"
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "expected a DigitalInOut"
-msgstr "umasa ng DigitalInOut"
-
 #: py/obj.c
 msgid "expected tuple/list"
 msgstr "umaasa ng tuple/list"
@@ -2794,6 +2790,9 @@ msgstr "zero step"
 
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "pos o kw args ang pinahihintulutan"
+
+#~ msgid "expected a DigitalInOut"
+#~ msgstr "umasa ng DigitalInOut"
 
 #~ msgid "expecting a pin"
 #~ msgstr "umaasa ng isang pin"

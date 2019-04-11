@@ -37,12 +37,16 @@ void gamepad_tick(void) {
     static uint8_t last = 0;
     uint8_t current = 0;
     uint8_t bit = 1;
+    digitalio_digitalinout_obj_t* data_pin;
+    digitalio_digitalinout_obj_t* clock_pin;
+    digitalio_digitalinout_obj_t* latch_pin;
+
     gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton) {
         return;
     }
-    switch (gamepad_singleton->kind) {
-    case GAMEPAD_KIND_PINS:
+    if (gamepad_singleton->pins[0]) {
+        // buttons connected directly to pins
         for (int i = 0; i < 8; ++i) {
             digitalio_digitalinout_obj_t* pin = gamepad_singleton->pins[i];
             if (!pin) {
@@ -54,12 +58,11 @@ void gamepad_tick(void) {
             bit <<= 1;
         }
         current ^= gamepad_singleton->pulls;
-        break;
-    case GAMEPAD_KIND_SHIFT:
-        bit = 1;  // we need a statement after a label
-        digitalio_digitalinout_obj_t* data_pin = gamepad_singleton->pins[0];
-        digitalio_digitalinout_obj_t* clock_pin = gamepad_singleton->pins[1];
-        digitalio_digitalinout_obj_t* latch_pin = gamepad_singleton->pins[2];
+    } else {
+        // buttons connected to a shift register
+        data_pin = gamepad_singleton->pins[1];
+        clock_pin = gamepad_singleton->pins[2];
+        latch_pin = gamepad_singleton->pins[3];
 
         common_hal_digitalio_digitalinout_set_value(latch_pin, 1);
         for (int i = 0; i < 8; ++i) {
@@ -67,11 +70,10 @@ void gamepad_tick(void) {
             if (common_hal_digitalio_digitalinout_get_value(data_pin)) {
                 current |= bit;
             }
-            bit <<= 1;
             common_hal_digitalio_digitalinout_set_value(clock_pin, 1);
+            bit <<= 1;
         }
         common_hal_digitalio_digitalinout_set_value(latch_pin, 0);
-        break;
     }
     gamepad_singleton->pressed |= last & current;
     last = current;
