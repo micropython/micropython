@@ -24,6 +24,15 @@ typedef struct {
     uint8_t                       flags;
 } mp_bt_characteristic_t;
 
+// Parse an UUID object from the caller and stores the result in the uuid
+// parameter. Must accept both strings and integers for 128-bit and 16-bit
+// UUIDs.
+void mp_bt_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid);
+
+// Parse a string UUID object into the 16-byte buffer. The string must be
+// the correct size, otherwise this function will throw an error.
+void mp_bt_parse_uuid_str(mp_obj_t obj, uint8_t *uuid);
+
 // Enables the Bluetooth stack. Returns errno on failure.
 int mp_bt_enable(void);
 

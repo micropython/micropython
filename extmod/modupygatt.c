@@ -248,7 +248,7 @@ STATIC mp_obj_t gatt_tool_backend_char_read(size_t n_args, const mp_obj_t *pos_a
 
   const mp_arg_t allowed_args[] = {
       { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
-      { MP_QSTR_value_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_int = mp_const_none } },
+      { MP_QSTR_value_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_int = 0 } },
   };
 
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -257,7 +257,7 @@ STATIC mp_obj_t gatt_tool_backend_char_read(size_t n_args, const mp_obj_t *pos_a
   mp_bt_characteristic_t *characteristic = m_new_obj(mp_bt_characteristic_t);
   characteristic->base.type = &gatt_tool_backend_type;
   mp_bt_parse_uuid(args[ARG_uuid].u_obj, &characteristic->uuid);
-  characteristic->flags = (uint8_t)(FLAG_READ|FLAG_NOTIFY);
+  characteristic->flags = (uint8_t)(MP_BLE_FLAG_READ|MP_BLE_FLAG_NOTIFY);
   characteristic->value_handle = (uint16_t)(args[ARG_value_handle].u_int);
 
   uint8_t data[MP_BT_MAX_ATTR_SIZE];

@@ -10,6 +10,7 @@
 #include "esp_bt.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gattc_api.h"
+#include "esp_gatts_api.h"
 #include "esp_gatt_defs.h"
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
@@ -106,6 +107,23 @@ STATIC esp_bt_uuid_t notify_descr_uuid = {
     .len = ESP_UUID_LEN_16,
     .uuid = {.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG,},
 };
+
+// Parse a UUID object from the caller.
+	void mp_bt_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
+	    if (MP_OBJ_IS_SMALL_INT(obj) && MP_OBJ_SMALL_INT_VALUE(obj) == (uint32_t)(uint16_t)MP_OBJ_SMALL_INT_VALUE(obj)) {
+	        // Integer fits inside 16 bits, assume it's a standard UUID.
+	        uuid->len = ESP_UUID_LEN_16;
+	        uuid->uuid.uuid16 = MP_OBJ_SMALL_INT_VALUE(obj);
+	    } else if (mp_obj_is_str(obj)) {
+	        // Guessing this is a 128-bit (proprietary) UUID.
+	        uuid->len = ESP_UUID_LEN_128;
+	        mp_bt_parse_uuid_str(obj, &uuid->uuid.uuid128[0]);
+	    } else {
+	        mp_raise_ValueError("cannot parse UUID");
+	    }
+	}
+
+
 
 // Initialize at early boot.
 void mp_bt_init(void) {
@@ -283,7 +301,7 @@ int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, uint8_t length, boo
 
 int mp_bt_char_read(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len) {
   esp_err_t err;
-  ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC %s", uuid);
+  ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC");
 
   uint16_t bt_len;
   const uint8_t *bt_ptr;
