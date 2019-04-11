@@ -60,6 +60,7 @@
 #define CYW43_EV_DISASSOC (11)
 #define CYW43_EV_DISASSOC_IND (12)
 #define CYW43_EV_LINK (16)
+#define CYW43_EV_PRUNE (23)
 #define CYW43_EV_PSK_SUP (46)
 #define CYW43_EV_ESCAN_RESULT (69)
 #define CYW43_EV_CSA_COMPLETE_IND (80)
@@ -126,7 +127,7 @@ void cyw43_wifi_set_up(cyw43_t *self, int itf, bool up);
 int cyw43_wifi_get_mac(cyw43_t *self, int itf, uint8_t mac[6]);
 int cyw43_wifi_scan(cyw43_t *self, cyw43_wifi_scan_options_t *opts, void *env, int (*result_cb)(void*, cyw43_scan_result_t*));
 bool cyw43_wifi_scan_active(cyw43_t *self);
-int cyw43_wifi_join(cyw43_t *self, size_t ssid_len, const char *ssid, size_t key_len, const char *key, const uint8_t *bssid, uint32_t channel);
+int cyw43_wifi_join(cyw43_t *self, size_t ssid_len, const char *ssid, size_t key_len, const char *key, uint32_t auth_type, const uint8_t *bssid, uint32_t channel);
 int cyw43_wifi_leave(cyw43_t *self, int itf);
 
 void cyw43_wifi_ap_get_ssid(cyw43_t *self, size_t *len, const uint8_t **buf);
