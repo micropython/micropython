@@ -210,6 +210,12 @@
 #endif
 #endif
 
+// If disabled then try normal (non-bypass) LSE first, with fallback to LSI.
+// If enabled first try LSE in bypass mode.  If that fails to start, try non-bypass mode, with fallback to LSI.
+#ifndef MICROPY_HW_RTC_USE_BYPASS
+#define MICROPY_HW_RTC_USE_BYPASS (0)
+#endif
+
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // Provide block device macros if internal flash storage is enabled
 #define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl

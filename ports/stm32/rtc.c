@@ -61,11 +61,11 @@ static mp_uint_t rtc_info;
 #endif
 
 STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc);
-STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse);
+STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool rtc_use_byp);
 STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc);
 STATIC void RTC_CalendarConfig(void);
 
-#if defined(MICROPY_HW_RTC_USE_LSE) && MICROPY_HW_RTC_USE_LSE
+#if MICROPY_HW_RTC_USE_LSE || MICROPY_HW_RTC_USE_BYPASS
 STATIC bool rtc_use_lse = true;
 #else
 STATIC bool rtc_use_lse = false;
@@ -159,7 +159,7 @@ void rtc_init_start(bool force_init) {
             rtc_info &= ~0x01000000;
         }
     }
-    PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse);
+    PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse, MICROPY_HW_RTC_USE_BYPASS);
 }
 
 void rtc_init_finalise() {
@@ -167,25 +167,33 @@ void rtc_init_finalise() {
         return;
     }
 
-    rtc_info = 0x20000000;
-    if (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
+    rtc_info = 0;
+    while (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
         if (rtc_use_lse) {
-            // fall back to LSI...
-            rtc_use_lse = false;
+            #if MICROPY_HW_RTC_USE_BYPASS
+            if (RCC->BDCR & RCC_BDCR_LSEBYP) {
+                // LSEBYP failed, fallback to LSE non-bypass
+                rtc_info |= 0x02000000;
+            } else
+            #endif
+            {
+                // LSE failed, fallback to LSI
+                rtc_use_lse = false;
+                rtc_info |= 0x01000000;
+            }
             rtc_startup_tick = HAL_GetTick();
-            PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse);
+            PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse, false);
             HAL_PWR_EnableBkUpAccess();
             RTCHandle.State = HAL_RTC_STATE_RESET;
-            if (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
-                rtc_info = 0x0100ffff; // indicate error
-                return;
-            }
         } else {
             // init error
-            rtc_info = 0xffff; // indicate error
+            rtc_info |= 0xffff; // indicate error
             return;
         }
     }
+
+    // RTC started successfully
+    rtc_info = 0x20000000;
 
     // record if LSE or LSI is used
     rtc_info |= (rtc_use_lse << 28);
@@ -254,6 +262,16 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
             if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
                 return HAL_TIMEOUT;
             }
+        }
+        #endif
+
+        #if MICROPY_HW_RTC_USE_BYPASS
+        // If LSEBYP is enabled and new state is non-bypass then disable LSEBYP
+        if (RCC_OscInitStruct->LSEState == RCC_LSE_ON && (RCC->BDCR & RCC_BDCR_LSEBYP)) {
+            CLEAR_BIT(RCC->BDCR, RCC_BDCR_LSEON);
+            while (RCC->BDCR & RCC_BDCR_LSERDY) {
+            }
+            CLEAR_BIT(RCC->BDCR, RCC_BDCR_LSEBYP);
         }
         #endif
 
@@ -327,7 +345,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
     }
 }
 
-STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse) {
+STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool rtc_use_byp) {
     /* To change the source clock of the RTC feature (LSE, LSI), You have to:
        - Enable the power clock using __PWR_CLK_ENABLE()
        - Enable write access using HAL_PWR_EnableBkUpAccess() function before to
@@ -342,12 +360,14 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse) {
     RCC_OscInitTypeDef RCC_OscInitStruct;
     RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-    if (rtc_use_lse) {
-        #if MICROPY_HW_RTC_USE_BYPASS
+    #if MICROPY_HW_RTC_USE_BYPASS
+    if (rtc_use_byp) {
         RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
-        #else
+        RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+    } else
+    #endif
+    if (rtc_use_lse) {
         RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-        #endif
         RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
     } else {
         RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
@@ -361,14 +381,21 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse) {
 
 #define PYB_LSE_TIMEOUT_VALUE 1000  // ST docs spec 2000 ms LSE startup, seems to be too pessimistic
 #define PYB_LSI_TIMEOUT_VALUE 500   // this is way too pessimistic, typ. < 1ms
+#define PYB_BYP_TIMEOUT_VALUE 150
 
 STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
     // we already had a kick so now wait for the corresponding ready state...
     if (rtc_use_lse) {
         // we now have to wait for LSE ready or timeout
+        uint32_t timeout = PYB_LSE_TIMEOUT_VALUE;
+        #if MICROPY_HW_RTC_USE_BYPASS
+        if (RCC->BDCR & RCC_BDCR_LSEBYP) {
+            timeout = PYB_BYP_TIMEOUT_VALUE;
+        }
+        #endif
         uint32_t tickstart = rtc_startup_tick;
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {
-            if ((HAL_GetTick() - tickstart ) > PYB_LSE_TIMEOUT_VALUE) {
+            if ((HAL_GetTick() - tickstart ) > timeout) {
                 return HAL_TIMEOUT;
             }
         }
