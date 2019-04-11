@@ -33,8 +33,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
 
-void pressed_pins(gamepad_obj_t *self) {
-    static uint8_t last = 0;
+STATIC uint8_t pressed_pins(gamepad_obj_t *self) {
     uint8_t current = 0;
     uint8_t bit = 1;
     for (int i = 0; i < 8; ++i) {
@@ -48,12 +47,12 @@ void pressed_pins(gamepad_obj_t *self) {
         bit <<= 1;
     }
     current ^= self->pulls;
-    self->pressed |= last & current;
-    last = current;
+    return current;
 }
 
 
-void pressed_shift(gamepad_obj_t *self) {
+STATIC uint8_t pressed_shift(gamepad_obj_t *self) {
+    uint8_t current = 0;
     uint8_t bit = 1;
     digitalio_digitalinout_obj_t* data_pin = self->pins[0];
     digitalio_digitalinout_obj_t* clock_pin = self->pins[1];
@@ -63,28 +62,33 @@ void pressed_shift(gamepad_obj_t *self) {
     for (int i = 0; i < 8; ++i) {
         common_hal_digitalio_digitalinout_set_value(clock_pin, 0);
         if (common_hal_digitalio_digitalinout_get_value(data_pin)) {
-            self->pressed |= bit;
+            current |= bit;
         }
         bit <<= 1;
         common_hal_digitalio_digitalinout_set_value(clock_pin, 1);
     }
     common_hal_digitalio_digitalinout_set_value(latch_pin, 0);
+    return current;
 }
 
 
 void gamepad_tick(void) {
+    static uint8_t last = 0;
+    uint8_t current = 0;
     gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton) {
         return;
     }
     switch (gamepad_singleton->kind) {
     case GAMEPAD_KIND_PINS:
-        pressed_pins(gamepad_singleton);
+        current = pressed_pins(gamepad_singleton);
         break;
     case GAMEPAD_KIND_SHIFT:
-        pressed_shift(gamepad_singleton);
+        current = pressed_shift(gamepad_singleton);
         break;
     }
+    gamepad_singleton->pressed |= last & current;
+    last = current;
 }
 
 void gamepad_reset(void) {
