@@ -182,6 +182,12 @@ STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
 STATIC void qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
     (void)self_in;
 
+    if (QUADSPI->SR & QUADSPI_SR_BUSY) {
+        QUADSPI->CR |= QUADSPI_CR_ABORT;
+        while (QUADSPI->CR & QUADSPI_CR_ABORT) {
+        }
+    }
+
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
     if (len == 0) {
@@ -224,6 +230,12 @@ STATIC void qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t
 
 STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
     (void)self_in;
+
+    if (QUADSPI->SR & QUADSPI_SR_BUSY) {
+        QUADSPI->CR |= QUADSPI_CR_ABORT;
+        while (QUADSPI->CR & QUADSPI_CR_ABORT) {
+        }
+    }
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
@@ -279,6 +291,12 @@ STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, 
 STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
     (void)self_in;
 
+    if (QUADSPI->SR & QUADSPI_SR_BUSY) {
+        QUADSPI->CR |= QUADSPI_CR_ABORT;
+        while (QUADSPI->CR & QUADSPI_CR_ABORT) {
+        }
+    }
+
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
     QUADSPI->DLR = len - 1; // number of bytes to read
@@ -307,6 +325,13 @@ STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
 
 STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
     (void)self_in;
+
+    if (QUADSPI->SR & QUADSPI_SR_BUSY) {
+        QUADSPI->CR |= QUADSPI_CR_ABORT;
+        while (QUADSPI->CR & QUADSPI_CR_ABORT) {
+        }
+    }
+
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
     QUADSPI->DLR = len - 1; // number of bytes to read
