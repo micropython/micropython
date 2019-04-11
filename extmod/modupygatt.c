@@ -30,6 +30,41 @@ STATIC mp_obj_t pygatt_handle_errno(int errno_) {
     return mp_const_none;
 }
 
+// Parse string UUIDs, which are probably 128-bit UUIDs.
+void mp_bt_parse_uuid_str(mp_obj_t obj, uint8_t *uuid) {
+    GET_STR_DATA_LEN(obj, str_data, str_len);
+    int uuid_i = 32;
+    for (int i = 0; i < str_len; i++) {
+        char c = str_data[i];
+        if (c == '-') {
+            continue;
+        }
+        if (c >= '0' && c <= '9') {
+            c = c - '0';
+        } else if (c >= 'a' && c <= 'f') {
+            c = c - 'a' + 10;
+        } else if (c >= 'A' && c <= 'F') {
+            c = c - 'A' + 10;
+        } else {
+            mp_raise_ValueError("unknown char in UUID");
+        }
+        uuid_i--;
+        if (uuid_i < 0) {
+            mp_raise_ValueError("UUID too long");
+        }
+        if (uuid_i % 2 == 0) {
+            // lower nibble
+            uuid[uuid_i/2] |= c;
+        } else {
+            // upper nibble
+            uuid[uuid_i/2] = c << 4;
+        }
+    }
+    if (uuid_i > 0) {
+        mp_raise_ValueError("UUID too short");
+    }
+}
+
 STATIC mp_obj_t upygatt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     return MP_OBJ_FROM_PTR(&upygatt_obj);
 }
@@ -179,10 +214,6 @@ STATIC mp_obj_t gatt_tool_backend_discover_characteristics(size_t n_args, const 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_discover_characteristics_obj, 0, gatt_tool_backend_discover_characteristics);
 
 STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-  //mp_upygatt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-  /*
-  Usage: bytearray(b'\x55\xFF\xAD\x00\x00') or [0x55, 0xff, 0xad, 0x00, 0x00]
-  */
   enum { ARG_handle, ARG_value, ARG_wait_for_response, ARG_timeout };
 
   const mp_arg_t allowed_args[] = {
@@ -212,6 +243,33 @@ STATIC mp_obj_t gatt_tool_backend_char_write_handle(size_t n_args, const mp_obj_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_write_handle_obj, 0, gatt_tool_backend_char_write_handle);
 
+STATIC mp_obj_t gatt_tool_backend_char_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_uuid, ARG_value_handle };
+
+  const mp_arg_t allowed_args[] = {
+      { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+      { MP_QSTR_value_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_int = mp_const_none } },
+  };
+
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  mp_bt_characteristic_t *characteristic = m_new_obj(mp_bt_characteristic_t);
+  characteristic->base.type = &gatt_tool_backend_type;
+  mp_bt_parse_uuid(args[ARG_uuid].u_obj, &characteristic->uuid);
+  characteristic->flags = (uint8_t)(FLAG_READ|FLAG_NOTIFY);
+  characteristic->value_handle = (uint16_t)(args[ARG_value_handle].u_int);
+
+  uint8_t data[MP_BT_MAX_ATTR_SIZE];
+  size_t value_len = MP_BT_MAX_ATTR_SIZE;
+  int errno_ = mp_bt_char_read(characteristic, data, &value_len);
+  if (errno_ != 0) {
+      mp_raise_OSError(errno_);
+  }
+  return mp_obj_new_bytes(data, value_len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_read_obj, 1, gatt_tool_backend_char_read);
+
 STATIC mp_obj_t gatt_tool_backend(void) {
   printf("GATTToolBackend init\r\n");
   return mp_const_none;
@@ -238,7 +296,7 @@ STATIC const mp_rom_map_elem_t gatt_tool_backend_locals_dict_table[] = {
     // //@at_most_one_device
     { MP_ROM_QSTR(MP_QSTR_char_write_handle),                     MP_ROM_PTR(&gatt_tool_backend_char_write_handle_obj) },
     // //@at_most_one_device
-    // { MP_ROM_QSTR(MP_QSTR_char_read),                             MP_ROM_PTR(&gatt_tool_backend_char_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_char_read),                             MP_ROM_PTR(&gatt_tool_backend_char_read_obj) },
     // //@at_most_one_device
     // { MP_ROM_QSTR(MP_QSTR_char_read_handle),                      MP_ROM_PTR(&gatt_tool_backend_char_read_handle_obj) },
     // { MP_ROM_QSTR(MP_QSTR_char_reset),                            MP_ROM_PTR(&gatt_tool_backend_char_reset_obj) },

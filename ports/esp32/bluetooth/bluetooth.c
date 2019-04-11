@@ -281,6 +281,25 @@ int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, uint8_t length, boo
   return 0;
 }
 
+int mp_bt_char_read(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len) {
+  esp_err_t err;
+  ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC %s", uuid);
+
+  uint16_t bt_len;
+  const uint8_t *bt_ptr;
+  //Wait for ESP_GATTC_WRITE_CHAR_EVT
+  err = esp_ble_gatts_get_attr_value(characteristic->value_handle, &bt_len, &bt_ptr);
+  if (err != ESP_OK) {
+      return mp_bt_esp_errno(err);
+  }
+  if (*value_len > bt_len) {
+      // Copy up to *value_len bytes.
+      *value_len = bt_len;
+  }
+  memcpy(value, bt_ptr, *value_len);
+  return 0;
+}
+
 STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
     esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
 
