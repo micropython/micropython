@@ -54,32 +54,21 @@ void pressed_pins(gamepad_obj_t *self) {
 
 
 void pressed_shift(gamepad_obj_t *self) {
-    static volatile uint8_t i = 8;
-    static volatile uint8_t clock = 0;
+    uint8_t bit = 1;
     digitalio_digitalinout_obj_t* data_pin = self->pins[0];
     digitalio_digitalinout_obj_t* clock_pin = self->pins[1];
     digitalio_digitalinout_obj_t* latch_pin = self->pins[2];
 
-    if (clock == 0) {
-        common_hal_digitalio_digitalinout_set_value(clock_pin, 1);
-        clock = 1;
-        return;
-    }
-
-    if (i == 8) {
-        common_hal_digitalio_digitalinout_set_value(latch_pin, 0);
-        i = 9;
-    } else if (i == 9) {
-        common_hal_digitalio_digitalinout_set_value(latch_pin, 1);
-        i = 0;
-    } else {
+    common_hal_digitalio_digitalinout_set_value(latch_pin, 1);
+    for (int i = 0; i < 8; ++i) {
+        common_hal_digitalio_digitalinout_set_value(clock_pin, 0);
         if (common_hal_digitalio_digitalinout_get_value(data_pin)) {
-            self->pressed |= (1 << i);
+            self->pressed |= bit;
         }
-        i += 1;
+        bit <<= 1;
+        common_hal_digitalio_digitalinout_set_value(clock_pin, 1);
     }
-    common_hal_digitalio_digitalinout_set_value(clock_pin, 0);
-    clock = 0;
+    common_hal_digitalio_digitalinout_set_value(latch_pin, 0);
 }
 
 

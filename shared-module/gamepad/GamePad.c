@@ -70,8 +70,8 @@ void gamepad_init_shift(digitalio_digitalinout_obj_t *data_pin,
     common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 0, DRIVE_MODE_PUSH_PULL);
     gamepad_singleton->pins[1] = clock_pin;
 
-    common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 1, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_switch_to_output(latch_pin, 1, DRIVE_MODE_PUSH_PULL);
     gamepad_singleton->pins[2] = latch_pin;
 
-    gamepad_singleton->kind = GAMEPAD_KIND_PINS;
+    gamepad_singleton->kind = GAMEPAD_KIND_SHIFT;
 }
