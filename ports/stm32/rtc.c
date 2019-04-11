@@ -73,36 +73,6 @@ STATIC bool rtc_use_lse = false;
 STATIC uint32_t rtc_startup_tick;
 STATIC bool rtc_need_init_finalise = false;
 
-// check if LSE exists
-// not well tested, should probably be removed
-STATIC bool lse_magic(void) {
-#if 0
-    uint32_t mode_in = GPIOC->MODER & 0x3fffffff;
-    uint32_t mode_out = mode_in | 0x40000000;
-    GPIOC->MODER = mode_out;
-    GPIOC->OTYPER &= 0x7fff;
-    GPIOC->BSRRH = 0x8000;
-    GPIOC->OSPEEDR &= 0x3fffffff;
-    GPIOC->PUPDR &= 0x3fffffff;
-    int i = 0xff0;
-    __IO int d = 0;
-    uint32_t tc = 0;
-    __IO uint32_t j;
-    while (i) {
-        GPIOC->MODER = mode_out;
-        GPIOC->MODER = mode_in;
-        for (j = 0; j < d; j++) ;
-        i--;
-        if ((GPIOC->IDR & 0x8000) == 0) {
-            tc++;
-        }
-    }
-    return (tc < 0xff0)?true:false;
-#else
-    return false;
-#endif
-}
-
 void rtc_init_start(bool force_init) {
     RTCHandle.Instance = RTC;
 
@@ -152,13 +122,6 @@ void rtc_init_start(bool force_init) {
 
     rtc_startup_tick = HAL_GetTick();
     rtc_info = 0x3f000000 | (rtc_startup_tick & 0xffffff);
-    if (rtc_use_lse) {
-        if (lse_magic()) {
-            // don't even try LSE
-            rtc_use_lse = false;
-            rtc_info &= ~0x01000000;
-        }
-    }
     PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse, MICROPY_HW_RTC_USE_BYPASS);
 }
 
