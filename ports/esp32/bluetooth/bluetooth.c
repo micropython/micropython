@@ -289,7 +289,7 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
   const uint8_t *bt_ptr;
   //Wait for ESP_GATTC_WRITE_CHAR_EVT
   //err = esp_ble_gatts_get_attr_value(characteristic->value_handle, &bt_len, &bt_ptr);
-  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000b, ESP_GATT_AUTH_REQ_NONE);
+  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, 0/*gl_profile_tab[PROFILE_A_APP_ID].conn_id*/, 0x000b, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
       return mp_bt_esp_errno(err);
   }
