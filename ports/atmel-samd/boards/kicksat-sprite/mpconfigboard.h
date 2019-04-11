@@ -1,6 +1,6 @@
 
 #define MICROPY_HW_BOARD_NAME "Sprite_v2b"
-#define MICROPY_HW_MCU_NAME "samd51J19"
+#define MICROPY_HW_MCU_NAME "samd51G19"
 #define CIRCUITPY_MCU_FAMILY samd51
 
 #define MICROPY_HW_LED_STATUS   (&pin_PB03)
