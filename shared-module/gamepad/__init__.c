@@ -29,6 +29,9 @@
 #include "py/mpstate.h"
 #include "__init__.h"
 #include "GamePad.h"
+#include "GamePadShift.h"
+#include "shared-bindings/gamepad/GamePad.h"
+#include "shared-bindings/gamepad/GamePadShift.h"
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
@@ -37,18 +40,16 @@ void gamepad_tick(void) {
     static uint8_t last = 0;
     uint8_t current = 0;
     uint8_t bit = 1;
-    digitalio_digitalinout_obj_t* data_pin;
-    digitalio_digitalinout_obj_t* clock_pin;
-    digitalio_digitalinout_obj_t* latch_pin;
 
-    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
-    if (!gamepad_singleton) {
+    void* singleton = MP_STATE_VM(gamepad_singleton);
+    if (!singleton) {
         return;
     }
-    if (gamepad_singleton->pins[0]) {
+    if (MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepad_type)) {
         // buttons connected directly to pins
+        gamepad_obj_t *self = singleton;
         for (int i = 0; i < 8; ++i) {
-            digitalio_digitalinout_obj_t* pin = gamepad_singleton->pins[i];
+            digitalio_digitalinout_obj_t* pin = self->pins[i];
             if (!pin) {
                 break;
             }
@@ -57,25 +58,24 @@ void gamepad_tick(void) {
             }
             bit <<= 1;
         }
-        current ^= gamepad_singleton->pulls;
-    } else {
+        current ^= self->pulls;
+        self->pressed |= last & current;
+    } else if (MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
         // buttons connected to a shift register
-        data_pin = gamepad_singleton->pins[1];
-        clock_pin = gamepad_singleton->pins[2];
-        latch_pin = gamepad_singleton->pins[3];
+        gamepadshift_obj_t *self = singleton;
 
-        common_hal_digitalio_digitalinout_set_value(latch_pin, 1);
+        common_hal_digitalio_digitalinout_set_value(self->latch_pin, 1);
         for (int i = 0; i < 8; ++i) {
-            common_hal_digitalio_digitalinout_set_value(clock_pin, 0);
-            if (common_hal_digitalio_digitalinout_get_value(data_pin)) {
+            common_hal_digitalio_digitalinout_set_value(self->clock_pin, 0);
+            if (common_hal_digitalio_digitalinout_get_value(self->data_pin)) {
                 current |= bit;
             }
-            common_hal_digitalio_digitalinout_set_value(clock_pin, 1);
+            common_hal_digitalio_digitalinout_set_value(self->clock_pin, 1);
             bit <<= 1;
         }
-        common_hal_digitalio_digitalinout_set_value(latch_pin, 0);
+        common_hal_digitalio_digitalinout_set_value(self->latch_pin, 0);
+        self->pressed |= last & current;
     }
-    gamepad_singleton->pressed |= last & current;
     last = current;
 }
 

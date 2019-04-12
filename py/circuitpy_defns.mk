@@ -317,6 +317,7 @@ $(filter $(SRC_PATTERNS), \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	gamepad/GamePad.c \
+	gamepad/GamePadShift.c \
 	gamepad/__init__.c \
 	os/__init__.c \
 	random/__init__.c \

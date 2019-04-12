@@ -24,10 +24,20 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "GamePadShift.h"
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H
 
-extern const mp_obj_type_t gamepad_type;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H
+void gamepadshift_init(gamepadshift_obj_t *gamepadshift,
+                       digitalio_digitalinout_obj_t *data_pin,
+                       digitalio_digitalinout_obj_t *clock_pin,
+                       digitalio_digitalinout_obj_t *latch_pin) {
+    common_hal_digitalio_digitalinout_switch_to_input(data_pin, PULL_NONE);
+    gamepadshift->data_pin = data_pin;
+    common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 0,
+                                                       DRIVE_MODE_PUSH_PULL);
+    gamepadshift->clock_pin = clock_pin;
+    common_hal_digitalio_digitalinout_switch_to_output(latch_pin, 1,
+                                                       DRIVE_MODE_PUSH_PULL);
+    gamepadshift->latch_pin = latch_pin;
+}
