@@ -31,10 +31,10 @@
 #include "shared-bindings/_stage/Text.h"
 
 
-bool render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
+void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         mp_obj_t *layers, size_t layers_size,
         uint16_t *buffer, size_t buffer_size,
-        busio_spi_obj_t *spi) {
+        displayio_display_obj_t *display) {
 
     size_t index = 0;
     for (uint16_t y = y0; y < y1; ++y) {
@@ -55,19 +55,13 @@ bool render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
             index += 1;
             // The buffer is full, send it.
             if (index >= buffer_size) {
-                if (!common_hal_busio_spi_write(spi,
-                        ((uint8_t*)buffer), buffer_size * 2)) {
-                    return false;
-                }
+                display->send(display->bus, false, ((uint8_t*)buffer), buffer_size * 2);
                 index = 0;
             }
         }
     }
     // Send the remaining data.
     if (index) {
-        if (!common_hal_busio_spi_write(spi, ((uint8_t*)buffer), index * 2)) {
-            return false;
-        }
+        display->send(display->bus, false, ((uint8_t*)buffer), index * 2);
     }
-    return true;
 }
