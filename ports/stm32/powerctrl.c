@@ -271,7 +271,7 @@ void powerctrl_enter_stop_mode(void) {
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
 
-    #if 1
+    #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
     mp_spiflash_deepsleep(&spi_bdev.spiflash, 1);
     mp_spiflash_deepsleep(&spi_bdev2.spiflash, 1);
     #endif
@@ -369,7 +369,7 @@ void powerctrl_enter_stop_mode(void) {
 }
 
 void powerctrl_enter_standby_mode(void) {
-    #if 1
+    #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
     // TODO need proper configuration option to select this
     // or maybe a bdev ioctl to do it
     mp_spiflash_deepsleep(&spi_bdev.spiflash, 1);
