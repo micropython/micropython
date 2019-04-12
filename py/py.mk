@@ -94,6 +94,7 @@ SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	core/ipv6/mld6.c \
 	core/ipv6/nd6.c \
 	netif/ethernet.c \
+	apps/mdns/mdns.c \
 	)
 ifeq ($(MICROPY_PY_LWIP_SLIP),1)
 CFLAGS_MOD += -DMICROPY_PY_LWIP_SLIP=1
