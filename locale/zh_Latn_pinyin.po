@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-27 16:28-0400\n"
+"POT-Creation-Date: 2019-04-12 13:44-0700\n"
 "PO-Revision-Date: 2019-04-03 01:59-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -53,8 +53,8 @@ msgstr "%q suǒyǐn chāochū fànwéi"
 msgid "%q indices must be integers, not %s"
 msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
-#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q bìxū dàyú huò děngyú 1"
 
@@ -70,12 +70,12 @@ msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 msgid "'%q' argument required"
 msgstr "xūyào '%q' cānshù"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr "'%s' qīwàng biāoqiān"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' qīwàng yīgè zhùcè"
@@ -95,7 +95,7 @@ msgstr "'%s' xūyào FPU jìcúnqì"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' qīwàng chuāng tǐ [a, b] dì dìzhǐ"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' qídài yīgè zhěngshù"
@@ -252,9 +252,9 @@ msgstr "Suǒyǒu tóngbù shìjiàn píndào shǐyòng"
 msgid "All timers for this pin are in use"
 msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -293,8 +293,12 @@ msgid "Auto-reload is off.\n"
 msgstr "Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
 
 #: main.c
-msgid "Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"
-msgstr "Zìdòng chóngxīn jiāzài. Zhǐ xū tōngguò USB bǎocún wénjiàn lái yùnxíng tāmen huò shūrù REPL jìnyòng.\n"
+msgid ""
+"Auto-reload is on. Simply save files over USB to run them or enter REPL to "
+"disable.\n"
+msgstr ""
+"Zìdòng chóngxīn jiāzài. Zhǐ xū tōngguò USB bǎocún wénjiàn lái yùnxíng tāmen "
+"huò shūrù REPL jìnyòng.\n"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -321,7 +325,7 @@ msgstr "Liàngdù wúfǎ tiáozhěng"
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
 
-#: shared-bindings/busio/I2C.c shared-bindings/bitbangio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 
@@ -360,7 +364,7 @@ msgstr "Wúfǎ gēnggǎi zhōngyāng móshì de míngchēng"
 msgid "Can't connect in Peripheral mode"
 msgstr "Wúfǎ zài biānyuán móshì zhōng liánjiē"
 
-#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "Wúfǎ shānchú zhí"
 
@@ -441,7 +445,7 @@ msgstr "Shǐyòng shízhōng dānwèi"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
 
-#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
 
@@ -479,8 +483,8 @@ msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
 #: ports/nrf/common-hal/bleio/Broadcaster.c
+#: ports/nrf/common-hal/bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
 msgstr "Guǎnggào bāo de shùjù tài dà"
 
@@ -500,8 +504,8 @@ msgstr "Xiǎnshì xuánzhuǎn bìxū 90 dù jiā xīn"
 msgid "Drive mode not used when direction is input."
 msgstr "Fāngxiàng shūrù shí qūdòng móshì méiyǒu shǐyòng."
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
 
@@ -509,8 +513,8 @@ msgstr "EXTINT píndào yǐjīng shǐyòng"
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
 
-#: shared-bindings/microcontroller/Pin.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Yùqí %q"
@@ -519,8 +523,8 @@ msgstr "Yùqí %q"
 msgid "Expected a Characteristic"
 msgstr "Yùqí de tèdiǎn"
 
-#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr "Yùqí UUID"
 
@@ -633,8 +637,8 @@ msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 msgid "Failed to start advertising"
 msgstr "Qǐdòng guǎnggào shībài"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
 #: ports/nrf/common-hal/bleio/Broadcaster.c
+#: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
@@ -652,8 +656,8 @@ msgstr "Qǐdòng sǎomiáo shībài, err 0x%04x"
 msgid "Failed to stop advertising"
 msgstr "Wúfǎ tíngzhǐ guǎnggào"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
 #: ports/nrf/common-hal/bleio/Broadcaster.c
+#: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
@@ -694,8 +698,8 @@ msgstr "Flash xiě rù shībài, err 0x%04x"
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr "Pínlǜ bǔhuò gāo yú nénglì. Bǔhuò zàntíng."
 
-#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Hánshù xūyào suǒdìng"
 
@@ -712,8 +716,12 @@ msgid "I2C operation not supported"
 msgstr "I2C cāozuò bù zhīchí"
 
 #: py/persistentcode.c
-msgid "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."
-msgstr "Bù jiānróng.Mpy wénjiàn. Qǐng gēngxīn suǒyǒu.Mpy wénjiàn. Yǒuguān xiángxì xìnxī, qǐng cānyuè http://Adafru.It/mpy-update."
+msgid ""
+"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
+"mpy-update for more info."
+msgstr ""
+"Bù jiānróng.Mpy wénjiàn. Qǐng gēngxīn suǒyǒu.Mpy wénjiàn. Yǒuguān xiángxì "
+"xìnxī, qǐng cānyuè http://Adafru.It/mpy-update."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -739,6 +747,10 @@ msgstr "Wúxiào de cānshù"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid bit clock pin"
 msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Invalid bits per value"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -773,16 +785,16 @@ msgstr "Wúxiào de wénjiàn"
 msgid "Invalid format chunk size"
 msgstr "Géshì kuài dàxiǎo wúxiào"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
 msgstr "Wèi shù wúxiào"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid phase"
 msgstr "Jiēduàn wúxiào"
 
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: shared-bindings/pulseio/PWMOut.c
 msgid "Invalid pin"
 msgstr "Wúxiào de yǐn jiǎo"
@@ -803,7 +815,7 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
 msgstr "Wúxiào liǎng jí zhí"
 
@@ -843,7 +855,8 @@ msgid ""
 msgstr ""
 "Kàn lái wǒmen de héxīn CircuitPython dàimǎ bēngkuì dé hěn lìhài. Āi yōu!\n"
 "Qǐng zài https://Github.Com/adafruit/circuitpython/issues\n"
-"shàng tíjiāo yīgè wèntí, qízhōng bāohán nín de CIRCUITPY qūdòngqì de nèiróng hé cǐ xiāoxī:\n"
+"shàng tíjiāo yīgè wèntí, qízhōng bāohán nín de CIRCUITPY qūdòngqì de nèiróng "
+"hé cǐ xiāoxī:\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -895,17 +908,9 @@ msgstr "Wèi zhǎodào TX yǐn jiǎo"
 msgid "No available clocks"
 msgstr "Méiyǒu kěyòng de shízhōng"
 
-#: supervisor/shared/board_busses.c
-msgid "No default I2C bus"
-msgstr "Méiyǒu mòrèn I2C gōnggòng qìchē"
-
-#: supervisor/shared/board_busses.c
-msgid "No default SPI bus"
-msgstr "Méiyǒu mòrèn SPI gōnggòng qìchē"
-
-#: supervisor/shared/board_busses.c
-msgid "No default UART bus"
-msgstr "Méiyǒu mòrèn UART gōnggòng qìchē"
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
@@ -915,8 +920,8 @@ msgstr "Méiyǒu miǎnfèi de GCLKs"
 msgid "No hardware random available"
 msgstr "Méiyǒu kěyòng de yìngjiàn suíjī"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
 
@@ -937,8 +942,10 @@ msgid "Not playing"
 msgstr "Wèi bòfàng"
 
 #: shared-bindings/util.c
-msgid "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr "Duìxiàng yǐjīng bèi shānchú, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xīn duìxiàng."
+msgid ""
+"Object has been deinitialized and can no longer be used. Create a new object."
+msgstr ""
+"Duìxiàng yǐjīng bèi shānchú, wúfǎ zài shǐyòng. Chuàngjiàn yīgè xīn duìxiàng."
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -950,17 +957,19 @@ msgstr "Zhǐyǒu 8 huò 16 wèi dānwèi "
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
-msgid "Only Windows format, uncompressed BMP supported: given header size is %d"
-msgstr "Jǐn zhīchí Windows géshì, zhīchí wèi yāsuō de BMP: Gěi dìng de biāo tóu dàxiǎo wèi %d"
-
-#: shared-module/displayio/Bitmap.c
-msgid "Only bit maps of 8 bit color or less are supported"
-msgstr "Jǐn zhīchí 8 wèi yánsè huò xiǎoyú"
+msgid ""
+"Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr ""
+"Jǐn zhīchí Windows géshì, zhīchí wèi yāsuō de BMP: Gěi dìng de biāo tóu "
+"dàxiǎo wèi %d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
-msgid "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp given"
-msgstr "Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
+msgid ""
+"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
+"given"
+msgstr ""
+"Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Only slices with step=1 (aka None) are supported"
@@ -971,11 +980,14 @@ msgid "Oversample must be multiple of 8."
 msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
 
 #: shared-bindings/pulseio/PWMOut.c
-msgid "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr "PWM yìwù zhōuqí bìxū jiè yú 0 zhì 65535 de bāoróng xìng (16 wèi fēnbiàn lǜ)"
+msgid ""
+"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+msgstr ""
+"PWM yìwù zhōuqí bìxū jiè yú 0 zhì 65535 de bāoróng xìng (16 wèi fēnbiàn lǜ)"
 
 #: shared-bindings/pulseio/PWMOut.c
-msgid "PWM frequency not writable when variable_frequency is False on construction."
+msgid ""
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bùkě xiě."
 
 #: py/moduerrno.c
@@ -1003,11 +1015,11 @@ msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzà
 msgid "Pull not used when direction is output."
 msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 
-#: shared-bindings/rtc/RTC.c
+#: ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "Cǐ bǎn bù zhīchí RTC jiàozhǔn"
 
-#: shared-bindings/time/__init__.c shared-bindings/rtc/RTC.c
+#: shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Cǐ bǎn bù zhīchí RTC"
 
@@ -1065,8 +1077,8 @@ msgstr "Xùliè huà yǐjīng shǐyòngguò"
 msgid "Slice and value different lengths."
 msgstr "Qiēpiàn hé zhí bùtóng chángdù."
 
-#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Qiēpiàn bù shòu zhīchí"
 
@@ -1090,24 +1102,35 @@ msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase stack size limits and press reset (after ejecting CIRCUITPY).\n"
-"If you didn't change the stack, then file an issue here with the contents of your CIRCUITPY drive:\n"
+"Please increase stack size limits and press reset (after ejecting "
+"CIRCUITPY).\n"
+"If you didn't change the stack, then file an issue here with the contents of "
+"your CIRCUITPY drive:\n"
 msgstr ""
 "Yóuyú duīzhàn tài xiǎo, huánliú Python rè sǔnhuài.\n"
-"Qǐng zēngjiā duīzhàn chǐcùn xiànzhì, ránhòu chóngxīn shèzhì (zài dànchū CIRCUITPY).\n"
-"Rúguǒ nín méiyǒu gǎibiàn duīzhàn, qǐng zài cǐ chù tíchū yīgè wèntí, bìng zài rù nín de CIRCUITPY qūdòngqì:\n"
+"Qǐng zēngjiā duīzhàn chǐcùn xiànzhì, ránhòu chóngxīn shèzhì (zài dànchū "
+"CIRCUITPY).\n"
+"Rúguǒ nín méiyǒu gǎibiàn duīzhàn, qǐng zài cǐ chù tíchū yīgè wèntí, bìng zài "
+"rù nín de CIRCUITPY qūdòngqì:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
-"The microcontroller's power dipped. Please make sure your power supply provides\n"
-"enough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"
+"The microcontroller's power dipped. Please make sure your power supply "
+"provides\n"
+"enough power for the whole circuit and press reset (after ejecting "
+"CIRCUITPY).\n"
 msgstr ""
 "Wēi kòngzhì qì de diànliàng bèi chōng chū. Qǐng quèbǎo nín de diànyuán wèi\n"
-"zhěnggè diànlù tígōng zúgòu de diànyuán bìng àn xià fùwèi (zài dànchū CIRCUITPY hòu).\n"
+"zhěnggè diànlù tígōng zúgòu de diànyuán bìng àn xià fùwèi (zài dànchū "
+"CIRCUITPY hòu).\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "The reset button was pressed while booting CircuitPython. Press again to exit safe mode.\n"
-msgstr "Qǐdòng CircuitPython shí, chóng zhì ànniǔ bèi àn xià. Zàicì àn xià yǐ tuìchū ānquán móshì\n"
+msgid ""
+"The reset button was pressed while booting CircuitPython. Press again to "
+"exit safe mode.\n"
+msgstr ""
+"Qǐdòng CircuitPython shí, chóng zhì ànniǔ bèi àn xià. Zàicì àn xià yǐ tuìchū "
+"ānquán móshì\n"
 
 #: shared-module/audioio/Mixer.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1145,7 +1168,7 @@ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
 msgid "Too many channels in sample."
 msgstr "Chōuyàng zhōng de píndào tài duō."
 
-#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Too many display busses"
 msgstr "Xiǎnshì zǒngxiàn tài duōle"
 
@@ -1260,8 +1283,11 @@ msgstr ""
 "Ruò yào liè chū nèizài de mókuài, qǐng qǐng zuò yǐxià `help(\"modules\")`.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "You are running in safe mode which means something unanticipated happened.\n"
-msgstr "Nǐ zhèngzài ānquán móshì xià yùnxíng, zhè yì wèi zhuó yìwài fāshēng de shìqíng.\n"
+msgid ""
+"You are running in safe mode which means something unanticipated happened.\n"
+msgstr ""
+"Nǐ zhèngzài ānquán móshì xià yùnxíng, zhè yì wèi zhuó yìwài fāshēng de "
+"shìqíng.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -1378,7 +1404,7 @@ msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
 msgid "buffer size must match format"
 msgstr "huǎnchōng qū dàxiǎo bìxū pǐpèi géshì"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
 msgstr "huǎnchōng qū qiēpiàn bìxū chángdù xiāngděng"
 
@@ -1552,11 +1578,13 @@ msgid "can't store with '%q' index"
 msgstr "bùnéng cúnchú '%q' suǒyǐn"
 
 #: py/objstr.c
-msgid "can't switch from automatic field numbering to manual field specification"
+msgid ""
+"can't switch from automatic field numbering to manual field specification"
 msgstr "wúfǎ zìdòng zìduàn biānhào gǎi wèi shǒudòng zìduàn guīgé"
 
 #: py/objstr.c
-msgid "can't switch from manual field specification to automatic field numbering"
+msgid ""
+"can't switch from manual field specification to automatic field numbering"
 msgstr "wúfǎ cóng shǒudòng zìduàn guīgé qiēhuàn dào zìdòng zìduàn biānhào"
 
 #: py/objtype.c
@@ -1597,7 +1625,8 @@ msgstr "chr() cān shǔ bùzài fànwéi (256)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr "yánsè huǎnchōng qū bìxū wèi 3 zì jié (RGB) huò 4 zì jié (RGB + pad zì jié)"
+msgstr ""
+"yánsè huǎnchōng qū bìxū wèi 3 zì jié (RGB) huò 4 zì jié (RGB + pad zì jié)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer or int"
@@ -1605,7 +1634,8 @@ msgstr "yánsè huǎnchōng qū bìxū shì huǎnchōng qū huò zhěngshù"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "yánsè huǎnchōng qū bìxū shì zì jié shùzǔ huò lèixíng wèi 'b' huò 'B' de shùzǔ"
+msgstr ""
+"yánsè huǎnchōng qū bìxū shì zì jié shùzǔ huò lèixíng wèi 'b' huò 'B' de shùzǔ"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -1644,8 +1674,10 @@ msgid "default 'except' must be last"
 msgstr "mòrèn 'except' bìxū shì zuìhòu yīgè"
 
 #: shared-bindings/audiobusio/PDMIn.c
-msgid "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
-msgstr "mùbiāo huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'B' wèi wèi shēndù = 8"
+msgid ""
+"destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
+msgstr ""
+"mùbiāo huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'B' wèi wèi shēndù = 8"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
@@ -1659,7 +1691,7 @@ msgstr "mùbiāo chángdù bìxū shì > = 0 de zhěngshù"
 msgid "dict update sequence has wrong length"
 msgstr "yǔfǎ gēngxīn xùliè de chángdù cuòwù"
 
-#: py/objfloat.c py/runtime.c py/modmath.c py/objint_longlong.c py/objint_mpz.c
+#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "bèi líng chú"
@@ -1668,7 +1700,7 @@ msgstr "bèi líng chú"
 msgid "empty"
 msgstr "kòngxián"
 
-#: extmod/modutimeq.c extmod/moduheapq.c
+#: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "kōng yīn yīnxiào"
 
@@ -1733,7 +1765,7 @@ msgstr "éwài de guānjiàn cí cānshù"
 msgid "extra positional arguments given"
 msgstr "gěi chūle éwài de wèizhì cānshù"
 
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
+#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
@@ -1906,7 +1938,7 @@ msgstr "wúxiào de MicroPython zhuāngshì qì"
 msgid "invalid step"
 msgstr "wúxiào bùzhòu"
 
-#: py/parse.c py/compile.c
+#: py/compile.c py/parse.c
 msgid "invalid syntax"
 msgstr "wúxiào de yǔfǎ"
 
@@ -1933,7 +1965,8 @@ msgstr "issubclass() cānshù 2 bìxū shì lèi de lèi huò yuán zǔ"
 
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr "tiānjiā yīgè fúhé zìshēn duìxiàng de zìfú chuàn/zì jié duìxiàng lièbiǎo"
+msgstr ""
+"tiānjiā yīgè fúhé zìshēn duìxiàng de zìfú chuàn/zì jié duìxiàng lièbiǎo"
 
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
@@ -1943,7 +1976,7 @@ msgstr "guānjiàn zì cānshù shàngwèi shíxiàn - qǐng shǐyòng chánggu�
 msgid "keywords must be strings"
 msgstr "guānjiàn zì bìxū shì zìfú chuàn"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
 msgstr "biāoqiān '%q' wèi dìngyì"
 
@@ -2050,11 +2083,11 @@ msgstr "yuánshēng chǎnliàng"
 msgid "need more than %d values to unpack"
 msgstr "xūyào chāoguò%d de zhí cáinéng jiědú"
 
-#: py/runtime.c py/objint_longlong.c py/objint_mpz.c
+#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "méiyǒu fú diǎn zhīchí de xiāojí gōnglǜ"
 
-#: py/runtime.c py/objint_mpz.c
+#: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
 msgstr "fù zhuǎnyí jìshù"
 
@@ -2160,7 +2193,7 @@ msgstr "jīshù zìfú chuàn"
 msgid "offset out of bounds"
 msgstr "piānlí biānjiè"
 
-#: py/objstr.c py/objarray.c py/objstrunicode.c py/objtuple.c
+#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
@@ -2264,17 +2297,17 @@ msgstr "fǎnhuí zhùshì bìxū shì biāozhì fú"
 msgid "return expected '%q' but got '%q'"
 msgstr "fǎnhuí yùqí de '%q' dàn huòdéle '%q'"
 
-#: shared-module/displayio/Bitmap.c
-msgid "row must be packed and word aligned"
-msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
-
 #: py/objstr.c
 msgid "rsplit(None,n)"
 msgstr ""
 
 #: shared-bindings/audioio/RawSample.c
-msgid "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-msgstr "yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', 'b' huò 'B' de shùzǔ"
+msgid ""
+"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
+"'B'"
+msgstr ""
+"yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', 'b' "
+"huò 'B' de shùzǔ"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -2312,7 +2345,7 @@ msgstr "shuìmián chángdù bìxū shìfēi fùshù"
 msgid "slice step cannot be zero"
 msgstr "qiēpiàn bù bùnéng wéi líng"
 
-#: py/sequence.c py/objint.c
+#: py/objint.c py/sequence.c
 msgid "small int overflow"
 msgstr "xiǎo zhěngshù yìchū"
 
@@ -2522,6 +2555,10 @@ msgstr "géshì wèi pǐpèi '{'"
 msgid "unreadable attribute"
 msgstr "bùkě dú shǔxìng"
 
+#: shared-bindings/displayio/TileGrid.c
+msgid "unsupported %q type"
+msgstr ""
+
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
@@ -2531,10 +2568,6 @@ msgstr "bù zhīchí de Thumb zhǐshì '%s', shǐyòng %d cānshù"
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "bù zhīchí de Xtensa zhǐlìng '%s', shǐyòng %d cānshù"
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "unsupported bitmap type"
-msgstr "bù zhīchí de bitmap lèixíng"
 
 #: py/objstr.c
 #, c-format
@@ -2584,3 +2617,21 @@ msgstr "y zhí chāochū biānjiè"
 #: py/objrange.c
 msgid "zero step"
 msgstr "líng bù"
+
+#~ msgid "No default I2C bus"
+#~ msgstr "Méiyǒu mòrèn I2C gōnggòng qìchē"
+
+#~ msgid "No default SPI bus"
+#~ msgstr "Méiyǒu mòrèn SPI gōnggòng qìchē"
+
+#~ msgid "No default UART bus"
+#~ msgstr "Méiyǒu mòrèn UART gōnggòng qìchē"
+
+#~ msgid "Only bit maps of 8 bit color or less are supported"
+#~ msgstr "Jǐn zhīchí 8 wèi yánsè huò xiǎoyú"
+
+#~ msgid "row must be packed and word aligned"
+#~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
+
+#~ msgid "unsupported bitmap type"
+#~ msgstr "bù zhīchí de bitmap lèixíng"
