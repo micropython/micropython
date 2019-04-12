@@ -29,4 +29,6 @@ CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_PIXELBUF = 0
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/ugame10
+
+CIRCUITPY_DISPLAY_FONT = "../../tools/Tecate-bitmap-fonts/bitmap/phallus/lemon.bdf"
