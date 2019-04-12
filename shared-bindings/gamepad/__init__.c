@@ -55,6 +55,7 @@ digitalio_digitalinout_obj_t *pin_io(mp_obj_t obj) {
 //|     :maxdepth: 3
 //|
 //|     GamePad
+//|     GamePadShift
 //|
 STATIC const mp_rom_map_elem_t gamepad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepad) },
