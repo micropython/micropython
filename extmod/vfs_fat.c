@@ -70,6 +70,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     vfs->base.type = type;
     vfs->flags = FSUSER_FREE_OBJ;
     vfs->fatfs.drv = vfs;
+    m_rs_push_ptr(vfs);
 
     // load block protocol methods
     mp_load_method(args[0], MP_QSTR_readblocks, vfs->readblocks);
@@ -93,6 +94,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
+    m_rs_pop_ptr(vfs);
     return MP_OBJ_FROM_PTR(vfs);
 }
 
@@ -109,6 +111,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_del_obj, fat_vfs_del);
 STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     // create new object
     fs_user_mount_t *vfs = MP_OBJ_TO_PTR(fat_vfs_make_new(&mp_fat_vfs_type, 1, 0, &bdev_in));
+    m_rs_push_ptr(vfs);
 
     // make the filesystem
     uint8_t working_buf[FF_MAX_SS];
@@ -119,6 +122,8 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
+
+    m_rs_pop_ptr(vfs);
 
     return mp_const_none;
 }
@@ -148,6 +153,7 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
 
         // make 4-tuple with info about this entry
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
+        m_rs_push_ptr(t);
         if (self->is_str) {
             t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
@@ -162,6 +168,7 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
         }
         t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
         t->items[3] = mp_obj_new_int_from_uint(fno.fsize);
+        m_rs_pop_ptr(t);
 
         return MP_OBJ_FROM_PTR(t);
     }
@@ -190,7 +197,9 @@ STATIC mp_obj_t fat_vfs_ilistdir_func(size_t n_args, const mp_obj_t *args) {
     iter->base.type = &mp_type_polymorph_iter;
     iter->iternext = mp_vfs_fat_ilistdir_it_iternext;
     iter->is_str = is_str_type;
+    m_rs_push_ptr(iter);
     FRESULT res = f_opendir(&self->fatfs, &iter->dir, path);
+    m_rs_pop_ptr(iter);
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
@@ -314,6 +323,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
+    m_rs_push_ptr(t);
     mp_int_t mode = 0;
     if (fno.fattrib & AM_DIR) {
         mode |= MP_S_IFDIR;
@@ -339,6 +349,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[8] = MP_OBJ_NEW_SMALL_INT(seconds); // st_mtime
     t->items[9] = MP_OBJ_NEW_SMALL_INT(seconds); // st_ctime
 
+    m_rs_pop_ptr(t);
     return MP_OBJ_FROM_PTR(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_stat_obj, fat_vfs_stat);

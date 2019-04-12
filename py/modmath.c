@@ -200,10 +200,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_math_log_obj, 1, 2, mp_math_log);
 STATIC mp_obj_t mp_math_frexp(mp_obj_t x_obj) {
     int int_exponent = 0;
     mp_float_t significand = MICROPY_FLOAT_C_FUN(frexp)(mp_obj_get_float(x_obj), &int_exponent);
-    mp_obj_t tuple[2];
-    tuple[0] = mp_obj_new_float(significand);
-    tuple[1] = mp_obj_new_int(int_exponent);
-    return mp_obj_new_tuple(2, tuple);
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    m_rs_push_ptr(tuple);
+    tuple->items[0] = mp_obj_new_float(significand);
+    tuple->items[1] = mp_obj_new_int(int_exponent);
+    m_rs_pop_ptr(tuple);
+    return MP_OBJ_FROM_PTR(tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_frexp_obj, mp_math_frexp);
 
@@ -211,10 +213,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_frexp_obj, mp_math_frexp);
 STATIC mp_obj_t mp_math_modf(mp_obj_t x_obj) {
     mp_float_t int_part = 0.0;
     mp_float_t fractional_part = MICROPY_FLOAT_C_FUN(modf)(mp_obj_get_float(x_obj), &int_part);
-    mp_obj_t tuple[2];
-    tuple[0] = mp_obj_new_float(fractional_part);
-    tuple[1] = mp_obj_new_float(int_part);
-    return mp_obj_new_tuple(2, tuple);
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    m_rs_push_ptr(tuple);
+    tuple->items[0] = mp_obj_new_float(fractional_part);
+    tuple->items[1] = mp_obj_new_float(int_part);
+    m_rs_pop_ptr(tuple);
+    return MP_OBJ_FROM_PTR(tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_modf_obj, mp_math_modf);
 
@@ -247,12 +251,20 @@ STATIC mp_obj_t mp_math_factorial_inner(mp_uint_t start, mp_uint_t end) {
         mp_obj_t middle = MP_OBJ_NEW_SMALL_INT(start + 1);
         mp_obj_t right = MP_OBJ_NEW_SMALL_INT(end);
         mp_obj_t tmp = mp_binary_op(MP_BINARY_OP_MULTIPLY, left, middle);
-        return mp_binary_op(MP_BINARY_OP_MULTIPLY, tmp, right);
+        m_rs_push_obj(tmp);
+        mp_obj_t result = mp_binary_op(MP_BINARY_OP_MULTIPLY, tmp, right);
+        m_rs_pop_obj(tmp);
+        return result;
     } else {
         mp_uint_t middle = start + ((end - start) >> 1);
         mp_obj_t left = mp_math_factorial_inner(start, middle);
+        m_rs_push_obj(left);
         mp_obj_t right = mp_math_factorial_inner(middle + 1, end);
-        return mp_binary_op(MP_BINARY_OP_MULTIPLY, left, right);
+        m_rs_push_obj(right);
+        mp_obj_t result = mp_binary_op(MP_BINARY_OP_MULTIPLY, left, right);
+        m_rs_pop_obj(right);
+        m_rs_pop_obj(left);
+        return result;
     }
 }
 STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {

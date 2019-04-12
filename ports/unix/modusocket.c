@@ -536,6 +536,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     for (struct addrinfo *addr = addr_list; addr; addr = addr->ai_next) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
+        m_rs_push_ptr(t);
         t->items[0] = MP_OBJ_NEW_SMALL_INT(addr->ai_family);
         t->items[1] = MP_OBJ_NEW_SMALL_INT(addr->ai_socktype);
         t->items[2] = MP_OBJ_NEW_SMALL_INT(addr->ai_protocol);
@@ -548,6 +549,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         }
         t->items[4] = mp_obj_new_bytearray(addr->ai_addrlen, addr->ai_addr);
         mp_obj_list_append(list, MP_OBJ_FROM_PTR(t));
+        m_rs_pop_ptr(t);
     }
     freeaddrinfo(addr_list);
     return list;

@@ -59,7 +59,9 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     o->globals = self_fun->globals;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = 0;
+    m_rs_push_ptr(o);
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 

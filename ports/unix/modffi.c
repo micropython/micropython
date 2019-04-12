@@ -246,6 +246,7 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(paramtypes_in));
     mp_obj_fficallback_t *o = m_new_obj_var(mp_obj_fficallback_t, ffi_type*, nparams);
+    m_rs_push_ptr(o);
     o->base.type = &fficallback_type;
 
     o->clo = ffi_closure_alloc(sizeof(ffi_closure), &o->func);
@@ -254,11 +255,13 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(paramtypes_in, &iter_buf);
+    m_rs_push_obj(iterable);
     mp_obj_t item;
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         o->params[i++] = get_ffi_type(item);
     }
+    m_rs_pop_obj(iterable);
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
@@ -270,6 +273,7 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
         mp_raise_ValueError("ffi_prep_closure_loc");
     }
 
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mod_ffi_callback_obj, mod_ffi_callback);

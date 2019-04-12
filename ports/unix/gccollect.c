@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "py/mpstate.h"
+#include "py/rootstack.h"
 #include "py/gc.h"
 
 #if MICROPY_ENABLE_GC
@@ -163,7 +164,9 @@ void gc_collect(void) {
     //gc_dump_info();
 
     gc_collect_start();
+    #if !MICROPY_ROOT_STACK
     gc_collect_regs_and_stack();
+    #endif
     #if MICROPY_PY_THREAD
     mp_thread_gc_others();
     #endif

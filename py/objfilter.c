@@ -39,7 +39,9 @@ STATIC mp_obj_t filter_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);
     o->base.type = type;
     o->fun = args[0];
+    m_rs_push_ptr(o);
     o->iter = mp_getiter(args[1], NULL);
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -48,6 +50,7 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
     mp_obj_filter_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t next;
     while ((next = mp_iternext(self->iter)) != MP_OBJ_STOP_ITERATION) {
+        m_rs_push_obj(next);
         mp_obj_t val;
         if (self->fun != mp_const_none) {
             val = mp_call_function_n_kw(self->fun, 1, 0, &next);
@@ -55,8 +58,10 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
             val = next;
         }
         if (mp_obj_is_true(val)) {
+            m_rs_pop_obj(next);
             return next;
         }
+        m_rs_pop_obj(next);
     }
     return MP_OBJ_STOP_ITERATION;
 }

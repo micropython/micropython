@@ -120,6 +120,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
         // in time and memory.
 
         vstr_t vstr;
+        m_rs_push_ind(&vstr.buf);
         vstr_init(&vstr, sz);
         mp_uint_t more_bytes = sz;
         mp_uint_t last_buf_offset = 0;
@@ -135,6 +136,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
                     // Otherwise, return data read so far.
                     // TODO what if we have read only half a non-ASCII char?
                     if (vstr.len == 0) {
+                        m_rs_pop_ind(&vstr.buf);
                         vstr_clear(&vstr);
                         return mp_const_none;
                     }
@@ -190,11 +192,13 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
             }
         }
 
+        m_rs_pop_ind(&vstr.buf);
         return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
     }
     #endif
 
     vstr_t vstr;
+    m_rs_push_ind(&vstr.buf);
     vstr_init_len(&vstr, sz);
     int error;
     mp_uint_t out_sz = mp_stream_rw(args[0], vstr.buf, sz, &error, flags);
@@ -206,11 +210,13 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
             // None is returned."
             // This is actually very weird, as naive truth check will treat
             // this as EOF.
+            m_rs_pop_ind(&vstr.buf);
             return mp_const_none;
         }
         mp_raise_OSError(error);
     } else {
         vstr.len = out_sz;
+        m_rs_pop_ind(&vstr.buf);
         return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
     }
 }
@@ -305,6 +311,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
 
     mp_uint_t total_size = 0;
     vstr_t vstr;
+    m_rs_push_ind(&vstr.buf);
     vstr_init(&vstr, DEFAULT_BUFFER_SIZE);
     char *p = vstr.buf;
     mp_uint_t current_read = DEFAULT_BUFFER_SIZE;
@@ -317,6 +324,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
                 // If we read nothing, return None, just like read().
                 // Otherwise, return data read so far.
                 if (total_size == 0) {
+                    m_rs_pop_ind(&vstr.buf);
                     return mp_const_none;
                 }
                 break;
@@ -337,6 +345,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     vstr.len = total_size;
+    m_rs_pop_ind(&vstr.buf);
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
 }
 
@@ -397,13 +406,15 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, str
 // TODO take an optional extra argument (what does it do exactly?)
 STATIC mp_obj_t stream_unbuffered_readlines(mp_obj_t self) {
     mp_obj_t lines = mp_obj_new_list(0, NULL);
+    m_rs_push_obj_ptr(lines);
     for (;;) {
         mp_obj_t line = stream_unbuffered_readline(1, &self);
         if (!mp_obj_is_true(line)) {
             break;
         }
-        mp_obj_list_append(lines, line);
+        mp_obj_list_append_rs(lines, line);
     }
+    m_rs_pop_obj_ptr(lines);
     return lines;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj, stream_unbuffered_readlines);

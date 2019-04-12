@@ -26,6 +26,7 @@
 
 #include <assert.h>
 
+#include "py/rootstack.h"
 #include "py/scope.h"
 
 #if MICROPY_ENABLE_COMPILER
@@ -51,10 +52,12 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_u
     } else {
         scope->simple_name = scope_simple_name_table[kind];
     }
+    m_rs_push_ptr(scope);
     scope->raw_code = mp_emit_glue_new_raw_code();
     scope->emit_options = emit_options;
     scope->id_info_alloc = MICROPY_ALLOC_SCOPE_ID_INIT;
     scope->id_info = m_new(id_info_t, scope->id_info_alloc);
+    m_rs_pop_ptr(scope);
 
     return scope;
 }
@@ -73,6 +76,7 @@ id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, scope_kind_t kind) {
     // make sure we have enough memory
     if (scope->id_info_len >= scope->id_info_alloc) {
         scope->id_info = m_renew(id_info_t, scope->id_info, scope->id_info_alloc, scope->id_info_alloc + MICROPY_ALLOC_SCOPE_ID_INC);
+        //m_rs_pop_reachable(scope->id_info);
         scope->id_info_alloc += MICROPY_ALLOC_SCOPE_ID_INC;
     }
 

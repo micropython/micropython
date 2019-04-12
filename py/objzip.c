@@ -42,9 +42,11 @@ STATIC mp_obj_t zip_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
     o->base.type = type;
     o->n_iters = n_args;
+    m_rs_push_ptr(o);
     for (size_t i = 0; i < n_args; i++) {
         o->iters[i] = mp_getiter(args[i], NULL);
     }
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -55,15 +57,18 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
         return MP_OBJ_STOP_ITERATION;
     }
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(self->n_iters, NULL));
+    m_rs_push_ptr(tuple);
 
     for (size_t i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_STOP_ITERATION) {
             mp_obj_tuple_del(MP_OBJ_FROM_PTR(tuple));
+            m_rs_pop_ptr(tuple);
             return MP_OBJ_STOP_ITERATION;
         }
         tuple->items[i] = next;
     }
+    m_rs_pop_ptr(tuple);
     return MP_OBJ_FROM_PTR(tuple);
 }
 

@@ -85,6 +85,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
 
     // create the lexer
     mp_lexer_t *lex = mp_lexer_new_from_str_len(filename, str, str_len, 0);
+    m_rs_push_ptr(lex);
 
     // get the compile mode
     qstr mode = mp_obj_str_get_qstr(args[2]);
@@ -99,7 +100,10 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_code_t *code = m_new_obj(mp_obj_code_t);
     code->base.type = &mp_type_code;
+    m_rs_pop_ptr(lex); // mp_parse_compile_execute will handle RS for us
+    m_rs_push_ptr(code);
     code->module_fun = mp_parse_compile_execute(lex, parse_input_kind, NULL, NULL);
+    m_rs_pop_ptr(code);
     return MP_OBJ_FROM_PTR(code);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_compile_obj, 3, 6, mp_builtin_compile);

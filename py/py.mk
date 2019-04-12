@@ -159,6 +159,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	malloc.o \
 	gc.o \
 	pystack.o \
+	rootstack.o \
 	qstr.o \
 	vstr.o \
 	mpprint.o \

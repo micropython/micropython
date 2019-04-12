@@ -31,6 +31,7 @@
 
 #include "py/parsenum.h"
 #include "py/compile.h"
+#include "py/objint.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
@@ -57,6 +58,7 @@ const mp_obj_module_t mp_module___main__ = {
 };
 
 void mp_init(void) {
+    m_rs_init();
     qstr_init();
 
     // no pending exceptions to start with
@@ -135,6 +137,8 @@ void mp_deinit(void) {
 #ifdef MICROPY_PORT_DEINIT_FUNC
     MICROPY_PORT_DEINIT_FUNC;
 #endif
+    qstr_deinit();
+    m_rs_deinit();
 }
 
 mp_obj_t mp_load_name(qstr qst) {
@@ -372,8 +376,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                         mp_raise_ValueError("negative shift count");
                     } else if (rhs_val >= (mp_int_t)BITS_PER_WORD || lhs_val > (MP_SMALL_INT_MAX >> rhs_val) || lhs_val < (MP_SMALL_INT_MIN >> rhs_val)) {
                         // left-shift will overflow, so use higher precision integer
-                        lhs = mp_obj_new_int_from_ll(lhs_val);
-                        goto generic_binary_op;
+                        return mp_obj_int_binary_op(op, lhs, rhs);
                     } else {
                         // use standard precision
                         lhs_val <<= rhs_val;
@@ -419,8 +422,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 
                     if (mp_small_int_mul_overflow(lhs_val, rhs_val)) {
                         // use higher precision
-                        lhs = mp_obj_new_int_from_ll(lhs_val);
-                        goto generic_binary_op;
+                        return mp_obj_int_binary_op(op, lhs, rhs);
                     } else {
                         // use standard precision
                         return MP_OBJ_NEW_SMALL_INT(lhs_val * rhs_val);
@@ -484,8 +486,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 
                 power_overflow:
                     // use higher precision
-                    lhs = mp_obj_new_int_from_ll(MP_OBJ_SMALL_INT_VALUE(lhs));
-                    goto generic_binary_op;
+                    return mp_obj_int_binary_op(op, lhs, rhs);
 
                 case MP_BINARY_OP_DIVMOD: {
                     if (rhs_val == 0) {
@@ -543,7 +544,9 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 
     // generic binary_op supplied by type
     mp_obj_type_t *type;
+#if MICROPY_PY_REVERSE_SPECIAL_METHODS
 generic_binary_op:
+#endif
     type = mp_obj_get_type(lhs);
     if (type->binary_op != NULL) {
         mp_obj_t result = type->binary_op(op, lhs, rhs);
@@ -616,6 +619,13 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
 
     DEBUG_OP_printf("calling function %p(n_args=" UINT_FMT ", n_kw=" UINT_FMT ", args=%p)\n", fun_in, n_args, n_kw, args);
 
+    #if MICROPY_ENABLE_GC && MICROPY_EXTENSIVE_GC_COLLECT
+    // Be sure not to recursively call GC during finaliser call
+    if (!gc_is_locked()) {
+        gc_collect();
+    }
+    #endif
+
     // get the type
     mp_obj_type_t *type = mp_obj_get_type(fun_in);
 
@@ -680,6 +690,9 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // allocate memory for the new array of args
         args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len);
         args2 = mp_nonlocal_alloc(args2_alloc * sizeof(mp_obj_t));
+        #if !MICROPY_ENABLE_PYSTACK
+        m_rs_push_ptr(args2);
+        #endif
 
         // copy the self
         if (self != MP_OBJ_NULL) {
@@ -701,6 +714,9 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // allocate memory for the new array of args
         args2_alloc = 1 + n_args + len + 2 * (n_kw + kw_dict_len);
         args2 = mp_nonlocal_alloc(args2_alloc * sizeof(mp_obj_t));
+        #if !MICROPY_ENABLE_PYSTACK
+        m_rs_push_ptr(args2);
+        #endif
 
         // copy the self
         if (self != MP_OBJ_NULL) {
@@ -717,6 +733,9 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // allocate memory for the new array of args
         args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len) + 3;
         args2 = mp_nonlocal_alloc(args2_alloc * sizeof(mp_obj_t));
+        #if !MICROPY_ENABLE_PYSTACK
+        m_rs_push_ptr(args2);
+        #endif
 
         // copy the self
         if (self != MP_OBJ_NULL) {
@@ -733,7 +752,12 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         mp_obj_t item;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (args2_len >= args2_alloc) {
-                args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), args2_alloc * 2 * sizeof(mp_obj_t));
+                mp_obj_t *new_args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), args2_alloc * 2 * sizeof(mp_obj_t));
+                #if !MICROPY_ENABLE_PYSTACK
+                m_rs_pop_ptr(args2);
+                m_rs_push_ptr(new_args2);
+                #endif
+                args2 = new_args2;
                 args2_alloc *= 2;
             }
             args2[args2_len++] = item;
@@ -774,23 +798,34 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // get the keys iterable
         mp_obj_t dest[3];
         mp_load_method(kw_dict, MP_QSTR_keys, dest);
-        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), NULL);
+        mp_obj_t keys = mp_call_method_n_kw(0, 0, dest);
+        m_rs_push_obj(keys);
+        mp_obj_t iterable = mp_getiter(keys, NULL);
+        m_rs_pop_obj(keys);
+        m_rs_push_obj(iterable);
 
         mp_obj_t key;
         while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            // the key must be a qstr, so intern it if it's a string
+            if (!mp_obj_is_qstr(key)) {
+                key = mp_obj_str_intern_checked(key);
+            }
+
             // expand size of args array if needed
             if (args2_len + 1 >= args2_alloc) {
                 uint new_alloc = args2_alloc * 2;
                 if (new_alloc < 4) {
                     new_alloc = 4;
                 }
-                args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
+                mp_obj_t *new_args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
+                #if !MICROPY_ENABLE_PYSTACK
+                m_rs_pop_obj(iterable);
+                m_rs_pop_ptr(args2);
+                m_rs_push_ptr(new_args2);
+                m_rs_push_obj(iterable);
+                #endif
+                args2 = new_args2;
                 args2_alloc = new_alloc;
-            }
-
-            // the key must be a qstr, so intern it if it's a string
-            if (!mp_obj_is_qstr(key)) {
-                key = mp_obj_str_intern_checked(key);
             }
 
             // get the value corresponding to the key
@@ -802,6 +837,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
             args2[args2_len++] = key;
             args2[args2_len++] = value;
         }
+        m_rs_pop_obj(iterable);
     }
 
     out_args->fun = fun;
@@ -816,6 +852,9 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_ob
     mp_call_prepare_args_n_kw_var(have_self, n_args_n_kw, args, &out_args);
 
     mp_obj_t res = mp_call_function_n_kw(out_args.fun, out_args.n_args, out_args.n_kw, out_args.args);
+    #if !MICROPY_ENABLE_PYSTACK
+    m_rs_pop_ptr(out_args.args);
+    #endif
     mp_nonlocal_free(out_args.args, out_args.n_alloc * sizeof(mp_obj_t));
 
     return res;
@@ -898,6 +937,7 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
         // iterable is exhausted, we take from this list for the right part of the items.
         // TODO Improve to waste less memory in the dynamically created list.
         mp_obj_t iterable = mp_getiter(seq_in, NULL);
+        m_rs_push_obj(iterable);
         mp_obj_t item;
         for (seq_len = 0; seq_len < num_left; seq_len++) {
             item = mp_iternext(iterable);
@@ -907,9 +947,12 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
             items[num_left + num_right + 1 - 1 - seq_len] = item;
         }
         mp_obj_list_t *rest = MP_OBJ_TO_PTR(mp_obj_new_list(0, NULL));
+        m_rs_push_ptr(rest);
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            mp_obj_list_append(MP_OBJ_FROM_PTR(rest), item);
+            mp_obj_list_append_rs(MP_OBJ_FROM_PTR(rest), item);
         }
+        m_rs_pop_ptr(rest);
+        m_rs_pop_obj(iterable);
         if (rest->len < num_right) {
             goto too_short;
         }
@@ -1421,7 +1464,9 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
+        m_rs_push_ptr(lex);
         mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
+        m_rs_assert(parse_tree.chunk);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
 
         mp_obj_t ret;
@@ -1430,7 +1475,9 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
             ret = module_fun;
         } else {
             // execute module function and get return value
+            m_rs_push_obj_ptr(module_fun);
             ret = mp_call_function_0(module_fun);
+            m_rs_pop_obj_ptr(module_fun);
         }
 
         // finish nlr block, restore context and return value

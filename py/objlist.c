@@ -59,10 +59,12 @@ STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
 
 STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     mp_obj_t iter = mp_getiter(iterable, NULL);
+    m_rs_push_obj(iter);
     mp_obj_t item;
     while ((item = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-        mp_obj_list_append(list, item);
+        mp_obj_list_append_rs(list, item);
     }
+    m_rs_pop_obj(iter);
     return list;
 }
 
@@ -80,7 +82,10 @@ STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
             // make list from iterable
             // TODO: optimize list/tuple
             mp_obj_t list = mp_obj_new_list(0, NULL);
-            return list_extend_from_iter(list, args[0]);
+            m_rs_push_obj_ptr(list);
+            mp_obj_t list2 = list_extend_from_iter(list, args[0]);
+            m_rs_pop_obj_ptr(list);
+            return list2;
         }
     }
 }
@@ -395,7 +400,6 @@ mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value) {
     mp_obj_t args[] = {self_in, value};
     args[1] = list_index(2, args);
     list_pop(2, args);
-
     return mp_const_none;
 }
 
@@ -463,7 +467,9 @@ void mp_obj_list_init(mp_obj_list_t *o, size_t n) {
 
 STATIC mp_obj_list_t *list_new(size_t n) {
     mp_obj_list_t *o = m_new_obj(mp_obj_list_t);
+    m_rs_push_ptr(o);
     mp_obj_list_init(o, n);
+    m_rs_pop_ptr(o);
     return o;
 }
 

@@ -70,6 +70,7 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
+    m_rs_push_ptr(o);
     o->base.type = type;
     memset(&o->decomp, 0, sizeof(o->decomp));
     o->decomp.readSource = read_src_stream;
@@ -100,6 +101,7 @@ header_error:
     }
 
     uzlib_uncompress_init(&o->decomp, m_new(byte, dict_sz), dict_sz);
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -148,11 +150,13 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     TINF_DATA *decomp = m_new_obj(TINF_DATA);
+    m_rs_push_ptr(decomp);
     memset(decomp, 0, sizeof(*decomp));
     DEBUG_printf("sizeof(TINF_DATA)=" UINT_FMT "\n", sizeof(*decomp));
     uzlib_uncompress_init(decomp, NULL, 0);
     mp_uint_t dest_buf_size = (bufinfo.len + 15) & ~15;
     byte *dest_buf = m_new(byte, dest_buf_size);
+    m_rs_push_ptr(dest_buf);
 
     decomp->dest = dest_buf;
     decomp->dest_limit = dest_buf + dest_buf_size;
@@ -183,7 +187,10 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
             break;
         }
         size_t offset = decomp->dest - dest_buf;
-        dest_buf = m_renew(byte, dest_buf, dest_buf_size, dest_buf_size + 256);
+        byte *dest_buf2 = m_renew(byte, dest_buf, dest_buf_size, dest_buf_size + 256);
+        m_rs_pop_ptr(dest_buf);
+        dest_buf = dest_buf2;
+        m_rs_push_ptr(dest_buf);
         dest_buf_size += 256;
         decomp->dest = dest_buf + offset;
         decomp->dest_limit = decomp->dest + 256;
@@ -193,6 +200,8 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     DEBUG_printf("uzlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", dest_buf_size, final_sz);
     dest_buf = (byte*)m_renew(byte, dest_buf, dest_buf_size, final_sz);
     mp_obj_t res = mp_obj_new_bytearray_by_ref(final_sz, dest_buf);
+    m_rs_pop_ptr(dest_buf);
+    m_rs_pop_ptr(decomp);
     m_del_obj(TINF_DATA, decomp);
     return res;
 

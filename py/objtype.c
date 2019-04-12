@@ -315,7 +315,9 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
             args2[0] = MP_OBJ_FROM_PTR(self);
             memcpy(args2 + 1, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+            m_rs_push_ptr(args2);
             new_ret = mp_call_function_n_kw(init_fn[0], n_args + 1, n_kw, args2);
+            m_rs_pop_ptr(args2);
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
 
@@ -341,13 +343,19 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     if (init_fn[0] != MP_OBJ_NULL) {
         mp_obj_t init_ret;
         if (n_args == 0 && n_kw == 0) {
+            m_rs_push_ptr(o);
             init_ret = mp_call_method_n_kw(0, 0, init_fn);
+            m_rs_pop_ptr(o);
         } else {
+            m_rs_push_ptr(o);
             mp_obj_t *args2 = m_new(mp_obj_t, 2 + n_args + 2 * n_kw);
+            m_rs_pop_ptr(o); // TODO why don't we need to hold on to this through mp_call_method_n_kw below?
             args2[0] = init_fn[0];
             args2[1] = init_fn[1];
             memcpy(args2 + 2, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
+            m_rs_push_ptr(args2);
             init_ret = mp_call_method_n_kw(n_args, n_kw, args2);
+            m_rs_pop_ptr(args2);
             m_del(mp_obj_t, args2, 2 + n_args + 2 * n_kw);
         }
         if (init_ret != mp_const_none) {
@@ -364,7 +372,9 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     // If the type had a native base that was not explicitly initialised
     // (constructed) by the Python __init__() method then construct it now.
     if (native_base != NULL && o->subobj[0] == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+        m_rs_push_ptr(o);
         o->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args);
+        m_rs_pop_ptr(o);
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -1169,7 +1179,9 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         // __new__ slot exists; check if it is a function
         if (mp_obj_is_fun(elem->value)) {
             // __new__ is a function, wrap it in a staticmethod decorator
+            m_rs_push_ptr(o);
             elem->value = static_class_method_make_new(&mp_type_staticmethod, 1, 0, &elem->value);
+            m_rs_pop_ptr(o);
         }
     }
 

@@ -59,6 +59,9 @@ mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, s
         // try to use heap to allocate temporary args array
         args2 = m_new_maybe(mp_obj_t, 1 + n_total);
         free_args2 = args2;
+        if (free_args2 != NULL) {
+            m_rs_push_ptr(free_args2);
+        }
     }
     if (args2 == NULL) {
         // (fallback to) use stack to allocate temporary args array
@@ -72,6 +75,7 @@ mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, s
     mp_pystack_free(args2);
     #else
     if (free_args2 != NULL) {
+        m_rs_pop_ptr(free_args2);
         m_del(mp_obj_t, free_args2, 1 + n_total);
     }
     #endif

@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/objmodule.h"
 
@@ -69,7 +70,8 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
     while (*name) {
         size_t l = strlen(name);
         // name should end in '.py' and we strip it off
-        mp_obj_list_append(list, mp_obj_new_str(name, l - 3));
+        mp_obj_t s = mp_obj_new_str(name, l - 3);
+        mp_obj_list_append_rs(list, s);
         name += l + 1;
     }
 }
@@ -77,6 +79,7 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
 
 STATIC void mp_help_print_modules(void) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
+    m_rs_push_obj_ptr(list);
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
@@ -127,6 +130,8 @@ STATIC void mp_help_print_modules(void) {
     // let the user know there may be other modules available from the filesystem
     mp_print_str(MP_PYTHON_PRINTER, "Plus any modules on the filesystem\n");
     #endif
+
+    m_rs_pop_obj_ptr(list);
 }
 #endif
 

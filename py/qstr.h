@@ -59,6 +59,7 @@ typedef struct _qstr_pool_t {
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
 
 void qstr_init(void);
+void qstr_deinit(void);
 
 mp_uint_t qstr_compute_hash(const byte *data, size_t len);
 qstr qstr_find_strn(const char *str, size_t str_len); // returns MP_QSTR_NULL if not found

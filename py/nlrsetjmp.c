@@ -36,6 +36,7 @@ void nlr_jump(void *val) {
     }
     top->ret_val = val;
     MP_NLR_RESTORE_PYSTACK(top);
+    MP_NLR_RESTORE_ROOT_STACK(top);
     *top_ptr = top->prev;
     longjmp(top->jmpbuf, 1);
 }

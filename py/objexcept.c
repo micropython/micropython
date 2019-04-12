@@ -157,7 +157,9 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
         o_tuple = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
     } else {
         // Try to allocate memory for the tuple containing the args
+        m_rs_push_ptr(o_exc);
         o_tuple = m_new_obj_var_maybe(mp_obj_tuple_t, mp_obj_t, n_args);
+        m_rs_pop_ptr(o_exc);
 
         #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
         // If we are called by mp_obj_new_exception_msg_varg then it will have
@@ -352,7 +354,10 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg
     o_str->data = (const byte*)msg;
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
-    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
+    m_rs_push_ptr(o_str);
+    mp_obj_t exc = mp_obj_exception_make_new(exc_type, 1, 0, &arg);
+    m_rs_pop_ptr(o_str);
+    return exc;
 }
 
 // The following struct and function implement a simple printer that conservatively
@@ -396,6 +401,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
 
     // Try to allocate memory for the message
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+    m_rs_push_ptr(o_str);
     size_t o_str_alloc = strlen(fmt) + 1;
     byte *o_str_buf = m_new_maybe(byte, o_str_alloc);
 
@@ -406,6 +412,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     // the string data), reserving room at the start for the traceback and 1-tuple.
     if ((o_str == NULL || o_str_buf == NULL)
         && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16) {
+        m_rs_pop_ptr(o_str);
         used_emg_buf = true;
         o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
             + EMG_BUF_STR_OFFSET);
@@ -417,6 +424,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
 
     if (o_str == NULL) {
         // No memory for the string object so create the exception with no args
+        m_rs_pop_ptr(o_str);
         return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
     }
 
@@ -429,6 +437,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         // We have some memory to format the string
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
+        m_rs_push_ind(&exc_pr.buf);
         va_list ap;
         va_start(ap, fmt);
         mp_vprintf(&print, fmt, ap);
@@ -436,13 +445,18 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;
+        m_rs_pop_ind(&exc_pr.buf);
     }
 
     // Create the string object and call mp_obj_exception_make_new to create the exception
     o_str->base.type = &mp_type_str;
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
-    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
+    mp_obj_t exc = mp_obj_exception_make_new(exc_type, 1, 0, &arg);
+    if (!used_emg_buf) {
+        m_rs_pop_ptr(o_str);
+    }
+    return exc;
 }
 
 // return true if the given object is an exception type

@@ -92,7 +92,9 @@ STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         mp_obj_t args2[2] = {dict_out, args[0]}; // args[0] is always valid, even if it's not a positional arg
         mp_map_t kwargs;
         mp_map_init_fixed_table(&kwargs, n_kw, args + n_args);
+        m_rs_push_ptr(dict);
         dict_update(n_args + 1, args2, &kwargs); // dict_update will check that n_args + 1 == 1 or 2
+        m_rs_pop_ptr(dict);
     }
     return dict_out;
 }
@@ -231,6 +233,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
     mp_obj_t iter = mp_getiter(args[1], NULL);
+    m_rs_push_obj(iter);
     mp_obj_t value = mp_const_none;
     mp_obj_t next = MP_OBJ_NULL;
 
@@ -249,9 +252,14 @@ STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_out);
+    m_rs_push_ptr(self);
     while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+        m_rs_push_obj(next);
         mp_map_lookup(&self->map, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+        m_rs_pop_obj(next);
     }
+    m_rs_pop_ptr(self);
+    m_rs_pop_obj(iter);
 
     return self_out;
 }
@@ -345,11 +353,16 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
         } else {
             // update from a generic iterable of pairs
             mp_obj_t iter = mp_getiter(args[1], NULL);
+            m_rs_push_obj(iter);
             mp_obj_t next = MP_OBJ_NULL;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+                m_rs_push_obj(next);
                 mp_obj_t inneriter = mp_getiter(next, NULL);
+                m_rs_push_obj(inneriter);
                 mp_obj_t key = mp_iternext(inneriter);
+                m_rs_push_obj(key);
                 mp_obj_t value = mp_iternext(inneriter);
+                m_rs_push_obj(value);
                 mp_obj_t stop = mp_iternext(inneriter);
                 if (key == MP_OBJ_STOP_ITERATION
                     || value == MP_OBJ_STOP_ITERATION
@@ -358,7 +371,12 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
                 } else {
                     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
                 }
+                m_rs_pop_obj(value);
+                m_rs_pop_obj(key);
+                m_rs_pop_obj(inneriter);
+                m_rs_pop_obj(next);
             }
+            m_rs_pop_obj(iter);
         }
     }
 
@@ -582,7 +600,9 @@ void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args) {
 
 mp_obj_t mp_obj_new_dict(size_t n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
+    m_rs_push_ptr(o);
     mp_obj_dict_init(o, n_args);
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 

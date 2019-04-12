@@ -192,6 +192,7 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
     mp_buffer_info_t bufinfo;
 
     mp_obj_stringio_t *o = stringio_new(type_in);
+    m_rs_push_ptr(o);
 
     if (n_args > 0) {
         if (mp_obj_is_int(args[0])) {
@@ -204,6 +205,7 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
                 vstr_init_fixed_buf(o->vstr, bufinfo.len, bufinfo.buf);
                 o->vstr->len = bufinfo.len;
                 o->ref_obj = args[0];
+                m_rs_pop_ptr(o);
                 return MP_OBJ_FROM_PTR(o);
             }
 
@@ -219,6 +221,7 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
         // Cur ptr is always at the beginning of buffer at the construction
         o->pos = 0;
     }
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 

@@ -30,6 +30,7 @@
 #include <fcntl.h>
 
 #include "py/mpstate.h"
+#include "py/rootstack.h"
 #include "py/mphal.h"
 #include "input.h"
 
@@ -65,6 +66,7 @@ void prompt_read_history(void) {
     char *home = getenv("HOME");
     if (home != NULL) {
         vstr_t vstr;
+        m_rs_push_ind(&vstr.buf);
         vstr_init(&vstr, 50);
         vstr_printf(&vstr, "%s/.micropython.history", home);
         int fd = open(vstr_null_terminated_str(&vstr), O_RDONLY);
@@ -88,6 +90,7 @@ void prompt_read_history(void) {
             }
             close(fd);
         }
+        m_rs_pop_ind(&vstr.buf);
         vstr_clear(&vstr);
     }
     #endif
@@ -100,6 +103,7 @@ void prompt_write_history(void) {
     char *home = getenv("HOME");
     if (home != NULL) {
         vstr_t vstr;
+        m_rs_push_ind(&vstr.buf);
         vstr_init(&vstr, 50);
         vstr_printf(&vstr, "%s/.micropython.history", home);
         int fd = open(vstr_null_terminated_str(&vstr), O_CREAT | O_TRUNC | O_WRONLY, 0644);
@@ -115,6 +119,7 @@ void prompt_write_history(void) {
             }
             close(fd);
         }
+        m_rs_pop_ind(&vstr.buf);
     }
     #endif
 #endif

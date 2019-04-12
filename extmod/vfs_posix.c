@@ -93,6 +93,7 @@ STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     mp_obj_vfs_posix_t *vfs = m_new_obj(mp_obj_vfs_posix_t);
+    m_rs_push_ptr(vfs); // while allocating other stuff
     vfs->base.type = type;
     vstr_init(&vfs->root, 0);
     if (n_args == 1) {
@@ -101,6 +102,7 @@ STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, siz
     }
     vfs->root_len = vfs->root.len;
     vfs->readonly = false;
+    m_rs_pop_ptr(vfs);
 
     return MP_OBJ_FROM_PTR(vfs);
 }
@@ -133,7 +135,10 @@ STATIC mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
     if (!mp_obj_is_small_int(path_in)) {
         path_in = vfs_posix_get_path_obj(self, path_in);
     }
-    return mp_vfs_posix_file_open(&mp_type_textio, path_in, mode_in);
+    m_rs_push_obj(path_in);
+    mp_obj_t o = mp_vfs_posix_file_open(&mp_type_textio, path_in, mode_in);
+    m_rs_pop_obj(path_in);
+    return o;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_posix_open_obj, vfs_posix_open);
 

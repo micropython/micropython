@@ -441,7 +441,9 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
 }
 
 STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line, mp_obj_t obj) {
+    m_rs_push_obj(obj); // make obj reachable on behalf of the caller, for efficiency
     mp_parse_node_struct_t *pn = parser_alloc(parser, sizeof(mp_parse_node_struct_t) + sizeof(mp_obj_t));
+    m_rs_pop_obj(obj);
     pn->source_line = src_line;
     #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
     // nodes are 32-bit pointers, but need to store 64-bit object
@@ -718,8 +720,10 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 if (!mp_parse_node_get_int_maybe(pn_value, &value)) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                         "constant must be an integer");
+                    m_rs_push_obj_ptr(exc);
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
                         ((mp_parse_node_struct_t*)pn1)->source_line, MP_QSTR_NULL);
+                    m_rs_pop_obj_ptr(exc);
                     nlr_raise(exc);
                 }
 
@@ -830,6 +834,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 }
 
 mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
+    m_rs_assert(lex);
 
     // initialise parser and allocate memory for its stacks
 
@@ -838,18 +843,23 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
     parser.rule_stack_top = 0;
     parser.rule_stack = m_new(rule_stack_t, parser.rule_stack_alloc);
+    m_rs_push_ind(&parser.rule_stack);
 
     parser.result_stack_alloc = MICROPY_ALLOC_PARSE_RESULT_INIT;
     parser.result_stack_top = 0;
     parser.result_stack = m_new(mp_parse_node_t, parser.result_stack_alloc);
+    m_rs_push_ind(&parser.result_stack);
 
     parser.lexer = lex;
 
     parser.tree.chunk = NULL;
     parser.cur_chunk = NULL;
+    m_rs_push_ind(&parser.tree.chunk);
+    m_rs_push_ind(&parser.cur_chunk);
 
     #if MICROPY_COMP_CONST
     mp_map_init(&parser.consts, 0);
+    m_rs_push_ind(&parser.consts.table);
     #endif
 
     // work out the top-level rule to use, and push it on the stack
@@ -1120,6 +1130,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     }
 
     #if MICROPY_COMP_CONST
+    m_rs_pop_ind(&parser.consts.table);
     mp_map_deinit(&parser.consts);
     #endif
 
@@ -1133,6 +1144,11 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         parser.cur_chunk->union_.next = parser.tree.chunk;
         parser.tree.chunk = parser.cur_chunk;
     }
+
+    // root stack now contains:
+    //  rule_stack
+    //  result_stack
+    //  tree.chunk
 
     if (
         lex->tok_kind != MP_TOKEN_END // check we are at the end of the token stream
@@ -1152,7 +1168,9 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this
+        m_rs_push_obj_ptr(exc);
         mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
+        m_rs_pop_obj_ptr(exc);
         nlr_raise(exc);
     }
 
@@ -1161,12 +1179,20 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     parser.tree.root = parser.result_stack[0];
 
     // free the memory that we don't need anymore
-    m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
+    m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
 
     // we also free the lexer on behalf of the caller
+    // note: mp_lexer_free() may call arbitrary Python code to close the stream
     mp_lexer_free(lex);
 
+    m_rs_pop_ind(&parser.cur_chunk);
+    m_rs_pop_ind(&parser.tree.chunk);
+    m_rs_pop_ind(&parser.result_stack);
+    m_rs_pop_ind(&parser.rule_stack);
+    m_rs_pop_ptr(lex);
+
+    m_rs_push_ptr(parser.tree.chunk);
     return parser.tree;
 }
 

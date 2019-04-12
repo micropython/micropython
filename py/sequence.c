@@ -130,6 +130,7 @@ mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t 
     mp_int_t step = indexes->step;
 
     mp_obj_t res = mp_obj_new_list(0, NULL);
+    m_rs_push_obj_ptr(res);
 
     if (step < 0) {
         while (start >= stop) {
@@ -142,6 +143,7 @@ mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t 
             start += step;
         }
     }
+    m_rs_pop_obj_ptr(res);
     return res;
 }
 

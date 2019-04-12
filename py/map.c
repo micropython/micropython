@@ -76,6 +76,7 @@ STATIC size_t get_hash_alloc_greater_or_equal_to(size_t x) {
 /******************************************************************************/
 /* map                                                                        */
 
+// new table data in map->table is not necessarily reachable
 void mp_map_init(mp_map_t *map, size_t n) {
     if (n == 0) {
         map->alloc = 0;
@@ -123,6 +124,7 @@ STATIC void mp_map_rehash(mp_map_t *map) {
     size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
     DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, old_alloc, new_alloc);
     mp_map_elem_t *old_table = map->table;
+    m_rs_push_ptr(old_table); // what if it's NULL?
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
     // If we reach this point, table resizing succeeded, now we can edit the old map.
     map->alloc = new_alloc;
@@ -135,6 +137,7 @@ STATIC void mp_map_rehash(mp_map_t *map) {
         }
     }
     m_del(mp_map_elem_t, old_table, old_alloc);
+    m_rs_pop_ptr(old_table);
 }
 
 // MP_MAP_LOOKUP behaviour:
@@ -311,6 +314,7 @@ STATIC void mp_set_rehash(mp_set_t *set) {
     mp_obj_t *old_table = set->table;
     set->alloc = get_hash_alloc_greater_or_equal_to(set->alloc + 1);
     set->used = 0;
+    m_rs_push_ptr(old_table);
     set->table = m_new0(mp_obj_t, set->alloc);
     for (size_t i = 0; i < old_alloc; i++) {
         if (old_table[i] != MP_OBJ_NULL && old_table[i] != MP_OBJ_SENTINEL) {
@@ -318,6 +322,7 @@ STATIC void mp_set_rehash(mp_set_t *set) {
         }
     }
     m_del(mp_obj_t, old_table, old_alloc);
+    m_rs_pop_ptr(old_table);
 }
 
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {

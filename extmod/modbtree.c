@@ -134,8 +134,10 @@ STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_t pair_o = mp_obj_new_tuple(2, NULL);
     mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(pair_o);
+    m_rs_push_ptr(pair);
     pair->items[0] = mp_obj_new_bytes(key.data, key.size);
     pair->items[1] = mp_obj_new_bytes(val.data, val.size);
+    m_rs_pop_ptr(pair);
     return pair_o;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_seq_obj, 2, 4, btree_seq);
@@ -239,8 +241,10 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
         default: {
             mp_obj_t pair_o = mp_obj_new_tuple(2, NULL);
             mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(pair_o);
+            m_rs_push_ptr(pair);
             pair->items[0] = mp_obj_new_bytes(key.data, key.size);
             pair->items[1] = mp_obj_new_bytes(val.data, val.size);
+            m_rs_pop_ptr(pair);
             return pair_o;
         }
     }

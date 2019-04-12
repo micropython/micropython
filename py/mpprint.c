@@ -334,6 +334,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     }
 
     if (buf != stack_buf) {
+        m_rs_pop_ptr(buf);
         m_del(char, buf, buf_size);
     }
     return len;

@@ -76,7 +76,9 @@ void vstr_clear(vstr_t *vstr) {
 
 vstr_t *vstr_new(size_t alloc) {
     vstr_t *vstr = m_new_obj(vstr_t);
+    m_rs_push_ptr(vstr);
     vstr_init(vstr, alloc);
+    m_rs_pop_ptr(vstr);
     return vstr;
 }
 

@@ -83,7 +83,10 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
                 if (i > 0) {
                     mp_print_str(print, ", ");
                 }
-                mp_obj_print_helper(print, mp_binary_get_val_array(o->typecode, o->items, i), PRINT_REPR);
+                mp_obj_t item = mp_binary_get_val_array(o->typecode, o->items, i);
+                m_rs_push_obj(item);
+                mp_obj_print_helper(print, item, PRINT_REPR);
+                m_rs_pop_obj(item);
             }
             mp_print_str(print, "]");
         }
@@ -106,7 +109,9 @@ STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
+    m_rs_push_ptr(o);
     o->items = m_new(byte, typecode_size * o->len);
+    m_rs_pop_ptr(o);
     return o;
 }
 #endif
@@ -141,17 +146,23 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     }
 
     mp_obj_array_t *array = array_new(typecode, len);
+    m_rs_push_ptr(array);
 
     mp_obj_t iterable = mp_getiter(initializer, NULL);
+    m_rs_push_obj(iterable);
     mp_obj_t item;
     size_t i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (len == 0) {
+            m_rs_push_obj(item);
             array_append(MP_OBJ_FROM_PTR(array), item);
+            m_rs_pop_obj(item);
         } else {
             mp_binary_set_val_array(typecode, array->items, i++, item);
         }
     }
+    m_rs_pop_obj(iterable);
+    m_rs_pop_ptr(array);
 
     return MP_OBJ_FROM_PTR(array);
 }

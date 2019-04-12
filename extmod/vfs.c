@@ -118,8 +118,16 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
     mp_load_method(vfs->obj, meth_name, meth);
     if (args != NULL) {
         memcpy(meth + 2, args, n_args * sizeof(*args));
+        // Handle args on behalf of user for convenience
+        for (size_t i = 0; i < n_args; ++i) {
+            m_rs_push_obj(args[i]);
+        }
     }
-    return mp_call_method_n_kw(n_args, 0, meth);
+    mp_obj_t o = mp_call_method_n_kw(n_args, 0, meth);
+    for (size_t i = 0; i < n_args; ++i) {
+        m_rs_pop_obj(args[n_args - 1 - i]);
+    }
+    return o;
 }
 
 mp_import_stat_t mp_vfs_import_stat(const char *path) {
@@ -185,14 +193,18 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     }
 
     // create new object
+    m_rs_push_obj(vfs_obj);
     mp_vfs_mount_t *vfs = m_new_obj(mp_vfs_mount_t);
+    m_rs_pop_obj(vfs_obj);
     vfs->str = mnt_str;
     vfs->len = mnt_len;
     vfs->obj = vfs_obj;
     vfs->next = NULL;
 
     // call the underlying object to do any mounting operation
+    m_rs_push_ptr(vfs);
     mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t*)&args);
+    m_rs_pop_ptr(vfs);
 
     // check that the destination mount point is unused
     const char *path_out;
@@ -248,7 +260,9 @@ mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
     }
 
     // call the underlying object to do any unmounting operation
+    m_rs_push_ptr(vfs);
     mp_vfs_proxy_call(vfs, MP_QSTR_umount, 0, NULL);
+    m_rs_pop_ptr(vfs);
 
     return mp_const_none;
 }
@@ -312,12 +326,16 @@ mp_obj_t mp_vfs_getcwd(void) {
         return cwd_o;
     }
     const char *cwd = mp_obj_str_get_str(cwd_o);
+    m_rs_push_obj(cwd_o);
     vstr_t vstr;
+    m_rs_push_ind(&vstr.buf);
     vstr_init(&vstr, MP_STATE_VM(vfs_cur)->len + strlen(cwd) + 1);
     vstr_add_strn(&vstr, MP_STATE_VM(vfs_cur)->str, MP_STATE_VM(vfs_cur)->len);
     if (!(cwd[0] == '/' && cwd[1] == 0)) {
         vstr_add_str(&vstr, cwd);
     }
+    m_rs_pop_ind(&vstr.buf);
+    m_rs_pop_obj(cwd_o);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj, mp_vfs_getcwd);
@@ -354,11 +372,13 @@ STATIC mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
         } else {
             // a mounted directory
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
+            m_rs_push_ptr(t);
             t->items[0] = mp_obj_new_str_of_type(
                 self->is_str ? &mp_type_str : &mp_type_bytes,
                 (const byte*)vfs->str + 1, vfs->len - 1);
             t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
             t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
+            m_rs_pop_ptr(t);
             return MP_OBJ_FROM_PTR(t);
         }
     }
@@ -392,11 +412,18 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_ilistdir_obj, 0, 1, mp_vfs_ilistdir);
 
 mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
     mp_obj_t iter = mp_vfs_ilistdir(n_args, args);
+    m_rs_push_obj(iter);
     mp_obj_t dir_list = mp_obj_new_list(0, NULL);
+    m_rs_push_obj_ptr(dir_list);
     mp_obj_t next;
     while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-        mp_obj_list_append(dir_list, mp_obj_subscr(next, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL));
+        m_rs_push_obj(next);
+        mp_obj_t next0 = mp_obj_subscr(next, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL);
+        m_rs_pop_obj(next);
+        mp_obj_list_append_rs(dir_list, next0);
     }
+    m_rs_pop_obj_ptr(dir_list);
+    m_rs_pop_obj(iter);
     return dir_list;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);

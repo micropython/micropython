@@ -85,9 +85,11 @@ STATIC mp_obj_t match_groups(mp_obj_t self_in) {
         return mp_const_empty_tuple;
     }
     mp_obj_tuple_t *groups = MP_OBJ_TO_PTR(mp_obj_new_tuple(self->num_matches - 1, NULL));
+    m_rs_push_ptr(groups);
     for (int i = 1; i < self->num_matches; ++i) {
         groups->items[i - 1] = match_group(self_in, MP_OBJ_NEW_SMALL_INT(i));
     }
+    m_rs_pop_ptr(groups);
     return MP_OBJ_FROM_PTR(groups);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(match_groups_obj, match_groups);
@@ -219,6 +221,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_t retval = mp_obj_new_list(0, NULL);
+    m_rs_push_obj_ptr(retval);
     const char **caps = mp_local_alloc(caps_num * sizeof(char*));
     while (true) {
         // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
@@ -231,7 +234,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         }
 
         mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, caps[0] - subj.begin);
-        mp_obj_list_append(retval, s);
+        mp_obj_list_append_rs(retval, s);
         if (self->re.sub > 0) {
             mp_raise_NotImplementedError("Splitting with sub-captures");
         }
@@ -244,7 +247,8 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     mp_local_free((char**)caps);
 
     mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, subj.end - subj.begin);
-    mp_obj_list_append(retval, s);
+    mp_obj_list_append_rs(retval, s);
+    m_rs_pop_obj_ptr(retval);
     return retval;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
@@ -287,6 +291,7 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *a
 
         // Initialise the vstr if it's not already
         if (vstr_return.buf == NULL) {
+            m_rs_push_ind(&vstr_return.buf);
             vstr_init(&vstr_return, match->caps[0] - subj.begin);
         }
 
@@ -353,6 +358,7 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *a
     // Add post-match string
     vstr_add_strn(&vstr_return, subj.begin, subj.end - subj.begin);
 
+    m_rs_pop_ind(&vstr_return.buf);
     return mp_obj_new_str_from_vstr(mp_obj_get_type(where), &vstr_return);
 }
 
@@ -410,7 +416,9 @@ STATIC mp_obj_t mod_re_exec(bool is_anchored, uint n_args, const mp_obj_t *args)
     mp_obj_t self = mod_re_compile(1, args);
 
     const mp_obj_t args2[] = {self, args[1]};
+    m_rs_push_obj_ptr(self);
     mp_obj_t match = ure_exec(is_anchored, 2, args2);
+    m_rs_pop_obj_ptr(self);
     return match;
 }
 
@@ -427,7 +435,10 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
 #if MICROPY_PY_URE_SUB
 STATIC mp_obj_t mod_re_sub(size_t n_args, const mp_obj_t *args) {
     mp_obj_t self = mod_re_compile(1, args);
-    return re_sub_helper(self, n_args, args);
+    m_rs_push_obj_ptr(self);
+    mp_obj_t o = re_sub_helper(self, n_args, args);
+    m_rs_pop_obj_ptr(self);
+    return o;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
 #endif

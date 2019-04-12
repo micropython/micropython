@@ -184,6 +184,7 @@ STATIC mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# vstr\n");
         vstr_t *vstr = vstr_new(16);
+        m_rs_push_ptr(vstr);
         vstr_hint_size(vstr, 32);
         vstr_add_str(vstr, "ts");
         vstr_ins_byte(vstr, 1, 'e');
@@ -202,6 +203,7 @@ STATIC mp_obj_t extra_coverage(void) {
 
         vstr_cut_out_bytes(vstr, 3, 10);
         mp_printf(&mp_plat_print, "%.*s\n", (int)vstr->len, vstr->buf);
+        m_rs_pop_ptr(vstr);
 
         VSTR_FIXED(fix, 4);
         nlr_buf_t nlr;
@@ -269,6 +271,7 @@ STATIC mp_obj_t extra_coverage(void) {
 
         mp_uint_t value;
         mpz_t mpz;
+        m_rs_push_ind(&mpz.dig);
         mpz_init_zero(&mpz);
 
         // mpz_as_uint_checked, with success
@@ -312,11 +315,15 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // mpz_mul_inpl with dest==rhs, lhs!=rhs
         mpz_t mpz2;
+        m_rs_push_ind(&mpz2.dig);
         mpz_set_from_int(&mpz, 2);
         mpz_init_from_int(&mpz2, 3);
         mpz_mul_inpl(&mpz, &mpz2, &mpz);
         mpz_as_uint_checked(&mpz, &value);
         mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        m_rs_pop_ind(&mpz2.dig);
+        m_rs_pop_ind(&mpz.dig);
     }
 
     // runtime utils
@@ -326,12 +333,15 @@ STATIC mp_obj_t extra_coverage(void) {
         // call mp_call_function_1_protected
         mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_1_protected with invalid args
-        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3));
+        mp_obj_t arg = mp_obj_new_str("abc", 3);
+        m_rs_push_obj(arg);
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), arg);
 
         // call mp_call_function_2_protected
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
-        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), arg, arg);
+        m_rs_pop_obj(arg);
     }
 
     // warning
@@ -380,13 +390,15 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_obj_fun_bc_t fun_bc;
         fun_bc.bytecode = (const byte*)"\x01"; // just needed for n_state
         mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        m_rs_push_ptr(code_state);
         code_state->fun_bc = &fun_bc;
-        code_state->ip = (const byte*)"\x00"; // just needed for an invalid opcode
+        code_state->ip = (const byte*)"\xff"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
         code_state->exc_sp = NULL;
         code_state->old_globals = NULL;
         mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
         mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
+        m_rs_pop_ptr(code_state);
     }
 
     // scheduler
@@ -419,17 +431,22 @@ STATIC mp_obj_t extra_coverage(void) {
     }
 
     mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
+    m_rs_push_ptr(s);
     s->base.type = &mp_type_stest_fileio;
     s->buf = NULL;
     s->len = 0;
     s->pos = 0;
     s->error_code = 0;
     mp_obj_streamtest_t *s2 = m_new_obj(mp_obj_streamtest_t);
+    m_rs_push_ptr(s2);
     s2->base.type = &mp_type_stest_textio2;
 
     // return a tuple of data for testing on the Python side
     mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj, MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
-    return mp_obj_new_tuple(MP_ARRAY_SIZE(items), items);
+    mp_obj_t tuple = mp_obj_new_tuple(MP_ARRAY_SIZE(items), items);
+    m_rs_pop_ptr(s2);
+    m_rs_pop_ptr(s);
+    return tuple;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
 

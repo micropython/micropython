@@ -41,7 +41,9 @@ STATIC NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // exception's type from ValueError to SyntaxError and add traceback info
     if (lex != NULL) {
         ((mp_obj_base_t*)MP_OBJ_TO_PTR(exc))->type = &mp_type_SyntaxError;
+        m_rs_push_obj_ptr(exc);
         mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
+        m_rs_pop_obj_ptr(exc);
     }
     nlr_raise(exc);
 }
@@ -155,11 +157,15 @@ value_error:
     } else {
         vstr_t vstr;
         mp_print_t print;
+        m_rs_push_ind(&vstr.buf);
         vstr_init_print(&vstr, 50, &print);
         mp_printf(&print, "invalid syntax for integer with base %d: ", base);
         mp_str_print_quoted(&print, str_val_start, top - str_val_start, true);
-        mp_obj_t exc = mp_obj_new_exception_arg1(&mp_type_ValueError,
-            mp_obj_new_str_from_vstr(&mp_type_str, &vstr));
+        m_rs_pop_ind(&vstr.buf);
+        mp_obj_t msg = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+        m_rs_push_obj(msg);
+        mp_obj_t exc = mp_obj_new_exception_arg1(&mp_type_ValueError, msg);
+        m_rs_pop_obj(msg);
         raise_exc(exc, lex);
     }
 }

@@ -41,6 +41,7 @@ unsigned int nlr_push_tail(nlr_buf_t *nlr) {
     nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
     nlr->prev = *top;
     MP_NLR_SAVE_PYSTACK(nlr);
+    MP_NLR_SAVE_ROOT_STACK(nlr);
     *top = nlr;
     return 0; // normal return
 }

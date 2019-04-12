@@ -27,6 +27,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/rootstack.h"
 #include "py/mpz.h"
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
@@ -711,7 +712,9 @@ STATIC mpz_t *mpz_clone(const mpz_t *src) {
     z->fixed_dig = 0;
     z->alloc = src->alloc;
     z->len = src->len;
+    m_rs_push_ptr(z);
     z->dig = m_new(mpz_dig_t, z->alloc);
+    m_rs_pop_ptr(z);
     memcpy(z->dig, src->dig, src->alloc * sizeof(mpz_dig_t));
     return z;
 }
@@ -1311,6 +1314,7 @@ void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else if (rhs == dest) {
         rhs = temp = mpz_clone(rhs);
     }
+    m_rs_push_ptr(temp);
 
     mpz_need_dig(dest, lhs->len + rhs->len); // min mem l+r-1, max mem l+r
     memset(dest->dig, 0, dest->alloc * sizeof(mpz_dig_t));
@@ -1322,6 +1326,7 @@ void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         dest->neg = 1;
     }
 
+    m_rs_pop_ptr(temp);
     mpz_free(temp);
 }
 
@@ -1340,7 +1345,9 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     }
 
     mpz_t *x = mpz_clone(lhs);
+    m_rs_push_ptr(x);
     mpz_t *n = mpz_clone(rhs);
+    m_rs_push_ptr(n);
 
     mpz_set_from_int(dest, 1);
 
@@ -1355,6 +1362,8 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         mpz_mul_inpl(x, x, x);
     }
 
+    m_rs_pop_ptr(n);
+    m_rs_pop_ptr(x);
     mpz_free(x);
     mpz_free(n);
 }
@@ -1375,23 +1384,32 @@ void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t 
     }
 
     mpz_t *x = mpz_clone(lhs);
+    m_rs_push_ptr(x);
     mpz_t *n = mpz_clone(rhs);
-    mpz_t quo; mpz_init_zero(&quo);
+    m_rs_push_ptr(n);
+    mpz_t *quo = m_new_obj(mpz_t);
+    m_rs_push_ptr(quo);
+    mpz_init_zero(quo);
 
     while (n->len > 0) {
         if ((n->dig[0] & 1) != 0) {
             mpz_mul_inpl(dest, dest, x);
-            mpz_divmod_inpl(&quo, dest, dest, mod);
+            mpz_divmod_inpl(quo, dest, dest, mod);
         }
         n->len = mpn_shr(n->dig, n->dig, n->len, 1);
         if (n->len == 0) {
             break;
         }
         mpz_mul_inpl(x, x, x);
-        mpz_divmod_inpl(&quo, x, x, mod);
+        mpz_divmod_inpl(quo, x, x, mod);
     }
 
-    mpz_deinit(&quo);
+    m_rs_pop_ptr(quo);
+    m_rs_pop_ptr(n);
+    m_rs_pop_ptr(x);
+
+    mpz_deinit(quo);
+    m_del_obj(mpz_t, quo);
     mpz_free(x);
     mpz_free(n);
 }

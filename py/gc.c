@@ -30,6 +30,7 @@
 
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/rootstack.h"
 
 #if MICROPY_ENABLE_GC
 
@@ -41,12 +42,20 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#if 0
+#include <inttypes.h>
+#define RS_DEBUG (1)
+#define RS_DEBUG_printf printf
+#else
+#define RS_DEBUG_printf(...) (void)0
+#endif
+
 // make this 1 to dump the heap each time it changes
 #define EXTENSIVE_HEAP_PROFILING (0)
 
 // make this 1 to zero out swept memory to more eagerly
 // detect untraced object still in use
-#define CLEAR_ON_SWEEP (0)
+#define CLEAR_ON_SWEEP (1)
 
 #define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
 #define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
@@ -294,6 +303,15 @@ STATIC void gc_sweep(void) {
 #endif
                 free_tail = 1;
                 DEBUG_printf("gc_sweep(%p)\n", PTR_FROM_BLOCK(block));
+                //printf("gc_sweep(%lx)\n", PTR_FROM_BLOCK(block));
+                #if RS_DEBUG
+                {
+                    #define F "%016lx"
+                    mp_uint_t *p = (void*)PTR_FROM_BLOCK(block);
+                    printf("gc_sweep(%p; " F ":" F ":" F ":" F ")\n", p, p[0], p[1], p[2], p[3]);
+                    #undef F
+                }
+                #endif
                 #if MICROPY_PY_GC_COLLECT_RETVAL
                 MP_STATE_MEM(gc_collected)++;
                 #endif
@@ -336,6 +354,10 @@ void gc_collect_start(void) {
     // Trace root pointers from the Python stack.
     ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
     gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
+    #endif
+
+    #if MICROPY_ROOT_STACK
+    m_rs_mark();
     #endif
 }
 
@@ -435,6 +457,13 @@ void gc_info(gc_info_t *info) {
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
+
+    #if MICROPY_EXTENSIVE_GC_COLLECT
+    if (!gc_is_locked()) {
+        gc_collect();
+    }
+    #endif
+
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
@@ -669,6 +698,12 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         gc_free(ptr_in);
         return NULL;
     }
+
+    #if MICROPY_EXTENSIVE_GC_COLLECT
+    if (!gc_is_locked()) {
+        gc_collect();
+    }
+    #endif
 
     void *ptr = ptr_in;
 
@@ -911,6 +946,22 @@ void gc_dump_alloc_table(void) {
     mp_print_str(&mp_plat_print, "\n");
     GC_EXIT();
 }
+
+#if MICROPY_ROOT_STACK
+void gc_rs_push_checked(void *ptr) {
+    if (VERIFY_PTR(ptr)) {
+        assert(ATB_GET_KIND(BLOCK_FROM_PTR(ptr)) == AT_HEAD);
+        gc_rs_push(0, ptr);
+    }
+}
+
+void gc_rs_pop_checked(void *ptr) {
+    if (VERIFY_PTR(ptr)) {
+        assert(ATB_GET_KIND(BLOCK_FROM_PTR(ptr)) == AT_HEAD);
+        gc_rs_pop(0, ptr);
+    }
+}
+#endif
 
 #if 0
 // For testing the GC functions

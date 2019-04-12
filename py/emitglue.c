@@ -190,5 +190,8 @@ mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_clos
         ffun = mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
     }
     // wrap function in closure object
-    return mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));
+    m_rs_push_obj_ptr(ffun);
+    mp_obj_t fun = mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));
+    m_rs_pop_obj_ptr(ffun);
+    return fun;
 }

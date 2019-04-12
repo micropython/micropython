@@ -75,9 +75,13 @@ STATIC mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
     // create the new class using a call to the meta object
     mp_obj_t meta_args[3];
     meta_args[0] = args[1]; // class name
+    m_rs_push_obj_ptr(class_locals);
     meta_args[1] = mp_obj_new_tuple(n_args - 2, args + 2); // tuple of bases
     meta_args[2] = class_locals; // dict of members
+    m_rs_push_obj_ptr(meta_args[1]);
     mp_obj_t new_class = mp_call_function_n_kw(meta, 3, 0, meta_args);
+    m_rs_pop_obj_ptr(meta_args[1]);
+    m_rs_pop_obj_ptr(meta_args[2]);
 
     // store into cell if neede
     if (cell != mp_const_none) {
@@ -174,6 +178,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 
 STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
     mp_obj_t dir = mp_obj_new_list(0, NULL);
+    m_rs_push_obj_ptr(dir);
     if (n_args == 0) {
         // Make a list of names in the local namespace
         mp_obj_dict_t *dict = mp_locals_get();
@@ -194,6 +199,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
                 // Support for __dir__: see if we can dispatch to this special method
                 // This relies on MP_QSTR__dir__ being first after MP_QSTR_
                 if (i == MP_QSTR___dir__ && dest[1] != MP_OBJ_NULL) {
+                    m_rs_pop_obj_ptr(dir);
                     return mp_call_method_n_kw(0, 0, dest);
                 }
                 #endif
@@ -201,6 +207,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
             }
         }
     }
+    m_rs_pop_obj_ptr(dir);
     return dir;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
@@ -270,16 +277,23 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
         // given an iterable
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
+        m_rs_push_obj(iterable);
+        // TODO how to deal with best_key and best_obj on root stack?
         mp_obj_t best_key = MP_OBJ_NULL;
         mp_obj_t best_obj = MP_OBJ_NULL;
         mp_obj_t item;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+            m_rs_push_obj(item);
             mp_obj_t key = key_fn == MP_OBJ_NULL ? item : mp_call_function_1(key_fn, item);
+            m_rs_pop_obj(item);
+            m_rs_push_obj(key);
             if (best_obj == MP_OBJ_NULL || (mp_binary_op(op, key, best_key) == mp_const_true)) {
                 best_key = key;
                 best_obj = item;
             }
+            m_rs_pop_obj(key);
         }
+        m_rs_pop_obj(iterable);
         if (best_obj == MP_OBJ_NULL) {
             default_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_default), MP_MAP_LOOKUP);
             if (default_elem != NULL) {
@@ -291,6 +305,7 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
         return best_obj;
     } else {
         // given many args
+        // TODO how to deal with best_key and best_obj on root stack?
         mp_obj_t best_key = MP_OBJ_NULL;
         mp_obj_t best_obj = MP_OBJ_NULL;
         for (size_t i = 0; i < n_args; i++) {
@@ -463,8 +478,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t vstr;
     mp_print_t print;
+    m_rs_push_ind(&vstr.buf);
     vstr_init_print(&vstr, 16, &print);
     mp_obj_print_helper(&print, o_in, PRINT_REPR);
+    m_rs_pop_ind(&vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
@@ -485,22 +502,34 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
         }
 
         mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, MP_OBJ_NEW_SMALL_INT(10), MP_OBJ_NEW_SMALL_INT(-num_dig));
+        m_rs_push_obj(mult);
         mp_obj_t half_mult =  mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, MP_OBJ_NEW_SMALL_INT(2));
+        m_rs_push_obj(half_mult);
         mp_obj_t modulo = mp_binary_op(MP_BINARY_OP_MODULO, o_in, mult);
+        m_rs_push_obj(modulo);
         mp_obj_t rounded = mp_binary_op(MP_BINARY_OP_SUBTRACT, o_in, modulo);
+        m_rs_push_obj(rounded);
+        mp_obj_t result;
         if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, half_mult, modulo))) {
-            return rounded;
+            result = rounded;
         } else if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, modulo, half_mult))) {
-            return mp_binary_op(MP_BINARY_OP_ADD, rounded, mult);
+            result = mp_binary_op(MP_BINARY_OP_ADD, rounded, mult);
         } else {
             // round to even number
             mp_obj_t floor = mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, o_in, mult);
+            m_rs_push_obj(floor);
             if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_AND, floor, MP_OBJ_NEW_SMALL_INT(1)))) {
-                return mp_binary_op(MP_BINARY_OP_ADD, rounded, mult);
+                result = mp_binary_op(MP_BINARY_OP_ADD, rounded, mult);
             } else {
-                return rounded;
+                result = rounded;
             }
+            m_rs_pop_obj(floor);
         }
+        m_rs_pop_obj(rounded);
+        m_rs_pop_obj(modulo);
+        m_rs_pop_obj(half_mult);
+        m_rs_pop_obj(mult);
+        return result;
         #endif
     }
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -542,7 +571,9 @@ STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t 
         mp_raise_TypeError("must use keyword argument for key function");
     }
     mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
+    m_rs_push_obj_ptr(self);
     mp_obj_list_sort(1, &self, kwargs);
+    m_rs_pop_obj_ptr(self);
 
     return self;
 }

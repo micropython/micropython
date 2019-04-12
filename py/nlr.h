@@ -83,6 +83,8 @@ struct _nlr_buf_t {
     #if MICROPY_ENABLE_PYSTACK
     void *pystack;
     #endif
+
+    struct _root_stack_elem_t *root_stack;
 };
 
 // Helper macros to save/restore the pystack state
@@ -94,6 +96,9 @@ struct _nlr_buf_t {
 #define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
 #endif
 
+#define MP_NLR_SAVE_ROOT_STACK(nlr_buf) (nlr_buf)->root_stack = MP_STATE_THREAD(root_stack_cur)
+#define MP_NLR_RESTORE_ROOT_STACK(nlr_buf) MP_STATE_THREAD(root_stack_cur) = (nlr_buf)->root_stack
+
 // Helper macro to use at the start of a specific nlr_jump implementation
 #define MP_NLR_JUMP_HEAD(val, top) \
     nlr_buf_t **_top_ptr = &MP_STATE_THREAD(nlr_top); \
@@ -103,6 +108,7 @@ struct _nlr_buf_t {
     } \
     top->ret_val = val; \
     MP_NLR_RESTORE_PYSTACK(top); \
+    MP_NLR_RESTORE_ROOT_STACK(top); \
     *_top_ptr = top->prev; \
 
 #if MICROPY_NLR_SETJMP

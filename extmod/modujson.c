@@ -44,9 +44,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ujson_dump_obj, mod_ujson_dump);
 
 STATIC mp_obj_t mod_ujson_dumps(mp_obj_t obj) {
     vstr_t vstr;
+    m_rs_push_ind(&vstr.buf);
     mp_print_t print;
     vstr_init_print(&vstr, 8, &print);
     mp_obj_print_helper(&print, obj, PRINT_JSON);
+    m_rs_pop_ind(&vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);
@@ -91,13 +93,17 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
     ujson_stream_t s = {stream_obj, stream_p->read, 0, 0};
     vstr_t vstr;
+    m_rs_push_ind(&vstr.buf);
     vstr_init(&vstr, 8);
     mp_obj_list_t stack; // we use a list as a simple stack for nested JSON
+    m_rs_push_ind(&stack.items);
     stack.len = 0;
     stack.items = NULL;
     mp_obj_t stack_top = MP_OBJ_NULL;
+    m_rs_push_ind(&stack_top);
     mp_obj_type_t *stack_top_type = NULL;
     mp_obj_t stack_key = MP_OBJ_NULL;
+    m_rs_push_ind(&stack_key);
     S_NEXT(s);
     for (;;) {
         cont:
@@ -234,6 +240,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
             }
         } else {
             // append to list or dict
+            m_rs_push_obj(next);
             if (stack_top_type == &mp_type_list) {
                 mp_obj_list_append(stack_top, next);
             } else {
@@ -257,6 +264,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
                 stack_top = next;
                 stack_top_type = mp_obj_get_type(stack_top);
             }
+            m_rs_pop_obj(next);
         }
     }
     success:
@@ -272,6 +280,10 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
         // not exactly 1 object
         goto fail;
     }
+    m_rs_pop_ind(&stack_key);
+    m_rs_pop_ind(&stack_top);
+    m_rs_pop_ind(&stack.items);
+    m_rs_pop_ind(&vstr.buf);
     vstr_clear(&vstr);
     return stack_top;
 

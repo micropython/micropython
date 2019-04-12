@@ -86,6 +86,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             } else {
                 lex = (mp_lexer_t*)source;
             }
+            m_rs_push_ptr(lex);
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);

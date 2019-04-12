@@ -71,10 +71,14 @@ STATIC void mp_reader_vfs_close(void *data) {
 
 void mp_reader_new_file(mp_reader_t *reader, const char *filename) {
     mp_reader_vfs_t *rf = m_new_obj(mp_reader_vfs_t);
+    m_rs_push_ptr(rf);
     mp_obj_t arg = mp_obj_new_str(filename, strlen(filename));
+    m_rs_push_obj(arg);
     rf->file = mp_vfs_open(1, &arg, (mp_map_t*)&mp_const_empty_map);
+    m_rs_pop_obj(arg);
     int errcode;
     rf->len = mp_stream_rw(rf->file, rf->buf, sizeof(rf->buf), &errcode, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+    m_rs_pop_ptr(rf);
     if (errcode != 0) {
         mp_raise_OSError(errcode);
     }

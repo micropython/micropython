@@ -58,6 +58,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_lexer_t *lex = mp_lexer_new_from_file(file);
+        m_rs_push_ptr(lex);
 
         qstr source_name;
         if (source_file == NULL) {
@@ -71,6 +72,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        m_rs_assert(parse_tree.chunk);
         mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, emit_opt, false);
 
         vstr_t vstr;

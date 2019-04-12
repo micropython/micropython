@@ -348,6 +348,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     if (kind == MP_CODE_BYTECODE) {
         // Allocate memory for the bytecode
         fun_data = m_new(uint8_t, fun_data_len);
+        m_rs_push_ptr(fun_data);
 
         // Load prelude
         byte *ip = fun_data;
@@ -421,6 +422,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
             ++n_alloc; // additional entry for mp_fun_table
         }
         const_table = m_new(mp_uint_t, n_alloc);
+        m_rs_push_ptr(const_table);
         mp_uint_t *ct = const_table;
 
         // Load function argument names (initial entries in const_table)
@@ -448,6 +450,8 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     // Create raw_code and return it
     mp_raw_code_t *rc = mp_emit_glue_new_raw_code();
     if (kind == MP_CODE_BYTECODE) {
+        m_rs_pop_ptr(const_table);
+        m_rs_pop_ptr(fun_data);
         mp_emit_glue_assign_bytecode(rc, fun_data,
             #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
             fun_data_len,
@@ -463,6 +467,10 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         #if defined(MP_PLAT_COMMIT_EXEC)
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len);
         #endif
+
+        if (kind != MP_CODE_NATIVE_ASM) {
+            m_rs_pop_ptr(const_table);
+        }
 
         mp_emit_glue_assign_native(rc, kind,
             fun_data, fun_data_len, const_table,
@@ -494,14 +502,19 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     qstr_window_t qw;
     qw.idx = 0;
     mp_raw_code_t *rc = load_raw_code(reader, &qw);
+    m_rs_push_ptr(rc);
     reader->close(reader->data);
+    m_rs_pop_ptr(rc);
     return rc;
 }
 
 mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
     mp_reader_t reader;
     mp_reader_new_mem(&reader, buf, len, 0);
-    return mp_raw_code_load(&reader);
+    m_rs_push_ptr(reader.data);
+    mp_raw_code_t *rc = mp_raw_code_load(&reader);
+    m_rs_pop_ptr(reader.data);
+    return rc;
 }
 
 #if MICROPY_HAS_FILE_READER
@@ -509,7 +522,10 @@ mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
 mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
     mp_reader_t reader;
     mp_reader_new_file(&reader, filename);
-    return mp_raw_code_load(&reader);
+    m_rs_push_ptr(reader.data);
+    mp_raw_code_t *rc = mp_raw_code_load(&reader);
+    m_rs_pop_ptr(reader.data);
+    return rc;
 }
 
 #endif // MICROPY_HAS_FILE_READER

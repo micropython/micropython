@@ -58,7 +58,11 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
+#if MICROPY_EXTENSIVE_GC_COLLECT
+long heap_size = 80*1024 * (sizeof(mp_uint_t) / 4);
+#else
 long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
+#endif
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
@@ -117,6 +121,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         } else { // LEX_SRC_STDIN
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
+        m_rs_push_ptr(lex);
 
         qstr source_name = lex->source_name;
 
@@ -127,6 +132,8 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+        m_rs_assert(parse_tree.chunk);
+        gc_collect(); // TODO mp_parse doesn't explicitly free something that perhaps it could
 
         #if defined(MICROPY_UNIX_COVERAGE)
         // allow to print the parse tree in the coverage build
@@ -141,7 +148,9 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
         if (!compile_only) {
             // execute it
+            m_rs_push_obj(module_fun);
             mp_call_function_0(module_fun);
+            m_rs_pop_obj(module_fun);
             // check for pending exception
             if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
                 mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
@@ -188,6 +197,7 @@ STATIC int do_repl(void) {
     // use MicroPython supplied readline
 
     vstr_t line;
+    m_rs_push_ind(&line.buf);
     vstr_init(&line, 16);
     for (;;) {
         mp_hal_stdio_mode_raw();
@@ -205,6 +215,7 @@ STATIC int do_repl(void) {
             // EOF
             printf("\n");
             mp_hal_stdio_mode_orig();
+            m_rs_pop_ind(&line.buf);
             vstr_clear(&line);
             return 0;
         } else if (ret == CHAR_CTRL_E) {
@@ -257,6 +268,7 @@ STATIC int do_repl(void) {
 
         ret = execute_from_lexer(LEX_SRC_VSTR, &line, parse_input_kind, true);
         if (ret & FORCED_EXIT) {
+            m_rs_pop_ind(&line.buf);
             return ret;
         }
     }
@@ -456,7 +468,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
             mp_type_vfs_posix.make_new(&mp_type_vfs_posix, 0, 0, NULL),
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
+        m_rs_push_obj_ptr(args[0]);
         mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
+        m_rs_pop_obj_ptr(args[0]);
         MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
     }
     #endif
@@ -495,9 +509,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
             // Expand standalone ~ to $HOME
             int home_l = strlen(home);
             vstr_t vstr;
+            m_rs_push_ind(&vstr.buf);
             vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
             vstr_add_strn(&vstr, home, home_l);
             vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+            m_rs_pop_ind(&vstr.buf);
             path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
         } else {
             path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
@@ -652,7 +668,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     #if defined(MICROPY_UNIX_COVERAGE)
-    gc_sweep_all();
+    // TODO get working with root pointer stack by not sweeping qstrs, or not explicitly freeing qstrs at end
+    //gc_sweep_all();
     #endif
 
     mp_deinit();

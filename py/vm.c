@@ -34,8 +34,9 @@
 #include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
+#include "py/gc.h"
 
-#if 0
+#if 0 // MICROPY_DEBUG_PRINTERS
 #define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
 #define TRACE(ip)
@@ -192,7 +193,13 @@ outer_dispatch_loop:
 
             // loop to execute byte code
             for (;;) {
-dispatch_loop:
+dispatch_loop:;
+                #if MICROPY_ENABLE_GC && MICROPY_EXTENSIVE_GC_COLLECT
+                // Be sure not to recursively call GC during finaliser call
+                if (!gc_is_locked()) {
+                    gc_collect();
+                }
+                #endif
 #if MICROPY_OPT_COMPUTED_GOTO
                 DISPATCH();
 #else
@@ -611,7 +618,9 @@ dispatch_loop:
                         sp[-1] = mp_const_none;
                         sp[0] = mp_const_none;
                         sp[1] = mp_const_none;
+                        m_rs_push_obj(data);
                         mp_call_method_n_kw(3, 0, sp - 3);
+                        m_rs_pop_obj(data);
                         sp[-3] = data;
                         sp[-2] = cause;
                         sp -= 2; // we removed (__exit__, ctx_mgr)
@@ -851,7 +860,10 @@ unwind_jump:;
                 ENTRY(MP_BC_UNPACK_EX): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
-                    mp_unpack_ex(sp[0], unum, sp);
+                    mp_obj_t seq = sp[0];
+                    m_rs_push_obj(seq); // sp[0] will be overwritten, so retain root pointer
+                    mp_unpack_ex(seq, unum, sp);
+                    m_rs_pop_obj(seq);
                     sp += (unum & 0xff) + ((unum >> 8) & 0xff);
                     DISPATCH();
                 }
@@ -1257,7 +1269,7 @@ yield:
                         SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
                         DISPATCH();
                     } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE) {
-                        mp_obj_t rhs = POP();
+                        mp_obj_t rhs = POP(); // XXX may now be unreachable
                         mp_obj_t lhs = TOP();
                         SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
                         DISPATCH();

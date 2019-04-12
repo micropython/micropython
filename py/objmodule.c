@@ -117,6 +117,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 
     // create new module object
     mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
+    m_rs_push_ptr(o);
     o->base.type = &mp_type_module;
     o->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
@@ -127,6 +128,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     el->value = MP_OBJ_FROM_PTR(o);
 
     // return the new module
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 

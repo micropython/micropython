@@ -235,6 +235,8 @@ typedef struct _mp_state_thread_t {
     uint8_t *pystack_cur;
     #endif
 
+    struct _root_stack_elem_t *root_stack_cur;
+
     ////////////////////////////////////////////////////////////
     // START ROOT POINTER SECTION
     // Everything that needs GC scanning must start here, and

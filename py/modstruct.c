@@ -128,6 +128,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
     size_t num_items = calc_size_items(fmt, &total_sz);
     char fmt_type = get_fmt_type(&fmt);
     mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_items, NULL));
+    m_rs_push_ptr(res);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
     byte *p = bufinfo.buf;
@@ -170,6 +171,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
         }
         fmt++;
     }
+    m_rs_pop_ptr(res);
     return MP_OBJ_FROM_PTR(res);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_from);

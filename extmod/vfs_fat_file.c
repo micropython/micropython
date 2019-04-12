@@ -193,6 +193,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     }
 
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
+    m_rs_push_ptr(o);
     o->base.type = type;
 
     const char *fname = mp_obj_str_get_str(args[0].u_obj);
@@ -208,6 +209,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
         f_lseek(&o->fp, f_size(&o->fp));
     }
 
+    m_rs_pop_ptr(o);
     return MP_OBJ_FROM_PTR(o);
 }
 

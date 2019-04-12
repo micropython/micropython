@@ -309,11 +309,12 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
                 goto zero_division_error;
             }
             mp_obj_float_divmod(&lhs_val, &rhs_val);
-            mp_obj_t tuple[2] = {
-                mp_obj_new_float(lhs_val),
-                mp_obj_new_float(rhs_val),
-            };
-            return mp_obj_new_tuple(2, tuple);
+            mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+            m_rs_push_ptr(tuple);
+            tuple->items[0] = mp_obj_new_float(lhs_val);
+            tuple->items[1] = mp_obj_new_float(rhs_val);
+            m_rs_pop_ptr(tuple);
+            return MP_OBJ_FROM_PTR(tuple);
         }
         case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val);
         case MP_BINARY_OP_MORE: return mp_obj_new_bool(lhs_val > rhs_val);

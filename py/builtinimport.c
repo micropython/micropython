@@ -135,7 +135,9 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     #if MICROPY_PY___FILE__
     qstr source_name = lex->source_name;
+    m_rs_push_ptr(lex);
     mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    m_rs_pop_ptr(lex);
     #endif
 
     // parse, compile and execute the module in its context
@@ -166,7 +168,9 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun = mp_make_function_from_raw_code(raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
+        m_rs_push_obj_ptr(module_fun);
         mp_call_function_0(module_fun);
+        m_rs_pop_obj_ptr(module_fun);
 
         // finish nlr block, restore context
         nlr_pop();
@@ -216,7 +220,9 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
+        m_rs_push_ptr(raw_code);
         do_execute_raw_code(module_obj, raw_code);
+        m_rs_pop_ptr(raw_code);
         return;
     }
     #endif
@@ -413,6 +419,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 // module not already loaded, so load it!
 
                 module_obj = mp_obj_new_module(mod_name);
+                m_rs_push_obj_ptr(module_obj);
 
                 // if args[3] (fromtuple) has magic value False, set up
                 // this module for command-line "-m" option (set module's
@@ -437,7 +444,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     DEBUG_printf("%.*s is dir\n", vstr_len(&path), vstr_str(&path));
                     // https://docs.python.org/3/reference/import.html
                     // "Specifically, any module that contains a __path__ attribute is considered a package."
-                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path)));
+                    mp_obj_t path_o = mp_obj_new_str(vstr_str(&path), vstr_len(&path));
+                    m_rs_push_obj(path_o);
+                    mp_store_attr(module_obj, MP_QSTR___path__, path_o);
+                    m_rs_pop_obj(path_o);
                     size_t orig_path_len = path.len;
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
@@ -454,6 +464,8 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     // (the module that was just loaded) is not a package.  This will be caught
                     // on the next iteration because the file will not exist.
                 }
+
+                m_rs_pop_obj_ptr(module_obj);
             }
             if (outer_module_obj != MP_OBJ_NULL) {
                 qstr s = qstr_from_strn(mod_str + last, i - last);

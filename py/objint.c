@@ -147,7 +147,9 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
         } else {
             mp_obj_int_t *o = mp_obj_int_new_mpz();
+            m_rs_push_ptr(o);
             mpz_set_from_float(&o->mpz, val);
+            m_rs_pop_ptr(o);
             return MP_OBJ_FROM_PTR(o);
         }
         #else
@@ -185,6 +187,7 @@ void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     mp_print_str(print, str);
 
     if (buf != stack_buf) {
+        m_rs_pop_ptr(buf);
         m_del(char, buf, buf_size);
     }
 }
@@ -251,6 +254,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;
+        m_rs_push_ptr(*buf);
     }
     char *str = *buf;
 

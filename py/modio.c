@@ -236,16 +236,21 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     const char *data = mp_find_frozen_str(path_buf.buf, &len);
     if (data != NULL) {
         mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
+        m_rs_push_ptr(o);
         o->base.type = &mp_type_bytesio;
         o->vstr = m_new_obj(vstr_t);
         vstr_init_fixed_buf(o->vstr, len + 1, (char*)data);
         o->vstr->len = len;
         o->pos = 0;
+        m_rs_pop_ptr(o);
         return MP_OBJ_FROM_PTR(o);
     }
 
     mp_obj_t path_out = mp_obj_new_str(path_buf.buf, path_buf.len);
-    return mp_builtin_open(1, &path_out, (mp_map_t*)&mp_const_empty_map);
+    m_rs_push_obj(path_out);
+    mp_obj_t o = mp_builtin_open(1, &path_out, (mp_map_t*)&mp_const_empty_map);
+    m_rs_pop_obj(path_out);
+    return o;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
 #endif

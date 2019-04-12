@@ -321,6 +321,7 @@ STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
         alloc = mp_obj_get_int(args[0]);
     }
     mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
+    m_rs_push_ptr(poll);
     poll->base.type = &mp_type_poll;
     poll->entries = m_new(struct pollfd, alloc);
     poll->alloc = alloc;
@@ -328,6 +329,7 @@ STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     poll->obj_map = NULL;
     poll->iter_cnt = 0;
     poll->ret_tuple = MP_OBJ_NULL;
+    m_rs_pop_ptr(poll);
     return MP_OBJ_FROM_PTR(poll);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_poll_obj, 0, 1, select_poll);
