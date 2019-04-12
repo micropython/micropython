@@ -21,3 +21,8 @@ CIRCUITPY_RTC = 0
 CIRCUITPY_SAMD = 0
 CIRCUITPY_USB_MIDI = 0
 CIRCUITPY_SMALL_BUILD = 1
+
+# Tweak inlining depending on language.
+ifeq ($(TRANSLATION), zh_Latn_pinyin)
+CFLAGS_INLINE_LIMIT = 40
+endif

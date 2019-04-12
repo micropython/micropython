@@ -12,3 +12,8 @@ CHIP_FAMILY = samd21
 
 EXTERNAL_FLASH_DEVICE_COUNT = 1
 EXTERNAL_FLASH_DEVICES = "W25Q32FV"
+
+# Tweak inlining depending on language.
+ifeq ($(TRANSLATION), zh_Latn_pinyin)
+CFLAGS_INLINE_LIMIT = 50
+endif
