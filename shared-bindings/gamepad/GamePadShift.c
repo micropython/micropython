@@ -34,7 +34,11 @@
 #include "GamePadShift.h"
 #include "__init__.h"
 
-
+//| .. currentmodule:: gamepad
+//|
+//| :class:`GamePadShift` -- Scan buttons for presses
+//| =================================================
+//|
 //| .. class:: GamePadShift(data, clock, latch)
 //|
 //|     Initializes button scanning routines.
