@@ -32,6 +32,9 @@
 #include <string.h>
 #include "py/mperrno.h"
 #include "py/mphal.h"
+
+#if MICROPY_PY_LWIP
+
 #include "lib/netutils/dhcpserver.h"
 #include "lwip/udp.h"
 
@@ -286,3 +289,5 @@ void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm) {
     }
     dhcp_socket_bind(&d->udp, 0, PORT_DHCP_SERVER);
 }
+
+#endif // MICROPY_PY_LWIP
