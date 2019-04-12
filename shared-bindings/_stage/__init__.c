@@ -84,7 +84,7 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     size_t buffer_size = bufinfo.len / 2; // 16-bit indexing
 
     if (!MP_OBJ_IS_TYPE(args[6], &displayio_display_type)) {
-        mp_raise_TypeError(translate("expected displayio.Display"));
+        mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     displayio_display_obj_t *display = MP_OBJ_TO_PTR(args[6]);
 
