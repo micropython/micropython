@@ -29,11 +29,12 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/mphal.h"
+
+#if MICROPY_HW_ENABLE_CYW43
+
 #include "lwip/netif.h"
 #include "cyw43/cyw43.h"
 #include "modnetwork.h"
-
-#if MICROPY_HW_ENABLE_CYW43
 
 extern struct netif cyw43_netif[2];
 
