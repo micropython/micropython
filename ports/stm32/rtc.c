@@ -52,7 +52,7 @@ static mp_uint_t rtc_info;
 // Note: LSI is around (32KHz), these dividers should work either way
 // ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)
 // modify RTC_ASYNCH_PREDIV & RTC_SYNCH_PREDIV in board/<BN>/mpconfigport.h to change sub-second ticks
-// default is 3906.25 µs, min is ~30.52 µs (will increas Ivbat by ~500nA)
+// default is 3906.25 us, min is ~30.52 us (will increase Ivbat by ~500nA)
 #ifndef RTC_ASYNCH_PREDIV
 #define RTC_ASYNCH_PREDIV (0x7f)
 #endif
