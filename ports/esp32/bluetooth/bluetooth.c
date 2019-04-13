@@ -309,7 +309,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
         case ESP_GATTC_CFG_MTU_EVT:
             if (param->cfg_mtu.status != ESP_GATT_OK) {
                 ESP_LOGE(GATTC_TAG,"config mtu failed, error status = %x", param->cfg_mtu.status);
-                esp_restart();
             }
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
             //Return for esp_ble_gattc_open
@@ -403,7 +402,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
         case ESP_GATTC_WRITE_CHAR_EVT:
             if (p_data->write.status != ESP_GATT_OK) {
                 ESP_LOGE(GATTC_TAG, "write char failed, error status = %x", p_data->write.status);
-                esp_restart();
                 break;
             }
             ESP_LOGI(GATTC_TAG, "write char success ");
