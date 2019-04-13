@@ -251,7 +251,6 @@ int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, uint8_t length, boo
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO WRITE TO CHARACTERISTIC in HANDLE 0x%04x", handle);
   uint8_t data[length];
   memcpy(data, value, length);
-  esp_log_buffer_hex(GATTC_TAG, data, length);
   err = esp_ble_gattc_write_char( gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, handle, length, data, ESP_GATT_WRITE_TYPE_RSP, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
@@ -265,7 +264,7 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC");
 
-  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000b, ESP_GATT_AUTH_REQ_NONE);
+  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, value_handle, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
       return mp_bt_esp_errno(err);
   }
@@ -302,6 +301,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
         case ESP_GATTC_OPEN_EVT:
             if (param->open.status != ESP_GATT_OK) {
                 ESP_LOGE(GATTC_TAG, "open failed, status %d", p_data->open.status);
+                esp_restart();
                 break;
             }
             ESP_LOGI(GATTC_TAG, "open success");
@@ -411,6 +411,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_READ_CHAR_EVT");
             notif_buf.data = p_data->read.value;
             notif_buf.len = p_data->read.value_len;
+            esp_log_buffer_hex(GATTC_TAG, notif_buf.data, notif_buf.len);
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
