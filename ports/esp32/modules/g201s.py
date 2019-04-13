@@ -87,7 +87,7 @@ class G201S():
 
     def set_temperature(self, value):
         self.index = 0
-        print("set temperature {}".format(value))
+        print("set temperature {}°C".format(value))
         # try:
         #     adapter.start()
         #     time.sleep_ms(500)
@@ -132,7 +132,7 @@ class G201S():
             value = hexlify(value)
             value = value[16:18]
             self.cur_temp = int(value, 16)
-            print("Current temperature of kettle is {}".format(self.cur_temp))
+            print("Current temperature of kettle is {}°C".format(self.cur_temp))
             self.adapter.disconnect(self.address)
             self.adapter.stop()
             time.sleep_ms(500)

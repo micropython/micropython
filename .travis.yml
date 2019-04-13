@@ -53,8 +53,7 @@ jobs:
         - git submodule update --init
         - git submodule init lib/berkeley-db-1.xx
         - cd lib/ESP-IDF
-        #- git checkout $IDF_HASH
-        - git checkout b9b401ee39bb8390bcbff4a80ba7eddcdbf7d1c1
+        - git checkout $IDF_HASH
         - cd ../..
         - git submodule update
         - export IDF_PATH=$HOME/build/ilyamordasov/micropython/lib/ESP-IDF

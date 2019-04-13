@@ -57,8 +57,8 @@ STATIC union {
     uint16_t      attr_handle;
 } mp_bt_call_result;
 
-STATIC union {
-  uint8_t data[20];
+STATIC struct {
+  uint8_t* data;
   uint16_t len;
 } notif_buf;
 
@@ -290,20 +290,14 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC");
 
-  uint16_t bt_len;
-  const uint8_t *bt_ptr;
-  //Wait for ESP_GATTC_WRITE_CHAR_EVT
-  //err = esp_ble_gatts_get_attr_value(characteristic->value_handle, &bt_len, &bt_ptr);
-  ESP_LOGW(GATTC_TAG, "Before call");
   err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000b, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
       return mp_bt_esp_errno(err);
   }
-  ESP_LOGW(GATTC_TAG, "After call");
 
   //Wait for ESP_GATTC_READ_CHAR_EVT
   xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-  ESP_LOGW(GATTC_TAG, "After freeRTOS");
+
   if (*value_len > notif_buf.len) {
       // Copy up to *value_len bytes.
       *value_len = notif_buf.len;
@@ -417,76 +411,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             //Return for esp_ble_gattc_search_service
             xSemaphoreGive(mp_bt_call_complete);
             break;
-        case ESP_GATTC_REG_FOR_NOTIFY_EVT:
-            ESP_LOGI(GATTC_TAG, "ESP_GATTC_REG_FOR_NOTIFY_EVT");
-            if (p_data->reg_for_notify.status != ESP_GATT_OK) {
-                ESP_LOGE(GATTC_TAG, "REG FOR NOTIFY failed: error status = %d", p_data->reg_for_notify.status);
-            } else {
-                uint16_t count = 0;
-                uint16_t notify_en = 1;
-                esp_gatt_status_t ret_status = esp_ble_gattc_get_attr_count( gattc_if,
-                                                                             gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                                                                             ESP_GATT_DB_DESCRIPTOR,
-                                                                             gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,
-                                                                             gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
-                                                                             gl_profile_tab[PROFILE_A_APP_ID].char_handle,
-                                                                             &count);
-
-                if (ret_status != ESP_GATT_OK) {
-                    ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
-                }
-                //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-
-                if (count > 0) {
-                    descr_elem_result = malloc(sizeof(esp_gattc_descr_elem_t) * count);
-                    if (!descr_elem_result) {
-                        ESP_LOGE(GATTC_TAG, "malloc error, gattc no mem");
-                    } else {
-                        ret_status = esp_ble_gattc_get_descr_by_char_handle( gattc_if,
-                                                                             gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                                                                             p_data->reg_for_notify.handle,
-                                                                             notify_descr_uuid,
-                                                                             descr_elem_result,
-                                                                             &count);
-
-                        if (ret_status != ESP_GATT_OK) {
-                            ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_descr_by_char_handle error");
-                        }
-                        //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-                        /* Every char has only one descriptor in our 'ESP_GATTS_DEMO' demo, so we used first 'descr_elem_result' */
-                        if (count > 0 && descr_elem_result[0].uuid.len == ESP_UUID_LEN_16 && descr_elem_result[0].uuid.uuid.uuid16 == ESP_GATT_UUID_CHAR_CLIENT_CONFIG) {
-                            ret_status = esp_ble_gattc_write_char_descr( gattc_if,
-                                                                         gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                                                                         descr_elem_result[0].handle,
-                                                                         sizeof(notify_en),
-                                                                         (uint8_t *)&notify_en,
-                                                                         ESP_GATT_WRITE_TYPE_RSP,
-                                                                         ESP_GATT_AUTH_REQ_NONE);
-                        }
-
-                        if (ret_status != ESP_GATT_OK) {
-                            ESP_LOGE(GATTC_TAG, "esp_ble_gattc_write_char_descr error");
-                        }
-                        //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-                        /* free descr_elem_result */
-                        free(descr_elem_result);
-                    }
-                }
-                else {
-                    ESP_LOGE(GATTC_TAG, "decsr not found");
-                }
-
-            }
-            break;
-
-        case ESP_GATTC_NOTIFY_EVT:
-            if (p_data->notify.is_notify) {
-                ESP_LOGI(GATTC_TAG, "ESP_GATTC_NOTIFY_EVT, receive notify value:");
-            } else {
-                ESP_LOGI(GATTC_TAG, "ESP_GATTC_NOTIFY_EVT, receive indicate value:");
-            }
-            esp_log_buffer_hex(GATTC_TAG, p_data->notify.value, p_data->notify.value_len);
-            break;
         case ESP_GATTC_WRITE_DESCR_EVT:
             if (p_data->write.status != ESP_GATT_OK) {
                 ESP_LOGE(GATTC_TAG, "write descr failed, error status = %x", p_data->write.status);
@@ -514,11 +438,8 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             ESP_LOGI(GATTC_TAG, "p_data->read.value %s",p_data->read.value);
             ESP_LOGI(GATTC_TAG, "p_data->read.value_len %d",p_data->read.value_len);
             esp_log_buffer_hex("P_DATA", p_data->read.value, p_data->read.value_len);
-            //memset(notif_buf.data, 0, p_data->read.value_len);
-            memcpy(notif_buf.data, p_data->read.value, p_data->read.value_len);
-            //notif_buf.data = p_data->read.value;
+            notif_buf.data = p_data->read.value;
             notif_buf.len = p_data->read.value_len;
-            esp_log_buffer_hex("NOTIF_BUF", notif_buf.data, notif_buf.len);
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:

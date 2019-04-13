@@ -7,18 +7,17 @@ ARG TAG=1.10
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-  && apt-get install -y gcc git wget zip make libncurses-dev flex bison gperf python-dev python3 python3-pip python-serial python3-pyparsing mc nano libtool-bin \
+  && apt-get install -y gcc git wget zip make libncurses-dev flex bison gperf python-dev python3 python3-pip python-serial python3-pyparsing mc vim libtool-bin \
   && pip3 install pyparsing
 
 WORKDIR /micropython
 RUN git clone -b $VERSION https://github.com/ilyamordasov/micropython.git . \
     && git submodule update --init --recursive
 
-WORKDIR /ESP-IDF
-RUN git clone https://github.com/espressif/esp-idf.git . \
-    && git checkout $IDF_HASH \
+WORKDIR /micropython/lib/ESP-IDF
+RUN git checkout $IDF_HASH \
     && git submodule update --init
-ENV IDF_PATH=/ESP-IDF
+ENV IDF_PATH=/micropython/lib/ESP-IDF
 
 WORKDIR /xtensa
 RUN wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz \
