@@ -57,6 +57,11 @@ STATIC union {
     uint16_t      attr_handle;
 } mp_bt_call_result;
 
+STATIC union {
+  uint8_t data[20];
+  uint16_t len;
+} notif_buf;
+
 struct gattc_profile_inst {
     esp_gattc_cb_t gattc_cb;
     uint16_t gattc_if;
@@ -289,13 +294,22 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
   const uint8_t *bt_ptr;
   //Wait for ESP_GATTC_WRITE_CHAR_EVT
   //err = esp_ble_gatts_get_attr_value(characteristic->value_handle, &bt_len, &bt_ptr);
-  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, 0/*gl_profile_tab[PROFILE_A_APP_ID].conn_id*/, 0x000b, ESP_GATT_AUTH_REQ_NONE);
+  ESP_LOGW(GATTC_TAG, "Before call");
+  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, 0x000b, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
       return mp_bt_esp_errno(err);
   }
+  ESP_LOGW(GATTC_TAG, "After call");
 
   //Wait for ESP_GATTC_READ_CHAR_EVT
-  //xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+  ESP_LOGW(GATTC_TAG, "After freeRTOS");
+  if (*value_len > notif_buf.len) {
+      // Copy up to *value_len bytes.
+      *value_len = notif_buf.len;
+  }
+  esp_log_buffer_hex(GATTC_TAG, notif_buf.data, notif_buf.len);
+  memcpy(value, notif_buf.data, notif_buf.len);
   return 0;
 }
 
@@ -499,8 +513,13 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_READ_CHAR_EVT");
             ESP_LOGI(GATTC_TAG, "p_data->read.value %s",p_data->read.value);
             ESP_LOGI(GATTC_TAG, "p_data->read.value_len %d",p_data->read.value_len);
-            esp_log_buffer_hex(GATTC_TAG, p_data->read.value, p_data->read.value_len);
-            //xSemaphoreGive(mp_bt_call_complete);
+            esp_log_buffer_hex("P_DATA", p_data->read.value, p_data->read.value_len);
+            //memset(notif_buf.data, 0, p_data->read.value_len);
+            memcpy(notif_buf.data, p_data->read.value, p_data->read.value_len);
+            //notif_buf.data = p_data->read.value;
+            notif_buf.len = p_data->read.value_len;
+            esp_log_buffer_hex("NOTIF_BUF", notif_buf.data, notif_buf.len);
+            xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
             get_server = false;
