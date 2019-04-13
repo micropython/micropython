@@ -71,8 +71,6 @@ Directory::
     #include "py/runtime.h"
     #include "py/builtin.h"
 
-    #define MODULE_EXAMPLE_ENABLED (1)
-
     // This is the function which will be called from Python as example.add_ints(a, b).
     STATIC mp_obj_t example_add_ints(mp_obj_t a_obj, mp_obj_t b_obj) {
         // Extract the ints from the micropython input objects
@@ -118,6 +116,14 @@ Directory::
     # We can add our module folder to include paths if needed
     # This is not actually needed in this example.
     CFLAGS_USERMOD += -I$(EXAMPLE_MOD_DIR)
+
+Finally you will need to modify the ``mpconfigboard.h`` for your board
+to tell the build process to include the new module by adding the
+following
+
+.. code-block:: c
+
+    #define MODULE_EXAMPLE_ENABLED (1)
 
 
 Compiling the cmodule into MicroPython
