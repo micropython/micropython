@@ -39,8 +39,6 @@ enum {
 
 STATIC bool is_scanning    = false;
 STATIC bool get_server = false;
-STATIC esp_gattc_char_elem_t *char_elem_result   = NULL;
-STATIC esp_gattc_descr_elem_t *descr_elem_result = NULL;
 
 /* Declare static functions */
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
@@ -88,29 +86,6 @@ STATIC int mp_bt_esp_errno(esp_err_t err) {
     }
     return 0;
 }
-
-// Convert the result of an asynchronous call to an errno value.
-STATIC int mp_bt_status_errno(void) {
-    if (mp_bt_call_status != ESP_BT_STATUS_SUCCESS) {
-        return MP_EPERM;
-    }
-    return 0;
-}
-
-STATIC esp_bt_uuid_t remote_filter_service_uuid = {
-    .len = ESP_UUID_LEN_16,
-    .uuid = {.uuid16 = REMOTE_SERVICE_UUID,},
-};
-
-STATIC esp_bt_uuid_t remote_filter_char_uuid = {
-    .len = ESP_UUID_LEN_16,
-    .uuid = {.uuid16 = REMOTE_NOTIFY_CHAR_UUID,},
-};
-
-STATIC esp_bt_uuid_t notify_descr_uuid = {
-    .len = ESP_UUID_LEN_16,
-    .uuid = {.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG,},
-};
 
 // Initialize at early boot.
 void mp_bt_init(void) {
@@ -302,7 +277,6 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
       // Copy up to *value_len bytes.
       *value_len = notif_buf.len;
   }
-  esp_log_buffer_hex(GATTC_TAG, notif_buf.data, notif_buf.len);
   memcpy(value, notif_buf.data, notif_buf.len);
   return 0;
 }
@@ -435,9 +409,6 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             break;
         case ESP_GATTC_READ_CHAR_EVT:
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_READ_CHAR_EVT");
-            ESP_LOGI(GATTC_TAG, "p_data->read.value %s",p_data->read.value);
-            ESP_LOGI(GATTC_TAG, "p_data->read.value_len %d",p_data->read.value_len);
-            esp_log_buffer_hex("P_DATA", p_data->read.value, p_data->read.value_len);
             notif_buf.data = p_data->read.value;
             notif_buf.len = p_data->read.value_len;
             xSemaphoreGive(mp_bt_call_complete);
@@ -538,8 +509,6 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
 }
 
 STATIC void mp_bt_gattc_callback(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param) {
-  esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
-
   /* If event is register event, store the gattc_if for each profile */
   if (event == ESP_GATTC_REG_EVT) {
       if (param->reg.status == ESP_GATT_OK) {
