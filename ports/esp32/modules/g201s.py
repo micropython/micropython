@@ -13,9 +13,9 @@ Example usage on ESP8266:
 import upygatt
 from binascii import hexlify
 import time
+import machine
 import gc
 
-#self.address = "E5:FB:01:09:F7:B4"
 #ADDRESS_TYPE = pygatt.BLEAddressType.random
 
 class G201S():
@@ -48,11 +48,10 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
+
             while self.adapter.connect(self.address) != 0:
-                print('Connection not 0')
                 pass
 
-        finally:
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
@@ -60,6 +59,11 @@ class G201S():
             self.write_handle(0x000e, [0x03])
             self.adapter.disconnect(self.address)
             self.adapter.stop()
+
+        except Exception as e:
+            machine.reset()
+
+        finally:
             time.sleep_ms(500)
             gc.collect()
 
@@ -69,11 +73,10 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
+
             while self.adapter.connect(self.address) != 0:
-                print('Connection not 0')
                 pass
 
-        finally:
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
@@ -82,6 +85,11 @@ class G201S():
             #print("Tried to switch off, returned {}".format(self.cur_temp))
             self.adapter.disconnect(self.address)
             self.adapter.stop()
+
+        except Exception as e:
+            machine.reset()
+
+        finally:
             time.sleep_ms(500)
             gc.collect()
 
@@ -98,7 +106,8 @@ class G201S():
         #     self.write_handle(device, 0x000e, [0x05, 0x00, 0x00, int(hex(value), 16), 0x00])
         #     self.write_handle(device, 0x000e, [0x03])
         #     self.get_temperature()
-
+        # except Exception as e:
+        #     machine.reset()
         # finally:
         #     adapter.stop()
         #     time.sleep_ms(500)
@@ -118,10 +127,10 @@ class G201S():
             self.adapter.start()
             time.sleep_ms(500)
             self.bt_is_started = True
+
             while self.adapter.connect(self.address) != 0:
-                print('Connection not 0')
                 pass
-        finally:
+
             self.write_handle(0x000e, [0xFF, 0xDF, 0x24, 0x0E, 0xC6, 0x94, 0xD1, 0x97, 0x43], False)
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
@@ -135,6 +144,11 @@ class G201S():
             print("Current temperature of kettle is {}°C".format(self.cur_temp))
             self.adapter.disconnect(self.address)
             self.adapter.stop()
+
+        except Exception as e:
+            machine.reset()
+
+        finally:
             time.sleep_ms(500)
             gc.collect()
             return self.cur_temp

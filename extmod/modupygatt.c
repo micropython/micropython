@@ -255,7 +255,7 @@ STATIC mp_obj_t gatt_tool_backend_char_read(size_t n_args, const mp_obj_t *pos_a
   mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
   uint16_t value_handle = (uint16_t)(args[ARG_value_handle].u_int);
-
+  printf("[upygatt] char_read handle: 0x%04x\r\n", value_handle);
   uint8_t data[MP_BT_MAX_ATTR_SIZE];
   size_t value_len = MP_BT_MAX_ATTR_SIZE;
   int errno_ = mp_bt_char_read(value_handle, data, &value_len);
