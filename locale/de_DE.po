@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-08 16:48-0700\n"
+"POT-Creation-Date: 2019-04-12 13:44-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -2573,6 +2573,10 @@ msgstr ""
 msgid "unreadable attribute"
 msgstr "nicht lesbares Attribut"
 
+#: shared-bindings/displayio/TileGrid.c
+msgid "unsupported %q type"
+msgstr "Nicht unterstützter %q-Typ"
+
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
@@ -2582,10 +2586,6 @@ msgstr "nicht unterstützter Thumb-Befehl '%s' mit %d Argumenten"
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "unsupported %q type"
-msgstr "Nicht unterstützter %q-Typ"
 
 #: py/objstr.c
 #, c-format

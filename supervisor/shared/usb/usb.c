@@ -70,7 +70,9 @@ void usb_init(void) {
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
 #endif
 
+#if CIRCUITPY_USB_MIDI
     usb_midi_init();
+#endif
 }
 
 void usb_background(void) {
