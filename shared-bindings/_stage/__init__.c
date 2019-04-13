@@ -28,6 +28,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/displayio/Display.h"
 #include "shared-module/_stage/__init__.h"
 #include "Layer.h"
 #include "Text.h"
@@ -49,7 +50,7 @@
 //|     Layer
 //|     Text
 //|
-//| .. function:: render(x0, y0, x1, y1, layers, buffer, spi)
+//| .. function:: render(x0, y0, x1, y1, layers, buffer, display)
 //|
 //|     Render and send to the display a fragment of the screen.
 //|
@@ -59,11 +60,8 @@
 //|     :param int y1: Bottom edge of the fragment.
 //|     :param list layers: A list of the :py:class:`~_stage.Layer` objects.
 //|     :param bytearray buffer: A buffer to use for rendering.
-//|     :param ~busio.SPI spi: The SPI bus to use.
+//|     :param ~displayio.Display display: The display to use.
 //|
-//|     Note that this function only sends the raw pixel data. Setting up
-//|     the display for receiving it and handling the chip-select and
-//|     data-command pins has to be done outside of it.
 //|     There are also no sanity checks, outside of the basic overflow
 //|     checking. The caller is responsible for making the passed parameters
 //|     valid.
@@ -85,12 +83,19 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t *buffer = bufinfo.buf;
     size_t buffer_size = bufinfo.len / 2; // 16-bit indexing
 
-    busio_spi_obj_t *spi = MP_OBJ_TO_PTR(args[6]);
-
-    if (!render_stage(x0, y0, x1, y1, layers, layers_size,
-            buffer, buffer_size, spi)) {
-        mp_raise_OSError(MP_EIO);
+    if (!MP_OBJ_IS_TYPE(args[6], &displayio_display_type)) {
+        mp_raise_TypeError(translate("argument num/types mismatch"));
     }
+    displayio_display_obj_t *display = MP_OBJ_TO_PTR(args[6]);
+
+    while (!displayio_display_begin_transaction(display)) {
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP ;
+#endif
+    }
+    displayio_display_set_region_to_update(display, x0, y0, x1, y1);
+    render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size, display);
+    displayio_display_end_transaction(display);
 
     return mp_const_none;
 }
