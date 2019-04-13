@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-11 13:46+0200\n"
+"POT-Creation-Date: 2019-04-13 11:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1345,7 +1345,8 @@ msgstr ""
 msgid "argument has wrong type"
 msgstr ""
 
-#: py/argcheck.c shared-bindings/gamepad/GamePad.c
+#: py/argcheck.c shared-bindings/gamepad/__init__.c
+#: shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr "argumen num/types tidak cocok"
 

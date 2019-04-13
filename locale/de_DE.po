@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-11 13:46+0200\n"
+"POT-Creation-Date: 2019-04-13 11:50+0200\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -1342,7 +1342,8 @@ msgstr "arg ist eine leere Sequenz"
 msgid "argument has wrong type"
 msgstr "Argument hat falschen Typ"
 
-#: py/argcheck.c shared-bindings/gamepad/GamePad.c
+#: py/argcheck.c shared-bindings/gamepad/__init__.c
+#: shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr "Anzahl/Type der Argumente passen nicht"
 
