@@ -411,6 +411,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_READ_CHAR_EVT");
             notif_buf.data = p_data->read.value;
             notif_buf.len = p_data->read.value_len;
+            esp_log_buffer_hex(GATTC_TAG, notif_buf.data, notif_buf.len);
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
