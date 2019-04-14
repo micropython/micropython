@@ -248,13 +248,13 @@ STATIC mp_obj_t gatt_tool_backend_char_read(size_t n_args, const mp_obj_t *pos_a
 
   const mp_arg_t allowed_args[] = {
       { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
-      { MP_QSTR_value_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_int = 0x000b } },
+      { MP_QSTR_value_handle, MP_ARG_REQUIRED | MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
   };
 
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  uint16_t value_handle = (uint16_t)(args[ARG_value_handle].u_int);
+  uint16_t value_handle = (uint16_t)mp_obj_get_int(args[ARG_value_handle].u_obj);
   printf("[upygatt] char_read handle: 0x%04x\r\n", value_handle);
   uint8_t data[MP_BT_MAX_ATTR_SIZE];
   size_t value_len = MP_BT_MAX_ATTR_SIZE;
