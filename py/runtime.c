@@ -456,8 +456,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_INPLACE_POWER:
                     if (rhs_val < 0) {
                         #if MICROPY_PY_BUILTINS_FLOAT
-                        lhs = mp_obj_new_float(lhs_val);
-                        goto generic_binary_op;
+                        return mp_obj_float_binary_op(op, lhs_val, rhs);
                         #else
                         mp_raise_ValueError("negative power with no float support");
                         #endif
