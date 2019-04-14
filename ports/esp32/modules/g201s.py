@@ -125,7 +125,7 @@ class G201S():
         self.index = 0
         try:
             self.adapter.start()
-            time.sleep_ms(500)
+            #time.sleep_ms(500)
             self.bt_is_started = True
 
             while self.adapter.connect(self.address) != 0:
@@ -135,7 +135,7 @@ class G201S():
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
             self.write_handle(0x000e, [0x06])
-            time.sleep_ms(500)
+            #time.sleep_ms(500)
             value = self.adapter.char_read(uuid="6e400003-b5a3-f393-e0a9-e50e24dcca9e", value_handle=0x000b)
             value = hexlify(value)
             value = value[16:18]
@@ -148,6 +148,6 @@ class G201S():
             machine.reset()
 
         finally:
-            time.sleep_ms(500)
+            #time.sleep_ms(500)
             gc.collect()
             return self.cur_temp
