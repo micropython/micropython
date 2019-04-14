@@ -902,7 +902,7 @@ msgstr "La valeur max. de x est %d lors d'une opération miroir"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
-msgstr "Saut MicroPython NLR a échoué. Corruption de mémoire possible."
+msgstr "Saut MicroPython NLR a échoué. Corruption de mémoire possible.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython fatal error.\n"
