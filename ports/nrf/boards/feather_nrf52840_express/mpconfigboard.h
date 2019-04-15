@@ -33,6 +33,9 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "Feather52840Express"
 
+#define FLASH_SIZE                  (0x100000)
+#define FLASH_PAGE_SIZE             (4096)
+
 #define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
 
 #define MICROPY_HW_LED_STATUS       (&pin_P1_15)
@@ -55,7 +58,7 @@
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
-// TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
+#define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
