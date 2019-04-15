@@ -1,4 +1,4 @@
-LD_FILE = boards/samd51x19-bootloader-external-flash.ld
+LD_FILE = boards/samd51x20-bootloader-external-flash.ld
 USB_VID = 0x239A
 USB_PID = 0x8021
 USB_PRODUCT = "CP32-M4"
@@ -13,5 +13,5 @@ CIRCUITPY_AUDIOBUSIO = 0
 # No touch on SAMD51 yet
 CIRCUITPY_TOUCHIO = 0
 
-CHIP_VARIANT = SAMD51G19A
+CHIP_VARIANT = SAMD51J20A
 CHIP_FAMILY = samd51
