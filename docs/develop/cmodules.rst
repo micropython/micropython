@@ -117,13 +117,18 @@ Directory::
     # This is not actually needed in this example.
     CFLAGS_USERMOD += -I$(EXAMPLE_MOD_DIR)
 
-Finally you will need to modify the ``mpconfigboard.h`` for your board
-to tell the build process to include the new module by adding the
-following
+Finally you will need to define ``MODULE_EXAMPLE_ENABLED`` to 1. This
+can be done by adding ``CFLAGS_EXTRA=-DMODULE_EXAMPLE_ENABLED=1`` to
+the ``make`` command, or editing ``mpconfigport.h`` or
+``mpconfigboard.h`` to add
 
 .. code-block:: c
 
     #define MODULE_EXAMPLE_ENABLED (1)
+
+Note that the exact method depends on the port as they have different
+structures. If not done correctly it will compile but importing will
+fail to find the module.
 
 
 Compiling the cmodule into MicroPython
@@ -152,7 +157,7 @@ Building for stm32 port:
 .. code-block:: bash
 
     cd my_project/micropython/ports/stm32
-    make USER_C_MODULES=../../../modules all
+    make USER_C_MODULES=../../../modules CFLAGS_EXTRA=-DMODULE_EXAMPLE_ENABLED=1 all
 
 
 Module usage in MicroPython
