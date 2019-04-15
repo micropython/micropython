@@ -94,7 +94,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_seed_obj, mod_urandom_seed);
 
 #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
 STATIC mp_obj_t mod_urandom___init__() {
-    mod_urandom_seed(mp_obj_new_int(MICROPY_PY_URANDOM_SEED_INIT_FUNC));
+    mod_urandom_seed(MP_OBJ_NEW_SMALL_INT(MICROPY_PY_URANDOM_SEED_INIT_FUNC));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__);
