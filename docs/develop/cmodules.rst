@@ -117,9 +117,9 @@ Directory::
     # This is not actually needed in this example.
     CFLAGS_USERMOD += -I$(EXAMPLE_MOD_DIR)
 
-Finally you will need to modify the ``mpconfigboard.h`` for your board
-to tell the build process to include the new module by adding the
-following
+Finally you will need to modify the ``mpconfigport.h`` (found under
+micropython/ports/PORTNAME) for your port to tell the build process
+to include the new module by adding the following
 
 .. code-block:: c
 
@@ -145,6 +145,7 @@ Directory::
     └── micropython/
         ├──ports/
        ... ├──stm32/
+               └──mpconfigport.h
           ...
 
 Building for stm32 port:
