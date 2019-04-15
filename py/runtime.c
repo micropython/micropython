@@ -875,8 +875,12 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     DEBUG_OP_printf("unpack ex " UINT_FMT " " UINT_FMT "\n", num_left, num_right);
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
+        // Make the seq variable volatile so the compiler keeps a reference to it,
+        // since if it's a tuple then seq_items points to the interior of the GC cell
+        // and mp_obj_new_list may trigger a GC which doesn't trace this and reclaims seq.
+        volatile mp_obj_t seq = seq_in;
         mp_obj_t *seq_items;
-        mp_obj_get_array(seq_in, &seq_len, &seq_items);
+        mp_obj_get_array(seq, &seq_len, &seq_items);
         if (seq_len < num_left + num_right) {
             goto too_short;
         }
@@ -887,6 +891,7 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
         for (size_t i = 0; i < num_left; i++) {
             items[num_right + 1 + i] = seq_items[num_left - 1 - i];
         }
+        seq = MP_OBJ_NULL;
     } else {
         // Generic iterable; this gets a bit messy: we unpack known left length to the
         // items destination array, then the rest to a dynamically created list.  Once the
