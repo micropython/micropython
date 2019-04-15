@@ -28,16 +28,16 @@
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "py/mpstate.h"
-#include "shared-module/gamepad/__init__.h"
-#include "shared-module/gamepad/GamePadShift.h"
+#include "shared-bindings/gamepad/__init__.h"
+#include "shared-bindings/gamepadshift/GamePadShift.h"
+#include "shared-bindings/gamepadshift/__init__.h"
+#include "shared-module/gamepadshift/GamePadShift.h"
 #include "supervisor/shared/translate.h"
-#include "GamePadShift.h"
-#include "__init__.h"
 
-//| .. currentmodule:: gamepad
+//| .. currentmodule:: gamepadshift
 //|
-//| :class:`GamePadShift` -- Scan buttons for presses
-//| =================================================
+//| :class:`GamePadShift` -- Scan buttons for presses through a shift register
+//| ===========================================================================
 //|
 //| .. class:: GamePadShift(data, clock, latch)
 //|
@@ -49,6 +49,9 @@
 //|     They button presses are accumulated, until the ``get_pressed`` method
 //|     is called, at which point the button state is cleared, and the new
 //|     button presses start to be recorded.
+//|
+//|     Only one gamepad (`gamepad.GamePad` or `gamepadshift.GamePadShift`)
+//|     may be used at a time.
 //|
 STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -63,9 +66,9 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
                      allowed_args, args);
 
-    digitalio_digitalinout_obj_t *data_pin = pin_io(args[ARG_data].u_obj);
-    digitalio_digitalinout_obj_t *clock_pin = pin_io(args[ARG_clock].u_obj);
-    digitalio_digitalinout_obj_t *latch_pin = pin_io(args[ARG_latch].u_obj);
+    digitalio_digitalinout_obj_t *data_pin = assert_digitalinout(args[ARG_data].u_obj);
+    digitalio_digitalinout_obj_t *clock_pin = assert_digitalinout(args[ARG_clock].u_obj);
+    digitalio_digitalinout_obj_t *latch_pin = assert_digitalinout(args[ARG_latch].u_obj);
 
     gamepadshift_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton ||
@@ -76,7 +79,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
         gamepad_singleton = gc_make_long_lived(gamepad_singleton);
         MP_STATE_VM(gamepad_singleton) = gamepad_singleton;
     }
-    gamepadshift_init(gamepad_singleton, data_pin, clock_pin, latch_pin);
+    common_hal_gamepadshift_gamepadshift_init(gamepad_singleton, data_pin, clock_pin, latch_pin);
     return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
 
@@ -103,7 +106,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gamepadshift_get_pressed_obj, gamepadshift_get_pressed
 //|         Disable button scanning.
 //|
 STATIC mp_obj_t gamepadshift_deinit(mp_obj_t self_in) {
-    gamepad_reset();
+    common_hal_gamepadshift_gamepadshift_deinit(self_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepadshift_deinit_obj, gamepadshift_deinit);

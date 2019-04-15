@@ -131,6 +131,10 @@ SRC_PATTERNS += frequencyio/%
 endif
 ifeq ($(CIRCUITPY_GAMEPAD),1)
 SRC_PATTERNS += gamepad/%
+	# gamepadshift depends on gamepad
+	ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
+	SRC_PATTERNS += gamepadshift/%
+	endif
 endif
 ifeq ($(CIRCUITPY_I2CSLAVE),1)
 SRC_PATTERNS += i2cslave/%
@@ -317,8 +321,9 @@ $(filter $(SRC_PATTERNS), \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	gamepad/GamePad.c \
-	gamepad/GamePadShift.c \
 	gamepad/__init__.c \
+	gamepadshift/GamePadShift.c \
+	gamepadshift/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
 	socket/__init__.c \

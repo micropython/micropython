@@ -100,7 +100,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     for (size_t i = 0; i < n_args; ++i) {
-        pin_io(args[i]);
+        assert_digitalinout(args[i]);
     }
     gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton ||
@@ -110,7 +110,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         gamepad_singleton = gc_make_long_lived(gamepad_singleton);
         MP_STATE_VM(gamepad_singleton) = gamepad_singleton;
     }
-    gamepad_init(gamepad_singleton, args, n_args);
+    common_hal_gamepad_gamepad_init(gamepad_singleton, args, n_args);
     return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
 
@@ -138,7 +138,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);
 //|         Disable button scanning.
 //|
 STATIC mp_obj_t gamepad_deinit(mp_obj_t self_in) {
-    gamepad_reset();
+    common_hal_gamepad_gamepad_deinit(self_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_deinit_obj, gamepad_deinit);

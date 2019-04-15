@@ -28,6 +28,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H
 
-digitalio_digitalinout_obj_t *pin_io(mp_obj_t obj);
+#include "shared-bindings/digitalio/DigitalInOut.h"
+
+digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H

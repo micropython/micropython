@@ -24,25 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_GAMEPAD_GAMEPADSHIFT_H
-#define MICROPY_INCLUDED_GAMEPAD_GAMEPADSHIFT_H
 
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT_GAMEPADSHIFT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT_GAMEPADSHIFT_H
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-module/gamepadshift/GamePadShift.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t* data_pin;
-    digitalio_digitalinout_obj_t* clock_pin;
-    digitalio_digitalinout_obj_t* latch_pin;
-    volatile uint8_t pressed;
-} gamepadshift_obj_t;
+extern const mp_obj_type_t gamepadshift_type;
 
+void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
+                                                digitalio_digitalinout_obj_t *data_pin,
+                                                digitalio_digitalinout_obj_t *clock_pin,
+                                                digitalio_digitalinout_obj_t *latch_pin);
 
-void gamepadshift_init(gamepadshift_obj_t *gamepadshift,
-                       digitalio_digitalinout_obj_t *data_pin,
-                       digitalio_digitalinout_obj_t *clock_pin,
-                       digitalio_digitalinout_obj_t *latch_pin);
+void common_hal_gamepadshift_gamepadshift_deinit(gamepadshift_obj_t *gamepadshift);
 
-#endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPADSHIFT_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT_GAMEPADSHIFT_H

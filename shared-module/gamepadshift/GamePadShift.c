@@ -24,14 +24,14 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpstate.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "GamePadShift.h"
+#include "shared-module/gamepadshift/GamePadShift.h"
 
-
-void gamepadshift_init(gamepadshift_obj_t *gamepadshift,
-                       digitalio_digitalinout_obj_t *data_pin,
-                       digitalio_digitalinout_obj_t *clock_pin,
-                       digitalio_digitalinout_obj_t *latch_pin) {
+void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
+                                                digitalio_digitalinout_obj_t *data_pin,
+                                                digitalio_digitalinout_obj_t *clock_pin,
+                                                digitalio_digitalinout_obj_t *latch_pin) {
     common_hal_digitalio_digitalinout_switch_to_input(data_pin, PULL_NONE);
     gamepadshift->data_pin = data_pin;
     common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 0,
@@ -40,4 +40,25 @@ void gamepadshift_init(gamepadshift_obj_t *gamepadshift,
     common_hal_digitalio_digitalinout_switch_to_output(latch_pin, 1,
                                                        DRIVE_MODE_PUSH_PULL);
     gamepadshift->latch_pin = latch_pin;
+}
+
+void common_hal_gamepadshift_gamepadshift_deinit(gamepadshift_obj_t *gamepadshift) {
+    MP_STATE_VM(gamepad_singleton) = NULL;
+}
+
+void gamepadshift_tick(gamepadshift_obj_t *self) {
+    uint8_t current = 0;
+    uint8_t bit = 1;
+    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 1);
+    for (int i = 0; i < 8; ++i) {
+        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 0);
+        if (common_hal_digitalio_digitalinout_get_value(self->data_pin)) {
+            current |= bit;
+        }
+        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 1);
+        bit <<= 1;
+    }
+    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 0);
+    self->pressed |= self->last & current;
+    self->last = current;
 }

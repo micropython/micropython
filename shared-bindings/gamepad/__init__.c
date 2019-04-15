@@ -26,14 +26,12 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "GamePad.h"
-#include "GamePadShift.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/gamepad/GamePad.h"
 #include "shared-bindings/util.h"
 
 
 // Helper for validating digitalio.DigitalInOut arguments
-digitalio_digitalinout_obj_t *pin_io(mp_obj_t obj) {
+digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj) {
     if (!MP_OBJ_IS_TYPE(obj, &digitalio_digitalinout_type)) {
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
@@ -55,12 +53,10 @@ digitalio_digitalinout_obj_t *pin_io(mp_obj_t obj) {
 //|     :maxdepth: 3
 //|
 //|     GamePad
-//|     GamePadShift
 //|
 STATIC const mp_rom_map_elem_t gamepad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepad) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_GamePad),  MP_ROM_PTR(&gamepad_type)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GamePadShift),  MP_ROM_PTR(&gamepadshift_type)},
 };
 STATIC MP_DEFINE_CONST_DICT(gamepad_module_globals,
         gamepad_module_globals_table);
