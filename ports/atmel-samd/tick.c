@@ -29,10 +29,16 @@
 #include "peripheral_clk_config.h"
 
 #include "supervisor/shared/autoreload.h"
-#include "shared-module/gamepad/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
+#if CIRCUITPY_GAMEPAD
+#include "shared-module/gamepad/__init__.h"
+#endif
+
+#if CIRCUITPY_GAMEPADSHIFT
+#include "shared-module/gamepadshift/__init__.h"
+#endif
 // Global millisecond tick count
 volatile uint64_t ticks_ms = 0;
 
@@ -51,7 +57,12 @@ void SysTick_Handler(void) {
     #endif
     #ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(ticks_ms & CIRCUITPY_GAMEPAD_TICKS)) {
+        #if CIRCUITPY_GAMEPAD
         gamepad_tick();
+        #endif
+        #if CIRCUITPY_GAMEPADSHIFT
+        gamepadshift_tick();
+        #endif
     }
     #endif
 }
