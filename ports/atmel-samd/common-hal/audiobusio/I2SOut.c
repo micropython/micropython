@@ -144,10 +144,10 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     }
     #endif
     if (bc_clock_unit == 0xff) {
-        mp_raise_ValueError(translate("Invalid %q pin", MP_QSTR_bit_clock));
+        mp_raise_ValueError_varg(translate("Invalid %q pin", MP_QSTR_bit_clock));
     }
     if (ws_clock_unit == 0xff) {
-        mp_raise_ValueError(translate("Invalid %q pin", MP_QSTR_ws_clock));
+        mp_raise_ValueError_varg(translate("Invalid %q pin", MP_QSTR_ws_clock));
     }
     if (bc_clock_unit != ws_clock_unit) {
         mp_raise_ValueError(translate("Bit clock and word select must share a clock unit"));
