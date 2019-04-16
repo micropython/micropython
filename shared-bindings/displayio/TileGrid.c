@@ -103,7 +103,12 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
     } else {
-        mp_raise_TypeError(translate("unsupported bitmap type"));
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+    }
+    mp_obj_t pixel_shader = args[ARG_pixel_shader].u_obj;
+    if (!MP_OBJ_IS_TYPE(pixel_shader, &displayio_colorconverter_type) &&
+        !MP_OBJ_IS_TYPE(pixel_shader, &displayio_palette_type)) {
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
     }
     uint16_t tile_width = args[ARG_tile_width].u_int;
     if (tile_width == 0) {
@@ -126,7 +131,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
     displayio_tilegrid_t *self = m_new_obj(displayio_tilegrid_t);
     self->base.type = &displayio_tilegrid_type;
     common_hal_displayio_tilegrid_construct(self, native, bitmap_width / tile_width,
-        args[ARG_pixel_shader].u_obj, args[ARG_width].u_int, args[ARG_height].u_int,
+        pixel_shader, args[ARG_width].u_int, args[ARG_height].u_int,
         tile_width, tile_height, x, y, args[ARG_default_tile].u_int);
     return MP_OBJ_FROM_PTR(self);
 }
@@ -259,9 +264,10 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
             mp_obj_get_array_fixed_n(index_obj, 2, &items);
             x = mp_obj_get_int(items[0]);
             y = mp_obj_get_int(items[1]);
-            if (x >= common_hal_displayio_tilegrid_get_width(self) || y >= common_hal_displayio_tilegrid_get_height(self)) {
-                mp_raise_IndexError(translate("tile index out of bounds"));
-            }
+        }
+        if (x >= common_hal_displayio_tilegrid_get_width(self) ||
+                y >= common_hal_displayio_tilegrid_get_height(self)) {
+            mp_raise_IndexError(translate("tile index out of bounds"));
         }
 
         if (value_obj == MP_OBJ_SENTINEL) {

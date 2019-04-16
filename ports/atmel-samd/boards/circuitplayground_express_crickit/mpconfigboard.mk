@@ -18,7 +18,12 @@ CIRCUITPY_I2CSLAVE = 0
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
+# Tweak inlining depending on language.
+ifeq ($(TRANSLATION), zh_Latn_pinyin)
+CFLAGS_INLINE_LIMIT = 35
+else
 CFLAGS_INLINE_LIMIT = 55
+endif
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice

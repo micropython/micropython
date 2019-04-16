@@ -37,6 +37,32 @@
 static mp_vfs_mount_t _mp_vfs;
 static fs_user_mount_t _internal_vfs;
 
+static volatile uint32_t filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
+volatile bool filesystem_flush_requested = false;
+
+void filesystem_background(void) {
+    if (filesystem_flush_requested) {
+        filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
+        // Flush but keep caches
+        supervisor_flash_flush();
+        filesystem_flush_requested = false;
+    }
+}
+
+inline void filesystem_tick(void) {
+    if (filesystem_flush_interval_ms == 0) {
+        // 0 means not turned on.
+        return;
+    }
+    if (filesystem_flush_interval_ms == 1) {
+        filesystem_flush_requested = true;
+        filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
+    } else {
+        filesystem_flush_interval_ms--;
+    }
+}
+
+
 static void make_empty_file(FATFS *fatfs, const char *path) {
     FIL fp;
     f_open(fatfs, &fp, path, FA_WRITE | FA_CREATE_ALWAYS);
@@ -91,7 +117,11 @@ void filesystem_init(bool create_allowed, bool force_create) {
 }
 
 void filesystem_flush(void) {
+    // Reset interval before next flush.
+    filesystem_flush_interval_ms = CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS;
     supervisor_flash_flush();
+    // Don't keep caches because this is called when starting or stopping the VM.
+    supervisor_flash_release_cache();
 }
 
 void filesystem_set_internal_writable_by_usb(bool writable) {

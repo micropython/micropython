@@ -129,7 +129,7 @@ STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp
     const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
     if (err_code != NRF_SUCCESS) {
         m_tx_in_progress--;
-        mp_raise_OSError_msg_varg(translate("Failed to notify or indicate attribute value, err %0x04x"), err_code);
+        mp_raise_OSError_msg_varg(translate("Failed to notify or indicate attribute value, err 0x%04x"), err_code);
     }
 
 }
@@ -141,7 +141,7 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
 
     const uint32_t err_code = sd_ble_gattc_read(conn_handle, characteristic->handle, 0);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err %0x04x"), err_code);
+        mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err 0x%04x"), err_code);
     }
 
 //

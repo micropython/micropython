@@ -28,8 +28,10 @@
 
 #include <stdint.h>
 
+#include "py/gc.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "tick.h"
 
@@ -39,6 +41,13 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
 
     self->bus = spi;
     common_hal_busio_spi_never_reset(self->bus);
+    // Our object is statically allocated off the heap so make sure the bus object lives to the end
+    // of the heap as well.
+    gc_never_free(self->bus);
+
+    self->frequency = common_hal_busio_spi_get_frequency(spi);
+    self->polarity = common_hal_busio_spi_get_polarity(spi);
+    self->phase = common_hal_busio_spi_get_phase(spi);
 
     common_hal_digitalio_digitalinout_construct(&self->command, command);
     common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);
@@ -70,14 +79,19 @@ bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
     if (!common_hal_busio_spi_try_lock(self->bus)) {
         return false;
     }
-    // TODO(tannewt): Stop hardcoding SPI frequency, polarity and phase.
-    common_hal_busio_spi_configure(self->bus, 12000000, 0, 0, 8);
+    common_hal_busio_spi_configure(self->bus, self->frequency, self->polarity,
+                                   self->phase, 8);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
     return true;
 }
 
 void common_hal_displayio_fourwire_send(mp_obj_t obj, bool command, uint8_t *data, uint32_t data_length) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    if (command) {
+        common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
+        common_hal_time_delay_ms(1);
+        common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
+    }
     common_hal_digitalio_digitalinout_set_value(&self->command, !command);
     common_hal_busio_spi_write(self->bus, data, data_length);
 }

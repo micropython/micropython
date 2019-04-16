@@ -26,9 +26,11 @@
 
 #include "boards/board.h"
 
+#include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "shared-bindings/busio/SPI.h"
 
 #include "tick.h"
 
@@ -71,8 +73,10 @@ uint8_t display_init_sequence[] = {
 void board_init(void) {
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
+    busio_spi_obj_t *spi = common_hal_board_create_spi();
+    common_hal_busio_spi_configure(spi, 12000000, 0, 0, 8);
     common_hal_displayio_fourwire_construct(bus,
-        board_spi(),
+        spi,
         &pin_PA28, // Command or data
         &pin_PA01, // Chip select
         &pin_PA27); // Reset
@@ -93,7 +97,9 @@ void board_init(void) {
         0x37, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_PA00);
+        &pin_PA00,
+        false, // single_byte_bounds
+        false); // data_as_commands
     common_hal_displayio_display_set_auto_brightness(display, true);
 }
 

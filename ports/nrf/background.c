@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/usb.h"
 #include "supervisor/shared/stack.h"
 
@@ -32,12 +33,25 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+static bool running_background_tasks = false;
+
+void background_tasks_reset(void) {
+    running_background_tasks = false;
+}
+
 void run_background_tasks(void) {
+    // Don't call ourselves recursively.
+    if (running_background_tasks) {
+        return;
+    }
+    running_background_tasks = true;
+    filesystem_background();
     usb_background();
 
     #ifdef CIRCUITPY_DISPLAYIO
     displayio_refresh_displays();
     #endif
+    running_background_tasks = false;
 
     assert_heap_ok();
 }

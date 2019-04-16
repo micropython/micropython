@@ -42,6 +42,12 @@ extension_by_board = {
     "pca10059": BIN_UF2
 }
 
+aliases_by_board = {
+    "circuitplayground_express": ["circuitplayground_express_4h", "circuitplayground_express_digikey_pycon2019"],
+    "gemma_m0": ["gemma_m0_pycon2018"],
+    "pewpew10": ["pewpew13"]
+}
+
 def get_languages():
     languages = []
     for f in os.scandir("../locale"):
@@ -59,7 +65,17 @@ def get_board_mapping():
                 board_id = board_path.name
                 extensions = extension_by_port[port]
                 extensions = extension_by_board.get(board_path.name, extensions)
-                boards[board_id] = {"port": port, "extensions": extensions, "download_count": 0}
+                aliases = aliases_by_board.get(board_path.name, [])
+                boards[board_id] = {"port": port,
+                                    "extensions": extensions,
+                                    "download_count": 0,
+                                    "aliases": aliases}
+                for alias in aliases:
+                    boards[alias] = {"port": port,
+                                     "extensions": extensions,
+                                     "download_count": 0,
+                                     "alias": True,
+                                     "aliases": []}
     return boards
 
 def get_version_info():
@@ -235,23 +251,25 @@ def generate_download_info():
                 board_id = board_path.name
                 board_info = board_mapping[board_id]
 
-                if board_id not in current_info:
-                    changes["new_boards"].append(board_id)
-                    current_info[board_id] = {"downloads": 0,
-                                              "versions": []}
+                for alias in [board_id] + board_info["aliases"]:
+                    alias_info = board_mapping[alias]
+                    if alias not in current_info:
+                        changes["new_boards"].append(alias)
+                        current_info[alias] = {"downloads": 0,
+                                                "versions": []}
 
-                new_version = {
-                    "stable": new_stable,
-                    "version": new_tag,
-                    "files": {}
-                }
-                for language in languages:
-                    files = []
-                    new_version["files"][language] = files
-                    for extension in board_info["extensions"]:
-                        files.append("https://github.com/adafruit/circuitpython/releases/download/{tag}/adafruit-circuitpython-{board}-{language}-{tag}.{extension}".format(tag=new_tag, board=board_id, language=language, extension=extension))
-                current_info[board_id]["downloads"] = board_info["download_count"]
-                current_info[board_id]["versions"].append(new_version)
+                    new_version = {
+                        "stable": new_stable,
+                        "version": new_tag,
+                        "files": {}
+                    }
+                    for language in languages:
+                        files = []
+                        new_version["files"][language] = files
+                        for extension in board_info["extensions"]:
+                            files.append("https://github.com/adafruit/circuitpython/releases/download/{tag}/adafruit-circuitpython-{alias}-{language}-{tag}.{extension}".format(tag=new_tag, alias=alias, language=language, extension=extension))
+                    current_info[alias]["downloads"] = alias_info["download_count"]
+                    current_info[alias]["versions"].append(new_version)
 
     changes["new_languages"] = set(languages) - previous_languages
 

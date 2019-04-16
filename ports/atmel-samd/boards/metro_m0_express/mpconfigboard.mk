@@ -13,4 +13,7 @@ LONGINT_IMPL = MPZ
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
-CIRCUITPY_FREQUENCYIO = 0
+# Tweak inlining depending on language.
+ifeq ($(TRANSLATION), zh_Latn_pinyin)
+CFLAGS_INLINE_LIMIT = 50
+endif

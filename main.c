@@ -43,6 +43,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 
+#include "background.h"
 #include "mpconfigboard.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
@@ -50,7 +51,6 @@
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/board_busses.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
@@ -60,6 +60,10 @@
 
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -85,6 +89,8 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
+
+    background_tasks_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)

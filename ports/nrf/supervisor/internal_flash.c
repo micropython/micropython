@@ -137,6 +137,9 @@ void supervisor_flash_flush(void) {
     _flash_page_addr = NO_CACHE;
 }
 
+void supervisor_flash_release_cache(void) {
+}
+
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     // Must write out anything in cache before trying to read.
     supervisor_flash_flush();

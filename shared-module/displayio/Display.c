@@ -44,7 +44,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t color_depth, uint8_t set_column_command, uint8_t set_row_command,
         uint8_t write_ram_command, uint8_t set_vertical_scroll, uint8_t* init_sequence, uint16_t init_sequence_len,
-        const mcu_pin_obj_t* backlight_pin) {
+        const mcu_pin_obj_t* backlight_pin, bool single_byte_bounds, bool data_as_commands) {
     self->color_depth = color_depth;
     self->set_column_command = set_column_command;
     self->set_row_command = set_row_command;
@@ -54,6 +54,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->colstart = colstart;
     self->rowstart = rowstart;
     self->auto_brightness = false;
+    self->data_as_commands = data_as_commands;
+    self->single_byte_bounds = single_byte_bounds;
 
     if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
         self->begin_transaction = common_hal_displayio_parallelbus_begin_transaction;
@@ -81,7 +83,14 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
         self->send(self->bus, true, cmd, 1);
-        self->send(self->bus, false, data, data_size);
+        if (self->data_as_commands) {
+            // Loop through each parameter to force a CS toggle
+            for (uint32_t j=0; j < data_size; j++) {
+                self->send(self->bus, true, data + j, 1);
+            }
+        } else {
+            self->send(self->bus, false, data, data_size);
+        }
         uint16_t delay_length_ms = 10;
         if (delay) {
             data_size++;
@@ -211,17 +220,35 @@ void displayio_display_end_transaction(displayio_display_obj_t* self) {
 }
 
 void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-    // TODO(tannewt): Handle displays with single byte bounds.
-    uint16_t data[2];
+
     self->send(self->bus, true, &self->set_column_command, 1);
-    data[0] = __builtin_bswap16(x0 + self->colstart);
-    data[1] = __builtin_bswap16(x1 - 1 + self->colstart);
-    self->send(self->bus, false, (uint8_t*) data, 4);
+    bool isCommand = self->data_as_commands;
+    if (self->single_byte_bounds) {
+        uint8_t data[2];
+        data[0] = x0 + self->colstart;
+        data[1] = x1 - 1 + self->colstart;
+        self->send(self->bus, isCommand, (uint8_t*) data, 2);
+    } else {
+        uint16_t data[2];
+        data[0] = __builtin_bswap16(x0 + self->colstart);
+        data[1] = __builtin_bswap16(x1 - 1 + self->colstart);
+        self->send(self->bus, isCommand, (uint8_t*) data, 4);
+    }
     self->send(self->bus, true, &self->set_row_command, 1);
-    data[0] = __builtin_bswap16(y0  + self->rowstart);
-    data[1] = __builtin_bswap16(y1 - 1 + self->rowstart);
-    self->send(self->bus, false, (uint8_t*) data, 4);
-    self->send(self->bus, true, &self->write_ram_command, 1);
+    if (self->single_byte_bounds) {
+        uint8_t data[2];
+        data[0] = y0 + self->rowstart;
+        data[1] = y1 - 1 + self->rowstart;
+        self->send(self->bus, isCommand, (uint8_t*) data, 2);
+    } else {
+        uint16_t data[2];
+        data[0] = __builtin_bswap16(y0  + self->rowstart);
+        data[1] = __builtin_bswap16(y1 - 1 + self->rowstart);
+        self->send(self->bus, isCommand, (uint8_t*) data, 4);
+    }
+    if (!self->data_as_commands) {
+        self->send(self->bus, true, &self->write_ram_command, 1);
+    }
 }
 
 bool displayio_display_frame_queued(displayio_display_obj_t* self) {

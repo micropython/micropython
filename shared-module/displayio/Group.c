@@ -73,8 +73,8 @@ void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp
         mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass."));
     }
     // Shift everything right.
-    for (size_t i = index; i < self->size; i++) {
-        self->children[i + 1] = self->children[i];
+    for (size_t i = self->size; i > index; i--) {
+        self->children[i] = self->children[i - 1];
     }
     self->children[index].native = native_layer;
     self->children[index].original = layer;

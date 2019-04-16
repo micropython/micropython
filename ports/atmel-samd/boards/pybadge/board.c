@@ -69,16 +69,16 @@ uint8_t display_init_sequence[] = {
     0x29, 0 | DELAY, 100, // _DISPON
 };
 
-STATIC busio_spi_obj_t display_spi_obj;
-
 void board_init(void) {
-    common_hal_busio_spi_construct(&display_spi_obj, &pin_PB13, &pin_PB12, NULL);
-    common_hal_busio_spi_never_reset(&display_spi_obj);
+    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
+    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
+    common_hal_busio_spi_never_reset(spi);
+    common_hal_busio_spi_configure(spi, 24000000, 0, 0, 8);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
-        &display_spi_obj,
+        spi,
         &pin_PB05, // TFT_DC Command or data
         &pin_PB07, // TFT_CS Chip select
         &pin_PA01); // TFT_RST Reset
@@ -99,7 +99,9 @@ void board_init(void) {
         0x37, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_PA00);
+        &pin_PA00,
+        false, // single_byte_bounds
+        false); // data_as_commands
     common_hal_displayio_display_set_auto_brightness(display, true);
 }
 

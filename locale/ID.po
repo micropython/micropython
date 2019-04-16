@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-19 18:37-0700\n"
+"POT-Creation-Date: 2019-04-12 13:44-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -218,10 +218,6 @@ msgstr ""
 msgid "A hardware interrupt channel is already in use"
 msgstr "Sebuah channel hardware interrupt sedang digunakan"
 
-#: ports/esp8266/modnetwork.c
-msgid "AP required"
-msgstr "AP dibutuhkan"
-
 #: shared-bindings/bleio/Address.c
 #, c-format
 msgid "Address is not %d bytes long or is in wrong format"
@@ -349,10 +345,6 @@ msgstr "buffers harus mempunyai panjang yang sama"
 msgid "Bytes must be between 0 and 255."
 msgstr ""
 
-#: ports/esp8266/esp_mphal.c
-msgid "C-level assert"
-msgstr "Dukungan C-level"
-
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Can not use dotstar with %s"
@@ -374,17 +366,9 @@ msgstr ""
 msgid "Can't connect in Peripheral mode"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c
-msgid "Cannot connect to AP"
-msgstr "Tidak dapat menyambungkan ke AP"
-
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr ""
-
-#: ports/esp8266/modnetwork.c
-msgid "Cannot disconnect from AP"
-msgstr "Tidak dapat memutuskna dari AP"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
@@ -415,15 +399,10 @@ msgid "Cannot remount '/' when USB is active."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
-#: ports/esp8266/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Tidak dapat melakukan reset ke bootloader karena tidak ada bootloader yang "
 "terisi"
-
-#: ports/esp8266/modnetwork.c
-msgid "Cannot set STA config"
-msgstr "Tidak dapat mengatur konfigurasi STA"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -440,10 +419,6 @@ msgstr ""
 #: extmod/moductypes.c
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "tidak dapat mendapatkan ukuran scalar secara tidak ambigu"
-
-#: ports/esp8266/modnetwork.c
-msgid "Cannot update i/f status"
-msgstr "Tidak dapat memperbarui status i/f"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -534,30 +509,14 @@ msgstr ""
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
-#: ports/unix/modffi.c
-msgid "Don't know how to pass object to native function"
-msgstr "Tidak tahu cara meloloskan objek ke fungsi native"
-
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr ""
-
-#: ports/esp8266/common-hal/microcontroller/__init__.c
-msgid "ESP8226 does not support safe mode."
-msgstr "ESP8266 tidak mendukung safe mode"
-
-#: ports/esp8266/common-hal/digitalio/DigitalInOut.c
-msgid "ESP8266 does not support pull down."
-msgstr "ESP866 tidak mendukung pull down"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Channel EXTINT sedang digunakan"
-
-#: ports/unix/modffi.c
-msgid "Error in ffi_prep_cif"
-msgstr "Errod pada ffi_prep_cif"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -613,7 +572,6 @@ msgid "Failed to allocate RX buffer"
 msgstr "Gagal untuk mengalokasikan buffer RX"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -660,9 +618,9 @@ msgid "Failed to get softdevice state"
 msgstr "Gagal untuk mendapatkan status softdevice, error: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to notify or indicate attribute value, err %0x04x"
-msgstr "Gagal untuk melaporkan nilai atribut, status: 0x%08lX"
+#, c-format
+msgid "Failed to notify or indicate attribute value, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -670,9 +628,9 @@ msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Gagal untuk membaca nilai atribut, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to read attribute value, err %0x04x"
-msgstr "Gagal untuk membaca nilai atribut, status: 0x%08lX"
+#, c-format
+msgid "Failed to read attribute value, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -763,23 +721,15 @@ msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/SPI.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr ""
-
-#: shared-bindings/busio/I2C.c
-msgid "Function requires lock."
-msgstr ""
-
-#: ports/esp8266/common-hal/digitalio/DigitalInOut.c
-msgid "GPIO16 does not support pull up."
-msgstr "GPIO16 tidak mendukung pull up"
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
 msgstr ""
 
-#: extmod/vfs_posix_file.c ports/unix/file.c py/objstringio.c
+#: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "operasi I/O pada file tertutup"
 
@@ -817,6 +767,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid bit clock pin"
 msgstr "Bit clock pada pin tidak valid"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Invalid bits per value"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -928,11 +882,6 @@ msgstr ""
 msgid "MOSI pin init failed."
 msgstr ""
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c
-#, c-format
-msgid "Maximum PWM frequency is %dhz."
-msgstr "Nilai maksimum frekuensi PWM adalah %dhz"
-
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
@@ -950,15 +899,6 @@ msgstr ""
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c
-msgid "Minimum PWM frequency is 1hz."
-msgstr "Nilai minimum frekuensi PWM is 1hz"
-
-#: ports/esp8266/common-hal/pulseio/PWMOut.c
-#, c-format
-msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-msgstr "Nilai Frekuensi PWM ganda tidak didukung. PWM sudah diatur pada %dhz"
-
 #: shared-bindings/displayio/Display.c
 msgid "Must be a Group subclass."
 msgstr ""
@@ -972,10 +912,6 @@ msgstr "Tidak ada DAC (Digital Analog Converter) di dalam chip"
 msgid "No DMA channel found"
 msgstr "tidak ada channel DMA ditemukan"
 
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
-msgid "No PulseIn support for %q"
-msgstr "Tidak ada dukungan PulseIn untuk %q"
-
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Tidak pin RX"
@@ -988,17 +924,9 @@ msgstr "Tidak ada pin TX"
 msgid "No available clocks"
 msgstr ""
 
-#: supervisor/shared/board_busses.c
-msgid "No default I2C bus"
-msgstr "Tidak ada standar bus I2C"
-
-#: supervisor/shared/board_busses.c
-msgid "No default SPI bus"
-msgstr "Tidak ada standar bus SPI"
-
-#: supervisor/shared/board_busses.c
-msgid "No default UART bus"
-msgstr "Tidak ada standar bus UART"
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
+msgstr "Tidak ada standar bus %q"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
@@ -1007,10 +935,6 @@ msgstr "Tidak ada GCLK yang kosong"
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
 msgstr ""
-
-#: ports/esp8266/common-hal/analogio/AnalogOut.c
-msgid "No hardware support for analog out."
-msgstr "Tidak dukungan hardware untuk analog out."
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -1029,10 +953,6 @@ msgstr ""
 #, fuzzy
 msgid "Not connected"
 msgstr "Tidak dapat menyambungkan ke AP"
-
-#: shared-bindings/bleio/CharacteristicBuffer.c
-msgid "Not connected."
-msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 msgid "Not playing"
@@ -1057,10 +977,6 @@ msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
 
-#: shared-module/displayio/Bitmap.c
-msgid "Only bit maps of 8 bit color or less are supported"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1071,10 +987,6 @@ msgstr ""
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Only slices with step=1 (aka None) are supported"
 msgstr ""
-
-#: ports/esp8266/common-hal/busio/UART.c
-msgid "Only tx supported on UART1 (GPIO2)."
-msgstr "Hanya tx yang mendukung pada UART1 (GPIO2)."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1090,31 +1002,14 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
-#: ports/esp8266/common-hal/pulseio/PWMOut.c ports/esp8266/machine_pwm.c
-#, c-format
-msgid "PWM not supported on pin %d"
-msgstr "PWM tidak didukung pada pin %d"
-
 #: py/moduerrno.c
 msgid "Permission denied"
 msgstr ""
-
-#: ports/esp8266/common-hal/analogio/AnalogIn.c
-msgid "Pin %q does not have ADC capabilities"
-msgstr "Pin %q tidak memiliki kemampuan ADC"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin tidak mempunya kemampuan untuk ADC (Analog Digital Converter)"
-
-#: ports/esp8266/machine_pin.c
-msgid "Pin(16) doesn't support pull"
-msgstr "Pin(16) tidak mendukung pull"
-
-#: ports/esp8266/common-hal/busio/SPI.c
-msgid "Pins not valid for SPI"
-msgstr "Pin-pin tidak valid untuk SPI"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Pixel beyond bounds of buffer"
@@ -1134,11 +1029,11 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr ""
 
-#: shared-bindings/rtc/RTC.c
+#: ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
-#: shared-bindings/rtc/RTC.c shared-bindings/time/__init__.c
+#: shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr ""
 
@@ -1179,14 +1074,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA atau SCL membutuhkan pull up"
-
-#: ports/esp8266/modnetwork.c
-msgid "STA must be active"
-msgstr "STA harus aktif"
-
-#: ports/esp8266/modnetwork.c
-msgid "STA required"
-msgstr "STA dibutuhkan"
 
 #: shared-bindings/audioio/Mixer.c
 msgid "Sample rate must be positive"
@@ -1306,15 +1193,6 @@ msgstr ""
 msgid "Tuple or struct_time argument required"
 msgstr ""
 
-#: ports/esp8266/machine_uart.c
-#, c-format
-msgid "UART(%d) does not exist"
-msgstr "UART(%d) tidak ada"
-
-#: ports/esp8266/machine_uart.c
-msgid "UART(1) can't read"
-msgstr "UART(1) tidak dapat dibaca"
-
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
 msgstr ""
@@ -1353,10 +1231,6 @@ msgstr ""
 msgid "Unable to read color palette data"
 msgstr ""
 
-#: ports/esp8266/common-hal/storage/__init__.c
-msgid "Unable to remount filesystem"
-msgstr "Tidak dapat memasang filesystem kembali"
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr ""
@@ -1364,10 +1238,6 @@ msgstr ""
 #: ports/nrf/common-hal/bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr ""
-
-#: ports/unix/modffi.c
-msgid "Unknown type"
-msgstr "Tipe tidak diketahui"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1394,12 +1264,6 @@ msgstr ""
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
 msgstr ""
-
-#: ports/esp8266/common-hal/storage/__init__.c
-msgid "Use esptool to erase flash and re-upload Python instead"
-msgstr ""
-"Gunakan esptool untuk menghapus flash dan upload ulang Python sebagai "
-"gantinya"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -1441,11 +1305,6 @@ msgstr ""
 msgid "You requested starting safe mode by "
 msgstr "Anda mengajukan untuk memulai mode aman pada (safe mode) pada "
 
-#: ports/unix/modusocket.c
-#, c-format
-msgid "[addrinfo error %d]"
-msgstr "[addrinfo error %d]"
-
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr ""
@@ -1467,7 +1326,7 @@ msgstr "sebuah objek menyerupai byte (bytes-like) dibutuhkan"
 msgid "abort() called"
 msgstr "abort() dipanggil"
 
-#: extmod/machine_mem.c ports/unix/modmachine.c
+#: extmod/machine_mem.c
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
 msgstr "alamat %08x tidak selaras dengan %d bytes"
@@ -1562,10 +1421,6 @@ msgstr "buffers harus mempunyai panjang yang sama"
 msgid "buffer slices must be of equal length"
 msgstr ""
 
-#: ports/esp8266/machine_rtc.c
-msgid "buffer too long"
-msgstr "buffer terlalu panjang"
-
 #: py/modstruct.c shared-bindings/struct/__init__.c
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
@@ -1619,10 +1474,6 @@ msgstr ""
 #: py/persistentcode.c
 msgid "can only save bytecode"
 msgstr ""
-
-#: ports/esp8266/modnetwork.c
-msgid "can query only one param"
-msgstr "hanya bisa melakukan query satu param"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -1695,14 +1546,6 @@ msgstr ""
 msgid "can't do truncated division of a complex number"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c
-msgid "can't get AP config"
-msgstr "tidak bisa mendapatkan konfigurasi AP"
-
-#: ports/esp8266/modnetwork.c
-msgid "can't get STA config"
-msgstr "tidak bisa mendapatkan konfigurasi STA"
-
 #: py/compile.c
 msgid "can't have multiple **x"
 msgstr "tidak bisa memiliki **x ganda"
@@ -1730,14 +1573,6 @@ msgstr ""
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
-
-#: ports/esp8266/modnetwork.c
-msgid "can't set AP config"
-msgstr "tidak bisa mendapatkan konfigurasi AP"
-
-#: ports/esp8266/modnetwork.c
-msgid "can't set STA config"
-msgstr "tidak bisa mendapatkan konfigurasi STA"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -1871,10 +1706,6 @@ msgstr ""
 msgid "division by zero"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c
-msgid "either pos or kw args are allowed"
-msgstr "hanya antar pos atau kw args yang diperbolehkan"
-
 #: py/objdeque.c
 msgid "empty"
 msgstr ""
@@ -1924,10 +1755,6 @@ msgstr ""
 msgid "expecting a dict for keyword args"
 msgstr ""
 
-#: ports/esp8266/machine_pin.c
-msgid "expecting a pin"
-msgstr "mengharapkan sebuah pin"
-
 #: py/compile.c
 msgid "expecting an assembler instruction"
 msgstr "sebuah instruksi assembler diharapkan"
@@ -1948,10 +1775,6 @@ msgstr "argumen keyword ekstra telah diberikan"
 msgid "extra positional arguments given"
 msgstr "argumen posisi ekstra telah diberikan"
 
-#: ports/unix/modffi.c
-msgid "ffi_prep_closure_loc"
-msgstr "ffi_prep_closure_loc"
-
 #: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
@@ -1968,10 +1791,6 @@ msgstr ""
 msgid "firstbit must be MSB"
 msgstr "bit pertama(firstbit) harus berupa MSB"
 
-#: ports/esp8266/modesp.c
-msgid "flash location must be below 1MByte"
-msgstr "alokasi flash harus dibawah 1MByte"
-
 #: py/objint.c
 msgid "float too big"
 msgstr ""
@@ -1983,10 +1802,6 @@ msgstr ""
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr ""
-
-#: ports/esp8266/modmachine.c
-msgid "frequency can only be either 80Mhz or 160MHz"
-msgstr "frekuensi hanya bisa didefinisikan 80Mhz atau 160Mhz"
 
 #: py/objdeque.c
 msgid "full"
@@ -2056,10 +1871,6 @@ msgstr "identifier didefinisi ulang sebagai global"
 msgid "identifier redefined as nonlocal"
 msgstr "identifier didefinisi ulang sebagai nonlocal"
 
-#: ports/esp8266/machine_hspi.c
-msgid "impossible baudrate"
-msgstr "baudrate tidak memungkinkan"
-
 #: py/objstr.c
 msgid "incomplete format"
 msgstr ""
@@ -2073,7 +1884,6 @@ msgid "incorrect padding"
 msgstr "lapisan (padding) tidak benar"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index keluar dari jangkauan"
@@ -2106,25 +1916,13 @@ msgstr "perangkat I2C tidak valid"
 msgid "invalid SPI peripheral"
 msgstr "perangkat SPI tidak valid"
 
-#: ports/esp8266/machine_rtc.c
-msgid "invalid alarm"
-msgstr "alarm tidak valid"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "argumen-argumen tidak valid"
 
-#: ports/esp8266/modnetwork.c
-msgid "invalid buffer length"
-msgstr "panjang buffer tidak valid"
-
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
 msgstr "cert tidak valid"
-
-#: ports/esp8266/common-hal/busio/UART.c ports/esp8266/machine_uart.c
-msgid "invalid data bits"
-msgstr "bit data tidak valid"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
@@ -2146,17 +1944,9 @@ msgstr "key tidak valid"
 msgid "invalid micropython decorator"
 msgstr "micropython decorator tidak valid"
 
-#: ports/esp8266/machine_pin.c
-msgid "invalid pin"
-msgstr "pin tidak valid"
-
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
 msgstr ""
-
-#: ports/esp8266/common-hal/busio/UART.c ports/esp8266/machine_uart.c
-msgid "invalid stop bits"
-msgstr "stop bit tidak valid"
 
 #: py/compile.c py/parse.c
 msgid "invalid syntax"
@@ -2203,10 +1993,6 @@ msgstr ""
 msgid "label redefined"
 msgstr "label didefinis ulang"
 
-#: ports/esp8266/modesp.c
-msgid "len must be multiple of 4"
-msgstr "len harus kelipatan dari 4"
-
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr ""
@@ -2247,11 +2033,6 @@ msgstr ""
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
 msgstr ""
-
-#: ports/esp8266/modesp.c
-#, c-format
-msgid "memory allocation failed, allocating %u bytes for native code"
-msgstr "alokasi memori gagal, mengalokasikan %u byte untuk kode native"
 
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
@@ -2359,11 +2140,6 @@ msgstr "non-keyword arg setelah keyword arg"
 msgid "not a 128-bit UUID"
 msgstr ""
 
-#: ports/esp8266/machine_adc.c
-#, c-format
-msgid "not a valid ADC Channel: %d"
-msgstr "tidak valid channel ADC: %d"
-
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
 msgstr ""
@@ -2465,10 +2241,6 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parameter harus menjadi register dalam urutan r0 sampai r3"
 
-#: ports/esp8266/machine_pin.c
-msgid "pin does not have IRQ capabilities"
-msgstr "pin tidak memiliki kemampuan IRQ"
-
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
 msgstr ""
@@ -2482,7 +2254,6 @@ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/esp8266/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "Muncul dari PulseIn yang kosong"
@@ -2536,10 +2307,6 @@ msgstr "anotasi return harus sebuah identifier"
 msgid "return expected '%q' but got '%q'"
 msgstr ""
 
-#: shared-module/displayio/Bitmap.c
-msgid "row must be packed and word aligned"
-msgstr ""
-
 #: py/objstr.c
 msgid "rsplit(None,n)"
 msgstr ""
@@ -2553,10 +2320,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
 msgstr "nilai sampling keluar dari jangkauan"
-
-#: ports/esp8266/modnetwork.c
-msgid "scan failed"
-msgstr "scan gagal"
 
 #: py/modmicropython.c
 msgid "schedule stack full"
@@ -2765,10 +2528,6 @@ msgstr ""
 msgid "unindent does not match any outer indentation level"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c
-msgid "unknown config param"
-msgstr "konfigurasi param tidak diketahui"
-
 #: py/objstr.c
 #, c-format
 msgid "unknown conversion specifier %c"
@@ -2789,10 +2548,6 @@ msgstr ""
 msgid "unknown format code '%c' for object of type 'str'"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c
-msgid "unknown status param"
-msgstr "status param tidak diketahui"
-
 #: py/compile.c
 msgid "unknown type"
 msgstr "tipe tidak diketahui"
@@ -2809,6 +2564,10 @@ msgstr ""
 msgid "unreadable attribute"
 msgstr ""
 
+#: shared-bindings/displayio/TileGrid.c
+msgid "unsupported %q type"
+msgstr ""
+
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
@@ -2817,10 +2576,6 @@ msgstr ""
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "unsupported bitmap type"
 msgstr ""
 
 #: py/objstr.c
@@ -2840,9 +2595,9 @@ msgstr ""
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr ""
 
-#: ports/esp8266/modnetwork.c
-msgid "wifi_set_ip_info() failed"
-msgstr "wifi_set_ip_info() gagal"
+#: shared-bindings/displayio/Bitmap.c
+msgid "value_count must be > 0"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "write_args must be a list, tuple, or None"
@@ -2871,3 +2626,176 @@ msgstr ""
 #: py/objrange.c
 msgid "zero step"
 msgstr ""
+
+#~ msgid "AP required"
+#~ msgstr "AP dibutuhkan"
+
+#~ msgid "C-level assert"
+#~ msgstr "Dukungan C-level"
+
+#~ msgid "Cannot connect to AP"
+#~ msgstr "Tidak dapat menyambungkan ke AP"
+
+#~ msgid "Cannot disconnect from AP"
+#~ msgstr "Tidak dapat memutuskna dari AP"
+
+#~ msgid "Cannot set STA config"
+#~ msgstr "Tidak dapat mengatur konfigurasi STA"
+
+#~ msgid "Cannot update i/f status"
+#~ msgstr "Tidak dapat memperbarui status i/f"
+
+#~ msgid "Don't know how to pass object to native function"
+#~ msgstr "Tidak tahu cara meloloskan objek ke fungsi native"
+
+#~ msgid "ESP8226 does not support safe mode."
+#~ msgstr "ESP8266 tidak mendukung safe mode"
+
+#~ msgid "ESP8266 does not support pull down."
+#~ msgstr "ESP866 tidak mendukung pull down"
+
+#~ msgid "Error in ffi_prep_cif"
+#~ msgstr "Errod pada ffi_prep_cif"
+
+#, fuzzy
+#~ msgid "Failed to notify or indicate attribute value, err %0x04x"
+#~ msgstr "Gagal untuk melaporkan nilai atribut, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to read attribute value, err %0x04x"
+#~ msgstr "Gagal untuk membaca nilai atribut, status: 0x%08lX"
+
+#~ msgid "GPIO16 does not support pull up."
+#~ msgstr "GPIO16 tidak mendukung pull up"
+
+#~ msgid "Maximum PWM frequency is %dhz."
+#~ msgstr "Nilai maksimum frekuensi PWM adalah %dhz"
+
+#~ msgid "Minimum PWM frequency is 1hz."
+#~ msgstr "Nilai minimum frekuensi PWM is 1hz"
+
+#~ msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
+#~ msgstr ""
+#~ "Nilai Frekuensi PWM ganda tidak didukung. PWM sudah diatur pada %dhz"
+
+#~ msgid "No PulseIn support for %q"
+#~ msgstr "Tidak ada dukungan PulseIn untuk %q"
+
+#~ msgid "No hardware support for analog out."
+#~ msgstr "Tidak dukungan hardware untuk analog out."
+
+#~ msgid "Only tx supported on UART1 (GPIO2)."
+#~ msgstr "Hanya tx yang mendukung pada UART1 (GPIO2)."
+
+#~ msgid "PWM not supported on pin %d"
+#~ msgstr "PWM tidak didukung pada pin %d"
+
+#~ msgid "Pin %q does not have ADC capabilities"
+#~ msgstr "Pin %q tidak memiliki kemampuan ADC"
+
+#~ msgid "Pin(16) doesn't support pull"
+#~ msgstr "Pin(16) tidak mendukung pull"
+
+#~ msgid "Pins not valid for SPI"
+#~ msgstr "Pin-pin tidak valid untuk SPI"
+
+#~ msgid "STA must be active"
+#~ msgstr "STA harus aktif"
+
+#~ msgid "STA required"
+#~ msgstr "STA dibutuhkan"
+
+#~ msgid "UART(%d) does not exist"
+#~ msgstr "UART(%d) tidak ada"
+
+#~ msgid "UART(1) can't read"
+#~ msgstr "UART(1) tidak dapat dibaca"
+
+#~ msgid "Unable to remount filesystem"
+#~ msgstr "Tidak dapat memasang filesystem kembali"
+
+#~ msgid "Unknown type"
+#~ msgstr "Tipe tidak diketahui"
+
+#~ msgid "Use esptool to erase flash and re-upload Python instead"
+#~ msgstr ""
+#~ "Gunakan esptool untuk menghapus flash dan upload ulang Python sebagai "
+#~ "gantinya"
+
+#~ msgid "[addrinfo error %d]"
+#~ msgstr "[addrinfo error %d]"
+
+#~ msgid "buffer too long"
+#~ msgstr "buffer terlalu panjang"
+
+#~ msgid "can query only one param"
+#~ msgstr "hanya bisa melakukan query satu param"
+
+#~ msgid "can't get AP config"
+#~ msgstr "tidak bisa mendapatkan konfigurasi AP"
+
+#~ msgid "can't get STA config"
+#~ msgstr "tidak bisa mendapatkan konfigurasi STA"
+
+#~ msgid "can't set AP config"
+#~ msgstr "tidak bisa mendapatkan konfigurasi AP"
+
+#~ msgid "can't set STA config"
+#~ msgstr "tidak bisa mendapatkan konfigurasi STA"
+
+#~ msgid "either pos or kw args are allowed"
+#~ msgstr "hanya antar pos atau kw args yang diperbolehkan"
+
+#~ msgid "expecting a pin"
+#~ msgstr "mengharapkan sebuah pin"
+
+#~ msgid "ffi_prep_closure_loc"
+#~ msgstr "ffi_prep_closure_loc"
+
+#~ msgid "flash location must be below 1MByte"
+#~ msgstr "alokasi flash harus dibawah 1MByte"
+
+#~ msgid "frequency can only be either 80Mhz or 160MHz"
+#~ msgstr "frekuensi hanya bisa didefinisikan 80Mhz atau 160Mhz"
+
+#~ msgid "impossible baudrate"
+#~ msgstr "baudrate tidak memungkinkan"
+
+#~ msgid "invalid alarm"
+#~ msgstr "alarm tidak valid"
+
+#~ msgid "invalid buffer length"
+#~ msgstr "panjang buffer tidak valid"
+
+#~ msgid "invalid data bits"
+#~ msgstr "bit data tidak valid"
+
+#~ msgid "invalid pin"
+#~ msgstr "pin tidak valid"
+
+#~ msgid "invalid stop bits"
+#~ msgstr "stop bit tidak valid"
+
+#~ msgid "len must be multiple of 4"
+#~ msgstr "len harus kelipatan dari 4"
+
+#~ msgid "memory allocation failed, allocating %u bytes for native code"
+#~ msgstr "alokasi memori gagal, mengalokasikan %u byte untuk kode native"
+
+#~ msgid "not a valid ADC Channel: %d"
+#~ msgstr "tidak valid channel ADC: %d"
+
+#~ msgid "pin does not have IRQ capabilities"
+#~ msgstr "pin tidak memiliki kemampuan IRQ"
+
+#~ msgid "scan failed"
+#~ msgstr "scan gagal"
+
+#~ msgid "unknown config param"
+#~ msgstr "konfigurasi param tidak diketahui"
+
+#~ msgid "unknown status param"
+#~ msgstr "status param tidak diketahui"
+
+#~ msgid "wifi_set_ip_info() failed"
+#~ msgstr "wifi_set_ip_info() gagal"

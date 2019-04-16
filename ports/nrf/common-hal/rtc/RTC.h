@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Noralf Trønnes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
 
-#include "py/obj.h"
+extern void rtc_init(void);
+extern void rtc_reset(void);
 
-mp_obj_t board_i2c(void);
-MP_DECLARE_CONST_FUN_OBJ_0(board_i2c_obj);
-
-mp_obj_t board_spi(void);
-MP_DECLARE_CONST_FUN_OBJ_0(board_spi_obj);
-
-mp_obj_t board_uart(void);
-MP_DECLARE_CONST_FUN_OBJ_0(board_uart_obj);
-
-void reset_board_busses(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_BUSSES_H
+#endif  // MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
