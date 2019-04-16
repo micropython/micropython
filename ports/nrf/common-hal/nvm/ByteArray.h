@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Nick Moore for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_NVM_BYTEARRAY_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_NVM_BYTEARRAY_H
 
-#include "py/mpconfig.h"
+#include "py/obj.h"
 
-#define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
+typedef struct {
+    mp_obj_base_t base;
+} nvm_bytearray_obj_t;
 
-#endif  // MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_NVM_BYTEARRAY_H

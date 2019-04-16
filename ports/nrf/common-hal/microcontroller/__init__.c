@@ -24,9 +24,14 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/microcontroller/Processor.h"
 
+#include "shared-bindings/nvm/ByteArray.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -63,6 +68,14 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
     },
 };
 
+#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+// The singleton nvm.ByteArray object.
+const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
+    .base = {
+        .type = &nvm_bytearray_type,
+    },
+};
+#endif
 
 STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_P0_00), MP_ROM_PTR(&pin_P0_00) },
