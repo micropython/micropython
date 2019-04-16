@@ -29,19 +29,6 @@
 #include "shared-bindings/gamepad/GamePad.h"
 #include "shared-bindings/util.h"
 
-
-// Helper for validating digitalio.DigitalInOut arguments
-digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj) {
-    if (!MP_OBJ_IS_TYPE(obj, &digitalio_digitalinout_type)) {
-        mp_raise_TypeError(translate("argument num/types mismatch"));
-    }
-    digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(obj);
-    raise_error_if_deinited(
-        common_hal_digitalio_digitalinout_deinited(pin));
-    return pin;
-}
-
-
 //| :mod:`gamepad` --- Button handling
 //| ==================================
 //|

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,10 @@
  * THE SOFTWARE.
  */
 
+#ifndef MICROPY_INCLUDED_GAMEPADSHIFT___INIT___H
+#define MICROPY_INCLUDED_GAMEPADSHIFT___INIT___H
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H
+void gamepadshift_tick(void);
+void gamepadshift_reset(void);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H
+#endif  // MICROPY_INCLUDED_GAMEPADSHIFT___INIT___H

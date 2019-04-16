@@ -315,8 +315,6 @@ extern const struct _mp_obj_module_t frequencyio_module;
 
 #if CIRCUITPY_GAMEPAD
 extern const struct _mp_obj_module_t gamepad_module;
-// Scan gamepad every 32ms
-#define CIRCUITPY_GAMEPAD_TICKS 0x1f
 #define GAMEPAD_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module },
 #else
 #define GAMEPAD_MODULE
@@ -327,6 +325,14 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPADSHIFT_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepadshift),(mp_obj_t)&gamepadshift_module },
 #else
 #define GAMEPADSHIFT_MODULE
+#endif
+
+#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
+// Scan gamepad every 32ms
+#define CIRCUITPY_GAMEPAD_TICKS 0x1f
+#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
+#else
+#define GAMEPAD_ROOT_POINTERS
 #endif
 
 #if CIRCUITPY_I2CSLAVE
@@ -612,7 +618,7 @@ extern const struct _mp_obj_module_t ustack_module;
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
-    mp_obj_t gamepad_singleton; \
+    GAMEPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
     mp_obj_t terminal_tilegrid_tiles; \
     BOARD_I2C_ROOT_POINTER \

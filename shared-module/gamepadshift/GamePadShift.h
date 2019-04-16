@@ -40,6 +40,4 @@ typedef struct {
     volatile uint8_t last;
 } gamepadshift_obj_t;
 
-void gamepadshift_tick(gamepadshift_obj_t *self);
-
 #endif  // MICROPY_INCLUDED_GAMEPADSHIFT_GAMEPADSHIFT_H

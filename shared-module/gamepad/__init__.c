@@ -30,10 +30,6 @@
 #include "shared-bindings/gamepad/__init__.h"
 #include "shared-bindings/gamepad/GamePad.h"
 
-#if CIRCUITPY_GAMEPADSHIFT
-#include "shared-bindings/gamepadshift/GamePadShift.h"
-#endif
-
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
 
@@ -62,12 +58,6 @@ void gamepad_tick(void) {
         self->pressed |= self->last & current;
         self->last = current;
     }
-    #if CIRCUITPY_GAMEPADSHIFT
-    else if (MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
-        // buttons connected to a shift register
-        gamepadshift_tick(singleton);
-    }
-    #endif
 }
 
 void gamepad_reset(void) {

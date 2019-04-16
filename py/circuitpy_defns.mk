@@ -131,10 +131,9 @@ SRC_PATTERNS += frequencyio/%
 endif
 ifeq ($(CIRCUITPY_GAMEPAD),1)
 SRC_PATTERNS += gamepad/%
-	# gamepadshift depends on gamepad
-	ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
-	SRC_PATTERNS += gamepadshift/%
-	endif
+endif
+ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
+SRC_PATTERNS += gamepadshift/%
 endif
 ifeq ($(CIRCUITPY_I2CSLAVE),1)
 SRC_PATTERNS += i2cslave/%

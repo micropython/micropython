@@ -39,11 +39,11 @@
 //| :class:`GamePadShift` -- Scan buttons for presses through a shift register
 //| ===========================================================================
 //|
-//| .. class:: GamePadShift(data, clock, latch)
+//| .. class:: GamePadShift(clock, data, latch)
 //|
 //|     Initializes button scanning routines.
 //|
-//|     The ``data``, ``clock`` and ``latch`` parameters are ``DigitalInOut``
+//|     The ``clock``, ``data`` and ``latch`` parameters are ``DigitalInOut``
 //|     objects connected to the shift register controlling the buttons.
 //|
 //|     They button presses are accumulated, until the ``get_pressed`` method
@@ -56,18 +56,18 @@
 STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
-    enum { ARG_data, ARG_clock, ARG_latch };
+    enum { ARG_clock, ARG_data, ARG_latch };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_latch, MP_ARG_REQUIRED | MP_ARG_OBJ},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
                      allowed_args, args);
 
-    digitalio_digitalinout_obj_t *data_pin = assert_digitalinout(args[ARG_data].u_obj);
     digitalio_digitalinout_obj_t *clock_pin = assert_digitalinout(args[ARG_clock].u_obj);
+    digitalio_digitalinout_obj_t *data_pin = assert_digitalinout(args[ARG_data].u_obj);
     digitalio_digitalinout_obj_t *latch_pin = assert_digitalinout(args[ARG_latch].u_obj);
 
     gamepadshift_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
@@ -79,7 +79,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
         gamepad_singleton = gc_make_long_lived(gamepad_singleton);
         MP_STATE_VM(gamepad_singleton) = gamepad_singleton;
     }
-    common_hal_gamepadshift_gamepadshift_init(gamepad_singleton, data_pin, clock_pin, latch_pin);
+    common_hal_gamepadshift_gamepadshift_init(gamepad_singleton, clock_pin, data_pin, latch_pin);
     return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
 
