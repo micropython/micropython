@@ -177,7 +177,6 @@ SRC_C += \
 	peripherals/nrf/clocks.c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	peripherals/nrf/$(MCU_CHIP)/power.c \
-        peripherals/nrf/nvm.c \
 	peripherals/nrf/timers.c \
 	sd_mutex.c \
 	supervisor/shared/memory.c
