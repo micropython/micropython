@@ -49,6 +49,7 @@ void common_hal_gamepad_gamepad_init(gamepad_obj_t *gamepad,
         }
         gamepad->pins[i] = pin;
     }
+    gamepad->last = 0;
 }
 
 void common_hal_gamepad_gamepad_deinit(gamepad_obj_t *self) {

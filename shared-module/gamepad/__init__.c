@@ -38,26 +38,24 @@ void gamepad_tick(void) {
     uint8_t bit = 1;
 
     void* singleton = MP_STATE_VM(gamepad_singleton);
-    if (!singleton) {
+    if (singleton == NULL || !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepad_type)) {
         return;
     }
-    if (MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepad_type)) {
-        // buttons connected directly to pins
-        gamepad_obj_t *self = singleton;
-        for (int i = 0; i < 8; ++i) {
-            digitalio_digitalinout_obj_t* pin = self->pins[i];
-            if (!pin) {
-                break;
-            }
-            if (common_hal_digitalio_digitalinout_get_value(pin)) {
-                current |= bit;
-            }
-            bit <<= 1;
+
+    gamepad_obj_t *self = MP_OBJ_TO_PTR(singleton);
+    for (int i = 0; i < 8; ++i) {
+        digitalio_digitalinout_obj_t* pin = self->pins[i];
+        if (!pin) {
+            break;
         }
-        current ^= self->pulls;
-        self->pressed |= self->last & current;
-        self->last = current;
+        if (common_hal_digitalio_digitalinout_get_value(pin)) {
+            current |= bit;
+        }
+        bit <<= 1;
     }
+    current ^= self->pulls;
+    self->pressed |= self->last & current;
+    self->last = current;
 }
 
 void gamepad_reset(void) {

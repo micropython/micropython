@@ -31,28 +31,25 @@
 
 void gamepadshift_tick(void) {
     void* singleton = MP_STATE_VM(gamepad_singleton);
-    if (!singleton) {
+    if (singleton == NULL || !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
         return;
     }
 
-    if (MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
-        // buttons connected to a shift register
-        gamepadshift_obj_t *self = MP_OBJ_TO_PTR(singleton);
-        uint8_t current = 0;
-        uint8_t bit = 1;
-        common_hal_digitalio_digitalinout_set_value(self->latch_pin, 1);
-        for (int i = 0; i < 8; ++i) {
-            common_hal_digitalio_digitalinout_set_value(self->clock_pin, 0);
-            if (common_hal_digitalio_digitalinout_get_value(self->data_pin)) {
-                current |= bit;
-            }
-            common_hal_digitalio_digitalinout_set_value(self->clock_pin, 1);
-            bit <<= 1;
+    gamepadshift_obj_t *self = MP_OBJ_TO_PTR(singleton);
+    uint8_t current = 0;
+    uint8_t bit = 1;
+    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 1);
+    for (int i = 0; i < 8; ++i) {
+        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 0);
+        if (common_hal_digitalio_digitalinout_get_value(self->data_pin)) {
+            current |= bit;
         }
-        common_hal_digitalio_digitalinout_set_value(self->latch_pin, 0);
-        self->pressed |= self->last & current;
-        self->last = current;
+        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 1);
+        bit <<= 1;
     }
+    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 0);
+    self->pressed |= self->last & current;
+    self->last = current;
 }
 
 void gamepadshift_reset(void) {

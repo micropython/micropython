@@ -40,6 +40,8 @@ void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
     common_hal_digitalio_digitalinout_switch_to_output(latch_pin, 1,
                                                        DRIVE_MODE_PUSH_PULL);
     gamepadshift->latch_pin = latch_pin;
+
+    gamepadshift->last = 0;
 }
 
 void common_hal_gamepadshift_gamepadshift_deinit(gamepadshift_obj_t *gamepadshift) {
