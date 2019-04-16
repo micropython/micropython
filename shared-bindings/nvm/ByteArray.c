@@ -124,7 +124,8 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
 #endif
         } else {
             // Single index rather than slice.
-            size_t index = mp_get_index(self->base.type, self->len, index_in, false);
+            size_t index = mp_get_index(self->base.type, common_hal_nvm_bytearray_get_length(self),
+                    index_in, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 uint8_t value_out;
