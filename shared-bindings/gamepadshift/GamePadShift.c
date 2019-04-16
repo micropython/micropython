@@ -28,10 +28,8 @@
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "py/mpstate.h"
-#include "shared-bindings/gamepad/__init__.h"
 #include "shared-bindings/gamepadshift/GamePadShift.h"
 #include "shared-bindings/gamepadshift/__init__.h"
-#include "shared-module/gamepadshift/GamePadShift.h"
 #include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: gamepadshift

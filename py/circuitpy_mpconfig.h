@@ -567,7 +567,7 @@ extern const struct _mp_obj_module_t ustack_module;
     ERRNO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
-      GAMEPADSHIFT_MODULE \
+    GAMEPADSHIFT_MODULE \
     I2CSLAVE_MODULE \
     JSON_MODULE \
     MATH_MODULE \

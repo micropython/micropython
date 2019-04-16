@@ -23,17 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "shared-bindings/gamepad/GamePad.h"
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "py/mpstate.h"
-#include "shared-module/gamepad/__init__.h"
-#include "shared-module/gamepad/GamePad.h"
+#include "shared-bindings/gamepad/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "supervisor/shared/translate.h"
-#include "GamePad.h"
-#include "__init__.h"
 
 
 //| .. currentmodule:: gamepad

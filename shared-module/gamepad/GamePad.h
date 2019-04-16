@@ -34,9 +34,9 @@
 typedef struct {
     mp_obj_base_t base;
     digitalio_digitalinout_obj_t* pins[8];
+    volatile uint8_t last;
     volatile uint8_t pressed;
     uint8_t pulls;
-    volatile uint8_t last;
 } gamepad_obj_t;
 
 #endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
