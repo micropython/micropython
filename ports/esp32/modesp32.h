@@ -28,4 +28,6 @@
 
 extern const mp_obj_type_t esp32_ulp_type;
 
+#define NVS_NAMESPACE "micropython"
+
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H
