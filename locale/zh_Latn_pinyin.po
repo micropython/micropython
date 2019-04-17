@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-12 13:44-0700\n"
+"POT-Creation-Date: 2019-04-17 11:17-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -677,20 +677,20 @@ msgstr "Xiě rù gatts zhí,err 0x%04x shībài"
 msgid "File exists"
 msgstr "Wénjiàn cúnzài"
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 msgid "Flash erase failed"
 msgstr "Flash cā chú shībài"
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 #, c-format
 msgid "Flash erase failed to start, err 0x%04x"
 msgstr "Flash cā chú shībài, err 0x%04x"
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 msgid "Flash write failed"
 msgstr "Flash xiě rù shībài"
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 #, c-format
 msgid "Flash write failed to start, err 0x%04x"
 msgstr "Flash xiě rù shībài, err 0x%04x"
@@ -732,6 +732,11 @@ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè"
 msgid "Input/output error"
 msgstr "Shūrù/shūchū cuòwù"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Invalid %q pin"
+msgstr "Wúxiào de %q yǐn jiǎo"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Wúxiào de BMP wénjiàn"
@@ -744,10 +749,6 @@ msgstr "Wúxiào de PWM pínlǜ"
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Invalid bit clock pin"
-msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
@@ -764,15 +765,6 @@ msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
 #: shared-bindings/audioio/Mixer.c
 msgid "Invalid channel count"
 msgstr "Wúxiào de tōngdào jìshù"
-
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Invalid clock pin"
-msgstr "Wúxiào de shízhōng yǐn jiǎo"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Invalid data pin"
-msgstr "Wúxiào de shùjù yǐn jiǎo"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -1336,7 +1328,8 @@ msgstr "cānshù shì yīgè kōng de xùliè"
 msgid "argument has wrong type"
 msgstr "cānshù lèixíng cuòwù"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/_stage/__init__.c
+#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr "cānshù biānhào/lèixíng bù pǐpèi"
 
@@ -1733,10 +1726,6 @@ msgstr "lìwài bìxū láizì BaseException"
 #: py/objstr.c
 msgid "expected ':' after format specifier"
 msgstr "zài géshì shuōmíng fú zhīhòu yùqí ':'"
-
-#: shared-bindings/gamepad/GamePad.c
-msgid "expected a DigitalInOut"
-msgstr "qídài de DigitalInOut"
 
 #: py/obj.c
 msgid "expected tuple/list"
@@ -2447,10 +2436,6 @@ msgstr "chāoshí bìxū shì >= 0.0"
 msgid "timestamp out of range for platform time_t"
 msgstr "time_t shíjiān chuō chāochū píngtái fànwéi"
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "too many arguments"
-msgstr "tài duō cānshù"
-
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
 msgstr "tígōng jǐ dìng géshì de cānshù tài duō"
@@ -2619,6 +2604,15 @@ msgstr "y zhí chāochū biānjiè"
 msgid "zero step"
 msgstr "líng bù"
 
+#~ msgid "Invalid bit clock pin"
+#~ msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
+
+#~ msgid "Invalid clock pin"
+#~ msgstr "Wúxiào de shízhōng yǐn jiǎo"
+
+#~ msgid "Invalid data pin"
+#~ msgstr "Wúxiào de shùjù yǐn jiǎo"
+
 #~ msgid "No default I2C bus"
 #~ msgstr "Méiyǒu mòrèn I2C gōnggòng qìchē"
 
@@ -2631,8 +2625,14 @@ msgstr "líng bù"
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Jǐn zhīchí 8 wèi yánsè huò xiǎoyú"
 
+#~ msgid "expected a DigitalInOut"
+#~ msgstr "qídài de DigitalInOut"
+
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
+
+#~ msgid "too many arguments"
+#~ msgstr "tài duō cānshù"
 
 #~ msgid "unsupported bitmap type"
 #~ msgstr "bù zhīchí de bitmap lèixíng"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-13 11:50+0200\n"
+"POT-Creation-Date: 2019-04-17 11:17-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,8 +52,8 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "buffers harus mempunyai panjang yang sama"
@@ -62,7 +62,7 @@ msgstr "buffers harus mempunyai panjang yang sama"
 msgid "%q should be an int"
 msgstr ""
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
 
@@ -70,12 +70,12 @@ msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
 msgid "'%q' argument required"
 msgstr "'%q' argumen dibutuhkan"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr ""
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' mengharapkan sebuah register"
@@ -95,7 +95,7 @@ msgstr "'%s' mengharapkan sebuah FPU register"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' mengharapkan sebuah alamat dengan bentuk [a, b]"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' mengharapkan integer"
@@ -245,7 +245,7 @@ msgstr "Semua perangkat I2C sedang digunakan"
 msgid "All event channels in use"
 msgstr "Semua channel event sedang digunakan"
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
+#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
 msgstr "Semua channel event yang disinkronisasi sedang digunakan"
 
@@ -253,9 +253,9 @@ msgstr "Semua channel event yang disinkronisasi sedang digunakan"
 msgid "All timers for this pin are in use"
 msgstr "Semua timer untuk pin ini sedang digunakan"
 
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -522,8 +522,9 @@ msgstr "Channel EXTINT sedang digunakan"
 msgid "Error in regex"
 msgstr "Error pada regex"
 
-#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr ""
 
@@ -531,8 +532,8 @@ msgstr ""
 msgid "Expected a Characteristic"
 msgstr ""
 
-#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr ""
 
@@ -697,20 +698,20 @@ msgstr "Gagal untuk menulis nilai gatts, status: 0x%08lX"
 msgid "File exists"
 msgstr ""
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 msgid "Flash erase failed"
 msgstr ""
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 #, c-format
 msgid "Flash erase failed to start, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 msgid "Flash write failed"
 msgstr ""
 
-#: ports/nrf/supervisor/internal_flash.c
+#: ports/nrf/peripherals/nrf/nvm.c
 #, c-format
 msgid "Flash write failed to start, err 0x%04x"
 msgstr ""
@@ -719,8 +720,8 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
-#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr ""
 
@@ -750,6 +751,11 @@ msgstr ""
 msgid "Input/output error"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Invalid %q pin"
+msgstr "%q pada tidak valid"
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr ""
@@ -762,10 +768,6 @@ msgstr "Frekuensi PWM tidak valid"
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr ""
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Invalid bit clock pin"
-msgstr "Bit clock pada pin tidak valid"
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
@@ -782,15 +784,6 @@ msgstr ""
 #: shared-bindings/audioio/Mixer.c
 msgid "Invalid channel count"
 msgstr ""
-
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Invalid clock pin"
-msgstr "Clock pada pin tidak valid"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Invalid data pin"
-msgstr "data pin tidak valid"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
@@ -826,10 +819,11 @@ msgstr "Pin untuk channel kiri tidak valid"
 msgid "Invalid pin for right channel"
 msgstr "Pin untuk channel kanan tidak valid"
 
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Pin-pin tidak valid"
 
@@ -1091,8 +1085,8 @@ msgstr "Serializer sedang digunakan"
 msgid "Slice and value different lengths."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
-#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -1345,8 +1339,8 @@ msgstr ""
 msgid "argument has wrong type"
 msgstr ""
 
-#: py/argcheck.c shared-bindings/gamepad/__init__.c
-#: shared-bindings/gamepad/GamePad.c
+#: py/argcheck.c shared-bindings/_stage/__init__.c
+#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr "argumen num/types tidak cocok"
 
@@ -1659,7 +1653,7 @@ msgstr ""
 msgid "complex division by zero"
 msgstr ""
 
-#: py/parsenum.c py/objfloat.c
+#: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
 msgstr ""
 
@@ -1700,7 +1694,7 @@ msgstr ""
 msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: py/runtime.c py/modmath.c py/objint_mpz.c py/objint_longlong.c py/objfloat.c
+#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr ""
@@ -1709,7 +1703,7 @@ msgstr ""
 msgid "empty"
 msgstr ""
 
-#: extmod/modutimeq.c extmod/moduheapq.c
+#: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "heap kosong"
 
@@ -1770,7 +1764,7 @@ msgstr "argumen keyword ekstra telah diberikan"
 msgid "extra positional arguments given"
 msgstr "argumen posisi ekstra telah diberikan"
 
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
+#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -1811,7 +1805,7 @@ msgstr "fungsi tidak dapat mengambil argumen keyword"
 msgid "function expected at most %d arguments, got %d"
 msgstr "fungsi diharapkan setidaknya %d argumen, hanya mendapatkan %d"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "fungsi mendapatkan nilai ganda untuk argumen '%q'"
 
@@ -1833,7 +1827,7 @@ msgstr "fungsi kehilangan argumen keyword '%q' yang dibutuhkan"
 msgid "function missing required positional argument #%d"
 msgstr "fungsi kehilangan argumen posisi #%d yang dibutuhkan"
 
-#: py/argcheck.c py/objnamedtuple.c py/bc.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "fungsi mengambil posisi argumen %d tapi %d yang diberikan"
@@ -1980,7 +1974,7 @@ msgstr "argumen keyword belum diimplementasi - gunakan args normal"
 msgid "keywords must be strings"
 msgstr "keyword harus berupa string"
 
-#: py/emitinlinextensa.c py/emitinlinethumb.c
+#: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
 msgstr ""
 
@@ -2087,11 +2081,11 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr ""
 
-#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
+#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr ""
 
-#: py/runtime.c py/objint_mpz.c
+#: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
 msgstr ""
 
@@ -2193,12 +2187,12 @@ msgstr ""
 msgid "odd-length string"
 msgstr "panjang data string memiliki keganjilan (odd-length)"
 
-#: py/objstrunicode.c py/objstr.c
+#: py/objstr.c py/objstrunicode.c
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "modul tidak ditemukan"
 
-#: py/objarray.c py/objtuple.c py/objstrunicode.c py/objstr.c
+#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
@@ -2216,7 +2210,7 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr ""
 
-#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
+#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr ""
 
@@ -2348,7 +2342,7 @@ msgstr ""
 msgid "slice step cannot be zero"
 msgstr ""
 
-#: py/sequence.c py/objint.c
+#: py/objint.c py/sequence.c
 msgid "small int overflow"
 msgstr ""
 
@@ -2507,7 +2501,7 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr "argumen keyword tidak diharapkan"
 
-#: py/objnamedtuple.c py/bc.c
+#: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
 msgstr "keyword argumen '%q' tidak diharapkan"
 
@@ -2658,6 +2652,15 @@ msgstr ""
 
 #~ msgid "GPIO16 does not support pull up."
 #~ msgstr "GPIO16 tidak mendukung pull up"
+
+#~ msgid "Invalid bit clock pin"
+#~ msgstr "Bit clock pada pin tidak valid"
+
+#~ msgid "Invalid clock pin"
+#~ msgstr "Clock pada pin tidak valid"
+
+#~ msgid "Invalid data pin"
+#~ msgstr "data pin tidak valid"
 
 #~ msgid "Maximum PWM frequency is %dhz."
 #~ msgstr "Nilai maksimum frekuensi PWM adalah %dhz"
