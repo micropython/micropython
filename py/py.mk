@@ -105,6 +105,24 @@ $(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare
 $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
+# External modules written in C.
+ifneq ($(USER_C_MODULES),)
+# pre-define USERMOD variables as expanded so that variables are immediate 
+# expanded as they're added to them
+SRC_USERMOD := 
+CFLAGS_USERMOD :=
+LDFLAGS_USERMOD :=
+$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
+    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
+    $(info Including User C Module from $(USERMOD_DIR))\
+	$(eval include $(module))\
+)
+
+SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
+CFLAGS_MOD += $(CFLAGS_USERMOD)
+LDFLAGS_MOD += $(LDFLAGS_USERMOD)
+endif
+
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
 	mpstate.o \
@@ -286,6 +304,13 @@ FORCE:
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
+
+# build a list of registered modules for py/objmodule.c.
+$(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+	@$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
+
+SRC_QSTR += $(HEADER_BUILD)/moduledefs.h
 
 # mpconfigport.mk is optional, but changes to it may drastically change
 # overall config, so they need to be caught
