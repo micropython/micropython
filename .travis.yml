@@ -72,6 +72,7 @@ before_script:
   - sudo apt-get install -y python3-pip
   - pip3 install --user sh click
   - ([[ -z "$TRAVIS_TESTS" ]] || sudo pip install --upgrade cpp-coveralls)
+  - (! var_search "${TRAVIS_TESTS-}" docs || sudo apt-get install -y librsvg2-bin)
   - (! var_search "${TRAVIS_TESTS-}" docs || pip install --user Sphinx sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter)
   - (! var_search "${TRAVIS_TESTS-}" translations || pip3 install --user polib)
 
