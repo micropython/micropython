@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
-#define MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+#include "shared-module/gamepadshift/__init__.h"
 
-#include <stdint.h>
+#include "py/mpstate.h"
+#include "shared-bindings/gamepadshift/GamePadShift.h"
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
+void gamepadshift_tick(void) {
+    void* singleton = MP_STATE_VM(gamepad_singleton);
+    if (singleton == NULL || !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
+        return;
+    }
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t* pins[8];
-    volatile uint8_t last;
-    volatile uint8_t pressed;
-    uint8_t pulls;
-} gamepad_obj_t;
+    gamepadshift_obj_t *self = MP_OBJ_TO_PTR(singleton);
+    uint8_t current = 0;
+    uint8_t bit = 1;
+    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 1);
+    for (int i = 0; i < 8; ++i) {
+        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 0);
+        if (common_hal_digitalio_digitalinout_get_value(self->data_pin)) {
+            current |= bit;
+        }
+        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 1);
+        bit <<= 1;
+    }
+    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 0);
+    self->pressed |= self->last & current;
+    self->last = current;
+}
 
-#endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+void gamepadshift_reset(void) {
+    MP_STATE_VM(gamepad_singleton) = NULL;
+}

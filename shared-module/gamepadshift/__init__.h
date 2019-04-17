@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
-#define MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+#ifndef MICROPY_INCLUDED_GAMEPADSHIFT___INIT___H
+#define MICROPY_INCLUDED_GAMEPADSHIFT___INIT___H
 
-#include <stdint.h>
+void gamepadshift_tick(void);
+void gamepadshift_reset(void);
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t* pins[8];
-    volatile uint8_t last;
-    volatile uint8_t pressed;
-    uint8_t pulls;
-} gamepad_obj_t;
-
-#endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+#endif  // MICROPY_INCLUDED_GAMEPADSHIFT___INIT___H

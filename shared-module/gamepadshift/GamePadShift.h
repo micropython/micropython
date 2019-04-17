@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
-#define MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+#ifndef MICROPY_INCLUDED_GAMEPADSHIFT_GAMEPADSHIFT_H
+#define MICROPY_INCLUDED_GAMEPADSHIFT_GAMEPADSHIFT_H
 
 #include <stdint.h>
 
@@ -33,10 +33,11 @@
 
 typedef struct {
     mp_obj_base_t base;
-    digitalio_digitalinout_obj_t* pins[8];
-    volatile uint8_t last;
+    digitalio_digitalinout_obj_t* data_pin;
+    digitalio_digitalinout_obj_t* clock_pin;
+    digitalio_digitalinout_obj_t* latch_pin;
     volatile uint8_t pressed;
-    uint8_t pulls;
-} gamepad_obj_t;
+    volatile uint8_t last;
+} gamepadshift_obj_t;
 
-#endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+#endif  // MICROPY_INCLUDED_GAMEPADSHIFT_GAMEPADSHIFT_H

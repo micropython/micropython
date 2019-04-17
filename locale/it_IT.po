@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-12 13:44-0700\n"
+"POT-Creation-Date: 2019-04-13 11:50+0200\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -52,8 +52,8 @@ msgstr "indice %q fuori intervallo"
 msgid "%q indices must be integers, not %s"
 msgstr "gli indici %q devono essere interi, non %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "slice del buffer devono essere della stessa lunghezza"
@@ -63,7 +63,7 @@ msgstr "slice del buffer devono essere della stessa lunghezza"
 msgid "%q should be an int"
 msgstr "y dovrebbe essere un int"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() prende %d argomenti posizionali ma ne sono stati forniti %d"
 
@@ -71,12 +71,12 @@ msgstr "%q() prende %d argomenti posizionali ma ne sono stati forniti %d"
 msgid "'%q' argument required"
 msgstr "'%q' argomento richiesto"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr "'%s' aspetta una etichetta"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' aspetta un registro"
@@ -96,7 +96,7 @@ msgstr "'%s' aspetta un registro"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' aspetta un registro"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' aspetta un intero"
@@ -246,7 +246,7 @@ msgstr "Tutte le periferiche I2C sono in uso"
 msgid "All event channels in use"
 msgstr "Tutti i canali eventi utilizati"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Tutti i canali di eventi sincronizzati in uso"
 
@@ -254,9 +254,9 @@ msgstr "Tutti i canali di eventi sincronizzati in uso"
 msgid "All timers for this pin are in use"
 msgstr "Tutti i timer per questo pin sono in uso"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -523,9 +523,8 @@ msgstr "Canale EXTINT già in uso"
 msgid "Error in regex"
 msgstr "Errore nella regex"
 
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/terminalio/Terminal.c
+#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
 msgid "Expected a %q"
 msgstr "Atteso un %q"
 
@@ -534,8 +533,8 @@ msgstr "Atteso un %q"
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Atteso un %q"
@@ -722,8 +721,8 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
+#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
 msgstr ""
 
@@ -833,11 +832,10 @@ msgstr "Pin non valido per il canale sinistro"
 msgid "Invalid pin for right channel"
 msgstr "Pin non valido per il canale destro"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Pin non validi"
 
@@ -1112,8 +1110,8 @@ msgstr "Serializer in uso"
 msgid "Slice and value different lengths."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Slice non supportate"
 
@@ -1361,7 +1359,8 @@ msgstr "l'argomento è una sequenza vuota"
 msgid "argument has wrong type"
 msgstr "il tipo dell'argomento è errato"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/gamepad/__init__.c
+#: shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr "discrepanza di numero/tipo di argomenti"
 
@@ -1679,7 +1678,7 @@ msgstr "il colore deve essere un int"
 msgid "complex division by zero"
 msgstr "complex divisione per zero"
 
-#: py/objfloat.c py/parsenum.c
+#: py/parsenum.c py/objfloat.c
 msgid "complex values not supported"
 msgstr "valori complessi non supportai"
 
@@ -1723,7 +1722,7 @@ msgstr "destination_length deve essere un int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "sequanza di aggiornamento del dizionario ha la lunghezza errata"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/modmath.c py/objint_mpz.c py/objint_longlong.c py/objfloat.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "divisione per zero"
@@ -1732,7 +1731,7 @@ msgstr "divisione per zero"
 msgid "empty"
 msgstr "vuoto"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "heap vuoto"
 
@@ -1766,10 +1765,6 @@ msgstr "le eccezioni devono derivare da BaseException"
 msgid "expected ':' after format specifier"
 msgstr "':' atteso dopo lo specificatore di formato"
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "expected a DigitalInOut"
-msgstr "DigitalInOut atteso"
-
 #: py/obj.c
 msgid "expected tuple/list"
 msgstr "lista/tupla prevista"
@@ -1798,7 +1793,7 @@ msgstr "argomento nominato aggiuntivo fornito"
 msgid "extra positional arguments given"
 msgstr "argomenti posizonali extra dati"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -1839,7 +1834,7 @@ msgstr "la funzione non prende argomenti nominati"
 msgid "function expected at most %d arguments, got %d"
 msgstr "la funzione prevede al massimo %d argmoneti, ma ne ha ricevuti %d"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la funzione ha ricevuto valori multipli per l'argomento '%q'"
 
@@ -1861,7 +1856,7 @@ msgstr "argomento nominato '%q' mancante alla funzione"
 msgid "function missing required positional argument #%d"
 msgstr "mancante il #%d argomento posizonale obbligatorio della funzione"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/objnamedtuple.c py/bc.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2014,7 +2009,7 @@ msgstr ""
 msgid "keywords must be strings"
 msgstr "argomenti nominati devono essere stringhe"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 msgid "label '%q' not defined"
 msgstr "etichetta '%q' non definita"
 
@@ -2121,11 +2116,11 @@ msgstr "yield nativo"
 msgid "need more than %d values to unpack"
 msgstr "necessari più di %d valori da scompattare"
 
-#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
 msgid "negative power with no float support"
 msgstr "potenza negativa senza supporto per float"
 
-#: py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c
 msgid "negative shift count"
 msgstr ""
 
@@ -2230,12 +2225,12 @@ msgstr ""
 msgid "odd-length string"
 msgstr "stringa di lunghezza dispari"
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstrunicode.c py/objstr.c
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "indirizzo fuori limite"
 
-#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
+#: py/objarray.c py/objtuple.c py/objstrunicode.c py/objstr.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo slice con step=1 (aka None) sono supportate"
@@ -2254,7 +2249,7 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr "overflow convertendo long int in parola"
 
-#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
 msgid "palette must be 32 bytes long"
 msgstr "la palette deve essere lunga 32 byte"
 
@@ -2391,7 +2386,7 @@ msgstr "la lunghezza di sleed deve essere non negativa"
 msgid "slice step cannot be zero"
 msgstr "la step della slice non può essere zero"
 
-#: py/objint.c py/sequence.c
+#: py/sequence.c py/objint.c
 msgid "small int overflow"
 msgstr "small int overflow"
 
@@ -2494,10 +2489,6 @@ msgstr "i bit devono essere 8"
 msgid "timestamp out of range for platform time_t"
 msgstr "timestamp è fuori intervallo per il time_t della piattaforma"
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "too many arguments"
-msgstr "troppi argomenti"
-
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
 msgstr "troppi argomenti forniti con il formato specificato"
@@ -2555,7 +2546,7 @@ msgstr "indentazione inaspettata"
 msgid "unexpected keyword argument"
 msgstr "argomento nominato inaspettato"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argomento nominato '%q' inaspettato"
 
@@ -2793,6 +2784,9 @@ msgstr "zero step"
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "sono permesse solo gli argomenti pos o kw"
 
+#~ msgid "expected a DigitalInOut"
+#~ msgstr "DigitalInOut atteso"
+
 #~ msgid "expecting a pin"
 #~ msgstr "pin atteso"
 
@@ -2844,6 +2838,9 @@ msgstr "zero step"
 
 #~ msgid "scan failed"
 #~ msgstr "scansione fallita"
+
+#~ msgid "too many arguments"
+#~ msgstr "troppi argomenti"
 
 #~ msgid "unknown config param"
 #~ msgstr "parametro di configurazione sconosciuto"

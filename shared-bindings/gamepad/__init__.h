@@ -24,19 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
-#define MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
 
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t* pins[8];
-    volatile uint8_t last;
-    volatile uint8_t pressed;
-    uint8_t pulls;
-} gamepad_obj_t;
-
-#endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD___INIT___H

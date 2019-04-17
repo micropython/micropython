@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-12 13:44-0700\n"
+"POT-Creation-Date: 2019-04-13 11:50+0200\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -52,8 +52,8 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "buffers devem ser o mesmo tamanho"
@@ -63,7 +63,7 @@ msgstr "buffers devem ser o mesmo tamanho"
 msgid "%q should be an int"
 msgstr "y deve ser um int"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
 
@@ -71,12 +71,12 @@ msgstr ""
 msgid "'%q' argument required"
 msgstr "'%q' argumento(s) requerido(s)"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr ""
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr ""
@@ -96,7 +96,7 @@ msgstr ""
 msgid "'%s' expects an address of the form [a, b]"
 msgstr ""
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr ""
@@ -246,7 +246,7 @@ msgstr "Todos os periféricos I2C estão em uso"
 msgid "All event channels in use"
 msgstr "Todos os canais de eventos em uso"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr ""
 
@@ -254,9 +254,9 @@ msgstr ""
 msgid "All timers for this pin are in use"
 msgstr "Todos os temporizadores para este pino estão em uso"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -518,9 +518,8 @@ msgstr "Canal EXTINT em uso"
 msgid "Error in regex"
 msgstr "Erro no regex"
 
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/terminalio/Terminal.c
+#: shared-bindings/pulseio/PulseOut.c shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
 msgid "Expected a %q"
 msgstr "Esperado um"
 
@@ -529,8 +528,8 @@ msgstr "Esperado um"
 msgid "Expected a Characteristic"
 msgstr "Não é possível adicionar Característica."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Descriptor.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Esperado um"
@@ -715,8 +714,8 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
+#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
 msgid "Function requires lock"
 msgstr ""
 
@@ -824,11 +823,10 @@ msgstr "Pino inválido para canal esquerdo"
 msgid "Invalid pin for right channel"
 msgstr "Pino inválido para canal direito"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Pinos inválidos"
 
@@ -1091,8 +1089,8 @@ msgstr "Serializer em uso"
 msgid "Slice and value different lengths."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/Group.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -1333,7 +1331,8 @@ msgstr ""
 msgid "argument has wrong type"
 msgstr "argumento tem tipo errado"
 
-#: py/argcheck.c
+#: py/argcheck.c shared-bindings/gamepad/__init__.c
+#: shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr ""
 
@@ -1648,7 +1647,7 @@ msgstr "cor deve ser um int"
 msgid "complex division by zero"
 msgstr ""
 
-#: py/objfloat.c py/parsenum.c
+#: py/parsenum.c py/objfloat.c
 msgid "complex values not supported"
 msgstr ""
 
@@ -1689,7 +1688,7 @@ msgstr "destination_length deve ser um int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr ""
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/modmath.c py/objint_mpz.c py/objint_longlong.c py/objfloat.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "divisão por zero"
@@ -1698,7 +1697,7 @@ msgstr "divisão por zero"
 msgid "empty"
 msgstr "vazio"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "heap vazia"
 
@@ -1732,10 +1731,6 @@ msgstr ""
 msgid "expected ':' after format specifier"
 msgstr ""
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "expected a DigitalInOut"
-msgstr ""
-
 #: py/obj.c
 msgid "expected tuple/list"
 msgstr ""
@@ -1764,7 +1759,7 @@ msgstr "argumentos extras de palavras-chave passados"
 msgid "extra positional arguments given"
 msgstr "argumentos extra posicionais passados"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -1805,7 +1800,7 @@ msgstr "função não aceita argumentos de palavras-chave"
 msgid "function expected at most %d arguments, got %d"
 msgstr "função esperada na maioria dos %d argumentos, obteve %d"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "function got multiple values for argument '%q'"
 msgstr ""
 
@@ -1827,7 +1822,7 @@ msgstr ""
 msgid "function missing required positional argument #%d"
 msgstr ""
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/objnamedtuple.c py/bc.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "função leva %d argumentos posicionais, mas apenas %d foram passadas"
@@ -1974,7 +1969,7 @@ msgstr ""
 msgid "keywords must be strings"
 msgstr ""
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 msgid "label '%q' not defined"
 msgstr ""
 
@@ -2081,11 +2076,11 @@ msgstr ""
 msgid "need more than %d values to unpack"
 msgstr "precisa de mais de %d valores para desempacotar"
 
-#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
 msgid "negative power with no float support"
 msgstr ""
 
-#: py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c
 msgid "negative shift count"
 msgstr ""
 
@@ -2187,11 +2182,11 @@ msgstr ""
 msgid "odd-length string"
 msgstr ""
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstrunicode.c py/objstr.c
 msgid "offset out of bounds"
 msgstr ""
 
-#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
+#: py/objarray.c py/objtuple.c py/objstrunicode.c py/objstr.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
@@ -2209,7 +2204,7 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr ""
 
-#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
 msgid "palette must be 32 bytes long"
 msgstr ""
 
@@ -2342,7 +2337,7 @@ msgstr ""
 msgid "slice step cannot be zero"
 msgstr ""
 
-#: py/objint.c py/sequence.c
+#: py/sequence.c py/objint.c
 msgid "small int overflow"
 msgstr ""
 
@@ -2445,10 +2440,6 @@ msgstr "bits devem ser 8"
 msgid "timestamp out of range for platform time_t"
 msgstr "timestamp fora do intervalo para a plataforma time_t"
 
-#: shared-bindings/gamepad/GamePad.c
-msgid "too many arguments"
-msgstr "muitos argumentos"
-
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
 msgstr "Muitos argumentos fornecidos com o formato dado"
@@ -2506,7 +2497,7 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr ""
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "unexpected keyword argument '%q'"
 msgstr ""
 
@@ -2784,6 +2775,9 @@ msgstr "passo zero"
 
 #~ msgid "scan failed"
 #~ msgstr "varredura falhou"
+
+#~ msgid "too many arguments"
+#~ msgstr "muitos argumentos"
 
 #~ msgid "unknown config param"
 #~ msgstr "parâmetro configuração desconhecido"

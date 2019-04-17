@@ -23,20 +23,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
-#define MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
-
-#include <stdint.h>
-
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
+#include "shared-bindings/gamepadshift/GamePadShift.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/util.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t* pins[8];
-    volatile uint8_t last;
-    volatile uint8_t pressed;
-    uint8_t pulls;
-} gamepad_obj_t;
+//| :mod:`gamepadshift` --- Tracks button presses read through a shift register
+//| ===========================================================================
+//|
+//| .. module:: gamepadshift
+//|   :synopsis: Tracks button presses read through a shift register
+//|   :platform: SAMD21, SAMD51
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     GamePadShift
+//|
+STATIC const mp_rom_map_elem_t gamepadshift_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepadshift) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_GamePadShift),  MP_ROM_PTR(&gamepadshift_type)},
+};
+STATIC MP_DEFINE_CONST_DICT(gamepadshift_module_globals, gamepadshift_module_globals_table);
 
-#endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H
+const mp_obj_module_t gamepadshift_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&gamepadshift_module_globals,
+};
