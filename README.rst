@@ -10,7 +10,7 @@ CircuitPython
 `Branding <#branding>`__ \| `Differences from Micropython <#differences-from-micropython>`__ \|
 `Project Structure <#project-structure>`__
 
-**CircuitPython** is an *beginner friendly*, open source version of Python for tiny, inexpensive
+**CircuitPython** is a *beginner friendly*, open source version of Python for tiny, inexpensive
 computers called microcontrollers. Microcontrollers are the brains of many electronics including a
 wide variety of development boards used to build hobby projects and prototypes. CircuitPython in
 electronics is one of the best ways to learn to code because it connects code to reality. Simply
@@ -22,9 +22,10 @@ CircuitPython features unified Python core APIs and a growing list of 150+ devic
 drivers that work with it. These libraries also work on single board computers with regular
 Python via the `Adafruit Blinka Library <https://github.com/adafruit/Adafruit_Blinka>`_.
 
-CircuitPython is a beginner focused derivative of `MicroPython <https://micropython.org>`_.
-CircuitPython development is sponsored by `Adafruit <https://adafruit.com>`_ and is available on
-their educational development boards. Please support both MicroPython and Adafruit.
+CircuitPython is based on `MicroPython <https://micropython.org>`_. See
+`below <#differences-from-micropython>`_ for differences. CircuitPython development is sponsored by
+`Adafruit <https://adafruit.com>`_ and is available on their educational development boards. Please
+support both MicroPython and Adafruit.
 
 Get CircuitPython
 ------------------
@@ -126,7 +127,7 @@ Behavior
    after the crash. A reset (the button) is needed after its fixed to
    get back into normal mode.
 -  RGB status LED indicating CircuitPython state, and errors through a sequence of colored flashes.
--  Re-runs ``code.y`` or other main file after file system writes over USB mass storage. (Disable with
+-  Re-runs ``code.py`` or other main file after file system writes over USB mass storage. (Disable with
    ``samd.disable_autoreload()``)
 -  Entering the REPL after the main code is finished requires a key press which enters the REPL and
    disables autoreload.
