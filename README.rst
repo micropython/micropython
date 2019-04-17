@@ -1,94 +1,46 @@
-Adafruit CircuitPython
-======================
+CircuitPython
+=============
 
-.. image:: https://github.com/adafruit/circuitpython/blob/master/logo/CircuitPython_Repo_header_logo.png
+.. image:: https://s3.amazonaws.com/adafruit-circuit-python/CircuitPython_Repo_header_logo.png
 
 |Build Status| |Doc Status| |License| |Discord|
 
-`Status <#status>`__ \| `Supported Boards <#supported-boards>`__
-\| `Download <#download>`__ \|
-`Documentation <#documentation>`__ \|
-`Contributing <#contributing>`__ \| `Differences from
-Micropython <#differences-from-micropython>`__ \| `Project
-Structure <#project-structure>`__
+`circuitpython.org <https:/circuitpython.org>`__ \| `Get CircuitPython <#get-circuitpython>`__ \|
+`Documentation <#documentation>`__ \| `Contributing <#contributing>`__ \|
+`Branding <#branding>`__ \| `Differences from Micropython <#differences-from-micropython>`__ \|
+`Project Structure <#project-structure>`__
 
-**CircuitPython** is an *education friendly* open source derivative of
-`MicroPython <https://micropython.org>`_. CircuitPython supports use
-on educational development boards designed and sold by
-`Adafruit <https://adafruit.com>`_. Adafruit CircuitPython features
-unified Python core APIs and a growing list of Adafruit libraries and
-drivers of that work with it.
+**CircuitPython** is a *beginner friendly*, open source version of Python for tiny, inexpensive
+computers called microcontrollers. Microcontrollers are the brains of many electronics including a
+wide variety of development boards used to build hobby projects and prototypes. CircuitPython in
+electronics is one of the best ways to learn to code because it connects code to reality. Simply
+install CircuitPython on a supported board via drag and drop and then edit a ``code.py`` file on
+the CIRCUITPY drive. The code will automatically reload. No software installs are needed besides a
+text editor (we recommend `Mu <https://codewith.mu/>`_ for beginners.)
 
-Status
-------
+CircuitPython features unified Python core APIs and a growing list of 150+ device libraries and
+drivers that work with it. These libraries also work on single board computers with regular
+Python via the `Adafruit Blinka Library <https://github.com/adafruit/Adafruit_Blinka>`_.
 
-This project is stable. Most APIs should be stable going forward. Those
-that change will change on major version numbers such as 2.0.0 and
-3.0.0.
+CircuitPython is based on `MicroPython <https://micropython.org>`_. See
+`below <#differences-from-micropython>`_ for differences. CircuitPython development is sponsored by
+`Adafruit <https://adafruit.com>`_ and is available on their educational development boards. Please
+support both MicroPython and Adafruit.
 
-Supported Boards
-----------------
+Get CircuitPython
+------------------
 
-Designed for CircuitPython
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**M0 Boards**
-
--  `Adafruit CircuitPlayground Express <https://www.adafruit.com/product/3333>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-circuit-playground-express/circuitpython-quickstart>`__)
--  `Adafruit Feather M0 Express <https://www.adafruit.com/product/3403>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/kattni-circuitpython>`__)
--  `Adafruit Gemma M0 <https://www.adafruit.com/product/3501>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-gemma-m0/circuitpython>`__)
--  `Adafruit Hallowing M0 Express <https://www.adafruit.com/product/3900>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-hallowing/circuitpython>`__)
--  `Adafruit ItsyBitsy M0 Express <https://www.adafruit.com/product/3727>`_ (`CircuitPython Guide <https://learn.adafruit.com/introducing-itsy-bitsy-m0/circuitpython>`__)
--  `Adafruit Metro M0 Express <https://www.adafruit.com/product/3505>`_ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m0-express-designed-for-circuitpython/circuitpython>`__)
--  `Adafruit Trinket M0 <https://www.adafruit.com/product/3500>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-trinket-m0-circuitpython-arduino/circuitpython>`__)
-
-**M4 Boards**
-
--  `Adafruit Feather M4 Express <https://www.adafruit.com/product/3857>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-feather-m4-express-atsamd51/circuitpython>`__)
--  `Adafruit ItsyBitsy M4 Express <https://www.adafruit.com/product/3800>`__ (`CircuitPython Guide <https://learn.adafruit.com/introducing-adafruit-itsybitsy-m4/circuitpython>`__)
--  `Adafruit Metro M4 Express <https://www.adafruit.com/product/3382>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/circuitpython>`__)
-
-Other
-~~~~~
-
--  `Adafruit Feather HUZZAH <https://www.adafruit.com/products/2821>`__
--  `Adafruit Feather M0
-   Basic <https://www.adafruit.com/products/2772>`__
--  `Adafruit Feather M0 Bluefruit
-   LE <https://www.adafruit.com/products/2995>`__ (uses M0 Basic
-   binaries)
--  `Adafruit Feather M0
-   Adalogger <https://www.adafruit.com/product/2796>`__ (MicroSD card
-   supported using the `Adafruit CircuitPython SD
-   library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
--  `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`__
--  `Arduino MKR Zero <https://store.arduino.cc/arduino-mkrzero>`__ (MicroSD card
-   supported using the `Adafruit CircuitPython SD
-   library <https://github.com/adafruit/Adafruit_CircuitPython_SD>`__)
-
-"Third-party" or "non-Adafruit" boards
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--  `Electronic Cats Meow Meow <https://electroniccats.com/gomeow/>`__
--  `Electronic Cats CatWAN USB Stick <https://electroniccats.com/producto/catwan_usb_stick/>`__
-
-Download
---------
-
-Official binaries are available through the `latest GitHub
-releases <https://github.com/adafruit/circuitpython/releases>`__.
-Continuous (one per commit) builds are available
-`here <https://adafruit-circuit-python.s3.amazonaws.com/index.html?prefix=bin>`__
-and includes experimental hardware support.
+Official binaries for all supported boards are available through
+`circuitpython.org/downloads <https://circuitpython.org/downloads>`_. The site includes stable, unstable and
+continuous builds. Full release notes and assets are available through
+`GitHub releases <https://github.com/adafruit/circuitpython/releases>`_ as well.
 
 Documentation
 -------------
 
 Guides and videos are available through the `Adafruit Learning
 System <https://learn.adafruit.com/>`__ under the `CircuitPython
-category <https://learn.adafruit.com/category/circuitpython>`__ and
-`MicroPython
-category <https://learn.adafruit.com/category/micropython>`__. An API
+category <https://learn.adafruit.com/category/circuitpython>`__. An API
 reference is also available on `Read the Docs
 <http://circuitpython.readthedocs.io/en/latest/?>`__. A collection of awesome
 resources can be found at `Awesome CircuitPython <https://github.com/adafruit/awesome-circuitpython>`__.
@@ -113,6 +65,28 @@ are welcome to submit pull requests and they will be promptly reviewed
 by project admins. Please join the
 `Discord <https://discord.gg/nBQh6qu>`__ too.
 
+Branding
+------------
+
+While we are happy to see CircuitPython forked and modified, we'd appreciate it if forked releases
+not use the name "CircuitPython" or the Blinka logo. "CircuitPython" means something special to
+us and those who learn about it. As a result, we'd like to make sure products referring to it meet a
+common set of requirements.
+
+If you'd like to use the term "CircuitPython" and Blinka for your product here is what we ask:
+
+* Your product is supported by the primary
+  `"adafruit/circuitpython" <https://github.com/adafruit/circuitpython>`_ repo. This way we can
+  update any custom code as we update the CircuitPython internals.
+* Your product is listed on `circuitpython.org <https:/circuitpython.org>`__ (source
+  `here <https://github.com/adafruit/circuitpython-org/>`_). This is to ensure that a user of your
+  product can always download the latest version of CircuitPython from the standard place.
+* Your product has a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.
+
+If you choose not to meet these requirements, then we ask you call your version of CircuitPython
+something else (for example, SuperDuperPython) and not use the Blinka logo. You can say it is
+"CircuitPython-compatible" if most CircuitPython drivers will work with it.
+
 --------------
 
 Differences from `MicroPython <https://github.com/micropython/micropython>`__
@@ -120,15 +94,14 @@ Differences from `MicroPython <https://github.com/micropython/micropython>`__
 
 CircuitPython:
 
--  includes a ports for MicroChip SAMD21 (Commonly known as M0 in Adafruit
+-  includes ports for MicroChip SAMD21 (Commonly known as M0 in Adafruit
    product names) and SAMD51 (M4).
--  supports only SAMD21, SAMD51, and ESP8266 ports. An nRF port is under
-   development.
+-  supports only SAMD21, SAMD51, and nRF52840 ports.
 -  tracks MicroPython's releases (not master).
--  Longints (arbitrary-length integers) are enabled for most M0
-   Express boards (those boards with SPI flash chips external
-   to the microcontroller), and for all M4 builds.
-   Longints are disabled on other boards due to lack of flash space.
+-  floats (aka decimals) are enabled for all builds.
+-  error messages are translated into 10+ languages.
+-  does not support concurrency within Python (including interrupts and threading). Some concurrency
+   is achieved with native modules for tasks that require it such as audio file playback.
 
 Behavior
 ~~~~~~~~
@@ -153,12 +126,23 @@ Behavior
    causes nasty crashes by making it available through mass storage
    after the crash. A reset (the button) is needed after its fixed to
    get back into normal mode.
+-  RGB status LED indicating CircuitPython state, and errors through a sequence of colored flashes.
+-  Re-runs ``code.py`` or other main file after file system writes over USB mass storage. (Disable with
+   ``samd.disable_autoreload()``)
+-  Entering the REPL after the main code is finished requires a key press which enters the REPL and
+   disables autoreload.
+-  Main is one of these: ``code.txt``, **``code.py``**, ``main.py``,
+   ``main.txt``
+-  Boot is one of these: ``settings.txt``, ``settings.py``, **``boot.py``**,
+   ``boot.txt``
 
 API
 ~~~
 
--  Unified hardware APIs: `audioio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html>`_, `analogio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html>`_, `bleio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bleio/__init__.html>`_, `busio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html>`_, `digitalio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html>`_, `pulseio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html>`_, `touchio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html>`_, `microcontroller <https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html>`_, `board <https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html>`_, `bitbangio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html>`_
--  No ``machine`` API on Atmel SAMD21 port.
+-  Unified hardware APIs. Documented
+   `on ReadTheDocs <https://circuitpython.readthedocs.io/en/latest/shared-bindings/index.html>`_.
+-  API docs are rST within the C files in ``shared-bindings``.
+-  No ``machine`` API.
 
 Modules
 ~~~~~~~
@@ -177,18 +161,6 @@ Modules
    necessarily the reverse.
 -  tick count is available as
    `time.monotonic() <https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html#time.monotonic>`__
-
-atmel-samd21 features
-~~~~~~~~~~~~~~~~~~~~~
-
--  RGB status LED
--  Auto-reload after file write over mass storage. (Disable with
-   ``samd.disable_autoreload()``)
--  Wait state after boot and main run, before REPL.
--  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
-   ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
-   ``boot.txt``
 
 --------------
 
@@ -231,40 +203,14 @@ Ports
 Ports include the code unique to a microcontroller line and also
 variations based on the board.
 
--  ``atmel-samd`` Support for SAMD21 based boards such as `Arduino
-   Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`__, `Adafruit
-   Feather M0 Basic <https://www.adafruit.com/products/2772>`__, and
-   `Adafruit Feather M0 Bluefruit
-   LE <https://www.adafruit.com/products/2995>`__.
--  ``bare-arm`` A bare minimum version of MicroPython for ARM MCUs.
--  ``cc3200`` Support for boards based
-   `CC3200 <http://www.ti.com/product/CC3200>`__ from TI such as the
-   `WiPy 1.0 <https://www.pycom.io/solutions/py-boards/wipy1/>`__.
--  ``esp8266`` Support for boards based on ESP8266 WiFi modules such as
-   the `Adafruit Feather
-   HUZZAH <https://www.adafruit.com/products/2821>`__.
--  ``minimal`` A minimal MicroPython port. Start with this if you want
-   to port MicroPython to another microcontroller.
--  ``pic16bit`` Support for 16-bit PIC microcontrollers.
--  ``qemu-arm`` Support for ARM emulation through
-   `QEMU <https://qemu.org>`__.
--  ``stmhal`` Support for boards based on STM32 microcontrollers
-   including the MicroPython flagship
-   `PyBoard <https://store.micropython.org/store/#/products/PYBv1_1>`__.
--  ``teensy`` Support for the Teensy line of boards such as the `Teensy
-   3.1 <https://www.pjrc.com/teensy/teensy31.html>`__.
--  ``unix`` Support for UNIX.
--  ``windows`` Support for
-   `Windows <https://www.microsoft.com/en-us/windows/>`__.
--  ``zephyr`` Support for `Zephyr <https://www.zephyrproject.org/>`__, a
-   real-time operating system by the Linux Foundation.
+-  ``atmel-samd`` Support for SAMD21 and SAMD51 based boards.
+-  ``nrf`` Support for the nRF52840 based boards.
+-  ``unix`` Support for UNIX. Only used for automated testing.
 
-CircuitPython only maintains the ``atmel-samd`` and ``esp8266`` ports.
-The rest are here to maintain compatibility with the
-`MicroPython <https://github.com/micropython/micropython>`__ parent
-project.
+The remaining port directories not listed above are in the repo to maintain compatibility with the
+`MicroPython <https://github.com/micropython/micropython>`__ parent project.
 
-`⬆ back to top <#adafruit-circuitpython>`__
+`back to top <#circuitpython>`__
 
 .. |Build Status| image:: https://travis-ci.com/adafruit/circuitpython.svg?branch=master
    :target: https://travis-ci.org/adafruit/circuitpython
@@ -272,5 +218,5 @@ project.
    :target: http://circuitpython.readthedocs.io/
 .. |Discord| image:: https://img.shields.io/discord/327254708534116352.svg
    :target: https://adafru.it/discord
-.. |License| image:: https://github.com/adafruit/circuitpython/blob/master/logo/license-MIT-brightgreen.svg
-   :target: https://opensource.org/licenses/MIT
+.. |License| image:: https://img.shields.io/badge/License-MIT-brightgreen.svg
+   :target: https://choosealicense.com/licenses/mit/
