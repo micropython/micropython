@@ -5,7 +5,7 @@ CircuitPython
 
 |Build Status| |Doc Status| |License| |Discord|
 
-`circuitpython.org <https:/circuitpython.org>`_ \| `Get CircuitPython <#get-circuitpython>`__ \|
+`circuitpython.org <https:/circuitpython.org>`__ \| `Get CircuitPython <#get-circuitpython>`__ \|
 `Documentation <#documentation>`__ \| `Contributing <#contributing>`__ \|
 `Branding <#branding>`__ \| `Differences from Micropython <#differences-from-micropython>`__ \|
 `Project Structure <#project-structure>`__
@@ -30,8 +30,8 @@ Get CircuitPython
 ------------------
 
 Official binaries for all supported boards are available through
-`circuitpython.org <https://circuitpython.org/downloads>`_. The site includes both stable, unstable
-and continuous builds. Full release notes and assets are available through
+`circuitpython.org/downloads <https://circuitpython.org/downloads>`_. The site includes stable, unstable and
+continuous builds. Full release notes and assets are available through
 `GitHub releases <https://github.com/adafruit/circuitpython/releases>`_ as well.
 
 Documentation
@@ -77,8 +77,9 @@ If you'd like to use the term "CircuitPython" and Blinka for your product here i
 * Your product is supported by the primary
   `"adafruit/circuitpython" <https://github.com/adafruit/circuitpython>`_ repo. This way we can
   update any custom code as we update the CircuitPython internals.
-* Your product is listed on circuitpython.org. This is to ensure that a user of your product can
-  always download the latest version of CircuitPython from the standard place.
+* Your product is listed on `circuitpython.org <https:/circuitpython.org>`__ (source
+  `here <https://github.com/adafruit/circuitpython-org/>`_). This is to ensure that a user of your
+  product can always download the latest version of CircuitPython from the standard place.
 * Your product has a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.
 
 If you choose not to meet these requirements, then we ask you call your version of CircuitPython
@@ -98,6 +99,8 @@ CircuitPython:
 -  tracks MicroPython's releases (not master).
 -  floats (aka decimals) are enabled for all builds.
 -  error messages are translated into 10+ languages.
+-  does not support concurrency within Python (including interrupts and threading). Some concurrency
+   is achieved with native modules for tasks that require it such as audio file playback.
 
 Behavior
 ~~~~~~~~
@@ -122,19 +125,21 @@ Behavior
    causes nasty crashes by making it available through mass storage
    after the crash. A reset (the button) is needed after its fixed to
    get back into normal mode.
--  RGB status LED
--  Auto-reload after file write over mass storage. (Disable with
+-  RGB status LED indicating CircuitPython state, and errors through a sequence of colored flashes.
+-  Re-runs ``code.y`` or other main file after file system writes over USB mass storage. (Disable with
    ``samd.disable_autoreload()``)
--  Wait state after boot and main run, before REPL.
--  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
+-  Entering the REPL after the main code is finished requires a key press which enters the REPL and
+   disables autoreload.
+-  Main is one of these: ``code.txt``, **``code.py``**, ``main.py``,
    ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
+-  Boot is one of these: ``settings.txt``, ``settings.py``, **``boot.py``**,
    ``boot.txt``
 
 API
 ~~~
 
--  Unified hardware APIs: `audioio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html>`_, `analogio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html>`_, `bleio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bleio/__init__.html>`_, `busio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html>`_, `digitalio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html>`_, `pulseio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html>`_, `touchio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html>`_, `microcontroller <https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html>`_, `board <https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html>`_, `bitbangio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html>`_
+-  Unified hardware APIs. Documented
+   `on ReadTheDocs <https://circuitpython.readthedocs.io/en/latest/shared-bindings/index.html>`_.
 -  API docs are rST within the C files in ``shared-bindings``.
 -  No ``machine`` API.
 
@@ -201,10 +206,10 @@ variations based on the board.
 -  ``nrf`` Support for the nRF52840 based boards.
 -  ``unix`` Support for UNIX. Only used for automated testing.
 
-The remaining, unlisted directories are in the repo to maintain compatibility with the
+The remaining port directories not listed above are in the repo to maintain compatibility with the
 `MicroPython <https://github.com/micropython/micropython>`__ parent project.
 
-`⬆ back to top <#adafruit-circuitpython>`__
+`back to top <#circuitpython>`__
 
 .. |Build Status| image:: https://travis-ci.com/adafruit/circuitpython.svg?branch=master
    :target: https://travis-ci.org/adafruit/circuitpython
