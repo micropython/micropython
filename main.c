@@ -176,6 +176,22 @@ bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     return true;
 }
 
+void cleanup_after_vm(supervisor_allocation* heap) {
+    // Turn off the display and flush the fileystem before the heap disappears.
+    #if CIRCUITPY_DISPLAYIO
+    reset_displays();
+    #endif
+    filesystem_flush();
+    stop_mp();
+    free_memory(heap);
+    supervisor_move_memory();
+
+    reset_port();
+    reset_board_busses();
+    reset_board();
+    reset_status_led();
+}
+
 bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
@@ -219,19 +235,7 @@ bool run_code_py(safe_mode_t safe_mode) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
-        // Turn off the display and flush the fileystem before the heap disappears.
-        #if CIRCUITPY_DISPLAYIO
-        reset_displays();
-        #endif
-        filesystem_flush();
-        stop_mp();
-        free_memory(heap);
-        supervisor_move_memory();
-
-        reset_port();
-        reset_board_busses();
-        reset_board();
-        reset_status_led();
+        cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
@@ -359,13 +363,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         boot_output_file = NULL;
         #endif
 
-        // Reset to remove any state that boot.py setup. It should only be used to
-        // change internal state that's not in the heap.
-        reset_port();
-        reset_board();
-        stop_mp();
-        free_memory(heap);
-        supervisor_move_memory();
+        cleanup_after_vm(heap);
     }
 }
 
@@ -382,12 +380,7 @@ int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
-    filesystem_flush();
-    reset_port();
-    reset_board();
-    stop_mp();
-    free_memory(heap);
-    supervisor_move_memory();
+    cleanup_after_vm(heap);
     autoreload_resume();
     return exit_code;
 }
