@@ -77,7 +77,8 @@
 //|     Initializes button scanning routines.
 //|
 //|     The ``b1``-``b8`` parameters are ``DigitalInOut`` objects, which
-//|     immediately get switched to input with a pull-up, and then scanned
+//|     immediately get switched to input with a pull-up, (unless they already
+//|     were set to pull-down, in which case they remain so), and then scanned
 //|     regularly for button presses. The order is the same as the order of
 //|     bits returned by the ``get_pressed`` function. You can re-initialize
 //|     it with different keys, then the new object will replace the previous
