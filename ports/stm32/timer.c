@@ -476,6 +476,12 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk)
     deadTimeConfig.DeadTime         = compute_dtg_from_ticks(ticks);
     deadTimeConfig.BreakState       = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
     deadTimeConfig.BreakPolarity    = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
+    #if defined(STM32F7) || defined(STM32H7) | defined(STM32L4)
+    deadTimeConfig.BreakFilter      = 0;
+    deadTimeConfig.Break2State      = TIM_BREAK_DISABLE;
+    deadTimeConfig.Break2Polarity   = TIM_BREAKPOLARITY_LOW;
+    deadTimeConfig.Break2Filter     = 0;
+    #endif
     deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
 }

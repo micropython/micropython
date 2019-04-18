@@ -48,12 +48,12 @@ If you use WSL then follow the
 [Linux guidelines](https://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html)
 for the ESP-IDF instead of the Windows ones.
 
-The Espressif ESP-IDF instructions above only install pyserial for Python 2,
-so if you're running Python 3 or a non-system Python you'll also need to
-install `pyserial` (or `esptool`) so that the Makefile can flash the board
-and set parameters:
+You will also need either Python 2 or Python 3, along with the `pyserial` and
+`pyparsing` packages installed for the version of Python that you will be using
+(when building you can use, eg, `make PYTHON=python2` to specify the version
+used).  To install the required packages do:
 ```bash
-$ pip install pyserial
+$ pip install pyserial pyparsing
 ```
 
 Once everything is set up you should have a functioning toolchain with

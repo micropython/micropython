@@ -45,8 +45,6 @@ typedef struct _mp_obj_set_it_t {
     size_t cur;
 } mp_obj_set_it_t;
 
-STATIC mp_obj_t set_it_iternext(mp_obj_t self_in);
-
 STATIC bool is_set_or_frozenset(mp_obj_t o) {
     return mp_obj_is_type(o, &mp_type_set)
 #if MICROPY_PY_BUILTINS_FROZENSET
@@ -154,7 +152,6 @@ STATIC mp_obj_t set_getiter(mp_obj_t set_in, mp_obj_iter_buf_t *iter_buf) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-
 /******************************************************************************/
 /* set methods                                                                */
 
@@ -169,9 +166,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
 STATIC mp_obj_t set_clear(mp_obj_t self_in) {
     check_set(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-
     mp_set_clear(&self->set);
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
@@ -332,6 +327,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     }
     return out;
 }
+
 STATIC mp_obj_t set_issubset(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(self_in, other_in, false);
 }
@@ -518,7 +514,6 @@ STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 /******************************************************************************/
 /* set constructors & public C API                                            */
 
-
 STATIC const mp_rom_map_elem_t set_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add), MP_ROM_PTR(&set_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&set_clear_obj) },
@@ -539,7 +534,6 @@ STATIC const mp_rom_map_elem_t set_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&set_update_obj) },
     { MP_ROM_QSTR(MP_QSTR___contains__), MP_ROM_PTR(&mp_op_contains_obj) },
 };
-
 STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
 
 const mp_obj_type_t mp_type_set = {
