@@ -37,6 +37,8 @@
 
 STATIC const mp_obj_type_t machine_hard_i2c_type;
 
+#define I2C_POLL_DEFAULT_TIMEOUT_US (50000) // 50ms
+
 #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
 
 typedef struct _machine_hard_i2c_obj_t {
@@ -104,9 +106,9 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
     #endif
 }
 
-void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
-    (void)timeout;
-    i2c_init(self->i2c, self->scl, self->sda, freq);
+void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout_us) {
+    uint32_t timeout_ms = (timeout_us + 999) / 1000;
+    i2c_init(self->i2c, self->scl, self->sda, freq, timeout_ms);
 }
 
 int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
@@ -147,22 +149,22 @@ typedef mp_machine_soft_i2c_obj_t machine_hard_i2c_obj_t;
 
 STATIC machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_DEFAULT_TIMEOUT_US, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_DEFAULT_TIMEOUT_US, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_DEFAULT_TIMEOUT_US, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_DEFAULT_TIMEOUT_US, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
@@ -209,7 +211,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2C_POLL_DEFAULT_TIMEOUT_US} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

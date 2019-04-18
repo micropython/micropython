@@ -138,6 +138,7 @@
 
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ffff7ac)
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_I2C (2)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 
@@ -146,6 +147,7 @@
 
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (14)
 #if defined(UART10)
 #define MICROPY_HW_MAX_UART (10)
@@ -169,6 +171,7 @@
 #endif
 
 #define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 
