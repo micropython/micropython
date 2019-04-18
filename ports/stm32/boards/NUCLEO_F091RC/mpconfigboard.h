@@ -17,6 +17,7 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 
 // For system clock, board uses internal 48MHz, HSI48
+#define MICROPY_HW_CLK_USE_HSI48    (1)
 
 // The board has an external 32kHz crystal
 #define MICROPY_HW_RTC_USE_LSE      (1)
