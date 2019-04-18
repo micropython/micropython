@@ -390,6 +390,12 @@ void powerctrl_enter_standby_mode(void) {
     // enable previously-enabled RTC interrupts
     RTC->CR |= save_irq_bits;
 
+    #if defined(STM32F7)
+    // Enable the internal (eg RTC) wakeup sources
+    // See Errata 2.2.2 "Wakeup from Standby mode when the back-up SRAM regulator is enabled"
+    PWR->CSR1 |= PWR_CSR1_EIWUP;
+    #endif
+
     // enter standby mode
     HAL_PWR_EnterSTANDBYMode();
     // we never return; MCU is reset on exit from standby
