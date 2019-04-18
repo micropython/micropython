@@ -98,9 +98,10 @@ void board_init(void) {
         display_init_sequence,
         sizeof(display_init_sequence),
         &pin_PA00,
+        1.0f, // brightness (ignored)
+        true, // auto_brightness
         false, // single_byte_bounds
         false); // data_as_commands
-    common_hal_displayio_display_set_auto_brightness(display, true);
 }
 
 bool board_requests_safe_mode(void) {
