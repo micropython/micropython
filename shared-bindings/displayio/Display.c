@@ -209,8 +209,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_wait_for_frame_obj, displayio_displa
 //|   .. attribute:: brightness
 //|
 //|     The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
-//|     `auto_brightness` is True this value will change automatically and setting it will have no
-//|     effect. To control the brightness, auto_brightness must be false.
+//|     `auto_brightness` is True, the value of `brightness` will change automatically.
+//|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False.
 //|
 STATIC mp_obj_t displayio_display_obj_get_brightness(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -224,6 +224,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_brightness_obj, displayio_displa
 
 STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness) {
     displayio_display_obj_t *self = native_display(self_in);
+    common_hal_displayio_display_set_auto_brightness(self, false);
     bool ok = common_hal_displayio_display_set_brightness(self, mp_obj_get_float(brightness));
     if (!ok) {
         mp_raise_RuntimeError(translate("Brightness not adjustable"));
@@ -241,7 +242,10 @@ const mp_obj_property_t displayio_display_brightness_obj = {
 
 //|   .. attribute:: auto_brightness
 //|
-//|     True when the display brightness is auto adjusted.
+//|     True when the display brightness is adjusted automatically, based on an ambient
+//|     light sensor or other method. Note that some displays may have this set to True by default,
+//|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
+//|     if `brightness` is set manually.
 //|
 STATIC mp_obj_t displayio_display_obj_get_auto_brightness(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
