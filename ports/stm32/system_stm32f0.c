@@ -129,6 +129,9 @@ void SystemInit(void) {
 }
 
 void SystemClock_Config(void) {
+    // Enable power control peripheral
+    __HAL_RCC_PWR_CLK_ENABLE();
+
     // Set flash latency to 1 because SYSCLK > 24MHz
     FLASH->ACR = (FLASH->ACR & ~0x7) | 0x1;
 
