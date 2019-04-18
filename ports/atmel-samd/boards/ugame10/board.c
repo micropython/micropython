@@ -98,6 +98,8 @@ void board_init(void) {
         display_init_sequence,
         sizeof(display_init_sequence),
         NULL,
+        1.0f, // brightness
+        false, // auto_brightness
         false, // single_byte_bounds
         false); // data as commands
 }
