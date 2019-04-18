@@ -30,8 +30,6 @@
 
 #if MICROPY_HW_ENABLE_HW_I2C
 
-#define I2C_POLL_TIMEOUT_MS (50)
-
 #if defined(STM32F4)
 
 int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t freq) {
@@ -87,10 +85,10 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     return 0;
 }
 
-STATIC int i2c_wait_sr1_set(i2c_t *i2c, uint32_t mask) {
+STATIC int i2c_wait_sr1_set(i2c_t *i2c, uint32_t mask, uint32_t timeout) {
     uint32_t t0 = HAL_GetTick();
     while (!(i2c->SR1 & mask)) {
-        if (HAL_GetTick() - t0 >= I2C_POLL_TIMEOUT_MS) {
+        if (HAL_GetTick() - t0 >= timeout) {
             i2c->CR1 &= ~I2C_CR1_PE;
             return -MP_ETIMEDOUT;
         }
@@ -98,10 +96,10 @@ STATIC int i2c_wait_sr1_set(i2c_t *i2c, uint32_t mask) {
     return 0;
 }
 
-STATIC int i2c_wait_stop(i2c_t *i2c) {
+STATIC int i2c_wait_stop(i2c_t *i2c, uint32_t timeout) {
     uint32_t t0 = HAL_GetTick();
     while (i2c->CR1 & I2C_CR1_STOP) {
-        if (HAL_GetTick() - t0 >= I2C_POLL_TIMEOUT_MS) {
+        if (HAL_GetTick() - t0 >= timeout) {
             i2c->CR1 &= ~I2C_CR1_PE;
             return -MP_ETIMEDOUT;
         }
@@ -112,7 +110,7 @@ STATIC int i2c_wait_stop(i2c_t *i2c) {
 
 // For write: len = 0, 1 or N
 // For read: len = 1, 2 or N; stop = true
-int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t next_len, bool stop) {
+int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t next_len, bool stop, uint32_t timeout) {
     if (!(i2c->CR1 & I2C_CR1_PE) && (i2c->SR2 & I2C_SR2_MSL)) {
         // The F4 I2C peripheral can sometimes get into a bad state where it's disabled
         // (PE low) but still an active master (MSL high).  It seems the best way to get
@@ -139,7 +137,7 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t next_len, bool 
 
     // Wait for START to be sent
     int ret;
-    if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_SB))) {
+    if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_SB, timeout))) {
         return ret;
     }
 
@@ -147,7 +145,7 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t next_len, bool 
     i2c->DR = addr << 1 | rd_wrn;
 
     // Wait for address to be sent
-    if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_AF | I2C_SR1_ADDR))) {
+    if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_AF | I2C_SR1_ADDR, timeout))) {
         return ret;
     }
 
@@ -155,7 +153,7 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t next_len, bool 
     if (i2c->SR1 & I2C_SR1_AF) {
         // Got a NACK
         i2c->CR1 |= I2C_CR1_STOP;
-        i2c_wait_stop(i2c); // Don't leak errors from this call
+        i2c_wait_stop(i2c, timeout); // Don't leak errors from this call
         return -MP_ENODEV;
     }
 
@@ -182,7 +180,7 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t next_len, bool 
 }
 
 // next_len = 0 or N (>=2)
-int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
+int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len, uint32_t timeout) {
     if (len == 0) {
         return -MP_EINVAL;
     }
@@ -195,7 +193,7 @@ int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
         // Special case
         i2c->CR1 |= I2C_CR1_STOP;
         int ret;
-        if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_RXNE))) {
+        if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_RXNE, timeout))) {
             return ret;
         }
         *dest = i2c->DR;
@@ -203,7 +201,7 @@ int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
         for (; len; --len) {
             remain = len + next_len;
             int ret;
-            if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_BTF))) {
+            if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_BTF, timeout))) {
                 return ret;
             }
             if (remain == 2) {
@@ -222,16 +220,16 @@ int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
 
     if (!next_len) {
         // We sent a stop above, just wait for it to be finished
-        return i2c_wait_stop(i2c);
+        return i2c_wait_stop(i2c, timeout);
     }
 
     return 0;
 }
 
 // next_len = 0 or N
-int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
+int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len, uint32_t timeout) {
     int ret;
-    if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_AF | I2C_SR1_TXE))) {
+    if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_AF | I2C_SR1_TXE, timeout))) {
         return ret;
     }
 
@@ -239,7 +237,7 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
     int num_acks = 0;
     while (len--) {
         i2c->DR = *src++;
-        if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_AF | I2C_SR1_BTF))) {
+        if ((ret = i2c_wait_sr1_set(i2c, I2C_SR1_AF | I2C_SR1_BTF, timeout))) {
             return ret;
         }
         if (i2c->SR1 & I2C_SR1_AF) {
@@ -253,7 +251,7 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
         if (i2c->OAR1) {
             // Send a STOP and wait for it to finish
             i2c->CR1 |= I2C_CR1_STOP;
-            if ((ret = i2c_wait_stop(i2c))) {
+            if ((ret = i2c_wait_stop(i2c, timeout))) {
                 return ret;
             }
         }
@@ -302,10 +300,10 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     return 0;
 }
 
-STATIC int i2c_wait_cr2_clear(i2c_t *i2c, uint32_t mask) {
+STATIC int i2c_wait_cr2_clear(i2c_t *i2c, uint32_t mask, uint32_t timeout) {
     uint32_t t0 = HAL_GetTick();
     while (i2c->CR2 & mask) {
-        if (HAL_GetTick() - t0 >= I2C_POLL_TIMEOUT_MS) {
+        if (HAL_GetTick() - t0 >= timeout) {
             i2c->CR1 &= ~I2C_CR1_PE;
             return -MP_ETIMEDOUT;
         }
@@ -313,10 +311,10 @@ STATIC int i2c_wait_cr2_clear(i2c_t *i2c, uint32_t mask) {
     return 0;
 }
 
-STATIC int i2c_wait_isr_set(i2c_t *i2c, uint32_t mask) {
+STATIC int i2c_wait_isr_set(i2c_t *i2c, uint32_t mask, uint32_t timeout) {
     uint32_t t0 = HAL_GetTick();
     while (!(i2c->ISR & mask)) {
-        if (HAL_GetTick() - t0 >= I2C_POLL_TIMEOUT_MS) {
+        if (HAL_GetTick() - t0 >= timeout) {
             i2c->CR1 &= ~I2C_CR1_PE;
             return -MP_ETIMEDOUT;
         }
@@ -325,7 +323,7 @@ STATIC int i2c_wait_isr_set(i2c_t *i2c, uint32_t mask) {
 }
 
 // len = 0, 1 or N
-int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop) {
+int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop, uint32_t timeout) {
     // Enable the peripheral and send the START condition with slave address
     i2c->CR1 |= I2C_CR1_PE;
     i2c->CR2 = stop << I2C_CR2_AUTOEND_Pos
@@ -337,14 +335,14 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop)
 
     // Wait for address to be sent
     int ret;
-    if ((ret = i2c_wait_cr2_clear(i2c, I2C_CR2_START))) {
+    if ((ret = i2c_wait_cr2_clear(i2c, I2C_CR2_START, timeout))) {
         return ret;
     }
 
     // Check if the slave responded or not
     if (i2c->ISR & I2C_ISR_NACKF) {
         // If we get a NACK then I2C periph unconditionally sends a STOP
-        i2c_wait_isr_set(i2c, I2C_ISR_STOPF); // Don't leak errors from this call
+        i2c_wait_isr_set(i2c, I2C_ISR_STOPF, timeout); // Don't leak errors from this call
         i2c->CR1 &= ~I2C_CR1_PE;
         return -MP_ENODEV;
     }
@@ -355,11 +353,11 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop)
     return 0;
 }
 
-STATIC int i2c_check_stop(i2c_t *i2c) {
+STATIC int i2c_check_stop(i2c_t *i2c, uint32_t timeout) {
     if (i2c->CR2 & I2C_CR2_AUTOEND) {
         // Wait for the STOP condition and then disable the peripheral
         int ret;
-        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_STOPF))) {
+        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_STOPF, timeout))) {
             return ret;
         }
         i2c->CR1 &= ~I2C_CR1_PE;
@@ -369,7 +367,7 @@ STATIC int i2c_check_stop(i2c_t *i2c) {
 }
 
 // next_len = 0 or N
-int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
+int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len, uint32_t timeout) {
     if (i2c->OAR1) {
         i2c->OAR1 = 0;
     } else {
@@ -379,7 +377,7 @@ int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
     // Read in the data
     while (len--) {
         int ret;
-        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_RXNE))) {
+        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_RXNE, timeout))) {
             return ret;
         }
         *dest++ = i2c->RXDR;
@@ -393,7 +391,7 @@ int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
 
     if (!next_len) {
         int ret;
-        if ((ret = i2c_check_stop(i2c))) {
+        if ((ret = i2c_check_stop(i2c, timeout))) {
             return ret;
         }
     }
@@ -402,7 +400,7 @@ int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
 }
 
 // next_len = 0 or N
-int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
+int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len, uint32_t timeout) {
     int num_acks = 0;
 
     if (i2c->OAR1) {
@@ -414,11 +412,11 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
     // Write out the data
     while (len--) {
         int ret;
-        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_TXE))) {
+        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_TXE, timeout))) {
             return ret;
         }
         i2c->TXDR = *src++;
-        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_TCR | I2C_ISR_TC | I2C_ISR_STOPF))) {
+        if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_TCR | I2C_ISR_TC | I2C_ISR_STOPF, timeout))) {
             return ret;
         }
         uint32_t isr = i2c->ISR;
@@ -441,7 +439,7 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
 
     if (!next_len) {
         int ret;
-        if ((ret = i2c_check_stop(i2c))) {
+        if ((ret = i2c_check_stop(i2c, timeout))) {
             return ret;
         }
     }
@@ -453,20 +451,20 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
 
 #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
 
-int i2c_readfrom(i2c_t *i2c, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+int i2c_readfrom(i2c_t *i2c, uint16_t addr, uint8_t *dest, size_t len, bool stop, uint32_t timeout) {
     int ret;
-    if ((ret = i2c_start_addr(i2c, 1, addr, len, stop))) {
+    if ((ret = i2c_start_addr(i2c, 1, addr, len, stop, timeout))) {
         return ret;
     }
-    return i2c_read(i2c, dest, len, 0);
+    return i2c_read(i2c, dest, len, 0, timeout);
 }
 
-int i2c_writeto(i2c_t *i2c, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+int i2c_writeto(i2c_t *i2c, uint16_t addr, const uint8_t *src, size_t len, bool stop, uint32_t timeout) {
     int ret;
-    if ((ret = i2c_start_addr(i2c, 0, addr, len, stop))) {
+    if ((ret = i2c_start_addr(i2c, 0, addr, len, stop, timeout))) {
         return ret;
     }
-    return i2c_write(i2c, src, len, 0);
+    return i2c_write(i2c, src, len, 0, timeout);
 }
 
 #endif

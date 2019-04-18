@@ -37,6 +37,8 @@
 
 STATIC const mp_obj_type_t machine_hard_i2c_type;
 
+#define I2C_POLL_TIMEOUT_US_DEFAULT (50000) // 50ms
+
 #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
 
 typedef struct _machine_hard_i2c_obj_t {
@@ -44,30 +46,35 @@ typedef struct _machine_hard_i2c_obj_t {
     i2c_t *i2c;
     mp_hal_pin_obj_t scl;
     mp_hal_pin_obj_t sda;
+    uint32_t *us_timeout;
 } machine_hard_i2c_obj_t;
+
+STATIC uint32_t machine_hard_i2c_timeout[];
 
 STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
-    {{&machine_hard_i2c_type}, I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
+    {{&machine_hard_i2c_type}, I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, &machine_hard_i2c_timeout[0]},
     #else
-    {{NULL}, NULL, NULL, NULL},
+    {{NULL}, NULL, NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    {{&machine_hard_i2c_type}, I2C2, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
+    {{&machine_hard_i2c_type}, I2C2, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA, &machine_hard_i2c_timeout[1]},
     #else
-    {{NULL}, NULL, NULL, NULL},
+    {{NULL}, NULL, NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    {{&machine_hard_i2c_type}, I2C3, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
+    {{&machine_hard_i2c_type}, I2C3, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA, &machine_hard_i2c_timeout[2]},
     #else
-    {{NULL}, NULL, NULL, NULL},
+    {{NULL}, NULL, NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    {{&machine_hard_i2c_type}, I2C4, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
+    {{&machine_hard_i2c_type}, I2C4, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA, &machine_hard_i2c_timeout[3]},
     #else
-    {{NULL}, NULL, NULL, NULL},
+    {{NULL}, NULL, NULL, NULL, NULL},
     #endif
 };
+
+STATIC uint32_t machine_hard_i2c_timeout[sizeof(machine_hard_i2c_obj)/sizeof(machine_hard_i2c_obj_t)] = {I2C_POLL_TIMEOUT_US_DEFAULT};
 
 STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -105,18 +112,20 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 }
 
 void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
-    (void)timeout;
     i2c_init(self->i2c, self->scl, self->sda, freq);
+    if (self->us_timeout != NULL) {
+        *self->us_timeout = timeout;
+    }
 }
 
 int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return i2c_readfrom(self->i2c, addr, dest, len, stop);
+    return i2c_readfrom(self->i2c, addr, dest, len, stop, *self->us_timeout);
 }
 
 int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return i2c_writeto(self->i2c, addr, src, len, stop);
+    return i2c_writeto(self->i2c, addr, src, len, stop, *self->us_timeout);
 }
 
 #else
@@ -127,22 +136,22 @@ typedef mp_machine_soft_i2c_obj_t machine_hard_i2c_obj_t;
 
 STATIC machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_TIMEOUT_US_DEFAULT, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_TIMEOUT_US_DEFAULT, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_TIMEOUT_US_DEFAULT, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
+    {{&machine_hard_i2c_type}, 1, I2C_POLL_TIMEOUT_US_DEFAULT, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
@@ -190,7 +199,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2C_POLL_TIMEOUT_US_DEFAULT} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
