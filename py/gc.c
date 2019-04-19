@@ -345,6 +345,19 @@ STATIC void gc_sweep(void) {
     }
 }
 
+// Mark can handle NULL pointers because it verifies the pointer is within the heap bounds.
+STATIC void gc_mark(void* ptr) {
+    if (VERIFY_PTR(ptr)) {
+        size_t block = BLOCK_FROM_PTR(ptr);
+        if (ATB_GET_KIND(block) == AT_HEAD) {
+            // An unmarked head: mark it, and mark all its children
+            TRACE_MARK(block, ptr);
+            ATB_HEAD_TO_MARK(block);
+            gc_mark_subtree(block);
+        }
+    }
+}
+
 void gc_collect_start(void) {
     GC_ENTER();
     MP_STATE_MEM(gc_lock_depth)++;
@@ -361,9 +374,7 @@ void gc_collect_start(void) {
     size_t root_end = offsetof(mp_state_ctx_t, vm.qstr_last_chunk);
     gc_collect_root(ptrs + root_start / sizeof(void*), (root_end - root_start) / sizeof(void*));
 
-    if (MP_STATE_MEM(permanent_pointers) != NULL) {
-        gc_collect_root(MP_STATE_MEM(permanent_pointers), BYTES_PER_BLOCK / sizeof(void*));
-    }
+    gc_mark(MP_STATE_MEM(permanent_pointers));
 
     #if MICROPY_ENABLE_PYSTACK
     // Trace root pointers from the Python stack.
@@ -375,15 +386,7 @@ void gc_collect_start(void) {
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
-        if (VERIFY_PTR(ptr)) {
-            size_t block = BLOCK_FROM_PTR(ptr);
-            if (ATB_GET_KIND(block) == AT_HEAD) {
-                // An unmarked head: mark it, and mark all its children
-                TRACE_MARK(block, ptr);
-                ATB_HEAD_TO_MARK(block);
-                gc_mark_subtree(block);
-            }
-        }
+        gc_mark(ptr);
     }
 }
 
