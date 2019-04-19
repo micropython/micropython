@@ -61,6 +61,15 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
 #define FLASH_MEM_SEG1_NUM_BLOCKS (128) // sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k
 
+#elif defined(STM32F413xx)
+
+#define CACHE_MEM_START_ADDR (0x10000000) // SRAM2 data RAM, 64k
+#define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of SRAM2
+#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
+#define FLASH_MEM_SEG1_NUM_BLOCKS (352) // sectors 1,2,3,4,5: 16k+16k+16k+64k+64k(of 128k)=176k
+#define FLASH_MEM_SEG2_START_ADDR (0x08040000) // sector 6
+#define FLASH_MEM_SEG2_NUM_BLOCKS (128) // sector 6: 64k(of 128k). Filesystem 176K + 64K = 240K
+
 #elif defined(STM32F429xx)
 
 #define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
