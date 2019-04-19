@@ -291,7 +291,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     struct _pyb_uart_obj_t *pyb_uart_obj_all[MICROPY_HW_MAX_UART]; \
     \
     /* pointers to all CAN objects (if they have been created) */ \
-    struct _pyb_can_obj_t *pyb_can_obj_all[2]; \
+    struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]; \
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
