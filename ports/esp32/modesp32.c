@@ -148,11 +148,23 @@ STATIC mp_obj_t esp32_hall_sensor(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
 
+nvs_handle get_nvs_handle(void) {
+  nvs_handle nvs_handle;
+  if (nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle) != ESP_OK) {
+      mp_raise_ValueError("Error while opening ESP32 NVS name space");
+  }
+  return nvs_handle;
+}
+
+void esp32_nvs_commit(nvs_handle nvs_handle) {
+  esp_err_t ret  = nvs_commit(nvs_handle);
+  if (ret != ESP_OK) {
+    mp_raise_OSError(ret);
+  }
+}
+
 STATIC mp_obj_t esp32_nvs_set(mp_obj_t _key, mp_obj_t _value) {
-    nvs_handle nvs_handle;
-    if (nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle) != ESP_OK) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error while opening ESP32 NVS name space"));
-    }
+    nvs_handle nvs_handle = get_nvs_handle();
 
     const char *key = mp_obj_str_get_str(_key);
     const char *value = mp_obj_str_get_str(_value);
@@ -165,27 +177,27 @@ STATIC mp_obj_t esp32_nvs_set(mp_obj_t _key, mp_obj_t _value) {
         break;
 
       case ESP_ERR_NVS_VALUE_TOO_LONG:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "value is too long"));
+        mp_raise_ValueError("value too long");
         break;
 
       case ESP_ERR_NVS_INVALID_HANDLE:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "invalid nvs handle"));
+        mp_raise_ValueError("invalid nvs handle");
         break;
 
       case ESP_ERR_NVS_READ_ONLY:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "NVS is read only"));
+        mp_raise_ValueError("NVS is read only");
         break;
 
       case ESP_ERR_NVS_INVALID_NAME:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "invalid key name"));
+        mp_raise_ValueError("invalid key name");
         break;
 
       case ESP_ERR_NVS_NOT_ENOUGH_SPACE:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "not enough storage"));
+        mp_raise_ValueError("not enough space");
         break;
 
       case ESP_ERR_NVS_REMOVE_FAILED:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "flash write failed"));
+        mp_raise_ValueError("flash remove operation failed");
         break;
     }
 
@@ -195,24 +207,21 @@ STATIC mp_obj_t esp32_nvs_set(mp_obj_t _key, mp_obj_t _value) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_nvs_set_obj, esp32_nvs_set);
 
 STATIC mp_obj_t esp32_nvs_get(mp_obj_t _key) {
-    nvs_handle nvs_handle;
-    if (nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle) != ESP_OK) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error while opening ESP32 NVS name space"));
-    }
+    nvs_handle nvs_handle = get_nvs_handle();
 
     const char *key = mp_obj_str_get_str(_key);
 
     size_t required_size = 0;
-    esp_err_t err = nvs_get_blob(nvs_handle, key, NULL, &required_size);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-      nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Error ESP-IDF code (%d)", err));
+    int ret = nvs_get_blob(nvs_handle, key, NULL, &required_size);
+    if (ret == ESP_ERR_NVS_NOT_FOUND) {
+      return mp_const_none;
     }
     // Get the blob
     unsigned char *value = m_malloc(required_size);
-    err = nvs_get_blob(nvs_handle, key, value, &required_size);
-    if (err != ESP_OK) {
+    ret = nvs_get_blob(nvs_handle, key, value, &required_size);
+    if (ret != ESP_OK) {
         m_free(value);
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Error ESP-IDF code (%d)", err));
+        mp_raise_OSError(ret);
     }
 
     mp_obj_t ret_val = mp_obj_new_bytes(value, required_size);
@@ -221,6 +230,32 @@ STATIC mp_obj_t esp32_nvs_get(mp_obj_t _key) {
     return ret_val;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_nvs_get_obj, esp32_nvs_get);
+
+STATIC mp_obj_t esp32_nvs_erase (mp_obj_t _key) {
+    nvs_handle nvs_handle = get_nvs_handle();
+
+    const char *key = mp_obj_str_get_str(_key);
+
+    if (ESP_ERR_NVS_NOT_FOUND == nvs_erase_key(nvs_handle, key)) {
+        mp_raise_ValueError("key does not exists");
+    }
+    esp32_nvs_commit(nvs_handle);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_nvs_erase_obj, esp32_nvs_erase);
+
+STATIC mp_obj_t esp32_nvs_erase_all (void) {
+    nvs_handle nvs_handle = get_nvs_handle();
+    esp_err_t ret;
+    ret = nvs_erase_all(nvs_handle);
+    if (ret != ESP_OK) {
+      mp_raise_OSError(ret);
+    }
+    esp32_nvs_commit(nvs_handle);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_nvs_erase_all_obj, esp32_nvs_erase_all);
+
 
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
@@ -232,6 +267,8 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
     { MP_ROM_QSTR(MP_QSTR_nvs_get), MP_ROM_PTR(&esp32_nvs_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_nvs_set), MP_ROM_PTR(&esp32_nvs_set_obj) },
+    { MP_ROM_QSTR(MP_QSTR_nvs_erase), MP_ROM_PTR(&esp32_nvs_erase_obj) },
+    { MP_ROM_QSTR(MP_QSTR_nvs_erase_all), MP_ROM_PTR(&esp32_nvs_erase_all_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
 
