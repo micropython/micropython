@@ -65,6 +65,14 @@ Note that the temperature sensor in the ESP32 will typically read higher than
 ambient due to the IC getting warm while it runs.  This effect can be minimised
 by reading the temperature sensor immediately after waking up from sleep.
 
+Non-volatile storage (NVS) is designed to store key-value pairs in flash.
+Currently NVS uses a portion of main flash memory, usage::
+
+    esp32.nvs_set(key, value) # set value for given key
+    esp32.nvs_get(key)        # get value for given key
+    esp32.nvs_erase(key)      # erase value for given key
+    esp32.nvs_erase_all()     # set value for all keys
+
 Networking
 ----------
 
@@ -169,7 +177,7 @@ PWM (pulse width modulation)
 
 PWM can be enabled on all output-enabled pins. The base frequency can
 range from 1Hz to 40MHz but there is a tradeoff; as the base frequency
-*increases* the duty resolution *decreases*. See 
+*increases* the duty resolution *decreases*. See
 `LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/ledc.html>`_
 for more details.
 
@@ -269,7 +277,7 @@ class::
 
 .. Warning::
    Currently *all* of ``sck``, ``mosi`` and ``miso`` *must* be specified when
-   initialising Software SPI. 
+   initialising Software SPI.
 
 Hardware SPI bus
 ----------------
@@ -344,10 +352,10 @@ Notes:
   To further reduce power consumption it is possible to disable the internal pullups::
 
     p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
-    
+
   After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
   it is an output pin) via::
-    
+
     p1 = Pin(4, Pin.OUT, None)
 
 OneWire driver
@@ -414,11 +422,11 @@ Use the ``TouchPad`` class in the ``machine`` module::
     from machine import TouchPad, Pin
 
     t = TouchPad(Pin(14))
-    t.read()              # Returns a smaller number when touched 
+    t.read()              # Returns a smaller number when touched
 
 ``TouchPad.read`` returns a value relative to the capacitive variation. Small numbers (typically in
-the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when 
-no touch is present. However the values are *relative* and can vary depending on the board 
+the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when
+no touch is present. However the values are *relative* and can vary depending on the board
 and surrounding composition so some calibration may be required.
 
 There are ten capacitive touch-enabled pins that can be used on the ESP32: 0, 2, 4, 12, 13
