@@ -235,6 +235,11 @@ void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, siz
     mp_bt_characteristic_callback_t *item = MP_STATE_PORT(bt_characteristic_callbacks);
     while (item != NULL) {
         if (item->characteristic->value_handle == value_handle) {
+            if ((item->triggers & MP_BLE_IRQ_WRITE) == 0) {
+                // This callback should not be called for writes.
+                break;
+            }
+
             // Queue callback.
             if (!mp_sched_schedule(MP_OBJ_FROM_PTR(&bluetooth_write_callback_obj), item->characteristic)) {
                 // Failed to schedule a callback: the queue is full.
@@ -508,11 +513,19 @@ STATIC mp_obj_t characteristic_read(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(characteristic_read_obj, characteristic_read);
 
-STATIC mp_obj_t characteristic_on_update(mp_obj_t self_in, mp_obj_t callback) {
+STATIC mp_obj_t characteristic_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ|MP_ARG_REQUIRED, {.u_obj = mp_const_none} },
+        { MP_QSTR_trigger, MP_ARG_INT|MP_ARG_REQUIRED, {.u_int = 0} },
+    };
+    mp_bt_characteristic_t *characteristic = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_obj_t callback = args[ARG_handler].u_obj;
     if (callback != mp_const_none && !mp_obj_is_fun(callback)) {
         mp_raise_ValueError("invalid callback");
     }
-    mp_bt_characteristic_t *characteristic = self_in;
 
     // A singly linked list of callbacks. In pseudocode:
     // If the new callback is none:
@@ -529,6 +542,7 @@ STATIC mp_obj_t characteristic_on_update(mp_obj_t self_in, mp_obj_t callback) {
                 *entry = m_new_obj(mp_bt_characteristic_callback_t);
                 (*entry)->characteristic = characteristic;
                 (*entry)->callback = callback;
+                (*entry)->triggers = args[ARG_trigger].u_int;
             }
             break;
         }
@@ -540,6 +554,7 @@ STATIC mp_obj_t characteristic_on_update(mp_obj_t self_in, mp_obj_t callback) {
             } else {
                 // update the entry with the new callback
                 (*entry)->callback = callback;
+                (*entry)->triggers = args[ARG_trigger].u_int;
             }
             break;
         }
@@ -547,14 +562,14 @@ STATIC mp_obj_t characteristic_on_update(mp_obj_t self_in, mp_obj_t callback) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(characteristic_on_update_obj, characteristic_on_update);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(characteristic_irq_obj, 1, characteristic_irq);
 
 STATIC const mp_rom_map_elem_t characteristic_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_service),   MP_ROM_PTR(&characteristic_service_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uuid),      MP_ROM_PTR(&characteristic_uuid_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write),     MP_ROM_PTR(&characteristic_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read),      MP_ROM_PTR(&characteristic_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_on_update), MP_ROM_PTR(&characteristic_on_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_service), MP_ROM_PTR(&characteristic_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid),    MP_ROM_PTR(&characteristic_uuid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write),   MP_ROM_PTR(&characteristic_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read),    MP_ROM_PTR(&characteristic_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&characteristic_irq_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(characteristic_locals_dict, characteristic_locals_dict_table);
 
@@ -588,6 +603,7 @@ STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_FLAG_READ),      MP_ROM_INT(MP_BLE_FLAG_READ) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_WRITE),     MP_ROM_INT(MP_BLE_FLAG_WRITE) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_NOTIFY),    MP_ROM_INT(MP_BLE_FLAG_NOTIFY) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_WRITE),      MP_ROM_INT(MP_BLE_IRQ_WRITE) },
 };
 STATIC MP_DEFINE_CONST_DICT(mp_module_bluetooth_globals, mp_module_bluetooth_globals_table);
 
