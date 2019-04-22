@@ -28,6 +28,7 @@
 
 #include "esp_bt.h"
 #include "esp_bt_main.h"
+#include "esp_bt_device.h"
 #include "esp_gatts_api.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -133,6 +134,14 @@ void mp_bt_disable(void) {
 
 bool mp_bt_is_enabled(void) {
     return esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED;
+}
+
+void mp_bt_get_address(uint8_t *address) {
+    const uint8_t *addr = esp_bt_dev_get_address();
+    // Convert from MSB to LSB.
+    for (int i = 5; i >= 0; i--) {
+        address[i] = addr[5-i];
+    }
 }
 
 STATIC esp_err_t mp_bt_advertise_start_internal(void) {
