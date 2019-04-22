@@ -205,6 +205,16 @@ bool mp_bt_is_enabled(void) {
     return is_enabled != 0;
 }
 
+void mp_bt_get_address(uint8_t *address) {
+    ble_gap_addr_t addr;
+    #if NRF51
+    sd_ble_gap_address_get(&addr);
+    #else
+    sd_ble_gap_addr_get(&addr);
+    #endif
+    memcpy(address, &addr.addr, 6);
+}
+
 #if NRF51
 STATIC uint32_t mp_bt_advertise_start_internal(void) {
     ble_gap_adv_params_t adv_params;

@@ -127,7 +127,7 @@ void mp_bt_parse_uuid_str(mp_obj_t obj, uint8_t *uuid) {
 
 // Format string UUID. Example output:
 // '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
-mp_obj_t mp_bt_format_uuid_str(uint8_t *uuid) {
+mp_obj_t mp_bt_format_uuid_str(const uint8_t *uuid) {
     char str[36];
     char *s = str;
     for (int i = 15; i >= 0; i--) {
@@ -152,6 +152,33 @@ mp_obj_t mp_bt_format_uuid_str(uint8_t *uuid) {
         }
     }
     return mp_obj_new_str(str, MP_ARRAY_SIZE(str));
+}
+
+// Format 6-byte MAC address. Example output:
+// '11:22:33:AA:BB:CC'
+STATIC mp_obj_t mp_bt_format_mac(const uint8_t *mac) {
+    char str[18]; // includes last ':' for convenience (e.g. '11:22:33:AA:BB:CC:')
+    char *s = str;
+    for (int i = 5; i >= 0; i--) {
+        char nibble = mac[i] >> 4;
+        if (nibble >= 10) {
+            nibble += 'A' - 10;
+        } else {
+            nibble += '0';
+        }
+        *(s++) = nibble;
+
+        nibble = mac[i] & 0xf;
+        if (nibble >= 10) {
+            nibble += 'A' - 10;
+        } else {
+            nibble += '0';
+        }
+        *(s++) = nibble;
+
+        *(s++) = ':';
+    }
+    return mp_obj_new_str(str, MP_ARRAY_SIZE(str)-1);
 }
 
 // Add this connection handle to the list of connected centrals.
@@ -421,6 +448,13 @@ STATIC mp_obj_t bluetooth_add_service(size_t n_args, const mp_obj_t *pos_args, m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_add_service_obj, 1, bluetooth_add_service);
 
+STATIC mp_obj_t bluetooth_address(mp_obj_t self_in) {
+    uint8_t address[6];
+    mp_bt_get_address(address);
+    return mp_bt_format_mac(address);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_address_obj, bluetooth_address);
+
 STATIC mp_obj_t service_uuid(mp_obj_t self_in) {
     mp_bt_service_t *service = self_in;
     return mp_bt_format_uuid(&service->uuid);
@@ -585,6 +619,7 @@ STATIC const mp_rom_map_elem_t bluetooth_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_advertise),     MP_ROM_PTR(&bluetooth_advertise_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise_raw), MP_ROM_PTR(&bluetooth_advertise_raw_obj) },
     { MP_ROM_QSTR(MP_QSTR_add_service),   MP_ROM_PTR(&bluetooth_add_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address),       MP_ROM_PTR(&bluetooth_address_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_locals_dict, bluetooth_locals_dict_table);
 

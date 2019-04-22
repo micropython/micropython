@@ -66,6 +66,9 @@ void mp_bt_disable(void);
 // Returns true when the Bluetooth stack is enabled.
 bool mp_bt_is_enabled(void);
 
+// Gets the MAC address of this device in LSB format.
+void mp_bt_get_address(uint8_t *address);
+
 // Start advertisement. Will re-start advertisement when already enabled.
 // Returns errno on failure.
 int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len);
@@ -110,7 +113,7 @@ mp_obj_t mp_bt_format_uuid(mp_bt_uuid_t *uuid);
 void mp_bt_parse_uuid_str(mp_obj_t obj, uint8_t *uuid);
 
 // Format a 128-bit UUID from the 16-byte buffer as a string.
-mp_obj_t mp_bt_format_uuid_str(uint8_t *uuid);
+mp_obj_t mp_bt_format_uuid_str(const uint8_t *uuid);
 
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
