@@ -81,7 +81,7 @@ void board_init(void) {
         spi,
         &pin_PB05, // TFT_DC Command or data
         &pin_PB07, // TFT_CS Chip select
-        &pin_PA01); // TFT_RST Reset
+        &pin_PA00); // TFT_RST Reset
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -99,7 +99,7 @@ void board_init(void) {
         0x37, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_PA00,
+        &pin_PA01,  // backlight pin
         1.0f, // brightness (ignored)
         true, // auto_brightness
         false, // single_byte_bounds
