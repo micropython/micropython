@@ -50,31 +50,29 @@ typedef struct _w600_pwm_obj_t {
 
 STATIC void w600_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     w600_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM(%u, freq=%u, duty=%u, pnum=%u, pin=%u)", self->channel, 
+    mp_printf(print, "PWM(%u, freq=%u, duty=%u, pnum=%u, pin=%u)", self->channel,
               self->freq, self->duty, self->pnum, self->pin);
 }
 
-STATIC int w600_pwm_multiplex_config(w600_pwm_obj_t *self)
-{
-	switch (self->channel)
-	{
-		case 0:
-			wm_pwm1_config(self->pin);
-		case 1:
-			wm_pwm2_config(self->pin);
-		case 2:
-			wm_pwm3_config(self->pin);
-		case 3:
-			wm_pwm4_config(self->pin);
-		case 4:
-			wm_pwm5_config(self->pin);
-		default:
-			return -1;
-	}
+STATIC int w600_pwm_multiplex_config(w600_pwm_obj_t *self) {
+    switch (self->channel) {
+    case 0:
+        wm_pwm1_config(self->pin);
+    case 1:
+        wm_pwm2_config(self->pin);
+    case 2:
+        wm_pwm3_config(self->pin);
+    case 3:
+        wm_pwm4_config(self->pin);
+    case 4:
+        wm_pwm5_config(self->pin);
+    default:
+        return -1;
+    }
 }
 
 STATIC void w600_pwm_init_helper(w600_pwm_obj_t *self,
-        size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+                                 size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_channel, ARG_freq, ARG_duty, ARG_pnum };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_channel,  MP_ARG_INT, {.u_int = 0} },
@@ -84,33 +82,33 @@ STATIC void w600_pwm_init_helper(w600_pwm_obj_t *self,
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+                     MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     int tval = args[ARG_channel].u_int;
     if ((tval < 0) || (tval > 4)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                    "Bad channel %d", tval));
+                                                "Bad channel %d", tval));
     }
     self->channel = tval;
 
     tval = args[ARG_freq].u_int;
     if ((tval < 1) || (tval > 156250)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                    "Bad frequency %d", tval));
+                                                "Bad frequency %d", tval));
     }
     self->freq = tval;
 
     tval = args[ARG_duty].u_int;
     if ((tval < 0) || (tval > 255)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                    "Bad duty %d", tval));
+                                                "Bad duty %d", tval));
     }
     self->duty = tval;
 
     tval = args[ARG_pnum].u_int;
     if ((tval < 0) || (tval > 255)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                    "Bad period num %d", tval));
+                                                "Bad period num %d", tval));
     }
     self->pnum = tval;
 
@@ -120,7 +118,7 @@ STATIC void w600_pwm_init_helper(w600_pwm_obj_t *self,
 }
 
 STATIC mp_obj_t w600_pwm_make_new(const mp_obj_type_t *type,
-        size_t n_args, size_t n_kw, const mp_obj_t *args) {
+                                  size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // create PWM object from the given pin
@@ -140,7 +138,7 @@ STATIC mp_obj_t w600_pwm_make_new(const mp_obj_type_t *type,
 }
 
 STATIC mp_obj_t w600_pwm_init(size_t n_args,
-        const mp_obj_t *args, mp_map_t *kw_args) {
+                              const mp_obj_t *args, mp_map_t *kw_args) {
     w600_pwm_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
@@ -164,7 +162,7 @@ STATIC mp_obj_t w600_pwm_freq(size_t n_args, const mp_obj_t *args) {
     int tval = mp_obj_get_int(args[1]);
     if ((tval < 1) || (tval > 156250)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "Bad frequency %d", tval));
+                                                "Bad frequency %d", tval));
     }
     tls_pwm_freq_set(self->channel, tval);
     self->freq = tval;
@@ -187,14 +185,14 @@ STATIC mp_obj_t w600_pwm_duty(size_t n_args, const mp_obj_t *args) {
     duty = mp_obj_get_int(args[1]);
     if ((duty < 0) || (duty > 255)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                    "Bad duty %d", duty));
+                                                "Bad duty %d", duty));
     }
     tls_pwm_duty_set(self->channel, duty);
     self->duty = duty;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(w600_pwm_duty_obj,
-    1, 2, w600_pwm_duty);
+        1, 2, w600_pwm_duty);
 
 STATIC const mp_rom_map_elem_t w600_pwm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&w600_pwm_init_obj) },
@@ -204,12 +202,13 @@ STATIC const mp_rom_map_elem_t w600_pwm_locals_dict_table[] = {
 };
 
 STATIC MP_DEFINE_CONST_DICT(w600_pwm_locals_dict,
-    w600_pwm_locals_dict_table);
+                            w600_pwm_locals_dict_table);
 
 const mp_obj_type_t machine_pwm_type = {
     { &mp_type_type },
     .name = MP_QSTR_PWM,
     .print = w600_pwm_print,
     .make_new = w600_pwm_make_new,
-    .locals_dict = (mp_obj_dict_t*)&w600_pwm_locals_dict,
+    .locals_dict = (mp_obj_dict_t *) &w600_pwm_locals_dict,
 };
+

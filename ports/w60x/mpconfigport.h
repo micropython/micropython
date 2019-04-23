@@ -154,9 +154,9 @@
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (512)
-#define MICROPY_FATFS_LFN_CODE_PAGE         (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define mp_type_fileio                      fatfs_type_fileio
-#define mp_type_textio                      fatfs_type_textio
+#define MICROPY_FATFS_LFN_CODE_PAGE          437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define mp_type_fileio                      mp_type_vfs_fat_fileio
+#define mp_type_textio                      mp_type_vfs_fat_textio
 
 #define MICROPY_USE_INTERVAL_FLS_FS         (1)
 
@@ -263,3 +263,4 @@ typedef long mp_off_t;
 #define MICROPY_HW_BOARD_NAME "WinnerMicro module"
 #define MICROPY_HW_MCU_NAME "W600"
 #define MICROPY_PY_SYS_PLATFORM "w600"
+

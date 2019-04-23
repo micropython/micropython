@@ -143,7 +143,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     int wanted_pin = mp_obj_get_int(args[0]);
     const machine_pin_obj_t *self = NULL;
     if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
-        self = (machine_pin_obj_t*)&machine_pin_obj[wanted_pin];
+        self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
     }
     if (self == NULL || self->base.type == NULL) {
         mp_raise_ValueError("invalid pin");
@@ -244,13 +244,13 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
     machine_pin_obj_t *self = self_in;
 
     switch (request) {
-        case MP_PIN_READ: {
-            return tls_gpio_read(self->id);
-        }
-        case MP_PIN_WRITE: {
-            tls_gpio_write(self->id, arg);
-            return 0;
-        }
+    case MP_PIN_READ: {
+        return tls_gpio_read(self->id);
+    }
+    case MP_PIN_WRITE: {
+        tls_gpio_write(self->id, arg);
+        return 0;
+    }
     }
     return -1;
 }
@@ -258,7 +258,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
 STATIC const mp_pin_p_t pin_pin_p = {
-  .ioctl = pin_ioctl,
+    .ioctl = pin_ioctl,
 };
 
 const mp_obj_type_t machine_pin_type = {
@@ -268,7 +268,7 @@ const mp_obj_type_t machine_pin_type = {
     .make_new = mp_pin_make_new,
     .call = machine_pin_call,
     .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_t)&machine_pin_locals_dict,
+    .locals_dict = (mp_obj_t) &machine_pin_locals_dict,
 };
 
 /******************************************************************************/
@@ -324,7 +324,7 @@ STATIC mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_k
 STATIC mp_obj_t machine_pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
     machine_pin_irq_obj_t *self = args[0];
 
-    if (n_args == 2){
+    if (n_args == 2) {
         // set trigger
         tls_gpio_irq_enable(self->id, mp_obj_get_int(args[1]));
     }
@@ -342,5 +342,6 @@ STATIC const mp_obj_type_t machine_pin_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_GPIO_IRQ,
     .call = machine_pin_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&machine_pin_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *) &machine_pin_irq_locals_dict,
 };
+

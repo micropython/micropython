@@ -66,7 +66,7 @@ STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
     struct tm tblock;
     if (n_args == 1) {
         // Get time
-	    tls_get_rtc(&tblock);
+        tls_get_rtc(&tblock);
 
         mp_uint_t seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE, tblock.tm_mon, tblock.tm_mday,
                                              tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
@@ -90,13 +90,13 @@ STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
 
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 8, &items);
-		tblock.tm_year = mp_obj_get_int(items[0]) - W600_YEAR_BASE;
-    	tblock.tm_mon = mp_obj_get_int(items[1]);
-    	tblock.tm_mday = mp_obj_get_int(items[2]);
-    	tblock.tm_hour = mp_obj_get_int(items[4]);
-    	tblock.tm_min = mp_obj_get_int(items[5]);
-    	tblock.tm_sec = mp_obj_get_int(items[6]);
-    	tls_set_rtc(&tblock);
+        tblock.tm_year = mp_obj_get_int(items[0]) - W600_YEAR_BASE;
+        tblock.tm_mon = mp_obj_get_int(items[1]);
+        tblock.tm_mday = mp_obj_get_int(items[2]);
+        tblock.tm_hour = mp_obj_get_int(items[4]);
+        tblock.tm_min = mp_obj_get_int(items[5]);
+        tblock.tm_sec = mp_obj_get_int(items[6]);
+        tls_set_rtc(&tblock);
         return mp_const_none;
     }
 }
@@ -114,11 +114,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_init_obj, 1, 2, machine_r
 STATIC mp_obj_t machine_rtc_deinit(mp_uint_t n_args, const mp_obj_t *args) {
     struct tm tblock;
     tblock.tm_year = 2015 - W600_YEAR_BASE;
-	tblock.tm_mon = 1;
-	tblock.tm_mday = 1;
-	tblock.tm_hour = 0;
-	tblock.tm_min = 0;
-	tblock.tm_sec = 0;
+    tblock.tm_mon = 1;
+    tblock.tm_mday = 1;
+    tblock.tm_hour = 0;
+    tblock.tm_min = 0;
+    tblock.tm_sec = 0;
     tls_set_rtc(&tblock);
     return mp_const_none;
 }
@@ -128,13 +128,13 @@ STATIC mp_obj_t machine_rtc_alarm(mp_uint_t n_args, const mp_obj_t *args) {
     struct tm tblock;
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(args[1], 8, &items);
-	tblock.tm_year = mp_obj_get_int(items[0]) - W600_YEAR_BASE;
-	tblock.tm_mon = mp_obj_get_int(items[1]);
-	tblock.tm_mday = mp_obj_get_int(items[2]);
-	tblock.tm_hour = mp_obj_get_int(items[4]);
-	tblock.tm_min = mp_obj_get_int(items[5]);
-	tblock.tm_sec = mp_obj_get_int(items[6]);
-	tls_rtc_timer_start(&tblock);
+    tblock.tm_year = mp_obj_get_int(items[0]) - W600_YEAR_BASE;
+    tblock.tm_mon = mp_obj_get_int(items[1]);
+    tblock.tm_mday = mp_obj_get_int(items[2]);
+    tblock.tm_hour = mp_obj_get_int(items[4]);
+    tblock.tm_min = mp_obj_get_int(items[5]);
+    tblock.tm_sec = mp_obj_get_int(items[6]);
+    tls_rtc_timer_start(&tblock);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_obj, 1, 2, machine_rtc_alarm);
@@ -145,8 +145,7 @@ STATIC mp_obj_t machine_rtc_cancel(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_cancel_obj, 0, 1, machine_rtc_cancel);
 
-STATIC void machine_rtc_alarm_irq(u8 *arg)
-{
+STATIC void machine_rtc_alarm_irq(u8 *arg) {
     machine_rtc_obj_t *self = arg;
     mp_obj_t handler = MP_STATE_PORT(machine_rtc_irq_handler)[0];
     mp_sched_schedule(handler, MP_OBJ_FROM_PTR(self));
@@ -191,7 +190,7 @@ const mp_obj_type_t machine_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = machine_rtc_make_new,
-    .locals_dict = (mp_obj_t)&machine_rtc_locals_dict,
+    .locals_dict = (mp_obj_t) &machine_rtc_locals_dict,
 };
 
 STATIC const mp_obj_type_t machine_rtc_irq_type;
@@ -214,6 +213,6 @@ STATIC const mp_obj_type_t machine_rtc_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC_IRQ,
     .call = machine_rtc_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&machine_rtc_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *) &machine_rtc_irq_locals_dict,
 };
 

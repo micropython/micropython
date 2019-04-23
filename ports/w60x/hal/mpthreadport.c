@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -58,7 +58,7 @@ static u32 thread_cnt = 0;
 
 void mp_thread_init(void *stack, uint32_t stack_len) {
     mp_thread_mutex_init(&thread_mutex);
- 
+
     // create first entry in linked list of all threads
     thread = &thread_entry0;
     thread->id = xTaskGetCurrentTaskHandle();
@@ -68,13 +68,13 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
     thread->stack_len = MPY_TASK_SIZE;
     thread->next = NULL;
 
-   mp_thread_set_state(&mp_state_ctx.thread);
+    mp_thread_set_state(&mp_state_ctx.thread);
 }
 
 void mp_thread_gc_others(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; th = th->next) {
-        gc_collect_root((void**)&th, 1);
+        gc_collect_root((void **)&th, 1);
         gc_collect_root(&th->arg, 1); // probably not needed
         if (th->id == xTaskGetCurrentTaskHandle()) {
             continue;
@@ -122,22 +122,23 @@ void mp_thread_start(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-STATIC void *(*ext_thread_entry)(void*) = NULL;
+STATIC void *(*ext_thread_entry)(void *) = NULL;
 
 STATIC void freertos_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
     mp_thread_mutex_lock(&thread_mutex, 1);
-    if (thread_cnt >= 1)
+    if (thread_cnt >= 1) {
         thread_cnt--;
+    }
     mp_thread_mutex_unlock(&thread_mutex);
     vTaskDelete(NULL);
     for (;;) {
     }
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
@@ -158,12 +159,12 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     //TaskHandle_t id = xTaskCreateStatic(freertos_entry, "MPY_Thread", *stack_size / sizeof(void*), arg, 2, stack, tcb);
     xTaskHandle id;
     u8 err = tls_os_task_create(&id, "MPY_Thread",
-                    freertos_entry,
-                    (void *)arg,
-                    (void *)stack,          /* ÈÎÎñÕ»µÄÆğÊ¼µØÖ· */
-                    *stack_size, /* ÈÎÎñÕ»µÄ´óĞ¡     */
-                    MPY_TASK_PRIO + (thread_cnt + 2),
-                    0);
+                                freertos_entry,
+                                (void *)arg,
+                                (void *)stack,          /* ä»»åŠ¡æ ˆçš„èµ·å§‹åœ°å€ */
+                                *stack_size, /* ä»»åŠ¡æ ˆçš„å¤§å°     */
+                                MPY_TASK_PRIO + (thread_cnt + 2),
+                                0);
     if (id == NULL) {
         mp_thread_mutex_unlock(&thread_mutex);
         mp_raise_msg(&mp_type_OSError, "can't create thread");
@@ -231,3 +232,4 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
 }
 
 #endif // MICROPY_PY_THREAD
+

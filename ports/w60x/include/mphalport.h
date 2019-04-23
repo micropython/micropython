@@ -81,3 +81,4 @@ static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
 }
 
 #endif // INCLUDED_MPHALPORT_H
+

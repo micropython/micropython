@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * Development of the code in this file was sponsored by Microbric Pty Ltd
@@ -54,20 +54,18 @@ uint32_t mp_hal_ticks_cpu(void) {
 }
 
 void mp_hal_delay_ms(uint32_t ms) {
-    if (ms / (1000 / HZ) > 0)
+    if (ms / (1000 / HZ) > 0) {
         tls_os_time_delay(ms / (1000 / HZ));
-    else
+    } else {
         delay_us(ms * 1000);
+    }
 }
 
 void mp_hal_delay_us(uint32_t us) {
-    if ((us / 1000) > 0)
-    {
+    if ((us / 1000) > 0) {
         mp_hal_delay_ms(us / 1000);
         delay_us((us % 1000));
-    }
-    else
-    {
+    } else {
         delay_us(us);
     }
 }

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * Development of the code in this file was sponsored by Microbric Pty Ltd
@@ -38,12 +38,12 @@
 DWORD get_fattime(void) {
     struct tm tblock;
     tls_get_rtc(&tblock);
-    mp_uint_t seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE, 
-        tblock.tm_mon, tblock.tm_mday, tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
+    mp_uint_t seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE,
+                                         tblock.tm_mon, tblock.tm_mday, tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
     timeutils_struct_time_t tm;
     timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
 
     return (((DWORD)(tm.tm_year - 1980) << 25) | ((DWORD)tm.tm_mon << 21) | ((DWORD)tm.tm_mday << 16) |
-           ((DWORD)tm.tm_hour << 11) | ((DWORD)tm.tm_min << 5) | ((DWORD)tm.tm_sec >> 1));
+            ((DWORD)tm.tm_hour << 11) | ((DWORD)tm.tm_min << 5) | ((DWORD)tm.tm_sec >> 1));
 }
 

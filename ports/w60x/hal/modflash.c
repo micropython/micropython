@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -40,24 +40,22 @@
 
 #define INTERVAL_FLS_BASE               (USER_ADDR_START - 0x8000)//80k (32+48)
 #define INTERVAL_FLS_LEN                (0x8000 + USER_AREA_LEN)//gz image <=352kb
-#define INTERVAL_LFS_SECTOR_SIZE        (_MAX_SS)
+#define INTERVAL_LFS_SECTOR_SIZE        (FF_MAX_SS)
 
-STATIC DRESULT w600_flash_read (BYTE *buff, DWORD sector, UINT count)
-{
-	int result = tls_fls_read(INTERVAL_FLS_BASE + (sector * INTERVAL_LFS_SECTOR_SIZE),
+STATIC DRESULT w600_flash_read (BYTE *buff, DWORD sector, UINT count) {
+    int result = tls_fls_read(INTERVAL_FLS_BASE + (sector * INTERVAL_LFS_SECTOR_SIZE),
                               buff, INTERVAL_LFS_SECTOR_SIZE * count);
     DSTATUS stat = (TLS_FLS_STATUS_OK == result) ? RES_OK : RES_ERROR;
 
-	return stat;
+    return stat;
 }
 
- STATIC DRESULT w600_flash_write (const BYTE *buff, DWORD sector, UINT count)
-{
-	int result = tls_fls_write(INTERVAL_FLS_BASE + (sector * INTERVAL_LFS_SECTOR_SIZE),
+STATIC DRESULT w600_flash_write (const BYTE *buff, DWORD sector, UINT count) {
+    int result = tls_fls_write(INTERVAL_FLS_BASE + (sector * INTERVAL_LFS_SECTOR_SIZE),
                                (u8 *)buff, INTERVAL_LFS_SECTOR_SIZE * count);
     DSTATUS stat = (TLS_FLS_STATUS_OK == result) ? RES_OK : RES_ERROR;
 
-	return stat;
+    return stat;
 }
 
 /******************************************************************************/
@@ -95,12 +93,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(w600_flash_writeblocks_obj, w600_flash_writeblo
 STATIC mp_obj_t w600_flash_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case BP_IOCTL_INIT: return MP_OBJ_NEW_SMALL_INT(RES_OK);
-        case BP_IOCTL_DEINIT: return MP_OBJ_NEW_SMALL_INT(RES_OK);
-        case BP_IOCTL_SYNC: return MP_OBJ_NEW_SMALL_INT(RES_OK);
-        case BP_IOCTL_SEC_COUNT: return MP_OBJ_NEW_SMALL_INT(INTERVAL_FLS_LEN / INTERVAL_LFS_SECTOR_SIZE);
-        case BP_IOCTL_SEC_SIZE: return MP_OBJ_NEW_SMALL_INT(INTERVAL_LFS_SECTOR_SIZE);
-        default: return mp_const_none;
+    case BP_IOCTL_INIT:
+        return MP_OBJ_NEW_SMALL_INT(RES_OK);
+    case BP_IOCTL_DEINIT:
+        return MP_OBJ_NEW_SMALL_INT(RES_OK);
+    case BP_IOCTL_SYNC:
+        return MP_OBJ_NEW_SMALL_INT(RES_OK);
+    case BP_IOCTL_SEC_COUNT:
+        return MP_OBJ_NEW_SMALL_INT(INTERVAL_FLS_LEN / INTERVAL_LFS_SECTOR_SIZE);
+    case BP_IOCTL_SEC_SIZE:
+        return MP_OBJ_NEW_SMALL_INT(INTERVAL_LFS_SECTOR_SIZE);
+    default:
+        return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(w600_flash_ioctl_obj, w600_flash_ioctl);
@@ -117,7 +121,7 @@ const mp_obj_type_t w600_flash_type = {
     { &mp_type_type },
     .name = MP_QSTR_Flash,
     .make_new = w600_flash_make_new,
-    .locals_dict = (mp_obj_t)&w600_flash_locals_dict,
+    .locals_dict = (mp_obj_t) &w600_flash_locals_dict,
 };
 
 void w600_flash_init_vfs(fs_user_mount_t *vfs) {

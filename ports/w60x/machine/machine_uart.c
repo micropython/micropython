@@ -48,9 +48,9 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t baudrate;
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u)",
-        self->uart_num, self->uartcfg.baudrate, self->uartcfg.charlength + 5, 
-        self->uartcfg.paritytype ? ((self->uartcfg.paritytype == 1) ? "1" : "0") : "None", 
-        self->uartcfg.stopbits + 1);
+              self->uart_num, self->uartcfg.baudrate, self->uartcfg.charlength + 5,
+              self->uartcfg.paritytype ? ((self->uartcfg.paritytype == 1) ? "1" : "0") : "None",
+              self->uartcfg.stopbits + 1);
 }
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -71,23 +71,23 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     // set data bits
     switch (args[ARG_bits].u_int) {
-        case 0:
-            break;
-        case 5:
-            self->uartcfg.charlength = TLS_UART_CHSIZE_5BIT;
-            break;
-        case 6:
-            self->uartcfg.charlength = TLS_UART_CHSIZE_6BIT;
-            break;
-        case 7:
-            self->uartcfg.charlength = TLS_UART_CHSIZE_7BIT;
-            break;
-        case 8:
-            self->uartcfg.charlength = TLS_UART_CHSIZE_8BIT;
-            break;
-        default:
-            mp_raise_ValueError("invalid data bits");
-            break;
+    case 0:
+        break;
+    case 5:
+        self->uartcfg.charlength = TLS_UART_CHSIZE_5BIT;
+        break;
+    case 6:
+        self->uartcfg.charlength = TLS_UART_CHSIZE_6BIT;
+        break;
+    case 7:
+        self->uartcfg.charlength = TLS_UART_CHSIZE_7BIT;
+        break;
+    case 8:
+        self->uartcfg.charlength = TLS_UART_CHSIZE_8BIT;
+        break;
+    default:
+        mp_raise_ValueError("invalid data bits");
+        break;
     }
 
     // set parity
@@ -96,26 +96,27 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
             self->uartcfg.paritytype = TLS_UART_PMODE_DISABLED;
         } else {
             mp_int_t parity = mp_obj_get_int(args[ARG_parity].u_obj);
-            if (0 == parity)
+            if (0 == parity) {
                 self->uartcfg.paritytype = TLS_UART_PMODE_EVEN;
-            else if (1 == parity)
+            } else if (1 == parity) {
                 self->uartcfg.paritytype = TLS_UART_PMODE_ODD;
+            }
         }
     }
 
     // set stop bits
     switch (args[ARG_stop].u_int) {
-        case 0:
-            break;
-        case 1:
-            self->uartcfg.stopbits = TLS_UART_ONE_STOPBITS;
-            break;
-        case 2:
-            self->uartcfg.stopbits = TLS_UART_TWO_STOPBITS;
-            break;
-        default:
-            mp_raise_ValueError("invalid stop bits");
-            break;
+    case 0:
+        break;
+    case 1:
+        self->uartcfg.stopbits = TLS_UART_ONE_STOPBITS;
+        break;
+    case 2:
+        self->uartcfg.stopbits = TLS_UART_TWO_STOPBITS;
+        break;
+    default:
+        mp_raise_ValueError("invalid stop bits");
+        break;
     }
 
     tls_uart_port_init(self->uart_num, &self->uartcfg, 0);
@@ -216,5 +217,6 @@ const mp_obj_type_t machine_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&machine_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *) &machine_uart_locals_dict,
 };
+

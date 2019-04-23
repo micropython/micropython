@@ -31,8 +31,8 @@
 #include "cryptoApi.h"
 
 union sha_ctxs {
-        struct sha256_state sha256;
-        psDigestContext_t sha1;
+    struct sha256_state sha256;
+    psDigestContext_t sha1;
 };
 typedef struct _mp_obj_hash_t {
     mp_obj_base_t base;
@@ -43,7 +43,7 @@ STATIC mp_obj_t sha256_update(mp_obj_t self_in, mp_obj_t arg);
 STATIC mp_obj_t sha1_update(mp_obj_t self_in, mp_obj_t arg);
 
 STATIC mp_obj_t sha256_make_new(const mp_obj_type_t *type,
-        size_t n_args, size_t n_kw, const mp_obj_t *args) {
+                                size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(union sha_ctxs));
     o->base.type = type;
@@ -55,7 +55,7 @@ STATIC mp_obj_t sha256_make_new(const mp_obj_type_t *type,
 }
 
 STATIC mp_obj_t sha1_make_new(const mp_obj_type_t *type,
-        size_t n_args, size_t n_kw, const mp_obj_t *args) {
+                              size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(union sha_ctxs));
     o->base.type = type;
@@ -113,7 +113,7 @@ STATIC const mp_obj_type_t sha256_type = {
     { &mp_type_type },
     .name = MP_QSTR_sha256,
     .make_new = sha256_make_new,
-    .locals_dict = (void*)&sha256_locals_dict,
+    .locals_dict = (void *) &sha256_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t sha1_locals_dict_table[] = {
@@ -126,7 +126,7 @@ STATIC const mp_obj_type_t sha1_type = {
     { &mp_type_type },
     .name = MP_QSTR_sha1,
     .make_new = sha1_make_new,
-    .locals_dict = (void*)&sha1_locals_dict,
+    .locals_dict = (void *) &sha1_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
@@ -136,9 +136,10 @@ STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_hashlib_globals,
-    mp_module_hashlib_globals_table);
+                            mp_module_hashlib_globals_table);
 
 const mp_obj_module_t mp_module_uhashlib = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_hashlib_globals,
+    .globals = (mp_obj_dict_t *) &mp_module_hashlib_globals,
 };
+

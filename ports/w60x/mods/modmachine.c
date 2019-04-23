@@ -75,10 +75,11 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (freq != 40 && freq != 80) {
             mp_raise_ValueError("frequency can only be either 40MHz or 80MHz");
         }
-        if (40 == freq)
+        if (40 == freq) {
             tls_sys_clk_set(CPU_CLK_40M);
-        else
+        } else {
             tls_sys_clk_set(CPU_CLK_80M);
+        }
         tls_os_timer_init();
         return mp_const_none;
     }
@@ -86,10 +87,11 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 STATIC mp_obj_t machine_sleep_helper(sleep_type_t sleep_type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    if (n_args == 0)
+    if (n_args == 0) {
         mp_raise_ValueError("invalid param format");
+    }
 
-    enum {ARG_operate,ARG_sleep_s};
+    enum {ARG_operate, ARG_sleep_s};
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_operate, MP_ARG_INT, { .u_int = 0 } },
         { MP_QSTR_sleep_s, MP_ARG_INT, { .u_int = 0 } },
@@ -101,17 +103,17 @@ STATIC mp_obj_t machine_sleep_helper(sleep_type_t sleep_type, size_t n_args, con
     mp_int_t operate = args[ARG_operate].u_int;
 
     switch(sleep_type) {
-        case MP_PS_SLEEP:
-            if (n_args != 1)
-                mp_raise_ValueError("invalid param format");
-            tls_wl_if_ps(operate);//MP_OP_PS_WAKEUP,MP_OP_PS_SLEEP
-            break;
-        case MP_DEEP_SLEEP:
-            if (n_args != 2)
-                mp_raise_ValueError("invalid param format");
-            mp_int_t sleeptime = args[ARG_sleep_s].u_int;
-            tls_wl_if_standby(operate, 0, sleeptime);//MP_OP_GPIO_WAKEUP,MP_OP_TIMER_WAKEUP
-            break;
+    case MP_PS_SLEEP:
+        if (n_args != 1)
+            mp_raise_ValueError("invalid param format");
+        tls_wl_if_ps(operate);//MP_OP_PS_WAKEUP,MP_OP_PS_SLEEP
+        break;
+    case MP_DEEP_SLEEP:
+        if (n_args != 2)
+            mp_raise_ValueError("invalid param format");
+        mp_int_t sleeptime = args[ARG_sleep_s].u_int;
+        tls_wl_if_standby(operate, 0, sleeptime);//MP_OP_GPIO_WAKEUP,MP_OP_TIMER_WAKEUP
+        break;
     }
     return mp_const_none;
 }
@@ -222,7 +224,8 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *) &machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE
+

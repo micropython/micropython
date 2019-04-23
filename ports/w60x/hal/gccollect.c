@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -33,8 +33,7 @@
 
 extern uint32_t _ram_end;
 
-static inline void *get_sp()
-{
+static inline void *get_sp(void) {
     void *sp;
     asm volatile ("mov %0, sp;" : "=r" (sp));
     return sp;
@@ -47,17 +46,18 @@ void gc_collect(void) {
     uintptr_t sp = get_sp();
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    #if MICROPY_PY_THREAD
-    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
-    #else
-    gc_collect_root((void**)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
-    #endif
+#if MICROPY_PY_THREAD
+    gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+#else
+    gc_collect_root((void **)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
+#endif
 
     // trace root pointers from any threads
-    #if MICROPY_PY_THREAD
+#if MICROPY_PY_THREAD
     mp_thread_gc_others();
-    #endif
+#endif
 
     // end the GC
     gc_collect_end();
 }
+

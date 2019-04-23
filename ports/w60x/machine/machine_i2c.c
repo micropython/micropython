@@ -49,7 +49,7 @@ typedef struct _machine_i2c_obj_t {
 STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(freq=%u, device_addr=%u, reg_addr=%u)",
-        self->freq, self->device_addr, self->reg_addr);
+              self->freq, self->device_addr, self->reg_addr);
 }
 
 STATIC void machine_i2c_init_helper(machine_i2c_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -100,50 +100,44 @@ STATIC const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_i2c_locals_dict, machine_i2c_locals_dict_table);
 
-STATIC u8 w600_i2c_readOneByte(u16 deviceaddr, u16 regaddr)
-{				  
-	u8 temp=0;		  	    																 
-	tls_i2c_write_byte(deviceaddr << 7,1);   
-	tls_i2c_wait_ack(); 
-    	tls_i2c_write_byte(regaddr,0);   
-	tls_i2c_wait_ack();	    
+STATIC u8 w600_i2c_readOneByte(u16 deviceaddr, u16 regaddr) {
+    u8 temp = 0;
+    tls_i2c_write_byte(deviceaddr << 7, 1);
+    tls_i2c_wait_ack();
+    tls_i2c_write_byte(regaddr, 0);
+    tls_i2c_wait_ack();
 
-	tls_i2c_write_byte((deviceaddr << 7) | 0x1,1);
-	tls_i2c_wait_ack();	 
-	temp=tls_i2c_read_byte(0,1);
-	return temp;
+    tls_i2c_write_byte((deviceaddr << 7) | 0x1, 1);
+    tls_i2c_wait_ack();
+    temp = tls_i2c_read_byte(0, 1);
+    return temp;
 }
 
-STATIC void w600_i2c_writeOneByte(u16 deviceaddr, u16 regaddr, u8 data)
-{				   	  	    																 
-	tls_i2c_write_byte(deviceaddr << 7, 1); 
-	tls_i2c_wait_ack();	   
-	tls_i2c_write_byte(regaddr, 0);
-	tls_i2c_wait_ack(); 	 										  		   
-	tls_i2c_write_byte(data, 0); 				   
-	tls_i2c_wait_ack();  	   
- 	tls_i2c_stop();
-	tls_os_time_delay(1);
+STATIC void w600_i2c_writeOneByte(u16 deviceaddr, u16 regaddr, u8 data) {
+    tls_i2c_write_byte(deviceaddr << 7, 1);
+    tls_i2c_wait_ack();
+    tls_i2c_write_byte(regaddr, 0);
+    tls_i2c_wait_ack();
+    tls_i2c_write_byte(data, 0);
+    tls_i2c_wait_ack();
+    tls_i2c_stop();
+    tls_os_time_delay(1);
 }
 
-STATIC void w600_i2c_read(u16 deviceaddr, u16 regaddr, u8 *buf, u16 len)
-{
-	while(len)
-	{
-		*buf++=w600_i2c_readOneByte(deviceaddr, regaddr++);	
-		len--;
-	}
+STATIC void w600_i2c_read(u16 deviceaddr, u16 regaddr, u8 *buf, u16 len) {
+    while(len) {
+        *buf++ = w600_i2c_readOneByte(deviceaddr, regaddr++);
+        len--;
+    }
 }
 
-STATIC void w600_i2c_write(u16 deviceaddr, u16 regaddr, u8 *buf, u16 len)
-{
-	while(len--)
-	{
-		w600_i2c_writeOneByte(deviceaddr, regaddr,*buf);
-		regaddr++;
-		buf++;
-	}
-} 
+STATIC void w600_i2c_write(u16 deviceaddr, u16 regaddr, u8 *buf, u16 len) {
+    while(len--) {
+        w600_i2c_writeOneByte(deviceaddr, regaddr, *buf);
+        regaddr++;
+        buf++;
+    }
+}
 
 STATIC mp_uint_t machine_i2c_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -176,5 +170,6 @@ const mp_obj_type_t machine_i2c_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &i2c_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&machine_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *) &machine_i2c_locals_dict,
 };
+

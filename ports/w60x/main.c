@@ -4,12 +4,9 @@
 *
 * Description: main
 *
-* Copyright (c) 2014 Winner Micro Electronic Design Co., Ltd.
+* Copyright (c) 2019 Winner Micro Electronic Design Co., Ltd.
 * All rights reserved.
 *
-* Author : dave
-*
-* Date : 2014-6-14
 *****************************************************************************/
 #include "wm_include.h"
 #include "wm_mem.h"
@@ -118,7 +115,7 @@ static void init_spiflash_fs (void) {
     FRESULT res = f_mount(&vfs_fat->fatfs);
     if (res == FR_NO_FILESYSTEM) {
         // no filesystem, so create a fresh one
-        uint8_t working_buf[_MAX_SS];
+        uint8_t working_buf[FF_MAX_SS];
         res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
         if (res == FR_OK) {
             // success creating fresh LFS
@@ -131,9 +128,9 @@ static void init_spiflash_fs (void) {
         //f_setlabel(&vfs_fat->fatfs, "w600flash");
     } else if (res == FR_OK) {
         // mount sucessful
-        
+
     } else {
-    fail:
+fail:
         printf("failed to mount flash\r\n");
         return;
     }
@@ -169,7 +166,7 @@ static void init_spiflash_fs (void) {
 
     // Make sure we have a /flash/boot.py.  Create it if needed.
     res = f_stat(&vfs_fat->fatfs, "/boot.py", &fno);
-    if (res != FR_OK) {// doesn't exist, create fresh file
+    if (res != FR_OK) { // doesn't exist, create fresh file
         FIL fp;
         f_open(&vfs_fat->fatfs, &fp, "/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
@@ -200,15 +197,13 @@ static void init_spiflash_fs (void) {
 }
 #endif
 
-static inline void *get_sp()
-{
+static inline void *get_sp(void) {
     void *sp;
     asm volatile ("mov %0, sp;" : "=r" (sp));
     return sp;
 }
 
-static void mpy_task(void *param)
-{
+static void mpy_task(void *param) {
     volatile uint32_t sp = (uint32_t)get_sp();
 #if MICROPY_PY_THREAD
     mp_thread_init(&mpy_task_stk[0], MPY_TASK_SIZE * sizeof(OS_STK));
@@ -269,8 +264,7 @@ soft_reset:
     goto soft_reset;
 }
 
-void UserMain(void)
-{
+void UserMain(void) {
     tls_os_task_create(NULL, "w600_mpy_task", mpy_task, NULL,
                        (void *)mpy_task_stk, MPY_TASK_SIZE * sizeof(OS_STK),
                        MPY_TASK_PRIO, 0);
@@ -279,3 +273,4 @@ void UserMain(void)
 void nlr_jump_fail(void *val) {
     tls_sys_reset();
 }
+

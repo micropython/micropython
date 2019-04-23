@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * Development of the code in this file was sponsored by Microbric Pty Ltd
@@ -26,9 +26,10 @@
  * THE SOFTWARE.
  */
 
-float fabsf(float x)
-{
-	if (x < 0)
-		x = -x;
-	return x;
+float fabsf(float x) {
+    if (x < 0) {
+        x = -x;
+    }
+    return x;
 }
+

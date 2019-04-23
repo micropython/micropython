@@ -54,11 +54,11 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
     }
 
     switch (id) {
-        case 0:
-            tls_watchdog_init(usec);
-            return &wdt_default;
-        default:
-            mp_raise_ValueError(NULL);
+    case 0:
+        tls_watchdog_init(usec);
+        return &wdt_default;
+    default:
+        mp_raise_ValueError(NULL);
     }
 }
 
@@ -77,5 +77,6 @@ const mp_obj_type_t machine_wdt_type = {
     { &mp_type_type },
     .name = MP_QSTR_WDT,
     .make_new = machine_wdt_make_new,
-    .locals_dict = (mp_obj_t)&machine_wdt_locals_dict,
+    .locals_dict = (mp_obj_t) &machine_wdt_locals_dict,
 };
+

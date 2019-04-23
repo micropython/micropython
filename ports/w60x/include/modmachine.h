@@ -18,3 +18,4 @@ extern const mp_obj_type_t machine_rtc_type;
 extern const mp_obj_type_t machine_i2c_type;
 
 #endif // MICROPY_INCLUDED_W600_MODMACHINE_H
+

@@ -119,10 +119,11 @@ STATIC mp_obj_t machine_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_ma
         mp_raise_ValueError("invalid format");
     }
 
-    if (WM_TIMER_ID_INVALID != self->timerid)
+    if (WM_TIMER_ID_INVALID != self->timerid) {
         tls_timer_stop(self->timerid);
-    else
+    } else {
         self->timerid = tls_timer_create(&timercfg);
+    }
     tls_timer_start(self->timerid);
     return mp_const_none;
 }
@@ -142,5 +143,6 @@ const mp_obj_type_t machine_timer_type = {
     .name = MP_QSTR_Timer,
     .print = machine_timer_print,
     .make_new = machine_timer_make_new,
-    .locals_dict = (mp_obj_t)&machine_timer_locals_dict,
+    .locals_dict = (mp_obj_t) &machine_timer_locals_dict,
 };
+

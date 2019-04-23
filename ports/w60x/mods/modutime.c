@@ -44,8 +44,8 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         struct tm tblock;
         tls_get_rtc(&tblock);
-        seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE, tblock.tm_mon, 
-                  tblock.tm_mday, tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
+        seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE, tblock.tm_mon,
+                                   tblock.tm_mday, tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
     } else {
         seconds = mp_obj_get_int(args[0]);
     }
@@ -75,16 +75,16 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
     }
 
     return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]),
-            mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
-            mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
+                                    mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
+                                    mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 
 STATIC mp_obj_t time_time(void) {
     struct tm tblock;
     tls_get_rtc(&tblock);
-    mp_uint_t seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE, 
-    tblock.tm_mon, tblock.tm_mday, tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
+    mp_uint_t seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE,
+                                         tblock.tm_mon, tblock.tm_mday, tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
     return mp_obj_new_int(seconds);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
@@ -109,5 +109,6 @@ STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
 
 const mp_obj_module_t utime_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&time_module_globals,
+    .globals = (mp_obj_dict_t *) &time_module_globals,
 };
+
