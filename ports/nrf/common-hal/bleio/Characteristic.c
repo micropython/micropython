@@ -118,7 +118,7 @@ STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp
         .p_data = bufinfo->buf,
     };
 
-    while (m_tx_in_progress > MAX_TX_IN_PROGRESS) {
+    while (m_tx_in_progress >= MAX_TX_IN_PROGRESS) {
 #ifdef MICROPY_VM_HOOK_LOOP
     MICROPY_VM_HOOK_LOOP
 #endif
