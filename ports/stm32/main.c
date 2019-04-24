@@ -721,10 +721,6 @@ soft_reset:
     servo_init();
     #endif
 
-    #if MICROPY_HW_ENABLE_DAC
-    dac_init();
-    #endif
-
     #if MICROPY_PY_NETWORK
     mod_network_init();
     #endif
