@@ -261,6 +261,9 @@ class Pyboard:
         self.serial.close()
 
     def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
+        # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
+        assert data_consumer is None or len(ending) == 1
+
         data = self.serial.read(min_num_bytes)
         if data_consumer:
             data_consumer(data)
@@ -270,9 +273,11 @@ class Pyboard:
                 break
             elif self.serial.inWaiting() > 0:
                 new_data = self.serial.read(1)
-                data = data + new_data
                 if data_consumer:
                     data_consumer(new_data)
+                    data = new_data
+                else:
+                    data = data + new_data
                 timeout_count = 0
             else:
                 timeout_count += 1
