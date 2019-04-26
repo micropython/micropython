@@ -60,15 +60,6 @@
 #define HID_DESC_OFFSET_POLLING_INTERVAL_OUT (31)
 #define HID_SUBDESC_LEN (9)
 
-#define CDC_IFACE_NUM_ALONE (0)
-#define CDC_IFACE_NUM_WITH_MSC (1)
-#define CDC2_IFACE_NUM_WITH_CDC (2)
-#define CDC2_IFACE_NUM_WITH_MSC (3)
-#define CDC_IFACE_NUM_WITH_HID (1)
-#define MSC_IFACE_NUM_WITH_CDC (0)
-#define HID_IFACE_NUM_WITH_CDC (0)
-#define HID_IFACE_NUM_WITH_MSC (1)
-
 #define CDC_IN_EP (0x83)
 #define CDC_OUT_EP (0x03)
 #define CDC_CMD_EP (0x82)
@@ -150,7 +141,7 @@ static const uint8_t msc_class_desc_data[MSC_CLASS_DESC_SIZE] = {
     // Interface Descriptor
     0x09,   // bLength: Interface Descriptor size
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
-    MSC_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
+    0x00,   // bInterfaceNumber: Number of Interface -- to be filled in
     0x00,   // bAlternateSetting: Alternate setting
     0x02,   // bNumEndpoints
     0x08,   // bInterfaceClass: MSC Class
@@ -278,7 +269,7 @@ static const uint8_t hid_class_desc_data[HID_CLASS_DESC_SIZE] = {
     // Interface Descriptor
     0x09,   // bLength: Interface Descriptor size
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
-    HID_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
+    0x00,   // bInterfaceNumber: Number of Interface -- to be filled in
     0x00,   // bAlternateSetting: Alternate setting
     0x02,   // bNumEndpoints
     0x03,   // bInterfaceClass: HID Class
@@ -400,29 +391,32 @@ static void make_head_desc(uint8_t *dest, uint16_t len, uint8_t num_itf) {
     dest[4] = num_itf; // bNumInterfaces
 }
 
-static size_t make_msc_desc(uint8_t *dest) {
+static size_t make_msc_desc(uint8_t *dest, uint8_t *iface_num) {
     memcpy(dest, msc_class_desc_data, sizeof(msc_class_desc_data));
+    dest[2] = (*iface_num)++; // bInterfaceNumber
     return sizeof(msc_class_desc_data);
 }
 
-static size_t make_cdc_desc(uint8_t *dest, int need_iad, uint8_t iface_num) {
+static size_t make_cdc_desc(uint8_t *dest, int need_iad, uint8_t *iface_num) {
+    uint8_t iface_main = (*iface_num)++;
+    uint8_t iface_data = (*iface_num)++;
     if (need_iad) {
         memcpy(dest, cdc_class_desc_data, sizeof(cdc_class_desc_data));
-        dest[2] = iface_num; // bFirstInterface
+        dest[2] = iface_main; // bFirstInterface
         dest += 8;
     } else {
         memcpy(dest, cdc_class_desc_data + 8, sizeof(cdc_class_desc_data) - 8);
     }
-    dest[2] = iface_num;        // bInterfaceNumber, main class
-    dest[18] = iface_num + 1;   // bDataInterface
-    dest[26] = iface_num + 0;   // bMasterInterface
-    dest[27] = iface_num + 1;   // bSlaveInterface
-    dest[37] = iface_num + 1;   // bInterfaceNumber, data class
+    dest[2] = iface_main;    // bInterfaceNumber, main class
+    dest[18] = iface_data;   // bDataInterface
+    dest[26] = iface_main;   // bMasterInterface
+    dest[27] = iface_data;   // bSlaveInterface
+    dest[37] = iface_data;   // bInterfaceNumber, data class
     return need_iad ? 8 + 58 : 58;
 }
 
 #if MICROPY_HW_USB_ENABLE_CDC2
-static size_t make_cdc_desc_ep(uint8_t *dest, int need_iad, uint8_t iface_num, uint8_t cmd_ep, uint8_t out_ep, uint8_t in_ep) {
+static size_t make_cdc_desc_ep(uint8_t *dest, int need_iad, uint8_t *iface_num, uint8_t cmd_ep, uint8_t out_ep, uint8_t in_ep) {
     size_t n = make_cdc_desc(dest, need_iad, iface_num);
     if (need_iad) {
         dest += 8;
@@ -434,8 +428,9 @@ static size_t make_cdc_desc_ep(uint8_t *dest, int need_iad, uint8_t iface_num, u
 }
 #endif
 
-static size_t make_hid_desc(uint8_t *dest, USBD_HID_ModeInfoTypeDef *hid_info) {
+static size_t make_hid_desc(uint8_t *dest, USBD_HID_ModeInfoTypeDef *hid_info, uint8_t *iface_num) {
     memcpy(dest, hid_class_desc_data, sizeof(hid_class_desc_data));
+    dest[2] = (*iface_num)++; // bInterfaceNumber
     dest[HID_DESC_OFFSET_SUBCLASS] = hid_info->subclass;
     dest[HID_DESC_OFFSET_PROTOCOL] = hid_info->protocol;
     dest[HID_DESC_OFFSET_REPORT_DESC_LEN] = hid_info->report_desc_len;
@@ -463,15 +458,15 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
     uint8_t num_itf = 0;
     switch (usbd->usbd_mode) {
         case USBD_MODE_MSC:
-            n += make_msc_desc(d + n);
-            num_itf = 1;
+            usbd->MSC_BOT_ClassData.interface = num_itf;
+            n += make_msc_desc(d + n, &num_itf);
             break;
 
         case USBD_MODE_CDC_MSC:
-            n += make_msc_desc(d + n);
-            n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_MSC;
-            num_itf = 3;
+            usbd->MSC_BOT_ClassData.interface = num_itf;
+            n += make_msc_desc(d + n, &num_itf);
+            usbd->cdc->iface_num = num_itf;
+            n += make_cdc_desc(d + n, 1, &num_itf);
             break;
 
         #if MICROPY_HW_USB_ENABLE_CDC2
@@ -479,41 +474,38 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             // Ensure the first interface is also enabled
             usbd->usbd_mode |= USBD_MODE_CDC;
 
-            n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_ALONE);
-            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_CDC, CDC2_CMD_EP, CDC2_OUT_EP, CDC2_IN_EP);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_ALONE;
-            usbd->cdc2->iface_num = CDC2_IFACE_NUM_WITH_CDC;
-            num_itf = 4;
+            usbd->cdc->iface_num = num_itf;
+            n += make_cdc_desc(d + n, 1, &num_itf);
+            usbd->cdc2->iface_num = num_itf;
+            n += make_cdc_desc_ep(d + n, 1, &num_itf, CDC2_CMD_EP, CDC2_OUT_EP, CDC2_IN_EP);
             break;
         }
 
         case USBD_MODE_CDC2_MSC: {
-            n += make_msc_desc(d + n);
-            n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
-            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_MSC, CDC2_CMD_EP, CDC2_OUT_EP, CDC2_IN_EP);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_MSC;
-            usbd->cdc2->iface_num = CDC2_IFACE_NUM_WITH_MSC;
-            num_itf = 5;
+            usbd->MSC_BOT_ClassData.interface = num_itf;
+            n += make_msc_desc(d + n, &num_itf);
+            usbd->cdc->iface_num = num_itf;
+            n += make_cdc_desc(d + n, 1, &num_itf);
+            usbd->cdc2->iface_num = num_itf;
+            n += make_cdc_desc_ep(d + n, 1, &num_itf, CDC2_CMD_EP, CDC2_OUT_EP, CDC2_IN_EP);
             break;
         }
         #endif
 
         case USBD_MODE_CDC_HID:
             usbd->hid->desc = d + n;
-            n += make_hid_desc(d + n, hid_info);
-            n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_HID);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_HID;
+            usbd->hid->iface_num = num_itf;
+            n += make_hid_desc(d + n, hid_info, &num_itf);
+            usbd->cdc->iface_num = num_itf;
+            n += make_cdc_desc(d + n, 1, &num_itf);
             usbd->hid->in_ep = HID_IN_EP_WITH_CDC;
             usbd->hid->out_ep = HID_OUT_EP_WITH_CDC;
-            usbd->hid->iface_num = HID_IFACE_NUM_WITH_CDC;
             usbd->hid->report_desc = hid_info->report_desc;
-            num_itf = 3;
             break;
 
         case USBD_MODE_CDC:
-            n += make_cdc_desc(d + n, 0, CDC_IFACE_NUM_ALONE);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_ALONE;
-            num_itf = 2;
+            usbd->cdc->iface_num = num_itf;
+            n += make_cdc_desc(d + n, 0, &num_itf);
             break;
 
             /*
@@ -725,7 +717,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                 recipient = USBD_MODE_CDC;
                 cdc = usbd->cdc2;
             #endif
-            } else if ((mode & USBD_MODE_MSC) && iface == MSC_IFACE_NUM_WITH_CDC) {
+            } else if ((mode & USBD_MODE_MSC) && iface == usbd->MSC_BOT_ClassData.interface) {
                 recipient = USBD_MODE_MSC;
             } else if ((mode & USBD_MODE_HID) && iface == usbd->hid->iface_num) {
                 recipient = USBD_MODE_HID;
