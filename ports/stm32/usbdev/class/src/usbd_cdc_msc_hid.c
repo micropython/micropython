@@ -62,6 +62,7 @@
 
 #define CDC_IFACE_NUM_ALONE (0)
 #define CDC_IFACE_NUM_WITH_MSC (1)
+#define CDC2_IFACE_NUM_WITH_CDC (2)
 #define CDC2_IFACE_NUM_WITH_MSC (3)
 #define CDC_IFACE_NUM_WITH_HID (1)
 #define MSC_IFACE_NUM_WITH_CDC (0)
@@ -474,6 +475,18 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             break;
 
         #if MICROPY_HW_USB_ENABLE_CDC2
+        case USBD_MODE_CDC2: {
+            // Ensure the first interface is also enabled
+            usbd->usbd_mode |= USBD_MODE_CDC;
+
+            n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_ALONE);
+            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_CDC, CDC2_CMD_EP, CDC2_OUT_EP, CDC2_IN_EP);
+            usbd->cdc->iface_num = CDC_IFACE_NUM_ALONE;
+            usbd->cdc2->iface_num = CDC2_IFACE_NUM_WITH_CDC;
+            num_itf = 4;
+            break;
+        }
+
         case USBD_MODE_CDC2_MSC: {
             n += make_msc_desc(d + n);
             n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
