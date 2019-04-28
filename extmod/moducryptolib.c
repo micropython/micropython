@@ -139,6 +139,33 @@ STATIC void aes_process_cbc_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *
         AES_cbc_decrypt(ctx, in, out, in_len);
     }
 }
+
+#if MICROPY_PY_UCRYPTOLIB_CTR
+// axTLS doesn't have CTR support out of the box. This implements the counter part using the ECB primitive.
+STATIC void aes_process_ctr_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *out, size_t in_len, struct ctr_params *ctr_params) {
+    size_t n = ctr_params->offset;
+    uint8_t *const counter = ctx->iv;
+
+    while (in_len--) {
+        if (n == 0) {
+            aes_process_ecb_impl(ctx, counter, ctr_params->encrypted_counter, true);
+
+            // increment the 128-bit counter
+            for (int i = 15; i >= 0; --i) {
+                if (++counter[i] != 0) {
+                    break;
+                }
+            }
+        }
+
+        *out++ = *in++ ^ ctr_params->encrypted_counter[n];
+        n = (n + 1) & 0xf;
+    }
+
+    ctr_params->offset = n;
+}
+#endif
+
 #endif
 
 #if MICROPY_SSL_MBEDTLS
