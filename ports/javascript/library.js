@@ -48,7 +48,7 @@ mergeInto(LibraryManager.library, {
             var mp_interrupt_char = Module.ccall('mp_hal_get_interrupt_char', 'number', ['number'], ['null']);
             var fs = require('fs');
 
-            var buf = new Buffer(1);
+            var buf = Buffer.alloc(1);
             try {
                 var n = fs.readSync(process.stdin.fd, buf, 0, 1);
                 if (n > 0) {
