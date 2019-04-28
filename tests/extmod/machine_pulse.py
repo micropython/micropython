@@ -1,11 +1,11 @@
 try:
-    import umachine as machine
-except ImportError:
-    import machine
-try:
+    try:
+        import umachine as machine
+    except ImportError:
+        import machine
     machine.PinBase
     machine.time_pulse_us
-except AttributeError:
+except:
     print("SKIP")
     raise SystemExit
 
