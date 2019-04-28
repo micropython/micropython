@@ -27,10 +27,12 @@
 mergeInto(LibraryManager.library, {
     mp_js_write: function(ptr, len) {
         for (var i = 0; i < len; ++i) {
-            c = String.fromCharCode(getValue(ptr + i, 'i8'));
             if (typeof window === 'undefined') {
-                process.stdout.write(c);
+                var b = Buffer.alloc(1);
+                b.writeInt8(getValue(ptr + i, 'i8'));
+                process.stdout.write(b);
             } else {
+                var c = String.fromCharCode(getValue(ptr + i, 'i8'));
                 var mp_js_stdout = document.getElementById('mp_js_stdout');
                 var print = new Event('print');
                 print.data = c;
