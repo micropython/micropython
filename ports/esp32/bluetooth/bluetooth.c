@@ -340,6 +340,11 @@ int mp_bt_characteristic_value_get(mp_bt_characteristic_t *characteristic, void 
     return 0;
 }
 
+int mp_bt_device_disconnect(uint16_t conn_handle) {
+    esp_err_t err = esp_ble_gatts_close(bluetooth_gatts_if, conn_handle);
+    return mp_bt_esp_errno(err);
+}
+
 // Parse a UUID object from the caller.
 void mp_bt_parse_uuid(mp_obj_t obj, mp_bt_uuid_t *uuid) {
     if (MP_OBJ_IS_SMALL_INT(obj) && MP_OBJ_SMALL_INT_VALUE(obj) == (uint32_t)(uint16_t)MP_OBJ_SMALL_INT_VALUE(obj)) {
@@ -444,7 +449,7 @@ STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts
             break;
         case ESP_GATTS_WRITE_EVT:
             // Characteristic value written by connected device.
-            mp_bt_characteristic_on_write(param->write.handle, param->write.value, param->write.len);
+            mp_bt_characteristic_on_write(param->write.conn_id, param->write.handle, param->write.value, param->write.len);
             break;
         case ESP_GATTS_CONF_EVT:
             // Characteristic notify confirmation received.
