@@ -494,7 +494,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
             esp_log_buffer_hex(GATTC_TAG, &param->scan_rst.ble_adv[param->scan_rst.adv_data_len], param->scan_rst.scan_rsp_len);
           }
         #endif
-        ESP_LOGI("handle = 0x0002, char properties = 0x0a, char value handle = 0x0003, uuid = 00002a00-0000-1000-8000-00805f9b34fb read write");
+        ESP_LOGI(GATTC_TAG, "handle = 0x0002, char properties = 0x0a, char value handle = 0x0003, uuid = 00002a00-0000-1000-8000-00805f9b34fb read write");
         ESP_LOGI(GATTC_TAG, "\n");
         // Return for esp_ble_gap_start_scanning
         xSemaphoreGive(mp_bt_call_complete);
