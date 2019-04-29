@@ -86,4 +86,8 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
 void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
 
+void dma_nohal_init(const dma_descr_t *descr, uint32_t config);
+void dma_nohal_deinit(const dma_descr_t *descr);
+void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_addr, uint16_t len);
+
 #endif // MICROPY_INCLUDED_STM32_DMA_H

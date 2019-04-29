@@ -1,10 +1,10 @@
 try:
-    import umachine as machine
-except ImportError:
-    import machine
-try:
+    try:
+        import umachine as machine
+    except ImportError:
+        import machine
     machine.PinBase
-except AttributeError:
+except:
     print("SKIP")
     raise SystemExit
 

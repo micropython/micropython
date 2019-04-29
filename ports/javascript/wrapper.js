@@ -29,7 +29,7 @@ var Module = {};
 var mainProgram = function()
 {
   mp_js_init = Module.cwrap('mp_js_init', 'null', ['number']);
-  mp_js_do_str = Module.cwrap('mp_js_do_str', 'null', ['string']);
+  mp_js_do_str = Module.cwrap('mp_js_do_str', 'number', ['string']);
   mp_js_init_repl = Module.cwrap('mp_js_init_repl', 'null', ['null']);
   mp_js_process_char = Module.cwrap('mp_js_process_char', 'number', ['number']);
 
@@ -69,7 +69,7 @@ var mainProgram = function()
               }
           });
       } else {
-          mp_js_do_str(contents);
+          process.exitCode = mp_js_do_str(contents);
       }
   }
 }
