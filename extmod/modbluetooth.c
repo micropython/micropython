@@ -216,14 +216,14 @@ STATIC mp_obj_t bluetooth_write_callback(mp_obj_t char_in) {
     } else {
         // Copy regular incoming packet.
         value_len = update_buf.data[tail++ % UPDATE_BUF_SIZE];
+        update_buf.tail = tail + value_len;
         if (value_len > sizeof(value)) {
-            update_buf.tail += value_len + 1; // skip this packet
-            mp_raise_ValueError("incoming BLE packet too big");
+            // Packet was too big, only pass the first N bytes.
+            value_len = sizeof(value);
         }
         for (size_t i = 0; i < value_len; i++) {
             value[i] = update_buf.data[tail++ % UPDATE_BUF_SIZE];
         }
-        update_buf.tail = tail;
     }
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 
