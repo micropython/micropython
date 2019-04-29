@@ -283,10 +283,10 @@ void mp_bt_advertise_stop(void) {
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
     switch (p_ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
-            mp_bt_connected(p_ble_evt->evt.gap_evt.conn_handle);
+            mp_bt_connected(p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->evt.gap_evt.params.connected.peer_addr.addr);
             break;
         case BLE_GAP_EVT_DISCONNECTED:
-            mp_bt_disconnected(p_ble_evt->evt.gap_evt.conn_handle);
+            mp_bt_disconnected(p_ble_evt->evt.gap_evt.conn_handle, NULL);
 #if NRF51
             mp_bt_advertise_start_internal();
 #else

@@ -35,10 +35,19 @@
 #if MICROPY_PY_BLUETOOTH
 
 STATIC const mp_obj_type_t bluetooth_type;
+STATIC const mp_obj_type_t device_type;
 STATIC const mp_obj_type_t service_type;
 STATIC const mp_obj_type_t characteristic_type;
 
 STATIC volatile uint16_t active_connections[MP_BT_MAX_CONNECTED_DEVICES];
+
+// A device that has just connected/disconnected.
+#if MICROPY_ENABLE_SCHEDULER
+STATIC mp_bt_device_t global_device_object = {
+    { &device_type },
+};
+#endif
+STATIC uint8_t bt_event_trigger;
 
 // This is a circular buffer of incoming packets.
 // Packets are length-prefixed chunks of data in the circular buffer. The
@@ -183,23 +192,63 @@ STATIC mp_obj_t mp_bt_format_mac(const uint8_t *mac) {
 }
 
 // Add this connection handle to the list of connected centrals.
-void mp_bt_connected(uint16_t conn_handle) {
+void mp_bt_connected(uint16_t conn_handle, const uint8_t *address) {
     for (size_t i = 0; i < MP_BT_MAX_CONNECTED_DEVICES; i++) {
         if (active_connections[i] == MP_BT_INVALID_CONN_HANDLE) {
             active_connections[i] = conn_handle;
             break;
         }
     }
+
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    if ((bt_event_trigger & MP_BT_IRQ_CONNECT) != 0 && MP_STATE_PORT(bt_event_handler) != mp_const_none) {
+        #if MICROPY_ENABLE_SCHEDULER
+        global_device_object.conn_handle = conn_handle;
+        memcpy(global_device_object.address, address, 6);
+        mp_sched_schedule(MP_STATE_PORT(bt_event_handler), &global_device_object);
+        #else
+        mp_bt_device_t device = {0};
+        device.base.type = &device_type;
+        device.conn_handle = conn_handle;
+        memcpy(device.address, address, 6);
+        mp_call_function_1_protected(MP_STATE_PORT(bt_event_handler), &device);
+        #endif
+    }
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
 // Remove this connection handle from the list of connected centrals.
-void mp_bt_disconnected(uint16_t conn_handle) {
+void mp_bt_disconnected(uint16_t conn_handle, const uint8_t *address) {
     for (size_t i = 0; i < MP_BT_MAX_CONNECTED_DEVICES; i++) {
         if (active_connections[i] == conn_handle) {
             active_connections[i] = MP_BT_INVALID_CONN_HANDLE;
             break;
         }
     }
+
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    if (MP_STATE_PORT(bt_event_handler) != mp_const_none && (bt_event_trigger & MP_BT_IRQ_DISCONNECT) != 0) {
+        #if MICROPY_ENABLE_SCHEDULER
+        if (address != NULL) {
+            memcpy(global_device_object.address, address, 6);
+        } else {
+            memset(global_device_object.address, 0, 6);
+        }
+        global_device_object.conn_handle = MP_BT_INVALID_CONN_HANDLE;
+        mp_sched_schedule(MP_STATE_PORT(bt_event_handler), &global_device_object);
+        #else
+        mp_bt_device_t device = {0};
+        device.base.type = &device_type;
+        device.conn_handle = MP_BT_INVALID_CONN_HANDLE;
+        if (address != NULL) {
+            memcpy(device.address, address, 6);
+        } else {
+            memset(device.address, 0, 6);
+        }
+        mp_call_function_1_protected(MP_STATE_PORT(bt_event_handler), &device);
+        #endif
+    }
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
 STATIC mp_obj_t bluetooth_write_callback(mp_obj_t char_in) {
@@ -263,7 +312,7 @@ void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, siz
     mp_bt_characteristic_callback_t *item = MP_STATE_PORT(bt_characteristic_callbacks);
     while (item != NULL) {
         if (item->characteristic->value_handle == value_handle) {
-            if ((item->triggers & MP_BLE_IRQ_WRITE) == 0) {
+            if ((item->triggers & MP_BT_IRQ_WRITE) == 0) {
                 // This callback should not be called for writes.
                 break;
             }
@@ -461,6 +510,63 @@ STATIC mp_obj_t bluetooth_address(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_address_obj, bluetooth_address);
 
+STATIC mp_obj_t bluetooth_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ|MP_ARG_REQUIRED, {.u_obj = mp_const_none} },
+        { MP_QSTR_trigger, MP_ARG_INT|MP_ARG_REQUIRED, {.u_int = 0} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_obj_t callback = args[ARG_handler].u_obj;
+    if (callback != mp_const_none && !mp_obj_is_fun(callback)) {
+        mp_raise_ValueError("invalid callback");
+    }
+
+    // Update the callback.
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    MP_STATE_PORT(bt_event_handler) = callback;
+    bt_event_trigger = args[ARG_trigger].u_int;
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_irq_obj, 1, bluetooth_irq);
+
+STATIC mp_obj_t device_address(mp_obj_t self_in) {
+    mp_bt_device_t *device = self_in;
+    bool has_address = false;
+    for (int i = 0; i < 6; i++) {
+        if (device->address[i] != 0) {
+            has_address = true;
+        }
+    }
+    if (has_address) {
+        return mp_bt_format_mac(device->address);
+    } else {
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(device_address_obj, device_address);
+
+STATIC mp_obj_t device_connected(mp_obj_t self_in) {
+    mp_bt_device_t *device = self_in;
+    return mp_obj_new_bool(device->conn_handle != MP_BT_INVALID_CONN_HANDLE);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(device_connected_obj, device_connected);
+
+STATIC const mp_rom_map_elem_t device_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_address),   MP_ROM_PTR(&device_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&device_connected_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(device_locals_dict, device_locals_dict_table);
+
+STATIC const mp_obj_type_t device_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Device,
+    .locals_dict = (void*)&device_locals_dict,
+};
+
 STATIC mp_obj_t service_uuid(mp_obj_t self_in) {
     mp_bt_service_t *service = self_in;
     return mp_bt_format_uuid(&service->uuid);
@@ -626,6 +732,7 @@ STATIC const mp_rom_map_elem_t bluetooth_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_advertise_raw), MP_ROM_PTR(&bluetooth_advertise_raw_obj) },
     { MP_ROM_QSTR(MP_QSTR_add_service),   MP_ROM_PTR(&bluetooth_add_service_obj) },
     { MP_ROM_QSTR(MP_QSTR_address),       MP_ROM_PTR(&bluetooth_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),           MP_ROM_PTR(&bluetooth_irq_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_locals_dict, bluetooth_locals_dict_table);
 
@@ -639,12 +746,15 @@ STATIC const mp_obj_type_t bluetooth_type = {
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),       MP_ROM_QSTR(MP_QSTR_bluetooth) },
     { MP_ROM_QSTR(MP_QSTR_Bluetooth),      MP_ROM_PTR(&bluetooth_type) },
+    { MP_ROM_QSTR(MP_QSTR_Device),         MP_ROM_PTR(&device_type) },
     { MP_ROM_QSTR(MP_QSTR_Service),        MP_ROM_PTR(&service_type) },
     { MP_ROM_QSTR(MP_QSTR_Characteristic), MP_ROM_PTR(&characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_READ),      MP_ROM_INT(MP_BLE_FLAG_READ) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_WRITE),     MP_ROM_INT(MP_BLE_FLAG_WRITE) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_NOTIFY),    MP_ROM_INT(MP_BLE_FLAG_NOTIFY) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_WRITE),      MP_ROM_INT(MP_BLE_IRQ_WRITE) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_CONNECT),    MP_ROM_INT(MP_BT_IRQ_CONNECT) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_DISCONNECT), MP_ROM_INT(MP_BT_IRQ_DISCONNECT) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_WRITE),      MP_ROM_INT(MP_BT_IRQ_WRITE) },
 };
 STATIC MP_DEFINE_CONST_DICT(mp_module_bluetooth_globals, mp_module_bluetooth_globals_table);
 

@@ -407,10 +407,10 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
     switch (event) {
         case ESP_GATTS_CONNECT_EVT:
-            mp_bt_connected(param->connect.conn_id);
+            mp_bt_connected(param->connect.conn_id, param->connect.remote_bda);
             break;
         case ESP_GATTS_DISCONNECT_EVT:
-            mp_bt_disconnected(param->disconnect.conn_id);
+            mp_bt_disconnected(param->disconnect.conn_id, param->disconnect.remote_bda);
             // restart advertisement
             mp_bt_advertise_start_internal();
             break;
