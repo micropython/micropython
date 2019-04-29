@@ -259,18 +259,22 @@ STATIC mp_obj_t bluetooth_write_callback(mp_obj_t char_in) {
     uint8_t value[20]; // maximum BLE packet size
     uint16_t tail = update_buf.tail;
     size_t value_len;
+    uint16_t conn_handle = MP_BT_INVALID_CONN_HANDLE;
     if (update_buf.dropped_packets) {
         // Handle dropped packet.
         update_buf.dropped_packets--;
         value_len = (size_t)-1;
     } else {
         // Copy regular incoming packet.
-        value_len = update_buf.data[tail++ % UPDATE_BUF_SIZE];
-        update_buf.tail = tail + value_len;
+        size_t data_len = update_buf.data[tail++ % UPDATE_BUF_SIZE];
+        value_len = data_len - 2;
+        update_buf.tail = tail + data_len;
         if (value_len > sizeof(value)) {
             // Packet was too big, only pass the first N bytes.
             value_len = sizeof(value);
         }
+        conn_handle = update_buf.data[tail++ % UPDATE_BUF_SIZE];
+        conn_handle |= update_buf.data[tail++ % UPDATE_BUF_SIZE] << 8;
         for (size_t i = 0; i < value_len; i++) {
             value[i] = update_buf.data[tail++ % UPDATE_BUF_SIZE];
         }
@@ -292,12 +296,25 @@ STATIC mp_obj_t bluetooth_write_callback(mp_obj_t char_in) {
     if (value_len == (size_t)-1) {
         // Unfortunately, there was a dropped packet.
         // Report this event by passing None.
-        mp_call_function_2_protected(item->callback, MP_OBJ_FROM_PTR(item->characteristic), mp_const_none);
+        mp_obj_t args[3] = {
+            mp_const_none,
+            MP_OBJ_FROM_PTR(item->characteristic),
+            mp_const_none,
+        };
+        mp_call_function_n_kw(item->callback, 3, 0, args);
     } else {
         // Pass the written data directly as a bytearray to the callback.
         // WARNING: this array must not be modified by the callee.
         mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, value_len, value};
-        mp_call_function_2_protected(item->callback, MP_OBJ_FROM_PTR(item->characteristic), MP_OBJ_FROM_PTR(&ar));
+        mp_bt_device_t device = {0};
+        device.base.type = &device_type;
+        device.conn_handle = conn_handle;
+        mp_obj_t args[3] = {
+            &device,
+            MP_OBJ_FROM_PTR(item->characteristic),
+            MP_OBJ_FROM_PTR(&ar),
+        };
+        mp_call_function_n_kw(item->callback, 3, 0, args);
     }
 
     return mp_const_none;
@@ -306,7 +323,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_write_callback_obj, bluetooth_write_c
 
 // Call the registered callback for this characteristic, if one has been
 // registered.
-void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, size_t value_len) {
+void mp_bt_characteristic_on_write(uint16_t conn_handle, uint16_t value_handle, const void *value, size_t value_len) {
     // Iterate through the linked list to find to find the characteristic
     // with the given handle.
     mp_bt_characteristic_callback_t *item = MP_STATE_PORT(bt_characteristic_callbacks);
@@ -321,7 +338,12 @@ void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, siz
             uint16_t head = update_buf.head;
             uint16_t tail = update_buf.tail;
             size_t bytes_left = ((uint16_t)UPDATE_BUF_SIZE - (head - tail));
-            while (bytes_left < value_len + 1) {
+            // A packet has the following components:
+            //  - 1 byte packet size (excluding this byte)
+            //  - 2 byte conn_handle
+            //  - N bytes data
+            size_t packet_len = value_len + 3;
+            while (bytes_left < packet_len) {
                 // Drop oldest packet.
                 uint8_t packet_len = update_buf.data[tail % UPDATE_BUF_SIZE];
                 tail += packet_len + 1;
@@ -329,7 +351,9 @@ void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, siz
                 bytes_left = ((uint16_t)UPDATE_BUF_SIZE - (head - tail));
                 update_buf.dropped_packets++;
             }
-            update_buf.data[head++ % UPDATE_BUF_SIZE] = (uint8_t)value_len;
+            update_buf.data[head++ % UPDATE_BUF_SIZE] = (uint8_t)(packet_len - 1);
+            update_buf.data[head++ % UPDATE_BUF_SIZE] = (uint8_t)(conn_handle & 0xff); // low bits
+            update_buf.data[head++ % UPDATE_BUF_SIZE] = (uint8_t)(conn_handle >> 8);   // high bits
             for (size_t i = 0; i < value_len; i++) {
                 update_buf.data[head++ % UPDATE_BUF_SIZE] = ((uint8_t*)value)[i];
             }
@@ -555,9 +579,22 @@ STATIC mp_obj_t device_connected(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(device_connected_obj, device_connected);
 
+STATIC mp_obj_t device_disconnect(mp_obj_t self_in) {
+    mp_bt_device_t *device = self_in;
+    if (device->conn_handle != MP_BT_INVALID_CONN_HANDLE) {
+        uint16_t conn_handle = device->conn_handle;
+        device->conn_handle = MP_BT_INVALID_CONN_HANDLE;
+        int errno_ = mp_bt_device_disconnect(conn_handle);
+        return bluetooth_handle_errno(errno_);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(device_disconnect_obj, device_disconnect);
+
 STATIC const mp_rom_map_elem_t device_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_address),   MP_ROM_PTR(&device_address_obj) },
-    { MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&device_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address),    MP_ROM_PTR(&device_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected),  MP_ROM_PTR(&device_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&device_disconnect_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(device_locals_dict, device_locals_dict_table);
 

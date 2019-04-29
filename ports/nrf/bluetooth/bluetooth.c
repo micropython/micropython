@@ -37,6 +37,7 @@
 
 #include "nrf_sdm.h"
 #include "ble.h"
+#include "ble_hci.h"
 #if !NRF51
 #include "nrf_nvic.h"
 #endif
@@ -300,7 +301,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             break;
 #endif
         case BLE_GATTS_EVT_WRITE:
-            mp_bt_characteristic_on_write(p_ble_evt->evt.gatts_evt.params.write.handle, &p_ble_evt->evt.gatts_evt.params.write.data, p_ble_evt->evt.gatts_evt.params.write.len);
+            mp_bt_characteristic_on_write(p_ble_evt->evt.gatts_evt.conn_handle, p_ble_evt->evt.gatts_evt.params.write.handle, &p_ble_evt->evt.gatts_evt.params.write.data, p_ble_evt->evt.gatts_evt.params.write.len);
             break;
     }
 }
@@ -394,6 +395,11 @@ int mp_bt_characteristic_value_get(mp_bt_characteristic_t *characteristic, void 
     data.p_value = value;
     uint32_t err_code = sd_ble_gatts_value_get(BLE_CONN_HANDLE_INVALID, characteristic->value_handle, &data);
     *value_len = data.len;
+    return mp_bt_errno(err_code);
+}
+
+int mp_bt_device_disconnect(uint16_t conn_handle) {
+    uint32_t err_code = sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
     return mp_bt_errno(err_code);
 }
 
