@@ -54,8 +54,6 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
             }
         }
         RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
-    } else {
-        RCC->DCKCFGR2 &= ~RCC_DCKCFGR2_CK48MSEL;
     }
 
     // If possible, scale down the internal voltage regulator to save power
@@ -208,6 +206,8 @@ set_clk:
     }
 
     #if defined(STM32F7)
+    // Deselect PLLSAI as 48MHz source if we were using it
+    RCC->DCKCFGR2 &= ~RCC_DCKCFGR2_CK48MSEL;
     // Turn PLLSAI off because we are changing PLLM (which drives PLLSAI)
     RCC->CR &= ~RCC_CR_PLLSAION;
     #endif
