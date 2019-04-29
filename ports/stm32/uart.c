@@ -805,7 +805,18 @@ void uart_irq_handler(mp_uint_t uart_id) {
         return;
     }
 
-    if (UART_RXNE_IS_SET(self->uartx)) {
+    // Set user IRQ flags
+    bool rxne_is_set = UART_RXNE_IS_SET(self->uartx);
+    #if defined(STM32F4)
+    self->mp_irq_flags = self->uartx->SR;
+    #else
+    self->mp_irq_flags = self->uartx->ISR;
+    if (self->uartx->ISR & USART_ISR_IDLE) {
+        self->uartx->ICR = USART_ICR_IDLECF;
+    }
+    #endif
+
+    if (rxne_is_set) {
         if (self->read_buf_len != 0) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
@@ -841,21 +852,6 @@ void uart_irq_handler(mp_uint_t uart_id) {
     #else
     else if (self->uartx->ISR & USART_ISR_ORE) {
         self->uartx->ICR = USART_ICR_ORECF;
-    }
-    #endif
-
-    // Set user IRQ flags
-    self->mp_irq_flags = 0;
-    #if defined(STM32F4)
-    if (self->uartx->SR & USART_SR_IDLE) {
-        (void)self->uartx->SR;
-        (void)self->uartx->DR;
-        self->mp_irq_flags |= UART_FLAG_IDLE;
-    }
-    #else
-    if (self->uartx->ISR & USART_ISR_IDLE) {
-        self->uartx->ICR = USART_ICR_IDLECF;
-        self->mp_irq_flags |= UART_FLAG_IDLE;
     }
     #endif
 
