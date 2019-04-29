@@ -87,6 +87,27 @@ STATIC int mp_bt_esp_errno(esp_err_t err) {
     return 0;
 }
 
+static const char *bt_gap_search_event_type_to_string(uint32_t searchEvt) {
+  switch(searchEvt) {
+    case ESP_GAP_SEARCH_INQ_RES_EVT:
+      return "ESP_GAP_SEARCH_INQ_RES_EVT";
+    case ESP_GAP_SEARCH_INQ_CMPL_EVT:
+      return "ESP_GAP_SEARCH_INQ_CMPL_EVT";
+    case ESP_GAP_SEARCH_DISC_RES_EVT:
+      return "ESP_GAP_SEARCH_DISC_RES_EVT";
+    case ESP_GAP_SEARCH_DISC_BLE_RES_EVT:
+      return "ESP_GAP_SEARCH_DISC_BLE_RES_EVT";
+    case ESP_GAP_SEARCH_DISC_CMPL_EVT:
+      return "ESP_GAP_SEARCH_DISC_CMPL_EVT";
+    case ESP_GAP_SEARCH_DI_DISC_CMPL_EVT:
+      return "ESP_GAP_SEARCH_DI_DISC_CMPL_EVT";
+    case ESP_GAP_SEARCH_SEARCH_CANCEL_CMPL_EVT:
+      return "ESP_GAP_SEARCH_SEARCH_CANCEL_CMPL_EVT";
+    default:
+      return "Unknown event type";
+  	}
+} // bt_gap_search_event_type_to_string
+
 // Initialize at early boot.
 void mp_bt_init(void) {
     printf("mp_bt_init on core %d\r\n", xPortGetCoreID());
@@ -174,6 +195,13 @@ int mp_bt_scan(void) {
     .scan_window            = 0x30,
     .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
 	};
+  if (is_scanning) {
+    err = esp_ble_gap_stop_scanning();
+    is_scanning = false;
+    if (err != ESP_OK) {
+      return mp_bt_esp_errno(err);
+    }
+  }
   is_scanning = true;
   err = esp_ble_gap_set_scan_params(&ble_scan_params);
 	if (err != ESP_OK) {
@@ -194,6 +222,7 @@ int mp_bt_connect(esp_bd_addr_t device) {
   esp_err_t err;
 
   if (is_scanning) {
+    is_scanning = false;
     err = esp_ble_gap_stop_scanning();
     if (err != ESP_OK) {
       return mp_bt_esp_errno(err);
@@ -421,6 +450,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             break;
         default:
             ESP_LOGI(GATTC_TAG, "GATTC_PROFILE_EVENT_HANDLER: unknown event: %d", event);
+            bt_gap_search_event_type_to_string(event);
             break;
 
     }
@@ -453,7 +483,6 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         ESP_LOGI(GATTC_TAG, "searched Adv Data Len %d, Scan Response Len %d", param->scan_rst.adv_data_len, param->scan_rst.scan_rsp_len);
         adv_name = esp_ble_resolve_adv_data(param->scan_rst.ble_adv, ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
         ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
-        ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
         esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
         #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
           if (param->scan_rst.adv_data_len > 0) {
@@ -465,16 +494,8 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
             esp_log_buffer_hex(GATTC_TAG, &param->scan_rst.ble_adv[param->scan_rst.adv_data_len], param->scan_rst.scan_rsp_len);
           }
         #endif
+        ESP_LOGI("handle = 0x0002, char properties = 0x0a, char value handle = 0x0003, uuid = 00002a00-0000-1000-8000-00805f9b34fb read write");
         ESP_LOGI(GATTC_TAG, "\n");
-        static const char remote_device_name[] = "RK-G201S";
-        if (adv_name != NULL) {
-                if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0) {
-                    ESP_LOGI(GATTC_TAG, "searched device %s\n", remote_device_name);
-                    ESP_LOGI(GATTC_TAG, "connect to the remote device.");
-                    esp_ble_gap_stop_scanning();
-                    esp_ble_gattc_open(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, param->scan_rst.bda, param->scan_rst.ble_addr_type, true);
-                }
-            }
         // Return for esp_ble_gap_start_scanning
         xSemaphoreGive(mp_bt_call_complete);
         break;
