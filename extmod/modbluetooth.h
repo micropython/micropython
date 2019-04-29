@@ -30,6 +30,13 @@
 #include "bluetooth/bluetooth.h"
 #include "py/obj.h"
 
+// A remote device.
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t       address[6];
+    uint16_t      conn_handle;
+} mp_bt_device_t;
+
 typedef struct {
     mp_obj_base_t          base;
     mp_bt_uuid_t           uuid;
@@ -77,10 +84,10 @@ int mp_bt_advertise_start(mp_bt_adv_type_t type, uint16_t interval, const uint8_
 void mp_bt_advertise_stop(void);
 
 // Call this when a central disconnects.
-void mp_bt_connected(uint16_t conn_handle);
+void mp_bt_connected(uint16_t conn_handle, const uint8_t *address);
 
 // Call this when a central connects.
-void mp_bt_disconnected(uint16_t conn_handle);
+void mp_bt_disconnected(uint16_t conn_handle, const uint8_t *address);
 
 // Add a service with the given list of characteristics.
 int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_bt_characteristic_t **characteristics);
@@ -128,5 +135,7 @@ mp_obj_t mp_bt_format_uuid_str(const uint8_t *uuid);
 #define MP_BLE_FLAG_WRITE    (1 << 3)
 #define MP_BLE_FLAG_NOTIFY   (1 << 4)
 
-// IRQ flags when to call a callback on a characteristic.
-#define MP_BLE_IRQ_WRITE (1 << 1)
+// IRQ flags to select on which event a callback should be called.
+#define MP_BT_IRQ_CONNECT    (1 << 1)
+#define MP_BT_IRQ_DISCONNECT (1 << 2)
+#define MP_BT_IRQ_WRITE      (1 << 3)
