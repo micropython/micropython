@@ -30,6 +30,7 @@
 #include "py/binary.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
+#include <string.h>
 
 #if MICROPY_PY_BLUETOOTH
 
@@ -267,13 +268,6 @@ void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, siz
                 break;
             }
 
-            // Queue callback.
-            if (!mp_sched_schedule(MP_OBJ_FROM_PTR(&bluetooth_write_callback_obj), item->characteristic)) {
-                // Failed to schedule a callback: the queue is full.
-                // There's not much we can do now.
-                return;
-            }
-
             // Insert packet into queue.
             uint16_t head = update_buf.head;
             uint16_t tail = update_buf.tail;
@@ -287,10 +281,22 @@ void mp_bt_characteristic_on_write(uint16_t value_handle, const void *value, siz
                 update_buf.dropped_packets++;
             }
             update_buf.data[head++ % UPDATE_BUF_SIZE] = (uint8_t)value_len;
-            for (size_t i=0; i<value_len; i++) {
+            for (size_t i = 0; i < value_len; i++) {
                 update_buf.data[head++ % UPDATE_BUF_SIZE] = ((uint8_t*)value)[i];
             }
             update_buf.head = head;
+
+            // Queue callback.
+            #if MICROPY_ENABLE_SCHEDULER
+            if (!mp_sched_schedule(MP_OBJ_FROM_PTR(&bluetooth_write_callback_obj), item->characteristic)) {
+                // Failed to schedule a callback: the queue is full.
+                // There's not much we can do now.
+                return;
+            }
+            #else
+            mp_call_function_1_protected(MP_OBJ_FROM_PTR(&bluetooth_write_callback_obj), item->characteristic);
+            #endif
+
             return;
         }
         item = item->next;
