@@ -41,9 +41,6 @@ typedef struct {
     mp_obj_base_t          base;
     mp_bt_uuid_t           uuid;
     mp_bt_service_handle_t handle;
-    #if ESP_PLATFORM
-    uint8_t                esp_gatts_if; /* Only for ESP-IDF */
-    #endif
 } mp_bt_service_t;
 
 // A characteristic.

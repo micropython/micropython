@@ -51,7 +51,7 @@ STATIC union {
 
 STATIC mp_bt_adv_type_t bluetooth_adv_type;
 STATIC uint16_t bluetooth_adv_interval;
-STATIC uint16_t bluetooth_app_id = 0; // provide unique number for each application profile
+STATIC esp_gatt_if_t bluetooth_gatts_if;
 
 STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 STATIC void mp_bt_gatts_callback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
@@ -122,6 +122,17 @@ int mp_bt_enable(void) {
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
+    // Register an application profile.
+    err = esp_ble_gatts_app_register(0);
+    if (err != 0) {
+        return mp_bt_esp_errno(err);
+    }
+    // Wait for ESP_GATTS_REG_EVT
+    xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+    if (mp_bt_call_status != 0) {
+        return mp_bt_status_errno();
+    }
+    bluetooth_gatts_if = mp_bt_call_result.gatts_if;
     return 0;
 }
 
@@ -202,25 +213,6 @@ void mp_bt_advertise_stop(void) {
 }
 
 int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_bt_characteristic_t **characteristics) {
-    // In ESP-IDF, a service is more than just a service, it's an
-    // "application profile". One application profile contains exactly one
-    // service. For details, see:
-    // https://github.com/espressif/esp-idf/blob/master/examples/bluetooth/gatt_server/tutorial/Gatt_Server_Example_Walkthrough.md
-
-    // Register an application profile.
-    esp_err_t err = esp_ble_gatts_app_register(bluetooth_app_id);
-    if (err != 0) {
-        return mp_bt_esp_errno(err);
-    }
-    bluetooth_app_id++;
-    // Wait for ESP_GATTS_REG_EVT
-    xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
-    if (mp_bt_call_status != 0) {
-        return mp_bt_status_errno();
-    }
-    esp_gatt_if_t gatts_if = mp_bt_call_result.gatts_if;
-    service->esp_gatts_if = gatts_if;
-
     // Calculate the number of required handles.
     // This formula is a guess. I can't seem to find any documentation for
     // the required number of handles.
@@ -237,7 +229,7 @@ int mp_bt_add_service(mp_bt_service_t *service, size_t num_characteristics, mp_b
     bluetooth_service_id.is_primary = true;
     bluetooth_service_id.id.inst_id = 0;
     bluetooth_service_id.id.uuid = service->uuid;
-    err = esp_ble_gatts_create_service(service->esp_gatts_if, &bluetooth_service_id, num_handle);
+    esp_err_t err = esp_ble_gatts_create_service(bluetooth_gatts_if, &bluetooth_service_id, num_handle);
     if (err != 0) {
         return mp_bt_esp_errno(err);
     }
@@ -329,7 +321,7 @@ int mp_bt_characteristic_value_set(mp_bt_characteristic_t *characteristic, const
 }
 
 int mp_bt_characteristic_value_notify(mp_bt_characteristic_t *characteristic, uint16_t conn_handle, const void *value, size_t value_len) {
-    esp_err_t err = esp_ble_gatts_send_indicate(characteristic->service->esp_gatts_if, conn_handle, characteristic->value_handle, value_len, (void*)value, false);
+    esp_err_t err = esp_ble_gatts_send_indicate(bluetooth_gatts_if, conn_handle, characteristic->value_handle, value_len, (void*)value, false);
     return mp_bt_esp_errno(err);
 }
 
