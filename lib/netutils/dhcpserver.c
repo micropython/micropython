@@ -104,6 +104,13 @@ static int dhcp_socket_new_dgram(struct udp_pcb **udp, void *cb_data, udp_recv_f
     return 0; // success
 }
 
+static void dhcp_socket_free(struct udp_pcb **udp) {
+    if (*udp != NULL) {
+        udp_remove(*udp);
+        *udp = NULL;
+    }
+}
+
 static int dhcp_socket_bind(struct udp_pcb **udp, uint32_t ip, uint16_t port) {
     ip_addr_t addr;
     IP4_ADDR(&addr, ip >> 24 & 0xff, ip >> 16 & 0xff, ip >> 8 & 0xff, ip & 0xff);
@@ -288,6 +295,10 @@ void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm) {
         return;
     }
     dhcp_socket_bind(&d->udp, 0, PORT_DHCP_SERVER);
+}
+
+void dhcp_server_deinit(dhcp_server_t *d) {
+    dhcp_socket_free(&d->udp);
 }
 
 #endif // MICROPY_PY_LWIP

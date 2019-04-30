@@ -44,5 +44,6 @@ typedef struct _dhcp_server_t {
 } dhcp_server_t;
 
 void dhcp_server_init(dhcp_server_t *d, ip_addr_t *ip, ip_addr_t *nm);
+void dhcp_server_deinit(dhcp_server_t *d);
 
 #endif // MICROPY_INCLUDED_LIB_NETUTILS_DHCPSERVER_H
