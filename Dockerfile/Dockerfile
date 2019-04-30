@@ -8,8 +8,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y gcc git wget zip make libncurses-dev flex bison gperf python-dev python3 python3-pip python-serial python3-pyparsing mc vim libtool-bin \
-  && pip3 install pyparsing
-  && echo "set number" >> ~/.vimrc
+  && pip3 install pyparsing \
+  && echo "set number" >> ~/.vimrc \
   && echo "map <C-a> <esc>ggVG<CR>" >> ~/.vimrc
 
 WORKDIR /micropython
