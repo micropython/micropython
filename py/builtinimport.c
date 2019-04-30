@@ -44,15 +44,37 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+STATIC mp_obj_t create_builtin(qstr module_name, mp_map_t *map) {
+    mp_map_elem_t *el = mp_map_lookup(map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    if (el == NULL) {
+        return MP_OBJ_NULL;
+    }
+
+#if MICROPY_MODULE_BUILTIN_INIT
+    // Look for __init__ and call it if it exists
+    mp_obj_t dest[2];
+    mp_load_method_maybe(el->value, MP_QSTR___init__, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        mp_call_method_n_kw(0, 0, dest);
+    }
+#endif
+
+    DEBUG_printf("Registering built-in module %s\n", qstr_str(module_name));
+
+    // Register module so __init__ is not called again.
+    // If a module can be referenced by more than one name (eg due to weak links)
+    // then __init__ will still be called for each distinct import, and it's then
+    // up to the particular module to make sure it's __init__ code only runs once.
+    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
+    mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = el->value;
+
+    return el->value;
+}
+
 #if MICROPY_ENABLE_EXTERNAL_IMPORT
 
 #define PATH_SEP_CHAR '/'
-
-bool mp_obj_is_package(mp_obj_t module) {
-    mp_obj_t dest[2];
-    mp_load_method_maybe(module, MP_QSTR___path__, dest);
-    return dest[0] != MP_OBJ_NULL;
-}
+#define PATH_SEP_CHAR_STR "/"
 
 // Stat either frozen or normal module by a given path
 // (whatever is available, if at all).
@@ -245,6 +267,11 @@ STATIC void chop_component(const char *start, const char **end) {
     *end = p;
 }
 
+// // returns MP_OBJ_NULL if not found
+// mp_obj_t mp_module_get(qstr module_name) {
+
+// }
+
 mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
@@ -267,6 +294,8 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             }
         }
     }
+
+    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
 
     size_t mod_len;
     const char *mod_str = mp_obj_str_get_data(module_name, &mod_len);
@@ -305,8 +334,8 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         const char *p = this_name + this_name_l;
         if (!is_pkg) {
             // We have module, but relative imports are anchored at package, so
-            // go there.
-            chop_component(this_name, &p);
+            // take off another level.
+            level++;
         }
 
         while (level--) {
@@ -334,40 +363,34 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         mod_len = new_mod_l;
     }
 
-    // check if module already exists
-    qstr module_name_qstr = mp_obj_str_get_qstr(module_name);
-    mp_obj_t module_obj = mp_module_get(module_name_qstr);
-    if (module_obj != MP_OBJ_NULL) {
-        DEBUG_printf("Module already loaded\n");
-        // If it's not a package, return module right away
-        char *p = strchr(mod_str, '.');
-        if (p == NULL) {
-            return module_obj;
-        }
-        // If fromlist is not empty, return leaf module
-        if (fromtuple != mp_const_none) {
-            return module_obj;
-        }
-        // Otherwise, we need to return top-level package
-        qstr pkg_name = qstr_from_strn(mod_str, p - mod_str);
-        return mp_module_get(pkg_name);
-    }
-    DEBUG_printf("Module not yet loaded\n");
-
     uint last = 0;
     VSTR_FIXED(path, MICROPY_ALLOC_PATH_MAX)
-    module_obj = MP_OBJ_NULL;
-    mp_obj_t top_module_obj = MP_OBJ_NULL;
-    mp_obj_t outer_module_obj = MP_OBJ_NULL;
+
+    mp_obj_t result_obj = MP_OBJ_NULL;
+    #if !MICROPY_MODULE_BUILTIN_PACKAGES
+    mp_obj_t package_obj = MP_OBJ_NULL;
+    #endif
     uint i;
     for (i = 1; i <= mod_len; i++) {
         if (i == mod_len || mod_str[i] == '.') {
             // create a qstr for the module name up to this depth
             qstr mod_name = qstr_from_strn(mod_str, i);
             DEBUG_printf("Processing module: %s\n", qstr_str(mod_name));
-            DEBUG_printf("Previous path: =%.*s=\n", vstr_len(&path), vstr_str(&path));
+            DEBUG_printf("Previous path: =%.*s=\n", (int)vstr_len(&path), vstr_str(&path));
 
-            // find the file corresponding to the module name
+            // see if this module is already loaded.
+            mp_obj_t module_obj;
+            mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
+            if (el != NULL) {
+                DEBUG_printf("already loaded\n");
+                module_obj = el->value;
+            } else {
+                // otherwise see if this is a built-in.
+                module_obj = create_builtin(mod_name, (mp_map_t*)&mp_builtin_module_map);
+            }
+
+            // find the file corresponding to the module name.
+            // the module may already be loaded, but this ensures we get the right path.
             mp_import_stat_t stat;
             if (vstr_len(&path) == 0) {
                 // first module in the dotted-name; search for a directory or file
@@ -378,40 +401,36 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 vstr_add_strn(&path, mod_str + last, i - last);
                 stat = stat_dir_or_file(&path);
             }
-            DEBUG_printf("Current path: %.*s\n", vstr_len(&path), vstr_str(&path));
+            DEBUG_printf("Current path: %.*s\n", (int)vstr_len(&path), vstr_str(&path));
 
-            if (stat == MP_IMPORT_STAT_NO_EXIST) {
-                #if MICROPY_MODULE_WEAK_LINKS
-                // check if there is a weak link to this module
-                if (i == mod_len) {
-                    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
-                    if (el == NULL) {
-                        goto no_exist;
+            if (module_obj == MP_OBJ_NULL) {
+                if (stat == MP_IMPORT_STAT_NO_EXIST) {
+                    #if MICROPY_MODULE_WEAK_LINKS
+                    // check if there is a weak link to this module
+                    module_obj = create_builtin(mod_name, (mp_map_t*)&mp_builtin_module_weak_links_map);
+                    if (module_obj == MP_OBJ_NULL) {
+                    #else
+                    {
+                    #endif
+                        // couldn't find the file, so fail
+                        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                            mp_raise_msg(&mp_type_ImportError, "module not found");
+                        } else {
+                            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+                                "no module named '%q'", mod_name));
+                        }
                     }
-                    // found weak linked module
-                    module_obj = el->value;
-                    mp_module_call_init(mod_name, module_obj);
                 } else {
-                    no_exist:
-                #else
-                {
-                #endif
-                    // couldn't find the file, so fail
-                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                        mp_raise_msg(&mp_type_ImportError, "module not found");
-                    } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                            "no module named '%q'", mod_name));
+                    // found the file, so get the module
+                    el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
+                    if (el != NULL) {
+                        module_obj = el->value;
                     }
                 }
-            } else {
-                // found the file, so get the module
-                module_obj = mp_module_get(mod_name);
             }
 
             if (module_obj == MP_OBJ_NULL) {
-                // module not already loaded, so load it!
-
+                // file exists (and it wasn't a builtin) but it's not already loaded, so load it!
                 module_obj = mp_obj_new_module(mod_name);
 
                 // if args[3] (fromtuple) has magic value False, set up
@@ -434,13 +453,12 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 }
 
                 if (stat == MP_IMPORT_STAT_DIR) {
-                    DEBUG_printf("%.*s is dir\n", vstr_len(&path), vstr_str(&path));
+                    DEBUG_printf("%.*s is dir\n", (int)vstr_len(&path), vstr_str(&path));
                     // https://docs.python.org/3/reference/import.html
                     // "Specifically, any module that contains a __path__ attribute is considered a package."
                     mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path)));
                     size_t orig_path_len = path.len;
-                    vstr_add_char(&path, PATH_SEP_CHAR);
-                    vstr_add_str(&path, "__init__.py");
+                    vstr_add_str(&path, PATH_SEP_CHAR_STR "__init__.py");
                     if (stat_file_py_or_mpy(&path) != MP_IMPORT_STAT_FILE) {
                         //mp_warning("%s is imported as namespace package", vstr_str(&path));
                     } else {
@@ -455,24 +473,27 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     // on the next iteration because the file will not exist.
                 }
             }
-            if (outer_module_obj != MP_OBJ_NULL) {
+
+            // If fromlist is not empty, return leaf module
+            // Otherwise, we need to return top-level package
+            if (result_obj == MP_OBJ_NULL || fromtuple != mp_const_none) {
+                result_obj = module_obj;
+            }
+
+            #if !MICROPY_MODULE_BUILTIN_PACKAGES
+            // If this is a submodule, store it as an attr on the package.
+            // Note: when builtin packages are enabled, objmodule.c:module_attr() will handle this instead.
+            if (package_obj != MP_OBJ_NULL) {
                 qstr s = qstr_from_strn(mod_str + last, i - last);
-                mp_store_attr(outer_module_obj, s, module_obj);
+                mp_store_attr(package_obj, s, module_obj);
             }
-            outer_module_obj = module_obj;
-            if (top_module_obj == MP_OBJ_NULL) {
-                top_module_obj = module_obj;
-            }
+            package_obj = module_obj;
+            #endif
             last = i + 1;
         }
     }
 
-    // If fromlist is not empty, return leaf module
-    if (fromtuple != mp_const_none) {
-        return module_obj;
-    }
-    // Otherwise, we need to return top-level package
-    return top_module_obj;
+    return result_obj;
 }
 
 #else // MICROPY_ENABLE_EXTERNAL_IMPORT
@@ -484,19 +505,24 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     }
 
     // Check if module already exists, and return it if it does
+    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
+    mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, args[0], MP_MAP_LOOKUP);
+    if (el != NULL) {
+        return el->value;
+    }
+
+    // Check if it's a builtin, and create & return if it is.
     qstr module_name_qstr = mp_obj_str_get_qstr(args[0]);
-    mp_obj_t module_obj = mp_module_get(module_name_qstr);
+    mp_obj_t module_obj = create_builtin(module_name_qstr, (mp_map_t*)&mp_builtin_module_map);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;
     }
 
     #if MICROPY_MODULE_WEAK_LINKS
-    // Check if there is a weak link to this module
-    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(module_name_qstr), MP_MAP_LOOKUP);
-    if (el != NULL) {
-        // Found weak-linked module
-        mp_module_call_init(module_name_qstr, el->value);
-        return el->value;
+    // Check if it's a weak builtin, and create & return if it is.
+    module_obj = create_builtin(module_name_qstr, (mp_map_t*)&mp_builtin_module_weak_links_map);
+    if (module_obj != MP_OBJ_NULL) {
+        return module_obj;
     }
     #endif
 

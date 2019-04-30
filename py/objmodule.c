@@ -25,6 +25,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "py/objmodule.h"
@@ -63,14 +64,44 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+        #if MICROPY_MODULE_BUILTIN_PACKAGES
+        } else {
+            // Check if what they're looking for is a submodule.
+
+            // Normally a package would have its submodule set as an attr, but as the globals dict
+            // is readonly for a built-in package, we need a way to find it.
+            // So search for any registered module that matches <this_package_name>.<attr>
+
+            // Get this package name (the name of the module that's being queried).
+            elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
+            size_t package_len;
+            const char *package_str = mp_obj_str_get_data(elem->value, &package_len);
+
+            size_t attr_len;
+            const char* attr_str = (const char*)qstr_data(attr, &attr_len);
+
+            // Search for a match.
+            mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
+            for (size_t i = 0; i < mp_loaded_modules_map->alloc; i++) {
+                if (mp_map_slot_is_filled(mp_loaded_modules_map, i)) {
+                    size_t mod_len;
+                    const char *mod_str = mp_obj_str_get_data(mp_loaded_modules_map->table[i].key, &mod_len);
+                    if (mod_len == package_len + 1 + attr_len && strncmp(package_str, mod_str, package_len) == 0 && mod_str[package_len] == '.' && strncmp(mod_str + package_len + 1, attr_str, attr_len) == 0) {
+                        dest[0] =  mp_loaded_modules_map->table[i].value;
+                    }
+                }
+            }
+        #endif
+        }
+
         #if MICROPY_MODULE_GETATTR
-        } else if (attr != MP_QSTR___getattr__) {
+        if (dest[0] == MP_OBJ_NULL && attr != MP_QSTR___getattr__) {
             elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
             }
-        #endif
         }
+        #endif
     } else {
         // delete/store attribute
         mp_obj_dict_t *dict = self->globals;
@@ -124,6 +155,7 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
+    // this is a shortcut for mp_module_register().
     el->value = MP_OBJ_FROM_PTR(o);
 
     // return the new module
@@ -240,44 +272,4 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
-#endif
-
-// returns MP_OBJ_NULL if not found
-mp_obj_t mp_module_get(qstr module_name) {
-    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
-    // lookup module
-    mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-
-    if (el == NULL) {
-        // module not found, look for builtin module names
-        el = mp_map_lookup((mp_map_t*)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-        if (el == NULL) {
-            return MP_OBJ_NULL;
-        }
-        mp_module_call_init(module_name, el->value);
-    }
-
-    // module found, return it
-    return el->value;
-}
-
-void mp_module_register(qstr qst, mp_obj_t module) {
-    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
-    mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
-}
-
-#if MICROPY_MODULE_BUILTIN_INIT
-void mp_module_call_init(qstr module_name, mp_obj_t module_obj) {
-    // Look for __init__ and call it if it exists
-    mp_obj_t dest[2];
-    mp_load_method_maybe(module_obj, MP_QSTR___init__, dest);
-    if (dest[0] != MP_OBJ_NULL) {
-        mp_call_method_n_kw(0, 0, dest);
-        // Register module so __init__ is not called again.
-        // If a module can be referenced by more than one name (eg due to weak links)
-        // then __init__ will still be called for each distinct import, and it's then
-        // up to the particular module to make sure it's __init__ code only runs once.
-        mp_module_register(module_name, module_obj);
-    }
-}
 #endif

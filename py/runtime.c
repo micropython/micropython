@@ -1340,6 +1340,12 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     return mp_builtin___import__(5, args);
 }
 
+bool mp_obj_is_package(mp_obj_t module) {
+    mp_obj_t dest[2];
+    mp_load_method_maybe(module, MP_QSTR___path__, dest);
+    return dest[0] != MP_OBJ_NULL;
+}
+
 mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 

@@ -684,6 +684,12 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_BUILTIN_INIT (0)
 #endif
 
+// Whether to support built-in packages (e.g. foo.bar)
+// (by default all built-ins must be top-level modules only)
+#ifndef MICROPY_MODULE_BUILTIN_PACKAGES
+#define MICROPY_MODULE_BUILTIN_PACKAGES (0)
+#endif
+
 // Whether to support module-level __getattr__ (see PEP 562)
 #ifndef MICROPY_MODULE_GETATTR
 #define MICROPY_MODULE_GETATTR (0)
