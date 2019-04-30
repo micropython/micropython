@@ -450,7 +450,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             break;
         default:
             ESP_LOGI(GATTC_TAG, "GATTC_PROFILE_EVENT_HANDLER: unknown event: %d", event);
-            bt_gap_search_event_type_to_string(event);
+            ESP_LOGW(GATTC_TAG, "%s", bt_gap_search_event_type_to_string(event));
             break;
 
     }
@@ -482,8 +482,13 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         esp_log_buffer_hex(GATTC_TAG, param->scan_rst.bda, 6);
         ESP_LOGI(GATTC_TAG, "searched Adv Data Len %d, Scan Response Len %d", param->scan_rst.adv_data_len, param->scan_rst.scan_rsp_len);
         adv_name = esp_ble_resolve_adv_data(param->scan_rst.ble_adv, ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
-        ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
-        esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
+        if (adv_name_len > 0)
+        {
+          //ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
+          esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
+          //mp_bt_connect();
+          //esp_ble_gattc_search_service(gattc_if, param->cfg_mtu.conn_id, NULL);
+        }
         #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
           if (param->scan_rst.adv_data_len > 0) {
             ESP_LOGI(GATTC_TAG, "adv data:");
