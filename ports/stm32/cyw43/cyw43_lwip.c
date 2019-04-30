@@ -189,6 +189,14 @@ void cyw43_tcpip_init(cyw43_t *self, int itf) {
 
 void cyw43_tcpip_deinit(cyw43_t *self, int itf) {
     struct netif *n = &cyw43_netif[itf];
+    if (itf == CYW43_ITF_STA) {
+        dhcp_stop(n);
+    } else {
+        dhcp_server_deinit(&cyw43_dhcp_server);
+    }
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_remove_netif(n);
+    #endif
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif == n) {
             netif_remove(netif);
