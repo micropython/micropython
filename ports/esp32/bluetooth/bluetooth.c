@@ -262,7 +262,7 @@ int mp_bt_discover_characteristics(void) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "discovering characteristics of the remote device.");
 
-  err = esp_ble_gattc_search_service(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, NULL); //&remote_filter_service_uuid);
+  err = esp_ble_gattc_search_service(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, NULL);
 
   if (err != ESP_OK) {
 		return mp_bt_esp_errno(err);
@@ -291,6 +291,25 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len) {
   esp_err_t err;
   ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC");
   printf("[bluetooth.c] char_read handle: 0x%04x\r\n", value_handle);
+  err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, value_handle, ESP_GATT_AUTH_REQ_NONE);
+  if (err != ESP_OK) {
+      return mp_bt_esp_errno(err);
+  }
+
+  //Wait for ESP_GATTC_READ_CHAR_EVT
+  xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
+
+  if (*value_len > notif_buf.len) {
+      // Copy up to *value_len bytes.
+      *value_len = notif_buf.len;
+  }
+  memcpy(value, notif_buf.data, notif_buf.len);
+  return 0;
+}
+
+int mp_bt_char_read_handle(uint16_t value_handle, void *value, size_t *value_len) {
+  esp_err_t err;
+  ESP_LOGI(GATTC_TAG, "ATTEMTING TO READ CHARACTERISTIC BY HANDLE");
   err = esp_ble_gattc_read_char(gl_profile_tab[PROFILE_A_APP_ID].gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, value_handle, ESP_GATT_AUTH_REQ_NONE);
   if (err != ESP_OK) {
       return mp_bt_esp_errno(err);
@@ -447,15 +466,12 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         xSemaphoreGive(mp_bt_call_complete);
         break;
       case ESP_GAP_BLE_SCAN_RESULT_EVT:
-        esp_log_buffer_hex(GATTC_TAG, param->scan_rst.bda, 6);
-        ESP_LOGI(GATTC_TAG, "searched Adv Data Len %d, Scan Response Len %d", param->scan_rst.adv_data_len, param->scan_rst.scan_rsp_len);
+        //ESP_LOGI(GATTC_TAG, "searched Adv Data Len %d, Scan Response Len %d", param->scan_rst.adv_data_len, param->scan_rst.scan_rsp_len);
         adv_name = esp_ble_resolve_adv_data(param->scan_rst.ble_adv, ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
         if (adv_name_len > 0)
         {
-          //ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
           esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
-          //mp_bt_connect();
-          //esp_ble_gattc_search_service(gattc_if, param->cfg_mtu.conn_id, NULL);
+          esp_log_buffer_hex(GATTC_TAG, param->scan_rst.bda, 6);
         }
         #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
           if (param->scan_rst.adv_data_len > 0) {
@@ -467,7 +483,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
             esp_log_buffer_hex(GATTC_TAG, &param->scan_rst.ble_adv[param->scan_rst.adv_data_len], param->scan_rst.scan_rsp_len);
           }
         #endif
-        ESP_LOGI(GATTC_TAG, "handle = 0x0002, char properties = 0x0a, char value handle = 0x0003, uuid = 00002a00-0000-1000-8000-00805f9b34fb read write");
+        //ESP_LOGI(GATTC_TAG, "handle = 0x0002, char properties = 0x0a, char value handle = 0x0003, uuid = 00002a00-0000-1000-8000-00805f9b34fb read write");
         ESP_LOGI(GATTC_TAG, "\n");
         // Return for esp_ble_gap_start_scanning
         xSemaphoreGive(mp_bt_call_complete);
@@ -480,8 +496,7 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
         break;
       case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
         mp_bt_call_status = param->adv_start_cmpl.status;
-        // May return an error (queue full) when called from
-        // mp_bt_gatts_callback, but that's OK.
+        // May return an error (queue full) when called from mp_bt_gatts_callback, but that's OK.
         //xSemaphoreGive(mp_bt_call_complete);
         break;
       case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:

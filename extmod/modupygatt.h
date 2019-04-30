@@ -32,6 +32,9 @@ int mp_bt_char_write_handle(uint16_t handle, uint8_t* value, uint8_t length, boo
 // Read char from characteristic and return bytearray. Returns errno on failure.
 int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len);
 
+// Read char from characteristic by handle and return bytearray. Returns errno on failure.
+int mp_bt_char_read_handle(uint16_t value_handle, void *value, size_t *value_len);
+
 // Data types of advertisement packet.
 #define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
 #define MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME   (0x09)

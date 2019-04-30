@@ -79,7 +79,7 @@ class G201S():
             self.write_handle(0x000e, [0x01])
             self.write_handle(0x000e, [0x04])
             self.write_handle(0x000e, [0x06])
-            value = self.adapter.char_read(uuid="6e400003-b5a3-f393-e0a9-e50e24dcca9e", value_handle=0x000b)
+            value = self.adapter.char_read_handle(value_handle=0x000b)
             value = hexlify(value)
             value = value[16:18]
             self.cur_temp = int(value, 16)
@@ -135,7 +135,7 @@ class G201S():
             self.write_handle(0x000c, [0x01, 0x00])
             self.write_handle(0x000e, [0x01])
             self.write_handle(0x000e, [0x06])
-            value = self.adapter.char_read(uuid="6e400003-b5a3-f393-e0a9-e50e24dcca9e", value_handle=0x000b)
+            value = self.adapter.char_read_handle(value_handle=0x000b)
             value = hexlify(value)
             value = value[16:18]
             self.cur_temp = int(value, 16)
