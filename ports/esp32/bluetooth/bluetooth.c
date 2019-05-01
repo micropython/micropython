@@ -369,7 +369,7 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             //ESP_LOGI(GATTC_TAG, "SEARCH RES: conn_id = %x is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
             //ESP_LOGI(GATTC_TAG, "start handle %d end handle %d current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
             //if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_16 && p_data->search_res.srvc_id.uuid.uuid.uuid16 == REMOTE_SERVICE_UUID) {
-                ESP_LOGI(GATTC_TAG, "Found %s service", get_service_name(p_data->search_res.srvc_id.uuid.uuid.uuid16).name);
+                ESP_LOGI(GATTC_TAG, "Found %s service", get_service_name((uint32_t)p_data->search_res.srvc_id.uuid.uuid.uuid16).name);
                 get_server = true;
                 gl_profile_tab[PROFILE_A_APP_ID].service_start_handle = p_data->search_res.start_handle;
                 gl_profile_tab[PROFILE_A_APP_ID].service_end_handle = p_data->search_res.end_handle;

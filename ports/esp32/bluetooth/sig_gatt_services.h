@@ -1,6 +1,6 @@
 typedef struct {
   const char* name;
-  uint16_t code;
+  uint32_t code;
 } GATT;
 
 GATT services[] = {
@@ -46,11 +46,9 @@ GATT services[] = {
   { "Weight Scale",                            0x181D }
 };
 
-GATT get_service_name(uint16_t code) {
-  GATT result;
-  result.code = code;
-  result.name = "Unknown";
-  for (uint16_t i=0; i<sizeof(services); i++) {
+GATT get_service_name(uint32_t code) {
+  GATT result = { "Unknown", code };
+  for (uint16_t i=0; i<40; i++) {
     if (services[i].code == code) {
       result.code = services[i].code;
       result.name = services[i].name;
