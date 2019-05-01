@@ -196,6 +196,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
     #elif defined(__x86_64__)
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+    #elif defined(__arm__) && !defined(__thumb2__)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
     #else
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     #endif
