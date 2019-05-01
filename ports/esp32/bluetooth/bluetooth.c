@@ -20,6 +20,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "extmod/modupygatt.h"
+#include "sig_gatt_services.h"
 
 #define GATTC_TAG "APP"
 #define PROFILE_NUM      1
@@ -319,8 +320,7 @@ int mp_bt_char_read_handle(uint16_t value_handle, void *value, size_t *value_len
   xSemaphoreTake(mp_bt_call_complete, portMAX_DELAY);
 
   if (*value_len > notif_buf.len) {
-      // Copy up to *value_len bytes.
-      *value_len = notif_buf.len;
+      *value_len = notif_buf.len; // Copy up to *value_len bytes.
   }
   memcpy(value, notif_buf.data, notif_buf.len);
   return 0;
@@ -357,18 +357,28 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 ESP_LOGE(GATTC_TAG,"config mtu failed, error status = %x", param->cfg_mtu.status);
             }
             ESP_LOGI(GATTC_TAG, "ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
+            esp_err_t ret_search_gatt = esp_ble_gattc_search_service(gattc_if, param->cfg_mtu.conn_id, NULL);
+            if(ret_search_gatt != ESP_OK)
+            {
+                ESP_LOGI(GATTC_TAG, "ERR: esp_ble_gattc_search_service, error code = %x", ret_search_gatt);
+            }
             //Return for esp_ble_gattc_open
             xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_SEARCH_RES_EVT: {
-            ESP_LOGI(GATTC_TAG, "SEARCH RES: conn_id = %x is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
-            ESP_LOGI(GATTC_TAG, "start handle %d end handle %d current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
+            //ESP_LOGI(GATTC_TAG, "SEARCH RES: conn_id = %x is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
+            //ESP_LOGI(GATTC_TAG, "start handle %d end handle %d current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
             //if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_16 && p_data->search_res.srvc_id.uuid.uuid.uuid16 == REMOTE_SERVICE_UUID) {
-                ESP_LOGI(GATTC_TAG, "service found");
+                ESP_LOGI(GATTC_TAG, "Found %s service", get_service_name(p_data->search_res.srvc_id.uuid.uuid.uuid16).name);
                 get_server = true;
                 gl_profile_tab[PROFILE_A_APP_ID].service_start_handle = p_data->search_res.start_handle;
                 gl_profile_tab[PROFILE_A_APP_ID].service_end_handle = p_data->search_res.end_handle;
-                ESP_LOGI(GATTC_TAG, "UUID16: %x", p_data->search_res.srvc_id.uuid.uuid.uuid16);
+                ESP_LOGI(GATTC_TAG, "attr handle = 0x%04x, end grp handle = 0x%04x uuid16: %X uuid128: %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.uuid.uuid.uuid16, p_data->search_res.srvc_id.uuid.uuid.uuid128[15],
+                     p_data->search_res.srvc_id.uuid.uuid.uuid128[14], p_data->search_res.srvc_id.uuid.uuid.uuid128[13], p_data->search_res.srvc_id.uuid.uuid.uuid128[12],
+                     p_data->search_res.srvc_id.uuid.uuid.uuid128[11], p_data->search_res.srvc_id.uuid.uuid.uuid128[10], p_data->search_res.srvc_id.uuid.uuid.uuid128[9],
+                     p_data->search_res.srvc_id.uuid.uuid.uuid128[8], p_data->search_res.srvc_id.uuid.uuid.uuid128[7], p_data->search_res.srvc_id.uuid.uuid.uuid128[6],
+                     p_data->search_res.srvc_id.uuid.uuid.uuid128[5], p_data->search_res.srvc_id.uuid.uuid.uuid128[4], p_data->search_res.srvc_id.uuid.uuid.uuid128[3],
+                     p_data->search_res.srvc_id.uuid.uuid.uuid128[2], p_data->search_res.srvc_id.uuid.uuid.uuid128[1], p_data->search_res.srvc_id.uuid.uuid.uuid128[0]);
             //}
             break;
         }
@@ -397,9 +407,10 @@ STATIC void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                 if (status != ESP_GATT_OK) {
                     ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
                 }
+                //printf("esp_ble_gattc_get_attr_count: %d", count);
             }
             //Return for esp_ble_gattc_search_service
-            xSemaphoreGive(mp_bt_call_complete);
+            //xSemaphoreGive(mp_bt_call_complete);
             break;
         case ESP_GATTC_WRITE_DESCR_EVT:
             if (p_data->write.status != ESP_GATT_OK) {
@@ -484,7 +495,6 @@ STATIC void mp_bt_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_para
           }
         #endif
         //ESP_LOGI(GATTC_TAG, "handle = 0x0002, char properties = 0x0a, char value handle = 0x0003, uuid = 00002a00-0000-1000-8000-00805f9b34fb read write");
-        ESP_LOGI(GATTC_TAG, "\n");
         // Return for esp_ble_gap_start_scanning
         xSemaphoreGive(mp_bt_call_complete);
         break;
