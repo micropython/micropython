@@ -40,9 +40,6 @@
 
 #define QSTR_LAST_STATIC MP_QSTR_zip
 
-// The current version of .mpy files
-#define MPY_VERSION (4)
-
 // Macros to encode/decode flags to/from the feature byte
 #define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
 #define MPY_FEATURE_DECODE_FLAGS(feat) ((feat) & 3)
