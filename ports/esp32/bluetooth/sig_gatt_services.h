@@ -48,6 +48,8 @@ GATT services[] = {
 
 GATT get_service_name(uint16_t code) {
   GATT result;
+  result.code = code;
+  result.name = "Unknown";
   for (uint16_t i=0; i<sizeof(services); i++) {
     if (services[i].code == code) {
       result.code = services[i].code;
