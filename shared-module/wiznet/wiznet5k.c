@@ -106,8 +106,8 @@ int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     }
 
     if (socket->u_param.fileno == -1) {
-        // get first unused socket number
-        for (mp_uint_t sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
+        // get first unused socket number ... 0 is reserved for DHCP
+        for (mp_uint_t sn = 1; sn < _WIZCHIP_SOCK_NUM_; sn++) {
             if ((wiznet5k_obj.socket_used & (1 << sn)) == 0) {
                 wiznet5k_obj.socket_used |= (1 << sn);
                 socket->u_param.fileno = sn;
