@@ -39,7 +39,7 @@ typedef struct _wiznet5k_obj_t {
     digitalio_digitalinout_obj_t cs;
     digitalio_digitalinout_obj_t rst;
     uint8_t socket_used;
-    bool dhcp_active;
+    int8_t dhcp_socket;
 } wiznet5k_obj_t;
 
 int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip);
