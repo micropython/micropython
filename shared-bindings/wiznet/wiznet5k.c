@@ -41,6 +41,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "shared-module/network/__init__.h"
 #include "shared-module/wiznet/wiznet5k.h"
@@ -56,14 +57,27 @@
 //|
 //|   :param spi: spi bus to use
 //|   :param cs: pin to use for Chip Select
-//|   :param rst: pin to sue for Reset
+//|   :param rst: pin to use for Reset
 //|
 
-STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    // check arguments
-    mp_arg_check_num(n_args, kw_args, 3, 3, false);
+STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_spi, ARG_cs, ARG_rst, ARG_dhcp };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_spi, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_cs, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rst, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_dhcp, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = true } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    // XXX check type of ARG_spi?
+    // XXX should ARG_rst be optional?
+    assert_pin(args[ARG_cs].u_obj, false);
+    assert_pin(args[ARG_rst].u_obj, false);
 
-    return wiznet5k_create(args[0], args[1], args[2]);
+    mp_obj_t ret = wiznet5k_create(args[ARG_spi].u_obj, args[ARG_cs].u_obj, args[ARG_rst].u_obj);
+    if (args[ARG_dhcp].u_bool) wiznet5k_start_dhcp();
+    return ret;
 }
 
 //| .. attribute:: connected
@@ -99,9 +113,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_dhcp_get_value_obj, wiznet5k_dhcp_get_
 STATIC mp_obj_t wiznet5k_dhcp_set_value(mp_obj_t self_in, mp_obj_t value) {
     (void)self_in;
     if (mp_obj_is_true(value)) {
-        wiznet5k_start_dhcp();
+        int ret = wiznet5k_start_dhcp();
+        if (ret) mp_raise_OSError(ret);
     } else {
-        wiznet5k_stop_dhcp();
+        int ret = wiznet5k_stop_dhcp();
+        if (ret) mp_raise_OSError(ret);
     }
     return mp_const_none;
 }

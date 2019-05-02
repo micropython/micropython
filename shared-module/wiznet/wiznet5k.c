@@ -328,27 +328,29 @@ void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket) {
     }
 }
 
-void wiznet5k_start_dhcp(void) {
+int wiznet5k_start_dhcp(void) {
     // XXX this should throw an error if DHCP fails
     static DHCP_INIT_BUFFER_TYPE dhcp_buf[DHCP_INIT_BUFFER_SIZE];
 
     if (wiznet5k_obj.dhcp_socket < 0) {
         // Set up the socket to listen on UDP 68 before calling DHCP_init
         wiznet5k_obj.dhcp_socket = get_available_socket(&wiznet5k_obj);
-        if (wiznet5k_obj.dhcp_socket < 0) return;
+        if (wiznet5k_obj.dhcp_socket < 0) return MP_EMFILE;
 
         WIZCHIP_EXPORT(socket)(wiznet5k_obj.dhcp_socket, MOD_NETWORK_SOCK_DGRAM, DHCP_CLIENT_PORT, 0);
         DHCP_init(wiznet5k_obj.dhcp_socket, dhcp_buf);
     }
+    return 0;
 }
 
-void wiznet5k_stop_dhcp(void) {
+int wiznet5k_stop_dhcp(void) {
     if (wiznet5k_obj.dhcp_socket >= 0) {
         DHCP_stop();
         WIZCHIP_EXPORT(close)(wiznet5k_obj.dhcp_socket);
         wiznet5k_obj.socket_used &= ~(1 << wiznet5k_obj.dhcp_socket);
         wiznet5k_obj.dhcp_socket = -1;
     }
+    return 0;
 }
 
 bool wiznet5k_check_dhcp(void) {
@@ -402,9 +404,6 @@ mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
 
     // seems we need a small delay after init
     mp_hal_delay_ms(250);
-
-    // dhcp is started by default
-    wiznet5k_start_dhcp();
 
     // register with network module
     network_module_register_nic(&wiznet5k_obj);
