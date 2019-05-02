@@ -1993,21 +1993,9 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_LOAD); // lhs load for aug assign
             compile_node(comp, pns1->nodes[1]); // rhs
             assert(MP_PARSE_NODE_IS_TOKEN(pns1->nodes[0]));
-            mp_binary_op_t op;
-            switch (MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0])) {
-                case MP_TOKEN_DEL_PIPE_EQUAL: op = MP_BINARY_OP_INPLACE_OR; break;
-                case MP_TOKEN_DEL_CARET_EQUAL: op = MP_BINARY_OP_INPLACE_XOR; break;
-                case MP_TOKEN_DEL_AMPERSAND_EQUAL: op = MP_BINARY_OP_INPLACE_AND; break;
-                case MP_TOKEN_DEL_DBL_LESS_EQUAL: op = MP_BINARY_OP_INPLACE_LSHIFT; break;
-                case MP_TOKEN_DEL_DBL_MORE_EQUAL: op = MP_BINARY_OP_INPLACE_RSHIFT; break;
-                case MP_TOKEN_DEL_PLUS_EQUAL: op = MP_BINARY_OP_INPLACE_ADD; break;
-                case MP_TOKEN_DEL_MINUS_EQUAL: op = MP_BINARY_OP_INPLACE_SUBTRACT; break;
-                case MP_TOKEN_DEL_STAR_EQUAL: op = MP_BINARY_OP_INPLACE_MULTIPLY; break;
-                case MP_TOKEN_DEL_DBL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_FLOOR_DIVIDE; break;
-                case MP_TOKEN_DEL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_TRUE_DIVIDE; break;
-                case MP_TOKEN_DEL_PERCENT_EQUAL: op = MP_BINARY_OP_INPLACE_MODULO; break;
-                case MP_TOKEN_DEL_DBL_STAR_EQUAL: default: op = MP_BINARY_OP_INPLACE_POWER; break;
-            }
+            assert(MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]) >= MP_TOKEN_DEL_PLUS_EQUAL);
+            assert(MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]) <=  MP_TOKEN_DEL_AT_EQUAL);
+            mp_binary_op_t op = token_to_binary_inplace_op[MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]) - MP_TOKEN_DEL_PLUS_EQUAL];
             EMIT_ARG(binary_op, op);
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_STORE); // lhs store for aug assign
         } else if (kind == PN_expr_stmt_assign_list) {
@@ -2203,21 +2191,15 @@ STATIC void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[0]);
     for (int i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
-        mp_binary_op_t op;
+
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]);
-        switch (tok) {
-            case MP_TOKEN_OP_PLUS:      op = MP_BINARY_OP_ADD; break;
-            case MP_TOKEN_OP_MINUS:     op = MP_BINARY_OP_SUBTRACT; break;
-            case MP_TOKEN_OP_STAR:      op = MP_BINARY_OP_MULTIPLY; break;
-            case MP_TOKEN_OP_DBL_SLASH: op = MP_BINARY_OP_FLOOR_DIVIDE; break;
-            case MP_TOKEN_OP_SLASH:     op = MP_BINARY_OP_TRUE_DIVIDE; break;
-            case MP_TOKEN_OP_PERCENT:   op = MP_BINARY_OP_MODULO; break;
-            case MP_TOKEN_OP_DBL_LESS:  op = MP_BINARY_OP_LSHIFT; break;
-            default:
-                assert(tok == MP_TOKEN_OP_DBL_MORE);
-                op = MP_BINARY_OP_RSHIFT;
-                break;
+        assert(tok >= MP_TOKEN_OP_PLUS);
+        assert(tok <= MP_TOKEN_OP_DBL_MORE);
+        mp_binary_op_t op = token_to_binary_op[tok - MP_TOKEN_OP_PLUS];
+        if (tok == MP_TOKEN_OP_SLASH) {
+            op = MP_BINARY_OP_TRUE_DIVIDE;
         }
+        assert(op != (mp_binary_op_t)255);
         EMIT_ARG(binary_op, op);
     }
 }

@@ -81,7 +81,7 @@ typedef enum {
     MP_BINARY_OP_IS,
     MP_BINARY_OP_EXCEPTION_MATCH,
 
-    // 12 inplace arithmetic operations
+    // 13 inplace arithmetic operations
     MP_BINARY_OP_INPLACE_OR,
     MP_BINARY_OP_INPLACE_XOR,
     MP_BINARY_OP_INPLACE_AND,
@@ -93,9 +93,10 @@ typedef enum {
     MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
     MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
     MP_BINARY_OP_INPLACE_MODULO,
+    MP_BINARY_OP_INPLACE_MATMUL,
     MP_BINARY_OP_INPLACE_POWER,
 
-    // 12 normal arithmetic operations
+    // 13 normal arithmetic operations
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
     MP_BINARY_OP_AND,
@@ -107,6 +108,7 @@ typedef enum {
     MP_BINARY_OP_FLOOR_DIVIDE,
     MP_BINARY_OP_TRUE_DIVIDE,
     MP_BINARY_OP_MODULO,
+    MP_BINARY_OP_MATMUL,
     MP_BINARY_OP_POWER,
 
     // Operations below this line don't appear in bytecode, they
@@ -126,6 +128,7 @@ typedef enum {
     MP_BINARY_OP_REVERSE_FLOOR_DIVIDE,
     MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
     MP_BINARY_OP_REVERSE_MODULO,
+    MP_BINARY_OP_REVERSE_MATMUL,
     MP_BINARY_OP_REVERSE_POWER,
 #endif
 

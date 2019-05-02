@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "py/lexer.h"
 #include "py/obj.h"
 
 struct _mp_lexer_t;
@@ -103,5 +104,10 @@ typedef struct _mp_parse_t {
 // the parser will free the lexer before it returns
 mp_parse_tree_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind);
 void mp_parse_tree_clear(mp_parse_tree_t *tree);
+
+// Take advantage of common ordering between the token list and the binary op list.
+// Importantly, each entry is only a single byte.
+extern const uint8_t token_to_binary_op[MP_TOKEN_OP_DBL_MORE - MP_TOKEN_OP_PLUS + 1];
+extern const uint8_t token_to_binary_inplace_op[MP_TOKEN_DEL_AT_EQUAL - MP_TOKEN_DEL_PLUS_EQUAL + 1];
 
 #endif // MICROPY_INCLUDED_PY_PARSE_H

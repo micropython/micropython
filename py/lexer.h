@@ -96,6 +96,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_WITH,
     MP_TOKEN_KW_YIELD,
 
+    // This order must match the token_to_binary_op table.
     MP_TOKEN_OP_PLUS,
     MP_TOKEN_OP_MINUS,
     MP_TOKEN_OP_STAR,
@@ -103,6 +104,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_SLASH,
     MP_TOKEN_OP_DBL_SLASH,
     MP_TOKEN_OP_PERCENT,
+    MP_TOKEN_OP_AT,
     MP_TOKEN_OP_LESS,
     MP_TOKEN_OP_DBL_LESS,
     MP_TOKEN_OP_MORE,
@@ -126,8 +128,9 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_COLON,
     MP_TOKEN_DEL_PERIOD,
     MP_TOKEN_DEL_SEMICOLON,
-    MP_TOKEN_DEL_AT,
     MP_TOKEN_DEL_EQUAL,
+
+    // This order must match the token_to_binary_inplace_op table.
     MP_TOKEN_DEL_PLUS_EQUAL,
     MP_TOKEN_DEL_MINUS_EQUAL,
     MP_TOKEN_DEL_STAR_EQUAL,
@@ -140,6 +143,8 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_DBL_MORE_EQUAL,
     MP_TOKEN_DEL_DBL_LESS_EQUAL,
     MP_TOKEN_DEL_DBL_STAR_EQUAL,
+    MP_TOKEN_DEL_AT_EQUAL,
+
     MP_TOKEN_DEL_MINUS_MORE,
 } mp_token_kind_t;
 
