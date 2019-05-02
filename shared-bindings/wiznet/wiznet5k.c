@@ -51,13 +51,14 @@
 //| :class:`WIZNET5K` -- wrapper for Wiznet 5500 Ethernet interface
 //| ===============================================================
 //|
-//| .. class:: WIZNET5K(spi, cs, rst)
+//| .. class:: WIZNET5K(spi, cs, rst, dhcp=True)
 //|
 //|   Create a new WIZNET5500 interface using the specified pins
 //|
-//|   :param spi: spi bus to use
-//|   :param cs: pin to use for Chip Select
-//|   :param rst: pin to use for Reset
+//|   :param ~busio.SPI spi: spi bus to use
+//|   :param ~microcontroller.Pin cs: pin to use for Chip Select
+//|   :param ~microcontroller.Pin rst: pin to use for Reset
+//|   :param bool dhcp: boolean flag, whether to start DHCP automatically (default True)
 //|
 
 STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
