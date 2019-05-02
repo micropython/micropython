@@ -69,7 +69,7 @@ Constructors
 Methods
 -------
 
-.. method:: UART.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=0, timeout_char=0, read_buf_len=64)
+.. method:: UART.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=0, flow=0, timeout_char=0, read_buf_len=64)
 
    Initialise the UART bus with the given parameters:
 
