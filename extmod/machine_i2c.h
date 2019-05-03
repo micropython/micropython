@@ -28,6 +28,10 @@
 
 #include "py/obj.h"
 
+#define MP_I2C_CONT_LEN_MASK (0x0f)
+#define MP_I2C_CONT_STOP (0x10)
+#define MP_I2C_CONT(next_len, stop) (((stop) ? MP_I2C_CONT_STOP : 0) | ((next_len) > MP_I2C_CONT_LEN_MASK ? MP_I2C_CONT_LEN_MASK : (next_len)))
+
 // I2C protocol
 // the first 4 methods can be NULL, meaning operation is not supported
 typedef struct _mp_machine_i2c_p_t {
@@ -35,8 +39,9 @@ typedef struct _mp_machine_i2c_p_t {
     int (*stop)(mp_obj_base_t *obj);
     int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);
     int (*write)(mp_obj_base_t *obj, const uint8_t *src, size_t len);
-    int (*readfrom)(mp_obj_base_t *obj, uint16_t addr, uint8_t *dest, size_t len, bool stop);
-    int (*writeto)(mp_obj_base_t *obj, uint16_t addr, const uint8_t *src, size_t len, bool stop);
+    int (*start_addr)(mp_obj_base_t *obj, int rd_wrn, uint16_t addr, unsigned int cont);
+    int (*read_part)(mp_obj_base_t *obj, uint8_t *dest, size_t len, unsigned int cont);
+    int (*write_part)(mp_obj_base_t *obj, const uint8_t *src, size_t len, unsigned int cont);
 } mp_machine_i2c_p_t;
 
 typedef struct _mp_machine_soft_i2c_obj_t {
