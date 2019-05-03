@@ -453,16 +453,62 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_readfrom_into_obj, 3, 4, machine
 
 STATIC mp_obj_t machine_i2c_writeto(size_t n_args, const mp_obj_t *args) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+
     mp_int_t addr = mp_obj_get_int(args[1]);
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+
+    // get the data buffer(s) to write: either a single buffer, or a tuple/list of them
+    size_t len;
+    const mp_obj_t *items;
+    if (mp_obj_is_type(args[2], &mp_type_tuple) || mp_obj_is_type(args[2], &mp_type_list)) {
+        mp_obj_get_array(args[2], &len, (mp_obj_t**)&items);
+    } else {
+        len = 1;
+        items = &args[2];
+    }
+
+    // get the stop argument
     bool stop = (n_args == 3) ? true : mp_obj_is_true(args[3]);
-    int ret = i2c_writeto_helper(self, addr, bufinfo.buf, bufinfo.len, stop);
-    if (ret < 0) {
+
+    // get the first two non-zero buffers
+    size_t items_idx = 0;
+    mp_buffer_info_t b0, b1;
+    b0.len = 0;
+    b1.len = 0;
+    while (items_idx < len && b0.len == 0) {
+        mp_get_buffer_raise(items[items_idx++], &b0, MP_BUFFER_READ);
+    }
+    while (items_idx < len && b1.len == 0) {
+        mp_get_buffer_raise(items[items_idx++], &b1, MP_BUFFER_READ);
+    }
+
+    // start the transaction
+    int ret;
+    if ((ret = i2c_p->start_addr(self, 0, addr, MP_I2C_CONT(b0.len + b1.len, stop)))) {
         mp_raise_OSError(-ret);
     }
+
+    // write the data buffer(s)
+    int n_ack = 0;
+    for (;;) {
+        ret = i2c_p->write_part(self, b0.buf, b0.len, MP_I2C_CONT(b1.len, stop));
+        if (ret < 0) {
+            mp_raise_OSError(-ret);
+        }
+        n_ack += ret;
+        if (ret < b0.len || b1.len == 0) {
+            // either received a nack, or no more data to write
+            break;
+        }
+        b0 = b1;
+        b1.len = 0;
+        while (items_idx < len && b1.len == 0) {
+            mp_get_buffer_raise(items[items_idx++], &b1, MP_BUFFER_READ);
+        }
+    }
+
     // return number of acks received
-    return MP_OBJ_NEW_SMALL_INT(ret);
+    return MP_OBJ_NEW_SMALL_INT(n_ack);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_writeto_obj, 3, 4, machine_i2c_writeto);
 
