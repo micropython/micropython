@@ -109,14 +109,19 @@ void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t
     i2c_init(self->i2c, self->scl, self->sda, freq);
 }
 
-int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+int machine_hard_i2c_start_addr(mp_obj_base_t *self_in, int rd_wrn, uint16_t addr, unsigned int cont) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return i2c_readfrom(self->i2c, addr, dest, len, stop);
+    return i2c_start_addr(self->i2c, rd_wrn, addr, cont & MP_I2C_CONT_LEN_MASK, (cont & MP_I2C_CONT_STOP) != 0);
 }
 
-int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+int machine_hard_i2c_read_part(mp_obj_base_t *self_in, uint8_t *dest, size_t len, unsigned int cont) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return i2c_writeto(self->i2c, addr, src, len, stop);
+    return i2c_read(self->i2c, dest, len, cont & MP_I2C_CONT_LEN_MASK);
+}
+
+int machine_hard_i2c_write_part(mp_obj_base_t *self_in, const uint8_t *src, size_t len, unsigned int cont) {
+    machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return i2c_write(self->i2c, src, len, cont & MP_I2C_CONT_LEN_MASK);
 }
 
 #else
@@ -240,8 +245,9 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 }
 
 STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
-    .readfrom = machine_hard_i2c_readfrom,
-    .writeto = machine_hard_i2c_writeto,
+    .start_addr = machine_hard_i2c_start_addr,
+    .read_part = machine_hard_i2c_read_part,
+    .write_part = machine_hard_i2c_write_part,
 };
 
 STATIC const mp_obj_type_t machine_hard_i2c_type = {
