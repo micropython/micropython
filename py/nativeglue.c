@@ -60,7 +60,7 @@ mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
     DEBUG_printf("mp_native_from_obj(%p, " UINT_FMT ")\n", obj, type);
     switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
-        case MP_NATIVE_TYPE_BOOL:
+        case MP_NATIVE_TYPE_BOOL: return mp_obj_is_true(obj);
         case MP_NATIVE_TYPE_INT:
         case MP_NATIVE_TYPE_UINT: return mp_obj_get_int_truncated(obj);
         default: { // cast obj to a pointer
