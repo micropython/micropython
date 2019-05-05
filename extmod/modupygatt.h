@@ -20,6 +20,9 @@ int mp_bt_scan(void);
 // Try to connect to address. Returns errno on failure.
 int mp_bt_connect(esp_bd_addr_t device);
 
+// Returns true when the Bluetooth is connected.
+bool mp_bt_is_connected(void);
+
 // Try to disconnect from remote device. Returns errno on failure.
 int mp_bt_disconnect(esp_bd_addr_t device);
 
@@ -35,15 +38,4 @@ int mp_bt_char_read(uint16_t value_handle, void *value, size_t *value_len);
 // Read char from characteristic by handle and return bytearray. Returns errno on failure.
 int mp_bt_char_read_handle(uint16_t value_handle, void *value, size_t *value_len);
 
-// Data types of advertisement packet.
-#define MP_BLE_GAP_AD_TYPE_FLAG                  (0x01)
-#define MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME   (0x09)
-
-// Flags element of advertisement packet.
-#define MP_BLE_GAP_ADV_FLAG_LE_GENERAL_DISC_MODE         (0x02)  // discoverable for everyone
-#define MP_BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED         (0x04)  // BLE only - no classic BT supported
-#define MP_BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE   (MP_BLE_GAP_ADV_FLAG_LE_GENERAL_DISC_MODE | MP_BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED)
-
-#define MP_BLE_FLAG_READ     (1 << 1)
-#define MP_BLE_FLAG_WRITE    (1 << 3)
-#define MP_BLE_FLAG_NOTIFY   (1 << 4)
+#define GATTC_TAG "APP"

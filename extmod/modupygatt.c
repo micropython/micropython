@@ -8,6 +8,7 @@
 #include "py/runtime.h"
 #include "extmod/modupygatt.h"
 #include "esp_bt_defs.h"
+#include "esp_log.h"
 
 #if MICROPY_PY_BLUETOOTH
 
@@ -84,7 +85,6 @@ STATIC mp_obj_t gatt_tool_backend_stop(size_t n_args, const mp_obj_t *pos_args, 
       mp_raise_OSError(errno_);
   }
 
-  printf("Bluetooth stop\r\n");
   return mp_obj_new_bool(mp_bt_is_enabled());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_stop_obj, 0, gatt_tool_backend_stop);
@@ -105,7 +105,6 @@ STATIC mp_obj_t gatt_tool_backend_start(size_t n_args, const mp_obj_t *pos_args,
       mp_raise_OSError(errno_);
   }
 
-  printf("Bluetooth start %d\r\n", n_args);
   return mp_obj_new_bool(mp_bt_is_enabled());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_start_obj, 0, gatt_tool_backend_start);
@@ -123,7 +122,6 @@ STATIC mp_obj_t gatt_tool_backend_scan(size_t n_args, const mp_obj_t *pos_args, 
 
   mp_int_t timeout = args[ARG_timeout].u_int;
 
-  printf("scan: %d timeout=" UINT_FMT " - %d, run_as_root=%s\r\n", n_args, timeout, timeout, mp_obj_is_true(args[ARG_run_as_root].u_obj) ? "True" : "False");
   int errno_ = mp_bt_scan();
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
@@ -154,6 +152,7 @@ STATIC mp_obj_t gatt_tool_backend_connect(size_t n_args, const mp_obj_t *pos_arg
   }
 
   int errno_ = mp_bt_connect(addr);
+  printf("connect errno %d", errno_);
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
   }
@@ -202,7 +201,14 @@ STATIC mp_obj_t gatt_tool_backend_discover_characteristics(size_t n_args, const 
   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
   mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-  int errno_ = mp_bt_discover_characteristics();
+  int errno_;
+
+  errno_ = mp_bt_is_connected();
+  if (errno_ != true) {
+    mp_raise_ValueError("You must connect to your device firstly");
+  }
+
+  errno_ = mp_bt_discover_characteristics();
   if (errno_ != 0) {
       mp_raise_OSError(errno_);
   }
@@ -253,7 +259,6 @@ STATIC mp_obj_t gatt_tool_backend_char_read(size_t n_args, const mp_obj_t *pos_a
   mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
   uint16_t value_handle = (uint16_t)mp_obj_get_int(args[ARG_value_handle].u_obj);
-  printf("[upygatt] char_read handle: 0x%04x\r\n", value_handle);
   uint8_t data[MP_BT_MAX_ATTR_SIZE];
   size_t value_len = MP_BT_MAX_ATTR_SIZE;
   int errno_ = mp_bt_char_read(value_handle, data, &value_len);
@@ -286,7 +291,6 @@ STATIC mp_obj_t gatt_tool_backend_char_read_handle(size_t n_args, const mp_obj_t
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(gatt_tool_backend_char_read_handle_obj, 1, gatt_tool_backend_char_read_handle);
 
 STATIC mp_obj_t gatt_tool_backend(void) {
-  printf("GATTToolBackend init\r\n");
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(gatt_tool_backend_obj, gatt_tool_backend);
