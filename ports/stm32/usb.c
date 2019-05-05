@@ -115,7 +115,6 @@ void pyb_usb_init0(void) {
     #if MICROPY_HW_USB_ENABLE_CDC2
     usb_device.usbd_cdc2_itf.attached_to_repl = false;
     #endif
-    mp_hal_set_interrupt_char(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 

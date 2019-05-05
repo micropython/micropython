@@ -136,7 +136,7 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     }
 
     // Default PLL parameters that give 48MHz on PLL48CK
-    uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
+    uint32_t m = MICROPY_HW_CLK_VALUE / 1000000, n = 336, p = 2, q = 7;
     uint32_t sysclk_source;
     bool need_pllsai = false;
 
@@ -157,7 +157,7 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
                 // use PLL
                 sysclk_source = RCC_SYSCLKSOURCE_PLLCLK;
                 uint32_t vco_out = sys * p;
-                n = vco_out * m / (HSE_VALUE / 1000000);
+                n = vco_out * m / (MICROPY_HW_CLK_VALUE / 1000000);
                 q = vco_out / 48;
                 #if defined(STM32F7)
                 need_pllsai = vco_out % 48 != 0;
@@ -178,7 +178,11 @@ set_clk:
     if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
         // Set HSE as system clock source to allow modification of the PLL configuration
         // We then change to PLL after re-configuring PLL
+        #if MICROPY_HW_CLK_USE_HSI
+        RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+        #else
         RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
+        #endif
     } else {
         // Directly set the system clock source as desired
         RCC_ClkInitStruct.SYSCLKSource = sysclk_source;
@@ -217,6 +221,8 @@ set_clk:
     RCC_OscInitTypeDef RCC_OscInitStruct;
     RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
     RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
+    RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
     RCC_OscInitStruct.PLL.PLLM = m;

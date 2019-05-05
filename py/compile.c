@@ -124,7 +124,7 @@ STATIC const emit_inline_asm_method_table_t *emit_asm_table[] = {
     NULL,
     NULL,
     NULL,
-    NULL,
+    &emit_inline_thumb_method_table,
     &emit_inline_thumb_method_table,
     &emit_inline_thumb_method_table,
     &emit_inline_thumb_method_table,

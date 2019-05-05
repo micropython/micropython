@@ -114,7 +114,7 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
             sce_irq = CAN1_SCE_IRQn;
             pins[0] = MICROPY_HW_CAN1_TX;
             pins[1] = MICROPY_HW_CAN1_RX;
-            __CAN1_CLK_ENABLE();
+            __HAL_RCC_CAN1_CLK_ENABLE();
             break;
         #endif
 
@@ -124,8 +124,18 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
             sce_irq = CAN2_SCE_IRQn;
             pins[0] = MICROPY_HW_CAN2_TX;
             pins[1] = MICROPY_HW_CAN2_RX;
-            __CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
-            __CAN2_CLK_ENABLE();
+            __HAL_RCC_CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
+            __HAL_RCC_CAN2_CLK_ENABLE();
+            break;
+        #endif
+
+        #if defined(MICROPY_HW_CAN3_TX)
+        case PYB_CAN_3:
+            CANx = CAN3;
+            sce_irq = CAN3_SCE_IRQn;
+            pins[0] = MICROPY_HW_CAN3_TX;
+            pins[1] = MICROPY_HW_CAN3_RX;
+            __HAL_RCC_CAN3_CLK_ENABLE(); // CAN3 is a "master" and doesn't need CAN1 enabled as well
             break;
         #endif
 
@@ -420,6 +430,10 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
         } else if (strcmp(port, MICROPY_HW_CAN2_NAME) == 0) {
             can_idx = PYB_CAN_2;
         #endif
+        #ifdef MICROPY_HW_CAN3_NAME
+        } else if (strcmp(port, MICROPY_HW_CAN3_NAME) == 0) {
+            can_idx = PYB_CAN_3;
+        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%s) doesn't exist", port));
         }
@@ -479,17 +493,26 @@ STATIC mp_obj_t pyb_can_deinit(mp_obj_t self_in) {
         HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN1_RX1_IRQn);
         HAL_NVIC_DisableIRQ(CAN1_SCE_IRQn);
-        __CAN1_FORCE_RESET();
-        __CAN1_RELEASE_RESET();
-        __CAN1_CLK_DISABLE();
+        __HAL_RCC_CAN1_FORCE_RESET();
+        __HAL_RCC_CAN1_RELEASE_RESET();
+        __HAL_RCC_CAN1_CLK_DISABLE();
     #if defined(CAN2)
     } else if (self->can.Instance == CAN2) {
         HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
         HAL_NVIC_DisableIRQ(CAN2_SCE_IRQn);
-        __CAN2_FORCE_RESET();
-        __CAN2_RELEASE_RESET();
-        __CAN2_CLK_DISABLE();
+        __HAL_RCC_CAN2_FORCE_RESET();
+        __HAL_RCC_CAN2_RELEASE_RESET();
+        __HAL_RCC_CAN2_CLK_DISABLE();
+    #endif
+    #if defined(CAN3)
+    } else if (self->can.Instance == CAN3) {
+        HAL_NVIC_DisableIRQ(CAN3_RX0_IRQn);
+        HAL_NVIC_DisableIRQ(CAN3_RX1_IRQn);
+        HAL_NVIC_DisableIRQ(CAN3_SCE_IRQn);
+        __HAL_RCC_CAN3_FORCE_RESET();
+        __HAL_RCC_CAN3_RELEASE_RESET();
+        __HAL_RCC_CAN3_CLK_DISABLE();
     #endif
     }
     return mp_const_none;
@@ -890,9 +913,13 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
         if (filter.FilterNumber >= can2_start_bank) {
             goto error;
         }
-    } else {
+    } else if (self->can_id == 2) {
         filter.FilterNumber = filter.FilterNumber + can2_start_bank;
         if (filter.FilterNumber > 27) {
+            goto error;
+        }
+    } else {
+        if (filter.FilterNumber > 13) { // CAN3 is independant and has its own 14 filters.
             goto error;
         }
     }
@@ -930,8 +957,12 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         if (self->can_id == PYB_CAN_1) {
             irq = (fifo == 0) ? CAN1_RX0_IRQn : CAN1_RX1_IRQn;
         #if defined(CAN2)
-        } else {
+        } else if (self->can_id == PYB_CAN_2) {
             irq = (fifo == 0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
+        #endif
+        #if defined(CAN3)
+        } else {
+            irq = (fifo == 0) ? CAN3_RX0_IRQn : CAN3_RX1_IRQn;
         #endif
         }
         NVIC_SetPriority(irq, IRQ_PRI_CAN);

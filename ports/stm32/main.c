@@ -78,7 +78,7 @@ STATIC fs_user_mount_t fs_user_mount_flash;
 
 #if defined(MICROPY_HW_UART_REPL)
 #ifndef MICROPY_HW_UART_REPL_RXBUF
-#define MICROPY_HW_UART_REPL_RXBUF (64)
+#define MICROPY_HW_UART_REPL_RXBUF (260)
 #endif
 STATIC pyb_uart_obj_t pyb_uart_repl_obj;
 STATIC uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];

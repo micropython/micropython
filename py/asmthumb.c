@@ -33,6 +33,8 @@
 // wrapper around everything in this file
 #if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
 
+#include "py/mpstate.h"
+#include "py/persistentcode.h"
 #include "py/mphal.h"
 #include "py/asmthumb.h"
 
@@ -117,6 +119,21 @@ STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
 
 void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
     assert(num_locals >= 0);
+
+    // If this Thumb machine code is run from ARM state then add a prelude
+    // to switch to Thumb state for the duration of the function.
+    #if MICROPY_DYNAMIC_COMPILER || MICROPY_EMIT_ARM || (defined(__arm__) && !defined(__thumb2__))
+    #if MICROPY_DYNAMIC_COMPILER
+    if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_ARMV6)
+    #endif
+    {
+        asm_thumb_op32(as, 0x4010, 0xe92d); // push {r4, lr}
+        asm_thumb_op32(as, 0xe009, 0xe28f); // add lr, pc, 8 + 1
+        asm_thumb_op32(as, 0xff3e, 0xe12f); // blx lr
+        asm_thumb_op32(as, 0x4010, 0xe8bd); // pop {r4, lr}
+        asm_thumb_op32(as, 0xff1e, 0xe12f); // bx lr
+    }
+    #endif
 
     // work out what to push and how many extra spaces to reserve on stack
     // so that we have enough for all locals and it's aligned an 8-byte boundary

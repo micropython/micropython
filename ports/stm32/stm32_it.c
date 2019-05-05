@@ -751,6 +751,22 @@ void UART8_IRQHandler(void) {
 }
 #endif
 
+#if defined(UART9)
+void UART9_IRQHandler(void) {
+    IRQ_ENTER(UART9_IRQn);
+    uart_irq_handler(9);
+    IRQ_EXIT(UART9_IRQn);
+}
+#endif
+
+#if defined(UART10)
+void UART10_IRQHandler(void) {
+    IRQ_ENTER(UART10_IRQn);
+    uart_irq_handler(10);
+    IRQ_EXIT(UART10_IRQn);
+}
+#endif
+
 #endif
 
 #if defined(MICROPY_HW_CAN1_TX)
@@ -790,6 +806,26 @@ void CAN2_SCE_IRQHandler(void) {
     IRQ_ENTER(CAN2_SCE_IRQn);
     can_sce_irq_handler(PYB_CAN_2);
     IRQ_EXIT(CAN2_SCE_IRQn);
+}
+#endif
+
+#if defined(MICROPY_HW_CAN3_TX)
+void CAN3_RX0_IRQHandler(void) {
+    IRQ_ENTER(CAN3_RX0_IRQn);
+    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO0);
+    IRQ_EXIT(CAN3_RX0_IRQn);
+}
+
+void CAN3_RX1_IRQHandler(void) {
+    IRQ_ENTER(CAN3_RX1_IRQn);
+    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO1);
+    IRQ_EXIT(CAN3_RX1_IRQn);
+}
+
+void CAN3_SCE_IRQHandler(void) {
+    IRQ_ENTER(CAN3_SCE_IRQn);
+    can_sce_irq_handler(PYB_CAN_3);
+    IRQ_EXIT(CAN3_SCE_IRQn);
 }
 #endif
 
