@@ -35,8 +35,10 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/ringbuf.h"
 #include "pin.h"
 #include "genhdr/pins.h"
+#include "lib/utils/interrupt_char.h"
 
 #include "uart.h"
 #include "mpconfigboard.h"
@@ -51,6 +53,12 @@ typedef struct _machine_hard_uart_obj_t {
     mp_obj_base_t       base;
     const nrfx_uart_t * p_uart;      // Driver instance
 } machine_hard_uart_obj_t;
+
+static uint8_t tx_buf[1];
+static uint8_t rx_buf[1];
+static volatile bool tx_pending;
+static uint8_t rx_ringbuf_array[64];
+static volatile ringbuf_t rx_ringbuf = {rx_ringbuf_array, sizeof(rx_ringbuf_array), 0, 0};
 
 static const nrfx_uart_t instance0 = NRFX_UART_INSTANCE(0);
 
@@ -70,27 +78,40 @@ STATIC int uart_find(mp_obj_t id) {
     mp_raise_ValueError("UART doesn't exist");
 }
 
-void uart_irq_handler(mp_uint_t uart_id) {
-
+void m_rx_handler(nrfx_uart_event_t const *p_event, void *p_context) {
+    machine_hard_uart_obj_t *self = p_context;
+    if (p_event->type == NRFX_UART_EVT_RX_DONE) {
+        int chr = rx_buf[0];
+        nrfx_uart_rx(self->p_uart, &rx_buf[0], 1);
+        #if !MICROPY_PY_BLE_NUS && MICROPY_KBD_EXCEPTION
+        if (chr == mp_interrupt_char) {
+            mp_keyboard_interrupt();
+        } else
+        #endif
+        {
+            ringbuf_put((ringbuf_t*)&rx_ringbuf, chr);
+        }
+    }
+    else if (p_event->type == NRFX_UART_EVT_TX_DONE) {
+        tx_pending = false;
+    }
 }
 
 bool uart_rx_any(const machine_hard_uart_obj_t *uart_obj) {
-    // TODO: uart will block for now.
-    return true;
+    return rx_ringbuf.iput != rx_ringbuf.iget;
 }
 
 int uart_rx_char(const machine_hard_uart_obj_t * self) {
-    uint8_t ch;
-    nrfx_uart_rx(self->p_uart, &ch, 1);
-    return (int)ch;
+    return ringbuf_get((ringbuf_t*)&rx_ringbuf);
 }
 
 STATIC nrfx_err_t uart_tx_char(const machine_hard_uart_obj_t * self, int c) {
-    while (nrfx_uart_tx_in_progress(self->p_uart)) {
-        ;
+    while (tx_pending) {
     }
 
-    return nrfx_uart_tx(self->p_uart, (uint8_t *)&c, 1);
+    tx_buf[0] = c;
+    tx_pending = true;
+    return nrfx_uart_tx(self->p_uart, &tx_buf[0], 1);
 }
 
 
@@ -182,7 +203,10 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
     config.p_context = (void *)self;
 
     // Set NULL as callback function to keep it blocking
-    nrfx_uart_init(self->p_uart, &config, NULL);
+    nrfx_uart_init(self->p_uart, &config, m_rx_handler);
+    rx_ringbuf.iput = rx_ringbuf.iget = 0;
+    tx_pending = false;
+    nrfx_uart_rx(self->p_uart, &rx_buf[0], 1);
 
     nrfx_uart_rx_enable(self->p_uart);
 
