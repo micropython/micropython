@@ -149,3 +149,15 @@ The following libraries are specific to the ESP8266 and ESP32.
 
   esp.rst
   esp32.rst
+
+Libraries specific to the nRF52832 Blurfruit52
+-------------------------------------------
+
+The following libraries are specific to the nRF52832 Bluefruit52 board.
+
+.. toctree::
+  :maxdepth: 2
+
+  nrf.rst
+  nrf52.rst
+  nrf52.SERVO.rst
