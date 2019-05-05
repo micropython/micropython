@@ -541,6 +541,18 @@ int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
 }
 
+int pyexec_file_if_exists(const char *filename) {
+    #if MICROPY_MODULE_FROZEN
+    if (mp_frozen_stat(filename) == MP_IMPORT_STAT_FILE) {
+        return pyexec_frozen_module(filename);
+    }
+    #endif
+    if (mp_import_stat(filename) != MP_IMPORT_STAT_FILE) {
+        return 1; // success (no file is the same as an empty file executing without fail)
+    }
+    return pyexec_file(filename);
+}
+
 #if MICROPY_MODULE_FROZEN
 int pyexec_frozen_module(const char *name) {
     void *frozen_data;

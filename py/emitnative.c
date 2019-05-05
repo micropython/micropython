@@ -1356,7 +1356,7 @@ STATIC void emit_native_load_global(emit_t *emit, qstr qst, int kind) {
         if (emit->do_viper_types) {
             // check for builtin casting operators
             int native_type = mp_native_type_from_qstr(qst);
-            if (native_type >= MP_NATIVE_TYPE_INT) {
+            if (native_type >= MP_NATIVE_TYPE_BOOL) {
                 emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, native_type);
                 return;
             }

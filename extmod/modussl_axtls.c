@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015-2017 Paul Sokolovsky
+ * Copyright (c) 2015-2019 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@ typedef struct _mp_obj_ssl_socket_t {
     SSL *ssl_sock;
     byte *buf;
     uint32_t bytes_left;
+    bool blocking;
 } mp_obj_ssl_socket_t;
 
 struct ssl_args {
@@ -48,6 +49,7 @@ struct ssl_args {
     mp_arg_val_t cert;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
+    mp_arg_val_t do_handshake;
 };
 
 STATIC const mp_obj_type_t ussl_socket_type;
@@ -62,8 +64,12 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     o->buf = NULL;
     o->bytes_left = 0;
     o->sock = sock;
+    o->blocking = true;
 
     uint32_t options = SSL_SERVER_VERIFY_LATER;
+    if (!args->do_handshake.u_bool) {
+        options |= SSL_CONNECT_IN_PARTS;
+    }
     if (args->key.u_obj != mp_const_none) {
         options |= SSL_NO_DEFAULT_KEY;
     }
@@ -97,17 +103,14 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
         o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0, ext);
 
-        int res = ssl_handshake_status(o->ssl_sock);
-        // Pointer to SSL_EXTENSIONS as being passed to ssl_client_new()
-        // is saved in ssl_sock->extensions.
-        // As of axTLS 2.1.3, extensions aren't used beyond the initial
-        // handshake, and that's pretty much how it's expected to be. So
-        // we allocate them on stack and reset the pointer after handshake.
+        if (args->do_handshake.u_bool) {
+            int res = ssl_handshake_status(o->ssl_sock);
 
-        if (res != SSL_OK) {
-            printf("ssl_handshake_status: %d\n", res);
-            ssl_display_error(res);
-            mp_raise_OSError(MP_EIO);
+            if (res != SSL_OK) {
+                printf("ssl_handshake_status: %d\n", res);
+                ssl_display_error(res);
+                mp_raise_OSError(MP_EIO);
+            }
         }
 
     }
@@ -133,8 +136,18 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         mp_int_t r = ssl_read(o->ssl_sock, &o->buf);
         if (r == SSL_OK) {
             // SSL_OK from ssl_read() means "everything is ok, but there's
-            // no user data yet". So, we just keep reading.
-            continue;
+            // no user data yet". It may happen e.g. if handshake is not
+            // finished yet. The best way we can treat it is by returning
+            // EAGAIN. This may be a bit unexpected in blocking mode, but
+            // default is to perform complete handshake in constructor, so
+            // this should not happen in blocking mode. On the other hand,
+            // in nonblocking mode EAGAIN (comparing to the alternative of
+            // looping) is really preferrable.
+            if (o->blocking) {
+                continue;
+            } else {
+                goto eagain;
+            }
         }
         if (r < 0) {
             if (r == SSL_CLOSE_NOTIFY || r == SSL_ERROR_CONN_LOST) {
@@ -142,6 +155,7 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
                 return 0;
             }
             if (r == SSL_EAGAIN) {
+eagain:
                 r = MP_EAGAIN;
             }
             *errcode = r;
@@ -187,12 +201,14 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
 }
 
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
-    // Currently supports only blocking mode
-    (void)self_in;
-    if (!mp_obj_is_true(flag_in)) {
-        mp_raise_NotImplementedError(NULL);
-    }
-    return mp_const_none;
+    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t sock = o->sock;
+    mp_obj_t dest[3];
+    mp_load_method(sock, MP_QSTR_setblocking, dest);
+    dest[2] = flag_in;
+    mp_obj_t res = mp_call_method_n_kw(1, 0, dest);
+    o->blocking = mp_obj_is_true(flag_in);
+    return res;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
@@ -234,6 +250,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
     // TODO: Check that sock implements stream protocol

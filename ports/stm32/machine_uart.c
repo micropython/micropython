@@ -385,6 +385,14 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         } else if (strcmp(port, MICROPY_HW_UART8_NAME) == 0) {
             uart_id = PYB_UART_8;
         #endif
+        #ifdef MICROPY_HW_UART9_NAME
+        } else if (strcmp(port, MICROPY_HW_UART9_NAME) == 0) {
+            uart_id = PYB_UART_9;
+        #endif
+        #ifdef MICROPY_HW_UART10_NAME
+        } else if (strcmp(port, MICROPY_HW_UART10_NAME) == 0) {
+            uart_id = PYB_UART_10;
+        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
         }

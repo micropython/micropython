@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2018 Damien P. George
+ * Copyright (c) 2017-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 // This DFU code with polling runs in about 70% of the time of the ST bootloader
 #define USE_USB_POLLING (1)
 
-// Using cache probably won't make it faster because we run at 48MHz, and best
+// Using cache probably won't make it faster because we run at a low frequency, and best
 // to keep the MCU config as minimal as possible.
 #define USE_CACHE (0)
 
@@ -46,18 +46,25 @@
 #define IRQ_PRI_SYSTICK (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0))
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
-// Configure PLL to give a 48MHz CPU freq
+// Configure PLL to give the desired CPU freq
+#undef MICROPY_HW_FLASH_LATENCY
+#if defined(STM32H7)
+#define CORE_PLL_FREQ (96000000)
+#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
+#else
 #define CORE_PLL_FREQ (48000000)
+#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+#endif
 #undef MICROPY_HW_CLK_PLLM
 #undef MICROPY_HW_CLK_PLLN
 #undef MICROPY_HW_CLK_PLLP
 #undef MICROPY_HW_CLK_PLLQ
-#undef MICROPY_HW_FLASH_LATENCY
+#undef MICROPY_HW_CLK_PLLR
 #define MICROPY_HW_CLK_PLLM (HSE_VALUE / 1000000)
 #define MICROPY_HW_CLK_PLLN (192)
-#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV4)
+#define MICROPY_HW_CLK_PLLP (MICROPY_HW_CLK_PLLN / (CORE_PLL_FREQ / 1000000))
 #define MICROPY_HW_CLK_PLLQ (4)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+#define MICROPY_HW_CLK_PLLR (2)
 
 // Work out which USB device to use for the USB DFU interface
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
@@ -137,11 +144,25 @@ static void __fatal_error(const char *msg) {
 #define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x24003010)
 
+#elif defined(STM32H7)
+
+#define CONFIG_RCC_CR_1ST (RCC_CR_HSION)
+#define CONFIG_RCC_CR_2ND (RCC_CR_PLL3ON | RCC_CR_PLL2ON | RCC_CR_PLL1ON | RCC_CR_CSSHSEON \
+    | RCC_CR_HSEON | RCC_CR_HSI48ON | RCC_CR_CSIKERON | RCC_CR_CSION)
+#define CONFIG_RCC_PLLCFGR (0x00000000)
+
 #else
 #error Unknown processor
 #endif
 
 void SystemInit(void) {
+    #if defined(STM32H7)
+    // Configure write-once power options, and wait for voltage levels to be ready
+    PWR->CR3 = PWR_CR3_LDOEN;
+    while (!(PWR->CSR1 & PWR_CSR1_ACTVOSRDY)) {
+    }
+    #endif
+
     // Set HSION bit
     RCC->CR |= CONFIG_RCC_CR_1ST;
 
@@ -154,11 +175,27 @@ void SystemInit(void) {
     // Reset PLLCFGR register
     RCC->PLLCFGR = CONFIG_RCC_PLLCFGR;
 
+    #if defined(STM32H7)
+    // Reset PLL and clock configuration registers
+    RCC->D1CFGR = 0x00000000;
+    RCC->D2CFGR = 0x00000000;
+    RCC->D3CFGR = 0x00000000;
+    RCC->PLLCKSELR = 0x00000000;
+    RCC->D1CCIPR = 0x00000000;
+    RCC->D2CCIP1R = 0x00000000;
+    RCC->D2CCIP2R = 0x00000000;
+    RCC->D3CCIPR = 0x00000000;
+    #endif
+
     // Reset HSEBYP bit
     RCC->CR &= (uint32_t)0xFFFBFFFF;
 
     // Disable all interrupts
+    #if defined(STM32F4) || defined(STM32F7)
     RCC->CIR = 0x00000000;
+    #elif defined(STM32H7)
+    RCC->CIER = 0x00000000;
+    #endif
 
     // Set location of vector table
     SCB->VTOR = FLASH_BASE;
@@ -172,6 +209,8 @@ void systick_init(void) {
     SysTick_Config(SystemCoreClock / 1000);
     NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
 }
+
+#if defined(STM32F4) || defined(STM32F7)
 
 void SystemClock_Config(void) {
     // This function assumes that HSI is used as the system clock (see RCC->CFGR, SWS bits)
@@ -243,6 +282,87 @@ void SystemClock_Config(void) {
     #endif
 }
 
+#elif defined(STM32H7)
+
+void SystemClock_Config(void) {
+    // This function assumes that HSI is used as the system clock (see RCC->CFGR, SWS bits)
+
+    // Select VOS level as high voltage to give reliable operation
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    while (__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY) == RESET) {
+    }
+
+    // Turn HSE on
+    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET) {
+    }
+
+    // Disable PLL1
+    __HAL_RCC_PLL_DISABLE();
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) != RESET) {
+    }
+
+    // Configure PLL1 factors and source
+    RCC->PLLCKSELR =
+        MICROPY_HW_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos
+        | 2 << RCC_PLLCKSELR_PLLSRC_Pos; // HSE selected as PLL source
+    RCC->PLL1DIVR =
+        (MICROPY_HW_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
+        | (MICROPY_HW_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
+        | (MICROPY_HW_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
+        | (MICROPY_HW_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
+
+    // Enable PLL1 outputs for SYSCLK and USB
+    RCC->PLLCFGR = RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVQ1EN;
+
+    // Select PLL1-Q for USB clock source
+    RCC->D2CCIP2R |= 1 << RCC_D2CCIP2R_USBSEL_Pos;
+
+    // Enable PLL1
+    __HAL_RCC_PLL_ENABLE();
+    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
+    }
+
+    // Increase latency before changing SYSCLK
+    if (MICROPY_HW_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    }
+
+    // Configure AHB divider
+    RCC->D1CFGR =
+        0 << RCC_D1CFGR_D1CPRE_Pos // SYSCLK prescaler of 1
+        | 8 << RCC_D1CFGR_HPRE_Pos // AHB prescaler of 2
+        ;
+
+    // Configure SYSCLK source from PLL
+    __HAL_RCC_SYSCLK_CONFIG(RCC_SYSCLKSOURCE_PLLCLK);
+    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1) {
+    }
+
+    // Decrease latency after changing clock
+    if (MICROPY_HW_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    }
+
+    // Set APB clock dividers
+    RCC->D1CFGR |=
+        4 << RCC_D1CFGR_D1PPRE_Pos // APB3 prescaler of 2
+        ;
+    RCC->D2CFGR =
+        4 << RCC_D2CFGR_D2PPRE2_Pos // APB2 prescaler of 2
+        | 4 << RCC_D2CFGR_D2PPRE1_Pos // APB1 prescaler of 2
+        ;
+    RCC->D3CFGR =
+        4 << RCC_D3CFGR_D3PPRE_Pos // APB4 prescaler of 2
+        ;
+
+    // Update clock value and reconfigure systick now that the frequency changed
+    SystemCoreClock = CORE_PLL_FREQ;
+    systick_init();
+}
+
+#endif
+
 // Needed by HAL_PCD_IRQHandler
 uint32_t HAL_RCC_GetHCLKFreq(void) {
     return SystemCoreClock;
@@ -251,13 +371,21 @@ uint32_t HAL_RCC_GetHCLKFreq(void) {
 /******************************************************************************/
 // GPIO
 
+#if defined(STM32F4) || defined(STM32F7)
+#define AHBxENR AHB1ENR
+#define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
+#elif defined(STM32H7)
+#define AHBxENR AHB4ENR
+#define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
+#endif
+
 void mp_hal_pin_config(mp_hal_pin_obj_t port_pin, uint32_t mode, uint32_t pull, uint32_t alt) {
     GPIO_TypeDef *gpio = (GPIO_TypeDef*)(port_pin & ~0xf);
 
     // Enable the GPIO peripheral clock
-    uint32_t en_bit = RCC_AHB1ENR_GPIOAEN_Pos + ((uintptr_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
-    RCC->AHB1ENR |= 1 << en_bit;
-    volatile uint32_t tmp = RCC->AHB1ENR; // Delay after enabling clock
+    uint32_t gpio_idx = ((uintptr_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
+    RCC->AHBxENR |= 1 << (AHBxENR_GPIOAEN_Pos + gpio_idx);
+    volatile uint32_t tmp = RCC->AHBxENR; // Delay after enabling clock
     (void)tmp;
 
     // Configure the pin
@@ -381,6 +509,14 @@ static const flash_layout_t flash_layout[] = {
     { 0x08040000, 0x40000, 7 },
 };
 
+#elif defined(STM32H743xx)
+
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+
+static const flash_layout_t flash_layout[] = {
+    { 0x08000000, 0x20000, 16 },
+};
+
 #endif
 
 static uint32_t flash_get_sector_index(uint32_t addr, uint32_t *sector_size) {
@@ -401,6 +537,27 @@ static uint32_t flash_get_sector_index(uint32_t addr, uint32_t *sector_size) {
     return 0;
 }
 
+#if defined(STM32H7)
+// get the bank of a given flash address
+static uint32_t get_bank(uint32_t addr) {
+    if (READ_BIT(FLASH->OPTCR, FLASH_OPTCR_SWAP_BANK) == 0) {
+        // no bank swap
+        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+            return FLASH_BANK_1;
+        } else {
+            return FLASH_BANK_2;
+        }
+    } else {
+        // bank swap
+        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+            return FLASH_BANK_2;
+        } else {
+            return FLASH_BANK_1;
+        }
+    }
+}
+#endif
+
 static int flash_mass_erase(void) {
     // TODO
     return -1;
@@ -419,13 +576,20 @@ static int flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     HAL_FLASH_Unlock();
 
     // Clear pending flags (if any)
+    #if defined(STM32H7)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
+    #else
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                            FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+    #endif
 
     // erase the sector(s)
     FLASH_EraseInitTypeDef EraseInitStruct;
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
+    #if defined(STM32H7)
+    EraseInitStruct.Banks = get_bank(addr);
+    #endif
     EraseInitStruct.Sector = sector;
     EraseInitStruct.NbSectors = 1;
 
@@ -454,6 +618,20 @@ static int flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
     const uint32_t *src = (const uint32_t*)src8;
     size_t num_word32 = (len + 3) / 4;
     HAL_FLASH_Unlock();
+
+    #if defined(STM32H7)
+
+    // program the flash 256 bits at a time
+    for (int i = 0; i < num_word32 / 8; ++i) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, addr, (uint64_t)(uint32_t)src) != HAL_OK) {
+            return - 1;
+        }
+        addr += 32;
+        src += 8;
+    }
+
+    #else
+
     // program the flash word by word
     for (size_t i = 0; i < num_word32; i++) {
         if (HAL_FLASH_Program(TYPEPROGRAM_WORD, addr, *src) != HAL_OK) {
@@ -462,6 +640,8 @@ static int flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
         addr += 4;
         src += 1;
     }
+
+    #endif
 
     // TODO verify data
 
@@ -1130,6 +1310,11 @@ static void pyb_usbdd_init(pyb_usbdd_obj_t *self, int phy_id) {
 
 static void pyb_usbdd_start(pyb_usbdd_obj_t *self) {
     if (!self->started) {
+        #if defined(STM32H7)
+        PWR->CR3 |= PWR_CR3_USB33DEN;
+        while (!(PWR->CR3 & PWR_CR3_USB33RDY)) {
+        }
+        #endif
         USBD_LL_Init(&self->hUSBDDevice, 0);
         USBD_LL_Start(&self->hUSBDDevice);
         self->started = true;
@@ -1249,8 +1434,8 @@ void stm32_main(int initial_r0) {
         goto enter_bootloader;
     }
 
-    // MCU starts up with 16MHz HSI
-    SystemCoreClock = 16000000;
+    // MCU starts up with HSI
+    SystemCoreClock = HSI_VALUE;
 
     int reset_mode = get_reset_mode();
     uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;

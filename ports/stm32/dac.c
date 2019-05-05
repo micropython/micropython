@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,15 +70,6 @@
 #define DAC DAC1
 #endif
 
-STATIC DAC_HandleTypeDef DAC_Handle;
-
-void dac_init(void) {
-    memset(&DAC_Handle, 0, sizeof DAC_Handle);
-    DAC_Handle.Instance = DAC;
-    DAC_Handle.State = HAL_DAC_STATE_RESET;
-    HAL_DAC_Init(&DAC_Handle);
-}
-
 #if defined(TIM6)
 STATIC void TIM6_Config(uint freq) {
     // Init TIM6 at the required frequency (in Hz)
@@ -131,26 +122,96 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
     }
 }
 
+STATIC void dac_deinit(uint32_t dac_channel) {
+    DAC->CR &= ~(DAC_CR_EN1 << dac_channel);
+    #if defined(STM32H7) || defined(STM32L4)
+    DAC->MCR = (DAC->MCR & ~(DAC_MCR_MODE1_Msk << dac_channel)) | (DAC_OUTPUTBUFFER_DISABLE << dac_channel);
+    #else
+    DAC->CR |= DAC_CR_BOFF1 << dac_channel;
+    #endif
+}
+
+STATIC void dac_config_channel(uint32_t dac_channel, uint32_t trig, uint32_t outbuf) {
+    DAC->CR &= ~(DAC_CR_EN1 << dac_channel);
+    uint32_t cr_off = DAC_CR_DMAEN1 | DAC_CR_MAMP1 | DAC_CR_WAVE1 | DAC_CR_TSEL1 | DAC_CR_TEN1;
+    uint32_t cr_on = trig;
+    #if defined(STM32H7) || defined(STM32L4)
+    DAC->MCR = (DAC->MCR & ~(DAC_MCR_MODE1_Msk << dac_channel)) | (outbuf << dac_channel);
+    #else
+    cr_off |= DAC_CR_BOFF1;
+    cr_on |= outbuf;
+    #endif
+    DAC->CR = (DAC->CR & ~(cr_off << dac_channel)) | (cr_on << dac_channel);
+}
+
+STATIC void dac_set_value(uint32_t dac_channel, uint32_t align, uint32_t value) {
+    uint32_t base;
+    if (dac_channel == DAC_CHANNEL_1) {
+        base = (uint32_t)&DAC->DHR12R1;
+    } else {
+        base = (uint32_t)&DAC->DHR12R2;
+    }
+    *(volatile uint32_t*)(base + align) = value;
+}
+
+STATIC void dac_start(uint32_t dac_channel) {
+    DAC->CR |= DAC_CR_EN1 << dac_channel;
+}
+
+STATIC void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, uint32_t dma_mode, uint32_t bit_size, uint32_t dac_align, size_t len, void *buf) {
+    uint32_t dma_align;
+    if (bit_size == 8) {
+        dma_align = DMA_MDATAALIGN_BYTE | DMA_PDATAALIGN_BYTE;
+    } else {
+        dma_align = DMA_MDATAALIGN_HALFWORD | DMA_PDATAALIGN_HALFWORD;
+    }
+
+    uint32_t base;
+    if (dac_channel == DAC_CHANNEL_1) {
+        base = (uint32_t)&DAC->DHR12R1;
+    } else {
+        base = (uint32_t)&DAC->DHR12R2;
+    }
+
+    dma_nohal_deinit(dma_descr);
+    dma_nohal_init(dma_descr, DMA_MEMORY_TO_PERIPH | dma_mode | dma_align);
+    dma_nohal_start(dma_descr, (uint32_t)buf, base + dac_align, len);
+
+    DAC->CR |= DAC_CR_EN1 << dac_channel;
+}
+
 /******************************************************************************/
 // MicroPython bindings
 
-typedef enum {
-    DAC_STATE_RESET,
-    DAC_STATE_WRITE_SINGLE,
-    DAC_STATE_BUILTIN_WAVEFORM,
-    DAC_STATE_DMA_WAVEFORM, // should be last enum since we use space beyond it
-} pyb_dac_state_t;
-
 typedef struct _pyb_dac_obj_t {
     mp_obj_base_t base;
-    uint32_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2
-    const dma_descr_t *tx_dma_descr;
-    mp_hal_pin_obj_t pin; // pin_A4 or pin_A5
+    uint8_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2
     uint8_t bits; // 8 or 12
-    uint8_t state;
     uint8_t outbuf_single;
     uint8_t outbuf_waveform;
 } pyb_dac_obj_t;
+
+STATIC pyb_dac_obj_t pyb_dac_obj[2];
+
+STATIC void pyb_dac_reconfigure(pyb_dac_obj_t *self, uint32_t cr, uint32_t outbuf, uint32_t value) {
+    bool restart = false;
+    const uint32_t cr_mask = DAC_CR_DMAEN1 | DAC_CR_MAMP1 | DAC_CR_WAVE1 | DAC_CR_TSEL1 | DAC_CR_TEN1 | DAC_CR_EN1;
+    if (((DAC->CR >> self->dac_channel) & cr_mask) != (cr | DAC_CR_EN1)) {
+        const dma_descr_t *tx_dma_descr;
+        if (self->dac_channel == DAC_CHANNEL_1) {
+            tx_dma_descr = &dma_DAC_1_TX;
+        } else {
+            tx_dma_descr = &dma_DAC_2_TX;
+        }
+        dma_nohal_deinit(tx_dma_descr);
+        dac_config_channel(self->dac_channel, cr, outbuf);
+        restart = true;
+    }
+    dac_set_value(self->dac_channel, DAC_ALIGN_12B_R, value);
+    if (restart) {
+        dac_start(self->dac_channel);
+    }
+}
 
 STATIC void pyb_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -170,7 +231,13 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // GPIO configuration
-    mp_hal_pin_config(self->pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_obj_t pin;
+    if (self->dac_channel == DAC_CHANNEL_1) {
+        pin = pin_A4;
+    } else {
+        pin = pin_A5;
+    }
+    mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
 
     // DAC peripheral clock
     #if defined(STM32F4) || defined(STM32F7)
@@ -183,20 +250,8 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     #error Unsupported Processor
     #endif
 
-    // stop anything already going on
-    __HAL_RCC_DMA1_CLK_ENABLE();
-    DMA_HandleTypeDef DMA_Handle;
-    /* Get currently configured dma */
-    dma_init_handle(&DMA_Handle, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, (void*)NULL);
-    // Need to deinit DMA first
-    DMA_Handle.State = HAL_DMA_STATE_READY;
-    HAL_DMA_DeInit(&DMA_Handle);
-
-    HAL_DAC_Stop(&DAC_Handle, self->dac_channel);
-    if ((self->dac_channel == DAC_CHANNEL_1 && DAC_Handle.DMA_Handle1 != NULL)
-            || (self->dac_channel == DAC_CHANNEL_2 && DAC_Handle.DMA_Handle2 != NULL)) {
-        HAL_DAC_Stop_DMA(&DAC_Handle, self->dac_channel);
-    }
+    // Stop the DAC in case it was already running
+    DAC->CR &= ~(DAC_CR_EN1 << self->dac_channel);
 
     // set bit resolution
     if (args[0].u_int == 8 || args[0].u_int == 12) {
@@ -217,9 +272,6 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
         self->outbuf_single = DAC_OUTPUTBUFFER_DISABLE;
         self->outbuf_waveform = DAC_OUTPUTBUFFER_DISABLE;
     }
-
-    // reset state of DAC
-    self->state = DAC_STATE_RESET;
 
     return mp_const_none;
 }
@@ -251,25 +303,25 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         }
     }
 
-    pyb_dac_obj_t *dac = m_new_obj(pyb_dac_obj_t);
-    dac->base.type = &pyb_dac_type;
-
+    uint32_t dac_channel;
     if (dac_id == 1) {
-        dac->pin = pin_A4;
-        dac->dac_channel = DAC_CHANNEL_1;
-        dac->tx_dma_descr = &dma_DAC_1_TX;
+        dac_channel = DAC_CHANNEL_1;
     } else if (dac_id == 2) {
-        dac->pin = pin_A5;
-        dac->dac_channel = DAC_CHANNEL_2;
-        dac->tx_dma_descr = &dma_DAC_2_TX;
+        dac_channel = DAC_CHANNEL_2;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id));
     }
 
-    // configure the peripheral
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    pyb_dac_init_helper(dac, n_args - 1, args + 1, &kw_args);
+    pyb_dac_obj_t *dac = &pyb_dac_obj[dac_id - 1];
+    dac->base.type = &pyb_dac_type;
+    dac->dac_channel = dac_channel;
+
+    if (dac->bits == 0 || n_args > 1 || n_kw > 0) {
+        // configure the peripheral
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        pyb_dac_init_helper(dac, n_args - 1, args + 1, &kw_args);
+    }
 
     // return object
     return MP_OBJ_FROM_PTR(dac);
@@ -284,21 +336,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_init_obj, 1, pyb_dac_init);
 /// Turn off the DAC, enable other use of pin.
 STATIC mp_obj_t pyb_dac_deinit(mp_obj_t self_in) {
     pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->dac_channel == DAC_CHANNEL_1) {
-        DAC_Handle.Instance->CR &= ~DAC_CR_EN1;
-        #if defined(STM32H7) || defined(STM32L4)
-        DAC->MCR = (DAC->MCR & ~(7 << DAC_MCR_MODE1_Pos)) | 2 << DAC_MCR_MODE1_Pos;
-        #else
-        DAC_Handle.Instance->CR |= DAC_CR_BOFF1;
-        #endif
-    } else {
-        DAC_Handle.Instance->CR &= ~DAC_CR_EN2;
-        #if defined(STM32H7) || defined(STM32L4)
-        DAC->MCR = (DAC->MCR & ~(7 << DAC_MCR_MODE2_Pos)) | 2 << DAC_MCR_MODE2_Pos;
-        #else
-        DAC_Handle.Instance->CR |= DAC_CR_BOFF2;
-        #endif
-    }
+    dac_deinit(self->dac_channel);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_dac_deinit_obj, pyb_dac_deinit);
@@ -313,19 +351,9 @@ STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(freq));
 
-    if (self->state != DAC_STATE_BUILTIN_WAVEFORM) {
-        // configure DAC to trigger via TIM6
-        DAC_ChannelConfTypeDef config;
-        config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-        config.DAC_OutputBuffer = self->outbuf_waveform;
-        HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
-        self->state = DAC_STATE_BUILTIN_WAVEFORM;
-    }
-
-    // set noise wave generation
-    HAL_DACEx_NoiseWaveGenerate(&DAC_Handle, self->dac_channel, DAC_LFSRUNMASK_BITS10_0);
-    HAL_DAC_SetValue(&DAC_Handle, self->dac_channel, DAC_ALIGN_12B_L, 0x7ff0);
-    HAL_DAC_Start(&DAC_Handle, self->dac_channel);
+    // Configure DAC in noise mode with trigger via TIM6
+    uint32_t cr = DAC_LFSRUNMASK_BITS11_0 | DAC_CR_WAVE1_0 | DAC_TRIGGER_T6_TRGO;
+    pyb_dac_reconfigure(self, cr, self->outbuf_waveform, 0);
 
     return mp_const_none;
 }
@@ -343,19 +371,9 @@ STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(freq));
 
-    if (self->state != DAC_STATE_BUILTIN_WAVEFORM) {
-        // configure DAC to trigger via TIM6
-        DAC_ChannelConfTypeDef config;
-        config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-        config.DAC_OutputBuffer = self->outbuf_waveform;
-        HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
-        self->state = DAC_STATE_BUILTIN_WAVEFORM;
-    }
-
-    // set triangle wave generation
-    HAL_DACEx_TriangleWaveGenerate(&DAC_Handle, self->dac_channel, DAC_TRIANGLEAMPLITUDE_1023);
-    HAL_DAC_SetValue(&DAC_Handle, self->dac_channel, DAC_ALIGN_12B_R, 0x100);
-    HAL_DAC_Start(&DAC_Handle, self->dac_channel);
+    // Configure DAC in triangle mode with trigger via TIM6
+    uint32_t cr = DAC_TRIANGLEAMPLITUDE_4095 | DAC_CR_WAVE1_1 | DAC_TRIGGER_T6_TRGO;
+    pyb_dac_reconfigure(self, cr, self->outbuf_waveform, 0);
 
     return mp_const_none;
 }
@@ -367,20 +385,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_triangle_obj, pyb_dac_triangle);
 STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
     pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->state != DAC_STATE_WRITE_SINGLE) {
-        DAC_ChannelConfTypeDef config;
-        config.DAC_Trigger = DAC_TRIGGER_NONE;
-        config.DAC_OutputBuffer = self->outbuf_single;
-        HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
-        self->state = DAC_STATE_WRITE_SINGLE;
-    }
-
     // DAC output is always 12-bit at the hardware level, and we provide support
     // for multiple bit "resolutions" simply by shifting the input value.
-    HAL_DAC_SetValue(&DAC_Handle, self->dac_channel, DAC_ALIGN_12B_R,
-        mp_obj_get_int(val) << (12 - self->bits));
-
-    HAL_DAC_Start(&DAC_Handle, self->dac_channel);
+    uint32_t cr = DAC_TRIGGER_NONE;
+    uint32_t value = mp_obj_get_int(val) << (12 - self->bits);
+    pyb_dac_reconfigure(self, cr, self->outbuf_single, value);
 
     return mp_const_none;
 }
@@ -432,83 +441,24 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         dac_trigger = TIMx_Config(args[1].u_obj);
     }
 
-    __HAL_RCC_DMA1_CLK_ENABLE();
+    dac_config_channel(self->dac_channel, DAC_CR_DMAEN1 | dac_trigger, self->outbuf_waveform);
 
-    DMA_HandleTypeDef DMA_Handle;
-    /* Get currently configured dma */
-    dma_init_handle(&DMA_Handle, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, (void*)NULL);
-    /*
-    DMA_Cmd(DMA_Handle->Instance, DISABLE);
-    while (DMA_GetCmdStatus(DMA_Handle->Instance) != DISABLE) {
-    }
-
-    DAC_Cmd(self->dac_channel, DISABLE);
-    */
-
-    /*
-    // DAC channel configuration
-    DAC_InitTypeDef DAC_InitStructure;
-    DAC_InitStructure.DAC_Trigger = DAC_Trigger_T7_TRGO;
-    DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
-    DAC_InitStructure.DAC_LFSRUnmask_TriangleAmplitude = DAC_TriangleAmplitude_1; // unused, but need to set it to a valid value
-    DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
-    DAC_Init(self->dac_channel, &DAC_InitStructure);
-    */
-
-    // Need to deinit DMA first
-    DMA_Handle.State = HAL_DMA_STATE_READY;
-    HAL_DMA_DeInit(&DMA_Handle);
-
-    if (self->bits == 8) {
-        DMA_Handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-        DMA_Handle.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    } else {
-        DMA_Handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-        DMA_Handle.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    }
-    DMA_Handle.Init.Mode = args[2].u_int;
-    HAL_DMA_Init(&DMA_Handle);
-
+    const dma_descr_t *tx_dma_descr;
     if (self->dac_channel == DAC_CHANNEL_1) {
-        __HAL_LINKDMA(&DAC_Handle, DMA_Handle1, DMA_Handle);
+        tx_dma_descr = &dma_DAC_1_TX;
     } else {
-        __HAL_LINKDMA(&DAC_Handle, DMA_Handle2, DMA_Handle);
+        tx_dma_descr = &dma_DAC_2_TX;
     }
 
-    DAC_Handle.Instance = DAC;
-    DAC_Handle.State = HAL_DAC_STATE_RESET;
-    HAL_DAC_Init(&DAC_Handle);
-
-    if (self->state != DAC_STATE_DMA_WAVEFORM + dac_trigger) {
-        DAC_ChannelConfTypeDef config;
-        config.DAC_Trigger = dac_trigger;
-        config.DAC_OutputBuffer = self->outbuf_waveform;
-        HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
-        self->state = DAC_STATE_DMA_WAVEFORM + dac_trigger;
-    }
-
+    uint32_t align;
     if (self->bits == 8) {
-        HAL_DAC_Start_DMA(&DAC_Handle, self->dac_channel,
-            (uint32_t*)bufinfo.buf, bufinfo.len, DAC_ALIGN_8B_R);
+        align = DAC_ALIGN_8B_R;
     } else {
-        HAL_DAC_Start_DMA(&DAC_Handle, self->dac_channel,
-            (uint32_t*)bufinfo.buf, bufinfo.len / 2, DAC_ALIGN_12B_R);
+        align = DAC_ALIGN_12B_R;
+        bufinfo.len /= 2;
     }
 
-    /*
-    // enable DMA stream
-    DMA_Cmd(DMA_Handle->Instance, ENABLE);
-    while (DMA_GetCmdStatus(DMA_Handle->Instance) == DISABLE) {
-    }
-
-    // enable DAC channel
-    DAC_Cmd(self->dac_channel, ENABLE);
-
-    // enable DMA for DAC channel
-    DAC_DMACmd(self->dac_channel, ENABLE);
-    */
-
-    //printf("DMA: %p %lu\n", bufinfo.buf, bufinfo.len);
+    dac_start_dma(self->dac_channel, tx_dma_descr, args[2].u_int, self->bits, align, bufinfo.len, bufinfo.buf);
 
     return mp_const_none;
 }

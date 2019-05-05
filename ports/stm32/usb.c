@@ -115,7 +115,6 @@ void pyb_usb_init0(void) {
     #if MICROPY_HW_USB_ENABLE_CDC2
     usb_device.usbd_cdc2_itf.attached_to_repl = false;
     #endif
-    mp_hal_set_interrupt_char(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 
@@ -306,6 +305,11 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
         mode = USBD_MODE_CDC_MSC;
     #if MICROPY_HW_USB_ENABLE_CDC2
+    } else if (strcmp(mode_str, "VCP+VCP") == 0) {
+        if (args[2].u_int == -1) {
+            pid = USBD_PID_CDC2;
+        }
+        mode = USBD_MODE_CDC2;
     } else if (strcmp(mode_str, "VCP+VCP+MSC") == 0) {
         if (args[2].u_int == -1) {
             pid = USBD_PID_CDC2_MSC;

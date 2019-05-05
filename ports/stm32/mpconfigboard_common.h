@@ -147,8 +147,14 @@
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_TIMER (14)
-#ifdef UART8
+#if defined(UART10)
+#define MICROPY_HW_MAX_UART (10)
+#elif defined(UART9)
+#define MICROPY_HW_MAX_UART (9)
+#elif defined(UART8)
 #define MICROPY_HW_MAX_UART (8)
+#elif defined(UART7)
+#define MICROPY_HW_MAX_UART (7)
 #else
 #define MICROPY_HW_MAX_UART (6)
 #endif
@@ -210,6 +216,12 @@
 #endif
 #endif
 
+// If disabled then try normal (non-bypass) LSE first, with fallback to LSI.
+// If enabled first try LSE in bypass mode.  If that fails to start, try non-bypass mode, with fallback to LSI.
+#ifndef MICROPY_HW_RTC_USE_BYPASS
+#define MICROPY_HW_RTC_USE_BYPASS (0)
+#endif
+
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // Provide block device macros if internal flash storage is enabled
 #define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
@@ -233,11 +245,20 @@
 #endif
 
 // Enable CAN if there are any peripherals defined
-#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX)
+#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
 #else
 #define MICROPY_HW_ENABLE_CAN (0)
+#define MICROPY_HW_MAX_CAN (0)
 #endif
+#if defined(MICROPY_HW_CAN3_TX)
+#define MICROPY_HW_MAX_CAN (3)
+#elif defined(MICROPY_HW_CAN2_TX)
+#define MICROPY_HW_MAX_CAN (2)
+#elif defined(MICROPY_HW_CAN1_TX)
+#define MICROPY_HW_MAX_CAN (1)
+#endif
+
 
 // Pin definition header file
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"

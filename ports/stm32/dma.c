@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2015-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "systick.h"
 #include "dma.h"
 #include "irq.h"
@@ -729,3 +730,100 @@ static void dma_idle_handler(uint32_t tick) {
         }
     }
 }
+
+#if defined(STM32F0) || defined(STM32L4)
+
+void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
+    DMA_Channel_TypeDef *dma = descr->instance;
+
+    // Enable the DMA peripheral
+    dma_enable_clock(descr->id);
+
+    // Set main configuration register
+    dma->CCR =
+        descr->init->Priority       // PL
+        | descr->init->MemInc       // MINC
+        | descr->init->PeriphInc    // PINC
+        | config                    // MSIZE | PSIZE | CIRC | DIR
+        ;
+
+    // Select channel that the DMA stream uses
+    #if defined(STM32F0)
+    if (dma < DMA2_Channel1) {
+        __HAL_DMA1_REMAP(descr->sub_instance);
+    } else {
+        __HAL_DMA2_REMAP(descr->sub_instance);
+    }
+    #else
+    DMA_Request_TypeDef *dma_ctrl = (void*)(((uint32_t)dma & ~0xff) + (DMA1_CSELR_BASE - DMA1_BASE)); // DMA1_CSELR or DMA2_CSELR
+    uint32_t channel_number = (((uint32_t)dma & 0xff) - 0x08) / 20; // 0 through 6
+    uint32_t channel_pos = channel_number * 4;
+    dma_ctrl->CSELR = (dma_ctrl->CSELR & ~(0xf << channel_pos)) | (descr->sub_instance << channel_pos);
+    #endif
+}
+
+void dma_nohal_deinit(const dma_descr_t *descr) {
+    DMA_Channel_TypeDef *dma = descr->instance;
+    dma->CCR &= ~DMA_CCR_EN;
+    dma->CCR = 0;
+    dma->CNDTR = 0;
+    dma_deinit(descr);
+}
+
+void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_addr, uint16_t len) {
+    DMA_Channel_TypeDef *dma = descr->instance;
+    dma->CNDTR = len;
+    dma->CPAR = dst_addr;
+    dma->CMAR = src_addr;
+    dma->CCR |= DMA_CCR_EN;
+}
+
+#else
+
+void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
+    DMA_Stream_TypeDef *dma = descr->instance;
+
+    // Enable the DMA peripheral
+    dma_enable_clock(descr->id);
+
+    // Set main configuration register
+    const DMA_InitTypeDef *init = descr->init;
+    dma->CR =
+        descr->sub_instance         // CHSEL
+        | init->MemBurst            // MBURST
+        | init->PeriphBurst         // PBURST
+        | init->Priority            // PL
+        | init->MemInc              // MINC
+        | init->PeriphInc           // PINC
+        | config                    // MSIZE | PSIZE | CIRC | DIR
+        ;
+
+    // Set FIFO control register
+    dma->FCR =
+        init->FIFOMode              // DMDIS
+        | init->FIFOThreshold       // FTH
+        ;
+}
+
+void dma_nohal_deinit(const dma_descr_t *descr) {
+    DMA_Stream_TypeDef *dma = descr->instance;
+    dma->CR &= ~DMA_SxCR_EN;
+    uint32_t t0 = mp_hal_ticks_ms();
+    while ((dma->CR & DMA_SxCR_EN) && mp_hal_ticks_ms() - t0 < 100) {
+    }
+    dma->CR = 0;
+    dma->NDTR = 0;
+    dma->FCR = 0x21;
+    dma_deinit(descr);
+}
+
+void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_addr, uint16_t len) {
+    DMA_Stream_TypeDef *dma = descr->instance;
+    dma->CR &= ~DMA_SxCR_DBM;
+    dma->NDTR = len;
+    dma->PAR = dst_addr;
+    dma->M0AR = src_addr;
+    dma->CR |= DMA_SxCR_EN;
+}
+
+#endif

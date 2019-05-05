@@ -60,7 +60,7 @@ void i2c_slave_ev_irq_handler(i2c_slave_t *i2c) {
     }
 }
 
-#elif defined(STM32F7)
+#elif defined(STM32F7) || defined(STM32H7)
 
 void i2c_slave_init_helper(i2c_slave_t *i2c, int addr) {
     i2c->CR1 = I2C_CR1_STOPIE | I2C_CR1_ADDRIE | I2C_CR1_RXIE | I2C_CR1_TXIE;
