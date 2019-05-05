@@ -10,6 +10,10 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
 * Pins
 * ADC
 * I2C
+* BUTTONS
+* MPU6050
+* LCD(240*135 ST7789 TFT displayer)
+* PCA9685(Servo)
 * PWM (nRF52 only)
 * Temperature
 * RTC (Real Time Counter. Low-Power counter)
@@ -32,6 +36,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
 * nRF52832
   * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html) 
   * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
+  * [Afantor Bluefruit52 nRF52832](https://www.afantor.cc/nrf52_bluefruit.html)
   * [Thingy:52](http://www.nordicsemi.com/eng/Products/Nordic-Thingy-52)
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
   * [IBK-BLYST-NANO breakout board](https://www.crowdsupply.com/i-syst/blyst-nano)
@@ -100,7 +105,14 @@ from.
 To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
 `make` with the given directory. For example:
 
-     make BOARD=pca10040 FROZEN_MPY_DIR=freeze
+     make BOARD=pca10040 FROZEN_MPY_DIR=freeze V=1
+     
+## Compile with frozen modules and Flash with Bluetooth Stack
+
+For example:
+
+     make BOARD=pca10040 FROZEN_MPY_DIR=freeze V=1 SD=s132 sd
+     make BOARD=bluefruit52 FROZEN_MPY_DIR=freeze V=1 SD=s132 sd
 
 ## Enable MICROPY_FATFS
 As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_FATFS is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` and `MICROPY_VFS_FAT` in mpconfigport.h.
@@ -121,6 +133,7 @@ pca10031             | s110                    | Peripheral             | [Segge
 wt51822_s4at         | s110                    | Peripheral             | Manual, see [datasheet](https://4tronix.co.uk/picobot2/WT51822-S4AT.pdf) for pinout
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
+bluefruit52          | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
 ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
