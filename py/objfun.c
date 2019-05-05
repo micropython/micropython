@@ -458,13 +458,13 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
         mp_obj_type_t *type = mp_obj_get_type(obj);
-        if (0) {
 #if MICROPY_PY_BUILTINS_FLOAT
-        } else if (type == &mp_type_float) {
+        if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)
             return (mp_int_t)mp_obj_float_get(obj);
+        } else
 #endif
-        } else if (type == &mp_type_tuple || type == &mp_type_list) {
+        if (type == &mp_type_tuple || type == &mp_type_list) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
             size_t len;
             mp_obj_t *items;
