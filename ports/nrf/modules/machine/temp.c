@@ -78,7 +78,7 @@ STATIC mp_obj_t machine_temp_make_new(const mp_obj_type_t *type, size_t n_args, 
 /// \method read()
 /// Get temperature.
 STATIC mp_obj_t machine_temp_read(mp_uint_t n_args, const mp_obj_t *args) {
-
+    int32_t volatile temp;
 #if BLUETOOTH_SD
     if (BLUETOOTH_STACK_ENABLED() == 1) {
         int32_t temp;
@@ -87,7 +87,13 @@ STATIC mp_obj_t machine_temp_read(mp_uint_t n_args, const mp_obj_t *args) {
     }
 #endif // BLUETOOTH_SD
 
-    return MP_OBJ_NEW_SMALL_INT(nrf_temp_read());
+    NRF_TEMP->TASKS_START = 1;
+    while (NRF_TEMP->EVENTS_DATARDY == 0) {
+    }
+    NRF_TEMP->EVENTS_DATARDY = 0;
+    temp = (nrf_temp_read() / 4);
+    NRF_TEMP->TASKS_STOP = 1;
+    return MP_OBJ_NEW_SMALL_INT(temp);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_temp_read_obj, 0, 1, machine_temp_read);

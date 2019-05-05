@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,36 +25,25 @@
  * THE SOFTWARE.
  */
 
-#include "py/builtin.h"
-#include "lib/utils/pyexec.h"
-#include "py/runtime.h"
-#include "py/obj.h"
-#include "led.h"
-#include "button.h"
-#include "nrf.h" // TODO: figure out where to put this import
-#include "pin.h"
+#ifndef BUTTON_H
+#define BUTTON_H
 
-#if MICROPY_HW_HAS_LED
-#define PYB_LED_MODULE { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&board_led_type) },
+typedef enum {
+#if (MICROPY_HW_BUTTON_COUNT == 1)
+    BOARD_BUTTON1 = 1,
+#elif (MICROPY_HW_BUTTON_COUNT == 2)
+    BOARD_BUTTON1 = 1,
+    BOARD_BUTTON2 = 2,
 #else
-#define PYB_LED_MODULE
+    BOARD_BUTTON1 = 1,
+    BOARD_BUTTON2 = 2,
+    BOARD_BUTTON3 = 3,
+    BOARD_BUTTON4 = 4
 #endif
-#if MICROPY_HW_HAS_BUTTON
-#define PYB_BUTTON_MODULE { MP_ROM_QSTR(MP_QSTR_BUTTON), MP_ROM_PTR(&board_button_type) },
-#else
-#define PYB_BUTTON_MODULE
-#endif
+} board_button_t;
 
-STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_board) },
-    { MP_ROM_QSTR(MP_QSTR_repl_info), MP_ROM_PTR(&pyb_set_repl_info_obj) },
-    PYB_LED_MODULE
-    PYB_BUTTON_MODULE
-};
+void button_init(void);
 
-STATIC MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
+extern const mp_obj_type_t board_button_type;
 
-const mp_obj_module_t board_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&board_module_globals,
-};
+#endif // BUTTON_H

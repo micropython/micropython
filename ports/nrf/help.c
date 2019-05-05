@@ -41,6 +41,10 @@ const char nrf5_help_text[] =
 "  board.LED(n)    -- create an LED object for LED n (n=" HELP_TEXT_BOARD_LED ")\n"
 "\n"
 #endif
+#if MICROPY_HW_HAS_BUTTON
+"  board.BUTTON(n)    -- create an BUTTON object for BUTTON n (n=" HELP_TEXT_BOARD_BUTTON ")\n"
+"\n"
+#endif
 #if BLUETOOTH_SD
 HELP_TEXT_SD
 #endif

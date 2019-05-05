@@ -80,7 +80,7 @@ STATIC void saadc_event_handler(nrfx_saadc_evt_t const * p_event) {
 void adc_init0(void) {
 #if defined(NRF52_SERIES)
     const nrfx_saadc_config_t config = {
-        .resolution         = NRF_SAADC_RESOLUTION_8BIT,
+        .resolution         = NRF_SAADC_RESOLUTION_10BIT,
         .oversample         = NRF_SAADC_OVERSAMPLE_DISABLED,
         .interrupt_priority = 6,
         .low_power_mode     = false
@@ -134,7 +134,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
         .gain       = NRF_SAADC_GAIN1_4,
         .reference  = NRF_SAADC_REFERENCE_VDD4,
-        .acq_time   = NRF_SAADC_ACQTIME_3US,
+        .acq_time   = NRF_SAADC_ACQTIME_5US,
         .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
         .burst      = NRF_SAADC_BURST_DISABLED,
         .pin_p      = self->id, // 0 - 7
@@ -243,7 +243,7 @@ mp_obj_t machine_adc_battery_level(void) {
         .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
         .gain       = NRF_SAADC_GAIN1_6,
         .reference  = NRF_SAADC_REFERENCE_INTERNAL,
-        .acq_time   = NRF_SAADC_ACQTIME_3US,
+        .acq_time   = NRF_SAADC_ACQTIME_5US,
         .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
         .burst      = NRF_SAADC_BURST_DISABLED,
         .pin_p      = NRF_SAADC_INPUT_VDD,

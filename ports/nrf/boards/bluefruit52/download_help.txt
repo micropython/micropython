@@ -1,0 +1,61 @@
+Compile and Flash
+Prerequisite steps for building the nrf port:
+
+git clone <URL>.git micropython
+cd micropython
+git submodule update --init
+make -C mpy-cross
+
+Alternatively the target board could be defined:
+
+ make BOARD=bluefruit52
+ make BOARD=bluefruit52 flash
+
+Compile without LTO enabled
+As a space optimization, LTO (Link Time Optimization) has been enabled on all targets in the nrf-port. The -flto linker flag can be toggled easily by using the argument LTO when building. The example below shows how to disable LTO for the compilation:
+
+make BOARD=bluefruit52 LTO=0
+Note: There have been several issues with use of LTO in conjunction with GNU ARM Embedded Toolchain 7.2.1/4Q17. It's recommended to use a toolchain after this release, for example 7.3.1/2Q18 or 8.2.1/4Q18. The alternative would be to build the target using the LTO=0 as described above.
+
+Compile and Flash with Bluetooth Stack
+First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
+
+ ./drivers/bluetooth/download_ble_stack.sh
+
+If the Bluetooth stacks has been downloaded, compile the target with the following command:
+
+make BOARD=bluefruit52 SD=s132
+The make sd will trigger a flash of the bluetooth stack before that application is flashed. Note that make sd will perform a full erase of the chip, which could cause 3rd party bootloaders to also be wiped.
+
+make BOARD=bluefruit52 SD=s132 sd
+Note: further tuning of features to include in bluetooth or even setting up the device to use REPL over Bluetooth can be configured in the bluetooth_conf.h.
+
+Compile with frozen modules
+Frozen modules are Python modules compiled to bytecode and added to the firmware image, as part of MicroPython. They can be imported as usual, using the import statement. The advantage is that frozen modules use a lot less RAM as the bytecode is stored in flash, not in RAM like when importing from a filesystem. Also, frozen modules are available even when no filesystem is present to import from.
+
+To use frozen modules, put them in a directory (e.g. freeze/) and supply make with the given directory. For example:
+
+ make BOARD=bluefruit52 FROZEN_MPY_DIR=freeze
+Enable MICROPY_FATFS
+As the oofatfs module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_FATFS is by default set to 0 and has to be set to 1 if oofatfs files should be compiled. This will be in addition of setting MICROPY_VFS and MICROPY_VFS_FAT in mpconfigport.h.
+
+For example:
+
+ make BOARD=bluefruit52 MICROPY_FATFS=1
+
+Bluetooth LE REPL
+The port also implements a BLE REPL driver. This feature is disabled by default, as it will deactivate the UART REPL when activated. As some of the nRF devices only have one UART, using the BLE REPL free's the UART instance such that it can be used as a general UART peripheral not bound to REPL.
+
+The configuration can be enabled by editing the bluetooth_conf.h and set MICROPY_PY_BLE_NUS to 1.
+
+When enabled you have different options to test it:
+
+NUS Console for Linux (recommended)
+WebBluetooth REPL (experimental)
+Other:
+
+nRF UART application for IPhone/Android
+WebBluetooth mode can also be configured by editing bluetooth_conf.h and set BLUETOOTH_WEBBLUETOOTH_REPL to 1. This will alternate advertisement between Eddystone URL and regular connectable advertisement. The Eddystone URL will point the phone or PC to download WebBluetooth REPL (experimental), which subsequently can be used to connect to the Bluetooth REPL from the PC or Phone browser.
+
+final:
+make BOARD=bluefruit52 FROZEN_MPY_DIR=freeze V=1 SD=s132 sd

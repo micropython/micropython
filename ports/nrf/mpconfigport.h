@@ -142,6 +142,14 @@
 #define MICROPY_HW_LED_PULLUP       (0)
 #endif
 
+#ifndef MICROPY_HW_BUTTON_COUNT
+#define MICROPY_HW_BUTTON_COUNT        (0)
+#endif
+
+#ifndef MICROPY_HW_BUTTON_PULLUP
+#define MICROPY_HW_BUTTON_PULLUP       (0)
+#endif
+
 #ifndef MICROPY_PY_MUSIC
 #define MICROPY_PY_MUSIC            (0)
 #endif

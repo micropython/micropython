@@ -45,6 +45,7 @@
 #include "modmusic.h"
 #include "modules/uos/microbitfs.h"
 #include "led.h"
+#include "button.h"
 #include "uart.h"
 #include "nrf.h"
 #include "pin.h"
@@ -54,6 +55,9 @@
 #include "rtcounter.h"
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
+#endif
+#if MICROPY_PY_MACHINE_LCD
+#include "lcd.h"
 #endif
 #include "timer.h"
 
@@ -200,6 +204,13 @@ pin_init0();
            MP_PARSE_FILE_INPUT);
 #endif
 
+#if (MICROPY_HW_HAS_BUTTON)
+    button_init();
+#endif
+
+#if (MICROPY_PY_MACHINE_LCD)
+    lcd_init(3);
+#endif
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     int ret_code = 0;
