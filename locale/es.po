@@ -967,8 +967,7 @@ msgstr ""
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo "
-"objeto"
+"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo objeto."
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1635,7 +1634,7 @@ msgstr "no se puedo realizar importación relativa"
 
 #: py/emitnative.c
 msgid "casting"
-msgstr "mandando (casting)"
+msgstr "emitiendo (casting)"
 
 #: shared-bindings/bleio/Service.c
 msgid "characteristics includes an object that is not a Characteristic"
@@ -1655,7 +1654,7 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr "color buffer debe ser 3 bytes (RBG) ó 4 bytes (RGB + pad byte)"
+msgstr "El burrer de color debe ser 3 bytes (RGB) ó 4 bytes (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer or int"
@@ -1922,7 +1921,7 @@ msgstr "Entero requerido"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c
 msgid "interval not in range 0.0020 to 10.24"
-msgstr "interval no en rango 0.0020 a 10.24"
+msgstr "El intervalo está fuera del rango de 0.0020 a 10.24"
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
