@@ -179,8 +179,9 @@ STATIC void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, u
     mp_hal_pin_open_drain(self->sda);
 }
 
-#define machine_hard_i2c_readfrom mp_machine_soft_i2c_readfrom
-#define machine_hard_i2c_writeto mp_machine_soft_i2c_writeto
+#define machine_hard_i2c_start_addr mp_machine_soft_i2c_start_addr
+#define machine_hard_i2c_read_part mp_machine_soft_i2c_read_part
+#define machine_hard_i2c_write_part mp_machine_soft_i2c_write_part
 
 #endif
 
