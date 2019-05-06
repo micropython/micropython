@@ -975,8 +975,8 @@ msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
-msgstr "Solo mono de 8 ó 16 bit con "
+msgid "Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported."
+msgstr "Solo 8 ó 16 bit mono con " MP_STRINGIFY(OVERSAMPLING) "x de sobremuestreo es soportado."
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1419,7 +1419,7 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "buf is too small. need %d bytes"
-msgstr ""
+msgstr "buf es demasiado pequeño. necesita %d bytes."
 
 #: shared-bindings/audioio/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -1432,7 +1432,7 @@ msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
-msgstr ""
+msgstr "cortes del buffer necesitan ser de tamaño igual"
 
 #: py/modstruct.c shared-bindings/struct/__init__.c
 #: shared-module/struct/__init__.c
@@ -1445,7 +1445,7 @@ msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "botones deben ser digitalio.DigitalInOut"
 
 #: py/vm.c
 msgid "byte code not implemented"
@@ -1454,7 +1454,7 @@ msgstr "codigo byte no implementado"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr ""
+msgstr "byteorder no es instancia de ByteOrder (encontramos un %s)"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -1585,8 +1585,7 @@ msgstr "no se puede colgar al generador recién iniciado"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
-msgstr ""
-"no se puede enviar un valor que no sea None a un generador recién iniciado"
+msgstr "no se puede enviar un valor que no sea None a un generador recién iniciado"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -1636,11 +1635,11 @@ msgstr "no se puedo realizar importación relativa"
 
 #: py/emitnative.c
 msgid "casting"
-msgstr ""
+msgstr "mandando (casting)"
 
 #: shared-bindings/bleio/Service.c
 msgid "characteristics includes an object that is not a Characteristic"
-msgstr ""
+msgstr "charactericas incluye un objeto que no es Characteristic"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -1656,7 +1655,7 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
+msgstr "color buffer debe ser 3 bytes (RBG) ó 4 bytes (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer or int"
@@ -1894,7 +1893,7 @@ msgstr "formato incompleto"
 
 #: py/objstr.c
 msgid "incomplete format key"
-msgstr ""
+msgstr "llave de formato incompleto"
 
 #: extmod/modubinascii.c
 msgid "incorrect padding"
@@ -1923,7 +1922,7 @@ msgstr "Entero requerido"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c
 msgid "interval not in range 0.0020 to 10.24"
-msgstr ""
+msgstr "interval no en rango 0.0020 a 10.24"
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
@@ -1963,7 +1962,7 @@ msgstr "decorador de micropython inválido"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
-msgstr ""
+msgstr "paso invalido"
 
 #: py/compile.c py/parse.c
 msgid "invalid syntax"
