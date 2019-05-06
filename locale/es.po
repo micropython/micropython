@@ -976,7 +976,7 @@ msgstr "Paridad impar no soportada"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
-msgstr "Solo mono de 8 o 16 bit con "
+msgstr "Solo mono de 8 ó 16 bit con "
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1402,7 +1402,7 @@ msgstr "operacion binaria %q no implementada"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be 7, 8 or 9"
-msgstr "bits deben ser 7, 8 o 9"
+msgstr "bits deben ser 7, 8 ó 9"
 
 #: extmod/machine_spi.c
 msgid "bits must be 8"
@@ -1410,7 +1410,7 @@ msgstr "bits debe ser 8"
 
 #: shared-bindings/audioio/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits_per_sample debe ser 8 o 16"
+msgstr "bits_per_sample debe ser 8 ó 16"
 
 #: py/emitinlinethumb.c
 msgid "branch not in range"
@@ -2403,7 +2403,7 @@ msgstr ""
 
 #: shared-bindings/busio/UART.c
 msgid "stop must be 1 or 2"
-msgstr "stop debe ser 1 o 2"
+msgstr "stop debe ser 1 ó 2"
 
 #: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
@@ -2522,7 +2522,7 @@ msgstr "objeto de tipo '%q' no tiene atributo '%q'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
-msgstr "type acepta 1 o 3 argumentos"
+msgstr "type acepta 1 ó 3 argumentos"
 
 #: py/objint_longlong.c
 msgid "ulonglong too large"
@@ -2802,7 +2802,7 @@ msgstr "paso cero"
 #~ msgstr "la ubicación de la flash debe estar debajo de 1MByte"
 
 #~ msgid "frequency can only be either 80Mhz or 160MHz"
-#~ msgstr "la frecuencia solo puede ser 80MHz o 160MHz"
+#~ msgstr "la frecuencia solo puede ser 80MHz ó 160MHz"
 
 #~ msgid "impossible baudrate"
 #~ msgstr "baudrate imposible"
