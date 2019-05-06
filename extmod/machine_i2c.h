@@ -55,7 +55,8 @@ typedef struct _mp_machine_soft_i2c_obj_t {
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_dict_t mp_machine_soft_i2c_locals_dict;
 
-int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop);
-int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop);
+int mp_machine_soft_i2c_start_addr(mp_obj_base_t *self_in, int rd_wrn, uint16_t addr, unsigned int cont);
+int mp_machine_soft_i2c_read_part(mp_obj_base_t *self_in, uint8_t *dest, size_t len, unsigned int cont);
+int mp_machine_soft_i2c_write_part(mp_obj_base_t *self_in, const uint8_t *src, size_t len, unsigned int cont);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H
