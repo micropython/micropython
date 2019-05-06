@@ -160,7 +160,7 @@ typedef struct _bytecode_prelude_t {
     uint code_info_size;
 } bytecode_prelude_t;
 
-#if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_EMIT_NATIVE
+#if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_EMIT_ANY_ASM
 
 // ip will point to start of opcodes
 // ip2 will point to simple_name, source_file qstrs
@@ -186,7 +186,7 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 
 #include "py/parsenum.h"
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_ANY_ASM
 
 #if MICROPY_EMIT_THUMB
 STATIC void asm_thumb_rewrite_mov(uint8_t *pc, uint16_t val) {
@@ -330,7 +330,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     int kind = (kind_len & 3) + MP_CODE_BYTECODE;
     size_t fun_data_len = kind_len >> 2;
 
-    #if !MICROPY_EMIT_NATIVE
+    #if !MICROPY_EMIT_ANY_ASM
     if (kind != MP_CODE_BYTECODE) {
         mp_raise_ValueError("incompatible .mpy file");
     }
@@ -339,7 +339,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     uint8_t *fun_data = NULL;
     byte *ip2;
     bytecode_prelude_t prelude = {0};
-    #if MICROPY_EMIT_NATIVE
+    #if MICROPY_EMIT_ANY_ASM
     size_t prelude_offset;
     mp_uint_t type_sig = 0;
     size_t n_qstr_link = 0;
@@ -356,7 +356,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         // Load bytecode
         load_bytecode(reader, qw, ip, fun_data + fun_data_len);
 
-    #if MICROPY_EMIT_NATIVE
+    #if MICROPY_EMIT_ANY_ASM
     } else {
         // Allocate memory for native data and load it
         size_t fun_alloc;
@@ -407,13 +407,16 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         ip2[2] = source_file; ip2[3] = source_file >> 8;
     }
 
+    size_t n_obj = 0;
+    size_t n_raw_code = 0;
     mp_uint_t *const_table = NULL;
+
     if (kind != MP_CODE_NATIVE_ASM) {
         // Load constant table for bytecode, native and viper
 
         // Number of entries in constant table
-        size_t n_obj = read_uint(reader, NULL);
-        size_t n_raw_code = read_uint(reader, NULL);
+        n_obj = read_uint(reader, NULL);
+        n_raw_code = read_uint(reader, NULL);
 
         // Allocate constant table
         size_t n_alloc = prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code;
@@ -429,7 +432,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
             *ct++ = (mp_uint_t)MP_OBJ_NEW_QSTR(load_qstr(reader, qw));
         }
 
-        #if MICROPY_EMIT_NATIVE
+        #if MICROPY_EMIT_ANY_ASM
         if (kind != MP_CODE_BYTECODE) {
             // Populate mp_fun_table entry
             *ct++ = (mp_uint_t)(uintptr_t)mp_fun_table;
@@ -458,7 +461,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
             #endif
             prelude.scope_flags);
 
-    #if MICROPY_EMIT_NATIVE
+    #if MICROPY_EMIT_ANY_ASM
     } else {
         #if defined(MP_PLAT_COMMIT_EXEC)
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len);
@@ -629,6 +632,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
 
         // Save bytecode
         save_bytecode(print, qstr_window, ip, ip_top);
+    #if MICROPY_EMIT_ANY_ASM
     } else {
         // Save native code
         mp_print_bytes(print, rc->fun_data, rc->fun_data_len);
@@ -657,6 +661,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
                 mp_print_uint(print, rc->type_sig);
             }
         }
+    #endif
     }
 
     if (rc->kind == MP_CODE_BYTECODE || rc->kind == MP_CODE_NATIVE_PY) {
