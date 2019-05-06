@@ -892,7 +892,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython fatal error.\n"
-msgstr "Errore fatale in MicroPython"
+msgstr "Errore fatale in MicroPython.\n"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
