@@ -197,6 +197,11 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
             for (qstr q = MP_QSTR_ + 1; q < nqstr; ++q) {
                 size_t d_len;
                 const char *d_str = (const char *)qstr_data(q, &d_len);
+                // special case; filter out words that begin with underscore
+                // unless there's already a partial match
+                if (s_len == 0 && d_str[0] == '_') {
+                    continue;
+                }
                 if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
                     mp_load_method_protected(obj, q, dest, true);
                     if (dest[0] != MP_OBJ_NULL) {
