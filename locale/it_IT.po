@@ -124,12 +124,12 @@ msgstr "intero '%s' non è nell'intervallo %d..%d"
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr ""
+msgstr "oggeto '%s' non supporta assengnamento di item"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item deletion"
-msgstr ""
+msgstr "oggeto '%s' non supporta eliminamento di item"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -143,7 +143,7 @@ msgstr "l'oggetto '%s' non è un iteratore"
 #: py/objtype.c py/runtime.c
 #, c-format
 msgid "'%s' object is not callable"
-msgstr ""
+msgstr "oggeto '%s' non è chiamabile"
 
 #: py/runtime.c
 #, c-format
@@ -153,11 +153,11 @@ msgstr "l'oggetto '%s' non è iterabile"
 #: py/obj.c
 #, c-format
 msgid "'%s' object is not subscriptable"
-msgstr ""
+msgstr "oggeto '%s' non è "
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "aligniamento '=' non è permesso per il specificatore formato string"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
@@ -201,7 +201,7 @@ msgstr "'yield' al di fuori della funzione"
 
 #: py/compile.c
 msgid "*x must be assignment target"
-msgstr ""
+msgstr "*x deve essere il bersaglio del assegnamento"
 
 #: py/obj.c
 msgid ", in %q\n"
@@ -276,15 +276,15 @@ msgstr "AnalogOut non supportato sul pin scelto"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
-msgstr ""
+msgstr "Another send è gia activato"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "Array deve avere mezzoparole (typo 'H')"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr ""
+msgstr "Valori di Array dovrebbero essere bytes singulari"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running.\n"
@@ -321,7 +321,7 @@ msgstr "La luminosità deve essere compreso tra 0 e 255"
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
-msgstr ""
+msgstr "Illiminazione non è regolabile"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -350,23 +350,23 @@ msgstr "I byte devono essere compresi tra 0 e 255"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Can not use dotstar with %s"
-msgstr ""
+msgstr "dotstar non può essere usato con %s"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't add services in Central mode"
-msgstr ""
+msgstr "non si può aggiungere servizi in Central mode"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't advertise in Central mode"
-msgstr ""
+msgstr "non si può pubblicizzare in Central mode"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't change the name in Central mode"
-msgstr ""
+msgstr "non si può cambiare il nome in Central mode"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't connect in Peripheral mode"
-msgstr ""
+msgstr "non si può connettere in Periferal mode"
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -375,7 +375,7 @@ msgstr "Impossibile cancellare valori"
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
-msgstr ""
+msgstr "non si può tirare quando nella modalita output"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
 #, fuzzy
@@ -405,7 +405,7 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
-msgstr ""
+msgstr "non si può impostare un valore quando direzione è input"
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
@@ -425,15 +425,15 @@ msgstr "Impossibile scrivere senza pin MOSI."
 
 #: shared-bindings/bleio/Service.c
 msgid "Characteristic UUID doesn't match Service UUID"
-msgstr ""
+msgstr "caratteristico UUID non assomiglia servizio UUID"
 
 #: ports/nrf/common-hal/bleio/Service.c
 msgid "Characteristic already in use by another Service."
-msgstr ""
+msgstr "caratteristico già usato da un altro servizio"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
-msgstr ""
+msgstr "CharacteristicBuffer scritura non dato"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -441,7 +441,7 @@ msgstr "Inizializzazione del pin di clock fallita."
 
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
-msgstr ""
+msgstr "Orologio e troppo allungato"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
@@ -622,7 +622,7 @@ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
-msgstr ""
+msgstr "Notificamento o indicazione di attribute value fallito, err 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -632,7 +632,7 @@ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
-msgstr ""
+msgstr "Tentative leggere attribute value fallito, err 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -702,21 +702,21 @@ msgstr "File esistente"
 
 #: ports/nrf/peripherals/nrf/nvm.c
 msgid "Flash erase failed"
-msgstr ""
+msgstr "Cancellamento di Flash fallito"
 
 #: ports/nrf/peripherals/nrf/nvm.c
 #, c-format
 msgid "Flash erase failed to start, err 0x%04x"
-msgstr ""
+msgstr "Iniziamento di Cancellamento di Flash fallito, err 0x%04x"
 
 #: ports/nrf/peripherals/nrf/nvm.c
 msgid "Flash write failed"
-msgstr ""
+msgstr "Impostazione di Flash fallito"
 
 #: ports/nrf/peripherals/nrf/nvm.c
 #, c-format
 msgid "Flash write failed to start, err 0x%04x"
-msgstr ""
+msgstr "Iniziamento di Impostazione di Flash dallito, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
@@ -775,7 +775,7 @@ msgstr "Argomento non valido"
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
-msgstr ""
+msgstr "bits per valore invalido"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, fuzzy
@@ -784,7 +784,7 @@ msgstr "lunghezza del buffer non valida"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
-msgstr ""
+msgstr "periodo di cattura invalido. Zona valida: 1 - 500"
 
 #: shared-bindings/audioio/Mixer.c
 #, fuzzy
@@ -856,7 +856,7 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
-msgstr ""
+msgstr "Layer deve essere un Group o TileGrid subclass"
 
 #: py/objslice.c
 msgid "Length must be an int"
@@ -884,7 +884,7 @@ msgstr "inizializzazione del pin MOSI fallita."
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
-msgstr ""
+msgstr "Valore massimo di x quando rispachiato è %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
@@ -892,7 +892,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython fatal error.\n"
-msgstr ""
+msgstr "Errore fatale in MicroPython"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -901,7 +901,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Must be a Group subclass."
-msgstr ""
+msgstr "Deve essere un Group subclass"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
@@ -922,7 +922,7 @@ msgstr "Nessun pin TX"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
-msgstr ""
+msgstr "Nessun orologio a disposizione"
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
@@ -943,7 +943,7 @@ msgstr "Nessun supporto hardware sul pin"
 
 #: py/moduerrno.c
 msgid "No space left on device"
-msgstr ""
+msgstr "Non che spazio sul dispositivo"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -1194,7 +1194,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Too many displays"
-msgstr ""
+msgstr "Troppi schermi"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -1749,7 +1749,7 @@ msgstr "y dovrebbe essere un int"
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
-msgstr ""
+msgstr "errore = 0x%08lX"
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
