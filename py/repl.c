@@ -189,7 +189,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
                     if (dest[0] != MP_OBJ_NULL) {
                         // special case; filter out words that begin with underscore
                         // unless there's already a partial match
-                        if (s_len == 0 && *d_str == '_') {
+                        if (s_len == 0 && d_str[0] == '_') {
                             continue;
                         }
                         if (match_str == NULL) {

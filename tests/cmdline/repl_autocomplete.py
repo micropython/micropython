@@ -7,6 +7,6 @@ x = '123'
 i = str
 i.lowe	('ABC')
 x = 5
-x.	
+x.	
 x._	
 None.	
