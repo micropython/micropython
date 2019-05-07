@@ -43,6 +43,7 @@ void network_module_init(void) {
 }
 
 void network_module_deinit(void) {
+    mp_obj_list_set_len(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 
 void network_module_background(void) {
