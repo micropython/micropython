@@ -252,16 +252,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
-    // Python allows the following variations on the arguments:
-    //  1. args[1]=exception instance; args[2]=None
-    //  2. args[1]=exception class; args[2]=None
-    //  3. args[1]=exception class; args[2]=exception instance (same class as args[1])
-    //  4. args[1]=exception class; args[2]=value -> create instance via args[1](args[2])
-    // MicroPython only supports 1-3, with no checking of the class being the same in 3
+    // The signature of this function is: throw(type[, value[, traceback]])
+    // CPython will pass all given arguments through the call chain and process them
+    // at the point they are used (native generators will handle them differently to
+    // user-defined generators with a throw() method).  To save passing multiple
+    // values, MicroPython instead does partial processing here to reduce it down to
+    // one argument and passes that through:
+    // - if only args[1] is given, or args[2] is given but is None, args[1] is
+    //   passed through (in the standard case it is an exception class or instance)
+    // - if args[2] is given and not None it is passed through (in the standard
+    //   case it would be an exception instance and args[1] its corresponding class)
+    // - args[3] is always ignored
 
     mp_obj_t exc = args[1];
     if (n_args > 2 && args[2] != mp_const_none) {
-        // Handle case 3 without any further checks
         exc = args[2];
     }
 
