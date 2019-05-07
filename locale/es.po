@@ -86,7 +86,7 @@ msgstr "'%s' espera un registro"
 
 #: py/emitinlinethumb.c
 #, c-format
-msgid "'%s' expects a special register"
+©msgid "'%s' expects a special register"
 msgstr "'%s' espera un carácter"
 
 #: py/emitinlinethumb.c
@@ -975,8 +975,8 @@ msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with 'MP_STRINGIFY(OVERSAMPLING)' x oversampling is supported."
-msgstr "Solo 8 ó 16 bit mono con 'MP_STRINGIFY(OVERSAMPLING)' x de sobremuestreo es soportado."
+msgid "Only 8 or 16 bit mono with MP_STRINGIFY(OVERSAMPLING) x oversampling is supported."
+msgstr "Solo 8 ó 16 bit mono con MP_STRINGIFY(OVERSAMPLING) x de sobremuestreo es soportado."
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
