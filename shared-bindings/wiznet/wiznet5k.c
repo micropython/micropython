@@ -66,15 +66,14 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, cons
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_cs, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_rst, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rst, MP_ARG_OBJ, { .u_obj = mp_const_none } },
         { MP_QSTR_dhcp, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = true } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     // XXX check type of ARG_spi?
-    // XXX should ARG_rst be optional?
     assert_pin(args[ARG_cs].u_obj, false);
-    assert_pin(args[ARG_rst].u_obj, false);
+    assert_pin(args[ARG_rst].u_obj, true); // may be NULL
 
     mp_obj_t ret = wiznet5k_create(args[ARG_spi].u_obj, args[ARG_cs].u_obj, args[ARG_rst].u_obj);
     if (args[ARG_dhcp].u_bool) wiznet5k_start_dhcp();

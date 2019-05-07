@@ -364,8 +364,6 @@ mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
     wiznet5k_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
     wiznet5k_obj.spi = MP_OBJ_TO_PTR(spi_in);
-    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.cs, cs_in);
-    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
     wiznet5k_obj.socket_used = 0;
     wiznet5k_obj.dhcp_socket = -1;
 
@@ -380,13 +378,17 @@ mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
         8 // 8 BITS
     );
 
+    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.cs, cs_in);
     common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.cs, 1, DRIVE_MODE_PUSH_PULL);
-    common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.rst, 1, DRIVE_MODE_PUSH_PULL); 
 
-    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 0);
-    mp_hal_delay_us(10); // datasheet says 2us
-    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 1);
-    mp_hal_delay_ms(160); // datasheet says 150ms
+    if (rst_in) {
+        common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
+        common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.rst, 1, DRIVE_MODE_PUSH_PULL); 
+        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 0);
+        mp_hal_delay_us(10); // datasheet says 2us
+        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 1);
+        mp_hal_delay_ms(160); // datasheet says 150ms
+    }
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
     reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
