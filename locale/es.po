@@ -86,7 +86,7 @@ msgstr "'%s' espera un registro"
 
 #: py/emitinlinethumb.c
 #, c-format
-©msgid "'%s' expects a special register"
+msgid "'%s' expects a special register"
 msgstr "'%s' espera un carácter"
 
 #: py/emitinlinethumb.c
