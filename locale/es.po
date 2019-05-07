@@ -326,7 +326,7 @@ msgstr "Brightness debe estar entro 0 y 255"
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
-msgstr ""
+msgstr "Brightness no adjustable"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -363,7 +363,7 @@ msgstr "No se pueden agregar servicio en modo Central"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't advertise in Central mode"
-msgstr ""
+msgstr "No se puede anunciar en modo Central"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't change the name in Central mode"
@@ -429,11 +429,11 @@ msgstr "No se puede escribir sin pin MOSI."
 
 #: shared-bindings/bleio/Service.c
 msgid "Characteristic UUID doesn't match Service UUID"
-msgstr ""
+msgstr "Characteristic UUID no iguala al Service UUID"
 
 #: ports/nrf/common-hal/bleio/Service.c
 msgid "Characteristic already in use by another Service."
-msgstr ""
+msgstr "Characteristic esta en uso por otro servicio"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -453,7 +453,7 @@ msgstr "Clock unit está siendo utilizado"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Column entry must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "La entrada en la columna debe ser digitalio.DigitalInOut"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 #, fuzzy
@@ -463,7 +463,7 @@ msgstr "Bytes debe estar entre 0 y 255."
 #: ports/nrf/common-hal/bleio/UUID.c
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr ""
+msgstr "No pudo descodificar ble_uuid, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -493,7 +493,7 @@ msgstr "graphic debe ser 2048 bytes de largo"
 
 #: shared-module/audioio/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
-msgstr ""
+msgstr "El Data Chunk debe seguir el fmt chunk"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
@@ -780,7 +780,7 @@ msgstr "Argumento inválido"
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
-msgstr ""
+msgstr "Bits no válidos por valor"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -788,7 +788,7 @@ msgstr "Tamaño de buffer inválido"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
-msgstr ""
+msgstr "Período de captura no válido. Rango válido: 1 - 500"
 
 #: shared-bindings/audioio/Mixer.c
 msgid "Invalid channel count"
@@ -983,6 +983,7 @@ msgstr "Solo 8 ó 16 bit mono con 'MP_STRINGIFY(OVERSAMPLING)' x de sobremuestre
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
+"Solo formato de Windows, BMP sin compresión soportado: el tamaño del encabezado dado es %d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1099,12 +1100,12 @@ msgstr "Serializer está siendo utilizado"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
-msgstr ""
+msgstr "Cortes y valores son de diferentes longitudes."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
-msgstr ""
+msgstr "No se soportan los cortes"
 
 #: ports/nrf/common-hal/bleio/Adapter.c
 #, c-format
@@ -1117,7 +1118,7 @@ msgstr "Dividiendo con sub-capturas"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
-msgstr ""
+msgstr "El tamaño de la pila debe ser de al menos 256"
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -1215,15 +1216,15 @@ msgstr "Error USB"
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID integer value not in range 0 to 0xffff"
-msgstr ""
+msgstr "El valor integer UUID no está en el rango 0 a 0xffff"
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
+msgstr "El string UUID no es 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxx'"
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
-msgstr ""
+msgstr "El valor UUID no es str, int, or buffer byte"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -1249,7 +1250,7 @@ msgstr "Imposible escribir en nvm"
 
 #: ports/nrf/common-hal/bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
-msgstr ""
+msgstr "Tipo nrfx uuid inesperado"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1378,7 +1379,7 @@ msgstr "atributos aún no soportados"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 msgid "bad GATT role"
-msgstr ""
+msgstr "Rol GATT malo"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1809,7 +1810,7 @@ msgstr "firstbit debe ser MSB"
 
 #: py/objint.c
 msgid "float too big"
-msgstr ""
+msgstr "float es demasiado grande"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -2067,7 +2068,7 @@ msgstr "múltiples *x en la asignación"
 
 #: py/objtype.c
 msgid "multiple bases have instance lay-out conflict"
-msgstr ""
+msgstr "múltiples bases tienen conflicto de diseño"
 
 #: py/objtype.c
 msgid "multiple inheritance not supported"
@@ -2104,7 +2105,7 @@ msgstr "nombre reusado para argumento"
 
 #: py/emitnative.c
 msgid "native yield"
-msgstr ""
+msgstr "rendimiento nativo"
 
 #: py/runtime.c
 #, c-format
@@ -2159,7 +2160,7 @@ msgstr ""
 
 #: shared-bindings/bleio/UUID.c
 msgid "not a 128-bit UUID"
-msgstr ""
+msgstr "no es un UUID de 128-bits"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -2270,7 +2271,7 @@ msgstr "address fuera de límites"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel value requires too many bits"
-msgstr ""
+msgstr "valor de píxel requiere demasiado bits"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -2307,7 +2308,7 @@ msgstr "desbordamiento de cola(queue)"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
-msgstr ""
+msgstr "rawbuf no es el miso tamaño que buf"
 
 #: shared-bindings/_pixelbuf/__init__.c
 #, fuzzy
@@ -2357,7 +2358,7 @@ msgstr "script de compilación no soportado"
 
 #: shared-bindings/bleio/Peripheral.c
 msgid "services includes an object that is not a Service"
-msgstr ""
+msgstr "services incluye un objeto que no es servicio"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2398,7 +2399,7 @@ msgstr "y deberia ser un int"
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
-msgstr ""
+msgstr "paso debe ser numero no-cero"
 
 #: shared-bindings/busio/UART.c
 msgid "stop must be 1 or 2"
@@ -2455,7 +2456,7 @@ msgstr "error de sintaxis en el descriptor uctypes"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
-msgstr ""
+msgstr "threshold debe estar en el rango 0 a 65536"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "tile index out of bounds"
@@ -2471,12 +2472,12 @@ msgstr "time.struct_time() acepta exactamente 1 argumento"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr ""
+msgstr "tiempo muerto >100 (unidades en segundos)"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "timeout must be >= 0.0"
-msgstr "bits debe ser 8"
+msgstr "tiempo muerto debe ser 8"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -2501,7 +2502,7 @@ msgstr "tupla/lista tiene una longitud incorrecta"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "tuple/list required on RHS"
-msgstr ""
+msgstr "tuple o lista se requiere en RHS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "tx and rx cannot both be None"
@@ -2620,11 +2621,11 @@ msgstr "tipos no soportados para %q: '%s', '%s'"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
+msgstr "value_count debe ser > 0"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "write_args must be a list, tuple, or None"
-msgstr ""
+msgstr "write_args debe ser lista, tuple, o None"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
