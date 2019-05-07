@@ -57,8 +57,14 @@
 //|
 //|   :param ~busio.SPI spi: spi bus to use
 //|   :param ~microcontroller.Pin cs: pin to use for Chip Select
-//|   :param ~microcontroller.Pin rst: pin to use for Reset
-//|   :param bool dhcp: boolean flag, whether to start DHCP automatically (default True)
+//|   :param ~microcontroller.Pin rst: pin to use for Reset (optional)
+//|   :param bool dhcp: boolean flag, whether to start DHCP automatically (optional, keyword only, default True)
+//|
+//|   * The reset pin is optional: if supplied it is used to reset the
+//|     wiznet board before initialization.
+//|   * The SPI bus will be initialized appropriately by this library.
+//|   * At present, the WIZNET5K object is a singleton, so only one WizNet
+//|     interface is supported at a time.
 //|
 
 STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -82,7 +88,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, cons
 
 //| .. attribute:: connected
 //|
-//|   is this device physically connected?
+//|   (boolean, readonly) is this device physically connected?
 //|
 
 STATIC mp_obj_t wiznet5k_connected_get_value(mp_obj_t self_in) {
@@ -100,7 +106,9 @@ const mp_obj_property_t wiznet5k_connected_obj = {
 
 //| .. attribute:: dhcp
 //|
-//|   is DHCP active on this device? (set to true to activate DHCP, false to turn it off)
+//|   (boolean, readwrite) is DHCP active on this device?
+//|
+//|   * set to True to activate DHCP, False to turn it off
 //|
 
 STATIC mp_obj_t wiznet5k_dhcp_get_value(mp_obj_t self_in) {
@@ -152,6 +160,7 @@ STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(4, tuple);
     } else {
         // set
+        // XXX should this automatically stop DHCP here?
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
         netutils_parse_ipv4_addr(items[0], netinfo.ip, NETUTILS_BIG);
