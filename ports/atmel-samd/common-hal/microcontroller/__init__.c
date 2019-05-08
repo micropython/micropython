@@ -35,6 +35,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/translate.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
@@ -62,26 +63,29 @@ void common_hal_mcu_enable_interrupts(void) {
     __enable_irq();
 }
 
-extern uint32_t _ezero;
+static mcu_runmode_t next_reset;
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    // Set up the defaults.
-    _bootloader_dbl_tap = DBL_TAP_MAGIC_QUICK_BOOT;
-    _ezero = CIRCUITPY_CANARY_WORD;
-
-    if (runmode == RUNMODE_BOOTLOADER) {
-        if (!bootloader_available()) {
-            mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present."));
-        }
-        // Pretend to be the first of the two reset presses needed to enter the
-        // bootloader. That way one reset will end in the bootloader.
-        _bootloader_dbl_tap = DBL_TAP_MAGIC;
-    } else if (runmode == RUNMODE_SAFE_MODE) {
-        _ezero = CIRCUITPY_SOFTWARE_SAFE_MODE;
+    if (runmode == RUNMODE_BOOTLOADER && !bootloader_available()) {
+        mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present."));
     }
+    next_reset = runmode;
 }
 
 void common_hal_mcu_reset(void) {
+    if (next_reset == RUNMODE_BOOTLOADER) {
+        // Pretend to be the first of the two reset presses needed to enter the
+        // bootloader. That way one reset will end in the bootloader.
+        _bootloader_dbl_tap = DBL_TAP_MAGIC;
+    } else {
+        // Set up the default.
+        _bootloader_dbl_tap = DBL_TAP_MAGIC_QUICK_BOOT;
+    }
+
+    if (next_reset == RUNMODE_SAFE_MODE) {
+        reset_into_safe_mode(PROGRAMMATIC_SAFE_MODE);
+        return; // Doesn't actually return but it's here to make it clear.
+    }
     reset();
 }
 
