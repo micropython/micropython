@@ -1598,6 +1598,10 @@ NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, 
     nlr_raise(exception);
 }
 
+NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
+    mp_raise_msg(&mp_type_MpyError, msg);
+}
+
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
 NORETURN void mp_raise_recursion_depth(void) {
     mp_raise_RuntimeError(translate("maximum recursion depth exceeded"));

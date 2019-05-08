@@ -31,4 +31,5 @@
 #define NAME_ERROR        WHITE
 #define OS_ERROR          ORANGE
 #define VALUE_ERROR       PURPLE
+#define MPY_ERROR         BLUE
 #define OTHER_ERROR       YELLOW

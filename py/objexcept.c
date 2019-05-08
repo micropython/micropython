@@ -298,6 +298,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
   MP_DEFINE_EXCEPTION(SyntaxError, Exception)
     MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
+    MP_DEFINE_EXCEPTION(MpyError, Exception)
     /*
       MP_DEFINE_EXCEPTION(TabError, IndentationError)
       */
