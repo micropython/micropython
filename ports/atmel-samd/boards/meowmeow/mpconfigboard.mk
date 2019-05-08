@@ -1,6 +1,6 @@
 LD_FILE = boards/samd21x18-bootloader.ld
-USB_VID = 0xBAB1
-USB_PID = 0x1209
+USB_VID = 0x1209
+USB_PID = 0xBAB1
 USB_PRODUCT = "Meow Meow"
 USB_MANUFACTURER = "Electronic Cats"
 
