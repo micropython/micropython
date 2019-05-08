@@ -23,7 +23,7 @@ msgid ""
 "Code done running. Waiting for reload.\n"
 msgstr ""
 "\n"
-"실행 완료 코드. 재장전 을 기다리는 중입니다.\n"
+"실행 완료 코드. 재장전 을 기다리는 중입니다\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -40,7 +40,7 @@ msgstr " 산출:\n"
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%%c int또는 char필요합니다"
+msgstr "%%c 전수(int)또는 캐릭터(char)필요합니다"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -61,7 +61,7 @@ msgstr "%q 는 >=1이어야합니다"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr "%q 는 정수 여야합니다"
+msgstr "%q 는 정수(int) 여야합니다"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -109,7 +109,7 @@ msgstr ""
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' {r0, r1, ...}은 을 기대합니다"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -299,7 +299,7 @@ msgid ""
 "disable.\n"
 msgstr ""
 "자동 새로 고침이 켜져 있습니다. USB를 통해 파일을 저장하여 실행하십시오. 비활성화하려면 " 
-"REPL을 입력하십시오"
+"REPL을 입력하십시오.\n"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -328,7 +328,7 @@ msgstr "잘못된 크기의 버퍼. %d 바이트 여야합니다."
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
-msgstr "잘못된 크기의 버퍼. >1 바이트 여야합니다."
+msgstr "잘못된 크기의 버퍼. >1 여야합니다"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -351,15 +351,15 @@ msgstr ""
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't add services in Central mode"
-msgstr ""
+msgstr "센트랄(중앙) 모드에서는 서비스를 추가 할 수 없습니다"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't advertise in Central mode"
-msgstr ""
+msgstr "센트랄(중앙) 모드로 광고 (브로드 캐스트) 할 수 없습니다"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't change the name in Central mode"
-msgstr ""
+msgstr "센트랄(중앙) 모드에서는 이름을 변경할 수 없습니다"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't connect in Peripheral mode"
@@ -367,7 +367,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
-msgstr ""
+msgstr "값을 삭제할 수 없습니다"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
@@ -448,7 +448,7 @@ msgstr ""
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
-msgstr "명령은 0에서 255 사이의 int 여야합니다"
+msgstr "명령은 0에서 255 사이의 정수(int) 여야합니다"
 
 #: ports/nrf/common-hal/bleio/UUID.c
 #, c-format
@@ -473,7 +473,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
-msgstr ""
+msgstr "DAC가 현재 사용 중입니다"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -487,11 +487,11 @@ msgstr ""
 #: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
-msgstr ""
+msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니다"
 
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Data too large for the advertisement packet"
-msgstr ""
+msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니다"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -512,7 +512,7 @@ msgstr ""
 
 #: extmod/modure.c
 msgid "Error in regex"
-msgstr ""
+msgstr "Regex에 오류가 있습니다."
 
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
@@ -522,7 +522,7 @@ msgstr "%q 이 예상되었습니다."
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "Expected a Characteristic"
-msgstr "Characteristic이 예상되었습니다."
+msgstr "특성(Characteristic)이 예상되었습니다."
 
 #: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
 #: shared-bindings/bleio/Service.c
@@ -550,12 +550,12 @@ msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Failed to add service"
-msgstr ""
+msgstr "서비스를 추가하지 못했습니다"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to add service, err 0x%04x"
-msgstr ""
+msgstr "서비스를 추가하지 못했습니다., 오류 0x%04x"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -573,16 +573,16 @@ msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Failed to connect:"
-msgstr ""
+msgstr 연결할 수 없다""
 
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Failed to continue scanning"
-msgstr ""
+msgstr "스캔을 계속할 수 없습니다"
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to continue scanning, err 0x%04x"
-msgstr ""
+msgstr "스캔을 계속할 수 없습니다, 오류 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Failed to create mutex"
@@ -770,33 +770,33 @@ msgstr ""
 
 #: shared-module/audioio/WaveFile.c
 msgid "Invalid file"
-msgstr ""
+msgstr "파일이 유효하지 않습니다"
 
 #: shared-module/audioio/WaveFile.c
 msgid "Invalid format chunk size"
-msgstr ""
+msgstr "형식 청크 크기가 잘못되었습니다"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
-msgstr ""
+msgstr "비트 수가 유효하지 않습니다"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid phase"
-msgstr ""
+msgstr "단계가 잘못되었습니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: shared-bindings/pulseio/PWMOut.c
 msgid "Invalid pin"
-msgstr ""
+msgstr "핀이 잘못되었습니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Invalid pin for left channel"
-msgstr ""
+msgstr "왼쪽 채널 핀이 유효하지 않습니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Invalid pin for right channel"
-msgstr ""
+msgstr "오른쪽 채널 핀이 잘못되었습니다"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
@@ -804,7 +804,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
-msgstr ""
+msgstr "핀이 유효하지 않습니다"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
@@ -832,7 +832,7 @@ msgstr ""
 
 #: py/objslice.c
 msgid "Length must be an int"
-msgstr ""
+msgstr "길이는 정수(int) 여야합니다"
 
 #: py/objslice.c
 msgid "Length must be non-negative"
@@ -1170,11 +1170,11 @@ msgstr ""
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
+msgstr "UUID문자열이 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'형식이 아닙니다"
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
-msgstr ""
+msgstr "UUID값이 문자열(str), 정수(int) 또는 바이트버퍼가(byte buffer) 아닙니다"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -1188,7 +1188,7 @@ msgstr ""
 
 #: py/parse.c
 msgid "Unable to init parser"
-msgstr ""
+msgstr "파서를 초기화(init) 할 수 없습니다"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
@@ -1343,15 +1343,15 @@ msgstr ""
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be 7, 8 or 9"
-msgstr ""
+msgstr "비트(bits)는 7, 8 또는 9 여야합니다"
 
 #: extmod/machine_spi.c
 msgid "bits must be 8"
-msgstr ""
+msgstr "비트(bits)는 8이어야합니다"
 
 #: shared-bindings/audioio/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
-msgstr ""
+msgstr "bits_per_sample은 8 또는 16이어야합니다."
 
 #: py/emitinlinethumb.c
 msgid "branch not in range"
@@ -1851,7 +1851,7 @@ msgstr ""
 
 #: py/objstr.c
 msgid "integer required"
-msgstr "정수(int)가 필요합니다."
+msgstr "정수가 필요합니다"
 
 #: ports/nrf/common-hal/bleio/Broadcaster.c
 msgid "interval not in range 0.0020 to 10.24"
@@ -1859,11 +1859,11 @@ msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
-msgstr "ICT주변 기기가 유효하지 않습니다."
+msgstr "ICT주변 기기가 유효하지 않습니다"
 
 #: extmod/machine_spi.c
 msgid "invalid SPI peripheral"
-msgstr "SPI주변 기기가 유효하지 않습니다."
+msgstr "SPI주변 기기가 유효하지 않습니다"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
@@ -1871,7 +1871,7 @@ msgstr ""
 
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
-msgstr "cert가 유효하지 않습니다."
+msgstr "cert가 유효하지 않습니다"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
@@ -1903,16 +1903,16 @@ msgstr "구문(syntax)가 유효하지 않습니다"
 
 #: py/parsenum.c
 msgid "invalid syntax for integer"
-msgstr ""
+msgstr "구문(syntax)가 정수가 유효하지 않습니다"
 
 #: py/parsenum.c
 #, c-format
 msgid "invalid syntax for integer with base %d"
-msgstr "구문(syntax)가 정수(int)가 유효하지 않습니다."
+msgstr "구문(syntax)가 정수가 유효하지 않습니다"
 
 #: py/parsenum.c
 msgid "invalid syntax for number"
-msgstr "숫자에 대한 구문(syntax)가 유효하지 않습니다."
+msgstr "숫자에 대한 구문(syntax)가 유효하지 않습니다"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
