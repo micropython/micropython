@@ -553,10 +553,25 @@ const mp_obj_type_t mp_type_bytearray = {
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
+#if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        return;
+    }
+    if (attr == MP_QSTR_itemsize) {
+        mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+        dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
+    }
+}
+#endif
+
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+    .attr = memoryview_attr,
+    #endif
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
