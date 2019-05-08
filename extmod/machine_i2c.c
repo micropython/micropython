@@ -480,6 +480,41 @@ STATIC mp_obj_t machine_i2c_writeto(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_writeto_obj, 3, 4, machine_i2c_writeto);
 
+STATIC mp_obj_t machine_i2c_writevto(size_t n_args, const mp_obj_t *args) {
+    mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
+    mp_int_t addr = mp_obj_get_int(args[1]);
+
+    // Get the list of data buffer(s) to write
+    size_t len;
+    const mp_obj_t *items;
+    mp_obj_get_array(args[2], &len, (mp_obj_t**)&items);
+
+    // Get the stop argument
+    bool stop = (n_args == 3) ? true : mp_obj_is_true(args[3]);
+
+    // Extract all buffer data
+    mp_machine_i2c_buf_t *bufs = mp_local_alloc(len * sizeof(mp_machine_i2c_buf_t));
+    for (size_t i = 0; i < len; ++i) {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(items[i], &bufinfo, MP_BUFFER_READ);
+        bufs[i].len = bufinfo.len;
+        bufs[i].buf = bufinfo.buf;
+    }
+
+    // Do the I2C transfer
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    int ret = i2c_p->transfer(self, addr, len, bufs, stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
+    mp_local_free(bufs);
+
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
+    }
+
+    // Return number of acks received
+    return MP_OBJ_NEW_SMALL_INT(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_writevto_obj, 3, 4, machine_i2c_writevto);
+
 STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t addrsize, uint8_t *buf, size_t len) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
     uint8_t memaddr_buf[4];
@@ -601,6 +636,7 @@ STATIC const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readfrom), MP_ROM_PTR(&machine_i2c_readfrom_obj) },
     { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&machine_i2c_readfrom_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeto), MP_ROM_PTR(&machine_i2c_writeto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writevto), MP_ROM_PTR(&machine_i2c_writevto_obj) },
 
     // memory operations
     { MP_ROM_QSTR(MP_QSTR_readfrom_mem), MP_ROM_PTR(&machine_i2c_readfrom_mem_obj) },
