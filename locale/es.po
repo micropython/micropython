@@ -226,29 +226,29 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 #: shared-bindings/bleio/Address.c
 #, c-format
 msgid "Address is not %d bytes long or is in wrong format"
-msgstr ""
+msgstr "Direción no es %d bytes largo o esta en el formato incorrecto"
 
 #: shared-bindings/bleio/Address.c
 #, fuzzy, c-format
 msgid "Address must be %d bytes long"
-msgstr "palette debe ser 32 bytes de largo"
+msgstr "Direción debe ser %d bytes de largo"
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr "Todos los timers están siendo usados"
+msgstr "Todos los periféricos I2C están siendo usados"
 
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr "Todos los timers están siendo usados"
+msgstr "Todos los periféricos SPI están siendo usados"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, fuzzy
 msgid "All UART peripherals are in use"
-msgstr "Todos los timers están siendo usados"
+msgstr "Todos los periféricos UART están siendo usados"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
-msgstr "Todos los canales de eventos en uso"
+msgstr "Todos los canales de eventos estan en uso"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
@@ -266,7 +266,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
-msgstr "Todos los timers en uso"
+msgstr "Todos los timers estan en uso"
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
@@ -274,7 +274,7 @@ msgstr "Funcionalidad AnalogOut no soportada"
 
 #: shared-bindings/analogio/AnalogOut.c
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut es solo de 16 bits. Value debe ser menos a 65536."
+msgstr "AnalogOut solo toma 16 bits. El valor debe ser menos de 65536."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
@@ -286,7 +286,7 @@ msgstr "Otro envío ya está activo"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "La matriz debe contener palabras medias (tipo 'H')"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
@@ -295,6 +295,8 @@ msgstr "Valores del array deben ser bytes individuales."
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running.\n"
 msgstr ""
+"Se intentó la asignación del montón cuando la VM de"
+" MicroPython no estaba corriendo.\n"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -355,7 +357,7 @@ msgstr "Bytes debe estar entre 0 y 255."
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Can not use dotstar with %s"
-msgstr ""
+msgstr "No se puede usar dotstar con %s"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't add services in Central mode"
