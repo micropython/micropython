@@ -103,7 +103,10 @@ void frequencyin_interrupt_handler(uint8_t index) {
                 // record a new event count.
                 if (current_ms - self->last_ms >= self->capture_period) {
                     float new_factor = self->last_us + (1000 - current_us);
-                    self->factor = (current_ms - self->last_ms) + (new_factor / 1000);
+                    // ms difference will not need 64 bits. If we use 64 bits,
+                    // double-precision float routines are required, and we don't
+                    // want to include them because they're very large.
+                    self->factor = (uint32_t) (current_ms - self->last_ms) + (new_factor / 1000);
                     self->last_ms = current_ms;
                     self->last_us = current_us;
 
