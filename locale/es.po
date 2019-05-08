@@ -491,7 +491,7 @@ msgstr "DAC ya está siendo utilizado"
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, fuzzy
 msgid "Data 0 pin must be byte aligned"
-msgstr "graphic debe ser 2048 bytes de largo"
+msgstr ""
 
 #: shared-module/audioio/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
