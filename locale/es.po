@@ -322,11 +322,11 @@ msgstr "Ambos pines deben soportar interrupciones por hardware"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
-msgstr "Brightness debe estar entro 0 y 255"
+msgstr "Brillo debe estar entro 0 y 255"
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
-msgstr "Brightness no adjustable"
+msgstr "Brillo no adjustable"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
