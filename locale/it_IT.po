@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-17 11:17-0700\n"
+"POT-Creation-Date: 2019-05-07 13:05-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -63,7 +63,7 @@ msgstr "slice del buffer devono essere della stessa lunghezza"
 msgid "%q should be an int"
 msgstr "y dovrebbe essere un int"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() prende %d argomenti posizionali ma ne sono stati forniti %d"
 
@@ -71,12 +71,12 @@ msgstr "%q() prende %d argomenti posizionali ma ne sono stati forniti %d"
 msgid "'%q' argument required"
 msgstr "'%q' argomento richiesto"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a label"
 msgstr "'%s' aspetta una etichetta"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a register"
 msgstr "'%s' aspetta un registro"
@@ -96,7 +96,7 @@ msgstr "'%s' aspetta un registro"
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' aspetta un registro"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an integer"
 msgstr "'%s' aspetta un intero"
@@ -140,7 +140,7 @@ msgstr "l'oggetto '%s' non ha l'attributo '%q'"
 msgid "'%s' object is not an iterator"
 msgstr "l'oggetto '%s' non è un iteratore"
 
-#: py/objtype.c py/runtime.c
+#: py/runtime.c py/objtype.c
 #, c-format
 msgid "'%s' object is not callable"
 msgstr "oggeto '%s' non è chiamabile"
@@ -246,7 +246,7 @@ msgstr "Tutte le periferiche I2C sono in uso"
 msgid "All event channels in use"
 msgstr "Tutti i canali eventi utilizati"
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr "Tutti i canali di eventi sincronizzati in uso"
 
@@ -328,7 +328,7 @@ msgstr "Illiminazione non è regolabile"
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Buffer di lunghezza non valida. Dovrebbe essere di %d bytes."
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Il buffer deve essere lungo almeno 1"
 
@@ -368,7 +368,7 @@ msgstr "non si può cambiare il nome in Central mode"
 msgid "Can't connect in Peripheral mode"
 msgstr "non si può connettere in Periferal mode"
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
 msgid "Cannot delete values"
 msgstr "Impossibile cancellare valori"
 
@@ -451,7 +451,7 @@ msgstr "Unità di clock in uso"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "I byte devono essere compresi tra 0 e 255"
@@ -491,8 +491,8 @@ msgstr "graphic deve essere lunga 2048 byte"
 msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Impossibile inserire dati nel pacchetto di advertisement."
@@ -523,9 +523,8 @@ msgstr "Canale EXTINT già in uso"
 msgid "Error in regex"
 msgstr "Errore nella regex"
 
-#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/terminalio/Terminal.c
+#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
 msgid "Expected a %q"
 msgstr "Atteso un %q"
 
@@ -534,8 +533,8 @@ msgstr "Atteso un %q"
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Service.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Atteso un %q"
@@ -659,8 +658,8 @@ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 msgid "Failed to start advertising"
 msgstr "Impossibile avviare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Impossibile avviare advertisement. status: 0x%02x"
@@ -680,8 +679,8 @@ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 msgid "Failed to stop advertising"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/bleio/Broadcaster.c
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
@@ -722,8 +721,8 @@ msgstr "Iniziamento di Impostazione di Flash dallito, err 0x%04x"
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
-#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
 msgid "Function requires lock"
 msgstr ""
 
@@ -803,11 +802,11 @@ msgstr "File non valido"
 msgid "Invalid format chunk size"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid number of bits"
 msgstr "Numero di bit non valido"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid phase"
 msgstr "Fase non valida"
 
@@ -825,15 +824,14 @@ msgstr "Pin non valido per il canale sinistro"
 msgid "Invalid pin for right channel"
 msgstr "Pin non valido per il canale destro"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Pin non validi"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "Invalid polarity"
 msgstr "Polarità non valida"
 
@@ -907,8 +905,8 @@ msgstr "Deve essere un Group subclass"
 msgid "No DAC on chip"
 msgstr "Nessun DAC sul chip"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "No DMA channel found"
 msgstr "Nessun canale DMA trovato"
 
@@ -954,7 +952,7 @@ msgstr "Nessun file/directory esistente"
 msgid "Not connected"
 msgstr "Impossible connettersi all'AP"
 
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audioio/AudioOut.c shared-bindings/audiobusio/I2SOut.c
 msgid "Not playing"
 msgstr "In pausa"
 
@@ -1104,8 +1102,8 @@ msgstr "Serializer in uso"
 msgid "Slice and value different lengths."
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
 msgid "Slices not supported"
 msgstr "Slice non supportate"
 
@@ -1188,7 +1186,7 @@ msgstr "Per uscire resettare la scheda senza "
 msgid "Too many channels in sample."
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
 msgid "Too many display busses"
 msgstr ""
 
@@ -1224,8 +1222,8 @@ msgstr ""
 msgid "UUID value is not str, int or byte buffer"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Ipossibilitato ad allocare buffer per la conversione con segno"
 
@@ -1324,7 +1322,7 @@ msgstr "__init__() deve ritornare None, non '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr ""
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
+#: extmod/moduhashlib.c extmod/modubinascii.c
 msgid "a bytes-like object is required"
 msgstr "un oggetto byte-like è richiesto"
 
@@ -1353,8 +1351,8 @@ msgstr "l'argomento è una sequenza vuota"
 msgid "argument has wrong type"
 msgstr "il tipo dell'argomento è errato"
 
-#: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: py/argcheck.c shared-bindings/gamepad/GamePad.c
+#: shared-bindings/_stage/__init__.c shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "discrepanza di numero/tipo di argomenti"
 
@@ -1426,7 +1424,7 @@ msgstr ""
 msgid "buffer size must match format"
 msgstr "slice del buffer devono essere della stessa lunghezza"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
 msgid "buffer slices must be of equal length"
 msgstr "slice del buffer devono essere della stessa lunghezza"
 
@@ -1672,7 +1670,7 @@ msgstr "il colore deve essere un int"
 msgid "complex division by zero"
 msgstr "complex divisione per zero"
 
-#: py/objfloat.c py/parsenum.c
+#: py/parsenum.c py/objfloat.c
 msgid "complex values not supported"
 msgstr "valori complessi non supportai"
 
@@ -1716,7 +1714,7 @@ msgstr "destination_length deve essere un int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "sequanza di aggiornamento del dizionario ha la lunghezza errata"
 
-#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/modmath.c py/runtime.c py/objfloat.c py/objint_mpz.c py/objint_longlong.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "divisione per zero"
@@ -1828,7 +1826,7 @@ msgstr "la funzione non prende argomenti nominati"
 msgid "function expected at most %d arguments, got %d"
 msgstr "la funzione prevede al massimo %d argmoneti, ma ne ha ricevuti %d"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la funzione ha ricevuto valori multipli per l'argomento '%q'"
 
@@ -1850,7 +1848,7 @@ msgstr "argomento nominato '%q' mancante alla funzione"
 msgid "function missing required positional argument #%d"
 msgstr "mancante il #%d argomento posizonale obbligatorio della funzione"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/objnamedtuple.c py/bc.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2003,7 +2001,7 @@ msgstr ""
 msgid "keywords must be strings"
 msgstr "argomenti nominati devono essere stringhe"
 
-#: py/emitinlinethumb.c py/emitinlinextensa.c
+#: py/emitinlinextensa.c py/emitinlinethumb.c
 msgid "label '%q' not defined"
 msgstr "etichetta '%q' non definita"
 
@@ -2110,11 +2108,11 @@ msgstr "yield nativo"
 msgid "need more than %d values to unpack"
 msgstr "necessari più di %d valori da scompattare"
 
-#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
 msgid "negative power with no float support"
 msgstr "potenza negativa senza supporto per float"
 
-#: py/objint_mpz.c py/runtime.c
+#: py/runtime.c py/objint_mpz.c
 msgid "negative shift count"
 msgstr ""
 
@@ -2194,7 +2192,7 @@ msgstr ""
 msgid "object not an iterator"
 msgstr "l'oggetto non è un iteratore"
 
-#: py/objtype.c py/runtime.c
+#: py/runtime.c py/objtype.c
 msgid "object not callable"
 msgstr ""
 
@@ -2219,12 +2217,12 @@ msgstr ""
 msgid "odd-length string"
 msgstr "stringa di lunghezza dispari"
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstrunicode.c py/objstr.c
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "indirizzo fuori limite"
 
-#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
+#: py/objstrunicode.c py/objarray.c py/objstr.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo slice con step=1 (aka None) sono supportate"
@@ -2243,7 +2241,7 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr "overflow convertendo long int in parola"
 
-#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+#: shared-bindings/_stage/Text.c shared-bindings/_stage/Layer.c
 msgid "palette must be 32 bytes long"
 msgstr "la palette deve essere lunga 32 byte"
 
@@ -2380,7 +2378,7 @@ msgstr "la lunghezza di sleed deve essere non negativa"
 msgid "slice step cannot be zero"
 msgstr "la step della slice non può essere zero"
 
-#: py/objint.c py/sequence.c
+#: py/sequence.c py/objint.c
 msgid "small int overflow"
 msgstr "small int overflow"
 
@@ -2540,7 +2538,7 @@ msgstr "indentazione inaspettata"
 msgid "unexpected keyword argument"
 msgstr "argomento nominato inaspettato"
 
-#: py/bc.c py/objnamedtuple.c
+#: py/objnamedtuple.c py/bc.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argomento nominato '%q' inaspettato"
 
@@ -2584,7 +2582,7 @@ msgstr "tipo '%q' sconosciuto"
 msgid "unmatched '{' in format"
 msgstr "'{' spaiato nella stringa di formattazione"
 
-#: py/objtype.c py/runtime.c
+#: py/runtime.c py/objtype.c
 msgid "unreadable attribute"
 msgstr "attributo non leggibile"
 
