@@ -298,7 +298,6 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
   MP_DEFINE_EXCEPTION(SyntaxError, Exception)
     MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
-    MP_DEFINE_EXCEPTION(MpyError, Exception)
     /*
       MP_DEFINE_EXCEPTION(TabError, IndentationError)
       */
@@ -312,6 +311,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
     //TODO: Implement more UnicodeError subclasses which take arguments
 #endif
+    MP_DEFINE_EXCEPTION(MpyError, ValueError)
   /*
   MP_DEFINE_EXCEPTION(Warning, Exception)
     MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)
