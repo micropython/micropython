@@ -496,35 +496,25 @@ STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
     return mp_machine_i2c_readfrom(self, addr, buf, len, true);
 }
 
-#define MAX_MEMADDR_SIZE (4)
-#define BUF_STACK_SIZE (12)
-
 STATIC int write_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t addrsize, const uint8_t *buf, size_t len) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
 
-    // need some memory to create the buffer to send; try to use stack if possible
-    uint8_t buf2_stack[MAX_MEMADDR_SIZE + BUF_STACK_SIZE];
-    uint8_t *buf2;
-    size_t buf2_alloc = 0;
-    if (len <= BUF_STACK_SIZE) {
-        buf2 = buf2_stack;
-    } else {
-        buf2_alloc = MAX_MEMADDR_SIZE + len;
-        buf2 = m_new(uint8_t, buf2_alloc);
-    }
-
-    // create the buffer to send
+    // Create buffer with memory address
     size_t memaddr_len = 0;
+    uint8_t memaddr_buf[4];
     for (int16_t i = addrsize - 8; i >= 0; i -= 8) {
-        buf2[memaddr_len++] = memaddr >> i;
+        memaddr_buf[memaddr_len++] = memaddr >> i;
     }
-    memcpy(buf2 + memaddr_len, buf, len);
 
-    int ret = mp_machine_i2c_writeto(self, addr, buf2, memaddr_len + len, true);
-    if (buf2_alloc != 0) {
-        m_del(uint8_t, buf2, buf2_alloc);
-    }
-    return ret;
+    // Create partial write buffers
+    mp_machine_i2c_buf_t bufs[2] = {
+        {.len = memaddr_len, .buf = memaddr_buf},
+        {.len = len, .buf = (uint8_t*)buf},
+    };
+
+    // Do I2C transfer
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    return i2c_p->transfer(self, addr, 2, bufs, MP_MACHINE_I2C_FLAG_STOP);
 }
 
 STATIC const mp_arg_t machine_i2c_mem_allowed_args[] = {
