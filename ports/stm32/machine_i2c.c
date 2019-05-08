@@ -109,14 +109,34 @@ void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t
     i2c_init(self->i2c, self->scl, self->sda, freq);
 }
 
-int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return i2c_readfrom(self->i2c, addr, dest, len, stop);
-}
 
-int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
-    machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return i2c_writeto(self->i2c, addr, src, len, stop);
+    size_t remain_len = 0;
+    for (size_t i = 0; i < n; ++i) {
+        remain_len += bufs[i].len;
+    }
+
+    int ret = i2c_start_addr(self->i2c, flags & MP_MACHINE_I2C_FLAG_READ, addr, remain_len, flags & MP_MACHINE_I2C_FLAG_STOP);
+    if (ret < 0) {
+        return ret;
+    }
+
+    int num_acks = 0; // only valid for write; for read it'll be 0
+    for (; n--; ++bufs) {
+        remain_len -= bufs->len;
+        if (flags & MP_MACHINE_I2C_FLAG_READ) {
+            ret = i2c_read(self->i2c, bufs->buf, bufs->len, remain_len);
+        } else {
+            ret = i2c_write(self->i2c, bufs->buf, bufs->len, remain_len);
+        }
+        if (ret < 0) {
+            return ret;
+        }
+        num_acks += ret;
+    }
+
+    return num_acks;
 }
 
 #else
@@ -174,8 +194,7 @@ STATIC void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, u
     mp_hal_pin_open_drain(self->sda);
 }
 
-#define machine_hard_i2c_readfrom mp_machine_soft_i2c_readfrom
-#define machine_hard_i2c_writeto mp_machine_soft_i2c_writeto
+#define machine_hard_i2c_transfer mp_machine_soft_i2c_transfer
 
 #endif
 
@@ -240,8 +259,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 }
 
 STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
-    .readfrom = machine_hard_i2c_readfrom,
-    .writeto = machine_hard_i2c_writeto,
+    .transfer = machine_hard_i2c_transfer,
 };
 
 STATIC const mp_obj_type_t machine_hard_i2c_type = {
