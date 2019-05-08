@@ -856,6 +856,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
 #endif
 
+// Whether to support memoryview.itemsize attribute
+#ifndef MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+#define MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE (0)
+#endif
+
 // Whether to support set object
 #ifndef MICROPY_PY_BUILTINS_SET
 #define MICROPY_PY_BUILTINS_SET (1)
