@@ -1,6 +1,6 @@
 LD_FILE = boards/samd21x18-bootloader.ld
-USB_VID = 0xBAB2
-USB_PID = 0x1209
+USB_VID = 0x1209
+USB_PID = 0xBAB2
 USB_PRODUCT = "CatWAN USBStick"
 USB_MANUFACTURER = "Electronic Cats"
 
