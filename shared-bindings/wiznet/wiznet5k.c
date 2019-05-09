@@ -77,7 +77,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, cons
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    // XXX check type of ARG_spi?
+    // TODO check type of ARG_spi?
     assert_pin(args[ARG_cs].u_obj, false);
     assert_pin(args[ARG_rst].u_obj, true); // may be NULL
 
@@ -144,6 +144,7 @@ const mp_obj_property_t wiznet5k_dhcp_obj = {
 //|   (ip_address, subnet_mask, gateway_address, dns_server)
 //|
 //|   Or can be called with the same tuple to set those parameters.
+//|   Setting ifconfig parameters turns DHCP off, if it was on.
 //|
 
 STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
@@ -160,7 +161,7 @@ STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(4, tuple);
     } else {
         // set
-        // XXX should this automatically stop DHCP here?
+        wiznet5k_stop_dhcp();
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
         netutils_parse_ipv4_addr(items[0], netinfo.ip, NETUTILS_BIG);
