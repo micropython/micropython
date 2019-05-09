@@ -340,7 +340,7 @@ void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_s
     return;
 
 raise:
-    mp_raise_ValueError_varg(translate("value would overflow a %d byte buffer"), nbytes);
+    mp_raise_OverflowError_varg(translate("value would overflow a %d byte buffer"), nbytes);
 }
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE

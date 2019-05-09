@@ -1598,6 +1598,14 @@ NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, 
     nlr_raise(exception);
 }
 
+NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OverflowError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
+
 NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_MpyError, msg);
 }
