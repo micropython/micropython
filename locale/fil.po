@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-07 13:05-0400\n"
+"POT-Creation-Date: 2019-05-09 01:06-0400\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -52,8 +52,8 @@ msgstr "%q indeks wala sa sakop"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
@@ -255,8 +255,8 @@ msgstr "Lahat ng sync event channels ay ginagamit"
 msgid "All timers for this pin are in use"
 msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -368,7 +368,7 @@ msgstr "Hindi mapalitan ang pangalan sa Central mode"
 msgid "Can't connect in Peripheral mode"
 msgstr "Hindi maconnect sa Peripheral mode"
 
-#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "Hindi mabura ang values"
 
@@ -450,7 +450,7 @@ msgstr "Clock unit ginagamit"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
@@ -523,8 +523,8 @@ msgstr "Ginagamit na ang EXTINT channel"
 msgid "Error in regex"
 msgstr "May pagkakamali sa REGEX"
 
+#: shared-bindings/microcontroller/Pin.c shared-bindings/terminalio/Terminal.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
-#: shared-bindings/terminalio/Terminal.c shared-bindings/microcontroller/Pin.c
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
 
@@ -533,8 +533,8 @@ msgstr "Umasa ng %q"
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
-#: shared-bindings/bleio/Service.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Descriptor.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Umasa ng %q"
@@ -722,8 +722,8 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: shared-bindings/busio/SPI.c shared-bindings/busio/I2C.c
-#: shared-bindings/bitbangio/SPI.c shared-bindings/bitbangio/I2C.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 msgid "Function requires lock"
 msgstr "Function nangangailangan ng lock"
 
@@ -755,8 +755,8 @@ msgstr ""
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid %q pin"
 msgstr "Mali ang %q pin"
 
@@ -824,9 +824,9 @@ msgid "Invalid pin for right channel"
 msgstr "Mali ang pin para sa kanang channel"
 
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -1087,8 +1087,8 @@ msgstr "Sample rate ay dapat positibo"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Serializer in use"
 msgstr "Serializer ginagamit"
 
@@ -1096,8 +1096,8 @@ msgstr "Serializer ginagamit"
 msgid "Slice and value different lengths."
 msgstr "Slice at value iba't ibang haba."
 
-#: shared-bindings/pulseio/PulseIn.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
 
@@ -1187,7 +1187,7 @@ msgstr "Para lumabas, paki-reset ang board na wala ang "
 msgid "Too many channels in sample."
 msgstr "Sobra ang channels sa sample."
 
-#: shared-bindings/displayio/ParallelBus.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Too many display busses"
 msgstr ""
 
@@ -1228,8 +1228,8 @@ msgstr ""
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to find free GCLK"
 msgstr "Hindi mahanap ang libreng GCLK"
 
@@ -1328,7 +1328,7 @@ msgstr "__init__() dapat magbalink na None, hindi '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ arg ay dapat na user-type"
 
-#: extmod/moduhashlib.c extmod/modubinascii.c
+#: extmod/modubinascii.c extmod/moduhashlib.c
 msgid "a bytes-like object is required"
 msgstr "a bytes-like object ay kailangan"
 
@@ -1358,7 +1358,7 @@ msgid "argument has wrong type"
 msgstr "may maling type ang argument"
 
 #: py/argcheck.c shared-bindings/gamepad/GamePad.c
-#: shared-bindings/_stage/__init__.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/_stage/__init__.c
 msgid "argument num/types mismatch"
 msgstr "hindi tugma ang argument num/types"
 
@@ -1722,7 +1722,7 @@ msgstr "ang destination_length ay dapat na isang int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "may mali sa haba ng dict update sequence"
 
-#: py/modmath.c py/runtime.c py/objfloat.c py/objint_mpz.c py/objint_longlong.c
+#: py/runtime.c py/objint_longlong.c py/objfloat.c py/objint_mpz.c py/modmath.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "dibisyon ng zero"
@@ -1731,7 +1731,7 @@ msgstr "dibisyon ng zero"
 msgid "empty"
 msgstr "walang laman"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "walang laman ang heap"
 
@@ -1856,7 +1856,7 @@ msgstr "function nangangailangan ng keyword argument '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "function nangangailangan ng positional argument #%d"
 
-#: py/argcheck.c py/objnamedtuple.c py/bc.c
+#: py/objnamedtuple.c py/argcheck.c py/bc.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2115,7 +2115,7 @@ msgstr "native yield"
 msgid "need more than %d values to unpack"
 msgstr "kailangan ng higit sa %d na halaga upang i-unpack"
 
-#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
+#: py/runtime.c py/objint_longlong.c py/objint_mpz.c
 msgid "negative power with no float support"
 msgstr "negatibong power na walang float support"
 
@@ -2221,12 +2221,12 @@ msgstr "object na may buffer protocol kinakailangan"
 msgid "odd-length string"
 msgstr "odd-length string"
 
-#: py/objstrunicode.c py/objstr.c
+#: py/objstr.c py/objstrunicode.c
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "wala sa sakop ang address"
 
-#: py/objstrunicode.c py/objarray.c py/objstr.c py/objtuple.c
+#: py/objstr.c py/objstrunicode.c py/objarray.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
@@ -2380,7 +2380,7 @@ msgstr "sleep length ay dapat hindi negatibo"
 msgid "slice step cannot be zero"
 msgstr "slice step ay hindi puedeng 0"
 
-#: py/sequence.c py/objint.c
+#: py/objint.c py/sequence.c
 msgid "small int overflow"
 msgstr "small int overflow"
 
@@ -2618,6 +2618,11 @@ msgstr "hindi sinusuportahang type para sa operator"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "hindi sinusuportahang type para sa %q: '%s', '%s'"
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
