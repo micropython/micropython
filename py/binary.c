@@ -441,15 +441,18 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
             break;
         }
         #endif
-        default:
+        default: {
+            bool signed_type = is_signed(val_type);
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
+                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
                 return;
             }
             #endif
 
             val = mp_obj_get_int(val_in);
+            mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
             // zero/sign extend if needed
             if (MP_BYTES_PER_OBJ_WORD < 8 && size > sizeof(val)) {
                 int c = (mp_int_t)val < 0 ? 0xff : 0x00;
@@ -459,6 +462,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
                 }
             }
             break;
+        }
     }
 
     mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
@@ -478,16 +482,24 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
         case 'O':
             ((mp_obj_t *)p)[index] = val_in;
             break;
-        default:
+        default: {
+            size_t size = mp_binary_get_size('@', typecode, NULL);
+            bool signed_type = is_signed(typecode);
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
-                size_t size = mp_binary_get_size('@', typecode, NULL);
+                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
                     size, (uint8_t *)p + index * size);
                 return;
             }
             #endif
-            mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
+            mp_int_t val = mp_obj_get_int(val_in);
+            if (val < 0 && typecode == BYTEARRAY_TYPECODE) {
+                val = val & 0xFF;
+            }
+            mp_obj_int_buffer_overflow_check(mp_obj_new_int(val), size, signed_type);
+            mp_binary_set_val_array_from_int(typecode, p, index, val);
+        }
     }
 }
 
