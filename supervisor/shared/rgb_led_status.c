@@ -247,6 +247,8 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
         status->exception_color = OS_ERROR;
     } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_ValueError)) {
         status->exception_color = VALUE_ERROR;
+    } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_MpyError)) {
+        status->exception_color = MPY_ERROR;
     } else {
         status->exception_color = OTHER_ERROR;
     }
