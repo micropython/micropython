@@ -485,25 +485,36 @@ STATIC mp_obj_t machine_i2c_writevto(size_t n_args, const mp_obj_t *args) {
     mp_int_t addr = mp_obj_get_int(args[1]);
 
     // Get the list of data buffer(s) to write
-    size_t len;
+    size_t nitems;
     const mp_obj_t *items;
-    mp_obj_get_array(args[2], &len, (mp_obj_t**)&items);
+    mp_obj_get_array(args[2], &nitems, (mp_obj_t**)&items);
 
     // Get the stop argument
     bool stop = (n_args == 3) ? true : mp_obj_is_true(args[3]);
 
-    // Extract all buffer data
-    mp_machine_i2c_buf_t *bufs = mp_local_alloc(len * sizeof(mp_machine_i2c_buf_t));
-    for (size_t i = 0; i < len; ++i) {
+    // Extract all buffer data, skipping zero-length buffers
+    size_t alloc = nitems == 0 ? 1 : nitems;
+    size_t nbufs = 0;
+    mp_machine_i2c_buf_t *bufs = mp_local_alloc(alloc * sizeof(mp_machine_i2c_buf_t));
+    for (; nitems--; ++items) {
         mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(items[i], &bufinfo, MP_BUFFER_READ);
-        bufs[i].len = bufinfo.len;
-        bufs[i].buf = bufinfo.buf;
+        mp_get_buffer_raise(*items, &bufinfo, MP_BUFFER_READ);
+        if (bufinfo.len > 0) {
+            bufs[nbufs].len = bufinfo.len;
+            bufs[nbufs++].buf = bufinfo.buf;
+        }
+    }
+
+    // Make sure there is at least one buffer, empty if needed
+    if (nbufs == 0) {
+        bufs[0].len = 0;
+        bufs[0].buf = NULL;
+        nbufs = 1;
     }
 
     // Do the I2C transfer
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
-    int ret = i2c_p->transfer(self, addr, len, bufs, stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
+    int ret = i2c_p->transfer(self, addr, nbufs, bufs, stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
     mp_local_free(bufs);
 
     if (ret < 0) {
