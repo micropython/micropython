@@ -76,6 +76,10 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     return NO_SAFE_MODE;
 }
 
+void safe_mode_on_next_reset(safe_mode_t reason) {
+    port_set_saved_word(SAFE_MODE_DATA_GUARD | (reason << 8));
+}
+
 // Don't inline this so it's easy to break on it from GDB.
 void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
     if (current_safe_mode > BROWNOUT && reason > BROWNOUT) {
@@ -85,7 +89,7 @@ void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
         }
     }
 
-    port_set_saved_word(SAFE_MODE_DATA_GUARD | (reason << 8));
+    safe_mode_on_next_reset(reason);
     reset_cpu();
 }
 
