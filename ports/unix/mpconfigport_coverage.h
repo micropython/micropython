@@ -58,6 +58,7 @@
 #define MICROPY_PY_FRAMEBUF            (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 #define MICROPY_PY_UCRYPTOLIB          (1)
+#define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 
 // TODO these should be generic, not bound to fatfs
 #define mp_type_fileio mp_type_vfs_posix_fileio

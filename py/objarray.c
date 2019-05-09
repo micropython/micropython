@@ -375,9 +375,8 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         return MP_OBJ_NULL; // op not supported
     } else {
         mp_obj_array_t *o = MP_OBJ_TO_PTR(self_in);
-        if (0) {
 #if MICROPY_PY_BUILTINS_SLICE
-        } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
+        if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
                 mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
@@ -456,22 +455,22 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             mp_obj_array_t *res;
             size_t sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
             assert(sz > 0);
-            if (0) {
-                // dummy
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
-            } else if (o->base.type == &mp_type_memoryview) {
+            if (o->base.type == &mp_type_memoryview) {
                 res = m_new_obj(mp_obj_array_t);
                 *res = *o;
                 res->memview_offset += slice.start;
                 res->len = slice.stop - slice.start;
+            } else
             #endif
-            } else {
+            {
                 res = array_new(o->typecode, slice.stop - slice.start);
                 memcpy(res->items, (uint8_t*)o->items + slice.start * sz, (slice.stop - slice.start) * sz);
             }
             return MP_OBJ_FROM_PTR(res);
+        } else
 #endif
-        } else {
+        {
             size_t index = mp_get_index(o->base.type, o->len, index_in, false);
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
             if (o->base.type == &mp_type_memoryview) {

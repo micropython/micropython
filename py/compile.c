@@ -3457,12 +3457,12 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     #endif
     uint max_num_labels = 0;
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
-        if (false) {
         #if MICROPY_EMIT_INLINE_ASM
-        } else if (s->emit_options == MP_EMIT_OPT_ASM) {
+        if (s->emit_options == MP_EMIT_OPT_ASM) {
             compile_scope_inline_asm(comp, s, MP_PASS_SCOPE);
+        } else
         #endif
-        } else {
+        {
             compile_scope(comp, s, MP_PASS_SCOPE);
 
             // Check if any implicitly declared variables should be closed over
@@ -3493,11 +3493,8 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     emit_t *emit_native = NULL;
 #endif
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
-        if (false) {
-            // dummy
-
         #if MICROPY_EMIT_INLINE_ASM
-        } else if (s->emit_options == MP_EMIT_OPT_ASM) {
+        if (s->emit_options == MP_EMIT_OPT_ASM) {
             // inline assembly
             if (comp->emit_inline_asm == NULL) {
                 comp->emit_inline_asm = ASM_EMITTER(new)(max_num_labels);
@@ -3519,9 +3516,9 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
             if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope_inline_asm(comp, s, MP_PASS_EMIT);
             }
+        } else
         #endif
-
-        } else {
+        {
 
             // choose the emit type
 

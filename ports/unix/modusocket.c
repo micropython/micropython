@@ -337,10 +337,9 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     struct timeval tv = {0,};
     bool new_blocking = true;
 
-    if (timeout_in == mp_const_none) {
-        setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, NULL, 0);
-        setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, NULL, 0);
-    } else {
+    // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
+    // and that's how 'tv' is initialized above
+    if (timeout_in != mp_const_none) {
         #if MICROPY_PY_BUILTINS_FLOAT
         mp_float_t val = mp_obj_get_float(timeout_in);
         double ipart;
@@ -354,12 +353,15 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         // for Python API it means non-blocking.
         if (tv.tv_sec == 0 && tv.tv_usec == 0) {
             new_blocking = false;
-        } else {
-            setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO,
-                       &tv, sizeof(struct timeval));
-            setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO,
-                       &tv, sizeof(struct timeval));
         }
+    }
+
+    if (new_blocking) {
+        int r;
+        r = setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
+        RAISE_ERRNO(r, errno);
+        r = setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
+        RAISE_ERRNO(r, errno);
     }
 
     if (self->blocking != new_blocking) {
