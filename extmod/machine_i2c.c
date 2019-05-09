@@ -192,7 +192,7 @@ int mp_machine_soft_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n
     }
 
     // write the slave address
-    ret = mp_hal_i2c_write_byte(self, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ));
+    ret = mp_hal_i2c_write_byte(self, (addr << 1) | (flags & MP_MACHINE_I2C_FLAG_READ));
     if (ret < 0) {
         return ret;
     } else if (ret != 0) {
