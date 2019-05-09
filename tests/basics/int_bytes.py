@@ -17,3 +17,15 @@ try:
     (1).to_bytes(-1, "little")
 except ValueError:
     print("ValueError")
+
+# too small buffer should raise an error
+try:
+    (256).to_bytes(1, "little")
+except OverflowError:
+    print("OverflowError")
+
+# negative numbers should raise an error
+try:
+    (-256).to_bytes(2, "little")
+except OverflowError:
+    print("OverflowError")
