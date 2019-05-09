@@ -53,6 +53,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     int base, const char *prefix, char base_char, char comma);
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
     int base, const char *prefix, char base_char, char comma);
+void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed);
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf);
 // Returns true if 'self_in' fit into 'len' bytes of 'buf' without overflowing, 'buf' is truncated otherwise.

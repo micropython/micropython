@@ -300,6 +300,48 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     return b;
 }
 
+void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed) {
+    if (is_signed) {
+        // edge = 1 << (nbytes * 8 - 1)
+        mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
+            mp_obj_new_int(1),
+            mp_obj_new_int(nbytes * 8 - 1));
+
+        // if self >= edge, we don't fit
+        if (mp_binary_op(MP_BINARY_OP_MORE_EQUAL, self_in, edge) == mp_const_true) {
+            goto raise;
+        }
+
+        // edge = -edge
+        edge = mp_unary_op(MP_UNARY_OP_NEGATIVE, edge);
+
+        // if self < edge, we don't fit
+        if (mp_binary_op(MP_BINARY_OP_LESS, self_in, edge) == mp_const_true) {
+            goto raise;
+        }
+    } else {
+        if (mp_obj_int_sign(self_in) < 0) {
+            // Negative numbers never fit in an unsigned value
+            goto raise;
+        }
+
+        // edge = 1 << (nbytes * 8)
+        mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
+            mp_obj_new_int(1),
+            mp_obj_new_int(nbytes * 8));
+
+        // if self >= edge, we don't fit
+        if (mp_binary_op(MP_BINARY_OP_MORE_EQUAL, self_in, edge) == mp_const_true) {
+            goto raise;
+        }
+    }
+
+    return;
+
+raise:
+    mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("value would overflow a %d byte buffer"), nbytes);
+}
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 int mp_obj_int_sign(mp_obj_t self_in) {
@@ -433,6 +475,8 @@ static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     vstr_t vstr;
     vstr_init_len(&vstr, dlen);
     byte *data = (byte *)vstr.buf;
+
+    mp_obj_int_buffer_overflow_check(args[0], dlen, false);
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     if (!mp_obj_is_small_int(args[0])) {
