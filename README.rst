@@ -63,7 +63,7 @@ Contributors who follow the `Code of
 Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__
 are welcome to submit pull requests and they will be promptly reviewed
 by project admins. Please join the
-`Discord <http://adafru.it/discord>`__ too.
+`Discord <https://adafru.it/discord>`__ too.
 
 Branding
 ------------
