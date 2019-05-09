@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -247,10 +247,8 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
         return ret;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
-STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
     // The signature of this function is: throw(type[, value[, traceback]])
     // CPython will pass all given arguments through the call chain and process them
@@ -276,7 +274,6 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
         return ret;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
@@ -298,7 +295,6 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
             return mp_const_none;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
 STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
