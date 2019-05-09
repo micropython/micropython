@@ -295,7 +295,7 @@ msgstr "Valores del array deben ser bytes individuales."
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running.\n"
 msgstr ""
-"Se intentó la asignación del montón cuando la VM de"
+"Se intentó la asignación del heap cuando el VM de"
 " MicroPython no estaba corriendo.\n"
 
 #: main.c
