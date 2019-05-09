@@ -124,6 +124,7 @@ int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, m
 
     int num_acks = 0; // only valid for write; for read it'll be 0
     for (; n--; ++bufs) {
+        remain_len -= bufs->len;
         if (flags & MP_MACHINE_I2C_FLAG_READ) {
             ret = i2c_read(self->i2c, bufs->buf, bufs->len, remain_len);
         } else {
@@ -133,7 +134,6 @@ int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, m
             return ret;
         }
         num_acks += ret;
-        remain_len -= bufs->len;
     }
 
     return num_acks;
