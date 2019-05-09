@@ -193,7 +193,7 @@ SRC_C = \
 	machine_wdt.c \
 	mpthreadport.c \
 	machine_rtc.c \
-	modsdcard.c \
+	esp32_sdcard.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -668,20 +668,23 @@ ESPIDF_WPA_SUPPLICANT_O = $(addprefix $(ESPCOMP)/wpa_supplicant/,\
 	)
 
 ESPIDF_SDMMC_O = $(addprefix $(ESPCOMP)/sdmmc/,\
-    sdmmc_cmd.o \
-    sdmmc_common.o \
-    sdmmc_init.o \
-    sdmmc_mmc.o \
-    sdmmc_sd.o \
-    sdmmc_io.o \
-    ) \
-    $(addprefix $(ESPCOMP)/driver/,\
-	sdmmc_host.o \
-    sdmmc_transaction.o \
+	sdmmc_cmd.o \
+	sdmmc_common.o \
+	sdmmc_init.o \
+	sdmmc_mmc.o \
+	sdmmc_sd.o \
+	sdmmc_io.o \
 	) \
-    $(addprefix $(ESPCOMP)/soc/,\
-    esp32/sdmmc_periph.o \
-    )
+	$(addprefix $(ESPCOMP)/driver/,\
+	sdmmc_host.o \
+	sdmmc_transaction.o \
+	sdspi_host.o \
+	sdspi_transaction.o \
+	sdspi_crc.o \
+	) \
+	$(addprefix $(ESPCOMP)/soc/,\
+	esp32/sdmmc_periph.o \
+	)
 
 
 OBJ_ESPIDF =

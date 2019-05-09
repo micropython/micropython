@@ -28,4 +28,8 @@
 
 extern const mp_obj_type_t esp32_ulp_type;
 
+#if MICROPY_HW_ENABLE_SDCARD
+extern const mp_obj_type_t esp32_sdcard_type;
+#endif
+
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H

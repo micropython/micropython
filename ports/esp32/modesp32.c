@@ -155,6 +155,9 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
+#if MICROPY_HW_ENABLE_SDCARD
+    { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&esp32_sdcard_type) },
+#endif
 
     { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_PTR(&mp_const_false_obj) },
     { MP_ROM_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), MP_ROM_PTR(&mp_const_true_obj) },
