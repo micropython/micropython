@@ -43,6 +43,12 @@ void network_module_init(void) {
 }
 
 void network_module_deinit(void) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic); 
+        if (nic_type->deinit != NULL) nic_type->deinit(nic);
+    }
+    mp_obj_list_set_len(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 
 void network_module_background(void) {
@@ -92,4 +98,8 @@ void network_module_create_random_mac_address(uint8_t *mac) {
     mac[3] = (uint8_t)(rb2 >> 16);
     mac[4] = (uint8_t)(rb2 >> 8);
     mac[5] = (uint8_t)(rb2);
+}
+
+uint16_t network_module_create_random_source_tcp_port(void) {
+    return 0xc000 | shared_modules_random_getrandbits(14);
 }

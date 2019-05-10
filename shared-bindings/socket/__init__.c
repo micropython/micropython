@@ -248,7 +248,7 @@ STATIC mp_int_t _socket_recv_into(mod_network_socket_obj_t *sock, byte *buf, mp_
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
-    return len;
+    return ret;
 }
 
 
