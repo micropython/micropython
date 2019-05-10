@@ -76,6 +76,10 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     return NO_SAFE_MODE;
 }
 
+void safe_mode_on_next_reset(safe_mode_t reason) {
+    port_set_saved_word(SAFE_MODE_DATA_GUARD | (reason << 8));
+}
+
 // Don't inline this so it's easy to break on it from GDB.
 void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
     if (current_safe_mode > BROWNOUT && reason > BROWNOUT) {
@@ -85,15 +89,18 @@ void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
         }
     }
 
-    port_set_saved_word(SAFE_MODE_DATA_GUARD | (reason << 8));
+    safe_mode_on_next_reset(reason);
     reset_cpu();
 }
 
 void print_safe_mode_message(safe_mode_t reason) {
+    if (reason == NO_SAFE_MODE) {
+        return;
+    }
+    serial_write("\r\n");
     // Output a user safe mode string if its set.
     #ifdef BOARD_USER_SAFE_MODE
     if (reason == USER_SAFE_MODE) {
-        serial_write("\r\n");
         serial_write_compressed(translate("You requested starting safe mode by "));
         serial_write(BOARD_USER_SAFE_MODE_ACTION);
         serial_write("\r\n");
@@ -102,8 +109,11 @@ void print_safe_mode_message(safe_mode_t reason) {
         serial_write("\r\n");
     } else
     #endif
-    if (reason != NO_SAFE_MODE) {
-        serial_write("\r\n");
+    if (reason == MANUAL_SAFE_MODE) {
+        serial_write_compressed(translate("The reset button was pressed while booting CircuitPython. Press again to exit safe mode.\n"));
+    } else if (reason == PROGRAMMATIC_SAFE_MODE) {
+        serial_write_compressed(translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.\n"));
+    } else {
         serial_write_compressed(translate("You are running in safe mode which means something unanticipated happened.\n"));
         if (reason == HARD_CRASH || reason == MICROPY_NLR_JUMP_FAIL || reason == MICROPY_FATAL_ERROR || reason == GC_ALLOC_OUTSIDE_VM) {
             serial_write_compressed(translate("Looks like our core CircuitPython code crashed hard. Whoops!\nPlease file an issue at https://github.com/adafruit/circuitpython/issues\n with the contents of your CIRCUITPY drive and this message:\n"));
@@ -121,8 +131,6 @@ void print_safe_mode_message(safe_mode_t reason) {
         } else if (reason == HEAP_OVERWRITTEN) {
             serial_write_compressed(translate("The CircuitPython heap was corrupted because the stack was too small.\nPlease increase stack size limits and press reset (after ejecting CIRCUITPY).\nIf you didn't change the stack, then file an issue here with the contents of your CIRCUITPY drive:\n"));
             serial_write("https://github.com/adafruit/circuitpython/issues\r\n");
-        } else if (reason == MANUAL_SAFE_MODE) {
-            serial_write_compressed(translate("The reset button was pressed while booting CircuitPython. Press again to exit safe mode.\n"));
         }
     }
 }
