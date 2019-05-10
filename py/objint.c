@@ -303,43 +303,32 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
 void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed)
 {
     if (is_signed) {
-        // edge = 1 << (nbytes * 8 - 1)
+        // self must be < 2**(bits - 1)
         mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
                                      mp_obj_new_int(1),
                                      mp_obj_new_int(nbytes * 8 - 1));
 
-        // if self >= edge, we don't fit
-        if (mp_binary_op(MP_BINARY_OP_MORE_EQUAL, self_in, edge) == mp_const_true) {
-            goto raise;
-        }
-
-        // edge = -edge
-        edge = mp_unary_op(MP_UNARY_OP_NEGATIVE, edge);
-
-        // if self < edge, we don't fit
         if (mp_binary_op(MP_BINARY_OP_LESS, self_in, edge) == mp_const_true) {
-            goto raise;
+            // and >= -2**(bits - 1)
+            edge = mp_unary_op(MP_UNARY_OP_NEGATIVE, edge);
+            if (mp_binary_op(MP_BINARY_OP_MORE_EQUAL, self_in, edge) == mp_const_true) {
+                return;
+            }
         }
     } else {
-        if (mp_obj_int_sign(self_in) < 0) {
-            // Negative numbers never fit in an unsigned value
-            goto raise;
-        }
+        // self must be >= 0
+        if (mp_obj_int_sign(self_in) >= 0) {
+            // and < 2**(bits)
+            mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
+                                         mp_obj_new_int(1),
+                                         mp_obj_new_int(nbytes * 8));
 
-        // edge = 1 << (nbytes * 8)
-        mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
-                                     mp_obj_new_int(1),
-                                     mp_obj_new_int(nbytes * 8));
-
-        // if self >= edge, we don't fit
-        if (mp_binary_op(MP_BINARY_OP_MORE_EQUAL, self_in, edge) == mp_const_true) {
-            goto raise;
+            if (mp_binary_op(MP_BINARY_OP_LESS, self_in, edge) == mp_const_true) {
+                return;
+            }
         }
     }
 
-    return;
-
-raise:
     mp_raise_OverflowError_varg(translate("value would overflow a %d byte buffer"), nbytes);
 }
 
