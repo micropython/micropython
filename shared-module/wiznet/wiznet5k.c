@@ -203,8 +203,12 @@ int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_
 }
 
 int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
+    uint16_t src_port = network_module_create_random_source_tcp_port();
+    // make sure same outgoing port number can't be in use by two different sockets.
+    src_port = (src_port & ~(_WIZCHIP_SOCK_NUM_ - 1)) | socket->u_param.fileno;
+
     // use "bind" function to open the socket in client mode
-    if (wiznet5k_socket_bind(socket, ip, 0, _errno) != 0) {
+    if (wiznet5k_socket_bind(socket, NULL, src_port, _errno) != 0) {
         return -1;
     }
 

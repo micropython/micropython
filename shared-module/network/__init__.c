@@ -99,3 +99,7 @@ void network_module_create_random_mac_address(uint8_t *mac) {
     mac[4] = (uint8_t)(rb2 >> 8);
     mac[5] = (uint8_t)(rb2);
 }
+
+uint16_t network_module_create_random_source_tcp_port(void) {
+    return 0xc000 | shared_modules_random_getrandbits(14);
+}

@@ -25,10 +25,11 @@
  * THE SOFTWARE.
  */
 
-void network_module_create_random_mac_address(uint8_t *mac);
-
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_NETWORK___INIT___H
 #define MICROPY_INCLUDED_SHARED_MODULE_NETWORK___INIT___H
+
+void network_module_create_random_mac_address(uint8_t *mac);
+uint16_t network_module_create_random_source_tcp_port(void);
 
 #define MOD_NETWORK_IPADDR_BUF_SIZE (4)
 
