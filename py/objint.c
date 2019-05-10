@@ -300,6 +300,38 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     return b;
 }
 
+void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed)
+{
+    if (is_signed) {
+        // self must be < 2**(bits - 1)
+        mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
+                                     mp_obj_new_int(1),
+                                     mp_obj_new_int(nbytes * 8 - 1));
+
+        if (mp_binary_op(MP_BINARY_OP_LESS, self_in, edge) == mp_const_true) {
+            // and >= -2**(bits - 1)
+            edge = mp_unary_op(MP_UNARY_OP_NEGATIVE, edge);
+            if (mp_binary_op(MP_BINARY_OP_MORE_EQUAL, self_in, edge) == mp_const_true) {
+                return;
+            }
+        }
+    } else {
+        // self must be >= 0
+        if (mp_obj_int_sign(self_in) >= 0) {
+            // and < 2**(bits)
+            mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
+                                         mp_obj_new_int(1),
+                                         mp_obj_new_int(nbytes * 8));
+
+            if (mp_binary_op(MP_BINARY_OP_LESS, self_in, edge) == mp_const_true) {
+                return;
+            }
+        }
+    }
+
+    mp_raise_OverflowError_varg(translate("value would overflow a %d byte buffer"), nbytes);
+}
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 int mp_obj_int_sign(mp_obj_t self_in) {
@@ -434,6 +466,8 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     vstr_init_len(&vstr, len);
     byte *data = (byte*)vstr.buf;
     memset(data, 0, len);
+
+    mp_obj_int_buffer_overflow_check(args[0], len, false);
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     if (!MP_OBJ_IS_SMALL_INT(args[0])) {

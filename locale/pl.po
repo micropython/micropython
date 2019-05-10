@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-08 15:23-0700\n"
+"POT-Creation-Date: 2019-05-09 01:06-0400\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -53,8 +53,8 @@ msgstr "%q poza zakresem"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "%q must be >= 1"
 msgstr "%q musi być >= 1"
 
@@ -252,8 +252,8 @@ msgstr "Wszystkie kanały zdarzeń synchronizacji w użyciu"
 msgid "All timers for this pin are in use"
 msgstr "Wszystkie timery tej nóżki w użyciu"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -731,8 +731,8 @@ msgstr "Niewłaściwa wielkość bufora"
 msgid "Input/output error"
 msgstr "Błąd I/O"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid %q pin"
 msgstr "Zła nóżka %q"
 
@@ -1056,8 +1056,8 @@ msgstr "Częstotliwość próbkowania musi być dodatnia"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Zbyt wysoka częstotliwość próbkowania. Musi być mniejsza niż %d"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Serializer in use"
 msgstr "Serializator w użyciu"
 
@@ -1203,8 +1203,8 @@ msgstr "UUID nie jest typu str, int lub bytes"
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Nie udała się alokacja buforów do konwersji ze znakiem"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to find free GCLK"
 msgstr "Brak wolnego GCLK"
 
@@ -1690,7 +1690,7 @@ msgstr "dzielenie przez zero"
 msgid "empty"
 msgstr "puste"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "pusta sterta"
 
@@ -2565,6 +2565,11 @@ msgstr "zły typ dla operatora"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "złe typy dla %q: '%s', '%s'"
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"

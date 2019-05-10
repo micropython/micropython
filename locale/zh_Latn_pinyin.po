@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-08 15:23-0700\n"
+"POT-Creation-Date: 2019-05-09 01:06-0400\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -54,8 +54,8 @@ msgstr "%q suǒyǐn chāochū fànwéi"
 msgid "%q indices must be integers, not %s"
 msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "%q must be >= 1"
 msgstr "%q bìxū dàyú huò děngyú 1"
 
@@ -253,8 +253,8 @@ msgstr "Suǒyǒu tóngbù shìjiàn píndào shǐyòng"
 msgid "All timers for this pin are in use"
 msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -732,8 +732,8 @@ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè"
 msgid "Input/output error"
 msgstr "Shūrù/shūchū cuòwù"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid %q pin"
 msgstr "Wúxiào de %q yǐn jiǎo"
 
@@ -1061,8 +1061,8 @@ msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Serializer in use"
 msgstr "Xùliè huà yǐjīng shǐyòngguò"
 
@@ -1208,8 +1208,8 @@ msgstr "UUID zhí bùshì str,int huò zì jié huǎnchōng qū"
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to find free GCLK"
 msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 
@@ -1700,7 +1700,7 @@ msgstr "bèi líng chú"
 msgid "empty"
 msgstr "kòngxián"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "kōng yīn yīnxiào"
 
@@ -2577,6 +2577,11 @@ msgstr "bù zhīchí de cāozuò zhě lèixíng"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "bù zhīchí de lèixíng wèi %q: '%s', '%s'"
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"

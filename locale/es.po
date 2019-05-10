@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-08 15:23-0700\n"
+"POT-Creation-Date: 2019-05-09 01:06-0400\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -55,8 +55,8 @@ msgstr "%q indice fuera de rango"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indices deben ser enteros, no %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "%q debe ser >= 1"
@@ -260,8 +260,8 @@ msgstr ""
 msgid "All timers for this pin are in use"
 msgstr "Todos los timers para este pin están siendo utilizados"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -762,8 +762,8 @@ msgstr "Tamaño incorrecto del buffer"
 msgid "Input/output error"
 msgstr "error Input/output"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid %q pin"
 msgstr "Pin %q inválido"
 
@@ -1096,8 +1096,8 @@ msgstr "Sample rate debe ser positivo"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Serializer in use"
 msgstr "Serializer está siendo utilizado"
 
@@ -1240,8 +1240,8 @@ msgstr "El valor UUID no es str, int, or buffer byte"
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to find free GCLK"
 msgstr "No se pudo encontrar un GCLK libre"
 
@@ -1740,7 +1740,7 @@ msgstr "división por cero"
 msgid "empty"
 msgstr "vacío"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "heap vacío"
 
@@ -2628,6 +2628,11 @@ msgstr "tipo de operador no soportado"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "tipos no soportados para %q: '%s', '%s'"
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"

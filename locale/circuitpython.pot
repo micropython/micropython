@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-08 15:23-0700\n"
+"POT-Creation-Date: 2019-05-10 10:09-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2537,6 +2537,11 @@ msgstr ""
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
+msgstr ""
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c

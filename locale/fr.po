@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-08 15:23-0700\n"
+"POT-Creation-Date: 2019-05-09 01:06-0400\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -54,8 +54,8 @@ msgstr "index %q hors gamme"
 msgid "%q indices must be integers, not %s"
 msgstr "les indices %q doivent être des entiers, pas %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "%d doit être >=1"
@@ -258,8 +258,8 @@ msgstr "Tous les canaux d'événements de synchro sont utilisés"
 msgid "All timers for this pin are in use"
 msgstr "Tous les timers pour cette broche sont utilisés"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -760,8 +760,8 @@ msgstr "Taille de tampon incorrecte"
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
 
@@ -1105,8 +1105,8 @@ msgstr "Le taux d'échantillonage doit être positif"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taux d'échantillonage trop élevé. Doit être inf. à %d"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Serializer in use"
 msgstr "Sérialiseur en cours d'utilisation"
 
@@ -1259,8 +1259,8 @@ msgstr ""
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to find free GCLK"
 msgstr "Impossible de trouver un GCLK libre"
 
@@ -1772,7 +1772,7 @@ msgstr "division par zéro"
 msgid "empty"
 msgstr "vide"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "tas vide"
 
@@ -2668,6 +2668,11 @@ msgstr "type non supporté pour l'opérateur"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "type non supporté pour %q: '%s', '%s'"
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"

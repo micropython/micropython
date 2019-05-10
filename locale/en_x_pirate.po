@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-08 15:23-0700\n"
+"POT-Creation-Date: 2019-05-09 01:06-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: @sommersoft, @MrCertainly\n"
@@ -54,8 +54,8 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "%q must be >= 1"
 msgstr ""
 
@@ -253,8 +253,8 @@ msgstr ""
 msgid "All timers for this pin are in use"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -730,8 +730,8 @@ msgstr ""
 msgid "Input/output error"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid %q pin"
 msgstr "Avast! %q pin be invalid"
 
@@ -1050,8 +1050,8 @@ msgstr ""
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Serializer in use"
 msgstr ""
 
@@ -1187,8 +1187,8 @@ msgstr ""
 msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to find free GCLK"
 msgstr "Arr! No free GCLK be in sight"
 
@@ -1669,7 +1669,7 @@ msgstr ""
 msgid "empty"
 msgstr ""
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr ""
 
@@ -2541,6 +2541,11 @@ msgstr ""
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
+msgstr ""
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c

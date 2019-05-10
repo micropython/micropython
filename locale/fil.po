@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-08 15:23-0700\n"
+"POT-Creation-Date: 2019-05-09 01:06-0400\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -52,8 +52,8 @@ msgstr "%q indeks wala sa sakop"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
@@ -255,8 +255,8 @@ msgstr "Lahat ng sync event channels ay ginagamit"
 msgid "All timers for this pin are in use"
 msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -756,8 +756,8 @@ msgstr ""
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Invalid %q pin"
 msgstr "Mali ang %q pin"
 
@@ -1089,8 +1089,8 @@ msgstr "Sample rate ay dapat positibo"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Serializer in use"
 msgstr "Serializer ginagamit"
 
@@ -1236,8 +1236,8 @@ msgstr ""
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Unable to find free GCLK"
 msgstr "Hindi mahanap ang libreng GCLK"
 
@@ -1739,7 +1739,7 @@ msgstr "dibisyon ng zero"
 msgid "empty"
 msgstr "walang laman"
 
-#: extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/modutimeq.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "walang laman ang heap"
 
@@ -2626,6 +2626,11 @@ msgstr "hindi sinusuportahang type para sa operator"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "hindi sinusuportahang type para sa %q: '%s', '%s'"
+
+#: py/objint.c
+#, c-format
+msgid "value would overflow a %d byte buffer"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
