@@ -66,7 +66,17 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 
     return MP_OBJ_FROM_PTR(self);
 }
-
+//|   .. method:: __setitem__(index, value)
+//|
+//|     Sets the pixel color at the given index. The index should be an integer in the range 0 to color_count-1
+//|
+//|     The color can be from 0x000000 to 0xFFFFFF, and can be an int or bytes (3 bytes (RGB) or 4 bytes (RGB + pad byte))
+//|
+//|     This allows you to::
+//|
+//|       palette[0] = 0xFFFFFF
+//|       palette[1] = 0xFF0000
+//|
 STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item
