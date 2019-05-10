@@ -357,6 +357,23 @@ bool wiznet5k_check_dhcp(void) {
     return wiznet5k_obj.dhcp_socket >= 0;
 }
 
+void wiznet5k_reset(void) {
+    if (wiznet5k_obj.rst.pin) {
+        // hardware reset if using RST pin
+        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 0);
+        mp_hal_delay_us(10); // datasheet says 2us
+        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 1);
+        mp_hal_delay_ms(150); // datasheet says 150ms
+    } else {
+        // otherwise, software reset
+        wizchip_sw_reset();
+    }
+}
+
+void wiznet5k_socket_deinit(mod_network_socket_obj_t *socket) {
+    wiznet5k_reset();
+}
+
 /// Create and return a WIZNET5K object.
 mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
 
@@ -381,14 +398,8 @@ mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
     common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.cs, cs_in);
     common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.cs, 1, DRIVE_MODE_PUSH_PULL);
 
-    if (rst_in) {
-        common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
-        common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.rst, 1, DRIVE_MODE_PUSH_PULL); 
-        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 0);
-        mp_hal_delay_us(10); // datasheet says 2us
-        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 1);
-        mp_hal_delay_ms(160); // datasheet says 150ms
-    }
+    if (rst_in) common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
+    wiznet5k_reset();
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
     reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);

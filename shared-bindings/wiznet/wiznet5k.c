@@ -204,6 +204,7 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
     .settimeout = wiznet5k_socket_settimeout,
     .ioctl = wiznet5k_socket_ioctl,
     .timer_tick = wiznet5k_socket_timer_tick,
+    .deinit = wiznet5k_socket_deinit,
 };
 
 #endif // MICROPY_PY_WIZNET5K

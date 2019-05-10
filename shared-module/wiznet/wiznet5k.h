@@ -57,6 +57,7 @@ int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level
 int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
 int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
 void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket);
+void wiznet5k_socket_deinit(mod_network_socket_obj_t *socket);
 mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in);
 mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in);
 
