@@ -128,6 +128,14 @@ void displayio_group_construct(displayio_group_t* self, displayio_group_child_t*
 bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, uint16_t* pixel) {
     x -= self->x;
     y -= self->y;
+    // When we are scaled we need to substract all but one to ensure -scale to 0 divide down to -1.
+    // Normally -scale to scale both divide down to 0 because 0 is unsigned.
+    if (x < 0) {
+        x -= self->scale - 1;
+    }
+    if (y < 0) {
+        y -= self->scale - 1;
+    }
     x /= self->scale;
     y /= self->scale;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
