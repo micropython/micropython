@@ -69,7 +69,7 @@ typedef struct _usb_device_t {
     usbd_hid_itf_t usbd_hid_itf;
 } usb_device_t;
 
-usb_device_t usb_device;
+usb_device_t usb_device = {0};
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 
 // predefined hid mouse data

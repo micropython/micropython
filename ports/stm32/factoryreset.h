@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_PERSISTENTCODE_H
-#define MICROPY_INCLUDED_PY_PERSISTENTCODE_H
+#ifndef MICROPY_INCLUDED_STM32_FACTORYRESET_H
+#define MICROPY_INCLUDED_STM32_FACTORYRESET_H
 
-#include "py/mpprint.h"
-#include "py/reader.h"
-#include "py/emitglue.h"
+#include "lib/oofatfs/ff.h"
 
-// The current version of .mpy files
-#define MPY_VERSION 4
+void factory_reset_make_files(FATFS *fatfs);
 
-enum {
-    MP_NATIVE_ARCH_NONE = 0,
-    MP_NATIVE_ARCH_X86,
-    MP_NATIVE_ARCH_X64,
-    MP_NATIVE_ARCH_ARMV6,
-    MP_NATIVE_ARCH_ARMV6M,
-    MP_NATIVE_ARCH_ARMV7M,
-    MP_NATIVE_ARCH_ARMV7EM,
-    MP_NATIVE_ARCH_ARMV7EMSP,
-    MP_NATIVE_ARCH_ARMV7EMDP,
-    MP_NATIVE_ARCH_XTENSA,
-};
-
-mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
-mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
-mp_raw_code_t *mp_raw_code_load_file(const char *filename);
-
-void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print);
-void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename);
-
-#endif // MICROPY_INCLUDED_PY_PERSISTENTCODE_H
+#endif // MICROPY_INCLUDED_STM32_FACTORYRESET_H

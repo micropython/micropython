@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
+#include "genhdr/mpversion.h"
 #ifdef _WIN32
 #include "ports/windows/fmode.h"
 #endif
@@ -98,6 +99,7 @@ STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
 "Options:\n"
+"--version : show version information\n"
 "-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
 "-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
 "-v : verbose (trace various operations); can be multiple\n"
@@ -211,6 +213,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
+            } else if (strcmp(argv[a], "--version") == 0) {
+                printf("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+                    "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "\n");
+                return 0;
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
             } else if (strncmp(argv[a], "-O", 2) == 0) {
