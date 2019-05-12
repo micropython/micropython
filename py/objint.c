@@ -351,53 +351,30 @@ void mp_small_int_buffer_overflow_check(mp_int_t val, size_t nbytes, bool is_sig
     if (val == 0) {
         return;
     }
-    if (!is_signed) {
-        if (val >= 0) {
-            // Using signed constants here, not UINT8_MAX, etc. to avoid any unintended conversions.
-            if (val <= 0xff) {
-                return;                     // Small values fit in any number of nbytes.
-            }
-            if (nbytes == 2 && val <= 0xffff) {
-                return;
-            }
-            #if !defined(__LP64__)
-            // 32-bit ints and pointers
-            if (nbytes >= 4) {
-                return;                // Any mp_int_t will fit.
-            }
-            #else
-            // 64-bit ints and pointers
-            if (nbytes == 4 && val <= 0xffffffff) {
-                return;
-            }
-            if (nbytes >= 8) {
-                return;                // Any mp_int_t will fit.
-            }
-            #endif
-        } // Negative, fall through to failure.
-    } else {
-        // signed
-        if (val >= INT8_MIN && val <= INT8_MAX) {
-            return;                                     // Small values fit in any number of nbytes.
-        }
-        if (nbytes == 2 && val >= INT16_MIN && val <= INT16_MAX) {
+    // Trying to store negative values in unsigned bytes falls through to failure.
+    if (is_signed || val >= 0) {
+
+        if (nbytes >= sizeof(val)) {
+            // All non-negative N bit signed integers fit in an unsigned N bit integer.
+            // This case prevents shifting too far below.
             return;
         }
-        #if !defined(__LP64__)
-        // 32-bit ints and pointers
-        if (nbytes >= 4) {
-            return;                // Any mp_int_t will fit.
+
+        if (is_signed) {
+            mp_int_t edge = ((mp_int_t)1 << (nbytes * 8 - 1));
+            if (-edge <= val && val < edge) {
+                return;
+            }
+            // Out of range, fall through to failure.
+        } else {
+            // Unsigned. We already know val >= 0.
+            mp_int_t edge = ((mp_int_t)1 << (nbytes * 8));
+            if (val < edge) {
+                return;
+            }
         }
-        #else
-        // 64-bit ints and pointers
-        if (nbytes == 4 && val >= INT32_MIN && val <= INT32_MAX) {
-            return;
-        }
-        if (nbytes >= 8) {
-            return;                // Any mp_int_t will fit.
-        }
-        #endif
-    } // Fall through to failure.
+        // Fall through to failure.
+    }
 
     mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("value would overflow a %d byte buffer"), nbytes);
 }
