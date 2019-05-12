@@ -1,1 +1,3 @@
+sphinx
+recommonmark
 sphinxcontrib-svg2pdfconverter
