@@ -13,13 +13,6 @@ def test_array_overflow(typecode, val):
     except OverflowError:
         print('OverflowError')
 
-# small int -1
-test_array_overflow('Q', -1)
-test_array_overflow('L', -1)
-test_array_overflow('I', -1)
-test_array_overflow('H', -1)
-test_array_overflow('B', -1)
-
 # big int -1
 test_array_overflow('Q', -2**64 // 2**64)
 test_array_overflow('L', -2**64 // 2**64)
