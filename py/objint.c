@@ -300,6 +300,8 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     return b;
 }
 
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+
 void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed) {
     if (is_signed) {
         // edge = 1 << (nbytes * 8 - 1)
@@ -339,6 +341,64 @@ void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_s
     return;
 
 raise:
+    mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("value would overflow a %d byte buffer"), nbytes);
+}
+
+#endif // MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+
+void mp_small_int_buffer_overflow_check(mp_int_t val, size_t nbytes, bool is_signed) {
+    // Fast path for zero.
+    if (val == 0) {
+        return;
+    }
+    if (!is_signed) {
+        if (val >= 0) {
+            // Using signed constants here, not UINT8_MAX, etc. to avoid any unintended conversions.
+            if (val <= 0xff) {
+                return;                     // Small values fit in any number of nbytes.
+            }
+            if (nbytes == 2 && val <= 0xffff) {
+                return;
+            }
+            #if !defined(__LP64__)
+            // 32-bit ints and pointers
+            if (nbytes >= 4) {
+                return;                // Any mp_int_t will fit.
+            }
+            #else
+            // 64-bit ints and pointers
+            if (nbytes == 4 && val <= 0xffffffff) {
+                return;
+            }
+            if (nbytes >= 8) {
+                return;                // Any mp_int_t will fit.
+            }
+            #endif
+        } // Negative, fall through to failure.
+    } else {
+        // signed
+        if (val >= INT8_MIN && val <= INT8_MAX) {
+            return;                                     // Small values fit in any number of nbytes.
+        }
+        if (nbytes == 2 && val >= INT16_MIN && val <= INT16_MAX) {
+            return;
+        }
+        #if !defined(__LP64__)
+        // 32-bit ints and pointers
+        if (nbytes >= 4) {
+            return;                // Any mp_int_t will fit.
+        }
+        #else
+        // 64-bit ints and pointers
+        if (nbytes == 4 && val >= INT32_MIN && val <= INT32_MAX) {
+            return;
+        }
+        if (nbytes >= 8) {
+            return;                // Any mp_int_t will fit.
+        }
+        #endif
+    } // Fall through to failure.
+
     mp_raise_msg_varg(&mp_type_OverflowError, MP_ERROR_TEXT("value would overflow a %d byte buffer"), nbytes);
 }
 
@@ -464,7 +524,6 @@ static MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_
 
 static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed (currently behaves as if signed=(val < 0))
-    bool overflow;
 
     mp_int_t dlen = n_args < 2 ? 1 : mp_obj_get_int(args[1]);
     if (dlen < 0) {
@@ -476,38 +535,18 @@ static mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     vstr_init_len(&vstr, dlen);
     byte *data = (byte *)vstr.buf;
 
-    mp_obj_int_buffer_overflow_check(args[0], dlen, false);
-
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     if (!mp_obj_is_small_int(args[0])) {
-        overflow = !mp_obj_int_to_bytes_impl(args[0], big_endian, dlen, data);
+        mp_obj_int_buffer_overflow_check(args[0], dlen, false);
+        mp_obj_int_to_bytes_impl(args[0], big_endian, dlen, data);
     } else
     #endif
     {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(args[0]);
-        int slen = 0;  // Number of bytes to represent val
-
-        // This logic has a twin in objint_longlong.c
-        if (val > 0) {
-            slen = (sizeof(mp_int_t) * 8 - mp_clz_mpi(val) + 7) / 8;
-        } else if (val < -1) {
-            slen = (sizeof(mp_int_t) * 8 - mp_clz_mpi(~val) + 8) / 8;
-        } else {
-            // clz of 0 is defined, so 0 and -1 map to 0 and 1
-            slen = -val;
-        }
-
-        if (slen <= dlen) {
-            memset(data, val < 0 ? 0xFF : 0x00, dlen);
-            mp_binary_set_int(slen, big_endian, data + (big_endian ? (dlen - slen) : 0), val);
-            overflow = false;
-        } else {
-            overflow = true;
-        }
-    }
-
-    if (overflow) {
-        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("buffer too small"));
+        // Small int checking is separate, to be fast.
+        mp_small_int_buffer_overflow_check(val, dlen, false);
+        size_t l = MIN((size_t)dlen, sizeof(val));
+        mp_binary_set_int(l, big_endian, data + (big_endian ? (dlen - l) : 0), val);
     }
 
     return mp_obj_new_bytes_from_vstr(&vstr);
