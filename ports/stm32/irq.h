@@ -144,6 +144,8 @@ MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 
 #define IRQ_PRI_CAN             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
 
+#define IRQ_PRI_SPI             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 8, 0)
+
 // Interrupt priority for non-special timers.
 #define IRQ_PRI_TIMX            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 13, 0)
 
