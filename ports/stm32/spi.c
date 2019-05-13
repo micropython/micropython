@@ -97,6 +97,28 @@ const spi_t spi_obj[6] = {
     #endif
 };
 
+#if defined(STM32H7)
+// STM32H7 HAL requires SPI IRQs to be enabled and handled.
+#if defined(MICROPY_HW_SPI1_SCK)
+void SPI1_IRQHandler(void) { IRQ_ENTER(SPI1_IRQn); HAL_SPI_IRQHandler(&SPIHandle1); IRQ_EXIT(SPI1_IRQn); }
+#endif
+#if defined(MICROPY_HW_SPI2_SCK)
+void SPI2_IRQHandler(void) { IRQ_ENTER(SPI2_IRQn); HAL_SPI_IRQHandler(&SPIHandle2); IRQ_EXIT(SPI2_IRQn); }
+#endif
+#if defined(MICROPY_HW_SPI3_SCK)
+void SPI3_IRQHandler(void) { IRQ_ENTER(SPI3_IRQn); HAL_SPI_IRQHandler(&SPIHandle3); IRQ_EXIT(SPI3_IRQn); }
+#endif
+#if defined(MICROPY_HW_SPI4_SCK)
+void SPI4_IRQHandler(void) { IRQ_ENTER(SPI4_IRQn); HAL_SPI_IRQHandler(&SPIHandle4); IRQ_EXIT(SPI4_IRQn); }
+#endif
+#if defined(MICROPY_HW_SPI5_SCK)
+void SPI5_IRQHandler(void) { IRQ_ENTER(SPI5_IRQn); HAL_SPI_IRQHandler(&SPIHandle5); IRQ_EXIT(SPI5_IRQn); }
+#endif
+#if defined(MICROPY_HW_SPI6_SCK)
+void SPI6_IRQHandler(void) { IRQ_ENTER(SPI6_IRQn); HAL_SPI_IRQHandler(&SPIHandle6); IRQ_EXIT(SPI6_IRQn); }
+#endif
+#endif
+
 void spi_init0(void) {
     // Initialise the SPI handles.
     // The structs live on the BSS so all other fields will be zero after a reset.
@@ -341,6 +363,41 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     // an initialisation the next time we use it.
     dma_invalidate_channel(self->tx_dma_descr);
     dma_invalidate_channel(self->rx_dma_descr);
+
+    #if defined(STM32H7)
+    if (0) {
+    #if defined(MICROPY_HW_SPI1_SCK)
+    } else if (spi->Instance == SPI1) {
+        NVIC_SetPriority(SPI1_IRQn, IRQ_PRI_SPI);
+        HAL_NVIC_EnableIRQ(SPI1_IRQn);
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
+    } else if (spi->Instance == SPI2) {
+        NVIC_SetPriority(SPI2_IRQn, IRQ_PRI_SPI);
+        HAL_NVIC_EnableIRQ(SPI2_IRQn);
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
+    } else if (spi->Instance == SPI3) {
+        NVIC_SetPriority(SPI3_IRQn, IRQ_PRI_SPI);
+        HAL_NVIC_EnableIRQ(SPI3_IRQn);
+    #endif
+    #if defined(MICROPY_HW_SPI4_SCK)
+    } else if (self->Instance == SPI4) {
+        NVIC_SetPriority(SPI4_IRQn, IRQ_PRI_SPI);
+        HAL_NVIC_EnableIRQ(SPI4_IRQn);
+    #endif
+    #if defined(MICROPY_HW_SPI5_SCK)
+    } else if (self->Instance == SPI5) {
+        NVIC_SetPriority(SPI5_IRQn, IRQ_PRI_SPI);
+        HAL_NVIC_EnableIRQ(SPI5_IRQn);
+    #endif
+    #if defined(MICROPY_HW_SPI6_SCK)
+    } else if (self->Instance == SPI6) {
+        NVIC_SetPriority(SPI6_IRQn, IRQ_PRI_SPI);
+        HAL_NVIC_EnableIRQ(SPI6_IRQn);
+    #endif
+    }
+    #endif
 }
 
 void spi_deinit(const spi_t *spi_obj) {
@@ -352,36 +409,42 @@ void spi_deinit(const spi_t *spi_obj) {
         __HAL_RCC_SPI1_FORCE_RESET();
         __HAL_RCC_SPI1_RELEASE_RESET();
         __HAL_RCC_SPI1_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(SPI1_IRQn);
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         __HAL_RCC_SPI2_FORCE_RESET();
         __HAL_RCC_SPI2_RELEASE_RESET();
         __HAL_RCC_SPI2_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(SPI2_IRQn);
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         __HAL_RCC_SPI3_FORCE_RESET();
         __HAL_RCC_SPI3_RELEASE_RESET();
         __HAL_RCC_SPI3_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(SPI3_IRQn);
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
         __HAL_RCC_SPI4_FORCE_RESET();
         __HAL_RCC_SPI4_RELEASE_RESET();
         __HAL_RCC_SPI4_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(SPI4_IRQn);
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
         __HAL_RCC_SPI5_FORCE_RESET();
         __HAL_RCC_SPI5_RELEASE_RESET();
         __HAL_RCC_SPI5_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(SPI5_IRQn);
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
         __HAL_RCC_SPI6_FORCE_RESET();
         __HAL_RCC_SPI6_RELEASE_RESET();
         __HAL_RCC_SPI6_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(SPI6_IRQn);
     #endif
     }
 }
