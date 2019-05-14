@@ -27,8 +27,16 @@
 #include "boards/board.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
+	// Don't reset:
+	// 	- USB Host Enable Pin
+	// 	- reset pin of the USB Hub
+	//
+	// If either are reset, USB devices will disconnect when the MCU restarts
+	never_reset_pin_number(PIN_PA07);
+	never_reset_pin_number(PIN_PB08);
 }
 
 bool board_requests_safe_mode(void) {
