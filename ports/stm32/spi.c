@@ -252,12 +252,14 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
 
 // TODO allow to take a list of pins to use
 void spi_init(const spi_t *self, bool enable_nss_pin) {
+    uint32_t irqn = 0;
     SPI_HandleTypeDef *spi = self->spi;
     const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
 
     if (0) {
     #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
+        irqn = SPI1_IRQn;
         #if defined(MICROPY_HW_SPI1_NSS)
         pins[0] = MICROPY_HW_SPI1_NSS;
         #endif
@@ -271,6 +273,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
+        irqn = SPI2_IRQn;
         #if defined(MICROPY_HW_SPI2_NSS)
         pins[0] = MICROPY_HW_SPI2_NSS;
         #endif
@@ -284,6 +287,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
+        irqn = SPI3_IRQn;
         #if defined(MICROPY_HW_SPI3_NSS)
         pins[0] = MICROPY_HW_SPI3_NSS;
         #endif
@@ -297,6 +301,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
+        irqn = SPI4_IRQn;
         #if defined(MICROPY_HW_SPI4_NSS)
         pins[0] = MICROPY_HW_SPI4_NSS;
         #endif
@@ -310,6 +315,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
+        irqn = SPI5_IRQn;
         #if defined(MICROPY_HW_SPI5_NSS)
         pins[0] = MICROPY_HW_SPI5_NSS;
         #endif
@@ -323,6 +329,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
+        irqn = SPI6_IRQn;
         #if defined(MICROPY_HW_SPI6_NSS)
         pins[0] = MICROPY_HW_SPI6_NSS;
         #endif
@@ -365,39 +372,11 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     dma_invalidate_channel(self->rx_dma_descr);
 
     #if defined(STM32H7)
-    if (0) {
-    #if defined(MICROPY_HW_SPI1_SCK)
-    } else if (spi->Instance == SPI1) {
-        NVIC_SetPriority(SPI1_IRQn, IRQ_PRI_SPI);
-        HAL_NVIC_EnableIRQ(SPI1_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
-    } else if (spi->Instance == SPI2) {
-        NVIC_SetPriority(SPI2_IRQn, IRQ_PRI_SPI);
-        HAL_NVIC_EnableIRQ(SPI2_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
-    } else if (spi->Instance == SPI3) {
-        NVIC_SetPriority(SPI3_IRQn, IRQ_PRI_SPI);
-        HAL_NVIC_EnableIRQ(SPI3_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
-    } else if (self->Instance == SPI4) {
-        NVIC_SetPriority(SPI4_IRQn, IRQ_PRI_SPI);
-        HAL_NVIC_EnableIRQ(SPI4_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
-    } else if (self->Instance == SPI5) {
-        NVIC_SetPriority(SPI5_IRQn, IRQ_PRI_SPI);
-        HAL_NVIC_EnableIRQ(SPI5_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
-    } else if (self->Instance == SPI6) {
-        NVIC_SetPriority(SPI6_IRQn, IRQ_PRI_SPI);
-        HAL_NVIC_EnableIRQ(SPI6_IRQn);
-    #endif
-    }
-    #endif
+    NVIC_SetPriority(irqn, IRQ_PRI_SPI);
+    HAL_NVIC_EnableIRQ(irqn);
+    #else 
+    (void)irqn;
+    #endif 
 }
 
 void spi_deinit(const spi_t *spi_obj) {
