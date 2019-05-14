@@ -291,5 +291,6 @@ const mp_obj_type_t displayio_group_type = {
     .make_new = displayio_group_make_new,
     .subscr = group_subscr,
     .unary_op = group_unary_op,
+    .getiter = mp_obj_new_generic_iterator,
     .locals_dict = (mp_obj_dict_t*)&displayio_group_locals_dict,
 };

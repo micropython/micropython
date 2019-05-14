@@ -531,6 +531,36 @@ mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
     return self;
 }
 
+typedef struct {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    mp_obj_t obj;
+    mp_int_t cur;
+} mp_obj_generic_it_t;
+
+STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
+    mp_obj_generic_it_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_type_t *type = mp_obj_get_type(self->obj);
+    mp_obj_t current_length = type->unary_op(MP_UNARY_OP_LEN, self->obj);
+    if (self->cur < MP_OBJ_SMALL_INT_VALUE(current_length)) {
+        mp_obj_t o_out = type->subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
+        self->cur += 1;
+        return o_out;
+    } else {
+        return MP_OBJ_STOP_ITERATION;
+    }
+}
+
+mp_obj_t mp_obj_new_generic_iterator(mp_obj_t obj, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_generic_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_generic_it_t *o = (mp_obj_generic_it_t*)iter_buf;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = generic_it_iternext;
+    o->obj = obj;
+    o->cur = 0;
+    return MP_OBJ_FROM_PTR(o);
+}
+
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_type_t *type = mp_obj_get_type(obj);
     if (type->buffer_p.get_buffer == NULL) {
