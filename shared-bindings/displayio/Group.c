@@ -31,6 +31,7 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -80,8 +81,12 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-static displayio_group_t* native_group(mp_obj_t group_obj) {
+displayio_group_t* native_group(mp_obj_t group_obj) {
     mp_obj_t native_group = mp_instance_cast_to_native_base(group_obj, &displayio_group_type);
+    if (native_group == MP_OBJ_NULL) {
+        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
+    }
+    mp_obj_assert_native_inited(native_group);
     return MP_OBJ_TO_PTR(native_group);
 }
 

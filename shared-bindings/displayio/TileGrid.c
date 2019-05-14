@@ -31,6 +31,7 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/ColorConverter.h"
@@ -139,6 +140,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 // Helper to ensure we have the native super class instead of a subclass.
 static displayio_tilegrid_t* native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_t native_tilegrid = mp_instance_cast_to_native_base(tilegrid_obj, &displayio_tilegrid_type);
+    mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
 
