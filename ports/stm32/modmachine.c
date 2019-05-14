@@ -174,6 +174,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
         printf("_edata=%p\n", &_edata);
         printf("_sbss=%p\n", &_sbss);
         printf("_ebss=%p\n", &_ebss);
+        printf("_sstack=%p\n", &_sstack);
         printf("_estack=%p\n", &_estack);
         printf("_ram_start=%p\n", &_ram_start);
         printf("_heap_start=%p\n", &_heap_start);

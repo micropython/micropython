@@ -181,7 +181,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if ((void*)&_ram_start <= (void*)regs && (void*)regs < (void*)&_ram_end) {
         mp_hal_stdout_tx_str("Stack:\r\n");
         uint32_t *stack_top = &_estack;
-        if ((void*)regs < (void*)&_heap_end) {
+        if ((void*)regs < (void*)&_sstack) {
             // stack not in static stack area so limit the amount we print
             stack_top = (uint32_t*)regs + 32;
         }
