@@ -31,6 +31,7 @@
 
 extern const mp_obj_type_t displayio_group_type;
 
+displayio_group_t* native_group(mp_obj_t group_obj);
 
 void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y);
 uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self);

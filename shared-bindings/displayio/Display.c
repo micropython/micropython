@@ -31,6 +31,7 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -172,6 +173,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
 // Helper to ensure we have the native super class instead of a subclass.
 static displayio_display_obj_t* native_display(mp_obj_t display_obj) {
     mp_obj_t native_display = mp_instance_cast_to_native_base(display_obj, &displayio_display_type);
+    mp_obj_assert_native_inited(native_display);
     return MP_OBJ_TO_PTR(native_display);
 }
 
@@ -184,11 +186,7 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
     displayio_display_obj_t *self = native_display(self_in);
     displayio_group_t* group = NULL;
     if (group_in != mp_const_none) {
-        mp_obj_t native_layer = mp_instance_cast_to_native_base(group_in, &displayio_group_type);
-        if (native_layer == MP_OBJ_NULL) {
-            mp_raise_ValueError(translate("Must be a Group subclass."));
-        }
-        group = MP_OBJ_TO_PTR(native_layer);
+        group = MP_OBJ_TO_PTR(native_group(group_in));
     }
 
     common_hal_displayio_display_show(self, group);
