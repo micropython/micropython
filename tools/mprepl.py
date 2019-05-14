@@ -102,6 +102,10 @@ class RemoteFile(io.IOBase):
         self.cmd = cmd
         self.fd = fd
         self.is_text = is_text
+    def ioctl(self, request, arg):
+        if request == 4: # CLOSE
+            self.close()
+        return 0
     def close(self):
         if self.fd is None:
             return
@@ -109,7 +113,7 @@ class RemoteFile(io.IOBase):
         self.cmd.wr_int32(self.fd)
         self.cmd.end()
         self.fd = None
-    def read(self, n):
+    def read(self, n=-1):
         self.cmd.begin(CMD_READ)
         self.cmd.wr_int32(self.fd)
         self.cmd.wr_int32(n)
