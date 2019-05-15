@@ -69,6 +69,9 @@ STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     static int initialized = 0;
     if (!initialized) {
         touch_pad_init();
+        // The following sets sleep_cycle to close to the max and meas_cycle to 25% to minimize deepsleep current draw
+        touch_pad_set_meas_time(0xF000, 0x4000);
+        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
         initialized = 1;
     }
     esp_err_t err = touch_pad_config(self->touchpad_id, 0);
