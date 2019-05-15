@@ -95,6 +95,16 @@ mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self, size_t index) {
     return item;
 }
 
+mp_int_t common_hal_displayio_group_index(displayio_group_t* self, mp_obj_t layer) {
+    // Shift everything left.
+    for (size_t i = 0; i < self->size; i++) {
+        if (self->children[i].original == layer) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 size_t common_hal_displayio_group_get_len(displayio_group_t* self) {
     return self->size;
 }
