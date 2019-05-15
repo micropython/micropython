@@ -85,7 +85,7 @@ struct _dma_descr_t {
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel             = 0,
-    #elif defined(STM32L4)
+    #elif defined(STM32H7) || defined(STM32L4)
     .Request             = 0,
     #endif
     .Direction           = 0,
@@ -95,7 +95,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .MemDataAlignment    = DMA_MDATAALIGN_BYTE,
     .Mode                = DMA_NORMAL,
     .Priority            = DMA_PRIORITY_LOW,
-    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     .FIFOMode            = DMA_FIFOMODE_DISABLE,
     .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
     .MemBurst            = DMA_MBURST_INC4,
@@ -136,7 +136,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 static const DMA_InitTypeDef dma_init_struct_dac = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel             = 0,
-    #elif defined(STM32L4)
+    #elif defined(STM32H7) || defined(STM32L4)
     .Request             = 0,
     #endif
     .Direction           = 0,
@@ -146,7 +146,7 @@ static const DMA_InitTypeDef dma_init_struct_dac = {
     .MemDataAlignment    = DMA_MDATAALIGN_BYTE,
     .Mode                = DMA_NORMAL,
     .Priority            = DMA_PRIORITY_HIGH,
-    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     .FIFOMode            = DMA_FIFOMODE_DISABLE,
     .FIFOThreshold       = DMA_FIFO_THRESHOLD_HALFFULL,
     .MemBurst            = DMA_MBURST_SINGLE,
