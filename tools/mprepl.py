@@ -81,7 +81,7 @@ class RemoteCommand:
         return self.rd(n)
     def rd_bytes_into(self, buf):
         n = struct.unpack('<H', self.rd(2))[0]
-        return self.rdinto(buf)
+        return self.rdinto(memoryview(buf)[:n])
     def wr_bytes(self, b):
         self.fout.write(struct.pack('<H', len(b)))
         self.fout.write(b)
@@ -327,7 +327,11 @@ cmd_table = {
 
 def main_loop(console, dev):
     # TODO add option to not restart pyboard, to continue a previous session
-    pyb = pyboard.Pyboard(dev)
+    try:
+        pyb = pyboard.Pyboard(dev)
+    except pyboard.PyboardError as er:
+        print(er)
+        return
     pyb.enter_raw_repl()
     pyb.exec_(fs_hook_code)
     pyb.exit_raw_repl()
@@ -379,10 +383,23 @@ def main_loop(console, dev):
                 console.write(c)
 
 def main():
+    # get serial device
     if len(sys.argv) == 1:
-        dev = '/dev/ttyACM0'
+        dev = None
+        for d in ('/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyUSB0', '/dev/ttyUSB1'):
+            try:
+                os.stat(d)
+            except OSError:
+                continue
+            dev = d
+            break
+        if dev is None:
+            print('no device found')
+            sys.exit(1)
     else:
         dev = sys.argv[1]
+        shortcuts = {'a0': '/dev/ttyACM0', 'a1': '/dev/ttyACM1', 'u0': '/dev/ttyUSB0', 'u1': '/dev/ttyUSB1'}
+        dev = shortcuts.get(dev, dev)
 
     console = Console()
     console.enter()
