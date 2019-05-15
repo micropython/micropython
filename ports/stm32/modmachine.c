@@ -247,6 +247,15 @@ STATIC mp_obj_t machine_soft_reset(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
+__attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t addr) {
+    __asm volatile (
+        "ldr r2, [r1, #0]\n"    // get address of stack pointer
+        "msr msp, r2\n"         // get stack pointer
+        "ldr r2, [r1, #4]\n"    // get address of destination
+        "bx r2\n"               // branch to bootloader
+    );
+}
+
 // Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
@@ -271,8 +280,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
         SCB_DisableICache();
         SCB_DisableDCache();
         #endif
-        __set_MSP(*(volatile uint32_t*)0x08000000);
-        ((void (*)(uint32_t)) *((volatile uint32_t*)(0x08000000 + 4)))(0x70ad0000);
+        branch_to_bootloader(0x70ad0000, 0x08000000);
     }
 
     if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
@@ -285,28 +293,16 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
         SCB_DisableICache();
         SCB_DisableDCache();
         #endif
-        __set_MSP(*(volatile uint32_t*)0x08000000);
-        ((void (*)(uint32_t)) *((volatile uint32_t*)(0x08000000 + 4)))(0x70ad0080);
+        branch_to_bootloader(0x70ad0080, 0x08000000);
     }
     #endif
 
-#if defined(STM32F7) || defined(STM32H7)
-    // arm-none-eabi-gcc 4.9.0 does not correctly inline this
-    // MSP function, so we write it out explicitly here.
-    //__set_MSP(*((uint32_t*) 0x1FF00000));
-    __ASM volatile ("movw r3, #0x0000\nmovt r3, #0x1FF0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
-
-    ((void (*)(void)) *((uint32_t*) 0x1FF00004))();
-#else
+    #if defined(STM32F7) || defined(STM32H7)
+    branch_to_bootloader(0, 0x1ff00000);
+    #else
     __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
-
-    // arm-none-eabi-gcc 4.9.0 does not correctly inline this
-    // MSP function, so we write it out explicitly here.
-    //__set_MSP(*((uint32_t*) 0x00000000));
-    __ASM volatile ("movs r3, #0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
-
-    ((void (*)(void)) *((uint32_t*) 0x00000004))();
-#endif
+    branch_to_bootloader(0, 0x00000000);
+    #endif
 
     while (1);
 }
