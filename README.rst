@@ -115,8 +115,8 @@ Behavior
    output is written to ``boot_out.txt``.
 -  ``code.py`` (or ``main.py``) is run after every reload until it
    finishes or is interrupted. After it is done running, the vm and
-   hardware is reinitialized. **This means you cannot read state from
-   ``code.py`` in the REPL anymore.** CircuitPython's goal for this
+   hardware is reinitialized. **This means you cannot read state from**
+   ``code.py`` **in the REPL anymore.** CircuitPython's goal for this
    change includes reduce confusion about pins and memory being used.
 -  After ``code.py`` the REPL can be entered by pressing any key. It no
    longer shares state with ``code.py`` so it is a fresh vm.
@@ -131,9 +131,9 @@ Behavior
    ``samd.disable_autoreload()``)
 -  Entering the REPL after the main code is finished requires a key press which enters the REPL and
    disables autoreload.
--  Main is one of these: ``code.txt``, **``code.py``**, ``main.py``,
+-  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
    ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, **``boot.py``**,
+-  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
    ``boot.txt``
 
 API
