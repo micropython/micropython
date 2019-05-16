@@ -131,9 +131,9 @@ Behavior
    ``samd.disable_autoreload()``)
 -  Entering the REPL after the main code is finished requires a key press which enters the REPL and
    disables autoreload.
--  Main is one of these: ``code.txt``, **``code.py``**, ``main.py``,
+-  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
    ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, **``boot.py``**,
+-  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
    ``boot.txt``
 
 API
