@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
 
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/FourWire.h"
@@ -47,4 +47,4 @@ extern displayio_group_t circuitpython_splash;
 void displayio_refresh_displays(void);
 void reset_displays(void);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H

@@ -99,7 +99,6 @@ endif
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
   # You may want to disable -flto if it interferes with debugging.
   CFLAGS += -flto

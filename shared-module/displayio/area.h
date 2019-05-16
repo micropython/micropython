@@ -24,34 +24,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "py/obj.h"
-#include "shared-module/displayio/area.h"
+// Implementations are in __init__.c
 
 typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t bitmap;
-    mp_obj_t pixel_shader;
-    displayio_area_t area;
-    uint16_t bitmap_width_in_tiles;
-    uint16_t width_in_tiles;
-    uint16_t height_in_tiles;
-    uint16_t tile_width;
-    uint16_t tile_height;
-    uint16_t top_left_x;
-    uint16_t top_left_y;
-    uint8_t* tiles;
-    bool needs_refresh;
-    bool inline_tiles;
-} displayio_tilegrid_t;
+    int16_t x1;
+    int16_t y1;
+    int16_t x2; // Second point is inclusive.
+    int16_t y2;
+} displayio_area_t;
 
-bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_transform_t* transform, displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
-bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self);
-void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self);
+typedef struct {
+    uint16_t width;
+    uint16_t height;
+    uint8_t scale;
+    bool mirror_x;
+    bool mirror_y;
+    bool transpose_xy;
+} displayio_buffer_transform_t;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H
+void displayio_area_shift(displayio_area_t* area, int16_t dx, int16_t dy);
+bool displayio_area_compute_overlap(const displayio_area_t* a,
+                                    const displayio_area_t* b,
+                                    displayio_area_t* overlap);
+uint16_t displayio_area_width(const displayio_area_t* area);
+uint16_t displayio_area_height(const displayio_area_t* area);
+uint32_t displayio_area_size(const displayio_area_t* area);
+bool displayio_area_equal(const displayio_area_t* a, const displayio_area_t* b);
+
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H
