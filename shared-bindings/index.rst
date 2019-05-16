@@ -53,6 +53,7 @@ Module             Supported Ports
 `nvm`              **SAMD Express**
 `os`               **All Supported**
 `pulseio`          **SAMD/SAMD Express**
+`ps2io`            **SAMD/SAMD Express**
 `random`           **All Supported**
 `rotaryio`         **SAMD51, SAMD Express**
 `storage`          **All Supported**

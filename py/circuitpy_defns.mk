@@ -162,6 +162,9 @@ endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
 endif
+ifeq ($(CIRCUITPY_PS2IO),1)
+SRC_PATTERNS += ps2io/%
+endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
 endif
@@ -252,6 +255,8 @@ $(filter $(SRC_PATTERNS), \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
+	ps2io/Ps2.c \
+	ps2io/__init__.c \
 	rotaryio/IncrementalEncoder.c \
 	rotaryio/__init__.c \
 	rtc/RTC.c \

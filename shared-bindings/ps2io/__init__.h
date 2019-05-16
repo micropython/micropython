@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Elvis Pfutzenreuter <epxx@epxx.co>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,42 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/ps2io/Ps2.h"
-#include "common-hal/rotaryio/IncrementalEncoder.h"
-#include "shared-bindings/microcontroller/__init__.h"
-//#include "samd/external_interrupts.h"
-#include "eic_handler.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO___INIT___H
 
-// Which handler should be called for a particular channel?
-static uint8_t eic_channel_handler[EIC_EXTINT_NUM];
+#include "py/obj.h"
 
-void set_eic_handler(uint8_t channel, uint8_t eic_handler) {
-    eic_channel_handler[channel] = eic_handler;
-}
+// Nothing now.
 
-void shared_eic_handler(uint8_t channel) {
-    uint8_t handler = eic_channel_handler[channel];
-    switch (handler) {
-#if CIRCUITPY_PULSEIO
-    case EIC_HANDLER_PULSEIN:
-        pulsein_interrupt_handler(channel);
-        break;
-#endif
-
-#if CIRCUITPY_PS2IO
-    case EIC_HANDLER_PS2:
-        ps2_interrupt_handler(channel);
-        break;
-#endif
-
-#if CIRCUITPY_ROTARYIO
-    case EIC_HANDLER_INCREMENTAL_ENCODER:
-        incrementalencoder_interrupt_handler(channel);
-        break;
-#endif
-
-    default:
-        break;
-    }
-}
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO___INIT___H

@@ -1,9 +1,10 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Elvis Pfutzenreuter <epxx@epxx.co>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +24,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
 
-#define EIC_HANDLER_NO_INTERRUPT 0x0
-#define EIC_HANDLER_PULSEIN 0x1
-#define EIC_HANDLER_INCREMENTAL_ENCODER 0x2
-#define EIC_HANDLER_PS2 0x3
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO_PS2_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO_PS2_H
 
-void set_eic_handler(uint8_t channel, uint8_t eic_handler);
-void shared_eic_handler(uint8_t channel);
+#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/ps2io/Ps2.h"
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_EIC_HANDLER_H
+extern const mp_obj_type_t ps2io_ps2_type;
+
+extern void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t* self,
+    const mcu_pin_obj_t* data_pin, const mcu_pin_obj_t* clk_pin);
+extern void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t* self);
+extern bool common_hal_ps2io_ps2_deinited(ps2io_ps2_obj_t* self);
+extern uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t* self);
+extern int16_t common_hal_ps2io_ps2_popleft(ps2io_ps2_obj_t* self);
+extern int16_t common_hal_ps2io_ps2_sendcmd(ps2io_ps2_obj_t* self, uint8_t b);
+extern uint16_t common_hal_ps2io_ps2_clear_errors(ps2io_ps2_obj_t* self);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PS2IO_PS2_H

@@ -416,6 +416,13 @@ extern const struct _mp_obj_module_t pulseio_module;
 #define PULSEIO_MODULE
 #endif
 
+#if CIRCUITPY_PS2IO
+extern const struct _mp_obj_module_t ps2io_module;
+#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
+#else
+#define PS2IO_MODULE
+#endif
+
 #if CIRCUITPY_RANDOM
 extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
@@ -580,6 +587,7 @@ extern const struct _mp_obj_module_t ustack_module;
     PEW_MODULE \
     PIXELBUF_MODULE \
     PULSEIO_MODULE \
+    PS2IO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     ROTARYIO_MODULE \
