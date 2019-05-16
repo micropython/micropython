@@ -256,6 +256,7 @@ SRC_C = \
 	qspi.c \
 	uart.c \
 	can.c \
+	fdcan.c \
 	usb.c \
 	wdt.c \
 	eth.c \

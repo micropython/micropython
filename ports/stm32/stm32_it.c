@@ -852,6 +852,34 @@ void CAN3_SCE_IRQHandler(void) {
 }
 #endif
 
+#if defined(MICROPY_HW_FDCAN1_TX)
+void FDCAN1_IT0_IRQHandler(void) {
+    IRQ_ENTER(FDCAN1_IT0_IRQn);
+    can_rx_irq_handler(PYB_CAN_1, FDCAN_RX_FIFO0);
+    IRQ_EXIT(FDCAN1_IT0_IRQn);
+}
+
+void FDCAN1_IT1_IRQHandler(void) {
+    IRQ_ENTER(FDCAN1_IT1_IRQn);
+    can_rx_irq_handler(PYB_CAN_1, FDCAN_RX_FIFO1);
+    IRQ_EXIT(FDCAN1_IT1_IRQn);
+}
+#endif
+
+#if defined(MICROPY_HW_FDCAN2_TX)
+void FDCAN2_IT0_IRQHandler(void) {
+    IRQ_ENTER(FDCAN2_IT0_IRQn);
+    can_rx_irq_handler(PYB_CAN_2, FDCAN_RX_FIFO0);
+    IRQ_EXIT(FDCAN2_IT0_IRQn);
+}
+
+void FDCAN2_IT1_IRQHandler(void) {
+    IRQ_ENTER(FDCAN2_IT1_IRQn);
+    can_rx_irq_handler(PYB_CAN_2, FDCAN_RX_FIFO1);
+    IRQ_EXIT(FDCAN2_IT1_IRQn);
+}
+#endif
+
 #if MICROPY_PY_PYB_LEGACY
 
 #if defined(MICROPY_HW_I2C1_SCL)
