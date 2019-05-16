@@ -1,6 +1,6 @@
 LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x239A
-USB_PID = 0x8035
+USB_PID = 0x8050
 USB_PRODUCT = "Arduino MKRZero"
 USB_MANUFACTURER = "Arduino"
 
