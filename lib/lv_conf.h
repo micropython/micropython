@@ -140,11 +140,11 @@ typedef void * lv_group_user_data_t;
 /* 1: Enable alpha indexed images */
 #define LV_IMG_CF_ALPHA     1
 
-/*1: Add a `user_data` to drivers and objects*/
-#define LV_USE_USER_DATA_SINGLE 1
+/*Declare the type of the user data of image decoder (can be e.g. `void *`, `int`, `struct`)*/
+typedef void * lv_img_decoder_user_data_t;
 
-/*1: Add separate `user_data` for every callback*/
-#define LV_USE_USER_DATA_MULTI  0
+/*1: Add a `user_data` to drivers and objects*/
+#define LV_USE_USER_DATA 1
 
 /*=====================
  *  Compiler settings
@@ -258,6 +258,13 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
 /*=================
  *  Text settings
  *=================*/
+
+/* Select a character encoding for strings.
+ * Your IDE or editor should have the same character encoding
+ * - LV_TXT_ENC_UTF8
+ * - LV_TXT_ENC_ASCII
+ * */
+#define LV_TXT_ENC LV_TXT_ENC_UTF8
 
  /*Can break (wrap) texts on these chars*/
 #define LV_TXT_BREAK_CHARS                  " ,.;:-_"
