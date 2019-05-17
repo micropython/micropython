@@ -231,6 +231,19 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+#if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        return;
+    }
+    if (attr == MP_QSTR_itemsize) {
+        mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+        dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
+    }
+}
+#endif
+
 #endif
 
 STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
@@ -560,6 +573,9 @@ const mp_obj_type_t mp_type_memoryview = {
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+    .attr = memoryview_attr,
+    #endif
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
 };

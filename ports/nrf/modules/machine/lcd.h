@@ -63,9 +63,9 @@
 // LCD TFT definitions for Bluefruit52
 #define LCD_SDA_PIN  		7
 #define LCD_SCL_PIN  		27
-#define LCD_RES_PIN  		15
+#define LCD_RES_PIN  		23
 #define LCD_DC_PIN  		16
-
+#define LCD_CS_PIN  		24
 
 /*
 #define USE_HORIZONTAL 3  //设置横屏或者竖屏显示 0或1为竖屏 2或3为横屏
@@ -95,6 +95,8 @@
 #define LCD_DC_Clr() nrf_gpio_pin_clear(LCD_DC_PIN)//DC
 #define LCD_DC_Set() nrf_gpio_pin_set(LCD_DC_PIN)
  		     
+#define LCD_CS_Clr() nrf_gpio_pin_clear(LCD_CS_PIN)//CS
+#define LCD_CS_Set() nrf_gpio_pin_set(LCD_CS_PIN)
 
 #define LCD_CMD  0	//写命令
 #define LCD_DATA 1	//写数据
@@ -109,6 +111,8 @@ extern uint8_t LCD_H;
 extern const mp_obj_type_t machine_lcd_type;
 
 void lcd_init(uint8_t dir);
+void LCD_ShowEnable(void);
+void LCD_ShowDisable(void);
 void LCD_Writ_Bus(uint8_t dat);
 void LCD_WR_DATA8(uint8_t dat);
 void LCD_WR_DATA(uint16_t dat);

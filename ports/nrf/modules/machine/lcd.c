@@ -163,12 +163,14 @@ void lcd_init(uint8_t dir) {
     nrf_gpio_cfg_output(LCD_SCL_PIN);
     nrf_gpio_cfg_output(LCD_RES_PIN);
     nrf_gpio_cfg_output(LCD_DC_PIN);
+    nrf_gpio_cfg_output(LCD_CS_PIN);
 
     nrf_gpio_pin_set(LCD_SDA_PIN);
     nrf_gpio_pin_set(LCD_SCL_PIN);
     nrf_gpio_pin_set(LCD_RES_PIN);
     nrf_gpio_pin_set(LCD_DC_PIN);
-
+    nrf_gpio_pin_clear(LCD_CS_PIN);
+    mp_hal_delay_ms(10);
     LCD_RST_Clr();
     mp_hal_delay_ms(50);
     LCD_RST_Set();
@@ -294,6 +296,14 @@ void LCD_Clear(uint16_t Color)
       }
 }
 
+void LCD_ShowDisable(void)
+{
+    nrf_gpio_pin_set(LCD_CS_PIN);
+}
+void LCD_ShowEnable(void)
+{
+    nrf_gpio_pin_clear(LCD_CS_PIN);
+}
 
 /******************************************************************************
       函数说明：LCD显示汉字
@@ -922,6 +932,28 @@ STATIC mp_obj_t machine_lcd_showBLE(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_lcd_showBLE_obj, 3, 3, machine_lcd_showBLE);
 
+/// \method showEnable()
+/// show enable.
+STATIC mp_obj_t machine_lcd_showEnable(mp_obj_t self_in) {
+    machine_lcd_obj_t *self = self_in;
+    (void)self;
+    LCD_ShowEnable();
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_lcd_showEnable_obj, machine_lcd_showEnable);
+
+/// \method showDisable()
+/// show disable.
+STATIC mp_obj_t machine_lcd_showDisable(mp_obj_t self_in) {
+    machine_lcd_obj_t *self = self_in;
+    (void)self;
+    LCD_ShowDisable();
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_lcd_showDisable_obj, machine_lcd_showDisable);
+
 STATIC const mp_rom_map_elem_t machine_lcd_locals_dict_table[] = {
     // instance methods
     // class methods
@@ -943,6 +975,8 @@ STATIC const mp_rom_map_elem_t machine_lcd_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_showPicture), MP_ROM_PTR(&mp_machine_lcd_showPicture_obj) },
     { MP_ROM_QSTR(MP_QSTR_showLogo), MP_ROM_PTR(&mp_machine_lcd_showLogo_obj) },
     { MP_ROM_QSTR(MP_QSTR_showBLE), MP_ROM_PTR(&mp_machine_lcd_showBLE_obj) },
+    { MP_ROM_QSTR(MP_QSTR_showEnable), MP_ROM_PTR(&mp_machine_lcd_showEnable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_showDisable), MP_ROM_PTR(&mp_machine_lcd_showDisable_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_WHITE),    MP_ROM_INT(LCD_WHITE) },
     { MP_ROM_QSTR(MP_QSTR_BLACK),     MP_ROM_INT(LCD_BLACK) },
