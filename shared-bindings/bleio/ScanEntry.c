@@ -37,9 +37,6 @@
 #include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/ScanEntry.h"
 
-// Work-in-progress: orphaned for now.
-//| :orphan:
-//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`ScanEntry` -- BLE scan response entry
@@ -63,7 +60,7 @@
 //|   .. attribute:: name
 //|
 //|   The name of the device. (read-only)
-//|   This attribute might be `None` if the data was missing from the advertisement packet.
+//|   Will be be `None` if the data was missing from the advertisement packet.
 //|
 
 //|   .. attribute:: raw_data
@@ -87,7 +84,7 @@
 //|   .. attribute:: tx_power_level
 //|
 //|   The transmit power level of the device. (read-only)
-//|   This attribute might be `None` if the data was missing from the advertisement packet.
+//|   Will be `None` if the data was missing from the advertisement packet.
 //|
 static uint8_t find_data_item(mp_obj_array_t *data_in, uint8_t type, uint8_t **data_out) {
     uint16_t i = 0;

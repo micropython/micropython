@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,9 +33,6 @@
 #define DEFAULT_INTERVAL 100
 #define DEFAULT_WINDOW 100
 
-// Work-in-progress: orphaned for now.
-//| :orphan:
-//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`Scanner` -- scan for nearby BLE devices
@@ -46,7 +44,7 @@
 //|
 //|    import bleio
 //|    scanner = bleio.Scanner()
-//|    entries = scanner.scan(2500)
+//|    entries = scanner.scan(2.5)  # Scan for 2.5 seconds
 //|    print(entries)
 //|
 
@@ -57,32 +55,27 @@
 
 //|   .. attribute:: interval
 //|
-//|     The interval (in ms) between the start of two consecutive scan windows.
-//|     Allowed values are between 10ms and 10.24 sec.
+//|     The interval (in seconds) between the start of two consecutive scan windows.
+//|     Allowed values are between 0.010 and 10.24 sec.
 //|
 
 //|   .. attribute:: window
 //|
-//|     The duration (in ms) in which a single BLE channel is scanned.
-//|     Allowed values are between 10ms and 10.24 sec.
+//|     The duration (in seconds) in which a single BLE channel is scanned.
+//|     Allowed values are between 0.010 and 10.24 sec.
 //|
 
 //|   .. method:: scan(timeout)
 //|
 //|     Performs a BLE scan.
 //|
-//|     :param int timeout: the scan timeout in ms
+//|     :param float timeout: the scan timeout in seconds
 //|     :returns: advertising packets found
 //|     :rtype: list of :py:class:`bleio.ScanEntry`
 //|
-STATIC void bleio_scanner_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    bleio_scanner_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    mp_printf(print, "Scanner(interval: %d window: %d)", self->interval, self->window);
-}
-
 STATIC mp_obj_t bleio_scanner_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 0, 0, false);
+
 
     bleio_scanner_obj_t *self = m_new_obj(bleio_scanner_obj_t);
     self->base.type = type;
