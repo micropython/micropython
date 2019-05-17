@@ -455,13 +455,13 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
             return o_in;
         }
 
-        #if !MICROPY_PY_BUILTINS_ROUND_INT
-        mp_raise_NotImplementedError(NULL);
-        #else
         mp_int_t num_dig = mp_obj_get_int(args[1]);
         if (num_dig >= 0) {
             return o_in;
         }
+        #if !MICROPY_PY_BUILTINS_ROUND_INT
+        mp_raise_NotImplementedError(NULL);
+        #else
 
         mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, MP_OBJ_NEW_SMALL_INT(10), MP_OBJ_NEW_SMALL_INT(-num_dig));
         mp_obj_t half_mult =  mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, MP_OBJ_NEW_SMALL_INT(2));
