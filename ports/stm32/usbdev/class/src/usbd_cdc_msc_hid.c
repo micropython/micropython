@@ -38,6 +38,8 @@
 #define MSC_TEMPLATE_MSC_DESC_OFFSET (9)
 #define CDC_MSC_TEMPLATE_MSC_DESC_OFFSET (9)
 #define CDC_MSC_TEMPLATE_CDC_DESC_OFFSET (40)
+#define CDC2_TEMPLATE_CDC_DESC_OFFSET (9 + 8)
+#define CDC2_TEMPLATE_CDC2_DESC_OFFSET (9 + (8 + 58) + 8)
 #define CDC2_MSC_TEMPLATE_MSC_DESC_OFFSET (9)
 #define CDC2_MSC_TEMPLATE_CDC_DESC_OFFSET (9 + 23 + 8)
 #define CDC2_MSC_TEMPLATE_CDC2_DESC_OFFSET (9 + 23 + (8 + 58) + 8)
@@ -69,13 +71,9 @@
 #define HID_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_MSC (1)
 
-#define CDC_IN_EP (0x83)
-#define CDC_OUT_EP (0x03)
-#define CDC_CMD_EP (0x82)
-
-#define CDC2_IN_EP (0x85)
-#define CDC2_OUT_EP (0x05)
-#define CDC2_CMD_EP (0x84)
+#define CDC_IN_EP(i) (0x83 + 2 * (i))
+#define CDC_OUT_EP(i) (0x03 + 2 * (i))
+#define CDC_CMD_EP(i) (0x82 + 2 * (i))
 
 #define HID_IN_EP_WITH_CDC (0x81)
 #define HID_OUT_EP_WITH_CDC (0x01)
@@ -232,7 +230,7 @@ static const uint8_t cdc_class_desc_data[CDC_CLASS_DESC_SIZE] = {
     // Endpoint CMD Descriptor
     0x07,                           // bLength: Endpoint Descriptor size
     USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint
-    CDC_CMD_EP,                     // bEndpointAddress
+    CDC_CMD_EP(0),                  // bEndpointAddress
     0x03,                           // bmAttributes: Interrupt
     LOBYTE(CDC_CMD_PACKET_SIZE),    // wMaxPacketSize:
     HIBYTE(CDC_CMD_PACKET_SIZE),
@@ -253,7 +251,7 @@ static const uint8_t cdc_class_desc_data[CDC_CLASS_DESC_SIZE] = {
     // Endpoint OUT Descriptor
     0x07,                               // bLength: Endpoint Descriptor size
     USB_DESC_TYPE_ENDPOINT,             // bDescriptorType: Endpoint
-    CDC_OUT_EP,                         // bEndpointAddress
+    CDC_OUT_EP(0),                      // bEndpointAddress
     0x02,                               // bmAttributes: Bulk
     LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
     HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
@@ -262,7 +260,7 @@ static const uint8_t cdc_class_desc_data[CDC_CLASS_DESC_SIZE] = {
     // Endpoint IN Descriptor
     0x07,                               // bLength: Endpoint Descriptor size
     USB_DESC_TYPE_ENDPOINT,             // bDescriptorType: Endpoint
-    CDC_IN_EP,                          // bEndpointAddress
+    CDC_IN_EP(0),                       // bEndpointAddress
     0x02,                               // bmAttributes: Bulk
     LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
     HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
@@ -421,7 +419,7 @@ static size_t make_cdc_desc(uint8_t *dest, int need_iad, uint8_t iface_num) {
     return need_iad ? 8 + 58 : 58;
 }
 
-#if MICROPY_HW_USB_ENABLE_CDC2
+#if MICROPY_HW_USB_CDC_NUM >= 2
 static size_t make_cdc_desc_ep(uint8_t *dest, int need_iad, uint8_t iface_num, uint8_t cmd_ep, uint8_t out_ep, uint8_t in_ep) {
     size_t n = make_cdc_desc(dest, need_iad, iface_num);
     if (need_iad) {
@@ -461,7 +459,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
     size_t n = HEAD_DESC_SIZE;
     uint8_t *d = usbd->usbd_config_desc;
     uint8_t num_itf = 0;
-    switch (usbd->usbd_mode) {
+    switch (usbd->usbd_mode & USBD_MODE_IFACE_MASK) {
         case USBD_MODE_MSC:
             n += make_msc_desc(d + n);
             num_itf = 1;
@@ -470,19 +468,16 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
         case USBD_MODE_CDC_MSC:
             n += make_msc_desc(d + n);
             n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_MSC;
+            usbd->cdc[0]->iface_num = CDC_IFACE_NUM_WITH_MSC;
             num_itf = 3;
             break;
 
-        #if MICROPY_HW_USB_ENABLE_CDC2
+        #if MICROPY_HW_USB_CDC_NUM >= 2
         case USBD_MODE_CDC2: {
-            // Ensure the first interface is also enabled
-            usbd->usbd_mode |= USBD_MODE_CDC;
-
             n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_ALONE);
-            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_CDC, CDC2_CMD_EP, CDC2_OUT_EP, CDC2_IN_EP);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_ALONE;
-            usbd->cdc2->iface_num = CDC2_IFACE_NUM_WITH_CDC;
+            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_CDC, CDC_CMD_EP(1), CDC_OUT_EP(1), CDC_IN_EP(1));
+            usbd->cdc[0]->iface_num = CDC_IFACE_NUM_ALONE;
+            usbd->cdc[1]->iface_num = CDC2_IFACE_NUM_WITH_CDC;
             num_itf = 4;
             break;
         }
@@ -490,9 +485,9 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
         case USBD_MODE_CDC2_MSC: {
             n += make_msc_desc(d + n);
             n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
-            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_MSC, CDC2_CMD_EP, CDC2_OUT_EP, CDC2_IN_EP);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_MSC;
-            usbd->cdc2->iface_num = CDC2_IFACE_NUM_WITH_MSC;
+            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_MSC, CDC_CMD_EP(1), CDC_OUT_EP(1), CDC_IN_EP(1));
+            usbd->cdc[0]->iface_num = CDC_IFACE_NUM_WITH_MSC;
+            usbd->cdc[1]->iface_num = CDC2_IFACE_NUM_WITH_MSC;
             num_itf = 5;
             break;
         }
@@ -502,7 +497,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             usbd->hid->desc = d + n;
             n += make_hid_desc(d + n, hid_info);
             n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_HID);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_HID;
+            usbd->cdc[0]->iface_num = CDC_IFACE_NUM_WITH_HID;
             usbd->hid->in_ep = HID_IN_EP_WITH_CDC;
             usbd->hid->out_ep = HID_OUT_EP_WITH_CDC;
             usbd->hid->iface_num = HID_IFACE_NUM_WITH_CDC;
@@ -512,7 +507,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
 
         case USBD_MODE_CDC:
             n += make_cdc_desc(d + n, 0, CDC_IFACE_NUM_ALONE);
-            usbd->cdc->iface_num = CDC_IFACE_NUM_ALONE;
+            usbd->cdc[0]->iface_num = CDC_IFACE_NUM_ALONE;
             num_itf = 2;
             break;
 
@@ -533,17 +528,12 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
     make_head_desc(d, n, num_itf);
     usbd->usbd_config_desc_size = n;
 
-    if (usbd->usbd_mode & USBD_MODE_CDC) {
-        usbd->cdc->in_ep = CDC_IN_EP;
-        usbd->cdc->out_ep = CDC_OUT_EP;
+    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        if (usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) {
+            usbd->cdc[i]->in_ep = CDC_IN_EP(i);
+            usbd->cdc[i]->out_ep = CDC_OUT_EP(i);
+        }
     }
-
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    if (usbd->usbd_mode & USBD_MODE_CDC2) {
-        usbd->cdc2->in_ep = CDC2_IN_EP;
-        usbd->cdc2->out_ep = CDC2_OUT_EP;
-    }
-    #endif
 
     return 0;
 }
@@ -578,19 +568,14 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
 
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
 
-    if (usbd->usbd_mode & USBD_MODE_CDC) {
-        // CDC VCP component
-        usbd_cdc_state_init(pdev, usbd, usbd->cdc, CDC_CMD_EP);
+    // CDC VCP component(s)
+    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        if (usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) {
+            usbd_cdc_state_init(pdev, usbd, usbd->cdc[i], CDC_CMD_EP(i));
+        }
     }
 
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    if (usbd->usbd_mode & USBD_MODE_CDC2) {
-        // CDC VCP #2 component
-        usbd_cdc_state_init(pdev, usbd, usbd->cdc2, CDC2_CMD_EP);
-    }
-    #endif
-
-    if (usbd->usbd_mode & USBD_MODE_MSC) {
+    if (usbd->usbd_mode & USBD_MODE_IFACE_MSC) {
         // MSC component
 
         int mp = usbd_msc_max_packet(pdev);
@@ -611,7 +596,7 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
         MSC_BOT_Init(pdev);
     }
 
-    if (usbd->usbd_mode & USBD_MODE_HID) {
+    if (usbd->usbd_mode & USBD_MODE_IFACE_HID) {
         // HID component
 
         // get max packet lengths from descriptor
@@ -644,31 +629,20 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
 static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
 
-    if ((usbd->usbd_mode & USBD_MODE_CDC) && usbd->cdc) {
-        // CDC VCP component
+    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        if ((usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) && usbd->cdc[i]) {
+            // CDC VCP component
 
-        usbd_cdc_deinit(usbd->cdc);
+            usbd_cdc_deinit(usbd->cdc[i]);
 
-        // close endpoints
-        USBD_LL_CloseEP(pdev, CDC_IN_EP);
-        USBD_LL_CloseEP(pdev, CDC_OUT_EP);
-        USBD_LL_CloseEP(pdev, CDC_CMD_EP);
+            // close endpoints
+            USBD_LL_CloseEP(pdev, CDC_IN_EP(i));
+            USBD_LL_CloseEP(pdev, CDC_OUT_EP(i));
+            USBD_LL_CloseEP(pdev, CDC_CMD_EP(i));
+        }
     }
 
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    if ((usbd->usbd_mode & USBD_MODE_CDC2) && usbd->cdc2) {
-        // CDC VCP #2 component
-
-        usbd_cdc_deinit(usbd->cdc2);
-
-        // close endpoints
-        USBD_LL_CloseEP(pdev, CDC2_IN_EP);
-        USBD_LL_CloseEP(pdev, CDC2_OUT_EP);
-        USBD_LL_CloseEP(pdev, CDC2_CMD_EP);
-    }
-    #endif
-
-    if (usbd->usbd_mode & USBD_MODE_MSC) {
+    if (usbd->usbd_mode & USBD_MODE_IFACE_MSC) {
         // MSC component
 
         // close endpoints
@@ -679,7 +653,7 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
         MSC_BOT_DeInit(pdev);
     }
 
-    if (usbd->usbd_mode & USBD_MODE_HID) {
+    if (usbd->usbd_mode & USBD_MODE_IFACE_HID) {
         // HID component
 
         // close endpoints
@@ -717,35 +691,35 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     switch (req->bmRequest & USB_REQ_RECIPIENT_MASK) {
         case USB_REQ_RECIPIENT_INTERFACE: {
             uint16_t iface = req->wIndex;
-            if ((mode & USBD_MODE_CDC) && iface == usbd->cdc->iface_num) {
-                recipient = USBD_MODE_CDC;
-                cdc = usbd->cdc;
-            #if MICROPY_HW_USB_ENABLE_CDC2
-            } else if ((mode & USBD_MODE_CDC2) && iface == usbd->cdc2->iface_num) {
-                recipient = USBD_MODE_CDC;
-                cdc = usbd->cdc2;
-            #endif
-            } else if ((mode & USBD_MODE_MSC) && iface == MSC_IFACE_NUM_WITH_CDC) {
+            if ((mode & USBD_MODE_IFACE_MSC) && iface == MSC_IFACE_NUM_WITH_CDC) {
                 recipient = USBD_MODE_MSC;
-            } else if ((mode & USBD_MODE_HID) && iface == usbd->hid->iface_num) {
+            } else if ((mode & USBD_MODE_IFACE_HID) && iface == usbd->hid->iface_num) {
                 recipient = USBD_MODE_HID;
+            } else {
+                for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+                    if ((mode & USBD_MODE_IFACE_CDC(i)) && iface == usbd->cdc[i]->iface_num) {
+                        recipient = USBD_MODE_CDC;
+                        cdc = usbd->cdc[i];
+                        break;
+                    }
+                }
             }
             break;
         }
         case USB_REQ_RECIPIENT_ENDPOINT: {
             uint8_t ep = req->wIndex & 0x7f;
-            if ((mode & USBD_MODE_CDC) && (ep == CDC_OUT_EP || ep == (CDC_CMD_EP & 0x7f))) {
-                recipient = USBD_MODE_CDC;
-                cdc = usbd->cdc;
-            #if MICROPY_HW_USB_ENABLE_CDC2
-            } else if ((mode & USBD_MODE_CDC2) && (ep == CDC2_OUT_EP || ep == (CDC2_CMD_EP & 0x7f))) {
-                recipient = USBD_MODE_CDC;
-                cdc = usbd->cdc2;
-            #endif
-            } else if ((mode & USBD_MODE_MSC) && ep == MSC_OUT_EP) {
+            if ((mode & USBD_MODE_IFACE_MSC) && ep == MSC_OUT_EP) {
                 recipient = USBD_MODE_MSC;
-            } else if ((mode & USBD_MODE_HID) && ep == usbd->hid->out_ep) {
+            } else if ((mode & USBD_MODE_IFACE_HID) && ep == usbd->hid->out_ep) {
                 recipient = USBD_MODE_HID;
+            } else {
+                for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+                    if ((mode & USBD_MODE_IFACE_CDC(i)) && (ep == CDC_OUT_EP(i) || ep == (CDC_CMD_EP(i) & 0x7f))) {
+                        recipient = USBD_MODE_CDC;
+                        cdc = usbd->cdc[i];
+                        break;
+                    }
+                }
             }
             break;
         }
@@ -894,36 +868,32 @@ static uint8_t EP0_TxSent(USBD_HandleTypeDef *pdev) {
 
 static uint8_t USBD_CDC_MSC_HID_EP0_RxReady(USBD_HandleTypeDef *pdev) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
-    if (usbd->cdc != NULL && usbd->cdc->cur_request != 0xff) {
-        usbd_cdc_control(usbd->cdc, usbd->cdc->cur_request, (uint8_t*)usbd->cdc->ctl_packet_buf, usbd->cdc->cur_length);
-        usbd->cdc->cur_request = 0xff;
+    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        if (usbd->cdc[i] != NULL && usbd->cdc[i]->cur_request != 0xff) {
+            usbd_cdc_control(usbd->cdc[i], usbd->cdc[i]->cur_request, (uint8_t*)usbd->cdc[i]->ctl_packet_buf, usbd->cdc[i]->cur_length);
+            usbd->cdc[i]->cur_request = 0xff;
+        }
     }
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    if (usbd->cdc2 != NULL && usbd->cdc2->cur_request != 0xff) {
-        usbd_cdc_control(usbd->cdc2, usbd->cdc2->cur_request, (uint8_t*)usbd->cdc2->ctl_packet_buf, usbd->cdc2->cur_length);
-        usbd->cdc2->cur_request = 0xff;
-    }
-    #endif
-
     return USBD_OK;
 }
 
 static uint8_t USBD_CDC_MSC_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
-    if ((usbd->usbd_mode & USBD_MODE_CDC) && (epnum == (CDC_IN_EP & 0x7f) || epnum == (CDC_CMD_EP & 0x7f))) {
-        usbd->cdc->tx_in_progress = 0;
-        usbd_cdc_tx_ready(usbd->cdc);
-        return USBD_OK;
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    } else if ((usbd->usbd_mode & USBD_MODE_CDC2) && (epnum == (CDC2_IN_EP & 0x7f) || epnum == (CDC2_CMD_EP & 0x7f))) {
-        usbd->cdc2->tx_in_progress = 0;
-        usbd_cdc_tx_ready(usbd->cdc2);
-        return USBD_OK;
-    #endif
-    } else if ((usbd->usbd_mode & USBD_MODE_MSC) && epnum == (MSC_IN_EP & 0x7f)) {
+
+    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        if ((usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) && (epnum == (CDC_IN_EP(i) & 0x7f) || epnum == (CDC_CMD_EP(i) & 0x7f))) {
+            usbd->cdc[i]->tx_in_progress = 0;
+            usbd_cdc_tx_ready(usbd->cdc[i]);
+            return USBD_OK;
+        }
+    }
+
+    if ((usbd->usbd_mode & USBD_MODE_IFACE_MSC) && epnum == (MSC_IN_EP & 0x7f)) {
         MSC_BOT_DataIn(pdev, epnum);
         return USBD_OK;
-    } else if ((usbd->usbd_mode & USBD_MODE_HID) && epnum == (usbd->hid->in_ep & 0x7f)) {
+    }
+
+    if ((usbd->usbd_mode & USBD_MODE_IFACE_HID) && epnum == (usbd->hid->in_ep & 0x7f)) {
         /* Ensure that the FIFO is empty before a new transfer, this condition could
         be caused by  a new transfer before the end of the previous transfer */
         usbd->hid->state = HID_IDLE;
@@ -935,26 +905,23 @@ static uint8_t USBD_CDC_MSC_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) 
 
 static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
-    if ((usbd->usbd_mode & USBD_MODE_CDC) && epnum == (CDC_OUT_EP & 0x7f)) {
-        /* Get the received data length */
-        size_t len = USBD_LL_GetRxDataSize (pdev, epnum);
 
-        /* USB data will be immediately processed, this allow next USB traffic being
-        NAKed till the end of the application Xfer */
-        return usbd_cdc_receive(usbd->cdc, len);
+    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        if ((usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) && epnum == (CDC_OUT_EP(i) & 0x7f)) {
+            size_t len = USBD_LL_GetRxDataSize(pdev, epnum);
+            // USB data will be immediately processed, and next USB traffic is NAKed until it's done
+            return usbd_cdc_receive(usbd->cdc[i], len);
+        }
+    }
 
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    } else if ((usbd->usbd_mode & USBD_MODE_CDC2) && epnum == (CDC2_OUT_EP & 0x7f)) {
-        size_t len = USBD_LL_GetRxDataSize(pdev, epnum);
-        return usbd_cdc_receive(usbd->cdc2, len);
-        
-    #endif
-    } else if ((usbd->usbd_mode & USBD_MODE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
+    if ((usbd->usbd_mode & USBD_MODE_IFACE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
         MSC_BOT_DataOut(pdev, epnum);
         return USBD_OK;
-    } else if ((usbd->usbd_mode & USBD_MODE_HID) && epnum == (usbd->hid->out_ep & 0x7f)) {
+    }
+
+    if ((usbd->usbd_mode & USBD_MODE_IFACE_HID) && epnum == (usbd->hid->out_ep & 0x7f)) {
         size_t len = USBD_LL_GetRxDataSize(pdev, epnum);
-        usbd_hid_receive(usbd->hid, len);
+        return usbd_hid_receive(usbd->hid, len);
     }
 
     return USBD_OK;
@@ -981,48 +948,46 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
 
     #if USBD_SUPPORT_HS_MODE
-    uint8_t *cdc_desc = NULL;
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    uint8_t *cdc2_desc = NULL;
-    #endif
+    uint8_t *cdc_desc[MICROPY_HW_USB_CDC_NUM] = {0};
     uint8_t *msc_desc = NULL;
-    switch (usbd->usbd_mode) {
+    switch (usbd->usbd_mode & USBD_MODE_IFACE_MASK) {
         case USBD_MODE_MSC:
             msc_desc = usbd->usbd_config_desc + MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
 
         case USBD_MODE_CDC_MSC:
-            cdc_desc = usbd->usbd_config_desc + CDC_MSC_TEMPLATE_CDC_DESC_OFFSET;
+            cdc_desc[0] = usbd->usbd_config_desc + CDC_MSC_TEMPLATE_CDC_DESC_OFFSET;
             msc_desc = usbd->usbd_config_desc + CDC_MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
 
-        #if MICROPY_HW_USB_ENABLE_CDC2
+        #if MICROPY_HW_USB_CDC_NUM >= 2
+        case USBD_MODE_CDC2:
+            cdc_desc[0] = usbd->usbd_config_desc + CDC2_TEMPLATE_CDC_DESC_OFFSET;
+            cdc_desc[1] = usbd->usbd_config_desc + CDC2_TEMPLATE_CDC2_DESC_OFFSET;
+            break;
+
         case USBD_MODE_CDC2_MSC:
-            cdc_desc = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC_DESC_OFFSET;
-            cdc2_desc = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC2_DESC_OFFSET;
+            cdc_desc[0] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC_DESC_OFFSET;
+            cdc_desc[1] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC2_DESC_OFFSET;
             msc_desc = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
         #endif
 
         case USBD_MODE_CDC_HID:
-            cdc_desc = usbd->usbd_config_desc + CDC_HID_TEMPLATE_CDC_DESC_OFFSET;
+            cdc_desc[0] = usbd->usbd_config_desc + CDC_HID_TEMPLATE_CDC_DESC_OFFSET;
             break;
 
         case USBD_MODE_CDC:
-            cdc_desc = usbd->usbd_config_desc + CDC_TEMPLATE_CDC_DESC_OFFSET;
+            cdc_desc[0] = usbd->usbd_config_desc + CDC_TEMPLATE_CDC_DESC_OFFSET;
             break;
     }
 
     // configure CDC descriptors, if needed
-    if (cdc_desc != NULL) {
-        usbd_cdc_desc_config_max_packet(pdev, cdc_desc);
+    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+        if (cdc_desc[i] != NULL) {
+            usbd_cdc_desc_config_max_packet(pdev, cdc_desc[i]);
+        }
     }
-
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    if (cdc2_desc != NULL) {
-        usbd_cdc_desc_config_max_packet(pdev, cdc2_desc);
-    }
-    #endif
 
     if (msc_desc != NULL) {
         uint32_t mp = usbd_msc_max_packet(pdev);

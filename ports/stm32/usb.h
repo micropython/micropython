@@ -58,14 +58,13 @@ extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_mouse_obj;
 extern const struct _mp_rom_obj_tuple_t pyb_usb_hid_keyboard_obj;
 extern const mp_obj_type_t pyb_usb_vcp_type;
 extern const mp_obj_type_t pyb_usb_hid_type;
-extern const pyb_usb_vcp_obj_t pyb_usb_vcp_obj;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(pyb_have_cdc_obj); // deprecated
 MP_DECLARE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj); // deprecated
 
 void pyb_usb_init0(void);
-bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
 void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
 int usb_vcp_recv_byte(uint8_t *c); // if a byte is available, return 1 and put the byte in *c, else return 0

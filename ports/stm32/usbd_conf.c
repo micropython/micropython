@@ -334,7 +334,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
     if (pdev->id ==  USB_PHY_FS_ID) {
         // Set LL Driver parameters
         pcd_fs_handle.Instance = USB_OTG_FS;
-        #if MICROPY_HW_USB_ENABLE_CDC2
+        #if MICROPY_HW_USB_CDC_NUM == 2
         pcd_fs_handle.Init.dev_endpoints = 6;
         #else
         pcd_fs_handle.Init.dev_endpoints = 4;
@@ -364,7 +364,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         HAL_PCD_Init(&pcd_fs_handle);
 
         // We have 320 32-bit words in total to use here
-        #if MICROPY_HW_USB_ENABLE_CDC2
+        #if MICROPY_HW_USB_CDC_NUM == 2
         HAL_PCD_SetRxFiFo(&pcd_fs_handle, 128);
         HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 32); // EP0
         HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 64); // MSC / HID

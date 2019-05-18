@@ -264,6 +264,10 @@
 #define MICROPY_HW_MAX_CAN (1)
 #endif
 
+// Configure maximum number of CDC VCP interfaces
+#ifndef MICROPY_HW_USB_CDC_NUM
+#define MICROPY_HW_USB_CDC_NUM (1)
+#endif
 
 // Pin definition header file
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"
