@@ -102,5 +102,6 @@ MP_DECLARE_CONST_FUN_OBJ_1(str_isalpha_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_isdigit_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
 
 #endif // MICROPY_INCLUDED_PY_OBJSTR_H
