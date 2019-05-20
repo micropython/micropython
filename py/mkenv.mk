@@ -42,6 +42,7 @@ ECHO = @echo
 CP = cp
 MKDIR = mkdir
 SED = sed
+CAT = cat
 PYTHON = python3
 
 AS = $(CROSS_COMPILE)as
