@@ -527,9 +527,16 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 }
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
+#if MICROPY_CPYTHON_COMPAT
+extern const mp_obj_fun_builtin_var_t bytes_decode_obj;
+#endif
+
 STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
+    #if MICROPY_CPYTHON_COMPAT
+    { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
