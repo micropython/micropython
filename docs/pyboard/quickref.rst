@@ -199,16 +199,25 @@ See :ref:`pyb.SPI <pyb.SPI>`. ::
 I2C bus
 -------
 
-See :ref:`pyb.I2C <pyb.I2C>`. ::
+Hardware I2C is available on the X and Y halves of the pyboard via ``I2C('X')``
+and ``I2C('Y')``.  Alternatively pass in the integer identifier of the peripheral,
+eg ``I2C(1)``.  Software I2C is also available by explicitly specifying the
+``scl`` and ``sda`` pins instead of the bus name.  For more details see
+:ref:`machine.I2C <machine.I2C>`. ::
 
-    from pyb import I2C
+    from machine import I2C
 
-    i2c = I2C(1, I2C.MASTER, baudrate=100000)
-    i2c.scan() # returns list of slave addresses
-    i2c.send('hello', 0x42) # send 5 bytes to slave with address 0x42
-    i2c.recv(5, 0x42) # receive 5 bytes from slave
-    i2c.mem_read(2, 0x42, 0x10) # read 2 bytes from slave 0x42, slave memory 0x10
-    i2c.mem_write('xy', 0x42, 0x10) # write 2 bytes to slave 0x42, slave memory 0x10
+    i2c = I2C('X', freq=400000)                 # create hardware I2c object
+    i2c = I2C(scl='X1', sda='X2', freq=100000)  # create software I2C object
+
+    i2c.scan()                          # returns list of slave addresses
+    i2c.writeto(0x42, 'hello')          # write 5 bytes to slave with address 0x42
+    i2c.readfrom(0x42, 5)               # read 5 bytes from slave
+
+    i2c.readfrom_mem(0x42, 0x10, 2)     # read 2 bytes from slave 0x42, slave memory 0x10
+    i2c.writeto_mem(0x42, 0x10, 'xy')   # write 2 bytes to slave 0x42, slave memory 0x10
+
+Note: for legacy I2C support see :ref:`pyb.I2C <pyb.I2C>`.
 
 CAN bus (controller area network)
 ---------------------------------
