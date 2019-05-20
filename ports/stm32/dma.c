@@ -387,7 +387,9 @@ const dma_descr_t dma_I2C_1_TX = { DMA1_Channel6, DMA_REQUEST_3, dma_id_5,   &dm
 const dma_descr_t dma_I2C_1_RX = { DMA1_Channel7, DMA_REQUEST_3, dma_id_6,   &dma_init_struct_spi_i2c };
 
 // DMA2 streams
+const dma_descr_t dma_I2C_4_RX = { DMA2_Channel1, DMA_REQUEST_0, dma_id_0,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_3_RX = { DMA2_Channel1, DMA_REQUEST_3, dma_id_7,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_4_TX = { DMA2_Channel2, DMA_REQUEST_0, dma_id_1,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_3_TX = { DMA2_Channel2, DMA_REQUEST_3, dma_id_8,   &dma_init_struct_spi_i2c };
 /* not preferred streams
 const dma_descr_t dma_ADC_1_RX = { DMA2_Channel3, DMA_REQUEST_0, dma_id_9,   NULL };
