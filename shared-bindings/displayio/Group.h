@@ -44,6 +44,7 @@ void common_hal_displayio_group_append(displayio_group_t* self, mp_obj_t layer);
 void common_hal_displayio_group_insert(displayio_group_t* self, size_t index, mp_obj_t layer);
 size_t common_hal_displayio_group_get_len(displayio_group_t* self);
 mp_obj_t common_hal_displayio_group_pop(displayio_group_t* self, size_t index);
+mp_int_t common_hal_displayio_group_index(displayio_group_t* self, mp_obj_t layer);
 mp_obj_t common_hal_displayio_group_get(displayio_group_t* self, size_t index);
 void common_hal_displayio_group_set(displayio_group_t* self, size_t index, mp_obj_t layer);
 
