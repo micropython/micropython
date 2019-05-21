@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2013, 2014 Damien P. George
+Copyright (c) 2013-2019 Damien P. George
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,59 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+SPDX-License-Identifier: MIT
+
+Unless specified otherwise (see below), the above license and copyright applies
+to all files in this repository.
+
+Individual files may include additional copyright holders.
+
+MicroPython includes third-party software that is licensed under different
+terms. These licenses are summarized in the tree below, please refer to these
+files and directories for further license and copyright information.
+
+/ (MIT)
+    /drivers
+        /cc3000 (BSD-3-clause)
+        /cc3100 (BSD-3-clause)
+        /wiznet5k (BSD-3-clause)
+    /extmod
+        /crypto-algorithms (NONE)
+        /re15 (BSD-3-clause)
+        /uzlib (Zlib)
+    /lib
+        /axtls (BSD-3-clause)
+            /config
+                /scripts
+                    /config (GPL-2.0-or-later)
+                /Rules.mak (GPL-2.0)
+        /berkeley-db-1xx (BSD-4-clause)
+        /cmsis (BSD-3-clause)
+        /lwip (BSD-3-clause)
+        /nrfx (BSD-3-clause)
+        /oofatfs (BSD-1-clause)
+        /stm32lib (BSD-3-clause)
+        /tinytest (BSD-3-clause)
+    /logo (uses OFL-1.1)
+    /ports
+        /cc3200
+            /hal (BSD-3-clause)
+            /simplelink (BSD-3-clause)
+            /FreeRTOS (GPL-2.0 with FreeRTOS exception)
+        /stm32
+            /usbd*.c (MCD-ST Liberty SW License Agreement V2)
+            /stm32_it.* (MIT + BSD-3-clause)
+            /system_stm32*.c (MIT + BSD-3-clause)
+            /boards
+                /startup_stm32*.s (BSD-3-clause)
+                /*/stm32*.h (BSD-3-clause)
+            /usbdev (MCD-ST Liberty SW License Agreement V2)
+            /usbhost (MCD-ST Liberty SW License Agreement V2)
+        /teensy
+            /core (PJRC.COM)
+        /zephyr
+            /src (Apache-2.0)
+    /tools
+        /dfu.py (LGPL-3.0-only)
+
