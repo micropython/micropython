@@ -27,7 +27,7 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Thermistor
 
 # Tweak inlining depending on language.
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
-CFLAGS_INLINE_LIMIT = 35
+CFLAGS_INLINE_LIMIT = 25
 else
 CFLAGS_INLINE_LIMIT = 55
 endif
