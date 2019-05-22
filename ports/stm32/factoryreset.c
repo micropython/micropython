@@ -40,6 +40,7 @@ static const char fresh_boot_py[] =
 "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
 "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
 #endif
+"pyb.country('US') # ISO 3166-1 Alpha-2 code, eg US, GB, DE, AU\r\n"
 ;
 
 static const char fresh_main_py[] =
