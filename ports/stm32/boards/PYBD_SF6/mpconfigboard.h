@@ -95,6 +95,8 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_UART6_RX         (pyb_pin_BT_RXD)
 #define MICROPY_HW_UART6_RTS        (pyb_pin_BT_RTS)
 #define MICROPY_HW_UART6_CTS        (pyb_pin_BT_CTS)
+#define MICROPY_HW_UART7_TX         (pyb_pin_W16)
+#define MICROPY_HW_UART7_RX         (pyb_pin_W22B)
 //#define MICROPY_HW_UART_REPL        PYB_UART_3
 //#define MICROPY_HW_UART_REPL_BAUD   115200
 
