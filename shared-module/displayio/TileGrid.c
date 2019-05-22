@@ -154,8 +154,8 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
     displayio_area_t scaled_area = {
         .x1 = self->area.x1 * transform->scale,
         .y1 = self->area.y1 * transform->scale,
-        .x2 = (self->area.x2 + 1) * transform->scale - 1, // Second point is inclusive.
-        .y2 = (self->area.y2 + 1) * transform->scale - 1
+        .x2 = self->area.x2 * transform->scale,
+        .y2 = self->area.y2 * transform->scale
     };
     if (!displayio_area_compute_overlap(area, &scaled_area, &overlap)) {
         return false;
@@ -169,19 +169,20 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
     }
     uint16_t start = 0;
     if (transform->mirror_x) {
-        start += (area->x2 - area->x1) * x_stride;
+        start += (area->x2 - area->x1 - 1) * x_stride;
         x_stride *= -1;
     }
     if (transform->mirror_y) {
-        start += (area->y2 - area->y1) * y_stride;
+        start += (area->y2 - area->y1 - 1) * y_stride;
         y_stride *= -1;
     }
 
+    // Track if this layer finishes filling in the given area. We can ignore any remaining
+    // layers at that point.
     bool full_coverage = displayio_area_equal(area, &overlap);
 
-    // TODO(tannewt): Set full coverage to true if all pixels outside the overlap have already been
-    // set as well.
-    bool always_full_coverage = false;
+    // TODO(tannewt): Skip coverage tracking if all pixels outside the overlap have already been
+    // set and our palette is all opaque.
 
     // TODO(tannewt): Check to see if the pixel_shader has any transparency. If it doesn't then we
     // can either return full coverage or bulk update the mask.
@@ -191,16 +192,21 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
     }
     int16_t x_shift = area->x1 - scaled_area.x1;
     int16_t y_shift = area->y1 - scaled_area.y1;
-    for (; y <= overlap.y2 - scaled_area.y1; y++) {
+    for (; y < overlap.y2 - scaled_area.y1; y++) {
         int16_t x = overlap.x1 - scaled_area.x1;
         if (x < 0) {
             x = 0;
         }
         int16_t row_start = start + (y - y_shift) * y_stride;
         int16_t local_y = y / transform->scale;
-        for (; x <= overlap.x2 - scaled_area.x1; x++) {
+        for (; x < overlap.x2 - scaled_area.x1; x++) {
             // Compute the destination pixel in the buffer and mask based on the transformations.
             uint16_t offset = row_start + (x - x_shift) * x_stride;
+
+            // This is super useful for debugging out range accesses. Uncomment to use.
+            // if (offset < 0 || offset >= displayio_area_size(area)) {
+            //     asm("bkpt");
+            // }
 
             // Check the mask first to see if the pixel has already been set.
             if ((mask[offset / 32] & (1 << (offset % 32))) != 0) {
@@ -229,22 +235,21 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
                 return true;
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
                 if (!displayio_palette_get_color(self->pixel_shader, value, pixel)) {
-                    // mark the pixel as transparent
+                    // A pixel is transparent so we haven't fully covered the area ourselves.
                     full_coverage = false;
-                } else if (!always_full_coverage) {
+                } else {
                     mask[offset / 32] |= 1 << (offset % 32);
                 }
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
                 if (!common_hal_displayio_colorconverter_convert(self->pixel_shader, value, pixel)) {
-                    // mark the pixel as transparent
+                    // A pixel is transparent so we haven't fully covered the area ourselves.
                     full_coverage = false;
-                } else if (!always_full_coverage) {
+                } else {
                     mask[offset / 32] |= 1 << (offset % 32);
                 }
             }
         }
     }
-
     return full_coverage;
 }
 

@@ -70,8 +70,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
 
     grid->width_in_tiles = width_in_tiles;
     grid->height_in_tiles = height_in_tiles;
-    grid->area.x2 = grid->area.x1 + width_in_tiles * grid->tile_width - 1;
-    grid->area.y2 = grid->area.y1 + height_in_tiles * grid->tile_height - 1;
+    grid->area.x2 = grid->area.x1 + width_in_tiles * grid->tile_width;
+    grid->area.y2 = grid->area.y1 + height_in_tiles * grid->tile_height;
     grid->tiles = tiles;
 
     supervisor_terminal.cursor_x = 0;

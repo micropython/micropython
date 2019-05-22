@@ -66,8 +66,8 @@ void displayio_refresh_displays(void) {
             displayio_area_t whole_screen = {
                 .x1 = 0,
                 .y1 = 0,
-                .x2 = display->width - 1,
-                .y2 = display->height - 1
+                .x2 = display->width,
+                .y2 = display->height
             };
             if (display->transpose_xy) {
                 swap(&whole_screen.x2, &whole_screen.y2);
@@ -88,13 +88,13 @@ void displayio_refresh_displays(void) {
                 displayio_area_t subrectangle = {
                     .x1 = 0,
                     .y1 = rows_per_buffer * j,
-                    .x2 = displayio_area_width(&whole_screen) - 1,
-                    .y2 = rows_per_buffer * (j + 1) - 1
+                    .x2 = displayio_area_width(&whole_screen),
+                    .y2 = rows_per_buffer * (j + 1)
                 };
 
                 displayio_display_begin_transaction(display);
                 displayio_display_set_region_to_update(display, subrectangle.x1, subrectangle.y1,
-                                                                subrectangle.x2 + 1, subrectangle.y2 + 1);
+                                                                subrectangle.x2, subrectangle.y2);
                 displayio_display_end_transaction(display);
 
                 // Handle display mirroring and transpose.
@@ -102,22 +102,22 @@ void displayio_refresh_displays(void) {
                 displayio_buffer_transform_t transform;
                 if (display->mirror_x) {
                     uint16_t width = displayio_area_width(&whole_screen);
-                    transformed_subrectangle.x1 = width - subrectangle.x2 - 1;
-                    transformed_subrectangle.x2 = width - subrectangle.x1 - 1;
+                    transformed_subrectangle.x1 = width - subrectangle.x2;
+                    transformed_subrectangle.x2 = width - subrectangle.x1;
                 } else {
                     transformed_subrectangle.x1 = subrectangle.x1;
                     transformed_subrectangle.x2 = subrectangle.x2;
                 }
                 if (display->mirror_y != display->transpose_xy) {
                     uint16_t height = displayio_area_height(&whole_screen);
-                    transformed_subrectangle.y1 = height - subrectangle.y2 - 1;
-                    transformed_subrectangle.y2 = height - subrectangle.y1 - 1;
+                    transformed_subrectangle.y1 = height - subrectangle.y2;
+                    transformed_subrectangle.y2 = height - subrectangle.y1;
                 } else {
                     transformed_subrectangle.y1 = subrectangle.y1;
                     transformed_subrectangle.y2 = subrectangle.y2;
                 }
-                transform.width = transformed_subrectangle.x2 - transformed_subrectangle.x1 + 1;
-                transform.height = transformed_subrectangle.y2 - transformed_subrectangle.y1 + 1;
+                transform.width = transformed_subrectangle.x2 - transformed_subrectangle.x1;
+                transform.height = transformed_subrectangle.y2 - transformed_subrectangle.y1;
                 if (display->transpose_xy) {
                     int16_t y1 = transformed_subrectangle.y1;
                     int16_t y2 = transformed_subrectangle.y2;
@@ -139,8 +139,8 @@ void displayio_refresh_displays(void) {
                 if (!full_coverage) {
                     uint32_t index = 0;
                     uint32_t current_mask = 0;
-                    for (int16_t y = subrectangle.y1; y <= subrectangle.y2; y++) {
-                        for (int16_t x = subrectangle.x1; x <= subrectangle.x2; x++) {
+                    for (int16_t y = subrectangle.y1; y < subrectangle.y2; y++) {
+                        for (int16_t x = subrectangle.x1; x < subrectangle.x2; x++) {
                             if (index % 32 == 0) {
                                 current_mask = mask[index / 32];
                             }
@@ -268,11 +268,11 @@ bool displayio_area_compute_overlap(const displayio_area_t* a,
 }
 
 uint16_t displayio_area_width(const displayio_area_t* area) {
-    return area->x2 - area->x1 + 1;
+    return area->x2 - area->x1;
 }
 
 uint16_t displayio_area_height(const displayio_area_t* area) {
-    return area->y2 - area->y1 + 1;
+    return area->y2 - area->y1;
 }
 
 uint32_t displayio_area_size(const displayio_area_t* area) {

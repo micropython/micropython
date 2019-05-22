@@ -138,6 +138,8 @@ bool displayio_group_get_area(displayio_group_t *self, displayio_buffer_transfor
     displayio_area_shift(area, -self->x * transform->scale, -self->y * transform->scale);
     transform->scale *= self->scale;
 
+    // Track if any of the layers finishes filling in the given area. We can ignore any remaining
+    // layers at that point.
     bool full_coverage = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i].native;
