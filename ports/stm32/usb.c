@@ -71,7 +71,7 @@ typedef struct _usb_device_t {
     usbd_hid_itf_t usbd_hid_itf;
 } usb_device_t;
 
-usb_device_t usb_device;
+usb_device_t usb_device = {0};
 //pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 
 // predefined hid mouse data
@@ -117,7 +117,6 @@ void pyb_usb_init0(void) {
     #if MICROPY_HW_USB_ENABLE_CDC2
     usb_device.usbd_cdc2_itf.attached_to_repl = false;
     #endif
-    mp_hal_set_interrupt_char(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 

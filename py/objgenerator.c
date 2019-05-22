@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -247,12 +247,25 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
         return ret;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
-STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
+    // The signature of this function is: throw(type[, value[, traceback]])
+    // CPython will pass all given arguments through the call chain and process them
+    // at the point they are used (native generators will handle them differently to
+    // user-defined generators with a throw() method).  To save passing multiple
+    // values, MicroPython instead does partial processing here to reduce it down to
+    // one argument and passes that through:
+    // - if only args[1] is given, or args[2] is given but is None, args[1] is
+    //   passed through (in the standard case it is an exception class or instance)
+    // - if args[2] is given and not None it is passed through (in the standard
+    //   case it would be an exception instance and args[1] its corresponding class)
+    // - args[3] is always ignored
+
+    mp_obj_t exc = args[1];
+    if (n_args > 2 && args[2] != mp_const_none) {
+        exc = args[2];
+    }
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_STOP_ITERATION) {
@@ -261,7 +274,6 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
         return ret;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_instance_throw);
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
@@ -283,7 +295,6 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
             return mp_const_none;
     }
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
 STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {

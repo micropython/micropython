@@ -5,6 +5,7 @@ for the machine.freq() function.
 """
 
 from __future__ import print_function
+import re
 
 def close_int(x):
     return abs(x - round(x)) < 0.01
@@ -109,12 +110,18 @@ def verify_pll(hse, pll):
     assert 1 <= vco_in <= 2
     assert 192 <= vco_out <= 432
 
+def compute_pll_table(source_clk, relax_pll48):
+    valid_plls = []
+    for sysclk in range(2, 217, 2):
+        pll = compute_pll2(source_clk, sysclk, relax_pll48)
+        if pll is not None:
+            verify_pll(source_clk, pll)
+            valid_plls.append((sysclk, pll))
+    return valid_plls
+
 def generate_c_table(hse, valid_plls):
-    valid_plls = valid_plls + [(16, (0, 0, 2, 0))]
-    if hse < 16:
-        valid_plls.append((hse, (1, 0, 2, 0)))
     valid_plls.sort()
-    print("// (M, P/2-1, SYS) values for %u MHz HSE" % hse)
+    print("// (M, P/2-1, SYS) values for %u MHz source" % hse)
     print("static const uint16_t pll_freq_table[%u] = {" % len(valid_plls))
     for sys, (M, N, P, Q) in valid_plls:
         print("    (%u << 10) | (%u << 8) | %u," % (M, P // 2 - 1, sys))
@@ -137,6 +144,8 @@ def main():
 
     c_table = False
     relax_pll48 = False
+    hse = None
+    hsi = None
 
     while True:
         if argv[0] == '-c':
@@ -153,32 +162,44 @@ def main():
         sys.exit(1)
 
     if argv[0].startswith("file:"):
-        # extract HSE_VALUE from header file
+        # extract HSE_VALUE, and optionally HSI_VALUE, from header file
+        regex = re.compile(r'#define +(HSE_VALUE|HSI_VALUE) +\(\(uint32_t\)([0-9]+)\)')
         with open(argv[0][5:]) as f:
             for line in f:
                 line = line.strip()
-                if line.startswith("#define") and line.find("HSE_VALUE") != -1:
-                    idx_start = line.find("((uint32_t)") + 11
-                    idx_end = line.find(")", idx_start)
-                    hse = int(line[idx_start:idx_end]) // 1000000
-                    break
-            else:
+                m = regex.match(line)
+                if m:
+                    val = int(m.group(2)) // 1000000
+                    if m.group(1) == 'HSE_VALUE':
+                        hse = val
+                    else:
+                        hsi = val
+            if hse is None:
                 raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
+            if hsi is not None and hsi > 16:
+                # Currently, a HSI value greater than 16MHz is not supported
+                hsi = None
     else:
         # HSE given directly as an integer
         hse = int(argv[0])
 
-    valid_plls = []
-    for sysclk in range(2, 217, 2):
-        pll = compute_pll2(hse, sysclk, relax_pll48)
-        if pll is not None:
-            verify_pll(hse, pll)
-            valid_plls.append((sysclk, pll))
+    hse_valid_plls = compute_pll_table(hse, relax_pll48)
+    if hsi is not None:
+        hsi_valid_plls = compute_pll_table(hsi, relax_pll48)
 
     if c_table:
-        generate_c_table(hse, valid_plls)
+        print('#if MICROPY_HW_CLK_USE_HSI')
+        if hsi is not None:
+            hsi_valid_plls.append((hsi, (0, 0, 2, 0)))
+            generate_c_table(hsi, hsi_valid_plls)
+        print('#else')
+        if hsi is not None:
+            hse_valid_plls.append((hsi, (0, 0, 2, 0)))
+        hse_valid_plls.append((hse, (1, 0, 2, 0)))
+        generate_c_table(hse, hse_valid_plls)
+        print('#endif')
     else:
-        print_table(hse, valid_plls)
+        print_table(hse, hse_valid_plls)
 
 if __name__ == "__main__":
     main()

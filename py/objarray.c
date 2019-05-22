@@ -231,6 +231,19 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+#if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        return;
+    }
+    if (attr == MP_QSTR_itemsize) {
+        mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+        dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
+    }
+}
+#endif
+
 #endif
 
 STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
@@ -375,9 +388,8 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         return MP_OBJ_NULL; // op not supported
     } else {
         mp_obj_array_t *o = MP_OBJ_TO_PTR(self_in);
-        if (0) {
 #if MICROPY_PY_BUILTINS_SLICE
-        } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
+        if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
                 mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
@@ -456,22 +468,22 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             mp_obj_array_t *res;
             size_t sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
             assert(sz > 0);
-            if (0) {
-                // dummy
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
-            } else if (o->base.type == &mp_type_memoryview) {
+            if (o->base.type == &mp_type_memoryview) {
                 res = m_new_obj(mp_obj_array_t);
                 *res = *o;
                 res->memview_offset += slice.start;
                 res->len = slice.stop - slice.start;
+            } else
             #endif
-            } else {
+            {
                 res = array_new(o->typecode, slice.stop - slice.start);
                 memcpy(res->items, (uint8_t*)o->items + slice.start * sz, (slice.stop - slice.start) * sz);
             }
             return MP_OBJ_FROM_PTR(res);
+        } else
 #endif
-        } else {
+        {
             size_t index = mp_get_index(o->base.type, o->len, index_in, false);
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
             if (o->base.type == &mp_type_memoryview) {
@@ -518,6 +530,9 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
+    #if MICROPY_CPYTHON_COMPAT
+    { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
@@ -561,6 +576,9 @@ const mp_obj_type_t mp_type_memoryview = {
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+    .attr = memoryview_attr,
+    #endif
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
 };

@@ -234,6 +234,7 @@ SRC_C = \
 	systick.c  \
 	powerctrl.c \
 	pybthread.c \
+	factoryreset.c \
 	timer.c \
 	led.c \
 	pin.c \

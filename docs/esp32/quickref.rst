@@ -128,6 +128,8 @@ with timer ID of -1::
 
 The period is in milliseconds.
 
+.. _Pins_and_GPIO:
+
 Pins and GPIO
 -------------
 
@@ -274,8 +276,13 @@ class::
 Hardware SPI bus
 ----------------
 
-There are two hardware SPI channels that allow faster (up to 80Mhz)
-transmission rates, but are only supported on a subset of pins.
+There are two hardware SPI channels that allow faster transmission
+rates (up to 80Mhz). These may be used on any IO pins that support the
+required direction and are otherwise unused (see :ref:`Pins_and_GPIO`)
+but if they are not configured to their default pins then they need to
+pass through an extra layer of GPIO multiplexing, which can impact
+their reliability at high speeds. Hardware SPI channels are limited
+to 40MHz when used on pins other than the default ones listed below.
 
 =====  ===========  ============
 \      HSPI (id=1)   VSPI (id=2)

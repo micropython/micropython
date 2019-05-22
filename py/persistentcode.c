@@ -40,9 +40,6 @@
 
 #define QSTR_LAST_STATIC MP_QSTR_zip
 
-// The current version of .mpy files
-#define MPY_VERSION (4)
-
 // Macros to encode/decode flags to/from the feature byte
 #define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
 #define MPY_FEATURE_DECODE_FLAGS(feat) ((feat) & 3)
@@ -563,7 +560,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         } else {
             obj_type = 'b';
         }
-        mp_uint_t len;
+        size_t len;
         const char *str = mp_obj_str_get_data(o, &len);
         mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, len);
