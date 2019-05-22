@@ -134,9 +134,8 @@ void uart_tx_strn_cooked(const machine_hard_uart_obj_t *uart_obj, const char *st
 /* MicroPython bindings                                                      */
 
 STATIC void machine_hard_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_printf(print, "UART(0)");
 }
-
-
 
 /// \method init(id, baudrate)
 ///
@@ -251,13 +250,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_sendbreak_obj, machine_hard_u
 
 STATIC const mp_rom_map_elem_t machine_hard_uart_locals_dict_table[] = {
     // instance methods
-    /// \method read([nbytes])
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    /// \method readline()
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    /// \method readinto(buf[, nbytes])
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    /// \method writechar(buf)
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&machine_hard_uart_writechar_obj) },
     { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&machine_hard_uart_readchar_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_hard_uart_sendbreak_obj) },
