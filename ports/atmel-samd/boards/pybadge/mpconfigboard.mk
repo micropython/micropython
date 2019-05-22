@@ -1,6 +1,6 @@
 LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x239A
-USB_PID = 0x802C
+USB_PID = 0x8034
 USB_PRODUCT = "PyBadge"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
