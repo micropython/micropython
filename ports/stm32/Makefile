@@ -445,6 +445,24 @@ else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
 
+ifeq ($(USE_QSPI),1)
+deploy-stlink deploy-openocd:
+	$(ECHO)
+	$(ECHO) "ERROR: $@ can't write to QSPI"
+	$(ECHO) "ERROR: Did you mean to build with USE_QSPI=0 ?"
+else
+ifeq ($(USE_MBOOT),1)
+mboot-warning:
+	$(ECHO)
+	$(ECHO) "WARNING: You should be using deploy since USE_MBOOT=1"
+	$(ECHO)
+
+deploy-stlink: mboot-warning
+
+deploy-openocd: mboot-warning
+endif
+endif
+
 # A board should specify TEXT0_ADDR if to use a different location than the
 # default for the firmware memory location.  A board can also optionally define
 # TEXT1_ADDR to split the firmware into two sections; see below for details.
@@ -455,13 +473,17 @@ ifeq ($(TEXT1_ADDR),)
 
 TEXT0_SECTIONS ?= .isr_vector .text .data
 
+ifneq ($(USE_QSPI),1)
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(TEXT0_ADDR)
+endif
 
+ifneq ($(USE_QSPI),1)
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK using OpenOCD"
 	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware.bin $(TEXT0_ADDR)"
+endif
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -474,15 +496,19 @@ else
 TEXT0_SECTIONS ?= .isr_vector
 TEXT1_SECTIONS ?= .text .data
 
+ifneq ($(USE_QSPI),1)
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin $(TEXT0_ADDR)
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin $(TEXT1_ADDR)
+endif
 
+ifneq ($(USE_QSPI),1)
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
 	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(TEXT0_ADDR) $(BUILD)/firmware1.bin $(TEXT1_ADDR)"
+endif
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "GEN $@"
