@@ -131,7 +131,9 @@ Methods
    authmode       Authentication mode supported (enumeration, see module constants)
    password       Access password (string)
    =============  ===========
+
 .. method:: WLAN.oneshot([is_start])
-	Turn on/off WiFi smart config, if boolean
+
+    Turn on/off WiFi smart config, if boolean
     argument is passed. Otherwise, query current state if no argument is
     provided.
