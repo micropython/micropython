@@ -52,40 +52,62 @@ typedef struct _machine_pin_irq_obj_t {
 STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, WM_IO_PA_00},
     {{&machine_pin_type}, WM_IO_PA_01},
-    {{NULL}, -1},
-    {{NULL}, -1},
+    {{&machine_pin_type}, WM_IO_PA_02},
+    {{&machine_pin_type}, WM_IO_PA_03}, 
     {{&machine_pin_type}, WM_IO_PA_04},
     {{&machine_pin_type}, WM_IO_PA_05},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
+
+    {{&machine_pin_type}, WM_IO_PA_06},
+    {{&machine_pin_type}, WM_IO_PA_07},
+    {{&machine_pin_type}, WM_IO_PA_08},
+    {{&machine_pin_type}, WM_IO_PA_09}, 
+    {{&machine_pin_type}, WM_IO_PA_10},
+    {{&machine_pin_type}, WM_IO_PA_11},
+
+    {{&machine_pin_type}, WM_IO_PA_12},
+    {{&machine_pin_type}, WM_IO_PA_13},
+    {{&machine_pin_type}, WM_IO_PA_14},
+    {{&machine_pin_type}, WM_IO_PA_15},  
+
+    
+    {{&machine_pin_type}, WM_IO_PB_00},
+    {{&machine_pin_type}, WM_IO_PB_01},
+    {{&machine_pin_type}, WM_IO_PB_02},
+    {{&machine_pin_type}, WM_IO_PB_03},
+    {{&machine_pin_type}, WM_IO_PB_04},
+    {{&machine_pin_type}, WM_IO_PB_05},
+    
     {{&machine_pin_type}, WM_IO_PB_06},
     {{&machine_pin_type}, WM_IO_PB_07},
     {{&machine_pin_type}, WM_IO_PB_08},
     {{&machine_pin_type}, WM_IO_PB_09},
     {{&machine_pin_type}, WM_IO_PB_10},
     {{&machine_pin_type}, WM_IO_PB_11},
+    
     {{&machine_pin_type}, WM_IO_PB_12},
     {{&machine_pin_type}, WM_IO_PB_13},
     {{&machine_pin_type}, WM_IO_PB_14},
     {{&machine_pin_type}, WM_IO_PB_15},
     {{&machine_pin_type}, WM_IO_PB_16},
     {{&machine_pin_type}, WM_IO_PB_17},
+    
     {{&machine_pin_type}, WM_IO_PB_18},
-};
+    {{&machine_pin_type}, WM_IO_PB_19},
+    {{&machine_pin_type}, WM_IO_PB_20},
+    {{&machine_pin_type}, WM_IO_PB_21},
+    {{&machine_pin_type}, WM_IO_PB_22},
+    {{&machine_pin_type}, WM_IO_PB_23},
+    
+    {{&machine_pin_type}, WM_IO_PB_24},
+    {{&machine_pin_type}, WM_IO_PB_25},
+    {{&machine_pin_type}, WM_IO_PB_26},
+    {{&machine_pin_type}, WM_IO_PB_27},
+    {{&machine_pin_type}, WM_IO_PB_28},
+    {{&machine_pin_type}, WM_IO_PB_29},
+    
+    {{&machine_pin_type}, WM_IO_PB_30},
+    {{&machine_pin_type}, WM_IO_PB_31}, 
+}; 
 
 // forward declaration
 STATIC const machine_pin_irq_obj_t machine_pin_irq_object[];
@@ -117,8 +139,8 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_direc, ARG_attr, ARG_value };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_direc, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_attr, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_mode, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_pull, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_value, MP_ARG_INT, {.u_int = 0} },
     };
 
@@ -237,6 +259,66 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(WM_GPIO_IRQ_TRIG_FALLING_EDGE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_HIGH_LEVEL), MP_ROM_INT(WM_GPIO_IRQ_TRIG_HIGH_LEVEL) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_LOW_LEVEL), MP_ROM_INT(WM_GPIO_IRQ_TRIG_LOW_LEVEL) },
+
+    { MP_ROM_QSTR(MP_QSTR_PA_00), MP_ROM_INT(WM_IO_PA_00) },
+    { MP_ROM_QSTR(MP_QSTR_PA_01), MP_ROM_INT(WM_IO_PA_01) },
+    { MP_ROM_QSTR(MP_QSTR_PA_02), MP_ROM_INT(WM_IO_PA_02) },
+    { MP_ROM_QSTR(MP_QSTR_PA_03), MP_ROM_INT(WM_IO_PA_03) },
+    { MP_ROM_QSTR(MP_QSTR_PA_04), MP_ROM_INT(WM_IO_PA_04) },
+    
+    { MP_ROM_QSTR(MP_QSTR_PA_05), MP_ROM_INT(WM_IO_PA_05) },
+    { MP_ROM_QSTR(MP_QSTR_PA_06), MP_ROM_INT(WM_IO_PA_06) },
+    { MP_ROM_QSTR(MP_QSTR_PA_07), MP_ROM_INT(WM_IO_PA_07) },
+    { MP_ROM_QSTR(MP_QSTR_PA_08), MP_ROM_INT(WM_IO_PA_08) },
+    { MP_ROM_QSTR(MP_QSTR_PA_09), MP_ROM_INT(WM_IO_PA_09) },
+    
+    { MP_ROM_QSTR(MP_QSTR_PA_10), MP_ROM_INT(WM_IO_PA_10) },
+    { MP_ROM_QSTR(MP_QSTR_PA_11), MP_ROM_INT(WM_IO_PA_11) },
+    { MP_ROM_QSTR(MP_QSTR_PA_12), MP_ROM_INT(WM_IO_PA_12) },
+    { MP_ROM_QSTR(MP_QSTR_PA_13), MP_ROM_INT(WM_IO_PA_13) },
+    { MP_ROM_QSTR(MP_QSTR_PA_14), MP_ROM_INT(WM_IO_PA_14) },
+    
+    { MP_ROM_QSTR(MP_QSTR_PA_15), MP_ROM_INT(WM_IO_PA_15) },
+
+    
+    { MP_ROM_QSTR(MP_QSTR_PB_00), MP_ROM_INT(WM_IO_PB_00) },
+    { MP_ROM_QSTR(MP_QSTR_PB_01), MP_ROM_INT(WM_IO_PB_01) },
+    { MP_ROM_QSTR(MP_QSTR_PB_02), MP_ROM_INT(WM_IO_PB_02) },
+    { MP_ROM_QSTR(MP_QSTR_PB_03), MP_ROM_INT(WM_IO_PB_03) },
+    { MP_ROM_QSTR(MP_QSTR_PB_04), MP_ROM_INT(WM_IO_PB_04) },
+
+    { MP_ROM_QSTR(MP_QSTR_PB_05), MP_ROM_INT(WM_IO_PB_05) },
+    { MP_ROM_QSTR(MP_QSTR_PB_06), MP_ROM_INT(WM_IO_PB_06) },
+    { MP_ROM_QSTR(MP_QSTR_PB_07), MP_ROM_INT(WM_IO_PB_07) },
+    { MP_ROM_QSTR(MP_QSTR_PB_08), MP_ROM_INT(WM_IO_PB_08) },
+    { MP_ROM_QSTR(MP_QSTR_PB_09), MP_ROM_INT(WM_IO_PB_09) },
+
+    { MP_ROM_QSTR(MP_QSTR_PB_10), MP_ROM_INT(WM_IO_PB_10) },
+    { MP_ROM_QSTR(MP_QSTR_PB_11), MP_ROM_INT(WM_IO_PB_11) },
+    { MP_ROM_QSTR(MP_QSTR_PB_12), MP_ROM_INT(WM_IO_PB_12) },
+    { MP_ROM_QSTR(MP_QSTR_PB_13), MP_ROM_INT(WM_IO_PB_13) },
+    { MP_ROM_QSTR(MP_QSTR_PB_14), MP_ROM_INT(WM_IO_PB_14) },
+
+    { MP_ROM_QSTR(MP_QSTR_PB_15), MP_ROM_INT(WM_IO_PB_15) },
+    { MP_ROM_QSTR(MP_QSTR_PB_16), MP_ROM_INT(WM_IO_PB_16) },
+    { MP_ROM_QSTR(MP_QSTR_PB_17), MP_ROM_INT(WM_IO_PB_17) },
+    { MP_ROM_QSTR(MP_QSTR_PB_18), MP_ROM_INT(WM_IO_PB_18) },
+    { MP_ROM_QSTR(MP_QSTR_PB_19), MP_ROM_INT(WM_IO_PB_19) },
+
+    { MP_ROM_QSTR(MP_QSTR_PB_20), MP_ROM_INT(WM_IO_PB_20) },
+    { MP_ROM_QSTR(MP_QSTR_PB_21), MP_ROM_INT(WM_IO_PB_21) },
+    { MP_ROM_QSTR(MP_QSTR_PB_22), MP_ROM_INT(WM_IO_PB_22) },
+    { MP_ROM_QSTR(MP_QSTR_PB_23), MP_ROM_INT(WM_IO_PB_23) },
+    { MP_ROM_QSTR(MP_QSTR_PB_24), MP_ROM_INT(WM_IO_PB_24) },
+
+    { MP_ROM_QSTR(MP_QSTR_PB_25), MP_ROM_INT(WM_IO_PB_25) },
+    { MP_ROM_QSTR(MP_QSTR_PB_26), MP_ROM_INT(WM_IO_PB_26) },
+    { MP_ROM_QSTR(MP_QSTR_PB_27), MP_ROM_INT(WM_IO_PB_27) },
+    { MP_ROM_QSTR(MP_QSTR_PB_28), MP_ROM_INT(WM_IO_PB_28) },
+    { MP_ROM_QSTR(MP_QSTR_PB_29), MP_ROM_INT(WM_IO_PB_29) },
+
+    { MP_ROM_QSTR(MP_QSTR_PB_30), MP_ROM_INT(WM_IO_PB_30) }, 
+    { MP_ROM_QSTR(MP_QSTR_PB_31), MP_ROM_INT(WM_IO_PB_31) },
 };
 
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
@@ -276,42 +358,64 @@ const mp_obj_type_t machine_pin_type = {
 
 STATIC const mp_obj_type_t machine_pin_irq_type;
 
-STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
+STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = { 
     {{&machine_pin_irq_type}, WM_IO_PA_00},
     {{&machine_pin_irq_type}, WM_IO_PA_01},
-    {{NULL}, -1},
-    {{NULL}, -1},
+    {{&machine_pin_irq_type}, WM_IO_PA_02},
+    {{&machine_pin_irq_type}, WM_IO_PA_03}, 
     {{&machine_pin_irq_type}, WM_IO_PA_04},
     {{&machine_pin_irq_type}, WM_IO_PA_05},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
+
+    {{&machine_pin_irq_type}, WM_IO_PA_06},
+    {{&machine_pin_irq_type}, WM_IO_PA_07},
+    {{&machine_pin_irq_type}, WM_IO_PA_08},
+    {{&machine_pin_irq_type}, WM_IO_PA_09}, 
+    {{&machine_pin_irq_type}, WM_IO_PA_10},
+    {{&machine_pin_irq_type}, WM_IO_PA_11},
+
+    {{&machine_pin_irq_type}, WM_IO_PA_12},
+    {{&machine_pin_irq_type}, WM_IO_PA_13},
+    {{&machine_pin_irq_type}, WM_IO_PA_14},
+    {{&machine_pin_irq_type}, WM_IO_PA_15},  
+
+    
+    {{&machine_pin_irq_type}, WM_IO_PB_00},
+    {{&machine_pin_irq_type}, WM_IO_PB_01},
+    {{&machine_pin_irq_type}, WM_IO_PB_02},
+    {{&machine_pin_irq_type}, WM_IO_PB_03},
+    {{&machine_pin_irq_type}, WM_IO_PB_04},
+    {{&machine_pin_irq_type}, WM_IO_PB_05},
+    
     {{&machine_pin_irq_type}, WM_IO_PB_06},
     {{&machine_pin_irq_type}, WM_IO_PB_07},
     {{&machine_pin_irq_type}, WM_IO_PB_08},
     {{&machine_pin_irq_type}, WM_IO_PB_09},
     {{&machine_pin_irq_type}, WM_IO_PB_10},
     {{&machine_pin_irq_type}, WM_IO_PB_11},
+    
     {{&machine_pin_irq_type}, WM_IO_PB_12},
     {{&machine_pin_irq_type}, WM_IO_PB_13},
     {{&machine_pin_irq_type}, WM_IO_PB_14},
     {{&machine_pin_irq_type}, WM_IO_PB_15},
     {{&machine_pin_irq_type}, WM_IO_PB_16},
     {{&machine_pin_irq_type}, WM_IO_PB_17},
+    
     {{&machine_pin_irq_type}, WM_IO_PB_18},
+    {{&machine_pin_irq_type}, WM_IO_PB_19},
+    {{&machine_pin_irq_type}, WM_IO_PB_20},
+    {{&machine_pin_irq_type}, WM_IO_PB_21},
+    {{&machine_pin_irq_type}, WM_IO_PB_22},
+    {{&machine_pin_irq_type}, WM_IO_PB_23},
+    
+    {{&machine_pin_irq_type}, WM_IO_PB_24},
+    {{&machine_pin_irq_type}, WM_IO_PB_25},
+    {{&machine_pin_irq_type}, WM_IO_PB_26},
+    {{&machine_pin_irq_type}, WM_IO_PB_27},
+    {{&machine_pin_irq_type}, WM_IO_PB_28},
+    {{&machine_pin_irq_type}, WM_IO_PB_29},
+    
+    {{&machine_pin_irq_type}, WM_IO_PB_30},
+    {{&machine_pin_irq_type}, WM_IO_PB_31}, 
 };
 
 STATIC mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {

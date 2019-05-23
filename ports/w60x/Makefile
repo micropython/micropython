@@ -18,7 +18,7 @@ MICROPY_SSL_MBEDTLS = 0
 #AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096 -Wno-implicit-function-declaration
 MICROPY_FATFS = 1
 
-FROZEN_MPY_DIR = modules
+FROZEN_MPY_DIR = scripts
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -130,13 +130,13 @@ MPY_SRC = main.c \
         machine/machine_uart.c \
         machine/machine_pwm.c \
         machine/machine_i2c.c \
-        mods/modnetwork.c \
-        mods/modmachine.c \
-        mods/modutime.c \
-        mods/moduos.c \
-        mods/modusocket.c \
-        mods/modw600.c \
-        mods/moduhashlib.c \
+        modules/modnetwork.c \
+        modules/modmachine.c \
+        modules/modutime.c \
+        modules/moduos.c \
+        modules/modusocket.c \
+        modules/modw600.c \
+        modules/moduhashlib.c \
         tools/ftpserver.c \
         $(SRC_MOD)
 

@@ -53,7 +53,7 @@ You will need to update your `PATH`
 environment variable to include the path of WM_SDK. For example, you can issue
 the following commands on (at least) Linux:
 
-    $ export WMSDK_PATH=$PATH:/home/username/WM_SDK
+    $ export WMSDK_PATH=/home/username/WM_SDK
 
 You can put this command in your `.profile` or `.bash_login`.
 

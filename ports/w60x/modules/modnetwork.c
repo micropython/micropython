@@ -563,9 +563,9 @@ STATIC mp_obj_t w600_oneshot(size_t n_args, const mp_obj_t *args) {
     }
 
     if (n_args > 1) {
-        tls_wifi_set_oneshot_flag(mp_obj_get_int(args[1]));
+        tls_wifi_set_oneshot_flag(mp_obj_is_true(args[1]) ? 1 : 0);
     } else {
-        return MP_OBJ_NEW_SMALL_INT(tls_wifi_get_oneshot_flag());
+        return tls_wifi_get_oneshot_flag() ? mp_const_true : mp_const_false;
     }
 
     return mp_const_none;

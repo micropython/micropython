@@ -38,10 +38,10 @@ extern const mp_obj_type_t machine_pwm_type;
 typedef struct _w600_pwm_obj_t {
     mp_obj_base_t base;
     uint8_t channel;
-    uint8_t freq;
     uint8_t duty;
     uint8_t pnum;
     uint8_t pin;
+    uint32_t freq;
 } w600_pwm_obj_t;
 
 /******************************************************************************/
