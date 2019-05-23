@@ -64,8 +64,8 @@
 //     Descriptor
 //     Device
 //|     Peripheral
-//    ScanEntry
-//    Scanner
+//|    ScanEntry
+//|    Scanner
 //|     Service
 //|     UUID
 //|
@@ -86,8 +86,8 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 //    { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
     { MP_ROM_QSTR(MP_QSTR_Peripheral),        MP_ROM_PTR(&bleio_peripheral_type) },
 // Hide work-in-progress.
-//    { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
-//    { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
+    { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
+    { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
     { MP_ROM_QSTR(MP_QSTR_Service),           MP_ROM_PTR(&bleio_service_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),              MP_ROM_PTR(&bleio_uuid_type) },
 

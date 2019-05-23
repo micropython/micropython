@@ -36,14 +36,12 @@
 #include "shared-bindings/bleio/Scanner.h"
 #include "shared-module/bleio/ScanEntry.h"
 
-#if (BLUETOOTH_SD == 140)
 static uint8_t m_scan_buffer_data[BLE_GAP_SCAN_BUFFER_MIN];
 
 static ble_data_t m_scan_buffer = {
     m_scan_buffer_data,
     BLE_GAP_SCAN_BUFFER_MIN
 };
-#endif
 
 STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
     bleio_scanner_obj_t *scanner = (bleio_scanner_obj_t*)scanner_in;
@@ -61,48 +59,34 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
     entry->address.type = report->peer_addr.addr_type;
     memcpy(entry->address.value, report->peer_addr.addr, BLEIO_ADDRESS_BYTES);
 
-#if (BLUETOOTH_SD == 140)
     entry->data = mp_obj_new_bytearray(report->data.len, report->data.p_data);
-#else
-    entry->data = mp_obj_new_bytearray(report->dlen, report->data);
-#endif
 
     mp_obj_list_append(scanner->adv_reports, entry);
 
-#if (BLUETOOTH_SD == 140)
     const uint32_t err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer);
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg_varg(translate("Failed to continue scanning, err 0x%04x"), err_code);
     }
-#endif
 }
 
-void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_int_t timeout) {
+void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout, mp_float_t interval, mp_float_t window) {
     ble_drv_add_event_handler(on_ble_evt, self);
 
     ble_gap_scan_params_t scan_params = {
-        .interval = MSEC_TO_UNITS(self->interval, UNIT_0_625_MS),
-        .window = MSEC_TO_UNITS(self->window, UNIT_0_625_MS),
-#if (BLUETOOTH_SD == 140)
+        .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS),
+        .window = SEC_TO_UNITS(window, UNIT_0_625_MS),
         .scan_phys = BLE_GAP_PHY_1MBPS,
-#endif
     };
 
     common_hal_bleio_adapter_set_enabled(true);
 
     uint32_t err_code;
-#if (BLUETOOTH_SD == 140)
     err_code = sd_ble_gap_scan_start(&scan_params, &m_scan_buffer);
-#else
-    err_code = sd_ble_gap_scan_start(&scan_params);
-#endif
 
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg_varg(translate("Failed to start scanning, err 0x%04x"), err_code);
     }
 
-    if (timeout > 0) {
-        mp_hal_delay_ms(timeout);
-        sd_ble_gap_scan_stop();
-    }
+    mp_hal_delay_ms(timeout * 1000);
+    sd_ble_gap_scan_stop();
 }

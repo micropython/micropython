@@ -30,10 +30,6 @@
 
 #include "ble.h"
 
-#if (BLUETOOTH_SD == 132) && (BLE_API_VERSION == 2)
-#define NRF52
-#endif
-
 #define MAX_TX_IN_PROGRESS 10
 
 #ifndef BLE_GATT_ATT_MTU_DEFAULT
@@ -43,6 +39,7 @@
 #define BLE_CONN_CFG_TAG_CUSTOM 1
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
+#define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
 // 0.625 msecs (625 usecs)
 #define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
 #define UNIT_0_625_MS (625)
