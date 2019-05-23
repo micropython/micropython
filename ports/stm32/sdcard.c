@@ -370,6 +370,7 @@ STATIC void sdmmc_irq_handler(void) {
         #if MICROPY_HW_ENABLE_SDCARD
         case PYB_SDMMC_FLAG_ACTIVE | PYB_SDMMC_FLAG_SD:
             HAL_SD_IRQHandler(&sdmmc_handle.sd);
+            break;
         #endif
         #if MICROPY_HW_ENABLE_MMCARD
         case PYB_SDMMC_FLAG_ACTIVE | PYB_SDMMC_FLAG_MMC:
