@@ -70,6 +70,7 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
 }
 
 void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout, mp_float_t interval, mp_float_t window) {
+    common_hal_bleio_adapter_set_enabled(true);
     ble_drv_add_event_handler(on_ble_evt, self);
 
     ble_gap_scan_params_t scan_params = {

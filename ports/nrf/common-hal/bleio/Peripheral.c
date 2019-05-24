@@ -288,7 +288,7 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
 
 void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self) {
-    common_hal_bleio_adapter_set_enabled(true);   // TODO -- Do this somewhere else maybe bleio __init__
+    common_hal_bleio_adapter_set_enabled(true);
 
     self->gatt_role = GATT_ROLE_SERVER;
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
