@@ -12,8 +12,8 @@ Features supported at this time:
 
 * REPL (interactive prompt) over Zephyr UART console.
 * `utime` module for time measurements and delays.
-* `machine.I2C` class for I2C control.
 * `machine.Pin` class for GPIO control.
+* `machine.I2C` class for I2C control.
 * `usocket` module for networking (IPv4/IPv6).
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
@@ -82,19 +82,19 @@ To blink an LED:
         LED.value(0)
         time.sleep(0.5)
 
-To scan for I2C slaves:
-
-    from machine import I2C
-
-    i2c = I2C("I2C_0")
-    i2c.scan()
-
 The above code uses an LED location for a FRDM-K64F board (port B, pin 21;
 following Zephyr conventions port are identified by "GPIO_x", where *x*
 starts from 0). You will need to adjust it for another board (using board's
 reference materials). To execute the above sample, copy it to clipboard, in
 MicroPython REPL enter "paste mode" using Ctrl+E, paste clipboard, press
 Ctrl+D to finish paste mode and start execution.
+
+Example of using I2C to scan for I2C slaves:
+
+    from machine import I2C
+
+    i2c = I2C("I2C_0")
+    i2c.scan()
 
 
 Minimal build

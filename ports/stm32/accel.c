@@ -46,6 +46,8 @@
 ///
 /// Raw values are between -32 and 31.
 
+#define I2C_TIMEOUT_MS (50)
+
 #define MMA_ADDR (76)
 #define MMA_REG_X (0)
 #define MMA_REG_Y (1)
@@ -62,7 +64,7 @@ void accel_init(void) {
 
 STATIC void accel_start(void) {
     // start the I2C bus in master mode
-    i2c_init(I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 400000);
+    i2c_init(I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 400000, I2C_TIMEOUT_MS);
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
     mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off
