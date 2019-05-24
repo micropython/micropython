@@ -42,7 +42,7 @@
 // TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
 #define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)
 
-#define TIMER_FLAGS    0
+#define TIMER_FLAGS    (ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED)
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
