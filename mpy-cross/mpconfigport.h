@@ -112,10 +112,6 @@ typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
-#ifndef MP_NOINLINE
-#define MP_NOINLINE __attribute__((noinline))
-#endif
-
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__
 #include <stdlib.h>
