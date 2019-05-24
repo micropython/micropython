@@ -73,8 +73,13 @@ STATIC esp_err_t check_esp_err(esp_err_t code) {
 }
 
 void machine_timer_deinit_all(void) {
-    while (MP_STATE_PORT(machine_timer_obj_head) != NULL) {
-        machine_timer_disable(MP_STATE_PORT(machine_timer_obj_head));
+    // Disable, deallocate and remove all timers from list
+    machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
+    while (*t != NULL) {
+        machine_timer_disable(*t);
+        machine_timer_obj_t *next = (*t)->next;
+        m_del_obj(machine_timer_obj_t, *t);
+        *t = next;
     }
 }
 
@@ -93,12 +98,24 @@ STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_uint_t group = (mp_obj_get_int(args[0]) >> 1) & 1;
+    mp_uint_t index = mp_obj_get_int(args[0]) & 1;
+
+    // Check whether the timer is already initialized, if so return it
+    for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
+        if (t->group == group && t->index == index) {
+            return t;
+        }
+    }
+    
     machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
     self->base.type = &machine_timer_type;
+    self->group = group;
+    self->index = index;
 
-    self->group = (mp_obj_get_int(args[0]) >> 1) & 1;
-    self->index = mp_obj_get_int(args[0]) & 1;
-    self->next = NULL;
+    // Add the timer to the linked-list of timers
+    self->next = MP_STATE_PORT(machine_timer_obj_head);
+    MP_STATE_PORT(machine_timer_obj_head) = self;
 
     return self;
 }
@@ -110,13 +127,8 @@ STATIC void machine_timer_disable(machine_timer_obj_t *self) {
         self->handle = NULL;
     }
 
-    // Remove the timer from the linked-list of active timers
-    for (machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head); *t; t = &(*t)->next) {
-        if (*t == self) {
-            *t = (*t)->next;
-            break;
-        }
-    }
+    // We let the disabled timer stay in the list, as it might be
+    // referenced elsewhere
 }
 
 STATIC void machine_timer_isr(void *self_in) {
@@ -150,10 +162,6 @@ STATIC void machine_timer_enable(machine_timer_obj_t *self) {
     check_esp_err(timer_enable_intr(self->group, self->index));
     check_esp_err(timer_isr_register(self->group, self->index, machine_timer_isr, (void*)self, TIMER_FLAGS, &self->handle));
     check_esp_err(timer_start(self->group, self->index));
-
-    // Add the timer to the linked-list of active timers
-    self->next = MP_STATE_PORT(machine_timer_obj_head);
-    MP_STATE_PORT(machine_timer_obj_head) = self;
 }
 
 STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
