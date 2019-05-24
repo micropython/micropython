@@ -361,3 +361,8 @@ $(addprefix lib/,\
 	libm/atan2f.c \
 	)
 endif
+
+.PHONY: check-release-needs-clean-build
+
+check-release-needs-clean-build:
+	@echo "RELEASE_NEEDS_CLEAN_BUILD = $(RELEASE_NEEDS_CLEAN_BUILD)"
