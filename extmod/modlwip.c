@@ -1416,6 +1416,9 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         tcp_err(socket->pcb.tcp, NULL);
         tcp_recv(socket->pcb.tcp, NULL);
 
+        // Free any incoming buffers or connections that are stored
+        lwip_socket_free_incoming(socket);
+
         switch (socket->type) {
             case MOD_NETWORK_SOCK_STREAM: {
                 if (tcp_close(socket->pcb.tcp) != ERR_OK) {
@@ -1430,7 +1433,7 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
             //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
         }
-        lwip_socket_free_incoming(socket);
+
         socket->pcb.tcp = NULL;
         socket->state = _ERR_BADF;
         ret = 0;
