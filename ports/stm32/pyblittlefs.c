@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
@@ -38,11 +39,22 @@
 // This is the mp_spiflash_t object that is used for the storage
 #define SPIFLASH &spi_bdev.spiflash
 
-// This is the starting block within SPIFLASH to start the filesystem
-#define START_BLOCK (1024 * 1024 / MP_SPIFLASH_ERASE_BLOCK_SIZE) // 1MiB
+// SPI flash size
+#ifdef MICROPY_HW_SPIFLASH_SIZE_BITS
+#define SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS/8)
+#else
+#define SPIFLASH_SIZE_BYTES (1024 * 1024)
+#endif
 
-// This is the number of blocks within SPIFLASH for the filesystem
-#define NUM_BLOCKS (1024 * 1024 / MP_SPIFLASH_ERASE_BLOCK_SIZE) // 1MiB
+// This is the starting block within SPIFLASH to start the filesystem
+#ifdef MICROPY_VFS_LITTLEFS_START_OFFSET_BYTES
+#define START_BLOCK (MICROPY_VFS_LITTLEFS_START_OFFSET / MP_SPIFLASH_ERASE_BLOCK_SIZE)
+#else
+#define START_BLOCK 0
+#endif
+
+// This is the number of blocks within SPIFLASH for the lfs filesystem
+#define NUM_BLOCKS ((SPIFLASH_SIZE_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE)-START_BLOCK)
 
 STATIC int dev_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size) {
     mp_spiflash_t *spiflash = c->context;
@@ -110,7 +122,7 @@ STATIC void init_config(struct lfs_config *config) {
     config->file_buffer = m_new(uint8_t, config->prog_size);
 }
 
-int pyb_littlefs_mount(void) {
+int pyb_littlefs_mount(const char * mount) {
     // create vfs object
     mp_obj_vfs_littlefs_t *lfs = m_new_obj_maybe(mp_obj_vfs_littlefs_t);
     mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
@@ -137,8 +149,14 @@ int pyb_littlefs_mount(void) {
     }
 
     // mounted via littlefs, now mount in the VFS
-    vfs->str = "/lfs";
-    vfs->len = 4;
+    if (mount != NULL) {
+        vfs->str = mount;
+        vfs->len = strlen(mount);
+    } else {
+        vfs->str = "/lfs";
+        vfs->len = 4;
+    }
+    
     vfs->obj = MP_OBJ_FROM_PTR(lfs);
     vfs->next = NULL;
     for (mp_vfs_mount_t **m = &MP_STATE_VM(vfs_mount_table);; m = &(*m)->next) {

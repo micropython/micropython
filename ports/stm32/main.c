@@ -618,8 +618,8 @@ soft_reset:
     #endif
 
     #if MICROPY_HW_ENABLE_NATIVE_LFS
-    extern int pyb_littlefs_mount(void);
-    pyb_littlefs_mount();
+    extern int pyb_littlefs_mount(const char *mount);
+    pyb_littlefs_mount(NULL);
     #endif
 
     #if MICROPY_HW_ENABLE_USB
