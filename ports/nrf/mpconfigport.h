@@ -163,7 +163,7 @@
 #endif
 
 #ifndef MICROPY_PY_MACHINE_HW_SPI
-#define MICROPY_PY_MACHINE_HW_SPI   (1)
+#define MICROPY_PY_MACHINE_HW_SPI   (0)
 #endif
 
 #ifndef MICROPY_PY_MACHINE_HW_PWM
