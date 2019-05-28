@@ -1421,12 +1421,15 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 
         switch (socket->type) {
             case MOD_NETWORK_SOCK_STREAM: {
+                if (socket->pcb.tcp->state != LISTEN) {
+                    // Schedule a callback to abort the connection if it's not cleanly closed after
+                    // the given timeout.  The callback must be set before calling tcp_close since
+                    // the latter may free the pcb; if it doesn't then the callback will be active.
+                    tcp_poll(socket->pcb.tcp, _lwip_tcp_close_poll, MICROPY_PY_LWIP_TCP_CLOSE_TIMEOUT_MS / 500);
+                }
                 if (tcp_close(socket->pcb.tcp) != ERR_OK) {
                     DEBUG_printf("lwip_close: had to call tcp_abort()\n");
                     tcp_abort(socket->pcb.tcp);
-                } else {
-                    // If connection not cleanly closed after timeout then abort the connection
-                    tcp_poll(socket->pcb.tcp, _lwip_tcp_close_poll, MICROPY_PY_LWIP_TCP_CLOSE_TIMEOUT_MS / 500);
                 }
                 break;
             }
