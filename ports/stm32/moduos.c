@@ -84,12 +84,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
-    #if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+        #if MICROPY_VFS_LITTLEFS
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)vfs->obj)->type), MP_OBJ_FROM_PTR(&mp_type_vfs_littlefs))) {
+            // struct lfs_config config = ((mp_obj_vfs_littlefs_t*)vfs->obj)->config;
+            // config.sync(&config);
+            continue;
+        }
+        #endif
+        #if MICROPY_VFS_FAT
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
+        #endif
     }
-    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
