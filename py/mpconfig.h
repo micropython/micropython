@@ -338,6 +338,7 @@
 #endif
 
 // Whether the compiler is dynamically configurable (ie at runtime)
+// This will disable the ability to execute native/viper code
 #ifndef MICROPY_DYNAMIC_COMPILER
 #define MICROPY_DYNAMIC_COMPILER (0)
 #endif

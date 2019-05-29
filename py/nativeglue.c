@@ -95,7 +95,7 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
 
 STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
     if (new_globals == NULL) {
