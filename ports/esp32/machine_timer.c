@@ -77,9 +77,9 @@ void machine_timer_deinit_all(void) {
     machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
     while (*t != NULL) {
         machine_timer_disable(*t);
-        machine_timer_obj_t **next = &(*t)->next;
+        machine_timer_obj_t *next = (*t)->next;
         m_del_obj(machine_timer_obj_t, *t);
-        t = next;
+        *t = next;
     }
 }
 
