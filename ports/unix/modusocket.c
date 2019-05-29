@@ -160,7 +160,12 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
     int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
-    RAISE_ERRNO(r, errno);
+    int err = errno;
+    if (r == -1 && self->blocking && err == EINPROGRESS) {
+        // EINPROGRESS on a blocking socket means the operation timed out
+        err = MP_ETIMEDOUT;
+    }
+    RAISE_ERRNO(r, err);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
@@ -190,7 +195,12 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     byte addr[32];
     socklen_t addr_len = sizeof(addr);
     int fd = accept(self->fd, (struct sockaddr*)&addr, &addr_len);
-    RAISE_ERRNO(fd, errno);
+    int err = errno;
+    if (fd == -1 && self->blocking && err == EAGAIN) {
+        // EAGAIN on a blocking socket means the operation timed out
+        err = MP_ETIMEDOUT;
+    }
+    RAISE_ERRNO(fd, err);
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     t->items[0] = MP_OBJ_FROM_PTR(socket_new(fd));

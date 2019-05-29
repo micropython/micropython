@@ -172,12 +172,57 @@ Notes:
 
 * Pins 6 and 8 are REPL UART TX and RX respectively
 
-* Pins 7, 15, 16, and 27 are used for connecting the lcd screen driver,
+* Pins 7, 16, 23, 24， and 27 are used for connecting the lcd screen driver,
   and are not recommended for other uses
 
 * Pins 11 and 18 are used for connecting the button, and it have been pull up 10k to 3.3v
 
 * Pins 17 and 19 are used for connecting the led.
+
+LEDs (on board leds)
+----------------------------
+
+    nRF52832-Bluefruit52 board have two leds, connect to pin 17 and 19. Here are some function:
+
+Use the ``board.LED`` class::
+    import board
+    led1 = board.LED(1)         #LED(1) connect pin17
+    led2 = board.LED(2)         #LED(2) connect pin19
+    led1.on()                   #LED(1) show on.
+    led2.on()                   #LED(2) show on.
+    led1.off()                  #LED(1) show off.
+    led2.off()                  #LED(2) show off.
+    led1.toggle()               #LED(1) toggle show.
+    led2.toggle()               #LED(2) toggle show.
+
+BUTTON (on board buttons)
+----------------------------
+
+    nRF52832-Bluefruit52 board have two buttons, connect to pin 11 and 18. Here are some function:
+
+Use the ``board.BUTTON`` class::
+    import board
+    btn1 = board.BUTTON(1)      #BUTTON(1) connect pin18
+    btn2 = board.BUTTON(2)      #BUTTON(2) connect pin11
+    btn1.isPressed()            #check button is pressed, if pressed return True, else return False
+    btn1.getPresses()           #get button pin level state. Default HIGH is 1, if button is pressed return 0.
+
+example for button control led::
+    import board
+    led1 = board.LED(1)
+    led2 = board.LED(2)
+                         
+    btn1 = board.BUTTON(1)
+    btn2 = board.BUTTON(2)
+                             
+    while True:
+        if btn1.isPressed():       #scan button 1
+            led1.toggle()          #LED(1) toggle
+                                        
+        if btn2.isPressed():       #scan button 2
+            led2.toggle()          #LED(2) toggle
+
+
 
 PWM (pulse width modulation)
 ----------------------------

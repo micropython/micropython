@@ -253,7 +253,13 @@ STATIC mp_obj_t socket_accept(const mp_obj_t arg0) {
         if (errno != EAGAIN) exception_from_errno(errno);
         check_for_exceptions();
     }
-    if (new_fd < 0) mp_raise_OSError(MP_ETIMEDOUT);
+    if (new_fd < 0) {
+        if (self->retries == 0) {
+            mp_raise_OSError(MP_EAGAIN);
+        } else {
+            mp_raise_OSError(MP_ETIMEDOUT);
+        }
+    }
 
     // create new socket object
     socket_obj_t *sock = m_new_obj_with_finaliser(socket_obj_t);
