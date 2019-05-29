@@ -97,7 +97,7 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #if MICROPY_EMIT_NATIVE
 
-mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
+STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
     if (new_globals == NULL) {
         // Globals were the originally the same so don't restore them
         return NULL;
@@ -113,13 +113,13 @@ mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
 
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)
-mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
     return mp_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
 }
 
 // wrapper that makes raise obj and raises it
 // END_FINALLY opcode requires that we don't raise if o==None
-void mp_native_raise(mp_obj_t o) {
+STATIC void mp_native_raise(mp_obj_t o) {
     if (o != MP_OBJ_NULL && o != mp_const_none) {
         nlr_raise(mp_make_raise_obj(o));
     }
@@ -244,11 +244,5 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_small_int_modulo,
     mp_native_yield_from,
 };
-
-/*
-void mp_f_vector(mp_fun_kind_t fun_kind) {
-    (mp_f_table[fun_kind])();
-}
-*/
 
 #endif // MICROPY_EMIT_NATIVE
