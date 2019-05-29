@@ -46,14 +46,14 @@ How to use
 
    This assumes that the board declares and defines the relevant SPI flash
    configuration structs, eg in the board-specific bdev.c file.  The
-   `MBOOT_SPIFLASH2_LAYOUT` string will be seen by the USB DFU utility and
+   `MBOOT_SPIFLASH_LAYOUT` string will be seen by the USB DFU utility and
    must describe the SPI flash layout.  Note that the number of pages in
    this layout description (the `64` above) cannot be larger than 99 (it
    must fit in two digits) so the reported page size (the `32Kg` above)
    must be made large enough so the number of pages fits in two digits.
    Alternatively the layout can specify multiple sections like
    `32*16Kg,32*16Kg`, in which case `MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE`
-   must be changed to `16 / 4` to match tho `16Kg` value.
+   must be changed to `16 / 4` to match the `16Kg` value.
 
    Mboot supports up to two external SPI flash devices.  To configure the
    second one use the same configuration names as above but with
@@ -115,6 +115,10 @@ The last element in the data sequence must be the end element:
 
 * END: type=1, len=0
 
+Note: MicroPython's `machine.bootloader()` function performs steps 1-4
+above, and also accepts an optional bytes argument as additional data to
+pass through to Mboot.
+
 Loading firmware from a filesystem
 ----------------------------------
 
@@ -129,6 +133,9 @@ are located and what filename to program.  The elements to use are:
 `u32` means unsigned 32-bit little-endian integer.
 
 The firmware to load must be a gzip'd DfuSe file (.dfu.gz).
+
+The provided fwupdate.py script contains helper functions to call into Mboot
+with the correct data, and also to update Mboot itself.
 
 Example: Mboot on PYBv1.x
 -------------------------

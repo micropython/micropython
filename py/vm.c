@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -675,7 +675,6 @@ unwind_jump:;
                     DISPATCH_WITH_PEND_EXC_CHECK();
                 }
 
-                // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                 ENTRY(MP_BC_SETUP_EXCEPT):
                 ENTRY(MP_BC_SETUP_FINALLY): {
                     MARK_EXC_IP_SELECTIVE();
@@ -758,7 +757,6 @@ unwind_jump:;
                     DISPATCH();
                 }
 
-                // matched against: SETUP_EXCEPT, SETUP_FINALLY, SETUP_WITH
                 ENTRY(MP_BC_POP_EXCEPT_JUMP): {
                     assert(exc_sp >= exc_stack);
                     POP_EXC_BLOCK();

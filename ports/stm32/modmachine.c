@@ -265,6 +265,12 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     storage_flush();
     #endif
 
+    #if __DCACHE_PRESENT == 1
+    // Flush and disable caches before turning off peripherals (eg SDRAM)
+    SCB_DisableICache();
+    SCB_DisableDCache();
+    #endif
+
     HAL_RCC_DeInit();
     HAL_DeInit();
 
@@ -276,10 +282,6 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     #if MICROPY_HW_USES_BOOTLOADER
     if (n_args == 0 || !mp_obj_is_true(args[0])) {
         // By default, with no args given, we enter the custom bootloader (mboot)
-        #if __DCACHE_PRESENT == 1
-        SCB_DisableICache();
-        SCB_DisableDCache();
-        #endif
         branch_to_bootloader(0x70ad0000, 0x08000000);
     }
 
@@ -289,10 +291,6 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
         const char *data = mp_obj_str_get_data(args[0], &len);
         void *mboot_region = (void*)*((volatile uint32_t*)0x08000000);
         memmove(mboot_region, data, len);
-        #if __DCACHE_PRESENT == 1
-        SCB_DisableICache();
-        SCB_DisableDCache();
-        #endif
         branch_to_bootloader(0x70ad0080, 0x08000000);
     }
     #endif
