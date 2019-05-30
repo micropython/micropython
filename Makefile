@@ -1,4 +1,4 @@
-# Makefile for Sphinx documentation
+# Top-level Makefile for documentation builds and miscellaneous tasks.
 #
 
 # You can set these variables from the command line.
@@ -203,3 +203,7 @@ translate: locale/circuitpython.pot
 
 check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^
+
+update-frozen-libraries:
+	@echo "Updating all frozen libraries to latest tagged version."
+	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done
