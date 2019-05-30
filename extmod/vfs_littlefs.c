@@ -104,6 +104,9 @@ STATIC int dev_sync(const struct lfs_config *c) {
     // TODO handle error return
     return 0;
 }
+#if (LFS_VERSION >= 0x00020000)
+static uint8_t __attribute__ ((aligned (64))) lookahead_buffer[128/8];
+#endif
 
 STATIC void init_config(struct lfs_config *config, mp_obj_t bdev) {
     memset(config, 0, sizeof(*config));
@@ -123,12 +126,20 @@ STATIC void init_config(struct lfs_config *config, mp_obj_t bdev) {
     config->prog_size = rws;
     config->block_size = bs;
     config->block_count = bc;
-    config->lookahead = 128;
-
     config->read_buffer = m_new(uint8_t, config->read_size);
     config->prog_buffer = m_new(uint8_t, config->prog_size);
+
+#if (LFS_VERSION >= 0x00020000)
+    config->block_cycles = 100;
+    config->cache_size = rws;
+    config->lookahead_size = 128;
+    // config->lookahead_buffer = m_new(uint8_t, config->lookahead_size / 8);
+    config->lookahead_buffer = lookahead_buffer;
+
+#else
+    config->lookahead = 128;
     config->lookahead_buffer = m_new(uint8_t, config->lookahead / 8);
-    config->file_buffer = m_new(uint8_t, config->prog_size);
+#endif
 }
 
 const char *mp_obj_vfs_littlefs_make_path(mp_obj_vfs_littlefs_t *self, mp_obj_t path_in) {
@@ -358,7 +369,11 @@ STATIC mp_obj_t vfs_littlefs_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     (void)path_in;
     mp_obj_vfs_littlefs_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t n_used_blocks = 0;
+#if (LFS_VERSION >= 0x00020000)
+    int ret = lfs_fs_traverse(&self->lfs, lfs_traverse_cb, &n_used_blocks);
+#else
     int ret = lfs_traverse(&self->lfs, lfs_traverse_cb, &n_used_blocks);
+#endif    
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }

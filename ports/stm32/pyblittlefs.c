@@ -48,7 +48,7 @@
 
 // This is the starting block within SPIFLASH to start the filesystem
 #ifdef MICROPY_VFS_LITTLEFS_START_OFFSET_BYTES
-#define START_BLOCK (MICROPY_VFS_LITTLEFS_START_OFFSET / MP_SPIFLASH_ERASE_BLOCK_SIZE)
+#define START_BLOCK (MICROPY_VFS_LITTLEFS_START_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE)
 #else
 #define START_BLOCK 0
 #endif
@@ -102,6 +102,10 @@ STATIC int dev_sync(const struct lfs_config *c) {
     return 0;
 }
 
+#if (LFS_VERSION >= 0x00020000)
+static uint8_t __attribute__ ((aligned (64))) lookahead_buffer[128/8];
+#endif
+
 STATIC void init_config(struct lfs_config *config) {
     config->context = SPIFLASH;
 
@@ -114,12 +118,20 @@ STATIC void init_config(struct lfs_config *config) {
     config->prog_size = 128;
     config->block_size = MP_SPIFLASH_ERASE_BLOCK_SIZE;
     config->block_count = NUM_BLOCKS;
-    config->lookahead = 128;
-
     config->read_buffer = m_new(uint8_t, config->read_size);
     config->prog_buffer = m_new(uint8_t, config->prog_size);
+#if (LFS_VERSION >= 0x00020000)
+    config->block_cycles = 100;
+    config->cache_size = 128;
+//   static uint8_t __attribute__ ((aligned (64))) lookahead_buffer[128/8];
+//   config->lookahead_buffer = lookahead_buffer;
+    config->lookahead_size = 128;
+    config->lookahead_buffer = lookahead_buffer;
+
+#else
+    config->lookahead = 128;
     config->lookahead_buffer = m_new(uint8_t, config->lookahead / 8);
-    config->file_buffer = m_new(uint8_t, config->prog_size);
+#endif
 }
 
 int pyb_littlefs_mount(const char * mount) {
