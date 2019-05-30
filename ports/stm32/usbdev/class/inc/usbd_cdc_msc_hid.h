@@ -19,7 +19,10 @@
 #endif
 
 // Should be maximum of possible config descriptors that might be configured
-#if MICROPY_HW_USB_CDC_NUM == 2
+#if MICROPY_HW_USB_CDC_NUM == 3
+// Maximum is MSC+CDC+CDC+CDC
+#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + 23 + (8 + 58) + (8 + 58) + (8 + 58))
+#elif MICROPY_HW_USB_CDC_NUM == 2
 // Maximum is MSC+CDC+CDC
 #define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + 23 + (8 + 58) + (8 + 58))
 #else

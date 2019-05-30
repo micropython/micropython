@@ -385,7 +385,11 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
     if (pdev->id == USB_PHY_HS_ID) {
         // Set LL Driver parameters
         pcd_hs_handle.Instance = USB_OTG_HS;
+        #if MICROPY_HW_USB_CDC_NUM == 3
+        pcd_hs_handle.Init.dev_endpoints = 8;
+        #else
         pcd_hs_handle.Init.dev_endpoints = 6;
+        #endif
         pcd_hs_handle.Init.use_dedicated_ep1 = 0;
         pcd_hs_handle.Init.ep0_mps = 0x40;
         pcd_hs_handle.Init.dma_enable = 0;
@@ -431,13 +435,21 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         HAL_PCD_Init(&pcd_hs_handle);
 
         // We have 1024 32-bit words in total to use here
+        #if MICROPY_HW_USB_CDC_NUM == 3
+        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 328);
+        #else
         HAL_PCD_SetRxFiFo(&pcd_hs_handle, 464);
+        #endif
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 32); // EP0
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 256); // MSC / HID
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 8); // CDC CMD
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 128); // CDC DATA
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 4, 8); // CDC2 CMD
         HAL_PCD_SetTxFiFo(&pcd_hs_handle, 5, 128); // CDC2 DATA
+        #if MICROPY_HW_USB_CDC_NUM == 3
+        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 6, 8); // CDC3 CMD
+        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 7, 128); // CDC3 DATA
+        #endif
     }
     #endif  // MICROPY_HW_USB_HS
 

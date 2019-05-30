@@ -309,6 +309,18 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
         mode = USBD_MODE_CDC2_MSC;
     #endif
+    #if MICROPY_HW_USB_CDC_NUM >= 3
+    } else if (strcmp(mode_str, "3xVCP") == 0) {
+        if (args[2].u_int == -1) {
+            pid = USBD_PID_CDC3;
+        }
+        mode = USBD_MODE_CDC3;
+    } else if (strcmp(mode_str, "3xVCP+MSC") == 0) {
+        if (args[2].u_int == -1) {
+            pid = USBD_PID_CDC3_MSC;
+        }
+        mode = USBD_MODE_CDC3_MSC;
+    #endif
     } else if (strcmp(mode_str, "CDC+HID") == 0 || strcmp(mode_str, "VCP+HID") == 0) {
         if (args[2].u_int == -1) {
             pid = USBD_PID_CDC_HID;
@@ -385,6 +397,9 @@ const pyb_usb_vcp_obj_t pyb_usb_vcp_obj[MICROPY_HW_USB_CDC_NUM] = {
     {{&pyb_usb_vcp_type}, &usb_device.usbd_cdc_itf[0]},
     #if MICROPY_HW_USB_CDC_NUM >= 2
     {{&pyb_usb_vcp_type}, &usb_device.usbd_cdc_itf[1]},
+    #endif
+    #if MICROPY_HW_USB_CDC_NUM >= 3
+    {{&pyb_usb_vcp_type}, &usb_device.usbd_cdc_itf[2]},
     #endif
 };
 

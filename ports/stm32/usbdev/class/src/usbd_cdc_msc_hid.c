@@ -43,6 +43,13 @@
 #define CDC2_MSC_TEMPLATE_MSC_DESC_OFFSET (9)
 #define CDC2_MSC_TEMPLATE_CDC_DESC_OFFSET (9 + 23 + 8)
 #define CDC2_MSC_TEMPLATE_CDC2_DESC_OFFSET (9 + 23 + (8 + 58) + 8)
+#define CDC3_TEMPLATE_CDC_DESC_OFFSET (9 + 8)
+#define CDC3_TEMPLATE_CDC2_DESC_OFFSET (9 + (8 + 58) + 8)
+#define CDC3_TEMPLATE_CDC3_DESC_OFFSET (9 + (8 + 58) + (8 + 58) + 8)
+#define CDC3_MSC_TEMPLATE_MSC_DESC_OFFSET (9)
+#define CDC3_MSC_TEMPLATE_CDC_DESC_OFFSET (9 + 23 + 8)
+#define CDC3_MSC_TEMPLATE_CDC2_DESC_OFFSET (9 + 23 + (8 + 58) + 8)
+#define CDC3_MSC_TEMPLATE_CDC3_DESC_OFFSET (9 + 23 + (8 + 58) + (8 + 58) + 8)
 #define CDC_HID_TEMPLATE_CDC_DESC_OFFSET (49)
 #define CDC_TEMPLATE_CDC_DESC_OFFSET (9)
 #define CDC_DESC_OFFSET_INTR_INTERVAL (34)
@@ -65,7 +72,9 @@
 #define CDC_IFACE_NUM_ALONE (0)
 #define CDC_IFACE_NUM_WITH_MSC (1)
 #define CDC2_IFACE_NUM_WITH_CDC (2)
+#define CDC3_IFACE_NUM_WITH_CDC (4)
 #define CDC2_IFACE_NUM_WITH_MSC (3)
+#define CDC3_IFACE_NUM_WITH_MSC (5)
 #define CDC_IFACE_NUM_WITH_HID (1)
 #define MSC_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_CDC (0)
@@ -489,6 +498,31 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             usbd->cdc[0]->iface_num = CDC_IFACE_NUM_WITH_MSC;
             usbd->cdc[1]->iface_num = CDC2_IFACE_NUM_WITH_MSC;
             num_itf = 5;
+            break;
+        }
+        #endif
+
+        #if MICROPY_HW_USB_CDC_NUM >= 3
+        case USBD_MODE_CDC3: {
+            n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_ALONE);
+            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_CDC, CDC_CMD_EP(1), CDC_OUT_EP(1), CDC_IN_EP(1));
+            n += make_cdc_desc_ep(d + n, 1, CDC3_IFACE_NUM_WITH_CDC, CDC_CMD_EP(2), CDC_OUT_EP(2), CDC_IN_EP(2));
+            usbd->cdc[0]->iface_num = CDC_IFACE_NUM_ALONE;
+            usbd->cdc[1]->iface_num = CDC2_IFACE_NUM_WITH_CDC;
+            usbd->cdc[2]->iface_num = CDC3_IFACE_NUM_WITH_CDC;
+            num_itf = 6;
+            break;
+        }
+
+        case USBD_MODE_CDC3_MSC: {
+            n += make_msc_desc(d + n);
+            n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
+            n += make_cdc_desc_ep(d + n, 1, CDC2_IFACE_NUM_WITH_MSC, CDC_CMD_EP(1), CDC_OUT_EP(1), CDC_IN_EP(1));
+            n += make_cdc_desc_ep(d + n, 1, CDC3_IFACE_NUM_WITH_MSC, CDC_CMD_EP(2), CDC_OUT_EP(2), CDC_IN_EP(2));
+            usbd->cdc[0]->iface_num = CDC_IFACE_NUM_WITH_MSC;
+            usbd->cdc[1]->iface_num = CDC2_IFACE_NUM_WITH_MSC;
+            usbd->cdc[2]->iface_num = CDC3_IFACE_NUM_WITH_MSC;
+            num_itf = 7;
             break;
         }
         #endif
@@ -970,6 +1004,21 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
             cdc_desc[0] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC_DESC_OFFSET;
             cdc_desc[1] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC2_DESC_OFFSET;
             msc_desc = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_MSC_DESC_OFFSET;
+            break;
+        #endif
+
+        #if MICROPY_HW_USB_CDC_NUM >= 3
+        case USBD_MODE_CDC3:
+            cdc_desc[0] = usbd->usbd_config_desc + CDC3_TEMPLATE_CDC_DESC_OFFSET;
+            cdc_desc[1] = usbd->usbd_config_desc + CDC3_TEMPLATE_CDC2_DESC_OFFSET;
+            cdc_desc[2] = usbd->usbd_config_desc + CDC3_TEMPLATE_CDC3_DESC_OFFSET;
+            break;
+
+        case USBD_MODE_CDC3_MSC:
+            cdc_desc[0] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC_DESC_OFFSET;
+            cdc_desc[1] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC2_DESC_OFFSET;
+            cdc_desc[2] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC3_DESC_OFFSET;
+            msc_desc = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
         #endif
 
