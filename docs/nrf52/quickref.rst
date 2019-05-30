@@ -162,7 +162,7 @@ Constants
           Pin.IRQ_FALLING
           Pin.IRQ_RISING
 
-Available Pins are from the following ranges (inclusive): 2-20, 25-31.
+Available Pins are from the following ranges (inclusive): 2-20, 23-31.
 These correspond to the actual GPIO pin numbers of nRF52832 chip.  Note that many
 end-user boards use their own adhoc pin numbering (marked e.g. D0, D1, ...).
 For mapping between board logical pins and physical chip pins consult your board
@@ -231,12 +231,16 @@ PWM can be enabled on all output-enabled pins. The base frequency can
 range from 1Hz to 16MHz but there is a tradeoff; as the base frequency
 *increases* the duty resolution *decreases*. 
 
+PWM id optional is 0,1,2.
+
 Use the ``machine.PWM`` class::
 
     from machine import Pin, PWM
 
-    # create PWM object from a pin,and set duty period.
-    pwm0 = PWM(0,pin=Pin(11,Pin.OUT),duty=90,period=10000)   
+    # create PWM object from id, pin, freq and set duty, period.
+    # eg. use PWM(0) for P11 pin out, and set frequency is 1000Hz, duty is 90%.
+    # if you want to change frequency, you need change 'freq' and 'period' parameter. freq_out = freq/period. 
+    pwm0 = PWM(0,pin=Pin(11,Pin.OUT),freq=PWM.FREQ_16MHZ,duty=90,period=16000)     
     pwm0.init()             # start pwm out
     pwm0.freq(1000)         # nothing work
     pwm0.duty()             # nothing work
@@ -266,14 +270,15 @@ On the nRF52832 ADC functionality is available 8 channels（0~7）. Note that, w
 using the default configuration, input voltages on the ADC pin must be between
 0.0v and 3.3v.  Attenuation must be applied in order to increase this usable voltage range.
 
-Analog Pin:
-ADC(1)--->GPIO0.02
-ADC(2)--->GPIO0.03
-ADC(3)--->GPIO0.04
-ADC(4)--->GPIO0.05
-ADC(5)--->GPIO0.28
-ADC(6)--->GPIO0.29
-ADC(7)--->GPIO0.30
+Notes, Analog Pin:
+
+* ADC(1)--->GPIO0.02
+* ADC(2)--->GPIO0.03
+* ADC(3)--->GPIO0.04
+* ADC(4)--->GPIO0.05
+* ADC(5)--->GPIO0.28
+* ADC(6)--->GPIO0.29
+* ADC(7)--->GPIO0.30
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
@@ -759,7 +764,33 @@ They are:
 See the MicroPython forum for other community-supported alternatives
 to transfer files to an nRF52832 board.
 
+ble
+---------------
 
+.. py:module:: ble
+
+The ble module contains specific functions related to the nRF52832 bluetooth
+hardware. Used incorrectly, this can lead to malfunction, lockups, 
+crashes of your board, and in extreme cases, hardware damage.
+
+
+Functions
+
+.. method:: ble.enable()
+
+    Enable BLE softdevice.
+
+.. method:: ble.disable()
+
+    Disable BLE softdevice.
+
+.. method:: ble.enabled()
+
+    Get state of whether the softdevice is enabled or not.
+
+.. method:: ble.address()
+
+    Return device address as text string.
 
 Example
 ---------------

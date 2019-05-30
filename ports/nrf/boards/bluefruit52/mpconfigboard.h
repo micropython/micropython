@@ -31,7 +31,7 @@
 #define MICROPY_PY_MACHINE_SOFT_PWM (1)
 #define MICROPY_PY_MUSIC            (1)
 
-#define MICROPY_HW_HAS_SDCARD       (1)
+#define MICROPY_HW_HAS_SDCARD       (0)
 
 #define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MACHINE_HW_PWM   (1)

@@ -44,9 +44,13 @@ For your convenience, some of technical specifications are provided below:
 * GPIO: 32 (GPIOs are multiplexed with other functions, including
   external SWD, UART, etc.)
 * UART: 1 RX/TX UART (hardware handshaking)
-* SPI: 1 SPI interfaces
+* SPI: 3 SPI interfaces,support soft SPI and Hard SPI.
 * I2C: 2 I2C
 * I2S: 1
+* PWM: 3 PWM interfaces.
+* Timer: 5 Timers.
+* RTCounter: 3 Real time  clock Counter.
+* temp: temperature register.
 * ADC: 12-bit SAADC up to 8 channels
 * Programming: using bootloader from UART -
   and always-available BootROM bootloader
