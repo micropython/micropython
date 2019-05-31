@@ -135,6 +135,27 @@ def print_table(hse, valid_plls):
         print(out_format % ((sys,) + pll + compute_derived(hse, pll)))
     print("found %u valid configurations" % len(valid_plls))
 
+def search_header_for_hsx_values(filename, vals):
+    regex_inc = re.compile(r'#include "(boards/[A-Za-z0-9_./]+)"')
+    regex_def = re.compile(r'#define +(HSE_VALUE|HSI_VALUE) +\(\(uint32_t\)([0-9]+)\)')
+    with open(filename) as f:
+        for line in f:
+            line = line.strip()
+            m = regex_inc.match(line)
+            if m:
+                # Search included file
+                search_header_for_hsx_values(m.group(1), vals)
+                continue
+            m = regex_def.match(line)
+            if m:
+                # Found HSE_VALUE or HSI_VALUE
+                val = int(m.group(2)) // 1000000
+                if m.group(1) == 'HSE_VALUE':
+                    vals[0] = val
+                else:
+                    vals[1] = val
+    return vals
+
 def main():
     global out_format
 
@@ -163,22 +184,12 @@ def main():
 
     if argv[0].startswith("file:"):
         # extract HSE_VALUE, and optionally HSI_VALUE, from header file
-        regex = re.compile(r'#define +(HSE_VALUE|HSI_VALUE) +\(\(uint32_t\)([0-9]+)\)')
-        with open(argv[0][5:]) as f:
-            for line in f:
-                line = line.strip()
-                m = regex.match(line)
-                if m:
-                    val = int(m.group(2)) // 1000000
-                    if m.group(1) == 'HSE_VALUE':
-                        hse = val
-                    else:
-                        hsi = val
-            if hse is None:
-                raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
-            if hsi is not None and hsi > 16:
-                # Currently, a HSI value greater than 16MHz is not supported
-                hsi = None
+        hse, hsi = search_header_for_hsx_values(argv[0][5:], [None, None])
+        if hse is None:
+            raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
+        if hsi is not None and hsi > 16:
+            # Currently, a HSI value greater than 16MHz is not supported
+            hsi = None
     else:
         # HSE given directly as an integer
         hse = int(argv[0])
