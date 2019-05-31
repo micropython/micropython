@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/mperrno.h"
 #include "extmod/vfs_fat.h"
 
 #include "driver/sdmmc_host.h"
@@ -35,7 +36,7 @@
 #include "sdmmc_cmd.h"
 #include "esp_log.h"
 
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG
 #define DEBUG_printf(...) ESP_LOGI("modsdcard", __VA_ARGS__)
 #else
@@ -54,7 +55,7 @@
 #if MICROPY_HW_ENABLE_SDCARD
 
 // Forward declaration
-const mp_obj_type_t esp32_sdcard_type;
+const mp_obj_type_t machine_sdcard_type;
 
 typedef struct _sdcard_obj_t {
     mp_obj_base_t base;
@@ -71,25 +72,21 @@ typedef struct _sdcard_obj_t {
 #define _SECTOR_SIZE(self) (self->card.csd.sector_size)
 
 STATIC esp_err_t check_esp_err(esp_err_t code) {
-    const mp_obj_type_t *ex_type = NULL;
-
     switch(code) {
     case ESP_OK:
         return ESP_OK;
     case ESP_ERR_NO_MEM:
-        ex_type = &mp_type_MemoryError;
+        code = MP_ENOMEM;
         break;
     case ESP_ERR_TIMEOUT:
-        ex_type = &mp_type_TimeoutError;
+        code = MP_ETIMEDOUT;
         break;
     case ESP_ERR_NOT_SUPPORTED:
-        ex_type = &mp_type_NotImplementedError;
+        code = MP_EOPNOTSUPP;
         break;
-    default:
-        mp_raise_OSError(code);
     }
 
-    mp_raise_msg(ex_type, "From ESP SDK");
+    mp_raise_OSError(code);
 }
 
 STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
@@ -135,22 +132,20 @@ STATIC esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
 // transfers. Only 1-bit is supported on the SPI interfaces.
 // card = SDCard(slot=1, width=None, present_pin=None, wp_pin=None)
 
-STATIC mp_obj_t esp32_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     enum {
         ARG_slot,
-        ARG_spi,
         ARG_width,
-        ARG_cd_pin,
-        ARG_wp_pin,
-        ARG_miso_pin,
-        ARG_mosi_pin,
-        ARG_sck_pin,
-        ARG_cs_pin,
+        ARG_cd,
+        ARG_wp,
+        ARG_miso,
+        ARG_mosi,
+        ARG_sck,
+        ARG_cs,
     };
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_spi,      MP_ARG_KW_ONLY | MP_ARG_BOOL,{.u_bool = false} },
         { MP_QSTR_width,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_cd,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_wp,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -171,20 +166,27 @@ STATIC mp_obj_t esp32_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_parse_all(n_args, args, &kw_args,
                      MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
 
-    DEBUG_printf("  slot=%d, width=%d, cd_pin=%p, wp_pin=%p",
+    DEBUG_printf("  slot=%d, width=%d, cd=%p, wp=%p",
                  arg_vals[ARG_slot].u_int, arg_vals[ARG_width].u_int,
-                 arg_vals[ARG_cd_pin].u_obj, arg_vals[ARG_wp_pin].u_obj);
+                 arg_vals[ARG_cd].u_obj, arg_vals[ARG_wp].u_obj);
 
-    DEBUG_printf("  cd_pin=%p, wp_pin=%p, cd_pin=%p, wp_pin=%p",
-                 arg_vals[ARG_miso_pin].u_obj, arg_vals[ARG_mosi_pin].u_obj,
-                 arg_vals[ARG_sck_pin].u_obj, arg_vals[ARG_cs_pin].u_obj);
+    DEBUG_printf("  miso=%p, mosi=%p, sck=%p, cs=%p",
+                 arg_vals[ARG_miso].u_obj, arg_vals[ARG_mosi].u_obj,
+                 arg_vals[ARG_sck].u_obj, arg_vals[ARG_cs].u_obj);
 
-    bool is_spi = arg_vals[ARG_spi].u_bool;
+    int slot_num = arg_vals[ARG_slot].u_int;
+    if (slot_num < 0 || slot_num > 3)
+        mp_raise_ValueError("Slot number must be between 0 and 3 inclusive");
+    
+    // Slots 0 and 1 are native SD/MMC, slots 2 and 3 are SPI
+    bool is_spi = (slot_num >= 2);
+    if (is_spi)
+        slot_num -= 2;
 
     DEBUG_printf("  Setting up host configuration");
 
     sdcard_card_obj_t *self = m_new_obj_with_finaliser(sdcard_card_obj_t);
-    self->base.type = &esp32_sdcard_type;
+    self->base.type = &machine_sdcard_type;
     self->flags = 0;
     // Note that these defaults are macros that expand to structure
     // constants so we can't directly assign them to fields.
@@ -196,13 +198,10 @@ STATIC mp_obj_t esp32_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, 
         self->host = _temp_host;
     }
 
-    int slot_num = arg_vals[ARG_slot].u_int;
-    if (slot_num !=0 && slot_num != 1)
-        mp_raise_ValueError("Slot number must be 0 or 1");
-    if (is_spi)
+    if (is_spi) {
         self->host.slot = slot_num ? HSPI_HOST : VSPI_HOST;
-    else
-        self->host.slot = slot_num;
+        slot_num -= 2;
+    }
 
     DEBUG_printf("  Calling host.init()");
 
@@ -226,12 +225,12 @@ STATIC mp_obj_t esp32_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, 
         DEBUG_printf("  Setting up SPI slot configuration");
         sdspi_slot_config_t slot_config = slot_defaults[slot_num];
 
-        SET_CONFIG_PIN(slot_config, gpio_cd, ARG_cd_pin);
-        SET_CONFIG_PIN(slot_config, gpio_wp, ARG_wp_pin);
-        SET_CONFIG_PIN(slot_config, gpio_miso, ARG_miso_pin);
-        SET_CONFIG_PIN(slot_config, gpio_mosi, ARG_mosi_pin);
-        SET_CONFIG_PIN(slot_config, gpio_sck, ARG_sck_pin);
-        SET_CONFIG_PIN(slot_config, gpio_cs, ARG_cs_pin);
+        SET_CONFIG_PIN(slot_config, gpio_cd, ARG_cd);
+        SET_CONFIG_PIN(slot_config, gpio_wp, ARG_wp);
+        SET_CONFIG_PIN(slot_config, gpio_miso, ARG_miso);
+        SET_CONFIG_PIN(slot_config, gpio_mosi, ARG_mosi);
+        SET_CONFIG_PIN(slot_config, gpio_sck, ARG_sck);
+        SET_CONFIG_PIN(slot_config, gpio_cs, ARG_cs);
 
         DEBUG_printf("  Calling init_slot()");
         check_esp_err(sdspi_host_init_slot(self->host.slot, &slot_config));
@@ -242,10 +241,10 @@ STATIC mp_obj_t esp32_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, 
 
         // Stronger external pull-ups are still needed but apparently
         // it is a good idea to set the internal pull-ups anyway.
-        slot_config.flags = SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
+        // slot_config.flags = SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
 
-        SET_CONFIG_PIN(slot_config, gpio_cd, ARG_cd_pin);
-        SET_CONFIG_PIN(slot_config, gpio_wp, ARG_wp_pin);
+        SET_CONFIG_PIN(slot_config, gpio_cd, ARG_cd);
+        SET_CONFIG_PIN(slot_config, gpio_wp, ARG_wp);
 
         int width = arg_vals[ARG_width].u_int;
         if (width == 1 || width == 4 || (width == 8 && slot_num == 0))
@@ -287,15 +286,15 @@ STATIC mp_obj_t sd_info(mp_obj_t self_in) {
     uint32_t log_block_nbr = self->card.csd.capacity;
     uint32_t log_block_size = _SECTOR_SIZE(self);
 
-    mp_obj_t tuple[3] = {
+    mp_obj_t tuple[2] = {
         mp_obj_new_int_from_ull((uint64_t)log_block_nbr * (uint64_t)log_block_size),
         mp_obj_new_int_from_uint(log_block_size),
     };
-    return mp_obj_new_tuple(3, tuple);
+    return mp_obj_new_tuple(2, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_info_obj, sd_info);
 
-STATIC mp_obj_t esp32_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
+STATIC mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
     sdcard_card_obj_t *self = self_in;
     mp_buffer_info_t bufinfo;
     esp_err_t err;
@@ -309,9 +308,9 @@ STATIC mp_obj_t esp32_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp
 
     return mp_obj_new_bool(err == ESP_OK);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_sdcard_readblocks_obj, esp32_sdcard_readblocks);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_readblocks_obj, machine_sdcard_readblocks);
 
-STATIC mp_obj_t esp32_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
+STATIC mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {
     sdcard_card_obj_t *self = self_in;
     mp_buffer_info_t bufinfo;
     esp_err_t err;
@@ -325,16 +324,16 @@ STATIC mp_obj_t esp32_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num, m
 
     return mp_obj_new_bool(err == ESP_OK);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_sdcard_writeblocks_obj, esp32_sdcard_writeblocks);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_writeblocks_obj, machine_sdcard_writeblocks);
 
-STATIC mp_obj_t esp32_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+STATIC mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     sdcard_card_obj_t *self = self_in;
     esp_err_t err = ESP_OK;
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
     switch (cmd) {
         case BP_IOCTL_INIT:
-            err = sdcard_ensure_card_init(self, true);
+            err = sdcard_ensure_card_init(self, false);
             return MP_OBJ_NEW_SMALL_INT((err == ESP_OK) ? 0 : -1);
 
         case BP_IOCTL_DEINIT:
@@ -362,25 +361,25 @@ STATIC mp_obj_t esp32_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t a
             return MP_OBJ_NEW_SMALL_INT(-1); // error
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_sdcard_ioctl_obj, esp32_sdcard_ioctl);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_sdcard_ioctl_obj, machine_sdcard_ioctl);
 
-STATIC const mp_rom_map_elem_t esp32_sdcard_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t machine_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&sd_info_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&sd_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&sd_deinit_obj) },
     // block device protocol
-    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&esp32_sdcard_readblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&esp32_sdcard_writeblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&esp32_sdcard_ioctl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&machine_sdcard_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&machine_sdcard_writeblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&machine_sdcard_ioctl_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp32_sdcard_locals_dict, esp32_sdcard_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(machine_sdcard_locals_dict, machine_sdcard_locals_dict_table);
 
-const mp_obj_type_t esp32_sdcard_type = {
+const mp_obj_type_t machine_sdcard_type = {
     { &mp_type_type },
     .name = MP_QSTR_SDCard,
-    .make_new = esp32_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t*)&esp32_sdcard_locals_dict,
+    .make_new = machine_sdcard_make_new,
+    .locals_dict = (mp_obj_dict_t*)&machine_sdcard_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_SDCARD

@@ -193,7 +193,7 @@ SRC_C = \
 	machine_wdt.c \
 	mpthreadport.c \
 	machine_rtc.c \
-	esp32_sdcard.c \
+	machine_sdcard.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\

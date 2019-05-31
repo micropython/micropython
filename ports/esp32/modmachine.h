@@ -20,6 +20,10 @@ extern const mp_obj_type_t machine_hw_spi_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_rtc_type;
 
+#if MICROPY_HW_ENABLE_SDCARD
+extern const mp_obj_type_t machine_sdcard_type;
+#endif
+
 void machine_pins_init(void);
 void machine_pins_deinit(void);
 void machine_timer_deinit_all(void);
