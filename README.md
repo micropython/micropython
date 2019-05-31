@@ -64,6 +64,17 @@ You will also need bash, gcc, and Python 3.3+ available as the command `python3`
 (if your system only has Python 2.7 then invoke make with the additional option
 `PYTHON=python2`).
 
+The MicroPython cross-compiler, mpy-cross
+-----------------------------------------
+
+Most ports require the MicroPython cross-compiler to be built first.  This
+program, called mpy-cross, is used to pre-compile Python scripts to .mpy
+files which can then be included (frozen) into the firmware/executable for
+a port.  To build mpy-cross use:
+
+    $ cd mpy-cross
+    $ make
+
 The Unix version
 ----------------
 
