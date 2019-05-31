@@ -47,7 +47,7 @@
 //| written in MicroPython will work in CPython but not necessarily the other
 //| way around.
 //|
-//| .. method:: monotonic()
+//| .. function:: monotonic()
 //|
 //|   Returns an always increasing value of time with an unknown reference
 //|   point. Only use it to compare against other values from `monotonic`.
@@ -62,7 +62,7 @@ STATIC mp_obj_t time_monotonic(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
-//| .. method:: sleep(seconds)
+//| .. function:: sleep(seconds)
 //|
 //|   Sleep for a given number of seconds.
 //|
@@ -95,19 +95,20 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     return namedtuple_make_new(type, 9, tuple->items, NULL);
 }
 
-//| .. class:: struct_time((tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst))
+//| .. class:: struct_time(time_tuple)
 //|
 //|   Structure used to capture a date and time. Note that it takes a tuple!
 //|
-//|   :param int tm_year: the year, 2017 for example
-//|   :param int tm_mon: the month, range [1, 12]
-//|   :param int tm_mday: the day of the month, range [1, 31]
-//|   :param int tm_hour: the hour, range [0, 23]
-//|   :param int tm_min: the minute, range [0, 59]
-//|   :param int tm_sec: the second, range [0, 61]
-//|   :param int tm_wday: the day of the week, range [0, 6], Monday is 0
-//|   :param int tm_yday: the day of the year, range [1, 366], -1 indicates not known
-//|   :param int tm_isdst: 1 when in daylight savings, 0 when not, -1 if unknown.
+//|   :param Tuple[tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst] time_tuple: Tuple of time info.
+//|     * the year, 2017 for example
+//|     * the month, range [1, 12]
+//|     * the day of the month, range [1, 31]
+//|     * the hour, range [0, 23]
+//|     * the minute, range [0, 59]
+//|     * the second, range [0, 61]
+//|     * the day of the week, range [0, 6], Monday is 0
+//|     * the day of the year, range [1, 366], -1 indicates not known
+//|     * 1 when in daylight savings, 0 when not, -1 if unknown.
 //|
 const mp_obj_namedtuple_type_t struct_time_type_obj = {
     .base = {
@@ -190,7 +191,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
     mp_raise_RuntimeError(translate("RTC is not supported on this board"));
 }
 
-//| .. method:: time()
+//| .. function:: time()
 //|
 //|   Return the current time in seconds since since Jan 1, 1970.
 //|
@@ -206,7 +207,7 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
-//| .. method:: monotonic_ns()
+//| .. function:: monotonic_ns()
 //|
 //|   Return the time of the specified clock clk_id in nanoseconds.
 //|
@@ -219,7 +220,7 @@ STATIC mp_obj_t time_monotonic_ns(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
 
-//| .. method:: localtime([secs])
+//| .. function:: localtime([secs])
 //|
 //|   Convert a time expressed in seconds since Jan 1, 1970 to a struct_time in
 //|   local time. If secs is not provided or None, the current time as returned
@@ -245,7 +246,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
-//| .. method:: mktime(t)
+//| .. function:: mktime(t)
 //|
 //|   This is the inverse function of localtime(). Its argument is the
 //|   struct_time or full 9-tuple (since the dst flag is needed; use -1 as the

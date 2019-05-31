@@ -62,14 +62,14 @@
 //|     RunMode
 //|
 
-//| .. attribute:: cpu
+//| .. data:: cpu
 //|
 //|   CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //|   (clock frequency).
 //|   This object is the sole instance of `microcontroller.Processor`.
 //|
 
-//| .. method:: delay_us(delay)
+//| .. function:: delay_us(delay)
 //|
 //|   Dedicated delay method used for very short delays. **Do not** do long delays
 //|   because this stops all other functions from completing. Think of this as an empty
@@ -87,7 +87,7 @@ STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 
-//| .. method:: disable_interrupts()
+//| .. function:: disable_interrupts()
 //|
 //|   Disable all interrupts. Be very careful, this can stall everything.
 //|
@@ -97,7 +97,7 @@ STATIC mp_obj_t mcu_disable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interrupts);
 
-//| .. method:: enable_interrupts()
+//| .. function:: enable_interrupts()
 //|
 //|   Enable the interrupts that were enabled at the last disable.
 //|
@@ -107,7 +107,7 @@ STATIC mp_obj_t mcu_enable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
 
-//| .. method:: on_next_reset(run_mode)
+//| .. function:: on_next_reset(run_mode)
 //|
 //|   Configure the run mode used the next time the microcontroller is reset but
 //|   not powered down.
@@ -132,7 +132,7 @@ STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 
-//| .. method:: reset()
+//| .. function:: reset()
 //|
 //|   Reset the microcontroller. After reset, the microcontroller will enter the
 //|   run mode last set by `on_next_reset`.
@@ -148,10 +148,12 @@ STATIC mp_obj_t mcu_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
-//| .. attribute:: nvm
+//| .. data:: nvm
 //|
 //|   Available non-volatile memory.
 //|   This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
+//|
+//|   :type: nvm.ByteArray or None
 //|
 
 //| :mod:`microcontroller.pin` --- Microcontroller pin names

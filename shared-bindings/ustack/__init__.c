@@ -39,7 +39,7 @@
 //|
 
 #if MICROPY_MAX_STACK_USAGE
-//| .. method:: max_stack_usage()
+//| .. function:: max_stack_usage()
 //|
 //|   Return the maximum excursion of the stack so far.
 //|
@@ -50,7 +50,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(max_stack_usage_obj, max_stack_usage);
 
 #endif // MICROPY_MAX_STACK_USAGE
 
-//| .. method:: stack_size()
+//| .. function:: stack_size()
 //|
 //|   Return the size of the entire stack.
 //|   Same as in micropython.mem_info(), but returns a value instead
@@ -61,7 +61,7 @@ STATIC mp_obj_t stack_size(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(stack_size_obj, stack_size);
 
-//| .. method:: stack_usage()
+//| .. function:: stack_usage()
 //|
 //|   Return how much stack is currently in use.
 //|   Same as micropython.stack_use(); duplicated here for convenience.

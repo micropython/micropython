@@ -95,7 +95,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
     return (mp_obj_t)self;
 }
 
-//|   .. method:: SPI.deinit()
+//|   .. method:: deinit()
 //|
 //|      Turn off the SPI bus.
 //|
@@ -106,13 +106,13 @@ STATIC mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 
-//|   .. method:: SPI.__enter__()
+//|   .. method:: __enter__()
 //|
 //|     No-op used by Context Managers.
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: SPI.__exit__()
+//|   .. method:: __exit__()
 //|
 //|     Automatically deinitializes the hardware when exiting a context. See
 //|     :ref:`lifetime-and-contextmanagers` for more info.
@@ -131,7 +131,7 @@ static void check_lock(busio_spi_obj_t *self) {
     }
 }
 
-//|   .. method:: SPI.configure(\*, baudrate=100000, polarity=0, phase=0, bits=8)
+//|   .. method:: configure(*, baudrate=100000, polarity=0, phase=0, bits=8)
 //|
 //|     Configures the SPI bus. The SPI object must be locked.
 //|
@@ -188,7 +188,7 @@ STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 
-//|   .. method:: SPI.try_lock()
+//|   .. method:: try_lock()
 //|
 //|     Attempts to grab the SPI lock. Returns True on success.
 //|
@@ -202,7 +202,7 @@ STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 
-//|   .. method:: SPI.unlock()
+//|   .. method:: unlock()
 //|
 //|     Releases the SPI lock.
 //|
@@ -214,14 +214,14 @@ STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 
-//|   .. method:: SPI.write(buffer, \*, start=0, end=len(buffer))
+//|   .. method:: write(buffer, *, start=0, end=None)
 //|
 //|     Write the data contained in ``buffer``. The SPI object must be locked.
 //|     If the buffer is empty, nothing happens.
 //|
 //|     :param bytearray buffer: Write out the data in this buffer
 //|     :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
-//|     :param int end: End of the slice; this index is not included
+//|     :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
 //|
 STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
@@ -255,7 +255,7 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 
 
-//|   .. method:: SPI.readinto(buffer, \*, start=0, end=len(buffer), write_value=0)
+//|   .. method:: readinto(buffer, *, start=0, end=None, write_value=0)
 //|
 //|     Read into ``buffer`` while writing ``write_value`` for each byte read.
 //|     The SPI object must be locked.
@@ -263,7 +263,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 //|
 //|     :param bytearray buffer: Read data into this buffer
 //|     :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
-//|     :param int end: End of the slice; this index is not included
+//|     :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
 //|     :param int write_value: Value to write while reading. (Usually ignored.)
 //|
 STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -298,7 +298,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 
-//|   .. method:: SPI.write_readinto(buffer_out, buffer_in, \*, out_start=0, out_end=len(buffer_out), in_start=0, in_end=len(buffer_in))
+//|   .. method:: write_readinto(buffer_out, buffer_in, *, out_start=0, out_end=None, in_start=0, in_end=None)
 //|
 //|     Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|     The SPI object must be locked.
@@ -309,9 +309,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 //|     :param bytearray buffer_out: Write out the data in this buffer
 //|     :param bytearray buffer_in: Read data into this buffer
 //|     :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
-//|     :param int out_end: End of the slice; this index is not included
+//|     :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|     :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
-//|     :param int in_end: End of the slice; this index is not included
+//|     :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``
 //|
 STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };

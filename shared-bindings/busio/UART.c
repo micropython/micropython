@@ -46,7 +46,7 @@
 //| =================================================
 //|
 //|
-//| .. class:: UART(tx, rx, \*, baudrate=9600, bits=8, parity=None, stop=1, timeout=1, receiver_buffer_size=64)
+//| .. class:: UART(tx, rx, *, baudrate=9600, bits=8, parity=None, stop=1, timeout=1, receiver_buffer_size=64)
 //|
 //|   A common bidirectional serial protocol that uses an an agreed upon speed
 //|   rather than a shared clock line.
@@ -292,7 +292,7 @@ STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_obj_reset_input_buffer);
 
-//| .. class:: busio.UART.Parity
+//| .. class:: busio.UART.Parity()
 //|
 //|     Enum-like class to define the parity used to verify correct data transfer.
 //|

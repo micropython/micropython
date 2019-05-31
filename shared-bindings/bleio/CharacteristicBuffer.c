@@ -47,7 +47,7 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|
 //| Accumulates a Characteristic's incoming values in a FIFO buffer.
 //|
-//| .. class:: CharacteristicBuffer(Characteristic, *, timeout=1, buffer_size=64)
+//| .. class:: CharacteristicBuffer(characteristic, *, timeout=1, buffer_size=64)
 //|
 //|   Create a new Characteristic object identified by the specified UUID.
 //|

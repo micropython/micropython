@@ -42,7 +42,7 @@
 //| :class:`I2C` --- Two wire serial protocol
 //| ------------------------------------------
 //|
-//| .. class:: I2C(scl, sda, \*, frequency=400000)
+//| .. class:: I2C(scl, sda, *, frequency=400000, timeout)
 //|
 //|   I2C is a two-wire protocol for communicating between devices.  At the
 //|   physical level it consists of 2 wires: SCL and SDA, the clock and data
@@ -75,7 +75,7 @@ STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args,
     return (mp_obj_t)self;
 }
 
-//|   .. method:: I2C.deinit()
+//|   .. method:: deinit()
 //|
 //|     Releases control of the underlying hardware so other classes can use it.
 //|
@@ -86,13 +86,13 @@ STATIC mp_obj_t bitbangio_i2c_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_deinit_obj, bitbangio_i2c_obj_deinit);
 
-//|   .. method:: I2C.__enter__()
+//|   .. method:: __enter__()
 //|
 //|     No-op used in Context Managers.
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: I2C.__exit__()
+//|   .. method:: __exit__()
 //|
 //|     Automatically deinitializes the hardware on context exit. See
 //|     :ref:`lifetime-and-contextmanagers` for more info.
@@ -110,7 +110,7 @@ static void check_lock(bitbangio_i2c_obj_t *self) {
     }
 }
 
-//|   .. method:: I2C.scan()
+//|   .. method:: scan()
 //|
 //|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
 //|      those that respond.  A device responds if it pulls the SDA line low after
@@ -132,7 +132,7 @@ STATIC mp_obj_t bitbangio_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_scan_obj, bitbangio_i2c_scan);
 
-//|   .. method:: I2C.try_lock()
+//|   .. method:: try_lock()
 //|
 //|     Attempts to grab the I2C lock. Returns True on success.
 //|
@@ -143,7 +143,7 @@ STATIC mp_obj_t bitbangio_i2c_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_try_lock_obj, bitbangio_i2c_obj_try_lock);
 
-//|   .. method:: I2C.unlock()
+//|   .. method:: unlock()
 //|
 //|     Releases the I2C lock.
 //|
@@ -155,7 +155,7 @@ STATIC mp_obj_t bitbangio_i2c_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_unlock_obj, bitbangio_i2c_obj_unlock);
 
-//|   .. method:: I2C.readfrom_into(address, buffer, \*, start=0, end=len(buffer))
+//|   .. method:: readfrom_into(address, buffer, *, start=0, end=None)
 //|
 //|      Read into ``buffer`` from the slave specified by ``address``.
 //|      The number of bytes read will be the length of ``buffer``.
@@ -203,7 +203,7 @@ STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_readfrom_into);
 
-//|   .. method:: I2C.writeto(address, buffer, \*, start=0, end=len(buffer), stop=True)
+//|   .. method:: writeto(address, buffer, *, start=0, end=None, stop=True)
 //|
 //|      Write the bytes from ``buffer`` to the slave specified by ``address``.
 //|      Transmits a stop bit if ``stop`` is set.
