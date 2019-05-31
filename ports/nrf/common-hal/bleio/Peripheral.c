@@ -52,7 +52,7 @@
 static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
 STATIC void check_data_fit(size_t pos, size_t data_len) {
-    if (pos + data_len >= BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
+    if (pos + data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
         mp_raise_ValueError(translate("Data too large for advertisement packet"));
     }
 }

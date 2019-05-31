@@ -118,6 +118,24 @@ const mp_obj_property_t bleio_service_characteristics_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|   .. attribute:: secondary
+//|
+//|     True if this is a secondary service. (read-only)
+//|
+STATIC mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
+    bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return mp_obj_new_bool(self->is_secondary);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_get_secondary);
+
+const mp_obj_property_t bleio_service_secondary_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_service_get_secondary_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 //|   .. attribute:: uuid
 //|
 //|     The UUID of this service. (read-only)
@@ -138,6 +156,7 @@ const mp_obj_property_t bleio_service_uuid_obj = {
 
 STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_characteristics),    MP_ROM_PTR(&bleio_service_characteristics_obj) },
+    { MP_ROM_QSTR(MP_QSTR_secondary),          MP_ROM_PTR(&bleio_service_secondary_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),               MP_ROM_PTR(&bleio_service_uuid_obj) },
 };
 
