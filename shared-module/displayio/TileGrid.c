@@ -58,9 +58,8 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
     self->height_in_tiles = height;
     self->area.x1 = x;
     self->area.y1 = y;
-    // -1 because areas are inclusive
-    self->area.x2 = x + width * tile_width - 1;
-    self->area.y2 = y + height * tile_height - 1;
+    self->area.x2 = x + width * tile_width;
+    self->area.y2 = y + height * tile_height;
     self->tile_width = tile_width;
     self->tile_height = tile_height;
     self->bitmap = bitmap;
