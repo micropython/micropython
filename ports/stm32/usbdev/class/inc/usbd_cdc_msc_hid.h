@@ -7,8 +7,7 @@
 #include  "usbd_ioreq.h"
 
 // These are included to get direct access the MICROPY_HW_USB_xxx config
-#include "mpconfigboard.h"
-#include "mpconfigboard_common.h"
+#include "py/mpconfig.h"
 
 // Work out if we should support USB high-speed device mode
 #if MICROPY_HW_USB_HS \
