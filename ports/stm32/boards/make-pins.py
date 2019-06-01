@@ -251,8 +251,16 @@ class Pin(object):
 class NamedPin(object):
 
     def __init__(self, name, pin):
-        self._name = name
+        if name.startswith('-'):
+            self._is_hidden = True
+            self._name = name[1:]
+        else:
+            self._is_hidden = False
+            self._name = name
         self._pin = pin
+
+    def is_hidden(self):
+        return self._is_hidden
 
     def pin(self):
         return self._pin
@@ -300,13 +308,14 @@ class Pins(object):
                 pin = self.find_pin(port_num, pin_num)
                 if pin:
                     pin.set_is_board_pin()
-                    self.board_pins.append(NamedPin(row[0], pin))
+                    if row[0]: # Only add board pins that have a name
+                        self.board_pins.append(NamedPin(row[0], pin))
 
     def print_named(self, label, named_pins):
         print('STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
         for named_pin in named_pins:
             pin = named_pin.pin()
-            if pin.is_board_pin():
+            if pin.is_board_pin() and not named_pin.is_hidden():
                 print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}_obj) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
         print('};')
         print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label))
@@ -364,7 +373,8 @@ class Pins(object):
                     qstr_set |= set(pin.qstr_list())
                     qstr_set |= set([named_pin.name()])
             for named_pin in self.board_pins:
-                qstr_set |= set([named_pin.name()])
+                if not named_pin.is_hidden():
+                    qstr_set |= set([named_pin.name()])
             for qstr in sorted(qstr_set):
                 cond_var = None
                 if qstr.startswith('AF'):
@@ -429,6 +439,8 @@ class Pins(object):
         with open(af_py_filename,  'wt') as af_py_file:
             print('PINS_AF = (', file=af_py_file)
             for named_pin in self.board_pins:
+                if named_pin.is_hidden():
+                    continue
                 print("  ('%s', " % named_pin.name(), end='', file=af_py_file)
                 for af in named_pin.pin().alt_fn:
                     if af.is_supported():

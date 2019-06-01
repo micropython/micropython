@@ -609,8 +609,11 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             const_table_alloc += nqstr;
         }
         emit->const_table = m_new(mp_uint_t, const_table_alloc);
+        #if !MICROPY_DYNAMIC_COMPILER
         // Store mp_fun_table pointer just after qstrs
+        // (but in dynamic-compiler mode eliminate dependency on mp_fun_table)
         emit->const_table[nqstr] = (mp_uint_t)(uintptr_t)mp_fun_table;
+        #endif
 
         #if MICROPY_PERSISTENT_CODE_SAVE
         size_t qstr_link_alloc = emit->qstr_link_cur;

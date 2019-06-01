@@ -217,18 +217,13 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     } else {
         usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
         hpcd->Instance->GINTMSK &= ~USB_OTG_GINTMSK_SOFM;
-        usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)usbd->cdc;
-        if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {
-            cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTED;
-            usbd_cdc_try_tx(cdc);
+        for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+            usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)usbd->cdc[i];
+            if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {
+                cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTED;
+                usbd_cdc_try_tx(cdc);
+            }
         }
-        #if MICROPY_HW_USB_ENABLE_CDC2
-        cdc = (usbd_cdc_itf_t*)usbd->cdc2;
-        if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {
-            cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTED;
-            usbd_cdc_try_tx(cdc);
-        }
-        #endif
     }
 }
 
