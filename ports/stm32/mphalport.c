@@ -151,7 +151,30 @@ void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed) {
     gpio->OSPEEDR = (gpio->OSPEEDR & ~(3 << (2 * pin))) | (speed << (2 * pin));
 }
 
+/*******************************************************************************/
+// MAC address
+
+typedef struct _pyb_otp_t {
+    uint16_t series;
+    uint16_t rev;
+    uint8_t mac[6];
+} pyb_otp_t;
+
+#if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
+#define OTP_ADDR (0x1ff079e0)
+#else
+#define OTP_ADDR (0x1ff0f3c0)
+#endif
+#define OTP ((pyb_otp_t*)OTP_ADDR)
+
 MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    // Check if OTP region has a valid MAC address, and use it if it does
+    if (OTP->series == 0x00d1 && OTP->mac[0] == 'H' && OTP->mac[1] == 'J' && OTP->mac[2] == '0') {
+        memcpy(buf, OTP->mac, 6);
+        buf[5] += idx;
+        return;
+    }
+
     // Generate a random locally administered MAC address (LAA)
     uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
     buf[0] = 0x02; // LAA range
@@ -160,4 +183,13 @@ MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     buf[3] = (id[7] << 4) | (id[6] & 0xf);
     buf[4] = id[2];
     buf[5] = (id[0] << 2) | idx;
+}
+
+void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
+    static const char hexchr[16] = "0123456789ABCDEF";
+    uint8_t mac[6];
+    mp_hal_get_mac(idx, mac);
+    for (; chr_len; ++chr_off, --chr_len) {
+        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
+    }
 }
