@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "pendsv.h"
 #include "pin.h"
 #include "extint.h"
 #include "irq.h"
@@ -613,6 +614,15 @@ void Handle_EXTI_Irq(uint32_t line) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(1 << line);
         if (line < EXTI_NUM_VECTORS) {
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
+            #if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
+            if (pyb_extint_callback_arg[line] == MP_OBJ_FROM_PTR(pyb_pin_WL_HOST_WAKE)) {
+                extern void (*cyw43_poll)(void);
+                if (cyw43_poll) {
+                    pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+                }
+                return;
+            }
+            #endif
             if (*cb != mp_const_none) {
                 // If it's a soft IRQ handler then just schedule callback for later
                 if (!pyb_extint_hard_irq[line]) {
