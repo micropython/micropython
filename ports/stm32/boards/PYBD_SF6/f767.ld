@@ -5,6 +5,7 @@
 
     FLASH_APP   .isr_vector
     FLASH_APP   .text
+    FLASH_APP   .big_const
     FLASH_APP   .data
 
     RAM         .data
@@ -55,6 +56,8 @@ SECTIONS
         . = ALIGN(4);
         *(.text*)
         *(.rodata*)
+        . = ALIGN(512);
+        *(.big_const*)
         . = ALIGN(4);
         _etext = .;
     } >FLASH_APP

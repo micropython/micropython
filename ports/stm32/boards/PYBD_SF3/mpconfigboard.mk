@@ -11,3 +11,4 @@ TEXT1_SECTIONS = .text_ext
 
 # MicroPython settings
 MICROPY_PY_LWIP = 1
+MICROPY_PY_NETWORK_CYW43 = 1

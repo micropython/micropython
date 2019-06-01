@@ -7,6 +7,8 @@
     FLASH_APP   .text
     FLASH_APP   .data
 
+    FLASH_EXT   .big_const
+
     RAM         .data
     RAM         .bss
     RAM         .heap
@@ -43,6 +45,13 @@ ENTRY(Reset_Handler)
 /* Define output sections */
 SECTIONS
 {
+    .text_ext :
+    {
+        . = ALIGN(512);
+        *(.big_const*)
+        . = ALIGN(4);
+    } >FLASH_EXT
+
     .isr_vector :
     {
         . = ALIGN(4);
