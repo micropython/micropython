@@ -70,8 +70,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
 
     grid->width_in_tiles = width_in_tiles;
     grid->height_in_tiles = height_in_tiles;
-    grid->total_width = width_in_tiles * grid->tile_width;
-    grid->total_height = height_in_tiles * grid->tile_height;
+    grid->area.x2 = grid->area.x1 + width_in_tiles * grid->tile_width;
+    grid->area.y2 = grid->area.y1 + height_in_tiles * grid->tile_height;
     grid->tiles = tiles;
 
     supervisor_terminal.cursor_x = 0;
@@ -157,13 +157,15 @@ displayio_tilegrid_t blinka_sprite = {
     .base = {.type = &displayio_tilegrid_type },
     .bitmap = &blinka_bitmap,
     .pixel_shader = &blinka_palette,
-    .x = 0,
-    .y = 0,
+    .area = {
+        .x1 = 0,
+        .y1 = 0,
+        .x2 = 16,
+        .y2 = 16
+    },
     .bitmap_width_in_tiles = 1,
     .width_in_tiles = 1,
     .height_in_tiles = 1,
-    .total_width = 16,
-    .total_height = 16,
     .tile_width = 16,
     .tile_height = 16,
     .top_left_x = 16,

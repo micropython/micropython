@@ -134,32 +134,30 @@ void displayio_group_construct(displayio_group_t* self, displayio_group_child_t*
     self->scale = scale;
 }
 
-bool displayio_group_get_pixel(displayio_group_t *self, int16_t x, int16_t y, uint16_t* pixel) {
-    x -= self->x;
-    y -= self->y;
-    // When we are scaled we need to substract all but one to ensure -scale to 0 divide down to -1.
-    // Normally -scale to scale both divide down to 0 because 0 is unsigned.
-    if (x < 0) {
-        x -= self->scale - 1;
-    }
-    if (y < 0) {
-        y -= self->scale - 1;
-    }
-    x /= self->scale;
-    y /= self->scale;
+bool displayio_group_get_area(displayio_group_t *self, displayio_buffer_transform_t* transform, displayio_area_t* area, uint32_t* mask, uint32_t* buffer) {
+    displayio_area_shift(area, -self->x * transform->scale, -self->y * transform->scale);
+    transform->scale *= self->scale;
+
+    // Track if any of the layers finishes filling in the given area. We can ignore any remaining
+    // layers at that point.
+    bool full_coverage = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i].native;
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
-            if (displayio_tilegrid_get_pixel(layer, x, y, pixel)) {
-                return true;
+            if (displayio_tilegrid_get_area(layer, transform, area, mask, buffer)) {
+                full_coverage = true;
+                break;
             }
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
-            if (displayio_group_get_pixel(layer, x, y, pixel)) {
-                return true;
+            if (displayio_group_get_area(layer, transform, area, mask, buffer)) {
+                full_coverage = true;
+                break;
             }
         }
     }
-    return false;
+    transform->scale /= self->scale;
+    displayio_area_shift(area, self->x * transform->scale, self->y * transform->scale);
+    return full_coverage;
 }
 
 bool displayio_group_needs_refresh(displayio_group_t *self) {

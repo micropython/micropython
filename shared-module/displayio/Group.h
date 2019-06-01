@@ -31,6 +31,7 @@
 #include <stdint.h>
 
 #include "py/obj.h"
+#include "shared-module/displayio/area.h"
 
 typedef struct {
     mp_obj_t native;
@@ -49,7 +50,7 @@ typedef struct {
 } displayio_group_t;
 
 void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y);
-bool displayio_group_get_pixel(displayio_group_t *group, int16_t x, int16_t y, uint16_t *pixel);
+bool displayio_group_get_area(displayio_group_t *group, displayio_buffer_transform_t* transform, displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
 bool displayio_group_needs_refresh(displayio_group_t *self);
 void displayio_group_finish_refresh(displayio_group_t *self);
 
