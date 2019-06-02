@@ -67,7 +67,7 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
-	rm -rf $(STUBDIR) $(DISTDIR)
+	rm -rf $(STUBDIR) $(DISTDIR) *.egg-info
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
