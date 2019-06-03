@@ -48,7 +48,7 @@
 // Wiznet5k Ethernet driver in MACRAW mode
 
 typedef struct _wiznet5k_obj_t {
-    mod_network_nic_type_t base;
+    mp_obj_base_t base;
     mp_uint_t cris_state;
     const spi_t *spi;
     mp_hal_pin_obj_t cs;
@@ -63,7 +63,6 @@ typedef struct _wiznet5k_obj_t {
 STATIC wiznet5k_obj_t wiznet5k_obj;
 
 STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self);
-STATIC void wiznet5k_lwip_poll(void *self_in, struct netif *netif);
 
 STATIC void wiz_cris_enter(void) {
     wiznet5k_obj.cris_state = MICROPY_BEGIN_ATOMIC_SECTION();
@@ -176,7 +175,7 @@ STATIC uint16_t wiznet5k_recv_ethernet(wiznet5k_obj_t *self) {
     uint16_t port;
     int ret = WIZCHIP_EXPORT(recvfrom)(0, self->eth_frame, 1514, ip, &port);
     if (ret <= 0) {
-        printf("wiznet5k_lwip_poll: fatal error len=%u ret=%d\n", len, ret);
+        printf("wiznet5k_poll: fatal error len=%u ret=%d\n", len, ret);
         netif_set_link_down(&self->netif);
         netif_set_down(&self->netif);
         return 0;
@@ -237,8 +236,11 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     self->netif.flags &= ~NETIF_FLAG_UP;
 }
 
-STATIC void wiznet5k_lwip_poll(void *self_in, struct netif *netif) {
-    wiznet5k_obj_t *self = self_in;
+void wiznet5k_poll(void) {
+    wiznet5k_obj_t *self = &wiznet5k_obj;
+    if (!(self->netif.flags & NETIF_FLAG_LINK_UP)) {
+        return;
+    }
     uint16_t len;
     while ((len = wiznet5k_recv_ethernet(self)) > 0) {
         if (self->trace_flags & TRACE_ETH_RX) {
@@ -267,7 +269,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_hal_pin_obj_t rst = pin_find(args[2]);
 
     // Access the existing object, if it has been constructed with the same hardware interface
-    if (wiznet5k_obj.base.base.type == &mod_network_nic_type_wiznet5k) {
+    if (wiznet5k_obj.base.type == &mod_network_nic_type_wiznet5k) {
         if (!(wiznet5k_obj.spi == spi && wiznet5k_obj.cs == cs && wiznet5k_obj.rst == rst
             && wiznet5k_obj.netif.flags != 0)) {
             wiznet5k_deinit();
@@ -275,8 +277,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     // Init the wiznet5k object
-    wiznet5k_obj.base.base.type = &mod_network_nic_type_wiznet5k;
-    wiznet5k_obj.base.poll_callback = wiznet5k_lwip_poll;
+    wiznet5k_obj.base.type = &mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
     wiznet5k_obj.spi = spi;
     wiznet5k_obj.cs = cs;

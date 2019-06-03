@@ -55,15 +55,11 @@ u32_t sys_now(void) {
 }
 
 STATIC void pyb_lwip_poll(void) {
-    // Poll all the NICs for incoming data
-    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
-        if (netif->flags & NETIF_FLAG_LINK_UP) {
-            mod_network_nic_type_t *nic = netif->state;
-            if (nic->poll_callback) {
-                nic->poll_callback(nic, netif);
-            }
-        }
-    }
+    #if MICROPY_PY_WIZNET5K
+    // Poll the NIC for incoming data
+    wiznet5k_poll();
+    #endif
+
     // Run the lwIP internal updates
     sys_check_timeouts();
 }
