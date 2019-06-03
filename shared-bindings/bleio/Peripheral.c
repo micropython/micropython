@@ -68,7 +68,8 @@ static const char default_name[] = "CIRCUITPY";
 //|
 //|    # Create a peripheral and start it up.
 //|    periph = bleio.Peripheral([service])
-//|    periph.start_advertising()
+//|    adv = ServerAdvertisement(periph)
+//|    periph.start_advertising(adv.advertising_data_bytes, adv.scan_response_bytes)
 //|
 //|    while not periph.connected:
 //|        # Wait for connection.
@@ -181,33 +182,40 @@ const mp_obj_property_t bleio_peripheral_name_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. method:: start_advertising(*, connectable=True, data=None)
+//|   .. method:: start_advertising(data, *, scan_response=None, connectable=True)
 //|
 //|     Starts advertising the peripheral. The peripheral's name and
 //|     services are included in the advertisement packets.
 //|
+//|     :param buf data: advertising data packet bytes
+//|     :param buf scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|     :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
-//|     :param buf data: If `None`, advertise the services passed to this Peripheral when it was created.
-//|       If not `None`, then send the bytes in ``data`` as the advertising packet.
+//|
 //|
 STATIC mp_obj_t bleio_peripheral_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_connectable, ARG_data };
+    enum { ARG_data, ARG_scan_response, ARG_connectable };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_scan_response, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_connectable, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
-        { MP_QSTR_data, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_buffer_info_t bufinfo = { 0 };
+    mp_buffer_info_t data_bufinfo;
+    mp_get_buffer_raise(args[ARG_data].u_obj, &data_bufinfo, MP_BUFFER_READ);
+
+    // Pass an empty buffer if scan_response not provided.
+    mp_buffer_info_t scan_response_bufinfo = { 0 };
     if (args[ARG_data].u_obj != mp_const_none) {
-        mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_READ);
+        mp_get_buffer_raise(args[ARG_scan_response].u_obj, &scan_response_bufinfo, MP_BUFFER_READ);
     }
 
-    common_hal_bleio_peripheral_start_advertising(self, args[ARG_connectable].u_bool, &bufinfo);
+    common_hal_bleio_peripheral_start_advertising(self, args[ARG_connectable].u_bool,
+                                                  &data_bufinfo, &scan_response_bufinfo);
 
     return mp_const_none;
 }

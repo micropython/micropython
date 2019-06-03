@@ -51,63 +51,15 @@
 
 static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
-STATIC void check_data_fit(size_t pos, size_t data_len) {
-    if (pos + data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
+STATIC void check_data_fit(size_t data_len) {
+    if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
         mp_raise_ValueError(translate("Data too large for advertisement packet"));
     }
 }
 
-STATIC uint32_t add_services_to_advertisement(bleio_peripheral_obj_t *self, size_t* adv_data_pos_p, size_t uuid_len) {
-    uint32_t uuids_total_size = 0;
-    const mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
-    uint32_t err_code = NRF_SUCCESS;
-
-    check_data_fit(*adv_data_pos_p, 1 + 1);
-
-    // Remember where length byte is; fill in later when we know the size.
-    const size_t length_pos = *adv_data_pos_p;
-    (*adv_data_pos_p)++;
-
-    self->adv_data[(*adv_data_pos_p)++] = (uuid_len == 16)
-        ? BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE
-        : BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
-
-    for (size_t i = 0; i < service_list->len; ++i) {
-        const bleio_service_obj_t *service = MP_OBJ_TO_PTR(service_list->items[i]);
-        uint8_t encoded_size = 0;
-
-        // Skip services of the wrong length and secondary services.
-        if (common_hal_bleio_uuid_get_size(service->uuid) != uuid_len || service->is_secondary) {
-            continue;
-        }
-
-        ble_uuid_t uuid;
-        bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
-
-        err_code = sd_ble_uuid_encode(&uuid, &encoded_size, &(self->adv_data[*adv_data_pos_p]));
-        if (err_code != NRF_SUCCESS) {
-            return err_code;
-        }
-
-        check_data_fit(*adv_data_pos_p, encoded_size);
-        uuids_total_size += encoded_size;
-        (*adv_data_pos_p) += encoded_size;
-    }
-
-    self->adv_data[length_pos] = 1 + uuids_total_size;  // 1 for the field type.
-    return err_code;
-}
-
-
-
-// if raw_data is a zero-length buffer, generate an advertising packet that advertises the
-// services passed in when this Peripheral was created.
-// If raw_data contains some bytes, use those bytes as the advertising packet.
-// TODO: Generate the advertising packet in Python, not here.
-STATIC uint32_t set_advertisement_data(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
+STATIC uint32_t start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
     common_hal_bleio_adapter_set_enabled(true);
 
-    size_t adv_data_pos = 0;
     uint32_t err_code;
 
     GET_STR_DATA_LEN(self->name, name_data, name_len);
@@ -115,86 +67,18 @@ STATIC uint32_t set_advertisement_data(bleio_peripheral_obj_t *self, bool connec
         ble_gap_conn_sec_mode_t sec_mode;
         BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
-        // We'll add the name after everything else, shortening it if necessary.
         err_code = sd_ble_gap_device_name_set(&sec_mode, name_data, name_len);
         if (err_code != NRF_SUCCESS) {
             return err_code;
         }
     }
 
-    if (raw_data->len != 0) {
-        // User-supplied advertising packet.
-        check_data_fit(adv_data_pos, raw_data->len);
-        memcpy(&(self->adv_data[adv_data_pos]), raw_data->buf, raw_data->len);
-        adv_data_pos += raw_data->len;
-    } else {
-        // Build up advertising packet.
-        check_data_fit(adv_data_pos, 1 + 1 + 1);
-        self->adv_data[adv_data_pos++] = 2;
-        self->adv_data[adv_data_pos++] = BLE_GAP_AD_TYPE_FLAGS;
-        self->adv_data[adv_data_pos++] = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
+    check_data_fit(advertising_data_bufinfo->len);
+    memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
 
-        // The 16-bit ids and 128-bit ids are grouped together by length, so find it whether we have
-        // 16 and/or 128-bit service UUIDs.
+    check_data_fit(scan_response_data_bufinfo->len);
+    memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
 
-        const mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
-        if (service_list->len > 0) {
-            bool has_128bit_services = false;
-            bool has_16bit_services = false;
-
-            for (size_t i = 0; i < service_list->len; ++i) {
-                const bleio_service_obj_t *service = MP_OBJ_TO_PTR(service_list->items[i]);
-
-                if (service->is_secondary) {
-                    continue;
-                }
-
-                switch (common_hal_bleio_uuid_get_size(service->uuid)) {
-                case 16:
-                    has_16bit_services = true;
-                    break;
-                case 128:
-                    has_128bit_services = true;
-                    break;
-                }
-            }
-
-            // Add 16-bit service UUID's in a group, then 128-bit service UUID's.
-
-            if (has_16bit_services) {
-                err_code = add_services_to_advertisement(self, &adv_data_pos, 16);
-                if (err_code != NRF_SUCCESS) {
-                    return err_code;
-                }
-            }
-
-            if (has_128bit_services) {
-                err_code = add_services_to_advertisement(self, &adv_data_pos, 128);
-                if (err_code != NRF_SUCCESS) {
-                    return err_code;
-                }
-            }
-        }
-
-        // Always include TX power.
-        check_data_fit(adv_data_pos, 1 + 1 + 1);
-        self->adv_data[adv_data_pos++] = 1 + 1;
-        self->adv_data[adv_data_pos++] = BLE_GAP_AD_TYPE_TX_POWER_LEVEL;
-        self->adv_data[adv_data_pos++] = 0;   // TODO - allow power level to be set later.
-
-        // We need room for at least a one-character name.
-        check_data_fit(adv_data_pos, 1 + 1 + 1);
-
-        // How big a name can we fit?
-        size_t bytes_left = BLE_GAP_ADV_SET_DATA_SIZE_MAX - adv_data_pos - 1 - 1;
-        size_t partial_name_len = MIN(bytes_left, name_len);
-        self->adv_data[adv_data_pos++] = 1 + partial_name_len;
-        self->adv_data[adv_data_pos++] = (partial_name_len == name_len)
-            ? BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME
-            : BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME;
-        memcpy(&(self->adv_data[adv_data_pos]), name_data, partial_name_len);
-        adv_data_pos += partial_name_len;
-    } // end of advertising packet construction
 
     static ble_gap_adv_params_t m_adv_params = {
         .interval = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
@@ -211,8 +95,10 @@ STATIC uint32_t set_advertisement_data(bleio_peripheral_obj_t *self, bool connec
     common_hal_bleio_peripheral_stop_advertising(self);
 
     const ble_gap_adv_data_t ble_gap_adv_data = {
-        .adv_data.p_data = self->adv_data,
-        .adv_data.len = adv_data_pos,
+        .adv_data.p_data = self->advertising_data,
+        .adv_data.len = advertising_data_bufinfo->len,
+        .scan_rsp_data.p_data = scan_response_data_bufinfo-> len > 0 ? self->scan_response_data : NULL,
+        .scan_rsp_data.len = scan_response_data_bufinfo->len,
     };
 
     err_code = sd_ble_gap_adv_set_configure(&m_adv_handle, &ble_gap_adv_data, &m_adv_params);
@@ -322,12 +208,13 @@ bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self) {
     return self->conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
-void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *raw_data) {
+void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
     if (connectable) {
         ble_drv_add_event_handler(peripheral_on_ble_evt, self);
     }
 
-    const uint32_t err_code = set_advertisement_data(self, connectable, raw_data);
+    const uint32_t err_code = start_advertising(self, connectable,
+                                                advertising_data_bufinfo, scan_response_data_bufinfo);
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg_varg(translate("Failed to start advertising, err 0x%04x"), err_code);
     }

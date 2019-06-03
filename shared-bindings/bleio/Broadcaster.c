@@ -82,7 +82,7 @@ STATIC mp_obj_t bleio_broadcaster_make_new(const mp_obj_type_t *type, size_t n_a
 //|
 //|     Start advertising using the given data packet.
 //|
-//|     :param buf data:  advertising data packet, starting with advertising data flags (0x01)
+//|     :param buf data:  advertising data packet
 //|
 STATIC mp_obj_t bleio_broadcaster_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_broadcaster_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);

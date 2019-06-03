@@ -39,7 +39,7 @@
 static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
 void common_hal_bleio_broadcaster_construct(bleio_broadcaster_obj_t *self, mp_float_t interval) {
-    common_hal_bleio_adapter_set_enabled(true);   // TODO -- Do this somewhere else maybe bleio __init__
+    common_hal_bleio_adapter_set_enabled(true);
     const mp_float_t min = BLE_GAP_ADV_INTERVAL_MIN * ADV_INTERVAL_UNIT_FLOAT_SECS;
     const mp_float_t max = BLE_GAP_ADV_INTERVAL_MAX * ADV_INTERVAL_UNIT_FLOAT_SECS;
 
