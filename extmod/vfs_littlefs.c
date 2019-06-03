@@ -155,6 +155,68 @@ const char *mp_obj_vfs_littlefs_make_path(mp_obj_vfs_littlefs_t *self, mp_obj_t 
     return path;
 }
 
+STATIC void vfs_littlefs_OSError(int lfs_error) {
+    int oserr = 0;
+    switch(lfs_error) {
+        case LFS_ERR_OK:
+        // No Error
+        return;
+
+        case LFS_ERR_IO:
+        oserr = MP_EIO;
+        break;
+
+        case LFS_ERR_CORRUPT:
+        oserr = MP_EPERM;
+        break;
+
+        case LFS_ERR_NOENT:
+        oserr = MP_ENOENT;
+        break;
+
+        case LFS_ERR_EXIST:
+        oserr = MP_EEXIST;
+        break;
+
+        case LFS_ERR_NOTDIR:
+        oserr = MP_ENOTDIR;
+        break;
+
+        case LFS_ERR_ISDIR:
+        oserr = MP_EISDIR;
+        break;
+
+        case LFS_ERR_NOTEMPTY:
+        oserr = MP_EACCES;
+        break;
+
+        case LFS_ERR_BADF:
+        oserr = MP_EBADF;
+        break;
+
+        case LFS_ERR_FBIG:
+        oserr = MP_EFBIG;
+        break;
+
+        case LFS_ERR_INVAL:
+        oserr = MP_EINVAL;
+        break;
+
+        case LFS_ERR_NOSPC:
+        oserr = MP_ENOSPC;
+        break;
+
+        case LFS_ERR_NOMEM:
+        oserr = MP_ENOBUFS;
+        break;
+
+        default:
+        oserr = MP_ESRCH;
+
+    }
+    mp_raise_OSError(oserr);
+}
+
 STATIC mp_obj_t vfs_littlefs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type;
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -165,7 +227,7 @@ STATIC mp_obj_t vfs_littlefs_make_new(const mp_obj_type_t *type, size_t n_args, 
     init_config(&self->config, args[0]);
     int ret = lfs_mount(&self->lfs, &self->config);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -176,7 +238,7 @@ STATIC mp_obj_t vfs_littlefs_mkfs(mp_obj_t bdev) {
     init_config(&config, bdev);
     int ret = lfs_format(&lfs, &config);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return mp_const_none;
 }
@@ -243,7 +305,7 @@ STATIC mp_obj_t vfs_littlefs_ilistdir_func(size_t n_args, const mp_obj_t *args) 
     iter->vfs = self;
     int ret = lfs_dir_open(&self->lfs, &iter->dir, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return MP_OBJ_FROM_PTR(iter);
 }
@@ -254,7 +316,7 @@ STATIC mp_obj_t vfs_littlefs_remove(mp_obj_t self_in, mp_obj_t path_in) {
     const char *path = mp_obj_vfs_littlefs_make_path(self, path_in);
     int ret = lfs_remove(&self->lfs, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return mp_const_none;
 }
@@ -265,7 +327,7 @@ STATIC mp_obj_t vfs_littlefs_rmdir(mp_obj_t self_in, mp_obj_t path_in) {
     const char *path = mp_obj_vfs_littlefs_make_path(self, path_in);
     int ret = lfs_remove(&self->lfs, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return mp_const_none;
 }
@@ -281,7 +343,7 @@ STATIC mp_obj_t vfs_littlefs_rename(mp_obj_t self_in, mp_obj_t path_old_in, mp_o
     int ret = lfs_rename(&self->lfs, path_old, vstr_null_terminated_str(&path_new));
     vstr_clear(&path_new);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return mp_const_none;
 }
@@ -292,7 +354,7 @@ STATIC mp_obj_t vfs_littlefs_mkdir(mp_obj_t self_in, mp_obj_t path_o) {
     const char *path = mp_obj_vfs_littlefs_make_path(self, path_o);
     int ret = lfs_mkdir(&self->lfs, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return mp_const_none;
 }
@@ -339,7 +401,7 @@ STATIC mp_obj_t vfs_littlefs_stat(mp_obj_t self_in, mp_obj_t path_in) {
     struct lfs_info info;
     int ret = lfs_stat(&self->lfs, path, &info);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
@@ -375,7 +437,7 @@ STATIC mp_obj_t vfs_littlefs_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     int ret = lfs_traverse(&self->lfs, lfs_traverse_cb, &n_used_blocks);
 #endif    
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
@@ -407,7 +469,7 @@ STATIC mp_obj_t vfs_littlefs_umount(mp_obj_t self_in) {
     mp_obj_vfs_littlefs_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = lfs_unmount(&self->lfs);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        vfs_littlefs_OSError(ret);
     }
     return mp_const_none;
 }
