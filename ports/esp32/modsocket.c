@@ -171,9 +171,25 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
         host_str = "0.0.0.0";
     }
 
+    bool port_is_0 = port_str[0] == '0' && port_str[1] == '\0';
+    if (port_is_0) {
+        // lwip_getaddrinfo doesn't support port=0, so pass it port=1 then convert the result back
+        port_str = "1";
+    }
+
     MP_THREAD_GIL_EXIT();
     int res = lwip_getaddrinfo(host_str, port_str, &hints, resp);
     MP_THREAD_GIL_ENTER();
+
+    if (port_is_0) {
+        // Convert all IPv4 ports to 0
+        for (struct addrinfo *resi = *resp; resi; resi = resi->ai_next) {
+            if (resi->ai_family == AF_INET) {
+                struct sockaddr_in *addr = (struct sockaddr_in *)resi->ai_addr;
+                addr->sin_port = htons(0);
+            }
+        }
+    }
 
     return res;
 }
