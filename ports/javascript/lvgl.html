@@ -152,7 +152,7 @@
 			var the_mp_handle_pending = Module.cwrap('mp_handle_pending', null);
 			function handle_pending() {
 				the_mp_handle_pending();
-				setTimeout(handle_pending, 20); // should call lv_task_handler() 
+				setTimeout(handle_pending, 50); // should call lv_task_handler() 
 			}
 			/*Initialize the REPL.*/
             mp_js_init_repl();
