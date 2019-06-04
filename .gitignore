@@ -12,6 +12,8 @@
 
 # Packages
 ############
+dist/
+*.egg-info
 
 # Logs and Databases
 ######################
@@ -25,6 +27,7 @@
 ######################
 build/
 bin/
+circuitpython-stubs/
 
 # Test failure outputs
 ######################

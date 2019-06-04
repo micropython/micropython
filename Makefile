@@ -17,6 +17,13 @@ CONFDIR      = .
 FORCE         = -E
 VERBOSE       = -v
 
+# path to generated type stubs
+STUBDIR       = circuitpython-stubs
+# Run "make VALIDATE= stubs" to avoid validating generated stub files
+VALIDATE      = -v
+# path to pypi source distributions
+DISTDIR       = dist
+
 # Make sure you have Sphinx installed, then set the SPHINXBUILD environment variable to point to the
 # full path of the '$(SPHINXBUILD)' executable. Alternatively you can add the directory with the
 # executable to your PATH. If you don't have Sphinx installed, grab it from http://sphinx-doc.org/)
@@ -31,7 +38,7 @@ I18NSPHINXOPTS  = $(BASEOPTS)
 
 TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/nrf py shared-bindings shared-module supervisor
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext stubs
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -60,6 +67,7 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf $(STUBDIR) $(DISTDIR) *.egg-info
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -203,3 +211,7 @@ translate: locale/circuitpython.pot
 
 check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^
+
+stubs:
+	rst2pyi $(VALIDATE) shared-bindings/ $(STUBDIR)
+	python setup.py sdist
