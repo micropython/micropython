@@ -40,6 +40,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
 extern const struct _mp_obj_type_t pyb_sdcard_type;
+extern const struct _mp_obj_type_t pyb_mmcard_type;
 extern const struct _mp_obj_base_t pyb_sdcard_obj;
 
 struct _fs_user_mount_t;

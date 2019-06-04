@@ -1,3 +1,5 @@
+.. _speed_python:
+
 Maximising MicroPython Speed
 ============================
 

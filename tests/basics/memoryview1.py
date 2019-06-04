@@ -94,3 +94,9 @@ try:
     memoryview(array.array('i'))[0:2] = b'1234'
 except ValueError:
     print('ValueError')
+
+# invalid attribute
+try:
+    memoryview(b'a').noexist
+except AttributeError:
+    print('AttributeError')

@@ -227,12 +227,8 @@ pin_init0();
 
 #if MICROPY_VFS || MICROPY_MBFS
     // run boot.py and main.py if they exist.
-    if (mp_import_stat("boot.py") == MP_IMPORT_STAT_FILE) {
-        pyexec_file("boot.py");
-    }
-    if (mp_import_stat("main.py") == MP_IMPORT_STAT_FILE) {
-        pyexec_file("main.py");
-    }
+    pyexec_file_if_exists("boot.py");
+    pyexec_file_if_exists("main.py");
 #endif
 
     for (;;) {

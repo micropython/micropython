@@ -20,12 +20,13 @@ ss = ssl.wrap_socket(socket, server_side=1)
 # print
 print(repr(ss)[:12])
 
-# setblocking
-try:
-    ss.setblocking(False)
-except NotImplementedError:
-    print('setblocking: NotImplementedError')
-ss.setblocking(True)
+# setblocking() propagates call to the underlying stream object, and
+# io.BytesIO doesn't have setblocking() (in CPython too).
+#try:
+#    ss.setblocking(False)
+#except NotImplementedError:
+#    print('setblocking: NotImplementedError')
+#ss.setblocking(True)
 
 # write
 print(ss.write(b'aaaa'))

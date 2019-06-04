@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +124,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
         } else if (o->args->len == 1) {
             #if MICROPY_PY_UERRNO
             // try to provide a nice OSError error message
-            if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
+            if (o->base.type == &mp_type_OSError && mp_obj_is_small_int(o->args->items[0])) {
                 qstr qst = mp_errno_to_str(o->args->items[0]);
                 if (qst != MP_QSTR_NULL) {
                     mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
@@ -348,9 +349,9 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg
 
     // Create the string object and call mp_obj_exception_make_new to create the exception
     o_str->base.type = &mp_type_str;
-    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
     o_str->len = strlen(msg);
     o_str->data = (const byte*)msg;
+    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
@@ -447,7 +448,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
 
 // return true if the given object is an exception type
 bool mp_obj_is_exception_type(mp_obj_t self_in) {
-    if (MP_OBJ_IS_TYPE(self_in, &mp_type_type)) {
+    if (mp_obj_is_type(self_in, &mp_type_type)) {
         // optimisation when self_in is a builtin exception
         mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
         if (self->make_new == mp_obj_exception_make_new) {

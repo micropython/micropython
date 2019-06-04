@@ -111,7 +111,7 @@ void __fatal_error(const char *msg);
 #if defined(STM32F4) || defined(STM32F7)
 
 #define CONFIG_RCC_CR_1ST (RCC_CR_HSION)
-#define CONFIG_RCC_CR_2ND (RCC_CR_HSEON | RCC_CR_CSSON | RCC_CR_PLLON)
+#define CONFIG_RCC_CR_2ND (MICROPY_HW_RCC_CR_HSxON | RCC_CR_CSSON | RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x24003010)
 
 #if defined(STM32F4)
@@ -222,7 +222,7 @@ void SystemInit(void)
   /* Reset CFGR register */
   RCC->CFGR = 0x00000000;
 
-  /* Reset HSEON, CSSON and PLLON bits */
+  /* Reset HSxON, CSSON and PLLON bits */
   RCC->CR &= ~ CONFIG_RCC_CR_2ND;
 
   /* Reset PLLCFGR register */
@@ -295,16 +295,17 @@ void SystemInit(void)
   * @brief  System Clock Configuration
   *
   *         The system Clock is configured for F4/F7 as follows:
-  *            System Clock source            = PLL (HSE)
+  *         (HSx should be read as HSE or HSI depending on the value of MICROPY_HW_CLK_USE_HSI)
+  *            System Clock source            = PLL (HSx)
   *            SYSCLK(Hz)                     = 168000000
   *            HCLK(Hz)                       = 168000000
   *            AHB Prescaler                  = 1
   *            APB1 Prescaler                 = 4
   *            APB2 Prescaler                 = 2
-  *            HSE Frequency(Hz)              = HSE_VALUE
-  *            PLL_M                          = HSE_VALUE/1000000
+  *            HSx Frequency(Hz)              = HSx_VALUE
+  *            PLL_M                          = HSx_VALUE/1000000
   *            PLL_N                          = 336
-  *            PLL_P                          = 2
+  *            PLL_P                          = 4
   *            PLL_Q                          = 7
   *            VDD(V)                         = 3.3
   *            Main regulator output voltage  = Scale1 mode
@@ -331,16 +332,16 @@ void SystemInit(void)
   * PLL is configured as follows:
   *
   *     VCO_IN
-  *         F4/F7 = HSE / M
+  *         F4/F7 = HSx / M
   *         L4    = MSI / M
   *     VCO_OUT
-  *         F4/F7 = HSE / M * N
+  *         F4/F7 = HSx / M * N
   *         L4    = MSI / M * N
   *     PLLCLK
-  *         F4/F7 = HSE / M * N / P
+  *         F4/F7 = HSx / M * N / P
   *         L4    = MSI / M * N / R
   *     PLL48CK
-  *         F4/F7 = HSE / M * N / Q
+  *         F4/F7 = HSx / M * N / Q
   *         L4    = MSI / M * N / Q  USB Clock is obtained over PLLSAI1
   *
   *     SYSCLK = PLLCLK
@@ -352,6 +353,7 @@ void SystemInit(void)
   *     VCO_IN between 1MHz and 2MHz (2MHz recommended)
   *     VCO_OUT between 192MHz and 432MHz
   *     HSE = 8MHz
+  *     HSI = 16MHz
   *     M = 2 .. 63 (inclusive)
   *     N = 192 ... 432 (inclusive)
   *     P = 2, 4, 6, 8
@@ -411,13 +413,14 @@ void SystemClock_Config(void)
 
     /* Enable HSE Oscillator and activate PLL with HSE as source */
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
-    RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
+    RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
+    RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
+    RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
     #if defined(STM32H7)
     RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
     #endif
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
     #elif defined(STM32L4)
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -538,7 +541,7 @@ void SystemClock_Config(void)
   }
 #endif
 
-    uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (HSE_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
+    uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (MICROPY_HW_CLK_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
     uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
     bool need_pllsai = vco_out % 48 != 0;
     if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai) != 0) {

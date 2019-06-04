@@ -127,7 +127,7 @@ STATIC const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     C(MAGN_X),
     C(MAGN_Y),
     C(MAGN_Z),
-    C(TEMP),
+    C(DIE_TEMP),
     C(PRESS),
     C(PROX),
     C(HUMIDITY),

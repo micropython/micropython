@@ -37,6 +37,7 @@
 #include "esp_task.h"
 #include "soc/cpu.h"
 #include "esp_log.h"
+#include "esp_spiram.h"
 
 #include "py/stackctrl.h"
 #include "py/nlr.h"
@@ -69,9 +70,29 @@ void mp_task(void *pvParameter) {
     #endif
     uart_init();
 
+    #if CONFIG_SPIRAM_SUPPORT
+    // Try to use the entire external SPIRAM directly for the heap
+    size_t mp_task_heap_size;
+    void *mp_task_heap = (void*)0x3f800000;
+    switch (esp_spiram_get_chip_size()) {
+        case ESP_SPIRAM_SIZE_16MBITS:
+            mp_task_heap_size = 2 * 1024 * 1024;
+            break;
+        case ESP_SPIRAM_SIZE_32MBITS:
+        case ESP_SPIRAM_SIZE_64MBITS:
+            mp_task_heap_size = 4 * 1024 * 1024;
+            break;
+        default:
+            // No SPIRAM, fallback to normal allocation
+            mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+            mp_task_heap = malloc(mp_task_heap_size);
+            break;
+    }
+    #else
     // Allocate the uPy heap using malloc and get the largest available region
     size_t mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
     void *mp_task_heap = malloc(mp_task_heap_size);
+    #endif
 
 soft_reset:
     // initialise the stack pointer for the main thread
@@ -90,9 +111,9 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");
-    pyexec_file("boot.py");
+    pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        pyexec_file("main.py");
+        pyexec_file_if_exists("main.py");
     }
 
     for (;;) {
@@ -109,13 +130,15 @@ soft_reset:
         }
     }
 
+    machine_timer_deinit_all();
+
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
     #endif
 
     gc_sweep_all();
 
-    mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
+    mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
     machine_pins_deinit();

@@ -32,6 +32,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
+#include "systick.h"
+#include "pendsv.h"
 #include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK
@@ -42,21 +44,40 @@
 #include "lwip/timeouts.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
+#include "extmod/network_cyw43.h"
+#include "drivers/cyw43/cyw43.h"
+
+// Poll lwIP every 128ms
+#define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
 
 u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-void pyb_lwip_poll(void) {
-    // Poll all the NICs for incoming data
-    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
-        if (netif->flags & NETIF_FLAG_LINK_UP) {
-            mod_network_nic_type_t *nic = netif->state;
-            nic->poll_callback(nic, netif);
-        }
-    }
+STATIC void pyb_lwip_poll(void) {
+    #if MICROPY_PY_WIZNET5K
+    // Poll the NIC for incoming data
+    wiznet5k_poll();
+    #endif
+
     // Run the lwIP internal updates
     sys_check_timeouts();
+}
+
+void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
+    if (LWIP_TICK(ticks_ms)) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, pyb_lwip_poll);
+    }
+
+    #if MICROPY_PY_NETWORK_CYW43
+    if (cyw43_poll) {
+        if (cyw43_sleep != 0) {
+            if (--cyw43_sleep == 0) {
+                pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+            }
+        }
+    }
+    #endif
 }
 
 #endif
@@ -103,6 +124,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
 
+    #if defined(MICROPY_HW_ETH_MDC)
+    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+    #endif
+    #if MICROPY_PY_NETWORK_CYW43
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
+    #endif
+
     #if MICROPY_PY_WIZNET5K
     { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
     #endif
@@ -111,6 +139,12 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },
+
+    // Constants
+    #if MICROPY_PY_NETWORK_CYW43
+    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(CYW43_ITF_STA)},
+    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(CYW43_ITF_AP)},
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);

@@ -54,7 +54,7 @@ typedef struct _thread_t {
 // the mutex controls access to the linked list
 STATIC mp_thread_mutex_t thread_mutex;
 STATIC thread_t thread_entry0;
-STATIC thread_t *thread; // root pointer, handled by mp_thread_gc_others
+STATIC thread_t *thread = NULL; // root pointer, handled by mp_thread_gc_others
 
 void mp_thread_init(void *stack, uint32_t stack_len) {
     mp_thread_set_state(&mp_state_ctx.thread);
@@ -166,6 +166,10 @@ void mp_thread_finish(void) {
 }
 
 void vPortCleanUpTCB(void *tcb) {
+    if (thread == NULL) {
+        // threading not yet initialised
+        return;
+    }
     thread_t *prev = NULL;
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; prev = th, th = th->next) {

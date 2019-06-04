@@ -31,7 +31,7 @@
 /// \moduleref pyb
 
 #if IRQ_ENABLE_STATS
-uint32_t irq_stats[FPU_IRQn + 1] = {0};
+uint32_t irq_stats[IRQ_STATS_MAX] = {0};
 #endif
 
 /// \function wfi()

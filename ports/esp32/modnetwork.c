@@ -41,11 +41,11 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "netutils.h"
+#include "esp_eth.h"
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
 #include "esp_log.h"
 #include "esp_event_loop.h"
-#include "esp_log.h"
 #include "lwip/dns.h"
 #include "tcpip_adapter.h"
 
@@ -168,7 +168,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         }
         ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
 
-        bool reconnected = false;
+        wifi_sta_connected = false;
         if (wifi_sta_connect_requested) {
             wifi_mode_t mode;
             if (esp_wifi_get_mode(&mode) == ESP_OK) {
@@ -177,18 +177,30 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                     esp_err_t e = esp_wifi_connect();
                     if (e != ESP_OK) {
                         ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
-                    } else {
-                        reconnected = true;
                     }
                 }
             }
         }
-        if (wifi_sta_connected && !reconnected) {
-            // If already connected and we fail to reconnect
-            wifi_sta_connected = false;
-        }
         break;
     }
+    case SYSTEM_EVENT_GOT_IP6:
+        ESP_LOGI("network", "Got IPv6");
+        break;
+    case SYSTEM_EVENT_ETH_START:
+        ESP_LOGI("ethernet", "start");
+        break;
+    case SYSTEM_EVENT_ETH_STOP:
+        ESP_LOGI("ethernet", "stop");
+        break;
+    case SYSTEM_EVENT_ETH_CONNECTED:
+        ESP_LOGI("ethernet", "LAN cable connected");
+        break;
+    case SYSTEM_EVENT_ETH_DISCONNECTED:
+        ESP_LOGI("ethernet", "LAN cable disconnected");
+        break;
+    case SYSTEM_EVENT_ETH_GOT_IP:
+        ESP_LOGI("ethernet", "Got IP");
+        break;
     default:
         ESP_LOGI("network", "event %d", event->event_id);
         break;
@@ -300,7 +312,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     // configure any parameters that are given
     if (n_args > 1) {
-        mp_uint_t len;
+        size_t len;
         const char *p;
         if (args[ARG_ssid].u_obj != mp_const_none) {
             p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
@@ -385,7 +397,14 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
             }
             return list;
         }
+        case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_rssi): {
+            // return signal of AP, only in STA mode
+            require_if(args[0], WIFI_IF_STA);
 
+            wifi_ap_record_t info;
+            ESP_EXCEPTIONS(esp_wifi_sta_get_ap_info(&info));
+            return MP_OBJ_NEW_SMALL_INT(info.rssi);
+        }
         default:
             mp_raise_ValueError("unknown status param");
     }
@@ -461,7 +480,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(4, tuple);
     } else {
         // set
-        if (MP_OBJ_IS_TYPE(args[1], &mp_type_tuple) || MP_OBJ_IS_TYPE(args[1], &mp_type_list)) {
+        if (mp_obj_is_type(args[1], &mp_type_tuple) || mp_obj_is_type(args[1], &mp_type_list)) {
             mp_obj_t *items;
             mp_obj_get_array_fixed_n(args[1], 4, &items);
             netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
@@ -518,7 +537,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     if (kwargs->used != 0) {
 
         for (size_t i = 0; i < kwargs->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+            if (mp_map_slot_is_filled(kwargs, i)) {
                 int req_if = -1;
 
                 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
@@ -534,7 +553,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     }
                     case QS(MP_QSTR_essid): {
                         req_if = WIFI_IF_AP;
-                        mp_uint_t len;
+                        size_t len;
                         const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
                         len = MIN(len, sizeof(cfg.ap.ssid));
                         memcpy(cfg.ap.ssid, s, len);
@@ -553,7 +572,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     }
                     case QS(MP_QSTR_password): {
                         req_if = WIFI_IF_AP;
-                        mp_uint_t len;
+                        size_t len;
                         const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
                         len = MIN(len, sizeof(cfg.ap.password) - 1);
                         memcpy(cfg.ap.password, s, len);
@@ -696,6 +715,14 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
     { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
+
+    // ETH Clock modes from ESP-IDF
+    { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_IN), MP_ROM_INT(ETH_CLOCK_GPIO0_IN) },
+    // Disabled at Aug 22nd 2018, reenabled Jan 28th 2019 in ESP-IDF
+    // Because we use older SDK, it's currently disabled
+    //{ MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_OUT), MP_ROM_INT(ETH_CLOCK_GPIO0_OUT) },
+    { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO16_OUT), MP_ROM_INT(ETH_CLOCK_GPIO16_OUT) },
+    { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO17_OUT), MP_ROM_INT(ETH_CLOCK_GPIO17_OUT) },
 
     { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STAT_IDLE)},
     { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STAT_CONNECTING)},

@@ -290,63 +290,6 @@ void SVC_Handler(void) {
 void DebugMon_Handler(void) {
 }
 
-/**
-  * @brief  This function handles PendSVC exception.
-  * @param  None
-  * @retval None
-  */
-void PendSV_Handler(void) {
-    pendsv_isr_handler();
-}
-
-/**
-  * @brief  This function handles SysTick Handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void) {
-    // Instead of calling HAL_IncTick we do the increment here of the counter.
-    // This is purely for efficiency, since SysTick is called 1000 times per
-    // second at the highest interrupt priority.
-    // Note: we don't need uwTick to be declared volatile here because this is
-    // the only place where it can be modified, and the code is more efficient
-    // without the volatile specifier.
-    extern uint32_t uwTick;
-    uwTick += 1;
-
-    // Read the systick control regster. This has the side effect of clearing
-    // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
-    // work properly.
-    SysTick->CTRL;
-
-    // Right now we have the storage and DMA controllers to process during
-    // this interrupt and we use custom dispatch handlers.  If this needs to
-    // be generalised in the future then a dispatch table can be used as
-    // follows: ((void(*)(void))(systick_dispatch[uwTick & 0xf]))();
-
-    #if MICROPY_HW_ENABLE_STORAGE
-    if (STORAGE_IDLE_TICK(uwTick)) {
-        NVIC->STIR = FLASH_IRQn;
-    }
-    #endif
-
-    if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
-        dma_idle_handler(uwTick);
-    }
-
-    #if MICROPY_PY_THREAD
-    if (pyb_thread_enabled) {
-        if (pyb_thread_cur->timeslice == 0) {
-            if (pyb_thread_cur->run_next != pyb_thread_cur) {
-                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-            }
-        } else {
-            --pyb_thread_cur->timeslice;
-        }
-    }
-    #endif
-}
-
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -386,13 +329,16 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
     /* Reset SLEEPDEEP bit of Cortex System Control Register */
     SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
 
-    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
-    PLL as system clock source (HSE and PLL are disabled in STOP mode) */
+    /* Configures system clock after wake-up from STOP: enable HSE/HSI, PLL and select
+    PLL as system clock source (HSE/HSI and PLL are disabled in STOP mode) */
 
-    __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
+    __HAL_RCC_HSE_CONFIG(MICROPY_HW_RCC_HSE_STATE);
+    #if MICROPY_HW_CLK_USE_HSI
+    __HAL_RCC_HSI_ENABLE();
+    #endif
 
-    /* Wait till HSE is ready */
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET)
+    /* Wait till HSE/HSI is ready */
+    while(__HAL_RCC_GET_FLAG(MICROPY_HW_RCC_FLAG_HSxRDY) == RESET)
     {}
 
     /* Enable the main PLL. */
@@ -464,23 +410,6 @@ void OTG_HS_WKUP_IRQHandler(void) {
 /*void PPP_IRQHandler(void)
 {
 }*/
-
-// Handle a flash (erase/program) interrupt.
-void FLASH_IRQHandler(void) {
-    IRQ_ENTER(FLASH_IRQn);
-    // This calls the real flash IRQ handler, if needed
-    /*
-    uint32_t flash_cr = FLASH->CR;
-    if ((flash_cr & FLASH_IT_EOP) || (flash_cr & FLASH_IT_ERR)) {
-        HAL_FLASH_IRQHandler();
-    }
-    */
-    #if MICROPY_HW_ENABLE_STORAGE
-    // This call the storage IRQ handler, to check if the flash cache needs flushing
-    storage_irq_handler();
-    #endif
-    IRQ_EXIT(FLASH_IRQn);
-}
 
 /**
   * @brief  These functions handle the EXTI interrupt requests.
@@ -583,8 +512,18 @@ void RTC_WKUP_IRQHandler(void) {
 
 void RTC_IRQHandler(void) {
     IRQ_ENTER(RTC_IRQn);
-    RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
-    Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
+    if (RTC->ISR & RTC_ISR_WUTF) {
+        RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
+        Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
+    }
+    if (RTC->ISR & RTC_ISR_ALRAF) {
+        RTC->ISR &= ~RTC_ISR_ALRAF; // clear Alarm A flag
+        Handle_EXTI_Irq(EXTI_RTC_ALARM); // clear EXTI flag and execute optional callback
+    }
+    if (RTC->ISR & RTC_ISR_TSF) {
+        RTC->ISR &= ~RTC_ISR_TSF; // clear timestamp flag
+        Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP); // clear EXTI flag and execute optional callback
+    }
     IRQ_EXIT(RTC_IRQn);
 }
 
@@ -796,7 +735,7 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
-#if defined(UART8)
+#if defined(UART7)
 void UART7_IRQHandler(void) {
     IRQ_ENTER(UART7_IRQn);
     uart_irq_handler(7);
@@ -809,6 +748,22 @@ void UART8_IRQHandler(void) {
     IRQ_ENTER(UART8_IRQn);
     uart_irq_handler(8);
     IRQ_EXIT(UART8_IRQn);
+}
+#endif
+
+#if defined(UART9)
+void UART9_IRQHandler(void) {
+    IRQ_ENTER(UART9_IRQn);
+    uart_irq_handler(9);
+    IRQ_EXIT(UART9_IRQn);
+}
+#endif
+
+#if defined(UART10)
+void UART10_IRQHandler(void) {
+    IRQ_ENTER(UART10_IRQn);
+    uart_irq_handler(10);
+    IRQ_EXIT(UART10_IRQn);
 }
 #endif
 
@@ -851,6 +806,26 @@ void CAN2_SCE_IRQHandler(void) {
     IRQ_ENTER(CAN2_SCE_IRQn);
     can_sce_irq_handler(PYB_CAN_2);
     IRQ_EXIT(CAN2_SCE_IRQn);
+}
+#endif
+
+#if defined(MICROPY_HW_CAN3_TX)
+void CAN3_RX0_IRQHandler(void) {
+    IRQ_ENTER(CAN3_RX0_IRQn);
+    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO0);
+    IRQ_EXIT(CAN3_RX0_IRQn);
+}
+
+void CAN3_RX1_IRQHandler(void) {
+    IRQ_ENTER(CAN3_RX1_IRQn);
+    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO1);
+    IRQ_EXIT(CAN3_RX1_IRQn);
+}
+
+void CAN3_SCE_IRQHandler(void) {
+    IRQ_ENTER(CAN3_SCE_IRQn);
+    can_sce_irq_handler(PYB_CAN_3);
+    IRQ_EXIT(CAN3_SCE_IRQn);
 }
 #endif
 

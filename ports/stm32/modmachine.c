@@ -30,6 +30,7 @@
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
@@ -246,13 +247,28 @@ STATIC mp_obj_t machine_soft_reset(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
+__attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t addr) {
+    __asm volatile (
+        "ldr r2, [r1, #0]\n"    // get address of stack pointer
+        "msr msp, r2\n"         // get stack pointer
+        "ldr r2, [r1, #4]\n"    // get address of destination
+        "bx r2\n"               // branch to bootloader
+    );
+}
+
 // Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t machine_bootloader(void) {
+STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif
     #if MICROPY_HW_ENABLE_STORAGE
     storage_flush();
+    #endif
+
+    #if __DCACHE_PRESENT == 1
+    // Flush and disable caches before turning off peripherals (eg SDRAM)
+    SCB_DisableICache();
+    SCB_DisableDCache();
     #endif
 
     HAL_RCC_DeInit();
@@ -263,27 +279,32 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
     HAL_MPU_Disable();
     #endif
 
-#if defined(STM32F7) || defined(STM32H7)
-    // arm-none-eabi-gcc 4.9.0 does not correctly inline this
-    // MSP function, so we write it out explicitly here.
-    //__set_MSP(*((uint32_t*) 0x1FF00000));
-    __ASM volatile ("movw r3, #0x0000\nmovt r3, #0x1FF0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
+    #if MICROPY_HW_USES_BOOTLOADER
+    if (n_args == 0 || !mp_obj_is_true(args[0])) {
+        // By default, with no args given, we enter the custom bootloader (mboot)
+        branch_to_bootloader(0x70ad0000, 0x08000000);
+    }
 
-    ((void (*)(void)) *((uint32_t*) 0x1FF00004))();
-#else
+    if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
+        // With a string/bytes given, pass its data to the custom bootloader
+        size_t len;
+        const char *data = mp_obj_str_get_data(args[0], &len);
+        void *mboot_region = (void*)*((volatile uint32_t*)0x08000000);
+        memmove(mboot_region, data, len);
+        branch_to_bootloader(0x70ad0080, 0x08000000);
+    }
+    #endif
+
+    #if defined(STM32F7) || defined(STM32H7)
+    branch_to_bootloader(0, 0x1ff00000);
+    #else
     __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
-
-    // arm-none-eabi-gcc 4.9.0 does not correctly inline this
-    // MSP function, so we write it out explicitly here.
-    //__set_MSP(*((uint32_t*) 0x00000000));
-    __ASM volatile ("movs r3, #0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
-
-    ((void (*)(void)) *((uint32_t*) 0x00000004))();
-#endif
+    branch_to_bootloader(0, 0x00000000);
+    #endif
 
     while (1);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
 
 // get or set the MCU frequencies
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
@@ -329,17 +350,25 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
 
-STATIC mp_obj_t machine_sleep(void) {
+STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    if (n_args != 0) {
+        mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
+        pyb_rtc_wakeup(2, args2);
+    }
     powerctrl_enter_stop_mode();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(void) {
+STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    if (n_args != 0) {
+        mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
+        pyb_rtc_wakeup(2, args2);
+    }
     powerctrl_enter_standby_mode();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(void) {
     return MP_OBJ_NEW_SMALL_INT(reset_cause);
@@ -358,7 +387,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rng),                 MP_ROM_PTR(&pyb_rng_get_obj) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&pyb_wfi_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
 #if 0

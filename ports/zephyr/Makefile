@@ -43,6 +43,7 @@ SRC_C = main.c \
 	modzephyr.c \
 	modzsensor.c \
 	modmachine.c \
+	machine_i2c.c \
 	machine_pin.c \
 	uart_core.c \
 	lib/utils/stdout_helpers.c \
@@ -62,7 +63,8 @@ CFLAGS = $(Z_CFLAGS) \
 
 include $(TOP)/py/mkrules.mk
 
-GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
+GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver \
+	ram_report rom_report
 KCONFIG_TARGETS = \
 	initconfig config nconfig menuconfig xconfig gconfig \
 	oldconfig silentoldconfig defconfig savedefconfig \

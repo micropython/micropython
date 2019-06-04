@@ -47,7 +47,7 @@
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
-#define MICROPY_KBD_EXCEPTION       (0)
+#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #if NRF51
@@ -65,7 +65,7 @@
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
-#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)

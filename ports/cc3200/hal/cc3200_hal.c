@@ -148,7 +148,7 @@ void mp_hal_stdout_tx_str(const char *str) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(os_term_dup_obj)) {
-        if (MP_OBJ_IS_TYPE(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
+        if (mp_obj_is_type(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
             uart_tx_strn(MP_STATE_PORT(os_term_dup_obj)->stream_o, str, len);
         } else {
             MP_STATE_PORT(os_term_dup_obj)->write[2] = mp_obj_new_str_of_type(&mp_type_str, (const byte *)str, len);
@@ -184,7 +184,7 @@ int mp_hal_stdin_rx_chr(void) {
         if (telnet_rx_any()) {
             return telnet_rx_char();
         } else if (MP_STATE_PORT(os_term_dup_obj)) { // then the stdio_dup
-            if (MP_OBJ_IS_TYPE(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
+            if (mp_obj_is_type(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
                 if (uart_rx_any(MP_STATE_PORT(os_term_dup_obj)->stream_o)) {
                     return uart_rx_char(MP_STATE_PORT(os_term_dup_obj)->stream_o);
                 }

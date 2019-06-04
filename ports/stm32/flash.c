@@ -122,6 +122,12 @@ static uint32_t get_page(uint32_t addr) {
 }
 #endif
 
+#elif defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)
+
+static uint32_t get_page(uint32_t addr) {
+    return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+}
+
 #endif
 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
@@ -167,7 +173,7 @@ void flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     #elif  (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE))
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
     EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
-    EraseInitStruct.Page        = flash_dest;
+    EraseInitStruct.Page        = get_page(flash_dest);
     EraseInitStruct.NbPages     = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
     #elif defined(STM32L4)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);

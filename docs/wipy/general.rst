@@ -178,7 +178,7 @@ Details on sleep modes
 * ``machine.idle()``: Power consumption: ~12mA (in WLAN STA mode). Wake sources:
   any hardware interrupt (including systick with period of 1ms), no special
   configuration required.
-* ``machine.sleep()``: 950uA (in WLAN STA mode). Wake sources are ``Pin``, ``RTC``
+* ``machine.lightsleep()``: 950uA (in WLAN STA mode). Wake sources are ``Pin``, ``RTC``
   and ``WLAN``
 * ``machine.deepsleep()``: ~350uA. Wake sources are ``Pin`` and ``RTC``.
 

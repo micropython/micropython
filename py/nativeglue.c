@@ -41,12 +41,26 @@
 
 #if MICROPY_EMIT_NATIVE
 
+int mp_native_type_from_qstr(qstr qst) {
+    switch (qst) {
+        case MP_QSTR_object: return MP_NATIVE_TYPE_OBJ;
+        case MP_QSTR_bool: return MP_NATIVE_TYPE_BOOL;
+        case MP_QSTR_int: return MP_NATIVE_TYPE_INT;
+        case MP_QSTR_uint: return MP_NATIVE_TYPE_UINT;
+        case MP_QSTR_ptr: return MP_NATIVE_TYPE_PTR;
+        case MP_QSTR_ptr8: return MP_NATIVE_TYPE_PTR8;
+        case MP_QSTR_ptr16: return MP_NATIVE_TYPE_PTR16;
+        case MP_QSTR_ptr32: return MP_NATIVE_TYPE_PTR32;
+        default: return -1;
+    }
+}
+
 // convert a MicroPython object to a valid native value based on type
-mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
-    DEBUG_printf("mp_convert_obj_to_native(%p, " UINT_FMT ")\n", obj, type);
+mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
+    DEBUG_printf("mp_native_from_obj(%p, " UINT_FMT ")\n", obj, type);
     switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
-        case MP_NATIVE_TYPE_BOOL:
+        case MP_NATIVE_TYPE_BOOL: return mp_obj_is_true(obj);
         case MP_NATIVE_TYPE_INT:
         case MP_NATIVE_TYPE_UINT: return mp_obj_get_int_truncated(obj);
         default: { // cast obj to a pointer
@@ -66,8 +80,8 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
 #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
 
 // convert a native value to a MicroPython object based on type
-mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
-    DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
+mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
+    DEBUG_printf("mp_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
     switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
         case MP_NATIVE_TYPE_BOOL: return mp_obj_new_bool(val);
@@ -81,9 +95,9 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
 
-mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
+STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
     if (new_globals == NULL) {
         // Globals were the originally the same so don't restore them
         return NULL;
@@ -99,13 +113,13 @@ mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
 
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)
-mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
     return mp_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
 }
 
 // wrapper that makes raise obj and raises it
 // END_FINALLY opcode requires that we don't raise if o==None
-void mp_native_raise(mp_obj_t o) {
+STATIC void mp_native_raise(mp_obj_t o) {
     if (o != MP_OBJ_NULL && o != mp_const_none) {
         nlr_raise(mp_make_raise_obj(o));
     }
@@ -178,8 +192,8 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     &mp_const_none_obj,
     &mp_const_false_obj,
     &mp_const_true_obj,
-    mp_convert_obj_to_native,
-    mp_convert_native_to_obj,
+    mp_native_from_obj,
+    mp_native_to_obj,
     mp_native_swap_globals,
     mp_load_name,
     mp_load_global,
@@ -230,11 +244,5 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_small_int_modulo,
     mp_native_yield_from,
 };
-
-/*
-void mp_f_vector(mp_fun_kind_t fun_kind) {
-    (mp_f_table[fun_kind])();
-}
-*/
 
 #endif // MICROPY_EMIT_NATIVE

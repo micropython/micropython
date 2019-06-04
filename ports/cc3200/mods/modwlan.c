@@ -1012,7 +1012,7 @@ STATIC mp_obj_t wlan_ifconfig(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         };
         return mp_obj_new_tuple(4, ifconfig);
     } else { // set the configuration
-        if (MP_OBJ_IS_TYPE(args[1].u_obj, &mp_type_tuple)) {
+        if (mp_obj_is_type(args[1].u_obj, &mp_type_tuple)) {
             // set a static ip
             mp_obj_t *items;
             mp_obj_get_array_fixed_n(args[1].u_obj, 4, &items);

@@ -88,9 +88,9 @@ mp_obj_t microbit_display_show_func(mp_uint_t n_args, const mp_obj_t *pos_args, 
     bool wait = args[3].u_bool;
     bool loop = args[4].u_bool;
 
-    if (MP_OBJ_IS_STR(image)) {
+    if (mp_obj_is_str(image)) {
         // arg is a string object
-        mp_uint_t len;
+        size_t len;
         const char *str = mp_obj_str_get_data(image, &len);
         if (len == 0) {
             // There are no chars; do nothing.
@@ -296,8 +296,8 @@ static void draw_object(mp_obj_t obj) {
         }
     } else if (mp_obj_get_type(obj) == &microbit_image_type) {
         microbit_display_show(display, (microbit_image_obj_t *)obj);
-    } else if (MP_OBJ_IS_STR(obj)) {
-        mp_uint_t len;
+    } else if (mp_obj_is_str(obj)) {
+        size_t len;
         const char *str = mp_obj_str_get_data(obj, &len);
         if (len == 1) {
             microbit_display_show(display, microbit_image_for_char(str[0]));
@@ -415,7 +415,7 @@ mp_obj_t microbit_display_scroll_func(mp_uint_t n_args, const mp_obj_t *pos_args
     microbit_display_obj_t *self = (microbit_display_obj_t*)pos_args[0];
     mp_arg_val_t args[MP_ARRAY_SIZE(scroll_allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(scroll_allowed_args), scroll_allowed_args, args);
-    mp_uint_t len;
+    size_t len;
     const char* str = mp_obj_str_get_data(args[0].u_obj, &len);
     mp_obj_t iterable = scrolling_string_image_iterable(str, len, args[0].u_obj, args[3].u_bool /*monospace?*/, args[4].u_bool /*loop*/);
     microbit_display_animate(self, iterable, args[1].u_int /*delay*/, false/*clear*/, args[2].u_bool/*wait?*/);

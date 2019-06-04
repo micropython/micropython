@@ -377,7 +377,7 @@ STATIC file_descriptor_obj *microbit_file_descriptor_new(uint8_t start_chunk, bo
 }
 
 STATIC mp_obj_t microbit_remove(mp_obj_t filename) {
-    mp_uint_t name_len;
+    size_t name_len;
     const char *name = mp_obj_str_get_data(filename, &name_len);
     mp_uint_t index = microbit_find_file(name, name_len);
     if (index == 255) {
@@ -487,7 +487,7 @@ STATIC mp_obj_t microbit_file_list(void) {
 }
 
 STATIC mp_obj_t microbit_file_size(mp_obj_t filename) {
-    mp_uint_t name_len;
+    size_t name_len;
     const char *name = mp_obj_str_get_data(filename, &name_len);
     uint8_t chunk = microbit_find_file(name, name_len);
     if (chunk == 255) {
@@ -659,7 +659,7 @@ mp_obj_t uos_mbfs_open(size_t n_args, const mp_obj_t *args) {
     int read = -1;
     int text = -1;
     if (n_args == 2) {
-        mp_uint_t len;
+        size_t len;
         const char *mode = mp_obj_str_get_data(args[1], &len);
         for (mp_uint_t i = 0; i < len; i++) {
             if (mode[i] == 'r' || mode[i] == 'w') {
@@ -677,7 +677,7 @@ mp_obj_t uos_mbfs_open(size_t n_args, const mp_obj_t *args) {
             }
         }
     }
-    mp_uint_t name_len;
+    size_t name_len;
     const char *filename = mp_obj_str_get_data(args[0], &name_len);
     file_descriptor_obj *res = microbit_file_open(filename, name_len, read == 0, text == 0);
     if (res == NULL) {

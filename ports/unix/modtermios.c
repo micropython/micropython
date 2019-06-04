@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,7 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
         when = TCSANOW;
     }
 
-    assert(MP_OBJ_IS_TYPE(attrs_in, &mp_type_list));
+    assert(mp_obj_is_type(attrs_in, &mp_type_list));
     mp_obj_list_t *attrs = MP_OBJ_TO_PTR(attrs_in);
 
     term.c_iflag = mp_obj_get_int(attrs->items[0]);

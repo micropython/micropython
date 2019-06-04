@@ -4,7 +4,7 @@
   <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
 
   <!--Generate qstrdefs.generated.h and mpversion.h similar to what is done in py/mkrules.mk and py/py.mk-->
-  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeQstrData">
+  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeModuleDefs;MakeQstrData">
   </Target>
 
   <PropertyGroup>
@@ -81,6 +81,20 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
                         Condition="'$(RunPreProcConcat)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
+  </Target>
+
+  <Target Name="MakeModuleDefs" DependsOnTargets="MakeDestDir">
+    <PropertyGroup>
+      <DestFile>$(DestDir)moduledefs.h</DestFile>
+      <TmpFile>$(DestFile).tmp</TmpFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <PyUserModuleFiles Include="@(ClCompile)">
+        <Path>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', ''))</Path>
+      </PyUserModuleFiles>
+    </ItemGroup>
+    <Exec Command="$(PyPython) $(PySrcDir)makemoduledefs.py --vpath=&quot;., $(PyBaseDir), $(PyUserCModules)&quot; @(PyUserModuleFiles->'%(Path)', ' ') > $(TmpFile)"/>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
   <Target Name="MakeQstrData" DependsOnTargets="MakeQstrDefs" Inputs="$(QstrDefsCollected);$(PyQstrDefs);$(QstrDefs)" Outputs="$(QstrGen)">

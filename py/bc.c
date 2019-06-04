@@ -321,7 +321,7 @@ STATIC const byte opcode_format_table[64] = {
     OC4(O, O, U, U), // 0x38-0x3b
     OC4(U, O, B, O), // 0x3c-0x3f
     OC4(O, B, B, O), // 0x40-0x43
-    OC4(B, B, O, B), // 0x44-0x47
+    OC4(O, U, O, B), // 0x44-0x47
     OC4(U, U, U, U), // 0x48-0x4b
     OC4(U, U, U, U), // 0x4c-0x4f
     OC4(V, V, U, V), // 0x50-0x53
@@ -382,7 +382,7 @@ STATIC const byte opcode_format_table[64] = {
 #undef V
 #undef O
 
-uint mp_opcode_format(const byte *ip, size_t *opcode_size) {
+uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) {
     uint f = (opcode_format_table[*ip >> 2] >> (2 * (*ip & 3))) & 3;
     const byte *ip_start = ip;
     if (f == MP_OPCODE_QSTR) {
@@ -403,7 +403,9 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size) {
         );
         ip += 1;
         if (f == MP_OPCODE_VAR_UINT) {
-            while ((*ip++ & 0x80) != 0) {
+            if (count_var_uint) {
+                while ((*ip++ & 0x80) != 0) {
+                }
             }
         } else if (f == MP_OPCODE_OFFSET) {
             ip += 2;
