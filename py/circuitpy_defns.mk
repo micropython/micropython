@@ -221,7 +221,6 @@ $(filter $(SRC_PATTERNS), \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
 	bleio/Adapter.c \
-	bleio/Broadcaster.c \
 	bleio/Characteristic.c \
 	bleio/CharacteristicBuffer.c \
 	bleio/Descriptor.c \
@@ -285,7 +284,6 @@ SRC_BINDINGS_ENUMS += \
 $(filter $(SRC_PATTERNS), \
 	bleio/Address.c \
 	bleio/AddressType.c \
-	bleio/AdvertisementData.c \
 	bleio/ScanEntry.c \
 )
 

@@ -27,7 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DEVICE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DEVICE_H
 
-#include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/Device.h"
 #include "shared-module/bleio/Service.h"
 

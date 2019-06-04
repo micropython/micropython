@@ -39,7 +39,6 @@
 #include "shared-bindings/bleio/Device.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
-#include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/Device.h"
 #include "shared-module/bleio/ScanEntry.h"
 

@@ -28,8 +28,6 @@
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/AddressType.h"
-#include "shared-bindings/bleio/AdvertisementData.h"
-#include "shared-bindings/bleio/Broadcaster.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/CharacteristicBuffer.h"
 #include "shared-bindings/bleio/Descriptor.h"
@@ -57,7 +55,6 @@
 //|     AddressType
 //|     AdvertisementData
 //|     Adapter
-//|     Broadcaster
 //|     Characteristic
 //|     CharacteristicBuffer
 // Work-in-progress classes are omitted, and marked as :orphan: in their files.
@@ -79,8 +76,6 @@
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),          MP_ROM_QSTR(MP_QSTR_bleio) },
     { MP_ROM_QSTR(MP_QSTR_Address),           MP_ROM_PTR(&bleio_address_type) },
-    { MP_ROM_QSTR(MP_QSTR_AdvertisementData), MP_ROM_PTR(&bleio_advertisementdata_type) },
-    { MP_ROM_QSTR(MP_QSTR_Broadcaster),       MP_ROM_PTR(&bleio_broadcaster_type) },
     { MP_ROM_QSTR(MP_QSTR_Characteristic),    MP_ROM_PTR(&bleio_characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer),    MP_ROM_PTR(&bleio_characteristic_buffer_type) },
 //    { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },

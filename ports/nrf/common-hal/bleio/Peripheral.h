@@ -48,6 +48,7 @@ typedef struct {
     // there are tricks to get the SD to notice (see DevZone - TBS).
     uint8_t advertising_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
     uint8_t scan_response_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
+    uint8_t adv_handle;
 
 } bleio_peripheral_obj_t;
 

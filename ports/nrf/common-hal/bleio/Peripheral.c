@@ -49,66 +49,10 @@
 #define BLE_ADV_AD_TYPE_FIELD_SIZE  1
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
 
-static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
-
 STATIC void check_data_fit(size_t data_len) {
     if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
         mp_raise_ValueError(translate("Data too large for advertisement packet"));
     }
-}
-
-STATIC uint32_t start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
-    common_hal_bleio_adapter_set_enabled(true);
-
-    uint32_t err_code;
-
-    GET_STR_DATA_LEN(self->name, name_data, name_len);
-    if (name_len > 0) {
-        ble_gap_conn_sec_mode_t sec_mode;
-        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
-
-        err_code = sd_ble_gap_device_name_set(&sec_mode, name_data, name_len);
-        if (err_code != NRF_SUCCESS) {
-            return err_code;
-        }
-    }
-
-    check_data_fit(advertising_data_bufinfo->len);
-    memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
-
-    check_data_fit(scan_response_data_bufinfo->len);
-    memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
-
-
-    static ble_gap_adv_params_t m_adv_params = {
-        .interval = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
-        .properties.type = BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED,
-        .duration = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED,
-        .filter_policy = BLE_GAP_ADV_FP_ANY,
-        .primary_phy = BLE_GAP_PHY_1MBPS,
-    };
-
-    if (!connectable) {
-        m_adv_params.properties.type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
-    }
-
-    common_hal_bleio_peripheral_stop_advertising(self);
-
-    const ble_gap_adv_data_t ble_gap_adv_data = {
-        .adv_data.p_data = self->advertising_data,
-        .adv_data.len = advertising_data_bufinfo->len,
-        .scan_rsp_data.p_data = scan_response_data_bufinfo-> len > 0 ? self->scan_response_data : NULL,
-        .scan_rsp_data.len = scan_response_data_bufinfo->len,
-    };
-
-    err_code = sd_ble_gap_adv_set_configure(&m_adv_handle, &ble_gap_adv_data, &m_adv_params);
-    if (err_code != NRF_SUCCESS) {
-        return err_code;
-    }
-
-    err_code = sd_ble_gap_adv_start(m_adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
-
-    return err_code;
 }
 
 STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
@@ -172,12 +116,12 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     }
 }
 
-
 void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self) {
     common_hal_bleio_adapter_set_enabled(true);
 
     self->gatt_role = GATT_ROLE_SERVER;
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
+    self->adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
     // Add all the services.
 
@@ -208,13 +152,62 @@ bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self) {
     return self->conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
-void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
+void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
+
+    // interval value has already been validated.
+
     if (connectable) {
         ble_drv_add_event_handler(peripheral_on_ble_evt, self);
     }
 
-    const uint32_t err_code = start_advertising(self, connectable,
-                                                advertising_data_bufinfo, scan_response_data_bufinfo);
+    common_hal_bleio_adapter_set_enabled(true);
+
+    uint32_t err_code;
+
+    GET_STR_DATA_LEN(self->name, name_data, name_len);
+    if (name_len > 0) {
+        ble_gap_conn_sec_mode_t sec_mode;
+        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
+
+        err_code = sd_ble_gap_device_name_set(&sec_mode, name_data, name_len);
+        if (err_code != NRF_SUCCESS) {
+            mp_raise_OSError_msg_varg(translate("Failed to set device name, err 0x%04x"), err_code);
+
+        }
+    }
+
+    check_data_fit(advertising_data_bufinfo->len);
+    memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
+
+    check_data_fit(scan_response_data_bufinfo->len);
+    memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
+
+
+    ble_gap_adv_params_t adv_params = {
+        .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS),
+        .properties.type = connectable ? BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED
+        : BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED,
+        .duration = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED,
+        .filter_policy = BLE_GAP_ADV_FP_ANY,
+        .primary_phy = BLE_GAP_PHY_1MBPS,
+    };
+
+    common_hal_bleio_peripheral_stop_advertising(self);
+
+    const ble_gap_adv_data_t ble_gap_adv_data = {
+        .adv_data.p_data = self->advertising_data,
+        .adv_data.len = advertising_data_bufinfo->len,
+        .scan_rsp_data.p_data = scan_response_data_bufinfo-> len > 0 ? self->scan_response_data : NULL,
+        .scan_rsp_data.len = scan_response_data_bufinfo->len,
+    };
+
+    err_code = sd_ble_gap_adv_set_configure(&self->adv_handle, &ble_gap_adv_data, &adv_params);
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to configure advertising, err 0x%04x"), err_code);
+    }
+
+    err_code = sd_ble_gap_adv_start(self->adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
+
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg_varg(translate("Failed to start advertising, err 0x%04x"), err_code);
     }
@@ -222,10 +215,10 @@ void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self,
 
 void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *self) {
 
-    if (m_adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET)
+    if (self->adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET)
         return;
 
-    const uint32_t err_code = sd_ble_gap_adv_stop(m_adv_handle);
+    const uint32_t err_code = sd_ble_gap_adv_stop(self->adv_handle);
 
     if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_INVALID_STATE)) {
         mp_raise_OSError_msg_varg(translate("Failed to stop advertising, err 0x%04x"), err_code);
