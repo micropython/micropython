@@ -1,0 +1,5 @@
+{
+  "name": "xterm.zmodem",
+  "main": "zmodem.js",
+  "private": true
+}

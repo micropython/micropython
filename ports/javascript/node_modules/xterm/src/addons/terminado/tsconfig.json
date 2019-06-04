@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "lib": [
+      "es5"
+    ],
+    "rootDir": ".",
+    "outDir": "../../../lib/addons/terminado/",
+    "sourceMap": true,
+    "removeComments": true,
+    "declaration": true,
+    "types": [
+      "../../node_modules/@types/mocha"
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "../../../typings/xterm.d.ts"
+  ]
+}

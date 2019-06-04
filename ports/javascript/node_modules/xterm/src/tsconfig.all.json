@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "." },
+    { "path": "./addons/attach" },
+    { "path": "./addons/fit" },
+    { "path": "./addons/fullscreen" },
+    { "path": "./addons/search" },
+    { "path": "./addons/terminado" },
+    { "path": "./addons/webLinks" },
+    { "path": "./addons/zmodem" }
+  ]
+}

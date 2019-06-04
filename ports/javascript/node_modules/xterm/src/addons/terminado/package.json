@@ -1,0 +1,5 @@
+{
+  "name": "xterm.terminado",
+  "main": "terminado.js",
+  "private": true
+}

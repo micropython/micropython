@@ -1,0 +1,166 @@
+<!doctype html>
+<!---->
+<html>
+  <head>
+    <style>
+		body {
+			width: 100%;
+			box-sizing: border-box;
+			padding: 0;
+			margin: 0;
+			text-align: center;
+		}
+		a { white-space: nowrap; }
+		table {
+			display: inline-block;
+		}
+		#mp_js_stdout {
+			display: inline-block;
+			max-width: 90%;
+			height: 20%;
+			max-height: 600px;
+			vertical-align: middle;
+		}
+		#canvas {
+			border: 4px black solid;
+			border-radius: 4px;
+			vertical-align: middle;
+		};
+    </style>
+	<link rel="stylesheet" href="node_modules/xterm/dist/xterm.css" />
+    <script src="node_modules/xterm/dist/xterm.js"></script>
+	<script src="node_modules/xterm/dist/addons/fit/fit.js"></script>
+  </head>
+  <body>
+	<h1>LittlevGL+MicroPython simulator</h1>
+	<p>
+	This is the JavaScript version of MicroPython, plus the LittlevGL bindings available at
+	<a href="https://github.com/littlevgl/lv_binding_micropython">https://github.com/littlevgl/lv_binding_micropython</a>.
+	<br>
+	You can type your own Python code into the prompt in the usual way.
+	<br>
+	For examples, see the README for the MicroPython binding.
+
+    <div id="mp_js_stdout"></div>
+
+    <canvas id="canvas" width="480" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+
+	<p>
+	<button onclick="mp_js_process_char(4);">Paste (Ctrl+D)</button>
+	<!-- scripts -->
+    <script src="lvgl_mp.js"></script>
+    <script>
+
+		/*Write text to the terminal */
+		function sendText(text) {
+			var print = new Event('print');
+			print.data = text;
+			mp_js_stdout.dispatchEvent(print);
+		}
+		function processScriptArg(url){
+			// read text from URL location
+			var request = new XMLHttpRequest();
+			request.open('GET', url, true);
+			request.send(null);
+			request.onreadystatechange = function () {
+				if (request.readyState === 4 && request.status === 200) {
+				    var type = request.getResponseHeader('Content-Type');
+				    if (type.indexOf("text") !== 1) {
+				        mp_js_do_str(request.responseText);
+				    }
+				}
+			}
+		}
+		Module.canvas = (function() {
+			var canvas = document.getElementById('canvas');
+			return canvas;
+		})(); 
+		var lines = [
+			"import lvgl as lv",
+			"lv.init()",
+			"import SDL",
+		            "SDL.init()",
+
+			/* Register SDL display driver. */
+			"disp_buf1 = lv.disp_buf_t()",
+			"buf1_1 = bytes(480*10)",
+			"lv.disp_buf_init(disp_buf1,buf1_1, None, len(buf1_1)//4)",
+			"disp_drv = lv.disp_drv_t()",
+			"lv.disp_drv_init(disp_drv)",
+			"disp_drv.buffer = disp_buf1",
+			"disp_drv.flush_cb = SDL.monitor_flush",
+			"disp_drv.hor_res = 480",
+			"disp_drv.ver_res = 320",
+			"lv.disp_drv_register(disp_drv)",
+			/*Regsiter SDL mouse driver*/
+			"indev_drv = lv.indev_drv_t()",
+			"lv.indev_drv_init(indev_drv)",
+			"indev_drv.type = lv.INDEV_TYPE.POINTER;",
+			"indev_drv.read_cb = SDL.mouse_read;",
+			"lv.indev_drv_register(indev_drv);",
+			/* Create a screen with a button and a label */
+			"scr = lv.obj()",
+			"btn = lv.btn(scr)",
+			"btn.align(lv.scr_act(), lv.ALIGN.CENTER, 0, 0)",
+			"label = lv.label(btn)",
+			"label.set_text('Button')",
+			/* Load the screen */
+			"lv.scr_load(scr)"
+		];
+    
+		/*Initialization function*/
+		window.onload = function() {
+
+			Terminal.applyAddon(fit);
+			term = new Terminal();
+			mp_js_stdout = document.getElementById('mp_js_stdout');
+	        mp_js_stdout.value = "";
+			term.open(mp_js_stdout);
+			term.fit();
+			/*Initialize MicroPython itself*/
+			mp_js_init(1 * 1024 * 1024); 
+			/*Setup printing event handler*/
+			mp_js_stdout.addEventListener('print', function(e) {
+				text = e.data;
+				term.write(text);
+			}, false);
+			/*Setup key input handler */
+			term.on('data', function(key, e) {
+				console.log(key);
+				for(var i = 0; i < key.length; i++) {
+					mp_js_process_char(key.charCodeAt(i));
+				}
+			});
+			/* Run init script */
+			for(var i = 0;i < lines.length;i++){
+			   mp_js_do_str(lines[i]);
+			}
+
+			/* Run custom script if passed */
+			var custom = undefined;
+			try {
+				custom = new URL(window.location.href).searchParams.get("script");
+			} catch (e) {
+				console.log(e + ": URL seems to be unsupported");
+			}
+			console.log("Custom script: " + custom);
+			if(custom !== undefined && custom !== null)
+				processScriptArg(custom);
+ 
+			/*Setup lv_task_handler loop*/
+			var the_mp_handle_pending = Module.cwrap('mp_handle_pending', null);
+			function handle_pending() {
+				the_mp_handle_pending();
+				setTimeout(handle_pending, 20); // should call lv_task_handler() 
+			}
+			/*Initialize the REPL.*/
+            mp_js_init_repl();
+			/*Start the main loop, asynchronously.*/
+			handle_pending();
+	}
+
+
+    </script>
+  </body>
+</html>
+

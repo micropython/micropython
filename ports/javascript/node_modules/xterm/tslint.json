@@ -1,0 +1,113 @@
+{
+  "rulesDirectory": [
+    "tslint-consistent-codestyle"
+  ],
+  "rules": {
+    "array-type": [
+      true,
+      "array"
+    ],
+    "class-name": true,
+    "comment-format": [
+      true,
+      "check-space"
+    ],
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "interface-name": [
+      true,
+      "always-prefix"
+    ],
+    "interface-over-type-literal": true,
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter"
+    ],
+    "eofline": true,
+    "new-parens": true,
+    "no-duplicate-imports": true,
+    "no-eval": true,
+    "no-internal-module": true,
+    "no-trailing-whitespace": true,
+    "one-variable-per-declaration": true,
+    "no-unsafe-finally": true,
+    "no-var-keyword": true,
+    "prefer-const": true,
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "semicolon": [
+      true,
+      "always"
+    ],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": {
+          "objects": "never",
+          "arrays": "never",
+          "functions": "never",
+          "typeLiterals": "ignore"
+        },
+        "esSpecCompliant": true
+      }
+    ],
+    "triple-equals": true,
+    "typedef-whitespace": [
+      true,
+      {
+        "call-signature": "nospace",
+        "index-signature": "nospace",
+        "parameter": "nospace",
+        "property-declaration": "nospace",
+        "variable-declaration": "nospace"
+      }
+    ],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore"
+    ],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-module",
+      "check-operator",
+      "check-rest-spread",
+      "check-separator",
+      "check-type",
+      "check-type-operator",
+      "check-preblock"
+    ],
+
+    "naming-convention": [
+      true,
+      {"type": "default", "format": "camelCase", "leadingUnderscore": "forbid"},
+      {"type": "type", "format": "PascalCase"},
+      {"type": "class", "format": "PascalCase"},
+      {"type": "property", "modifiers": ["const"], "format": "UPPER_CASE"},
+      {"type": "member", "modifiers": ["protected"], "format": "camelCase", "leadingUnderscore": "allow"},
+      // TODO: Change allow to require when there aren't many PRs out
+      // {"type": "member", "modifiers": ["protected"], "format": "camelCase", "leadingUnderscore": "require"},
+      {"type": "member", "modifiers": ["private"], "format": "camelCase", "leadingUnderscore": "require"},
+      {"type": "variable", "modifiers": ["const"], "format": ["camelCase", "UPPER_CASE"]},
+      {"type": "interface", "prefix": "I"}
+    ],
+    "no-else-after-return": {
+      "options": "allow-else-if"
+    },
+    "prefer-const-enum": [
+      true
+    ]
+  }
+}

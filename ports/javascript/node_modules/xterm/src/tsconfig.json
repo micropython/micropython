@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig-base",
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": [
+      "dom",
+      "es5",
+      "es6",
+      "scripthost",
+      "es2015.promise"
+    ],
+    "rootDir": ".",
+    "outDir": "../lib",
+
+    "noUnusedLocals": true,
+    "noImplicitAny": true
+  },
+  "include": [
+    "./**/*",
+    "../typings/xterm.d.ts"
+  ],
+  "exclude": [
+    "./addons/**/*"
+  ],
+  "references": [
+    { "path": "./common" },
+    { "path": "./core" },
+    { "path": "./ui" }
+  ]
+}
