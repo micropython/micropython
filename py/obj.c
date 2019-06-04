@@ -113,7 +113,7 @@ bool mp_obj_is_true(mp_obj_t arg) {
     } else if (arg == mp_const_none) {
         return 0;
     } else if (mp_obj_is_small_int(arg)) {
-        if (MP_OBJ_SMALL_INT_VALUE(arg) == 0) {
+        if (arg == MP_OBJ_NEW_SMALL_INT(0)) {
             return 0;
         } else {
             return 1;
