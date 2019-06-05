@@ -50,6 +50,8 @@
 	<p>
 	<button onclick="mp_js_process_char(4);">Paste (Ctrl+D)</button>
 	<p>
+	<button onclick="for(var i = 0;i < lines.length;i++) { mp_js_do_str(lines[i]); }">Run basic demo</button>
+	<p>
 	<i>Simulator revision v1.0</i>
 	<!-- scripts -->
     <script src="lvgl_mp.js"></script>
@@ -68,6 +70,7 @@
 		function processScriptArg(url){
 			// read text from URL location
 			var request = new XMLHttpRequest();
+			console.log("GET " + url);
 			request.open('GET', url, true);
 			request.send(null);
 			request.onreadystatechange = function () {
@@ -90,7 +93,7 @@
 			"import lvgl as lv",
 			"lv.init()",
 			"import SDL",
-		            "SDL.init()",
+		    "SDL.init()",
 
 			/* Register SDL display driver. */
 			"disp_buf1 = lv.disp_buf_t()",
@@ -155,12 +158,7 @@
 			console.log("Custom script: " + custom);
 			if(custom !== undefined && custom !== null)
 				processScriptArg(custom);
- 			else {
-				/* Run init script */
-				for(var i = 0;i < lines.length;i++){
-				   mp_js_do_str(lines[i]);
-				}
-			}
+ 			
 			/*Setup lv_task_handler loop*/
 			var the_mp_handle_pending = Module.cwrap('mp_handle_pending', null);
 			function handle_pending() {
