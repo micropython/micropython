@@ -46,7 +46,7 @@
     <canvas id="canvas" width="480" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 
 	<p>
-	<input id="script-url" placeholder="Script URL" value=""/><button onclick="processScriptArg(document.getElementById('script-url').value);">Run a script</button>
+	<input id="script-url" placeholder="Script URL" value=""/><button onclick="reloadScript(document.getElementById('script-url').value);">Run a script</button>
 	<p>
 	<button onclick="mp_js_process_char(4);">Paste (Ctrl+D)</button>
 	<p>
@@ -61,6 +61,10 @@
 			print.data = text;
 			mp_js_stdout.dispatchEvent(print);
 		}
+		function reloadScript(target_script) {
+			var url = [location.protocol, '//', location.host, location.pathname].join('');
+			window.location.replace(url + "?env=dev&script=" + target_script);
+		}
 		function processScriptArg(url){
 			// read text from URL location
 			var request = new XMLHttpRequest();
@@ -70,6 +74,9 @@
 				if (request.readyState === 4 && request.status === 200) {
 				    var type = request.getResponseHeader('Content-Type');
 				    if (type.indexOf("text") !== 1) {
+						console.log(request.reponseText);
+						if(request.responseText === undefined)
+							return;
 				        mp_js_do_str(request.responseText);
 				    }
 				}
