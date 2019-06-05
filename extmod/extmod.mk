@@ -28,10 +28,81 @@ SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 	crypto/sha1.c \
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
-# Can be overridden by ports which have "builtin" mbedTLS
-MICROPY_SSL_MBEDTLS_INCLUDE ?= $(TOP)/lib/mbedtls/include
-CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(MICROPY_SSL_MBEDTLS_INCLUDE)
-LDFLAGS_MOD += -L$(TOP)/lib/mbedtls/library -lmbedx509 -lmbedtls -lmbedcrypto
+MBEDTLS_DIR = lib/mbedtls
+CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
+SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
+	aes.c \
+	aesni.c \
+	arc4.c \
+	asn1parse.c \
+	asn1write.c \
+	base64.c \
+	bignum.c \
+	blowfish.c \
+	camellia.c \
+	ccm.c \
+	certs.c \
+	chacha20.c \
+	chachapoly.c \
+	cipher.c \
+	cipher_wrap.c \
+	cmac.c \
+	ctr_drbg.c \
+	debug.c \
+	des.c \
+	dhm.c \
+	ecdh.c \
+	ecdsa.c \
+	ecjpake.c \
+	ecp.c \
+	ecp_curves.c \
+	entropy.c \
+	entropy_poll.c \
+	error.c \
+	gcm.c \
+	havege.c \
+	hmac_drbg.c \
+	md2.c \
+	md4.c \
+	md5.c \
+	md.c \
+	md_wrap.c \
+	oid.c \
+	padlock.c \
+	pem.c \
+	pk.c \
+	pkcs11.c \
+	pkcs12.c \
+	pkcs5.c \
+	pkparse.c \
+	pk_wrap.c \
+	pkwrite.c \
+	platform.c \
+	platform_util.c \
+	poly1305.c \
+	ripemd160.c \
+	rsa.c \
+	rsa_internal.c \
+	sha1.c \
+	sha256.c \
+	sha512.c \
+	ssl_cache.c \
+	ssl_ciphersuites.c \
+	ssl_cli.c \
+	ssl_cookie.c \
+	ssl_srv.c \
+	ssl_ticket.c \
+	ssl_tls.c \
+	timing.c \
+	x509.c \
+	x509_create.c \
+	x509_crl.c \
+	x509_crt.c \
+	x509_csr.c \
+	x509write_crt.c \
+	x509write_csr.c \
+	xtea.c \
+	)
 endif
 endif
 
