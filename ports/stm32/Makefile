@@ -396,6 +396,11 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	)
 endif
 
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+SRC_MOD += mbedtls/mbedtls_port.c
+endif
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
