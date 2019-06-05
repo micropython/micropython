@@ -76,6 +76,7 @@ $(BUILD)/micropython.js: $(OBJ) library.js wrapper.js
 	$(ECHO) "LINK $(BUILD)/firmware.js"
 	$(Q)emcc $(LDFLAGS) -o $(BUILD)/firmware.js $(OBJ) $(JSFLAGS)
 	cat wrapper.js $(BUILD)/firmware.js > $@
+	cp $@ $(BUILD)/../lvgl_mp.js
 
 min: $(BUILD)/micropython.js
 	uglifyjs $< -c -o $(BUILD)/micropython.min.js

@@ -134,10 +134,7 @@
 					mp_js_process_char(key.charCodeAt(i));
 				}
 			});
-			/* Run init script */
-			for(var i = 0;i < lines.length;i++){
-			   mp_js_do_str(lines[i]);
-			}
+			
 
 			/* Run custom script if passed */
 			var custom = undefined;
@@ -149,7 +146,12 @@
 			console.log("Custom script: " + custom);
 			if(custom !== undefined && custom !== null)
 				processScriptArg(custom);
- 
+ 			else {
+				/* Run init script */
+				for(var i = 0;i < lines.length;i++){
+				   mp_js_do_str(lines[i]);
+				}
+			}
 			/*Setup lv_task_handler loop*/
 			var the_mp_handle_pending = Module.cwrap('mp_handle_pending', null);
 			function handle_pending() {
