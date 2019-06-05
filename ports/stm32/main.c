@@ -39,6 +39,7 @@
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
+#include "lwip/apps/mdns.h"
 #include "drivers/cyw43/cyw43.h"
 #endif
 
@@ -479,6 +480,9 @@ void stm32_main(uint32_t reset_mode) {
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
     // So for now we only init the lwIP stack once on power-up.
     lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
 
