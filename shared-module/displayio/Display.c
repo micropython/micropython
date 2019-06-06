@@ -107,28 +107,26 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
 
     supervisor_start_terminal(width, height);
 
-    // Set the group after initialization otherwise we may send pixels while we delay in
-    // initialization.
-    self->refresh = true;
-    self->current_group = &circuitpython_splash;
-
     self->width = width;
     self->height = height;
     rotation = rotation % 360;
-    self->mirror_x = false;
-    self->mirror_y = false;
-    self->transpose_xy = false;
+    self->transform.x = 0;
+    self->transform.y = 0;
+    self->transform.scale = 1;
+    self->transform.mirror_x = false;
+    self->transform.mirror_y = false;
+    self->transform.transpose_xy = false;
     if (rotation == 0 || rotation == 180) {
         if (rotation == 180) {
-            self->mirror_x = true;
-            self->mirror_y = true;
+            self->transform.mirror_x = true;
+            self->transform.mirror_y = true;
         }
     } else {
-        self->transpose_xy = true;
-        if (rotation == 90) {
-            self->mirror_y = true;
+        self->transform.transpose_xy = true;
+        if (rotation == 270) {
+            self->transform.mirror_y = true;
         } else {
-            self->mirror_x = true;
+            self->transform.mirror_x = true;
         }
     }
 
@@ -148,18 +146,66 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
             }
         }
     }
+
+    self->area.x1 = 0;
+    self->area.y1 = 0;
+    self->area.next = NULL;
+
+    self->transform.dx = 1;
+    self->transform.dy = 1;
+    if (self->transform.transpose_xy) {
+        self->area.x2 = height;
+        self->area.y2 = width;
+        if (self->transform.mirror_x) {
+            self->transform.x = height;
+            self->transform.dx = -1;
+        }
+        if (self->transform.mirror_y) {
+            self->transform.y = width;
+            self->transform.dy = -1;
+        }
+    } else {
+        self->area.x2 = width;
+        self->area.y2 = height;
+        if (self->transform.mirror_x) {
+            self->transform.x = width;
+            self->transform.dx = -1;
+        }
+        if (self->transform.mirror_y) {
+            self->transform.y = height;
+            self->transform.dy = -1;
+        }
+    }
+
+    // Set the group after initialization otherwise we may send pixels while we delay in
+    // initialization.
+    common_hal_displayio_display_show(self, &circuitpython_splash);
 }
 
 void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
     if (root_group == NULL) {
         root_group = &circuitpython_splash;
     }
+    if (root_group == self->current_group) {
+        return;
+    }
+    displayio_group_update_transform(root_group, &self->transform);
     self->current_group = root_group;
+    self->full_refresh = true;
     common_hal_displayio_display_refresh_soon(self);
 }
 
 void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self) {
     self->refresh = true;
+}
+
+const displayio_area_t* displayio_display_get_refresh_areas(displayio_display_obj_t *self) {
+    if (self->full_refresh) {
+        self->area.next = NULL;
+        return &self->area;
+    } else {
+        return displayio_group_get_refresh_areas(self->current_group, NULL);
+    }
 }
 
 int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* self) {
@@ -224,7 +270,6 @@ void displayio_display_end_transaction(displayio_display_obj_t* self) {
 }
 
 void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-
     self->send(self->bus, true, &self->set_column_command, 1);
     bool isCommand = self->data_as_commands;
     if (self->single_byte_bounds) {
@@ -255,13 +300,16 @@ void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint1
     }
 }
 
-bool displayio_display_frame_queued(displayio_display_obj_t* self) {
-    // Refresh at ~30 fps.
-    return (ticks_ms - self->last_refresh) > 32;
+void displayio_display_start_refresh(displayio_display_obj_t* self) {
+    self->last_refresh = ticks_ms;
 }
 
-bool displayio_display_refresh_queued(displayio_display_obj_t* self) {
-    return self->refresh || (self->current_group != NULL && displayio_group_needs_refresh(self->current_group));
+bool displayio_display_frame_queued(displayio_display_obj_t* self) {
+    if (self->current_group == NULL) {
+        return false;
+    }
+    // Refresh at ~60 fps.
+    return (ticks_ms - self->last_refresh) > 16;
 }
 
 void displayio_display_finish_refresh(displayio_display_obj_t* self) {
@@ -269,11 +317,12 @@ void displayio_display_finish_refresh(displayio_display_obj_t* self) {
         displayio_group_finish_refresh(self->current_group);
     }
     self->refresh = false;
+    self->full_refresh = false;
     self->last_refresh = ticks_ms;
 }
 
-void displayio_display_send_pixels(displayio_display_obj_t* self, uint32_t* pixels, uint32_t length) {
-    self->send(self->bus, false, (uint8_t*) pixels, length * 4);
+void displayio_display_send_pixels(displayio_display_obj_t* self, uint8_t* pixels, uint32_t length) {
+    self->send(self->bus, false, pixels, length);
 }
 
 void displayio_display_update_backlight(displayio_display_obj_t* self) {
@@ -297,4 +346,12 @@ void release_display(displayio_display_obj_t* self) {
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
     }
+}
+
+bool displayio_display_fill_area(displayio_display_obj_t *self, displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
+    return displayio_group_fill_area(self->current_group, area, mask, buffer);
+}
+
+bool displayio_display_clip_area(displayio_display_obj_t *self, const displayio_area_t* area, displayio_area_t* clipped) {
+    return displayio_area_compute_overlap(&self->area, area, clipped);
 }

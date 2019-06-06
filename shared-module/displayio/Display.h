@@ -31,6 +31,8 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 
+#include "shared-module/displayio/area.h"
+
 typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
 typedef void (*display_bus_send)(mp_obj_t bus, bool command, uint8_t *data, uint32_t data_length);
 typedef void (*display_bus_end_transaction)(mp_obj_t bus);
@@ -61,12 +63,16 @@ typedef struct {
     uint64_t last_backlight_refresh;
     bool auto_brightness:1;
     bool updating_backlight:1;
-    bool mirror_x;
-    bool mirror_y;
-    bool transpose_xy;
+    bool full_refresh; // New group means we need to refresh the whole display.
+    displayio_buffer_transform_t transform;
+    displayio_area_t area;
 } displayio_display_obj_t;
 
+void displayio_display_start_refresh(displayio_display_obj_t* self);
+const displayio_area_t* displayio_display_get_refresh_areas(displayio_display_obj_t *self);
+bool displayio_display_fill_area(displayio_display_obj_t *self, displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
 void displayio_display_update_backlight(displayio_display_obj_t* self);
+bool displayio_display_clip_area(displayio_display_obj_t *self, const displayio_area_t* area, displayio_area_t* clipped);
 void release_display(displayio_display_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

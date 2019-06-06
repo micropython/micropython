@@ -56,39 +56,127 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
     self->bitmap_width_in_tiles = bitmap_width_in_tiles;
     self->width_in_tiles = width;
     self->height_in_tiles = height;
-    self->area.x1 = x;
-    self->area.y1 = y;
-    self->area.x2 = x + width * tile_width;
-    self->area.y2 = y + height * tile_height;
+    self->x = x;
+    self->y = y;
+    self->pixel_width = width * tile_width;
+    self->pixel_height = height * tile_height;
     self->tile_width = tile_width;
     self->tile_height = tile_height;
     self->bitmap = bitmap;
     self->pixel_shader = pixel_shader;
+    self->in_group = false;
+    self->first_draw = true;
+    self->flip_x = false;
+    self->flip_y = false;
+    self->transpose_xy = false;
 }
 
+bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_area_t* area) {
+    if (self->first_draw) {
+        return false;
+    }
+    displayio_area_copy(&self->previous_area, area);
+    return true;
+}
+
+void _update_current_x(displayio_tilegrid_t *self) {
+    if (self->absolute_transform->transpose_xy) {
+        self->current_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * self->x;
+        if (self->transpose_xy) {
+            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + self->pixel_height);
+        } else {
+            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + self->pixel_width);
+        }
+        if (self->current_area.y2 < self->current_area.y1) {
+            int16_t temp = self->current_area.y2;
+            self->current_area.y2 = self->current_area.y1;
+            self->current_area.y1 = temp;
+        }
+    } else {
+        self->current_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * self->x;
+        if (self->transpose_xy) {
+            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->pixel_height);
+        } else {
+            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->pixel_width);
+        }
+        if (self->current_area.x2 < self->current_area.x1) {
+            int16_t temp = self->current_area.x2;
+            self->current_area.x2 = self->current_area.x1;
+            self->current_area.x1 = temp;
+        }
+    }
+}
+
+void _update_current_y(displayio_tilegrid_t *self) {
+    if (self->absolute_transform->transpose_xy) {
+        self->current_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * self->y;
+        if (self->transpose_xy) {
+            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->pixel_width);
+        } else {
+            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->pixel_height);
+        }
+        if (self->current_area.x2 < self->current_area.x1) {
+            int16_t temp = self->current_area.x2;
+            self->current_area.x2 = self->current_area.x1;
+            self->current_area.x1 = temp;
+        }
+    } else {
+        self->current_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * self->y;
+        if (self->transpose_xy) {
+            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->pixel_width);
+        } else {
+            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->pixel_height);
+        }
+        if (self->current_area.y2 < self->current_area.y1) {
+            int16_t temp = self->current_area.y2;
+            self->current_area.y2 = self->current_area.y1;
+            self->current_area.y1 = temp;
+        }
+    }
+}
+
+void displayio_tilegrid_update_transform(displayio_tilegrid_t *self,
+                                         const displayio_buffer_transform_t* absolute_transform) {
+    self->in_group = absolute_transform != NULL;
+    self->absolute_transform = absolute_transform;
+    if (absolute_transform != NULL) {
+        self->moved = !self->first_draw;
+
+        _update_current_x(self);
+        _update_current_y(self);
+    } else {
+        self->first_draw = true;
+    }
+}
 
 mp_int_t common_hal_displayio_tilegrid_get_x(displayio_tilegrid_t *self) {
-    return self->area.x1;
+    return self->x;
 }
 void common_hal_displayio_tilegrid_set_x(displayio_tilegrid_t *self, mp_int_t x) {
-    if (self->area.x1 == x) {
+    if (self->x == x) {
         return;
     }
-    self->needs_refresh = true;
-    self->area.x2 += (self->area.x1 - x);
-    self->area.x1 = x;
+
+    self->moved = !self->first_draw;
+
+    self->x = x;
+    if (self->absolute_transform != NULL) {
+        _update_current_x(self);
+    }
 }
 mp_int_t common_hal_displayio_tilegrid_get_y(displayio_tilegrid_t *self) {
-    return self->area.y1;
+    return self->y;
 }
 
 void common_hal_displayio_tilegrid_set_y(displayio_tilegrid_t *self, mp_int_t y) {
-    if (self->area.y1 == y) {
+    if (self->y == y) {
         return;
     }
-    self->needs_refresh = true;
-    self->area.y2 += (self->area.y1 - y);
-    self->area.y1 = y;
+    self->moved = !self->first_draw;
+    self->y = y;
+    if (self->absolute_transform != NULL) {
+        _update_current_y(self);
+    }
 }
 
 mp_obj_t common_hal_displayio_tilegrid_get_pixel_shader(displayio_tilegrid_t *self) {
@@ -97,9 +185,8 @@ mp_obj_t common_hal_displayio_tilegrid_get_pixel_shader(displayio_tilegrid_t *se
 
 void common_hal_displayio_tilegrid_set_pixel_shader(displayio_tilegrid_t *self, mp_obj_t pixel_shader) {
     self->pixel_shader = pixel_shader;
-    self->needs_refresh = true;
+    self->full_change = true;
 }
-
 
 uint16_t common_hal_displayio_tilegrid_get_width(displayio_tilegrid_t *self) {
     return self->width_in_tiles;
@@ -129,17 +216,77 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
         return;
     }
     tiles[y * self->width_in_tiles + x] = tile_index;
-    self->needs_refresh = true;
+    displayio_area_t temp_area;
+    displayio_area_t* tile_area;
+    if (!self->partial_change) {
+        tile_area = &self->dirty_area;
+    } else {
+        tile_area = &temp_area;
+    }
+    tile_area->x1 = x * self->tile_width;
+    tile_area->x2 = tile_area->x1 + self->tile_width;
+    tile_area->y1 = y * self->tile_height;
+    tile_area->y2 = tile_area->y1 + self->tile_height;
+    if (self->partial_change) {
+        displayio_area_expand(&self->dirty_area, &temp_area);
+    }
+
+    self->partial_change = true;
 }
 
+bool common_hal_displayio_tilegrid_get_flip_x(displayio_tilegrid_t *self) {
+    return self->flip_x;
+}
+
+void common_hal_displayio_tilegrid_set_flip_x(displayio_tilegrid_t *self, bool flip_x) {
+    if (self->flip_x == flip_x) {
+        return;
+    }
+    self->flip_x = flip_x;
+    self->full_change = true;
+}
+
+bool common_hal_displayio_tilegrid_get_flip_y(displayio_tilegrid_t *self) {
+    return self->flip_y;
+}
+
+void common_hal_displayio_tilegrid_set_flip_y(displayio_tilegrid_t *self, bool flip_y) {
+    if (self->flip_y == flip_y) {
+        return;
+    }
+    self->flip_y = flip_y;
+    self->full_change = true;
+}
+
+bool common_hal_displayio_tilegrid_get_transpose_xy(displayio_tilegrid_t *self) {
+    return self->transpose_xy;
+}
+
+void common_hal_displayio_tilegrid_set_transpose_xy(displayio_tilegrid_t *self, bool transpose_xy) {
+    if (self->transpose_xy == transpose_xy) {
+        return;
+    }
+    self->transpose_xy = transpose_xy;
+
+    // Square TileGrids do not change dimensions when transposed.
+    if (self->pixel_width == self->pixel_height) {
+        self->full_change = true;
+        return;
+    }
+
+    _update_current_x(self);
+    _update_current_y(self);
+
+    self->moved = true;
+}
 
 void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {
     self->top_left_x = x;
     self->top_left_y = y;
-    self->needs_refresh = true;
+    self->full_change = true;
 }
 
-bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_transform_t* transform, displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
+bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
     // If no tiles are present we have no impact.
     uint8_t* tiles = self->tiles;
     if (self->inline_tiles) {
@@ -150,30 +297,40 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
     }
 
     displayio_area_t overlap;
-    displayio_area_t scaled_area = {
-        .x1 = self->area.x1 * transform->scale,
-        .y1 = self->area.y1 * transform->scale,
-        .x2 = self->area.x2 * transform->scale,
-        .y2 = self->area.y2 * transform->scale
-    };
-    if (!displayio_area_compute_overlap(area, &scaled_area, &overlap)) {
+    if (!displayio_area_compute_overlap(area, &self->current_area, &overlap)) {
         return false;
     }
 
     int16_t x_stride = 1;
     int16_t y_stride = displayio_area_width(area);
-    if (transform->transpose_xy) {
-        x_stride = displayio_area_height(area);
-        y_stride = 1;
+
+    bool flip_x = self->flip_x;
+    bool flip_y = self->flip_y;
+    if (self->transpose_xy != self->absolute_transform->transpose_xy) {
+        bool temp_flip = flip_x;
+        flip_x = flip_y;
+        flip_y = temp_flip;
     }
+
+    // How many pixels are outside of our area between us and the start of the row.
     uint16_t start = 0;
-    if (transform->mirror_x) {
-        start += (area->x2 - area->x1 - 1) * x_stride;
-        x_stride *= -1;
+    if ((self->absolute_transform->dx < 0) != flip_x) {
+        // if (self->absolute_transform->transpose_xy) {
+        //     start += (area->y2 - area->y1 - 1) * y_stride;
+        //     y_stride *= -1;
+        // } else {
+            start += (area->x2 - area->x1 - 1) * x_stride;
+            x_stride *= -1;
+        //}
     }
-    if (transform->mirror_y) {
-        start += (area->y2 - area->y1 - 1) * y_stride;
-        y_stride *= -1;
+    if ((self->absolute_transform->dy < 0) != flip_y) {
+        // if (self->absolute_transform->transpose_xy) {
+        //     start += (area->x2 - area->x1 - 1) * x_stride;
+        //     x_stride *= -1;
+        // } else {
+            start += (area->y2 - area->y1 - 1) * y_stride;
+            y_stride *= -1;
+        //}
     }
 
     // Track if this layer finishes filling in the given area. We can ignore any remaining
@@ -185,25 +342,49 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
 
     // TODO(tannewt): Check to see if the pixel_shader has any transparency. If it doesn't then we
     // can either return full coverage or bulk update the mask.
-    int16_t y = overlap.y1 - scaled_area.y1;
-    if (y < 0) {
-        y = 0;
+    displayio_area_t transformed;
+    displayio_area_transform_within(flip_x != (self->absolute_transform->dx < 0), flip_y != (self->absolute_transform->dy < 0), self->transpose_xy != self->absolute_transform->transpose_xy,
+                                    &overlap,
+                                    &self->current_area,
+                                    &transformed);
+
+    int16_t start_x = (transformed.x1 - self->current_area.x1);
+    int16_t end_x = (transformed.x2 - self->current_area.x1);
+    int16_t start_y = (transformed.y1 - self->current_area.y1);
+    int16_t end_y = (transformed.y2 - self->current_area.y1);
+
+    int16_t y_shift = 0;
+    int16_t x_shift = 0;
+    if ((self->absolute_transform->dx < 0) != flip_x) {
+        x_shift = area->x2 - overlap.x2;
+    } else {
+        x_shift = overlap.x1 - area->x1;
     }
-    int16_t x_shift = area->x1 - scaled_area.x1;
-    int16_t y_shift = area->y1 - scaled_area.y1;
-    for (; y < overlap.y2 - scaled_area.y1; y++) {
-        int16_t x = overlap.x1 - scaled_area.x1;
-        if (x < 0) {
-            x = 0;
-        }
-        int16_t row_start = start + (y - y_shift) * y_stride;
-        int16_t local_y = y / transform->scale;
-        for (; x < overlap.x2 - scaled_area.x1; x++) {
+    if ((self->absolute_transform->dy < 0) != flip_y) {
+        y_shift = area->y2 - overlap.y2;
+    } else {
+        y_shift = overlap.y1 - area->y1;
+    }
+
+    // This untransposes x and y so it aligns with bitmap rows.
+    if (self->transpose_xy != self->absolute_transform->transpose_xy) {
+        int16_t temp_stride = x_stride;
+        x_stride = y_stride;
+        y_stride = temp_stride;
+        int16_t temp_shift = x_shift;
+        x_shift = y_shift;
+        y_shift = temp_shift;
+    }
+
+    for (int16_t y = start_y; y < end_y; y++) {
+        int16_t row_start = start + (y - start_y + y_shift) * y_stride;
+        int16_t local_y = y / self->absolute_transform->scale;
+        for (int16_t x = start_x; x < end_x; x++) {
             // Compute the destination pixel in the buffer and mask based on the transformations.
-            uint16_t offset = row_start + (x - x_shift) * x_stride;
+            int16_t offset = row_start + (x - start_x + x_shift) * x_stride;
 
             // This is super useful for debugging out range accesses. Uncomment to use.
-            // if (offset < 0 || offset >= displayio_area_size(area)) {
+            // if (offset < 0 || offset >= (int32_t) displayio_area_size(area)) {
             //     asm("bkpt");
             // }
 
@@ -211,7 +392,7 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
             if ((mask[offset / 32] & (1 << (offset % 32))) != 0) {
                 continue;
             }
-            int16_t local_x = x / transform->scale;
+            int16_t local_x = x / self->absolute_transform->scale;
             uint16_t tile_location = ((local_y / self->tile_height + self->top_left_y) % self->height_in_tiles) * self->width_in_tiles + (local_x / self->tile_width + self->top_left_x) % self->width_in_tiles;
             uint8_t tile = tiles[tile_location];
             uint16_t tile_x = (tile % self->bitmap_width_in_tiles) * self->tile_width + local_x % self->tile_width;
@@ -252,20 +433,15 @@ bool displayio_tilegrid_get_area(displayio_tilegrid_t *self, displayio_buffer_tr
     return full_coverage;
 }
 
-bool displayio_tilegrid_needs_refresh(displayio_tilegrid_t *self) {
-    if (self->needs_refresh) {
-        return true;
-    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
-        return displayio_palette_needs_refresh(self->pixel_shader);
-    } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
-        return displayio_colorconverter_needs_refresh(self->pixel_shader);
+void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
+    if (self->moved || self->first_draw) {
+        displayio_area_copy(&self->current_area, &self->previous_area);
     }
 
-    return false;
-}
-
-void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
-    self->needs_refresh = false;
+    self->moved = false;
+    self->full_change = false;
+    self->partial_change = false;
+    self->first_draw = false;
     if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
         displayio_palette_finish_refresh(self->pixel_shader);
     } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
@@ -273,4 +449,59 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
     }
     // TODO(tannewt): We could double buffer changes to position and move them over here.
     // That way they won't change during a refresh and tear.
+}
+
+displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *self, displayio_area_t* tail) {
+    if (self->moved && !self->first_draw) {
+        displayio_area_union(&self->previous_area, &self->current_area, &self->dirty_area);
+        if (displayio_area_size(&self->dirty_area) <= 2 * self->pixel_width * self->pixel_height) {
+            self->dirty_area.next = tail;
+            return &self->dirty_area;
+        }
+        self->previous_area.next = tail;
+        self->current_area.next = &self->previous_area;
+        return &self->current_area;
+    }
+
+    // We must recheck if our sources require a refresh because needs_refresh may or may not have
+    // been called.
+    self->full_change = self->full_change ||
+        (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) &&
+         displayio_palette_needs_refresh(self->pixel_shader)) ||
+        (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) &&
+         displayio_colorconverter_needs_refresh(self->pixel_shader));
+    if (self->full_change || self->first_draw) {
+        self->current_area.next = tail;
+        return &self->current_area;
+    }
+
+    if (self->partial_change) {
+        if (self->absolute_transform->transpose_xy) {
+            int16_t x1 = self->dirty_area.x1;
+            self->dirty_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->dirty_area.y1);
+            self->dirty_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + x1);
+            int16_t x2 = self->dirty_area.x2;
+            self->dirty_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->dirty_area.y2);
+            self->dirty_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + x2);
+        } else {
+            self->dirty_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->dirty_area.x1);
+            self->dirty_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->dirty_area.y1);
+            self->dirty_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->dirty_area.x2);
+            self->dirty_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->dirty_area.y2);
+        }
+        if (self->dirty_area.y2 < self->dirty_area.y1) {
+            int16_t temp = self->dirty_area.y2;
+            self->dirty_area.y2 = self->dirty_area.y1;
+            self->dirty_area.y1 = temp;
+        }
+        if (self->dirty_area.x2 < self->dirty_area.x1) {
+            int16_t temp = self->dirty_area.x2;
+            self->dirty_area.x2 = self->dirty_area.x1;
+            self->dirty_area.x1 = temp;
+        }
+
+        self->dirty_area.next = tail;
+        return &self->dirty_area;
+    }
+    return tail;
 }

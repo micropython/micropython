@@ -53,7 +53,11 @@ void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t 
     uint32_t packed = r5 << 11 | g6 << 5 | b5;
     // swap bytes
     packed = __builtin_bswap16(packed);
-    self->colors[palette_index / 2] = masked | packed << shift;
+    uint32_t final_color = masked | packed << shift;
+    if (self->colors[palette_index / 2] == final_color) {
+        return;
+    }
+    self->colors[palette_index / 2] = final_color;
     self->needs_refresh = true;
 }
 
