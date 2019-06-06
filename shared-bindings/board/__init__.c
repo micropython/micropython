@@ -34,7 +34,6 @@
 //|
 //| .. module:: board
 //|   :synopsis: Board specific pin names
-//|   :platform: SAMD21
 //|
 //| Common container for board base pin names. These will vary from board to
 //| board so don't expect portability when using this module.
