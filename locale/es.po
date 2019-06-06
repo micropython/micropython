@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-13 17:34-0700\n"
+"POT-Creation-Date: 2019-05-22 15:56-0300\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -524,6 +524,7 @@ msgid "Drive mode not used when direction is input."
 msgstr "Modo Drive no se usa cuando la dirección es input."
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
@@ -553,6 +554,10 @@ msgstr "Se espera un %q"
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Se esperaba un tuple de %d, se obtuvo %d"
+
+#: shared-bindings/ps2io/Ps2.c
+msgid "Failed sending command."
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c
 #, fuzzy
@@ -946,6 +951,10 @@ msgstr "Sin GCLKs libres"
 msgid "No hardware random available"
 msgstr "No hay hardware random disponible"
 
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+msgid "No hardware support on clk pin"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1034,6 +1043,10 @@ msgstr ""
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
 msgstr "Incapaz de montar de nuevo el sistema de archivos"
+
+#: shared-bindings/ps2io/Ps2.c
+msgid "Pop from an empty Ps2 buffer"
+msgstr ""
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -2213,7 +2226,7 @@ msgstr "objeto no es un iterator"
 msgid "object not callable"
 msgstr "objeto no puede ser llamado"
 
-#: py/sequence.c
+#: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
 msgstr "objeto no en secuencia"
 
