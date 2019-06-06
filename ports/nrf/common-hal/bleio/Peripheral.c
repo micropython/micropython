@@ -177,9 +177,13 @@ void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self,
     }
 
     check_data_fit(advertising_data_bufinfo->len);
+    // The advertising data buffers must not move, because the SoftDevice depends on them.
+    // So make them long-lived.
+    self->advertising_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_MAX * sizeof(uint8_t), false, true);
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
 
     check_data_fit(scan_response_data_bufinfo->len);
+    self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_MAX * sizeof(uint8_t), false, true);
     memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
 
 
@@ -214,7 +218,6 @@ void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self,
 }
 
 void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *self) {
-
     if (self->adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET)
         return;
 

@@ -46,8 +46,8 @@ typedef struct {
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).
-    uint8_t advertising_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
-    uint8_t scan_response_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
+    uint8_t* advertising_data;
+    uint8_t* scan_response_data;
     uint8_t adv_handle;
 
 } bleio_peripheral_obj_t;
