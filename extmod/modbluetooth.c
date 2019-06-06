@@ -399,10 +399,12 @@ STATIC mp_obj_t bluetooth_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_active_obj, 1, 2, bluetooth_active);
 
 STATIC mp_obj_t bluetooth_advertise(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_interval, ARG_name, ARG_connectable };
+    enum { ARG_interval, ARG_name, ARG_adv_data, ARG_resp_data, ARG_connectable };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_interval,    MP_ARG_INT,                  {.u_int = 100} },
         { MP_QSTR_name,        MP_ARG_OBJ,                  {.u_obj = mp_const_none } },
+        { MP_QSTR_adv_data,    MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
+        { MP_QSTR_resp_data,   MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_connectable, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_true } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -423,77 +425,44 @@ STATIC mp_obj_t bluetooth_advertise(size_t n_args, const mp_obj_t *pos_args, mp_
         adv_type = MP_BT_ADV_TYPE_ADV_NONCONN_IND; // connectable=False
     }
 
-    size_t name_len;
-    const char *name = NULL;
-    if (args[ARG_name].u_obj != mp_const_none) {
-        name = mp_obj_str_get_data(args[ARG_name].u_obj, &name_len);
-    }
-
-    uint8_t adv_data[31];
+    uint8_t adv_data_buf[31];
+    const uint8_t *adv_data = NULL;
     size_t adv_data_len = 0;
 
-    if (name != NULL) {
-        adv_data[adv_data_len++] = 2; // 1 byte type + 1 byte flags data
-        adv_data[adv_data_len++] = MP_BLE_GAP_AD_TYPE_FLAG;
-        adv_data[adv_data_len++] = MP_BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
+    // Pick advertisement data.
+    if (args[ARG_name].u_obj != mp_const_none) {
+        // Base the advertisement on the 'name' keyword argument.
+        size_t name_len;
+        const char *name = mp_obj_str_get_data(args[ARG_name].u_obj, &name_len);
+        adv_data_buf[adv_data_len++] = 2; // 1 byte type + 1 byte flags data
+        adv_data_buf[adv_data_len++] = MP_BLE_GAP_AD_TYPE_FLAG;
+        adv_data_buf[adv_data_len++] = MP_BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
 
-        if (name_len + 3 > sizeof(adv_data) - adv_data_len) {
+        if (name_len + 3 > sizeof(adv_data_buf) - adv_data_len) {
             mp_raise_ValueError("advertisement packet overflow");
         }
-        adv_data[adv_data_len++] = name_len + 1;
-        adv_data[adv_data_len++] = MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
+        adv_data_buf[adv_data_len++] = name_len + 1;
+        adv_data_buf[adv_data_len++] = MP_BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
         for (size_t i=0; i<name_len; i++) {
-            adv_data[adv_data_len++] = name[i];
+            adv_data_buf[adv_data_len++] = name[i];
         }
-    }
-
-    int errno_ = mp_bt_advertise_start(adv_type, interval, adv_data_len ? adv_data : NULL, adv_data_len, NULL, 0);
-    return bluetooth_handle_errno(errno_);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_advertise_obj, 1, bluetooth_advertise);
-
-STATIC mp_obj_t bluetooth_advertise_raw(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_interval, ARG_adv_data, ARG_sr_data, ARG_connectable };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_interval,    MP_ARG_INT,                  {.u_int = 100} },
-        { MP_QSTR_adv_data,    MP_ARG_OBJ,                  {.u_obj = mp_const_none } },
-        { MP_QSTR_sr_data,     MP_ARG_OBJ,                  {.u_obj = mp_const_none } },
-        { MP_QSTR_connectable, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_true } },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_int_t interval = args[ARG_interval].u_int;
-    if (interval == 0) {
-        mp_bt_advertise_stop();
-        return mp_const_none;
-    }
-    interval = interval * 8 / 5; // convert from 1ms to 0.625ms units
-    if (interval < 0x20 || interval > 0x4000) {
-        mp_raise_ValueError("interval out of range");
-    }
-
-    mp_bt_adv_type_t adv_type = MP_BT_ADV_TYPE_ADV_IND; // connectable=True
-    if (!mp_obj_is_true(args[ARG_connectable].u_obj)) {
-        adv_type = MP_BT_ADV_TYPE_ADV_NONCONN_IND; // connectable=False
-    }
-
-    size_t adv_data_len;
-    const uint8_t *adv_data = NULL;
-    if (args[ARG_adv_data].u_obj != mp_const_none) {
+        adv_data = adv_data_buf;
+    } else if (args[ARG_adv_data].u_obj != mp_const_none) {
+        // Base the advertisement on the raw advertisement data field.
         adv_data = (const uint8_t*)mp_obj_str_get_data(args[ARG_adv_data].u_obj, &adv_data_len);
     }
 
-    size_t sr_data_len;
-    const uint8_t *sr_data = NULL;
-    if (args[ARG_sr_data].u_obj != mp_const_none) {
-        sr_data = (const uint8_t*)mp_obj_str_get_data(args[ARG_sr_data].u_obj, &sr_data_len);
+    // Pick scan response data, if provided.
+    const uint8_t *resp_data = NULL;
+    size_t resp_data_len = 0;
+    if (args[ARG_resp_data].u_obj != mp_const_none) {
+        resp_data = (const uint8_t*)mp_obj_str_get_data(args[ARG_resp_data].u_obj, &resp_data_len);
     }
 
-    int errno_ = mp_bt_advertise_start(adv_type, interval, adv_data_len ? adv_data : NULL, adv_data_len, sr_data_len ? sr_data : NULL, sr_data_len);
+    int errno_ = mp_bt_advertise_start(adv_type, interval, adv_data_len ? adv_data : NULL, adv_data_len, resp_data, resp_data_len);
     return bluetooth_handle_errno(errno_);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_advertise_raw_obj, 1, bluetooth_advertise_raw);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_advertise_obj, 1, bluetooth_advertise);
 
 STATIC mp_obj_t bluetooth_add_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_uuid, ARG_characteristics };
@@ -766,7 +735,6 @@ STATIC const mp_obj_type_t characteristic_type = {
 STATIC const mp_rom_map_elem_t bluetooth_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),        MP_ROM_PTR(&bluetooth_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise),     MP_ROM_PTR(&bluetooth_advertise_obj) },
-    { MP_ROM_QSTR(MP_QSTR_advertise_raw), MP_ROM_PTR(&bluetooth_advertise_raw_obj) },
     { MP_ROM_QSTR(MP_QSTR_add_service),   MP_ROM_PTR(&bluetooth_add_service_obj) },
     { MP_ROM_QSTR(MP_QSTR_address),       MP_ROM_PTR(&bluetooth_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),           MP_ROM_PTR(&bluetooth_irq_obj) },
