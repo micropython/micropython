@@ -46,5 +46,6 @@ extern displayio_group_t circuitpython_splash;
 
 void displayio_refresh_displays(void);
 void reset_displays(void);
+void displayio_gc_collect(void);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H
