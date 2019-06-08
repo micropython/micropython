@@ -64,7 +64,7 @@
 //|   :param int height: Height of the grid in tiles.
 //|   :param int tile_width: Width of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
 //|   :param int tile_height: Height of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
-//|   :param in default_tile: Default tile index to show.
+//|   :param int default_tile: Default tile index to show.
 //|   :param int x: Initial x position of the left edge within the parent.
 //|   :param int y: Initial y position of the top edge within the parent.
 //|

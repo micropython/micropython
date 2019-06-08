@@ -31,7 +31,7 @@
 //| :class:`AddressType` -- defines the type of a BLE address
 //| =============================================================
 //|
-//| .. class:: bleio.AddressType
+//| .. class:: AddressType()
 //|
 //|     Enum-like class to define the type of a BLE address, see also `bleio.Address`.
 //|

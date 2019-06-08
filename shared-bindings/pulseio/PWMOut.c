@@ -42,7 +42,7 @@
 //|
 //| PWMOut can be used to output a PWM signal on a given pin.
 //|
-//| .. class:: PWMOut(pin, \*, duty_cycle=0, frequency=500, variable_frequency=False)
+//| .. class:: PWMOut(pin, *, duty_cycle=0, frequency=500, variable_frequency=False)
 //|
 //|   Create a PWM object associated with the given pin. This allows you to
 //|   write PWM signals out on the given pin. Frequency is fixed after init

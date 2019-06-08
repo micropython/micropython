@@ -51,7 +51,7 @@ extern const int32_t colorwheel(float pos);
 //|
 //| :class:`~_pixelbuf.PixelBuf` implements an RGB[W] bytearray abstraction.
 //|
-//| .. class:: PixelBuf(size, buf, byteorder=BGR, bpp=3)
+//| .. class:: PixelBuf(size, buf, byteorder=BGR, brightness=0, rawbuf=None, offset=0, dotstar=False, auto_write=False, write_function=None, write_args=None)
 //|
 //|   Create a PixelBuf object of the specified size, byteorder, and bits per pixel.
 //|
@@ -66,14 +66,14 @@ extern const int32_t colorwheel(float pos);
 //|
 //|   :param ~int size: Number of pixelsx
 //|   :param ~bytearray buf: Bytearray to store pixel data in
-//|   :param ~_pixelbuf.ByteOrder byteorder: Byte order constant from `_pixelbuf` (also sets the bpp)
+//|   :param ~_pixelbuf.ByteOrder byteorder: Byte order constant from `_pixelbuf`
 //|   :param ~float brightness: Brightness (0 to 1.0, default 1.0)
 //|   :param ~bytearray rawbuf: Bytearray to store raw pixel colors in
 //|   :param ~int offset: Offset from start of buffer (default 0)
 //|   :param ~bool dotstar: Dotstar mode (default False)
 //|   :param ~bool auto_write: Whether to automatically write pixels (Default False)
 //|   :param ~callable write_function: (optional) Callable to use to send pixels
-//|   :param ~list write_args: (optional) Tuple or list of args to pass to ``write_function``.  The 
+//|   :param ~list write_args: (optional) Tuple or list of args to pass to ``write_function``.  The
 //|          PixelBuf instance is appended after these args.
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -95,7 +95,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (mp_obj_is_subclass_fast(args[ARG_byteorder].u_obj, &pixelbuf_byteorder_type)) 
+    if (mp_obj_is_subclass_fast(args[ARG_byteorder].u_obj, &pixelbuf_byteorder_type))
         mp_raise_TypeError_varg(translate("byteorder is not an instance of ByteOrder (got a %s)"), mp_obj_get_type_str(args[ARG_byteorder].u_obj));
 
     pixelbuf_byteorder_obj_t *byteorder = (args[ARG_byteorder].u_obj == mp_const_none) ? MP_OBJ_FROM_PTR(&byteorder_BGR) : args[ARG_byteorder].u_obj;
@@ -122,7 +122,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
 
     if (!MP_OBJ_IS_TYPE(args[ARG_write_args].u_obj, &mp_type_list) &&
         !MP_OBJ_IS_TYPE(args[ARG_write_args].u_obj, &mp_type_tuple) &&
-        args[ARG_write_args].u_obj != mp_const_none) 
+        args[ARG_write_args].u_obj != mp_const_none)
     {
         mp_raise_ValueError(translate("write_args must be a list, tuple, or None"));
     }
@@ -186,8 +186,8 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
         else if (self->brightness > 1)
             self->brightness = 1;
     }
-    
-    if (self->dotstar_mode) { 
+
+    if (self->dotstar_mode) {
         // Initialize the buffer with the dotstar start bytes.
         // Header and end must be setup by caller
         for (uint i = 0; i < self->pixels * 4; i += 4) {
@@ -197,7 +197,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
             }
         }
     }
-    
+
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -227,7 +227,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_bpp_obj = {
 //|     setting this value causes a recomputation of the values in buf.
 //|     If only a buf was provided, then the brightness only applies to
 //|     future pixel changes.
-//|     In DotStar mode 
+//|     In DotStar mode
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_brightness(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
@@ -266,7 +266,7 @@ void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self) {
     // Compensate for shifted buffer (bpp=3 dotstar)
     for (uint i = 0; i < self->bytes; i++) {
         // Don't adjust per-pixel luminance bytes in dotstar mode
-        if (!self->dotstar_mode || (i % 4 != 0)) 
+        if (!self->dotstar_mode || (i % 4 != 0))
             buf[i] = rawbuf[i] * self->brightness;
     }
 }
@@ -367,11 +367,13 @@ void call_write_function(pixelbuf_pixelbuf_obj_t *self) {
     }
 }
 
-
-
-//|   .. method:: []
+//|   .. method:: __getitem__(index)
 //|
-//|     Get or set pixels.  Supports individual pixels and slices.
+//|     Returns the pixel value at the given index.
+//|
+//|   .. method:: __setitem__(index, value)
+//|
+//|     Sets the pixel value at the given index.
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
@@ -380,7 +382,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         // delete item
         // slice deletion
         return MP_OBJ_NULL; // op not supported
-    } 
+    }
 
     pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (0) {
@@ -390,7 +392,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
         if (!mp_seq_get_fast_slice_indexes(self->bytes, index_in, &slice))
             mp_raise_NotImplementedError(translate("Only slices with step=1 (aka None) are supported"));
-        if ((slice.stop * self->pixel_step) > self->bytes) 
+        if ((slice.stop * self->pixel_step) > self->bytes)
             mp_raise_IndexError(translate("Range out of bounds"));
 
         if (value == MP_OBJ_SENTINEL) { // Get
@@ -422,8 +424,8 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             for (size_t i = slice.start; i < slice.stop; i++) {
                 mp_obj_t *item = src_objs[i-slice.start];
                 if (MP_OBJ_IS_TYPE(value, &mp_type_list) || MP_OBJ_IS_TYPE(value, &mp_type_tuple) || MP_OBJ_IS_INT(value)) {
-                    pixelbuf_set_pixel(self->buf + (i * self->pixel_step), 
-                        self->two_buffers ? self->rawbuf + (i * self->pixel_step) : NULL, 
+                    pixelbuf_set_pixel(self->buf + (i * self->pixel_step),
+                        self->two_buffers ? self->rawbuf + (i * self->pixel_step) : NULL,
                         self->brightness, item, &self->byteorder, self->dotstar_mode);
                 }
             }
@@ -438,14 +440,14 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     } else { // Single index rather than slice.
         size_t index = mp_get_index(self->base.type, self->pixels, index_in, false);
         size_t offset = (index * self->pixel_step);
-        if (offset > self->bytes) 
+        if (offset > self->bytes)
             mp_raise_IndexError(translate("Pixel beyond bounds of buffer"));
 
         if (value == MP_OBJ_SENTINEL) { // Get
             uint8_t *pixelstart = (uint8_t *)(self->two_buffers ? self->rawbuf : self->buf) + offset;
             return pixelbuf_get_pixel(pixelstart, &self->byteorder, self->dotstar_mode);
         } else { // Store
-            pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? self->rawbuf + offset : NULL, 
+            pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? self->rawbuf + offset : NULL,
                 self->brightness, value, &self->byteorder, self->dotstar_mode);
             if (self->auto_write)
                 call_write_function(self);

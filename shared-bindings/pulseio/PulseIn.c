@@ -45,7 +45,7 @@
 //| The pulsed signal consists of timed active and idle periods. Unlike PWM,
 //| there is no set duration for active and idle pairs.
 //|
-//| .. class:: PulseIn(pin, maxlen=2, \*, idle_state=False)
+//| .. class:: PulseIn(pin, maxlen=2, *, idle_state=False)
 //|
 //|   Create a PulseIn object associated with the given pin. The object acts as
 //|   a read-only sequence of pulse lengths with a given max length. When it is

@@ -41,11 +41,11 @@
 //| A .wav file prepped for audio playback. Only mono and stereo files are supported. Samples must
 //| be 8 bit unsigned or 16 bit signed.
 //|
-//| .. class:: WaveFile(filename)
+//| .. class:: WaveFile(file)
 //|
 //|   Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
-//|   :param bytes-like file: Already opened wave file
+//|   :param typing.BinaryIO file: Already opened wave file
 //|
 //|   Playing a wave file from flash::
 //|

@@ -53,7 +53,7 @@
 //|
 //|     PixelBuf
 
-//| .. class:: ByteOrder
+//| .. class:: ByteOrder()
 //|
 //|   Classes representing byteorders for circuitpython
 
@@ -169,34 +169,34 @@ const int32_t colorwheel(float pos) {
 
 
 /// RGB
-//| .. class:: RGB
+//| .. data:: RGB
 //|
 //|    * **order** Red, Green, Blue
 //|    * **bpp** 3
 PIXELBUF_BYTEORDER(RGB, 3, 0, 1, 2, 3, false, false)
-//| .. class:: RBG
+//| .. data:: RBG
 //|
 //|    * **order** Red, Blue, Green
 //|    * **bpp** 3
 PIXELBUF_BYTEORDER(RBG, 3, 0, 2, 1, 3, false, false)
-//| .. class:: GRB
+//| .. data:: GRB
 //|
 //|    * **order** Green, Red, Blue
 //|    * **bpp** 3
 //|
 //|    Commonly used by NeoPixel.
 PIXELBUF_BYTEORDER(GRB, 3, 1, 0, 2, 3, false, false)
-//| .. class:: GBR
+//| .. data:: GBR
 //|
 //|    * **order** Green, Blue, Red
 //|    * **bpp** 3
 PIXELBUF_BYTEORDER(GBR, 3, 1, 2, 0, 3, false, false)
-//| .. class:: BRG
+//| .. data:: BRG
 //|
 //|    * **order** Blue, Red, Green
 //|    * **bpp** 3
 PIXELBUF_BYTEORDER(BRG, 3, 2, 0, 1, 3, false, false)
-//| .. class:: BGR
+//| .. data:: BGR
 //|
 //|    * **order** Blue, Green, Red
 //|    * **bpp** 3
@@ -205,19 +205,19 @@ PIXELBUF_BYTEORDER(BRG, 3, 2, 0, 1, 3, false, false)
 PIXELBUF_BYTEORDER(BGR, 3, 2, 1, 0, 3, false, false)
 
 // RGBW
-//| .. class:: RGBW
+//| .. data:: RGBW
 //|
 //|    * **order** Red, Green, Blue, White
 //|    * **bpp** 4
 //|    * **has_white** True
 PIXELBUF_BYTEORDER(RGBW, 4, 0, 1, 2, 3, true, false)
-//| .. class:: RBGW
+//| .. data:: RBGW
 //|
 //|    * **order** Red, Blue, Green, White
 //|    * **bpp** 4
 //|    * **has_white** True
 PIXELBUF_BYTEORDER(RBGW, 4, 0, 2, 1, 3, true, false)
-//| .. class:: GRBW
+//| .. data:: GRBW
 //|
 //|    * **order** Green, Red, Blue, White
 //|    * **bpp** 4
@@ -225,19 +225,19 @@ PIXELBUF_BYTEORDER(RBGW, 4, 0, 2, 1, 3, true, false)
 //|
 //|    Commonly used by RGBW NeoPixels.
 PIXELBUF_BYTEORDER(GRBW, 4, 1, 0, 2, 3, true, false)
-//| .. class:: GBRW
+//| .. data:: GBRW
 //|
 //|    * **order** Green, Blue, Red, White
 //|    * **bpp** 4
 //|    * **has_white** True
 PIXELBUF_BYTEORDER(GBRW, 4, 1, 2, 0, 3, true, false)
-//| .. class:: BRGW
+//| .. data:: BRGW
 //|
 //|    * **order** Blue, Red, Green, White
 //|    * **bpp** 4
 //|    * **has_white** True
 PIXELBUF_BYTEORDER(BRGW, 4, 2, 0, 1, 3, true, false)
-//| .. class:: BGRW
+//| .. data:: BGRW
 //|
 //|    * **order** Blue, Green, Red, White
 //|    * **bpp** 4
@@ -248,37 +248,37 @@ PIXELBUF_BYTEORDER(BGRW, 4, 2, 1, 0, 3, true, false)
 // Luminosity chosen because the luminosity of a Dotstar at full bright
 // burns the eyes like looking at the Sun.
 // https://www.thesaurus.com/browse/luminosity?s=t
-//| .. class:: LRGB
+//| .. data:: LRGB
 //|
 //|    * **order** *Luminosity*, Red, Green, Blue
 //|    * **bpp** 4
 //|    * **has_luminosity** True
 PIXELBUF_BYTEORDER(LRGB, 4, 1, 2, 3, 0, false, true)
-//| .. class:: LRBG
+//| .. data:: LRBG
 //|
 //|    * **order** *Luminosity*, Red, Blue, Green
 //|    * **bpp** 4
 //|    * **has_luminosity** True
 PIXELBUF_BYTEORDER(LRBG, 4, 1, 3, 2, 0, false, true)
-//| .. class:: LGRB
+//| .. data:: LGRB
 //|
 //|    * **order** *Luminosity*, Green, Red, Blue
 //|    * **bpp** 4
 //|    * **has_luminosity** True
 PIXELBUF_BYTEORDER(LGRB, 4, 2, 1, 3, 0, false, true)
-//| .. class:: LGBR
+//| .. data:: LGBR
 //|
 //|    * **order** *Luminosity*, Green, Blue, Red
 //|    * **bpp** 4
 //|    * **has_luminosity** True
 PIXELBUF_BYTEORDER(LGBR, 4, 2, 3, 1, 0, false, true)
-//| .. class:: LBRG
+//| .. data:: LBRG
 //|
 //|    * **order** *Luminosity*, Blue, Red, Green
 //|    * **bpp** 4
 //|    * **has_luminosity** True
 PIXELBUF_BYTEORDER(LBRG, 4, 3, 1, 2, 0, false, true)
-//| .. class:: LBGR
+//| .. data:: LBGR
 //|
 //|    * **order** *Luminosity*, Blue, Green, Red
 //|    * **bpp** 4

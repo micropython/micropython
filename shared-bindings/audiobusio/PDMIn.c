@@ -43,7 +43,7 @@
 //|
 //| PDMIn can be used to record an input audio signal on a given set of pins.
 //|
-//| .. class:: PDMIn(clock_pin, data_pin, \*, sample_rate=16000, bit_depth=8, mono=True, oversample=64, startup_delay=0.11)
+//| .. class:: PDMIn(clock_pin, data_pin, *, sample_rate=16000, bit_depth=8, mono=True, oversample=64, startup_delay=0.11)
 //|
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
