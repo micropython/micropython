@@ -58,11 +58,11 @@ connect to your WiFi network::
     def do_connect():
         import network
         sta_if = network.WLAN(network.STA_IF)
-        if not sta_if.isconnected():
-            print('connecting to network...')
+        while not sta_if.isconnected():
+            print('attempting connection...')
             sta_if.active(True)
             sta_if.connect('<essid>', '<password>')
-            while not sta_if.isconnected():
+            while sta_if.status() == network.STAT_CONNECTING:
                 pass
         print('network config:', sta_if.ifconfig())
 

@@ -89,11 +89,11 @@ A useful function for connecting to your local WiFi network is::
     def do_connect():
         import network
         wlan = network.WLAN(network.STA_IF)
-        wlan.active(True)
-        if not wlan.isconnected():
-            print('connecting to network...')
-            wlan.connect('essid', 'password')
-            while not wlan.isconnected():
+        while not wlan.isconnected():
+            print('attempting connection...')
+            wlan.active(True)
+            wlan.connect('<essid>', '<password>')
+            while wlan.status() == network.STAT_CONNECTING:
                 pass
         print('network config:', wlan.ifconfig())
 
