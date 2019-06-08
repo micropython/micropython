@@ -56,6 +56,7 @@ Here is a function you can run (or put in your boot.py file) to automatically
 connect to your WiFi network::
 
     def do_connect():
+        from time import sleep
         import network
         sta_if = network.WLAN(network.STA_IF)
         while not sta_if.isconnected():
@@ -63,7 +64,7 @@ connect to your WiFi network::
             sta_if.active(True)
             sta_if.connect('<essid>', '<password>')
             while sta_if.status() == network.STAT_CONNECTING:
-                pass
+                sleep(.1)
         print('network config:', sta_if.ifconfig())
 
 Sockets

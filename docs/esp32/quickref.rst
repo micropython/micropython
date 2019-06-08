@@ -87,6 +87,7 @@ The :mod:`network` module::
 A useful function for connecting to your local WiFi network is::
 
     def do_connect():
+        from time import sleep
         import network
         wlan = network.WLAN(network.STA_IF)
         while not wlan.isconnected():
@@ -94,7 +95,7 @@ A useful function for connecting to your local WiFi network is::
             wlan.active(True)
             wlan.connect('<essid>', '<password>')
             while wlan.status() == network.STAT_CONNECTING:
-                pass
+                sleep(.1)
         print('network config:', wlan.ifconfig())
 
 Once the network is established the :mod:`socket <usocket>` module can be used
