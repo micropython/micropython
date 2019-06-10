@@ -48,8 +48,9 @@
 //|
 //|   - an `int` value in range 0 to 0xFFFF (Bluetooth SIG 16-bit UUID)
 //|   - a buffer object (bytearray, bytes)  of 16 bytes in little-endian order (128-bit UUID)
+//|   - a string of hex digits of the form 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
 //|
-//|   :param int/buffer value: The uuid value to encapsulate
+//|   :param value: The uuid value to encapsulate
 //|
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
@@ -63,7 +64,7 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, co
     if (MP_OBJ_IS_INT(value)) {
         mp_int_t uuid16 = mp_obj_get_int(value);
         if (uuid16 < 0 || uuid16 > 0xffff) {
-            mp_raise_ValueError(translate("UUID integer value not in range 0 to 0xffff"));
+            mp_raise_ValueError(translate("UUID integer value must be 0-0xffff"));
         }
 
         // NULL means no 128-bit value.

@@ -53,9 +53,8 @@ STATIC uint8_t xdigit_8b_value(byte nibble1, byte nibble2) {
 //|   Create a new Address object encapsulating the address value.
 //|   The value itself can be one of:
 //|
-//|   - a `str` value in the format of 'XXXXXXXXXXXX' or 'XX:XX:XX:XX:XX:XX' (12 hex digits)
-//|   - a `bytes` or `bytearray` containing 6 bytes
-//|   - another Address object
+//|   :param buf: The address value to encapsulate
+//|   - a buffer object (bytearray, bytes) of 6 bytes
 //|
 //|   :param address: The address to encapsulate
 //|
@@ -84,54 +83,15 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const mp_obj_t address = args[ARG_address].u_obj;
 
-    if (MP_OBJ_IS_STR(address)) {
-        GET_STR_DATA_LEN(address, str, str_len);
-
-        size_t value_index = 0;
-        int str_index = str_len;
-        bool error = false;
-
-        // Loop until fewer than two characters left.
-        while (str_index >= 1 && value_index < sizeof(self->value)) {
-            if (str[str_index] == ':') {
-                // Skip colon separators.
-                str_index--;
-                continue;
-            }
-
-            if (!unichar_isxdigit(str[str_index]) ||
-                !unichar_isxdigit(str[str_index-1])) {
-                error = true;
-                break;
-            }
-
-            self->value[value_index] = xdigit_8b_value(str[str_index],
-                                                       str[str_index-1]);
-            value_index += 1;
-            str_index -= 2;
-            }
-            // Check for correct number of hex digits and no parsing errors.
-        if (error || value_index != ADDRESS_BYTE_LEN || str_index != -1) {
-            mp_raise_ValueError_varg(translate("Address is not %d bytes long or is in wrong format"),
-                                     ADDRESS_BYTE_LEN);
-        }
-    } else if (MP_OBJ_IS_TYPE(address, &mp_type_bytearray) || MP_OBJ_IS_TYPE(address, &mp_type_bytes)) {
-            mp_buffer_info_t buf_info;
-            mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
-            if (buf_info.len != BLEIO_ADDRESS_BYTES) {
-                mp_raise_ValueError_varg(translate("Address must be %d bytes long"), BLEIO_ADDRESS_BYTES);
-            }
-
-            for (size_t b = 0; b < BLEIO_ADDRESS_BYTES; ++b) {
-                self->value[BLEIO_ADDRESS_BYTES - b - 1] = ((uint8_t*)buf_info.buf)[b];
-            }
-    } else if (MP_OBJ_IS_TYPE(address, &bleio_address_type)) {
-        // deep copy
-        bleio_address_obj_t *other = MP_OBJ_TO_PTR(address);
-        self->type = other->type;
-        memcpy(self->value, other->value, BLEIO_ADDRESS_BYTES);
+    mp_buffer_info_t buf_info;
+    mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
+    if (buf_info.len != BLEIO_ADDRESS_BYTES) {
+        mp_raise_ValueError_varg(translate("Address must be %d bytes long"), BLEIO_ADDRESS_BYTES);
     }
 
+    for (size_t b = 0; b < BLEIO_ADDRESS_BYTES; ++b) {
+        self->value[BLEIO_ADDRESS_BYTES - b - 1] = ((uint8_t*)buf_info.buf)[b];
+    }
     return MP_OBJ_FROM_PTR(self);
 }
 
