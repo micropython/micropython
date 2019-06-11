@@ -349,7 +349,6 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_cdc_msc_hid.c \
 	class/src/usbd_msc_bot.c \
 	class/src/usbd_msc_scsi.c \
-	class/src/usbd_msc_data.c \
 	)
 
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)

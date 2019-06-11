@@ -28,7 +28,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc_bot.h"
 #include "usbd_msc_scsi.h"
-#include "usbd_msc_data.h"
 #include "usbd_cdc_msc_hid.h"
 
 
@@ -328,13 +327,13 @@ static int8_t SCSI_ReadFormatCapacity(USBD_HandleTypeDef  *pdev, uint8_t lun, ui
 static int8_t SCSI_ModeSense6 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  uint16_t len = 8 ;
+  uint16_t len = sizeof(USBD_MSC_Mode_Sense6_Data);
   hmsc->bot_data_length = len;
 
   while (len)
   {
     len--;
-    hmsc->bot_data[len] = MSC_Mode_Sense6_data[len];
+    hmsc->bot_data[len] = USBD_MSC_Mode_Sense6_Data[len];
   }
   return 0;
 }
@@ -348,7 +347,7 @@ static int8_t SCSI_ModeSense6 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *
 */
 static int8_t SCSI_ModeSense10 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params)
 {
-  uint16_t len = 8;
+  uint16_t len = sizeof(USBD_MSC_Mode_Sense10_Data);
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
 
   hmsc->bot_data_length = len;
@@ -356,7 +355,7 @@ static int8_t SCSI_ModeSense10 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t 
   while (len)
   {
     len--;
-    hmsc->bot_data[len] = MSC_Mode_Sense10_data[len];
+    hmsc->bot_data[len] = USBD_MSC_Mode_Sense10_Data[len];
   }
   return 0;
 }

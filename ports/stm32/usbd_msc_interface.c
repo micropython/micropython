@@ -57,6 +57,24 @@ static inline bool lu_flag_is_set(uint8_t lun, uint8_t flag) {
     return usbd_msc_lu_flags & (flag << (lun * 2));
 }
 
+// Sent in response to MODE SENSE(6) command
+const uint8_t USBD_MSC_Mode_Sense6_Data[4] = {
+    0x03, // mode data length
+    0x00, // medium type
+    0x00, // bit 7: write protect
+    0x00, // block descriptor length
+};
+
+// Sent in response to MODE SENSE(10) command
+const uint8_t USBD_MSC_Mode_Sense10_Data[8] = {
+    0x00, 0x06, // mode data length
+    0x00, // medium type
+    0x00, // bit 7: write protect
+    0x00,
+    0x00,
+    0x00, 0x00, // block descriptor length
+};
+
 STATIC const uint8_t usbd_msc_vpd00[6] = {
     0x00, // peripheral qualifier; peripheral device type
     0x00, // page code

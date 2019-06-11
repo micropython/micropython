@@ -131,6 +131,9 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     usbd_hid_state_t *hid;
 } usbd_cdc_msc_hid_state_t;
 
+extern const uint8_t USBD_MSC_Mode_Sense6_Data[4];
+extern const uint8_t USBD_MSC_Mode_Sense10_Data[8];
+
 #define USBD_HID_MOUSE_MAX_PACKET          (4)
 #define USBD_HID_MOUSE_REPORT_DESC_SIZE    (74)
 
