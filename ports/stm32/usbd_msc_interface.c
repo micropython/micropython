@@ -135,6 +135,7 @@ STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
             default:
                 return -1;
         }
+    #if MICROPY_HW_ENABLE_SDCARD
     } else if (lu == &pyb_sdcard_type
         #if MICROPY_HW_ENABLE_MMCARD
         || lu == &pyb_mmcard_type
@@ -158,6 +159,7 @@ STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
             default:
                 return -1;
         }
+    #endif
     } else {
         return -1;
     }
@@ -205,12 +207,13 @@ STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_ou
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
-    const void *lu = usbd_msc_lu_data[lun];
 
     uint8_t alloc_len = params[3] << 8 | params[4];
     int len = MIN(sizeof(usbd_msc_inquiry_data), alloc_len);
     memcpy(data_out, usbd_msc_inquiry_data, len);
 
+    #if MICROPY_HW_ENABLE_SDCARD
+    const void *lu = usbd_msc_lu_data[lun];
     if (len == sizeof(usbd_msc_inquiry_data)) {
         if (lu == &pyb_sdcard_type) {
             memcpy(data_out + 24, "SDCard", sizeof("SDCard") - 1);
@@ -221,6 +224,7 @@ STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_ou
         }
         #endif
     }
+    #endif
 
     return len;
 }
@@ -282,6 +286,7 @@ STATIC int8_t usbd_msc_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16
     if (lu == &pyb_flash_type) {
         storage_read_blocks(buf, blk_addr, blk_len);
         return 0;
+    #if MICROPY_HW_ENABLE_SDCARD
     } else if (lu == &pyb_sdcard_type
         #if MICROPY_HW_ENABLE_MMCARD
         || lu == &pyb_mmcard_type
@@ -290,6 +295,7 @@ STATIC int8_t usbd_msc_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16
         if (sdcard_read_blocks(buf, blk_addr, blk_len) == 0) {
             return 0;
         }
+    #endif
     }
     return -1;
 }
@@ -304,6 +310,7 @@ STATIC int8_t usbd_msc_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint1
     if (lu == &pyb_flash_type) {
         storage_write_blocks(buf, blk_addr, blk_len);
         return 0;
+    #if MICROPY_HW_ENABLE_SDCARD
     } else if (lu == &pyb_sdcard_type
         #if MICROPY_HW_ENABLE_MMCARD
         || lu == &pyb_mmcard_type
@@ -312,6 +319,7 @@ STATIC int8_t usbd_msc_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint1
         if (sdcard_write_blocks(buf, blk_addr, blk_len) == 0) {
             return 0;
         }
+    #endif
     }
     return -1;
 }
