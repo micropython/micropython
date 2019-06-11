@@ -3,6 +3,7 @@
 #include "shared-module/displayio/__init__.h"
 
 #include "lib/utils/interrupt_char.h"
+#include "py/gc.h"
 #include "py/reload.h"
 #include "py/runtime.h"
 #include "shared-bindings/board/__init__.h"
@@ -192,7 +193,6 @@ void common_hal_displayio_release_displays(void) {
 }
 
 void reset_displays(void) {
-    #if CIRCUITPY_DISPLAYIO
     // The SPI buses used by FourWires may be allocated on the heap so we need to move them inline.
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].fourwire_bus.base.type != &displayio_fourwire_type) {
@@ -229,7 +229,19 @@ void reset_displays(void) {
         display->auto_brightness = true;
         common_hal_displayio_display_show(display, &circuitpython_splash);
     }
-    #endif
+}
+
+void displayio_gc_collect(void) {
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].display.base.type == NULL) {
+            continue;
+        }
+
+        // Alternatively, we could use gc_collect_root over the whole object,
+        // but this is more precise, and is the only field that needs marking.
+        gc_collect_ptr(displays[i].display.current_group);
+
+    }
 }
 
 void displayio_area_shift(displayio_area_t* area, int16_t dx, int16_t dy) {

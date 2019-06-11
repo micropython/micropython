@@ -79,6 +79,7 @@ feather_nrf52840_express | s140                    | Peripheral and Scanner | UF
 makerdiary_nrf52840_mdk  | s140                    | Peripheral and Scanner | pyocd or ARM mbed DAPLink
 makerdiary_nrf52840_mdk_usb_dongle | s140          | Peripheral and Scanner | DFU bootloader & nrfutil
 electronut_labs_papyr    | s140                    | Peripheral and Scanner | UF2 bootloader
+electronut_labs_blip     | s140                    | Peripheral and Scanner | Black Magic Probe
 
 ## Segger Targets
 
