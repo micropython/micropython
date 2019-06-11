@@ -103,7 +103,7 @@ void reset_board_busses(void) {
 #endif
 #if BOARD_SPI
     bool display_using_spi = false;
-    #ifdef CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].fourwire_bus.bus == spi_singleton) {
             display_using_spi = true;

@@ -16,4 +16,5 @@ EXTERNAL_FLASH_DEVICES = "W25Q32FV"
 # Tweak inlining depending on language.
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
 CFLAGS_INLINE_LIMIT = 50
+RELEASE_NEEDS_CLEAN_BUILD = 1
 endif

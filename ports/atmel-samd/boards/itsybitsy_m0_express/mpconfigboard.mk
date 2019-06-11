@@ -15,6 +15,7 @@ CHIP_FAMILY = samd21
 # Tweak inlining depending on language.
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
 CFLAGS_INLINE_LIMIT = 45
+RELEASE_NEEDS_CLEAN_BUILD = 1
 else
 CFLAGS_INLINE_LIMIT = 70
 endif

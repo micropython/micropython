@@ -29,7 +29,7 @@
 #include "supervisor/usb.h"
 #include "supervisor/shared/stack.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
 
@@ -48,7 +48,7 @@ void run_background_tasks(void) {
     filesystem_background();
     usb_background();
 
-    #ifdef CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_DISPLAYIO
     displayio_refresh_displays();
     #endif
     running_background_tasks = false;
