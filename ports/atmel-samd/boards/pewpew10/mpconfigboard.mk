@@ -24,6 +24,8 @@ CIRCUITPY_SMALL_BUILD = 1
 
 # Tweak inlining depending on language.
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
-CFLAGS_INLINE_LIMIT = 40
+CFLAGS_INLINE_LIMIT = 23
 RELEASE_NEEDS_CLEAN_BUILD = 1
+else
+CFLAGS_INLINE_LIMIT = 35
 endif
