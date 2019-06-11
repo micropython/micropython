@@ -31,7 +31,7 @@
 #include "usbd_desc.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
-#include "usbd_msc_storage.h"
+#include "usbd_msc_interface.h"
 #include "usbd_hid_interface.h"
 
 #include "py/objstr.h"
@@ -40,6 +40,8 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "bufhelper.h"
+#include "storage.h"
+#include "sdcard.h"
 #include "usb.h"
 
 #if MICROPY_HW_ENABLE_USB
@@ -143,16 +145,20 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, USBD_HID_ModeInf
             return false;
         }
 
+        // Configure the MSC interface
+        const void *lu[1];
         switch (pyb_usb_storage_medium) {
             #if MICROPY_HW_ENABLE_SDCARD
             case PYB_USB_STORAGE_MEDIUM_SDCARD:
-                USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
+                lu[0] = &pyb_sdcard_type;
                 break;
             #endif
             default:
-                USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+                lu[0] = &pyb_flash_type;
                 break;
         }
+        usbd_msc_init_lu(1, lu);
+        USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&usbd_msc_fops);
 
         // start the USB device
         USBD_LL_Init(usbd, (mode & USBD_MODE_HIGH_SPEED) != 0);
