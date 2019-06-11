@@ -225,33 +225,15 @@ static int8_t SCSI_TestUnitReady(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t
 */
 static int8_t  SCSI_Inquiry(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params)
 {
-  uint8_t* pPage;
-  uint16_t len;
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
 
-  if (params[1] & 0x01)/*Evpd is set*/
+  int res = hmsc->bdev_ops->Inquiry(lun, params, hmsc->bot_data);
+  if (res < 0)
   {
-    pPage = (uint8_t *)MSC_Page00_Inquiry_Data;
-    len = LENGTH_INQUIRY_PAGE00;
+    SCSI_SenseCode(pdev, lun, ILLEGAL_REQUEST, INVALID_CDB);
+    return -1;
   }
-  else
-  {
-
-    pPage = (uint8_t *)&hmsc->bdev_ops->pInquiry[lun * STANDARD_INQUIRY_DATA_LEN];
-    len = pPage[4] + 5;
-
-    if (params[4] <= len)
-    {
-      len = params[4];
-    }
-  }
-  hmsc->bot_data_length = len;
-
-  while (len)
-  {
-    len--;
-    hmsc->bot_data[len] = pPage[len];
-  }
+  hmsc->bot_data_length = res;
   return 0;
 }
 

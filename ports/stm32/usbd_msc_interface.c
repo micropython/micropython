@@ -57,6 +57,21 @@ static inline bool lu_flag_is_set(uint8_t lun, uint8_t flag) {
     return usbd_msc_lu_flags & (flag << (lun * 2));
 }
 
+STATIC const uint8_t usbd_msc_vpd00[6] = {
+    0x00, // peripheral qualifier; peripheral device type
+    0x00, // page code
+    0x00, // reserved
+    2, // page length (additional bytes beyond this entry)
+    0x00, // page 0x00 supported
+    0x83, // page 0x83 supported
+};
+
+STATIC const uint8_t usbd_msc_vpd83[4] = {
+    0x00, // peripheral qualifier; peripheral device type
+    0x83, // page code
+    0x00, 0x00, // page length (additional bytes beyond this entry)
+};
+
 STATIC const int8_t usbd_msc_inquiry_data[36] = {
     0x00, // peripheral qualifier; peripheral device type
     0x80, // 0x00 for a fixed drive, 0x80 for a removable drive
@@ -150,6 +165,48 @@ STATIC int8_t usbd_msc_Init(uint8_t lun_in) {
         }
     }
     return 0;
+}
+
+// Process SCSI INQUIRY command for the logical unit
+STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_out) {
+    if (params[1] & 1) {
+        // EVPD set - return vital product data parameters
+        uint8_t page_code = params[2];
+        switch (page_code) {
+            case 0x00: // Supported VPD pages
+                memcpy(data_out, usbd_msc_vpd00, sizeof(usbd_msc_vpd00));
+                return sizeof(usbd_msc_vpd00);
+            case 0x83: // Device identification
+                memcpy(data_out, usbd_msc_vpd83, sizeof(usbd_msc_vpd83));
+                return sizeof(usbd_msc_vpd83);
+            default: // Unsupported
+                return -1;
+        }
+    }
+
+    // A standard inquiry
+
+    if (lun >= usbd_msc_lu_num) {
+        return -1;
+    }
+    const void *lu = usbd_msc_lu_data[lun];
+
+    uint8_t alloc_len = params[3] << 8 | params[4];
+    int len = MIN(sizeof(usbd_msc_inquiry_data), alloc_len);
+    memcpy(data_out, usbd_msc_inquiry_data, len);
+
+    if (len == sizeof(usbd_msc_inquiry_data)) {
+        if (lu == &pyb_sdcard_type) {
+            memcpy(data_out + 24, "SDCard", sizeof("SDCard") - 1);
+        }
+        #if MICROPY_HW_ENABLE_MMCARD
+        else if (lu == &pyb_mmcard_type) {
+            memcpy(data_out + 24, "MMCard", sizeof("MMCard") - 1);
+        }
+        #endif
+    }
+
+    return len;
 }
 
 // Get storage capacity of a logical unit
@@ -251,6 +308,7 @@ STATIC int8_t usbd_msc_GetMaxLun(void) {
 // Table of operations for the SCSI layer to call
 const USBD_StorageTypeDef usbd_msc_fops = {
     usbd_msc_Init,
+    usbd_msc_Inquiry,
     usbd_msc_GetCapacity,
     usbd_msc_IsReady,
     usbd_msc_IsWriteProtected,
@@ -259,5 +317,4 @@ const USBD_StorageTypeDef usbd_msc_fops = {
     usbd_msc_Read,
     usbd_msc_Write,
     usbd_msc_GetMaxLun,
-    (int8_t *)usbd_msc_inquiry_data,
 };
