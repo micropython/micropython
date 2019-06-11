@@ -28,6 +28,7 @@ Session.vim
 # CTags files
 ######################
 tags
+TAGS
 
 # Build directory
 ######################

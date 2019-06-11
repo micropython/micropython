@@ -124,7 +124,7 @@ LVGL_BINDING_DIR = $(TOP)/lib/lv_bindings
 LVGL_DIR = $(LVGL_BINDING_DIR)/lvgl
 LVGL_GENERIC_DRV_DIR = $(LVGL_BINDING_DIR)/driver/generic
 INC += -I$(LVGL_BINDING_DIR)
-ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f) $(TOP)/lib/lv_conf.h
+ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f) $(LVGL_BINDING_DIR)/lv_conf.h
 LVGL_PP = $(BUILD)/lvgl/lvgl.pp.c
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
 QSTR_GLOBAL_DEPENDENCIES += $(LVGL_MPY)
@@ -134,10 +134,30 @@ $(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CPP) $(LV_CFLAGS) $(INC) -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(LVGL_DIR)/lvgl.h > $(LVGL_PP)
-	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -E $(LVGL_PP) $(LVGL_DIR)/lvgl.h > $@
+	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -M lvgl -MP lv -E $(LVGL_PP) $(LVGL_DIR)/lvgl.h > $@
 
 CFLAGS_MOD += -Wno-unused-function
 SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
+
+#lodepng
+LODEPNG_DIR = $(TOP)/lib/lv_bindings/driver/png/lodepng
+ALL_LODEPNG_SRC = $(shell find $(LODEPNG_DIR) -type f)
+LODEPNG_MODULE = $(BUILD)/lodepng/mp_lodepng.c
+LODEPNG_C = $(BUILD)/lodepng/lodepng.c
+LODEPNG_PP = $(BUILD)/lodepng/lodepng.pp.c
+INC += -I$(LODEPNG_DIR)
+
+$(LODEPNG_MODULE): $(ALL_LODEPNG_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
+	$(ECHO) "LODEPNG-GEN $@"
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CPP) $(LODEPNG_CFLAGS) $(INC) -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(LODEPNG_DIR)/lodepng.h > $(LODEPNG_PP)
+	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -M lodepng -E $(LODEPNG_PP) $(LODEPNG_DIR)/lodepng.h > $@
+
+$(LODEPNG_C): $(LODEPNG_DIR)/lodepng.cpp
+	$(Q)mkdir -p $(dir $@)
+	cp $< $@
+
+SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(LODEPNG_MODULE))
 
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
