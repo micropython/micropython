@@ -1,9 +1,11 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 tavish@electronut.in
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +26,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
+#include "nrfx/hal/nrf_gpio.h"
 
-#include "shared-bindings/displayio/Display.h"
-#include "shared-bindings/displayio/FourWire.h"
-#include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/displayio/ParallelBus.h"
+#define ELECTRONUT_LABS_PAPYR
 
-typedef struct {
-    union {
-        displayio_fourwire_obj_t fourwire_bus;
-        displayio_parallelbus_obj_t parallel_bus;
-    };
-    displayio_display_obj_t display;
-} primary_display_t;
+#define MICROPY_HW_BOARD_NAME       "Electronut Labs Blip"
+#define MICROPY_HW_MCU_NAME         "nRF52840"
+#define MICROPY_PY_SYS_PLATFORM     "ElectronutLabsPapyr"
 
-extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
-extern displayio_group_t circuitpython_splash;
+// TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
 
-void displayio_refresh_displays(void);
-void reset_displays(void);
-void displayio_gc_collect(void);
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
+#define BOARD_HAS_CRYSTAL 1
+
+#define DEFAULT_I2C_BUS_SCL         (&pin_P0_11)
+#define DEFAULT_I2C_BUS_SDA         (&pin_P0_12)
+
+#define DEFAULT_SPI_BUS_SCK         (&pin_P0_25)
+#define DEFAULT_SPI_BUS_MOSI        (&pin_P1_02)
+#define DEFAULT_SPI_BUS_MISO        (&pin_P0_24)
+
+#define DEFAULT_UART_BUS_RX         (&pin_P0_08)
+#define DEFAULT_UART_BUS_TX         (&pin_P0_06)

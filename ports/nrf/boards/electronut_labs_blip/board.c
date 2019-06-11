@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
+#include "boards/board.h"
 
-#include "shared-bindings/displayio/Display.h"
-#include "shared-bindings/displayio/FourWire.h"
-#include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/displayio/ParallelBus.h"
+void board_init(void) {
+}
 
-typedef struct {
-    union {
-        displayio_fourwire_obj_t fourwire_bus;
-        displayio_parallelbus_obj_t parallel_bus;
-    };
-    displayio_display_obj_t display;
-} primary_display_t;
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
+void reset_board(void) {
 
-extern displayio_group_t circuitpython_splash;
-
-void displayio_refresh_displays(void);
-void reset_displays(void);
-void displayio_gc_collect(void);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
+}
