@@ -120,7 +120,7 @@ void pyb_usb_init0(void) {
     pyb_usb_vcp_init0();
 }
 
-bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
+bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, const void *msc_unit, USBD_HID_ModeInfoTypeDef *hid_info) {
     usb_device_t *usb_dev = &usb_device;
     if (!usb_dev->enabled) {
         // only init USB once in the device's power-lifetime
@@ -146,18 +146,22 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, USBD_HID_ModeInf
         }
 
         // Configure the MSC interface
-        const void *lu[1];
-        switch (pyb_usb_storage_medium) {
-            #if MICROPY_HW_ENABLE_SDCARD
-            case PYB_USB_STORAGE_MEDIUM_SDCARD:
-                lu[0] = &pyb_sdcard_type;
-                break;
-            #endif
-            default:
-                lu[0] = &pyb_flash_type;
-                break;
+        const void *msc_unit_default[1];
+        if (msc_n == 0) {
+            msc_n = 1;
+            msc_unit = msc_unit_default;
+            switch (pyb_usb_storage_medium) {
+                #if MICROPY_HW_ENABLE_SDCARD
+                case PYB_USB_STORAGE_MEDIUM_SDCARD:
+                    msc_unit_default[0] = &pyb_sdcard_type;
+                    break;
+                #endif
+                default:
+                    msc_unit_default[0] = &pyb_flash_type;
+                    break;
+            }
         }
-        usbd_msc_init_lu(1, lu);
+        usbd_msc_init_lu(msc_n, msc_unit);
         USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&usbd_msc_fops);
 
         // start the USB device
@@ -226,11 +230,12 @@ usbd_cdc_itf_t *usb_vcp_get(int idx) {
 */
 
 STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_vid, ARG_pid, ARG_hid, ARG_high_speed };
+    enum { ARG_mode, ARG_vid, ARG_pid, ARG_msc, ARG_hid, ARG_high_speed };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = USBD_VID} },
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_msc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_empty_tuple_obj)} },
         { MP_QSTR_hid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&pyb_usb_hid_mouse_obj)} },
         #if USBD_SUPPORT_HS_MODE
         { MP_QSTR_high_speed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -347,6 +352,30 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         goto bad_mode;
     }
 
+    // Get MSC logical units
+    size_t msc_n = 0;
+    const void *msc_unit[USBD_MSC_MAX_LUN];
+    if (mode & USBD_MODE_IFACE_MSC) {
+        mp_obj_t *items;
+        mp_obj_get_array(args[ARG_msc].u_obj, &msc_n, &items);
+        if (msc_n > USBD_MSC_MAX_LUN) {
+            mp_raise_ValueError("too many logical units");
+        }
+        for (size_t i = 0; i < msc_n; ++i) {
+            mp_obj_type_t *type = mp_obj_get_type(items[i]);
+            if (type == &pyb_flash_type
+                || type == &pyb_sdcard_type
+                #if MICROPY_HW_ENABLE_MMCARD
+                || type == &pyb_mmcard_type
+                #endif
+                ) {
+                msc_unit[i] = type;
+            } else {
+                mp_raise_ValueError("unsupported logical unit");
+            }
+        }
+    }
+
     // get hid info if user selected such a mode
     USBD_HID_ModeInfoTypeDef hid_info;
     if (mode & USBD_MODE_IFACE_HID) {
@@ -372,7 +401,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #endif
 
     // init the USB device
-    if (!pyb_usb_dev_init(vid, pid, mode, &hid_info)) {
+    if (!pyb_usb_dev_init(vid, pid, mode, msc_n, msc_unit, &hid_info)) {
         goto bad_mode;
     }
 

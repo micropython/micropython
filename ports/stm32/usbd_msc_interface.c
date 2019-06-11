@@ -33,8 +33,6 @@
 #include "storage.h"
 #include "sdcard.h"
 
-#define USBD_MSC_MAX_LUN (2)
-
 // This flag is needed to support removal of the medium, so that the USB drive
 // can be unmounted and won't be remounted automatically.
 #define FLAGS_STARTED (0x01)
