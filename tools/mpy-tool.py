@@ -481,6 +481,7 @@ class RawCodeNative(RawCode):
         if kind == 0:
             # Generic 16-bit link
             print('    %s & 0xff, %s >> 8,' % (qst, qst))
+            return 2
         else:
             # Architecture-specific link
             is_obj = kind == 2
@@ -488,14 +489,17 @@ class RawCodeNative(RawCode):
                 qst = '((uintptr_t)MP_OBJ_NEW_QSTR(%s))' % qst
             if config.native_arch in (MP_NATIVE_ARCH_X86, MP_NATIVE_ARCH_X64):
                 print('    %s & 0xff, %s >> 8, 0, 0,' % (qst, qst))
+                return 4
             elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
                 if is_obj:
                     # qstr object, movw and movt
                     self._asm_thumb_rewrite_mov(pc, qst)
                     self._asm_thumb_rewrite_mov(pc + 4, '(%s >> 16)' % qst)
+                    return 8
                 else:
                     # qstr number, movw instruction
                     self._asm_thumb_rewrite_mov(pc, qst)
+                    return 4
             else:
                 assert 0
 
@@ -523,8 +527,7 @@ class RawCodeNative(RawCode):
                 # link qstr
                 qi_off, qi_kind, qi_val = self.qstr_links[qi]
                 qst = global_qstrs[qi_val].qstr_id
-                self._link_qstr(i, qi_kind, qst)
-                i += 4
+                i += self._link_qstr(i, qi_kind, qst)
                 qi += 1
             else:
                 # copy machine code (max 16 bytes)
