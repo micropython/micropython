@@ -111,12 +111,18 @@ else
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
-  ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
-    CFLAGS += -finline-limit=50
+
+  # Do a default shrink for small builds.
+  ifndef CFLAGS_INLINE_LIMIT
+    ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+      CFLAGS_INLINE_LIMIT = 50
+    endif
   endif
+
   ifdef CFLAGS_INLINE_LIMIT
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
   endif
+
   CFLAGS += -flto
 endif
 

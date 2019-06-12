@@ -32,13 +32,13 @@
 # CIRCUITPY_FULL_BUILD = 0
 
 ifndef CIRCUITPY_FULL_BUILD
-ifeq ($(CIRCUITPY_SMALL_BUILD),1)
-CIRCUITPY_FULL_BUILD = 0
-CFLAGS += -DCIRCUITPY_FULL_BUILD=0
-else
-CIRCUITPY_FULL_BUILD = 1
-CFLAGS += -DCIRCUITPY_FULL_BUILD=1
-endif
+  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+    CIRCUITPY_FULL_BUILD = 0
+    CFLAGS += -DCIRCUITPY_FULL_BUILD=0
+  else
+    CIRCUITPY_FULL_BUILD = 1
+    CFLAGS += -DCIRCUITPY_FULL_BUILD=1
+  endif
 endif
 
 # All builtin modules are listed below, with default values (0 for off, 1 for on)
