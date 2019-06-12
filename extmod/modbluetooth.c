@@ -29,6 +29,7 @@
 #include "py/objarray.h"
 #include "py/binary.h"
 #include "py/runtime.h"
+#include "py/qstr.h"
 #include "extmod/modbluetooth.h"
 #include <string.h>
 
@@ -162,33 +163,6 @@ mp_obj_t mp_bt_format_uuid_str(const uint8_t *uuid) {
         }
     }
     return mp_obj_new_str(str, MP_ARRAY_SIZE(str));
-}
-
-// Format 6-byte MAC address. Example output:
-// '11:22:33:AA:BB:CC'
-STATIC mp_obj_t mp_bt_format_mac(const uint8_t *mac) {
-    char str[18]; // includes last ':' for convenience (e.g. '11:22:33:AA:BB:CC:')
-    char *s = str;
-    for (int i = 5; i >= 0; i--) {
-        char nibble = mac[i] >> 4;
-        if (nibble >= 10) {
-            nibble += 'A' - 10;
-        } else {
-            nibble += '0';
-        }
-        *(s++) = nibble;
-
-        nibble = mac[i] & 0xf;
-        if (nibble >= 10) {
-            nibble += 'A' - 10;
-        } else {
-            nibble += '0';
-        }
-        *(s++) = nibble;
-
-        *(s++) = ':';
-    }
-    return mp_obj_new_str(str, MP_ARRAY_SIZE(str)-1);
 }
 
 // Add this connection handle to the list of connected centrals.
@@ -496,12 +470,18 @@ STATIC mp_obj_t bluetooth_add_service(size_t n_args, const mp_obj_t *pos_args, m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_add_service_obj, 1, bluetooth_add_service);
 
-STATIC mp_obj_t bluetooth_address(mp_obj_t self_in) {
-    uint8_t address[6];
-    mp_bt_get_address(address);
-    return mp_bt_format_mac(address);
+STATIC mp_obj_t bluetooth_config(mp_obj_t self_in, mp_obj_t param) {
+    switch ((uintptr_t)param) {
+    case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_mac): {
+        uint8_t address[6];
+        mp_bt_get_address(address);
+        return mp_obj_new_bytes(address, MP_ARRAY_SIZE(address));
+    }
+    default:
+        mp_raise_ValueError("unknown config param");
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_address_obj, bluetooth_address);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_config_obj, bluetooth_config);
 
 STATIC mp_obj_t bluetooth_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger };
@@ -526,21 +506,27 @@ STATIC mp_obj_t bluetooth_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_irq_obj, 1, bluetooth_irq);
 
-STATIC mp_obj_t device_address(mp_obj_t self_in) {
+STATIC mp_obj_t device_config(mp_obj_t self_in, mp_obj_t param) {
     mp_bt_device_t *device = self_in;
-    bool has_address = false;
-    for (int i = 0; i < 6; i++) {
-        if (device->address[i] != 0) {
-            has_address = true;
+    switch ((uintptr_t)param) {
+    case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_mac): {
+        bool has_address = false;
+        for (int i = 0; i < 6; i++) {
+            if (device->address[i] != 0) {
+                has_address = true;
+            }
+        }
+        if (has_address) {
+            return mp_obj_new_bytes(device->address, 6);
+        } else {
+            return mp_const_none;
         }
     }
-    if (has_address) {
-        return mp_bt_format_mac(device->address);
-    } else {
-        return mp_const_none;
+    default:
+        mp_raise_ValueError("unknown config param");
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(device_address_obj, device_address);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(device_config_obj, device_config);
 
 STATIC mp_obj_t device_connected(mp_obj_t self_in) {
     mp_bt_device_t *device = self_in;
@@ -561,7 +547,7 @@ STATIC mp_obj_t device_disconnect(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(device_disconnect_obj, device_disconnect);
 
 STATIC const mp_rom_map_elem_t device_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_address),    MP_ROM_PTR(&device_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config),     MP_ROM_PTR(&device_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_connected),  MP_ROM_PTR(&device_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&device_disconnect_obj) },
 };
@@ -736,7 +722,7 @@ STATIC const mp_rom_map_elem_t bluetooth_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),        MP_ROM_PTR(&bluetooth_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise),     MP_ROM_PTR(&bluetooth_advertise_obj) },
     { MP_ROM_QSTR(MP_QSTR_add_service),   MP_ROM_PTR(&bluetooth_add_service_obj) },
-    { MP_ROM_QSTR(MP_QSTR_address),       MP_ROM_PTR(&bluetooth_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config),        MP_ROM_PTR(&bluetooth_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),           MP_ROM_PTR(&bluetooth_irq_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_locals_dict, bluetooth_locals_dict_table);
