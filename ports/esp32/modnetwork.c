@@ -159,8 +159,8 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                 message = "\nno AP found";
                 break;
             case WIFI_REASON_AUTH_FAIL:
+                // Password may be wrong, or it just failed to connect; try to reconnect.
                 message = "\nauthentication failed";
-                wifi_sta_connect_requested = false;
                 break;
             default:
                 // Let other errors through and try to reconnect.
