@@ -127,7 +127,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, 
 //|
 STATIC mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
     pulseio_pulseout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pulseout_deinited(self));
+    if (common_hal_pulseio_pulseout_deinited(self)) {
+        raise_deinited_error();
+    }
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(pulses, &bufinfo, MP_BUFFER_READ);

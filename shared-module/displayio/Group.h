@@ -40,12 +40,12 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
+    displayio_group_child_t* children;
     int16_t x;
     int16_t y;
     uint16_t scale;
     uint16_t size;
     uint16_t max_size;
-    displayio_group_child_t* children;
     bool item_removed;
     bool in_group;
     displayio_buffer_transform_t absolute_transform;

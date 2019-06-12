@@ -150,7 +150,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cslave_i2c_slave___exit___obj, 4, 4
 STATIC mp_obj_t i2cslave_i2c_slave_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(MP_OBJ_IS_TYPE(pos_args[0], &i2cslave_i2c_slave_type));
     i2cslave_i2c_slave_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_i2cslave_i2c_slave_deinited(self));
+    if(common_hal_i2cslave_i2c_slave_deinited(self)) {
+        raise_deinited_error();
+    }
     enum { ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },

@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_UTIL_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_UTIL_H
 
-void raise_error_if_deinited(bool deinited);
+void raise_deinited_error(void);
 
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_UTIL_H

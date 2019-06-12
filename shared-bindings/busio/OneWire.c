@@ -91,6 +91,12 @@ STATIC mp_obj_t busio_onewire_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_onewire_deinit_obj, busio_onewire_deinit);
 
+STATIC void check_for_deinit(busio_onewire_obj_t *self) {
+    if (common_hal_busio_onewire_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -118,7 +124,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_onewire___exit___obj, 4, 4, bus
 //|
 STATIC mp_obj_t busio_onewire_obj_reset(mp_obj_t self_in) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_onewire_deinited(self));
+    check_for_deinit(self);
 
     return mp_obj_new_bool(common_hal_busio_onewire_reset(self));
 }
@@ -133,7 +139,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_onewire_reset_obj, busio_onewire_obj_reset);
 //|
 STATIC mp_obj_t busio_onewire_obj_read_bit(mp_obj_t self_in) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_onewire_deinited(self));
+    check_for_deinit(self);
 
     return mp_obj_new_bool(common_hal_busio_onewire_read_bit(self));
 }
@@ -145,7 +151,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_onewire_read_bit_obj, busio_onewire_obj_read_bit
 //|
 STATIC mp_obj_t busio_onewire_obj_write_bit(mp_obj_t self_in, mp_obj_t bool_obj) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_onewire_deinited(self));
+    check_for_deinit(self);
 
     common_hal_busio_onewire_write_bit(self, mp_obj_is_true(bool_obj));
     return mp_const_none;
