@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-22 15:56-0300\n"
+"POT-Creation-Date: 2019-06-11 14:59-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -835,6 +835,10 @@ msgstr "Zły plik wave"
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "Lewa strona argumentu nazwanego musi być nazwą"
+
+#: shared-module/displayio/Group.c
+msgid "Layer already in a group."
+msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."

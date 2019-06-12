@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-22 15:56-0300\n"
+"POT-Creation-Date: 2019-06-11 14:59-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -855,6 +855,10 @@ msgstr ""
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "LHS dari keyword arg harus menjadi sebuah id"
+
+#: shared-module/displayio/Group.c
+msgid "Layer already in a group."
+msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
