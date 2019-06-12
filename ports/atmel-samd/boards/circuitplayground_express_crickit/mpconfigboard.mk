@@ -17,7 +17,10 @@ CIRCUITPY_DISPLAYIO = 0
 CIRCUITPY_PIXELBUF = 0
 CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_I2CSLAVE = 0
+
 SUPEROPT_GC = 0
+CFLAGS_INLINE_LIMIT = 55
+
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice

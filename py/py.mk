@@ -357,7 +357,7 @@ ifndef SUPEROPT_VM
 endif
 
 ifeq ($(SUPEROPT_VM),1)
-#$(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
+$(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 endif
 
 # Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
