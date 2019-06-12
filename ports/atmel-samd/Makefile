@@ -101,7 +101,7 @@ endif
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
   # You may want to disable -flto if it interferes with debugging.
-  CFLAGS += -flto
+  CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
@@ -122,8 +122,7 @@ else
   ifdef CFLAGS_INLINE_LIMIT
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
   endif
-
-  CFLAGS += -flto
+  CFLAGS += -flto -flto-partition=none
 endif
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
