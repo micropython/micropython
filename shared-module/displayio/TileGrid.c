@@ -80,13 +80,15 @@ bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_
 }
 
 void _update_current_x(displayio_tilegrid_t *self) {
+    int16_t width;
+    if (self->transpose_xy) {
+        width = self->pixel_height;
+    } else {
+        width = self->pixel_width;
+    }
     if (self->absolute_transform->transpose_xy) {
         self->current_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * self->x;
-        if (self->transpose_xy) {
-            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + self->pixel_height);
-        } else {
-            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + self->pixel_width);
-        }
+        self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->x + width);
         if (self->current_area.y2 < self->current_area.y1) {
             int16_t temp = self->current_area.y2;
             self->current_area.y2 = self->current_area.y1;
@@ -94,11 +96,7 @@ void _update_current_x(displayio_tilegrid_t *self) {
         }
     } else {
         self->current_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * self->x;
-        if (self->transpose_xy) {
-            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->pixel_height);
-        } else {
-            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + self->pixel_width);
-        }
+        self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->x + width);
         if (self->current_area.x2 < self->current_area.x1) {
             int16_t temp = self->current_area.x2;
             self->current_area.x2 = self->current_area.x1;
@@ -108,13 +106,15 @@ void _update_current_x(displayio_tilegrid_t *self) {
 }
 
 void _update_current_y(displayio_tilegrid_t *self) {
+    int16_t height;
+    if (self->transpose_xy) {
+        height = self->pixel_width;
+    } else {
+        height = self->pixel_height;
+    }
     if (self->absolute_transform->transpose_xy) {
         self->current_area.x1 = self->absolute_transform->x + self->absolute_transform->dx * self->y;
-        if (self->transpose_xy) {
-            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->pixel_width);
-        } else {
-            self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + self->pixel_height);
-        }
+        self->current_area.x2 = self->absolute_transform->x + self->absolute_transform->dx * (self->y + height);
         if (self->current_area.x2 < self->current_area.x1) {
             int16_t temp = self->current_area.x2;
             self->current_area.x2 = self->current_area.x1;
@@ -122,11 +122,7 @@ void _update_current_y(displayio_tilegrid_t *self) {
         }
     } else {
         self->current_area.y1 = self->absolute_transform->y + self->absolute_transform->dy * self->y;
-        if (self->transpose_xy) {
-            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->pixel_width);
-        } else {
-            self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + self->pixel_height);
-        }
+        self->current_area.y2 = self->absolute_transform->y + self->absolute_transform->dy * (self->y + height);
         if (self->current_area.y2 < self->current_area.y1) {
             int16_t temp = self->current_area.y2;
             self->current_area.y2 = self->current_area.y1;
@@ -315,22 +311,12 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const displayio_ar
     // How many pixels are outside of our area between us and the start of the row.
     uint16_t start = 0;
     if ((self->absolute_transform->dx < 0) != flip_x) {
-        // if (self->absolute_transform->transpose_xy) {
-        //     start += (area->y2 - area->y1 - 1) * y_stride;
-        //     y_stride *= -1;
-        // } else {
-            start += (area->x2 - area->x1 - 1) * x_stride;
-            x_stride *= -1;
-        //}
+        start += (area->x2 - area->x1 - 1) * x_stride;
+        x_stride *= -1;
     }
     if ((self->absolute_transform->dy < 0) != flip_y) {
-        // if (self->absolute_transform->transpose_xy) {
-        //     start += (area->x2 - area->x1 - 1) * x_stride;
-        //     x_stride *= -1;
-        // } else {
-            start += (area->y2 - area->y1 - 1) * y_stride;
-            y_stride *= -1;
-        //}
+        start += (area->y2 - area->y1 - 1) * y_stride;
+        y_stride *= -1;
     }
 
     // Track if this layer finishes filling in the given area. We can ignore any remaining

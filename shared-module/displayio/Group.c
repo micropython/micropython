@@ -40,7 +40,7 @@ uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self) {
 
 bool displayio_group_get_previous_area(displayio_group_t *self, displayio_area_t* area) {
     bool first = true;
-    for (int32_t i = 0; i < self->size; i++) {
+    for (size_t i = 0; i < self->size; i++) {
         mp_obj_t layer = self->children[i].native;
         displayio_area_t layer_area;
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
@@ -74,7 +74,7 @@ static void _update_child_transforms(displayio_group_t* self) {
     if (!self->in_group) {
         return;
     }
-    for (int32_t i = 0; i < self->size; i++) {
+    for (size_t i = 0; i < self->size; i++) {
         mp_obj_t layer = self->children[i].native;
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
             displayio_tilegrid_update_transform(layer, &self->absolute_transform);
@@ -128,10 +128,10 @@ void common_hal_displayio_group_set_x(displayio_group_t* self, mp_int_t x) {
         return;
     }
     if (self->absolute_transform.transpose_xy) {
-        int8_t dy = self->absolute_transform.dy / self->scale;
+        int16_t dy = self->absolute_transform.dy / self->scale;
         self->absolute_transform.y += dy * (x - self->x);
     } else  {
-        int8_t dx = self->absolute_transform.dx / self->scale;
+        int16_t dx = self->absolute_transform.dx / self->scale;
         self->absolute_transform.x += dx * (x - self->x);
     }
 

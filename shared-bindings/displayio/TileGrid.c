@@ -249,8 +249,8 @@ const mp_obj_property_t displayio_tilegrid_flip_y_obj = {
 
 //|   .. attribute:: transpose_xy
 //|
-//|     If true, the TileGrid will be rotate 90 degrees. When combined with mirroring any 90 degree
-//|     rotation can be achieved.
+//|     If true, the TileGrid's axis will be swapped. When combined with mirroring, any 90 degree
+//|     rotation can be achieved along with the corresponding mirrored version.
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_transpose_xy(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
