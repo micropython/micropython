@@ -95,6 +95,12 @@ STATIC mp_obj_t bitbangio_spi_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_deinit_obj, bitbangio_spi_obj_deinit);
 
+STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
+    if (shared_module_bitbangio_spi_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -139,7 +145,7 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
     };
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -171,7 +177,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configu
 //|
 STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(shared_module_bitbangio_spi_try_lock(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock);
@@ -182,7 +188,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock
 //|
 STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     shared_module_bitbangio_spi_unlock(self);
     return mp_const_none;
 }
@@ -196,7 +202,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
     if (src.len == 0) {
@@ -221,7 +227,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
     if (bufinfo.len == 0) {
@@ -261,7 +267,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
         { MP_QSTR_in_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

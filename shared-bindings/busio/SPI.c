@@ -124,10 +124,16 @@ STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, busio_spi_obj___exit__);
 
-static void check_lock(busio_spi_obj_t *self) {
+STATIC void check_lock(busio_spi_obj_t *self) {
     asm("");
     if (!common_hal_busio_spi_has_lock(self)) {
         mp_raise_RuntimeError(translate("Function requires lock"));
+    }
+}
+
+STATIC void check_for_deinit(busio_spi_obj_t *self) {
+    if (common_hal_busio_spi_deinited(self)) {
+        raise_deinited_error();
     }
 }
 
@@ -162,7 +168,7 @@ STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -197,7 +203,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 //|
 STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
     return mp_obj_new_bool(common_hal_busio_spi_try_lock(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
@@ -208,7 +213,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 //|
 STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    check_for_deinit(self);
     common_hal_busio_spi_unlock(self);
     return mp_const_none;
 }
@@ -231,7 +236,7 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -275,7 +280,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
         { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -324,7 +329,7 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
         { MP_QSTR_in_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -367,7 +372,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 2, busio_spi_write_read
 //|
 STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_busio_spi_get_frequency(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_get_frequency_obj, busio_spi_obj_get_frequency);

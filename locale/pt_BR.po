@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-22 15:56-0300\n"
+"POT-Creation-Date: 2019-06-11 14:59-0700\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -852,6 +852,10 @@ msgstr "Aqruivo de ondas inválido"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
+msgstr ""
+
+#: shared-module/displayio/Group.c
+msgid "Layer already in a group."
 msgstr ""
 
 #: shared-module/displayio/Group.c

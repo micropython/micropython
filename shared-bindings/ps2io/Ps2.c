@@ -103,6 +103,12 @@ STATIC mp_obj_t ps2io_ps2_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_deinit_obj, ps2io_ps2_deinit);
 
+STATIC void check_for_deinit(ps2io_ps2_obj_t *self) {
+    if (common_hal_ps2io_ps2_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -128,7 +134,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ps2io_ps2___exit___obj, 4, 4, ps2io_p
 //|
 STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_ps2io_ps2_deinited(self));
+    check_for_deinit(self);
 
     int b = common_hal_ps2io_ps2_popleft(self);
     if (b < 0) {
@@ -153,7 +159,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_popleft_obj, ps2io_ps2_obj_popleft);
 //|
 STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_ps2io_ps2_deinited(self));
+    check_for_deinit(self);
     mp_int_t cmd = mp_obj_get_int(ob) & 0xff;
     int resp = common_hal_ps2io_ps2_sendcmd(self, cmd);
     if (resp < 0) {
@@ -195,7 +201,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(ps2io_ps2_sendcmd_obj, ps2io_ps2_obj_sendcmd);
 //|
 STATIC mp_obj_t ps2io_ps2_obj_clear_errors(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_ps2io_ps2_deinited(self));
+    check_for_deinit(self);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_ps2io_ps2_clear_errors(self));
 }
@@ -208,7 +214,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_clear_errors_obj, ps2io_ps2_obj_clear_errors
 //|
 STATIC mp_obj_t ps2_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_ps2io_ps2_deinited(self));
+    check_for_deinit(self);
     uint16_t len = common_hal_ps2io_ps2_get_len(self);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);

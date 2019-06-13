@@ -100,6 +100,12 @@ STATIC mp_obj_t rotaryio_incrementalencoder_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rotaryio_incrementalencoder_deinit_obj, rotaryio_incrementalencoder_deinit);
 
+STATIC void check_for_deinit(rotaryio_incrementalencoder_obj_t *self) {
+    if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -126,7 +132,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rotaryio_incrementalencoder___exit___
 //|
 STATIC mp_obj_t rotaryio_incrementalencoder_obj_get_position(mp_obj_t self_in) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_rotaryio_incrementalencoder_deinited(self));
+    check_for_deinit(self);
 
     return mp_obj_new_int(common_hal_rotaryio_incrementalencoder_get_position(self));
 }
@@ -134,7 +140,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(rotaryio_incrementalencoder_get_position_obj, rotaryio
 
 STATIC mp_obj_t rotaryio_incrementalencoder_obj_set_position(mp_obj_t self_in, mp_obj_t new_position) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_rotaryio_incrementalencoder_deinited(self));
+    check_for_deinit(self);
 
     common_hal_rotaryio_incrementalencoder_set_position(self, mp_obj_get_int(new_position));
     return mp_const_none;

@@ -96,8 +96,9 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
             mp_raise_TypeError(translate("Row entry must be digitalio.DigitalInOut"));
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(rows[i]);
-        raise_error_if_deinited(
-            common_hal_digitalio_digitalinout_deinited(pin));
+        if (common_hal_digitalio_digitalinout_deinited(pin)) {
+            raise_deinited_error();
+        }
     }
 
     for (size_t i = 0; i < cols_size; ++i) {
@@ -105,8 +106,9 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
             mp_raise_TypeError(translate("Column entry must be digitalio.DigitalInOut"));
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(cols[i]);
-        raise_error_if_deinited(
-            common_hal_digitalio_digitalinout_deinited(pin));
+        if (common_hal_digitalio_digitalinout_deinited(pin)) {
+            raise_deinited_error();
+        }
     }
 
     if (!MP_OBJ_IS_TYPE(args[ARG_buttons].u_obj,
@@ -115,8 +117,9 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
     }
     digitalio_digitalinout_obj_t *buttons = MP_OBJ_TO_PTR(
             args[ARG_buttons].u_obj);
-    raise_error_if_deinited(
-        common_hal_digitalio_digitalinout_deinited(buttons));
+    if (common_hal_digitalio_digitalinout_deinited(buttons)) {
+        raise_deinited_error();
+    }
 
     pew_obj_t *pew = MP_STATE_VM(pew_singleton);
     if (!pew) {
