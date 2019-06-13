@@ -207,7 +207,7 @@ void mp_js_init(int heap_size) {
     #endif
 
     #if MICROPY_ENABLE_PYSTACK
-    static mp_obj_t pystack[1024];
+    static mp_obj_t pystack[16384];
     mp_pystack_init(pystack, &pystack[MP_ARRAY_SIZE(pystack)]);
     #endif
 
