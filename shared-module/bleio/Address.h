@@ -27,14 +27,12 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H
 
-#include "shared-bindings/bleio/AddressType.h"
-
-#define BLEIO_ADDRESS_BYTES 6
+#define NUM_BLEIO_ADDRESS_BYTES 6
 
 typedef struct {
     mp_obj_base_t base;
-    bleio_address_type_t type;
-    uint8_t value[BLEIO_ADDRESS_BYTES];
+    uint8_t type;
+    uint8_t bytes[NUM_BLEIO_ADDRESS_BYTES];
 } bleio_address_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H

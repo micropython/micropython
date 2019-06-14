@@ -121,6 +121,12 @@ STATIC mp_obj_t audioio_mixer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_deinit_obj, audioio_mixer_deinit);
 
+STATIC void check_for_deinit(audioio_mixer_obj_t *self) {
+    if (common_hal_audioio_mixer_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -157,7 +163,7 @@ STATIC mp_obj_t audioio_mixer_obj_play(size_t n_args, const mp_obj_t *pos_args, 
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
+    check_for_deinit(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -178,7 +184,7 @@ STATIC mp_obj_t audioio_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *pos_
         { MP_QSTR_voice, MP_ARG_INT, {.u_int = 0} },
     };
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
+    check_for_deinit(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -193,7 +199,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_stop_voice_obj, 1, audioio_mixer_obj_st
 //|
 STATIC mp_obj_t audioio_mixer_obj_get_playing(mp_obj_t self_in) {
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(common_hal_audioio_mixer_get_playing(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_playing_obj, audioio_mixer_obj_get_playing);
@@ -211,7 +217,7 @@ const mp_obj_property_t audioio_mixer_playing_obj = {
 //|
 STATIC mp_obj_t audioio_mixer_obj_get_sample_rate(mp_obj_t self_in) {
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_mixer_get_sample_rate(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_sample_rate_obj, audioio_mixer_obj_get_sample_rate);

@@ -41,11 +41,11 @@
 //| A .wav file prepped for audio playback. Only mono and stereo files are supported. Samples must
 //| be 8 bit unsigned or 16 bit signed.
 //|
-//| .. class:: WaveFile(filename)
+//| .. class:: WaveFile(file)
 //|
 //|   Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
-//|   :param bytes-like file: Already opened wave file
+//|   :param typing.BinaryIO file: Already opened wave file
 //|
 //|   Playing a wave file from flash::
 //|
@@ -92,6 +92,12 @@ STATIC mp_obj_t audioio_wavefile_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_deinit_obj, audioio_wavefile_deinit);
 
+STATIC void check_for_deinit(audioio_wavefile_obj_t *self) {
+    if (common_hal_audioio_wavefile_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -118,14 +124,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_wavefile___exit___obj, 4, 4, 
 //|
 STATIC mp_obj_t audioio_wavefile_obj_get_sample_rate(mp_obj_t self_in) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_wavefile_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_wavefile_get_sample_rate(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_get_sample_rate_obj, audioio_wavefile_obj_get_sample_rate);
 
 STATIC mp_obj_t audioio_wavefile_obj_set_sample_rate(mp_obj_t self_in, mp_obj_t sample_rate) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_wavefile_deinited(self));
+    check_for_deinit(self);
     common_hal_audioio_wavefile_set_sample_rate(self, mp_obj_get_int(sample_rate));
     return mp_const_none;
 }
@@ -144,7 +150,7 @@ const mp_obj_property_t audioio_wavefile_sample_rate_obj = {
 //|
 STATIC mp_obj_t audioio_wavefile_obj_get_bits_per_sample(mp_obj_t self_in) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_wavefile_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_wavefile_get_bits_per_sample(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_get_bits_per_sample_obj, audioio_wavefile_obj_get_bits_per_sample);
@@ -162,7 +168,7 @@ const mp_obj_property_t audioio_wavefile_bits_per_sample_obj = {
 //|
 STATIC mp_obj_t audioio_wavefile_obj_get_channel_count(mp_obj_t self_in) {
     audioio_wavefile_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_wavefile_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_wavefile_get_channel_count(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_wavefile_get_channel_count_obj, audioio_wavefile_obj_get_channel_count);

@@ -51,15 +51,14 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
         return;
     }
 
-    // TODO: Don't add new entry for each item, group by address and update
     bleio_scanentry_obj_t *entry = m_new_obj(bleio_scanentry_obj_t);
     entry->base.type = &bleio_scanentry_type;
     entry->rssi = report->rssi;
 
+    memcpy(entry->address.bytes, report->data.p_data, NUM_BLEIO_ADDRESS_BYTES);
     entry->address.type = report->peer_addr.addr_type;
-    memcpy(entry->address.value, report->peer_addr.addr, BLEIO_ADDRESS_BYTES);
 
-    entry->data = mp_obj_new_bytearray(report->data.len, report->data.p_data);
+    entry->data = mp_obj_new_bytes(report->data.p_data, report->data.len);
 
     mp_obj_list_append(scanner->adv_reports, entry);
 

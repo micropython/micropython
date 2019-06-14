@@ -51,7 +51,7 @@ STATIC const mp_obj_type_t socket_type;
 
 //| .. currentmodule:: socket
 //|
-//| .. class:: socket(family, type, proto, ...)
+//| .. class:: socket(family, type, proto)
 //|
 //|   Create a new socket
 //|

@@ -44,7 +44,7 @@ typedef struct {
     uint32_t bytes_remaining;
 
     uint8_t channel_count;
-    uint16_t sample_rate;
+    uint32_t sample_rate;
 
     uint32_t len;
     pyb_file_obj_t* file;

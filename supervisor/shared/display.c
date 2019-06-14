@@ -50,6 +50,10 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     }
     width_in_tiles = (width_px - blinka_bitmap.width * scale) / (grid->tile_width * scale);
     uint16_t height_in_tiles = height_px / (grid->tile_height * scale);
+    uint16_t remaining_pixels = height_px % (grid->tile_height * scale);
+    if (remaining_pixels > 0) {
+        height_in_tiles += 1;
+    }
     circuitpython_splash.scale = scale;
 
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
@@ -67,11 +71,13 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     if (tiles == NULL) {
         return;
     }
-
+    if (remaining_pixels > 0) {
+        grid->y -= (grid->tile_height - remaining_pixels);
+    }
     grid->width_in_tiles = width_in_tiles;
     grid->height_in_tiles = height_in_tiles;
-    grid->total_width = width_in_tiles * grid->tile_width;
-    grid->total_height = height_in_tiles * grid->tile_height;
+    grid->pixel_width = width_in_tiles * grid->tile_width;
+    grid->pixel_height = height_in_tiles * grid->tile_height;
     grid->tiles = tiles;
 
     supervisor_terminal.cursor_x = 0;
@@ -159,18 +165,22 @@ displayio_tilegrid_t blinka_sprite = {
     .pixel_shader = &blinka_palette,
     .x = 0,
     .y = 0,
+    .pixel_width = 16,
+    .pixel_height = 16,
     .bitmap_width_in_tiles = 1,
     .width_in_tiles = 1,
     .height_in_tiles = 1,
-    .total_width = 16,
-    .total_height = 16,
     .tile_width = 16,
     .tile_height = 16,
     .top_left_x = 16,
     .top_left_y = 16,
     .tiles = 0,
-    .needs_refresh = false,
-    .inline_tiles = true
+    .partial_change = false,
+    .full_change = false,
+    .first_draw = true,
+    .moved = false,
+    .inline_tiles = true,
+    .in_group = true
 };
 
 displayio_group_child_t splash_children[2] = {
@@ -186,5 +196,5 @@ displayio_group_t circuitpython_splash = {
     .size = 2,
     .max_size = 2,
     .children = splash_children,
-    .needs_refresh = true
+    .item_removed = false
 };

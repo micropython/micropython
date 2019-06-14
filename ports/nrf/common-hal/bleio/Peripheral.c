@@ -32,6 +32,7 @@
 #include "ble_drv.h"
 #include "ble_hci.h"
 #include "nrf_soc.h"
+#include "py/gc.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/bleio/Adapter.h"

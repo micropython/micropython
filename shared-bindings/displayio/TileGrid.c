@@ -64,7 +64,7 @@
 //|   :param int height: Height of the grid in tiles.
 //|   :param int tile_width: Width of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
 //|   :param int tile_height: Height of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
-//|   :param in default_tile: Default tile index to show.
+//|   :param int default_tile: Default tile index to show.
 //|   :param int x: Initial x position of the left edge within the parent.
 //|   :param int y: Initial y position of the top edge within the parent.
 //|
@@ -196,6 +196,83 @@ const mp_obj_property_t displayio_tilegrid_y_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: flip_x
+//|
+//|     If true, the left edge rendered will be the right edge of the right-most tile.
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_get_flip_x(mp_obj_t self_in) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return mp_obj_new_bool(common_hal_displayio_tilegrid_get_flip_x(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_flip_x_obj, displayio_tilegrid_obj_get_flip_x);
+
+STATIC mp_obj_t displayio_tilegrid_obj_set_flip_x(mp_obj_t self_in, mp_obj_t flip_x_obj) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+
+    common_hal_displayio_tilegrid_set_flip_x(self, mp_obj_is_true(flip_x_obj));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_flip_x_obj, displayio_tilegrid_obj_set_flip_x);
+
+const mp_obj_property_t displayio_tilegrid_flip_x_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_x_obj,
+              (mp_obj_t)&displayio_tilegrid_set_flip_x_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: flip_y
+//|
+//|     If true, the top edge rendered will be the bottom edge of the bottom-most tile.
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_get_flip_y(mp_obj_t self_in) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return mp_obj_new_bool(common_hal_displayio_tilegrid_get_flip_y(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_flip_y_obj, displayio_tilegrid_obj_get_flip_y);
+
+STATIC mp_obj_t displayio_tilegrid_obj_set_flip_y(mp_obj_t self_in, mp_obj_t flip_y_obj) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+
+    common_hal_displayio_tilegrid_set_flip_y(self, mp_obj_is_true(flip_y_obj));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_flip_y_obj, displayio_tilegrid_obj_set_flip_y);
+
+const mp_obj_property_t displayio_tilegrid_flip_y_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_y_obj,
+              (mp_obj_t)&displayio_tilegrid_set_flip_y_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
+//|   .. attribute:: transpose_xy
+//|
+//|     If true, the TileGrid's axis will be swapped. When combined with mirroring, any 90 degree
+//|     rotation can be achieved along with the corresponding mirrored version.
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_get_transpose_xy(mp_obj_t self_in) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return mp_obj_new_bool(common_hal_displayio_tilegrid_get_transpose_xy(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_transpose_xy_obj, displayio_tilegrid_obj_get_transpose_xy);
+
+STATIC mp_obj_t displayio_tilegrid_obj_set_transpose_xy(mp_obj_t self_in, mp_obj_t transpose_xy_obj) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+
+    common_hal_displayio_tilegrid_set_transpose_xy(self, mp_obj_is_true(transpose_xy_obj));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_transpose_xy_obj, displayio_tilegrid_obj_set_transpose_xy);
+
+const mp_obj_property_t displayio_tilegrid_transpose_xy_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_transpose_xy_obj,
+              (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|   .. attribute:: pixel_shader
 //|
 //|     The pixel shader of the tilegrid.
@@ -292,6 +369,9 @@ STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&displayio_tilegrid_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&displayio_tilegrid_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flip_x), MP_ROM_PTR(&displayio_tilegrid_flip_x_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flip_y), MP_ROM_PTR(&displayio_tilegrid_flip_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_transpose_xy), MP_ROM_PTR(&displayio_tilegrid_transpose_xy_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader),          MP_ROM_PTR(&displayio_tilegrid_pixel_shader_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_tilegrid_locals_dict, displayio_tilegrid_locals_dict_table);

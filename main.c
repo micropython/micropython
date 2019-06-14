@@ -455,6 +455,11 @@ void gc_collect(void) {
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_gc_collect();
+    #endif
+
     // This naively collects all object references from an approximate stack
     // range.
     gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));

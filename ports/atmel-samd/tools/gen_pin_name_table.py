@@ -156,6 +156,9 @@ capabilities = {
                    "PA14", "PA15", "PA16", "PA17", "PA18", "PA19", "PA20",
                    "PA21", "PA22", "PA23", "PA30", "PA31"]
     },
+    "ps2io": {
+        "Ps2": ALL_BUT_USB,
+    },
     "touchio": {
         "TouchIn": ["PA02", "PA03", "PB08", "PB09", "PA04", "PA05", "PA06",
                     "PA07", "PB02", "PB03"]

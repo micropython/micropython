@@ -138,7 +138,7 @@ const mp_obj_property_t wiznet5k_dhcp_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//| .. method:: ifconfig(...)
+//| .. method:: ifconfig(params=None)
 //|
 //|   Called without parameters, returns a tuple of
 //|   (ip_address, subnet_mask, gateway_address, dns_server)

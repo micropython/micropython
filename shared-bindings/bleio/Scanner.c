@@ -80,8 +80,8 @@ STATIC mp_obj_t bleio_scanner_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
     enum { ARG_timeout, ARG_interval, ARG_window };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_timeout,  MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_window,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_window,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     bleio_scanner_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);

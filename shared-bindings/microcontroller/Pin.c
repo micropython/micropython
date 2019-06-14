@@ -40,7 +40,7 @@
 //|
 //| Identifies an IO pin on the microcontroller.
 //|
-//| .. class:: Pin
+//| .. class:: Pin()
 //|
 //|    Identifies an IO pin on the microcontroller. They are fixed by the
 //|    hardware so they cannot be constructed on demand. Instead, use

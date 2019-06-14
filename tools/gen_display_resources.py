@@ -122,16 +122,20 @@ displayio_tilegrid_t supervisor_terminal_text_grid = {{
     .pixel_shader = &supervisor_terminal_color,
     .x = 16,
     .y = 0,
+    .pixel_width = {1},
+    .pixel_height = {2},
     .bitmap_width_in_tiles = {0},
     .width_in_tiles = 1,
     .height_in_tiles = 1,
-    .total_width = {1},
-    .total_height = {2},
     .tile_width = {1},
     .tile_height = {2},
     .tiles = NULL,
-    .needs_refresh = false,
-    .inline_tiles = false
+    .partial_change = false,
+    .full_change = false,
+    .first_draw = true,
+    .moved = false,
+    .inline_tiles = false,
+    .in_group = true
 }};
 """.format(len(all_characters), tile_x, tile_y))
 

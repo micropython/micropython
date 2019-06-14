@@ -84,7 +84,7 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     return (mp_obj_t)self;
 }
 
-//|   .. method:: SPI.deinit()
+//|   .. method:: deinit()
 //|
 //|      Turn off the SPI bus.
 //|
@@ -95,13 +95,19 @@ STATIC mp_obj_t bitbangio_spi_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_deinit_obj, bitbangio_spi_obj_deinit);
 
-//|   .. method:: SPI.__enter__()
+STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
+    if (shared_module_bitbangio_spi_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
+//|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: SPI.__exit__()
+//|   .. method:: __exit__()
 //|
 //|      Automatically deinitializes the hardware when exiting a context. See
 //|      :ref:`lifetime-and-contextmanagers` for more info.
@@ -120,7 +126,7 @@ static void check_lock(bitbangio_spi_obj_t *self) {
     }
 }
 
-//|   .. method:: SPI.configure(\*, baudrate=100000, polarity=0, phase=0, bits=8)
+//|   .. method:: configure(*, baudrate=100000, polarity=0, phase=0, bits=8)
 //|
 //|     Configures the SPI bus. Only valid when locked.
 //|
@@ -139,7 +145,7 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
     };
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -162,7 +168,7 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configure);
 
-//|   .. method:: SPI.try_lock()
+//|   .. method:: try_lock()
 //|
 //|     Attempts to grab the SPI lock. Returns True on success.
 //|
@@ -171,24 +177,24 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configu
 //|
 STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(shared_module_bitbangio_spi_try_lock(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock);
 
-//|   .. method:: SPI.unlock()
+//|   .. method:: unlock()
 //|
 //|     Releases the SPI lock.
 //|
 STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     shared_module_bitbangio_spi_unlock(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 
-//|   .. method:: SPI.write(buf)
+//|   .. method:: write(buf)
 //|
 //|     Write the data contained in ``buf``. Requires the SPI being locked.
 //|     If the buffer is empty, nothing happens.
@@ -196,7 +202,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
     if (src.len == 0) {
@@ -212,7 +218,7 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
 MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 
 
-//|   .. method:: SPI.readinto(buf)
+//|   .. method:: readinto(buf)
 //|
 //|     Read into the buffer specified by ``buf`` while writing zeroes.
 //|     Requires the SPI being locked.
@@ -221,7 +227,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
     if (bufinfo.len == 0) {
@@ -236,7 +242,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
 
-//|   .. method:: SPI.write_readinto(buffer_out, buffer_in, \*, out_start=0, out_end=len(buffer_out), in_start=0, in_end=len(buffer_in))
+//|   .. method:: write_readinto(buffer_out, buffer_in, *, out_start=0, out_end=None, in_start=0, in_end=None)
 //|
 //|     Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|     The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
@@ -246,9 +252,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_
 //|     :param bytearray buffer_out: Write out the data in this buffer
 //|     :param bytearray buffer_in: Read data into this buffer
 //|     :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
-//|     :param int out_end: End of the slice; this index is not included
+//|     :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|     :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
-//|     :param int in_end: End of the slice; this index is not included
+//|     :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``
 //|
 STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
@@ -261,7 +267,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
         { MP_QSTR_in_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+    check_for_deinit(self);
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

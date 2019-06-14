@@ -27,7 +27,6 @@
 
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Address.h"
-#include "shared-bindings/bleio/AddressType.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/CharacteristicBuffer.h"
 #include "shared-bindings/bleio/Descriptor.h"
@@ -52,7 +51,6 @@
 //|     :maxdepth: 3
 //|
 //|     Address
-//|     AddressType
 //|     AdvertisementData
 //|     Adapter
 //|     Characteristic
@@ -87,9 +85,6 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_adapter),           MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
-
-    // Enum-like Classes.
-    { MP_ROM_QSTR(MP_QSTR_AddressType),       MP_ROM_PTR(&bleio_addresstype_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);

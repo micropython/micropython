@@ -69,7 +69,7 @@
 //|
 
 
-//| .. method:: release_displays()
+//| .. function:: release_displays()
 //|
 //|   Releases any actively used displays so their busses and pins can be used again. This will also
 //|   release the builtin display on boards that have one. You will need to reinitialize it yourself

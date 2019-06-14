@@ -35,7 +35,6 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/bleio/Adapter.h"
-#include "shared-bindings/bleio/AddressType.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/Service.h"

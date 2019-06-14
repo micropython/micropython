@@ -87,8 +87,8 @@ void board_init(void) {
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
-        160, // Width
-        128, // Height
+        160, // Width (after rotation)
+        128, // Height (after rotation)
         0, // column start
         0, // row start
         270, // rotation

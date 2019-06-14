@@ -27,7 +27,7 @@
 //| :func:`help` - Built-in method to provide helpful information
 //| ==============================================================
 //|
-//| .. method:: help(object=None)
+//| .. function:: help(object=None)
 //|
 //|   Prints a help method about the given object. When ``object`` is none,
 //|   prints general port information.
