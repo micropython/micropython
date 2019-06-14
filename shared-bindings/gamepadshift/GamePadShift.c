@@ -94,7 +94,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
 STATIC mp_obj_t gamepadshift_get_pressed(mp_obj_t self_in) {
     gamepadshift_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     mp_obj_t pressed = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
-    gamepad_singleton->pressed = 0;
+    gamepad_singleton->pressed = gamepad_singleton->last;
     return pressed;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepadshift_get_pressed_obj, gamepadshift_get_pressed);
