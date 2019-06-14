@@ -40,23 +40,13 @@ displayio_fourwire_obj_t board_display_obj;
 uint8_t display_init_sequence[] = {
     0x01, 0 | DELAY, 150, // SWRESET
     0x11, 0 | DELAY, 255, // SLPOUT
-    0x36, 1, 0x08, // _MADCTL top to bottom refresh in vsync aligned order.
-    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
-    // fix on VTL
+    0x36, 1, 0x08,        // _MADCTL bottom to top refresh in vsync aligned order.
     0x3a, 2, 0x55, 10, // COLMOD - 16bit color
-    0xe0, 16, 0x02, 0x1c, 0x07, 0x12, // _GMCTRP1 Gamma
-              0x37, 0x32, 0x29, 0x2d,
-              0x29, 0x25, 0x2B, 0x39,
-              0x00, 0x01, 0x03, 0x10,
-    0xe1, 16, 0x03, 0x1d, 0x07, 0x06, // _GMCTRN1
-              0x2E, 0x2C, 0x29, 0x2D,
-              0x2E, 0x2E, 0x37, 0x3F,
-              0x00, 0x00, 0x02, 0x10,
     0x2a, 3, 0x00, 240 >> 8, 240 & 0xFF, // _CASET XSTART = 0, XEND = 240
     0x2b, 3, 0x00, 320 >> 8, 320 & 0xFF, // _RASET YSTART = 0, YEND = 320
-    0x21, 0 | DELAY, 10, // _INVON
-    0x13, 0 | DELAY, 10, // _NORON
-    0x29, 0 | DELAY, 255, // _DISPON
+    0x21, 0 | DELAY, 10,                 // _INVON
+    0x13, 0 | DELAY, 10,                 // _NORON
+    0x29, 0 | DELAY, 255,                // _DISPON
 };
 
 void board_init(void) {
