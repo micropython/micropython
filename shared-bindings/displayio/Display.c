@@ -78,7 +78,8 @@
 //|   The initialization sequence should always leave the display memory access inline with the scan
 //|   of the display to minimize tearing artifacts.
 //|
-//|   :param displayio.FourWire or displayio.ParallelBus display_bus: The bus that the display is connected to
+//|   :param display_bus: The bus that the display is connected to
+//|   :type display_bus: displayio.FourWire or displayio.ParallelBus
 //|   :param buffer init_sequence: Byte-packed initialization sequence.
 //|   :param int width: Width in pixels
 //|   :param int height: Height in pixels
@@ -182,6 +183,7 @@ static displayio_display_obj_t* native_display(mp_obj_t display_obj) {
 //|     Switches to displaying the given group of layers. When group is None, the default
 //|     CircuitPython terminal will be shown.
 //|
+//|     :param Group group: The group to show.
 STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
     displayio_display_obj_t *self = native_display(self_in);
     displayio_group_t* group = NULL;
