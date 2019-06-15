@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-15 00:49-0500\n"
+"POT-Creation-Date: 2019-06-15 09:21-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -55,7 +55,7 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indices deben ser enteros, no %s"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Shape.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q debe ser >= 1"
 
@@ -140,7 +140,7 @@ msgstr "objeto '%s' no tiene atributo '%q'"
 msgid "'%s' object is not an iterator"
 msgstr "objeto '%s' no es un iterator"
 
-#: py/runtime.c py/objtype.c
+#: py/objtype.c py/runtime.c
 #, c-format
 msgid "'%s' object is not callable"
 msgstr "objeto '%s' no puede ser llamado"
@@ -247,17 +247,15 @@ msgstr "Todos los canales de eventos estan siendo usados"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
-msgstr ""
-"Todos los canales de eventos de sincronización (sync event channels) están "
-"siendo utilizados"
+msgstr "Todos los canales de eventos de sincronización (sync event channels) están siendo utilizados"
 
 #: shared-bindings/pulseio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Todos los timers para este pin están siendo utilizados"
 
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -289,9 +287,7 @@ msgstr "Valores del array deben ser bytes individuales."
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running.\n"
-msgstr ""
-"Intento de allocation de heap cuando la VM de MicroPython no estaba "
-"corriendo.\n"
+msgstr "Intento de allocation de heap cuando la VM de MicroPython no estaba corriendo.\n"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -301,9 +297,7 @@ msgstr "Auto-recarga deshabilitada.\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr ""
-"Auto-reload habilitado. Simplemente guarda los archivos via USB para "
-"ejecutarlos o entra al REPL para desabilitarlos.\n"
+msgstr "Auto-reload habilitado. Simplemente guarda los archivos via USB para ejecutarlos o entra al REPL para desabilitarlos.\n"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -330,7 +324,7 @@ msgstr "Brillo no se puede ajustar"
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tamaño de buffer incorrecto. Debe ser de %d bytes."
 
-#: shared-bindings/busio/I2C.c shared-bindings/bitbangio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Buffer debe ser de longitud 1 como minimo"
 
@@ -347,6 +341,10 @@ msgstr "Byte buffer debe de ser 16 bytes"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Bytes debe estar entre 0 y 255."
+
+#: py/objtype.c
+msgid "Call super().__init__() before accessing native object."
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -463,11 +461,11 @@ msgstr "No se puede descodificar ble_uuid, err 0x%04x"
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: shared-module/audioio/WaveFile.c shared-module/audioio/Mixer.c
+#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
 msgid "Couldn't allocate first buffer"
 msgstr "No se pudo asignar el primer buffer"
 
-#: shared-module/audioio/WaveFile.c shared-module/audioio/Mixer.c
+#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
 msgid "Couldn't allocate second buffer"
 msgstr "No se pudo asignar el segundo buffer"
 
@@ -510,6 +508,7 @@ msgid "Drive mode not used when direction is input."
 msgstr "Modo Drive no se usa cuando la dirección es input."
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
@@ -518,9 +517,9 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 msgid "Error in regex"
 msgstr "Error en regex"
 
-#: shared-bindings/microcontroller/Pin.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
-#: shared-bindings/neopixel_write/__init__.c
 msgid "Expected a %q"
 msgstr "Se espera un %q"
 
@@ -538,11 +537,15 @@ msgstr "Se esperaba un UUID"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Se esperaba un tuple de %d, se obtuvo %d"
 
+#: shared-bindings/ps2io/Ps2.c
+msgid "Failed sending command."
+msgstr "Fallo enviando comando"
+
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Failed to acquire mutex"
 msgstr "Fallo al adquirir el mutex"
 
-#: ports/nrf/sd_mutex.c ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Fallo al adquirir el mutex, err: 0x%08lX"
@@ -633,7 +636,7 @@ msgstr "Fallo al registrar el Vendor-Specific UUID, err 0x%04x"
 msgid "Failed to release mutex"
 msgstr "No se puede liberar el mutex, status: 0x%08lX"
 
-#: ports/nrf/sd_mutex.c ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "No se puede liberar el mutex, err 0x%04x"
@@ -703,8 +706,8 @@ msgstr "Falló el iniciar la escritura de flash, err 0x%04x"
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
 
-#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "La función requiere lock"
 
@@ -724,9 +727,7 @@ msgstr "operación I2C no soportada"
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
-msgstr ""
-"Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte "
-"http://adafru.it/mpy-update para más información"
+msgstr "Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte http://adafru.it/mpy-update para más información"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -782,16 +783,16 @@ msgstr "Archivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
 msgstr "Numero inválido de bits"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid phase"
 msgstr "Fase inválida"
 
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: shared-bindings/pulseio/PWMOut.c
 msgid "Invalid pin"
 msgstr "Pin inválido"
@@ -805,14 +806,14 @@ msgid "Invalid pin for right channel"
 msgstr "Pin inválido para canal derecho"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
 msgstr "Polaridad inválida"
 
@@ -831,6 +832,10 @@ msgstr "Archivo wave inválido"
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "LHS del agumento por palabra clave deberia ser un identificador"
+
+#: shared-module/displayio/Group.c
+msgid "Layer already in a group."
+msgstr "Layer ya pertenece a un grupo"
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
@@ -880,16 +885,16 @@ msgstr "Error fatal de MicroPython.\n"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Micrófono demora de inicio debe estar en el rango 0.0 a 1.0"
 
-#: shared-bindings/displayio/Display.c
-msgid "Must be a Group subclass."
-msgstr "Debe ser una subclase de Group."
+#: shared-bindings/displayio/Group.c
+msgid "Must be a %q subclass."
+msgstr "Debe de ser una subclase de %q"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "El chip no tiene DAC"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "No DMA channel found"
 msgstr "No se encontró el canal DMA"
 
@@ -917,6 +922,10 @@ msgstr "Sin GCLKs libres"
 msgid "No hardware random available"
 msgstr "No hay hardware random disponible"
 
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+msgid "No hardware support on clk pin"
+msgstr "Sin soporte de hardware en el pin clk"
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -931,20 +940,18 @@ msgid "No such file/directory"
 msgstr "No existe el archivo/directorio"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "Not connected"
-msgstr "No se puede conectar a AP"
+msgstr "No conectado"
 
-#: shared-bindings/audioio/AudioOut.c shared-bindings/audiobusio/I2SOut.c
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 msgid "Not playing"
-msgstr "No esta jugando"
+msgstr "No reproduciendo"
 
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo "
-"objeto"
+"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo objeto"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1009,6 +1016,10 @@ msgstr "Pixel beyond bounds of buffer"
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
 msgstr "Incapaz de montar de nuevo el sistema de archivos"
+
+#: shared-bindings/ps2io/Ps2.c
+msgid "Pop from an empty Ps2 buffer"
+msgstr "Pop de un buffer Ps2 vacio"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -1122,6 +1133,12 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
+"The `microcontroller` module was used to boot into safe mode. Press reset to "
+"exit safe mode.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
@@ -1212,8 +1229,8 @@ msgstr "UUID string no es 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgid "UUID value is not str, int or byte buffer"
 msgstr "UUID valor no es un str, int o byte buffer"
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
 
@@ -1293,7 +1310,6 @@ msgstr ""
 "Para listar los módulos incorporados por favor haga `help(\"modules\")`.\n"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid ""
 "You are running in safe mode which means something unanticipated happened.\n"
 msgstr ""
@@ -1346,8 +1362,8 @@ msgstr "argumento es una secuencia vacía"
 msgid "argument has wrong type"
 msgstr "el argumento tiene un tipo erroneo"
 
-#: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/gamepad/GamePad.c shared-bindings/digitalio/DigitalInOut.c
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/gamepad/GamePad.c shared-bindings/_stage/__init__.c
 msgid "argument num/types mismatch"
 msgstr "argumento número/tipos no coinciden"
 
@@ -1417,7 +1433,7 @@ msgstr "buffer debe de ser un objeto bytes-like"
 msgid "buffer size must match format"
 msgstr "los buffers deben de tener el mismo formato"
 
-#: shared-bindings/busio/SPI.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
 msgstr "Las secciones del buffer necesitan tener longitud igual"
 
@@ -1708,7 +1724,7 @@ msgstr "destination_length debe ser un int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "la secuencia de actualizacion del dict tiene una longitud incorrecta"
 
-#: py/modmath.c py/runtime.c py/objint_mpz.c py/objfloat.c py/objint_longlong.c
+#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
 msgstr "división por cero"
@@ -1717,7 +1733,7 @@ msgstr "división por cero"
 msgid "empty"
 msgstr "vacío"
 
-#: extmod/modutimeq.c extmod/moduheapq.c
+#: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "heap vacío"
 
@@ -1778,7 +1794,7 @@ msgstr "argumento(s) por palabra clave adicionales fueron dados"
 msgid "extra positional arguments given"
 msgstr "argumento posicional adicional dado"
 
-#: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/audioio/WaveFile.c
+#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "el archivo deberia ser una archivo abierto en modo byte"
 
@@ -1951,7 +1967,7 @@ msgstr "decorador de micropython inválido"
 msgid "invalid step"
 msgstr ""
 
-#: py/parse.c py/compile.c
+#: py/compile.c py/parse.c
 msgid "invalid syntax"
 msgstr "sintaxis inválida"
 
@@ -2097,11 +2113,11 @@ msgstr "yield nativo"
 msgid "need more than %d values to unpack"
 msgstr "necesita más de %d valores para descomprimir"
 
-#: py/runtime.c py/objint_mpz.c py/objint_longlong.c
+#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
 msgstr "potencia negativa sin float support"
 
-#: py/runtime.c py/objint_mpz.c
+#: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
 msgstr "cuenta de corrimientos negativo"
 
@@ -2181,11 +2197,11 @@ msgstr "el objeto no es suscriptable"
 msgid "object not an iterator"
 msgstr "objeto no es un iterator"
 
-#: py/runtime.c py/objtype.c
+#: py/objtype.c py/runtime.c
 msgid "object not callable"
 msgstr "objeto no puede ser llamado"
 
-#: py/sequence.c
+#: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
 msgstr "objeto no en secuencia"
 
@@ -2211,7 +2227,7 @@ msgstr "string de longitud impar"
 msgid "offset out of bounds"
 msgstr "address fuera de límites"
 
-#: py/objstr.c py/objarray.c py/objtuple.c py/objstrunicode.c
+#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo se admiten segmentos con step=1 (alias None)"
@@ -2361,11 +2377,11 @@ msgstr "un solo '}' encontrado en format string"
 msgid "sleep length must be non-negative"
 msgstr "la longitud de sleep no puede ser negativa"
 
-#: py/sequence.c py/objslice.c
+#: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr "slice step no puede ser cero"
 
-#: py/sequence.c py/objint.c
+#: py/objint.c py/sequence.c
 msgid "small int overflow"
 msgstr "pequeño int desbordamiento"
 
@@ -2569,7 +2585,7 @@ msgstr "tipo desconocido '%q'"
 msgid "unmatched '{' in format"
 msgstr "No coinciden '{' en format"
 
-#: py/runtime.c py/objtype.c
+#: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
 msgstr "atributo no legible"
 
@@ -2603,6 +2619,11 @@ msgstr "tipo de operador no soportado"
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "tipos no soportados para %q: '%s', '%s'"
+
+#: py/objint.c
+#, c-format
+msgid "value must fit in %d byte(s)"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
@@ -2697,6 +2718,9 @@ msgstr "paso cero"
 #~ msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
 #~ msgstr ""
 #~ "PWM de múltiples frecuencias no soportado. El PWM ya se estableció a %dhz"
+
+#~ msgid "Must be a Group subclass."
+#~ msgstr "Debe ser una subclase de Group."
 
 #~ msgid "No PulseIn support for %q"
 #~ msgstr "Sin soporte PulseIn para %q"
