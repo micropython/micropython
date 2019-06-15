@@ -61,7 +61,7 @@ main()
 	shell_do_cmd ./${MKIMG} "${BUILD}/${SOBJ}.bin" "${BUILD}/${TARGET}.img" 0 0 "${BUILD}/version.txt" 90000 10100
 	shell_do_cmd ./${MKIMG} "${BUILD}/${SOBJ}.bin.gz" "${BUILD}/${TARGET}_GZ.img" 0 1 "${BUILD}/version.txt" 90000 10100 "${BUILD}/${SOBJ}.bin" 
 	shell_do_cmd ./${MKIMG} "${BUILD}/${SOBJ}.bin" "${BUILD}/${TARGET}_SEC.img" 0 0 "${BUILD}/version.txt" 90000 10100
-	./${MKIMG_ALL} "tools/secboot.img" "${BUILD}/${TARGET}.img" "${BUILD}/${TARGET}.FLS"
+	./${MKIMG_ALL} "${WMSDK_PATH}/Bin/secboot.img" "${BUILD}/${TARGET}.img" "${BUILD}/${TARGET}.FLS"
 	#rm -rf "../Bin/${TARGET}.img"
 	#rm -rf "../Bin/${SOBJ}.bin.gz"
 }
