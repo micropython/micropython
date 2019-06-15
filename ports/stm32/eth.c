@@ -107,7 +107,6 @@ typedef struct _eth_dma_t {
 } eth_dma_t;
 
 typedef struct _eth_t {
-    mod_network_nic_type_t base;
     uint32_t trace_flags;
     struct netif netif;
     struct dhcp dhcp_struct;

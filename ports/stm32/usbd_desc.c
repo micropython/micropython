@@ -37,7 +37,7 @@
 #include "py/mphal.h"
 
 // need this header for any overrides to the below constants
-#include "mpconfigboard.h"
+#include "py/mpconfig.h"
 
 #ifndef USBD_LANGID_STRING
 #define USBD_LANGID_STRING            0x409

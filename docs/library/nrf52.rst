@@ -15,70 +15,94 @@ Functions
 
     New a object MPU6050.
 
-.. function:: dmpInit()
+.. function:: init()
+
+    mpu6050 init registers.
+
+.. function:: DMPinit()
 
     mpu6050 init dmp mode.
-
-.. function:: setDMPEnabled(True)
-
-    set DMP Mode enable.
-
-.. function:: dmpGetFIFOPacketSize()
-
-    Return FIFO packet sizes.
-
-.. function:: getIntStatus()
-
-    Return interrupt status. 
-
-.. function:: getFIFOCount()
-
-    Return FIFO counts. 
-
-.. function:: getFIFOBytes()
-
-    Return FIFO bytes to buffers. 
-
-.. function:: dmpGetQuaternion(fifoBuffer)
-
-    Calculation quaternion value and return to buffers. 
-
-.. function:: dmpGetEuler(*fifoBuffer)
-
-    Calculation euler angle value and return to buffers(yaw,roll,pitch). 
 
 .. function:: getTemp()
 
     Return the soc temperature register value(°C). 
 
-.. function:: getAccelX()
+.. function:: getAccel()
 
-    Return the Accel X register value. 
+    Return the Accel X,Y,Z register value. 
 
-.. function:: getAccelY()
+.. function:: getAccel_x()
 
-    Return the Accel Y register value. 
+    Return the Accel X-axis angle value(°). 
 
-.. function:: getAccelZ()
+.. function:: getAccel_y()
 
-    Return the Accel Z register value. 
+    Return the Accel Y-axis angle value(°). 
 
-.. function:: getGyroX()
+.. function:: getAccel_z()
 
-    Return the Gyro X register value. 
+    Return the Accel Z-axis angle value(°). 
 
-.. function:: getGyroY()
+.. function:: getGyros()
 
-    Return the Gyro Y register value. 
+    Return the Gyros X,Y,Z register value. 
 
-.. function:: getGyroZ()
+.. function:: getGyro_x()
 
-    Return the Gyro Z register value. 
+    Return the Gyro X-axis angular velocity value(rad/s).  
 
-Constants
+.. function:: getGyro_Y()
+
+    Return the Gyro Y-axis angular velocity value(rad/s).
+
+.. function:: getGyro_Z()
+
+    Return the Gyro Z-axis angular velocity value(rad/s).
+
+.. function:: getDMPdata()
+
+    Return the MPU6050 DMP data (pitch,roll,yaw).
+
+.. function:: setAccelOffset(x_offset,y_offset,z_offset)
+
+    First place the MP6050 module horizontally and use the function 'getAccel()' to read the static register values. and set it for offset.
+
+.. function:: setGyrosOffset(x_offset,y_offset,z_offset)
+
+    First place the MP6050 module horizontally and use the function 'getGyros()' to read the static register values. and set it for offset.
+
+Example
 ---------
 
-.. data:: MPU6050.MPU6050_DEFAULT_ADDRESS
-          MPU6050.MPU6050_RA_TEMP_OUT_H
+Examples for MPU6050::
 
-   Selects the register address.
+    from machine import *
+    import time
+
+    mpu = MPU6050()
+    mpu.init()
+    mpu.DMPinit()
+
+    accel_offset = [0,0,0]
+    gyros_offset = [0,0,0]
+
+    accel_offset = mpu.getAccel()
+    gyros_offset = mpu.getGyros()
+
+    mpu.setAccelOffset(accel_offset)
+    mpu.setGyrosOffset(gyros_offset)
+
+    print('Temp:')
+    print(mpu.getTemp())
+
+    while True:
+        print(mpu.getAccel_x())
+        print(mpu.getAccel_y())
+        print(mpu.getAccel_z())
+
+        print(mpu.getGyro_x())
+        print(mpu.getGyro_y())
+        print(mpu.getGyro_z())
+
+        print(mpu.getDMPdata())
+

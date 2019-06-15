@@ -687,8 +687,8 @@ STATIC mp_obj_t machine_lcd_init(mp_obj_t self_in, mp_obj_t dir_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_lcd_init_obj, machine_lcd_init);
 
-/// \method init()
-/// init lcd display.
+/// \method setRotation()
+/// set lcd display Rotation.
 STATIC mp_obj_t machine_lcd_setRotation(mp_obj_t self_in, mp_obj_t dir_in) {
     machine_lcd_obj_t *self = self_in;
     uint8_t dir = mp_obj_get_int(dir_in);

@@ -116,6 +116,7 @@ SRC_LIB = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	netutils/trace.c \
+	netutils/dhcpserver.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
@@ -351,6 +352,14 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_data.c \
 	)
 
+ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
+CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
+SRC_C += sdio.c
+EXTMOD_SRC_C += extmod/network_cyw43.c
+DRIVERS_SRC_C += drivers/cyw43/cyw43_ctrl.c drivers/cyw43/cyw43_lwip.c
+LIBS += $(TOP)/drivers/cyw43/libcyw43.a
+endif
+
 ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
@@ -385,6 +394,11 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	patch.c \
 	patch_prog.c \
 	)
+endif
+
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+SRC_MOD += mbedtls/mbedtls_port.c
 endif
 
 OBJ =

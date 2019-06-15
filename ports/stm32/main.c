@@ -39,6 +39,8 @@
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#include "drivers/cyw43/cyw43.h"
 #endif
 
 #include "systick.h"
@@ -478,7 +480,21 @@ void stm32_main(uint32_t reset_mode) {
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
     // So for now we only init the lwIP stack once on power-up.
     lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
+
+    #if MICROPY_PY_NETWORK_CYW43
+    {
+        cyw43_init(&cyw43_state);
+        uint8_t buf[8];
+        memcpy(&buf[0], "PYBD", 4);
+        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char*)&buf[4]);
+        cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
+        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t*)"pybd0123");
+    }
     #endif
 
     #if defined(MICROPY_HW_UART_REPL)
@@ -558,10 +574,6 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
-
-    // Activate USB_VCP(0) on dupterm slot 1 for the REPL
-    MP_STATE_VM(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj);
-    usb_vcp_attach_to_repl(&pyb_usb_vcp_obj, true);
     #endif
 
     // Initialise the local flash filesystem.

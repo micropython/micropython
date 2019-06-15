@@ -44,7 +44,7 @@
 #define MICROPY_PY_RANDOM_HW_RNG    (1)
 
 #define MICROPY_PY_MACHINE_LCD      (1)
-#define MICROPY_PY_MACHINE_MPU      (1)
+#define MICROPY_PY_MACHINE_MPU6050      (1)
 
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_LED_COUNT        (2)
@@ -64,6 +64,10 @@
 #define MICROPY_HW_UART1_RX         (8)
 #define MICROPY_HW_UART1_TX         (6)
 #define MICROPY_HW_UART1_HWFC       (0)
+
+// I2C0 config
+#define MICROPY_HW_I2C_SCL_PIN      (26) // SCL
+#define MICROPY_HW_I2C_SDA_PIN      (25) // SDA
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
