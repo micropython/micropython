@@ -113,14 +113,7 @@
 			}
 			/*Initialize MicroPython itself*/
 			mp_js_init(1 * 1024 * 1024); 
-			
-			/* Run custom script if passed */
-			var custom = getSearchArg("script");
-			console.log("Custom script: " + custom);
-			if(custom !== undefined && custom !== null)
-				processScriptArg(custom);
- 			
-			
+
 			var compressedScript = window.parent.document.getElementById("emscripten-iframe").getAttribute("data-cscript");
 			if(compressedScript !== undefined && compressedScript !== null)
 				decompressScript(compressedScript);
@@ -135,7 +128,11 @@
             mp_js_init_repl();
 			/*Start the main loop, asynchronously.*/
 			handle_pending();
-	}
+		}
+		window.onload = function() {
+			console.log("onload");
+			startRunning();
+		}
 
 
     </script>

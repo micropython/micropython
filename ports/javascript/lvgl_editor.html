@@ -91,7 +91,7 @@
 				<div id="mp_js_stdout"></div>
 			</div>
 		</div>
-		<iframe onload="reloaded();" id="emscripten-iframe"></iframe>
+		<iframe onload="reloaded();" src="about:blank" id="emscripten-iframe"></iframe>
 		<script>
 			var editor, iframe;
 			var iframe_html;
@@ -110,17 +110,22 @@
 				$this.prop("disabled", true);
 				term.write('\x1bc');
 				
+
+				const context = document.getElementById("canvas").getContext('2d');
+
+				context.clearRect(0, 0, canvas.width, canvas.height);
+
+
+				
 				iframe.setAttribute("data-cscript", LZString.compressToEncodedURIComponent(editor.getValue()));
 
 				console.log(iframe.src);
+				clear_iframe(iframe);
 				var doc = iframe.contentWindow.document;
 				doc.open();
 				doc.write(iframe_html);
 				doc.close();
-				iframe.onload = function() {
-					$this.removeProp("disabled");
-					iframe.contentWindow.startRunning();
-				};
+				
 			}
 			function get_iframe_url() {
 				/* Assemble the URL */
@@ -144,14 +149,13 @@
 				request.send(null);
 				request.onreadystatechange = function () {
 					if (request.readyState === 4 && request.status === 200) {
-						var type = request.getResponseHeader('Content-Type');
-						if (type.indexOf("text") !== 1) {
-							console.log(request.reponseText);
-							if(request.responseText === undefined)
-								return;
-							editor.session.getUndoManager().reset();
-						    editor.setValue(request.responseText, -1);
-						}
+						
+						console.log(request.reponseText);
+						if(request.responseText === undefined)
+							return;
+						editor.session.getUndoManager().reset();
+					    editor.setValue(request.responseText, -1);
+						
 					}
 				}
 			}
@@ -170,7 +174,7 @@
 				iframe.contentWindow.document.write("");
 				iframe.contentWindow.document.close();
 			}
-			window.onload = function() {
+			$(window).load(function() {
 			    editor = ace.edit("editor");
 				editor.setAutoScrollEditorIntoView(true);
 				var PythonMode = ace.require("ace/mode/python").Mode;
@@ -205,6 +209,7 @@
 				var request = new XMLHttpRequest();
 
 				request.open('GET', get_iframe_url(), true);
+				request.overrideMimeType("text/plain; charset=x-user-defined");
 				request.send(null);
 				request.onreadystatechange = function () {
 						if (request.readyState === 4 && request.status === 200 && request.responseText !== undefined && request.responseText != null) {
@@ -212,7 +217,7 @@
 							$("#run-button").removeProp("disabled");
 						}
 				};
-			}
+			});
 		</script>
 	</body>
 </html>
