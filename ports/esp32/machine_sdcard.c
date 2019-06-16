@@ -203,7 +203,6 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
 
     if (is_spi) {
         self->host.slot = slot_num ? HSPI_HOST : VSPI_HOST;
-        slot_num -= 2;
     }
 
     DEBUG_printf("  Calling host.init()");

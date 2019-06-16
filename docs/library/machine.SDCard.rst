@@ -30,7 +30,7 @@ vary from platform to platform.
     The class implements the block protocol defined by :class:`uos.AbstractBlockDev`.
     This allows the mounting of an SD card to be as simple as::
 
-      uos.mount(storage.SDCard(), "/sd")
+      uos.mount(machine.SDCard(), "/sd")
 
     The constrcutor takes the following paramters:
 
