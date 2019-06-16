@@ -91,13 +91,10 @@
 				<div id="mp_js_stdout"></div>
 			</div>
 		</div>
-		<iframe onload="reloaded();" src="about:blank" id="emscripten-iframe"></iframe>
+		<iframe src="about:blank" id="emscripten-iframe"></iframe>
 		<script>
 			var editor, iframe;
 			var iframe_html;
-			function reloaded() {
-				console.log("Loaded iframe");
-			}
 			function forward_event(event) {
 				if(iframe !== undefined && iframe !== null) {
 					if(iframe.contentWindow !== null)
@@ -119,12 +116,16 @@
 				
 				iframe.setAttribute("data-cscript", LZString.compressToEncodedURIComponent(editor.getValue()));
 
-				console.log(iframe.src);
 				clear_iframe(iframe);
+				iframe.src = get_iframe_url() + "&timestamp=" + new Date().getTime();
+				console.log(iframe.src);
+				//iframe.contentWindow.location.reload(true);
+				/*
 				var doc = iframe.contentWindow.document;
 				doc.open();
 				doc.write(iframe_html);
 				doc.close();
+				*/
 			}
 			function reenableButton() {
 				$("#run-button").removeProp('disabled');
