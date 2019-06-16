@@ -219,10 +219,19 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
     } else {
         tile_area = &temp_area;
     }
-    tile_area->x1 = x * self->tile_width;
+    int16_t tx = (x - self->top_left_x) % self->width_in_tiles;
+    if (tx < 0) {
+        tx += self->height_in_tiles;
+    }
+    tile_area->x1 = tx * self->tile_width;
     tile_area->x2 = tile_area->x1 + self->tile_width;
-    tile_area->y1 = y * self->tile_height;
+    int16_t ty = (y - self->top_left_y) % self->height_in_tiles;
+    if (ty < 0) {
+        ty += self->height_in_tiles;
+    }
+    tile_area->y1 = ty * self->tile_height;
     tile_area->y2 = tile_area->y1 + self->tile_height;
+
     if (self->partial_change) {
         displayio_area_expand(&self->dirty_area, &temp_area);
     }
