@@ -116,6 +116,7 @@
 				newPathname += LZString.compressToEncodedURIComponent(editor.getValue());
 				
 				iframe.src = window.location.protocol + "//" + window.location.host + "/" + newPathname;
+				console.log(iframe.src);
 				iframe.onload = function() {
 					iframe.contentWindow.startRunning();
 				};
