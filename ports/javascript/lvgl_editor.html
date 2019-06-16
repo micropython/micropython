@@ -94,6 +94,7 @@
 		<iframe onload="reloaded();" id="emscripten-iframe"></iframe>
 		<script>
 			var editor, iframe;
+			var iframe_html;
 			function reloaded() {
 				console.log("Loaded iframe");
 			}
@@ -108,6 +109,20 @@
 				var $this = $("#run-button");
 				$this.prop("disabled", true);
 				term.write('\x1bc');
+				
+				iframe.setAttribute("data-cscript", LZString.compressToEncodedURIComponent(editor.getValue()));
+
+				console.log(iframe.src);
+				var doc = iframe.contentWindow.document;
+				doc.open();
+				doc.write(iframe_html);
+				doc.close();
+				iframe.onload = function() {
+					$this.removeProp("disabled");
+					iframe.contentWindow.startRunning();
+				};
+			}
+			function get_iframe_url() {
 				/* Assemble the URL */
 				var newPathname = "";
 				var pathArray = window.location.pathname.split('/');
@@ -119,14 +134,7 @@
 				  newPathname += pathArray[i];
 				}
 				newPathname += "/lvgl.html?env=dev";
-				iframe.setAttribute("data-cscript", LZString.compressToEncodedURIComponent(editor.getValue()));
-
-				iframe.src = window.location.protocol + "//" + window.location.host + newPathname;
-				console.log(iframe.src);
-				iframe.onload = function() {
-					$this.removeProp("disabled");
-					iframe.contentWindow.startRunning();
-				};
+				return window.location.protocol + "//" + window.location.host + newPathname;
 			}
 			function processScriptArg(url){
 				// read text from URL location
@@ -192,6 +200,18 @@
 					text = e.data;
 					term.write(text);
 				}, false);
+				$("#run-button").prop("disabled", true);
+				// read text from URL location
+				var request = new XMLHttpRequest();
+
+				request.open('GET', get_iframe_url(), true);
+				request.send(null);
+				request.onreadystatechange = function () {
+						if (request.readyState === 4 && request.status === 200 && request.responseText !== undefined && request.responseText != null) {
+							iframe_html = request.responseText;
+							$("#run-button").removeProp("disabled");
+						}
+				};
 			}
 		</script>
 	</body>
