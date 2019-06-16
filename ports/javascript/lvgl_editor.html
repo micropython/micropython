@@ -111,14 +111,17 @@
 				/* Assemble the URL */
 				var newPathname = "";
 				var pathArray = window.location.pathname.split('/');
+	
 				for (i = 0; i < pathArray.length - 1; i++) {
+			      if(pathArray[i].length === 0)
+						continue;
 				  newPathname += "/";
 				  newPathname += pathArray[i];
 				}
 				newPathname += "/lvgl.html?env=dev";
 				iframe.setAttribute("data-cscript", LZString.compressToEncodedURIComponent(editor.getValue()));
 
-				iframe.src = window.location.protocol + window.location.host + "/" + newPathname;
+				iframe.src = window.location.protocol + "//" + window.location.host + newPathname;
 				console.log(iframe.src);
 				iframe.onload = function() {
 					$this.removeProp("disabled");
