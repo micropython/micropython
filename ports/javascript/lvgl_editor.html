@@ -82,7 +82,7 @@
 			For examples, see the README for the MicroPython binding.
 		
 			<p>
-			<button onclick="runScript();">Run</button>
+			<button id="run-button" onclick="runScript();">Run the script</button>
 			</div>
 			<div id="editor">print("Hello world")</div>
 			<div class="display-objects">
@@ -105,6 +105,9 @@
 			}
 			document.onmouseup = forward_event;
 			function runScript() {
+				var $this = $("#run-button");
+				$this.prop("disabled", true);
+				term.write('\x1bc');
 				/* Assemble the URL */
 				var newPathname = "";
 				var pathArray = window.location.pathname.split('/');
@@ -118,6 +121,7 @@
 				iframe.src = window.location.protocol + "//" + window.location.host + "/" + newPathname;
 				console.log(iframe.src);
 				iframe.onload = function() {
+					$this.removeProp("disabled");
 					iframe.contentWindow.startRunning();
 				};
 			}
