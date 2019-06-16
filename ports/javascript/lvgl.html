@@ -119,7 +119,8 @@
 			if(custom !== undefined && custom !== null)
 				processScriptArg(custom);
  			
-			var compressedScript = getSearchArg("script_direct");
+			
+			var compressedScript = window.parent.document.getElementById("emscripten-iframe").getAttribute("data-cscript");
 			if(compressedScript !== undefined && compressedScript !== null)
 				decompressScript(compressedScript);
 
