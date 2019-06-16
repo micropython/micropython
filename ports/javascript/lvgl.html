@@ -128,6 +128,7 @@
             mp_js_init_repl();
 			/*Start the main loop, asynchronously.*/
 			handle_pending();
+			window.top.reenableButton();
 		}
 		window.onload = function() {
 			console.log("onload");
