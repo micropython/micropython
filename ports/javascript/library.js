@@ -33,7 +33,7 @@ mergeInto(LibraryManager.library, {
                 process.stdout.write(b);
             } else {
                 var c = String.fromCharCode(getValue(ptr + i, 'i8'));
-                var mp_js_stdout = document.getElementById('mp_js_stdout');
+                var mp_js_stdout = window.top.document.getElementById('mp_js_stdout');
                 var print = new Event('print');
                 print.data = c;
                 mp_js_stdout.dispatchEvent(print);

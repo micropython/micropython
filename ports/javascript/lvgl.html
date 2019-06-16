@@ -10,57 +10,22 @@
 			margin: 0;
 			text-align: center;
 		}
-		a { white-space: nowrap; }
-		table {
-			display: inline-block;
-		}
-		#mp_js_stdout {
-			display: inline-block;
-			max-width: 90%;
-			height: 20%;
-			max-height: 600px;
-			vertical-align: middle;
-		}
-		#canvas {
-			border: 4px black solid;
-			border-radius: 4px;
-			vertical-align: middle;
-		};
     </style>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/addons/fit/fit.min.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.js" type="text/javascript" charset="utf-8"></script>
   </head>
   <body>
-	<h1>LittlevGL+MicroPython simulator</h1>
-	<p>
-	This is the JavaScript version of MicroPython, plus the LittlevGL bindings available at
-	<a href="https://github.com/littlevgl/lv_binding_micropython">https://github.com/littlevgl/lv_binding_micropython</a>.
-	<br>
-	You can type your own Python code into the prompt in the usual way.
-	<br>
-	For examples, see the README for the MicroPython binding.
-
-    <div id="mp_js_stdout"></div>
-
-    <canvas id="canvas" width="480" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-
-	<p>
-	<input id="script-url" placeholder="Script URL" value=""/><button onclick="reloadScript(document.getElementById('script-url').value);">Run a script</button>
-	<p>
-	<button onclick="mp_js_process_char(4);">Paste (Ctrl+D)</button>
-	<p>
-	<button onclick="for(var i = 0;i < lines.length;i++) { mp_js_do_str(lines[i]); }">Run basic demo</button>
-	<p>
-	<i>Simulator revision v1.1</i>
 	<!-- scripts -->
     <script src="lvgl_mp.js"></script>
     <script>
-
+		var mp_js_stdout;
 		/*Write text to the terminal */
 		function sendText(text) {
 			var print = new Event('print');
 			print.data = text;
+			if(mp_js_stdout === null) {
+				console.log("Stdout is null???");
+			}
 			mp_js_stdout.dispatchEvent(print);
 		}
 		function reloadScript(target_script) {
@@ -85,8 +50,24 @@
 				}
 			}
 		}
+		function decompressScript(compressed) {
+			var script = LZString.decompressFromEncodedURIComponent(compressed);
+			mp_js_do_str(script);
+		}
+
+		function getSearchArg(argname) {
+			/* Run custom script if passed */
+			var custom = undefined;
+			try {
+				custom = new URL(window.location.href).searchParams.get(argname);
+			} catch (e) {
+				console.log(e + ": URL seems to be unsupported");
+			}
+			return custom;
+		}
+
 		Module.canvas = (function() {
-			var canvas = document.getElementById('canvas');
+			var canvas = window.top.document.getElementById('canvas');
 			return canvas;
 		})(); 
 		var lines = [
@@ -121,44 +102,27 @@
 			/* Load the screen */
 			"lv.scr_load(scr)"
 		];
-    
+    	
 		/*Initialization function*/
-		window.onload = function() {
-
-			Terminal.applyAddon(fit);
-			term = new Terminal();
-			mp_js_stdout = document.getElementById('mp_js_stdout');
-	        mp_js_stdout.value = "";
-			term.open(mp_js_stdout);
-			term.fit();
+		function startRunning() {
+			/*Setup printing event handler*/
+			mp_js_stdout = window.parent.document.getElementById("mp_js_stdout");
+			if(mp_js_stdout === undefined || mp_js_stdout === null) {
+				throw "Could not retrieve parent element";
+			}
 			/*Initialize MicroPython itself*/
 			mp_js_init(1 * 1024 * 1024); 
-			/*Setup printing event handler*/
-			mp_js_stdout.addEventListener('print', function(e) {
-				text = e.data;
-				term.write(text);
-			}, false);
-			/*Setup key input handler */
-			term.on('data', function(key, e) {
-				console.log(key);
-				for(var i = 0; i < key.length; i++) {
-					console.log(key.charCodeAt(i));
-					mp_js_process_char(key.charCodeAt(i));
-				}
-			});
 			
-
 			/* Run custom script if passed */
-			var custom = undefined;
-			try {
-				custom = new URL(window.location.href).searchParams.get("script");
-			} catch (e) {
-				console.log(e + ": URL seems to be unsupported");
-			}
+			var custom = getSearchArg("script");
 			console.log("Custom script: " + custom);
 			if(custom !== undefined && custom !== null)
 				processScriptArg(custom);
  			
+			var compressedScript = getSearchArg("script_direct");
+			if(compressedScript !== undefined && compressedScript !== null)
+				decompressScript(compressedScript);
+
 			/*Setup lv_task_handler loop*/
 			var the_mp_handle_pending = Module.cwrap('mp_handle_pending', null);
 			function handle_pending() {

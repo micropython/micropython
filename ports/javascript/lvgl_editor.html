@@ -1,0 +1,190 @@
+<!doctype html>
+<!-- Updated for 6.0 -->
+<html>
+	<head>
+		<style>
+			html, body {
+				width: 100%;
+				height: 100%;
+				min-width: 100%;
+				min-height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			#mp_js_stdout {
+				display: inline-block;
+				vertical-align: top;
+			}
+			#editor {
+				position: relative;
+				width: 100%;
+			}
+			iframe {
+				width: 0;
+				height: 0;
+				display: inline-block;
+				position: absolute;
+				top: 0;
+				left: 0;
+				border: none;
+			}
+			#canvas {
+				border: 4px black solid;
+				vertical-align: top;
+				display: inline-block;
+				flex: none;
+				width: 480px;
+				height: 320px;
+ 				min-width: 0;
+			};
+			a { white-space: nowrap; }
+			.flex-container {
+				display: flex;
+				width: 100%;
+				height: 100%;
+				flex-direction: column;
+			}
+			.flex-container> div {
+				flex: none;
+			}
+			#editor {
+				flex: auto;
+			}
+			.display-objects {
+				display: flex;
+				flex-direction: row;
+			}
+			#mp_js_stdout {
+				flex: 1 0 auto;
+				height: 328px;
+				background-color: black;
+			}
+		</style>
+		
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.css" />
+		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/mode-python.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/addons/fit/fit.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div class="flex-container">
+			<div style="display: inline-block; padding: 10px;" class="no-iframe">
+			<h1>LittlevGL+MicroPython simulator</h1>
+			<p>
+			This is the JavaScript version of MicroPython, plus the LittlevGL bindings available at
+			<a href="https://github.com/littlevgl/lv_binding_micropython">https://github.com/littlevgl/lv_binding_micropython</a>.
+			<br>
+			You can type your own Python code into the prompt in the usual way.
+			<br>
+			For examples, see the README for the MicroPython binding.
+		
+			<p>
+			<button onclick="runScript();">Run</button>
+			</div>
+			<div id="editor">print("Hello world")</div>
+			<div class="display-objects">
+				
+				<canvas id="canvas" width="480" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+				<div id="mp_js_stdout"></div>
+			</div>
+		</div>
+		<iframe onload="reloaded();" id="emscripten-iframe"></iframe>
+		<script>
+			var editor, iframe;
+			function reloaded() {
+				console.log("Loaded iframe");
+			}
+			function forward_event(event) {
+				if(iframe !== undefined && iframe !== null) {
+					if(iframe.contentWindow !== null)
+						iframe.contentWindow.document.dispatchEvent(new MouseEvent('mouseup'));
+				}
+			}
+			document.onmouseup = forward_event;
+			function runScript() {
+				/* Assemble the URL */
+				var newPathname = "";
+				var pathArray = window.location.pathname.split('/');
+				for (i = 0; i < pathArray.length - 1; i++) {
+				  newPathname += "/";
+				  newPathname += pathArray[i];
+				}
+				newPathname += "/lvgl.html?env=dev&script_direct=";
+				newPathname += LZString.compressToEncodedURIComponent(editor.getValue());
+				
+				iframe.src = window.location.protocol + "//" + window.location.host + "/" + newPathname;
+				iframe.onload = function() {
+					iframe.contentWindow.startRunning();
+				};
+			}
+			function processScriptArg(url){
+				// read text from URL location
+				var request = new XMLHttpRequest();
+				console.log("GET " + url);
+				request.open('GET', url, true);
+				request.send(null);
+				request.onreadystatechange = function () {
+					if (request.readyState === 4 && request.status === 200) {
+						var type = request.getResponseHeader('Content-Type');
+						if (type.indexOf("text") !== 1) {
+							console.log(request.reponseText);
+							if(request.responseText === undefined)
+								return;
+							editor.session.getUndoManager().reset();
+						    editor.setValue(request.responseText, -1);
+						}
+					}
+				}
+			}
+			function getSearchArg(argname) {
+				/* Run custom script if passed */
+				var custom = undefined;
+				try {
+					custom = new URL(window.location.href).searchParams.get(argname);
+				} catch (e) {
+					console.log(e + ": URL seems to be unsupported");
+				}
+				return custom;
+			}
+			function clear_iframe(iframe) {
+				iframe.contentWindow.document.open();
+				iframe.contentWindow.document.write("");
+				iframe.contentWindow.document.close();
+			}
+			window.onload = function() {
+			    editor = ace.edit("editor");
+				editor.setAutoScrollEditorIntoView(true);
+				var PythonMode = ace.require("ace/mode/python").Mode;
+				editor.session.setMode(new PythonMode());
+				iframe = document.getElementById("emscripten-iframe");
+				iframe.src = "about:blank";
+				clear_iframe(iframe);
+				var script = getSearchArg("script");
+				if(script !== undefined && script !== null) {
+					processScriptArg(script);
+				} else
+					processScriptArg("https://raw.githubusercontent.com/littlevgl/lv_binding_micropython/dev-6.0/examples/advanced_demo.py");
+				Terminal.applyAddon(fit);
+				term = new Terminal();
+				mp_js_stdout = document.getElementById('mp_js_stdout');
+			    mp_js_stdout.value = "";
+				term.open(mp_js_stdout);
+				term.fit();
+				term.on('data', function(key, e) {
+					for(var i = 0; i < key.length; i++) {
+						if(iframe.contentWindow !== null)
+							iframe.contentWindow.mp_js_process_char(key.charCodeAt(i));
+					}
+				});
+				
+				mp_js_stdout.addEventListener('print', function(e) {
+					text = e.data;
+					term.write(text);
+				}, false);
+			}
+		</script>
+	</body>
+</html>
