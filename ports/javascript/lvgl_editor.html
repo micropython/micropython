@@ -82,7 +82,7 @@
 			For examples, see the README for the MicroPython binding.
 		
 			<p>
-			<button id="run-button" onclick="runScript();">Run the script</button>
+			<input type="button" disabled="disabled" id="run-button" value="Run the script" onclick="runScript();"/>
 			</div>
 			<div id="editor">print("Hello world")</div>
 			<div class="display-objects">
@@ -107,7 +107,7 @@
 			document.onmouseup = forward_event;
 			function runScript() {
 				var $this = $("#run-button");
-				$this.prop("disabled", true);
+				$this.prop("disabled", "disabled");
 				term.write('\x1bc');
 				
 
@@ -204,10 +204,9 @@
 					text = e.data;
 					term.write(text);
 				}, false);
-				$("#run-button").prop("disabled", true);
+				
 				// read text from URL location
 				var request = new XMLHttpRequest();
-
 				request.open('GET', get_iframe_url(), true);
 				request.overrideMimeType("text/plain; charset=x-user-defined");
 				request.send(null);
