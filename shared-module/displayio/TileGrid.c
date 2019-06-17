@@ -221,7 +221,7 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
     }
     int16_t tx = (x - self->top_left_x) % self->width_in_tiles;
     if (tx < 0) {
-        tx += self->height_in_tiles;
+        tx += self->width_in_tiles;
     }
     tile_area->x1 = tx * self->tile_width;
     tile_area->x2 = tile_area->x1 + self->tile_width;
