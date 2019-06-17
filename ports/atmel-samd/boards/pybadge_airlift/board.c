@@ -41,12 +41,10 @@ uint8_t display_init_sequence[] = {
     0x01, 0 | DELAY, 150, // SWRESET
     0x11, 0 | DELAY, 255, // SLPOUT
     0x36, 1, 0x08,        // _MADCTL bottom to top refresh in vsync aligned order.
-    0x3a, 2, 0x55, 10, // COLMOD - 16bit color
-    0x2a, 3, 0x00, 240 >> 8, 240 & 0xFF, // _CASET XSTART = 0, XEND = 240
-    0x2b, 3, 0x00, 320 >> 8, 320 & 0xFF, // _RASET YSTART = 0, YEND = 320
-    0x21, 0 | DELAY, 10,                 // _INVON
-    0x13, 0 | DELAY, 10,                 // _NORON
-    0x29, 0 | DELAY, 255,                // _DISPON
+    0x3a, 1, 0x55,        // COLMOD - 16bit color
+    0x21, 0 | DELAY, 10,  // _INVON
+    0x13, 0 | DELAY, 10,  // _NORON
+    0x29, 0 | DELAY, 255, // _DISPON
 };
 
 void board_init(void) {
