@@ -54,7 +54,14 @@
     #endif
 #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
     #define MICROPY_NLR_THUMB (1)
-    #define MICROPY_NLR_NUM_REGS (10)
+    #if defined(__SOFTFP__)
+        #define MICROPY_NLR_NUM_REGS (10)
+    #else
+        // With hardware FP registers s16-s31 are callee save so in principle
+        // should be saved and restored by the NLR code.  gcc only uses s16-s21
+        // so only save/restore those as an optimisation.
+        #define MICROPY_NLR_NUM_REGS (10 + 6)
+    #endif
 #elif defined(__xtensa__)
     #define MICROPY_NLR_XTENSA (1)
     #define MICROPY_NLR_NUM_REGS (10)
