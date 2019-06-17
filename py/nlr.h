@@ -54,7 +54,11 @@
     #endif
 #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
     #define MICROPY_NLR_THUMB (1)
-    #define MICROPY_NLR_NUM_REGS (10)
+    #if defined(__SOFTFP__)
+        #define MICROPY_NLR_NUM_REGS (10)
+    #else
+        #define MICROPY_NLR_NUM_REGS (16)
+    #endif
 #elif defined(__xtensa__)
     #define MICROPY_NLR_XTENSA (1)
     #define MICROPY_NLR_NUM_REGS (10)
