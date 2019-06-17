@@ -18,6 +18,8 @@ MICROPY_SSL_MBEDTLS = 0
 #AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096 -Wno-implicit-function-declaration
 MICROPY_FATFS = 1
 
+MICROPY_USE_2M_FLASH = 0
+
 FROZEN_MPY_DIR = scripts
 
 # include py core make definitions
@@ -58,10 +60,18 @@ include $(TOPDIR)/Tools/toolchain.def
 
 OUTPUT_PATH = $(BUILD)
 
+ifeq ($(MICROPY_USE_2M_FLASH),1)
+PACKIMG = tools/create_2m_img.sh
+else
+PACKIMG = tools/create_1m_img.sh
+endif
+DOWNLOADIMG = tools/download_img.sh
+DOWNLOADFLS = tools/download_fls.sh
+
 #---------------------------------------------------------------------------
 # Target definition (User)
 #---------------------------------------------------------------------------
-GOAL = W600
+GOAL = wm_w600
 
 #---------------------------------------------------------------------------
 # Source section (User)
@@ -75,7 +85,11 @@ C_SRC := $(TOPDIR)/Platform/Boot/gcc/retarget_gcc.c \
 #---------------------------------------------------------------------------
 LDFLAGS	   += -static
 LDFLAGS    += -nostartfiles
-LDFLAGS    += -T./tools/link_w600.ld
+ifeq ($(MICROPY_USE_2M_FLASH),1)
+LDFLAGS    += -T./tools/link_w600_2m.ld
+else
+LDFLAGS    += -T./tools/link_w600_1m.ld
+endif
 LDFLAGS    += -mthumb
 LDFLAGS    += -mcpu=cortex-m3
 #---------------------------------------------------------------------------
@@ -130,6 +144,7 @@ MPY_SRC = main.c \
         machine/machine_uart.c \
         machine/machine_pwm.c \
         machine/machine_i2c.c \
+        machine/machine_spi.c \
         modules/modnetwork.c \
         modules/modmachine.c \
         modules/modutime.c \
@@ -219,8 +234,15 @@ ENV_OS=$(shell echo $(_ENV_OS) | tr '[A-Z]' '[a-z]')
 MODULES := library
 
 all: $(MODULES) $(GOAL)
-	@./tools/createimg.sh
-#	@./createimg.sh -e $(ENV_OS) -r ${_SVN_Revision}
+	@./$(PACKIMG)
+
+image: $(MODULES) $(GOAL)
+	@./$(PACKIMG)
+	@./$(DOWNLOADIMG)
+
+flash: $(MODULES) $(GOAL)
+	@./$(PACKIMG)
+	@./$(DOWNLOADFLS)
 
 $(MODULES):
 	@for i in ${Src_App_dirs} ; do [ ! -d $$i ] || $(MAKE) -C $$i || exit $?; done

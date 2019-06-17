@@ -20,7 +20,7 @@ Supported features
 - Many of MicroPython's features are enabled: unicode, arbitrary-precision
   integers, single-precision floats, complex numbers, frozen bytecode, as
   well as many of the internal modules.
-- The machine module with GPIO, UART, software SPI, I2C, PWM, WDT and Timer.
+- The machine module with GPIO, UART, SPI, I2C, PWM, WDT and Timer.
 - The network module with WLAN (WiFi) support.
 - Internal filesystem using the flash (27Kb available).
 - Support built-in FTP server transfer script files.
@@ -65,7 +65,6 @@ You can crop the component by modifying the macro switch, For example,
 
 The recommended components that can be turned off are:
 
-    #define TLS_CONFIG_HS_SPI      CFG_OFF
     #define TLS_CONFIG_HOSTIF      CFG_OFF
     #define TLS_CONFIG_RMMS        CFG_OFF
     #define TLS_CONFIG_HTTP_CLIENT CFG_OFF
@@ -85,10 +84,17 @@ This will produce binary firmware images in the `build/` subdirectory
 Flashing the Firmware
 -----------------------
 
-This will use the `download.py` script to download the
-binary images. For example, 
+The first time you burn the firmware, please use the command 
+```bash
+make flash V=s
+```
 
-    python ./download.py ttyUSB0 ./build/W600_GZ.img
+It is recommended to use the command 
+```bash
+make image V=s
+``` 
+to complete the firmware programming faster.
+
 
 Reference document
 -----------------------

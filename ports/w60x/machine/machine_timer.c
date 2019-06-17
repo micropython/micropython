@@ -41,8 +41,9 @@
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
-    u8 timerid;
     u32 timeout;
+    mp_obj_t callback;
+    u8 timerid;
     bool is_repeat;
 } machine_timer_obj_t;
 
@@ -85,6 +86,16 @@ STATIC mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
 
+STATIC void machine_timer_callback(void *arg)
+{
+    machine_timer_obj_t *self = (machine_timer_obj_t *)arg;
+
+    if (self->callback) {
+        mp_sched_schedule(self->callback, self);
+        //mp_call_function_1(self->callback, self);
+    }
+}
+
 STATIC mp_obj_t machine_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)args[0];
     struct tls_timer_cfg timercfg;
@@ -98,33 +109,34 @@ STATIC mp_obj_t machine_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_ma
         ARG_callback,
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_period,       MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_mode,         MP_ARG_INT, {.u_int = MP_ROM_INT(true)} },
+        { MP_QSTR_period,       MP_ARG_INT, {.u_int = 100} },
         { MP_QSTR_callback,     MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t dargs[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, dargs);
 
-    if (2 == n_args) {
-        timercfg.timeout = dargs[0].u_int;
-    } else if (3 == n_args) {
-        timercfg.is_repeat = dargs[ARG_mode].u_int;
-        timercfg.timeout = dargs[ARG_period].u_int;
-    } else if (4 == n_args) {
-        timercfg.is_repeat = dargs[ARG_mode].u_int;
-        timercfg.timeout = dargs[ARG_period].u_int;
-        timercfg.callback = dargs[ARG_callback].u_obj;
+    if (mp_obj_is_callable(dargs[ARG_callback].u_obj)) {
+        self->callback = dargs[ARG_callback].u_obj;
+    } else if (dargs[ARG_callback].u_obj == mp_const_none) {
+        self->callback = NULL;
     } else {
-        mp_raise_ValueError("invalid format");
+        mp_raise_ValueError("callback must be a function");
     }
 
+    timercfg.is_repeat = dargs[ARG_mode].u_int;
+    timercfg.timeout = dargs[ARG_period].u_int;
+    timercfg.callback = machine_timer_callback;
+    timercfg.arg = self;
+
     if (WM_TIMER_ID_INVALID != self->timerid) {
-        tls_timer_stop(self->timerid);
-    } else {
-        self->timerid = tls_timer_create(&timercfg);
+        tls_timer_destroy(self->timerid);
     }
+
+    self->timerid = tls_timer_create(&timercfg);
     tls_timer_start(self->timerid);
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init);

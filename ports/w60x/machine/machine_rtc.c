@@ -43,6 +43,7 @@
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
+    mp_uint_t alarm_seconds;
 } machine_rtc_obj_t;
 
 typedef struct machine_rtc_irq_obj_t {
@@ -124,7 +125,13 @@ STATIC mp_obj_t machine_rtc_deinit(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_deinit_obj, 0, 1, machine_rtc_deinit);
 
+STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
+    return machine_rtc_datetime_helper(n_args, args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
+
 STATIC mp_obj_t machine_rtc_alarm(mp_uint_t n_args, const mp_obj_t *args) {
+    machine_rtc_obj_t *self = args[0];
     struct tm tblock;
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(args[1], 8, &items);
@@ -135,9 +142,37 @@ STATIC mp_obj_t machine_rtc_alarm(mp_uint_t n_args, const mp_obj_t *args) {
     tblock.tm_min = mp_obj_get_int(items[5]);
     tblock.tm_sec = mp_obj_get_int(items[6]);
     tls_rtc_timer_start(&tblock);
+
+    self->alarm_seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE,
+                                           tblock.tm_mon, tblock.tm_mday,
+                                           tblock.tm_hour, tblock.tm_min,
+                                           tblock.tm_sec);
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_obj, 1, 2, machine_rtc_alarm);
+
+STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
+    machine_rtc_obj_t *self = args[0];
+    int64_t ms_left;
+    mp_uint_t seconds;
+    struct tm tblock;
+
+    tls_get_rtc(&tblock);
+
+    seconds = timeutils_mktime(tblock.tm_year + W600_YEAR_BASE,
+                               tblock.tm_mon, tblock.tm_mday,
+                               tblock.tm_hour, tblock.tm_min,
+                               tblock.tm_sec);
+
+    ms_left = (self->alarm_seconds - seconds) * 1000;
+
+    if (ms_left < 0) {
+        ms_left = 0;
+    }
+    return mp_obj_new_int(ms_left);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_left_obj, 1, 2, machine_rtc_alarm_left);
 
 STATIC mp_obj_t machine_rtc_cancel(mp_uint_t n_args, const mp_obj_t *args) {
     tls_rtc_timer_stop();
@@ -176,43 +211,22 @@ STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 
-STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_rtc_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&machine_rtc_now_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&machine_rtc_alarm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm_left), MP_ROM_PTR(&machine_rtc_alarm_left_obj) },
     { MP_ROM_QSTR(MP_QSTR_cancel), MP_ROM_PTR(&machine_rtc_cancel_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_rtc_irq_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
 const mp_obj_type_t machine_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = machine_rtc_make_new,
-    .locals_dict = (mp_obj_t) &machine_rtc_locals_dict,
-};
-
-STATIC const mp_obj_type_t machine_rtc_irq_type;
-
-STATIC const machine_rtc_irq_obj_t machine_rtc_irq_object = {&machine_rtc_irq_type};
-
-STATIC mp_obj_t machine_rtc_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    machine_rtc_irq_obj_t *self = self_in;
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    machine_rtc_alarm_irq(self);
-    return mp_const_none;
-}
-
-STATIC const mp_rom_map_elem_t machine_rtc_irq_locals_dict_table[] = {
-
-};
-STATIC MP_DEFINE_CONST_DICT(machine_rtc_irq_locals_dict, machine_rtc_irq_locals_dict_table);
-
-STATIC const mp_obj_type_t machine_rtc_irq_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RTC_IRQ,
-    .call = machine_rtc_irq_call,
-    .locals_dict = (mp_obj_dict_t *) &machine_rtc_irq_locals_dict,
+    .locals_dict = (mp_obj_t) &pyb_rtc_locals_dict,
 };
 

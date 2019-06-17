@@ -138,11 +138,12 @@
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)
-#define MICROPY_PY_MACHINE_I2C              (0)
+#define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_I2C_MAKE_NEW     machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
-//#define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hw_spi_make_new
+#define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hard_spi_make_new
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (mp_hal_get_cpu_freq() * 1000000 / 200) // roughly
 //#define MICROPY_PY_USSL_FINALISER           (1)
