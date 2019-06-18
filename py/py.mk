@@ -153,6 +153,13 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	frozenmod.o \
 	)
 
+ifdef IGNORE_ZVM_FILE
+PY_CORE_O_BASENAME += $(addprefix py/,\
+    tvm.o \
+    gas.o \
+    )
+endif
+
 PY_EXTMOD_O_BASENAME = \
 	extmod/moductypes.o \
 	extmod/modujson.o \
@@ -188,6 +195,14 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/uos_dupterm.o \
 	lib/embed/abort_.o \
 	lib/utils/printf.o \
+
+ifdef IGNORE_ZVM_FILE
+PY_EXTMOD_O_BASENAME +=	extmod/zvm/tas.o \
+    extmod/zvm/tas_account.o \
+	extmod/zvm/tas_block.o \
+	extmod/zvm/tas_tx.o \
+
+endif
 
 # prepend the build destination prefix to the py object files
 PY_CORE_O = $(addprefix $(BUILD)/, $(PY_CORE_O_BASENAME))

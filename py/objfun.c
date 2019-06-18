@@ -170,6 +170,29 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     return mp_obj_code_get_name(bc);
 }
 
+#if ZVM_EXTMOD
+mp_obj_tuple_t* mp_obj_fun_get_params_name(mp_const_obj_t fun_in) {
+    const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
+    const byte *bc = fun->bytecode;
+    bc = mp_decode_uint_skip(bc);
+    bc = mp_decode_uint_skip(bc);
+    bc++;
+    mp_uint_t n_pos_args = *bc++;
+    mp_uint_t n_kwonly_args = *bc++;
+    bc++;
+
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_pos_args + n_kwonly_args, NULL));
+
+    for (mp_uint_t i = 0; i < n_pos_args + n_kwonly_args; i++) {
+        const char* p = qstr_str(MP_OBJ_QSTR_VALUE(fun->const_table[i]));
+        t->items[i] = mp_obj_new_str(p, strlen(p));//MP_OBJ_NEW_QSTR(qstr_str(MP_OBJ_QSTR_VALUE(fun->const_table[i])));
+
+        //printf(" %s\n", qstr_str(MP_OBJ_QSTR_VALUE(fun->const_table[i])));
+    }
+    return t; //mp_obj_code_get_name(bc);
+}
+#endif
+
 #if MICROPY_CPYTHON_COMPAT
 STATIC void fun_bc_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
@@ -352,6 +375,12 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (attr == MP_QSTR___name__) {
         dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(self_in));
     }
+#if ZVM_EXTMOD
+    else if (attr == MP_QSTR___para__)
+    {
+        dest[0] = (mp_obj_fun_get_params_name(self_in));
+    }
+#endif
 }
 #endif
 

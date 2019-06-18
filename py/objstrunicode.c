@@ -264,6 +264,27 @@ STATIC const mp_rom_map_elem_t struni_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(struni_locals_dict, struni_locals_dict_table);
 
+#if ZVM_EXTMOD
+STATIC void fill_string_return_data(mp_obj_t self_in, const tvm_execute_result_t *result) {
+	GET_STR_DATA_LEN(self_in, str_data, str_len);
+
+	result->result_type = RETURN_TYPE_STRING;
+	result->error_code = 0;
+	result->content = str_data;
+
+	return data;
+}
+
+STATIC char* get_string_return_data(mp_obj_t self_in) {
+	GET_STR_DATA_LEN(self_in, str_data, str_len);
+	size_t len = str_len;
+	char *data = (char*)malloc(len + 1);
+	strcpy(data, (char*)str_data);
+	strcat(data, "\0");
+	return data;
+}
+#endif
+
 const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
     .name = MP_QSTR_str,
@@ -275,6 +296,10 @@ const mp_obj_type_t mp_type_str = {
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_dict_t*)&struni_locals_dict,
+#if ZVM_EXTMOD
+	.fill_return_data = fill_string_return_data,
+	.get_string = get_string_return_data,
+#endif
 };
 
 /******************************************************************************/

@@ -32,6 +32,10 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
+#if ZVM_EXTMOD
+#include "py/gas.h"
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -93,6 +97,7 @@ void *m_malloc(size_t num_bytes) {
     UPDATE_PEAK();
 #endif
     DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
+    FireGas_Mem(num_bytes);
     return ptr;
 }
 
@@ -104,6 +109,9 @@ void *m_malloc_maybe(size_t num_bytes) {
     UPDATE_PEAK();
 #endif
     DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
+#if ZVM_EXTMOD
+    FireGas_Mem(num_bytes);
+#endif
     return ptr;
 }
 
@@ -157,6 +165,9 @@ void *m_realloc(void *ptr, size_t new_num_bytes) {
     #else
     DEBUG_printf("realloc %p, %d : %p\n", ptr, new_num_bytes, new_ptr);
     #endif
+#if ZVM_EXTMOD
+    FireGas_Mem(new_num_bytes);
+#endif
     return new_ptr;
 }
 
@@ -185,6 +196,9 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
     #else
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, new_num_bytes, new_ptr);
     #endif
+#if ZVM_EXTMOD
+    FireGas_Mem(new_num_bytes);
+#endif
     return new_ptr;
 }
 

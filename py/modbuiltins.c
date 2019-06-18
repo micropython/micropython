@@ -35,6 +35,10 @@
 #include "py/builtin.h"
 #include "py/stream.h"
 
+#if ZVM_EXTMOD
+#include <string.h>
+#endif
+
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
@@ -604,6 +608,189 @@ STATIC mp_obj_t mp_builtin_locals(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_builtin_locals);
 
+#if ZVM_EXTMOD
+char* g_pAbi = NULL;
+
+char* mystrstr(char* p1, char* p2)
+{
+	if (p1 == NULL || p2 == NULL)
+	{
+		return NULL;
+	}
+	int iLen1 = strlen(p1);
+	int iLen2 = strlen(p2);
+	if (iLen1 < iLen2)
+	{
+		return NULL;
+	}
+
+	for (int i = 0; i < iLen1- iLen2; i++)
+	{
+		if (0 == memcmp(p1+i,p2,iLen2))
+		{
+			return p1+i;
+		}
+	}
+
+	return NULL;
+}
+
+void formatabistr(char* pstr)
+{
+	if(pstr == NULL)
+	{
+		return;
+	}
+
+	int iLen = strlen(pstr)-13;
+	char* p = pstr;
+
+	char* pTobeFound = "<class 'int'>";
+	for(int i = 0 ; i < iLen; i++)
+	{
+		char* p1 = mystrstr(p + i, pTobeFound);
+		if (p1)
+		{
+			char szTmp[4096];
+			memset(szTmp,0,sizeof(szTmp));
+			memcpy(szTmp,"'int'",5);
+			memcpy(szTmp + 5, p1 + strlen(pTobeFound), strlen(pstr) - (p1 - p) - strlen(pTobeFound));
+			memcpy(p1, szTmp , strlen(szTmp)+1);
+
+			//memcpy(p1, "int          ",strlen("int          "));
+			//i = (p1-p) + (strlen("int          ")-1);
+		}
+	}
+
+	p = pstr;
+	pTobeFound = "<class 'str'>";
+	for (int i = 0; i < iLen; i++)
+	{
+		char* p1 = mystrstr(p + i, pTobeFound);
+		if (p1)
+		{
+			char szTmp[4096];
+			memset(szTmp, 0, sizeof(szTmp));
+			memcpy(szTmp, "'str'",5);
+			memcpy(szTmp + 5, p1 + strlen(pTobeFound), strlen(pstr) - (p1 - p) - strlen(pTobeFound));
+			memcpy(p1, szTmp, strlen(szTmp) + 1);
+		}
+	}
+
+	p = pstr;
+	pTobeFound = "<class 'dict'>";
+	for (int i = 0; i < iLen; i++)
+	{
+		char* p1 = mystrstr(p + i, pTobeFound);
+		if (p1)
+		{
+			char szTmp[4096];
+			memset(szTmp, 0, sizeof(szTmp));
+			memcpy(szTmp, "'dict'", 6);
+			memcpy(szTmp + 6, p1 + strlen(pTobeFound), strlen(pstr) - (p1 - p) - strlen(pTobeFound));
+			memcpy(p1, szTmp, strlen(szTmp) + 1);
+		}
+	}
+
+	p = pstr;
+	pTobeFound = "<class 'list'>";
+	for (int i = 0; i < iLen; i++)
+	{
+		char* p1 = mystrstr(p + i, pTobeFound);
+		if (p1)
+		{
+			char szTmp[4096];
+			memset(szTmp, 0, sizeof(szTmp));
+			memcpy(szTmp, "'list'", 6);
+			memcpy(szTmp + 6, p1 + strlen(pTobeFound), strlen(pstr) - (p1 - p) - strlen(pTobeFound));
+			memcpy(p1, szTmp, strlen(szTmp) + 1);
+		}
+	}
+
+	p = pstr;
+	pTobeFound = "<class 'bool'>";
+	for (int i = 0; i < iLen; i++)
+	{
+		char* p1 = mystrstr(p + i, pTobeFound);
+		if (p1)
+		{
+			char szTmp[4096];
+			memset(szTmp, 0, sizeof(szTmp));
+			memcpy(szTmp, "'bool'", 6);
+			memcpy(szTmp + 6, p1 + strlen(pTobeFound), strlen(pstr) - (p1 - p) - strlen(pTobeFound));
+			memcpy(p1, szTmp, strlen(szTmp) + 1);
+		}
+	}
+
+//	p = pstr;
+//	for (int i = strlen(pstr)-2 ; i >= 0 ; i--)
+//	{
+//		if (p[i] == ' ' && p[i + 1] == ' ')
+//		{
+//			char szTmp[4096];
+//			memset(szTmp,0,sizeof(szTmp));
+//			memcpy(szTmp, p + i + 1, strlen(pstr) - i - 1);
+//			memcpy(p+i, szTmp , strlen(pstr) - i);
+//		}
+//	}
+}
+
+STATIC mp_obj_t mp_builtin_abiexport(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    if (n_args != 1 || pos_args == NULL)
+    {
+        return mp_const_none;
+    }
+
+    enum { ARG_sep, ARG_end, ARG_file };
+    static const mp_arg_t allowed_args[] = {
+            { MP_QSTR_sep, MP_ARG_KW_ONLY | MP_ARG_OBJ,{ .u_rom_obj = MP_ROM_QSTR(MP_QSTR__space_) } },
+            { MP_QSTR_end, MP_ARG_KW_ONLY | MP_ARG_OBJ,{ .u_rom_obj = MP_ROM_QSTR(MP_QSTR__0x0a_) } },
+            #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+            { MP_QSTR_file, MP_ARG_KW_ONLY | MP_ARG_OBJ,{ .u_rom_obj = MP_ROM_PTR(&mp_sys_stdout_obj) } },
+            #endif
+            };
+
+    // parse args (a union is used to reduce the amount of C stack that is needed)
+    union {
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        size_t len[2];
+    } u;
+    mp_arg_parse_all(0, NULL, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, u.args);
+
+    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+    mp_get_stream_raise(u.args[ARG_file].u_obj, MP_STREAM_OP_WRITE);
+    mp_print_t print = { MP_OBJ_TO_PTR(u.args[ARG_file].u_obj), mp_stream_write_adaptor };
+    #endif
+
+    // extract the objects first because we are going to use the other part of the union
+    // 	mp_obj_t sep = u.args[ARG_sep].u_obj;
+    //	mp_obj_t end = u.args[ARG_end].u_obj;
+    //	const char *sep_data = mp_obj_str_get_data(sep, &u.len[0]);
+    //	const char *end_data = mp_obj_str_get_data(end, &u.len[1]);
+
+    GET_STR_DATA_LEN(pos_args[0], str_data, str_len);
+    char* pTmp = malloc(str_len+1);
+    memset(pTmp, 0, str_len + 1);
+    strcpy(pTmp, (char*)str_data);
+    formatabistr(pTmp);
+
+    if (g_pAbi)
+    {
+        free(g_pAbi);
+        g_pAbi = NULL;
+    }
+    g_pAbi = malloc(strlen(pTmp)+1);
+    memset(g_pAbi,0, strlen(pTmp) + 1);
+
+    strcpy(g_pAbi, pTmp);
+
+    free(pTmp);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_abiexport_obj, 0, mp_builtin_abiexport);
+#endif
+
 // These are defined in terms of MicroPython API functions right away
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_obj_id);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
@@ -726,6 +913,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_round), MP_ROM_PTR(&mp_builtin_round_obj) },
     { MP_ROM_QSTR(MP_QSTR_sorted), MP_ROM_PTR(&mp_builtin_sorted_obj) },
     { MP_ROM_QSTR(MP_QSTR_sum), MP_ROM_PTR(&mp_builtin_sum_obj) },
+    #if ZVM_EXTMOD
+    { MP_ROM_QSTR(MP_QSTR_abiexport), MP_ROM_PTR(&mp_builtin_abiexport_obj) },
+    #endif
 
     // built-in exceptions
     { MP_ROM_QSTR(MP_QSTR_BaseException), MP_ROM_PTR(&mp_type_BaseException) },

@@ -453,6 +453,22 @@ STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
 
+#if ZVM_EXTMOD
+STATIC void fill_int_return_data(mp_obj_t self_in, tvm_execute_result_t *result) {
+    char stack_buf[sizeof(fmt_int_t) * 4];
+    char *buf = stack_buf;
+    size_t buf_size = sizeof(stack_buf);
+    size_t fmt_size;
+    char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, self_in, 10, NULL, '\0', '\0');
+
+    result->result_type = RETURN_TYPE_INT;
+    result->error_code = 0;
+    result->content = malloc(fmt_size + 1);
+    memset(result->content, 0, fmt_size + 1);
+    memcpy(result->content, str, fmt_size);
+}
+#endif
+
 const mp_obj_type_t mp_type_int = {
     { &mp_type_type },
     .name = MP_QSTR_int,
@@ -461,4 +477,7 @@ const mp_obj_type_t mp_type_int = {
     .unary_op = mp_obj_int_unary_op,
     .binary_op = mp_obj_int_binary_op,
     .locals_dict = (mp_obj_dict_t*)&int_locals_dict,
+#if ZVM_EXTMOD
+    .fill_return_data = fill_int_return_data,
+#endif
 };

@@ -32,6 +32,10 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
+#if ZVM_EXTMOD
+#include "py/gas.h"
+#endif
+
 #if MICROPY_ENABLE_GC
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -554,6 +558,9 @@ found:
     gc_dump_alloc_table();
     #endif
 
+#if ZVM_EXTMOD
+    FireGas_Mem(n_bytes);
+#endif
     return ret_ptr;
 }
 
@@ -790,6 +797,9 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
     memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
     gc_free(ptr_in);
+#if ZVM_EXTMOD
+    FireGas_Mem(n_bytes);
+#endif
     return ptr_out;
 }
 #endif // Alternative gc_realloc impl

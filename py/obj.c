@@ -37,6 +37,14 @@
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
+#if ZVM_EXTMOD
+#include <string.h>
+
+#include "py/tvm.h"
+
+int lib_line = 0;
+#endif
+
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (mp_obj_is_small_int(o_in)) {
         return (mp_obj_type_t*)&mp_type_int;
@@ -529,3 +537,57 @@ mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         default: return MP_OBJ_NULL; // op not supported
     }
 }
+
+#if ZVM_EXTMOD
+void mp_fun_return(mp_obj_t func_return, tvm_execute_result_t *result) {
+    if (func_return != NULL) {
+        mp_obj_type_t *type = mp_obj_get_type(func_return);
+        if (type->fill_return_data != NULL) {
+            type->fill_return_data(func_return, result);
+            return;
+        }
+    }
+    result->result_type = RETURN_TYPE_NONE;
+    result->error_code = 0;
+    result->content = NULL;
+}
+
+void mp_obj_fill_exception(char* exception_str, const int error_code, tvm_execute_result_t *result) {
+    result->result_type = RETURN_TYPE_EXCEPTION;
+    result->error_code = error_code;
+    result->content = exception_str;
+}
+
+void set_code_line(int line) {
+	lib_line = line;
+}
+
+mp_obj_t result_to_obj(const tvm_execute_result_t *result) {
+	assert(result);
+	switch (result->result_type)
+	{
+	    case RETURN_TYPE_INT: {
+            const char *str = result->content;
+            return mp_obj_new_int_from_str_len(&str, strlen(result->content), false, 10);
+	    }
+	    case RETURN_TYPE_STRING:
+            return mp_obj_new_str(result->content, strlen(result->content));
+	    case RETURN_TYPE_NONE:
+            return MP_OBJ_FROM_PTR(&mp_const_none_obj);
+	    case RETURN_TYPE_EXCEPTION:
+            mp_raise_CallError(result->content);
+	    case RETURN_TYPE_BOOL:
+            if (strcmp(result->content, "0") == 0) {
+                return mp_obj_new_bool(0);
+            }
+            else {
+                return mp_obj_new_bool(1);
+            }
+        default:
+            assert(false);
+            break;
+	}
+	return MP_OBJ_FROM_PTR(&mp_const_none_obj);
+}
+
+#endif

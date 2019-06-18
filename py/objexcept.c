@@ -229,6 +229,26 @@ const mp_obj_type_t mp_type_BaseException = {
     .attr = mp_obj_exception_attr,
 };
 
+#if ZVM_EXTMOD
+const mp_obj_type_t mp_type_GasNotEnough = {
+        { &mp_type_type },
+        .name = MP_QSTR_GasNotEnoughException,
+        .print = mp_obj_exception_print,
+        .make_new = mp_obj_exception_make_new,
+        .attr = mp_obj_exception_attr,
+        .parent = &mp_type_Exception,
+};
+
+const mp_obj_type_t mp_type_CallException = {
+        { &mp_type_type },
+        .name = MP_QSTR_CallException,
+        .print = mp_obj_exception_print,
+        .make_new = mp_obj_exception_make_new,
+        .attr = mp_obj_exception_attr,
+        .parent = &mp_type_Exception,
+};
+#endif
+
 // List of all exceptions, arranged as in the table at:
 // http://docs.python.org/3/library/exceptions.html
 MP_DEFINE_EXCEPTION(SystemExit, BaseException)
@@ -557,3 +577,67 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values
         *values = self->traceback_data;
     }
 }
+
+#if ZVM_EXTMOD
+extern int lib_line;
+char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name) {
+	mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
+	mp_obj_t exception_stack = o->args->items[0];
+	if (exception_stack == MP_OBJ_NULL) {
+		return NULL;
+	}
+	size_t n, *values;
+	mp_obj_exception_get_traceback(o_in, &n, &values);
+
+	char*data = NULL;
+	mp_obj_type_t *type = mp_obj_get_type(exception_stack);
+	if (type->get_string != NULL) {
+		data = type->get_string(exception_stack);
+	}
+	if (strcmp(exception_name, "NoLineLibException") == 0 || strcmp(exception_name, "CallException") == 0 || strcmp(exception_name, "ABICheckException") == 0 || strcmp(exception_name, "GasNotEnoughException") == 0) {
+		return data;
+	}
+	else {
+		if (n > 0) {
+			int pos_index = 1;
+			if (strcmp(exception_name, "LibException") == 0) {
+				int args_len = o->args->len;
+				if (args_len == 2) {
+					mp_obj_t index_obj = o->args->items[1];
+					pos_index = MP_OBJ_SMALL_INT_VALUE(index_obj);
+				}
+				else {
+					return data;
+				}
+			}
+			pos_index = (pos_index - 1) * 3 + 1;
+			const char*contract = qstr_str(values[0]);
+			int pos = (int)values[pos_index] - lib_line + 1;
+			if (pos < 0) {
+				pos = 0;
+			}
+			size_t bufsz = snprintf(NULL, 0, "%d", pos);
+			char s[bufsz + 1];
+			sprintf(s, "%d",pos);
+			const char* contract_name = "contractname:";
+			const char* line_name = "line:";
+			const char* symbol = ",";
+			size_t len = strlen(contract_name) + strlen(contract) + strlen(symbol) + strlen(line_name) + strlen(s) + strlen(symbol) + strlen(data);
+			char *exception_data = (char*)malloc(len + 1);
+			strcpy(exception_data, contract_name);
+			strcat(exception_data, contract);
+			strcat(exception_data, symbol);
+			strcat(exception_data, line_name);
+			strcat(exception_data, s);
+			strcat(exception_data, symbol);
+			strcat(exception_data, data);
+			strcat(exception_data, "\0");
+			free(data);
+			return exception_data;
+		}
+		else {
+			return data;
+		}
+	}
+}
+#endif

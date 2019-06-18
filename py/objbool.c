@@ -28,6 +28,10 @@
 
 #include "py/runtime.h"
 
+#if ZVM_EXTMOD
+#include <string.h>
+#endif
+
 typedef struct _mp_obj_bool_t {
     mp_obj_base_t base;
     bool value;
@@ -74,6 +78,21 @@ STATIC mp_obj_t bool_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
     return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT(self->value), rhs_in);
 }
 
+#if ZVM_EXTMOD
+STATIC void fill_bool_return_data(mp_obj_t self_in, tvm_execute_result_t *result) {
+    result->result_type = RETURN_TYPE_BOOL;
+    result->error_code = 0;
+    mp_obj_bool_t *self = MP_OBJ_TO_PTR(self_in);
+    result->content = malloc(2);
+    memset(result->content, 0, 2);
+    if (self->value) {
+        memset(result->content, '1', 1);
+    }else {
+        memset(result->content, '0', 1);
+    }
+}
+#endif
+
 const mp_obj_type_t mp_type_bool = {
     { &mp_type_type },
     .name = MP_QSTR_bool,
@@ -81,6 +100,9 @@ const mp_obj_type_t mp_type_bool = {
     .make_new = bool_make_new,
     .unary_op = bool_unary_op,
     .binary_op = bool_binary_op,
+#if ZVM_EXTMOD
+    .fill_return_data = fill_bool_return_data,
+#endif
 };
 
 const mp_obj_bool_t mp_const_false_obj = {{&mp_type_bool}, false};

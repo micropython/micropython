@@ -32,6 +32,10 @@
 #include "py/mpprint.h"
 #include "py/runtime0.h"
 
+#if ZVM_EXTMOD
+#include "py/tvm.h"
+#endif
+
 // This is the definition of the opaque MicroPython object type.
 // All concrete objects have an encoding within this type and the
 // particular encoding is specified by MICROPY_OBJ_REPR.
@@ -432,6 +436,10 @@ typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+#if ZVM_EXTMOD
+typedef void (*mp_fill_fun_return_t)(mp_obj_t self_in, tvm_execute_result_t *result);
+typedef char* (*mp_string_fun_return_data_t)(mp_obj_t self_in);
+#endif
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
@@ -524,6 +532,13 @@ struct _mp_obj_type_t {
 
     // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
+
+#if ZVM_EXTMOD
+    //fill call function return data
+	mp_fill_fun_return_t fill_return_data;
+
+	mp_string_fun_return_data_t get_string;
+#endif
 };
 
 // Constant types, globally accessible
@@ -601,6 +616,10 @@ extern const mp_obj_type_t mp_type_UnicodeError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
+#if ZVM_EXTMOD
+extern const mp_obj_type_t mp_type_GasNotEnough;
+extern const mp_obj_type_t mp_type_CallException;
+#endif
 
 // Constant objects, globally accessible
 // The macros are for convenience only
@@ -677,6 +696,9 @@ mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
+#if ZVM_EXTMOD
+void mp_obj_fill_exception(char* exception_str, const int error_code, tvm_execute_result_t *result);
+#endif
 
 bool mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);
@@ -700,6 +722,10 @@ mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); // may return MP_OBJ_NULL
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in);
+#if ZVM_EXTMOD
+void mp_fun_return(mp_obj_t func_return, tvm_execute_result_t *result);
+mp_obj_t result_to_obj(const tvm_execute_result_t *result);
+#endif
 
 // cell
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
@@ -880,5 +906,9 @@ mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t 
 #define MP_OBJ_IS_FUN mp_obj_is_fun
 #define MP_MAP_SLOT_IS_FILLED mp_map_slot_is_filled
 #define MP_SET_SLOT_IS_FILLED mp_set_slot_is_filled
+
+#if ZVM_EXTMOD
+void set_code_line(int line);
+#endif
 
 #endif // MICROPY_INCLUDED_PY_OBJ_H

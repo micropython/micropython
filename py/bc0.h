@@ -115,4 +115,45 @@
 #define MP_BC_UNARY_OP_MULTI             (0xd0) // + op(<MP_UNARY_OP_NUM_BYTECODE)
 #define MP_BC_BINARY_OP_MULTI            (0xd7) // + op(<MP_BINARY_OP_NUM_BYTECODE)
 
+#if ZVM_EXTMOD
+//ACCOUNT
+#define MP_BC_CREATE_ACCOUNT           (0x6f)
+#define MP_BC_SUB_BALANCE              (0x71)
+#define MP_BC_GET_BALANCE              (0x72)
+#define MP_BC_ADD_BALANCE              (0x73)
+#define MP_BC_GET_CODE_HASH            (0x74)
+#define MP_BC_GET_CODE                 (0x75)
+#define MP_BC_SET_CODE                 (0x76)
+#define MP_BC_GET_CODE_SIZE            (0x77)
+#define MP_BC_GET_NONCE                (0x78)
+#define MP_BC_SET_NONCE                (0x79)
+#define MP_BC_ADD_REFUND               (0x7a)
+#define MP_BC_GET_REFUND               (0x7b)
+#define MP_BC_GET_STATE                (0x7c)
+#define MP_BC_SET_STATE                (0x7d)
+#define MP_BC_REMOVE_STATE             (0x7e)
+#define MP_BC_SUICIDE                  (0x2c)
+#define MP_BC_HAS_SUICIDED             (0x2d)
+#define MP_BC_EXISTS                   (0x2e)
+#define MP_BC_EMPTY                    (0x2f)
+#define MP_BC_REVERT_TO_SNAPSHOT       (0x48)
+#define MP_BC_SNAPSHOT                 (0x49)
+#define MP_BC_TRANSFER                 (0x4a)
+#define MP_BC_IS_CONTRACT_CREATER      (0x4b)
+#define MP_BC_CONTRACT_ADDR            (0x4c)
+#define MP_BC_TASEVENT				   (0x5f)
+
+
+//BLOCK
+#define MP_BC_BLOCKHASH                (0x4d)
+#define MP_BC_COINBASE                 (0x4e)
+#define MP_BC_DIFFICULT                (0x4f)
+#define MP_BC_NUMBER                   (0x6b)
+#define MP_BC_TIMESTAMP                (0x6c)
+#define MP_BC_GASLIMIT                 (0x6d)
+
+//TX
+#define MP_BC_ORIGIN                   (0x6e)
+#endif
+
 #endif // MICROPY_INCLUDED_PY_BC0_H

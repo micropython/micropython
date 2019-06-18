@@ -35,6 +35,10 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 
+#if ZVM_EXTMOD
+#include "py/gas.h"
+#endif
+
 #if 0
 #define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
@@ -197,6 +201,12 @@ dispatch_loop:
                 DISPATCH();
 #else
                 TRACE(ip);
+#if ZVM_EXTMOD
+                if (!CheckGas((byte*)ip))
+                {
+                    return MP_VM_RETURN_NORMAL;
+                }
+#endif
                 MARK_EXC_IP_GLOBAL();
                 switch (*ip++) {
 #endif

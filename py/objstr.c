@@ -1970,6 +1970,27 @@ STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(str8_locals_dict, str8_locals_dict_table);
 
+#if ZVM_EXTMOD
+STATIC void fill_str_return_data(mp_obj_t self_in, tvm_execute_result_t *result) {
+    GET_STR_DATA_LEN(self_in, str_data, str_len);
+
+    result->result_type = RETURN_TYPE_STRING;
+    result->error_code = 0;
+    result->content = malloc(str_len + 1);
+    memset(result->content, 0, str_len + 1);
+    memcpy(result->content, str_data, str_len);
+}
+
+STATIC char* get_string_return_data(mp_obj_t self_in) {
+    GET_STR_DATA_LEN(self_in, str_data, str_len);
+    size_t len = str_len;
+    char *data = (char*)malloc(len + 1);
+    strcpy(data, (char*)str_data);
+    strcat(data, "\0");
+    return data;
+}
+#endif
+
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
@@ -1983,6 +2004,10 @@ const mp_obj_type_t mp_type_str = {
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_dict_t*)&str8_locals_dict,
+#if ZVM_EXTMOD
+    .fill_return_data = fill_str_return_data,
+    .get_string = get_string_return_data,
+#endif
 };
 #endif
 
@@ -1997,6 +2022,10 @@ const mp_obj_type_t mp_type_bytes = {
     .getiter = mp_obj_new_bytes_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
     .locals_dict = (mp_obj_dict_t*)&str8_locals_dict,
+#if ZVM_EXTMOD
+    .fill_return_data = fill_str_return_data,
+    .get_string = get_string_return_data,
+#endif
 };
 
 // The zero-length bytes object, with data that includes a null-terminating byte

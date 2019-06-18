@@ -122,6 +122,12 @@ extern const mp_obj_module_t mp_module_uwebsocket;
 extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
+#if ZVM_EXTMOD
+//extern const mp_obj_module_t mp_module_tas;
+extern const mp_obj_module_t mp_module_account;
+extern const mp_obj_module_t mp_module_block;
+extern const mp_obj_module_t mp_module_tx;
+#endif
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 
