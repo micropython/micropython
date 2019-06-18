@@ -97,7 +97,9 @@ void *m_malloc(size_t num_bytes) {
     UPDATE_PEAK();
 #endif
     DEBUG_printf("malloc %d : %p\n", num_bytes, ptr);
+#if ZVM_EXTMOD
     FireGas_Mem(num_bytes);
+#endif
     return ptr;
 }
 
