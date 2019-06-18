@@ -55,6 +55,7 @@ STATIC mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
+    address->base.type = &bleio_address_type;
     memcpy(address->bytes, self->address.bytes, NUM_BLEIO_ADDRESS_BYTES);
     address->type = self->address.type;
     return MP_OBJ_TO_PTR(address);

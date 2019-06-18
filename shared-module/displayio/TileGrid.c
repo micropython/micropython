@@ -440,7 +440,7 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
 displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *self, displayio_area_t* tail) {
     if (self->moved && !self->first_draw) {
         displayio_area_union(&self->previous_area, &self->current_area, &self->dirty_area);
-        if (displayio_area_size(&self->dirty_area) <= 2 * self->pixel_width * self->pixel_height) {
+        if (displayio_area_size(&self->dirty_area) <= 2U * self->pixel_width * self->pixel_height) {
             self->dirty_area.next = tail;
             return &self->dirty_area;
         }

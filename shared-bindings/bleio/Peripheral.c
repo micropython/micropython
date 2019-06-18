@@ -117,11 +117,8 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
     }
 
     const mp_obj_t name = args[ARG_name].u_obj;
-    if (name == MP_OBJ_NULL) {
+    if (name == MP_OBJ_NULL || name == mp_const_none) {
         self->name = mp_obj_new_str(default_name, strlen(default_name));
-    } else if (name == mp_const_none) {
-        // Make None be the empty string.
-        self->name =  MP_OBJ_NEW_QSTR(MP_QSTR_);
     } else if (MP_OBJ_IS_STR(name)) {
         self->name = name;
     } else {
