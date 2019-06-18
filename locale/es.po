@@ -231,11 +231,11 @@ msgstr "La dirección debe ser %d bytes de largo"
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr "Todos los I2C peripherals están siendo usados"
+msgstr "Todos los periféricos I2C están siendo usados"
 
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr "Todos los SPI peripherals están siendo usados"
+msgstr "Todos los periféricos SPI están siendo usados"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
@@ -313,11 +313,11 @@ msgstr "Ambos pines deben soportar interrupciones por hardware"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
-msgstr "Brightness debe estar entro 0 y 255"
+msgstr "El brillo debe estar entro 0 y 255"
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
-msgstr "Brillo no se puede ajustar"
+msgstr "El brillo no se puede ajustar"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -357,7 +357,7 @@ msgstr "No se pueden agregar servicio en modo Central"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't advertise in Central mode"
-msgstr "No se puede anunciarse en Central mode"
+msgstr "No puede anunciarse en Central mode"
 
 #: shared-bindings/bleio/Device.c
 msgid "Can't change the name in Central mode"
@@ -757,7 +757,7 @@ msgstr "Argumento inválido"
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
-msgstr "Inválido bits per valor"
+msgstr "Inválido bits por valor"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -985,7 +985,7 @@ msgstr "solo se admiten segmentos con step=1 (alias None)"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
-msgstr "La sobreexplotación debe ser un múltiplo de 8"
+msgstr "El sobremuestreo debe ser un múltiplo de 8"
 
 #: shared-bindings/pulseio/PWMOut.c
 msgid ""
@@ -1092,7 +1092,7 @@ msgstr "Serializer está siendo utilizado"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
-msgstr "Rebanada y valor son diferentes longitudes"
+msgstr "Slice y value tienen diferentes longitudes"
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
@@ -1102,7 +1102,7 @@ msgstr "Rebanadas no soportadas"
 #: ports/nrf/common-hal/bleio/Adapter.c
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Asunto de dispositivo suave, id: 0x%08lX, pc: 0x%08lX"
+msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1183,7 +1183,7 @@ msgstr "Los índices de Tile deben ser 0 - 255"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
-msgstr "Ancho del azulejo debe dividir exactamente ancho de mapa de bits"
+msgstr "Ancho del Tile debe dividir exactamente el ancho de mapa de bits"
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
@@ -1195,7 +1195,7 @@ msgstr "Demasiados canales en sample."
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Too many display busses"
-msgstr "Demasiados autobuses de pantalla"
+msgstr "Demasiados buses de pantalla"
 
 #: shared-bindings/displayio/Display.c
 msgid "Too many displays"
@@ -1381,7 +1381,7 @@ msgstr "atributos aún no soportados"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 msgid "bad GATT role"
-msgstr "mal GATT papel"
+msgstr "mal GATT role"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1429,9 +1429,8 @@ msgid "buffer must be a bytes-like object"
 msgstr "buffer debe de ser un objeto bytes-like"
 
 #: shared-module/struct/__init__.c
-#, fuzzy
 msgid "buffer size must match format"
-msgstr "los buffers deben de tener el mismo formato"
+msgstr "el tamaño del buffer debe de coincidir con el formato"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
@@ -1448,7 +1447,7 @@ msgstr "los buffers deben de tener la misma longitud"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
-msgstr "los bottones nececitan ser digitalio.DigitalInOut"
+msgstr "los botones necesitan ser digitalio.DigitalInOut"
 
 #: py/vm.c
 msgid "byte code not implemented"
@@ -2266,9 +2265,8 @@ msgid "parameters must be registers in sequence r0 to r3"
 msgstr "los parametros deben ser registros en secuencia del r0 al r3"
 
 #: shared-bindings/displayio/Bitmap.c
-#, fuzzy
 msgid "pixel coordinates out of bounds"
-msgstr "address fuera de límites"
+msgstr "coordenadas del pixel fuera de límites"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel value requires too many bits"
@@ -2461,7 +2459,7 @@ msgstr "limite debe ser en el rango 0-65536"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "tile index out of bounds"
-msgstr "titlo indice fuera de limite"
+msgstr "el indice del tile fuera de limite"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -2476,13 +2474,12 @@ msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr "timepo muerto >100 (unidades en segundos)"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "timeout must be >= 0.0"
-msgstr "tiempo muetro debe ser >= 0.o"
+msgstr "tiempo muerto debe ser >= 0.0"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
-msgstr "sello de tiemp to esta en rango para plataformatime_t"
+msgstr "timestamp fuera de rango para plataform time_t"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
