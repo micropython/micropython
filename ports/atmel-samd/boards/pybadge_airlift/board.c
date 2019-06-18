@@ -51,7 +51,6 @@ void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
     common_hal_busio_spi_never_reset(spi);
-    common_hal_busio_spi_configure(spi, 24000000, 0, 0, 8);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
@@ -59,7 +58,8 @@ void board_init(void) {
         spi,
         &pin_PB05, // TFT_DC Command or data
         &pin_PB06, // TFT_CS Chip select
-        &pin_PB07); // TFT_RST Reset
+        &pin_PB07, // TFT_RST Reset
+        60000000);
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
