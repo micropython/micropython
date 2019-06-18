@@ -315,6 +315,7 @@ void mp_unix_mark_exec(void);
 #define MP_STATE_PORT MP_STATE_VM
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
+    void *mp_lv_user_data; \
     const char *readline_hist[50]; \
     void *mmap_region_head; \
 

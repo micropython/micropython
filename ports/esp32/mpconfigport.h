@@ -227,6 +227,7 @@ extern const struct _mp_obj_module_t mp_module_rtch;
 
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
+    void *mp_lv_user_data; \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
 
