@@ -74,7 +74,7 @@ def main():
     if len(args.files) == 0:
         if pyb is None:
             # run PC tests
-            test_dirs = ('bench',)
+            test_dirs = ('internal_bench',)
         else:
             # run pyboard tests
             test_dirs = ('basics', 'float', 'pyb')
