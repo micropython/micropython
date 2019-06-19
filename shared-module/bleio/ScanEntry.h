@@ -27,7 +27,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H
 
-#include "shared-module/bleio/Address.h"
+#include "py/obj.h"
+#include "shared-bindings/bleio/Address.h"
 
 typedef struct {
     mp_obj_base_t base;

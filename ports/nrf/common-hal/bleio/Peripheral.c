@@ -33,6 +33,7 @@
 #include "ble_hci.h"
 #include "nrf_soc.h"
 #include "py/gc.h"
+#include "py/objlist.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/bleio/Adapter.h"
@@ -40,6 +41,7 @@
 #include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
+#include "common-hal/bleio/Service.h"
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(300, UNIT_0_625_MS)
@@ -117,8 +119,11 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     }
 }
 
-void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self) {
+void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_list_t *service_list, mp_obj_t name) {
     common_hal_bleio_adapter_set_enabled(true);
+
+    self->service_list = service_list;
+    self->name = name;
 
     self->gatt_role = GATT_ROLE_SERVER;
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
@@ -126,9 +131,10 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self) {
 
     // Add all the services.
 
-    mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
     for (size_t service_idx = 0; service_idx < service_list->len; ++service_idx) {
         bleio_service_obj_t *service = MP_OBJ_TO_PTR(service_list->items[service_idx]);
+
+        common_hal_bleio_service_set_device(service, MP_OBJ_FROM_PTR(self));
 
         ble_uuid_t uuid;
         bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
@@ -149,8 +155,16 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self) {
 }
 
 
+mp_obj_list_t *common_hal_bleio_peripheral_get_service_list(bleio_peripheral_obj_t *self) {
+    return self->service_list;
+}
+
 bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self) {
     return self->conn_handle != BLE_CONN_HANDLE_INVALID;
+}
+
+mp_obj_t common_hal_bleio_peripheral_get_name(bleio_peripheral_obj_t *self) {
+    return self->name;
 }
 
 void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self, bool connectable, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {

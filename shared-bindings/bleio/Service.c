@@ -67,17 +67,19 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     }
 
     bleio_service_obj_t *self = m_new_obj(bleio_service_obj_t);
-    self->char_list = mp_obj_new_list(0, NULL);
     self->base.type = &bleio_service_type;
-    self->device = mp_const_none;
-    self->handle = 0xFFFF;
-    self->is_secondary = args[ARG_secondary].u_bool;
-    self->uuid = MP_OBJ_TO_PTR(uuid);
+
+    const bool is_secondary = args[ARG_secondary].u_bool;
+    bleio_uuid_obj_t *uuid_obj = MP_OBJ_TO_PTR(uuid);
 
     // If characteristics is not an iterable, an exception will be thrown.
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_characteristics].u_obj, &iter_buf);
     mp_obj_t characteristic;
+
+    // Copy the characteristics list and validate its items.
+    mp_obj_t char_list = mp_obj_new_list(0, NULL);
+    mp_obj_list_t *char_list_obj = MP_OBJ_FROM_PTR(char_list);
 
     while ((characteristic = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!MP_OBJ_IS_TYPE(characteristic, &bleio_characteristic_type)) {
@@ -89,12 +91,10 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
             // The descriptor base UUID doesn't match the characteristic base UUID.
             mp_raise_ValueError(translate("Characteristic UUID doesn't match Service UUID"));
         }
-        characteristic_ptr->service = self;
-        mp_obj_list_append(self->char_list, characteristic);
+        mp_obj_list_append(char_list, characteristic);
     }
 
-    // Do port-specific initialization.
-    common_hal_bleio_service_construct(self);
+    common_hal_bleio_service_construct(self, uuid_obj, char_list_obj, is_secondary);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -106,7 +106,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
-    mp_obj_list_t *char_list = MP_OBJ_TO_PTR(self->char_list);
+    mp_obj_list_t *char_list = common_hal_bleio_service_get_characteristic_list(self);
     return mp_obj_new_tuple(char_list->len, char_list->items);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_service_get_characteristics);
@@ -125,7 +125,7 @@ const mp_obj_property_t bleio_service_characteristics_obj = {
 STATIC mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(self->is_secondary);
+    return mp_obj_new_bool(common_hal_bleio_service_get_is_secondary(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_get_secondary);
 
@@ -143,7 +143,7 @@ const mp_obj_property_t bleio_service_secondary_obj = {
 STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_FROM_PTR(self->uuid);
+    return MP_OBJ_FROM_PTR(common_hal_bleio_service_get_uuid(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_uuid);
 

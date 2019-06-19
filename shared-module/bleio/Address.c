@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +25,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
+#include <string.h>
 
-#include "shared-bindings/bleio/__init__.h"
-#include "shared-bindings/bleio/Adapter.h"
+#include "py/objproperty.h"
+#include "shared-bindings/bleio/Address.h"
+#include "shared-module/bleio/Address.h"
 
-#include "shared-module/bleio/__init__.h"
+void common_hal_bleio_address_construct(bleio_address_obj_t *self, uint8_t *bytes, size_t bytes_length, uint8_t address_type) {
+    memcpy(self->bytes, bytes, bytes_length);
+    self->type = address_type;
+}
 
-// We assume variable length data.
-// 20 bytes max (23 - 3).
-#define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
+mp_obj_t common_hal_bleio_address_get_address_bytes(bleio_address_obj_t *self) {
+    return mp_obj_new_bytes(self->bytes, NUM_BLEIO_ADDRESS_BYTES);
+}
 
-gatt_role_t common_hal_bleio_device_get_gatt_role(mp_obj_t device);
-uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
+uint8_t common_hal_bleio_address_get_type(bleio_address_obj_t *self) {
+    return self->type;
+}

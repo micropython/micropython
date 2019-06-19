@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -74,13 +75,12 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_ValueError_varg(translate("Address must be %d bytes long"), NUM_BLEIO_ADDRESS_BYTES);
     }
 
-    memcpy(self->bytes, buf_info.buf, buf_info.len);
-
     const mp_int_t address_type = args[ARG_address_type].u_int;
     if (address_type < BLEIO_ADDRESS_TYPE_MIN || address_type > BLEIO_ADDRESS_TYPE_MAX) {
         mp_raise_ValueError(translate("Address type out of range"));
     }
-    self->type = address_type;
+
+    common_hal_bleio_address_construct(self, buf_info.buf, buf_info.len, address_type);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -97,7 +97,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bytes(self->bytes, NUM_BLEIO_ADDRESS_BYTES);
+    return common_hal_bleio_address_get_address_bytes(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_address_bytes_obj, bleio_address_get_address_bytes);
 
@@ -113,7 +113,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_address_bytes_obj, bleio_address_get
 STATIC mp_obj_t bleio_address_get_type(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_NEW_SMALL_INT(self->type);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_address_get_type(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_type_obj, bleio_address_get_type);
 

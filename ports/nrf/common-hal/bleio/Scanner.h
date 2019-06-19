@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +25,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
 
-#include "shared-bindings/bleio/__init__.h"
-#include "shared-bindings/bleio/Adapter.h"
+#include "py/obj.h"
 
-#include "shared-module/bleio/__init__.h"
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t adv_reports;    // List of reports.
+    uint16_t interval;
+    uint16_t window;
+} bleio_scanner_obj_t;
 
-// We assume variable length data.
-// 20 bytes max (23 - 3).
-#define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
-
-gatt_role_t common_hal_bleio_device_get_gatt_role(mp_obj_t device);
-uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H

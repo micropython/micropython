@@ -85,9 +85,8 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
 
     bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);
     self->base.type = &bleio_characteristic_buffer_type;
-    self->characteristic = MP_OBJ_TO_PTR(characteristic);
 
-    common_hal_bleio_characteristic_buffer_construct(self, self->characteristic, timeout, buffer_size);
+    common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }

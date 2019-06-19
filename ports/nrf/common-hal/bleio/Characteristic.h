@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
 
 #include "shared-module/bleio/Characteristic.h"
-#include "shared-module/bleio/Service.h"
+#include "common-hal/bleio/Service.h"
 #include "common-hal/bleio/UUID.h"
 
 typedef struct {
@@ -43,4 +43,4 @@ typedef struct {
     uint16_t sccd_handle;
 } bleio_characteristic_obj_t;
 
-#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H

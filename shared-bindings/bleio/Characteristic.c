@@ -73,10 +73,10 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     if (!MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
         mp_raise_ValueError(translate("Expected a UUID"));
     }
+    bleio_uuid_obj_t *uuid_obj = MP_OBJ_TO_PTR(uuid);
 
     bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
     self->base.type = &bleio_characteristic_type;
-    self->uuid = MP_OBJ_TO_PTR(uuid);
 
     bleio_characteristic_properties_t properties;
 
@@ -87,7 +87,7 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     properties.write = args[ARG_write].u_bool;
     properties.write_no_response = args[ARG_write_no_response].u_bool;
 
-    common_hal_bleio_characteristic_construct(self, uuid, properties);
+    common_hal_bleio_characteristic_construct(self, uuid_obj, properties);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -99,7 +99,7 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
 STATIC mp_obj_t bleio_characteristic_get_broadcast(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(self->props.broadcast);
+    return mp_obj_new_bool(common_hal_bleio_characteristic_get_properties(self).broadcast);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_broadcast_obj, bleio_characteristic_get_broadcast);
 
@@ -117,7 +117,7 @@ const mp_obj_property_t bleio_characteristic_broadcast_obj = {
 STATIC mp_obj_t bleio_characteristic_get_indicate(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(self->props.indicate);
+    return mp_obj_new_bool(common_hal_bleio_characteristic_get_properties(self).indicate);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_indicate_obj, bleio_characteristic_get_indicate);
 
@@ -136,7 +136,7 @@ const mp_obj_property_t bleio_characteristic_indicate_obj = {
 STATIC mp_obj_t bleio_characteristic_get_notify(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(self->props.notify);
+    return mp_obj_new_bool(common_hal_bleio_characteristic_get_properties(self).notify);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_notify_obj, bleio_characteristic_get_notify);
 
@@ -154,7 +154,7 @@ const mp_obj_property_t bleio_characteristic_notify_obj = {
 STATIC mp_obj_t bleio_characteristic_get_read(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(self->props.read);
+    return mp_obj_new_bool(common_hal_bleio_characteristic_get_properties(self).read);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_read_obj, bleio_characteristic_get_read);
 
@@ -172,7 +172,7 @@ const mp_obj_property_t bleio_characteristic_read_obj = {
 STATIC mp_obj_t bleio_characteristic_get_write(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(self->props.write);
+    return mp_obj_new_bool(common_hal_bleio_characteristic_get_properties(self).write);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_write_obj, bleio_characteristic_get_write);
 
@@ -190,7 +190,7 @@ const mp_obj_property_t bleio_characteristic_write_obj = {
 STATIC mp_obj_t bleio_characteristic_get_write_no_response(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(self->props.write_no_response);
+    return mp_obj_new_bool(common_hal_bleio_characteristic_get_properties(self).write_no_response);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_write_no_response_obj, bleio_characteristic_get_write_no_response);
 
@@ -208,7 +208,7 @@ const mp_obj_property_t bleio_characteristic_write_no_response_obj = {
 STATIC mp_obj_t bleio_characteristic_get_uuid(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_FROM_PTR(self->uuid);
+    return MP_OBJ_FROM_PTR(common_hal_bleio_characteristic_get_uuid(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_uuid_obj, bleio_characteristic_get_uuid);
 
@@ -228,9 +228,7 @@ const mp_obj_property_t bleio_characteristic_uuid_obj = {
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    common_hal_bleio_characteristic_get_value(self);
-
-    return self->value_data;
+    return common_hal_bleio_characteristic_get_value(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_value_obj, bleio_characteristic_get_value);
 

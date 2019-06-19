@@ -25,12 +25,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_PERIPHERAL_H
-#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_PERIPHERAL_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PERIPHERAL_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PERIPHERAL_H
 
 #include <stdbool.h>
 
 #include "ble.h"
+
+#include "py/obj.h"
+#include "py/objlist.h"
 
 #include "shared-module/bleio/__init__.h"
 #include "shared-module/bleio/Address.h"
@@ -40,8 +43,7 @@ typedef struct {
     mp_obj_t name;
     gatt_role_t gatt_role;
     volatile uint16_t conn_handle;
-    mp_obj_t service_list;
-    mp_obj_t notif_handler;
+    mp_obj_list_t *service_list;
     mp_obj_t conn_handler;
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
@@ -52,4 +54,4 @@ typedef struct {
 
 } bleio_peripheral_obj_t;
 
-#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_PERIPHERAL_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PERIPHERAL_H

@@ -308,6 +308,8 @@ $(filter $(SRC_PATTERNS), \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	board/__init__.c \
+	bleio/Address.c \
+	bleio/ScanEntry.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \

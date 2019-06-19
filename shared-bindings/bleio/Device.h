@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DEVICE_H
 
 #include "shared-module/bleio/Device.h"
-#include "shared-module/bleio/Service.h"
+#include "common-hal/bleio/Service.h"
 
 extern const mp_obj_type_t bleio_device_type;
 

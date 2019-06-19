@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SERVICE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SERVICE_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
 
 #include "common-hal/bleio/UUID.h"
 
@@ -36,9 +36,9 @@ typedef struct {
     bleio_uuid_obj_t *uuid;
     // May be a Peripheral, Central, etc.
     mp_obj_t *device;
-    mp_obj_t char_list;
+    mp_obj_t characteristic_list;
     uint16_t start_handle;
     uint16_t end_handle;
 } bleio_service_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SERVICE_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H

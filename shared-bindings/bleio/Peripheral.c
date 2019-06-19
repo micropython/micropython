@@ -101,32 +101,33 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
     // If services is not an iterable, an exception will be thrown.
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_services].u_obj, &iter_buf);
-    mp_obj_t service;
 
     bleio_peripheral_obj_t *self = m_new_obj(bleio_peripheral_obj_t);
     self->base.type = &bleio_peripheral_type;
-    self->service_list = mp_obj_new_list(0, NULL);
-    self->notif_handler = mp_const_none;
+
+    // Copy the services list and validate its items.
+    mp_obj_t service_list = mp_obj_new_list(0, NULL);
+    mp_obj_list_t *service_list_obj = MP_OBJ_FROM_PTR(service_list);
+
+    mp_obj_t service;
     while ((service = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!MP_OBJ_IS_TYPE(service, &bleio_service_type)) {
             mp_raise_ValueError(translate("services includes an object that is not a Service"));
         }
-        bleio_service_obj_t *service_ptr = MP_OBJ_TO_PTR(service);
-        service_ptr->device = MP_OBJ_FROM_PTR(self);
-        mp_obj_list_append(self->service_list, service);
+        mp_obj_list_append(service_list, service);
     }
 
     const mp_obj_t name = args[ARG_name].u_obj;
+    mp_obj_t name_str;
     if (name == MP_OBJ_NULL || name == mp_const_none) {
-        self->name = mp_obj_new_str(default_name, strlen(default_name));
+        name_str = mp_obj_new_str(default_name, strlen(default_name));
     } else if (MP_OBJ_IS_STR(name)) {
-        self->name = name;
+        name_str = name;
     } else {
         mp_raise_ValueError(translate("name must be a string"));
     }
 
-    // Do port-specific initialization.
-    common_hal_bleio_peripheral_construct(self);
+    common_hal_bleio_peripheral_construct(self, service_list_obj, name_str);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -157,7 +158,7 @@ const mp_obj_property_t bleio_peripheral_connected_obj = {
 STATIC mp_obj_t bleio_peripheral_get_services(mp_obj_t self_in) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
-    mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
+    mp_obj_list_t *service_list = common_hal_bleio_peripheral_get_service_list(self);
     return mp_obj_new_tuple(service_list->len, service_list->items);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_get_services_obj, bleio_peripheral_get_services);
@@ -176,7 +177,7 @@ const mp_obj_property_t bleio_peripheral_services_obj = {
 STATIC mp_obj_t bleio_peripheral_get_name(mp_obj_t self_in) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return self->name;
+    return common_hal_bleio_peripheral_get_name(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_get_name_obj, bleio_peripheral_get_name);
 

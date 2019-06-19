@@ -61,6 +61,8 @@ STATIC mp_obj_t bleio_scanner_make_new(const mp_obj_type_t *type, size_t n_args,
     bleio_scanner_obj_t *self = m_new_obj(bleio_scanner_obj_t);
     self->base.type = type;
 
+    common_hal_bleio_scanner_construct(self);
+
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -108,11 +110,9 @@ STATIC mp_obj_t bleio_scanner_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
         mp_raise_ValueError(translate("window must be <= interval"));
     }
 
-    self->adv_reports = mp_obj_new_list(0, NULL);
-
     common_hal_bleio_scanner_scan(self, timeout, interval, window);
 
-    return self->adv_reports;
+    return common_hal_bleio_scanner_get_adv_reports(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanner_scan_obj, 2, bleio_scanner_scan);
 

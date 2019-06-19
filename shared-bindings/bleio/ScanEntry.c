@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  * Copyright (c) 2017 Glenn Ruben Bakke
  *
@@ -27,10 +28,7 @@
 
 #include <string.h>
 
-#include "py/objarray.h"
 #include "py/objproperty.h"
-#include "py/objstr.h"
-#include "py/objtuple.h"
 #include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/UUID.h"
@@ -53,18 +51,13 @@
 //|
 STATIC mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
-    memcpy(address->bytes, self->address.bytes, NUM_BLEIO_ADDRESS_BYTES);
-    address->type = self->address.type;
-    return MP_OBJ_TO_PTR(address);
+    return common_hal_bleio_scanentry_get_address(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluepy_scanentry_get_address_obj, bleio_scanentry_get_address);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_address_obj, bleio_scanentry_get_address);
 
 const mp_obj_property_t bleio_scanentry_address_obj = {
     .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bluepy_scanentry_get_address_obj,
+    .proxy = { (mp_obj_t)&bleio_scanentry_get_address_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
@@ -75,7 +68,7 @@ const mp_obj_property_t bleio_scanentry_address_obj = {
 //|
 STATIC mp_obj_t scanentry_get_raw_data(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->data;
+    return common_hal_bleio_scanentry_get_raw_data(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_raw_data_obj, scanentry_get_raw_data);
 
@@ -92,14 +85,13 @@ const mp_obj_property_t bleio_scanentry_raw_data_obj = {
 //|
 STATIC mp_obj_t scanentry_get_rssi(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    return mp_obj_new_int(self->rssi);
+    return mp_obj_new_int(common_hal_bleio_scanentry_get_rssi(self));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluepy_scanentry_get_rssi_obj, scanentry_get_rssi);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_rssi_obj, scanentry_get_rssi);
 
 const mp_obj_property_t bleio_scanentry_rssi_obj = {
     .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bluepy_scanentry_get_rssi_obj,
+    .proxy = { (mp_obj_t)&bleio_scanentry_get_rssi_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };

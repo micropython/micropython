@@ -237,7 +237,11 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
 
 }
 
-void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
+void common_hal_bleio_characteristic_set_service(bleio_characteristic_obj_t *self, bleio_service_obj_t *service) {
+    self->service = service;
+}
+
+mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
     switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
     case GATT_ROLE_CLIENT:
         gattc_read(self);
@@ -251,6 +255,8 @@ void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self)
         mp_raise_RuntimeError(translate("bad GATT role"));
         break;
     }
+
+    return self->value_data;
 }
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
@@ -284,4 +290,12 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
         mp_raise_RuntimeError(translate("bad GATT role"));
         break;
     }
+}
+
+bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_obj_t *self) {
+    return self->uuid;
+}
+
+bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties(bleio_characteristic_obj_t *self) {
+    return self->props;
 }

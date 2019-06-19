@@ -37,5 +37,6 @@ typedef struct {
         bool indicate : 1;
 } bleio_characteristic_properties_t;
 
+// bleio_characteristic_obj_t is defined in ports/*/common-hal.
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H

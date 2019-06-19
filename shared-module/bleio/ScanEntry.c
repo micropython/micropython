@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +26,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
+#include <string.h>
 
-#include "py/obj.h"
+#include "shared-bindings/bleio/Address.h"
+#include "shared-module/bleio/Address.h"
+#include "shared-module/bleio/ScanEntry.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t adv_reports;
-    uint16_t interval;
-    uint16_t window;
-} bleio_scanner_obj_t;
+mp_obj_t common_hal_bleio_scanentry_get_address(bleio_scanentry_obj_t *self) {
+    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
+    address->base.type = &bleio_address_type;
+    memcpy(address->bytes, self->address.bytes, NUM_BLEIO_ADDRESS_BYTES);
+    address->type = self->address.type;
+    return MP_OBJ_TO_PTR(address);
+}
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
+mp_obj_t common_hal_bleio_scanentry_get_raw_data(bleio_scanentry_obj_t *self) {
+    return self->data;
+}
+
+mp_int_t common_hal_bleio_scanentry_get_rssi(bleio_scanentry_obj_t *self) {
+    return self->rssi;
+}

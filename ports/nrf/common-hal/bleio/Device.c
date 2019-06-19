@@ -323,7 +323,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
         bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
         service->base.type = &bleio_service_type;
         service->device = device;
-        service->char_list = mp_obj_new_list(0, NULL);
+        service->characteristic_list = mp_obj_new_list(0, NULL);
         service->start_handle = gattc_service->handle_range.start_handle;
         service->end_handle = gattc_service->handle_range.end_handle;
         service->handle = gattc_service->handle_range.start_handle;
@@ -366,7 +366,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
         characteristic->handle = gattc_char->handle_value;
         characteristic->service = m_char_discovery_service;
 
-        mp_obj_list_append(m_char_discovery_service->char_list, MP_OBJ_FROM_PTR(characteristic));
+        mp_obj_list_append(m_char_discovery_service->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
     }
 
     if (response->count > 0) {
@@ -491,9 +491,9 @@ void common_hal_bleio_device_add_service(bleio_device_obj_t *device, bleio_servi
         mp_raise_OSError_msg(translate("Failed to add service"));
     }
 
-    const mp_obj_list_t *char_list = MP_OBJ_TO_PTR(service->char_list);
-    for (size_t i = 0; i < char_list->len; ++i) {
-        bleio_characteristic_obj_t *characteristic = char_list->items[i];
+    const mp_obj_list_t *characteristic_list = MP_OBJ_TO_PTR(service->characteristic_list);
+    for (size_t i = 0; i < characteristic_list->len; ++i) {
+        bleio_characteristic_obj_t *characteristic = characteristic_list->items[i];
         common_hal_bleio_service_add_characteristic(service, characteristic);
     }
 }
@@ -583,8 +583,8 @@ void common_hal_bleio_device_connect(bleio_device_obj_t *device) {
 
         bool found_char = discover_characteristics(device, service, service->start_handle);
         while (found_char) {
-            const mp_obj_list_t *char_list = MP_OBJ_TO_PTR(service->char_list);
-            const bleio_characteristic_obj_t *characteristic = char_list->items[char_list->len - 1];
+            const mp_obj_list_t *characteristic_list = MP_OBJ_TO_PTR(service->characteristic_list);
+            const bleio_characteristic_obj_t *characteristic = characteristic_list->items[characteristic_list->len - 1];
 
             const uint16_t next_handle = characteristic->handle + 1;
             if (next_handle >= service->end_handle) {
