@@ -31,7 +31,7 @@
 //| :class:`Pull` -- defines the pull of a digital input pin
 //| =============================================================
 //|
-//| .. class:: digitalio.Pull
+//| .. class:: Pull
 //|
 //|     Enum-like class to define the pull value, if any, used while reading
 //|     digital values in.
