@@ -20,4 +20,4 @@ CIRCUITPY_STAGE = 1
 # No touch on SAMD51 yet
 CIRCUITPY_TOUCHIO = 0
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pybadge
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pygamer
