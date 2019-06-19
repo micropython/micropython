@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,7 +35,6 @@
 #include "py/runtime.h"
 #include "common-hal/bleio/__init__.h"
 #include "common-hal/bleio/Characteristic.h"
-#include "shared-module/bleio/Characteristic.h"
 
 STATIC volatile bleio_characteristic_obj_t *m_read_characteristic;
 STATIC volatile uint8_t m_tx_in_progress;

@@ -1,9 +1,11 @@
 /*
  * SPI Master library for nRF5x.
- * Copyright (c) 2015 Arduino LLC
- * Copyright (c) 2016 Sandeep Mistry All right reserved.
- * Copyright (c) 2017 hathach
+ *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 hathach
+ * Copyright (c) 2016 Sandeep Mistry All right reserved.
+ * Copyright (c) 2015 Arduino LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

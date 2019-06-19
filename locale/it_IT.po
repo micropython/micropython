@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-11 14:59-0700\n"
+"POT-Creation-Date: 2019-06-19 09:49-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -220,14 +220,13 @@ msgid "A hardware interrupt channel is already in use"
 msgstr "Un canale di interrupt hardware è già in uso"
 
 #: shared-bindings/bleio/Address.c
-#, c-format
-msgid "Address is not %d bytes long or is in wrong format"
-msgstr ""
-
-#: shared-bindings/bleio/Address.c
 #, fuzzy, c-format
 msgid "Address must be %d bytes long"
 msgstr "la palette deve essere lunga 32 byte"
+
+#: shared-bindings/bleio/Address.c
+msgid "Address type out of range"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -356,19 +355,19 @@ msgstr ""
 msgid "Can not use dotstar with %s"
 msgstr "dotstar non può essere usato con %s"
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't add services in Central mode"
 msgstr "non si può aggiungere servizi in Central mode"
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't advertise in Central mode"
 msgstr "non si può pubblicizzare in Central mode"
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't change the name in Central mode"
 msgstr "non si può cambiare il nome in Central mode"
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't connect in Peripheral mode"
 msgstr "non si può connettere in Periferal mode"
 
@@ -495,13 +494,12 @@ msgstr "graphic deve essere lunga 2048 byte"
 msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Impossibile inserire dati nel pacchetto di advertisement."
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Data too large for the advertisement packet"
 msgstr "Impossibile inserire dati nel pacchetto di advertisement."
@@ -554,7 +552,7 @@ msgstr ""
 msgid "Failed sending command."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to acquire mutex"
 msgstr "Impossibile allocare buffer RX"
@@ -569,7 +567,7 @@ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to add service"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
@@ -594,12 +592,17 @@ msgstr "Fallita allocazione del buffer RX di %d byte"
 msgid "Failed to change softdevice state"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to configure advertising, err 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to connect:"
 msgstr "Impossibile connettersi. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to continue scanning"
 msgstr "Impossible iniziare la scansione. status: 0x%02x"
@@ -609,12 +612,12 @@ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to create mutex"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
@@ -653,7 +656,7 @@ msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Non è possibile aggiungere l'UUID del vendor specifico da 128-bit"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to release mutex"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
@@ -663,18 +666,22 @@ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to set device name, err 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to start advertising"
 msgstr "Impossibile avviare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Impossibile avviare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to start scanning"
 msgstr "Impossible iniziare la scansione. status: 0x%02x"
@@ -684,12 +691,11 @@ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to stop advertising"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
@@ -1240,7 +1246,7 @@ msgid "USB Error"
 msgstr "Errore USB"
 
 #: shared-bindings/bleio/UUID.c
-msgid "UUID integer value not in range 0 to 0xffff"
+msgid "UUID integer value must be 0-0xffff"
 msgstr ""
 
 #: shared-bindings/bleio/UUID.c
@@ -1380,8 +1386,8 @@ msgstr "l'argomento è una sequenza vuota"
 msgid "argument has wrong type"
 msgstr "il tipo dell'argomento è errato"
 
-#: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/gamepad/GamePad.c shared-bindings/_stage/__init__.c
 msgid "argument num/types mismatch"
 msgstr "discrepanza di numero/tipo di argomenti"
 
@@ -1944,8 +1950,9 @@ msgstr "il secondo argomanto di int() deve essere >= 2 e <= 36"
 msgid "integer required"
 msgstr "intero richiesto"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-msgid "interval not in range 0.0020 to 10.24"
+#: shared-bindings/bleio/Peripheral.c shared-bindings/bleio/Scanner.c
+#, c-format
+msgid "interval must be in range %s-%s"
 msgstr ""
 
 #: extmod/machine_i2c.c
@@ -2653,6 +2660,10 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
+msgstr ""
+
+#: shared-bindings/bleio/Scanner.c
+msgid "window must be <= interval"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c

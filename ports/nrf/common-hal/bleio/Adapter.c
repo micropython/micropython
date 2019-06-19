@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  * Copyright (c) 2016 Glenn Ruben Bakke
  * Copyright (c) 2018 Artur Pacholec
  *

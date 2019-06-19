@@ -159,7 +159,6 @@ SRC_C += \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	bluetooth/ble_drv.c \
-	bluetooth/ble_uart.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \

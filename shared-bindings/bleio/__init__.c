@@ -3,8 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,11 +54,10 @@
 //|     Address
 //|     AdvertisementData
 //|     Adapter
+//|     Central
 //|     Characteristic
 //|     CharacteristicBuffer
-// Work-in-progress classes are omitted, and marked as :orphan: in their files.
 //     Descriptor
-//     Device
 //|     Peripheral
 //|    ScanEntry
 //|    Scanner
@@ -74,6 +74,7 @@
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),          MP_ROM_QSTR(MP_QSTR_bleio) },
     { MP_ROM_QSTR(MP_QSTR_Address),           MP_ROM_PTR(&bleio_address_type) },
+//    { MP_ROM_QSTR(MP_QSTR_Central),           MP_ROM_PTR(&bleio_central_type) },
     { MP_ROM_QSTR(MP_QSTR_Characteristic),    MP_ROM_PTR(&bleio_characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer),    MP_ROM_PTR(&bleio_characteristic_buffer_type) },
 //    { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },

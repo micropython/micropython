@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-11 14:59-0700\n"
+"POT-Creation-Date: 2019-06-19 09:49-0400\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -221,14 +221,13 @@ msgid "A hardware interrupt channel is already in use"
 msgstr "Isang channel ng hardware interrupt ay ginagamit na"
 
 #: shared-bindings/bleio/Address.c
-#, c-format
-msgid "Address is not %d bytes long or is in wrong format"
-msgstr ""
-
-#: shared-bindings/bleio/Address.c
 #, fuzzy, c-format
 msgid "Address must be %d bytes long"
 msgstr "ang palette ay dapat 32 bytes ang haba"
+
+#: shared-bindings/bleio/Address.c
+msgid "Address type out of range"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -356,19 +355,19 @@ msgstr ""
 msgid "Can not use dotstar with %s"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't add services in Central mode"
 msgstr "Hindi maarang maglagay ng service sa Central mode"
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't advertise in Central mode"
 msgstr "Hindi ma advertise habang nasa Central mode"
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't change the name in Central mode"
 msgstr "Hindi mapalitan ang pangalan sa Central mode"
 
-#: shared-bindings/bleio/Device.c
+#: shared-bindings/bleio/Central.c
 msgid "Can't connect in Peripheral mode"
 msgstr "Hindi maconnect sa Peripheral mode"
 
@@ -494,13 +493,12 @@ msgstr "graphic ay dapat 2048 bytes ang haba"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Data too large for the advertisement packet"
 msgstr "Hindi makasya ang data sa loob ng advertisement packet"
@@ -554,7 +552,7 @@ msgstr ""
 msgid "Failed sending command."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to acquire mutex"
 msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
@@ -569,7 +567,7 @@ msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to add service"
 msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
@@ -594,12 +592,17 @@ msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
 msgid "Failed to change softdevice state"
 msgstr "Nabigo sa pagbago ng softdevice state, error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to configure advertising, err 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to connect:"
 msgstr "Hindi makaconnect, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to continue scanning"
 msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
@@ -609,12 +612,12 @@ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to create mutex"
 msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "Nabigo sa pagdiscover ng services, status: 0x%08lX"
@@ -654,7 +657,7 @@ msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Hindi matagumpay ang paglagay ng Vender Specific UUID, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to release mutex"
 msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
@@ -664,18 +667,22 @@ msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to set device name, err 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to start advertising"
 msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to start scanning"
 msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
@@ -685,12 +692,11 @@ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
 msgid "Failed to stop advertising"
 msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
@@ -1241,7 +1247,7 @@ msgid "USB Error"
 msgstr "May pagkakamali ang USB"
 
 #: shared-bindings/bleio/UUID.c
-msgid "UUID integer value not in range 0 to 0xffff"
+msgid "UUID integer value must be 0-0xffff"
 msgstr ""
 
 #: shared-bindings/bleio/UUID.c
@@ -1386,8 +1392,8 @@ msgstr "arg ay walang laman na sequence"
 msgid "argument has wrong type"
 msgstr "may maling type ang argument"
 
-#: py/argcheck.c shared-bindings/_stage/__init__.c
-#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/gamepad/GamePad.c shared-bindings/_stage/__init__.c
 msgid "argument num/types mismatch"
 msgstr "hindi tugma ang argument num/types"
 
@@ -1952,8 +1958,9 @@ msgstr "int() arg 2 ay dapat >=2 at <= 36"
 msgid "integer required"
 msgstr "kailangan ng int"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-msgid "interval not in range 0.0020 to 10.24"
+#: shared-bindings/bleio/Peripheral.c shared-bindings/bleio/Scanner.c
+#, c-format
+msgid "interval must be in range %s-%s"
 msgstr ""
 
 #: extmod/machine_i2c.c
@@ -2655,6 +2662,10 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
+msgstr ""
+
+#: shared-bindings/bleio/Scanner.c
+msgid "window must be <= interval"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
