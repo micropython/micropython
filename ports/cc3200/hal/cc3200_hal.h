@@ -64,5 +64,6 @@ extern void HAL_SystemDeInit (void);
 extern void HAL_IncrementTick(void);
 extern void mp_hal_set_interrupt_char (int c);
 
+#define mp_hal_stdio_poll(poll_flags) (0) // not implemented
 #define mp_hal_delay_us(usec) UtilsDelay(UTILS_DELAY_US_TO_COUNT(usec))
 #define mp_hal_ticks_cpu() (SysTickPeriodGet() - SysTickValueGet())
