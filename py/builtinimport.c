@@ -131,6 +131,38 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 #endif
 }
 
+#if __EMSCRIPTEN__
+
+mp_obj_t mp_parse_compile_execute_wasm(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
+    // save context
+    mp_obj_dict_t *volatile old_globals = mp_globals_get();
+    mp_obj_dict_t *volatile old_locals = mp_locals_get();
+
+    // set new context
+    mp_globals_set(globals);
+    mp_locals_set(locals);
+
+    qstr source_name = lex->source_name;
+    mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
+    mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
+
+    mp_obj_t ret;
+    if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
+        // for compile only, return value is the module function
+        ret = module_fun;
+    } else {
+        // execute module function and get return value
+        ret = mp_call_function_0(module_fun);
+    }
+
+    // finish nlr block, restore context and return value
+    mp_globals_set(old_globals);
+    mp_locals_set(old_locals);
+    return ret;
+}
+
+#endif
+
 #if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
 STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     #if MICROPY_PY___FILE__
@@ -140,7 +172,11 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 
     // parse, compile and execute the module in its context
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
+    #if __EMSCRIPTEN__
+    mp_parse_compile_execute_wasm(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
+    #else
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
+    #endif
 }
 #endif
 
