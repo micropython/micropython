@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,23 +25,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
 
-#include "common-hal/bleio/UUID.h"
+#include <stdbool.h>
+
+#include "shared-module/bleio/Address.h"
 
 typedef struct {
     mp_obj_base_t base;
-    // Handle for this service.
-    uint16_t handle;
-    bool is_secondary;
-    bleio_uuid_obj_t *uuid;
-    // May be a Peripheral, Central, etc.
-    mp_obj_t *device;
-    mp_obj_t characteristic_list;
-    // Range of attribute handles of this service.
-    uint16_t start_handle;
-    uint16_t end_handle;
-} bleio_service_obj_t;
+    mp_obj_t remote_name;
+    bleio_address_obj_t address;
+    volatile bool attempting_to_connect;
+    volatile uint16_t conn_handle;
+    mp_obj_t service_list;
+    mp_obj_t conn_handler;
+} bleio_central_obj_t;
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H

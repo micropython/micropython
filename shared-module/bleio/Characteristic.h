@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 
-#include "common-hal/bleio/UUID.h"
-
+// Flags for each characteristic property. Common across ports.
 typedef struct {
-    mp_obj_base_t base;
-    // Handle for this service.
-    uint16_t handle;
-    bool is_secondary;
-    bleio_uuid_obj_t *uuid;
-    // May be a Peripheral, Central, etc.
-    mp_obj_t *device;
-    mp_obj_t characteristic_list;
-    // Range of attribute handles of this service.
-    uint16_t start_handle;
-    uint16_t end_handle;
-} bleio_service_obj_t;
+        bool broadcast : 1;
+        bool read : 1;
+        bool write_no_response : 1;
+        bool write : 1;
+        bool notify : 1;
+        bool indicate : 1;
+} bleio_characteristic_properties_t;
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H

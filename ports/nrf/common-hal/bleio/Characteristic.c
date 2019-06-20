@@ -37,9 +37,6 @@
 #include "common-hal/bleio/Characteristic.h"
 
 STATIC volatile bleio_characteristic_obj_t *m_read_characteristic;
-STATIC volatile uint8_t m_tx_in_progress;
-// Serialize gattc writes that send a response. This might be done per object?
-STATIC nrf_mutex_t *m_write_mutex;
 
 STATIC uint16_t get_cccd(bleio_characteristic_obj_t *characteristic) {
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
@@ -118,17 +115,21 @@ STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp
         .p_data = bufinfo->buf,
     };
 
-    while (m_tx_in_progress >= MAX_TX_IN_PROGRESS) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
-    }
-
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
-    m_tx_in_progress++;
-    const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
-    if (err_code != NRF_SUCCESS) {
-        m_tx_in_progress--;
+
+    while (1) {
+        const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
+        if (err_code == NRF_SUCCESS) {
+            break;
+        }
+        // TX buffer is full
+        // We could wait for an event indicating the write is complete, but just retrying is easier.
+        if (err_code == NRF_ERROR_RESOURCES) {
+            MICROPY_VM_HOOK_LOOP;
+            continue;
+        }
+
+        // Some real error has occurred.
         mp_raise_OSError_msg_varg(translate("Failed to notify or indicate attribute value, err 0x%04x"), err_code);
     }
 
@@ -144,11 +145,8 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
         mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err 0x%04x"), err_code);
     }
 
-//
     while (m_read_characteristic != NULL) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        MICROPY_VM_HOOK_LOOP;
     }
 }
 
@@ -158,67 +156,47 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
 
     ble_gattc_write_params_t write_params = {
         .flags = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL,
-        .write_op = BLE_GATT_OP_WRITE_REQ,
+        .write_op = characteristic->props.write_no_response ? BLE_GATT_OP_WRITE_CMD : BLE_GATT_OP_WRITE_REQ,
         .handle = characteristic->handle,
         .p_value = bufinfo->buf,
         .len = bufinfo->len,
     };
 
-    if (characteristic->props.write_no_response) {
-        write_params.write_op = BLE_GATT_OP_WRITE_CMD;
-
-        err_code = sd_mutex_acquire(m_write_mutex);
-        if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError_msg_varg(translate("Failed to acquire mutex, err 0x%04x"), err_code);
+    while (1) {
+        uint32 err_code = sd_ble_gattc_write(conn_handle, &write_params);
+        if (err_code == NRF_SUCCESS) {
+            break;
         }
-    }
 
-    err_code = sd_ble_gattc_write(conn_handle, &write_params);
-    if (err_code != NRF_SUCCESS) {
+        // Write with response will return NRF_ERROR_BUSY if the response has not been received.
+        // Write without reponse will return NRF_ERROR_RESOURCES if too many writes are pending.
+        if (err_code == NRF_ERROR_BUSY || err_code == NRF_ERROR_RESOURCES) {
+            // We could wait for an event indicating the write is complete, but just retrying is easier.
+            MICROPY_VM_HOOK_LOOP;
+            continue;
+        }
+
+        // Some real error occurred.
         mp_raise_OSError_msg_varg(translate("Failed to write attribute value, err 0x%04x"), err_code);
     }
 
-    while (sd_mutex_acquire(m_write_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
-    }
-
-    err_code = sd_mutex_release(m_write_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to release mutex, err 0x%04x"), err_code);
-    }
 }
 
 STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     switch (ble_evt->header.evt_id) {
-    case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-    {
-        uint8_t count = ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
-        // Don't underflow the count.
-        if (count >= m_tx_in_progress) {
-            m_tx_in_progress = 0;
-        } else {
-            m_tx_in_progress -= count;
-        }
-        break;
-    }
+
+        // More events may be handled later, so keep this as a switch.
 
     case BLE_GATTC_EVT_READ_RSP:
     {
         ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
         m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
-        // Flag to busy-wait loop that we've read the characteristic.
+        // Indicate to busy-wait loop that we've read the characteristic.
         m_read_characteristic = NULL;
         break;
     }
 
-    case BLE_GATTC_EVT_WRITE_RSP:
-        // Someone else can write now.
-        sd_mutex_release(m_write_mutex);
-        break;
-
-        // For debugging.
+    // For debugging.
     default:
         // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
         break;

@@ -224,6 +224,7 @@ $(filter $(SRC_PATTERNS), \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
 	bleio/Adapter.c \
+	bleio/Central.c \
 	bleio/Characteristic.c \
 	bleio/CharacteristicBuffer.c \
 	bleio/Descriptor.c \
