@@ -1416,9 +1416,11 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
     // set new context
     mp_globals_set(globals);
     mp_locals_set(locals);
-
+    
+    #ifndef __EMSCRIPTEN__
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+    #endif
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
@@ -1437,12 +1439,14 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
         mp_globals_set(old_globals);
         mp_locals_set(old_locals);
         return ret;
+    #ifndef __EMSCRIPTEN__        
     } else {
         // exception; restore context and re-raise same exception
         mp_globals_set(old_globals);
         mp_locals_set(old_locals);
         nlr_jump(nlr.ret_val);
     }
+    #endif
 }
 
 #endif // MICROPY_ENABLE_COMPILER
