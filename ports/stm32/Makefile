@@ -222,7 +222,7 @@ SRC_C = \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
 	usbd_hid_interface.c \
-	usbd_msc_storage.c \
+	usbd_msc_interface.c \
 	mphalport.c \
 	mpthreadport.c \
 	irq.c \
@@ -349,7 +349,6 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_cdc_msc_hid.c \
 	class/src/usbd_msc_bot.c \
 	class/src/usbd_msc_scsi.c \
-	class/src/usbd_msc_data.c \
 	)
 
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
@@ -394,6 +393,11 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	patch.c \
 	patch_prog.c \
 	)
+endif
+
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+SRC_MOD += mbedtls/mbedtls_port.c
 endif
 
 OBJ =

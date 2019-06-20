@@ -37,9 +37,9 @@ git hash of this version can be found by running `make` without a configured
 The binary toolchain (binutils, gcc, etc.) can be installed using the following
 guides:
 
-  * [Linux installation](https://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html)
-  * [MacOS installation](https://esp-idf.readthedocs.io/en/latest/get-started/macos-setup.html)
-  * [Windows installation](https://esp-idf.readthedocs.io/en/latest/get-started/windows-setup.html)
+  * [Linux installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/linux-setup.html)
+  * [MacOS installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/macos-setup.html)
+  * [Windows installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/windows-setup.html)
 
 If you are on a Windows machine then the
 [Windows Subsystem for Linux](https://msdn.microsoft.com/en-au/commandline/wsl/install_guide)

@@ -63,6 +63,11 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "str    r10, [r0, #36]      \n" // store r10 into nlr_buf
     "str    r11, [r0, #40]      \n" // store r11 into nlr_buf
     "str    r13, [r0, #44]      \n" // store r13=sp into nlr_buf
+    #if MICROPY_NLR_NUM_REGS == 16
+    "vstr   d8, [r0, #48]       \n" // store s16-s17 into nlr_buf
+    "vstr   d9, [r0, #56]       \n" // store s18-s19 into nlr_buf
+    "vstr   d10, [r0, #64]      \n" // store s20-s21 into nlr_buf
+    #endif
     "str    lr, [r0, #8]        \n" // store lr into nlr_buf
 #endif
 
@@ -116,6 +121,11 @@ NORETURN void nlr_jump(void *val) {
     "ldr    r10, [r0, #36]      \n" // load r10 from nlr_buf
     "ldr    r11, [r0, #40]      \n" // load r11 from nlr_buf
     "ldr    r13, [r0, #44]      \n" // load r13=sp from nlr_buf
+    #if MICROPY_NLR_NUM_REGS == 16
+    "vldr   d8, [r0, #48]       \n" // load s16-s17 from nlr_buf
+    "vldr   d9, [r0, #56]       \n" // load s18-s19 from nlr_buf
+    "vldr   d10, [r0, #64]      \n" // load s20-s21 from nlr_buf
+    #endif
     "ldr    lr, [r0, #8]        \n" // load lr from nlr_buf
 #endif
     "movs   r0, #1              \n" // return 1, non-local return

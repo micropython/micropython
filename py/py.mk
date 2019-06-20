@@ -405,3 +405,6 @@ $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 # http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
 # http://www.emulators.com/docs/nx25_nostradamus.htm
 #-fno-crossjumping
+
+# Include rules for extmod related code
+include $(TOP)/extmod/extmod.mk

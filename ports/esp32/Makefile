@@ -28,7 +28,7 @@ SDKCONFIG ?= boards/sdkconfig
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # the git hash of the currently supported ESP IDF version
-ESPIDF_SUPHASH := 5c88c5996dbde6208e3bec05abc21ff6cd822d26
+ESPIDF_SUPHASH := 6b3da6b1882f3b72e904cc90be67e9c4e3f369a9
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
@@ -79,7 +79,10 @@ INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/nghttp2/lib/includes
+INC_ESPCOMP += -I$(ESPCOMP)/efuse/include
+INC_ESPCOMP += -I$(ESPCOMP)/efuse/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp32/include
+INC_ESPCOMP += -I$(ESPCOMP)/espcoredump/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/ethernet/include
@@ -135,7 +138,7 @@ LDFLAGS += -u call_user_start_cpu0 -u uxTopUsedPriority -u ld_include_panic_high
 LDFLAGS += -u __cxa_guard_dummy # so that implementation of static guards is taken from cxx_guards.o instead of libstdc++.a
 LDFLAGS += -L$(ESPCOMP)/esp32/ld
 LDFLAGS += -T $(BUILD)/esp32_out.ld
-LDFLAGS += -T $(BUILD)/esp32.common.ld
+LDFLAGS += -T $(BUILD)/esp32.project.ld
 LDFLAGS += -T esp32.rom.ld
 LDFLAGS += -T esp32.rom.libgcc.ld
 LDFLAGS += -T esp32.peripherals.ld
@@ -277,6 +280,12 @@ ESPIDF_DRIVER_O = $(addprefix $(ESPCOMP)/driver/,\
 	rtc_module.o \
 	)
 
+ESPIDF_EFUSE_O = $(addprefix $(ESPCOMP)/efuse/,\
+	esp32/esp_efuse_table.o \
+	src/esp_efuse_api.o \
+	src/esp_efuse_utility.o \
+	)
+
 $(BUILD)/$(ESPCOMP)/esp32/dport_access.o: CFLAGS += -Wno-array-bounds
 ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	brownout.o \
@@ -284,6 +293,7 @@ ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	coexist.o \
 	dbg_stubs.o \
 	dport_panic_highint_hdl.o \
+	esp_adapter.o \
 	esp_err_to_name.o \
 	esp_himem.o \
 	panic.o \
@@ -299,7 +309,6 @@ ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	task_wdt.o \
 	cache_err_int.o \
 	clk.o \
-	core_dump.o \
 	cpu_start.o \
 	gdbstub.o \
 	crosscore_int.o \
@@ -318,7 +327,6 @@ ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	intr_alloc.o \
 	dport_access.o \
 	wifi_init.o \
-	wifi_os_adapter.o \
 	sleep_modes.o \
 	spiram.o \
 	spiram_psram.o \
@@ -693,6 +701,7 @@ ESPIDF_SDMMC_O = $(addprefix $(ESPCOMP)/sdmmc/,\
 OBJ_ESPIDF =
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NEWLIB_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_DRIVER_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_EFUSE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ESP32_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ESP_RINGBUF_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_HEAP_O))
@@ -724,6 +733,7 @@ $(OBJ_ESPIDF): $(SDKCONFIG_H)
 
 LIB_ESPIDF =
 LIB_ESPIDF += driver
+LIB_ESPIDF += efuse
 LIB_ESPIDF += esp32
 LIB_ESPIDF += esp_ringbuf
 LIB_ESPIDF += heap
@@ -765,6 +775,7 @@ $(BUILD_ESPIDF_LIB)/$(1)/lib$(1).a: $(addprefix $$(BUILD)/,$(2))
 endef
 
 $(eval $(call gen_espidf_lib_rule,driver,$(ESPIDF_DRIVER_O)))
+$(eval $(call gen_espidf_lib_rule,efuse,$(ESPIDF_EFUSE_O)))
 $(eval $(call gen_espidf_lib_rule,esp32,$(ESPIDF_ESP32_O)))
 $(eval $(call gen_espidf_lib_rule,esp_ringbuf,$(ESPIDF_ESP_RINGBUF_O)))
 $(eval $(call gen_espidf_lib_rule,heap,$(ESPIDF_HEAP_O)))
@@ -812,7 +823,7 @@ $(eval $(foreach lib,$(LIB_ESPIDF),$(eval $(call gen_sections_info_rule,$(BUILD_
 $(LDGEN_SECTION_INFOS): $(LDGEN_SECTIONS_INFO) $(ESPIDF)/make/ldgen.mk
 	$(Q)printf "$(foreach info,$(LDGEN_SECTIONS_INFO),$(info)\n)" > $@
 
-$(BUILD)/esp32.common.ld: $(ESPCOMP)/esp32/ld/esp32.common.ld.in $(LDGEN_FRAGMENTS) $(SDKCONFIG) $(LDGEN_SECTION_INFOS)
+$(BUILD)/esp32.project.ld: $(ESPCOMP)/esp32/ld/esp32.project.ld.in $(LDGEN_FRAGMENTS) $(SDKCONFIG) $(LDGEN_SECTION_INFOS)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(ESPIDF)/tools/ldgen/ldgen.py \
 		--input $< \
@@ -872,7 +883,7 @@ $(BUILD)/application.bin: $(BUILD)/application.elf
 	$(ECHO) "Create $@"
 	$(Q)$(ESPTOOL) --chip esp32 elf2image --flash_mode $(FLASH_MODE) --flash_freq $(FLASH_FREQ) --flash_size $(FLASH_SIZE) $<
 
-$(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.common.ld
+$(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.project.ld
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(APP_LD_ARGS)
 	$(Q)$(SIZE) $@
@@ -899,7 +910,7 @@ $(BUILD)/%.o: %.cpp
 BOOTLOADER_LIB_DIR = $(BUILD)/bootloader
 BOOTLOADER_LIB_ALL =
 
-$(BUILD)/bootloader/$(ESPCOMP)/%.o: CFLAGS += -DBOOTLOADER_BUILD=1 -I$(ESPCOMP)/bootloader_support/include_priv -I$(ESPCOMP)/bootloader_support/include -I$(ESPCOMP)/micro-ecc/micro-ecc -I$(ESPCOMP)/esp32 -Wno-error=format
+$(BUILD)/bootloader/$(ESPCOMP)/%.o: CFLAGS += -DBOOTLOADER_BUILD=1 -I$(ESPCOMP)/bootloader_support/include_priv -I$(ESPCOMP)/bootloader_support/include -I$(ESPCOMP)/micro-ecc/micro-ecc -I$(ESPCOMP)/efuse/include -I$(ESPCOMP)/esp32 -Wno-error=format
 
 # libbootloader_support.a
 BOOTLOADER_LIB_ALL += bootloader_support
@@ -911,7 +922,6 @@ BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOM
 	bootloader_support/src/bootloader_random.o \
 	bootloader_support/src/bootloader_sha.o \
 	bootloader_support/src/bootloader_utility.o \
-	bootloader_support/src/efuse.o \
 	bootloader_support/src/flash_qio_mode.o \
 	bootloader_support/src/secure_boot_signatures.o \
 	bootloader_support/src/secure_boot.o \

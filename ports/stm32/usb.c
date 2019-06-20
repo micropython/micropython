@@ -31,7 +31,7 @@
 #include "usbd_desc.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
-#include "usbd_msc_storage.h"
+#include "usbd_msc_interface.h"
 #include "usbd_hid_interface.h"
 
 #include "py/objstr.h"
@@ -40,6 +40,8 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "bufhelper.h"
+#include "storage.h"
+#include "sdcard.h"
 #include "usb.h"
 
 #if MICROPY_HW_ENABLE_USB
@@ -118,7 +120,7 @@ void pyb_usb_init0(void) {
     pyb_usb_vcp_init0();
 }
 
-bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
+bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, const void *msc_unit, USBD_HID_ModeInfoTypeDef *hid_info) {
     usb_device_t *usb_dev = &usb_device;
     if (!usb_dev->enabled) {
         // only init USB once in the device's power-lifetime
@@ -143,16 +145,24 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, USBD_HID_ModeInf
             return false;
         }
 
-        switch (pyb_usb_storage_medium) {
-            #if MICROPY_HW_ENABLE_SDCARD
-            case PYB_USB_STORAGE_MEDIUM_SDCARD:
-                USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
-                break;
-            #endif
-            default:
-                USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
-                break;
+        // Configure the MSC interface
+        const void *msc_unit_default[1];
+        if (msc_n == 0) {
+            msc_n = 1;
+            msc_unit = msc_unit_default;
+            switch (pyb_usb_storage_medium) {
+                #if MICROPY_HW_ENABLE_SDCARD
+                case PYB_USB_STORAGE_MEDIUM_SDCARD:
+                    msc_unit_default[0] = &pyb_sdcard_type;
+                    break;
+                #endif
+                default:
+                    msc_unit_default[0] = &pyb_flash_type;
+                    break;
+            }
         }
+        usbd_msc_init_lu(msc_n, msc_unit);
+        USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&usbd_msc_fops);
 
         // start the USB device
         USBD_LL_Init(usbd, (mode & USBD_MODE_HIGH_SPEED) != 0);
@@ -220,10 +230,12 @@ usbd_cdc_itf_t *usb_vcp_get(int idx) {
 */
 
 STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_mode, ARG_vid, ARG_pid, ARG_msc, ARG_hid, ARG_high_speed };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = USBD_VID} },
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_msc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_empty_tuple_obj)} },
         { MP_QSTR_hid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&pyb_usb_hid_mouse_obj)} },
         #if USBD_SUPPORT_HS_MODE
         { MP_QSTR_high_speed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -263,14 +275,14 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     pyb_usb_flags |= PYB_USB_FLAG_USB_MODE_CALLED;
 
     // check if user wants to disable the USB
-    if (args[0].u_obj == mp_const_none) {
+    if (args[ARG_mode].u_obj == mp_const_none) {
         // disable usb
         pyb_usb_dev_deinit();
         return mp_const_none;
     }
 
     // get mode string
-    const char *mode_str = mp_obj_str_get_str(args[0].u_obj);
+    const char *mode_str = mp_obj_str_get_str(args[ARG_mode].u_obj);
 
 #if defined(USE_HOST_MODE)
 
@@ -289,50 +301,50 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // get the VID, PID and USB mode
     // note: PID=-1 means select PID based on mode
     // note: we support CDC as a synonym for VCP for backward compatibility
-    uint16_t vid = args[1].u_int;
-    uint16_t pid = args[2].u_int;
+    uint16_t vid = args[ARG_vid].u_int;
+    uint16_t pid = args[ARG_pid].u_int;
     uint8_t mode;
     if (strcmp(mode_str, "CDC+MSC") == 0 || strcmp(mode_str, "VCP+MSC") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_CDC_MSC;
         }
         mode = USBD_MODE_CDC_MSC;
     #if MICROPY_HW_USB_CDC_NUM >= 2
     } else if (strcmp(mode_str, "VCP+VCP") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_CDC2;
         }
         mode = USBD_MODE_CDC2;
     } else if (strcmp(mode_str, "VCP+VCP+MSC") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_CDC2_MSC;
         }
         mode = USBD_MODE_CDC2_MSC;
     #endif
     #if MICROPY_HW_USB_CDC_NUM >= 3
     } else if (strcmp(mode_str, "3xVCP") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_CDC3;
         }
         mode = USBD_MODE_CDC3;
     } else if (strcmp(mode_str, "3xVCP+MSC") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_CDC3_MSC;
         }
         mode = USBD_MODE_CDC3_MSC;
     #endif
     } else if (strcmp(mode_str, "CDC+HID") == 0 || strcmp(mode_str, "VCP+HID") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_CDC_HID;
         }
         mode = USBD_MODE_CDC_HID;
     } else if (strcmp(mode_str, "CDC") == 0 || strcmp(mode_str, "VCP") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_CDC;
         }
         mode = USBD_MODE_CDC;
     } else if (strcmp(mode_str, "MSC") == 0) {
-        if (args[2].u_int == -1) {
+        if (pid == -1) {
             pid = USBD_PID_MSC;
         }
         mode = USBD_MODE_MSC;
@@ -340,11 +352,37 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         goto bad_mode;
     }
 
+    // Get MSC logical units
+    size_t msc_n = 0;
+    const void *msc_unit[USBD_MSC_MAX_LUN];
+    if (mode & USBD_MODE_IFACE_MSC) {
+        mp_obj_t *items;
+        mp_obj_get_array(args[ARG_msc].u_obj, &msc_n, &items);
+        if (msc_n > USBD_MSC_MAX_LUN) {
+            mp_raise_ValueError("too many logical units");
+        }
+        for (size_t i = 0; i < msc_n; ++i) {
+            mp_obj_type_t *type = mp_obj_get_type(items[i]);
+            if (type == &pyb_flash_type
+                #if MICROPY_HW_ENABLE_SDCARD
+                || type == &pyb_sdcard_type
+                #endif
+                #if MICROPY_HW_ENABLE_MMCARD
+                || type == &pyb_mmcard_type
+                #endif
+                ) {
+                msc_unit[i] = type;
+            } else {
+                mp_raise_ValueError("unsupported logical unit");
+            }
+        }
+    }
+
     // get hid info if user selected such a mode
     USBD_HID_ModeInfoTypeDef hid_info;
     if (mode & USBD_MODE_IFACE_HID) {
         mp_obj_t *items;
-        mp_obj_get_array_fixed_n(args[3].u_obj, 5, &items);
+        mp_obj_get_array_fixed_n(args[ARG_hid].u_obj, 5, &items);
         hid_info.subclass = mp_obj_get_int(items[0]);
         hid_info.protocol = mp_obj_get_int(items[1]);
         hid_info.max_packet_len = mp_obj_get_int(items[2]);
@@ -359,13 +397,13 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
 
     #if USBD_SUPPORT_HS_MODE
-    if (args[4].u_bool) {
+    if (args[ARG_high_speed].u_bool) {
         mode |= USBD_MODE_HIGH_SPEED;
     }
     #endif
 
     // init the USB device
-    if (!pyb_usb_dev_init(vid, pid, mode, &hid_info)) {
+    if (!pyb_usb_dev_init(vid, pid, mode, msc_n, msc_unit, &hid_info)) {
         goto bad_mode;
     }
 

@@ -301,7 +301,7 @@ void uart_task_handler(os_event_t *evt) {
     }
 
     int c, ret = 0;
-    while ((c = ringbuf_get(&input_buf)) >= 0) {
+    while ((c = ringbuf_get(&stdin_ringbuf)) >= 0) {
         if (c == mp_interrupt_char) {
             mp_keyboard_interrupt();
         }
