@@ -260,7 +260,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
         do_execute_raw_code(module_obj, raw_code, file_str);
         #else
         do_execute_raw_code(module_obj, raw_code);
-        #end
+        #endif
         return;
     }
     #endif
