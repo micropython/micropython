@@ -246,7 +246,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // its data) in the list of frozen files, execute it.
     #if MICROPY_MODULE_FROZEN_MPY
     if (frozen_type == MP_FROZEN_MPY) {
-        do_execute_raw_code(module_obj, modref);
+        #if MICROPY_PY___FILE__
+        do_execute_raw_code(module_obj, modref, file_str);
+        #else
+        do_execute_raw_code(module_obj, modref);        
+        #endif
         return;
     }
     #endif
@@ -255,11 +259,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // the correct format and, if so, load and execute the file.
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
-        mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
+        mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);    
         #if MICROPY_PY___FILE__
-        do_execute_raw_code(module_obj, modref, file_str);
-        #else
-        do_execute_raw_code(module_obj, modref);        
+        do_execute_raw_code(module_obj, raw_code, file_str);
+        #else        
+        do_execute_raw_code(module_obj, raw_code);
         #endif
         return;
     }
