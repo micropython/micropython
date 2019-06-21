@@ -257,9 +257,9 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
         #if MICROPY_PY___FILE__
-        do_execute_raw_code(module_obj, raw_code, file_str);
+        do_execute_raw_code(module_obj, modref, file_str);
         #else
-        do_execute_raw_code(module_obj, raw_code);
+        do_execute_raw_code(module_obj, modref);        
         #endif
         return;
     }
