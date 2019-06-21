@@ -37,7 +37,7 @@ typedef struct {
     bool is_secondary;
     bleio_uuid_obj_t *uuid;
     // May be a Peripheral, Central, etc.
-    mp_obj_t *device;
+    mp_obj_t device;
     mp_obj_t characteristic_list;
     // Range of attribute handles of this service.
     uint16_t start_handle;

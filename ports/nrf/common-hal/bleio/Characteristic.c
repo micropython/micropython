@@ -152,7 +152,6 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
 
 STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
-    uint32_t err_code;
 
     ble_gattc_write_params_t write_params = {
         .flags = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL,
@@ -163,7 +162,7 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
     };
 
     while (1) {
-        uint32 err_code = sd_ble_gattc_write(conn_handle, &write_params);
+        uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
         if (err_code == NRF_SUCCESS) {
             break;
         }

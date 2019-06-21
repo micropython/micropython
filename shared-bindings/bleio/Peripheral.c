@@ -107,8 +107,8 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
     self->base.type = &bleio_peripheral_type;
 
     // Copy the services list and validate its items.
-    mp_obj_t service_list = mp_obj_new_list(0, NULL);
-    mp_obj_list_t *service_list_obj = MP_OBJ_FROM_PTR(service_list);
+    mp_obj_t service_list_obj = mp_obj_new_list(0, NULL);
+    mp_obj_list_t *service_list = MP_OBJ_FROM_PTR(service_list_obj);
 
     mp_obj_t service;
     while ((service = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -128,7 +128,7 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
         mp_raise_ValueError(translate("name must be a string"));
     }
 
-    common_hal_bleio_peripheral_construct(self, service_list_obj, name_str);
+    common_hal_bleio_peripheral_construct(self, service_list, name_str);
 
     return MP_OBJ_FROM_PTR(self);
 }

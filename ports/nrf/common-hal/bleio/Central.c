@@ -41,34 +41,22 @@
 #include "shared-bindings/bleio/UUID.h"
 
 static bleio_service_obj_t *m_char_discovery_service;
+static volatile bool m_discovery_in_process;
 static volatile bool m_discovery_successful;
 
 STATIC bool discover_next_services(bleio_central_obj_t *self, uint16_t start_handle) {
     m_discovery_successful = false;
+    m_discovery_in_process = true;
 
     uint32_t err_code = sd_ble_gattc_primary_services_discover(self->conn_handle, start_handle, NULL);
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg(translate("Failed to discover services"));
     }
 
-    // Serialize discovery.
-    err_code = sd_mutex_acquire(&m_discovery_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to acquire mutex"));
+    // Wait for a discovery event.
+    while (m_discovery_in_process) {
+        MICROPY_VM_HOOK_LOOP;
     }
-
-    // Wait for someone else to release m_discovery_mutex.
-    while (sd_mutex_acquire(&m_discovery_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
-    }
-
-    err_code = sd_mutex_release(&m_discovery_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to release mutex"));
-    }
-
     return m_discovery_successful;
 }
 
@@ -80,26 +68,17 @@ STATIC bool discover_next_characteristics(bleio_central_obj_t *self, bleio_servi
     handle_range.end_handle = service->end_handle;
 
     m_discovery_successful = false;
+    m_discovery_in_process = true;
 
     uint32_t err_code = sd_ble_gattc_characteristics_discover(self->conn_handle, &handle_range);
     if (err_code != NRF_SUCCESS) {
         return false;
     }
 
-    err_code = sd_mutex_acquire(&m_discovery_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to acquire mutex"));
-    }
-
-    while (sd_mutex_acquire(&m_discovery_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
+    // Wait for a discovery event.
+    while (m_discovery_in_process) {
         MICROPY_VM_HOOK_LOOP;
     }
-
-    err_code = sd_mutex_release(&m_discovery_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to release mutex"));
-    }
-
     return m_discovery_successful;
 }
 
@@ -109,7 +88,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
 
         bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
         service->base.type = &bleio_service_type;
-        service->device = central;
+        service->device = MP_OBJ_FROM_PTR(central);
         service->characteristic_list = mp_obj_new_list(0, NULL);
         service->start_handle = gattc_service->handle_range.start_handle;
         service->end_handle = gattc_service->handle_range.end_handle;
@@ -125,11 +104,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
     if (response->count > 0) {
         m_discovery_successful = true;
     }
-
-    const uint32_t err_code = sd_mutex_release(&m_discovery_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to release mutex"));
-    }
+    m_discovery_in_process = false;
 }
 
 STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio_central_obj_t *central) {
@@ -159,11 +134,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
     if (response->count > 0) {
         m_discovery_successful = true;
     }
-
-    const uint32_t err_code = sd_mutex_release(&m_discovery_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to release mutex"));
-    }
+    m_discovery_in_process = false;
 }
 
 STATIC void on_ble_evt(ble_evt_t *ble_evt, void *central_in) {
@@ -189,6 +160,8 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *central_in) {
 
     case BLE_GAP_EVT_DISCONNECTED:
         central->conn_handle = BLE_CONN_HANDLE_INVALID;
+        m_discovery_successful = false;
+        m_discovery_in_process = false;
         break;
 
     case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
@@ -220,9 +193,21 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *central_in) {
     }
 }
 
+void common_hal_bleio_central_construct(bleio_central_obj_t *self, bleio_address_obj_t *address) {
+    common_hal_bleio_adapter_set_enabled(true);
+
+    self->service_list = mp_obj_new_list(0, NULL);
+    self->gatt_role = GATT_ROLE_CLIENT;
+    self->conn_handle = BLE_CONN_HANDLE_INVALID;
+}
+
 void common_hal_bleio_central_connect(bleio_central_obj_t *self, mp_float_t timeout) {
     common_hal_bleio_adapter_set_enabled(true);
     ble_drv_add_event_handler(on_ble_evt, self);
+
+    ble_gap_addr_t addr;
+    addr.addr_type = self->address.type;
+    memcpy(addr.addr, self->address.bytes, NUM_BLEIO_ADDRESS_BYTES);
 
     ble_gap_scan_params_t scan_params = {
         .interval = MSEC_TO_UNITS(100, UNIT_0_625_MS),
@@ -241,7 +226,7 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, mp_float_t time
 
     self->attempting_to_connect = true;
 
-    uint32_t err_code = sd_ble_gap_connect(&scan_params, &m_scan_buffer);
+    uint32_t err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params, BLE_CONN_CFG_TAG_CUSTOM);
 
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg_varg(translate("Failed to start connecting, error 0x%04x"), err_code);
@@ -266,7 +251,7 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, mp_float_t time
     next_start_handle = BLE_GATT_HANDLE_START;
 
     while (1) {
-        if(!discover_next_services(self, discovery_start_handle)) {
+        if(!discover_next_services(self, next_start_handle)) {
             break;
         }
 
@@ -309,4 +294,8 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, mp_float_t time
 
 void common_hal_bleio_central_disconnect(bleio_central_obj_t *self) {
     sd_ble_gap_disconnect(self->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}
+
+mp_obj_t common_hal_bleio_central_get_remote_services(bleio_central_obj_t *self) {
+    return self->service_list;
 }

@@ -31,9 +31,11 @@
 #include "common-hal/bleio/Central.h"
 #include "common-hal/bleio/Service.h"
 
-extern const mp_obj_type_t bleio_device_type;
+extern const mp_obj_type_t bleio_central_type;
 
-extern void common_hal_bleio_device_connect(bleio_device_obj_t *device);
-extern void common_hal_bleio_device_disconnect(bleio_device_obj_t *device);
+extern void common_hal_bleio_central_construct(bleio_central_obj_t *self, bleio_address_obj_t *address);
+extern void common_hal_bleio_central_connect(bleio_central_obj_t *self, mp_float_t timeout);
+extern void common_hal_bleio_central_disconnect(bleio_central_obj_t *self);
+extern mp_obj_t common_hal_bleio_central_get_remote_services(bleio_central_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CENTRAL_H

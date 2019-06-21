@@ -69,12 +69,12 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mp_obj_t uuid = args[ARG_uuid].u_obj;
+    const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
 
-    if (!MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
+    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
         mp_raise_ValueError(translate("Expected a UUID"));
     }
-    bleio_uuid_obj_t *uuid_obj = MP_OBJ_TO_PTR(uuid);
+    bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);
 
     bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
     self->base.type = &bleio_characteristic_type;
@@ -88,7 +88,7 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     properties.write = args[ARG_write].u_bool;
     properties.write_no_response = args[ARG_write_no_response].u_bool;
 
-    common_hal_bleio_characteristic_construct(self, uuid_obj, properties);
+    common_hal_bleio_characteristic_construct(self, uuid, properties);
 
     return MP_OBJ_FROM_PTR(self);
 }

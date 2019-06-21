@@ -28,6 +28,7 @@
 
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
+#include "shared-bindings/bleio/Central.h"
 #include "shared-bindings/bleio/Peripheral.h"
 #include "common-hal/bleio/__init__.h"
 

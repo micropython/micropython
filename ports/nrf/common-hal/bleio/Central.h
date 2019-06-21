@@ -30,16 +30,16 @@
 
 #include <stdbool.h>
 
+#include "shared-module/bleio/__init__.h"
 #include "shared-module/bleio/Address.h"
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t remote_name;
+    gatt_role_t gatt_role;
     bleio_address_obj_t address;
     volatile bool attempting_to_connect;
     volatile uint16_t conn_handle;
     mp_obj_t service_list;
-    mp_obj_t conn_handler;
 } bleio_central_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H

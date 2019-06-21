@@ -61,9 +61,9 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mp_obj_t uuid = args[ARG_uuid].u_obj;
+    const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
 
-    if (!MP_OBJ_IS_TYPE(uuid, &bleio_uuid_type)) {
+    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
         mp_raise_ValueError(translate("Expected a UUID"));
     }
 
@@ -71,31 +71,31 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     self->base.type = &bleio_service_type;
 
     const bool is_secondary = args[ARG_secondary].u_bool;
-    bleio_uuid_obj_t *uuid_obj = MP_OBJ_TO_PTR(uuid);
+    bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);
 
     // If characteristics is not an iterable, an exception will be thrown.
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_characteristics].u_obj, &iter_buf);
-    mp_obj_t characteristic;
+    mp_obj_t characteristic_obj;
 
     // Copy the characteristics list and validate its items.
-    mp_obj_t char_list = mp_obj_new_list(0, NULL);
-    mp_obj_list_t *char_list_obj = MP_OBJ_FROM_PTR(char_list);
+    mp_obj_t char_list_obj = mp_obj_new_list(0, NULL);
+    mp_obj_list_t *char_list = MP_OBJ_FROM_PTR(char_list);
 
-    while ((characteristic = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if (!MP_OBJ_IS_TYPE(characteristic, &bleio_characteristic_type)) {
+    while ((characteristic_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (!MP_OBJ_IS_TYPE(characteristic_obj, &bleio_characteristic_type)) {
             mp_raise_ValueError(translate("characteristics includes an object that is not a Characteristic"));
         }
-        bleio_characteristic_obj_t *characteristic_ptr = MP_OBJ_TO_PTR(characteristic);
+        bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(characteristic_obj);
         if (common_hal_bleio_uuid_get_uuid128_reference(uuid) !=
-            common_hal_bleio_uuid_get_uuid128_reference(characteristic_ptr->uuid)) {
+            common_hal_bleio_uuid_get_uuid128_reference(characteristic->uuid)) {
             // The descriptor base UUID doesn't match the characteristic base UUID.
             mp_raise_ValueError(translate("Characteristic UUID doesn't match Service UUID"));
         }
-        mp_obj_list_append(char_list, characteristic);
+        mp_obj_list_append(char_list_obj, characteristic_obj);
     }
 
-    common_hal_bleio_service_construct(self, uuid_obj, char_list_obj, is_secondary);
+    common_hal_bleio_service_construct(self, uuid, char_list, is_secondary);
 
     return MP_OBJ_FROM_PTR(self);
 }
