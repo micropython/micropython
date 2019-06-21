@@ -273,11 +273,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_ENABLE_COMPILER
     {
         mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
-        #if MICROPY_PY___FILE__
-        do_execute_raw_code(module_obj, raw_code, file_str);        
-        #else        
         do_load_from_lexer(module_obj, lex);
-        #endif
         return;
     }
     #else
