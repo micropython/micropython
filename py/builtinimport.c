@@ -181,11 +181,16 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
+#if MICROPY_PY___FILE__
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
+#else
 STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
+#endif
     #if MICROPY_PY___FILE__
-    // TODO
-    //qstr source_name = lex->source_name;
-    //mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    if (source_name!=NULL){
+        mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
+    } else
+        mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str("<stdin>") ));
     #endif
 
     // execute the module in its context
@@ -198,7 +203,6 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
     // set new context
     mp_globals_set(mod_globals);
     mp_locals_set(mod_globals);
-
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun = mp_make_function_from_raw_code(raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
