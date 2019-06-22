@@ -237,7 +237,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
 STATIC mp_obj_t machine_reset(void) {
-    NVIC_SystemReset();
+    powerctrl_mcu_reset();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
@@ -248,15 +248,6 @@ STATIC mp_obj_t machine_soft_reset(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
-__attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t addr) {
-    __asm volatile (
-        "ldr r2, [r1, #0]\n"    // get address of stack pointer
-        "msr msp, r2\n"         // get stack pointer
-        "ldr r2, [r1, #4]\n"    // get address of destination
-        "bx r2\n"               // branch to bootloader
-    );
-}
-
 // Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
@@ -266,24 +257,10 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     storage_flush();
     #endif
 
-    #if __DCACHE_PRESENT == 1
-    // Flush and disable caches before turning off peripherals (eg SDRAM)
-    SCB_DisableICache();
-    SCB_DisableDCache();
-    #endif
-
-    HAL_RCC_DeInit();
-    HAL_DeInit();
-
-    #if (__MPU_PRESENT == 1)
-    // MPU must be disabled for bootloader to function correctly
-    HAL_MPU_Disable();
-    #endif
-
     #if MICROPY_HW_USES_BOOTLOADER
     if (n_args == 0 || !mp_obj_is_true(args[0])) {
         // By default, with no args given, we enter the custom bootloader (mboot)
-        branch_to_bootloader(0x70ad0000, 0x08000000);
+        powerctrl_enter_bootloader(0x70ad0000, 0x08000000);
     }
 
     if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
@@ -292,15 +269,14 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
         const char *data = mp_obj_str_get_data(args[0], &len);
         void *mboot_region = (void*)*((volatile uint32_t*)0x08000000);
         memmove(mboot_region, data, len);
-        branch_to_bootloader(0x70ad0080, 0x08000000);
+        powerctrl_enter_bootloader(0x70ad0080, 0x08000000);
     }
     #endif
 
     #if defined(STM32F7) || defined(STM32H7)
-    branch_to_bootloader(0, 0x1ff00000);
+    powerctrl_enter_bootloader(0, 0x1ff00000);
     #else
-    __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
-    branch_to_bootloader(0, 0x00000000);
+    powerctrl_enter_bootloader(0, 0x00000000);
     #endif
 
     while (1);
