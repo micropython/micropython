@@ -17,7 +17,7 @@ _minimum_heap_size = 16K;
 
 /* Define the stack.  The stack is full descending so begins just above last byte
    of RAM.  Note that EABI requires the stack to be 8-byte aligned for a call. */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
+_estack = ORIGIN(RAM) + LENGTH(RAM) - _estack_reserve;
 _sstack = _estack - 32K; /* tunable */
 
 /* RAM extents for the garbage collector */

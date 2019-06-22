@@ -45,6 +45,7 @@
 
 #include "systick.h"
 #include "pendsv.h"
+#include "powerctrl.h"
 #include "pybthread.h"
 #include "gccollect.h"
 #include "factoryreset.h"
@@ -368,6 +369,9 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    // Check if bootloader should be entered instead of main application
+    powerctrl_check_enter_bootloader();
+
     // Enable caches and prefetch buffers
 
     #if defined(STM32F4)
