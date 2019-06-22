@@ -21,3 +21,6 @@
 [submodule "lib/mbedtls"]
 	path = lib/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "lib/asf4"]
+	path = lib/asf4
+	url = https://github.com/adafruit/asf4
