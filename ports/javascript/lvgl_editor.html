@@ -8,7 +8,7 @@
 		<link rel="stylesheet" href="https://littlevgl.com/bootstrap/css/bootstrap.min.css"/>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.css" />
 		<link rel="stylesheet" href="https://littlevgl.com/common.css"/>
-
+		<title>LittlevGL/MicroPython Simulator</title>
 		<style>
 			* {
 				font-size: normal;
@@ -99,7 +99,8 @@
 		
 			<p>
 			<input type="button" disabled="disabled" id="run-button" value="Run the script" onclick="runScript();"/>
-			Get script from:
+			Copy/paste script here:
+			<input onClick="this.setSelectionRange(0, this.value.length)" id="script-compressed" oninput="input_change();"/>
 			</div>
 			<div id="editor">print("Hello world")</div>
 			<div class="display-objects">
@@ -111,7 +112,7 @@
 		<iframe src="about:blank" id="emscripten-iframe"></iframe>
 		<script>
 			var editor, iframe;
-			var iframe_html;
+			var script_passed = false;
 			function forward_event(event) {
 				if(iframe !== undefined && iframe !== null) {
 					if(iframe.contentWindow !== null)
@@ -119,6 +120,12 @@
 				}
 			}
 			document.onmouseup = forward_event;
+			function input_change() {
+				editor.session.setValue(LZString.decompressFromEncodedURIComponent($("#script-compressed").val()));
+			}
+			function editor_change() {
+				$("#script-compressed").val(LZString.compressToEncodedURIComponent(editor.getValue()));
+			}
 			function runScript() {
 				var $this = $("#run-button");
 				$this.prop("disabled", "disabled");
@@ -135,14 +142,6 @@
 
 				clear_iframe(iframe);
 				iframe.src = get_iframe_url() + "&timestamp=" + new Date().getTime();
-				console.log(iframe.src);
-				//iframe.contentWindow.location.reload(true);
-				/*
-				var doc = iframe.contentWindow.document;
-				doc.open();
-				doc.write(iframe_html);
-				doc.close();
-				*/
 			}
 			function reenableButton() {
 				$("#run-button").removeProp('disabled');
@@ -174,8 +173,13 @@
 						if(request.responseText === undefined)
 							return;
 						editor.session.getUndoManager().reset();
-					    editor.setValue(request.responseText, -1);
-						
+					    editor.session.setValue(request.responseText, -1);
+						console.log("Script passed: " + script_passed);
+						if(script_passed)
+							runScript();
+						else
+							reenableButton();
+						script_passed = false;
 					}
 				}
 			}
@@ -204,6 +208,7 @@
 				clear_iframe(iframe);
 				var script = getSearchArg("script");
 				if(script !== undefined && script !== null) {
+					script_passed = true;
 					processScriptArg(script);
 				} else
 					processScriptArg("https://raw.githubusercontent.com/littlevgl/lv_binding_micropython/dev-6.0/examples/advanced_demo.py");
@@ -224,18 +229,7 @@
 					text = e.data;
 					term.write(text);
 				}, false);
-				
-				// read text from URL location
-				var request = new XMLHttpRequest();
-				request.open('GET', get_iframe_url(), true);
-				request.overrideMimeType("text/plain; charset=x-user-defined");
-				request.send(null);
-				request.onreadystatechange = function () {
-						if (request.readyState === 4 && request.status === 200 && request.responseText !== undefined && request.responseText != null) {
-							iframe_html = request.responseText;
-							$("#run-button").removeProp("disabled");
-						}
-				};
+				editor.getSession().on('change', editor_change);
 				editor.resize();
 			});
 		</script>
