@@ -148,7 +148,7 @@
 			}
 			function get_iframe_url() {
 				/* Assemble the URL */
-				var newPathname = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/'));
+				var newPathname = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
 				newPathname += "/lvgl.html?env=dev";
 				newPathname = window.location.protocol + "//" + window.location.host + newPathname;
 				console.log(newPathname);
