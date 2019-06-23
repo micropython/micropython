@@ -149,8 +149,7 @@
 			function get_iframe_url() {
 				/* Assemble the URL */
 				var newPathname = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
-				newPathname += "/lvgl.html?env=dev";
-				newPathname = window.location.protocol + "//" + window.location.host + newPathname;
+				newPathname += "/lvgl.html" + (window.location.href.indexOf('?') ? ':' : '?') + "env=dev";
 				console.log(newPathname);
 				return newPathname;
 			}
