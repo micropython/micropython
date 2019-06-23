@@ -148,17 +148,11 @@
 			}
 			function get_iframe_url() {
 				/* Assemble the URL */
-				var newPathname = "";
-				var pathArray = window.location.pathname.split('/');
-	
-				for (i = 0; i < pathArray.length - 1; i++) {
-			      if(pathArray[i].length === 0)
-						continue;
-				  newPathname += "/";
-				  newPathname += pathArray[i];
-				}
+				var newPathname = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/'));
 				newPathname += "/lvgl.html?env=dev";
-				return window.location.protocol + "//" + window.location.host + newPathname;
+				newPathname = window.location.protocol + "//" + window.location.host + newPathname;
+				console.log(newPathname);
+				return newPathname;
 			}
 			function processScriptArg(url){
 				// read text from URL location
