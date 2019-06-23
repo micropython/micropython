@@ -32,7 +32,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t adv_reports;    // List of reports.
+    mp_obj_t scan_entries;
     uint16_t interval;
     uint16_t window;
 } bleio_scanner_obj_t;

@@ -62,19 +62,19 @@ const mp_obj_property_t bleio_scanentry_address_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: raw_data
+//|   .. attribute:: advertisement_bytes
 //|
 //|   All the advertisement data present in the packet, returned as a ``bytes`` object. (read-only)
 //|
-STATIC mp_obj_t scanentry_get_raw_data(mp_obj_t self_in) {
+STATIC mp_obj_t scanentry_get_advertisement_bytes(mp_obj_t self_in) {
     bleio_scanentry_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return common_hal_bleio_scanentry_get_raw_data(self);
+    return common_hal_bleio_scanentry_get_advertisement_bytes(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_raw_data_obj, scanentry_get_raw_data);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_advertisement_bytes_obj, scanentry_get_advertisement_bytes);
 
-const mp_obj_property_t bleio_scanentry_raw_data_obj = {
+const mp_obj_property_t bleio_scanentry_advertisement_bytes_obj = {
     .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_scanentry_get_raw_data_obj,
+    .proxy = { (mp_obj_t)&bleio_scanentry_get_advertisement_bytes_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
@@ -96,10 +96,11 @@ const mp_obj_property_t bleio_scanentry_rssi_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+
 STATIC const mp_rom_map_elem_t bleio_scanentry_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_address),  MP_ROM_PTR(&bleio_scanentry_address_obj) },
-    { MP_ROM_QSTR(MP_QSTR_raw_data), MP_ROM_PTR(&bleio_scanentry_raw_data_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rssi),     MP_ROM_PTR(&bleio_scanentry_rssi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address),             MP_ROM_PTR(&bleio_scanentry_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_advertisement_bytes), MP_ROM_PTR(&bleio_scanentry_advertisement_bytes_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rssi),                MP_ROM_PTR(&bleio_scanentry_rssi_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_scanentry_locals_dict, bleio_scanentry_locals_dict_table);

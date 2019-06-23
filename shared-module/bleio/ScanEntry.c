@@ -33,14 +33,10 @@
 #include "shared-module/bleio/ScanEntry.h"
 
 mp_obj_t common_hal_bleio_scanentry_get_address(bleio_scanentry_obj_t *self) {
-    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
-    memcpy(address->bytes, self->address.bytes, NUM_BLEIO_ADDRESS_BYTES);
-    address->type = self->address.type;
-    return MP_OBJ_TO_PTR(address);
+    return MP_OBJ_FROM_PTR(self->address);
 }
 
-mp_obj_t common_hal_bleio_scanentry_get_raw_data(bleio_scanentry_obj_t *self) {
+mp_obj_t common_hal_bleio_scanentry_get_advertisement_bytes(bleio_scanentry_obj_t *self) {
     return self->data;
 }
 

@@ -80,7 +80,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_ValueError(translate("Address type out of range"));
     }
 
-    common_hal_bleio_address_construct(self, buf_info.buf, buf_info.len, address_type);
+    common_hal_bleio_address_construct(self, buf_info.buf, address_type);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -100,6 +100,13 @@ STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
     return common_hal_bleio_address_get_address_bytes(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_address_bytes_obj, bleio_address_get_address_bytes);
+
+const mp_obj_property_t bleio_address_address_bytes_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&bleio_address_get_address_bytes_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
 
 //|   .. attribute:: type
 //|
@@ -124,9 +131,47 @@ const mp_obj_property_t bleio_address_type_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. method:: __eq__(other)
+//|
+//|     Two Address objects are equal if their addresses and address types are equal.
+//|
+STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    switch (op) {
+        // Two Addresses are equal if their address bytes and address_type are equal
+        case MP_BINARY_OP_EQUAL:
+            if (MP_OBJ_IS_TYPE(rhs_in, &bleio_address_type)) {
+                bleio_address_obj_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+                bleio_address_obj_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+                return mp_obj_new_bool(
+                    mp_obj_equal(common_hal_bleio_address_get_address_bytes(lhs),
+                                 common_hal_bleio_address_get_address_bytes(rhs)) &&
+                    common_hal_bleio_address_get_type(lhs) ==
+                    common_hal_bleio_address_get_type(rhs));
+
+            } else {
+                return mp_const_false;
+            }
+
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
+STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
+
+    mp_buffer_info_t buf_info;
+    mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
+    const uint8_t *buf = (uint8_t *) buf_info.buf;
+    mp_printf(print,
+              "%02x:%02x:%02x:%02x:%02x:%02x",
+              buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
+}
+
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_address_bytes), MP_ROM_PTR(&bleio_address_get_address_bytes_obj) },
-    { MP_ROM_QSTR(MP_QSTR_type), MP_ROM_PTR(&bleio_address_get_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address_bytes), MP_ROM_PTR(&bleio_address_address_bytes_obj) },
+    { MP_ROM_QSTR(MP_QSTR_type), MP_ROM_PTR(&bleio_address_type_obj) },
     // These match the BLE_GAP_ADDR_TYPES values used by the nRF library.
     { MP_ROM_QSTR(MP_QSTR_PUBLIC), MP_OBJ_NEW_SMALL_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_RANDOM_STATIC), MP_OBJ_NEW_SMALL_INT(1) },
@@ -141,5 +186,7 @@ const mp_obj_type_t bleio_address_type = {
     { &mp_type_type },
     .name = MP_QSTR_Address,
     .make_new = bleio_address_make_new,
+    .print = bleio_address_print,
+    .binary_op = bleio_address_binary_op,
     .locals_dict = (mp_obj_dict_t*)&bleio_address_locals_dict
 };

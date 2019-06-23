@@ -27,17 +27,17 @@
 
 #include <string.h>
 
-#include "py/objproperty.h"
+#include "py/objstr.h"
 #include "shared-bindings/bleio/Address.h"
 #include "shared-module/bleio/Address.h"
 
-void common_hal_bleio_address_construct(bleio_address_obj_t *self, uint8_t *bytes, size_t bytes_length, uint8_t address_type) {
-    memcpy(self->bytes, bytes, bytes_length);
+void common_hal_bleio_address_construct(bleio_address_obj_t *self, uint8_t *bytes, uint8_t address_type) {
+    self->bytes = mp_obj_new_bytes(bytes, NUM_BLEIO_ADDRESS_BYTES);
     self->type = address_type;
 }
 
 mp_obj_t common_hal_bleio_address_get_address_bytes(bleio_address_obj_t *self) {
-    return mp_obj_new_bytes(self->bytes, NUM_BLEIO_ADDRESS_BYTES);
+    return self->bytes;
 }
 
 uint8_t common_hal_bleio_address_get_type(bleio_address_obj_t *self) {

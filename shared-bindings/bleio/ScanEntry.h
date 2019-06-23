@@ -35,7 +35,7 @@
 extern const mp_obj_type_t bleio_scanentry_type;
 
 mp_obj_t common_hal_bleio_scanentry_get_address(bleio_scanentry_obj_t *self);
-mp_obj_t common_hal_bleio_scanentry_get_raw_data(bleio_scanentry_obj_t *self);
+mp_obj_t common_hal_bleio_scanentry_get_advertisement_bytes(bleio_scanentry_obj_t *self);
 mp_int_t common_hal_bleio_scanentry_get_rssi(bleio_scanentry_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANENTRY_H

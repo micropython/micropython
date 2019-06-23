@@ -42,7 +42,7 @@
 //| :class:`Scanner` -- scan for nearby BLE devices
 //| =========================================================
 //|
-//| Allows scanning for nearby BLE devices.
+//| Scan for nearby BLE devices.
 //|
 //| Usage::
 //|
@@ -112,7 +112,7 @@ STATIC mp_obj_t bleio_scanner_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     common_hal_bleio_scanner_scan(self, timeout, interval, window);
 
-    return common_hal_bleio_scanner_get_adv_reports(self);
+    return common_hal_bleio_scanner_get_scan_entries(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanner_scan_obj, 2, bleio_scanner_scan);
 

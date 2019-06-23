@@ -57,12 +57,15 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
     entry->base.type = &bleio_scanentry_type;
     entry->rssi = report->rssi;
 
-    memcpy(entry->address.bytes, report->data.p_data, NUM_BLEIO_ADDRESS_BYTES);
-    entry->address.type = report->peer_addr.addr_type;
+    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
+    address->base.type = &bleio_address_type;
+    common_hal_bleio_address_construct(MP_OBJ_TO_PTR(address),
+                                       report->peer_addr.addr, report->peer_addr.addr_type);
+    entry->address = address;
 
     entry->data = mp_obj_new_bytes(report->data.p_data, report->data.len);
 
-    mp_obj_list_append(scanner->adv_reports, entry);
+    mp_obj_list_append(scanner->scan_entries, MP_OBJ_FROM_PTR(entry));
 
     const uint32_t err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer);
     if (err_code != NRF_SUCCESS) {
@@ -71,7 +74,7 @@ STATIC void on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
 }
 
 void common_hal_bleio_scanner_construct(bleio_scanner_obj_t *self) {
-    self->adv_reports = mp_obj_new_list(0, NULL);
+    self->scan_entries = mp_obj_new_list(0, NULL);
 }
 
 void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout, mp_float_t interval, mp_float_t window) {
@@ -85,7 +88,7 @@ void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout
     };
 
     // Empty the advertising reports list.
-    mp_obj_list_clear(self->adv_reports);
+    mp_obj_list_clear(self->scan_entries);
 
     uint32_t err_code;
     err_code = sd_ble_gap_scan_start(&scan_params, &m_scan_buffer);
@@ -98,6 +101,6 @@ void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout
     sd_ble_gap_scan_stop();
 }
 
-mp_obj_t common_hal_bleio_scanner_get_adv_reports(bleio_scanner_obj_t *self) {
-    return self->adv_reports;
+mp_obj_t common_hal_bleio_scanner_get_scan_entries(bleio_scanner_obj_t *self) {
+    return self->scan_entries;
 }

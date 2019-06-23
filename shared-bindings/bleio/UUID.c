@@ -220,6 +220,12 @@ STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
+//|
+
+//|   .. method:: __eq__(other)
+//|
+//|     Two UUID objects are equal if their values match and they are both 128-bit or both 16-bit.
+//|
 STATIC mp_obj_t bleio_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         // Two UUID's are equal if their uuid16 values and uuid128 references match.

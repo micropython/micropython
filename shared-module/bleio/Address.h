@@ -35,7 +35,7 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t type;
-    uint8_t bytes[NUM_BLEIO_ADDRESS_BYTES];
+    mp_obj_t bytes;    // a bytes() object
 } bleio_address_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H

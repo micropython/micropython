@@ -35,7 +35,7 @@ typedef struct {
     mp_obj_base_t base;
     bool connectable;
     int8_t rssi;
-    bleio_address_obj_t address;
+    bleio_address_obj_t *address;
     mp_obj_t data;
 } bleio_scanentry_obj_t;
 
