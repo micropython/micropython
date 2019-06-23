@@ -68,7 +68,7 @@ SRC_QSTR += $(SRC_C) $(LIB_SRC_C) dummy_header.h
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-JSFLAGS = $(BOTH_CFLAGS) -s USE_SDL=2 $(OPTIM) -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_handle_pending', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" --memory-init-file 0 --js-library library.js
+JSFLAGS = $(BOTH_CFLAGS) -s ASSERTIONS=2 -s FORCE_FILESYSTEM=1 -s USE_SDL=2 $(OPTIM) -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_handle_pending', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" --memory-init-file 0 --js-library library.js
 
 all: $(BUILD)/micropython.js
 

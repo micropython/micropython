@@ -2,7 +2,17 @@
 <!-- Updated for 6.0 -->
 <html>
 	<head>
+		
+		
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600"></script>
+		<link rel="stylesheet" href="https://littlevgl.com/bootstrap/css/bootstrap.min.css"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.css" />
+		<link rel="stylesheet" href="https://littlevgl.com/common.css"/>
+
 		<style>
+			* {
+				font-size: normal;
+			}
 			html, body {
 				width: 100%;
 				height: 100%;
@@ -59,15 +69,20 @@
 				height: 328px;
 				background-color: black;
 			}
+			.ace_editor * {
+				font-size: 12px;
+				line-height: normal;
+			}
 		</style>
-		
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.css" />
+
 		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+		<script src="https://littlevgl.com/bootstrap/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/mode-python.js" type="text/javascript" charset="utf-8"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/addons/fit/fit.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.js" type="text/javascript" charset="utf-8"></script>
+		
 	</head>
 	<body>
 		<div class="flex-container">
@@ -83,6 +98,7 @@
 		
 			<p>
 			<input type="button" disabled="disabled" id="run-button" value="Run the script" onclick="runScript();"/>
+			Get script from:
 			</div>
 			<div id="editor">print("Hello world")</div>
 			<div class="display-objects">
@@ -219,6 +235,7 @@
 							$("#run-button").removeProp("disabled");
 						}
 				};
+				editor.resize();
 			});
 		</script>
 	</body>
