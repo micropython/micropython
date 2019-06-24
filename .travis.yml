@@ -10,6 +10,8 @@ cache:
 env:
   global:
     - MAKEOPTS="-j4"
+git:
+  submodules: false
 
 # define the successive stages
 stages:
@@ -30,6 +32,7 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
+        - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
@@ -60,6 +63,7 @@ jobs:
         - gcc --version
         - python3 --version
       script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
@@ -80,6 +84,7 @@ jobs:
     - stage: test
       env: NAME="unix port build and tests"
       script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
@@ -91,6 +96,7 @@ jobs:
       install:
         - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix nanbox
@@ -100,6 +106,7 @@ jobs:
     - stage: test
       env: NAME="unix stackless port build and tests"
       script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
@@ -122,6 +129,7 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
+        - git submodule update --init lib/nrfx
         - make ${MAKEOPTS} -C ports/nrf
 
     # bare-arm and minimal ports
