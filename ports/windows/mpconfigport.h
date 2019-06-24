@@ -214,6 +214,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 // CL specific overrides from mpconfig
 
 #define NORETURN                    __declspec(noreturn)
+#define MP_WEAK
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
