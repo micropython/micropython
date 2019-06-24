@@ -121,6 +121,18 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
+    # esp8266 port
+    - stage: test
+      env: NAME="esp8266 port build"
+      install:
+        - wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
+        - zcat xtensa-lx106-elf-standalone.tar.gz | tar x
+        - export PATH=$(pwd)/xtensa-lx106-elf/bin:$PATH
+      script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/esp8266
+
     # nrf port
     - stage: test
       env: NAME="nrf port build"
