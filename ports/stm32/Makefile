@@ -513,6 +513,12 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $@
+ifneq ($(TEXT0_ADDR),0x08000000)
+	$(ECHO) "INFO: this build requires mboot to be installed first"
+endif
+ifeq ($(TEXT1_ADDR),0x90000000)
+	$(ECHO) "INFO: this build places firmware in external QSPI flash"
+endif
 
 PLLVALUES = boards/pllvalues.py
 MAKE_PINS = boards/make-pins.py
