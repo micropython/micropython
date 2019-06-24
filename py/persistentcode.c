@@ -404,14 +404,14 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         ip2[2] = source_file; ip2[3] = source_file >> 8;
     }
 
+    // Number of entries in constant table
+    size_t n_obj = read_uint(reader, NULL);
+    size_t n_raw_code = read_uint(reader, NULL);
     mp_uint_t *const_table = NULL;
+    
     if (kind != MP_CODE_NATIVE_ASM) {
         // Load constant table for bytecode, native and viper
-
-        // Number of entries in constant table
-        size_t n_obj = read_uint(reader, NULL);
-        size_t n_raw_code = read_uint(reader, NULL);
-
+        
         // Allocate constant table
         size_t n_alloc = prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code;
         if (kind != MP_CODE_BYTECODE) {
