@@ -330,7 +330,7 @@ STATIC mp_obj_t mp_builtin_next(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         mp_obj_t ret = mp_iternext_allow_raise(args[0]);
         if (ret == MP_OBJ_STOP_ITERATION) {
-            nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+            return mp_raise_o(mp_obj_new_exception(&mp_type_StopIteration));
         } else {
             return ret;
         }

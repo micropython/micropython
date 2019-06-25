@@ -427,8 +427,9 @@
 #endif
 
 // Whether to enable debugging versions of MP_OBJ_NULL/STOP_ITERATION/SENTINEL
+// Note: this is currently required for no NLR, to distinguish MP_OBJ_NULL (exception) from MP_OBJ_STOP_ITERATION
 #ifndef MICROPY_DEBUG_MP_OBJ_SENTINELS
-#define MICROPY_DEBUG_MP_OBJ_SENTINELS (0)
+#define MICROPY_DEBUG_MP_OBJ_SENTINELS (1)
 #endif
 
 // Whether to enable a simple VM stack overflow check
