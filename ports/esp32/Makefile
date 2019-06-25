@@ -256,21 +256,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H)
 ################################################################################
 # List of object files from the ESP32 IDF components
 
-ESPIDF_DRIVER_O = $(addprefix $(ESPCOMP)/driver/,\
-	uart.o \
-	periph_ctrl.o \
-	ledc.o \
-	gpio.o \
-	timer.o \
-	sdmmc_host.o \
-	sdmmc_transaction.o \
-	sdspi_crc.o \
-	sdspi_host.o \
-	sdspi_transaction.o \
-	spi_master.o \
-	spi_common.o \
-	rtc_module.o \
-	)
+ESPIDF_DRIVER_O = $(subst .c,.o,$(wildcard $(ESPCOMP)/driver/*.c))
 
 ESPIDF_EFUSE_O = $(addprefix $(ESPCOMP)/efuse/,\
 	esp32/esp_efuse_table.o \
