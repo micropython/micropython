@@ -302,7 +302,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // note: PID=-1 means select PID based on mode
     // note: we support CDC as a synonym for VCP for backward compatibility
     uint16_t vid = args[ARG_vid].u_int;
-    uint16_t pid = args[ARG_pid].u_int;
+    mp_int_t pid = args[ARG_pid].u_int;
     uint8_t mode;
     if (strcmp(mode_str, "CDC+MSC") == 0 || strcmp(mode_str, "VCP+MSC") == 0) {
         if (pid == -1) {
