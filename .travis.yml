@@ -121,6 +121,23 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
+    # esp32 port
+    - stage: test
+      env: NAME="esp32 port build"
+      install:
+        - sudo apt-get install python3-pip
+        - sudo pip3 install pyparsing
+        - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - zcat xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar x
+        - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
+        - git clone https://github.com/espressif/esp-idf.git
+        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH :=" ports/esp32/Makefile | cut -d " " -f 3)
+        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+      script:
+        - git submodule update --init lib/berkeley-db-1.xx
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/esp32 ESPIDF=$(pwd)/esp-idf
+
     # esp8266 port
     - stage: test
       env: NAME="esp8266 port build"
