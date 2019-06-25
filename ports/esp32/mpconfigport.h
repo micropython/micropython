@@ -221,7 +221,7 @@ extern const struct _mp_obj_module_t mp_module_rtch;
 #define MP_STATE_PORT MP_STATE_VM
 
 #if MICROPY_PY_LVGL
-#include "lib/lv_bindings/lvgl/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
 #else
 #define LV_ROOTS
 #endif

@@ -148,7 +148,7 @@ LIBSTDCXX_FILE_NAME = $(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -g3
+CFLAGS += -g
 COPT = -O0
 else
 #CFLAGS += -fdata-sections -ffunction-sections
