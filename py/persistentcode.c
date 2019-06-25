@@ -128,6 +128,12 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
     size_t len = read_uint(reader);
     char str[len];
     read_bytes(reader, (byte*)str, len);
+    // Validate the QSTRs by ensuring they do not contain any null terminations. They are length encoded instead.
+    for (size_t i = 0; i < len; i++) {
+        if (str[i] == '\0') {
+            mp_raise_RuntimeError(translate("Corrupt .mpy file"));
+        }
+    }
     qstr qst = qstr_from_strn(str, len);
     return qst;
 }
@@ -145,11 +151,12 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
             return mp_obj_new_str_from_vstr(obj_type == 's' ? &mp_type_str : &mp_type_bytes, &vstr);
         } else if (obj_type == 'i') {
             return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
-        } else {
-            assert(obj_type == 'f' || obj_type == 'c');
+        } else if (obj_type == 'f' || obj_type == 'c') {
             return mp_parse_num_decimal(vstr.buf, vstr.len, obj_type == 'c', false, NULL);
         }
     }
+    mp_raise_RuntimeError(translate("Corrupt .mpy file"));
+    return MP_OBJ_FROM_PTR(&mp_const_none_obj);
 }
 
 STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
