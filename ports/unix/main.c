@@ -139,7 +139,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
 
-        if (!compile_only) {
+        if (!compile_only && module_fun != MP_OBJ_NULL) {
             // execute it
             mp_obj_t ret = mp_call_function_0(module_fun);
             // check for pending exception
@@ -148,11 +148,12 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
                 MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
                 mp_raise_o(obj);
             }
-            if (MP_STATE_THREAD(cur_exc) != NULL) {
-                // uncaught exception
-                mp_hal_set_interrupt_char(-1);
-                return handle_uncaught_exception(MP_STATE_THREAD(cur_exc));
-            }
+        }
+
+        if (MP_STATE_THREAD(cur_exc) != NULL) {
+            // uncaught exception
+            mp_hal_set_interrupt_char(-1);
+            return handle_uncaught_exception(MP_STATE_THREAD(cur_exc));
         }
 
         mp_hal_set_interrupt_char(-1);
