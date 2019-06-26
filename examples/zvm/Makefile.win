@@ -1,3 +1,6 @@
+# ZVM
+IGNORE_ZVM_FILE = 1
+
 MPTOP = ../..
 -include mpconfigport.mk
 include $(MPTOP)/py/mkenv.mk
@@ -173,6 +176,9 @@ CROSS_COMPILE_HOST = --host=$(patsubst %-,%,$(CROSS_COMPILE))
 else
 CROSS_COMPILE_HOST =
 endif
+
+# ZVM
+LIBMICROPYTHON = libtvm.a
 
 deplibs: libffi axtls
 
