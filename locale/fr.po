@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-25 16:50-0700\n"
+"POT-Creation-Date: 2019-06-25 17:53-0700\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -467,6 +467,10 @@ msgstr "La commande doit être un entier entre 0 et 255"
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
+msgstr ""
+
+#: py/emitglue.c
+msgid "Corrupt raw code"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/UUID.c

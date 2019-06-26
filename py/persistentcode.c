@@ -102,20 +102,35 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 
 #include "py/parsenum.h"
 
+STATIC void raise_corrupt_mpy(void) {
+    mp_raise_RuntimeError(translate("Corrupt .mpy file"));
+}
+
 STATIC int read_byte(mp_reader_t *reader) {
-    return reader->readbyte(reader->data);
+    mp_uint_t b = reader->readbyte(reader->data);
+    if (b == MP_READER_EOF) {
+        raise_corrupt_mpy();
+    }
+    return b;
 }
 
 STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
-        *buf++ = reader->readbyte(reader->data);
+        mp_uint_t b =reader->readbyte(reader->data);
+        if (b == MP_READER_EOF) {
+            raise_corrupt_mpy();
+        }
+        *buf++ = b;
     }
 }
 
 STATIC size_t read_uint(mp_reader_t *reader) {
     size_t unum = 0;
     for (;;) {
-        byte b = reader->readbyte(reader->data);
+        mp_uint_t b = reader->readbyte(reader->data);
+        if (b == MP_READER_EOF) {
+            raise_corrupt_mpy();
+        }
         unum = (unum << 7) | (b & 0x7f);
         if ((b & 0x80) == 0) {
             break;
@@ -128,12 +143,6 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
     size_t len = read_uint(reader);
     char str[len];
     read_bytes(reader, (byte*)str, len);
-    // Validate the QSTRs by ensuring they do not contain any null terminations. They are length encoded instead.
-    for (size_t i = 0; i < len; i++) {
-        if (str[i] == '\0') {
-            mp_raise_RuntimeError(translate("Corrupt .mpy file"));
-        }
-    }
     qstr qst = qstr_from_strn(str, len);
     return qst;
 }
@@ -155,7 +164,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
             return mp_parse_num_decimal(vstr.buf, vstr.len, obj_type == 'c', false, NULL);
         }
     }
-    mp_raise_RuntimeError(translate("Corrupt .mpy file"));
+    raise_corrupt_mpy();
     return MP_OBJ_FROM_PTR(&mp_const_none_obj);
 }
 
