@@ -89,6 +89,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
         - make ${MAKEOPTS} -C ports/unix test
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
 
     # unix nanbox
     - stage: test
