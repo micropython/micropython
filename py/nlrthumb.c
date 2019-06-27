@@ -44,7 +44,7 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "str    r6, [r0, #20]       \n" // store r6 into nlr_buf
     "str    r7, [r0, #24]       \n" // store r7 into nlr_buf
 
-#if defined(__ARM_ARCH_6M__)
+#if !defined(__thumb2__)
     "mov    r1, r8              \n"
     "str    r1, [r0, #28]       \n" // store r8 into nlr_buf
     "mov    r1, r9              \n"
@@ -71,7 +71,7 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "str    lr, [r0, #8]        \n" // store lr into nlr_buf
 #endif
 
-#if defined(__ARM_ARCH_6M__)
+#if !defined(__thumb2__)
     "ldr    r1, nlr_push_tail_var \n"
     "bx     r1                  \n" // do the rest in C
     ".align 2                   \n"
@@ -102,7 +102,7 @@ NORETURN void nlr_jump(void *val) {
     "ldr    r6, [r0, #20]       \n" // load r6 from nlr_buf
     "ldr    r7, [r0, #24]       \n" // load r7 from nlr_buf
 
-#if defined(__ARM_ARCH_6M__)
+#if !defined(__thumb2__)
     "ldr    r1, [r0, #28]       \n" // load r8 from nlr_buf
     "mov    r8, r1              \n"
     "ldr    r1, [r0, #32]       \n" // load r9 from nlr_buf
