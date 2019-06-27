@@ -112,9 +112,11 @@ STATIC mp_obj_t mod_account_set_Data(mp_obj_t key, mp_obj_t value) {
     if(!CheckGas(&code)) {
         return mp_const_none;
     }
+    const char *c_key = mp_obj_str_get_str(key);
+    size_t key_len = strlen(c_key);
     const char *c_value = mp_obj_str_get_str(value);
     size_t value_len = strlen(c_value);
-    FireGas_DB(value_len);
+    FireGas_DB(key_len + value_len);
     storage_set_data_fn(mp_obj_str_get_str(key), mp_obj_str_get_str(value));
     return mp_const_none;
 };
