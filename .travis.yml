@@ -33,6 +33,16 @@ addons:
     - $(ls -d1 bin/*/*/* | tr "\n" ":")
     target_paths: /
 
+# Some deploy jobs take over 10 minutes so use this keep alive hack to make sure Travis doesn't kill us.
+before_deploy: |
+  function keep_alive() {
+    while true; do
+      echo -en "\a"
+      sleep 5
+    done
+  }
+  keep_alive &
+
 deploy:
   provider: releases
   api_key:
