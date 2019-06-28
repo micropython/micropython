@@ -54,7 +54,7 @@ void SysTick_Handler(void) {
 }
 
 void tick_init() {
-    uint32_t ticks_per_ms = common_hal_mcu_processor_get_frequency() / 1000;
+    //uint32_t ticks_per_ms = common_hal_mcu_processor_get_frequency() / 1000;
     SysTick_Config(ticks_per_ms); // interrupt is enabled
 }
 

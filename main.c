@@ -45,7 +45,7 @@
 
 #include "background.h"
 #include "mpconfigboard.h"
-#include "shared-module/displayio/__init__.h"
+//#include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
@@ -187,7 +187,7 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     supervisor_move_memory();
 
     reset_port();
-    reset_board_busses();
+    //reset_board_busses();
     reset_board();
     reset_status_led();
 }

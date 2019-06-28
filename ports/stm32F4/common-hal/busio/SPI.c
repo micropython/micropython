@@ -1,0 +1,337 @@
+/*
+ * SPI Master library for nRF5x.
+ * Copyright (c) 2015 Arduino LLC
+ * Copyright (c) 2016 Sandeep Mistry All right reserved.
+ * Copyright (c) 2017 hathach
+ * Copyright (c) 2018 Artur Pacholec
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+#include "shared-bindings/busio/SPI.h"
+#include "py/mperrno.h"
+#include "py/runtime.h"
+
+#include "nrfx_spim.h"
+#include "nrf_gpio.h"
+
+STATIC spim_peripheral_t spim_peripherals[] = {
+#if NRFX_CHECK(NRFX_SPIM3_ENABLED)
+    // SPIM3 exists only on nRF52840 and supports 32MHz max. All other SPIM's are only 8MHz max.
+    // Allocate SPIM3 first.
+    { .spim = NRFX_SPIM_INSTANCE(3),
+      .max_frequency_MHz = 32,
+      .max_xfer_size = SPIM3_EASYDMA_MAXCNT_SIZE,
+    },
+#endif
+#if NRFX_CHECK(NRFX_SPIM2_ENABLED)
+    // SPIM2 is not shared with a TWIM, so allocate before the shared ones.
+    { .spim = NRFX_SPIM_INSTANCE(2),
+      .max_frequency_MHz = 8,
+      .max_xfer_size = SPIM2_EASYDMA_MAXCNT_SIZE,
+    },
+#endif
+#if NRFX_CHECK(NRFX_SPIM1_ENABLED)
+    // SPIM1 and TWIM1 share an address.
+    { .spim = NRFX_SPIM_INSTANCE(1),
+      .max_frequency_MHz = 8,
+      .max_xfer_size = SPIM1_EASYDMA_MAXCNT_SIZE,
+    },
+#endif
+#if NRFX_CHECK(NRFX_SPIM0_ENABLED)
+    // SPIM0 and TWIM0 share an address.
+    { .spim = NRFX_SPIM_INSTANCE(0),
+      .max_frequency_MHz = 8,
+      .max_xfer_size = SPIM0_EASYDMA_MAXCNT_SIZE,
+    },
+#endif
+};
+
+STATIC bool never_reset[4];
+
+void spi_reset(void) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
+        if (never_reset[i]) {
+            continue;
+        }
+        nrf_spim_disable(spim_peripherals[i].spim.p_reg);
+    }
+}
+
+void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
+        if (self->spim_peripheral == &spim_peripherals[i]) {
+            never_reset[i] = true;
+
+            never_reset_pin_number(self->clock_pin_number);
+            never_reset_pin_number(self->MOSI_pin_number);
+            never_reset_pin_number(self->MISO_pin_number);
+            break;
+        }
+    }
+}
+
+// Convert frequency to clock-speed-dependent value. Choose the next lower baudrate if in between
+// available baudrates.
+static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) {
+
+    static const struct {
+        const uint32_t boundary;
+        nrf_spim_frequency_t spim_frequency;
+    } baudrate_map[] = {
+#ifdef SPIM_FREQUENCY_FREQUENCY_M32
+        { 32000000, NRF_SPIM_FREQ_32M },
+#endif
+#ifdef SPIM_FREQUENCY_FREQUENCY_M16
+        { 16000000, NRF_SPIM_FREQ_16M },
+#endif
+        {  8000000, NRF_SPIM_FREQ_8M },
+        {  4000000, NRF_SPIM_FREQ_4M },
+        {  2000000, NRF_SPIM_FREQ_2M },
+        {  1000000, NRF_SPIM_FREQ_1M },
+        {   500000, NRF_SPIM_FREQ_500K },
+        {   250000, NRF_SPIM_FREQ_250K },
+        {        0, NRF_SPIM_FREQ_125K },
+    };
+
+    size_t i = 0;
+    uint32_t boundary;
+    do {
+        boundary = baudrate_map[i].boundary;
+        if (baudrate >= boundary) {
+            return baudrate_map[i].spim_frequency;
+        }
+        i++;
+    } while (boundary != 0);
+    // Should not get here.
+    return 0;
+}
+
+void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi, const mcu_pin_obj_t * miso) {
+    // Find a free instance.
+    self->spim_peripheral = NULL;
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
+        if ((spim_peripherals[i].spim.p_reg->ENABLE & SPIM_ENABLE_ENABLE_Msk) == 0) {
+            self->spim_peripheral = &spim_peripherals[i];
+            break;
+        }
+    }
+
+    if (self->spim_peripheral == NULL) {
+        mp_raise_ValueError(translate("All SPI peripherals are in use"));
+    }
+
+    nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG;
+    config.frequency = NRF_SPIM_FREQ_8M;
+
+    config.sck_pin = clock->number;
+    self->clock_pin_number = clock->number;
+    claim_pin(clock);
+
+    if (mosi != (mcu_pin_obj_t*)&mp_const_none_obj) {
+        config.mosi_pin = mosi->number;
+        self->MOSI_pin_number = mosi->number;
+        claim_pin(mosi);
+    } else {
+        self->MOSI_pin_number = NO_PIN;
+    }
+
+    if (miso != (mcu_pin_obj_t*)&mp_const_none_obj) {
+        config.miso_pin = miso->number;
+        self->MISO_pin_number = mosi->number;
+        claim_pin(miso);
+    } else {
+        self->MISO_pin_number = NO_PIN;
+    }
+
+    nrfx_err_t err = nrfx_spim_init(&self->spim_peripheral->spim, &config, NULL, NULL);
+
+    // A soft reset doesn't uninit the driver so we might end up with a invalid state
+    if (err == NRFX_ERROR_INVALID_STATE) {
+        nrfx_spim_uninit(&self->spim_peripheral->spim);
+        err = nrfx_spim_init(&self->spim_peripheral->spim, &config, NULL, NULL);
+    }
+
+    if (err != NRFX_SUCCESS) {
+        common_hal_busio_spi_deinit(self);
+        mp_raise_OSError(MP_EIO);
+    }
+}
+
+bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
+    return self->clock_pin_number == NO_PIN;
+}
+
+void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
+    if (common_hal_busio_spi_deinited(self))
+        return;
+
+    nrfx_spim_uninit(&self->spim_peripheral->spim);
+
+    reset_pin_number(self->clock_pin_number);
+    reset_pin_number(self->MOSI_pin_number);
+    reset_pin_number(self->MISO_pin_number);
+}
+
+bool common_hal_busio_spi_configure(busio_spi_obj_t *self, uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    // nrf52 does not support 16 bit
+    if (bits != 8) {
+      return false;
+    }
+
+    // Set desired frequency, rounding down, and don't go above available frequency for this SPIM.
+    nrf_spim_frequency_set(self->spim_peripheral->spim.p_reg,
+                           baudrate_to_spim_frequency(MIN(baudrate,
+                                                          self->spim_peripheral->max_frequency_MHz * 1000000)));
+
+    nrf_spim_mode_t mode = NRF_SPIM_MODE_0;
+    if (polarity) {
+        mode = (phase) ? NRF_SPIM_MODE_3 : NRF_SPIM_MODE_2;
+    } else {
+        mode = (phase) ? NRF_SPIM_MODE_1 : NRF_SPIM_MODE_0;
+    }
+
+    nrf_spim_configure(self->spim_peripheral->spim.p_reg, mode, NRF_SPIM_BIT_ORDER_MSB_FIRST);
+
+    return true;
+}
+
+bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
+    bool grabbed_lock = false;
+    // NRFX_CRITICAL_SECTION_ENTER();
+    if (!self->has_lock) {
+        grabbed_lock = true;
+        self->has_lock = true;
+    }
+    // NRFX_CRITICAL_SECTION_EXIT();
+    return grabbed_lock;
+}
+
+bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {
+    return self->has_lock;
+}
+
+void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
+    self->has_lock = false;
+}
+
+bool common_hal_busio_spi_write(busio_spi_obj_t *self, const uint8_t *data, size_t len) {
+    if (len == 0)
+        return true;
+
+    const uint32_t max_xfer_size = self->spim_peripheral->max_xfer_size;
+    const uint32_t parts = len / max_xfer_size;
+    const uint32_t remainder = len % max_xfer_size;
+
+    for (uint32_t i = 0; i < parts; ++i) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(data + i * max_xfer_size, max_xfer_size);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    if (remainder > 0) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(data + parts * max_xfer_size, remainder);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    return true;
+}
+
+bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value) {
+    if (len == 0)
+        return true;
+
+    const uint32_t max_xfer_size = self->spim_peripheral->max_xfer_size;
+    const uint32_t parts = len / max_xfer_size;
+    const uint32_t remainder = len % max_xfer_size;
+
+    for (uint32_t i = 0; i < parts; ++i) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data + i * max_xfer_size, max_xfer_size);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    if (remainder > 0) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data + parts * max_xfer_size, remainder);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    return true;
+}
+
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+    if (len == 0)
+        return true;
+
+
+    const uint32_t max_xfer_size = self->spim_peripheral->max_xfer_size;
+    const uint32_t parts = len / max_xfer_size;
+    const uint32_t remainder = len % max_xfer_size;
+
+    for (uint32_t i = 0; i < parts; ++i) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(data_out + i * max_xfer_size, max_xfer_size,
+            data_in + i * max_xfer_size, max_xfer_size);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    if (remainder > 0) {
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(data_out + parts * max_xfer_size, remainder,
+            data_in + parts * max_xfer_size, remainder);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+            return false;
+    }
+
+    return true;
+}
+
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+    switch (self->spim_peripheral->spim.p_reg->FREQUENCY) {
+    case NRF_SPIM_FREQ_125K:
+        return 125000;
+    case NRF_SPIM_FREQ_250K:
+        return 250000;
+    case NRF_SPIM_FREQ_500K:
+        return 500000;
+    case NRF_SPIM_FREQ_1M:
+        return 1000000;
+    case NRF_SPIM_FREQ_2M:
+        return 2000000;
+    case NRF_SPIM_FREQ_4M:
+        return 4000000;
+    case NRF_SPIM_FREQ_8M:
+        return 8000000;
+#ifdef SPIM_FREQUENCY_FREQUENCY_M16
+    case NRF_SPIM_FREQ_16M:
+        return 16000000;
+#endif
+#ifdef SPIM_FREQUENCY_FREQUENCY_M32
+    case NRF_SPIM_FREQ_32M:
+        return 32000000;
+#endif
+    default:
+        return 0;
+    }
+}
+
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
+    return 0;
+}
+
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
+    return 0;
+}
