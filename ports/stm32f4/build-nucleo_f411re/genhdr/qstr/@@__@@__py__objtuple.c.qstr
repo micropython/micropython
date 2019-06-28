@@ -1,4 +1,0 @@
-TRANSLATE("only slices with step=1 (aka None) are supported")
-Q(count)
-Q(index)
-Q(tuple)

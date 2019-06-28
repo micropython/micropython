@@ -1,5 +1,0 @@
-TRANSLATE("local variable referenced before assignment")
-Q(__exit__)
-Q(__enter__)
-TRANSLATE("no active exception to reraise")
-TRANSLATE("byte code not implemented")

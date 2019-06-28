@@ -65,14 +65,14 @@ INC += -I$(BUILD)
 #keep?
 INC += -I$(BUILD)/genhdr
 #HAL SPECIFIC
-INC += -I./cubeMXInc
-INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc
-INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc/Legacy
-INC += -I./cubeMXDrivers/CMSIS/Device/ST/STM32F4xx/Include
-INC += -I./cubeMXDrivers/CMSIS/Include
-INC += -I./cubeMXDrivers/CMSIS/Include
+INC += -IcubeMXInc
+INC += -IcubeMXDrivers/STM32F4xx_HAL_Driver/Inc
+INC += -IcubeMXDrivers/STM32F4xx_HAL_Driver/Inc/Legacy
+INC += -IcubeMXDrivers/CMSIS/Device/ST/STM32F4xx/Include
+INC += -IcubeMXDrivers/CMSIS/Include
+INC += -IcubeMXDrivers/CMSIS/Include
 #does order matter?
-INC += -I./boards/$(BOARD)
+INC += -Iboards/$(BOARD)
 #INC += -I./peripherals
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
@@ -138,7 +138,6 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD
 # source
 ######################################
 
-# 	cubeMXsrc/stm32f4xx_it.c \
 SRC_STM32 = \
 	cubeMXsrc/stm32f4xx_it.c \
 	cubeMXsrc/stm32f4xx_hal_msp.c \

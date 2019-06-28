@@ -1,3 +1,0 @@
-TRANSLATE("stream operation not supported")
-TRANSLATE("string not supported; use bytes or bytearray")
-TRANSLATE("length argument not allowed for this type")

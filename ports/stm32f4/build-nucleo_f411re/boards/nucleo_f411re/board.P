@@ -1,5 +1,0 @@
-build-nucleo_f411re/boards/nucleo_f411re/board.o: \
- boards/nucleo_f411re/board.c boards/board.h \
- /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdbool.h
- boards/nucleo_f411re/board.c boards/board.h :
- /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdbool.h :

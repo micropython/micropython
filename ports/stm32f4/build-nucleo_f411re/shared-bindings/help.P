@@ -1,2 +1,0 @@
-build-nucleo_f411re/shared-bindings/help.o: ../../shared-bindings/help.c
-../../shared-bindings/help.c :

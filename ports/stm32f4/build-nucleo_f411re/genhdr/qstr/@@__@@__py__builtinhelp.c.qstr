@@ -1,3 +1,0 @@
-TRANSLATE("Plus any modules on the filesystem\n")
-Q(modules)
-TRANSLATE("Welcome to Adafruit CircuitPython %s!\n\nPlease visit learn.adafruit.com/category/circuitpython for project guides.\n\nTo list built-in modules please do `help(\"modules\")`.\n")

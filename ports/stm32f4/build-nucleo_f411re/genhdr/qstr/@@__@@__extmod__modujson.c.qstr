@@ -1,7 +1,0 @@
-TRANSLATE("syntax error in JSON")
-Q(__name__)
-Q(json)
-Q(dump)
-Q(dumps)
-Q(load)
-Q(loads)
