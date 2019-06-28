@@ -65,12 +65,12 @@ INC += -I$(BUILD)
 #keep?
 INC += -I$(BUILD)/genhdr
 #HAL SPECIFIC
-INC += -I./CubeMXInc
-INC += -I./CubeMXDrivers/STM32F4xx_HAL_DRIVER/Inc
-INC += -I./CubeMXDrivers/STM32F4xx_HAL_DRIVER/Inc/Legacy
-INC += -I./CubeMXDrivers/CMSIS/Device/ST/STM32F4xx/Include
-INC += -I./CubeMXDrivers/CMSIS/Include
-INC += -I./CubeMXDrivers/CMSIS/Include
+INC += -I./cubeMXInc
+INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc
+INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc/Legacy
+INC += -I./cubeMXDrivers/CMSIS/Device/ST/STM32F4xx/Include
+INC += -I./cubeMXDrivers/CMSIS/Include
+INC += -I./cubeMXDrivers/CMSIS/Include
 #does order matter?
 INC += -I./boards/$(BOARD)
 #INC += -I./peripherals
@@ -142,23 +142,23 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD
 SRC_STM32 = \
 	cubeMXsrc/stm32f4xx_it.c \
 	cubeMXsrc/stm32f4xx_hal_msp.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
-	CubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
-	CubeMXsrc/system_stm32f4xx.c  
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
+	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
+	cubeMXsrc/system_stm32f4xx.c  
 
 
 SRC_C += \
