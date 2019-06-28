@@ -165,6 +165,7 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
+	boards/$(BOARD)/board.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
