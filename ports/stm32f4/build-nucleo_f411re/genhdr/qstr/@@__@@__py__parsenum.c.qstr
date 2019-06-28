@@ -1,0 +1,4 @@
+TRANSLATE("int() arg 2 must be >= 2 and <= 36")
+TRANSLATE("invalid syntax for integer")
+TRANSLATE("invalid syntax for integer with base %d")
+TRANSLATE("invalid syntax for number")

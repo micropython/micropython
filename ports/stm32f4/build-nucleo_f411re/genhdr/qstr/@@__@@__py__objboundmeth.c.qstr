@@ -1,0 +1,3 @@
+Q(__name__)
+Q(__func__)
+Q(bound_method)

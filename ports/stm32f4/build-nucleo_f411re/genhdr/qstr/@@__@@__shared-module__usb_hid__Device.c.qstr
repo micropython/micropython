@@ -1,0 +1,3 @@
+TRANSLATE("Buffer incorrect size. Should be %d bytes.")
+TRANSLATE("USB Busy")
+TRANSLATE("USB Error")

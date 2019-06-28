@@ -1,0 +1,5 @@
+Q(__name__)
+Q(usb_midi)
+Q(ports)
+Q(PortIn)
+Q(PortOut)

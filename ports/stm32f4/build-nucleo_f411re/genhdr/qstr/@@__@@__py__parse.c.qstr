@@ -1,0 +1,7 @@
+Q(errno)
+Q(const)
+TRANSLATE("constant must be an integer")
+TRANSLATE("Unable to init parser")
+TRANSLATE("unexpected indent")
+TRANSLATE("unindent does not match any outer indentation level")
+TRANSLATE("invalid syntax")

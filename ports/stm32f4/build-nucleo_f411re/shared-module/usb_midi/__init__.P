@@ -1,0 +1,167 @@
+build-nucleo_f411re/shared-module/usb_midi/__init__.o: \
+ ../../shared-module/usb_midi/__init__.c \
+ ../../shared-bindings/usb_midi/__init__.h ../../py/obj.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdarg.h \
+ ../../py/mpconfig.h mpconfigport.h ../../py/circuitpy_mpconfig.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdint.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/stdint.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/_default_types.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/features.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/_newlib_version.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_intsup.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_stdint.h \
+ boards/nucleo_f411re/mpconfigboard.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/alloca.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/_ansi.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/newlib.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/config.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/ieeefp.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/reent.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/_ansi.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stddef.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_types.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/_types.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/lock.h \
+ ../../supervisor/flash_root_pointers.h \
+ supervisor/internal_flash_root_pointers.h ../../py/misc.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdbool.h \
+ ../../py/mpconfig.h ../../py/qstr.h \
+ build-nucleo_f411re/genhdr/qstrdefs.enum.h ../../py/mpprint.h \
+ ../../py/runtime0.h ../../supervisor/shared/translate.h \
+ build-nucleo_f411re/genhdr/autogen_usb_descriptor.h ../../py/mphal.h \
+ mphalport.h ../../lib/utils/interrupt_char.h ../../extmod/virtpin.h \
+ ../../py/runtime.h ../../py/mpstate.h ../../py/mpthread.h ../../py/nlr.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include-fixed/limits.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include-fixed/syslimits.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/limits.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/cdefs.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/assert.h \
+ ../../py/objlist.h ../../py/objexcept.h ../../py/objtuple.h \
+ ../../py/pystack.h ../../shared-bindings/usb_midi/PortIn.h \
+ ../../shared-module/usb_midi/PortIn.h \
+ ../../shared-bindings/usb_midi/PortOut.h \
+ ../../shared-module/usb_midi/PortOut.h ../../supervisor/memory.h \
+ ../../lib/tinyusb/src/tusb.h ../../lib/tinyusb/src/common/tusb_common.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/string.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/xlocale.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/strings.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/string.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/stdio.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/types.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/endian.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/_endian.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/select.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_sigset.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_timeval.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/timespec.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_timespec.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_pthreadtypes.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/sched.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/types.h \
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/stdio.h \
+ ../../lib/tinyusb/src/tusb_option.h \
+ ../../supervisor/shared/usb/tusb_config.h \
+ ../../lib/tinyusb/src/common/tusb_compiler.h \
+ ../../lib/tinyusb/src/common/compiler/tusb_compiler_gcc.h \
+ ../../lib/tinyusb/src/common/tusb_verify.h \
+ ../../lib/tinyusb/src/common/tusb_error.h \
+ ../../lib/tinyusb/src/common/tusb_timeout.h \
+ ../../lib/tinyusb/src/common/tusb_types.h \
+ ../../lib/tinyusb/src/osal/osal.h \
+ ../../lib/tinyusb/src/common/tusb_common.h \
+ ../../lib/tinyusb/src/osal/osal_none.h \
+ ../../lib/tinyusb/src/common/tusb_fifo.h \
+ ../../lib/tinyusb/src/common/tusb_fifo.h \
+ ../../lib/tinyusb/src/device/usbd.h ../../lib/tinyusb/src/device/dcd.h \
+ ../../lib/tinyusb/src/class/hid/hid_device.h \
+ ../../lib/tinyusb/src/device/usbd.h \
+ ../../lib/tinyusb/src/class/hid/hid.h \
+ ../../lib/tinyusb/src/class/cdc/cdc_device.h \
+ ../../lib/tinyusb/src/class/cdc/cdc.h \
+ ../../lib/tinyusb/src/class/msc/msc_device.h \
+ ../../lib/tinyusb/src/class/msc/msc.h \
+ ../../lib/tinyusb/src/class/midi/midi_device.h \
+ ../../lib/tinyusb/src/class/audio/audio.h
+ ../../shared-module/usb_midi/__init__.c :
+ ../../shared-bindings/usb_midi/__init__.h ../../py/obj.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdarg.h :
+ ../../py/mpconfig.h mpconfigport.h ../../py/circuitpy_mpconfig.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdint.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/stdint.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/_default_types.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/features.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/_newlib_version.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_intsup.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_stdint.h :
+ boards/nucleo_f411re/mpconfigboard.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/alloca.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/_ansi.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/newlib.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/config.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/ieeefp.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/reent.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/_ansi.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stddef.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_types.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/_types.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/lock.h :
+ ../../supervisor/flash_root_pointers.h :
+ supervisor/internal_flash_root_pointers.h ../../py/misc.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include/stdbool.h :
+ ../../py/mpconfig.h ../../py/qstr.h :
+ build-nucleo_f411re/genhdr/qstrdefs.enum.h ../../py/mpprint.h :
+ ../../py/runtime0.h ../../supervisor/shared/translate.h :
+ build-nucleo_f411re/genhdr/autogen_usb_descriptor.h ../../py/mphal.h :
+ mphalport.h ../../lib/utils/interrupt_char.h ../../extmod/virtpin.h :
+ ../../py/runtime.h ../../py/mpstate.h ../../py/mpthread.h ../../py/nlr.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include-fixed/limits.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/lib/gcc/arm-none-eabi/7.3.1/include-fixed/syslimits.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/limits.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/cdefs.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/assert.h :
+ ../../py/objlist.h ../../py/objexcept.h ../../py/objtuple.h :
+ ../../py/pystack.h ../../shared-bindings/usb_midi/PortIn.h :
+ ../../shared-module/usb_midi/PortIn.h :
+ ../../shared-bindings/usb_midi/PortOut.h :
+ ../../shared-module/usb_midi/PortOut.h ../../supervisor/memory.h :
+ ../../lib/tinyusb/src/tusb.h ../../lib/tinyusb/src/common/tusb_common.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/string.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/xlocale.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/strings.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/string.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/stdio.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/types.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/endian.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/_endian.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/select.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_sigset.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_timeval.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/timespec.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_timespec.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/_pthreadtypes.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/sched.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/machine/types.h :
+ /usr/local/Caskroom/gcc-arm-embedded/7-2018-q2-update/gcc-arm-none-eabi-7-2018-q2-update/arm-none-eabi/include/sys/stdio.h :
+ ../../lib/tinyusb/src/tusb_option.h :
+ ../../supervisor/shared/usb/tusb_config.h :
+ ../../lib/tinyusb/src/common/tusb_compiler.h :
+ ../../lib/tinyusb/src/common/compiler/tusb_compiler_gcc.h :
+ ../../lib/tinyusb/src/common/tusb_verify.h :
+ ../../lib/tinyusb/src/common/tusb_error.h :
+ ../../lib/tinyusb/src/common/tusb_timeout.h :
+ ../../lib/tinyusb/src/common/tusb_types.h :
+ ../../lib/tinyusb/src/osal/osal.h :
+ ../../lib/tinyusb/src/common/tusb_common.h :
+ ../../lib/tinyusb/src/osal/osal_none.h :
+ ../../lib/tinyusb/src/common/tusb_fifo.h :
+ ../../lib/tinyusb/src/common/tusb_fifo.h :
+ ../../lib/tinyusb/src/device/usbd.h ../../lib/tinyusb/src/device/dcd.h :
+ ../../lib/tinyusb/src/class/hid/hid_device.h :
+ ../../lib/tinyusb/src/device/usbd.h :
+ ../../lib/tinyusb/src/class/hid/hid.h :
+ ../../lib/tinyusb/src/class/cdc/cdc_device.h :
+ ../../lib/tinyusb/src/class/cdc/cdc.h :
+ ../../lib/tinyusb/src/class/msc/msc_device.h :
+ ../../lib/tinyusb/src/class/msc/msc.h :
+ ../../lib/tinyusb/src/class/midi/midi_device.h :
+ ../../lib/tinyusb/src/class/audio/audio.h :

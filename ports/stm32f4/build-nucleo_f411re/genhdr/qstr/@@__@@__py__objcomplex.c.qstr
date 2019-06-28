@@ -1,0 +1,6 @@
+Q(real)
+Q(imag)
+Q(complex)
+TRANSLATE("can't do truncated division of a complex number")
+TRANSLATE("complex division by zero")
+TRANSLATE("0.0 to a complex power")

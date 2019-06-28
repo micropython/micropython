@@ -1,0 +1,4 @@
+TRANSLATE("__new__ arg must be a user-type")
+Q(__init__)
+Q(__new__)
+Q(object)

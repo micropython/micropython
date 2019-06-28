@@ -1,0 +1,4 @@
+TRANSLATE("a bytes-like object is required")
+TRANSLATE("odd-length string")
+TRANSLATE("non-hex digit found")
+TRANSLATE("incorrect padding")
