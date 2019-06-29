@@ -29,7 +29,6 @@ class BitmapStub:
         self.rows[y] = bytes(row)
 
 f = bitmap_font.load_font(args.font, BitmapStub)
-real_bb = [0, 0]
 
 # Load extra characters from the sample file.
 sample_characters = set()
@@ -61,13 +60,11 @@ for c in all_characters:
         print("Font missing character:", c, ord(c))
         filtered_characters = filtered_characters.replace(c, "")
         continue
-    x, y, dx, dy = g["bounds"]
     if g["shift"][1] != 0:
         raise RuntimeError("y shift")
-    real_bb[0] = max(real_bb[0], x - dx)
-    real_bb[1] = max(real_bb[1], y - dy)
 
-tile_x, tile_y = real_bb
+x, y, dx, dy = f.get_bounding_box()
+tile_x, tile_y = x - dx, y - dy
 total_bits = tile_x * len(all_characters)
 total_bits += 32 - total_bits % 32
 bytes_per_row = total_bits // 8
