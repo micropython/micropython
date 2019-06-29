@@ -60,7 +60,7 @@ STATIC uint16_t get_cccd(bleio_characteristic_obj_t *characteristic) {
 }
 
 STATIC void gatts_read(bleio_characteristic_obj_t *characteristic) {
-    // This might be BLE_CONN_HANDLE_INVALID if we're not conected, but that's OK, because
+    // This might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
     // we can still read and write the local value.
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
 
@@ -135,8 +135,15 @@ STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp
 
 }
 
+STATIC void check_connected(uint16_t conn_handle) {
+    if (conn_handle == BLE_CONN_HANDLE_INVALID) {
+        mp_raise_OSError_msg(translate("Not connected"));
+    }
+}
+
 STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
+    check_connected(conn_handle);
 
     m_read_characteristic = characteristic;
 
@@ -152,6 +159,7 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
 
 STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
+    check_connected(conn_handle);
 
     ble_gattc_write_params_t write_params = {
         .flags = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL,

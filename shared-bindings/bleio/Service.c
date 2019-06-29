@@ -140,11 +140,13 @@ const mp_obj_property_t bleio_service_secondary_obj = {
 //|   .. attribute:: uuid
 //|
 //|     The UUID of this service. (read-only)
+//|       Will be ``None`` if the 128-bit UUID for this service is not known.
 //|
 STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_FROM_PTR(common_hal_bleio_service_get_uuid(self));
+    bleio_uuid_obj_t *uuid = common_hal_bleio_service_get_uuid(self);
+    return uuid ? MP_OBJ_FROM_PTR(uuid) : mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_uuid);
 
@@ -160,12 +162,23 @@ STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_secondary),          MP_ROM_PTR(&bleio_service_secondary_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),               MP_ROM_PTR(&bleio_service_uuid_obj) },
 };
-
 STATIC MP_DEFINE_CONST_DICT(bleio_service_locals_dict, bleio_service_locals_dict_table);
+
+STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "Service(");
+    if (self->uuid) {
+        bleio_uuid_print(print, MP_OBJ_FROM_PTR(self->uuid), kind);
+    } else {
+        mp_printf(print, "unregistered UUID");
+    }
+    mp_printf(print, ")");
+}
 
 const mp_obj_type_t bleio_service_type = {
     { &mp_type_type },
     .name = MP_QSTR_Service,
     .make_new = bleio_service_make_new,
+    .print = bleio_service_print,
     .locals_dict = (mp_obj_dict_t*)&bleio_service_locals_dict
 };

@@ -91,7 +91,7 @@ INC += -I../../supervisor/shared/usb
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
   # You may want to enable these flags to make setting breakpoints easier.
-  # CFLAGS += -fno-inline -fno-ipa-sra
+  CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -Os -DNDEBUG
   # TODO: Test with -flto

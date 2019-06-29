@@ -50,6 +50,9 @@
 //|   - a buffer object (bytearray, bytes) of 16 bytes in little-endian order (128-bit UUID)
 //|   - a string of hex digits of the form 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
 //|
+//|   Creating a 128-bit UUID registers the UUID with the onboard BLE software, and provides a
+//|   temporary 16-bit UUID that can be used in place of the full 128-bit UUID.
+//|
 //|   :param value: The uuid value to encapsulate
 //|   :type value: int or typing.ByteString
 //|

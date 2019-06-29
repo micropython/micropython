@@ -33,8 +33,8 @@
 
 extern const mp_obj_type_t bleio_central_type;
 
-extern void common_hal_bleio_central_construct(bleio_central_obj_t *self, bleio_address_obj_t *address);
-extern void common_hal_bleio_central_connect(bleio_central_obj_t *self, mp_float_t timeout);
+extern void common_hal_bleio_central_construct(bleio_central_obj_t *self);
+extern void common_hal_bleio_central_connect(bleio_central_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout, mp_obj_t service_uuids);
 extern void common_hal_bleio_central_disconnect(bleio_central_obj_t *self);
 extern mp_obj_t common_hal_bleio_central_get_remote_services(bleio_central_obj_t *self);
 

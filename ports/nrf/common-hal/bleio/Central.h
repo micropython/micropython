@@ -36,8 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     gatt_role_t gatt_role;
-    bleio_address_obj_t address;
-    volatile bool attempting_to_connect;
+    volatile bool waiting_to_connect;
     volatile uint16_t conn_handle;
     mp_obj_t service_list;
 } bleio_central_obj_t;

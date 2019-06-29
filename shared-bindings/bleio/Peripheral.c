@@ -113,7 +113,7 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_obj_t service;
     while ((service = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!MP_OBJ_IS_TYPE(service, &bleio_service_type)) {
-            mp_raise_ValueError(translate("services includes an object that is not a Service"));
+            mp_raise_ValueError(translate("non-Service found in services"));
         }
         mp_obj_list_append(service_list, service);
     }
@@ -237,7 +237,7 @@ STATIC mp_obj_t bleio_peripheral_start_advertising(mp_uint_t n_args, const mp_ob
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_peripheral_start_advertising_obj, 0, bleio_peripheral_start_advertising);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_peripheral_start_advertising_obj, 2, bleio_peripheral_start_advertising);
 
 //|   .. method:: stop_advertising()
 //|
