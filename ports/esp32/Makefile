@@ -220,10 +220,26 @@ LIB_SRC_C += \
 endif
 
 ifeq ($(MICROPY_PY_LVGL), 1)
+
+#esp-idf generated module
+ESPIDFMOD_SOURCE = $(TOP)/lib/lv_bindings/driver/esp32/espidf.h
+ALL_ESPIDFMOD_SRC = $(shell find $(subst -I,,$(INC_ESPCOMP)) -type f) $(ESPIDFMOD_SOURCE)
+ESPIDFMOD_MODULE = $(BUILD)/espidfmod/mp_espidf.c
+ESPIDFMOD_PP = $(BUILD)/espidfmod/mp_espidf.pp.c
+ESPIDFMOD_CFLAGS = -Wno-deprecated-declarations
+CFLAGS_MOD += $(ESPIDFMOD_CFLAGS) 
+
+$(ESPIDFMOD_MODULE): $(ALL_ESPIDFMOD_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
+	$(ECHO) "ESPIDFMOD-GEN $@"
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CPP) $(ESPIDFMOD_CFLAGS) -DPYCPARSER -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(INC) $(INC_ESPCOMP) $(ESPIDFMOD_SOURCE) > $(ESPIDFMOD_PP)
+	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -M espidf -E $(ESPIDFMOD_PP) $(ESPIDFMOD_SOURCE) > $@
+
 LIB_SRC_C += \
 	lib/lv_bindings/driver/esp32/modlvesp32.c \
 	lib/lv_bindings/driver/esp32/modILI9341.c \
-	lib/lv_bindings/driver/esp32/modrtch.c
+	lib/lv_bindings/driver/esp32/modrtch.c \
+	$(ESPIDFMOD_MODULE)
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
