@@ -401,14 +401,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("FOR_ITER " UINT_FMT, (mp_uint_t)(ip + unum - mp_showbc_code_start));
             break;
 
-        case MP_BC_POP_BLOCK:
-            // pops block and restores the stack
-            printf("POP_BLOCK");
-            break;
-
-        case MP_BC_POP_EXCEPT:
-            // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
-            printf("POP_EXCEPT");
+        case MP_BC_POP_EXCEPT_JUMP:
+            DECODE_ULABEL; // these labels are always forward
+            printf("POP_EXCEPT_JUMP " UINT_FMT, (mp_uint_t)(ip + unum - mp_showbc_code_start));
             break;
 
         case MP_BC_BUILD_TUPLE:

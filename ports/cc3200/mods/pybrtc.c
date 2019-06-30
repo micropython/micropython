@@ -367,7 +367,7 @@ STATIC mp_obj_t pyb_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     uint32_t f_seconds;
     uint16_t f_mseconds;
     bool repeat = args[2].u_bool;
-    if (MP_OBJ_IS_TYPE(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
+    if (mp_obj_is_type(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
         // repeat cannot be used with a datetime tuple
         if (repeat) {
             mp_raise_ValueError(mpexception_value_invalid_arguments);

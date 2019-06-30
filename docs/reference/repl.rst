@@ -174,8 +174,8 @@ variables no longer exist:
 
 .. code-block:: python
 
-    PYB: sync filesystems
-    PYB: soft reboot
+    MPY: sync filesystems
+    MPY: soft reboot
     MicroPython v1.5-51-g6f70283-dirty on 2015-10-30; PYBv1.0 with STM32F405RG
     Type "help()" for more information.
     >>> dir()

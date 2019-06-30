@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +31,8 @@
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
+
+#include "genhdr/moduledefs.h"
 
 STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -136,9 +139,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     { MP_ROM_QSTR(MP_QSTR_builtins), MP_ROM_PTR(&mp_module_builtins) },
     { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
 
-#if MICROPY_PY_ARRAY
-    { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mp_module_array) },
-#endif
 #if MICROPY_PY_IO
     { MP_ROM_QSTR(MP_QSTR_uio), MP_ROM_PTR(&mp_module_io) },
 #endif
@@ -211,8 +211,8 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_LWIP
     { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
 #endif
-#if MICROPY_PY_WEBSOCKET
-    { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&mp_module_websocket) },
+#if MICROPY_PY_UWEBSOCKET
+    { MP_ROM_QSTR(MP_QSTR_uwebsocket), MP_ROM_PTR(&mp_module_uwebsocket) },
 #endif
 #if MICROPY_PY_WEBREPL
     { MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&mp_module_webrepl) },
@@ -226,6 +226,11 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
+
+    #ifdef MICROPY_REGISTERED_MODULES
+    // builtin modules declared with MP_REGISTER_MODULE()
+    MICROPY_REGISTERED_MODULES
+    #endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);

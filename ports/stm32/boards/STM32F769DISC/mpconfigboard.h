@@ -7,10 +7,13 @@
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
-#define MICROPY_HW_HAS_SDCARD       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SDCARD    (1)
+
+#define MICROPY_BOARD_EARLY_INIT    board_early_init
+void board_early_init(void);
 
 // HSE is 25MHz
 // VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
@@ -22,6 +25,15 @@
 #define MICROPY_HW_CLK_PLLQ (9)
 
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
+
+// 512MBit external QSPI flash, to be memory mapped
+#define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (29)
+#define MICROPY_HW_QSPIFLASH_CS     (pin_B6)
+#define MICROPY_HW_QSPIFLASH_SCK    (pin_B2)
+#define MICROPY_HW_QSPIFLASH_IO0    (pin_C9)
+#define MICROPY_HW_QSPIFLASH_IO1    (pin_C10)
+#define MICROPY_HW_QSPIFLASH_IO2    (pin_E2)
+#define MICROPY_HW_QSPIFLASH_IO3    (pin_D13)
 
 // UART config
 #define MICROPY_HW_UART1_TX         (pin_A9)
@@ -73,11 +85,19 @@
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
-// USB config (CN13 - USB OTG FS)
-#define MICROPY_HW_USB_HS              (1)
-#define MICROPY_HW_USB_HS_IN_FS        (1)
-/*#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_J12)*/
-#define MICROPY_HW_USB_OTG_ID_PIN      (pin_J12)
+// USB config (CN15 - USB OTG HS with external PHY)
+#define MICROPY_HW_USB_HS (1)
+
+// Ethernet via RMII
+#define MICROPY_HW_ETH_MDC          (pin_C1)
+#define MICROPY_HW_ETH_MDIO         (pin_A2)
+#define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
+#define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)
+#define MICROPY_HW_ETH_RMII_RXD0    (pin_C4)
+#define MICROPY_HW_ETH_RMII_RXD1    (pin_C5)
+#define MICROPY_HW_ETH_RMII_TX_EN   (pin_G11)
+#define MICROPY_HW_ETH_RMII_TXD0    (pin_G13)
+#define MICROPY_HW_ETH_RMII_TXD1    (pin_G14)
 
 #if 0
 // Optional SDRAM configuration; requires SYSCLK <= 200MHz
@@ -167,3 +187,16 @@
 #define MICROPY_HW_FMC_D30     (pyb_pin_FMC_D30)
 #define MICROPY_HW_FMC_D31     (pyb_pin_FMC_D31)
 #endif
+
+/******************************************************************************/
+// Bootloader configuration
+
+// Give Mboot access to the external QSPI flash
+extern const struct _mp_spiflash_config_t spiflash_config;
+extern struct _mp_spiflash_t spiflash_instance;
+#define MBOOT_SPIFLASH_ADDR                     (0x90000000)
+#define MBOOT_SPIFLASH_BYTE_SIZE                (512 * 128 * 1024)
+#define MBOOT_SPIFLASH_LAYOUT                   "/0x90000000/512*128Kg"
+#define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE    (128 / 4) // 128k page, 4k erase block
+#define MBOOT_SPIFLASH_CONFIG                   (&spiflash_config)
+#define MBOOT_SPIFLASH_SPIFLASH                 (&spiflash_instance)

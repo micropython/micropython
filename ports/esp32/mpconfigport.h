@@ -142,12 +142,13 @@
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hw_spi_make_new
+#define MICROPY_HW_ENABLE_SDCARD            (1)
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (ets_get_cpu_frequency() * 1000000 / 200) // roughly
 #define MICROPY_PY_USSL                     (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_USSL_FINALISER           (1)
-#define MICROPY_PY_WEBSOCKET                (1)
+#define MICROPY_PY_UWEBSOCKET               (1)
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
@@ -156,7 +157,7 @@
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (4096)
-#define MICROPY_FATFS_LFN_CODE_PAGE         (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define mp_type_fileio                      mp_type_vfs_fat_fileio
 #define mp_type_textio                      mp_type_vfs_fat_textio
 
@@ -227,10 +228,15 @@ extern const struct _mp_obj_module_t mp_module_rtch;
 #define LV_ROOTS
 #endif
 
+struct _machine_timer_obj_t;
+
+
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
+    void *mp_lv_user_data; \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
+    struct _machine_timer_obj_t *machine_timer_obj_head; \
 
 // type definitions for the specific machine
 

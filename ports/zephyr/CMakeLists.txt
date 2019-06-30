@@ -17,6 +17,7 @@ zephyr_get_compile_options_for_lang_as_string(C options)
 add_custom_target(
   outputexports
   COMMAND echo CC="${CMAKE_C_COMPILER}"
+  COMMAND echo AR="${CMAKE_AR}"
   COMMAND echo Z_CFLAGS=${system_includes} ${includes} ${definitions} ${options}
   VERBATIM
   USES_TERMINAL

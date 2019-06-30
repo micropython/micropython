@@ -96,8 +96,8 @@ If something goes wrong, you can reset the board in two ways. The first is to pr
 at the MicroPython prompt, which performs a soft reset.  You will see a message something like ::
 
     >>> 
-    PYB: sync filesystems
-    PYB: soft reboot
+    MPY: sync filesystems
+    MPY: soft reboot
     Micro Python v1.0 on 2014-05-03; PYBv1.0 with STM32F405RG
     Type "help()" for more information.
     >>>

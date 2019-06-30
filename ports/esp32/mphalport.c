@@ -148,15 +148,6 @@ void mp_hal_delay_us(uint32_t us) {
     }
 }
 
-// this function could do with improvements (eg use ets_delay_us)
-void mp_hal_delay_us_fast(uint32_t us) {
-    uint32_t delay = ets_get_cpu_frequency() / 19;
-    while (--us) {
-        for (volatile uint32_t i = delay; i; --i) {
-        }
-    }
-}
-
 /*
 extern int mp_stream_errno;
 int *__errno() {

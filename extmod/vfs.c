@@ -227,7 +227,7 @@ mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
     mp_vfs_mount_t *vfs = NULL;
     size_t mnt_len;
     const char *mnt_str = NULL;
-    if (MP_OBJ_IS_STR(mnt_in)) {
+    if (mp_obj_is_str(mnt_in)) {
         mnt_str = mp_obj_str_get_data(mnt_in, &mnt_len);
     }
     for (mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
@@ -270,7 +270,7 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 
     #if MICROPY_VFS_POSIX
     // If the file is an integer then delegate straight to the POSIX handler
-    if (MP_OBJ_IS_SMALL_INT(args[ARG_file].u_obj)) {
+    if (mp_obj_is_small_int(args[ARG_file].u_obj)) {
         return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
     }
     #endif

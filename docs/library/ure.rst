@@ -175,7 +175,7 @@ Match objects
 Match objects as returned by `match()` and `search()` methods, and passed
 to the replacement function in `sub()`.
 
-.. method:: match.group([index])
+.. method:: match.group(index)
 
    Return matching (sub)string. *index* is 0 for entire match,
    1 and above for each capturing group. Only numeric groups are supported.

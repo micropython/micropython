@@ -87,7 +87,7 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
 
     mp_int_t len;
     byte *buf;
-    bool alloc_buf = MP_OBJ_IS_INT(len_or_buf_in);
+    bool alloc_buf = mp_obj_is_int(len_or_buf_in);
 
     if (alloc_buf) {
         len = mp_obj_get_int(len_or_buf_in);

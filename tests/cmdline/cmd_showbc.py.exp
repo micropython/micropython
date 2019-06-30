@@ -257,15 +257,12 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ JUMP \\d\+
 \\d\+ LOAD_FAST 0
 \\d\+ POP_JUMP_IF_TRUE \\d\+
-\\d\+ POP_BLOCK
-\\d\+ JUMP \\d\+
+\\d\+ POP_EXCEPT_JUMP \\d\+
 \\d\+ POP_TOP
 \\d\+ LOAD_DEREF 14
 \\d\+ POP_TOP
-\\d\+ POP_EXCEPT
-\\d\+ JUMP \\d\+
+\\d\+ POP_EXCEPT_JUMP \\d\+
 \\d\+ END_FINALLY
-\\d\+ POP_BLOCK
 \\d\+ LOAD_CONST_NONE
 \\d\+ LOAD_FAST 1
 \\d\+ POP_TOP
@@ -273,11 +270,9 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ JUMP \\d\+
 \\d\+ SETUP_EXCEPT \\d\+
 \\d\+ UNWIND_JUMP \\d\+ 1
-\\d\+ POP_BLOCK
-\\d\+ JUMP \\d\+
+\\d\+ POP_EXCEPT_JUMP \\d\+
 \\d\+ POP_TOP
-\\d\+ POP_EXCEPT
-\\d\+ JUMP \\d\+
+\\d\+ POP_EXCEPT_JUMP \\d\+
 \\d\+ END_FINALLY
 \\d\+ LOAD_FAST 0
 \\d\+ POP_JUMP_IF_TRUE \\d\+
@@ -286,7 +281,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ POP_TOP
 \\d\+ LOAD_DEREF 14
 \\d\+ POP_TOP
-\\d\+ POP_BLOCK
 \\d\+ LOAD_CONST_NONE
 \\d\+ WITH_CLEANUP
 \\d\+ END_FINALLY

@@ -128,6 +128,8 @@ with timer ID of -1::
 
 The period is in milliseconds.
 
+.. _Pins_and_GPIO:
+
 Pins and GPIO
 -------------
 
@@ -160,6 +162,9 @@ Notes:
   and are not recommended for other uses
 
 * Pins 34-39 are input only, and also do not have internal pull-up resistors
+
+* The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
+  consumption during deepsleep.
 
 PWM (pulse width modulation)
 ----------------------------
@@ -271,8 +276,13 @@ class::
 Hardware SPI bus
 ----------------
 
-There are two hardware SPI channels that allow faster (up to 80Mhz)
-transmission rates, but are only supported on a subset of pins.
+There are two hardware SPI channels that allow faster transmission
+rates (up to 80Mhz). These may be used on any IO pins that support the
+required direction and are otherwise unused (see :ref:`Pins_and_GPIO`)
+but if they are not configured to their default pins then they need to
+pass through an extra layer of GPIO multiplexing, which can impact
+their reliability at high speeds. Hardware SPI channels are limited
+to 40MHz when used on pins other than the default ones listed below.
 
 =====  ===========  ============
 \      HSPI (id=1)   VSPI (id=2)
@@ -337,6 +347,15 @@ Notes:
 * Calling ``deepsleep()`` without an argument will put the device to sleep
   indefinitely
 * A software reset does not change the reset cause
+* There may be some leakage current flowing through enabled internal pullups.
+  To further reduce power consumption it is possible to disable the internal pullups::
+
+    p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
+    
+  After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
+  it is an output pin) via::
+    
+    p1 = Pin(4, Pin.OUT, None)
 
 OneWire driver
 --------------
@@ -421,7 +440,7 @@ Note that TouchPads can be used to wake an ESP32 from sleep::
     t = TouchPad(Pin(14))
     t.config(500)               # configure the threshold at which the pin is considered touched
     esp32.wake_on_touch(True)
-    machine.sleep()             # put the MCU to sleep until a touchpad is touched
+    machine.lightsleep()        # put the MCU to sleep until a touchpad is touched
 
 For more details on touchpads refer to `Espressif Touch Sensor
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/touch_pad.html>`_.

@@ -30,13 +30,6 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
         }
 #endif
 #endif
-
-        #if MICROPY_HW_ENABLE_USB
-        byte c;
-        if (usb_vcp_recv_byte(&c) != 0) {
-            return c;
-        }
-        #endif
         if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
@@ -59,11 +52,6 @@ MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 #if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
 #endif
-    #if MICROPY_HW_ENABLE_USB
-    if (usb_vcp_is_enabled()) {
-        usb_vcp_send_strn(str, len);
-    }
-    #endif
     mp_uos_dupterm_tx_strn(str, len);
 }
 
@@ -161,4 +149,47 @@ void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed) {
     GPIO_TypeDef *gpio = pin_obj->gpio;
     uint32_t pin = pin_obj->pin;
     gpio->OSPEEDR = (gpio->OSPEEDR & ~(3 << (2 * pin))) | (speed << (2 * pin));
+}
+
+/*******************************************************************************/
+// MAC address
+
+typedef struct _pyb_otp_t {
+    uint16_t series;
+    uint16_t rev;
+    uint8_t mac[6];
+} pyb_otp_t;
+
+#if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
+#define OTP_ADDR (0x1ff079e0)
+#else
+#define OTP_ADDR (0x1ff0f3c0)
+#endif
+#define OTP ((pyb_otp_t*)OTP_ADDR)
+
+MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    // Check if OTP region has a valid MAC address, and use it if it does
+    if (OTP->series == 0x00d1 && OTP->mac[0] == 'H' && OTP->mac[1] == 'J' && OTP->mac[2] == '0') {
+        memcpy(buf, OTP->mac, 6);
+        buf[5] += idx;
+        return;
+    }
+
+    // Generate a random locally administered MAC address (LAA)
+    uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
+    buf[0] = 0x02; // LAA range
+    buf[1] = (id[11] << 4) | (id[10] & 0xf);
+    buf[2] = (id[9] << 4) | (id[8] & 0xf);
+    buf[3] = (id[7] << 4) | (id[6] & 0xf);
+    buf[4] = id[2];
+    buf[5] = (id[0] << 2) | idx;
+}
+
+void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
+    static const char hexchr[16] = "0123456789ABCDEF";
+    uint8_t mac[6];
+    mp_hal_get_mac(idx, mac);
+    for (; chr_len; ++chr_off, --chr_len) {
+        *dest++ = hexchr[mac[chr_off >> 1] >> (4 * (1 - (chr_off & 1))) & 0xf];
+    }
 }

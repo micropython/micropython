@@ -1,0 +1,11 @@
+MemoryError: bytearray create
+MemoryError: bytearray create from bytes
+MemoryError: bytearray create from iter
+MemoryError: bytearray.__add__
+MemoryError: bytearray.__iadd__
+bytearray(b'\x00\x00\x00\x00')
+MemoryError: bytearray.append
+MemoryError: bytearray.extend
+MemoryError: bytearray subscr get
+MemoryError: bytearray subscr grow
+bytearray(b'\x00\x00\x00\x00')

@@ -1,8 +1,8 @@
 .. currentmodule:: machine
 .. _machine.SD:
 
-class SD -- secure digital memory card
-======================================
+class SD -- secure digital memory card (cc3200 port only)
+=========================================================
 
 .. warning::
 

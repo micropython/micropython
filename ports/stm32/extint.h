@@ -34,8 +34,13 @@
 // Use the following constants for the internal sources:
 
 #define EXTI_PVD_OUTPUT         (16)
+#if defined(STM32L4)
+#define EXTI_RTC_ALARM          (18)
+#define EXTI_USB_OTG_FS_WAKEUP  (17)
+#else
 #define EXTI_RTC_ALARM          (17)
 #define EXTI_USB_OTG_FS_WAKEUP  (18)
+#endif
 #define EXTI_ETH_WAKEUP         (19)
 #define EXTI_USB_OTG_HS_WAKEUP  (20)
 #if defined(STM32F0) || defined(STM32L4)
@@ -54,13 +59,6 @@
 
 #define EXTI_NUM_VECTORS        (PYB_EXTI_NUM_VECTORS)
 
-#define EXTI_MODE_INTERRUPT     (offsetof(EXTI_TypeDef, IMR))
-#define EXTI_MODE_EVENT         (offsetof(EXTI_TypeDef, EMR))
-
-#define EXTI_TRIGGER_RISING         (offsetof(EXTI_TypeDef, RTSR))
-#define EXTI_TRIGGER_FALLING        (offsetof(EXTI_TypeDef, FTSR))
-#define EXTI_TRIGGER_RISING_FALLING (EXTI_TRIGGER_RISING + EXTI_TRIGGER_FALLING)  // just different from RISING or FALLING
-
 void extint_init0(void);
 
 uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj);
@@ -69,6 +67,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
 void extint_enable(uint line);
 void extint_disable(uint line);
 void extint_swint(uint line);
+void extint_trigger_mode(uint line, uint32_t mode);
 
 void Handle_EXTI_Irq(uint32_t line);
 

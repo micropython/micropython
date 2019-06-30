@@ -40,16 +40,19 @@
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-#include "lwip/pppapi.h"
+#include "netif/ppp/pppapi.h"
+
+#define PPP_CLOSE_TIMEOUT_MS (4000)
 
 typedef struct _ppp_if_obj_t {
     mp_obj_base_t base;
     bool active;
     bool connected;
+    volatile bool clean_close;
     ppp_pcb *pcb;
     mp_obj_t stream;
     SemaphoreHandle_t inactiveWaitSem;
-    TaskHandle_t client_task_handle;
+    volatile TaskHandle_t client_task_handle;
     struct netif pppif;
 } ppp_if_obj_t;
 
@@ -64,7 +67,7 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
             self->connected = (pppif->ip_addr.u_addr.ip4.addr != 0);
             break;
         case PPPERR_USER:
-            xSemaphoreGive(self->inactiveWaitSem);
+            self->clean_close = true;
             break;
         case PPPERR_CONNECT:
             self->connected = false;
@@ -83,10 +86,9 @@ STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {
     self->stream = stream;
     self->active = false;
     self->connected = false;
-    self->inactiveWaitSem = xSemaphoreCreateBinary();
+    self->clean_close = false;
     self->client_task_handle = NULL;
 
-    assert(self->inactiveWaitSem != NULL);
     return MP_OBJ_FROM_PTR(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ppp_make_new_obj, ppp_make_new);
@@ -108,6 +110,8 @@ static void pppos_client_task(void *self_in) {
             pppos_input_tcpip(self->pcb, (u8_t*)buf, len);
         }
     }
+
+    self->client_task_handle = NULL;
     vTaskDelete(NULL);
 }
 
@@ -128,21 +132,24 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
             pppapi_set_default(self->pcb);
             pppapi_connect(self->pcb, 0);
 
-            xTaskCreate(pppos_client_task, "ppp", 2048, self, 1, &self->client_task_handle);
+            xTaskCreate(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t*)&self->client_task_handle);
             self->active = true;
         } else {
             if (!self->active) {
                 return mp_const_false;
             }
 
-            // Wait for PPPERR_USER
+            // Wait for PPPERR_USER, with timeout
             pppapi_close(self->pcb, 0);
-            xSemaphoreTake(self->inactiveWaitSem, portMAX_DELAY);
-            xSemaphoreGive(self->inactiveWaitSem);
+            uint32_t t0 = mp_hal_ticks_ms();
+            while (!self->clean_close && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
+                mp_hal_delay_ms(10);
+            }
 
             // Shutdown task
             xTaskNotifyGive(self->client_task_handle);
-            while (eTaskGetState(self->client_task_handle) != eDeleted) {
+            t0 = mp_hal_ticks_ms();
+            while (self->client_task_handle != NULL && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
                 mp_hal_delay_ms(10);
             }
 
@@ -151,6 +158,7 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
             self->pcb = NULL;
             self->active = false;
             self->connected = false;
+            self->clean_close = false;
         }
     }
     return mp_obj_new_bool(self->active);

@@ -139,7 +139,7 @@
 #ifndef MICROPY_PY_USELECT_POSIX
 #define MICROPY_PY_USELECT_POSIX    (1)
 #endif
-#define MICROPY_PY_WEBSOCKET        (1)
+#define MICROPY_PY_UWEBSOCKET       (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
@@ -148,7 +148,7 @@
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
-#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_VFS_FAT                (0)
 
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
@@ -188,6 +188,7 @@ extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_lvindev;
 extern const struct _mp_obj_module_t mp_module_SDL;
 extern const struct _mp_obj_module_t mp_module_fb;
+extern const struct _mp_obj_module_t mp_module_lodepng;
 
 #if MICROPY_PY_UOS_VFS
 #define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos_vfs) },
@@ -225,12 +226,13 @@ extern const struct _mp_obj_module_t mp_module_fb;
 #define MICROPY_PY_USELECT_DEF
 #endif
 #if MICROPY_PY_LVGL
-#include "lib/lv_bindings/lvgl/lv_misc/lv_gc.h"
+#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
 #define MICROPY_PY_LVGL_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvindev), (mp_obj_t)&mp_module_lvindev},\
     { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },\
-    { MP_OBJ_NEW_QSTR(MP_QSTR_fb), (mp_obj_t)&mp_module_fb },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fb), (mp_obj_t)&mp_module_fb },\
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
 #else
 #define LV_ROOTS 
 #define MICROPY_PY_LVGL_DEF 
@@ -313,6 +315,7 @@ void mp_unix_mark_exec(void);
 #define MP_STATE_PORT MP_STATE_VM
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
+    void *mp_lv_user_data; \
     const char *readline_hist[50]; \
     void *mmap_region_head; \
 

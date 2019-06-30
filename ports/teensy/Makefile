@@ -98,10 +98,6 @@ STM_SRC_C = $(addprefix ports/stm32/,\
 	pin_named_pins.c \
 	)
 
-STM_SRC_S = $(addprefix ports/stm32/,\
-	gchelper.s \
-	)
-
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
@@ -120,8 +116,9 @@ SRC_TEENSY = $(addprefix core/,\
 	yield.c \
 	)
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(SRC_TEENSY:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(BUILD)/lib/utils/gchelper_m3.o
 OBJ += $(BUILD)/pins_gen.o
 
 all: hex

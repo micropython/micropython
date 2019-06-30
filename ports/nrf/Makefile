@@ -163,7 +163,7 @@ SRC_LIB += $(addprefix lib/,\
 ifeq ($(MICROPY_FATFS), 1)
 SRC_LIB += $(addprefix lib/,\
         oofatfs/ff.c \
-        oofatfs/option/unicode.c \
+        oofatfs/ffunicode.c \
         )
 endif
 
@@ -295,6 +295,14 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_VARIANT) --chip_erase
 	pyocd-flashtool -t $(MCU_VARIANT) $(SOFTDEV_HEX)
 	pyocd-flashtool -t $(MCU_VARIANT) $<
+
+else ifeq ($(FLASHER), idap)
+
+flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+	IDAPnRFPRog $<
+
+sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	IDAPnRFPRog $(SOFTDEV_HEX) $<
 
 endif
 

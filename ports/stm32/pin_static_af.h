@@ -41,6 +41,10 @@
 #define mp_hal_pin_config_alt_static(pin_obj, mode, pull, fn_type) \
         mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)) /* Overflow Error => alt func not found */
 
+#define mp_hal_pin_config_alt_static_speed(pin_obj, mode, pull, speed, fn_type) \
+        mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)); /* Overflow Error => alt func not found */ \
+        mp_hal_pin_config_speed(pin_obj, speed)
+
 #endif
 
 #endif // MICROPY_INCLUDED_STM32_PIN_STATIC_AF_H

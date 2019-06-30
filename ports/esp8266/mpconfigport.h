@@ -87,7 +87,7 @@
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hspi_make_new
-#define MICROPY_PY_WEBSOCKET        (1)
+#define MICROPY_PY_UWEBSOCKET       (1)
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)
 #define MICROPY_PY_FRAMEBUF         (1)
@@ -110,7 +110,7 @@
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
-#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_ESP8266_APA102         (1)
 #define MICROPY_ESP8266_NEOPIXEL       (1)

@@ -38,7 +38,15 @@
 // mp_kbd_exception which is in the root-pointer set.
 void *pendsv_object;
 
+#if defined(PENDSV_DISPATCH_NUM_SLOTS)
+uint32_t pendsv_dispatch_active;
+pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
+#endif
+
 void pendsv_init(void) {
+    #if defined(PENDSV_DISPATCH_NUM_SLOTS)
+    pendsv_dispatch_active = false;
+    #endif
     // set PendSV interrupt at lowest priority
     NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
 }
@@ -61,10 +69,33 @@ void pendsv_kbd_intr(void) {
     }
 }
 
-void pendsv_isr_handler(void) {
-    // re-jig the stack so that when we return from this interrupt handler
+#if defined(PENDSV_DISPATCH_NUM_SLOTS)
+void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
+    pendsv_dispatch_table[slot] = f;
+    pendsv_dispatch_active = true;
+    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+}
+
+void pendsv_dispatch_handler(void) {
+    for (size_t i = 0; i < PENDSV_DISPATCH_NUM_SLOTS; ++i) {
+        if (pendsv_dispatch_table[i] != NULL) {
+            pendsv_dispatch_t f = pendsv_dispatch_table[i];
+            pendsv_dispatch_table[i] = NULL;
+            f();
+        }
+    }
+}
+#endif
+
+__attribute__((naked)) void PendSV_Handler(void) {
+    // Handle a PendSV interrupt
+    //
+    // For the case of an asynchronous exception, re-jig the
+    // stack so that when we return from this interrupt handler
     // it returns instead to nlr_jump with argument pendsv_object
     // note that stack has a different layout if DEBUG is enabled
+    //
+    // For the case of a thread switch, swap stacks.
     //
     // on entry to this (naked) function, stack has the following layout:
     //
@@ -88,20 +119,42 @@ void pendsv_isr_handler(void) {
     //   sp[1]: 0xfffffff9
     //   sp[0]: ?
 
-#if MICROPY_PY_THREAD
     __asm volatile (
+        #if defined(PENDSV_DISPATCH_NUM_SLOTS)
+        // Check if there are any pending calls to dispatch to
+        "ldr r1, pendsv_dispatch_active_ptr\n"
+        "ldr r0, [r1]\n"
+        "cmp r0, #0\n"
+        "beq .no_dispatch\n"
+        "mov r2, #0\n"
+        "str r2, [r1]\n"                // clear pendsv_dispatch_active
+        "b pendsv_dispatch_handler\n"   // jump to the handler
+        ".no_dispatch:\n"
+        #endif
+
+        // Check if there is an active object to throw via nlr_jump
         "ldr r1, pendsv_object_ptr\n"
         "ldr r0, [r1]\n"
-        "cmp r0, 0\n"
+        "cmp r0, #0\n"
         "beq .no_obj\n"
+        #if defined(PENDSV_DEBUG)
+        "str r0, [sp, #8]\n"            // store to r0 on stack
+        #else
         "str r0, [sp, #0]\n"            // store to r0 on stack
+        #endif
         "mov r0, #0\n"
         "str r0, [r1]\n"                // clear pendsv_object
         "ldr r0, nlr_jump_ptr\n"
+        #if defined(PENDSV_DEBUG)
+        "str r0, [sp, #32]\n"           // store to pc on stack
+        #else
         "str r0, [sp, #24]\n"           // store to pc on stack
+        #endif
         "bx lr\n"                       // return from interrupt; will return to nlr_jump
-
         ".no_obj:\n"                    // pendsv_object==NULL
+
+        #if MICROPY_PY_THREAD
+        // Do a thread context switch
         "push {r4-r11, lr}\n"
         "vpush {s16-s31}\n"
         "mrs r5, primask\n"             // save PRIMASK in r5
@@ -115,37 +168,17 @@ void pendsv_isr_handler(void) {
         "vpop {s16-s31}\n"
         "pop {r4-r11, lr}\n"
         "bx lr\n"                       // return from interrupt; will return to new thread
-        ".align 2\n"
-        "pendsv_object_ptr: .word pendsv_object\n"
-        "nlr_jump_ptr: .word nlr_jump\n"
-    );
-#else
-    __asm volatile (
-        "ldr r0, pendsv_object_ptr\n"
-        "ldr r0, [r0]\n"
-#if defined(PENDSV_DEBUG)
-        "str r0, [sp, #8]\n"
-#else
-        "str r0, [sp, #0]\n"
-#endif
-        "ldr r0, nlr_jump_ptr\n"
-#if defined(PENDSV_DEBUG)
-        "str r0, [sp, #32]\n"
-#else
-        "str r0, [sp, #24]\n"
-#endif
+        #else
+        // Spurious pendsv, just return
         "bx lr\n"
+        #endif
+
+        // Data
         ".align 2\n"
+        #if defined(PENDSV_DISPATCH_NUM_SLOTS)
+        "pendsv_dispatch_active_ptr: .word pendsv_dispatch_active\n"
+        #endif
         "pendsv_object_ptr: .word pendsv_object\n"
         "nlr_jump_ptr: .word nlr_jump\n"
     );
-#endif
-
-    /*
-    uint32_t x[2] = {0x424242, 0xdeaddead};
-    printf("PendSV: %p\n", x);
-    for (uint32_t *p = (uint32_t*)(((uint32_t)x - 15) & 0xfffffff0), i = 64; i > 0; p += 4, i -= 4) {
-        printf(" %p: %08x %08x %08x %08x\n", p, (uint)p[0], (uint)p[1], (uint)p[2], (uint)p[3]);
-    }
-    */
 }

@@ -1,5 +1,14 @@
 # test use of return with try-except
 
+def f():
+    try:
+        print(1)
+        return
+    except:
+        print(2)
+    print(3)
+f()
+
 def f(l, i):
     try:
         return l[i]

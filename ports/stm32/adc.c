@@ -51,11 +51,17 @@
 ///     val = adc.read_core_vref()      # read MCU VREF
 
 /* ADC defintions */
+
 #if defined(STM32H7)
 #define ADCx                    (ADC3)
+#define PIN_ADC_MASK            PIN_ADC3
+#define pin_adc_table           pin_adc3
 #else
 #define ADCx                    (ADC1)
+#define PIN_ADC_MASK            PIN_ADC1
+#define pin_adc_table           pin_adc1
 #endif
+
 #define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
 #define ADC_NUM_CHANNELS        (19)
 
@@ -125,14 +131,15 @@
 #if defined(STM32F091xC)
 #define VBAT_DIV (2)
 #elif defined(STM32F405xx) || defined(STM32F415xx) || \
-    defined(STM32F407xx) || defined(STM32F417xx) || \
-    defined(STM32F401xC) || defined(STM32F401xE) || \
-    defined(STM32F411xE)
+      defined(STM32F407xx) || defined(STM32F417xx) || \
+      defined(STM32F401xC) || defined(STM32F401xE)
 #define VBAT_DIV (2)
-#elif defined(STM32F427xx) || defined(STM32F429xx) || \
+#elif defined(STM32F411xE) || defined(STM32F413xx) || \
+      defined(STM32F427xx) || defined(STM32F429xx) || \
       defined(STM32F437xx) || defined(STM32F439xx) || \
-      defined(STM32F446xx) || \
-      defined(STM32F722xx) || defined(STM32F723xx) || \
+      defined(STM32F446xx)
+#define VBAT_DIV (4)
+#elif defined(STM32F722xx) || defined(STM32F723xx) || \
       defined(STM32F732xx) || defined(STM32F733xx) || \
       defined(STM32F746xx) || defined(STM32F765xx) || \
       defined(STM32F767xx) || defined(STM32F769xx)
@@ -280,7 +287,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 
     if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
         // Channels 0-16 correspond to real pins. Configure the GPIO pin in ADC mode.
-        const pin_obj_t *pin = pin_adc1[adc_obj->channel];
+        const pin_obj_t *pin = pin_adc_table[adc_obj->channel];
         mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
     }
 
@@ -389,11 +396,11 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     uint32_t channel;
 
-    if (MP_OBJ_IS_INT(pin_obj)) {
+    if (mp_obj_is_int(pin_obj)) {
         channel = adc_get_internal_channel(mp_obj_get_int(pin_obj));
     } else {
         const pin_obj_t *pin = pin_find(pin_obj);
-        if ((pin->adc_num & PIN_ADC1) == 0) {
+        if ((pin->adc_num & PIN_ADC_MASK) == 0) {
             // No ADC1 function on that pin
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have ADC capabilities", pin->name));
         }
@@ -407,7 +414,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     if (ADC_FIRST_GPIO_CHANNEL <= channel && channel <= ADC_LAST_GPIO_CHANNEL) {
         // these channels correspond to physical GPIO ports so make sure they exist
-        if (pin_adc1[channel] == NULL) {
+        if (pin_adc_table[channel] == NULL) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "channel %d not available on this board", channel));
         }
@@ -690,7 +697,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
         if (en_mask & (1 << channel)) {
             // Channels 0-16 correspond to real pins. Configure the GPIO pin in
             // ADC mode.
-            const pin_obj_t *pin = pin_adc1[channel];
+            const pin_obj_t *pin = pin_adc_table[channel];
             if (pin) {
                 mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
             }

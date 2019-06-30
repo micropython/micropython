@@ -38,6 +38,10 @@ typedef enum {
 #elif (MICROPY_HW_LED_COUNT == 2)
     BOARD_LED1 = 1,
     BOARD_LED2 = 2,
+#elif (MICROPY_HW_LED_COUNT == 3)
+    BOARD_LED1 = 1,
+    BOARD_LED2 = 2,
+    BOARD_LED3 = 3,
 #else
     BOARD_LED1 = 1,
     BOARD_LED2 = 2,

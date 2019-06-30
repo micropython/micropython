@@ -812,6 +812,11 @@ branch_not_in_range:
 }
 
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_inline_thumb_new,
+    emit_inline_thumb_free,
+    #endif
+
     emit_inline_thumb_start_pass,
     emit_inline_thumb_end_pass,
     emit_inline_thumb_count_params,

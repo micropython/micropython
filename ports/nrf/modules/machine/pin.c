@@ -126,7 +126,7 @@ void pin_init0(void) {
 const pin_obj_t *pin_find(mp_obj_t user_obj) {
     const pin_obj_t *pin_obj;
     // If pin is SMALL_INT
-    if (MP_OBJ_IS_SMALL_INT(user_obj)) {
+    if (mp_obj_is_small_int(user_obj)) {
 	uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
         for (uint8_t i = 0; i < machine_pin_num_of_pins; i++) {
             if (machine_pin_obj[i].pin == value) {
@@ -136,7 +136,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     }
 
     // If a pin was provided, then use it
-    if (MP_OBJ_IS_TYPE(user_obj, &pin_type)) {
+    if (mp_obj_is_type(user_obj, &pin_type)) {
         pin_obj = user_obj;
         if (pin_class_debug) {
             printf("Pin map passed pin ");
@@ -149,7 +149,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
         pin_obj = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
         if (pin_obj != mp_const_none) {
-            if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
+            if (!mp_obj_is_type(pin_obj, &pin_type)) {
                 mp_raise_ValueError("Pin.mapper didn't return a Pin object");
             }
             if (pin_class_debug) {
@@ -207,7 +207,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin '%s' not a valid pin identifier", mp_obj_str_get_str(user_obj)));
+    mp_raise_ValueError("not a valid pin identifier");
 }
 
 /// \method __str__()
@@ -215,62 +215,22 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
 STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_obj_t *self = self_in;
 
-    // pin name
-    mp_printf(print, "Pin(Pin.cpu.%q, mode=Pin.", self->name);
-    mp_printf(print, "port=0x%x, ", self->pin / 32);
-    mp_printf(print, "pin=0x%x, ", self->pin);
-/*
-    uint32_t mode = pin_get_mode(self);
+    char *pull = "PULL_DISABLED";
+    switch (nrf_gpio_pin_pull_get(self->pin)) {
+        case NRF_GPIO_PIN_PULLUP:
+            pull = "PULL_UP";
+            break;
+        case NRF_GPIO_PIN_PULLDOWN:
+            pull = "PULL_DOWN";
+            break;
+        default:
+            break;
+    }
 
-    if (mode == GPIO_MODE_ANALOG) {
-        // analog
-        mp_print_str(print, "ANALOG)");
-
-    } else {
-        // IO mode
-        bool af = false;
-        qstr mode_qst;
-        if (mode == GPIO_MODE_INPUT) {
-            mode_qst = MP_QSTR_IN;
-        } else if (mode == GPIO_MODE_OUTPUT_PP) {
-            mode_qst = MP_QSTR_OUT;
-        } else if (mode == GPIO_MODE_OUTPUT_OD) {
-            mode_qst = MP_QSTR_OPEN_DRAIN;
-        } else {
-            af = true;
-            if (mode == GPIO_MODE_AF_PP) {
-                mode_qst = MP_QSTR_ALT;
-            } else {
-                mode_qst = MP_QSTR_ALT_OPEN_DRAIN;
-            }
-        }
-        mp_print_str(print, qstr_str(mode_qst));
-        // pull mode
-        qstr pull_qst = MP_QSTR_NULL;
-        uint32_t pull = pin_get_pull(self);
-        if (pull == GPIO_PULLUP) {
-            pull_qst = MP_QSTR_PULL_UP;
-        } else if (pull == GPIO_PULLDOWN) {
-            pull_qst = MP_QSTR_PULL_DOWN;
-        }
-        if (pull_qst != MP_QSTR_NULL) {
-            mp_printf(print, ", pull=Pin.%q", pull_qst);
-        }
-        // AF mode
-        if (af) {
-            mp_uint_t af_idx = pin_get_af(self);
-            const pin_af_obj_t *af_obj = pin_find_af_by_index(self, af_idx);
-            if (af_obj == NULL) {
-                mp_printf(print, ", af=%d)", af_idx);
-            } else {
-                mp_printf(print, ", af=Pin.%q)", af_obj->name);
-            }
-        } else {
-*/
-            mp_print_str(print, ")");
-   /*     }
-    }*/
-
+    mp_printf(print, "Pin(%d, mode=%s, pull=%s)",
+            self->pin,
+            (nrf_gpio_pin_dir_get(self->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? "OUT" : "IN",
+            pull);
 }
 
 STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
