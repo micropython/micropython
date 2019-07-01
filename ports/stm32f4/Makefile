@@ -62,18 +62,13 @@ CROSS_COMPILE = arm-none-eabi-
 INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
-#keep?
 INC += -I$(BUILD)/genhdr
-#HAL SPECIFIC
-INC += -IcubeMXInc
-INC += -IcubeMXDrivers/STM32F4xx_HAL_Driver/Inc
-INC += -IcubeMXDrivers/STM32F4xx_HAL_Driver/Inc/Legacy
-INC += -IcubeMXDrivers/CMSIS/Device/ST/STM32F4xx/Include
-INC += -IcubeMXDrivers/CMSIS/Include
-INC += -IcubeMXDrivers/CMSIS/Include
-#does order matter?
-INC += -Iboards/$(BOARD)
-#INC += -I./peripherals
+INC += -I./cubeMXInc
+INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc
+INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc/Legacy
+INC += -I./cubeMXDrivers/CMSIS/Device/ST/STM32F4xx/Include
+INC += -I./cubeMXDrivers/CMSIS/Include
+INC += -I./boards/$(BOARD)
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
@@ -118,7 +113,7 @@ CFLAGS += -D__START=main
 
 #TODO: add LD file? 
 
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
 LDFLAGS += -mthumb -mcpu=cortex-m4
@@ -138,9 +133,10 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD
 # source
 ######################################
 
+#cubeMXsrc/stm32f4xx_it.c \
+#cubeMXsrc/stm32f4xx_hal_msp.c \
+
 SRC_STM32 = \
-	cubeMXsrc/stm32f4xx_it.c \
-	cubeMXsrc/stm32f4xx_hal_msp.c \
 	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
 	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
 	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
@@ -164,6 +160,7 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
+	tick.c \
 	boards/$(BOARD)/board.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
@@ -176,7 +173,8 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	supervisor/shared/memory.c
+	supervisor/shared/memory.c \
+	lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
 
 #
 

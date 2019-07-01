@@ -136,7 +136,7 @@ safe_mode_t port_init(void) {
 	// huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	// huart2.Init.OverSampling = UART_OVERSAMPLING_16;
 
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
     return NO_SAFE_MODE;
 }

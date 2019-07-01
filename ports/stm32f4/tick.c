@@ -30,7 +30,6 @@
 #include "supervisor/filesystem.h"
 #include "shared-module/gamepad/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
-#include "nrf.h"
 
 // Global millisecond tick count
 volatile uint64_t ticks_ms = 0;
@@ -54,31 +53,31 @@ void SysTick_Handler(void) {
 }
 
 void tick_init() {
-    uint32_t ticks_per_ms = common_hal_mcu_processor_get_frequency() / 1000;
-    SysTick_Config(ticks_per_ms); // interrupt is enabled
+    uint32_t ticks_per_ms = 16000000/ 1000;
+    //SysTick_Config(ticks_per_ms); // interrupt is enabled
 }
 
 void tick_delay(uint32_t us) {
-    uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
-    uint32_t us_between_ticks = SysTick->VAL / ticks_per_us;
-    uint64_t start_ms = ticks_ms;
-    while (us > 1000) {
-        while (ticks_ms == start_ms) {}
-        us -= us_between_ticks;
-        start_ms = ticks_ms;
-        us_between_ticks = 1000;
-    }
-    while (SysTick->VAL > ((us_between_ticks - us) * ticks_per_us)) {}
+    // uint32_t ticks_per_us = 16000000 / 1000 / 1000;
+    // uint32_t us_between_ticks = SysTick->VAL / ticks_per_us;
+    // uint64_t start_ms = ticks_ms;
+    // while (us > 1000) {
+    //     while (ticks_ms == start_ms) {}
+    //     us -= us_between_ticks;
+    //     start_ms = ticks_ms;
+    //     us_between_ticks = 1000;
+    // }
+    //while (SysTick->VAL > ((us_between_ticks - us) * ticks_per_us)) {}
 }
 
 // us counts down!
 void current_tick(uint64_t* ms, uint32_t* us_until_ms) {
-    uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
+    uint32_t ticks_per_us = 16000000 / 1000 / 1000;
     *ms = ticks_ms;
-    *us_until_ms = SysTick->VAL / ticks_per_us;
+    //*us_until_ms = SysTick->VAL / ticks_per_us;
 }
 
 void wait_until(uint64_t ms, uint32_t us_until_ms) {
-    uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
-    while(ticks_ms <= ms && SysTick->VAL / ticks_per_us >= us_until_ms) {}
+    uint32_t ticks_per_us = 16000000 / 1000 / 1000;
+    //while(ticks_ms <= ms && SysTick->VAL / ticks_per_us >= us_until_ms) {}
 }
