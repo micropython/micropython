@@ -139,6 +139,16 @@ STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
         case MP_QSPI_IOCTL_INIT:
             qspi_init();
             break;
+        case MP_QSPI_IOCTL_BUS_ACQUIRE:
+            // Disable memory-mapped region during bus access
+            qspi_mpu_disable_all();
+            // Abort any ongoing transfer if peripheral is busy
+            if (QUADSPI->SR & QUADSPI_SR_BUSY) {
+                QUADSPI->CR |= QUADSPI_CR_ABORT;
+                while (QUADSPI->CR & QUADSPI_CR_ABORT) {
+                }
+            }
+            break;
         case MP_QSPI_IOCTL_BUS_RELEASE:
             // Switch to memory-map mode when bus is idle
             qspi_memory_map();
