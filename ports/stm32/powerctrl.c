@@ -324,6 +324,10 @@ void powerctrl_enter_stop_mode(void) {
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
 
+    #if defined(MICROPY_BOARD_ENTER_STOP)
+    MICROPY_BOARD_ENTER_STOP
+    #endif
+
     #if defined(STM32L4)
     // Configure the MSI as the clock source after waking up
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
@@ -399,12 +403,20 @@ void powerctrl_enter_stop_mode(void) {
 
     #endif
 
+    #if defined(MICROPY_BOARD_LEAVE_STOP)
+    MICROPY_BOARD_LEAVE_STOP
+    #endif
+
     // Enable IRQs now that all clocks are reconfigured
     enable_irq(irq_state);
 }
 
 void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
+
+    #if defined(MICROPY_BOARD_ENTER_STANDBY)
+    MICROPY_BOARD_ENTER_STANDBY
+    #endif
 
     // We need to clear the PWR wake-up-flag before entering standby, since
     // the flag may have been set by a previous wake-up event.  Furthermore,
