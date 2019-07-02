@@ -88,6 +88,8 @@ void qspi_init(void) {
     // Bring up the QSPI peripheral
 
     __HAL_RCC_QSPI_CLK_ENABLE();
+    __HAL_RCC_QSPI_FORCE_RESET();
+    __HAL_RCC_QSPI_RELEASE_RESET();
 
     QUADSPI->CR =
         (MICROPY_HW_QSPI_PRESCALER - 1) << QUADSPI_CR_PRESCALER_Pos
