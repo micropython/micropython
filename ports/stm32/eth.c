@@ -30,6 +30,7 @@
 #include "lib/netutils/netutils.h"
 #include "pin_static_af.h"
 #include "modnetwork.h"
+#include "mpu.h"
 #include "eth.h"
 
 #if defined(MICROPY_HW_ETH_MDC)
@@ -141,35 +142,6 @@ STATIC uint32_t eth_phy_read(uint32_t reg) {
     return ETH->MACMIIDR;
 }
 
-STATIC void mpu_config(uint32_t region, uint32_t base_addr, uint32_t size) {
-    __DMB();
-
-    // Disable MPU
-    SCB->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
-    MPU->CTRL = 0;
-
-    // Config MPU region
-    MPU->RNR = region;
-    MPU->RBAR = base_addr;
-    MPU->RASR =
-        MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos
-        | MPU_REGION_FULL_ACCESS        << MPU_RASR_AP_Pos
-        | MPU_TEX_LEVEL1                << MPU_RASR_TEX_Pos
-        | MPU_ACCESS_SHAREABLE          << MPU_RASR_S_Pos
-        | MPU_ACCESS_NOT_CACHEABLE      << MPU_RASR_C_Pos
-        | MPU_ACCESS_NOT_BUFFERABLE     << MPU_RASR_B_Pos
-        | 0x00                          << MPU_RASR_SRD_Pos
-        | size                          << MPU_RASR_SIZE_Pos
-        | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos;
-
-    // Enable MPU
-    MPU->CTRL = MPU_PRIVILEGED_DEFAULT | MPU_CTRL_ENABLE_Msk;
-    SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
-
-    __DSB();
-    __ISB();
-}
-
 void eth_init(eth_t *self, int mac_idx) {
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
@@ -181,7 +153,9 @@ void eth_set_trace(eth_t *self, uint32_t value) {
 
 STATIC int eth_mac_init(eth_t *self) {
     // Configure MPU
-    mpu_config(MPU_REGION_NUMBER0, (uint32_t)&eth_dma, MPU_REGION_SIZE_16KB);
+    mpu_config_start();
+    mpu_config_region(MPU_REGION_ETH, (uint32_t)&eth_dma, MPU_CONFIG_ETH(MPU_REGION_SIZE_16KB));
+    mpu_config_end();
 
     // Configure GPIO
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_MDC, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_MDC);
