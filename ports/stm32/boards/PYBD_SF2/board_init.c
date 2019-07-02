@@ -36,3 +36,8 @@ void board_early_init(void) {
     // Explicitly init SPI2 because it's not enabled as a block device
     spi_bdev_ioctl(&spi_bdev2, BDEV_IOCTL_INIT, (uint32_t)&spiflash2_config);
 }
+
+void board_sleep(int value) {
+    mp_spiflash_deepsleep(&spi_bdev.spiflash, value);
+    mp_spiflash_deepsleep(&spi_bdev2.spiflash, value);
+}

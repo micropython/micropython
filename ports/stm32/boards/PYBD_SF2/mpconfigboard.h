@@ -41,7 +41,11 @@
 #define MICROPY_HW_ENABLE_MMCARD    (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
+#define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
+#define MICROPY_BOARD_LEAVE_STOP    board_sleep(0);
+#define MICROPY_BOARD_ENTER_STANDBY board_sleep(1);
 void board_early_init(void);
+void board_sleep(int value);
 
 // HSE is 25MHz, run SYS at 120MHz
 #define MICROPY_HW_CLK_PLLM         (20)
