@@ -73,6 +73,7 @@
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
+#define MICROPY_PY_MATH_ISCLOSE     (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_STRUCT           (1)
