@@ -12,10 +12,16 @@ NTP_DELTA = 3155673600
 
 host = "pool.ntp.org"
 
+class NTPException(Exception):
+    pass
+
 def time():
     NTP_QUERY = bytearray(48)
     NTP_QUERY[0] = 0x1b
-    addr = socket.getaddrinfo(host, 123)[0][-1]
+    info = socket.getaddrinfo(host, 123)
+    if not info:
+        raise NTPException("Could not resolve: '{}:{}'".format(host, 123))
+    addr = info[0][-1]
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(1)
     res = s.sendto(NTP_QUERY, addr)
