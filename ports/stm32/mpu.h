@@ -29,6 +29,8 @@
 #if defined(STM32F7) || defined(STM32H7)
 
 #define MPU_REGION_ETH      (MPU_REGION_NUMBER0)
+#define MPU_REGION_SDRAM1   (MPU_REGION_NUMBER4)
+#define MPU_REGION_SDRAM2   (MPU_REGION_NUMBER5)
 
 #define MPU_CONFIG_DISABLE(srd, size) ( \
     MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos \
@@ -49,6 +51,18 @@
     | MPU_ACCESS_SHAREABLE          << MPU_RASR_S_Pos \
     | MPU_ACCESS_NOT_CACHEABLE      << MPU_RASR_C_Pos \
     | MPU_ACCESS_NOT_BUFFERABLE     << MPU_RASR_B_Pos \
+    | 0x00                          << MPU_RASR_SRD_Pos \
+    | (size)                        << MPU_RASR_SIZE_Pos \
+    | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
+    )
+
+#define MPU_CONFIG_SDRAM(size) ( \
+    MPU_INSTRUCTION_ACCESS_ENABLE   << MPU_RASR_XN_Pos \
+    | MPU_REGION_FULL_ACCESS        << MPU_RASR_AP_Pos \
+    | MPU_TEX_LEVEL1                << MPU_RASR_TEX_Pos \
+    | MPU_ACCESS_NOT_SHAREABLE      << MPU_RASR_S_Pos \
+    | MPU_ACCESS_CACHEABLE          << MPU_RASR_C_Pos \
+    | MPU_ACCESS_BUFFERABLE         << MPU_RASR_B_Pos \
     | 0x00                          << MPU_RASR_SRD_Pos \
     | (size)                        << MPU_RASR_SIZE_Pos \
     | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
