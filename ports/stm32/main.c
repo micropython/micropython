@@ -43,6 +43,7 @@
 #include "drivers/cyw43/cyw43.h"
 #endif
 
+#include "mpu.h"
 #include "systick.h"
 #include "pendsv.h"
 #include "powerctrl.h"
@@ -408,6 +409,8 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     #endif
+
+    mpu_init();
 
     #if __CORTEX_M >= 0x03
     // Set the priority grouping
