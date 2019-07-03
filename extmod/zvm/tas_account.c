@@ -148,9 +148,9 @@ STATIC mp_obj_t mod_account_transfer(mp_obj_t address,mp_obj_t amount) {
 
     byte code = MP_BC_TRANSFER;
     if(CheckGas(&code)) {
-        transfer_fn(mp_obj_str_get_str(address), str);
+        success = transfer_fn(mp_obj_str_get_str(address), str);
     }
-    return mp_const_none;
+    return mp_obj_new_bool(success);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_transfer_obj, mod_account_transfer);
