@@ -272,16 +272,28 @@ bool CheckGas(byte* op)
 
 bool FireGas_Mem(size_t len)
 {
-    len = len * 381;//(int)(0.03814697265625 * GAS_PRECISION);
-    mem_gas += len;
-    return FireGas(len);
+    const int MAX = INT_MAX / 381;
+    if (len < max)
+        len = len * 381;//(int)(0.03814697265625 * GAS_PRECISION);
+        mem_gas += len;
+        return FireGas(len);
+    } else {
+        g_iGas = 0;
+        return false;
+    }
 }
 
 bool FireGas_DB(size_t len)
 {
-    len = len * 3814;//(int)(0.3814697265625 * GAS_PRECISION);
-    db_gas += len;
-    return FireGas(len);
+    const int MAX = INT_MAX / 3814;
+    if (len < max)
+        len = len * 3814;//(int)(0.3814697265625 * GAS_PRECISION);
+        db_gas += len;
+        return FireGas(len);
+    } else {
+        g_iGas = 0;
+        return false;
+    }
 }
 
 void Gas_Report()
