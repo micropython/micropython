@@ -245,7 +245,11 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     }
 
     if (self->data_to_recv != 0) {
-        static byte filebuf[512];
+        // Ports that don't have much available stack can make this filebuf static
+        #if MICROPY_PY_WEBREPL_STATIC_FILEBUF
+        static
+        #endif
+        byte filebuf[512];
         filebuf[0] = *(byte*)buf;
         mp_uint_t buf_sz = 1;
         if (--self->data_to_recv != 0) {
