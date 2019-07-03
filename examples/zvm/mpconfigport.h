@@ -142,14 +142,4 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-// We need to provide a declaration/definition of alloca()
-#ifdef __FreeBSD__
 #include <stdlib.h>
-#else
-#ifdef _VM_WINDOWS_
-#include <malloc.h>
-#else
-//#include <alloca.h>
-#include <stdlib.h>
-#endif
-#endif

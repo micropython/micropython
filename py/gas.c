@@ -195,16 +195,21 @@ STCODEGAS g_CodeGas[] = {
 
 int g_iGas = 100000;
 
+#define GAS_PRECISION 10000
+
 int db_gas = 0;
 int mem_gas = 0;
 int cpu_gas = 0;
 
 void setGas(int value) {
-    g_iGas = value;
+    g_iGas = value * GAS_PRECISION;
+    db_gas = 0;
+    mem_gas = 0;
+    cpu_gas = 0;
 }
 
 int getGas() {
-    return g_iGas;
+    return g_iGas / GAS_PRECISION;
 }
 
 GASPRICE GetGas(byte* op)
@@ -244,25 +249,18 @@ bool FireGas(int gas)
 {
     if (g_iGas - gas >= 0) {
         g_iGas -= gas;
-//        printf("gas: %d\n", g_iGas);
         return true;
     }
     else {
+        g_iGas = 0;
         return false;
     }
-//    else {
-////        __asm__("int $0x03");
-//		mp_raise_GasNotEnoughError("dose not have enough gas to run!");
-//        return false;
-//    }
 }
 
 bool CheckGas(byte* op)
 {
-    //printf("CheckGas %d,current gas=%d ",*op, g_iGas);
     GASPRICE gas = GetGas(op);
-    //printf("use price=%d\n",gas);
-    cpu_gas += gas;
+    cpu_gas += gas * GAS_PRECISION;
     if (FireGas(gas)) {
         return true;
     }
@@ -274,21 +272,33 @@ bool CheckGas(byte* op)
 
 bool FireGas_Mem(size_t len)
 {
-    len = len * 0.03814697265625;
-    mem_gas += len;
-    return FireGas(len);
+    const int MAX = INT_MAX / 381;
+    if (len < MAX) {
+        len = len * 381;//(int)(0.03814697265625 * GAS_PRECISION);
+        mem_gas += len;
+        return FireGas(len);
+    } else {
+        g_iGas = 0;
+        return false;
+    }
 }
 
 bool FireGas_DB(size_t len)
 {
-    len = len * 0.3814697265625;
-    db_gas += len;
-    return FireGas(len);
+    const int MAX = INT_MAX / 3814;
+    if (len < MAX) {
+        len = len * 3814;//(int)(0.3814697265625 * GAS_PRECISION);
+        db_gas += len;
+        return FireGas(len);
+    } else {
+        g_iGas = 0;
+        return false;
+    }
 }
 
 void Gas_Report()
 {
-    printf("gas: cpu:%d mem:%d db:%d\n", cpu_gas, mem_gas, db_gas);
+    printf("gas: cpu:%d mem:%d db:%d\n", cpu_gas/GAS_PRECISION, mem_gas/GAS_PRECISION, db_gas/GAS_PRECISION);
 }
 
 
