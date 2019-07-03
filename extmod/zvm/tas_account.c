@@ -71,6 +71,11 @@ STATIC mp_obj_t mod_account_event_call(mp_obj_t EventName, mp_obj_t Data) {
 
 	const char *name = mp_obj_str_get_str(EventName);
 	const char *data = mp_obj_str_get_str(Data);
+    size_t name_len = strlen(name);
+    size_t data_len = strlen(data);
+    if (!FireGas_DB(name_len + data_len)) {
+        return mp_const_none;
+    }
 	event_call_fn(name, data);
 	return MP_OBJ_FROM_PTR(&mp_const_none_obj);
 };
@@ -115,7 +120,9 @@ STATIC mp_obj_t mod_account_set_Data(mp_obj_t key, mp_obj_t value) {
     size_t key_len = strlen(c_key);
     const char *c_value = mp_obj_str_get_str(value);
     size_t value_len = strlen(c_value);
-    FireGas_DB(key_len + value_len);
+    if (!FireGas_DB(key_len + value_len)) {
+        return mp_const_none;
+    }
     storage_set_data_fn(mp_obj_str_get_str(key), mp_obj_str_get_str(value));
     return mp_const_none;
 };
