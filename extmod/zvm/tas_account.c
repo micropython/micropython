@@ -63,20 +63,24 @@ STATIC mp_obj_t mod_account_contract_call(mp_obj_t contractAddr, mp_obj_t contra
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_account_contract_call_obj , mod_account_contract_call);
 
 //extern int g_iGas;
-STATIC mp_obj_t mod_account_event_call(mp_obj_t EventName, mp_obj_t Index, mp_obj_t Data) {
+STATIC mp_obj_t mod_account_event_call(mp_obj_t EventName, mp_obj_t Data) {
 	byte code = MP_BC_TASEVENT;
 	if (!CheckGas(&code)) {
 		return mp_const_none;
 	}
 
 	const char *name = mp_obj_str_get_str(EventName);
-	const char *index = mp_obj_str_get_str(Index);
 	const char *data = mp_obj_str_get_str(Data);
-	event_call_fn(name, index, data);
+    size_t name_len = strlen(name);
+    size_t data_len = strlen(data);
+    if (!FireGas_DB(name_len + data_len)) {
+        return mp_const_none;
+    }
+	event_call_fn(name, data);
 	return MP_OBJ_FROM_PTR(&mp_const_none_obj);
 };
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_account_event_call_obj, mod_account_event_call);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_event_call_obj, mod_account_event_call);
 
 STATIC mp_obj_t mod_account_get_balance(mp_obj_t address) {
     byte code = MP_BC_GET_BALANCE;
@@ -112,9 +116,13 @@ STATIC mp_obj_t mod_account_set_Data(mp_obj_t key, mp_obj_t value) {
     if(!CheckGas(&code)) {
         return mp_const_none;
     }
+    const char *c_key = mp_obj_str_get_str(key);
+    size_t key_len = strlen(c_key);
     const char *c_value = mp_obj_str_get_str(value);
     size_t value_len = strlen(c_value);
-    FireGas_DB(value_len);
+    if (!FireGas_DB(key_len + value_len)) {
+        return mp_const_none;
+    }
     storage_set_data_fn(mp_obj_str_get_str(key), mp_obj_str_get_str(value));
     return mp_const_none;
 };

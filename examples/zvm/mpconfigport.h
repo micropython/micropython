@@ -31,6 +31,9 @@
 //方便计算gas大小，不做intern优化
 #define MICROPY_ALLOC_PARSE_INTERN_STRING_LEN (0)
 
+//TasBaseStorage need hook setattr
+#define MICROPY_PY_DELATTR_SETATTR (1)
+
 #define MICROPY_PY_BUILTINS_EVAL_EXEC (0)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
