@@ -248,6 +248,7 @@ bool FireGas(int gas)
         return true;
     }
     else {
+        g_iGas = 0;
         return false;
     }
 //    else {
