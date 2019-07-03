@@ -84,11 +84,12 @@
 
 // TODO Add python method to change callback object.
 
+#if defined(STM32F4) || defined(STM32L4)
+// These MCUs have bitband support so define macros to atomically set/clear bits in IMR/EMR and SWIER
 #define EXTI_OFFSET (EXTI_BASE - PERIPH_BASE)
-
-// Macro used to set/clear the bit corresponding to the line in the IMR/EMR
-// register in an atomic fashion by using bitband addressing.
 #define EXTI_MODE_BB(mode, line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + (mode)) * 32) + ((line) * 4)))
+#define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
+#endif
 
 #if defined(STM32L4)
 // The L4 MCU supports 40 Events/IRQs lines of the type configurable and direct.
@@ -115,8 +116,6 @@
 #define EXTI_RTSR EXTI->RTSR
 #define EXTI_FTSR EXTI->FTSR
 #endif
-
-#define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
 
 typedef struct {
     mp_obj_base_t base;
@@ -349,8 +348,8 @@ void extint_enable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32H7)
-    // The Cortex-M7 doesn't have bitband support.
+    #if !defined(EXTI_MODE_BB)
+    // This MCU doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
         #if defined(STM32H7)
@@ -379,8 +378,8 @@ void extint_disable(uint line) {
         return;
     }
 
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32H7)
-    // The Cortex-M7 doesn't have bitband support.
+    #if !defined(EXTI_MODE_BB)
+    // This MCU doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     #if defined(STM32H7)
     EXTI_D1->IMR1 &= ~(1 << line);
@@ -417,8 +416,8 @@ void extint_trigger_mode(uint line, uint32_t mode) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32H7)
-    // The Cortex-M7 doesn't have bitband support.
+    #if !defined(EXTI_MODE_BB)
+    // This MCU doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     // Enable or disable the rising detector
     if ((mode & GPIO_MODE_IT_RISING) == GPIO_MODE_IT_RISING) {
