@@ -63,20 +63,19 @@ STATIC mp_obj_t mod_account_contract_call(mp_obj_t contractAddr, mp_obj_t contra
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_account_contract_call_obj , mod_account_contract_call);
 
 //extern int g_iGas;
-STATIC mp_obj_t mod_account_event_call(mp_obj_t EventName, mp_obj_t Index, mp_obj_t Data) {
+STATIC mp_obj_t mod_account_event_call(mp_obj_t EventName, mp_obj_t Data) {
 	byte code = MP_BC_TASEVENT;
 	if (!CheckGas(&code)) {
 		return mp_const_none;
 	}
 
 	const char *name = mp_obj_str_get_str(EventName);
-	const char *index = mp_obj_str_get_str(Index);
 	const char *data = mp_obj_str_get_str(Data);
-	event_call_fn(name, index, data);
+	event_call_fn(name, data);
 	return MP_OBJ_FROM_PTR(&mp_const_none_obj);
 };
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_account_event_call_obj, mod_account_event_call);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_event_call_obj, mod_account_event_call);
 
 STATIC mp_obj_t mod_account_get_balance(mp_obj_t address) {
     byte code = MP_BC_GET_BALANCE;
