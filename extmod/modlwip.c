@@ -356,7 +356,8 @@ STATIC void lwip_socket_free_incoming(lwip_socket_obj_t *socket) {
 
 static inline void exec_user_callback(lwip_socket_obj_t *socket) {
     if (socket->callback != MP_OBJ_NULL) {
-        mp_call_function_1_protected(socket->callback, MP_OBJ_FROM_PTR(socket));
+        // Schedule the user callback to execute outside the lwIP context
+        mp_sched_schedule(socket->callback, MP_OBJ_FROM_PTR(socket));
     }
 }
 
@@ -446,18 +447,6 @@ STATIC err_t _lwip_tcp_recv_unaccepted(void *arg, struct tcp_pcb *pcb, struct pb
     return ERR_BUF;
 }
 
-// "Poll" (idle) callback to be called ASAP after accept callback
-// to execute Python callback function, as it can't be executed
-// from accept callback itself.
-STATIC err_t _lwip_tcp_accept_finished(void *arg, struct tcp_pcb *pcb)
-{
-    // The ->connected entry of the pcb holds the listening socket of the accept
-    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)pcb->connected;
-    tcp_poll(pcb, NULL, 0);
-    exec_user_callback(socket);
-    return ERR_OK;
-}
-
 // Callback for incoming tcp connections.
 STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
     // err can be ERR_MEM to notify us that there was no memory for an incoming connection
@@ -476,12 +465,9 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
         if (++socket->incoming.connection.iput >= socket->incoming.connection.alloc) {
             socket->incoming.connection.iput = 0;
         }
-        if (socket->callback != MP_OBJ_NULL) {
-            // Schedule accept callback to be called when lwIP is done
-            // with processing this incoming connection on its side and
-            // is idle.
-            tcp_poll(newpcb, _lwip_tcp_accept_finished, 1);
-        }
+
+        // Schedule user accept callback
+        exec_user_callback(socket);
 
         // Set the error callback to handle the case of a dropped connection before we
         // have a chance to take it off the accept queue.
