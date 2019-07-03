@@ -249,33 +249,34 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
     uint16_t cccd = 0;
 
     switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
-    case GATT_ROLE_SERVER:
-        if (self->props.notify || self->props.indicate) {
-            cccd = get_cccd(self);
-        }
-        // It's possible that both notify and indicate are set.
-        if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
-            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
-            sent = true;
-        }
-        if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
-            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
-            sent = true;
-        }
-        if (!sent) {
-            gatts_write(self, bufinfo);
-        }
-        break;
+        case GATT_ROLE_SERVER:
+            if (self->props.notify || self->props.indicate) {
+                cccd = get_cccd(self);
+            }
+            // It's possible that both notify and indicate are set.
+            if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+                gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
+                sent = true;
+            }
+            if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+                gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
+                sent = true;
+            }
+            if (!sent) {
+                gatts_write(self, bufinfo);
+            }
+            break;
 
-    case GATT_ROLE_CLIENT:
-        gattc_write(self, bufinfo);
-        break;
+        case GATT_ROLE_CLIENT:
+            gattc_write(self, bufinfo);
+            break;
 
-    default:
-        mp_raise_RuntimeError(translate("bad GATT role"));
-        break;
+        default:
+            mp_raise_RuntimeError(translate("bad GATT role"));
+            break;
     }
 }
+
 
 bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_obj_t *self) {
     return self->uuid;

@@ -140,7 +140,6 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
 STATIC mp_obj_t bleio_peripheral_get_connected(mp_obj_t self_in) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // Return list as a tuple so user won't be able to change it.
     return mp_obj_new_bool(common_hal_bleio_peripheral_get_connected(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_get_connected_obj, bleio_peripheral_get_connected);

@@ -80,7 +80,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     // Copy the characteristics list and validate its items.
     mp_obj_t char_list_obj = mp_obj_new_list(0, NULL);
-    mp_obj_list_t *char_list = MP_OBJ_FROM_PTR(char_list);
+    mp_obj_list_t *char_list = MP_OBJ_TO_PTR(char_list_obj);
 
     while ((characteristic_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!MP_OBJ_IS_TYPE(characteristic_obj, &bleio_characteristic_type)) {

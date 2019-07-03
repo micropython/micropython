@@ -141,6 +141,25 @@ STATIC mp_obj_t bleio_central_disconnect(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_central_disconnect_obj, bleio_central_disconnect);
 
+//|   .. attribute:: connected
+//|
+//|     True if connected to a remove peripheral.
+//|
+STATIC mp_obj_t bleio_central_get_connected(mp_obj_t self_in) {
+    bleio_central_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return mp_obj_new_bool(common_hal_bleio_central_get_connected(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_central_get_connected_obj, bleio_central_get_connected);
+
+const mp_obj_property_t bleio_central_connected_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_central_get_connected_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+
 //|   .. attribute:: remote_services (read-only)
 //|
 //|     Empty until connected, then a list of services provided by the remote peripheral.
@@ -161,11 +180,12 @@ const mp_obj_property_t bleio_central_remote_services_obj = {
 
 STATIC const mp_rom_map_elem_t bleio_central_locals_dict_table[] = {
     // Methods
-    { MP_ROM_QSTR(MP_QSTR_connect),            MP_ROM_PTR(&bleio_central_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect),         MP_ROM_PTR(&bleio_central_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),         MP_ROM_PTR(&bleio_central_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),      MP_ROM_PTR(&bleio_central_disconnect_obj) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_remote_services),    MP_ROM_PTR(&bleio_central_remote_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected),       MP_ROM_PTR(&bleio_central_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remote_services), MP_ROM_PTR(&bleio_central_remote_services_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_central_locals_dict, bleio_central_locals_dict_table);

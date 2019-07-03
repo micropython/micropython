@@ -162,40 +162,41 @@ STATIC void central_on_ble_evt(ble_evt_t *ble_evt, void *central_in) {
     bleio_central_obj_t *central = (bleio_central_obj_t*)central_in;
 
     switch (ble_evt->header.evt_id) {
-    case BLE_GAP_EVT_CONNECTED:
-        central->conn_handle = ble_evt->evt.gap_evt.conn_handle;
-        central->waiting_to_connect = false;
-        break;
+        case BLE_GAP_EVT_CONNECTED:
+            central->conn_handle = ble_evt->evt.gap_evt.conn_handle;
+            central->waiting_to_connect = false;
+            break;
 
-    case BLE_GAP_EVT_TIMEOUT:
-        // Handle will be invalid.
-        central->waiting_to_connect = false;
-        break;
+        case BLE_GAP_EVT_TIMEOUT:
+            // Handle will be invalid.
+            central->waiting_to_connect = false;
+            break;
 
-    case BLE_GAP_EVT_DISCONNECTED:
-        central->conn_handle = BLE_CONN_HANDLE_INVALID;
-        m_discovery_successful = false;
-        m_discovery_in_process = false;
-        break;
+        case BLE_GAP_EVT_DISCONNECTED:
+            central->conn_handle = BLE_CONN_HANDLE_INVALID;
+            m_discovery_successful = false;
+            m_discovery_in_process = false;
+            break;
 
-    case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
-        on_primary_srv_discovery_rsp(&ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp, central);
-        break;
+        case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
+            on_primary_srv_discovery_rsp(&ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp, central);
+            break;
 
-    case BLE_GATTC_EVT_CHAR_DISC_RSP:
-        on_char_discovery_rsp(&ble_evt->evt.gattc_evt.params.char_disc_rsp, central);
-        break;
+        case BLE_GATTC_EVT_CHAR_DISC_RSP:
+            on_char_discovery_rsp(&ble_evt->evt.gattc_evt.params.char_disc_rsp, central);
+            break;
 
-    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-        sd_ble_gap_sec_params_reply(central->conn_handle, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
-        break;
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+            sd_ble_gap_sec_params_reply(central->conn_handle, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
+            break;
 
-    case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
-    {
-        ble_gap_evt_conn_param_update_request_t *request = &ble_evt->evt.gap_evt.params.conn_param_update_request;
-        sd_ble_gap_conn_param_update(central->conn_handle, &request->conn_params);
-        break;
-    }
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
+        {
+            ble_gap_evt_conn_param_update_request_t *request =
+                &ble_evt->evt.gap_evt.params.conn_param_update_request;
+            sd_ble_gap_conn_param_update(central->conn_handle, &request->conn_params);
+            break;
+        }
     }
 }
 
@@ -317,6 +318,10 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, bleio_address_o
 
 void common_hal_bleio_central_disconnect(bleio_central_obj_t *self) {
     sd_ble_gap_disconnect(self->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}
+
+bool common_hal_bleio_central_get_connected(bleio_central_obj_t *self) {
+    return self->conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
 mp_obj_t common_hal_bleio_central_get_remote_services(bleio_central_obj_t *self) {

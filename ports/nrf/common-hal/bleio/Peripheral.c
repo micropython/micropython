@@ -62,60 +62,61 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_peripheral_obj_t *self = (bleio_peripheral_obj_t*)self_in;
 
     switch (ble_evt->header.evt_id) {
-    case BLE_GAP_EVT_CONNECTED: {
-        // Central has connected.
-        ble_gap_conn_params_t conn_params;
-        self->conn_handle = ble_evt->evt.gap_evt.conn_handle;
-        sd_ble_gap_ppcp_get(&conn_params);
-        sd_ble_gap_conn_param_update(ble_evt->evt.gap_evt.conn_handle, &conn_params);
-        break;
-    }
+        case BLE_GAP_EVT_CONNECTED: {
+            // Central has connected.
+            ble_gap_conn_params_t conn_params;
+            self->conn_handle = ble_evt->evt.gap_evt.conn_handle;
+            sd_ble_gap_ppcp_get(&conn_params);
+            sd_ble_gap_conn_param_update(ble_evt->evt.gap_evt.conn_handle, &conn_params);
+            break;
+        }
 
-    case BLE_GAP_EVT_DISCONNECTED:
-        // Central has disconnected.
-        self->conn_handle = BLE_CONN_HANDLE_INVALID;
-        break;
+        case BLE_GAP_EVT_DISCONNECTED:
+            // Central has disconnected.
+            self->conn_handle = BLE_CONN_HANDLE_INVALID;
+            break;
 
-    case BLE_GAP_EVT_PHY_UPDATE_REQUEST: {
-        ble_gap_phys_t const phys = {
-            .rx_phys = BLE_GAP_PHY_AUTO,
-            .tx_phys = BLE_GAP_PHY_AUTO,
-        };
-        sd_ble_gap_phy_update(ble_evt->evt.gap_evt.conn_handle, &phys);
-        break;
-    }
+        case BLE_GAP_EVT_PHY_UPDATE_REQUEST: {
+            ble_gap_phys_t const phys = {
+                .rx_phys = BLE_GAP_PHY_AUTO,
+                .tx_phys = BLE_GAP_PHY_AUTO,
+            };
+            sd_ble_gap_phy_update(ble_evt->evt.gap_evt.conn_handle, &phys);
+            break;
+        }
 
-    case BLE_GAP_EVT_ADV_SET_TERMINATED:
-        // Someday may handle timeouts or limit reached.
-        break;
+        case BLE_GAP_EVT_ADV_SET_TERMINATED:
+            // Someday may handle timeouts or limit reached.
+            break;
 
-    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-        sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
-        break;
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+            sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
+            break;
 
-    case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST: {
-        ble_gap_evt_conn_param_update_request_t *request = &ble_evt->evt.gap_evt.params.conn_param_update_request;
-        sd_ble_gap_conn_param_update(self->conn_handle, &request->conn_params);
-        break;
-    }
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST: {
+            ble_gap_evt_conn_param_update_request_t *request =
+                &ble_evt->evt.gap_evt.params.conn_param_update_request;
+            sd_ble_gap_conn_param_update(self->conn_handle, &request->conn_params);
+            break;
+        }
 
-    case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
-        sd_ble_gap_data_length_update(self->conn_handle, NULL, NULL);
-        break;
+        case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+            sd_ble_gap_data_length_update(self->conn_handle, NULL, NULL);
+            break;
 
-    case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST: {
-        sd_ble_gatts_exchange_mtu_reply(self->conn_handle, BLE_GATT_ATT_MTU_DEFAULT);
-        break;
-    }
+        case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST: {
+            sd_ble_gatts_exchange_mtu_reply(self->conn_handle, BLE_GATT_ATT_MTU_DEFAULT);
+            break;
+        }
 
-    case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-        sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
-        break;
+        case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+            sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
+            break;
 
-    default:
-        // For debugging.
-        // mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
-        break;
+        default:
+            // For debugging.
+            // mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
+            break;
     }
 }
 
