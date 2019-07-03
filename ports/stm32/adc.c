@@ -110,7 +110,6 @@
 #define ADC_CAL1                ((uint16_t*)(0x1FF1E820))
 #define ADC_CAL2                ((uint16_t*)(0x1FF1E840))
 #define ADC_CAL_BITS            (16)
-#define ADC_CHANNEL_VBAT        ADC_CHANNEL_VBAT_DIV4
 
 #elif defined(STM32L4)
 
@@ -247,7 +246,6 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.DMAContinuousRequests = DISABLE;
     #elif defined(STM32H7)
     adch->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV4;
-    adch->Init.BoostMode             = ENABLE;
     adch->Init.ScanConvMode          = DISABLE;
     adch->Init.LowPowerAutoWait      = DISABLE;
     adch->Init.Overrun               = ADC_OVR_DATA_OVERWRITTEN;

@@ -40,6 +40,8 @@
 
 #if defined(STM32F4)
 #define UART_RXNE_IS_SET(uart) ((uart)->SR & USART_SR_RXNE)
+#elif defined(STM32H7)
+#define UART_RXNE_IS_SET(uart) ((uart)->ISR & USART_ISR_RXNE_RXFNE)
 #else
 #define UART_RXNE_IS_SET(uart) ((uart)->ISR & USART_ISR_RXNE)
 #endif
