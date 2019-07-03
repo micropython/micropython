@@ -135,6 +135,7 @@ STATIC mp_obj_t mod_account_remove_data(mp_obj_t key) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_account_remove_data_obj, mod_account_remove_data);
 
 STATIC mp_obj_t mod_account_transfer(mp_obj_t address,mp_obj_t amount) {
+    bool success=false;
     mp_obj_get_int(amount);
     char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
