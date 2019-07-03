@@ -255,9 +255,10 @@ usbd_cdc_itf_t *usb_vcp_get(int idx) {
 */
 
 STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_vid, ARG_pid, ARG_msc, ARG_hid, ARG_high_speed };
+    enum { ARG_mode, ARG_port, ARG_vid, ARG_pid, ARG_msc, ARG_hid, ARG_high_speed };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_port, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = USBD_VID} },
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_msc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_empty_tuple_obj)} },
@@ -427,8 +428,14 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
     #endif
 
+    // Work out which port/peripheral to use, either user supplied or auto detect
+    int dev_id = args[ARG_port].u_int;
+    if (dev_id == -1) {
+        dev_id = pyb_usb_dev_detect();
+    }
+
     // init the USB device
-    if (!pyb_usb_dev_init(pyb_usb_dev_detect(), vid, pid, mode, msc_n, msc_unit, &hid_info)) {
+    if (!pyb_usb_dev_init(dev_id, vid, pid, mode, msc_n, msc_unit, &hid_info)) {
         goto bad_mode;
     }
 
