@@ -67,10 +67,9 @@ typedef struct _mp_obj_webrepl_t {
     mp_obj_t cur_file;
 } mp_obj_webrepl_t;
 
-// These get passed to functions which aren't force-l32, so can't be const
-STATIC char passwd_prompt[] = "Password: ";
-STATIC char connected_prompt[] = "\r\nWebREPL connected\r\n>>> ";
-STATIC char denied_prompt[] = "\r\nAccess denied\r\n";
+STATIC const char passwd_prompt[] = "Password: ";
+STATIC const char connected_prompt[] = "\r\nWebREPL connected\r\n>>> ";
+STATIC const char denied_prompt[] = "\r\nAccess denied\r\n";
 
 STATIC char webrepl_passwd[10];
 
@@ -138,7 +137,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
 
     switch (self->hdr.type) {
         case GET_VER: {
-            static char ver[] = {MICROPY_VERSION_MAJOR, MICROPY_VERSION_MINOR, MICROPY_VERSION_MICRO};
+            static const char ver[] = {MICROPY_VERSION_MAJOR, MICROPY_VERSION_MINOR, MICROPY_VERSION_MICRO};
             write_webrepl(self->sock, ver, sizeof(ver));
             self->hdr_to_recv = sizeof(struct webrepl_file);
             return;
