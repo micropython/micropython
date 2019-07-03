@@ -186,6 +186,37 @@ int spi_find_index(mp_obj_t id) {
     }
 }
 
+STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
+    #if defined(STM32F0)
+    return HAL_RCC_GetPCLK1Freq();
+    #elif defined(STM32H7)
+    if (spi->Instance == SPI1 || spi->Instance == SPI2 || spi->Instance == SPI3) {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
+    } else if (spi->Instance == SPI4 || spi->Instance == SPI5) {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45);
+    } else {
+        return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
+    }
+    #else
+    #if defined(SPI2)
+    if (spi->Instance == SPI2) {
+        // SPI2 is on APB1
+        return HAL_RCC_GetPCLK1Freq();
+    } else
+    #endif
+    #if defined(SPI3)
+    if (spi->Instance == SPI3) {
+        // SPI3 is on APB1
+        return HAL_RCC_GetPCLK1Freq();
+    } else
+    #endif
+    {
+        // SPI1, SPI4, SPI5 and SPI6 are on APB2
+        return HAL_RCC_GetPCLK2Freq();
+    }
+    #endif
+}
+
 // sets the parameters in the SPI_InitTypeDef struct
 // if an argument is -1 then the corresponding parameter is not changed
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
@@ -196,32 +227,7 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     if (prescale != 0xffffffff || baudrate != -1) {
         if (prescale == 0xffffffff) {
             // prescaler not given, so select one that yields at most the requested baudrate
-            mp_uint_t spi_clock;
-            #if defined(STM32F0)
-            spi_clock = HAL_RCC_GetPCLK1Freq();
-            #elif defined(STM32H7)
-            if (spi->Instance == SPI1 || spi->Instance == SPI2 || spi->Instance == SPI3) {
-                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
-            } else if (spi->Instance == SPI4 || spi->Instance == SPI5) {
-                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45);
-            } else {
-                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
-            }
-            #else
-            if (spi->Instance == SPI3) {
-                // SPI3 is on APB1
-                spi_clock = HAL_RCC_GetPCLK1Freq();
-            #if defined(SPI2)
-            } else if (spi->Instance == SPI2) {
-                // SPI2 is on APB1
-                spi_clock = HAL_RCC_GetPCLK1Freq();
-            #endif
-            } else {
-                // SPI1, SPI4, SPI5 and SPI6 are on APB2
-                spi_clock = HAL_RCC_GetPCLK2Freq();
-            }
-            #endif
-            prescale = (spi_clock + baudrate - 1) / baudrate;
+            prescale = (spi_get_source_freq(spi) + baudrate - 1) / baudrate;
         }
         if (prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
         else if (prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
@@ -578,34 +584,8 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     if (spi->State != HAL_SPI_STATE_RESET) {
         if (spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
-            uint spi_clock;
-            #if defined(STM32F0)
-            spi_clock = HAL_RCC_GetPCLK1Freq();
-            #elif defined(STM32H7)
-            if (spi->Instance == SPI1 || spi->Instance == SPI2 || spi->Instance == SPI3) {
-                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
-            } else if (spi->Instance == SPI4 || spi->Instance == SPI5) {
-                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45);
-            } else {
-                spi_clock = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
-            }
-            #else
-            #if defined(SPI2)
-            if (spi->Instance == SPI2) {
-                // SPI2 is on APB1
-                spi_clock = HAL_RCC_GetPCLK1Freq();
-            } else
-            #endif
-            if (spi->Instance == SPI3) {
-                // SPI2 and SPI3 are on APB1
-                spi_clock = HAL_RCC_GetPCLK1Freq();
-            } else {
-                // SPI1, SPI4, SPI5 and SPI6 are on APB2
-                spi_clock = HAL_RCC_GetPCLK2Freq();
-            }
-            #endif
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 3) + 1;
-            uint baudrate = spi_clock >> log_prescaler;
+            uint baudrate = spi_get_source_freq(spi) >> log_prescaler;
             if (legacy) {
                 mp_printf(print, ", SPI.MASTER");
             }
