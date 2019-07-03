@@ -99,6 +99,10 @@ transfer_fn_t transfer_fn;
 typedef unsigned long long (*gas_limit_fn_t) ();
 gas_limit_fn_t gas_limit_fn;
 
+char* msg_sender;
+unsigned long long msg_value;
+void change_sender(char*);
+
 #ifdef __cplusplus
 }
 #endif

@@ -789,6 +789,82 @@ STATIC mp_obj_t mp_builtin_abiexport(size_t n_args, const mp_obj_t *pos_args, mp
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_abiexport_obj, 0, mp_builtin_abiexport);
+
+typedef struct _mp_obj_register_t {
+    mp_obj_base_t base;
+} mp_obj_register_t;
+
+STATIC mp_obj_t mp_builtin_register_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_obj_register_t *o = m_new_obj(mp_obj_register_t);
+    o->base.type = type;
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
+    //mp_obj_register_t *self = MP_OBJ_TO_PTR(args[0]);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(builtin_register_public_obj, 0, builtin_register_public);
+
+STATIC const mp_rom_map_elem_t builtin_register_locals_dict_table[] = {
+        { MP_ROM_QSTR(MP_QSTR_public), MP_ROM_PTR(&builtin_register_public_obj) },
+//        { MP_ROM_QSTR(MP_QSTR_decrypt), MP_ROM_PTR(&ucryptolib_aes_decrypt_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(builtin_register_locals_dict, builtin_register_locals_dict_table);
+
+STATIC const mp_obj_type_t mp_builtin_register_type = {
+        { &mp_type_type },
+        .name = MP_QSTR_Register,
+        .make_new = mp_builtin_register_make_new,
+        .locals_dict = (void*)&builtin_register_locals_dict,
+};
+
+mp_obj_register_t register_obj =  {{&mp_builtin_register_type}};
+
+// msg
+
+
+void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        const char *s = qstr_str(attr);
+        if (strcmp(s, "sender") == 0) {
+            *dest = mp_obj_new_str(msg_sender, strlen(msg_sender));
+        } else if (strcmp(s, "value") == 0) {
+            *dest = mp_obj_new_int_from_ull(msg_value);
+        } else {
+            *dest = mp_const_none;
+        }
+    }
+}
+
+typedef struct _mp_obj_msg_t {
+    mp_obj_base_t base;
+} mp_obj_msg_t;
+
+STATIC mp_obj_t mp_builtin_msg_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_obj_msg_t *o = m_new_obj(mp_obj_msg_t);
+    o->base.type = type;
+    return MP_OBJ_FROM_PTR(o);
+}
+
+
+STATIC const mp_rom_map_elem_t builtin_msg_locals_dict_table[] = {
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(builtin_msg_locals_dict, builtin_msg_locals_dict_table);
+
+STATIC const mp_obj_type_t mp_builtin_msg_type = {
+        { &mp_type_type },
+        .name = MP_QSTR_Msg,
+        .make_new = mp_builtin_msg_make_new,
+        .locals_dict = (void*)&builtin_msg_locals_dict,
+        .attr = mp_obj_instance_attr,
+};
+
+mp_obj_msg_t msg_obj =  {{&mp_builtin_msg_type}};
+
 #endif
 
 // These are defined in terms of MicroPython API functions right away
@@ -915,6 +991,8 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sum), MP_ROM_PTR(&mp_builtin_sum_obj) },
     #if ZVM_EXTMOD
     { MP_ROM_QSTR(MP_QSTR_abiexport), MP_ROM_PTR(&mp_builtin_abiexport_obj) },
+    { MP_ROM_QSTR(MP_QSTR_msg), MP_ROM_PTR(&msg_obj) },
+    { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&register_obj) },
     #endif
 
     // built-in exceptions
@@ -954,7 +1032,6 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ZeroDivisionError), MP_ROM_PTR(&mp_type_ZeroDivisionError) },
     // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
     // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
-
     // Extra builtins as defined by a port
     MICROPY_PORT_BUILTINS
 };

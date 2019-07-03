@@ -220,6 +220,14 @@ void tvm_remove_context() {
 	mp_locals_set(dict_main);
 }
 
+void change_sender(char* new_sender) {
+    msg_sender = new_sender;
+}
+
+void change_value(unsigned long long new_value) {
+    msg_value = new_value;
+}
+
 /***********************/
 
 
