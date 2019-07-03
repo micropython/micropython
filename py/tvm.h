@@ -94,7 +94,7 @@ typedef void (*contract_call_fn_t) (const char*, const char*, const char*, tvm_e
 contract_call_fn_t contract_call_fn;
 typedef char* (*event_call_fn_t) (const char*, const char*);
 event_call_fn_t event_call_fn;
-typedef void (*transfer_fn_t) (const char*, const char*);
+typedef _Bool (*transfer_fn_t) (const char*, const char*);
 transfer_fn_t transfer_fn;
 typedef unsigned long long (*gas_limit_fn_t) ();
 gas_limit_fn_t gas_limit_fn;
