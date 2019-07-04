@@ -355,7 +355,7 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
 CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
-SRC_C += sdio.c
+SRC_C += sdio.c cywbt.c
 EXTMOD_SRC_C += extmod/network_cyw43.c
 DRIVERS_SRC_C += drivers/cyw43/cyw43_ctrl.c drivers/cyw43/cyw43_lwip.c
 LIBS += $(TOP)/drivers/cyw43/libcyw43.a
