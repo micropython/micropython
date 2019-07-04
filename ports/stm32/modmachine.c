@@ -257,6 +257,8 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     storage_flush();
     #endif
 
+    __disable_irq();
+
     #if MICROPY_HW_USES_BOOTLOADER
     if (n_args == 0 || !mp_obj_is_true(args[0])) {
         // By default, with no args given, we enter the custom bootloader (mboot)
