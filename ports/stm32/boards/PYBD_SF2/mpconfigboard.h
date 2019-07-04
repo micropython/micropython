@@ -44,6 +44,7 @@
 #define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
 #define MICROPY_BOARD_LEAVE_STOP    board_sleep(0);
 #define MICROPY_BOARD_ENTER_STANDBY board_sleep(1);
+#define MICROPY_BOARD_SDCARD_POWER  mp_hal_pin_high(pyb_pin_EN_3V3);
 void board_early_init(void);
 void board_sleep(int value);
 
