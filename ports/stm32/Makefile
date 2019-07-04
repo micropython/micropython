@@ -280,6 +280,7 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
+	bluetooth/bluetooth.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 ifeq ($(MCU_SERIES),f0)
