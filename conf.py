@@ -31,7 +31,7 @@ master_doc = 'docs/index'
 # in 'shared-bindings/index.rst'
 shared_bindings_json = 'support_matrix.json'
 if 'TRAVIS' in os.environ:
-    shared_bindings_json = os.path.join('$HOME', shared_bindings_json)
+    shared_bindings_json = os.path.join(os.environ['HOME'], shared_bindings_json)
 else:
     shared_bindings_json = os.path.join('shared-bindings', shared_bindings_json)
 with open(shared_bindings_json) as json_file:

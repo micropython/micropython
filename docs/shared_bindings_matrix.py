@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     shared_bindings_json = 'support_matrix.json'
     if 'TRAVIS' in os.environ:
-        shared_bindings_json = os.path.join('$HOME', shared_bindings_json)
+        shared_bindings_json = os.path.join(os.environ['HOME'], shared_bindings_json)
     else:
         print(final_json)
         shared_bindings_json = os.path.join('shared-bindings', shared_bindings_json)
