@@ -1,0 +1,441 @@
+{
+  "pew": {
+    "name": "_pew",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  },
+  "pixelbuf": {
+    "name": "_pixelbuf",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "circuitplayground_express_crickit",
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "ugame10",
+      "pewpew10",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "feather_m0_basic",
+      "gemma_m0",
+      "arduino_mkrzero",
+      "meowmeow",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "stage": {
+    "name": "_stage",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  },
+  "analogio": {
+    "name": "analogio",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "pirkey_m0"
+    ]
+  },
+  "audiobusio": {
+    "name": "audiobusio",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "kicksat-sprite",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "ugame10",
+      "pewpew10",
+      "mini_sam_m4",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "sparkfun_lumidrive",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "capablerobot_usbhub",
+      "feather_m0_basic",
+      "gemma_m0",
+      "hallowing_m0_express",
+      "arduino_mkrzero",
+      "trellis_m4_express",
+      "feather_radiofruit_zigbee",
+      "itsybitsy_m4_express",
+      "meowmeow",
+      "cp32-m4",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "audioio": {
+    "name": "audioio",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "pewpew10",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "sparkfun_lumidrive",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "feather_m0_basic",
+      "gemma_m0",
+      "arduino_mkrzero",
+      "feather_radiofruit_zigbee",
+      "meowmeow",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "bitbangio": {
+    "name": "bitbangio",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "pewpew10",
+      "feather_m0_express_crickit",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "feather_m0_basic",
+      "gemma_m0",
+      "arduino_mkrzero",
+      "meowmeow",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "bleio": {
+    "name": "bleio",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  },
+  "board": {
+    "name": "board",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "busio": {
+    "name": "busio",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "digitalio": {
+    "name": "digitalio",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "displayio": {
+    "name": "displayio",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "circuitplayground_express_crickit",
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "kicksat-sprite",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "circuitplayground_express",
+      "pewpew10",
+      "feather_m0_express_crickit",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "robohatmm1",
+      "feather_m0_basic",
+      "gemma_m0",
+      "arduino_mkrzero",
+      "meowmeow",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "frequencyio": {
+    "name": "frequencyio",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "circuitplayground_express_crickit",
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "ugame10",
+      "circuitplayground_express",
+      "pewpew10",
+      "feather_m0_express_crickit",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "robohatmm1",
+      "feather_m0_basic",
+      "gemma_m0",
+      "hallowing_m0_express",
+      "arduino_mkrzero",
+      "meowmeow",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "gamepad": {
+    "name": "gamepad",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "pewpew10",
+      "feather_m0_express_crickit",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "feather_m0_basic",
+      "gemma_m0",
+      "arduino_mkrzero",
+      "meowmeow",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "gamepadshift": {
+    "name": "gamepadshift",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  },
+  "i2cslave": {
+    "name": "i2cslave",
+    "full_build": "1",
+    "default_value": "None",
+    "excluded": [
+      "circuitplayground_express_crickit",
+      "feather_m0_rfm69",
+      "arduino_mkr1300",
+      "bast_pro_mini_m0",
+      "feather_m0_adalogger",
+      "ugame10",
+      "circuitplayground_express",
+      "pewpew10",
+      "feather_m0_express_crickit",
+      "trinket_m0",
+      "catwan_usbstick",
+      "pirkey_m0",
+      "feather_m0_rfm9x",
+      "sparkfun_samd21_mini",
+      "feather_m0_basic",
+      "gemma_m0",
+      "hallowing_m0_express",
+      "arduino_mkrzero",
+      "meowmeow",
+      "escornabot_makech",
+      "sparkfun_samd21_dev",
+      "arduino_zero",
+      "uchip"
+    ]
+  },
+  "math": {
+    "name": "math",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "pirkey_m0"
+    ]
+  },
+  "microcontroller": {
+    "name": "microcontroller",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "neopixel_write": {
+    "name": "neopixel_write",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "ugame10",
+      "pirkey_m0"
+    ]
+  },
+  "network": {
+    "name": "network",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  },
+  "nvm": {
+    "name": "nvm",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "os": {
+    "name": "os",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "ps2io": {
+    "name": "ps2io",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  },
+  "pulseio": {
+    "name": "pulseio",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "random": {
+    "name": "random",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "rotaryio": {
+    "name": "rotaryio",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "pewpew10",
+      "pirkey_m0"
+    ]
+  },
+  "rtc": {
+    "name": "rtc",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "ugame10",
+      "pewpew10",
+      "pirkey_m0"
+    ]
+  },
+  "storage": {
+    "name": "storage",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "struct": {
+    "name": "struct",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "supervisor": {
+    "name": "supervisor",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "time": {
+    "name": "time",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": []
+  },
+  "touchio": {
+    "name": "touchio",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "kicksat-sprite",
+      "ugame10",
+      "datalore_ip_m4",
+      "pybadge",
+      "pyportal",
+      "sam32",
+      "mini_sam_m4",
+      "grandcentral_m4_express",
+      "feather_m4_express",
+      "pirkey_m0",
+      "pygamer",
+      "capablerobot_usbhub",
+      "metro_m4_airlift_lite",
+      "trellis_m4_express",
+      "itsybitsy_m4_express",
+      "pygamer_advance",
+      "metro_m4_express",
+      "cp32-m4",
+      "pybadge_airlift"
+    ]
+  },
+  "uheap": {
+    "name": "uheap",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  },
+  "usb_hid": {
+    "name": "usb_hid",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "ugame10"
+    ]
+  },
+  "usb_midi": {
+    "name": "usb_midi",
+    "full_build": "0",
+    "default_value": "1",
+    "excluded": [
+      "ugame10",
+      "pewpew10"
+    ]
+  },
+  "ustack": {
+    "name": "ustack",
+    "full_build": "0",
+    "default_value": "0",
+    "excluded": []
+  }
+}
