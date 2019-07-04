@@ -297,7 +297,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_write_callback_obj, bluetooth_write_c
 
 // Call the registered callback for this characteristic, if one has been
 // registered.
-void mp_bt_characteristic_on_write(uint16_t conn_handle, uint16_t value_handle, const void *value, size_t value_len) {
+void mp_bt_characteristic_on_write(uint16_t conn_handle, mp_bt_characteristic_handle_t value_handle, const void *value, size_t value_len) {
     // Iterate through the linked list to find to find the characteristic
     // with the given handle.
     mp_bt_characteristic_callback_t *item = MP_STATE_PORT(bt_characteristic_callbacks);

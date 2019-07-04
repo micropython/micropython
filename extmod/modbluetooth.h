@@ -101,7 +101,7 @@ int mp_bt_characteristic_value_notify(mp_bt_characteristic_t *characteristic, ui
 int mp_bt_characteristic_value_get(mp_bt_characteristic_t *characteristic, void *value, size_t *value_len);
 
 // Call this when a characteristic is written to.
-void mp_bt_characteristic_on_write(uint16_t conn_handle, uint16_t value_handle, const void *value, size_t value_len);
+void mp_bt_characteristic_on_write(uint16_t conn_handle, mp_bt_characteristic_handle_t value_handle, const void *value, size_t value_len);
 
 // Disconnect a connected central.
 int mp_bt_device_disconnect(uint16_t conn_handle);
