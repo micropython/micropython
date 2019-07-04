@@ -124,15 +124,20 @@ Setup
 -----
 
 An ARM compiler is required for the build, along with the associated binary
-utilities.  On Ubuntu, these can be installed as follows:
+utilities.  They can be installed as follows:
 
-.. code-block:: shell
+- Ubuntu
 
-    sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
-    sudo apt-get install gcc-arm-embedded
+  .. code-block:: shell
 
-On Arch Linux the compiler is available for via the package
-``arm-none-eabi-gcc``.
+      sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
+      sudo apt-get install gcc-arm-embedded
+
+- Arch Linux
+
+  .. code-block:: shell
+
+      sudo pacman -S arm-none-eabi-gcc arm-none-eabi-newlib 
 
 For other systems, the `GNU Arm Embedded Toolchain <https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads>`_
 may be available in binary form.
