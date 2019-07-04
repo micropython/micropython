@@ -671,7 +671,7 @@ STATIC mp_obj_t characteristic_irq(size_t n_args, const mp_obj_t *pos_args, mp_m
     // Else:
     //   Replace a registered callback for this characteristic.
     //   If none exists, add it at the end of the list.
-    mp_bt_characteristic_callback_t **entry = &MP_STATE_PORT(bt_characteristic_callbacks);
+    mp_bt_characteristic_callback_t **entry = (mp_bt_characteristic_callback_t**)&MP_STATE_PORT(bt_characteristic_callbacks);
     while (1) {
         if (*entry == NULL) {
             // found the end of the list
