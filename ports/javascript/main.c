@@ -249,6 +249,9 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
+#else
+	#pragma message "file.c will require external WASM_FILE_API functions"
+	#pragma message "see wasm_file_api.txt"
 #endif
 
 void nlr_jump_fail(void *val) {
