@@ -193,7 +193,7 @@ STCODEGAS g_CodeGas[] = {
 
 };
 
-int g_iGas = 100000;
+long long g_iGas = 100000;
 
 #define GAS_PRECISION 10000
 
@@ -202,7 +202,7 @@ int mem_gas = 0;
 int cpu_gas = 0;
 
 void setGas(int value) {
-    g_iGas = value * GAS_PRECISION;
+    g_iGas = (long long)value * GAS_PRECISION;
     db_gas = 0;
     mem_gas = 0;
     cpu_gas = 0;
@@ -260,8 +260,9 @@ bool FireGas(int gas)
 bool CheckGas(byte* op)
 {
     GASPRICE gas = GetGas(op);
-    cpu_gas += gas * GAS_PRECISION;
-    if (FireGas(gas)) {
+    int gas_used = gas * GAS_PRECISION;
+    cpu_gas += gas_used;
+    if (FireGas(gas_used)) {
         return true;
     }
     else {
