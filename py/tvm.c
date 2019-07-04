@@ -103,17 +103,8 @@ void tvm_delete(void) {
 }
 
 void tvm_set_lib_path(const char *path) {
-    size_t path_num = 2;
-    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), path_num);
-    mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-
-    int path_l = strlen(path);
-    vstr_t vstr;
-    vstr_init(&vstr, path_l);
-    vstr_add_strn(&vstr, path, path_l);
-    path_items[1] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(QSTR_FROM_STR_STATIC(path)));
 }
 
 void tvm_print_result(tvm_execute_result_t *result) {
