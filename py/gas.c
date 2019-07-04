@@ -193,7 +193,7 @@ STCODEGAS g_CodeGas[] = {
 
 };
 
-int g_iGas = 100000;
+long long g_iGas = 100000;
 
 #define GAS_PRECISION 10000
 
