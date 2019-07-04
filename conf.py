@@ -13,6 +13,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import json
 import sys
 import os
 
@@ -25,6 +26,19 @@ sys.path.insert(0, os.path.abspath('docs'))
 sys.path.insert(0, os.path.abspath('.'))
 
 master_doc = 'docs/index'
+
+# Grab the JSON values to use while building the module support matrix
+# in 'shared-bindings/index.rst'
+shared_bindings_json = 'support_matrix.json'
+if 'TRAVIS' in os.environ:
+    shared_bindings_json = os.path.join('$HOME', shared_bindings_json)
+else:
+    shared_bindings_json = os.path.join('shared-bindings', shared_bindings_json)
+with open(shared_bindings_json) as json_file:
+    modules_support_matrix = json.load(json_file)
+html_context = {
+    'support_matrix': modules_support_matrix
+}
 
 # -- General configuration ------------------------------------------------
 
@@ -40,7 +54,8 @@ extensions = [
     'sphinxcontrib.rsvgconverter',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'sphinx.ext.coverage'
+    'sphinx.ext.coverage',
+    'rstjinja'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
