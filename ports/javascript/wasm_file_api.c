@@ -6,8 +6,9 @@
 #endif
 
 // VERY BAD
-int wasm_file_open(const char *url) {
-    fprintf(stderr,"204:wasm_file_open[%s]\n", url);
+int
+wasm_file_open(const char *url) {
+    fprintf(stderr,"10:wasm_file_open[%s]\n", url);
 
     if (strlen(url)>1 && url[0]==':') {
         fprintf(stderr,"  -> same host[%s]\n", url);

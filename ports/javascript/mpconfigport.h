@@ -138,7 +138,7 @@ extern const struct _mp_obj_module_t mp_module_SDL;
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvindev), (mp_obj_t)&mp_module_lvindev},\
     { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },
 #else
-#define MICROPY_PY_LVGL_DEF 
+#define MICROPY_PY_LVGL_DEF
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -228,3 +228,6 @@ typedef long mp_off_t;
     void *mp_lv_user_data; \
     const char *readline_hist[8];
 
+
+
+#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
