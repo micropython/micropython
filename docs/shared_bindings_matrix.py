@@ -61,10 +61,10 @@ def build_json(modules, configs):
         #print(module, "|", find_config)
         if not find_config:
             continue
-        full_build = int("FULL_BUILD" in find_config[0])
+        full_build = int("FULL_BUILD" in find_config.group(0))
         #print(find_config[1])
         if not full_build:
-            default_val = find_config[1]
+            default_val = find_config.group(1)
         else:
             default_val = "None"
         base_json[search_name] = {
@@ -107,8 +107,8 @@ def get_excluded_boards(base_json):
                     find_module = re.search(re_pattern, contents)
                     if not find_module:
                         continue
-                    if (find_module[1] == "0" and
-                       find_module[1] != base_json[module]["default_value"]):
+                    if (find_module.group(1) == "0" and
+                       find_module.group(1) != base_json[module]["default_value"]):
                             base_json[module]["excluded"].append(entry.name)
 
     return base_json
