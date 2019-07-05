@@ -18,16 +18,8 @@
 #endif
 
 // Should be maximum of possible config descriptors that might be configured
-#if MICROPY_HW_USB_CDC_NUM == 3
-// Maximum is MSC+CDC+CDC+CDC
-#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + 23 + (8 + 58) + (8 + 58) + (8 + 58))
-#elif MICROPY_HW_USB_CDC_NUM == 2
-// Maximum is MSC+CDC+CDC
-#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + 23 + (8 + 58) + (8 + 58))
-#else
-// Maximum is HID+CDC
-#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + 32 + (8 + 58))
-#endif
+// Maximum is: 9 + MSC + NxCDC + HID
+#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + (23) + MICROPY_HW_USB_CDC_NUM * (8 + 58) + (9 + 9 + 7 + 7))
 
 // CDC, MSC and HID packet sizes
 #define MSC_FS_MAX_PACKET           (64)
@@ -118,7 +110,7 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     USBD_HandleTypeDef *pdev;
 
     uint8_t usbd_mode;
-    uint8_t usbd_config_desc_size;
+    uint16_t usbd_config_desc_size;
 
     #if MICROPY_HW_USB_MSC
     USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;

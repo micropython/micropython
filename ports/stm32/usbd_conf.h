@@ -39,7 +39,7 @@
 
 #include "py/mpconfig.h"
 
-#define USBD_MAX_NUM_INTERFACES               5
+#define USBD_MAX_NUM_INTERFACES               8
 #define USBD_MAX_NUM_CONFIGURATION            1
 #define USBD_MAX_STR_DESC_SIZ                 0x100
 #if MICROPY_HW_USB_SELF_POWERED
