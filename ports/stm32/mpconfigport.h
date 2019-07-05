@@ -165,7 +165,9 @@
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_UWEBSOCKET       (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL          (MICROPY_PY_LWIP)
+#ifndef MICROPY_PY_FRAMEBUF
 #define MICROPY_PY_FRAMEBUF         (1)
+#endif
 #ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET          (1)
 #endif
