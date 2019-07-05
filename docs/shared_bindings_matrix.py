@@ -106,6 +106,10 @@ def get_excluded_boards(base_json):
                     re_pattern = "CIRCUITPY_{}\s=\s(\w)".format(module.upper())
                     find_module = re.search(re_pattern, contents)
                     if not find_module:
+                        # check if default inclusion is off ('0'). if the board doesn't
+                        # have it explicitly enabled, its excluded.
+                        if base_json[module]["default_value"] == "0":
+                            base_json[module]["excluded"].append(entry.name)
                         continue
                     if (find_module.group(1) == "0" and
                        find_module.group(1) != base_json[module]["default_value"]):
