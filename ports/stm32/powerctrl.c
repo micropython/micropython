@@ -84,7 +84,31 @@ void powerctrl_check_enter_bootloader(void) {
     }
 }
 
-#if !defined(STM32F0)
+#if defined(STM32L0)
+void SystemClock_Config(void) {
+    // Enable power control peripheral
+    __HAL_RCC_PWR_CLK_ENABLE();
+
+    // Use the 16MHz internal oscillator
+    RCC->CR |= RCC_CR_HSION;
+    while (!(RCC->CR & RCC_CR_HSIRDY)) {
+    }
+    const uint32_t sysclk_src = 1;
+
+    // Select SYSCLK source
+    RCC->CFGR |= sysclk_src << RCC_CFGR_SW_Pos;
+    while (((RCC->CFGR >> RCC_CFGR_SWS_Pos) & 0x3) != sysclk_src) {
+        // Wait for SYSCLK source to change
+    }
+
+    SystemCoreClockUpdate();
+
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+}
+#endif
+
+#if !defined(STM32F0) && !defined(STM32L0)
 
 // Assumes that PLL is used as the SYSCLK source
 int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai) {
@@ -158,7 +182,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !(defined(STM32F0) || defined(STM32L4))
+#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
@@ -333,7 +357,7 @@ void powerctrl_enter_stop_mode(void) {
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
     #endif
 
-    #if !defined(STM32F0) && !defined(STM32L4)
+    #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -426,7 +450,7 @@ void powerctrl_enter_standby_mode(void) {
 
     // Note: we only support RTC ALRA, ALRB, WUT and TS.
     // TODO support TAMP and WKUP (PA0 external pin).
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #else

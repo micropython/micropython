@@ -73,6 +73,17 @@ STATIC bool rtc_use_lse = false;
 STATIC uint32_t rtc_startup_tick;
 STATIC bool rtc_need_init_finalise = false;
 
+#if defined(STM32L0)
+#define BDCR CSR
+#define RCC_BDCR_RTCEN RCC_CSR_RTCEN
+#define RCC_BDCR_RTCSEL RCC_CSR_RTCSEL
+#define RCC_BDCR_RTCSEL_0 RCC_CSR_RTCSEL_0
+#define RCC_BDCR_RTCSEL_1 RCC_CSR_RTCSEL_1
+#define RCC_BDCR_LSEON RCC_CSR_LSEON
+#define RCC_BDCR_LSERDY RCC_CSR_LSERDY
+#define RCC_BDCR_LSEBYP RCC_CSR_LSEBYP
+#endif
+
 void rtc_init_start(bool force_init) {
     RTCHandle.Instance = RTC;
 
@@ -287,7 +298,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         // Exit Initialization mode
         hrtc->Instance->ISR &= (uint32_t)~RTC_ISR_INIT;
 
-        #if defined(STM32L4) || defined(STM32H7)
+        #if defined(STM32L0) || defined(STM32L4) || defined(STM32H7)
         hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMOUTTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
         #elif defined(STM32F7)
@@ -539,7 +550,7 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-#if defined(STM32F0)
+#if defined(STM32F0) || defined(STM32L0)
 #define RTC_WKUP_IRQn RTC_IRQn
 #endif
 

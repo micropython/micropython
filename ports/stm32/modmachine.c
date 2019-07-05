@@ -56,6 +56,11 @@
 #include "uart.h"
 #include "wdt.h"
 
+#if defined(STM32L0)
+// L0 does not have a BOR, so use POR instead
+#define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
+#endif
+
 #if defined(STM32L4)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
@@ -300,7 +305,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L4)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
         mp_raise_NotImplementedError("machine.freq set not supported yet");
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
