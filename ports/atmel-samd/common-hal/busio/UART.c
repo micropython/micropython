@@ -55,7 +55,7 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
         uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint8_t receiver_buffer_size) {
+        uint16_t receiver_buffer_size) {
     Sercom* sercom = NULL;
     uint8_t sercom_index = 255; // Unset index
     uint32_t rx_pinmux = 0;
