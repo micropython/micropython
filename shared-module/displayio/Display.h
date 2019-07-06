@@ -52,11 +52,13 @@ typedef struct {
     uint64_t last_backlight_refresh;
     displayio_buffer_transform_t transform;
     displayio_area_t area;
+    mp_float_t current_brightness;
     uint16_t width;
     uint16_t height;
-    uint16_t color_depth;
+    _displayio_colorspace_t colorspace;
     int16_t colstart;
     int16_t rowstart;
+    uint16_t brightness_command;
     uint8_t set_column_command;
     uint8_t set_row_command;
     uint8_t write_ram_command;

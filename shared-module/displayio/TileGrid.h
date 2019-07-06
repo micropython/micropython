@@ -32,6 +32,7 @@
 
 #include "py/obj.h"
 #include "shared-module/displayio/area.h"
+#include "shared-module/displayio/Palette.h"
 
 typedef struct {
     mp_obj_base_t base;
@@ -71,7 +72,7 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
 
 // Area is always in absolute screen coordinates. Update transform is used to inform TileGrids how
 // they relate to it.
-bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
+bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
 void displayio_tilegrid_update_transform(displayio_tilegrid_t *group, const displayio_buffer_transform_t* parent_transform);
 
 // Fills in area with the maximum bounds of all related pixels in the last rendered frame. Returns

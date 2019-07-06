@@ -71,6 +71,8 @@ void board_init(void) {
         0, // row start
         90, // rotation
         16, // Color depth
+        false, // Grayscale
+        false, // pixels in a byte share a row. Only valid for depths < 8
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
@@ -78,6 +80,7 @@ void board_init(void) {
         display_init_sequence,
         sizeof(display_init_sequence),
         &pin_PA01,  // backlight pin
+        0x100, // Brightness command. Only available when < 0xff
         1.0f, // brightness (ignored)
         true, // auto_brightness
         false, // single_byte_bounds

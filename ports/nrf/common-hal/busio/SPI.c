@@ -61,7 +61,7 @@ STATIC spim_peripheral_t spim_peripherals[] = {
 #endif
 };
 
-STATIC bool never_reset[4];
+STATIC bool never_reset[MP_ARRAY_SIZE(spim_peripherals)];
 
 void spi_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {

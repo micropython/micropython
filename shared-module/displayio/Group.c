@@ -270,19 +270,19 @@ void displayio_group_construct(displayio_group_t* self, displayio_group_child_t*
     self->in_group = false;
 }
 
-bool displayio_group_fill_area(displayio_group_t *self, const displayio_area_t* area, uint32_t* mask, uint32_t* buffer) {
+bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t* buffer) {
     // Track if any of the layers finishes filling in the given area. We can ignore any remaining
     // layers at that point.
     bool full_coverage = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i].native;
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
-            if (displayio_tilegrid_fill_area(layer, area, mask, buffer)) {
+            if (displayio_tilegrid_fill_area(layer, colorspace, area, mask, buffer)) {
                 full_coverage = true;
                 break;
             }
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
-            if (displayio_group_fill_area(layer, area, mask, buffer)) {
+            if (displayio_group_fill_area(layer, colorspace, area, mask, buffer)) {
                 full_coverage = true;
                 break;
             }

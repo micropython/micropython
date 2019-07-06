@@ -95,7 +95,12 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
         MICROPY_VM_HOOK_LOOP ;
 #endif
     }
-    displayio_display_set_region_to_update(display, x0, y0, x1, y1);
+    displayio_area_t area;
+    area.x1 = x0;
+    area.y1 = y0;
+    area.x2 = x1;
+    area.y2 = y1;
+    displayio_display_set_region_to_update(display, &area);
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size, display);
     displayio_display_end_transaction(display);
 

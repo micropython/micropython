@@ -317,6 +317,7 @@ $(filter $(SRC_PATTERNS), \
 	displayio/Display.c \
 	displayio/FourWire.c \
 	displayio/Group.c \
+	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \

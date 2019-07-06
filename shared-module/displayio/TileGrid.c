@@ -291,7 +291,7 @@ void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint
     self->full_change = true;
 }
 
-bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
+bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
     // If no tiles are present we have no impact.
     uint8_t* tiles = self->tiles;
     if (self->inline_tiles) {
@@ -371,12 +371,13 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const displayio_ar
         y_shift = temp_shift;
     }
 
+    uint8_t pixels_per_byte = 8 / colorspace->depth;
     for (int16_t y = start_y; y < end_y; y++) {
-        int16_t row_start = start + (y - start_y + y_shift) * y_stride;
+        int16_t row_start = start + (y - start_y + y_shift) * y_stride; // in pixels
         int16_t local_y = y / self->absolute_transform->scale;
         for (int16_t x = start_x; x < end_x; x++) {
             // Compute the destination pixel in the buffer and mask based on the transformations.
-            int16_t offset = row_start + (x - start_x + x_shift) * x_stride;
+            int16_t offset = row_start + (x - start_x + x_shift) * x_stride; // in pixels
 
             // This is super useful for debugging out range accesses. Uncomment to use.
             // if (offset < 0 || offset >= (int32_t) displayio_area_size(area)) {
@@ -404,23 +405,38 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const displayio_ar
                 value = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, tile_x, tile_y);
             }
 
-            uint16_t* pixel = ((uint16_t*) buffer) + offset;
+            uint32_t pixel;
+            bool opaque = true;
             if (self->pixel_shader == mp_const_none) {
-                *pixel = value;
-                return true;
+                pixel = value;
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
-                if (!displayio_palette_get_color(self->pixel_shader, value, pixel)) {
-                    // A pixel is transparent so we haven't fully covered the area ourselves.
-                    full_coverage = false;
-                } else {
-                    mask[offset / 32] |= 1 << (offset % 32);
-                }
+                opaque = displayio_palette_get_color(self->pixel_shader, colorspace, value, &pixel);
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
-                if (!common_hal_displayio_colorconverter_convert(self->pixel_shader, value, pixel)) {
-                    // A pixel is transparent so we haven't fully covered the area ourselves.
-                    full_coverage = false;
-                } else {
-                    mask[offset / 32] |= 1 << (offset % 32);
+                opaque = displayio_colorconverter_convert(self->pixel_shader, colorspace, value, &pixel);
+            }
+            if (!opaque) {
+                // A pixel is transparent so we haven't fully covered the area ourselves.
+                full_coverage = false;
+            } else {
+                mask[offset / 32] |= 1 << (offset % 32);
+                if (colorspace->depth == 16) {
+                    *(((uint16_t*) buffer) + offset) = pixel;
+                } else if (colorspace->depth == 8) {
+                    *(((uint8_t*) buffer) + offset) = pixel;
+                } else if (colorspace->depth < 8) {
+                    // Reorder the offsets to pack multiple rows into a byte (meaning they share a column).
+                    if (!colorspace->pixels_in_byte_share_row) {
+                        uint16_t width = displayio_area_width(area);
+                        uint16_t row = offset / width;
+                        uint16_t col = offset % width;
+                        // Dividing by pixels_per_byte does truncated division even if we multiply it back out.
+                        offset = col * pixels_per_byte + (row / pixels_per_byte) * pixels_per_byte * width + row % pixels_per_byte;
+                        // Also useful for validating that the bitpacking worked correctly.
+                        // if (offset > displayio_area_size(area)) {
+                        //     asm("bkpt");
+                        // }
+                    }
+                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= pixel << ((offset % pixels_per_byte) * colorspace->depth);
                 }
             }
         }

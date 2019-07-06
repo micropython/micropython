@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017, 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,37 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALETTE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALETTE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_I2CDISPLAY_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_I2CDISPLAY_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "shared-module/displayio/I2CDisplay.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "py/obj.h"
+extern const mp_obj_type_t displayio_i2cdisplay_type;
 
-typedef struct {
-    uint8_t depth;
-    bool grayscale;
-    bool pixels_in_byte_share_row;
-    uint8_t hue;
-} _displayio_colorspace_t;
+void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
+    busio_i2c_obj_t* i2c, uint16_t device_address, const mcu_pin_obj_t* reset);
 
-typedef struct {
-    uint32_t rgb888;
-    uint16_t rgb565;
-    uint8_t luma;
-    bool transparent; // This may have additional bits added later for blending.
-} _displayio_color_t;
+void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self);
 
-typedef struct {
-    mp_obj_base_t base;
-    _displayio_color_t* colors;
-    uint32_t color_count;
-    bool needs_refresh;
-} displayio_palette_t;
+bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t self);
 
-bool displayio_palette_get_color(displayio_palette_t *palette, const _displayio_colorspace_t* colorspace, uint32_t palette_index, uint32_t* color);
-bool displayio_palette_needs_refresh(displayio_palette_t *self);
-void displayio_palette_finish_refresh(displayio_palette_t *self);
+void common_hal_displayio_i2cdisplay_send(mp_obj_t self, bool command, uint8_t *data, uint32_t data_length);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_PALLETE_H
+void common_hal_displayio_i2cdisplay_end_transaction(mp_obj_t self);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_I2CDISPLAY_H

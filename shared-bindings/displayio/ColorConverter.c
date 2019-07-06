@@ -69,8 +69,10 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
     if (!mp_obj_get_int_maybe(color_obj, &color)) {
         mp_raise_ValueError(translate("color should be an int"));
     }
-    uint16_t output_color;
-    common_hal_displayio_colorconverter_convert(self, color, &output_color);
+    _displayio_colorspace_t colorspace;
+    colorspace.depth = 16;
+    uint32_t output_color;
+    common_hal_displayio_colorconverter_convert(self, &colorspace, color, &output_color);
     return MP_OBJ_NEW_SMALL_INT(output_color);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorconverter_obj_convert);
