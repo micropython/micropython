@@ -241,11 +241,17 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
 mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
+
+#ifndef WASM_FILE_API
 #if !MICROPY_PY_IO_FILEIO
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+#endif
+#else
+	#pragma message "file.c will require external WASM_FILE_API functions"
+	#pragma message "see wasm_file_api.txt"
 #endif
 
 void nlr_jump_fail(void *val) {

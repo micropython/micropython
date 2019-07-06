@@ -20,13 +20,23 @@ BOTH_CFLAGS := -s WASM=0
 
 CPP = clang -E
 
+#for lvgl
+CPPFLAGS += -I$(EM_CACHE)/asmjs/ports-builds/sdl2/include
+
+ifdef WASM_FILE_API
+	CPPFLAGS += -DWASM_FILE_API=1 
+endif
+
 ifdef EMSCRIPTEN
-    CPP += -isystem $(EMSCRIPTEN)/system/include/libc -isystem $(EMSCRIPTEN)/system/include/libcxx -isystem $(EM_CACHE)/asmjs/ports-builds/sdl2/include -isystem $(EMSCRIPTEN)/system/include
+    CPP += --sysroot $(EMSCRIPTEN)/system
+    CPP += -isystem $(EMSCRIPTEN)/system/include/libc
+    CPP += -isystem $(EMSCRIPTEN)/system/include/libcxx
+    CPP += $(CPPFLAGS)
     # Act like 'emcc'
     CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
 endif
 
-CFLAGS = -m32 -Wall $(INC) $(COPT)
+CFLAGS = -m32 -Wall $(INC) $(COPT) $(CPPFLAGS)
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 
 OPTIM := -O2
@@ -34,6 +44,7 @@ OPTIM := -O2
 CFLAGS += $(OPTIM) -DNDEBUG -D__EMSCRIPTEN__ -DLV_CONF_INCLUDE_SIMPLE
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += $(CFLAGS_MOD)
+
 
 SRC_LIB = $(addprefix lib/,\
 	utils/interrupt_char.c \
@@ -45,8 +56,13 @@ SRC_LIB = $(addprefix lib/,\
 SRC_C = \
 	main.c \
 	mphalport.c \
-	modutime.c \
-	$(SRC_MOD)
+	modutime.c
+	
+ifdef WASM_FILE_API
+	SRC_C += file.c wasm_file_api.c
+endif	
+
+SRC_C += $(SRC_MOD)
 
 LIB_SRC_C = $(addprefix lib/,\
     lv_bindings/driver/SDL/SDL_monitor.c \
