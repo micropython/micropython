@@ -155,9 +155,7 @@ void reset_status_led() {
         reset_pin_number(MICROPY_HW_APA102_SCK->number);
     #endif
     #if defined(CP_RGB_STATUS_LED)
-        reset_pin_number(CP_RGB_STATUS_R->number);
-        reset_pin_number(CP_RGB_STATUS_G->number);
-        reset_pin_number(CP_RGB_STATUS_B->number);
+        // TODO: Support sharing status LED with user.
     #endif
 }
 
@@ -199,9 +197,9 @@ void new_status_color(uint32_t rgb) {
         uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
         uint8_t blue_u8 = rgb_adjusted & 0xFF;
  
-        status_rgb_color[0] = (uint16_t) (red_u8 << 8) + red_u8;
-        status_rgb_color[1] = (uint16_t) (green_u8 << 8) + green_u8;
-        status_rgb_color[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
+        status_rgb_color[0] = (1<<16) - 1 - ((uint16_t) (red_u8 << 8) + red_u8);
+        status_rgb_color[1] = (1<<16) - 1 - ((uint16_t) (green_u8 << 8) + green_u8);
+        status_rgb_color[2] = (1<<16) - 1 - ((uint16_t) (blue_u8 << 8) + blue_u8);
         
         common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
         common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
@@ -237,13 +235,14 @@ void temp_status_color(uint32_t rgb) {
         uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
         uint8_t blue_u8 = rgb_adjusted & 0xFF;
  
-        status_rgb_color[0] = (uint16_t) (red_u8 << 8) + red_u8;
-        status_rgb_color[1] = (uint16_t) (green_u8 << 8) + green_u8;
-        status_rgb_color[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
+        uint16_t temp_status_color_rgb[3];
+        temp_status_color_rgb[0] = (uint16_t) (red_u8 << 8) + red_u8;
+        temp_status_color_rgb[1] = (uint16_t) (green_u8 << 8) + green_u8;
+        temp_status_color_rgb[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
         
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
     #endif
 }
 
