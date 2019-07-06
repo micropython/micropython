@@ -28,12 +28,13 @@ ifdef WASM_FILE_API
 endif
 
 ifdef EMSCRIPTEN
-    CPP += --sysroot $(EMSCRIPTEN)/system
-    CPP += -isystem $(EMSCRIPTEN)/system/include/libc
-    CPP += -isystem $(EMSCRIPTEN)/system/include/libcxx
-    CPP += $(CPPFLAGS)
-    # Act like 'emcc'
-    CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
+	CPP += -D__EMSCRIPTEN__ -D__CPP__
+	CPP += --sysroot $(EMSCRIPTEN)/system
+	CPP += -isystem $(EMSCRIPTEN)/system/include/libc
+	CPP += -isystem $(EMSCRIPTEN)/system/include/libcxx
+	CPP += $(CPPFLAGS)
+	# Act like 'emcc'
+	CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
 endif
 
 CFLAGS = -m32 -Wall $(INC) $(COPT) $(CPPFLAGS)
