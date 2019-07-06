@@ -337,7 +337,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     byte *ip2;
     bytecode_prelude_t prelude = {0};
     #if MICROPY_EMIT_MACHINE_CODE
-    size_t prelude_offset;
+    size_t prelude_offset = 0;
     mp_uint_t type_sig = 0;
     size_t n_qstr_link = 0;
     #endif

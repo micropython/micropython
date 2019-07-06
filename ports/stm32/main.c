@@ -43,6 +43,7 @@
 #include "drivers/cyw43/cyw43.h"
 #endif
 
+#include "mpu.h"
 #include "systick.h"
 #include "pendsv.h"
 #include "powerctrl.h"
@@ -409,6 +410,8 @@ void stm32_main(uint32_t reset_mode) {
 
     #endif
 
+    mpu_init();
+
     #if __CORTEX_M >= 0x03
     // Set the priority grouping
     NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
@@ -649,7 +652,7 @@ soft_reset:
     #if MICROPY_HW_ENABLE_USB
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
-        pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, 0, NULL, NULL);
+        pyb_usb_dev_init(pyb_usb_dev_detect(), USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, 0, NULL, NULL);
     }
     #endif
 

@@ -68,6 +68,7 @@ typedef struct _mp_spiflash_t {
 } mp_spiflash_t;
 
 void mp_spiflash_init(mp_spiflash_t *self);
+void mp_spiflash_deepsleep(mp_spiflash_t *self, int value);
 
 // These functions go direct to the SPI flash device
 int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr);

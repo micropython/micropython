@@ -120,14 +120,39 @@ void pyb_usb_init0(void) {
     pyb_usb_vcp_init0();
 }
 
-bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, const void *msc_unit, USBD_HID_ModeInfoTypeDef *hid_info) {
+int pyb_usb_dev_detect(void) {
+    if (usb_device.enabled) {
+        return usb_device.hUSBDDevice.id;
+    }
+
+    #if MICROPY_HW_USB_FS && MICROPY_HW_USB_HS
+    // Try to auto-detect which USB is connected by reading DP/DM pins
+    for (int i = 0; i < 2; ++i) {
+        mp_hal_pin_obj_t dp = i == 0 ? pyb_pin_USB_DP : pyb_pin_USB_HS_DP;
+        mp_hal_pin_obj_t dm = i == 0 ? pyb_pin_USB_DM : pyb_pin_USB_HS_DM;
+        mp_hal_pin_config(dp, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+        mp_hal_pin_config(dm, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+        int state = mp_hal_pin_read(dp) == 0 && mp_hal_pin_read(dm) == 0;
+        mp_hal_pin_config(dp, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+        mp_hal_pin_config(dm, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+        if (state) {
+            // DP and DM pins are actively held low so assume USB is connected
+            return i == 0 ? USB_PHY_FS_ID : USB_PHY_HS_ID;
+        }
+    }
+    #endif
+
+    return MICROPY_HW_USB_MAIN_DEV;
+}
+
+bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, const void *msc_unit, USBD_HID_ModeInfoTypeDef *hid_info) {
     usb_device_t *usb_dev = &usb_device;
     if (!usb_dev->enabled) {
         // only init USB once in the device's power-lifetime
 
         // set up the USBD state
         USBD_HandleTypeDef *usbd = &usb_dev->hUSBDDevice;
-        usbd->id = MICROPY_HW_USB_MAIN_DEV;
+        usbd->id = dev_id;
         usbd->dev_state  = USBD_STATE_DEFAULT;
         usbd->pDesc = (USBD_DescriptorsTypeDef*)&USBD_Descriptors;
         usbd->pClass = &USBD_CDC_MSC_HID;
@@ -230,9 +255,10 @@ usbd_cdc_itf_t *usb_vcp_get(int idx) {
 */
 
 STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_vid, ARG_pid, ARG_msc, ARG_hid, ARG_high_speed };
+    enum { ARG_mode, ARG_port, ARG_vid, ARG_pid, ARG_msc, ARG_hid, ARG_high_speed };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_port, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = USBD_VID} },
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_msc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_empty_tuple_obj)} },
@@ -402,8 +428,14 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
     #endif
 
+    // Work out which port/peripheral to use, either user supplied or auto detect
+    int dev_id = args[ARG_port].u_int;
+    if (dev_id == -1) {
+        dev_id = pyb_usb_dev_detect();
+    }
+
     // init the USB device
-    if (!pyb_usb_dev_init(vid, pid, mode, msc_n, msc_unit, &hid_info)) {
+    if (!pyb_usb_dev_init(dev_id, vid, pid, mode, msc_n, msc_unit, &hid_info)) {
         goto bad_mode;
     }
 

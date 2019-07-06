@@ -188,6 +188,16 @@ jobs:
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
 
+    # samd port
+    - stage: test
+      env: NAME="samd port build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
+      script:
+        - git submodule update --init lib/asf4 lib/tinyusb
+        - make ${MAKEOPTS} -C ports/samd
+
     # teensy port
     - stage: test
       env: NAME="teensy port build"

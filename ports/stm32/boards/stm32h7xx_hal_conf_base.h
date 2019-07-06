@@ -28,6 +28,7 @@
 
 // Include various HAL modules for convenience
 #include "stm32h7xx_hal_dma.h"
+#include "stm32h7xx_hal_mdma.h"
 #include "stm32h7xx_hal_adc.h"
 #include "stm32h7xx_hal_cortex.h"
 #include "stm32h7xx_hal_crc.h"
