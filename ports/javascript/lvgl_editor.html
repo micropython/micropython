@@ -110,6 +110,7 @@
 			</div>
 		</div>
 		<iframe src="about:blank" id="emscripten-iframe"></iframe>
+        
 		<script>
 			var editor, iframe;
 			var script_passed = false;
@@ -223,6 +224,9 @@
 					term.write(text);
 				}, false);
 				editor.getSession().on('change', editor_change);
+				editor.resize();
+			});
+			$(window).resize(function() {
 				editor.resize();
 			});
 		</script>

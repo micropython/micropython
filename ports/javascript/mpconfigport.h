@@ -28,13 +28,50 @@
 
 // options to control how MicroPython is built
 
-// You can disable the built-in MicroPython compiler by setting the following
-// config option to 0.  If you do this then you won't get a REPL prompt, but you
-// will still be able to execute pre-compiled scripts, compiled with mpy-cross.
-#define MICROPY_ENABLE_COMPILER     (1)
+// options to control how Micro Python is built
+#define MICROPY_QSTR_BYTES_IN_HASH  (1)
+#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
+#define MICROPY_CPYTHON_COMPAT      (1)
+#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
+//just in case of long urls and a local cache ?
+#define MICROPY_ALLOC_PATH_MAX      (1024)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
+#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 
-#define MICROPY_QSTR_BYTES_IN_HASH  (2)
-#define MICROPY_ALLOC_PATH_MAX      (256)
+
+#define MICROPY_MODULE_FROZEN       (0)
+#define MICROPY_MODULE_FROZEN_MPY   (0)
+#define MICROPY_MODULE_FROZEN_STR   (0)
+#define MICROPY_MODULE_WEAK_LINKS   (0)
+
+#define MICROPY_MODULE_GETATTR (1)
+#define MICROPY_MODULE_SPECIAL_METHODS (1)
+
+
+#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
+#define MICROPY_LONGINT_IMPL_MPZ    (2)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#define MPZ_DIG_SIZE                (16)
+
+
+#define MICROPY_ENABLE_COMPILER     (1)
+#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
+#define MICROPY_PERSISTENT_CODE_LOAD (0)
+#define MICROPY_PERSISTENT_CODE_SAVE (0)
+
+#define MICROPY_HAS_FILE_READER (1)
+#define MICROPY_READER_POSIX (0)
+#define MICROPY_HELPER_LEXER_UNIX (1)
+
+#define MICROPY_PY_BUILTINS_INPUT (1)
+
+
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
+#define MICROPY_PY_DELATTR_SETATTR  (1)
+#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
+#define MICROPY_PY_MATH_FACTORIAL   (1)
+
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
 #define MICROPY_EMIT_X64            (0) //BROKEN
 #define MICROPY_EMIT_THUMB          (0) //BROKEN
@@ -50,11 +87,9 @@
 #define MICROPY_GC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (1)
 #define MICROPY_HELPER_REPL         (1)
-#define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_ENABLE_DOC_STRING   (1)
 #define MICROPY_WARNINGS            (1)
-#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
 #define MICROPY_PY_ASYNC_AWAIT      (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
@@ -67,8 +102,10 @@
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #define MICROPY_PY_BUILTINS_MIN_MAX (1)
 #define MICROPY_PY___FILE__         (1)
+#define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
+#define MICROPY_PY_ASYNC_AWAIT      (1)
 #define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_MATH             (1)
@@ -115,14 +152,22 @@
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
-#define MICROPY_PY_USELECT          (1)
+#define MICROPY_PY_USELECT          (0)
 #define MICROPY_PY_FRAMEBUF         (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
-#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_SCHEDULER_DEPTH     (1)
+
+#define MICROPY_PY_IO                   (1)
+#define MICROPY_PY_IO_IOBASE            (1)
+#define MICROPY_PY_IO_RESOURCE_STREAM   (0)
+#define MICROPY_PY_IO_FILEIO            (1)
+#define MICROPY_PY_IO_BYTESIO           (1)
+#define MICROPY_PY_IO_BUFFEREDWRITER    (1)
+
+#define MICROPY_VFS                 (0)
 
 #define MP_SSIZE_MAX (0x7fffffff)
 

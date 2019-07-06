@@ -4,6 +4,8 @@ CROSS = 0
 
 QSTR_DEFS = qstrdefsport.h
 
+WASM_FILE_API = 1
+
 include $(TOP)/py/py.mk
 
 CC = emcc -g4 $(JSFLAGS)
@@ -28,7 +30,8 @@ ifdef WASM_FILE_API
 endif
 
 ifdef EMSCRIPTEN
-    CPP += --sysroot $(EMSCRIPTEN)/system
+#    CPP += --sysroot $(EMSCRIPTEN)/system
+    CPP += -isystem $(EMSCRIPTEN)/system/include
     CPP += -isystem $(EMSCRIPTEN)/system/include/libc
     CPP += -isystem $(EMSCRIPTEN)/system/include/libcxx
     CPP += $(CPPFLAGS)
