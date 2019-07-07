@@ -30,11 +30,13 @@
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_DESCRIPTOR_H
 
 #include "py/obj.h"
+#include "common-hal/bleio/Characteristic.h"
 #include "common-hal/bleio/UUID.h"
 
 typedef struct {
     mp_obj_base_t base;
     uint16_t handle;
+    bleio_characteristic_obj_t *characteristic;
     bleio_uuid_obj_t *uuid;
 } bleio_descriptor_obj_t;
 

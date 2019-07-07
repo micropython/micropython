@@ -194,27 +194,26 @@ STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
 
         // More events may be handled later, so keep this as a switch.
 
-    case BLE_GATTC_EVT_READ_RSP:
-    {
-        ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
-        m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
-        // Indicate to busy-wait loop that we've read the characteristic.
-        m_read_characteristic = NULL;
-        break;
-    }
+        case BLE_GATTC_EVT_READ_RSP: {
+            ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
+            m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
+            // Indicate to busy-wait loop that we've read the characteristic.
+            m_read_characteristic = NULL;
+            break;
+        }
 
-    // For debugging.
-    default:
-        // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
-        break;
+            // For debugging.
+        default:
+            // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
+            break;
     }
 
 }
 
 void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props) {
-    self->service = NULL;
+    self->service = mp_const_none;
     self->uuid = uuid;
-    self->value_data = NULL;
+    self->value_data = mp_const_none;
     self->props = props;
     self->handle = BLE_GATT_HANDLE_INVALID;
 

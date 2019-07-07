@@ -250,10 +250,26 @@ STATIC mp_obj_t bleio_peripheral_stop_advertising(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_stop_advertising_obj, bleio_peripheral_stop_advertising);
 
+//|   .. method:: disconnect()
+//|
+//|     Disconnects from the remote central.
+//|     Normally the central initiates a disconnection. Use this only
+//|     if necessary for your application.
+//|
+STATIC mp_obj_t bleio_peripheral_disconnect(mp_obj_t self_in) {
+    bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_bleio_peripheral_disconnect(self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_disconnect_obj, bleio_peripheral_disconnect);
+
 STATIC const mp_rom_map_elem_t bleio_peripheral_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_start_advertising),  MP_ROM_PTR(&bleio_peripheral_start_advertising_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_advertising),   MP_ROM_PTR(&bleio_peripheral_stop_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),         MP_ROM_PTR(&bleio_peripheral_disconnect_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_connected),          MP_ROM_PTR(&bleio_peripheral_connected_obj) },

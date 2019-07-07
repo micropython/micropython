@@ -37,10 +37,13 @@
 #include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Central.h"
+#include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 
 static bleio_service_obj_t *m_char_discovery_service;
+static bleio_characteristic_obj_t *m_desc_discovery_characteristic;
+
 static volatile bool m_discovery_in_process;
 static volatile bool m_discovery_successful;
 
@@ -68,6 +71,28 @@ STATIC bool discover_next_characteristics(bleio_central_obj_t *self, bleio_servi
     ble_gattc_handle_range_t handle_range;
     handle_range.start_handle = start_handle;
     handle_range.end_handle = service->end_handle;
+
+    m_discovery_successful = false;
+    m_discovery_in_process = true;
+
+    uint32_t err_code = sd_ble_gattc_characteristics_discover(self->conn_handle, &handle_range);
+    if (err_code != NRF_SUCCESS) {
+        return false;
+    }
+
+    // Wait for a discovery event.
+    while (m_discovery_in_process) {
+        MICROPY_VM_HOOK_LOOP;
+    }
+    return m_discovery_successful;
+}
+
+STATIC bool discover_next_descriptors(bleio_central_obj_t *self, bleio_characteristic_obj_t *characteristic, uint16_t start_handle, uint16_t end_handle) {
+    m_desc_discovery_characteristic = characteristic;
+
+    ble_gattc_handle_range_t handle_range;
+    handle_range.start_handle = start_handle;
+    handle_range.end_handle = end_handle;
 
     m_discovery_successful = false;
     m_discovery_in_process = true;
@@ -127,29 +152,67 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
         bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
         characteristic->base.type = &bleio_characteristic_type;
 
+        bleio_uuid_obj_t *uuid = NULL;
+
         if (gattc_char->uuid.type != BLE_UUID_TYPE_UNKNOWN) {
             // Known characteristic UUID.
-            bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
+            uuid = m_new_obj(bleio_uuid_obj_t);
             uuid->base.type = &bleio_uuid_type;
             bleio_uuid_construct_from_nrf_ble_uuid(uuid, &gattc_char->uuid);
-            characteristic->uuid = uuid;
         } else {
             // The discovery response contained a 128-bit UUID that has not yet been registered with the
             // softdevice via sd_ble_uuid_vs_add(). We need to fetch the 128-bit value and register it.
-            // For now, just set the UUID to NULL.
-            characteristic->uuid = NULL;
+            // For now, just leave the UUID as NULL.
         }
 
-        characteristic->props.broadcast = gattc_char->char_props.broadcast;
-        characteristic->props.indicate = gattc_char->char_props.indicate;
-        characteristic->props.notify = gattc_char->char_props.notify;
-        characteristic->props.read = gattc_char->char_props.read;
-        characteristic->props.write = gattc_char->char_props.write;
-        characteristic->props.write_no_response = gattc_char->char_props.write_wo_resp;
+        bleio_characteristic_properties_t props;
+
+        props.broadcast = gattc_char->char_props.broadcast;
+        props.indicate = gattc_char->char_props.indicate;
+        props.notify = gattc_char->char_props.notify;
+        props.read = gattc_char->char_props.read;
+        props.write = gattc_char->char_props.write;
+        props.write_no_response = gattc_char->char_props.write_wo_resp;
+
+        // Call common_hal_bleio_characteristic_construct() to set up evt handler.
+        common_hal_bleio_characteristic_construct(characteristic, uuid, props);
         characteristic->handle = gattc_char->handle_value;
         characteristic->service = m_char_discovery_service;
 
         mp_obj_list_append(m_char_discovery_service->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
+    }
+
+    if (response->count > 0) {
+        m_discovery_successful = true;
+    }
+    m_discovery_in_process = false;
+}
+
+STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio_central_obj_t *central) {
+    for (size_t i = 0; i < response->count; ++i) {
+        ble_gattc_desc_t *gattc_desc = &response->descs[i];
+
+        bleio_descriptor_obj_t *descriptor = m_new_obj(bleio_descriptor_obj_t);
+        descriptor->base.type = &bleio_descriptor_type;
+
+        bleio_uuid_obj_t *uuid = NULL;
+
+        if (gattc_desc->uuid.type != BLE_UUID_TYPE_UNKNOWN) {
+            // Known descriptor UUID.
+            uuid = m_new_obj(bleio_uuid_obj_t);
+            uuid->base.type = &bleio_uuid_type;
+            bleio_uuid_construct_from_nrf_ble_uuid(uuid, &gattc_desc->uuid);
+        } else {
+            // The discovery response contained a 128-bit UUID that has not yet been registered with the
+            // softdevice via sd_ble_uuid_vs_add(). We need to fetch the 128-bit value and register it.
+            // For now, just leave the UUID as NULL.
+        }
+
+        common_hal_bleio_descriptor_construct(descriptor, uuid);
+        descriptor->handle = gattc_desc->handle;
+        descriptor->characteristic = m_desc_discovery_characteristic;
+
+        mp_obj_list_append(m_desc_discovery_characteristic->descriptor_list, MP_OBJ_FROM_PTR(descriptor));
     }
 
     if (response->count > 0) {
@@ -186,17 +249,24 @@ STATIC void central_on_ble_evt(ble_evt_t *ble_evt, void *central_in) {
             on_char_discovery_rsp(&ble_evt->evt.gattc_evt.params.char_disc_rsp, central);
             break;
 
+        case BLE_GATTC_EVT_DESC_DISC_RSP:
+            on_desc_discovery_rsp(&ble_evt->evt.gattc_evt.params.desc_disc_rsp, central);
+
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
             sd_ble_gap_sec_params_reply(central->conn_handle, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
             break;
 
-        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
-        {
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST: {
             ble_gap_evt_conn_param_update_request_t *request =
                 &ble_evt->evt.gap_evt.params.conn_param_update_request;
             sd_ble_gap_conn_param_update(central->conn_handle, &request->conn_params);
             break;
         }
+
+        default:
+            // For debugging.
+            mp_printf(&mp_plat_print, "Unhandled central event: 0x%04x\n", ble_evt->header.evt_id);
+            break;
     }
 }
 
@@ -257,16 +327,16 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, bleio_address_o
 
         // List of service UUID's not given, so discover all available services.
 
-        uint16_t next_start_handle = BLE_GATT_HANDLE_START;
+        uint16_t next_service_start_handle = BLE_GATT_HANDLE_START;
 
-        while (discover_next_services(self, next_start_handle, MP_OBJ_NULL)) {
+        while (discover_next_services(self, next_service_start_handle, MP_OBJ_NULL)) {
                 // discover_next_services() appends to service_list.
-                const mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
 
                 // Get the most recently discovered service, and then ask for services
                 // whose handles start after the last attribute handle inside that service.
-                const bleio_service_obj_t *service = service_list->items[service_list->len - 1];
-                next_start_handle = service->end_handle + 1;
+                const bleio_service_obj_t *service =
+                    MP_OBJ_TO_PTR(self->service_list->items[self->service_list->len - 1]);
+                next_service_start_handle = service->end_handle + 1;
         }
     } else {
         mp_obj_iter_buf_t iter_buf;
@@ -289,30 +359,65 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, bleio_address_o
     }
 
 
-    const mp_obj_list_t *service_list = MP_OBJ_TO_PTR(self->service_list);
-    for (size_t i = 0; i < service_list->len; ++i) {
-        bleio_service_obj_t *service = service_list->items[i];
+    for (size_t service_idx = 0; service_idx < self->service_list->len; ++service_idx) {
+        bleio_service_obj_t *service = MP_OBJ_TO_PTR(self->service_list->items[service_idx]);
 
         // Skip the service if it had an unknown (unregistered) UUID.
         if (service->uuid == NULL) {
             continue;
         }
 
-        uint16_t next_start_handle = service->start_handle;
+        uint16_t next_char_start_handle = service->start_handle;
 
         // Stop when we go past the end of the range of handles for this service or
         // discovery call returns nothing.
-        while (next_start_handle <= service->end_handle &&
-               discover_next_characteristics(self, service, next_start_handle)) {
+        // discover_next_characteristics() appends to the characteristic_list.
+        while (next_char_start_handle <= service->end_handle &&
+               discover_next_characteristics(self, service, next_char_start_handle)) {
 
-            // discover_next_characteristics() appends to the characteristic_list.
-            const mp_obj_list_t *characteristic_list = MP_OBJ_TO_PTR(service->characteristic_list);
 
-            // Get the most recently discovered characteristic.
+            // Get the most recently discovered characteristic, and then ask for characteristics
+            // whose handles start after the last attribute handle inside that characteristic.
             const bleio_characteristic_obj_t *characteristic =
-                characteristic_list->items[characteristic_list->len - 1];
-            next_start_handle = characteristic->handle + 1;
+                MP_OBJ_TO_PTR(service->characteristic_list->items[service->characteristic_list->len - 1]);
+            next_char_start_handle = characteristic->handle + 1;
         }
+
+        // Got characteristics for this service. Now discover descriptors for each characteristic.
+        for (size_t char_idx = 0; char_idx < service->characteristic_list->len; ++char_idx) {
+            bleio_characteristic_obj_t *characteristic =
+                MP_OBJ_TO_PTR(service->characteristic_list->items[char_idx]);
+            const bool last_characteristic = char_idx == service->characteristic_list->len - 1;
+            bleio_characteristic_obj_t *next_characteristic = last_characteristic
+                ? NULL
+                : MP_OBJ_TO_PTR(service->characteristic_list->items[char_idx + 1]);
+
+            // Skip the characteristic if it had an unknown (unregistered) UUID.
+            if (characteristic->uuid == NULL) {
+                continue;
+            }
+
+            uint16_t next_desc_start_handle = characteristic->handle + 1;
+
+            // Don't run past the end of this service or the beginning of the next characteristic.
+            uint16_t next_desc_end_handle = next_characteristic == NULL
+                ? service->end_handle
+                : next_characteristic->handle;
+
+            // Stop when we go past the end of the range of handles for this service or
+            // discovery call returns nothing.
+            // discover_next_descriptors() appends to the descriptor_list.
+            while (next_desc_start_handle <= service->end_handle &&
+                   discover_next_descriptors(self, characteristic, next_desc_start_handle, next_desc_end_handle)) {
+
+                // Get the most recently discovered descriptor, and then ask for descriptors
+                // whose handles start after that descriptor's handle.
+                const bleio_descriptor_obj_t *descriptor =
+                    MP_OBJ_TO_PTR(characteristic->descriptor_list->items[characteristic->descriptor_list->len - 1]);
+                next_desc_start_handle = descriptor->handle + 1;
+            }
+        }
+
     }
 }
 
@@ -324,6 +429,6 @@ bool common_hal_bleio_central_get_connected(bleio_central_obj_t *self) {
     return self->conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
-mp_obj_t common_hal_bleio_central_get_remote_services(bleio_central_obj_t *self) {
+mp_obj_list_t *common_hal_bleio_central_get_remote_services(bleio_central_obj_t *self) {
     return self->service_list;
 }

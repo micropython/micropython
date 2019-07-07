@@ -42,7 +42,8 @@ void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_ob
     self->is_secondary = is_secondary;
 
     for (size_t characteristic_idx = 0; characteristic_idx < characteristic_list->len; ++characteristic_idx) {
-        bleio_characteristic_obj_t *characteristic = MP_OBJ_TO_PTR(characteristic_list->items[characteristic_idx]);
+        bleio_characteristic_obj_t *characteristic =
+            MP_OBJ_TO_PTR(characteristic_list->items[characteristic_idx]);
         common_hal_bleio_characteristic_set_service(characteristic, self);
     }
 
@@ -67,9 +68,9 @@ void common_hal_bleio_service_set_device(bleio_service_obj_t *self, mp_obj_t dev
 // Call this after the Service has been added to the Peripheral.
 void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self) {
     // Add all the characteristics.
-    const mp_obj_list_t *characteristic_list = MP_OBJ_TO_PTR(self->characteristic_list);
-    for (size_t characteristic_idx = 0; characteristic_idx < characteristic_list->len; ++characteristic_idx) {
-        bleio_characteristic_obj_t *characteristic = characteristic_list->items[characteristic_idx];
+    for (size_t characteristic_idx = 0; characteristic_idx < self->characteristic_list->len; ++characteristic_idx) {
+        bleio_characteristic_obj_t *characteristic =
+            MP_OBJ_TO_PTR(self->characteristic_list->items[characteristic_idx]);
 
         ble_gatts_char_md_t char_md = {
             .char_props.broadcast      = characteristic->props.broadcast,

@@ -28,6 +28,7 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
 
+#include "py/objlist.h"
 #include "common-hal/bleio/UUID.h"
 
 typedef struct {
@@ -38,7 +39,7 @@ typedef struct {
     bleio_uuid_obj_t *uuid;
     // May be a Peripheral, Central, etc.
     mp_obj_t device;
-    mp_obj_t characteristic_list;
+    mp_obj_list_t *characteristic_list;
     // Range of attribute handles of this service.
     uint16_t start_handle;
     uint16_t end_handle;

@@ -30,7 +30,6 @@
 #include "shared-bindings/bleio/UUID.h"
 
 void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid) {
-    // TODO: set handle ???
     self->uuid = uuid;
 }
 

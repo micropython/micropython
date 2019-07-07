@@ -36,9 +36,10 @@ typedef struct {
     mp_obj_base_t base;
     bleio_service_obj_t *service;
     bleio_uuid_obj_t *uuid;
-    mp_obj_t value_data;
+    volatile mp_obj_t value_data;
     uint16_t handle;
     bleio_characteristic_properties_t props;
+    mp_obj_list_t *descriptor_list;
     uint16_t user_desc_handle;
     uint16_t cccd_handle;
     uint16_t sccd_handle;

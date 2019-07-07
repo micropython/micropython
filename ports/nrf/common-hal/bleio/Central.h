@@ -30,6 +30,7 @@
 
 #include <stdbool.h>
 
+#include "py/objlist.h"
 #include "shared-module/bleio/__init__.h"
 #include "shared-module/bleio/Address.h"
 
@@ -38,7 +39,7 @@ typedef struct {
     gatt_role_t gatt_role;
     volatile bool waiting_to_connect;
     volatile uint16_t conn_handle;
-    mp_obj_t service_list;
+    mp_obj_list_t *service_list;
 } bleio_central_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H

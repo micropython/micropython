@@ -49,9 +49,6 @@ enum {
     DescriptorUuidTimeTriggerSetting = 0x290E,
 };
 
-// Work-in-progress: orphaned for now.
-//| :orphan:
-//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`Descriptor` -- BLE descriptor

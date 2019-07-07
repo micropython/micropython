@@ -243,3 +243,7 @@ void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *self) 
         mp_raise_OSError_msg_varg(translate("Failed to stop advertising, err 0x%04x"), err_code);
     }
 }
+
+void common_hal_bleio_peripheral_disconnect(bleio_peripheral_obj_t *self) {
+    sd_ble_gap_disconnect(self->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}

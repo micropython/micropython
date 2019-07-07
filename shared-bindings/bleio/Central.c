@@ -79,8 +79,6 @@ STATIC mp_obj_t bleio_central_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-
-
 //|   .. method:: connect(address, timeout, *, service_uuids=None)
 //|     Attempts a connection to the remote peripheral. If the connection is successful,
 //|      Do BLE discovery for the listed services, to find their handles and characteristics.
@@ -167,7 +165,7 @@ const mp_obj_property_t bleio_central_connected_obj = {
 STATIC mp_obj_t bleio_central_get_remote_services(mp_obj_t self_in) {
     bleio_central_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return common_hal_bleio_central_get_remote_services(self);
+    return MP_OBJ_FROM_PTR(common_hal_bleio_central_get_remote_services(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_central_get_remote_services_obj, bleio_central_get_remote_services);
 
