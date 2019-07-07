@@ -104,4 +104,5 @@ test: $(BUILD)/micropython.js $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests
 
+
 include $(TOP)/py/mkrules.mk

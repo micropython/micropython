@@ -48,7 +48,9 @@ __pycache__/
 ######################
 GNUmakefile
 user.props
+ports/javascript/node_modules
 
 # Generated rst files
 ######################
 genrst/
+

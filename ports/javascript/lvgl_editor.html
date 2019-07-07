@@ -75,7 +75,6 @@
 				line-height: normal;
 			}
 		</style>
-
 		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 		<script src="https://littlevgl.com/bootstrap/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -83,7 +82,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/addons/fit/fit.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.js" type="text/javascript" charset="utf-8"></script>
-		
+		<script src="query.js"></script>
 	</head>
 	<body>
 		<div class="flex-container">
@@ -99,8 +98,14 @@
 		
 			<p>
 			<input type="button" disabled="disabled" id="run-button" value="Run the script" onclick="runScript();"/>
+
+			<!-- HTML input control is disabled currently -->
+			<span style="display: none;">
 			Copy/paste script here:
 			<input onClick="this.setSelectionRange(0, this.value.length)" id="script-compressed" oninput="input_change();"/>
+			</span>
+
+
 			</div>
 			<div id="editor">print("Hello world")</div>
 			<div class="display-objects">
@@ -120,12 +125,17 @@
 						iframe.contentWindow.document.dispatchEvent(new MouseEvent('mouseup'));
 				}
 			}
+			
 			document.onmouseup = forward_event;
 			function input_change() {
 				editor.session.setValue(LZString.decompressFromEncodedURIComponent($("#script-compressed").val()));
 			}
 			function editor_change() {
-				$("#script-compressed").val(LZString.compressToEncodedURIComponent(editor.getValue()));
+				var script_string = LZString.compressToEncodedURIComponent(editor.getValue());
+				$("#script-compressed").val(script_string);
+				var new_href = update_query_string(window.location.href, "script_direct", script_string);
+				// Create a dummy element to parse the URI with
+				window.history.replaceState({path:new_href}, document.title,new_href);
 			}
 			function runScript() {
 				var $this = $("#run-button");
@@ -143,39 +153,52 @@
 
 				clear_iframe(iframe);
 				iframe.src = get_iframe_url() + "&timestamp=" + new Date().getTime();
+				iframe.contentWindow.location.href = iframe.src;
+				console.log("Iframe src: " + iframe.src);
 			}
 			function reenableButton() {
 				$("#run-button").removeProp('disabled');
 			}
 			function get_iframe_url() {
 				/* Assemble the URL */
-				var newPathname = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
-				newPathname += "/lvgl.html" + (window.location.href.indexOf('?') != -1 ? '&' : '?') + "env=dev";
-				console.log(newPathname);
+				var num_url_chars = (window.location.href.indexOf('?'));
+				var base_url = window.location.href.substr(0, (num_url_chars == -1) ? undefined : num_url_chars);
+				var newPathname = base_url.substr(0, base_url.lastIndexOf('/'));
+				newPathname += "/lvgl.html" + '?' + "env=dev";
 				return newPathname;
 			}
-			function processScriptArg(url){
-				// read text from URL location
-				var request = new XMLHttpRequest();
-				console.log("GET " + url);
-				request.open('GET', url, true);
-				request.send(null);
-				request.onreadystatechange = function () {
-					if (request.readyState === 4 && request.status === 200) {
+			function processScriptArg(url, lzstring){
+				var script_passed_handler = function() {
+					console.log("Script passed: " + script_passed);
+					if(script_passed)
+						runScript();
+					else
+						reenableButton();
+					script_passed = false;
+				};
+				if(!lzstring) {
+					// read text from URL location
+					var request = new XMLHttpRequest();
+					console.log("GET " + url);
+					request.open('GET', url, true);
+					request.send(null);
+					request.onreadystatechange = function () {
+						if (request.readyState === 4 && request.status === 200) {
 						
-						console.log(request.reponseText);
-						if(request.responseText === undefined)
-							return;
-						editor.session.getUndoManager().reset();
-					    editor.session.setValue(request.responseText, -1);
-						console.log("Script passed: " + script_passed);
-						if(script_passed)
-							runScript();
-						else
-							reenableButton();
-						script_passed = false;
+							console.log(request.reponseText);
+							if(request.responseText === undefined)
+								return;
+							editor.session.getUndoManager().reset();
+							editor.session.setValue(request.responseText, -1);
+							script_passed_handler();
+						}
 					}
+				} else {
+					// decompress LZString
+					editor.session.setValue(LZString.decompressFromEncodedURIComponent(url));
+					script_passed_handler();
 				}
+				
 			}
 			function getSearchArg(argname) {
 				/* Run custom script if passed */
@@ -199,13 +222,11 @@
 				editor.session.setMode(new PythonMode());
 				iframe = document.getElementById("emscripten-iframe");
 				iframe.src = "about:blank";
+				iframe.contentWindow.location.href = iframe.src;
 				clear_iframe(iframe);
-				var script = getSearchArg("script");
-				if(script !== undefined && script !== null) {
-					script_passed = true;
-					processScriptArg(script);
-				} else
-					processScriptArg("https://raw.githubusercontent.com/littlevgl/lv_binding_micropython/dev-6.0/examples/advanced_demo.py");
+				
+
+				
 				Terminal.applyAddon(fit);
 				term = new Terminal();
 				mp_js_stdout = document.getElementById('mp_js_stdout');
@@ -225,6 +246,17 @@
 				}, false);
 				editor.getSession().on('change', editor_change);
 				editor.resize();
+
+				var script = getSearchArg("script");
+				var script_direct = getSearchArg("script_direct");
+				if(script_direct !== undefined && script_direct !== null) {
+					script_passed = true;
+					processScriptArg(script_direct, true);
+				} else if(script !== undefined && script !== null) {
+					script_passed = true;
+					processScriptArg(script);
+				} else
+					processScriptArg("https://raw.githubusercontent.com/littlevgl/lv_binding_micropython/dev-6.0/examples/advanced_demo.py");
 			});
 			$(window).resize(function() {
 				editor.resize();
