@@ -88,8 +88,8 @@ function wasm_file_open(url, cachefile){
             url = url.substr(1)
         else {
             // [TODO:do some tests there for your CORS integration]
-            if (url.includes('/wyz.fr/'))
-                url = CORS_BROKER + url
+            if (window.urls.cors)
+                url = window.urls.cors(url)
         }
 
         var ab = awfull_get(url)
