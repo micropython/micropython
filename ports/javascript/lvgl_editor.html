@@ -99,8 +99,7 @@
 			<p>
 			<input type="button" disabled="disabled" id="run-button" value="Run the script" onclick="runScript();"/>
 
-			<!-- HTML input control is disabled currently -->
-			<span style="display: none;">
+			<span>
 			Copy/paste script here:
 			<input onClick="this.setSelectionRange(0, this.value.length)" id="script-compressed" oninput="input_change();"/>
 			</span>
@@ -133,9 +132,10 @@
 			function editor_change() {
 				var script_string = LZString.compressToEncodedURIComponent(editor.getValue());
 				$("#script-compressed").val(script_string);
+				/*
 				var new_href = update_query_string(window.location.href, "script_direct", script_string);
 				// Create a dummy element to parse the URI with
-				window.history.replaceState({path:new_href}, document.title,new_href);
+				window.history.replaceState({path:new_href}, document.title,new_href); */
 			}
 			function runScript() {
 				var $this = $("#run-button");
