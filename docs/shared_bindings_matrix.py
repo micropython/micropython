@@ -85,35 +85,34 @@ def get_excluded_boards(base_json):
     modules = list(base_json.keys())
     for port in SUPPORTED_PORTS:
         port_dir = "ports/{}/boards".format(port)
-        with os.scandir(port_dir) as boards:
-            for entry in boards:
-                if not entry.is_dir():
+        for entry in os.scandir(port_dir):
+            if not entry.is_dir():
+                continue
+            contents = ""
+            board_dir = os.path.join(entry.path, "mpconfigboard.mk")
+            #print(board_dir)
+            with open(board_dir) as board:
+                contents = board.read()
+            for module in modules:
+                # check if board uses `SMALL_BUILD`. if yes, and current
+                # module is marked as `FULL_BUILD`, board is excluded
+                small_build = re.search("CIRCUITPY_SMALL_BUILD = 1", contents)
+                if small_build and base_json[module]["full_build"] == "1":
+                    base_json[module]["excluded"].append(entry.name)
                     continue
-                contents = ""
-                board_dir = os.path.join(entry.path, "mpconfigboard.mk")
-                #print(board_dir)
-                with open(board_dir) as board:
-                    contents = board.read()
-                for module in modules:
-                    # check if board uses `SMALL_BUILD`. if yes, and current
-                    # module is marked as `FULL_BUILD`, board is excluded
-                    small_build = re.search("CIRCUITPY_SMALL_BUILD = 1", contents)
-                    if small_build and base_json[module]["full_build"] == "1":
-                        base_json[module]["excluded"].append(entry.name)
-                        continue
 
-                    # check if module is specifically disabled for this board
-                    re_pattern = "CIRCUITPY_{}\s=\s(\w)".format(module.upper())
-                    find_module = re.search(re_pattern, contents)
-                    if not find_module:
-                        # check if default inclusion is off ('0'). if the board doesn't
-                        # have it explicitly enabled, its excluded.
-                        if base_json[module]["default_value"] == "0":
-                            base_json[module]["excluded"].append(entry.name)
-                        continue
-                    if (find_module.group(1) == "0" and
-                       find_module.group(1) != base_json[module]["default_value"]):
-                            base_json[module]["excluded"].append(entry.name)
+                # check if module is specifically disabled for this board
+                re_pattern = "CIRCUITPY_{}\s=\s(\w)".format(module.upper())
+                find_module = re.search(re_pattern, contents)
+                if not find_module:
+                    # check if default inclusion is off ('0'). if the board doesn't
+                    # have it explicitly enabled, its excluded.
+                    if base_json[module]["default_value"] == "0":
+                        base_json[module]["excluded"].append(entry.name)
+                    continue
+                if (find_module.group(1) == "0" and
+                   find_module.group(1) != base_json[module]["default_value"]):
+                        base_json[module]["excluded"].append(entry.name)
 
     return base_json
 
