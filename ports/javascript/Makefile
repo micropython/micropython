@@ -15,7 +15,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-EM_CACHE ?= ~/.emscripten_cache
+EM_CACHE ?= $(HOME)/.emscripten_cache
 
 
 BOTH_CFLAGS := -s WASM=0
