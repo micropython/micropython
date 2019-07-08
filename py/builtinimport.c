@@ -145,16 +145,9 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
     #if MICROPY_PY___FILE__
-    , const char* source_name
-    #endif
-) {
-    #if MICROPY_PY___FILE__
-    if (source_name != NULL) {
-        mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
-    } else
-        mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str("<stdin>")));
+    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
     #endif
 
     // execute the module in its context
