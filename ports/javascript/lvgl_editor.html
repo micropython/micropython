@@ -217,6 +217,7 @@
 			}
 			$(window).load(function() {
 			    editor = ace.edit("editor");
+				editor.getSession().setUseWrapMode(true);
 				editor.setAutoScrollEditorIntoView(true);
 				var PythonMode = ace.require("ace/mode/python").Mode;
 				editor.session.setMode(new PythonMode());
