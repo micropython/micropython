@@ -13,23 +13,25 @@ function awfull_get(url) {
     }
 
     function transferFailed(evt) {
-      console.log("callfs: An error occurred while transferring the file '"+window.currentTransfer+"'");
+        console.log("awfull_get: An error occurred while transferring the file '"+window.currentTransfer+"'");
+        window.currentTransferSize = -1 ;
     }
 
     function transferCanceled(evt) {
-      console.log("callfs: transfer '"+window.currentTransfer+"' has been canceled by the user.");
+        console.log("awfull_get: transfer '"+window.currentTransfer+"' has been canceled by the user.");
+        window.currentTransferSize = -1 ;
     }
 
     var oReq = new XMLHttpRequest();
 
     function transferComplete(evt) {
         if (oReq.status==404){
-            console.log("callfs: File not found : "+ url );
+            console.log("awfull_get: File not found : "+ url );
             window.currentTransferSize = -1 ;
 
         } else {
             window.currentTransferSize = oReq.response.length;
-            console.log("callfs: Transfer is complete saving : "+window.currentTransferSize);
+            console.log("awfull_get: Transfer is complete saving : "+window.currentTransferSize);
         }
     }
 
@@ -93,6 +95,10 @@ function wasm_file_open(url, cachefile){
         }
 
         var ab = awfull_get(url)
+
+        // is file found and complete ?
+        if (window.currentTransferSize<0)
+            return -1
         var ret = ab.length
 
         window.urls.id += 1
@@ -132,12 +138,18 @@ function wasm_file_exists(url, need_dot) {
     if (url.endswith('.mpy'))
         return -1
 
+
     // are we possibly doing folder checking ?
     if (need_dot) {
+
+
         // .mpy is blacklisted for now
         // so if it's not .py then it's a folder check.
         if (!url.endswith('.py')) {
             var found = -1
+
+            // TODO: gain 1 call if .py exists we can discard both __init__ and index checks
+            // -> would need a path cache that is usefull anyway
 
             // package search
             found = url_exists( url + '/__init__.py' , 2 )
@@ -162,4 +174,5 @@ function wasm_file_exists(url, need_dot) {
     // default is a file search
     return url_exists(url, 1)
 }
+
 
