@@ -134,6 +134,15 @@ STATIC mp_obj_t mp_builtin_callable(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 
+#if MICROPY_PY_BUILTINS_EXECFILE
+STATIC mp_obj_t mp_builtin_vars(mp_obj_t o_in) {
+    mp_obj_t* module_obj = (mp_obj_t*)o_in;
+    mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
+    return mod_globals;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_vars_obj, mp_builtin_vars);
+#endif
+
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     mp_uint_t c = mp_obj_get_int(o_in);
@@ -694,6 +703,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #endif
     #if MICROPY_PY_BUILTINS_EXECFILE
     { MP_ROM_QSTR(MP_QSTR_execfile), MP_ROM_PTR(&mp_builtin_execfile_obj) },
+    // because execfile is as non-standard as this vars implementation
+    // move it when it is compliant.
+    { MP_ROM_QSTR(MP_QSTR_vars), MP_ROM_PTR(&mp_builtin_vars_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_getattr), MP_ROM_PTR(&mp_builtin_getattr_obj) },
     { MP_ROM_QSTR(MP_QSTR_setattr), MP_ROM_PTR(&mp_builtin_setattr_obj) },
