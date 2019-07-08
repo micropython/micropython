@@ -231,9 +231,3 @@ typedef long mp_off_t;
 
 
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
-
-#ifdef FROZEN_MPY_DIR
-#define MICROPY_MODULE_FROZEN       (1)
-#define MICROPY_MODULE_FROZEN_MPY   (1)
-#endif
-#define MICROPY_MODULE_FROZEN_STR   (0)
