@@ -25,6 +25,10 @@ LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 CFLAGS += -O0 -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 
+ifdef FROZEN_MPY_DIR
+	CFLAGS += -DFROZEN_MPY_DIR=$(FROZEN_MPY_DIR)
+endif
+
 SRC_LIB = $(addprefix lib/,\
 	utils/interrupt_char.c \
 	utils/stdout_helpers.c \
