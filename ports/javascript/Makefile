@@ -25,14 +25,17 @@ LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 CFLAGS += -O0 -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 
-ifdef FROZEN_MPY_DIR
-	CFLAGS += -DFROZEN_MPY_DIR=$(FROZEN_MPY_DIR)
-	CFLAGS += -DMICROPY_MODULE_FROZEN=1
-	CFLAGS += -DMICROPY_MODULE_FROZEN_MPY=1
-# //for qstr.c
-	CFLAGS +=-DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-# //for build/genhdr/qstr.i.last
-	QSTR_GEN_EXTRA_CFLAGS=-DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+ifneq ($(FROZEN_DIR),)
+# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
+# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+endif
+
+ifneq ($(FROZEN_MPY_DIR),)
+# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
+# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
 SRC_LIB = $(addprefix lib/,\
