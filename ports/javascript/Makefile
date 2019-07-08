@@ -32,8 +32,7 @@ endif
 ifdef EMSCRIPTEN
 	CPP += -D__EMSCRIPTEN__
 	CPP += --sysroot $(EMSCRIPTEN)/system
-	CPP += -isystem $(EMSCRIPTEN)/system/include/libc
-	CPP += -isystem $(EMSCRIPTEN)/system/include/libcxx
+	CPP += $(addprefix -isystem, $(shell $(CC) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
 	CPP += $(CPPFLAGS)
 	# Act like 'emcc'
 	CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
