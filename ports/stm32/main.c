@@ -71,8 +71,6 @@
 #include "can.h"
 #include "modnetwork.h"
 
-void SystemClock_Config(void);
-
 #if MICROPY_PY_THREAD
 STATIC pyb_thread_t pyb_thread_main;
 #endif

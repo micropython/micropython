@@ -233,6 +233,7 @@ SRC_C = \
 	pendsv.c \
 	systick.c  \
 	powerctrl.c \
+	powerctrlboot.c \
 	pybthread.c \
 	factoryreset.c \
 	timer.c \
