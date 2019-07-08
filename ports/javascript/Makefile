@@ -27,6 +27,8 @@ CFLAGS += -fdata-sections -ffunction-sections
 
 ifdef FROZEN_MPY_DIR
 	CFLAGS += -DFROZEN_MPY_DIR=$(FROZEN_MPY_DIR)
+	CFLAGS += -DMICROPY_MODULE_FROZEN=1
+	CFLAGS += -DMICROPY_MODULE_FROZEN_MPY=1
 # //for qstr.c
 	CFLAGS +=-DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 # //for build/genhdr/qstr.i.last
