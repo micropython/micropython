@@ -29,47 +29,23 @@ typedef enum gasPrice
     Mid=8,		// 8, Mid
     High=10,	// 10, Slow
     Ext=20,		// 20, Ext
-    ExtCode=700,// 700, Extcode
-    Balance=400,	// 400, Balance
-    createAccount=25000,
-    subBalance=400,
-    addBalance=400,
-    getBalance=40,
-    getCodeHash=40,
-    getCode=40,
-    setCode=5001,
-    getCodeSize=40,
-    getNonce=400,
-    setNonce=400,
-    addRefund=400,
-    getRefund=40,
-    getState=40,
-    setState=5002,
-	removeState = 500,
-    suicide=5003,
-    hasSuicided=40,
-    exists=40,
-    empty=40,
-    revertToSnapshot=40,
-    snapshot=40,
-    transfer=9000,
-    isContractCreater=40,
-    contractAddr=40,
+
+    getBalance=20,
+
+    getState=200,
+    setState=200,
+	removeState=200,
+
+    transfer=400,
+
 	tasevent=8,
 
+    blockhash=20,
+    number=20,
+    timestamp=20,
+    gaslimit=20,
 
-    blockhash=40,
-    coinbase=40,
-    difficulty=2048,
-    number=40,
-    timestamp=40,
-    gaslimit=5004,
-
-
-    origin = 40,
-
-	getIter = 80,
-	getIterNext = 40,
+    origin = 20,
 
 //	Special,	// multiparam or otherwise special
 //	Invalid		// Invalid.
@@ -155,35 +131,17 @@ STCODEGAS g_CodeGas[] = {
         { MP_BC_IMPORT_FROM ,Ext },
         { MP_BC_IMPORT_STAR ,Base },
 
-        {MP_BC_CREATE_ACCOUNT, createAccount},
-        {MP_BC_SUB_BALANCE, subBalance},
         {MP_BC_GET_BALANCE, getBalance},
-        {MP_BC_GET_CODE_HASH, getCodeHash},
-        {MP_BC_GET_CODE, getCode},
-        {MP_BC_SET_CODE,setCode},
-        {MP_BC_GET_CODE_SIZE, getCodeSize},
-        {MP_BC_GET_NONCE, getNonce},
-        {MP_BC_SET_NONCE, setNonce},
-        {MP_BC_ADD_REFUND, addRefund},
-        {MP_BC_GET_REFUND, getRefund},
         {MP_BC_GET_STATE, getState},
         {MP_BC_SET_STATE, setState},
 		{MP_BC_REMOVE_STATE, removeState},
-        {MP_BC_SUICIDE, suicide},
-        {MP_BC_HAS_SUICIDED, hasSuicided},
-        {MP_BC_EXISTS, exists},
-        {MP_BC_EMPTY, empty},
-        {MP_BC_REVERT_TO_SNAPSHOT, revertToSnapshot},
-        {MP_BC_SNAPSHOT, snapshot},
+
         {MP_BC_TRANSFER, transfer},
-        {MP_BC_IS_CONTRACT_CREATER, isContractCreater},
-        {MP_BC_CONTRACT_ADDR, contractAddr},
+
 		{ MP_BC_TASEVENT, tasevent},
 
 //BLOCK
         {MP_BC_BLOCKHASH, blockhash},
-        {MP_BC_COINBASE , coinbase},
-        {MP_BC_DIFFICULT, difficulty},
         {MP_BC_NUMBER, number},
         {MP_BC_TIMESTAMP,timestamp},
         {MP_BC_GASLIMIT, gaslimit},
