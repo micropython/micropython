@@ -368,6 +368,14 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
+    // Change IRQ vector table if configured differently
+    SCB->VTOR = MICROPY_HW_VTOR;
+    #endif
+
+    // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
+    SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+
     // Check if bootloader should be entered instead of main application
     powerctrl_check_enter_bootloader();
 

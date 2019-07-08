@@ -43,6 +43,7 @@ STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
+SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o
 
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
@@ -284,23 +285,22 @@ SRC_C = \
 	adc.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
-ifeq ($(MCU_SERIES),f0)
 SRC_O = \
 	$(STARTUP_FILE) \
-	system_stm32f0.o \
+	$(SYSTEM_FILE)
+
+ifeq ($(MCU_SERIES),f0)
+SRC_O += \
 	resethandler_m0.o \
 	lib/utils/gchelper_m0.o
 else
 ifeq ($(MCU_SERIES),l0)
 CSUPEROPT = -Os # save some code space
-SRC_O = \
-	$(STARTUP_FILE) \
-	lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o \
+SRC_O += \
 	resethandler_m0.o \
 	lib/utils/gchelper_m0.o
 else
-SRC_O = \
-	$(STARTUP_FILE) \
+SRC_O += \
 	system_stm32.o \
 	resethandler.o \
 	lib/utils/gchelper_m3.o
