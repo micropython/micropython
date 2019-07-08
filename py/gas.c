@@ -30,7 +30,7 @@ typedef enum gasPrice
     High=10,	// 10, Slow
     Ext=20,		// 20, Ext
 
-    getBalance=20,
+    getBalance=200,
 
     getState=200,
     setState=200,
@@ -38,7 +38,7 @@ typedef enum gasPrice
 
     transfer=400,
 
-	tasevent=8,
+	tasevent=20,
 
     blockhash=20,
     number=20,
@@ -224,7 +224,7 @@ bool CheckGas(byte* op)
         return true;
     }
     else {
-        mp_raise_GasNotEnoughError("dose not have enough gas to run!");
+        mp_raise_GasNotEnoughError("does not have enough gas to run!");
         return false;
     }
 }
