@@ -23,9 +23,7 @@
 #include "py/objint.h"
 #include "py/lexer.h"
 #include "py/compile.h"
-#ifndef _MYWINDOWS_
 #include "py/tvm.h"
-#endif
 #include "py/gas.h"
 #include "py/obj.h"
 #include <stdlib.h>

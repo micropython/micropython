@@ -31,9 +31,5 @@ mp_dynamic_compiler_t mp_dynamic_compiler = {0};
 #endif
 
 mp_state_ctx_t mp_state_ctx = {
-#ifdef _MYWINDOWS_
-        0
-#else
 
-#endif //_MYWINDOWS_
 };

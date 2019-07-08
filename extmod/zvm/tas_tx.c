@@ -22,9 +22,7 @@
 #include "py/objint.h"
 #include "py/lexer.h"
 #include "py/compile.h"
-#ifndef _MYWINDOWS_
 #include "py/tvm.h"
-#endif
 #include <stdlib.h>
 #include <string.h>
 

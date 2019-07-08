@@ -49,11 +49,7 @@ void nlr_jump_fail(void *val) {
 }
 
 //static char heap[16384];
-#ifdef _MYWINDOWS_
-extern long heap_size;
-#else
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
-#endif
 void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm_execute_result_t *result) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
