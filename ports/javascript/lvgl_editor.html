@@ -6,7 +6,7 @@
 		
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600"></script>
 		<link rel="stylesheet" href="https://littlevgl.com/bootstrap/css/bootstrap.min.css"/>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/xterm.min.css" />
 		<link rel="stylesheet" href="https://littlevgl.com/common.css"/>
 		<title>LittlevGL/MicroPython Simulator</title>
 		<style>
@@ -79,8 +79,8 @@
 		<script src="https://littlevgl.com/bootstrap/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/mode-python.js" type="text/javascript" charset="utf-8"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/xterm.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.13.2/addons/fit/fit.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/xterm.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/addons/fit/fit.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.js" type="text/javascript" charset="utf-8"></script>
 		<script src="query.js"></script>
 	</head>
@@ -118,6 +118,34 @@
 		<script>
 			var editor, iframe;
 			var script_passed = false;
+			// Ctrl+L is mandatory ! need xterm.js 3.14+
+		    function xterm_helper(term, key) {
+			function ESC(data) {
+			    return String.fromCharCode(27)+data
+			}
+			if ( key.charCodeAt(0)==12 ) {
+			    var cy = 0+term.buffer.cursorY
+			    if ( cy > 0) {
+				if (cy <= term.rows) {
+				    term.write( ESC("[B") )
+				    term.write( ESC("[J") )
+				    term.write( ESC("[A") )
+				}
+
+				term.write( ESC("[A") )
+				term.write( ESC("[K") )
+				term.write( ESC("[1J"))
+
+				for (var i=1;i<cy;i++) {
+				    term.write( ESC("[A") )
+				    term.write( ESC("[M") )
+				}
+				term.write( ESC("[M") )
+			    }
+			    return false
+			}
+			return true
+		    }
 			function forward_event(event) {
 				if(iframe !== undefined && iframe !== null) {
 					if(iframe.contentWindow !== null)
@@ -229,15 +257,22 @@
 
 				
 				Terminal.applyAddon(fit);
-				term = new Terminal();
+				term = new Terminal({
+					tabStopWidth : 8,
+				        cursorBlink : true,
+				        cursorStyle : 'block',
+				        applicationCursor : true
+				});
 				mp_js_stdout = document.getElementById('mp_js_stdout');
 			    mp_js_stdout.value = "";
 				term.open(mp_js_stdout);
 				term.fit();
 				term.on('data', function(key, e) {
-					for(var i = 0; i < key.length; i++) {
-						if(iframe.contentWindow !== null)
-							iframe.contentWindow.mp_js_process_char(key.charCodeAt(i));
+					if ( xterm_helper(term, key) ) {
+						for(var i = 0; i < key.length; i++) {
+							if(iframe.contentWindow !== null)
+								iframe.contentWindow.mp_js_process_char(key.charCodeAt(i));
+						}
 					}
 				});
 				
