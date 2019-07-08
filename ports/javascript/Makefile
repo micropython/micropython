@@ -28,7 +28,7 @@ ifdef WASM_FILE_API
 endif
 
 ifdef EMSCRIPTEN
-	CPP += -D__EMSCRIPTEN__ -D__CPP__
+	CPP += -D__EMSCRIPTEN__
 	CPP += --sysroot $(EMSCRIPTEN)/system
 	CPP += -isystem $(EMSCRIPTEN)/system/include/libc
 	CPP += -isystem $(EMSCRIPTEN)/system/include/libcxx
@@ -46,14 +46,17 @@ CFLAGS += $(OPTIM) -DNDEBUG -D__EMSCRIPTEN__ -DLV_CONF_INCLUDE_SIMPLE
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += $(CFLAGS_MOD)
 
-ifdef FROZEN_MPY_DIR
-	CFLAGS += -DFROZEN_MPY_DIR=$(FROZEN_MPY_DIR)
+ifneq ($(FROZEN_DIR),)
+# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
+# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+endif
 
-# //for qstr.c
-	CFLAGS +=-DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-
-# //for build/genhdr/qstr.i.last
-	QSTR_GEN_EXTRA_CFLAGS=-DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool	
+ifneq ($(FROZEN_MPY_DIR),)
+# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
+# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
 SRC_LIB = $(addprefix lib/,\
