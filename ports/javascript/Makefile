@@ -8,6 +8,8 @@ WASM_FILE_API = 1
 
 include $(TOP)/py/py.mk
 
+JSFLAGS = $(BOTH_CFLAGS) -s ASSERTIONS=2 -s FORCE_FILESYSTEM=1 -s USE_SDL=2 $(OPTIM) -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_handle_pending', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" --memory-init-file 0 --js-library library.js
+
 CC = emcc -g4 $(JSFLAGS)
 LD = emcc -g4
 
@@ -15,15 +17,9 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-EM_CACHE ?= $(HOME)/.emscripten_cache
-
-
 BOTH_CFLAGS := -s WASM=0
 
 CPP = clang -E
-
-#for lvgl
-CPPFLAGS += -I$(EM_CACHE)/asmjs/ports-builds/sdl2/include
 
 ifdef WASM_FILE_API
 	CPPFLAGS += -DWASM_FILE_API=1 
@@ -32,7 +28,7 @@ endif
 ifdef EMSCRIPTEN
 	CPP += -D__EMSCRIPTEN__
 	CPP += --sysroot $(EMSCRIPTEN)/system
-	CPP += $(addprefix -isystem, $(shell $(CC) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
+	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
 	CPP += $(CPPFLAGS)
 	# Act like 'emcc'
 	CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
@@ -98,7 +94,6 @@ SRC_QSTR += $(SRC_C) $(LIB_SRC_C) dummy_header.h
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-JSFLAGS = $(BOTH_CFLAGS) -s ASSERTIONS=2 -s FORCE_FILESYSTEM=1 -s USE_SDL=2 $(OPTIM) -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_handle_pending', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" --memory-init-file 0 --js-library library.js
 
 all: $(BUILD)/micropython.js
 
