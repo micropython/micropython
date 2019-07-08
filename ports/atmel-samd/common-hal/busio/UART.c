@@ -88,11 +88,19 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 continue;
             }
             potential_sercom = sercom_insts[sercom_index];
-            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
+#ifdef SAMD21
+	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0 ||
                   tx->sercom[i].pad == 2)) {
                 continue;
             }
+#endif
+#ifdef SAMD51
+	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
+                !(tx->sercom[i].pad == 0)) {
+                continue;
+            }
+#endif
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
             if (rx == mp_const_none) {
