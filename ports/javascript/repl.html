@@ -1,0 +1,142 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name=viewport content='width=device-width,initial-scale=1'>
+
+    <style>
+        body {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+        a { white-space: nowrap; }
+        #vt100,#mp_js_stdout {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        #canvas {
+            border: 4px black solid;
+            border-radius: 4px;
+
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/xterm.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/xterm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/addons/fit/fit.min.js"></script>
+
+    <script src="lvgl_mp.js"></script>
+    <script src="docs/wasm_file_api.js"></script>
+
+  </head>
+
+
+<body>
+
+    <h1>MicroPython javascript port + lvgl</h1>
+
+    <pre id="url"></pre>
+
+    <pre id="test"></pre>
+
+    <pre id="log"></pre>
+
+    <div id='mp_js_stdout'></div>
+
+    <canvas id="canvas" width="240" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+
+    <p>
+
+<script type="text/µpython">
+if 1:
+    print("hello World")
+
+</script>
+
+
+<script defer>
+    window.vt100 = mp_js_stdout
+
+    Module.canvas = canvas
+
+    // Ctrl+L is mandatory ! need xterm.js 3.14+
+    function xterm_helper(term, key) {
+        function ESC(data) {
+            return String.fromCharCode(27)+data
+        }
+        if ( key.charCodeAt(0)==12 ) {
+            var cy = 0+term.buffer.cursorY
+            if ( cy > 0) {
+                if (cy <= term.rows) {
+                    term.write( ESC("[B") )
+                    term.write( ESC("[J") )
+                    term.write( ESC("[A") )
+                }
+
+                term.write( ESC("[A") )
+                term.write( ESC("[K") )
+                term.write( ESC("[1J"))
+
+                for (var i=1;i<cy;i++) {
+                    term.write( ESC("[A") )
+                    term.write( ESC("[M") )
+                }
+                term.write( ESC("[M") )
+            }
+            return false
+        }
+        return true
+    }
+
+    Terminal.applyAddon(fit);
+    var term = new Terminal({
+                    cols : 132,
+                    rows : 33,
+                    tabStopWidth : 8,
+                    cursorBlink : true,
+                    cursorStyle : 'block',
+                    applicationCursor : true,
+    });
+    term.open(vt100)
+
+    vt100.addEventListener('print', function(e) {
+				text = e.data;
+				term.write(text);
+			}, false);
+
+    mp_js_init(512 * 1024);
+    mp_js_init_repl()
+
+    window.stdin = ""
+
+    term.on('data', function(key, e) {
+        if ( xterm_helper(term, key) ) {
+            const kc = key.charCodeAt(0)
+            if (kc <=27)
+                console.log("KBD : "+kc+ " len= "+key.length)
+
+            if (0) {
+                 // canonical term - bug
+                term.write(key)
+
+                if (kc==13) {
+                    mp_js_do_str(window.stdin + "\r\n")
+                    window.stdin =""
+                } else window.stdin += key
+
+            } else {
+                // raw
+    			for (var i = 0; i < key.length; i++) {
+					mp_js_process_char(key.charCodeAt(i));
+			    }
+            }
+        }
+    });
+
+
+</script>
+
+</body>
+</html>
+

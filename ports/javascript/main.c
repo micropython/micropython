@@ -132,7 +132,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
 		MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
 		nlr_raise(obj);
 	}
-        
+
 
         nlr_pop();
         return 0;
@@ -212,7 +212,7 @@ void mp_js_init(int heap_size) {
     #endif
 
     mp_init();
-    
+
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
     mp_obj_list_init(mp_sys_argv, 0);
@@ -251,7 +251,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 #else
 	#pragma message "file.c will require external WASM_FILE_API functions"
-	#pragma message "see wasm_file_api.txt"
+	#pragma message "see docs/wasm_file_api.txt"
 #endif
 
 void nlr_jump_fail(void *val) {
