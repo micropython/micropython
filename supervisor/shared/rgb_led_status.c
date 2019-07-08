@@ -271,9 +271,24 @@ void clear_temp_status() {
         #endif
     #endif
     #if defined(CP_RGB_STATUS_LED)
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
+
+	uint16_t red = 0;
+	uint16_t green = 0;
+	uint16_t blue = 0;
+
+	#if defined(CP_RGB_STATUS_INVERTED_PWM)
+		red = (1 << 16) - 1 - status_rgb_color[0];
+		green = (1 << 16) - 1 - status_rgb_color[1];
+		blue = (1 << 16) - 1 - status_rgb_color[2];
+	#else
+		red = status_rgb_color[0];
+		green = status_rgb_color[1];
+		blue = status_rgb_color[2];
+	#endif
+
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, red);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, green);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, blue);
     #endif
 }
 
