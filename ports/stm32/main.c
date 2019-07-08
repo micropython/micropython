@@ -557,7 +557,7 @@ soft_reset:
     mp_stack_set_limit((char*)&_estack - (char*)&_heap_end - 1024);
 
     // GC init
-    gc_init(&_heap_start, &_heap_end);
+    gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];
