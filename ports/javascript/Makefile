@@ -19,7 +19,7 @@ INC += -I$(BUILD)
 
 BOTH_CFLAGS := -s WASM=0
 
-CPP = clang -E
+CPP = clang -E -undef
 
 ifdef WASM_FILE_API
 	CPPFLAGS += -DWASM_FILE_API=1 
@@ -30,8 +30,6 @@ ifdef EMSCRIPTEN
 	CPP += --sysroot $(EMSCRIPTEN)/system
 	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
 	CPP += $(CPPFLAGS)
-	# Act like 'emcc'
-	CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
 endif
 
 CFLAGS = -m32 -Wall $(INC) $(COPT) $(CPPFLAGS)
@@ -89,7 +87,13 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C) dummy_header.h
+SRC_QSTR += $(BUILD)/clang_predefs.h $(SRC_C) $(LIB_SRC_C) dummy_header.h
+
+
+# Generate the proper predefined macros for Emscripten (and not the host)
+$(BUILD)/clang_predefs.h:
+	@emcc $(JSFLAGS) -E -x c /dev/null -dM > $@
+
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
