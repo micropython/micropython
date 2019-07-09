@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-19 09:49-0400\n"
+"POT-Creation-Date: 2019-07-09 08:43-0400\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -362,21 +362,9 @@ msgstr ""
 msgid "Can not use dotstar with %s"
 msgstr "No se puede usar dotstar con %s"
 
-#: shared-bindings/bleio/Central.c
-msgid "Can't add services in Central mode"
-msgstr "No se pueden agregar servicio en modo Central"
-
-#: shared-bindings/bleio/Central.c
-msgid "Can't advertise in Central mode"
-msgstr "No se puede anunciar en modo Central"
-
-#: shared-bindings/bleio/Central.c
-msgid "Can't change the name in Central mode"
-msgstr "No se puede cambiar el nombre en modo Central"
-
-#: shared-bindings/bleio/Central.c
-msgid "Can't connect in Peripheral mode"
-msgstr "No se puede conectar en modo Peripheral"
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Can't set CCCD for local Characteristic"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -504,11 +492,6 @@ msgstr "El Data Chunk debe seguir el fmt chunk"
 msgid "Data too large for advertisement packet"
 msgstr "Los datos no caben en el paquete de anuncio."
 
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Data too large for the advertisement packet"
-msgstr "Los datos no caben en el paquete de anuncio."
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Capacidad de destino es mas pequeña que destination_length."
@@ -548,6 +531,10 @@ msgstr "No se puede agregar la Característica."
 msgid "Expected a UUID"
 msgstr "Se espera un %q"
 
+#: shared-bindings/bleio/Central.c
+msgid "Expected an Address"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -557,12 +544,7 @@ msgstr "Se esperaba un tuple de %d, se obtuvo %d"
 msgid "Failed sending command."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to acquire mutex"
-msgstr "No se puede adquirir el mutex, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "No se puede adquirir el mutex, status: 0x%08lX"
@@ -571,11 +553,6 @@ msgstr "No se puede adquirir el mutex, status: 0x%08lX"
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "No se puede añadir caracteristica, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to add service"
-msgstr "No se puede detener el anuncio. status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
@@ -603,24 +580,13 @@ msgid "Failed to configure advertising, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to connect:"
-msgstr "No se puede conectar. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to continue scanning"
-msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+msgid "Failed to connect: timeout"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, fuzzy, c-format
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "No se puede iniciar el escaneo. status: 0x%02x"
-
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to create mutex"
-msgstr "No se puede leer el valor del atributo. status 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Central.c
 #, fuzzy
@@ -662,12 +628,7 @@ msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "No se puede agregar el Vendor Specific 128-bit UUID."
 
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to release mutex"
-msgstr "No se puede liberar el mutex, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "No se puede liberar el mutex, status: 0x%08lX"
@@ -677,35 +638,30 @@ msgstr "No se puede liberar el mutex, status: 0x%08lX"
 msgid "Failed to set device name, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to start advertising"
-msgstr "No se puede inicar el anuncio. status: 0x%02x"
-
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "No se puede inicar el anuncio. status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to start scanning"
-msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+#, c-format
+msgid "Failed to start connecting, error 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, fuzzy, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "No se puede iniciar el escaneo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to stop advertising"
-msgstr "No se puede detener el anuncio. status: 0x%02x"
-
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "No se puede detener el anuncio. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to write CCCD, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
@@ -928,6 +884,10 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "No CCCD for this Characteristic"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "El chip no tiene DAC"
@@ -978,6 +938,7 @@ msgstr "No queda espacio en el dispositivo"
 msgid "No such file/directory"
 msgstr "No existe el archivo/directorio"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "Not connected"
@@ -2177,6 +2138,14 @@ msgstr "ningún módulo se llama '%q'"
 msgid "no such attribute"
 msgstr "no hay tal atributo"
 
+#: shared-bindings/bleio/Peripheral.c
+msgid "non-Service found in services"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
+msgid "non-UUID found in service_uuids"
+msgstr ""
+
 #: py/compile.c
 msgid "non-default argument follows default argument"
 msgstr "argumento no predeterminado sigue argumento predeterminado"
@@ -2392,10 +2361,6 @@ msgstr ""
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "script de compilación no soportado"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "services includes an object that is not a Service"
-msgstr "services incluye un objeto que no es servicio"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2705,6 +2670,18 @@ msgstr "paso cero"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Direción no es %d bytes largo o esta en el formato incorrecto"
 
+#~ msgid "Can't add services in Central mode"
+#~ msgstr "No se pueden agregar servicio en modo Central"
+
+#~ msgid "Can't advertise in Central mode"
+#~ msgstr "No se puede anunciar en modo Central"
+
+#~ msgid "Can't change the name in Central mode"
+#~ msgstr "No se puede cambiar el nombre en modo Central"
+
+#~ msgid "Can't connect in Peripheral mode"
+#~ msgstr "No se puede conectar en modo Peripheral"
+
 #~ msgid "Cannot connect to AP"
 #~ msgstr "No se puede conectar a AP"
 
@@ -2716,6 +2693,10 @@ msgstr "paso cero"
 
 #~ msgid "Cannot update i/f status"
 #~ msgstr "No se puede actualizar i/f status"
+
+#, fuzzy
+#~ msgid "Data too large for the advertisement packet"
+#~ msgstr "Los datos no caben en el paquete de anuncio."
 
 #~ msgid "Don't know how to pass object to native function"
 #~ msgstr "No se sabe cómo pasar objeto a función nativa"
@@ -2730,12 +2711,48 @@ msgstr "paso cero"
 #~ msgstr "Error en ffi_prep_cif"
 
 #, fuzzy
+#~ msgid "Failed to acquire mutex"
+#~ msgstr "No se puede adquirir el mutex, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to add service"
+#~ msgstr "No se puede detener el anuncio. status: 0x%02x"
+
+#, fuzzy
+#~ msgid "Failed to connect:"
+#~ msgstr "No se puede conectar. status: 0x%02x"
+
+#, fuzzy
+#~ msgid "Failed to continue scanning"
+#~ msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+
+#, fuzzy
+#~ msgid "Failed to create mutex"
+#~ msgstr "No se puede leer el valor del atributo. status 0x%02x"
+
+#, fuzzy
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "No se puede notificar el valor del anuncio. status: 0x%02x"
 
 #, fuzzy
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "No se puede leer el valor del atributo. status 0x%02x"
+
+#, fuzzy
+#~ msgid "Failed to release mutex"
+#~ msgstr "No se puede liberar el mutex, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to start advertising"
+#~ msgstr "No se puede inicar el anuncio. status: 0x%02x"
+
+#, fuzzy
+#~ msgid "Failed to start scanning"
+#~ msgstr "No se puede iniciar el escaneo. status: 0x%02x"
+
+#, fuzzy
+#~ msgid "Failed to stop advertising"
+#~ msgstr "No se puede detener el anuncio. status: 0x%02x"
 
 #~ msgid "Function requires lock."
 #~ msgstr "La función requiere lock"
@@ -2908,6 +2925,9 @@ msgstr "paso cero"
 
 #~ msgid "scan failed"
 #~ msgstr "scan ha fallado"
+
+#~ msgid "services includes an object that is not a Service"
+#~ msgstr "services incluye un objeto que no es servicio"
 
 #~ msgid "too many arguments"
 #~ msgstr "muchos argumentos"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-19 09:49-0400\n"
+"POT-Creation-Date: 2019-07-09 08:43-0400\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -351,21 +351,9 @@ msgstr ""
 msgid "Can not use dotstar with %s"
 msgstr "Nie można używać dotstar z %s"
 
-#: shared-bindings/bleio/Central.c
-msgid "Can't add services in Central mode"
-msgstr "Nie można dodać serwisów w trybie Central"
-
-#: shared-bindings/bleio/Central.c
-msgid "Can't advertise in Central mode"
-msgstr "Nie można rozgłaszać w trybie Central"
-
-#: shared-bindings/bleio/Central.c
-msgid "Can't change the name in Central mode"
-msgstr "Nie można zmienić nazwy w trybie Central"
-
-#: shared-bindings/bleio/Central.c
-msgid "Can't connect in Peripheral mode"
-msgstr "Nie można się łączyć w trybie Peripheral"
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Can't set CCCD for local Characteristic"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -490,10 +478,6 @@ msgstr "Fragment danych musi następować po fragmencie fmt"
 msgid "Data too large for advertisement packet"
 msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Data too large for the advertisement packet"
-msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Pojemność celu mniejsza od destination_length."
@@ -531,6 +515,10 @@ msgstr "Oczekiwano charakterystyki"
 msgid "Expected a UUID"
 msgstr "Oczekiwano UUID"
 
+#: shared-bindings/bleio/Central.c
+msgid "Expected an Address"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -540,11 +528,7 @@ msgstr "Oczekiwano krotkę długości %d, otrzymano %d"
 msgid "Failed sending command."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to acquire mutex"
-msgstr "Nie udało się uzyskać blokady"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
@@ -553,10 +537,6 @@ msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
 #, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Nie udało się dodać charakterystyki, błąd 0x$04x"
-
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to add service"
-msgstr "Nie udało się dodać serwisu"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
@@ -583,21 +563,13 @@ msgid "Failed to configure advertising, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to connect:"
-msgstr "Nie udało się połączenie:"
-
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to continue scanning"
-msgstr "Nie udała się kontynuacja skanowania"
+msgid "Failed to connect: timeout"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Nie udała się kontynuacja skanowania, błąd 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to create mutex"
-msgstr "Nie udało się stworzyć blokady"
 
 #: ports/nrf/common-hal/bleio/Central.c
 msgid "Failed to discover services"
@@ -636,11 +608,7 @@ msgstr "Nie udało się odczytać gatts, błąd 0x%04x"
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Nie udało się zarejestrować UUID dostawcy, błąd 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to release mutex"
-msgstr "Nie udało się zwolnić blokady"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Nie udało się zwolnić blokady, błąd 0x%04x"
@@ -650,32 +618,30 @@ msgstr "Nie udało się zwolnić blokady, błąd 0x%04x"
 msgid "Failed to set device name, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to start advertising"
-msgstr "Nie udało się rozpocząć rozgłaszania"
-
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Nie udało się rozpocząć rozgłaszania, błąd 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to start scanning"
-msgstr "Nie udało się rozpocząć skanowania"
+#, c-format
+msgid "Failed to start connecting, error 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Nie udało się rozpocząć skanowania, błąd 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "Failed to stop advertising"
-msgstr "Nie udało się zatrzymać rozgłaszania"
-
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Nie udało się zatrzymać rozgłaszania, błąd 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to write CCCD, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
@@ -899,6 +865,10 @@ msgstr "Opóźnienie włączenia mikrofonu musi być w zakresie od 0.0 do 1.0"
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "No CCCD for this Characteristic"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Brak DAC"
@@ -949,6 +919,7 @@ msgstr "Brak miejsca"
 msgid "No such file/directory"
 msgstr "Brak pliku/katalogu"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "Not connected"
 msgstr "Nie podłączono"
@@ -2123,6 +2094,14 @@ msgstr "brak modułu o nazwie '%q'"
 msgid "no such attribute"
 msgstr "nie ma takiego atrybutu"
 
+#: shared-bindings/bleio/Peripheral.c
+msgid "non-Service found in services"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
+msgid "non-UUID found in service_uuids"
+msgstr ""
+
 #: py/compile.c
 msgid "non-default argument follows default argument"
 msgstr "argument z wartością domyślną przed argumentem bez"
@@ -2332,10 +2311,6 @@ msgstr "stos planu pełen"
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "kompilowanie skryptów nieobsługiwane"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "services includes an object that is not a Service"
-msgstr "obiekt typu innego niż Service w services"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2638,6 +2613,48 @@ msgstr "zerowy krok"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Adres nie ma długości %d bajtów lub zły format"
 
+#~ msgid "Can't add services in Central mode"
+#~ msgstr "Nie można dodać serwisów w trybie Central"
+
+#~ msgid "Can't advertise in Central mode"
+#~ msgstr "Nie można rozgłaszać w trybie Central"
+
+#~ msgid "Can't change the name in Central mode"
+#~ msgstr "Nie można zmienić nazwy w trybie Central"
+
+#~ msgid "Can't connect in Peripheral mode"
+#~ msgstr "Nie można się łączyć w trybie Peripheral"
+
+#~ msgid "Data too large for the advertisement packet"
+#~ msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
+
+#~ msgid "Failed to acquire mutex"
+#~ msgstr "Nie udało się uzyskać blokady"
+
+#~ msgid "Failed to add service"
+#~ msgstr "Nie udało się dodać serwisu"
+
+#~ msgid "Failed to connect:"
+#~ msgstr "Nie udało się połączenie:"
+
+#~ msgid "Failed to continue scanning"
+#~ msgstr "Nie udała się kontynuacja skanowania"
+
+#~ msgid "Failed to create mutex"
+#~ msgstr "Nie udało się stworzyć blokady"
+
+#~ msgid "Failed to release mutex"
+#~ msgstr "Nie udało się zwolnić blokady"
+
+#~ msgid "Failed to start advertising"
+#~ msgstr "Nie udało się rozpocząć rozgłaszania"
+
+#~ msgid "Failed to start scanning"
+#~ msgstr "Nie udało się rozpocząć skanowania"
+
+#~ msgid "Failed to stop advertising"
+#~ msgstr "Nie udało się zatrzymać rozgłaszania"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Zła nóżka zegara"
 
@@ -2655,3 +2672,6 @@ msgstr "zerowy krok"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "przedział poza zakresem 0.0020 do 10.24"
+
+#~ msgid "services includes an object that is not a Service"
+#~ msgstr "obiekt typu innego niż Service w services"
