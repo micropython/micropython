@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-09 08:43-0400\n"
+"POT-Creation-Date: 2019-07-09 09:06-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1308,8 +1308,8 @@ msgstr ""
 msgid "argument has wrong type"
 msgstr ""
 
-#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/gamepad/GamePad.c shared-bindings/_stage/__init__.c
+#: py/argcheck.c shared-bindings/_stage/__init__.c
+#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr ""
 

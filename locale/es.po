@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-09 08:43-0400\n"
+"POT-Creation-Date: 2019-07-09 09:07-0400\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -221,11 +221,6 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 
 #: shared-bindings/bleio/Address.c
 #, c-format
-msgid "Address is not %d bytes long or is in wrong format"
-msgstr "Direción no es %d bytes largo o esta en el formato incorrecto"
-
-#: shared-bindings/bleio/Address.c
-#, c-format
 msgid "Address must be %d bytes long"
 msgstr "La dirección debe ser %d bytes de largo"
 
@@ -251,7 +246,9 @@ msgstr "Todos los canales de eventos estan siendo usados"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
-msgstr "Todos los canales de eventos de sincronización (sync event channels) están siendo utilizados"
+msgstr ""
+"Todos los canales de eventos de sincronización (sync event channels) están "
+"siendo utilizados"
 
 #: shared-bindings/pulseio/PWMOut.c
 msgid "All timers for this pin are in use"
@@ -291,7 +288,9 @@ msgstr "Valores del array deben ser bytes individuales."
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running.\n"
-msgstr "Intento de allocation de heap cuando la VM de MicroPython no estaba corriendo.\n"
+msgstr ""
+"Intento de allocation de heap cuando la VM de MicroPython no estaba "
+"corriendo.\n"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -301,7 +300,9 @@ msgstr "Auto-recarga deshabilitada.\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr "Auto-reload habilitado. Simplemente guarda los archivos via USB para ejecutarlos o entra al REPL para desabilitarlos.\n"
+msgstr ""
+"Auto-reload habilitado. Simplemente guarda los archivos via USB para "
+"ejecutarlos o entra al REPL para desabilitarlos.\n"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -657,6 +658,7 @@ msgid "Failed to write CCCD, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "No se puede escribir el valor del atributo. err: 0x%04x"
 
@@ -712,7 +714,9 @@ msgstr "operación I2C no soportada"
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
-msgstr "Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte http://adafru.it/mpy-update para más información"
+msgstr ""
+"Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte "
+"http://adafru.it/mpy-update para más información"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -941,7 +945,8 @@ msgstr "No reproduciendo"
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo objeto"
+"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo "
+"objeto"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1352,8 +1357,8 @@ msgstr "argumento es una secuencia vacía"
 msgid "argument has wrong type"
 msgstr "el argumento tiene un tipo erroneo"
 
-#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/gamepad/GamePad.c shared-bindings/_stage/__init__.c
+#: py/argcheck.c shared-bindings/_stage/__init__.c
+#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr "argumento número/tipos no coinciden"
 
