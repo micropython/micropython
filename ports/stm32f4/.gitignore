@@ -1,0 +1,8 @@
+# Build files
+#####################
+build-*/
+
+# Reference files
+#####################
+ref/
+

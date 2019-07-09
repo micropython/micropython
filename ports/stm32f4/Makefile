@@ -63,11 +63,11 @@ INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
-INC += -I./cubeMXInc
-INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc
-INC += -I./cubeMXDrivers/STM32F4xx_HAL_Driver/Inc/Legacy
-INC += -I./cubeMXDrivers/CMSIS/Device/ST/STM32F4xx/Include
-INC += -I./cubeMXDrivers/CMSIS/Include
+INC += -I./stm32cube/STM32F4xx_HAL_Driver/Inc
+INC += -I./stm32cube/STM32F4xx_HAL_Driver/Inc/Legacy
+INC += -I./stm32cube/CMSIS/Device/ST/STM32F4xx/Include
+INC += -I./stm32cube/CMSIS/Include
+INC += -I./boards
 INC += -I./boards/$(BOARD)
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
@@ -87,9 +87,16 @@ endif
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F411xE \
+-DSTM32F412Zx \
 -DUSE_HAL_DRIVER \
--DSTM32F411xE
+-DSTM32F412Zx
+
+# C defines
+#C_DEFS =  \
+#-DUSE_HAL_DRIVER \
+#-DSTM32F411xE \
+#-DUSE_HAL_DRIVER \
+#-DSTM32F411xE
 
 #TODO: Add ASM Flags? -Werror
 CFLAGS += $(INC) -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
@@ -128,32 +135,28 @@ endif
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
 
 
-
 ######################################
 # source
 ######################################
 
-#cubeMXsrc/stm32f4xx_it.c \
-#cubeMXsrc/stm32f4xx_hal_msp.c \
-
 SRC_STM32 = \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
-	cubeMXDrivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
-	cubeMXsrc/system_stm32f4xx.c  
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
+	system_stm32f4xx.c  
 
 
 SRC_C += \
@@ -180,7 +183,10 @@ SRC_C += \
 
 SRC_S = \
 	supervisor/cpu.s \
-	startup_stm32f411xe.s
+	boards/startup_stm32f412zx.s
+#	boards/startup_stm32f411xe.s
+	
+#boards/startup_stm32f412zx.s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
