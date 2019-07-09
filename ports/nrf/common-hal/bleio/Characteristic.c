@@ -162,7 +162,6 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
     check_connected(conn_handle);
 
     ble_gattc_write_params_t write_params = {
-        .flags = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL,
         .write_op = characteristic->props.write_no_response ? BLE_GATT_OP_WRITE_CMD : BLE_GATT_OP_WRITE_REQ,
         .handle = characteristic->handle,
         .p_value = bufinfo->buf,
@@ -210,19 +209,19 @@ STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
 
 }
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props) {
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, mp_obj_list_t *descriptor_list) {
     self->service = mp_const_none;
     self->uuid = uuid;
     self->value_data = mp_const_none;
     self->props = props;
+    self->descriptor_list = descriptor_list;
     self->handle = BLE_GATT_HANDLE_INVALID;
 
     ble_drv_add_event_handler(characteristic_on_ble_evt, self);
-
 }
 
-void common_hal_bleio_characteristic_set_service(bleio_characteristic_obj_t *self, bleio_service_obj_t *service) {
-    self->service = service;
+mp_obj_list_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
+    return self->descriptor_list;
 }
 
 mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
@@ -283,4 +282,48 @@ bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_
 
 bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties(bleio_characteristic_obj_t *self) {
     return self->props;
+}
+
+void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
+    if (self->cccd_handle == BLE_GATT_HANDLE_INVALID) {
+        mp_raise_ValueError(translate("No CCCD for this Characteristic"));
+    }
+
+    if (common_hal_bleio_device_get_gatt_role(self->service->device) != GATT_ROLE_CLIENT) {
+        mp_raise_ValueError(translate("Can't set CCCD for local Characteristic"));
+    }
+
+    uint16_t cccd_value =
+        (notify ? BLE_GATT_HVX_NOTIFICATION : 0) |
+        (indicate ? BLE_GATT_HVX_INDICATION : 0);
+
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->service->device);
+    check_connected(conn_handle);
+
+
+    ble_gattc_write_params_t write_params = {
+        .write_op = BLE_GATT_OP_WRITE_REQ,
+        .handle = self->cccd_handle,
+        .p_value = (uint8_t *) &cccd_value,
+        .len = 2,
+    };
+
+    while (1) {
+        uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
+        if (err_code == NRF_SUCCESS) {
+            break;
+        }
+
+        // Write with response will return NRF_ERROR_BUSY if the response has not been received.
+        // Write without reponse will return NRF_ERROR_RESOURCES if too many writes are pending.
+        if (err_code == NRF_ERROR_BUSY || err_code == NRF_ERROR_RESOURCES) {
+            // We could wait for an event indicating the write is complete, but just retrying is easier.
+            MICROPY_VM_HOOK_LOOP;
+            continue;
+        }
+
+        // Some real error occurred.
+        mp_raise_OSError_msg_varg(translate("Failed to write CCCD, err 0x%04x"), err_code);
+    }
+
 }

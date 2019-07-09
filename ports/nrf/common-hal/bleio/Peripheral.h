@@ -44,7 +44,6 @@ typedef struct {
     gatt_role_t gatt_role;
     volatile uint16_t conn_handle;
     mp_obj_list_t *service_list;
-    mp_obj_t conn_handler;
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).

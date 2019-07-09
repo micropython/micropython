@@ -82,13 +82,12 @@ static const char default_name[] = "CIRCUITPY";
 //| .. class:: Peripheral(services=(), \*, name='CIRCUITPY')
 //|
 //|   Create a new Peripheral object.
-
+//|
 //|   :param iterable services: the Service objects representing services available from this peripheral, if any.
 //|     A non-connectable peripheral will have no services.
 //|   :param str name: The name used when advertising this peripheral. Use ``None`` when a name is not needed,
 //|     such as when the peripheral is a beacon
 //|
-
 STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_services, ARG_name };
     static const mp_arg_t allowed_args[] = {

@@ -53,15 +53,14 @@
 //|     :maxdepth: 3
 //|
 //|     Address
-//|     AdvertisementData
 //|     Adapter
 //|     Central
 //|     Characteristic
 //|     CharacteristicBuffer
-//     Descriptor
+//|     Descriptor
 //|     Peripheral
-//|    ScanEntry
-//|    Scanner
+//|     ScanEntry
+//|     Scanner
 //|     Service
 //|     UUID
 //|

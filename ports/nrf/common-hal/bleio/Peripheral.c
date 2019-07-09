@@ -135,13 +135,13 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_
     for (size_t service_idx = 0; service_idx < service_list->len; ++service_idx) {
         bleio_service_obj_t *service = MP_OBJ_TO_PTR(service_list->items[service_idx]);
 
-        common_hal_bleio_service_set_device(service, MP_OBJ_FROM_PTR(self));
+        service->device = MP_OBJ_FROM_PTR(self);
 
         ble_uuid_t uuid;
         bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
 
         uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
-        if (service->is_secondary) {
+        if (common_hal_bleio_service_get_is_secondary(service)) {
             service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
         }
 

@@ -37,6 +37,6 @@ mp_int_t common_hal_bleio_descriptor_get_handle(bleio_descriptor_obj_t *self) {
     return self->handle;
 }
 
-mp_obj_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
-    return MP_OBJ_FROM_PTR(self->uuid);
+bleio_uuid_obj_t *common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
+    return self->uuid;
 }

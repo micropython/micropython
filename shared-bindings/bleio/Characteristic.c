@@ -88,7 +88,8 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     properties.write = args[ARG_write].u_bool;
     properties.write_no_response = args[ARG_write_no_response].u_bool;
 
-    common_hal_bleio_characteristic_construct(self, uuid, properties);
+    // Initialize, with an empty descriptor list.
+    common_hal_bleio_characteristic_construct(self, uuid, properties, mp_obj_new_list(0, NULL));
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -254,11 +255,58 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|   .. attribute:: descriptors
+//|
+//|     A tuple of `bleio.Descriptor` that describe this characteristic. (read-only)
+//|
+STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
+    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // Return list as a tuple so user won't be able to change it.
+    mp_obj_list_t *char_list = common_hal_bleio_characteristic_get_descriptor_list(self);
+    return mp_obj_new_tuple(char_list->len, char_list->items);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio_characteristic_get_descriptors);
+
+const mp_obj_property_t bleio_characteristic_descriptors_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_characteristic_get_descriptors_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+//|   .. method:: set_cccd(*, notify=False, indicate=False)
+//|
+//|     Set the remote characteristic's CCCD to enable or disable notification and indication.
+//|
+//|     :param bool notify: True if Characteristic should receive notifications of remote writes
+//|     :param float indicate: True if Characteristic should receive indications of remote writes
+//|
+STATIC mp_obj_t bleio_characteristic_set_cccd(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    enum { ARG_notify, ARG_indicate };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_notify, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_indicate, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    common_hal_bleio_characteristic_set_cccd(self, args[ARG_notify].u_bool, args[ARG_indicate].u_bool);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_characteristic_set_cccd_obj, 1, bleio_characteristic_set_cccd);
+
+
 STATIC const mp_rom_map_elem_t bleio_characteristic_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_broadcast),     MP_ROM_PTR(&bleio_characteristic_broadcast_obj) },
+    { MP_ROM_QSTR(MP_QSTR_descriptors),   MP_ROM_PTR(&bleio_characteristic_descriptors_obj) },
     { MP_ROM_QSTR(MP_QSTR_indicate),      MP_ROM_PTR(&bleio_characteristic_indicate_obj) },
     { MP_ROM_QSTR(MP_QSTR_notify),        MP_ROM_PTR(&bleio_characteristic_notify_obj) },
     { MP_ROM_QSTR(MP_QSTR_read),          MP_ROM_PTR(&bleio_characteristic_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_cccd),      MP_ROM_PTR(&bleio_characteristic_set_cccd_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),          MP_ROM_PTR(&bleio_characteristic_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),         MP_ROM_PTR(&bleio_characteristic_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),         MP_ROM_PTR(&bleio_characteristic_write_obj) },

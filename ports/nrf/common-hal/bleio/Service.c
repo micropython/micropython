@@ -44,7 +44,7 @@ void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_ob
     for (size_t characteristic_idx = 0; characteristic_idx < characteristic_list->len; ++characteristic_idx) {
         bleio_characteristic_obj_t *characteristic =
             MP_OBJ_TO_PTR(characteristic_list->items[characteristic_idx]);
-        common_hal_bleio_characteristic_set_service(characteristic, self);
+        characteristic->service = self;
     }
 
 }
@@ -59,10 +59,6 @@ mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_ob
 
 bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
     return self->is_secondary;
-}
-
-void common_hal_bleio_service_set_device(bleio_service_obj_t *self, mp_obj_t device) {
-    self->device = device;
 }
 
 // Call this after the Service has been added to the Peripheral.

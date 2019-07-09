@@ -102,7 +102,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
 //|   .. attribute:: characteristics
 //|
-//|     A `list` of `bleio.Characteristic` that are offered by this service. (read-only)
+//|     A tuple of `bleio.Characteristic` that are offered by this service. (read-only)
 //|
 STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);

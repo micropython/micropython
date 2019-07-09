@@ -49,10 +49,10 @@
 //|
 //|   :param buf address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
 //|   :param int address_type: one of these integers:
-//|     - `bleio.Address.PUBLIC` = 0
-//|     - `bleio.Address.RANDOM_STATIC` = 1
-//|     - `bleio.Address.RANDOM_PRIVATE_RESOLVABLE` = 2
-//|     - `bleio.Address.RANDOM_PRIVATE_NON_RESOLVABLE` = 3
+//|     - ``bleio.Address.PUBLIC`` = 0
+//|     - ``bleio.Address.RANDOM_STATIC`` = 1
+//|     - ``bleio.Address.RANDOM_PRIVATE_RESOLVABLE`` = 2
+//|     - ``bleio.Address.RANDOM_PRIVATE_NON_RESOLVABLE`` = 3
 //|
 
 STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -89,11 +89,6 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 //|
 //|     The bytes that make up the device address (read-only)
 //|
-//|     - `bleio.Address.PUBLIC`
-//|     - `bleio.Address.RANDOM_STATIC`
-//|     - `bleio.Address.RANDOM_PRIVATE_RESOLVABLE`
-//|     - `bleio.Address.RANDOM_PRIVATE_NON_RESOLVABLE`
-//|
 STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -112,10 +107,10 @@ const mp_obj_property_t bleio_address_address_bytes_obj = {
 //|
 //|     The address type (read-only). One of these integers:
 //|
-//|     - `bleio.Address.PUBLIC`
-//|     - `bleio.Address.RANDOM_STATIC`
-//|     - `bleio.Address.RANDOM_PRIVATE_RESOLVABLE`
-//|     - `bleio.Address.RANDOM_PRIVATE_NON_RESOLVABLE`
+//|     - ``bleio.Address.PUBLIC`` = 0
+//|     - ``bleio.Address.RANDOM_STATIC`` = 1
+//|     - ``bleio.Address.RANDOM_PRIVATE_RESOLVABLE`` = 2
+//|     - ``bleio.Address.RANDOM_PRIVATE_NON_RESOLVABLE`` = 3
 //|
 STATIC mp_obj_t bleio_address_get_type(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
