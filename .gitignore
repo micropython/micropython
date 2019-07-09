@@ -42,3 +42,7 @@ user.props
 # Generated rst files
 ######################
 genrst/
+
+# IDE and OS
+.DS_Store
+.vscode
