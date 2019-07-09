@@ -39,6 +39,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
+        - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
 
     # qemu-arm port
     - stage: test
