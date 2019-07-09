@@ -1,10 +1,10 @@
 LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x239A
 USB_PID = 0x803E
-USB_PRODUCT = "PyGamer"
+USB_PRODUCT = "PyGamer Advance"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
-CHIP_VARIANT = SAMD51J19A
+CHIP_VARIANT = SAMD51J20A
 CHIP_FAMILY = samd51
 
 QSPI_FLASH_FILESYSTEM = 1
@@ -20,4 +20,4 @@ CIRCUITPY_STAGE = 1
 # No touch on SAMD51 yet
 CIRCUITPY_TOUCHIO = 0
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pygamer
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pybadge

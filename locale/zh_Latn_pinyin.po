@@ -441,6 +441,14 @@ msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
 msgid "Command must be an int between 0 and 255"
 msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
 
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr ""
+
+#: py/emitglue.c
+msgid "Corrupt raw code"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/UUID.c
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"

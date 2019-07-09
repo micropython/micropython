@@ -182,7 +182,7 @@ Exceptions
 
 .. exception:: OSError
 
-    |see_cpython| `OSError`. CircuitPython doesn't implement the ``errno``
+    |see_cpython| :py:class:`cpython:OSError`. CircuitPython doesn't implement the ``errno``
     attribute, instead use the standard way to access exception arguments:
     ``exc.args[0]``.
 
@@ -198,11 +198,11 @@ Exceptions
 
 .. exception:: SystemExit
 
-    |see_cpython| :py:class:`python:SystemExit`.
+    |see_cpython| :py:class:`cpython:SystemExit`.
 
 .. exception:: TypeError
 
-    |see_cpython| :py:class:`python:TypeError`.
+    |see_cpython| :py:class:`cpython:TypeError`.
 
 .. exception:: ValueError
 

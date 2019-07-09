@@ -443,6 +443,14 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "Os bytes devem estar entre 0 e 255."
 
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr ""
+
+#: py/emitglue.c
+msgid "Corrupt raw code"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/UUID.c
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"

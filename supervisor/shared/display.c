@@ -71,6 +71,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     if (tiles == NULL) {
         return;
     }
+    grid->y = 0;
+    grid->top_left_y = 0;
     if (remaining_pixels > 0) {
         grid->y -= (grid->tile_height - remaining_pixels);
     }

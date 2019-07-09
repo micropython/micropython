@@ -99,6 +99,9 @@ void filesystem_init(bool create_allowed, bool force_create) {
         make_empty_file(&vfs_fat->fatfs, "/.Trashes");
         make_empty_file(&vfs_fat->fatfs, "/.fseventsd/no_log");
 
+        // create empty lib directory
+        f_mkdir(&vfs_fat->fatfs, "/lib");
+
         // and ensure everything is flushed
         supervisor_flash_flush();
     } else if (res != FR_OK) {
