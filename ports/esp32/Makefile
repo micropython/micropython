@@ -128,6 +128,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/mdns/include
 INC_ESPCOMP += -I$(ESPCOMP)/mdns/private_include
+INC_ESPCOMP += -I$(ESPCOMP)/micro-ecc/micro-ecc
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
@@ -216,6 +217,7 @@ SRC_C = \
 	network_ppp.c \
 	modsocket.c \
 	modesp.c \
+	esp32_partition.c \
 	esp32_ulp.c \
 	modesp32.c \
 	espneopixel.c \
@@ -287,6 +289,10 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H) $(BOARD_DIR)/mpconfigboard.
 
 ################################################################################
 # List of object files from the ESP32 IDF components
+
+ESPIDF_BOOTLOADER_SUPPORT_O = $(subst .c,.o,\
+	$(filter-out $(ESPCOMP)/bootloader_support/src/bootloader_init.c,\
+		$(wildcard $(ESPCOMP)/bootloader_support/src/*.c)))
 
 ESPIDF_DRIVER_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/driver/*.c))
 
@@ -399,6 +405,7 @@ $(BUILD_ESPIDF_LIB)/$(1)/lib$(1).a: $(addprefix $$(BUILD)/,$(2))
 	$(Q)$(AR) cru $$@ $$^
 endef
 
+$(eval $(call gen_espidf_lib_rule,bootloader_support,$(ESPIDF_BOOTLOADER_SUPPORT_O)))
 $(eval $(call gen_espidf_lib_rule,driver,$(ESPIDF_DRIVER_O)))
 $(eval $(call gen_espidf_lib_rule,efuse,$(ESPIDF_EFUSE_O)))
 $(eval $(call gen_espidf_lib_rule,esp32,$(ESPIDF_ESP32_O)))
