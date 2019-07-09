@@ -243,6 +243,7 @@ void test_gas() {
                       "print(1123000)\n"
                       "\n";
 
+
     tvm_execute_result_t result;
     tvm_init_result(&result);
     tvm_execute(str, "Testcontract_call", PARSE_KIND_FILE, &result);
@@ -325,6 +326,43 @@ void test_lib_line() {
     tvm_deinit_result(&result);
 }
 
+void test_1() {
+    tvm_start();
+    tvm_set_gas(500000);
+
+    const char *str = "\n"
+                      "class Max():\n"
+                      "    def __init__(self):\n"
+                      "        pass\n"
+                      "\n"
+                      "    def exec(self, max):\n"
+                      "        counter = \"\"\n"
+                      "        while 0 <= max:\n"
+                      "            counter += str(max)\n"
+                      "            max -= 1\n"
+                      "\n"
+                      "m = Max()\n"
+                      "m.exec(1000000)\n"
+                      "\n";
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_1", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_gas_report();
+
+    tvm_delete();
+}
+
+void test_2() {
+    for (int i = 0; i < 100; ++i) {
+        test_1();
+        tvm_delete();
+    }
+}
+
 int main() {
 //    test_execute();
 
@@ -340,7 +378,11 @@ int main() {
 
 //    test_not_supported();
 
-    test_lib_line();
+//    test_lib_line();
+
+    test_1();
+
+//    test_2();
 
     printf("finished\n");
 }
