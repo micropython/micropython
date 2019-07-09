@@ -54,6 +54,9 @@ typedef struct _ppp_if_obj_t {
     SemaphoreHandle_t inactiveWaitSem;
     volatile TaskHandle_t client_task_handle;
     struct netif pppif;
+    mp_obj_t user_name;
+    mp_obj_t password;
+    uint8_t auth_type;
 } ppp_if_obj_t;
 
 const mp_obj_type_t ppp_if_type;
@@ -77,9 +80,51 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
     }
 }
 
-STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {
+
+STATIC mp_obj_t ppp_make_new(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    enum { ARG_stream, ARG_auth_method, ARG_user_name, ARG_password };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_stream, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_auth_method, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_user_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+
+    mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
+
+    mp_obj_t stream = parsed_args[ARG_stream].u_obj;
     mp_get_stream_raise(stream, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
 
+    mp_obj_t auth_method = parsed_args[ARG_auth_method].u_obj;
+    mp_obj_t user_name   = parsed_args[ARG_user_name].u_obj;
+    mp_obj_t password    = parsed_args[ARG_password].u_obj;
+    uint8_t auth_type = PPPAUTHTYPE_NONE;
+    if ( auth_method != MP_OBJ_NULL ) {
+        if ( !mp_obj_is_str(auth_method) ) {
+            mp_raise_TypeError("auth_method must be a str");
+        }
+        if ( user_name == MP_OBJ_NULL ) {
+            mp_raise_ValueError("user name must not be None");
+        }
+        if ( !mp_obj_is_str(user_name) ) {
+            mp_raise_TypeError("user name must be a str");
+        }
+        if ( password == MP_OBJ_NULL ) {
+            mp_raise_ValueError("password must not be None");
+        }
+        if ( !mp_obj_is_str(password) ) {
+            mp_raise_TypeError("password must be a str");
+        }
+        qstr auth_method_qstr = mp_obj_str_get_qstr(auth_method);
+        switch (auth_method_qstr) {
+            case MP_QSTR_PAP: auth_type = PPPAUTHTYPE_PAP; break;
+            case MP_QSTR_CHAP: auth_type = PPPAUTHTYPE_CHAP; break;
+            default:
+                mp_raise_msg(&mp_type_ValueError, "invalid auth method");
+        }
+    }
+    
     ppp_if_obj_t *self = m_new_obj_with_finaliser(ppp_if_obj_t);
 
     self->base.type = &ppp_if_type;
@@ -88,10 +133,13 @@ STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {
     self->connected = false;
     self->clean_close = false;
     self->client_task_handle = NULL;
+    self->auth_type = auth_type;
+    self->user_name = user_name;
+    self->password = password;
 
     return MP_OBJ_FROM_PTR(self);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(ppp_make_new_obj, ppp_make_new);
+MP_DEFINE_CONST_FUN_OBJ_KW(ppp_make_new_obj, 1, ppp_make_new);
 
 static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx) {
     ppp_if_obj_t *self = ctx;
@@ -123,15 +171,29 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
             if (self->active) {
                 return mp_const_true;
             }
-
             self->pcb = pppapi_pppos_create(&self->pppif, ppp_output_callback, ppp_status_cb, self);
 
             if (self->pcb == NULL) {
                 mp_raise_msg(&mp_type_RuntimeError, "init failed");
             }
-            pppapi_set_default(self->pcb);
-            ppp_set_usepeerdns(self->pcb, 1);
-            pppapi_connect(self->pcb, 0);
+            if (self->auth_type != PPPAUTHTYPE_NONE ) {
+                const char* user_name = mp_obj_str_get_str(self->user_name);
+                const char* password  = mp_obj_str_get_str(self->password);
+                pppapi_set_auth(self->pcb, self->auth_type, user_name, password);
+            }
+            if (pppapi_set_default(self->pcb) != ESP_OK ) {
+                pppapi_free(self->pcb);
+                self->pcb = NULL;
+                mp_raise_msg(&mp_type_RuntimeError, "set default failed");
+            }
+            
+            ppp_set_usepeerdns(self->pcb, true);
+            
+            if (pppapi_connect(self->pcb, 0) != ESP_OK ) {
+                pppapi_free(self->pcb);
+                self->pcb = NULL;
+                mp_raise_msg(&mp_type_RuntimeError, "connect failed");
+            }
 
             xTaskCreatePinnedToCore(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t*)&self->client_task_handle, MP_TASK_COREID);
             self->active = true;
