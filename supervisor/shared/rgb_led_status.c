@@ -293,7 +293,7 @@ void clear_temp_status() {
 }
 
 uint32_t color_brightness(uint32_t color, uint8_t brightness) {
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     uint32_t result = ((color & 0xff0000) * brightness / 255) & 0xff0000;
     result += ((color & 0xff00) * brightness / 255) & 0xff00;
     result += ((color & 0xff) * brightness / 255) & 0xff;
@@ -304,7 +304,7 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
 }
 
 void set_rgb_status_brightness(uint8_t level){
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     rgb_status_brightness = level;
     uint32_t current_color = current_status_color;
     // Temporarily change the current color global to force the new_status_color call to update the
