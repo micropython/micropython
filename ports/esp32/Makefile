@@ -181,6 +181,7 @@ SRC_C = \
 	machine_touchpad.c \
 	machine_adc.c \
 	machine_dac.c \
+	machine_i2c.c \
 	machine_pwm.c \
 	machine_uart.c \
 	modmachine.c \
