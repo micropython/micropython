@@ -35,7 +35,7 @@
 #define MICROPY_PY_DELATTR_SETATTR (1)
 
 //internal printf unsupported long long
-#define MICROPY_USE_INTERNAL_PRINTF (0)
+//#define MICROPY_USE_INTERNAL_PRINTF (0)
 
 #define MICROPY_PY_BUILTINS_EVAL_EXEC (0)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (1)

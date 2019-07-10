@@ -32,7 +32,7 @@
 
 
 STATIC const mp_rom_map_elem_t mp_module_tx_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_block) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_tx) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_tx_globals, mp_module_tx_globals_table);
