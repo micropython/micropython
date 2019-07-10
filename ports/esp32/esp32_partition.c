@@ -109,7 +109,7 @@ STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(esp32_partition_new(part));
 }
 
-STATIC mp_obj_t esp32_partition_metadata(mp_obj_t self_in) {
+STATIC mp_obj_t esp32_partition_info(mp_obj_t self_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t tuple[] = {
         MP_OBJ_NEW_SMALL_INT(self->part->type),
@@ -121,7 +121,7 @@ STATIC mp_obj_t esp32_partition_metadata(mp_obj_t self_in) {
     };
     return mp_obj_new_tuple(6, tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_metadata_obj, esp32_partition_metadata);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_info_obj, esp32_partition_info);
 
 STATIC mp_obj_t esp32_partition_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -167,7 +167,7 @@ STATIC mp_obj_t esp32_partition_get_next_update(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_get_next_update_obj, esp32_partition_get_next_update);
 
 STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_metadata), MP_ROM_PTR(&esp32_partition_metadata_obj) },
+    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&esp32_partition_info_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&esp32_partition_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&esp32_partition_writeblocks_obj) },
