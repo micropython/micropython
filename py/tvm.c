@@ -79,10 +79,12 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
     }
 }
 
-static char heap[1024 * 1024 * 2];
+// 0.03814697265625	per memory byte
+// 500000gas / 0.04 = 11.9mb
+static char heap[1024 * 1024 * 16];
 void tvm_start(void) {
 	// Initialized stack limit
-	mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+//	mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 	// Initialize heap
 	gc_init(heap, heap + sizeof(heap));
 	// Initialize interpreter
@@ -95,7 +97,7 @@ void tvm_gc() {
 }
 
 void tvm_delete(void) {
-//	mp_deinit();
+	mp_deinit();
 }
 
 void tvm_set_lib_path(const char *path) {

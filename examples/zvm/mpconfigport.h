@@ -34,6 +34,9 @@
 //TasBaseStorage need hook setattr
 #define MICROPY_PY_DELATTR_SETATTR (1)
 
+//internal printf unsupported long long
+#define MICROPY_USE_INTERNAL_PRINTF (0)
+
 #define MICROPY_PY_BUILTINS_EVAL_EXEC (0)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)

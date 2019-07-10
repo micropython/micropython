@@ -155,9 +155,9 @@ long long g_iGas = 100000;
 
 #define GAS_PRECISION 10000
 
-int db_gas = 0;
-int mem_gas = 0;
-int cpu_gas = 0;
+long long db_gas = 0;
+long long mem_gas = 0;
+long long cpu_gas = 0;
 
 void setGas(int value) {
     g_iGas = (long long)value * GAS_PRECISION;
@@ -257,7 +257,7 @@ bool FireGas_DB(size_t len)
 
 void Gas_Report()
 {
-    printf("gas: cpu:%d mem:%d db:%d\n", cpu_gas/GAS_PRECISION, mem_gas/GAS_PRECISION, db_gas/GAS_PRECISION);
+    printf("gas: cpu:%lld mem:%lld db:%lld\n", cpu_gas/GAS_PRECISION, mem_gas/GAS_PRECISION, db_gas/GAS_PRECISION);
 }
 
 
