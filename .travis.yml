@@ -129,7 +129,7 @@ script:
   - echo 'travis_fold:end:test_mpy' && tools/print_status.py status
 
   - (echo 'Building docs' && echo 'travis_fold:start:build_docs')
-  - (! var_search "${TRAVIS_TESTS-}" docs || python3 -m docs.shared_bindings_matrix ; sphinx-build -E -W -b html . _build/html) ; S=$? ; echo $S > status ; (exit $S)
+  - (! var_search "${TRAVIS_TESTS-}" docs || (python3 -m docs.shared_bindings_matrix && sphinx-build -E -W -b html . _build/html)) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:build_docs' && tools/print_status.py status
 
   - (echo 'Building translations' && echo 'travis_fold:start:build_translations')
