@@ -69,8 +69,6 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
 		int error_code = 1001;
 		if (strcmp(exception_name, "GasNotEnoughException") == 0) {
 			error_code = 1002;
-		}else if (strcmp(exception_name, "ABICheckException") == 0) {
-			error_code = 2002;
 		}
 		
 		char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);

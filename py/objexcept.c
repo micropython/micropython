@@ -594,7 +594,7 @@ char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name) {
 	if (type->get_string != NULL) {
 		data = type->get_string(exception_stack);
 	}
-	if (strcmp(exception_name, "NoLineLibException") == 0 || strcmp(exception_name, "CallException") == 0 || strcmp(exception_name, "ABICheckException") == 0 || strcmp(exception_name, "GasNotEnoughException") == 0) {
+	if (strcmp(exception_name, "NoLineLibException") == 0 || strcmp(exception_name, "CallException") == 0 || strcmp(exception_name, "GasNotEnoughException") == 0) {
 		return data;
 	}
 	else {
