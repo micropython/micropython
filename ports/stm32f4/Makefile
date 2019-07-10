@@ -73,6 +73,7 @@ INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
 
+DEBUG = 1
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb

@@ -24,66 +24,62 @@
  * THE SOFTWARE.
  */
 
-// #include "nrfx.h"
-// #include "nrfx_power.h"
-//#include "tick.h"
+
+#include "tick.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
+#include "stm32f4xx.h"
 
-// #ifdef SOFTDEVICE_PRESENT
-// #include "nrf_sdm.h"
-// #include "nrf_soc.h"
-// #endif
-
-// tinyusb function that handles power event (detected, ready, removed)
-// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
-//extern void tusb_hal_nrf_power_event(uint32_t event);
 
 void init_usb_hardware(void) {
+	// Init the LED on PD14
+  RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
+  GPIOD->MODER |= GPIO_MODER_MODE14_0;
 
-//     // 2 is max priority (0, 1 are reserved for SD)
-//     NVIC_SetPriority(USBD_IRQn, 2);
+  // USB Clock init
+  // PLL input- 8 MHz (External oscillator clock; HSI clock tolerance isn't
+  // tight enough- 1%, need 0.25%)
+  // VCO input- 1 to 2 MHz (2 MHz, M = 4)
+  // VCO output- 100 to 432 MHz (144 MHz, N = 72)
+  // Main PLL out- <= 180 MHz (18 MHz, P = 3- divides by 8)
+  // USB PLL out- 48 MHz (Q = 3)
+  RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSE | (3 << RCC_PLLCFGR_PLLQ_Pos) | \
+    (3 << RCC_PLLCFGR_PLLP_Pos) | (72 << RCC_PLLCFGR_PLLN_Pos) | \
+    (4 << RCC_PLLCFGR_PLLM_Pos);
 
-//     // USB power may already be ready at this time -> no event generated
-//     // We need to invoke the handler based on the status initially for the first call
-//     static bool first_call = true;
-//     uint32_t usb_reg;
+  // Wait for external clock to become ready
+  RCC->CR |= RCC_CR_HSEON;
+  while(!(RCC->CR & RCC_CR_HSERDY_Msk));
 
-// #ifdef SOFTDEVICE_PRESENT
-//     uint8_t sd_en = false;
-//     (void) sd_softdevice_is_enabled(&sd_en);
+  // Wait for PLL to become ready
+  RCC->CR |= RCC_CR_PLLON;
+  while(!(RCC->CR & RCC_CR_PLLRDY_Msk));
 
-//     if ( sd_en ) {
-//         sd_power_usbdetected_enable(true);
-//         sd_power_usbpwrrdy_enable(true);
-//         sd_power_usbremoved_enable(true);
+  // Switch clocks!
+  RCC->CFGR |= RCC_CFGR_SW_1;
 
-//         sd_power_usbregstatus_get(&usb_reg);
-//     }else
-// #endif
-//     {
-//         // Power module init
-//         const nrfx_power_config_t pwr_cfg = { 0 };
-//         nrfx_power_init(&pwr_cfg);
+  // Notify runtime of frequency change.
+  SystemCoreClockUpdate();
 
-//         // Register tusb function as USB power handler
-//         const nrfx_power_usbevt_config_t config = { .handler = (nrfx_power_usb_event_handler_t) tusb_hal_nrf_power_event };
-//         nrfx_power_usbevt_init(&config);
+  #if CFG_TUSB_OS  == OPT_OS_NONE
+  // 1ms tick timer
+  SysTick_Config(SystemCoreClock / 1000);
+  #endif
 
-//         nrfx_power_usbevt_enable();
+  RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;
 
-//         usb_reg = NRF_POWER->USBREGSTATUS;
-//     }
+  // USB Pin Init
+  // PA9- VUSB, PA10- ID, PA11- DM, PA12- DP
+  // PC0- Power on
+  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+  GPIOA->MODER |= GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1 | \
+    GPIO_MODER_MODE11_1 | GPIO_MODER_MODE12_1;
+  GPIOA->AFR[1] |= (10 << GPIO_AFRH_AFSEL9_Pos) | \
+    (10 << GPIO_AFRH_AFSEL10_Pos) | (10 << GPIO_AFRH_AFSEL11_Pos) | \
+    (10 << GPIO_AFRH_AFSEL12_Pos);
 
-//     if ( first_call ) {
-//         first_call = false;
-//         if ( usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk ) {
-//             tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
-//         }
-
-//         if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk ) {
-//             tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
-//         }
-//     }
+  // Pullup required on ID, despite the manual claiming there's an
+  // internal pullup already (page 1245, Rev 17)
+  GPIOA->PUPDR |= GPIO_PUPDR_PUPD10_0;
 }
