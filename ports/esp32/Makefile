@@ -74,6 +74,7 @@ INC += -I$(BUILD)
 
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
+INC_ESPCOMP += -I$(ESPCOMP)/console
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
@@ -103,6 +104,8 @@ INC_ESPCOMP += -I$(ESPCOMP)/lwip/port/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
+INC_ESPCOMP += -I$(ESPCOMP)/mdns/include
+INC_ESPCOMP += -I$(ESPCOMP)/mdns/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
@@ -346,6 +349,8 @@ ESPIDF_MBEDTLS_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/mbedtls/port/*.c) \
 	)
 
+ESPIDF_MDNS_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/mdns/*.c))
+
 $(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DEMBEDDED_SUPP -DIEEE8021X_EAPOL -DEAP_PEER_METHOD -DEAP_MSCHAPv2 -DEAP_TTLS -DEAP_TLS -DEAP_PEAP -DUSE_WPA2_TASK -DCONFIG_WPS2 -DCONFIG_WPS_PIN -DUSE_WPS_TASK -DESPRESSIF_USE -DESP32_WORKAROUND -DALLOW_EVEN_MOD -D__ets__ -Wno-strict-aliasing
 ESPIDF_WPA_SUPPLICANT_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/wpa_supplicant/port/*.c) \
@@ -390,6 +395,7 @@ $(eval $(call gen_espidf_lib_rule,spi_flash,$(ESPIDF_SPI_FLASH_O)))
 $(eval $(call gen_espidf_lib_rule,ulp,$(ESPIDF_ULP_O)))
 $(eval $(call gen_espidf_lib_rule,lwip,$(ESPIDF_LWIP_O)))
 $(eval $(call gen_espidf_lib_rule,mbedtls,$(ESPIDF_MBEDTLS_O)))
+$(eval $(call gen_espidf_lib_rule,mdns,$(ESPIDF_MDNS_O)))
 $(eval $(call gen_espidf_lib_rule,wpa_supplicant,$(ESPIDF_WPA_SUPPLICANT_O)))
 $(eval $(call gen_espidf_lib_rule,sdmmc,$(ESPIDF_SDMMC_O)))
 
