@@ -79,6 +79,8 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
     }
 }
 
+// 0.03814697265625	per memory byte
+// 500000gas / 0.04 = 11.9mb
 static char heap[1024 * 1024 * 16];
 void tvm_start(void) {
 	// Initialized stack limit
