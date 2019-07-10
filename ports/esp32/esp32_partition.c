@@ -31,6 +31,11 @@
 #include "modesp32.h"
 #include "esp_ota_ops.h"
 
+// esp_partition_read and esp_partition_write can operate on arbitrary bytes
+// but esp_partition_erase_range operates on 4k blocks.  But to make a partition
+// implement the standard block protocol all operations are done on 4k blocks.
+#define BLOCK_SIZE_BYTES (4096)
+
 enum {
     ESP32_PARTITION_FIRST,
     ESP32_PARTITION_BOOT,
@@ -118,36 +123,35 @@ STATIC mp_obj_t esp32_partition_metadata(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_metadata_obj, esp32_partition_metadata);
 
-// TODO different signature to readinto(buf[, maxlen])
-STATIC mp_obj_t esp32_partition_readinto(mp_obj_t self_in, mp_obj_t offset_in, mp_obj_t buf_in) {
+STATIC mp_obj_t esp32_partition_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint32_t offset = mp_obj_get_int_truncated(offset_in);
+    uint32_t offset = mp_obj_get_int(block_num) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
     check_esp_err(esp_partition_read(self->part, offset, bufinfo.buf, bufinfo.len));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_readinto_obj, esp32_partition_readinto);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_readblocks_obj, esp32_partition_readblocks);
 
-// TODO different signature to write(buf[, maxlen]) / write(buf[, offset, maxlen])
-STATIC mp_obj_t esp32_partition_write(mp_obj_t self_in, mp_obj_t offset_in, mp_obj_t buf_in) {
+STATIC mp_obj_t esp32_partition_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint32_t offset = mp_obj_get_int_truncated(offset_in);
+    uint32_t offset = mp_obj_get_int(block_num) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-    check_esp_err(esp_partition_read(self->part, offset, bufinfo.buf, bufinfo.len));
+    check_esp_err(esp_partition_write(self->part, offset, bufinfo.buf, bufinfo.len));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_write_obj, esp32_partition_write);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_writeblocks_obj, esp32_partition_writeblocks);
 
-STATIC mp_obj_t esp32_partition_erase(mp_obj_t self_in, mp_obj_t start_addr_in, mp_obj_t size_in) {
+// TODO could be an ioctl?
+STATIC mp_obj_t esp32_partition_eraseblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t size_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint32_t start_addr = mp_obj_get_int_truncated(start_addr_in);
+    uint32_t start_addr = mp_obj_get_int_truncated(block_num) * BLOCK_SIZE_BYTES;
     uint32_t size = mp_obj_get_int_truncated(size_in);
     check_esp_err(esp_partition_erase_range(self->part, start_addr, size));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_erase_obj, esp32_partition_erase);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_eraseblocks_obj, esp32_partition_eraseblocks);
 
 STATIC mp_obj_t esp32_partition_set_boot(mp_obj_t self_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -165,9 +169,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_get_next_update_obj, esp32_part
 STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_metadata), MP_ROM_PTR(&esp32_partition_metadata_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&esp32_partition_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&esp32_partition_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_erase), MP_ROM_PTR(&esp32_partition_erase_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&esp32_partition_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&esp32_partition_writeblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_eraseblocks), MP_ROM_PTR(&esp32_partition_eraseblocks_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_set_boot), MP_ROM_PTR(&esp32_partition_set_boot_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_next_update), MP_ROM_PTR(&esp32_partition_get_next_update_obj) },
