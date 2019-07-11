@@ -31,6 +31,7 @@
 #include "ets_sys.h"
 #include "uart.h"
 
+#include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
@@ -147,7 +148,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
 
     // set rx ring buffer
     if (args[ARG_rxbuf].u_int > 0) {
-        uint16_t len = args[ARG_rxbuf].u_int + 1; // account for usable items in ringbuf
+        uint16_t len = ringbuf_fix_len(args[ARG_rxbuf].u_int);
         byte *buf;
         if (len <= UART0_STATIC_RXBUF_LEN) {
             buf = uart_ringbuf_array;

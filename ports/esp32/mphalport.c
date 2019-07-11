@@ -48,7 +48,7 @@ ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
+    if ((poll_flags & MP_STREAM_POLL_RD) && !ringbuf_is_empty(&stdin_ringbuf)) {
         ret |= MP_STREAM_POLL_RD;
     }
     return ret;

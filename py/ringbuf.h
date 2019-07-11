@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2019 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +27,17 @@
 #ifndef MICROPY_INCLUDED_PY_RINGBUF_H
 #define MICROPY_INCLUDED_PY_RINGBUF_H
 
+#include "py/mpconfig.h"
+#include "py/misc.h"
+
+// In order to avoid wasting a byte in the ringbuffer, and to reduce code
+// size, the two indicies (iget & iput) do not wrap around at size. Instead
+// they rely on unsigned integer overflow.
+// This means that the empty state (iget == iput) can be distinguished from
+// the full state (iput == iget + size).
+// However, this means that the size must divide evenly into 2^16. Most uses
+// of the ringbuffer use small power-of-two sizes anyway.
+
 typedef struct _ringbuf_t {
     uint8_t *buf;
     uint16_t size;
@@ -34,39 +46,29 @@ typedef struct _ringbuf_t {
 } ringbuf_t;
 
 // Static initialization:
-// byte buf_array[N];
+// byte buf_array[N]; // N must be divisible into 2^16.
 // ringbuf_t buf = {buf_array, sizeof(buf_array)};
 
-// Dynamic initialization. This creates root pointer!
+// Dynamic initialization.
 #define ringbuf_alloc(r, sz) \
 { \
-    (r)->buf = m_new(uint8_t, sz); \
-    (r)->size = sz; \
+    (r)->size = ringbuf_fix_len(sz); \
+    (r)->buf = m_new(uint8_t, (r)->size); \
     (r)->iget = (r)->iput = 0; \
 }
 
-static inline int ringbuf_get(ringbuf_t *r) {
-    if (r->iget == r->iput) {
-        return -1;
-    }
-    uint8_t v = r->buf[r->iget++];
-    if (r->iget >= r->size) {
-        r->iget = 0;
-    }
-    return v;
+// Rounds len to the nearest power of two (to ensure divisibility into 2^16).
+// Use this if dynamically allocating buf.
+uint16_t ringbuf_fix_len(uint16_t len);
+
+static inline bool ringbuf_is_empty(ringbuf_t *r) {
+    return r->iput == r->iget;
 }
 
-static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
-    uint32_t iput_new = r->iput + 1;
-    if (iput_new >= r->size) {
-        iput_new = 0;
-    }
-    if (iput_new == r->iget) {
-        return -1;
-    }
-    r->buf[r->iput] = v;
-    r->iput = iput_new;
-    return 0;
-}
+// Returns the next byte, or -1 if empty.
+int ringbuf_get(ringbuf_t *r);
+
+// Returns -1 if full, 0 otherwise.
+int ringbuf_put(ringbuf_t *r, uint8_t v);
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

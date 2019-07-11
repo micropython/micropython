@@ -52,7 +52,7 @@
 typedef struct _machine_hard_uart_buf_t {
     uint8_t tx_buf[1];
     uint8_t rx_buf[1];
-    uint8_t rx_ringbuf_array[64];
+    uint8_t rx_ringbuf_array[64]; // Must be divisible into 2^16, see py/ringbuf.h.
     volatile ringbuf_t rx_ringbuf;
 } machine_hard_uart_buf_t;
 
@@ -99,7 +99,7 @@ STATIC void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context
 }
 
 bool uart_rx_any(const machine_hard_uart_obj_t *self) {
-    return self->buf->rx_ringbuf.iput != self->buf->rx_ringbuf.iget;
+    return !ringbuf_is_empty((ringbuf_t*)&self->buf->rx_ringbuf);
 }
 
 int uart_rx_char(const machine_hard_uart_obj_t * self) {

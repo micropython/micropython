@@ -203,7 +203,7 @@ static void uart0_rx_intr_handler(void *para) {
 bool uart_rx_wait(uint32_t timeout_us) {
     uint32_t start = system_get_time();
     for (;;) {
-        if (uart_ringbuf.iget != uart_ringbuf.iput) {
+        if (!ringbuf_is_empty(&uart_ringbuf)) {
             return true; // have at least 1 char ready for reading
         }
         if (system_get_time() - start >= timeout_us) {
@@ -214,7 +214,7 @@ bool uart_rx_wait(uint32_t timeout_us) {
 }
 
 int uart_rx_any(uint8 uart) {
-    if (uart_ringbuf.iget != uart_ringbuf.iput) {
+    if (!ringbuf_is_empty(&uart_ringbuf)) {
         return true; // have at least 1 char ready for reading
     }
     return false;
