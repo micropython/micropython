@@ -86,16 +86,16 @@ STATIC mp_obj_t bleio_central_make_new(const mp_obj_type_t *type, size_t n_args,
 //|
 //|   :param bleio.Address address: The address of the peripheral to connect to
 //|   :param float/int timeout: Try to connect for timeout seconds.
-//|   :param iterable service_uuids: a collection of `UUID` objects for the services
+//|   :param iterable service_uuids: a collection of :py:class:~`UUID` objects for the services
 //|      provided by the peripheral that you want to use.
 //|      The peripheral may provide more services, but services not listed are ignored.
-//|      If a service in `service_uuids` is not found during discovery, it will not
+//|      If a service in service_uuids is not found during discovery, it will not
 //|      appear in `remote_services`.
 //|
-//|      If `services` is None, then all services will undergo discovery, which can be slow.
+//|      If service_uuids is None, then all services will undergo discovery, which can be slow.
 //|
 //|      If the service UUID is 128-bit, or its characteristic UUID's are 128-bit, you
-//|      you must have already created a `UUID` object for that UUID in order for the
+//|      you must have already created a :py:class:~`UUID` object for that UUID in order for the
 //|      service or characteristic to be discovered. (This restriction may be lifted in the future.)
 //|
 STATIC mp_obj_t bleio_central_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

@@ -73,8 +73,8 @@ STATIC mp_obj_t bleio_scanner_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     :param float timeout: the scan timeout in seconds
 //|     :param float interval: the interval (in seconds) between the start of two consecutive scan windows
 //|        Must be in the range 0.0025 - 40.959375 seconds.
-//|     :param float window: the duration (in seconds) to scan a single BLE channel
-//|        `window` must be <= `interval`.
+//|     :param float window: the duration (in seconds) to scan a single BLE channel.
+//|        window must be <= interval.
 //|     :returns: advertising packets found
 //|     :rtype: list of :py:class:`bleio.ScanEntry`
 //|
