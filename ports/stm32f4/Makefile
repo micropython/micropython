@@ -21,6 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+DEBUG = 1
 
 # Select the board to build for.
 ifeq ($(BOARD),)
@@ -73,7 +74,7 @@ INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
 
-DEBUG = 1
+
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
@@ -141,6 +142,8 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD
 ######################################
 
 SRC_STM32 = \
+	boards/$(BOARD)/stm32f4xx_it.c \
+	boards/$(BOARD)/stm32f4xx_hal_msp.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
@@ -178,7 +181,7 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	supervisor/shared/memory.c \
-	lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
+	#lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
 
 #
 

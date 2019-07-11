@@ -6,3 +6,4 @@ build-*/
 #####################
 ref/
 
+.gdb_history

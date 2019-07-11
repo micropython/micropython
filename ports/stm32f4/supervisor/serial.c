@@ -25,68 +25,27 @@
  */
 
 #include "py/mphal.h"
-
+#include <string.h>
 #include "supervisor/serial.h"
+#include "stm32f4xx_hal.h"
 
-// #if (MICROPY_PY_BLE_NUS == 1)
-// #include "ble_uart.h"
-// #else
-// #include <string.h>
-// #include "nrf_gpio.h"
-// #include "nrfx_uarte.h"
-// #endif
-
-#if (MICROPY_PY_BLE_NUS == 1)
+UART_HandleTypeDef huart2;
 
 void serial_init(void) {
-    //ble_uart_init();
-}
-
-bool serial_connected(void) {
-    // return ble_uart_connected();
-    return false;
-}
-
-char serial_read(void) {
-    // return (char) ble_uart_rx_chr();
-}
-
-bool serial_bytes_available(void) {
-    // return ble_uart_stdin_any();
-    return false;
-}
-
-void serial_write(const char *text) {
-    // ble_uart_stdout_tx_str(text);
-}
-
-#elif !defined(NRF52840_XXAA)
-
-// uint8_t serial_received_char;
-// nrfx_uarte_t serial_instance = NRFX_UARTE_INSTANCE(0);
-
-void serial_init(void) {
-    // nrfx_uarte_config_t config = {
-    //     .pseltxd = MICROPY_HW_UART_TX,
-    //     .pselrxd = MICROPY_HW_UART_RX,
-    //     .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
-    //     .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
-    //     .p_context = NULL,
-    //     .hwfc = NRF_UARTE_HWFC_DISABLED,
-    //     .parity = NRF_UARTE_PARITY_EXCLUDED,
-    //     .baudrate = NRF_UARTE_BAUDRATE_115200,
-    //     .interrupt_priority = 7
-    // };
-
-    // nrfx_uarte_uninit(&serial_instance);
-    // const nrfx_err_t err = nrfx_uarte_init(&serial_instance, &config, NULL);    // no callback for blocking mode
-
-    // if (err != NRFX_SUCCESS) {
-    //     NRFX_ASSERT(err);
-    // }
-
-    // // enabled receiving
-    // nrf_uarte_task_trigger(serial_instance.p_reg, NRF_UARTE_TASK_STARTRX);
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 115200;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart2) == HAL_OK)
+    {
+        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_RESET);
+    }
+    HAL_UART_Transmit(&huart2, (uint8_t*)"helloworld", 10, 5000);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 
 bool serial_connected(void) {
@@ -94,38 +53,24 @@ bool serial_connected(void) {
 }
 
 char serial_read(void) {
-    // uint8_t data;
-    // nrfx_uarte_rx(&serial_instance, &data, 1);
-    // return data;
-    return 0xFF;
+    uint8_t data;
+    HAL_UART_Receive(&huart2, &data, 1,5000);
+    return data;
 }
 
 bool serial_bytes_available(void) {
-    // return nrf_uarte_event_check(serial_instance.p_reg, NRF_UARTE_EVENT_RXDRDY);
-    return false;
+    return __HAL_UART_GET_FLAG(&huart2, UART_FLAG_RXNE);
+
 }
 
 void serial_write(const char* text) {
-    // serial_write_substring(text, strlen(text));
+    serial_write_substring(text, strlen(text));
 }
 
 void serial_write_substring(const char *text, uint32_t len) {
-    // if (len == 0) {
-    //     return;
-    // }
-
-    // // EasyDMA can only access SRAM
-    // uint8_t * tx_buf = (uint8_t*) text;
-    // if ( !nrfx_is_in_ram(text) ) {
-    //     tx_buf = (uint8_t *) m_malloc(len, false);
-    //     memcpy(tx_buf, text, len);
-    // }
-
-    // nrfx_uarte_tx(&serial_instance, tx_buf, len);
-
-    // if ( !nrfx_is_in_ram(text) ) {
-    //     m_free(tx_buf);
-    // }
+    if (len == 0) {
+        return;
+    }
+    HAL_UART_Transmit(&huart2, (uint8_t*)text, len, 5000);
 }
 
-#endif

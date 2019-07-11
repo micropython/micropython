@@ -184,7 +184,7 @@
 #define LED2_Pin GPIO_PIN_1
 #define LED2_GPIO_Port GPIOE
 
-//UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart2;
 
 /*
 #include "shared-module/gamepad/__init__.h"
@@ -230,6 +230,7 @@ safe_mode_t port_init(void) {
 	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
 	RCC_OscInitStruct.PLL.PLLQ = 3;
 	RCC_OscInitStruct.PLL.PLLR = 2;
+	HAL_RCC_OscConfig(&RCC_OscInitStruct);
 	/** Initializes the CPU, AHB and APB busses clocks 
 	*/
 	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -238,6 +239,8 @@ safe_mode_t port_init(void) {
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+
 	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1|RCC_PERIPHCLK_SDIO
 	                      |RCC_PERIPHCLK_CLK48;
 	PeriphClkInitStruct.PLLI2S.PLLI2SN = 50;
@@ -248,6 +251,8 @@ safe_mode_t port_init(void) {
 	PeriphClkInitStruct.SdioClockSelection = RCC_SDIOCLKSOURCE_CLK48;
 	PeriphClkInitStruct.PLLI2SSelection = RCC_PLLI2SCLKSOURCE_PLLSRC;
 	PeriphClkInitStruct.I2sApb1ClockSelection = RCC_I2SAPB1CLKSOURCE_PLLI2S;
+	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+
 	HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI, RCC_MCODIV_1);
 
 	//GPIO Init
@@ -282,14 +287,38 @@ safe_mode_t port_init(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(USB_OTGFS_PPWR_EN_GPIO_Port, &GPIO_InitStruct);
 
-  	//turn on LED
-	HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, GPIO_PIN_SET);
+	//Status LED chain
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET); //LED 1
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_SET); //LED 2
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_SET); //LED 3
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET); //LED 4
 
+	//Status LED chain
+	// HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+	// HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+	// HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);
+ //    HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, GPIO_PIN_SET);
 
     tick_init();
+
+	//UART testing
+	// huart2.Instance = USART2;
+	// huart2.Init.BaudRate = 115200;
+	// huart2.Init.WordLength = UART_WORDLENGTH_8B;
+	// huart2.Init.StopBits = UART_STOPBITS_1;
+	// huart2.Init.Parity = UART_PARITY_NONE;
+	// huart2.Init.Mode = UART_MODE_TX_RX;
+	// huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	// huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+	// if (HAL_UART_Init(&huart2) == HAL_OK)
+	// {
+	// 	HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+	// }
+
+	// HAL_UART_Transmit(&huart2, (uint8_t*)"helloworld", 10, 5000);
+	// HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET);
+
+    
     board_init(); 
 
     return NO_SAFE_MODE;
@@ -317,6 +346,6 @@ uint32_t port_get_saved_word(void) {
     return _ebss;
 }
 
-void HardFault_Handler(void) {
+// void HardFault_Handler(void) {
 
-}
+// }
