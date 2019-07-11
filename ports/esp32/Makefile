@@ -257,7 +257,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H)
 ################################################################################
 # List of object files from the ESP32 IDF components
 
-ESPIDF_DRIVER_O = $(subst .c,.o,$(wildcard $(ESPCOMP)/driver/*.c))
+ESPIDF_DRIVER_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/driver/*.c))
 
 ESPIDF_EFUSE_O = $(addprefix $(ESPCOMP)/efuse/,\
 	esp32/esp_efuse_table.o \
