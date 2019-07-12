@@ -25,7 +25,7 @@
  */
 
     .syntax unified
-    .cpu cortex-m4
+    .cpu cortex-m3
     .thumb
 
     .section .text.Reset_Handler

@@ -231,12 +231,10 @@ SRC_C = \
 	pyb_i2c.c \
 	spi.c \
 	pyb_spi.c \
-	qspi.c \
 	uart.c \
 	can.c \
 	usb.c \
 	wdt.c \
-	eth.c \
 	gccollect.c \
 	help.c \
 	machine_i2c.c \
@@ -258,7 +256,6 @@ SRC_C = \
 	spibdev.c \
 	storage.c \
 	sdcard.c \
-	sdram.c \
 	fatfs_port.c \
 	lcd.c \
 	accel.c \
@@ -273,7 +270,7 @@ SRC_O = \
 	resethandler.o \
 	lib/utils/gchelper_m3.o
 
-SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32f1xx_,\
+SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \

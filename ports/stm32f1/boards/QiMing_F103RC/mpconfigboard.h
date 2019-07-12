@@ -3,13 +3,20 @@
 #define MICROPY_HW_BOARD_NAME       "QiMing STM32F103RC"
 #define MICROPY_HW_MCU_NAME         "STM32F103RC"
 
-#define MICROPY_HW_HAS_SWITCH                    (1)		// has 2 buttons KEY0=PC12, KEY1=PD2
-#define MICROPY_HW_HAS_FLASH                     (1)
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
-#define MICROPY_HW_ENABLE_RTC       			 (1)
-#define MICROPY_HW_ENABLE_DAC                    (1)
-#define MICROPY_HW_ENABLE_ADC                    (1)
-#define MICROPY_HW_ENABLE_USB                    (0)
+#define MICROPY_EMIT_THUMB          (0)
+#define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_PY_USOCKET          (0)
+#define MICROPY_PY_NETWORK          (0)
+#define MICROPY_PY_STM              (0)
+#define MICROPY_PY_PYB_LEGACY       (0)
+#define MICROPY_VFS_FAT             (0)
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
+
+#define MICROPY_HW_HAS_SWITCH       (1)		// has 2 buttons KEY0=PC12, KEY1=PD2
+#define MICROPY_HW_ENABLE_RTC       (1)
+#define MICROPY_HW_ENABLE_ADC       (1)
+#define MICROPY_HW_ENABLE_DAC       (1)
+#define MICROPY_HW_ENABLE_TIMER     (1)
 
 // HSE is 8MHz, TODO: Clock need calc
 #define MICROPY_HW_CLK_USE_HSE (1)
@@ -44,7 +51,9 @@
 // UART5
 #define MICROPY_HW_UART5_TX     (pin_C12) // PC12
 #define MICROPY_HW_UART5_RX     (pin_D2)  // PD2
-// --------------------------------------------------------------
+
+#define MICROPY_HW_UART_REPL        PYB_UART_1
+#define MICROPY_HW_UART_REPL_BAUD   115200
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)  // PB8,PB6

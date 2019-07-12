@@ -62,7 +62,6 @@
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
-#include "sdram.h"
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
@@ -399,12 +398,6 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     // basic sub-system init
-    #if MICROPY_HW_SDRAM_SIZE
-    sdram_init();
-    #if MICROPY_HW_SDRAM_STARTUP_TEST
-    sdram_test(true);
-    #endif
-    #endif
     #if MICROPY_PY_THREAD
     pyb_thread_init(&pyb_thread_main);
     #endif
