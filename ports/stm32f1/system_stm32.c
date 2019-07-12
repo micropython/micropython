@@ -1,0 +1,324 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * Taken from ST Cube library and modified.  See below for original header.
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+/**
+  ******************************************************************************
+  * @file    system_stm32.c
+  * @author  MCD Application Team
+  * @version V1.0.1
+  * @date    26-February-2014
+  * @brief   CMSIS Cortex-M4/M7 Device Peripheral Access Layer System Source File.
+  *
+  *   This file provides two functions and one global variable to be called from
+  *   user application:
+  *      - SystemInit(): This function is called at startup just after reset and
+  *                      before branch to main program. This call is made inside
+  *                      the "startup_stm32.s" file.
+  *
+  *      - SystemCoreClock variable: Contains the core clock (HCLK), it can be used
+  *                                  by the user application to setup the SysTick
+  *                                  timer or configure other parameters.
+  *
+  *
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
+  *
+  * Redistribution and use in source and binary forms, with or without modification,
+  * are permitted provided that the following conditions are met:
+  *   1. Redistributions of source code must retain the above copyright notice,
+  *      this list of conditions and the following disclaimer.
+  *   2. Redistributions in binary form must reproduce the above copyright notice,
+  *      this list of conditions and the following disclaimer in the documentation
+  *      and/or other materials provided with the distribution.
+  *   3. Neither the name of STMicroelectronics nor the names of its contributors
+  *      may be used to endorse or promote products derived from this software
+  *      without specific prior written permission.
+  *
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  ******************************************************************************
+  */
+
+/** @addtogroup CMSIS
+  * @{
+  */
+
+/** @addtogroup stm32fxxx_system
+  * @{
+  */
+
+/** @addtogroup STM32Fxxx_System_Private_Includes
+  * @{
+  */
+
+#include "py/mphal.h"
+#include "powerctrl.h"
+
+void __fatal_error(const char *msg);
+
+/**
+  * @}
+  */
+
+/** @addtogroup STM32Fxxx_System_Private_TypesDefinitions
+  * @{
+  */
+
+/**
+  * @}
+  */
+
+/** @addtogroup STM32Fxxx_System_Private_Defines
+  * @{
+  */
+
+#define CONFIG_RCC_CR_1ST  (RCC_CR_HSION);
+#define CONFIG_RCC_CR_2ND  (MICROPY_HW_RCC_CR_HSxON | RCC_CR_CSSON | RCC_CR_PLLON)
+const uint8_t AHBPrescTable[16U] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
+
+/************************* Miscellaneous Configuration ************************/
+
+/*!< Uncomment the following line if you need to relocate your vector Table in
+     Internal SRAM. */
+/* #define VECT_TAB_SRAM */
+#define VECT_TAB_OFFSET  0x00 /*!< Vector Table base offset field.
+                                   This value must be a multiple of 0x200. */
+/******************************************************************************/
+
+/**
+  * @}
+  */
+
+/** @addtogroup STM32Fxxx_System_Private_Macros
+  * @{
+  */
+
+/**
+  * @}
+  */
+
+/** @addtogroup STM32Fxxx_System_Private_Variables
+  * @{
+  */
+  /* This variable is updated in three ways:
+      1) by calling CMSIS function SystemCoreClockUpdate()
+      2) by calling HAL API function HAL_RCC_GetHCLKFreq()
+      3) each time HAL_RCC_ClockConfig() is called to configure the system clock frequency
+         Note: If you use this function to configure the system clock; then there
+               is no need to call the 2 first functions listed above, since SystemCoreClock
+               variable is updated automatically.
+  */
+  uint32_t SystemCoreClock = 16000000;
+
+/**
+  * @}
+  */
+
+/** @addtogroup STM32Fxxx_System_Private_FunctionPrototypes
+  * @{
+  */
+
+/**
+  * @}
+  */
+
+/** @addtogroup STM32Fxxx_System_Private_Functions
+  * @{
+  */
+
+/**
+  * @brief  Setup the microcontroller system
+  *         Initialize the FPU setting, vector table location and External memory
+  *         configuration.
+  * @param  None
+  * @retval None
+  */
+void SystemInit(void)
+{
+  /* Set configured startup clk source */
+  RCC->CR |= CONFIG_RCC_CR_1ST;
+
+  /* Reset CFGR register */
+  RCC->CFGR &= 0x00000000U;
+
+  /* Reset HSxON, CSSON and PLLON bits */
+  RCC->CR &= ~ CONFIG_RCC_CR_2ND;
+
+  /* Reset PLLCFGR register */
+  // RCC->PLLCFGR = CONFIG_RCC_PLLCFGR;
+
+  /* Reset HSEBYP bit */
+  RCC->CR &= (uint32_t)0xFFFBFFFF;
+
+  /* Disable all interrupts */
+  RCC->CIR = 0x009F0000U;
+
+  /* Configure the Vector Table location add offset address ------------------*/
+#ifdef MICROPY_HW_VTOR
+  SCB->VTOR = MICROPY_HW_VTOR;
+#else
+#ifdef VECT_TAB_SRAM
+  SCB->VTOR = SRAM1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
+#else
+  SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+#endif
+#endif
+
+  /* dpgeorge: enable 8-byte stack alignment for IRQ handlers, in accord with EABI */
+  SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+}
+
+
+/**
+  * @brief  System Clock Configuration
+  *
+  *         The system Clock is configured for F4/F7 as follows:
+  *         (HSx should be read as HSE or HSI depending on the value of MICROPY_HW_CLK_USE_HSI)
+  *            System Clock source            = PLL (HSx)
+  *            SYSCLK(Hz)                     = 168000000
+  *            HCLK(Hz)                       = 168000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSx Frequency(Hz)              = HSx_VALUE
+  *            PLL_M                          = HSx_VALUE/1000000
+  *            PLL_N                          = 336
+  *            PLL_P                          = 4
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 5
+  *
+  *         The system Clock is configured for L4 as follows:
+  *            System Clock source            = PLL (MSI)
+  *            SYSCLK(Hz)                     = 80000000
+  *            HCLK(Hz)                       = 80000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 1
+  *            APB2 Prescaler                 = 1
+  *            MSI Frequency(Hz)              = MSI_VALUE (4000000)
+  *            LSE Frequency(Hz)              = 32768
+  *            PLL_M                          = 1
+  *            PLL_N                          = 40
+  *            PLL_P                          = 7
+  *            PLL_Q                          = 2
+  *            PLL_R                          = 2 <= This is the source for SysClk, not as on F4/7 PLL_P
+  *            Flash Latency(WS)              = 4
+  * @param  None
+  * @retval None
+  *
+  * PLL is configured as follows:
+  *
+  *     VCO_IN
+  *         F4/F7 = HSx / M
+  *         L4    = MSI / M
+  *     VCO_OUT
+  *         F4/F7 = HSx / M * N
+  *         L4    = MSI / M * N
+  *     PLLCLK
+  *         F4/F7 = HSx / M * N / P
+  *         L4    = MSI / M * N / R
+  *     PLL48CK
+  *         F4/F7 = HSx / M * N / Q
+  *         L4    = MSI / M * N / Q  USB Clock is obtained over PLLSAI1
+  *
+  *     SYSCLK = PLLCLK
+  *     HCLK   = SYSCLK / AHB_PRESC
+  *     PCLKx  = HCLK / APBx_PRESC
+  *
+  * Constraints on parameters:
+  *
+  *     VCO_IN between 1MHz and 2MHz (2MHz recommended)
+  *     VCO_OUT between 192MHz and 432MHz
+  *     HSE = 8MHz
+  *     HSI = 16MHz
+  *     M = 2 .. 63 (inclusive)
+  *     N = 192 ... 432 (inclusive)
+  *     P = 2, 4, 6, 8
+  *     Q = 2 .. 15 (inclusive)
+  *
+  *     AHB_PRESC=1,2,4,8,16,64,128,256,512
+  *     APBx_PRESC=1,2,4,8,16
+  *
+  * Output clocks:
+  *
+  * CPU             SYSCLK      max 168MHz
+  * USB,RNG,SDIO    PLL48CK     must be 48MHz for USB
+  * AHB             HCLK        max 168MHz
+  * APB1            PCLK1       max 42MHz
+  * APB2            PCLK2       max 84MHz
+  *
+  * Timers run from APBx if APBx_PRESC=1, else 2x APBx
+  */
+void SystemClock_Config(void)
+{
+    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+    RCC_OscInitTypeDef RCC_OscInitStruct;
+
+    /* Enable Power Control clock */
+    __HAL_RCC_PWR_CLK_ENABLE();
+
+    /* Enable HSE Oscillator and activate PLL with HSE as source */
+    RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
+    RCC_OscInitStruct.HSEState       = MICROPY_HW_RCC_HSE_STATE;
+    RCC_OscInitStruct.HSEPredivValue = MICROPY_HW_HSE_PREDIV;
+
+    RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
+    RCC_OscInitStruct.PLL.PLLState  = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLMUL    = MICROPY_HW_CLK_PLLMUL;
+
+	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+
+    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+      __fatal_error("HAL_RCC_OscConfig");
+    }
+
+    uint32_t vco_out = (MICROPY_HW_CLK_VALUE / 2000000);
+    uint32_t sysclk_mhz = vco_out;
+    bool need_pllsai = vco_out % 48 != 0;
+    if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai) != 0) {
+        __fatal_error("HAL_RCC_ClockConfig");
+    }
+}

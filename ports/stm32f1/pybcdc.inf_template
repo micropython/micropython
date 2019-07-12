@@ -1,0 +1,92 @@
+; Windows USB CDC ACM Setup File
+; Based on INF files which were:
+;     Copyright (c) 2000 Microsoft Corporation
+;     Copyright (C) 2007 Microchip Technology Inc.
+; Likely to be covered by the MLPL as found at:
+;    <http://msdn.microsoft.com/en-us/cc300389.aspx#MLPL>.
+
+[Version]
+Signature="$Windows NT$"
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
+Provider=%MFGNAME%
+LayoutFile=layout.inf
+DriverVer=03/11/2010,5.1.2600.3
+
+[Manufacturer]
+%MFGNAME%=DeviceList, NTamd64
+
+[DestinationDirs]
+DefaultDestDir=12
+
+;---------------------------------------------------------------------
+; Windows 2000/XP/Server2003/Vista/Server2008/7 - 32bit Sections
+
+[DriverInstall.nt]
+include=mdmcpq.inf
+CopyFiles=DriverCopyFiles.nt
+AddReg=DriverInstall.nt.AddReg
+
+[DriverCopyFiles.nt]
+usbser.sys,,,0x20
+
+[DriverInstall.nt.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
+
+[DriverInstall.nt.Services]
+AddService=usbser, 0x00000002, DriverService.nt
+
+[DriverService.nt]
+DisplayName=%SERVICE%
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%12%\usbser.sys
+
+;---------------------------------------------------------------------
+;  Windows XP/Server2003/Vista/Server2008/7 - 64bit Sections
+
+[DriverInstall.NTamd64]
+include=mdmcpq.inf
+CopyFiles=DriverCopyFiles.NTamd64
+AddReg=DriverInstall.NTamd64.AddReg
+
+[DriverCopyFiles.NTamd64]
+usbser.sys,,,0x20
+
+[DriverInstall.NTamd64.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
+
+[DriverInstall.NTamd64.Services]
+AddService=usbser, 0x00000002, DriverService.NTamd64
+
+[DriverService.NTamd64]
+DisplayName=%SERVICE%
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%12%\usbser.sys
+
+;---------------------------------------------------------------------
+;  Vendor and Product ID Definitions
+
+[SourceDisksFiles]
+[SourceDisksNames]
+[DeviceList]
+%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC}
+
+[DeviceList.NTamd64]
+%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC}
+
+;---------------------------------------------------------------------
+;  String Definitions
+
+[Strings]
+MFGFILENAME="pybcdc"
+MFGNAME="MicroPython"
+DESCRIPTION="Pyboard USB Comm Port"
+SERVICE="USB Serial Driver"
