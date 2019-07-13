@@ -225,6 +225,9 @@
 				editor.getSession().on('change', editor_change);
 				editor.resize();
 			});
+			$(window).resize(function() {
+                                editor.resize();
+                        });
 		</script>
 	</body>
 </html>
