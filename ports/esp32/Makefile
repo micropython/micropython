@@ -223,7 +223,7 @@ ifeq ($(MICROPY_PY_LVGL), 1)
 
 #esp-idf generated module
 ESPIDFMOD_SOURCE = $(TOP)/lib/lv_bindings/driver/esp32/espidf.h
-ALL_ESPIDFMOD_SRC = $(shell find $(subst -I,,$(INC_ESPCOMP)) -type f) $(ESPIDFMOD_SOURCE)
+ALL_ESPIDFMOD_SRC = $(shell find $(subst -I,,$(INC_ESPCOMP)) -type f) $(ESPIDFMOD_SOURCE) $(SDKCONFIG_H)
 ESPIDFMOD_MODULE = $(BUILD)/espidfmod/mp_espidf.c
 ESPIDFMOD_PP = $(BUILD)/espidfmod/mp_espidf.pp.c
 ESPIDFMOD_CFLAGS = -Wno-deprecated-declarations
