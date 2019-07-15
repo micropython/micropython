@@ -46,19 +46,6 @@ int inputValCheck(mp_obj_t val){
     }
 }
 
-STATIC mp_obj_t mod_account_contract_call(mp_obj_t contractAddr, mp_obj_t contractName, mp_obj_t contractArgs) {
-    const char *addr = mp_obj_str_get_str(contractAddr);
-    const char *name = mp_obj_str_get_str(contractName);
-    const char *args = mp_obj_str_get_str(contractArgs);
-    tvm_execute_result_t result;
-    tvm_init_result(&result);
-    contract_call_fn(addr, name, args, &result);
-	mp_obj_t return_obj =  result_to_obj(&result);
-	tvm_deinit_result(&result);
-	return return_obj;
-};
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_account_contract_call_obj , mod_account_contract_call);
 
 //extern int g_iGas;
 STATIC mp_obj_t mod_account_event_call(mp_obj_t EventName, mp_obj_t Data) {
@@ -220,7 +207,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_refund_stake_obj, mod_account_refun
 
 STATIC const mp_rom_map_elem_t mp_module_account_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_account) },
-        { MP_ROM_QSTR(MP_QSTR_contract_call), MP_ROM_PTR(&mod_account_contract_call_obj) },
 		{ MP_ROM_QSTR(MP_QSTR_event_call), MP_ROM_PTR(&mod_account_event_call_obj) },
         { MP_ROM_QSTR(MP_QSTR_get_balance), MP_ROM_PTR(&mod_account_get_balance_obj) },
         { MP_ROM_QSTR(MP_QSTR_get_data), MP_ROM_PTR(&mod_account_get_data_obj) },

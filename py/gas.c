@@ -257,7 +257,7 @@ bool FireGas_DB(size_t len)
 
 void Gas_Report()
 {
-//    printf("gas: cpu:%lld mem:%lld db:%lld\n", cpu_gas/GAS_PRECISION, mem_gas/GAS_PRECISION, db_gas/GAS_PRECISION);
+    printf("gas: cpu:%" PRIdLL " mem:%" PRIdLL " db:%" PRIdLL "\n", cpu_gas/GAS_PRECISION, mem_gas/GAS_PRECISION, db_gas/GAS_PRECISION);
 }
 
 

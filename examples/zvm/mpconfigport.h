@@ -35,7 +35,7 @@
 #define MICROPY_PY_DELATTR_SETATTR (1)
 
 //internal printf unsupported long long
-//#define MICROPY_USE_INTERNAL_PRINTF (0)
+#define MICROPY_USE_INTERNAL_PRINTF (0)
 
 #define MICROPY_PY_BUILTINS_EVAL_EXEC (0)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
@@ -136,6 +136,14 @@ typedef unsigned __int64 mp_uint_t;
 // regardless for actual size.
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
+#endif
+
+#ifdef _WIN64
+#define PRIdLL "I64d"
+#define PRIuLL "I64u"
+#else
+#define PRIdLL "lld"
+#define PRIuLL "llu"
 #endif
 
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
