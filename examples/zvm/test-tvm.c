@@ -128,29 +128,29 @@ void test_gc() {
     }
 }
 
-void contract_call_callback (const char *contractAddr, const char *contractName, const char *contractArgs, tvm_execute_result_t *result) {
+void contract_call_callback (const char *contractAddr, const char *funName, const char *JSON, tvm_execute_result_t *result) {
     assert(result);
-    if (strcmp(contractArgs, "1") == 0) {
+    if (strcmp(JSON, "[\"1\"]") == 0) {
         result->result_type = RETURN_TYPE_STRING;
         result->content = malloc(100);
         memset(result->content, 0, 100);
         memcpy(result->content, "Hello", 5);
-    } else if (strcmp(contractArgs, "2") == 0) {
+    } else if (strcmp(JSON, "[\"2\"]") == 0) {
         result->result_type = RETURN_TYPE_INT;
         result->content = malloc(100);
         memset(result->content, 0, 100);
         memcpy(result->content, "55555", 5);
     }
-    else if (strcmp(contractArgs, "3") == 0) {
+    else if (strcmp(JSON, "[\"3\"]") == 0) {
         result->result_type = RETURN_TYPE_NONE;
     }
-    else if (strcmp(contractArgs, "4") == 0) {
+    else if (strcmp(JSON, "[\"4\"]") == 0) {
         result->result_type = RETURN_TYPE_BOOL;
         result->content = malloc(100);
         memset(result->content, 0, 100);
         memcpy(result->content, "0", 1);
     }
-    else if (strcmp(contractArgs, "5") == 0) {
+    else if (strcmp(JSON, "[\"5\"]") == 0) {
         result->result_type = RETURN_TYPE_EXCEPTION;
         result->content = malloc(100);
         memset(result->content, 0, 100);
@@ -164,17 +164,24 @@ void test_contract_call() {
 
     contract_call_fn = &contract_call_callback;
 
-    const char *str = "import account\n"
-                      "\n"
-                      "t = account.contract_call('A', 'B', '1')\n"
+    const char *str = "\n"
+                      "t = Contract('A').B('1')\n"
                       "print(t)\n"
-                      "t = account.contract_call('A', 'B', '2')\n"
+                      "t = Contract('A').B('2')\n"
                       "print(t)\n"
-                      "t = account.contract_call('A', 'B', '3')\n"
+                      "t = Contract('A').B('3')\n"
                       "print(t)\n"
-                      "t = account.contract_call('A', 'B', '4')\n"
+                      "t = Contract('A').B('4')\n"
                       "print(t)\n"
-//                      "t = account.contract_call('A', 'B', '5')\n"
+//                      "t = Contract('A').B('5')\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B(Contract)\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B([1,2,3,4])\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B({'a':1})\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B(a=1)\n"
 //                      "print(t)\n"
                       "print('Test Finished')\n"
                       "\n";
@@ -368,7 +375,7 @@ int main() {
 
 //    test_gc();
 
-//    test_contract_call();
+    test_contract_call();
 
 //    test_lib_path();
 
@@ -380,7 +387,7 @@ int main() {
 
 //    test_lib_line();
 
-    test_1();
+//    test_1();
 
 //    test_2();
 
