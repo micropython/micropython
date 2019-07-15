@@ -994,6 +994,10 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #if ZVM_EXTMOD
     { MP_ROM_QSTR(MP_QSTR_abiexport), MP_ROM_PTR(&mp_builtin_abiexport_obj) },
     { MP_ROM_QSTR(MP_QSTR_Contract), MP_ROM_PTR(&mp_builtin_contract_type) },
+    { MP_ROM_QSTR(MP_QSTR_RA), MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_KRA), MP_ROM_INT(1000) },
+    { MP_ROM_QSTR(MP_QSTR_MRA), MP_ROM_INT(1000000) },
+    { MP_ROM_QSTR(MP_QSTR_ZVC), MP_ROM_INT(1000000000) },
     #endif
 
     // built-in exceptions
