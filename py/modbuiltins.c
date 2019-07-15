@@ -789,6 +789,84 @@ STATIC mp_obj_t mp_builtin_abiexport(size_t n_args, const mp_obj_t *pos_args, mp
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_abiexport_obj, 0, mp_builtin_abiexport);
+
+
+// contract_function
+typedef struct _mp_obj_contract_fun_t {
+    mp_obj_base_t base;
+    const char* address;
+    const char* fun_name;
+} mp_obj_contract_fun_t;
+
+STATIC mp_obj_t mp_builtin_contract_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    if (n_kw) {
+        mp_raise_TypeError("function doesn't take keyword arguments");
+    }
+
+    mp_obj_t params = mp_obj_new_list(n_args, (mp_obj_t*)args);
+    mp_obj_contract_fun_t *self = MP_OBJ_TO_PTR(self_in);
+
+    vstr_t vstr;
+    mp_print_t print;
+    vstr_init_print(&vstr, 8, &print);
+    mp_obj_print_helper(&print, params, PRINT_JSON);
+    char *params_json = vstr_str(&vstr);
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    contract_call_fn(self->address, self->fun_name, params_json, &result);
+    mp_obj_t return_obj =  result_to_obj(&result);
+    tvm_deinit_result(&result);
+    return return_obj;
+}
+
+STATIC const mp_obj_type_t mp_builtin_contract_fun_type = {
+        { &mp_type_type },
+        .name = MP_QSTR_ContractFunction,
+        .call = mp_builtin_contract_fun_call,
+};
+
+typedef struct _mp_obj_contract_t {
+    mp_obj_base_t base;
+    const char* address;
+} mp_obj_contract_t;
+
+void mp_obj_contract_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        mp_obj_contract_t *self = MP_OBJ_TO_PTR(self_in);
+        mp_obj_contract_fun_t *o = m_new_obj(mp_obj_contract_fun_t);
+        o->base.type = &mp_builtin_contract_fun_type;
+        o->address = self->address;
+        o->fun_name = qstr_str(attr);
+        *dest = MP_OBJ_FROM_PTR(o);
+    }
+}
+
+
+STATIC mp_obj_t mp_builtin_contract_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_obj_contract_t *o = m_new_obj(mp_obj_contract_t);
+    o->base.type = type;
+    o->address = mp_obj_str_get_str(args[0]);
+    return MP_OBJ_FROM_PTR(o);
+}
+
+
+STATIC const mp_rom_map_elem_t builtin_contract_locals_dict_table[] = {
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(builtin_contract_locals_dict, builtin_contract_locals_dict_table);
+
+STATIC const mp_obj_type_t mp_builtin_contract_type = {
+        { &mp_type_type },
+        .name = MP_QSTR_Contract,
+        .make_new = mp_builtin_contract_make_new,
+        .locals_dict = (void*)&builtin_contract_locals_dict,
+        .attr = mp_obj_contract_attr,
+};
+
+
 #endif
 
 // These are defined in terms of MicroPython API functions right away
@@ -915,6 +993,11 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sum), MP_ROM_PTR(&mp_builtin_sum_obj) },
     #if ZVM_EXTMOD
     { MP_ROM_QSTR(MP_QSTR_abiexport), MP_ROM_PTR(&mp_builtin_abiexport_obj) },
+    { MP_ROM_QSTR(MP_QSTR_Contract), MP_ROM_PTR(&mp_builtin_contract_type) },
+    { MP_ROM_QSTR(MP_QSTR_RA), MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_KRA), MP_ROM_INT(1000) },
+    { MP_ROM_QSTR(MP_QSTR_MRA), MP_ROM_INT(1000000) },
+    { MP_ROM_QSTR(MP_QSTR_ZVC), MP_ROM_INT(1000000000) },
     #endif
 
     // built-in exceptions
