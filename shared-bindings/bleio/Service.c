@@ -166,13 +166,13 @@ STATIC MP_DEFINE_CONST_DICT(bleio_service_locals_dict, bleio_service_locals_dict
 
 STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "Service(");
     if (self->uuid) {
+        mp_printf(print, "Service(");
         bleio_uuid_print(print, MP_OBJ_FROM_PTR(self->uuid), kind);
+        mp_printf(print, ")");
     } else {
-        mp_printf(print, "unregistered UUID");
+        mp_printf(print, "<Service with unregistered UUID>");
     }
-    mp_printf(print, ")");
 }
 
 const mp_obj_type_t bleio_service_type = {

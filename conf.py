@@ -84,6 +84,7 @@ version = release = '0.0.0'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
+                    ".git",
                     ".venv",
                     ".direnv",
                     "docs/README.md",

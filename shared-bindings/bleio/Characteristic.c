@@ -316,13 +316,13 @@ STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_locals_dict, bleio_characterist
 
 STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "Characteristic(");
     if (self->uuid) {
+        mp_printf(print, "Characteristic(");
         bleio_uuid_print(print, MP_OBJ_FROM_PTR(self->uuid), kind);
+        mp_printf(print, ")");
     } else {
-        mp_printf(print, "Unregistered uUID");
+        mp_printf(print, "<Characteristic with Unregistered UUID>");
     }
-    mp_printf(print, ")");
 }
 
 const mp_obj_type_t bleio_characteristic_type = {

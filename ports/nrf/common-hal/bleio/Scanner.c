@@ -74,10 +74,9 @@ STATIC void scanner_on_ble_evt(ble_evt_t *ble_evt, void *scanner_in) {
 }
 
 void common_hal_bleio_scanner_construct(bleio_scanner_obj_t *self) {
-    self->scan_entries = mp_obj_new_list(0, NULL);
 }
 
-void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout, mp_float_t interval, mp_float_t window) {
+mp_obj_t common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout, mp_float_t interval, mp_float_t window) {
     common_hal_bleio_adapter_set_enabled(true);
     ble_drv_add_event_handler(scanner_on_ble_evt, self);
 
@@ -87,8 +86,7 @@ void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout
         .scan_phys = BLE_GAP_PHY_1MBPS,
     };
 
-    // Empty the advertising reports list.
-    mp_obj_list_clear(self->scan_entries);
+    self->scan_entries = mp_obj_new_list(0, NULL);
 
     uint32_t err_code;
     err_code = sd_ble_gap_scan_start(&scan_params, &m_scan_buffer);
@@ -99,8 +97,9 @@ void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout
 
     mp_hal_delay_ms(timeout * 1000);
     sd_ble_gap_scan_stop();
-}
 
-mp_obj_t common_hal_bleio_scanner_get_scan_entries(bleio_scanner_obj_t *self) {
-    return self->scan_entries;
+    // Return list, and don't hang on to it, so it can be GC'd.
+    mp_obj_t entries = self->scan_entries;
+    self->scan_entries = MP_OBJ_NULL;
+    return entries;
 }

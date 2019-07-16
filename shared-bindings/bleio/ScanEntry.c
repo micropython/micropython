@@ -32,7 +32,6 @@
 #include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/UUID.h"
-#include "shared-module/bleio/AdvertisementData.h"
 #include "shared-module/bleio/ScanEntry.h"
 
 //| .. currentmodule:: bleio

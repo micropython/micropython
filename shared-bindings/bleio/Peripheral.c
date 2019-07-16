@@ -63,6 +63,7 @@ static const char default_name[] = "CIRCUITPY";
 //| Usage::
 //|
 //|    import bleio
+//|    from adafruit_ble.advertising import ServerAdvertisement
 //|
 //|    # Create a Characteristic.
 //|    chara = bleio.Characteristic(bleio.UUID(0x2919), read=True, notify=True)

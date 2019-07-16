@@ -48,13 +48,9 @@
 //|   The value itself can be one of:
 //|
 //|   :param buf address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
-//|   :param int address_type: one of these integers:
-//|     - ``bleio.Address.PUBLIC`` = 0
-//|     - ``bleio.Address.RANDOM_STATIC`` = 1
-//|     - ``bleio.Address.RANDOM_PRIVATE_RESOLVABLE`` = 2
-//|     - ``bleio.Address.RANDOM_PRIVATE_NON_RESOLVABLE`` = 3
+//|   :param int address_type: one of the integer values: `PUBLIC`, `RANDOM_STATIC`,
+//|     `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`.
 //|
-
 STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_address_type };
     static const mp_arg_t allowed_args[] = {
@@ -105,12 +101,9 @@ const mp_obj_property_t bleio_address_address_bytes_obj = {
 
 //|   .. attribute:: type
 //|
-//|     The address type (read-only). One of these integers:
-//|
-//|     - ``bleio.Address.PUBLIC`` = 0
-//|     - ``bleio.Address.RANDOM_STATIC`` = 1
-//|     - ``bleio.Address.RANDOM_PRIVATE_RESOLVABLE`` = 2
-//|     - ``bleio.Address.RANDOM_PRIVATE_NON_RESOLVABLE`` = 3
+//|     The address type (read-only).
+//|       One of the integer values: `PUBLIC`, `RANDOM_STATIC`,
+//|       `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`.
 //|
 STATIC mp_obj_t bleio_address_get_type(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -154,16 +147,37 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
 
 STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
+    if (kind == PRINT_STR) {
+        mp_buffer_info_t buf_info;
+        mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
+        mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
 
-    mp_buffer_info_t buf_info;
-    mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
-    const uint8_t *buf = (uint8_t *) buf_info.buf;
-    mp_printf(print,
-              "%02x:%02x:%02x:%02x:%02x:%02x",
-              buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
+        const uint8_t *buf = (uint8_t *) buf_info.buf;
+        mp_printf(print,
+                  "%02x:%02x:%02x:%02x:%02x:%02x",
+                  buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
+    } else {
+        mp_printf(print, "<Address>");
+    }
 }
 
+//|   .. data:: PUBLIC
+//|
+//|      A publicly known address, with a company ID (high 24 bits)and company-assigned part (low 24 bits).
+//|
+//|   .. data:: RANDOM_STATIC
+//|
+//|      A randomly generated address that does not change often. It may never change or may change after
+//|      a power cycle.
+//|
+//|   .. data:: RANDOM_PRIVATE_RESOLVABLE
+//|
+//|      An address that is usable when the peer knows the other device's secret Identity Resolving Key (IRK).
+//|
+//|   .. data:: RANDOM_PRIVATE_NON_RESOLVABLE
+//|
+//|      A randomly generated address that changes on every connection.
+//|
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_address_bytes), MP_ROM_PTR(&bleio_address_address_bytes_obj) },
     { MP_ROM_QSTR(MP_QSTR_type), MP_ROM_PTR(&bleio_address_type_obj) },
