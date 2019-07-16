@@ -79,6 +79,17 @@ static inline void restore_irq_pri(uint32_t basepri) {
     __set_BASEPRI(basepri);
 }
 
+#else
+
+static inline uint32_t raise_irq_pri(uint32_t pri) {
+    return disable_irq();
+}
+
+// "state" should be the value returned from raise_irq_pri
+static inline void restore_irq_pri(uint32_t state) {
+    enable_irq(state);
+}
+
 #endif
 
 MP_DECLARE_CONST_FUN_OBJ_0(pyb_wfi_obj);

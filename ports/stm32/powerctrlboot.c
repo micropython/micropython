@@ -98,6 +98,27 @@ void SystemClock_Config(void) {
 
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+    #if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
+    // Enable the 48MHz internal oscillator
+    RCC->CRRCR |= RCC_CRRCR_HSI48ON;
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    SYSCFG->CFGR3 |= SYSCFG_CFGR3_ENREF_HSI48;
+    while (!(RCC->CRRCR & RCC_CRRCR_HSI48RDY)) {
+        // Wait for HSI48 to be ready
+    }
+
+    // Select RC48 as HSI48 for USB and RNG
+    RCC->CCIPR |= RCC_CCIPR_HSI48SEL;
+
+    #if MICROPY_HW_ENABLE_USB
+    // Synchronise HSI48 with 1kHz USB SoF
+    __HAL_RCC_CRS_CLK_ENABLE();
+    CRS->CR = 0x20 << CRS_CR_TRIM_Pos;
+    CRS->CFGR = 2 << CRS_CFGR_SYNCSRC_Pos | 0x22 << CRS_CFGR_FELIM_Pos
+        | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
+    #endif
+    #endif
 }
 
 #endif
