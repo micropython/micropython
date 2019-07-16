@@ -71,8 +71,11 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
 			error_code = 1002;
 		}
 		
-		char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
-		assert(exception_data_str);
+		const char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
+		if (exception_data_str == NULL) {
+            assert(false);
+		    exception_data_str = "";
+		}
 		mp_obj_fill_exception(exception_data_str, error_code, result);
     }
 }
