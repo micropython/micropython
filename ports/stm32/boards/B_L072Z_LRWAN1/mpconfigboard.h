@@ -19,6 +19,7 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_ADC       (0)
+#define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_HAS_SWITCH       (1)
 
 // UART config
@@ -58,3 +59,10 @@
 #define MICROPY_HW_LED4             (pin_B7) // Red
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
+
+// USB config (need to bridge SB15/SB16)
+#define MICROPY_HW_USB_FS           (1)
+#define MICROPY_HW_USB_MSC          (0)
+#define MICROPY_HW_USB_HID          (0)
+#define USBD_CDC_RX_DATA_SIZE       (256)
+#define USBD_CDC_TX_DATA_SIZE       (256)
