@@ -82,11 +82,21 @@ void SystemClock_Config(void) {
     // Enable power control peripheral
     __HAL_RCC_PWR_CLK_ENABLE();
 
-    // Use the 16MHz internal oscillator
+    // Set flash latency to 1 because SYSCLK > 16MHz
+    FLASH->ACR |= FLASH_ACR_LATENCY;
+
+    // Enable the 16MHz internal oscillator
     RCC->CR |= RCC_CR_HSION;
     while (!(RCC->CR & RCC_CR_HSIRDY)) {
     }
-    const uint32_t sysclk_src = 1;
+
+    // Use HSI16 and the PLL to get a 32MHz SYSCLK
+    RCC->CFGR = 1 << RCC_CFGR_PLLDIV_Pos | 1 << RCC_CFGR_PLLMUL_Pos;
+    RCC->CR |= RCC_CR_PLLON;
+    while (!(RCC->CR & RCC_CR_PLLRDY)) {
+        // Wait for PLL to lock
+    }
+    const uint32_t sysclk_src = 3;
 
     // Select SYSCLK source
     RCC->CFGR |= sysclk_src << RCC_CFGR_SW_Pos;
