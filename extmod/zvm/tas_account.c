@@ -14,7 +14,6 @@
 //   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdio.h>
-#include "tas_account.h"
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -29,22 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-int inputValCheck(mp_obj_t val){
-    if (MP_OBJ_IS_SMALL_INT(val)) {
-        return 1;
-    } else {
-        const mp_obj_int_t *self = MP_OBJ_TO_PTR(val);
-        mp_int_t value;
-        if (mpz_as_int_checked(&self->mpz, &value)) {
-            return 2;
-        } else {
-            // overflow
-            printf("number overflow, nothing to change, please confirm your input!\n");
-            return 0;
-        }
-    }
-}
 
 
 //extern int g_iGas;
