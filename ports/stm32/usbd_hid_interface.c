@@ -42,6 +42,8 @@
 #include "irq.h"
 #include "usb.h"
 
+#if MICROPY_HW_USB_HID
+
 uint8_t *usbd_hid_init(usbd_hid_state_t *hid_in) {
     usbd_hid_itf_t *hid = (usbd_hid_itf_t*)hid_in;
 
@@ -107,3 +109,5 @@ int usbd_hid_rx(usbd_hid_itf_t *hid, size_t len, uint8_t *buf, uint32_t timeout)
     // Success, return number of bytes read
     return read_len;
 }
+
+#endif // MICROPY_HW_USB_HID

@@ -148,6 +148,7 @@ static const uint8_t head_desc_data[HEAD_DESC_SIZE] = {
     CONFIG_DESC_MAXPOWER, // bMaxPower
 };
 
+#if MICROPY_HW_USB_MSC
 // USB MSC partial configuration descriptor
 static const uint8_t msc_class_desc_data[MSC_CLASS_DESC_SIZE] = {
     //==========================================================================
@@ -183,6 +184,7 @@ static const uint8_t msc_class_desc_data[MSC_CLASS_DESC_SIZE] = {
     HIBYTE(MSC_FS_MAX_PACKET),
     0x00,                           // bInterval: ignore for Bulk transfer
 };
+#endif
 
 // USB CDC partial configuration descriptor
 static const uint8_t cdc_class_desc_data[CDC_CLASS_DESC_SIZE] = {
@@ -276,6 +278,7 @@ static const uint8_t cdc_class_desc_data[CDC_CLASS_DESC_SIZE] = {
     0x00,                               // bInterval: ignore for Bulk transfer
 };
 
+#if MICROPY_HW_USB_HID
 // USB HID partial configuration descriptor
 static const uint8_t hid_class_desc_data[HID_CLASS_DESC_SIZE] = {
     //==========================================================================
@@ -399,6 +402,7 @@ __ALIGN_BEGIN const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPOR
     0x81, 0x00,         // Input (Data, Array), ;Key arrays (6 bytes)
     0xC0            // End Collection
 };
+#endif
 
 static void make_head_desc(uint8_t *dest, uint16_t len, uint8_t num_itf) {
     memcpy(dest, head_desc_data, sizeof(head_desc_data));
@@ -407,10 +411,12 @@ static void make_head_desc(uint8_t *dest, uint16_t len, uint8_t num_itf) {
     dest[4] = num_itf; // bNumInterfaces
 }
 
+#if MICROPY_HW_USB_MSC
 static size_t make_msc_desc(uint8_t *dest) {
     memcpy(dest, msc_class_desc_data, sizeof(msc_class_desc_data));
     return sizeof(msc_class_desc_data);
 }
+#endif
 
 static size_t make_cdc_desc(uint8_t *dest, int need_iad, uint8_t iface_num) {
     if (need_iad) {
@@ -441,6 +447,7 @@ static size_t make_cdc_desc_ep(uint8_t *dest, int need_iad, uint8_t iface_num, u
 }
 #endif
 
+#if MICROPY_HW_USB_HID
 static size_t make_hid_desc(uint8_t *dest, USBD_HID_ModeInfoTypeDef *hid_info) {
     memcpy(dest, hid_class_desc_data, sizeof(hid_class_desc_data));
     dest[HID_DESC_OFFSET_SUBCLASS] = hid_info->subclass;
@@ -454,6 +461,7 @@ static size_t make_hid_desc(uint8_t *dest, USBD_HID_ModeInfoTypeDef *hid_info) {
     dest[HID_DESC_OFFSET_POLLING_INTERVAL_OUT] = hid_info->polling_interval;
     return sizeof(hid_class_desc_data);
 }
+#endif
 
 // return the saved usb mode
 uint8_t USBD_GetMode(usbd_cdc_msc_hid_state_t *usbd) {
@@ -469,6 +477,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
     uint8_t *d = usbd->usbd_config_desc;
     uint8_t num_itf = 0;
     switch (usbd->usbd_mode & USBD_MODE_IFACE_MASK) {
+        #if MICROPY_HW_USB_MSC
         case USBD_MODE_MSC:
             n += make_msc_desc(d + n);
             num_itf = 1;
@@ -480,6 +489,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             usbd->cdc[0]->iface_num = CDC_IFACE_NUM_WITH_MSC;
             num_itf = 3;
             break;
+        #endif
 
         #if MICROPY_HW_USB_CDC_NUM >= 2
         case USBD_MODE_CDC2: {
@@ -491,6 +501,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             break;
         }
 
+        #if MICROPY_HW_USB_MSC
         case USBD_MODE_CDC2_MSC: {
             n += make_msc_desc(d + n);
             n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
@@ -500,6 +511,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             num_itf = 5;
             break;
         }
+        #endif
         #endif
 
         #if MICROPY_HW_USB_CDC_NUM >= 3
@@ -514,6 +526,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             break;
         }
 
+        #if MICROPY_HW_USB_MSC
         case USBD_MODE_CDC3_MSC: {
             n += make_msc_desc(d + n);
             n += make_cdc_desc(d + n, 1, CDC_IFACE_NUM_WITH_MSC);
@@ -526,7 +539,9 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             break;
         }
         #endif
+        #endif
 
+        #if MICROPY_HW_USB_HID
         case USBD_MODE_CDC_HID:
             usbd->hid->desc = d + n;
             n += make_hid_desc(d + n, hid_info);
@@ -538,6 +553,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             usbd->hid->report_desc = hid_info->report_desc;
             num_itf = 3;
             break;
+        #endif
 
         case USBD_MODE_CDC:
             n += make_cdc_desc(d + n, 0, CDC_IFACE_NUM_ALONE);
@@ -609,6 +625,7 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
         }
     }
 
+    #if MICROPY_HW_USB_MSC
     if (usbd->usbd_mode & USBD_MODE_IFACE_MSC) {
         // MSC component
 
@@ -629,7 +646,9 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
         // Init the BOT layer
         MSC_BOT_Init(pdev);
     }
+    #endif
 
+    #if MICROPY_HW_USB_HID
     if (usbd->usbd_mode & USBD_MODE_IFACE_HID) {
         // HID component
 
@@ -656,6 +675,7 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
 
         usbd->hid->state = HID_IDLE;
     }
+    #endif
 
     return 0;
 }
@@ -676,6 +696,7 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
         }
     }
 
+    #if MICROPY_HW_USB_MSC
     if (usbd->usbd_mode & USBD_MODE_IFACE_MSC) {
         // MSC component
 
@@ -686,7 +707,9 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
         // DeInit the BOT layer
         MSC_BOT_DeInit(pdev);
     }
+    #endif
 
+    #if MICROPY_HW_USB_HID
     if (usbd->usbd_mode & USBD_MODE_IFACE_HID) {
         // HID component
 
@@ -694,6 +717,7 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
         USBD_LL_CloseEP(pdev, usbd->hid->in_ep);
         USBD_LL_CloseEP(pdev, usbd->hid->out_ep);
     }
+    #endif
 
     return 0;
 }
@@ -725,11 +749,17 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     switch (req->bmRequest & USB_REQ_RECIPIENT_MASK) {
         case USB_REQ_RECIPIENT_INTERFACE: {
             uint16_t iface = req->wIndex;
+            #if MICROPY_HW_USB_MSC
             if ((mode & USBD_MODE_IFACE_MSC) && iface == MSC_IFACE_NUM_WITH_CDC) {
                 recipient = USBD_MODE_MSC;
-            } else if ((mode & USBD_MODE_IFACE_HID) && iface == usbd->hid->iface_num) {
+            } else
+            #endif
+            #if MICROPY_HW_USB_HID
+            if ((mode & USBD_MODE_IFACE_HID) && iface == usbd->hid->iface_num) {
                 recipient = USBD_MODE_HID;
-            } else {
+            } else
+            #endif
+            {
                 for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
                     if ((mode & USBD_MODE_IFACE_CDC(i)) && iface == usbd->cdc[i]->iface_num) {
                         recipient = USBD_MODE_CDC;
@@ -742,11 +772,17 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
         }
         case USB_REQ_RECIPIENT_ENDPOINT: {
             uint8_t ep = req->wIndex & 0x7f;
+            #if MICROPY_HW_USB_MSC
             if ((mode & USBD_MODE_IFACE_MSC) && ep == MSC_OUT_EP) {
                 recipient = USBD_MODE_MSC;
-            } else if ((mode & USBD_MODE_IFACE_HID) && ep == usbd->hid->out_ep) {
+            } else
+            #endif
+            #if MICROPY_HW_USB_HID
+            if ((mode & USBD_MODE_IFACE_HID) && ep == usbd->hid->out_ep) {
                 recipient = USBD_MODE_HID;
-            } else {
+            } else
+            #endif
+            {
                 for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
                     if ((mode & USBD_MODE_IFACE_CDC(i)) && (ep == CDC_OUT_EP(i) || ep == (CDC_CMD_EP(i) & 0x7f))) {
                         recipient = USBD_MODE_CDC;
@@ -786,7 +822,9 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                     // Transfer the command to the interface layer
                     return usbd_cdc_control(cdc, req->bRequest, NULL, req->wValue);
                 }
-            } else if (recipient == USBD_MODE_MSC) {
+            }
+            #if MICROPY_HW_USB_MSC
+            if (recipient == USBD_MODE_MSC) {
                 switch (req->bRequest) {
                     case BOT_GET_MAX_LUN:
                         if ((req->wValue  == 0) && (req->wLength == 1) && ((req->bmRequest & 0x80) == 0x80)) {
@@ -811,7 +849,10 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                         USBD_CtlError(pdev, req);
                         return USBD_FAIL;
                 }
-            } else if (recipient == USBD_MODE_HID) {
+            }
+            #endif
+            #if MICROPY_HW_USB_HID
+            if (recipient == USBD_MODE_HID) {
                 switch (req->bRequest) {
                     case HID_REQ_SET_PROTOCOL:
                         usbd->hid->ctl_protocol = (uint8_t)(req->wValue);
@@ -834,9 +875,11 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                         return USBD_FAIL;
                 }
             }
+            #endif
             break;
 
         case USB_REQ_TYPE_STANDARD:
+            #if MICROPY_HW_USB_MSC
             if (recipient == USBD_MODE_MSC) {
                 switch (req->bRequest) {
                     case USB_REQ_GET_INTERFACE :
@@ -864,7 +907,10 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                         MSC_BOT_CplClrFeature(pdev, (uint8_t)req->wIndex);
                         break;
                 }
-            } else if (recipient == USBD_MODE_HID) {
+            }
+            #endif
+            #if MICROPY_HW_USB_HID
+            if (recipient == USBD_MODE_HID) {
                 switch (req->bRequest) {
                     case USB_REQ_GET_DESCRIPTOR: {
                         uint16_t len = 0;
@@ -890,6 +936,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                         break;
                 }
             }
+            #endif
             break;
     }
     return USBD_OK;
@@ -922,17 +969,21 @@ static uint8_t USBD_CDC_MSC_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) 
         }
     }
 
+    #if MICROPY_HW_USB_MSC
     if ((usbd->usbd_mode & USBD_MODE_IFACE_MSC) && epnum == (MSC_IN_EP & 0x7f)) {
         MSC_BOT_DataIn(pdev, epnum);
         return USBD_OK;
     }
+    #endif
 
+    #if MICROPY_HW_USB_HID
     if ((usbd->usbd_mode & USBD_MODE_IFACE_HID) && epnum == (usbd->hid->in_ep & 0x7f)) {
         /* Ensure that the FIFO is empty before a new transfer, this condition could
         be caused by  a new transfer before the end of the previous transfer */
         usbd->hid->state = HID_IDLE;
         return USBD_OK;
     }
+    #endif
 
     return USBD_OK;
 }
@@ -948,15 +999,19 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
         }
     }
 
+    #if MICROPY_HW_USB_MSC
     if ((usbd->usbd_mode & USBD_MODE_IFACE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
         MSC_BOT_DataOut(pdev, epnum);
         return USBD_OK;
     }
+    #endif
 
+    #if MICROPY_HW_USB_HID
     if ((usbd->usbd_mode & USBD_MODE_IFACE_HID) && epnum == (usbd->hid->out_ep & 0x7f)) {
         size_t len = USBD_LL_GetRxDataSize(pdev, epnum);
         return usbd_hid_receive(usbd->hid, len);
     }
+    #endif
 
     return USBD_OK;
 }
@@ -985,6 +1040,7 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
     uint8_t *cdc_desc[MICROPY_HW_USB_CDC_NUM] = {0};
     uint8_t *msc_desc = NULL;
     switch (usbd->usbd_mode & USBD_MODE_IFACE_MASK) {
+        #if MICROPY_HW_USB_MSC
         case USBD_MODE_MSC:
             msc_desc = usbd->usbd_config_desc + MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
@@ -993,6 +1049,7 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
             cdc_desc[0] = usbd->usbd_config_desc + CDC_MSC_TEMPLATE_CDC_DESC_OFFSET;
             msc_desc = usbd->usbd_config_desc + CDC_MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
+        #endif
 
         #if MICROPY_HW_USB_CDC_NUM >= 2
         case USBD_MODE_CDC2:
@@ -1000,11 +1057,13 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
             cdc_desc[1] = usbd->usbd_config_desc + CDC2_TEMPLATE_CDC2_DESC_OFFSET;
             break;
 
+        #if MICROPY_HW_USB_MSC
         case USBD_MODE_CDC2_MSC:
             cdc_desc[0] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC_DESC_OFFSET;
             cdc_desc[1] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC2_DESC_OFFSET;
             msc_desc = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
+        #endif
         #endif
 
         #if MICROPY_HW_USB_CDC_NUM >= 3
@@ -1014,6 +1073,7 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
             cdc_desc[2] = usbd->usbd_config_desc + CDC3_TEMPLATE_CDC3_DESC_OFFSET;
             break;
 
+        #if MICROPY_HW_USB_MSC
         case USBD_MODE_CDC3_MSC:
             cdc_desc[0] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC_DESC_OFFSET;
             cdc_desc[1] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC2_DESC_OFFSET;
@@ -1021,10 +1081,13 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
             msc_desc = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_MSC_DESC_OFFSET;
             break;
         #endif
+        #endif
 
+        #if MICROPY_HW_USB_HID
         case USBD_MODE_CDC_HID:
             cdc_desc[0] = usbd->usbd_config_desc + CDC_HID_TEMPLATE_CDC_DESC_OFFSET;
             break;
+        #endif
 
         case USBD_MODE_CDC:
             cdc_desc[0] = usbd->usbd_config_desc + CDC_TEMPLATE_CDC_DESC_OFFSET;
@@ -1091,6 +1154,8 @@ uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf) {
     return USBD_OK;
 }
 
+#if MICROPY_HW_USB_HID
+
 // prepare OUT endpoint for reception
 uint8_t USBD_HID_ReceivePacket(usbd_hid_state_t *hid, uint8_t *buf) {
     // Suspend or Resume USB Out process
@@ -1148,6 +1213,8 @@ uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *hid) {
     USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
     return USBD_OK;
 }
+
+#endif
 
 // CDC/MSC/HID interface class callback structure
 const USBD_ClassTypeDef USBD_CDC_MSC_HID = {
