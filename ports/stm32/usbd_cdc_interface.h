@@ -31,8 +31,12 @@
   ******************************************************************************
   */
 
+#ifndef USBD_CDC_RX_DATA_SIZE
 #define USBD_CDC_RX_DATA_SIZE (1024) // this must be 2 or greater, and a power of 2
+#endif
+#ifndef USBD_CDC_TX_DATA_SIZE
 #define USBD_CDC_TX_DATA_SIZE (1024) // I think this can be any value (was 2048)
+#endif
 
 // Values for connect_state
 #define USBD_CDC_CONNECT_STATE_DISCONNECTED (0)
