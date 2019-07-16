@@ -810,7 +810,7 @@ STATIC mp_obj_t mp_builtin_contract_fun_call(mp_obj_t self_in, size_t n_args, si
     mp_print_t print;
     vstr_init_print(&vstr, 8, &print);
     mp_obj_print_helper(&print, params, PRINT_JSON);
-    char *params_json = vstr_str(&vstr);
+    const char *params_json = vstr_str(&vstr);
 
     tvm_execute_result_t result;
     tvm_init_result(&result);
