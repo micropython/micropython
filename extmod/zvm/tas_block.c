@@ -36,9 +36,6 @@ STATIC mp_obj_t mod_block_blockhash(mp_obj_t height) {
     if(!CheckGas(&code)) {
         return mp_const_none;
     }
-    if(!inputValCheck(height)) {
-        return mp_const_none;
-    };
     const char* str = (char*)block_hash_fn(mp_obj_get_int(height));
     int len = strlen(str);
     return mp_obj_new_str(str, len);
