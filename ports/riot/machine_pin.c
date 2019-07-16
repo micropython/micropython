@@ -44,9 +44,9 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, "<Pin %u>", (unsigned)self->pin);
 }
 
-// pin.init(mode, pull=None, *, value)
+// pin.init(mode, *, value)
 STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_pull, ARG_value };
+    enum { ARG_mode, ARG_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = GPIO_IN } },
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
@@ -59,13 +59,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     // get io mode
     uint mode = args[ARG_mode].u_int;
 
-    // get pull mode
-    uint pull = GPIO_OUT;
-    if (args[ARG_pull].u_obj != mp_const_none) {
-        pull = mp_obj_get_int(args[ARG_pull].u_obj);
-    }
-
-    int ret = gpio_init(self->pin, mode | pull);
+    int ret = gpio_init(self->pin, mode);
     if (ret) {
         mp_raise_ValueError("invalid pin");
     }
@@ -78,18 +72,11 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     return mp_const_none;
 }
 
-// constructor(port, pin, ...)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // get the wanted port
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple)) {
-        mp_raise_ValueError("Pin id must be tuple of (\"GPIO_x\", pin#)");
-    }
-    mp_obj_t *items;
-    mp_obj_get_array_fixed_n(args[0], 2, &items);
-    const char *drv_name = mp_obj_str_get_str(items[0]);
-    int wanted_pin = mp_obj_get_int(items[1]);
+    // get the wanted pin nr
+    int wanted_pin = mp_obj_get_int(args[0]);
 
     machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
     pin->base = machine_pin_obj_template;
