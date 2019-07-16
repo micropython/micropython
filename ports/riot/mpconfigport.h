@@ -25,6 +25,8 @@
  */
 #include <alloca.h>
 
+#include "irq.h"
+
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE
 #define MICROPY_HEAP_SIZE (16 * 1024)
@@ -87,6 +89,9 @@
 typedef int mp_int_t;       // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     irq_disable()
+#define MICROPY_END_ATOMIC_SECTION(state)  irq_restore(state)
 
 #define MP_STATE_PORT MP_STATE_VM
 
