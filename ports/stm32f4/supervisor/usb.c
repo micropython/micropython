@@ -29,57 +29,37 @@
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
-#include "stm32f4xx.h"
+#include "stm32f4xx_hal.h"
+
+#define USB_OTGFS_VBUS_Pin GPIO_PIN_9
+#define USB_OTGFS_VBUS_GPIO_Port GPIOA
+#define USB_OTGFS_ID_Pin GPIO_PIN_10
+#define USB_OTGFS_ID_GPIO_Port GPIOA
+#define USB_OTGFS_DM_Pin GPIO_PIN_11
+#define USB_OTGFS_DM_GPIO_Port GPIOA
+#define USB_OTGFS_DP_Pin GPIO_PIN_12
+#define USB_OTGFS_DP_GPIO_Port GPIOA
 
 
 void init_usb_hardware(void) {
-	// Init the LED on PD14
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
-  GPIOD->MODER |= GPIO_MODER_MODE14_0;
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  /**USB_OTG_FS GPIO Configuration    
+  PA10     ------> USB_OTG_FS_ID
+  PA11     ------> USB_OTG_FS_DM
+  PA12     ------> USB_OTG_FS_DP 
+  */
+  GPIO_InitStruct.Pin = USB_OTGFS_ID_Pin|USB_OTGFS_DM_Pin|USB_OTGFS_DP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  // USB Clock init
-  // PLL input- 8 MHz (External oscillator clock; HSI clock tolerance isn't
-  // tight enough- 1%, need 0.25%)
-  // VCO input- 1 to 2 MHz (2 MHz, M = 4)
-  // VCO output- 100 to 432 MHz (144 MHz, N = 72)
-  // Main PLL out- <= 180 MHz (18 MHz, P = 3- divides by 8)
-  // USB PLL out- 48 MHz (Q = 3)
-  RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSE | (3 << RCC_PLLCFGR_PLLQ_Pos) | \
-    (3 << RCC_PLLCFGR_PLLP_Pos) | (72 << RCC_PLLCFGR_PLLN_Pos) | \
-    (4 << RCC_PLLCFGR_PLLM_Pos);
+  /* Peripheral clock enable */
+  __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 
-  // Wait for external clock to become ready
-  RCC->CR |= RCC_CR_HSEON;
-  while(!(RCC->CR & RCC_CR_HSERDY_Msk));
-
-  // Wait for PLL to become ready
-  RCC->CR |= RCC_CR_PLLON;
-  while(!(RCC->CR & RCC_CR_PLLRDY_Msk));
-
-  // Switch clocks!
-  RCC->CFGR |= RCC_CFGR_SW_1;
-
-  // Notify runtime of frequency change.
-  SystemCoreClockUpdate();
-
-  #if CFG_TUSB_OS  == OPT_OS_NONE
-  // 1ms tick timer
-  SysTick_Config(SystemCoreClock / 1000);
-  #endif
-
-  RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;
-
-  // USB Pin Init
-  // PA9- VUSB, PA10- ID, PA11- DM, PA12- DP
-  // PC0- Power on
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-  GPIOA->MODER |= GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1 | \
-    GPIO_MODER_MODE11_1 | GPIO_MODER_MODE12_1;
-  GPIOA->AFR[1] |= (10 << GPIO_AFRH_AFSEL9_Pos) | \
-    (10 << GPIO_AFRH_AFSEL10_Pos) | (10 << GPIO_AFRH_AFSEL11_Pos) | \
-    (10 << GPIO_AFRH_AFSEL12_Pos);
-
-  // Pullup required on ID, despite the manual claiming there's an
-  // internal pullup already (page 1245, Rev 17)
-  GPIOA->PUPDR |= GPIO_PUPDR_PUPD10_0;
+  /* Peripheral interrupt init */
+  HAL_NVIC_SetPriority(OTG_FS_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
 }

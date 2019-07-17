@@ -27,38 +27,46 @@
 // DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
 // that all necessary includes are already included.
 
-#ifndef __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
-#define __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
+#ifndef __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__
+#define __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__
 
 #include <stdint.h>
 #include <stdbool.h>
 
-//#include "nrf_gpio.h"
+#include "stm32f4xx_hal.h"
 
 typedef struct {
     mp_obj_base_t base;
-    // These could be squeezed to fewer bits if more fields are needed.
-    uint8_t number;      // port << 5 | pin number in port (0-31): 6 bits needed
-    uint8_t adc_channel; // 0 is no ADC, ADC channel from 1 to 8:
-                         // 4 bits needed here; 5 bits used in periph registers
+    //uint8_t number; //(3)port,(5)pin 
+    uint8_t port_number;
+    GPIO_TypeDef * port;
+    uint8_t number;
 } mcu_pin_obj_t;
+
+// extern GPIO_TypeDef *port_lookup_table[];
+
+// static inline GPIO_TypeDef * get_GPIO_ptr(const mcu_pin_obj_t *p)
+// {
+// 	return port_lookup_table[0x7&( (p->number) >> 5)];
+// }
 
 extern const mp_obj_type_t mcu_pin_type;
 
 // Used in device-specific pins.c
-#define PIN(p_name, p_port, p_pin, p_adc_channel)       \
+#define PIN(p_port_num, p_port, p_number)       \
 { \
     { &mcu_pin_type }, \
-    .number = NRF_GPIO_PIN_MAP(p_port, p_pin),      \
-    .adc_channel = (p_adc_channel), \
+    .port_number = (p_port_num), \
+    .port = (p_port),      \
+    .number = (p_number), \
 }
 
 // Use illegal pin value to mark unassigned pins.
 #define NO_PIN 0xff
 
-// Choose based on chip, but not specifically revision (e.g., not NRF52840_XXAA)
-#ifdef NRF52840
-#include "nrf52840/pins.h"
-#endif
+// Choose based on chip
+//#ifdef STM32F412ZG
+#include "stm32f412zg/pins.h"
+//#endif
 
-#endif // __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__
+#endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__

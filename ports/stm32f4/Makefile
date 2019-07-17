@@ -70,6 +70,7 @@ INC += -I./stm32cube/CMSIS/Device/ST/STM32F4xx/Include
 INC += -I./stm32cube/CMSIS/Include
 INC += -I./boards
 INC += -I./boards/$(BOARD)
+INC += -I./peripherals
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
@@ -88,10 +89,9 @@ endif
 
 # C defines
 C_DEFS =  \
+-DUSE_FULL_LL_DRIVER \
 -DUSE_HAL_DRIVER \
 -DSTM32F412Zx \
--DUSE_HAL_DRIVER \
--DSTM32F412Zx
 
 # C defines
 #C_DEFS =  \
@@ -144,8 +144,25 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD
 SRC_STM32 = \
 	boards/$(BOARD)/stm32f4xx_it.c \
 	boards/$(BOARD)/stm32f4xx_hal_msp.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
+	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
@@ -169,6 +186,7 @@ SRC_C += \
 	mphalport.c \
 	tick.c \
 	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -180,6 +198,7 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
+	peripherals/stm32f4/stm32f412zg/pins.c \
 	supervisor/shared/memory.c \
 	#lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
 

@@ -24,38 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_STM34F4_COMMON_HAL_MICROCONTROLLER_PIN_H
+#define MICROPY_INCLUDED_STM34F4_COMMON_HAL_MICROCONTROLLER_PIN_H
 
 #include "py/mphal.h"
 
-#include "peripherals/stm32/pins.h"
-
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
-#ifdef MICROPY_HW_APA102_MOSI
-extern bool apa102_sck_in_use;
-extern bool apa102_mosi_in_use;
-#endif
+#include "peripherals/stm32f4/pins.h"
 
 void reset_all_pins(void);
 // reset_pin_number takes the pin number instead of the pointer so that objects don't
 // need to store a full pointer.
-void reset_pin_number(uint8_t pin);
+void reset_pin_number(uint8_t pin_port, uint8_t pin);
 void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(uint8_t pin_number);
-void never_reset_pin_number(uint8_t pin_number);
+bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number);
+void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number);
 
-// Lower 5 bits of a pin number are the pin number in a port.
-// upper bits (just one bit for current chips) is port number.
-
-static inline uint8_t nrf_pin_port(uint8_t absolute_pin) {
-    return absolute_pin >> 5;
-}
-
-static inline uint8_t nrf_relative_pin_number(uint8_t absolute_pin) {
-    return absolute_pin & 0x1f;
-}
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
+#endif // MICROPY_INCLUDED_STM34F4_COMMON_HAL_MICROCONTROLLER_PIN_H
