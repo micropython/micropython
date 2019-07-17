@@ -115,8 +115,7 @@ void Softuart_Init(Softuart *s, uint32_t baudrate)
 	if(baudrate <= 0) {
                 os_printf("SOFTUART ERROR: Set baud rate (%d)\r\n",baudrate);
         } else {
-            s->bit_time = (1000000 / baudrate);
-            if ( ((100000000 / baudrate) - (100*s->bit_time)) > 50 ) s->bit_time++;
+            s->bit_time = system_get_cpu_freq() * 1000000 / baudrate;
             os_printf("SOFTUART bit_time is %d\r\n",s->bit_time);
         }
 
@@ -133,7 +132,7 @@ void Softuart_Init(Softuart *s, uint32_t baudrate)
 		
 		//set high for tx idle
 		GPIO_OUTPUT_SET(GPIO_ID_PIN(s->pin_tx.gpio_id), 1);
-    unsigned int delay = 100000;
+                unsigned int delay = 100000;
 		os_delay_us(delay);
 		
 		os_printf("SOFTUART TX INIT DONE\r\n");
@@ -196,13 +195,30 @@ void Softuart_Init(Softuart *s, uint32_t baudrate)
 	os_printf("SOFTUART INIT DONE\r\n");
 }
 
+//***********************************
+
+#define RSR_CCOUNT(r)     __asm__ __volatile__("rsr %0,ccount":"=a" (r))
+static inline uint32_t get_ccount(void)
+{
+    uint32_t ccount;
+    RSR_CCOUNT(ccount);
+    return ccount;
+}
+
+//***********************************
+
 void Softuart_Intr_Handler(void *p)
 {
-	uint8_t level, gpio_id;
-// clear gpio status. Say ESP8266EX SDK Programming Guide in  5.1.6. GPIO interrupt handler
-
+    uint8_t level, gpio_id;
+    unsigned start_time = get_ccount();
+    
     //ignore void* pointer and make a new pointer
     Softuart *s;
+
+    // disable all interrupts
+    ets_intr_lock();
+
+    // clear gpio status. Say ESP8266EX SDK Programming Guide in  5.1.6. GPIO interrupt handler
 
     uint32_t gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
 	gpio_id = Softuart_Bitcount(gpio_status);
@@ -223,21 +239,23 @@ void Softuart_Intr_Handler(void *p)
 			//pin is low
 			//therefore we have a start bit
 
-			//wait till start bit is half over so we can sample the next one in the center
-			os_delay_us(s->bit_time/2);	
-
 			//now sample bits
 			unsigned i;
 			unsigned d = 0;
-			unsigned start_time = 0x7FFFFFFF & system_get_time();
+                        unsigned elapsed_time = get_ccount() - start_time;
+                        s->elapsed = elapsed_time;
+
+			//wait till start bit is half over so we can sample the next one in the center
+			//os_delay_us(s->bit_time/2);	
+                        if (elapsed_time < s->bit_time / 2) {
+                            unsigned wait_time = s->bit_time / 2 - elapsed_time;
+                            while ((get_ccount() - start_time) < wait_time);
+                            start_time += wait_time;
+                        }
 
 			for(i = 0; i < 8; i ++ )
 			{
-				while ((0x7FFFFFFF & system_get_time()) < (start_time + (s->bit_time*(i+1))))
-				{
-					//If system timer overflow, escape from while loop
-					if ((0x7FFFFFFF & system_get_time()) < start_time){break;}
-				}
+				while ((get_ccount() - start_time) < s->bit_time);
 				//shift d to the right
 				d >>= 1;
 
@@ -246,8 +264,14 @@ void Softuart_Intr_Handler(void *p)
 					//if high, set msb of 8bit to 1
 					d |= 0x80;
 				}
+                                // recalculate start time for next bit
+                                start_time += s->bit_time;
 			}
 
+			//wait for stop bit
+			//os_delay_us(s->bit_time);
+                        while ((get_ccount() - start_time) < s->bit_time);
+	
 			//store byte in buffer
 
 			// if buffer full, set the overflow flag and return
@@ -261,10 +285,7 @@ void Softuart_Intr_Handler(void *p)
 			else 
 			{
 			  s->buffer.buffer_overflow = 1;
-			}
-
-			//wait for stop bit
-			os_delay_us(s->bit_time);	
+			}	
 
 			//done
 		}
@@ -279,6 +300,10 @@ void Softuart_Intr_Handler(void *p)
 		//otherwise, this interrupt will be called again forever
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status);
 	}
+        // re-enable all interrupts
+  
+        ets_intr_unlock();
+  
 }
 
 
@@ -349,8 +374,16 @@ static inline u8 chbit(u8 data, u8 bit)
 void Softuart_Putchar(Softuart *s, char data)
 {
 	unsigned i;
-	unsigned start_time = 0x7FFFFFFF & system_get_time();
+	unsigned start_time;
 
+  // is this needed? delay(0);
+
+	start_time = get_ccount();
+  
+        // disable all interrupts
+  
+        ets_intr_lock();
+  
 	//if rs485 set tx enable
 	if(s->is_rs485 == 1)
 	{
@@ -361,30 +394,29 @@ void Softuart_Putchar(Softuart *s, char data)
 	GPIO_OUTPUT_SET(GPIO_ID_PIN(s->pin_tx.gpio_id), 0);
 	for(i = 0; i < 8; i ++ )
 	{
-		while ((0x7FFFFFFF & system_get_time()) < (start_time + (s->bit_time*(i+1))))
-		{
-			//If system timer overflow, escape from while loop
-			if ((0x7FFFFFFF & system_get_time()) < start_time){break;}
-		}
+		while ((get_ccount() - start_time) < s->bit_time);
 		GPIO_OUTPUT_SET(GPIO_ID_PIN(s->pin_tx.gpio_id), chbit(data,1<<i));
+        
+                // recalculate start time for next bit
+                start_time += s->bit_time;
 	}
 
 	// Stop bit
-	while ((0x7FFFFFFF & system_get_time()) < (start_time + (s->bit_time*9)))
-	{
-		//If system timer overflow, escape from while loop
-		if ((0x7FFFFFFF & system_get_time()) < start_time){break;}
-	}
+	while ((get_ccount() - start_time) < s->bit_time);
 	GPIO_OUTPUT_SET(GPIO_ID_PIN(s->pin_tx.gpio_id), 1);
 
 	// Delay after byte, for new sync
-	os_delay_us(s->bit_time*6);
+	os_delay_us(s->bit_time*6/system_get_cpu_freq());
 
 	//if rs485 set tx disable 
 	if(s->is_rs485 == 1)
 	{
 		GPIO_OUTPUT_SET(GPIO_ID_PIN(s->pin_rs485_tx_enable), 0);
 	}
+  
+        // re-enable all interrupts
+  
+        ets_intr_unlock();
 }
 
 void Softuart_Puts(Softuart *s, const char *c )

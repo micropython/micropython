@@ -29,6 +29,7 @@ typedef struct {
 	uint8_t is_rs485;
 	volatile softuart_buffer_t buffer;
 	uint16_t bit_time;
+  uint32_t elapsed;
 } Softuart;
 
 
