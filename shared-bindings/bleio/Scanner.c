@@ -75,7 +75,7 @@ STATIC mp_obj_t bleio_scanner_make_new(const mp_obj_type_t *type, size_t n_args,
 //|        Must be in the range 0.0025 - 40.959375 seconds.
 //|     :param float window: the duration (in seconds) to scan a single BLE channel.
 //|        window must be <= interval.
-//|     :returns: an iterable of `bleio.ScanEntry` objects
+//|     :returns: an iterable of `ScanEntry` objects
 //|     :rtype: iterable
 //|
 STATIC mp_obj_t bleio_scanner_scan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
