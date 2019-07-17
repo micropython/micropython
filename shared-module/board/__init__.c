@@ -24,18 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/busio/I2C.h"
-#include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/busio/UART.h"
+// #include "shared-bindings/busio/I2C.h"
+// #include "shared-bindings/busio/SPI.h"
+// #include "shared-bindings/busio/UART.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 #include "mpconfigboard.h"
 #include "py/runtime.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+// #ifdef CIRCUITPY_DISPLAYIO
+// #include "shared-module/displayio/__init__.h"
+// #endif
 
 #if BOARD_I2C
 mp_obj_t common_hal_board_get_i2c(void) {
