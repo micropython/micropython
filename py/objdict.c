@@ -56,12 +56,12 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
 STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     bool first = true;
-    bool quote_nums = false;
+    bool should_quote = false;
     
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     } else {
-	quote_nums = true;
+	should_quote = true;
     }
     if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict) {
         mp_printf(print, "%q(", self->base.type->name);
@@ -74,7 +74,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, ", ");
         }
         first = false;
-	bool quote = quote_nums && (mp_obj_is_int(next->key) || mp_obj_is_float(next->key));
+	bool quote = should_quote && !mp_obj_is_str(next->key);
 	if (quote) {
 	    mp_print_str(print, "\"");
 	}
