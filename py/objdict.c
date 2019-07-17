@@ -74,13 +74,12 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, ", ");
         }
         first = false;
-	bool quote = should_quote && !mp_obj_is_str(next->key);
-	if (quote) {
+	if (should_quote && !mp_obj_is_str(next->key)) {
 	    mp_print_str(print, "\"");
-	}
-        mp_obj_print_helper(print, next->key, kind);
-	if (quote) {
+	    mp_obj_print_helper(print, next->key, kind);
 	    mp_print_str(print, "\"");
+	} else {
+	    mp_obj_print_helper(print, next->key, kind);
 	}
         mp_print_str(print, ": ");
         mp_obj_print_helper(print, next->value, kind);
