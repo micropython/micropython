@@ -34,6 +34,18 @@
 #include "dma.h"
 #include "irq.h"
 
+#if defined(STM32WB)
+
+// DMA is currently not implemented for this MCU
+
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data) {
+}
+
+void dma_deinit(const dma_descr_t *dma_descr) {
+}
+
+#else
+
 #define DMA_IDLE_ENABLED()  (dma_idle.enabled != 0)
 #define DMA_SYSTICK_LOG2    (3)
 #define DMA_SYSTICK_MASK    ((1 << DMA_SYSTICK_LOG2) - 1)
@@ -919,3 +931,5 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
 }
 
 #endif
+
+#endif // defined(STM32WB)

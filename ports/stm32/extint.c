@@ -91,7 +91,7 @@
 #define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
 #endif
 
-#if defined(STM32L4)
+#if defined(STM32L4) || defined(STM32WB)
 // The L4 MCU supports 40 Events/IRQs lines of the type configurable and direct.
 // Here we only support configurable line types.  Details, see page 330 of RM0351, Rev 1.
 // The USB_FS_WAKUP event is a direct type and there is no support for it.
@@ -140,6 +140,7 @@ STATIC mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
 
 STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     #if defined(STM32F0) || defined(STM32L0)
+
     EXTI0_1_IRQn,  EXTI0_1_IRQn,  EXTI2_3_IRQn,  EXTI2_3_IRQn,
     EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn,
     EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn, EXTI4_15_IRQn,
@@ -155,11 +156,19 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     RTC_IRQn,
     ADC1_COMP_IRQn,
     ADC1_COMP_IRQn,
+
     #else
+
     EXTI0_IRQn,     EXTI1_IRQn,     EXTI2_IRQn,     EXTI3_IRQn,     EXTI4_IRQn,
     EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,
     EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,
     EXTI15_10_IRQn,
+    #if defined(STM32WB)
+    PVD_PVM_IRQn,
+    RTC_Alarm_IRQn,
+    TAMP_STAMP_LSECSS_IRQn,
+    RTC_WKUP_IRQn,
+    #else
     #if defined(STM32L4)
     PVD_PVM_IRQn,
     #else
@@ -176,6 +185,8 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     OTG_HS_WKUP_IRQn,
     TAMP_STAMP_IRQn,
     RTC_WKUP_IRQn,
+    #endif
+
     #endif
 };
 
@@ -285,7 +296,9 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
         pyb_extint_callback_arg[line] = MP_OBJ_FROM_PTR(pin);
 
         // Route the GPIO to EXTI
+        #if !defined(STM32WB)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
+        #endif
         SYSCFG->EXTICR[line >> 2] =
             (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
             | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
@@ -320,7 +333,9 @@ void extint_set(const pin_obj_t *pin, uint32_t mode) {
         pyb_extint_callback_arg[line] = MP_OBJ_FROM_PTR(pin);
 
         // Route the GPIO to EXTI
+        #if !defined(STM32WB)
         __HAL_RCC_SYSCFG_CLK_ENABLE();
+        #endif
         SYSCFG->EXTICR[line >> 2] =
             (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
             | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
@@ -358,12 +373,16 @@ void extint_enable(uint line) {
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
         #if defined(STM32H7)
         EXTI_D1->IMR1 |= (1 << line);
+        #elif defined(STM32WB)
+        EXTI->IMR1 |= (1 << line);
         #else
         EXTI->IMR |= (1 << line);
         #endif
     } else {
         #if defined(STM32H7)
         EXTI_D1->EMR1 |= (1 << line);
+        #elif defined(STM32WB)
+        EXTI->EMR1 |= (1 << line);
         #else
         EXTI->EMR |= (1 << line);
         #endif
@@ -388,6 +407,9 @@ void extint_disable(uint line) {
     #if defined(STM32H7)
     EXTI_D1->IMR1 &= ~(1 << line);
     EXTI_D1->EMR1 &= ~(1 << line);
+    #elif defined(STM32WB)
+    EXTI->IMR1 &= ~(1 << line);
+    EXTI->EMR1 &= ~(1 << line);
     #else
     EXTI->IMR &= ~(1 << line);
     EXTI->EMR &= ~(1 << line);
@@ -407,7 +429,7 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-#if defined(STM32L4) || defined(STM32H7)
+#if defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
 #else
@@ -485,7 +507,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 /// \classmethod regs()
 /// Dump the values of the EXTI registers.
 STATIC mp_obj_t extint_regs(void) {
-    #if defined(STM32L4)
+    #if defined(STM32L4) || defined(STM32WB)
     printf("EXTI_IMR1   %08x\n", (unsigned int)EXTI->IMR1);
     printf("EXTI_IMR2   %08x\n", (unsigned int)EXTI->IMR2);
     printf("EXTI_EMR1   %08x\n", (unsigned int)EXTI->EMR1);
