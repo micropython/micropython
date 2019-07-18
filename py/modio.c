@@ -208,15 +208,8 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     // package parameter being None, the path_in is interpreted as a
     // raw path.
     if (package_in != mp_const_none) {
-        mp_obj_t args[5];
-        args[0] = package_in;
-        args[1] = mp_const_none; // TODO should be globals
-        args[2] = mp_const_none; // TODO should be locals
-        args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
-        args[4] = MP_OBJ_NEW_SMALL_INT(0);
-
-        // TODO lookup __import__ and call that instead of going straight to builtin implementation
-        mp_obj_t pkg = mp_builtin___import__(5, args);
+        // Pass "True" as sentinel value in fromlist to force returning of leaf module
+        mp_obj_t pkg = mp_import_name(mp_obj_str_get_qstr(package_in), mp_const_true, MP_OBJ_NEW_SMALL_INT(0));
 
         mp_obj_t dest[2];
         mp_load_method_maybe(pkg, MP_QSTR___path__, dest);
