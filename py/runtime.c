@@ -1333,7 +1333,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     argv[2] = mp_const_none; // TODO should be locals
     argv[3] = fromlist;
     argv[4] = level;
-
+#if MICROPY_CAN_OVERRIDE_BUILTINS
     mp_obj_dict_t *bo_dict = MP_STATE_VM(mp_module_builtins_override_dict);
     
     // lookup __import__ and call that instead of going straight to builtin implementation
@@ -1342,6 +1342,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
         if (cust_imp != NULL)
             return mp_call_function_n_kw(cust_imp->value, 5, 0, argv);
     }
+#endif    
     return mp_builtin___import__(5, argv);
 }
 
