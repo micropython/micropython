@@ -1,0 +1,21 @@
+commit 1ada52e32da6b333012c75ddb090adddd46d5e15
+Author: Kaspar Schleiser <kaspar@schleiser.de>
+Date:   Thu Jul 18 23:29:00 2019 +0200
+
+    tools/pyboard.py: write serial commands one byte at a time
+
+diff --git a/tools/pyboard.py b/tools/pyboard.py
+index d90623506..0e1b50dc7 100755
+--- a/tools/pyboard.py
++++ b/tools/pyboard.py
+@@ -344,8 +344,8 @@ class Pyboard:
+             raise PyboardError('could not enter raw repl')
+ 
+         # write command
+-        for i in range(0, len(command_bytes), 256):
+-            self.serial.write(command_bytes[i:min(i + 256, len(command_bytes))])
++        for i in range(0, len(command_bytes), 1):
++            self.serial.write(command_bytes[i:min(i + 1, len(command_bytes))])
+             time.sleep(0.01)
+         self.serial.write(b'\x04')
+ 
