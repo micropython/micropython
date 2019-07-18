@@ -41,7 +41,8 @@ typedef struct {
     int16_t y;
     uint16_t pixel_width;
     uint16_t pixel_height;
-    uint16_t bitmap_width_in_tiles;
+    uint16_t bitmap_width_in_tiles;;
+    uint8_t tiles_in_bitmap;
     uint16_t width_in_tiles;
     uint16_t height_in_tiles;
     uint16_t tile_width;
