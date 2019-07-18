@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_INIT_H
-#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_INIT_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H
 
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
@@ -39,4 +39,4 @@
 gatt_role_t common_hal_bleio_device_get_gatt_role(mp_obj_t device);
 uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
 
-#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_INIT_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H

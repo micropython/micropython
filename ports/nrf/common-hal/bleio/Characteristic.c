@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,12 +35,8 @@
 #include "py/runtime.h"
 #include "common-hal/bleio/__init__.h"
 #include "common-hal/bleio/Characteristic.h"
-#include "shared-module/bleio/Characteristic.h"
 
 STATIC volatile bleio_characteristic_obj_t *m_read_characteristic;
-STATIC volatile uint8_t m_tx_in_progress;
-// Serialize gattc writes that send a response. This might be done per object?
-STATIC nrf_mutex_t *m_write_mutex;
 
 STATIC uint16_t get_cccd(bleio_characteristic_obj_t *characteristic) {
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
@@ -63,7 +60,7 @@ STATIC uint16_t get_cccd(bleio_characteristic_obj_t *characteristic) {
 }
 
 STATIC void gatts_read(bleio_characteristic_obj_t *characteristic) {
-    // This might be BLE_CONN_HANDLE_INVALID if we're not conected, but that's OK, because
+    // This might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
     // we can still read and write the local value.
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
 
@@ -118,24 +115,35 @@ STATIC void gatts_notify_indicate(bleio_characteristic_obj_t *characteristic, mp
         .p_data = bufinfo->buf,
     };
 
-    while (m_tx_in_progress >= MAX_TX_IN_PROGRESS) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
-    }
-
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
-    m_tx_in_progress++;
-    const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
-    if (err_code != NRF_SUCCESS) {
-        m_tx_in_progress--;
+
+    while (1) {
+        const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
+        if (err_code == NRF_SUCCESS) {
+            break;
+        }
+        // TX buffer is full
+        // We could wait for an event indicating the write is complete, but just retrying is easier.
+        if (err_code == NRF_ERROR_RESOURCES) {
+            MICROPY_VM_HOOK_LOOP;
+            continue;
+        }
+
+        // Some real error has occurred.
         mp_raise_OSError_msg_varg(translate("Failed to notify or indicate attribute value, err 0x%04x"), err_code);
     }
 
 }
 
+STATIC void check_connected(uint16_t conn_handle) {
+    if (conn_handle == BLE_CONN_HANDLE_INVALID) {
+        mp_raise_OSError_msg(translate("Not connected"));
+    }
+}
+
 STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
+    check_connected(conn_handle);
 
     m_read_characteristic = characteristic;
 
@@ -144,100 +152,79 @@ STATIC void gattc_read(bleio_characteristic_obj_t *characteristic) {
         mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err 0x%04x"), err_code);
     }
 
-//
     while (m_read_characteristic != NULL) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        MICROPY_VM_HOOK_LOOP;
     }
 }
 
 STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *bufinfo) {
     const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
-    uint32_t err_code;
+    check_connected(conn_handle);
 
     ble_gattc_write_params_t write_params = {
-        .flags = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL,
-        .write_op = BLE_GATT_OP_WRITE_REQ,
+        .write_op = characteristic->props.write_no_response ? BLE_GATT_OP_WRITE_CMD : BLE_GATT_OP_WRITE_REQ,
         .handle = characteristic->handle,
         .p_value = bufinfo->buf,
         .len = bufinfo->len,
     };
 
-    if (characteristic->props.write_no_response) {
-        write_params.write_op = BLE_GATT_OP_WRITE_CMD;
-
-        err_code = sd_mutex_acquire(m_write_mutex);
-        if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError_msg_varg(translate("Failed to acquire mutex, err 0x%04x"), err_code);
+    while (1) {
+        uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
+        if (err_code == NRF_SUCCESS) {
+            break;
         }
-    }
 
-    err_code = sd_ble_gattc_write(conn_handle, &write_params);
-    if (err_code != NRF_SUCCESS) {
+        // Write with response will return NRF_ERROR_BUSY if the response has not been received.
+        // Write without reponse will return NRF_ERROR_RESOURCES if too many writes are pending.
+        if (err_code == NRF_ERROR_BUSY || err_code == NRF_ERROR_RESOURCES) {
+            // We could wait for an event indicating the write is complete, but just retrying is easier.
+            MICROPY_VM_HOOK_LOOP;
+            continue;
+        }
+
+        // Some real error occurred.
         mp_raise_OSError_msg_varg(translate("Failed to write attribute value, err 0x%04x"), err_code);
     }
 
-    while (sd_mutex_acquire(m_write_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
-    }
-
-    err_code = sd_mutex_release(m_write_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to release mutex, err 0x%04x"), err_code);
-    }
 }
 
 STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     switch (ble_evt->header.evt_id) {
-    case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-    {
-        uint8_t count = ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
-        // Don't underflow the count.
-        if (count >= m_tx_in_progress) {
-            m_tx_in_progress = 0;
-        } else {
-            m_tx_in_progress -= count;
+
+        // More events may be handled later, so keep this as a switch.
+
+        case BLE_GATTC_EVT_READ_RSP: {
+            ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
+            m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
+            // Indicate to busy-wait loop that we've read the characteristic.
+            m_read_characteristic = NULL;
+            break;
         }
-        break;
-    }
 
-    case BLE_GATTC_EVT_READ_RSP:
-    {
-        ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
-        m_read_characteristic->value_data = mp_obj_new_bytearray(response->len, response->data);
-        // Flag to busy-wait loop that we've read the characteristic.
-        m_read_characteristic = NULL;
-        break;
-    }
-
-    case BLE_GATTC_EVT_WRITE_RSP:
-        // Someone else can write now.
-        sd_mutex_release(m_write_mutex);
-        break;
-
-        // For debugging.
-    default:
-        // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
-        break;
+            // For debugging.
+        default:
+            // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
+            break;
     }
 
 }
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props) {
-    self->service = NULL;
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, mp_obj_list_t *descriptor_list) {
+    self->service = mp_const_none;
     self->uuid = uuid;
-    self->value_data = NULL;
+    self->value_data = mp_const_none;
     self->props = props;
+    self->descriptor_list = descriptor_list;
     self->handle = BLE_GATT_HANDLE_INVALID;
 
     ble_drv_add_event_handler(characteristic_on_ble_evt, self);
-
 }
 
-void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
+mp_obj_list_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
+    return self->descriptor_list;
+}
+
+mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
     switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
     case GATT_ROLE_CLIENT:
         gattc_read(self);
@@ -251,6 +238,8 @@ void common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self)
         mp_raise_RuntimeError(translate("bad GATT role"));
         break;
     }
+
+    return self->value_data;
 }
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
@@ -258,30 +247,83 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
     uint16_t cccd = 0;
 
     switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
-    case GATT_ROLE_SERVER:
-        if (self->props.notify || self->props.indicate) {
-            cccd = get_cccd(self);
-        }
-        // It's possible that both notify and indicate are set.
-        if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
-            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
-            sent = true;
-        }
-        if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
-            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
-            sent = true;
-        }
-        if (!sent) {
-            gatts_write(self, bufinfo);
-        }
-        break;
+        case GATT_ROLE_SERVER:
+            if (self->props.notify || self->props.indicate) {
+                cccd = get_cccd(self);
+            }
+            // It's possible that both notify and indicate are set.
+            if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+                gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
+                sent = true;
+            }
+            if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+                gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
+                sent = true;
+            }
+            if (!sent) {
+                gatts_write(self, bufinfo);
+            }
+            break;
 
-    case GATT_ROLE_CLIENT:
-        gattc_write(self, bufinfo);
-        break;
+        case GATT_ROLE_CLIENT:
+            gattc_write(self, bufinfo);
+            break;
 
-    default:
-        mp_raise_RuntimeError(translate("bad GATT role"));
-        break;
+        default:
+            mp_raise_RuntimeError(translate("bad GATT role"));
+            break;
     }
+}
+
+
+bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_obj_t *self) {
+    return self->uuid;
+}
+
+bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties(bleio_characteristic_obj_t *self) {
+    return self->props;
+}
+
+void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
+    if (self->cccd_handle == BLE_GATT_HANDLE_INVALID) {
+        mp_raise_ValueError(translate("No CCCD for this Characteristic"));
+    }
+
+    if (common_hal_bleio_device_get_gatt_role(self->service->device) != GATT_ROLE_CLIENT) {
+        mp_raise_ValueError(translate("Can't set CCCD for local Characteristic"));
+    }
+
+    uint16_t cccd_value =
+        (notify ? BLE_GATT_HVX_NOTIFICATION : 0) |
+        (indicate ? BLE_GATT_HVX_INDICATION : 0);
+
+    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->service->device);
+    check_connected(conn_handle);
+
+
+    ble_gattc_write_params_t write_params = {
+        .write_op = BLE_GATT_OP_WRITE_REQ,
+        .handle = self->cccd_handle,
+        .p_value = (uint8_t *) &cccd_value,
+        .len = 2,
+    };
+
+    while (1) {
+        uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
+        if (err_code == NRF_SUCCESS) {
+            break;
+        }
+
+        // Write with response will return NRF_ERROR_BUSY if the response has not been received.
+        // Write without reponse will return NRF_ERROR_RESOURCES if too many writes are pending.
+        if (err_code == NRF_ERROR_BUSY || err_code == NRF_ERROR_RESOURCES) {
+            // We could wait for an event indicating the write is complete, but just retrying is easier.
+            MICROPY_VM_HOOK_LOOP;
+            continue;
+        }
+
+        // Some real error occurred.
+        mp_raise_OSError_msg_varg(translate("Failed to write CCCD, err 0x%04x"), err_code);
+    }
+
 }

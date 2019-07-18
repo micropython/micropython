@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,11 +29,12 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANNER_H
 
 #include "py/objtype.h"
-#include "shared-module/bleio/Scanner.h"
+#include "common-hal/bleio/Scanner.h"
 
 extern const mp_obj_type_t bleio_scanner_type;
 
-extern void common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_int_t timeout);
+extern void common_hal_bleio_scanner_construct(bleio_scanner_obj_t *self);
+extern mp_obj_t common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout, mp_float_t interval, mp_float_t window);
 extern void common_hal_bleio_scanner_stop(bleio_scanner_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANNER_H

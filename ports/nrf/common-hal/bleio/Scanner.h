@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,16 +25,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t adv_reports;
+    mp_obj_t scan_entries;
     uint16_t interval;
     uint16_t window;
 } bleio_scanner_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H

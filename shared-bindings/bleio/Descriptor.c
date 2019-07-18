@@ -3,8 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,27 +31,6 @@
 #include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/UUID.h"
 
-enum {
-    DescriptorUuidCharacteristicExtendedProperties = 0x2900,
-    DescriptorUuidCharacteristicUserDescription = 0x2901,
-    DescriptorUuidClientCharacteristicConfiguration = 0x2902,
-    DescriptorUuidServerCharacteristicConfiguration = 0x2903,
-    DescriptorUuidCharacteristicPresentationFormat = 0x2904,
-    DescriptorUuidCharacteristicAggregateFormat = 0x2905,
-    DescriptorUuidValidRange = 0x2906,
-    DescriptorUuidExternalReportReference = 0x2907,
-    DescriptorUuidReportReference = 0x2908,
-    DescriptorUuidNumberOfDigitals = 0x2909,
-    DescriptorUuidValueTriggerSetting = 0x290A,
-    DescriptorUuidEnvironmentalSensingConfiguration = 0x290B,
-    DescriptorUuidEnvironmentalSensingMeasurement = 0x290C,
-    DescriptorUuidEnvironmentalSensingTriggerSetting = 0x290D,
-    DescriptorUuidTimeTriggerSetting = 0x290E,
-};
-
-// Work-in-progress: orphaned for now.
-//| :orphan:
-//|
 //| .. currentmodule:: bleio
 //|
 //| :class:`Descriptor` -- BLE descriptor
@@ -113,7 +93,9 @@ const mp_obj_property_t bleio_descriptor_handle_obj = {
 
 STATIC mp_obj_t bleio_descriptor_get_uuid(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return common_hal_bleio_descriptor_get_uuid(self);
+
+    bleio_uuid_obj_t *uuid = common_hal_bleio_descriptor_get_uuid(self);
+    return uuid ? MP_OBJ_FROM_PTR(uuid) : mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_uuid_obj, bleio_descriptor_get_uuid);
 
@@ -130,28 +112,69 @@ STATIC const mp_rom_map_elem_t bleio_descriptor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uuid), MP_ROM_PTR(&bleio_descriptor_uuid_obj) },
 
     // Static variables
-    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_EXTENDED_PROPERTIES),    MP_ROM_INT(DescriptorUuidCharacteristicExtendedProperties) },
-    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_USER_DESCRIPTION),       MP_ROM_INT(DescriptorUuidCharacteristicUserDescription) },
-    { MP_ROM_QSTR(MP_QSTR_CLIENT_CHARACTERISTIC_CONFIGURATION),   MP_ROM_INT(DescriptorUuidClientCharacteristicConfiguration) },
-    { MP_ROM_QSTR(MP_QSTR_SERVER_CHARACTERISTIC_CONFIGURATION),   MP_ROM_INT(DescriptorUuidServerCharacteristicConfiguration) },
-    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_PRESENTATION_FORMAT),    MP_ROM_INT(DescriptorUuidCharacteristicPresentationFormat) },
-    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_AGGREGATE_FORMAT),       MP_ROM_INT(DescriptorUuidCharacteristicAggregateFormat) },
-    { MP_ROM_QSTR(MP_QSTR_VALID_RANGE),                           MP_ROM_INT(DescriptorUuidValidRange) },
-    { MP_ROM_QSTR(MP_QSTR_EXTERNAL_REPORT_REFERENCE),             MP_ROM_INT(DescriptorUuidExternalReportReference) },
-    { MP_ROM_QSTR(MP_QSTR_REPORT_REFERENCE),                      MP_ROM_INT(DescriptorUuidReportReference) },
-    { MP_ROM_QSTR(MP_QSTR_NUMBER_OF_DIGITALS),                    MP_ROM_INT(DescriptorUuidNumberOfDigitals) },
-    { MP_ROM_QSTR(MP_QSTR_VALUE_TRIGGER_SETTING),                 MP_ROM_INT(DescriptorUuidValueTriggerSetting) },
-    { MP_ROM_QSTR(MP_QSTR_ENVIRONMENTAL_SENSING_CONFIGURATION),   MP_ROM_INT(DescriptorUuidEnvironmentalSensingConfiguration) },
-    { MP_ROM_QSTR(MP_QSTR_ENVIRONMENTAL_SENSING_MEASUREMENT  ),   MP_ROM_INT(DescriptorUuidEnvironmentalSensingMeasurement) },
-    { MP_ROM_QSTR(MP_QSTR_ENVIRONMENTAL_SENSING_TRIGGER_SETTING), MP_ROM_INT(DescriptorUuidEnvironmentalSensingTriggerSetting) },
-    { MP_ROM_QSTR(MP_QSTR_TIME_TRIGGER_SETTING),                  MP_ROM_INT(DescriptorUuidTimeTriggerSetting) }
+    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_EXTENDED_PROPERTIES),
+      MP_ROM_INT(DESCRIPTOR_UUID_CHARACTERISTIC_EXTENDED_PROPERTIES) },
+
+    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_USER_DESCRIPTION),
+      MP_ROM_INT(DESCRIPTOR_UUID_CHARACTERISTIC_USER_DESCRIPTION) },
+
+    { MP_ROM_QSTR(MP_QSTR_CLIENT_CHARACTERISTIC_CONFIGURATION),
+      MP_ROM_INT(DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION) },
+
+    { MP_ROM_QSTR(MP_QSTR_SERVER_CHARACTERISTIC_CONFIGURATION),
+      MP_ROM_INT(DESCRIPTOR_UUID_SERVER_CHARACTERISTIC_CONFIGURATION) },
+
+    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_PRESENTATION_FORMAT),
+      MP_ROM_INT(DESCRIPTOR_UUID_CHARACTERISTIC_PRESENTATION_FORMAT) },
+
+    { MP_ROM_QSTR(MP_QSTR_CHARACTERISTIC_AGGREGATE_FORMAT),
+      MP_ROM_INT(DESCRIPTOR_UUID_CHARACTERISTIC_AGGREGATE_FORMAT) },
+
+    { MP_ROM_QSTR(MP_QSTR_VALID_RANGE),
+      MP_ROM_INT(DESCRIPTOR_UUID_VALID_RANGE) },
+
+    { MP_ROM_QSTR(MP_QSTR_EXTERNAL_REPORT_REFERENCE),
+      MP_ROM_INT(DESCRIPTOR_UUID_EXTERNAL_REPORT_REFERENCE) },
+
+    { MP_ROM_QSTR(MP_QSTR_REPORT_REFERENCE),
+      MP_ROM_INT(DESCRIPTOR_UUID_REPORT_REFERENCE) },
+
+    { MP_ROM_QSTR(MP_QSTR_NUMBER_OF_DIGITALS),
+      MP_ROM_INT(DESCRIPTOR_UUID_NUMBER_OF_DIGITALS) },
+
+    { MP_ROM_QSTR(MP_QSTR_VALUE_TRIGGER_SETTING),
+      MP_ROM_INT(DESCRIPTOR_UUID_VALUE_TRIGGER_SETTING) },
+
+    { MP_ROM_QSTR(MP_QSTR_ENVIRONMENTAL_SENSING_CONFIGURATION),
+      MP_ROM_INT(DESCRIPTOR_UUID_ENVIRONMENTAL_SENSING_CONFIGURATION) },
+
+    { MP_ROM_QSTR(MP_QSTR_ENVIRONMENTAL_SENSING_MEASUREMENT  ),
+      MP_ROM_INT(DESCRIPTOR_UUID_ENVIRONMENTAL_SENSING_MEASUREMENT) },
+
+    { MP_ROM_QSTR(MP_QSTR_ENVIRONMENTAL_SENSING_TRIGGER_SETTING),
+      MP_ROM_INT(DESCRIPTOR_UUID_ENVIRONMENTAL_SENSING_TRIGGER_SETTING) },
+
+    { MP_ROM_QSTR(MP_QSTR_TIME_TRIGGER_SETTING),
+      MP_ROM_INT(DESCRIPTOR_UUID_TIME_TRIGGER_SETTING) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_descriptor_locals_dict, bleio_descriptor_locals_dict_table);
+
+STATIC void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->uuid) {
+        mp_printf(print, "Descriptor(");
+        bleio_uuid_print(print, MP_OBJ_FROM_PTR(self->uuid), kind);
+        mp_printf(print, ")");
+    } else {
+        mp_printf(print, "<Descriptor with Unregistered UUID>");
+    }
+}
 
 const mp_obj_type_t bleio_descriptor_type = {
     { &mp_type_type },
     .name = MP_QSTR_Descriptor,
     .make_new = bleio_descriptor_make_new,
+    .print = bleio_descriptor_print,
     .locals_dict = (mp_obj_dict_t*)&bleio_descriptor_locals_dict
 };

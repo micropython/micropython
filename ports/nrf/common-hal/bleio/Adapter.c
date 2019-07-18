@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  * Copyright (c) 2016 Glenn Ruben Bakke
  * Copyright (c) 2018 Artur Pacholec
  *
@@ -136,17 +137,15 @@ void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address) {
     uint32_t err_code;
 
     common_hal_bleio_adapter_set_enabled(true);
-
-#if (BLE_API_VERSION == 2)
-    err_code = sd_ble_gap_address_get(&local_address);
-#else
     err_code = sd_ble_gap_addr_get(&local_address);
-#endif
 
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg(translate("Failed to get local address"));
     }
 
     address->type = local_address.addr_type;
-    memcpy(address->value, local_address.addr, BLEIO_ADDRESS_BYTES);
+
+    mp_buffer_info_t buf_info;
+    mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
+    memcpy(address->bytes, buf_info.buf, NUM_BLEIO_ADDRESS_BYTES);
 }

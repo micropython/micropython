@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,15 +25,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_BROADCASTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_BROADCASTER_H
+#include <string.h>
 
-#include "common-hal/bleio/Broadcaster.h"
+#include "py/objstr.h"
+#include "shared-bindings/bleio/Address.h"
+#include "shared-module/bleio/Address.h"
 
-extern const mp_obj_type_t bleio_broadcaster_type;
+void common_hal_bleio_address_construct(bleio_address_obj_t *self, uint8_t *bytes, uint8_t address_type) {
+    self->bytes = mp_obj_new_bytes(bytes, NUM_BLEIO_ADDRESS_BYTES);
+    self->type = address_type;
+}
 
-extern void common_hal_bleio_broadcaster_construct(bleio_broadcaster_obj_t *self, mp_float_t interval);
-extern void common_hal_bleio_broadcaster_start_advertising(bleio_broadcaster_obj_t *self, mp_buffer_info_t *data);
-extern void common_hal_bleio_broadcaster_stop_advertising(bleio_broadcaster_obj_t *self);
+mp_obj_t common_hal_bleio_address_get_address_bytes(bleio_address_obj_t *self) {
+    return self->bytes;
+}
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_BROADCASTER_H
+uint8_t common_hal_bleio_address_get_type(bleio_address_obj_t *self) {
+    return self->type;
+}
