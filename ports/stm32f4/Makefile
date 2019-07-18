@@ -88,17 +88,15 @@ else
 endif
 
 # C defines
-C_DEFS =  \
--DUSE_FULL_LL_DRIVER \
--DUSE_HAL_DRIVER \
--DSTM32F412Zx \
+#C_DEFS =  \
+#-DUSE_FULL_LL_DRIVER \
+#-DUSE_HAL_DRIVER \
+#-DSTM32F412Zx \
 
 # C defines
-#C_DEFS =  \
-#-DUSE_HAL_DRIVER \
-#-DSTM32F411xE \
-#-DUSE_HAL_DRIVER \
-#-DSTM32F411xE
+C_DEFS =  \
+	-DUSE_HAL_DRIVER \
+	-DSTM32F411xE \
 
 #TODO: Add ASM Flags? -Werror
 CFLAGS += $(INC) -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
@@ -142,7 +140,6 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD
 ######################################
 
 SRC_STM32 = \
-	boards/$(BOARD)/stm32f4xx_it.c \
 	boards/$(BOARD)/stm32f4xx_hal_msp.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
@@ -179,7 +176,6 @@ SRC_STM32 = \
 	stm32cube/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
 	system_stm32f4xx.c  
 
-
 SRC_C += \
 	background.c \
 	fatfs_port.c \
@@ -198,15 +194,15 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	peripherals/stm32f4/stm32f412zg/pins.c \
 	supervisor/shared/memory.c \
-	#lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
+	lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
 
-#
+#	peripherals/stm32f4/stm32f412zg/pins.c \
 
 SRC_S = \
 	supervisor/cpu.s \
-	boards/startup_stm32f412zx.s
+	boards/startup_stm32f411xe.s
+#	boards/startup_stm32f412zx.s
 #	boards/startup_stm32f411xe.s
 	
 #boards/startup_stm32f412zx.s
