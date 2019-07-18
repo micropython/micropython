@@ -1326,17 +1326,23 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
 
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     DEBUG_printf("import name '%s' level=%d\n", qstr_str(name), MP_OBJ_SMALL_INT_VALUE(level));
-
     // build args array
-    mp_obj_t args[5];
-    args[0] = MP_OBJ_NEW_QSTR(name);
-    args[1] = mp_const_none; // TODO should be globals
-    args[2] = mp_const_none; // TODO should be locals
-    args[3] = fromlist;
-    args[4] = level;
+    mp_obj_t argv[5];
+    argv[0] = MP_OBJ_NEW_QSTR(name);
+    argv[1] = mp_const_none; // TODO should be globals
+    argv[2] = mp_const_none; // TODO should be locals
+    argv[3] = fromlist;
+    argv[4] = level;
 
-    // TODO lookup __import__ and call that instead of going straight to builtin implementation
-    return mp_builtin___import__(5, args);
+    mp_obj_dict_t *bo_dict = MP_STATE_VM(mp_module_builtins_override_dict);
+    
+    // lookup __import__ and call that instead of going straight to builtin implementation
+    if (bo_dict != NULL) {        
+        mp_map_elem_t *cust_imp = mp_map_lookup(&bo_dict->map, MP_ROM_QSTR(MP_QSTR___import__), MP_MAP_LOOKUP);
+        if (cust_imp != NULL)
+            return mp_call_function_n_kw(cust_imp->value, 5, 0, argv);
+    }
+    return mp_builtin___import__(5, argv);
 }
 
 mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
