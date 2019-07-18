@@ -51,7 +51,6 @@ else
 	SRC_SUPERVISOR += supervisor/internal_flash.c
 endif
 
-USB=TRUE
 ifeq ($(USB),FALSE)
 	ifeq ($(wildcard supervisor/serial.c),)
 		SRC_SUPERVISOR += supervisor/stub/serial.c

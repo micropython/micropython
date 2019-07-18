@@ -87,16 +87,22 @@ else
   ### CFLAGS += -flto
 endif
 
-# C defines
-#C_DEFS =  \
-#-DUSE_FULL_LL_DRIVER \
-#-DUSE_HAL_DRIVER \
-#-DSTM32F412Zx \
+# C defines and other board specifics
+ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
+C_DEFS =  \
+	-DUSE_FULL_LL_DRIVER \
+	-DUSE_HAL_DRIVER \
+	-DSTM32F412Zx
+endif
 
-# C defines
+ifeq ($(MCU_SUB_VARIANT), stm32f411xe)
 C_DEFS =  \
 	-DUSE_HAL_DRIVER \
-	-DSTM32F411xE \
+	-DSTM32F411xE
+CIRCUITPY_BOARD = 0
+CIRCUITPY_DIGITALIO = 0
+CIRCUITPY_MICROCONTROLLER = 0
+endif
 
 #TODO: Add ASM Flags? -Werror
 CFLAGS += $(INC) -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
@@ -118,8 +124,6 @@ CFLAGS += \
 # TODO: check this
 CFLAGS += -D__START=main
 
-#TODO: add LD file? 
-
 LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
@@ -131,7 +135,6 @@ LIBS += -lm
 endif
 
 # TinyUSB defines
-# TODO: make this stm32
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
 
 
@@ -194,18 +197,19 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	supervisor/shared/memory.c \
-	lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
+	supervisor/shared/memory.c
+	
+ifneq ($(USB),FALSE)
+SRC_C += lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
+endif
 
-#	peripherals/stm32f4/stm32f412zg/pins.c \
+ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
+SRC_C += peripherals/stm32f4/stm32f412zg/pins.c
+endif
 
 SRC_S = \
 	supervisor/cpu.s \
-	boards/startup_stm32f411xe.s
-#	boards/startup_stm32f412zx.s
-#	boards/startup_stm32f411xe.s
-	
-#boards/startup_stm32f412zx.s
+	boards/startup_$(MCU_SUB_VARIANT).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
