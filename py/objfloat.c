@@ -150,7 +150,7 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             } else {
                 // something else, try to cast it to a float
                 mp_float_t val = mp_obj_get_float(args[0]);
-                if (MP_STATE_THREAD(cur_exc) != NULL) {
+                if (MP_STATE_THREAD(active_exception) != NULL) {
                     return MP_OBJ_NULL;
                 }
                 return mp_obj_new_float(val);

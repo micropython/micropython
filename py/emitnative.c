@@ -1194,7 +1194,7 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
 
             // Wrap everything in an nlr context
             emit_native_label_assign(emit, nlr_label);
-            emit_call(emit, MP_F_NATIVE_CLR_EXC); // clear cur_exc because we are handling it (may need to re-raise it later)
+            emit_call(emit, MP_F_NATIVE_CLR_EXC); // clear active_exception because we are handling it (may need to re-raise it later)
 
             // Clear PC of current code block, and jump there to resume execution
             ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
@@ -1204,7 +1204,7 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             // Global exception handler: check for valid exception handler
             emit_native_label_assign(emit, global_except_label);
             emit_call(emit, MP_F_NATIVE_GET_EXC);
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_RET); // get cur_exc and store it locally; TODO could perhaps change this so we load it on demand
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_RET); // get active_exception and store it locally; TODO could perhaps change this so we load it on demand
             ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_1, LOCAL_IDX_EXC_HANDLER_PC(emit));
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_LOCAL_1, nlr_label, false);
         }

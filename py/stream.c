@@ -313,7 +313,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
         int error;
         mp_uint_t out_sz = stream_p->read(self_in, p, current_read, &error);
         if (out_sz == MP_STREAM_ERROR) {
-            if (MP_STATE_THREAD(cur_exc) != NULL) {
+            if (MP_STATE_THREAD(active_exception) != NULL) {
                 return MP_OBJ_NULL;
             }
             if (mp_is_nonblocking_error(error)) {
@@ -365,7 +365,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
         int error;
         mp_uint_t out_sz = stream_p->read(args[0], p, 1, &error);
         if (out_sz == MP_STREAM_ERROR) {
-            if (MP_STATE_THREAD(cur_exc) != NULL) {
+            if (MP_STATE_THREAD(active_exception) != NULL) {
                 return MP_OBJ_NULL;
             }
             if (mp_is_nonblocking_error(error)) {
@@ -428,7 +428,7 @@ mp_obj_t mp_stream_close(mp_obj_t stream) {
     int error;
     mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
     if (res == MP_STREAM_ERROR) {
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         return mp_raise_OSError_o(error);
@@ -455,7 +455,7 @@ STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     int error;
     mp_uint_t res = stream_p->ioctl(args[0], MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &error);
     if (res == MP_STREAM_ERROR) {
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         return mp_raise_OSError_o(error);
@@ -479,7 +479,7 @@ STATIC mp_obj_t stream_flush(mp_obj_t self) {
     int error;
     mp_uint_t res = stream_p->ioctl(self, MP_STREAM_FLUSH, 0, &error);
     if (res == MP_STREAM_ERROR) {
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         return mp_raise_OSError_o(error);
@@ -503,7 +503,7 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     int error;
     mp_uint_t res = stream_p->ioctl(args[0], mp_obj_get_int(args[1]), val, &error);
     if (res == MP_STREAM_ERROR) {
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         return mp_raise_OSError_o(error);

@@ -113,7 +113,7 @@ STATIC mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
     }
 
     // check for errors from mp_obj_get_int
-    if (MP_STATE_THREAD(cur_exc) != NULL) {
+    if (MP_STATE_THREAD(active_exception) != NULL) {
         return MP_OBJ_NULL;
     }
 

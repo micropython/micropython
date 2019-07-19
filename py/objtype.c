@@ -426,7 +426,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             case MP_UNARY_OP_HASH:
                 // __hash__ must return a small int
                 val = MP_OBJ_NEW_SMALL_INT(mp_obj_get_int_truncated(val));
-                if (MP_STATE_THREAD(cur_exc) != NULL) {
+                if (MP_STATE_THREAD(active_exception) != NULL) {
                     return MP_OBJ_NULL;
                 }
                 break;

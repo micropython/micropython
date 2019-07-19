@@ -1105,7 +1105,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
             }
         }
 
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return parser.tree;
         }
     }

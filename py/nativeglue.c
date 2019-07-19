@@ -151,7 +151,7 @@ STATIC mp_obj_t mp_native_raise(mp_obj_t o) {
 }
 
 STATIC mp_obj_t mp_native_is_exc(void) {
-    if (MP_STATE_THREAD(cur_exc) == NULL) {
+    if (MP_STATE_THREAD(active_exception) == NULL) {
         return MP_OBJ_SENTINEL;
     } else {
         return MP_OBJ_NULL;
@@ -159,11 +159,11 @@ STATIC mp_obj_t mp_native_is_exc(void) {
 }
 
 STATIC mp_obj_t mp_native_get_exc(void) {
-    return MP_STATE_THREAD(cur_exc);
+    return MP_STATE_THREAD(active_exception);
 }
 
 STATIC void mp_native_clr_exc(void) {
-    MP_STATE_THREAD(cur_exc) = NULL;
+    MP_STATE_THREAD(active_exception) = NULL;
 }
 
 // wrapper that handles iterator buffer
@@ -212,17 +212,17 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
         assert(ret_kind == MP_VM_RETURN_EXCEPTION);
         if (!mp_obj_exception_match(*ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
             mp_raise_o(*ret_value);
-            return false; // caller must also check cur_exc
+            return false; // caller must also check active_exception
         }
         *ret_value = mp_obj_exception_get_value(*ret_value);
     }
 
     if (throw_value != MP_OBJ_NULL && mp_obj_exception_match(throw_value, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
         mp_raise_o(mp_make_raise_obj(throw_value));
-        return false; // caller must also check cur_exc
+        return false; // caller must also check active_exception
     }
 
-    return false; // caller must also check cur_exc (should be NULL)
+    return false; // caller must also check active_exception (should be NULL)
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT

@@ -149,8 +149,8 @@ STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     if (MP_STACK_CHECK()) {
-        *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc));
-        MP_STATE_THREAD(cur_exc) = NULL;
+        *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception));
+        MP_STATE_THREAD(active_exception) = NULL;
         return MP_VM_RETURN_EXCEPTION;
     }
     mp_check_self(mp_obj_is_type(self_in, &mp_type_gen_instance));
@@ -177,8 +177,8 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
             mp_raise_TypeError_o("can't send non-None value to a just-started generator");
-            *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc));
-            MP_STATE_THREAD(cur_exc) = NULL;
+            *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception));
+            MP_STATE_THREAD(active_exception) = NULL;
             return MP_VM_RETURN_EXCEPTION;
         }
     } else {
@@ -231,11 +231,11 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
         case MP_VM_RETURN_EXCEPTION: {
             self->code_state.ip = 0;
-            // TODO probably makes sense to have bytecode also place exception in cur_exc
+            // TODO probably makes sense to have bytecode also place exception in active_exception
             #if MICROPY_EMIT_NATIVE
             if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
-                *ret_val = MP_STATE_THREAD(cur_exc);
-                MP_STATE_THREAD(cur_exc) = NULL; // clear it
+                *ret_val = MP_STATE_THREAD(active_exception);
+                MP_STATE_THREAD(active_exception) = NULL; // clear it
             } else
             #endif
             {

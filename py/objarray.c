@@ -203,7 +203,7 @@ STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, 
     } else if (mp_obj_is_int(args[0])) {
         // 1 arg, an integer: construct a blank bytearray of that length
         mp_uint_t len = mp_obj_get_int(args[0]);
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
@@ -375,7 +375,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
         mp_seq_clear(self->items, self->len + 1, self->len + self->free, item_sz);
     }
     mp_binary_set_val_array(self->typecode, self->items, self->len, arg);
-    if (MP_STATE_THREAD(cur_exc) != NULL) {
+    if (MP_STATE_THREAD(active_exception) != NULL) {
         return MP_OBJ_NULL;
     }
     // only update length/free if set succeeded

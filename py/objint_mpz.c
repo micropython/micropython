@@ -261,7 +261,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_RSHIFT:
             case MP_BINARY_OP_INPLACE_RSHIFT: {
                 mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
-                if (MP_STATE_THREAD(cur_exc) != NULL) {
+                if (MP_STATE_THREAD(active_exception) != NULL) {
                     return MP_OBJ_NULL;
                 }
                 if (irhs < 0) {

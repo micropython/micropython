@@ -41,10 +41,10 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     mp_obj_t value = mp_call_method_n_kw(1, 0, self->args);
     if (value == MP_OBJ_NULL) {
         // an exception was raised
-        mp_obj_type_t *t = (mp_obj_type_t*)MP_STATE_THREAD(cur_exc)->type;
+        mp_obj_type_t *t = (mp_obj_type_t*)MP_STATE_THREAD(active_exception)->type;
         if (t == &mp_type_StopIteration || t == &mp_type_IndexError) {
             // return MP_OBJ_STOP_ITERATION instead of raising
-            MP_STATE_THREAD(cur_exc) = NULL;
+            MP_STATE_THREAD(active_exception) = NULL;
             return MP_OBJ_STOP_ITERATION;
         } else {
             // re-raise exception

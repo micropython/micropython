@@ -3595,7 +3595,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 }
 
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
-    if (MP_STATE_THREAD(cur_exc) != NULL) {
+    if (MP_STATE_THREAD(active_exception) != NULL) {
         // parser had an exception
         return MP_OBJ_NULL;
     }

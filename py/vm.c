@@ -227,7 +227,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
     // sees that it's possible for us to jump from the dispatch loop to the exception
     // handler.  Without this, the code may have a different stack layout in the dispatch
     // loop and the exception handler, leading to very obscure bugs.
-    #define RAISE(o) do { MP_STATE_THREAD(cur_exc) = MP_OBJ_TO_PTR(o); goto exception_handler; } while (0)
+    #define RAISE(o) do { MP_STATE_THREAD(active_exception) = MP_OBJ_TO_PTR(o); goto exception_handler; } while (0)
     #define RAISE_IT() do { goto exception_handler; } while (0)
 
 #if MICROPY_STACKLESS
@@ -874,8 +874,8 @@ unwind_jump:;
                         ip += ulab; // jump to after for-block
                     } else if (value == MP_OBJ_NULL) {
                         // raised an exception
-                        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                            MP_STATE_THREAD(cur_exc) = NULL;
+                        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+                            MP_STATE_THREAD(active_exception) = NULL;
                             sp -= MP_OBJ_ITER_BUF_NSLOTS; // pop the exhausted iterator
                             ip += ulab; // jump to after for-block
                         } else {
@@ -1511,11 +1511,11 @@ pending_exception_check:
         {
 exception_handler:
             // exception occurred
-            assert(MP_STATE_THREAD(cur_exc) != NULL);
+            assert(MP_STATE_THREAD(active_exception) != NULL);
 
             // clear exception because we caught it
-            mp_obj_base_t *the_exc = MP_STATE_THREAD(cur_exc);
-            MP_STATE_THREAD(cur_exc) = NULL;
+            mp_obj_base_t *the_exc = MP_STATE_THREAD(active_exception);
+            MP_STATE_THREAD(active_exception) = NULL;
 
             #if MICROPY_PY_SYS_EXC_INFO
             MP_STATE_VM(cur_exception) = the_exc;

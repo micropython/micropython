@@ -104,7 +104,7 @@ void mp_init(void) {
     mp_locals_set(&MP_STATE_VM(dict_main));
     mp_globals_set(&MP_STATE_VM(dict_main));
 
-    MP_STATE_THREAD(cur_exc) = NULL;
+    MP_STATE_THREAD(active_exception) = NULL;
 
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     // start with no extensions to builtins
@@ -569,7 +569,7 @@ generic_binary_op:
         if (result != MP_OBJ_NULL) {
             return result;
         }
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
     }
@@ -1099,7 +1099,7 @@ mp_obj_t mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     } else if (type->attr != NULL) {
         // this type can do its own load, so call it
         type->attr(obj, attr, dest);
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
 
@@ -1150,8 +1150,8 @@ mp_obj_t mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
 mp_obj_t mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc) {
     if (mp_load_method_maybe(obj, attr, dest) == MP_OBJ_NULL) {
         // exception
-        mp_obj_base_t *exc = MP_STATE_THREAD(cur_exc);
-        MP_STATE_THREAD(cur_exc) = NULL;
+        mp_obj_base_t *exc = MP_STATE_THREAD(active_exception);
+        MP_STATE_THREAD(active_exception) = NULL;
         if (!catch_all_exc
             && !mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type),
                 MP_OBJ_FROM_PTR(&mp_type_AttributeError))) {
@@ -1168,7 +1168,7 @@ mp_obj_t mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     if (type->attr != NULL) {
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, value};
         type->attr(base, attr, dest);
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             // exception
             return MP_OBJ_NULL;
         }
@@ -1270,8 +1270,8 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 return ret;
             } else {
                 // exception
-                if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                    MP_STATE_THREAD(cur_exc) = NULL;
+                if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+                    MP_STATE_THREAD(active_exception) = NULL;
                     return MP_OBJ_STOP_ITERATION;
                 } else {
                     // reraise
@@ -1295,18 +1295,18 @@ mp_obj_t mp_iternext2(mp_obj_t o) {
     }
     o = mp_iternext(o);
     if (o == MP_OBJ_STOP_ITERATION) {
-        MP_STATE_THREAD(cur_exc) = (void*)1;
+        MP_STATE_THREAD(active_exception) = (void*)1;
         return MP_OBJ_NULL;
     }
     return o;
 }
 
 bool mp_iternext_had_exc(void) {
-    if (MP_STATE_THREAD(cur_exc) == (void*)1) {
-        MP_STATE_THREAD(cur_exc) = NULL;
+    if (MP_STATE_THREAD(active_exception) == (void*)1) {
+        MP_STATE_THREAD(active_exception) = NULL;
         return false;
     }
-    return MP_STATE_THREAD(cur_exc) != NULL;
+    return MP_STATE_THREAD(active_exception) != NULL;
 }
 
 // TODO: Unclear what to do with StopIterarion exception here.
@@ -1322,8 +1322,8 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         mp_obj_t ret = type->iternext(self_in);
         if (ret == MP_OBJ_NULL) {
             // exception
-            *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc));
-            MP_STATE_THREAD(cur_exc) = NULL;
+            *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception));
+            MP_STATE_THREAD(active_exception) = NULL;
             return MP_VM_RETURN_EXCEPTION;
         }
         *ret_val = ret;
@@ -1344,8 +1344,8 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         if (dest[0] != MP_OBJ_NULL) {
             *ret_val = mp_call_method_n_kw(0, 0, dest);
             if (*ret_val == MP_OBJ_NULL) {
-                *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc));
-                MP_STATE_THREAD(cur_exc) = NULL;
+                *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception));
+                MP_STATE_THREAD(active_exception) = NULL;
                 return MP_VM_RETURN_EXCEPTION;
             }
             return MP_VM_RETURN_YIELD;
@@ -1586,8 +1586,8 @@ void mp_raise_recursion_depth(void) {
 mp_obj_t mp_raise_o(mp_obj_t exc) {
     //printf("mp_raise_o(%p)\n", MP_OBJ_TO_PTR(exc));
     // don't overwrite an existing exception
-    if (MP_STATE_THREAD(cur_exc) == NULL) {
-        MP_STATE_THREAD(cur_exc) = MP_OBJ_TO_PTR(exc);
+    if (MP_STATE_THREAD(active_exception) == NULL) {
+        MP_STATE_THREAD(active_exception) = MP_OBJ_TO_PTR(exc);
     }
     return MP_OBJ_NULL;
 }

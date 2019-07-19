@@ -30,8 +30,8 @@
 mp_obj_t mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
     mp_obj_t ret = mp_call_function_1(fun, arg);
     if (ret == MP_OBJ_NULL) {
-        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc)));
-        MP_STATE_THREAD(cur_exc) = NULL;
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception)));
+        MP_STATE_THREAD(active_exception) = NULL;
     }
     return ret;
 }
@@ -39,8 +39,8 @@ mp_obj_t mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
 mp_obj_t mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
     mp_obj_t ret = mp_call_function_2(fun, arg1, arg2);
     if (ret == MP_OBJ_NULL) {
-        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(MP_STATE_THREAD(cur_exc)));
-        MP_STATE_THREAD(cur_exc) = NULL;
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception)));
+        MP_STATE_THREAD(active_exception) = NULL;
     }
     return ret;
 }

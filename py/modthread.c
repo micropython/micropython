@@ -175,7 +175,7 @@ STATIC void *thread_entry(void *args_in) {
     mp_locals_set(args->dict_locals);
     mp_globals_set(args->dict_globals);
 
-    MP_STATE_THREAD(cur_exc) = NULL;
+    MP_STATE_THREAD(active_exception) = NULL;
 
     MP_THREAD_GIL_ENTER();
 
@@ -189,10 +189,10 @@ STATIC void *thread_entry(void *args_in) {
     DEBUG_printf("[thread] start ts=%p args=%p stack=%p\n", &ts, &args, MP_STATE_THREAD(stack_top));
 
     mp_call_function_n_kw(args->fun, args->n_args, args->n_kw, args->args);
-    if (MP_STATE_THREAD(cur_exc) != NULL) {
+    if (MP_STATE_THREAD(active_exception) != NULL) {
         // uncaught exception
         // check for SystemExit
-        mp_obj_base_t *exc = (mp_obj_base_t*)MP_STATE_THREAD(cur_exc);
+        mp_obj_base_t *exc = (mp_obj_base_t*)MP_STATE_THREAD(active_exception);
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // swallow exception silently
         } else {

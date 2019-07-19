@@ -481,7 +481,7 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
             return ret;
         }
         // MP_OBJ_NULL return can mean either unsupported or exception
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         // TODO: call base classes here?
