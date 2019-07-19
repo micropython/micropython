@@ -530,7 +530,8 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
         byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
-            mp_raise_ValueError("incompatible .mpy arch");
+            mp_raise_ValueError_o("incompatible .mpy arch");
+            return NULL;
         }
     }
     qstr_window_t qw;
