@@ -26,6 +26,7 @@
 
 #include "shared-bindings/displayio/TileGrid.h"
 
+#include "py/runtime.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
@@ -33,7 +34,7 @@
 #include "shared-bindings/displayio/Shape.h"
 
 void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_t bitmap,
-        uint16_t bitmap_width_in_tiles,
+        uint16_t bitmap_width_in_tiles, uint16_t bitmap_height_in_tiles,
         mp_obj_t pixel_shader, uint16_t width, uint16_t height,
         uint16_t tile_width, uint16_t tile_height, uint16_t x, uint16_t y, uint8_t default_tile) {
     uint32_t total_tiles = width * height;
@@ -54,6 +55,7 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
         self->inline_tiles = false;
     }
     self->bitmap_width_in_tiles = bitmap_width_in_tiles;
+    self->tiles_in_bitmap = bitmap_width_in_tiles * bitmap_height_in_tiles;
     self->width_in_tiles = width;
     self->height_in_tiles = height;
     self->x = x;
@@ -204,6 +206,9 @@ uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint1
 }
 
 void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index) {
+    if (tile_index >= self->tiles_in_bitmap) {
+        mp_raise_ValueError(translate("Tile value out of bounds"));
+    }
     uint8_t* tiles = self->tiles;
     if (self->inline_tiles) {
         tiles = (uint8_t*) &self->tiles;
@@ -442,6 +447,14 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
     } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
         displayio_colorconverter_finish_refresh(self->pixel_shader);
     }
+    if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
+        displayio_bitmap_finish_refresh(self->bitmap);
+    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
+        // TODO: Support shape changes.
+    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
+        // OnDiskBitmap changes will trigger a complete reload so no need to
+        // track changes.
+    }
     // TODO(tannewt): We could double buffer changes to position and move them over here.
     // That way they won't change during a refresh and tear.
 }
@@ -458,8 +471,21 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
         return &self->current_area;
     }
 
-    // We must recheck if our sources require a refresh because needs_refresh may or may not have
-    // been called.
+    // If we have an in-memory bitmap, then check it for modifications.
+    if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
+        displayio_area_t* refresh_area = displayio_bitmap_get_refresh_areas(self->bitmap, tail);
+        if (refresh_area != tail) {
+            // Special case a TileGrid that shows a full bitmap and use its
+            // dirty area. Copy it to ours so we can transform it.
+            if (self->tiles_in_bitmap == 1) {
+                displayio_area_copy(refresh_area, &self->dirty_area);
+                self->partial_change = true;
+            } else {
+                self->full_change = true;
+            }
+        }
+    }
+
     self->full_change = self->full_change ||
         (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type) &&
          displayio_palette_needs_refresh(self->pixel_shader)) ||

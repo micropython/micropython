@@ -122,6 +122,7 @@ displayio_tilegrid_t supervisor_terminal_text_grid = {{
     .pixel_width = {1},
     .pixel_height = {2},
     .bitmap_width_in_tiles = {0},
+    .tiles_in_bitmap = {0},
     .width_in_tiles = 1,
     .height_in_tiles = 1,
     .tile_width = {1},
@@ -150,7 +151,7 @@ c_file.write("""\
 """)
 
 c_file.write("""\
-const displayio_bitmap_t supervisor_terminal_font_bitmap = {{
+displayio_bitmap_t supervisor_terminal_font_bitmap = {{
     .base = {{.type = &displayio_bitmap_type }},
     .width = {},
     .height = {},
