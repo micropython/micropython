@@ -38,8 +38,6 @@ void NUCLEO_F722ZE_board_early_init(void);
 // I2C busses
 #define MICROPY_HW_I2C1_SCL         (pin_B8)
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
-#define MICROPY_HW_I2C3_SCL         (pin_H7)
-#define MICROPY_HW_I2C3_SDA         (pin_H8)
 
 // SPI
 #define MICROPY_HW_SPI3_NSS         (pin_A4)
