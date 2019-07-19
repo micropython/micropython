@@ -475,7 +475,7 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
     if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
         displayio_area_t* refresh_area = displayio_bitmap_get_refresh_areas(self->bitmap, tail);
         if (refresh_area != tail) {
-            // Special case a TileGrid that shows a full bitmap and use it's
+            // Special case a TileGrid that shows a full bitmap and use its
             // dirty area. Copy it to ours so we can transform it.
             if (self->tiles_in_bitmap == 1) {
                 displayio_area_copy(refresh_area, &self->dirty_area);
