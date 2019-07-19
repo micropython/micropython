@@ -207,14 +207,14 @@ STATIC mp_obj_t extra_coverage(void) {
 
         VSTR_FIXED(fix, 4);
         if (vstr_add_str(&fix, "large")) {
-            mp_obj_print_exception(&mp_plat_print, MP_STATE_THREAD(cur_exc));
-            MP_STATE_THREAD(cur_exc) = NULL;
+            mp_obj_print_exception(&mp_plat_print, MP_STATE_THREAD(active_exception));
+            MP_STATE_THREAD(active_exception) = NULL;
         }
 
         fix.len = fix.alloc;
         if (vstr_null_terminated_str(&fix) == NULL) {
-            mp_obj_print_exception(&mp_plat_print, MP_STATE_THREAD(cur_exc));
-            MP_STATE_THREAD(cur_exc) = NULL;
+            mp_obj_print_exception(&mp_plat_print, MP_STATE_THREAD(active_exception));
+            MP_STATE_THREAD(active_exception) = NULL;
         }
     }
 

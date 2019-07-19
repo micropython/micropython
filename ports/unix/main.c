@@ -76,8 +76,8 @@ const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 // and lower 8 bits are SystemExit value. For all other exceptions,
 // return 1.
 STATIC int handle_uncaught_exception(void) {
-    mp_obj_base_t *exc = MP_STATE_THREAD(cur_exc);
-    MP_STATE_THREAD(cur_exc) = NULL;
+    mp_obj_base_t *exc = MP_STATE_THREAD(active_exception);
+    MP_STATE_THREAD(active_exception) = NULL;
     // check for SystemExit
     if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
         // None is an exit value of 0; an int is its value; anything else is 1
@@ -152,7 +152,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
             }
         }
 
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             // uncaught exception
             mp_hal_set_interrupt_char(-1);
             return handle_uncaught_exception();
