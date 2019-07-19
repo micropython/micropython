@@ -69,7 +69,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_READ_ADDR(index, self->elem_size);
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         uint32_t val;
@@ -82,7 +82,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else {
         // store
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_WRITE_ADDR(index, self->elem_size);
-        if (MP_STATE_THREAD(cur_exc) != NULL) {
+        if (MP_STATE_THREAD(active_exception) != NULL) {
             return MP_OBJ_NULL;
         }
         uint32_t val = mp_obj_get_int_truncated(value);

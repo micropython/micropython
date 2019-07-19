@@ -144,7 +144,7 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     mp_obj_t stat = mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_o);
     if (stat == MP_OBJ_NULL) {
         // assume an exception means that the path is not found
-        MP_STATE_THREAD(cur_exc) = NULL;
+        MP_STATE_THREAD(active_exception) = NULL;
         return MP_IMPORT_STAT_NO_EXIST;
     }
     mp_obj_t *items;
