@@ -13,13 +13,29 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-CPP = clang -E
-
 ifdef EMSCRIPTEN
-	CPP += -D__EMSCRIPTEN__
-	CPP += --sysroot $(EMSCRIPTEN)/system
-	CPP += -isystem $(EMSCRIPTEN)/system/include/libc
-	CPP += -cxx-isystem $(EMSCRIPTEN)/system/include/libcxx
+	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
+	# not using an emterpreting list *is* bad and will lead to poor performance and huge binary.
+	ifdef ASYNC
+		CFLAGS += -D__EMTERPRETER__=1 
+		CFLAGS += -s EMTERPRETIFY=1 -s EMTERPRETIFY_ASYNC=1 -s 'EMTERPRETIFY_FILE="micropython.binary"'
+		CFLAGS += -s EMTERPRETIFY_SYNCLIST='["_mp_execute_bytecode"]' -s EMTERPRETIFY_ADVISE=1
+	endif
+
+	CC = emcc
+	CPP = clang -E -D__CPP__ -D__EMSCRIPTEN__
+	CPP += --sysroot $(EMSCRIPTEN)/system	
+	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) $(CFLAGS_EXTRA) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
+	# Act like 'emcc'
+	CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
+else
+	ifdef CLANG
+		CC=clang
+		CPP=clang -E -D__CPP__
+	else
+		CC = gcc
+		CPP = gcc -E -D__CPP__
+	endif
 endif
 
 CFLAGS = -m32 -Wall -Werror $(INC) -std=c99 $(COPT)
