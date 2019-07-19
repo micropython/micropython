@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-19 16:09-0700\n"
+"POT-Creation-Date: 2019-07-19 16:10-0700\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -311,6 +311,10 @@ msgstr ""
 msgid "Both pins must support hardware interrupts"
 msgstr "Ambos os pinos devem suportar interrupções de hardware"
 
+#: shared-bindings/displayio/Display.c
+msgid "Brightness must be 0-1.0"
+msgstr ""
+
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
 msgstr "O brilho deve estar entre 0 e 255"
@@ -438,8 +442,11 @@ msgstr "Unidade de Clock em uso"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/I2CDisplay.c
+msgid "Command must be 0-255"
+msgstr ""
+
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Os bytes devem estar entre 0 e 255."

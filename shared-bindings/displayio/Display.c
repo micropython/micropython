@@ -119,7 +119,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_write_ram_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2c} },
         { MP_QSTR_set_vertical_scroll, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x0} },
         { MP_QSTR_backlight_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_brightness_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x100} },
+        { MP_QSTR_brightness_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = NO_BRIGHTNESS_COMMAND} },
         { MP_QSTR_brightness, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
         { MP_QSTR_auto_brightness, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_single_byte_bounds, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
@@ -242,10 +242,14 @@ STATIC mp_obj_t displayio_display_obj_get_brightness(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_brightness_obj, displayio_display_obj_get_brightness);
 
-STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness) {
+STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness_obj) {
     displayio_display_obj_t *self = native_display(self_in);
     common_hal_displayio_display_set_auto_brightness(self, false);
-    bool ok = common_hal_displayio_display_set_brightness(self, mp_obj_get_float(brightness));
+    mp_float_t brightness = mp_obj_get_float(brightness_obj);
+    if (brightness < 0 || brightness > 1.0) {
+        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+    }
+    bool ok = common_hal_displayio_display_set_brightness(self, brightness);
     if (!ok) {
         mp_raise_RuntimeError(translate("Brightness not adjustable"));
     }

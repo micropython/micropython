@@ -62,6 +62,8 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
 
 //|   .. method:: convert(color)
 //|
+//|   Converts the given RGB888 color to RGB565
+//|
 STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 

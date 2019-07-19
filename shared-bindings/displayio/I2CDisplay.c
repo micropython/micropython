@@ -103,7 +103,7 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
 STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
     mp_int_t command_int = MP_OBJ_SMALL_INT_VALUE(command_obj);
     if (!MP_OBJ_IS_SMALL_INT(command_obj) || command_int > 255 || command_int < 0) {
-        mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
+        mp_raise_ValueError(translate("Command must be 0-255"));
     }
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;

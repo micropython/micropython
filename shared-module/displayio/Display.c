@@ -153,7 +153,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
             common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
         }
     }
-    if (!self->auto_brightness && (self->backlight_inout.base.type != &mp_type_NoneType || brightness_command <= 0xff)) {
+    if (!self->auto_brightness && (self->backlight_inout.base.type != &mp_type_NoneType ||
+                                   brightness_command != NO_BRIGHTNESS_COMMAND)) {
         common_hal_displayio_display_set_brightness(self, brightness);
     } else {
         self->current_brightness = -1.0;
@@ -258,7 +259,7 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_set_value(&self->backlight_inout, brightness > 0.99);
         ok = true;
-    } else if (self->brightness_command < 0x100) {
+    } else if (self->brightness_command != NO_BRIGHTNESS_COMMAND) {
         ok = self->begin_transaction(self->bus);
         if (ok) {
             if (self->data_as_commands) {
@@ -315,17 +316,16 @@ void displayio_display_set_region_to_update(displayio_display_obj_t* self, displ
         data_length = 0;
     }
     if (self->single_byte_bounds) {
-        data[data_length] = x1 + self->colstart;
-        data[data_length + 1] = x2 - 1 + self->colstart;
+        data[data_length++] = x1 + self->colstart;
+        data[data_length++] = x2 - 1 + self->colstart;
         data_length += 2;
     } else {
         x1 += self->colstart;
         x2 += self->colstart - 1;
-        data[data_length] = x1 >> 8;
-        data[data_length + 1] = x1 & 0xff;
-        data[data_length + 2] = x2 >> 8;
-        data[data_length + 3] = x2 & 0xff;
-        data_length += 4;
+        data[data_length++] = x1 >> 8;
+        data[data_length++] = x1 & 0xff;
+        data[data_length++] = x2 >> 8;
+        data[data_length++] = x2 & 0xff;
     }
     self->send(self->bus, self->data_as_commands, data, data_length);
 
@@ -337,17 +337,15 @@ void displayio_display_set_region_to_update(displayio_display_obj_t* self, displ
         data_length = 0;
     }
     if (self->single_byte_bounds) {
-        data[data_length] = y1 + self->rowstart;
-        data[data_length + 1] = y2 - 1 + self->rowstart;
-        data_length += 2;
+        data[data_length++] = y1 + self->rowstart;
+        data[data_length++] = y2 - 1 + self->rowstart;
     } else {
         y1 += self->rowstart;
         y2 += self->rowstart - 1;
-        data[data_length] = y1 >> 8;
-        data[data_length + 1] = y1 & 0xff;
-        data[data_length + 2] = y2 >> 8;
-        data[data_length + 3] = y2 & 0xff;
-        data_length += 4;
+        data[data_length++] = y1 >> 8;
+        data[data_length++] = y1 & 0xff;
+        data[data_length++] = y2 >> 8;
+        data[data_length++] = y2 & 0xff;
     }
     self->send(self->bus, self->data_as_commands, data, data_length);
 }

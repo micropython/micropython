@@ -379,7 +379,7 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
             // Compute the destination pixel in the buffer and mask based on the transformations.
             int16_t offset = row_start + (x - start_x + x_shift) * x_stride; // in pixels
 
-            // This is super useful for debugging out range accesses. Uncomment to use.
+            // This is super useful for debugging out of range accesses. Uncomment to use.
             // if (offset < 0 || offset >= (int32_t) displayio_area_size(area)) {
             //     asm("bkpt");
             // }

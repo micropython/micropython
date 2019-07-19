@@ -57,8 +57,8 @@ bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
     return false;
 }
 
-bool common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, uint32_t input_color, uint32_t* output_color) {
-    return displayio_colorconverter_convert(self, colorspace, input_color, output_color);
+void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, uint32_t input_color, uint32_t* output_color) {
+    displayio_colorconverter_convert(self, colorspace, input_color, output_color);
 }
 
 // Currently no refresh logic is needed for a ColorConverter.

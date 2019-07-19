@@ -92,7 +92,7 @@ void board_init(void) {
         display_init_sequence,
         sizeof(display_init_sequence),
         &pin_PB31, // Backlight pin
-        0x100, // Brightness command > 0xff is none s
+        NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness (ignored)
         true, // auto_brightness
         false, // single_byte_bounds

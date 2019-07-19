@@ -74,7 +74,7 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(true);
+        case MP_UNARY_OP_BOOL: return mp_const_true;
         case MP_UNARY_OP_LEN:
             return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_palette_get_len(self));
         default: return MP_OBJ_NULL; // op not supported

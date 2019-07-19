@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-19 16:09-0700\n"
+"POT-Creation-Date: 2019-07-19 16:10-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -311,6 +311,10 @@ msgstr "Głębia musi być wielokrotnością 8."
 msgid "Both pins must support hardware interrupts"
 msgstr "Obie nóżki muszą wspierać przerwania sprzętowe"
 
+#: shared-bindings/displayio/Display.c
+msgid "Brightness must be 0-1.0"
+msgstr ""
+
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
 msgstr "Jasność musi być pomiędzy 0 a 255"
@@ -436,8 +440,11 @@ msgstr "Jednostka zegara w użyciu"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Kolumny muszą być typu digitalio.DigitalInOut"
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/I2CDisplay.c
+msgid "Command must be 0-255"
+msgstr ""
+
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Komenda musi być int pomiędzy 0 a 255"
 

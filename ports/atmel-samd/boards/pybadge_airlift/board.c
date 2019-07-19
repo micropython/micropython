@@ -80,7 +80,7 @@ void board_init(void) {
         display_init_sequence,
         sizeof(display_init_sequence),
         &pin_PA01,  // backlight pin
-        0x100, // brightness command, only valid <= 0xff
+        NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness (ignored)
         true, // auto_brightness
         false, // single_byte_bounds
