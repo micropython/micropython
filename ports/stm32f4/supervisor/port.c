@@ -184,8 +184,6 @@
 #define LED2_Pin GPIO_PIN_1
 #define LED2_GPIO_Port GPIOE
 
-UART_HandleTypeDef huart2;
-
 /*
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
