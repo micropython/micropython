@@ -11,6 +11,8 @@ boards_info_json = build_board_info.get_board_mapping()
 
 # Get all the boards out of the json format
 info_boards = boards_info_json.keys()
+# Turn the dict_keys into a list
+info_boards = list(info_boards)
 
 # We need to know the path of the .travis.yml file
 base_path = os.path.dirname(__file__)
@@ -38,4 +40,6 @@ with open(travis_path, 'r') as travis:
         else:
             pass
 
-# TODO (Carlos) Comparing boards listed in TRAVIS_BOARDS and boards got from get_board_mapping
+# All the travis_boards elements must be on info_boards
+info_boards.sort()
+travis_boards.sort()
