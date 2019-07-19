@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import sys
 import os
 import re
 import json
@@ -43,3 +44,17 @@ with open(travis_path, 'r') as travis:
 # All the travis_boards elements must be on info_boards
 info_boards.sort()
 travis_boards.sort()
+
+exit_status = 0
+
+missing_boards = list(set(info_boards) - set(travis_boards))
+
+if len(missing_boards) is not 0:
+    exit_status = 1
+
+if exit_status is 1:
+    print('Boards missing in TRAVIS_BOARDS:')
+    for board in missing_boards:
+        print(board)
+
+sys.exit(exit_status)
