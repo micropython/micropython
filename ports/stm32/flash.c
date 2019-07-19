@@ -62,11 +62,19 @@ static const flash_layout_t flash_layout[] = {
 // FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
 #define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
 
+#if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
+static const flash_layout_t flash_layout[] = {
+    { 0x08000000, 0x04000, 4 },
+    { 0x08010000, 0x10000, 1 },
+    { 0x08020000, 0x20000, 3 },
+};
+#else
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x08000, 4 },
     { 0x08020000, 0x20000, 1 },
     { 0x08040000, 0x40000, 3 },
 };
+#endif
 
 #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
 
