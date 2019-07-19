@@ -77,7 +77,7 @@ STATIC mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
         self->locked = true;
         return mp_const_true;
     } else {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(thread_lock_acquire_obj, 1, 3, thread_lock_acquire);
@@ -85,7 +85,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(thread_lock_acquire_obj, 1, 3, thread
 STATIC mp_obj_t thread_lock_release(mp_obj_t self_in) {
     mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->locked) {
-        mp_raise_msg(&mp_type_RuntimeError, NULL);
+        return mp_raise_msg_o(&mp_type_RuntimeError, NULL);
     }
     self->locked = false;
     MP_THREAD_GIL_EXIT();
@@ -175,6 +175,8 @@ STATIC void *thread_entry(void *args_in) {
     mp_locals_set(args->dict_locals);
     mp_globals_set(args->dict_globals);
 
+    MP_STATE_THREAD(cur_exc) = NULL;
+
     MP_THREAD_GIL_ENTER();
 
     // signal that we are set up and running
@@ -186,14 +188,11 @@ STATIC void *thread_entry(void *args_in) {
 
     DEBUG_printf("[thread] start ts=%p args=%p stack=%p\n", &ts, &args, MP_STATE_THREAD(stack_top));
 
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_call_function_n_kw(args->fun, args->n_args, args->n_kw, args->args);
-        nlr_pop();
-    } else {
+    mp_call_function_n_kw(args->fun, args->n_args, args->n_kw, args->args);
+    if (MP_STATE_THREAD(cur_exc) != NULL) {
         // uncaught exception
         // check for SystemExit
-        mp_obj_base_t *exc = (mp_obj_base_t*)nlr.ret_val;
+        mp_obj_base_t *exc = (mp_obj_base_t*)MP_STATE_THREAD(cur_exc);
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // swallow exception silently
         } else {
@@ -235,7 +234,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     } else {
         // positional and keyword arguments
         if (mp_obj_get_type(args[2]) != &mp_type_dict) {
-            mp_raise_TypeError("expecting a dict for keyword args");
+            return mp_raise_TypeError_o("expecting a dict for keyword args");
         }
         mp_map_t *map = &((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[2]))->map;
         th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);
@@ -271,7 +270,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_start_new_thread_obj, 2, 3, mod_thread_start_new_thread);
 
 STATIC mp_obj_t mod_thread_exit(void) {
-    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+    return mp_raise_o(mp_obj_new_exception(&mp_type_SystemExit));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_exit_obj, mod_thread_exit);
 
