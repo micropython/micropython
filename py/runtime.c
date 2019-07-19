@@ -104,6 +104,8 @@ void mp_init(void) {
     mp_locals_set(&MP_STATE_VM(dict_main));
     mp_globals_set(&MP_STATE_VM(dict_main));
 
+    MP_STATE_THREAD(cur_exc) = NULL;
+
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     // start with no extensions to builtins
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
