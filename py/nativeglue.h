@@ -67,6 +67,9 @@ typedef enum {
     MP_F_NLR_PUSH,
     MP_F_NLR_POP,
     MP_F_NATIVE_RAISE,
+    MP_F_NATIVE_IS_EXC,
+    MP_F_NATIVE_GET_EXC,
+    MP_F_NATIVE_CLR_EXC,
     MP_F_IMPORT_NAME,
     MP_F_IMPORT_FROM,
     MP_F_IMPORT_ALL,
@@ -96,11 +99,11 @@ typedef struct _mp_fun_table_t {
     mp_obj_t (*load_global)(qstr qst);
     mp_obj_t (*load_build_class)(void);
     mp_obj_t (*load_attr)(mp_obj_t base, qstr attr);
-    void (*load_method)(mp_obj_t base, qstr attr, mp_obj_t *dest);
-    void (*load_super_method)(qstr attr, mp_obj_t *dest);
+    mp_obj_t (*load_method)(mp_obj_t base, qstr attr, mp_obj_t *dest);
+    mp_obj_t (*load_super_method)(qstr attr, mp_obj_t *dest);
     void (*store_name)(qstr qst, mp_obj_t obj);
     void (*store_global)(qstr qst, mp_obj_t obj);
-    void (*store_attr)(mp_obj_t base, qstr attr, mp_obj_t val);
+    mp_obj_t (*store_attr)(mp_obj_t base, qstr attr, mp_obj_t val);
     mp_obj_t (*obj_subscr)(mp_obj_t base, mp_obj_t index, mp_obj_t val);
     bool (*obj_is_true)(mp_obj_t arg);
     mp_obj_t (*unary_op)(mp_unary_op_t op, mp_obj_t arg);
@@ -120,23 +123,26 @@ typedef struct _mp_fun_table_t {
     mp_obj_t (*iternext)(mp_obj_iter_buf_t *iter);
     unsigned int (*nlr_push)(nlr_buf_t *);
     void (*nlr_pop)(void);
-    void (*raise)(mp_obj_t o);
+    mp_obj_t (*raise)(mp_obj_t o);
+    mp_obj_t (*mp_native_is_exc)(void);
+    mp_obj_t (*mp_native_get_exc)(void);
+    void (*mp_native_clr_exc)(void);
     mp_obj_t (*import_name)(qstr name, mp_obj_t fromlist, mp_obj_t level);
     mp_obj_t (*import_from)(mp_obj_t module, qstr name);
     void (*import_all)(mp_obj_t module);
     mp_obj_t (*new_slice)(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
-    void (*unpack_sequence)(mp_obj_t seq, size_t num, mp_obj_t *items);
-    void (*unpack_ex)(mp_obj_t seq, size_t num, mp_obj_t *items);
-    void (*delete_name)(qstr qst);
-    void (*delete_global)(qstr qst);
+    mp_obj_t (*unpack_sequence)(mp_obj_t seq, size_t num, mp_obj_t *items);
+    mp_obj_t (*unpack_ex)(mp_obj_t seq, size_t num, mp_obj_t *items);
+    mp_obj_t (*delete_name)(qstr qst);
+    mp_obj_t (*delete_global)(qstr qst);
     mp_obj_t (*make_closure_from_raw_code)(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);
-    void (*arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig);
-    void (*setup_code_state)(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
+    int (*arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig);
+    mp_obj_t (*setup_code_state)(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
     mp_int_t (*small_int_floor_divide)(mp_int_t num, mp_int_t denom);
     mp_int_t (*small_int_modulo)(mp_int_t dividend, mp_int_t divisor);
     bool (*yield_from)(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value);
     void *setjmp;
-    // Additional entries for dynamic runtime, starts at index 50
+    // Additional entries for dynamic runtime, starts at index 53
     void *(*memset_)(void *s, int c, size_t n);
     void *(*memmove_)(void *dest, const void *src, size_t n);
     void *(*realloc_)(void *ptr, size_t n_bytes, bool allow_move);
@@ -154,7 +160,7 @@ typedef struct _mp_fun_table_t {
     mp_obj_t (*obj_new_float_from_d)(double d);
     float (*obj_get_float_to_f)(mp_obj_t o);
     double (*obj_get_float_to_d)(mp_obj_t o);
-    void (*get_buffer_raise)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+    bool (*get_buffer_raise)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
     const mp_stream_p_t *(*get_stream_raise)(mp_obj_t self_in, int flags);
     const mp_print_t *plat_print;
     const mp_obj_type_t *type_type;

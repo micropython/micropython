@@ -231,7 +231,16 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
         case MP_VM_RETURN_EXCEPTION: {
             self->code_state.ip = 0;
+            // TODO probably makes sense to have bytecode also place exception in cur_exc
+            #if MICROPY_EMIT_NATIVE
+            if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
+                *ret_val = MP_STATE_THREAD(cur_exc);
+                MP_STATE_THREAD(cur_exc) = NULL; // clear it
+            } else
+            #endif
+            {
             *ret_val = self->code_state.state[0];
+            }
             // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
             if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(*ret_val)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
                 *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator raised StopIteration");

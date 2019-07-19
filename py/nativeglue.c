@@ -143,10 +143,27 @@ STATIC mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, 
 
 // wrapper that makes raise obj and raises it
 // END_FINALLY opcode requires that we don't raise if o==None
-STATIC void mp_native_raise(mp_obj_t o) {
+STATIC mp_obj_t mp_native_raise(mp_obj_t o) {
     if (o != MP_OBJ_NULL && o != mp_const_none) {
-        nlr_raise(mp_make_raise_obj(o));
+        return mp_raise_o(mp_make_raise_obj(o));
     }
+    return MP_OBJ_SENTINEL;
+}
+
+STATIC mp_obj_t mp_native_is_exc(void) {
+    if (MP_STATE_THREAD(cur_exc) == NULL) {
+        return MP_OBJ_SENTINEL;
+    } else {
+        return MP_OBJ_NULL;
+    }
+}
+
+STATIC mp_obj_t mp_native_get_exc(void) {
+    return MP_STATE_THREAD(cur_exc);
+}
+
+STATIC void mp_native_clr_exc(void) {
+    MP_STATE_THREAD(cur_exc) = NULL;
 }
 
 // wrapper that handles iterator buffer
@@ -155,12 +172,15 @@ STATIC mp_obj_t mp_native_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter) {
         return mp_getiter(obj, NULL);
     } else {
         obj = mp_getiter(obj, iter);
+        if (obj == MP_OBJ_NULL) {
+            return MP_OBJ_NULL;
+        }
         if (obj != MP_OBJ_FROM_PTR(iter)) {
             // Iterator didn't use the stack so indicate that with MP_OBJ_NULL.
             iter->base.type = MP_OBJ_NULL;
             iter->buf[0] = obj;
         }
-        return NULL;
+        return MP_OBJ_SENTINEL;
     }
 }
 
@@ -176,19 +196,11 @@ STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
 }
 
 STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value) {
-    mp_vm_return_kind_t ret_kind;
-    nlr_buf_t nlr_buf;
     mp_obj_t throw_value = *ret_value;
-    if (nlr_push(&nlr_buf) == 0) {
-        if (throw_value != MP_OBJ_NULL) {
-            send_value = MP_OBJ_NULL;
-        }
-        ret_kind = mp_resume(gen, send_value, throw_value, ret_value);
-        nlr_pop();
-    } else {
-        ret_kind = MP_VM_RETURN_EXCEPTION;
-        *ret_value = nlr_buf.ret_val;
+    if (throw_value != MP_OBJ_NULL) {
+        send_value = MP_OBJ_NULL;
     }
+    mp_vm_return_kind_t ret_kind = mp_resume(gen, send_value, throw_value, ret_value);
 
     if (ret_kind == MP_VM_RETURN_YIELD) {
         return true;
@@ -199,16 +211,18 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
     } else {
         assert(ret_kind == MP_VM_RETURN_EXCEPTION);
         if (!mp_obj_exception_match(*ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-            nlr_raise(*ret_value);
+            mp_raise_o(*ret_value);
+            return false; // caller must also check cur_exc
         }
         *ret_value = mp_obj_exception_get_value(*ret_value);
     }
 
     if (throw_value != MP_OBJ_NULL && mp_obj_exception_match(throw_value, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
-        nlr_raise(mp_make_raise_obj(throw_value));
+        mp_raise_o(mp_make_raise_obj(throw_value));
+        return false; // caller must also check cur_exc
     }
 
-    return false;
+    return false; // caller must also check cur_exc (should be NULL)
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -294,6 +308,9 @@ const mp_fun_table_t mp_fun_table = {
     #endif
     nlr_pop,
     mp_native_raise,
+    mp_native_is_exc,
+    mp_native_get_exc,
+    mp_native_clr_exc,
     mp_import_name,
     mp_import_from,
     mp_import_all,
@@ -313,7 +330,7 @@ const mp_fun_table_t mp_fun_table = {
     #else
     NULL,
     #endif
-    // Additional entries for dynamic runtime, starts at index 50
+    // Additional entries for dynamic runtime, starts at index 53
     memset,
     memmove,
     gc_realloc,
