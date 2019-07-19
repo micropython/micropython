@@ -1303,9 +1303,9 @@ const mp_obj_type_t mp_type_super = {
     .attr = super_attr,
 };
 
-void mp_load_super_method(qstr attr, mp_obj_t *dest) {
+mp_obj_t mp_load_super_method(qstr attr, mp_obj_t *dest) {
     mp_obj_super_t super = {{&mp_type_super}, dest[1], dest[2]};
-    mp_load_method(MP_OBJ_FROM_PTR(&super), attr, dest);
+    return mp_load_method(MP_OBJ_FROM_PTR(&super), attr, dest);
 }
 
 /******************************************************************************/

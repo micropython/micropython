@@ -596,7 +596,7 @@ STATIC mp_obj_t mp_builtin_getattr(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_getattr_obj, 2, 3, mp_builtin_getattr);
 
 STATIC mp_obj_t mp_builtin_setattr(mp_obj_t base, mp_obj_t attr, mp_obj_t value) {
-    if (mp_store_attr(base, mp_obj_str_get_qstr(attr), value)) {
+    if (mp_store_attr(base, mp_obj_str_get_qstr(attr), value) == MP_OBJ_NULL) {
         return MP_OBJ_NULL;
     }
     return mp_const_none;
@@ -617,7 +617,7 @@ STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
         return MP_OBJ_NULL;
     }
     mp_obj_t dest[2];
-    if (mp_load_method_protected(object_in, attr, dest, false)) {
+    if (mp_load_method_protected(object_in, attr, dest, false) == MP_OBJ_NULL) {
         return MP_OBJ_NULL;
     }
     return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);

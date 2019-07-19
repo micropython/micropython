@@ -453,7 +453,7 @@ dispatch_loop:
                 ENTRY(MP_BC_LOAD_METHOD): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    if (mp_load_method(*sp, qst, sp)) {
+                    if (mp_load_method(*sp, qst, sp) == MP_OBJ_NULL) {
                         RAISE_IT();
                     }
                     sp += 1;
@@ -464,7 +464,9 @@ dispatch_loop:
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     sp -= 1;
-                    mp_load_super_method(qst, sp - 1);
+                    if (mp_load_super_method(qst, sp - 1) == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     DISPATCH();
                 }
 
@@ -514,7 +516,7 @@ dispatch_loop:
                     FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    if (mp_store_attr(sp[0], qst, sp[-1])) {
+                    if (mp_store_attr(sp[0], qst, sp[-1]) == MP_OBJ_NULL) {
                         RAISE_IT();
                     }
                     sp -= 2;
@@ -539,7 +541,7 @@ dispatch_loop:
                     if (elem != NULL) {
                         elem->value = sp[-1];
                     } else {
-                        if (mp_store_attr(sp[0], qst, sp[-1])) {
+                        if (mp_store_attr(sp[0], qst, sp[-1]) == MP_OBJ_NULL) {
                             RAISE_IT();
                         }
                     }
@@ -580,7 +582,7 @@ dispatch_loop:
                 ENTRY(MP_BC_DELETE_NAME): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    if (mp_delete_name(qst)) {
+                    if (mp_delete_name(qst) == MP_OBJ_NULL) {
                         RAISE_IT();
                     }
                     DISPATCH();
@@ -589,7 +591,7 @@ dispatch_loop:
                 ENTRY(MP_BC_DELETE_GLOBAL): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    if (mp_delete_global(qst)) {
+                    if (mp_delete_global(qst) == MP_OBJ_NULL) {
                         RAISE_IT();
                     }
                     DISPATCH();
@@ -672,8 +674,12 @@ dispatch_loop:
                     MARK_EXC_IP_SELECTIVE();
                     // stack: (..., ctx_mgr)
                     mp_obj_t obj = TOP();
-                    mp_load_method(obj, MP_QSTR___exit__, sp);
-                    mp_load_method(obj, MP_QSTR___enter__, sp + 2);
+                    if (mp_load_method(obj, MP_QSTR___exit__, sp) == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
+                    if (mp_load_method(obj, MP_QSTR___enter__, sp + 2) == MP_OBJ_NULL) {
+                        RAISE_IT();
+                    }
                     mp_obj_t ret = mp_call_method_n_kw(0, 0, sp + 2);
                     if (ret == MP_OBJ_NULL) {
                         RAISE_IT();
@@ -988,7 +994,7 @@ unwind_jump:;
                 ENTRY(MP_BC_UNPACK_SEQUENCE): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
-                    if (mp_unpack_sequence(sp[0], unum, sp)) {
+                    if (mp_unpack_sequence(sp[0], unum, sp) == MP_OBJ_NULL) {
                         RAISE_IT();
                     }
                     sp += unum - 1;
@@ -998,7 +1004,7 @@ unwind_jump:;
                 ENTRY(MP_BC_UNPACK_EX): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
-                    if (mp_unpack_ex(sp[0], unum, sp)) {
+                    if (mp_unpack_ex(sp[0], unum, sp) == MP_OBJ_NULL) {
                         RAISE_IT();
                     }
                     sp += (unum & 0xff) + ((unum >> 8) & 0xff);

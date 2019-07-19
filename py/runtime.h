@@ -96,8 +96,8 @@ mp_obj_t mp_load_global(qstr qst);
 mp_obj_t mp_load_build_class(void);
 void mp_store_name(qstr qst, mp_obj_t obj);
 void mp_store_global(qstr qst, mp_obj_t obj);
-int mp_delete_name(qstr qst);
-int mp_delete_global(qstr qst);
+mp_obj_t mp_delete_name(qstr qst);
+mp_obj_t mp_delete_global(qstr qst);
 
 mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg);
 mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs);
@@ -128,16 +128,16 @@ typedef struct _mp_call_args_t {
 void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args);
 #endif
 
-int mp_unpack_sequence(mp_obj_t seq, size_t num, mp_obj_t *items);
-int mp_unpack_ex(mp_obj_t seq, size_t num, mp_obj_t *items);
+mp_obj_t mp_unpack_sequence(mp_obj_t seq, size_t num, mp_obj_t *items);
+mp_obj_t mp_unpack_ex(mp_obj_t seq, size_t num, mp_obj_t *items);
 mp_obj_t mp_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr);
 void mp_convert_member_lookup(mp_obj_t obj, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest);
-int mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
-int mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
-int mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc);
-void mp_load_super_method(qstr attr, mp_obj_t *dest);
-int mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
+mp_obj_t mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
+mp_obj_t mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
+mp_obj_t mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc);
+mp_obj_t mp_load_super_method(qstr attr, mp_obj_t *dest);
+mp_obj_t mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
 
 mp_obj_t mp_getiter(mp_obj_t o, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATION instead of raising StopIteration()

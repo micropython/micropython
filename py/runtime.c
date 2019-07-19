@@ -215,10 +215,10 @@ void mp_store_name(qstr qst, mp_obj_t obj) {
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
 
-int mp_delete_name(qstr qst) {
+mp_obj_t mp_delete_name(qstr qst) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
-    return mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst)) == MP_OBJ_NULL;
+    return mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
 void mp_store_global(qstr qst, mp_obj_t obj) {
@@ -226,10 +226,10 @@ void mp_store_global(qstr qst, mp_obj_t obj) {
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
 
-int mp_delete_global(qstr qst) {
+mp_obj_t mp_delete_global(qstr qst) {
     DEBUG_OP_printf("delete global %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
-    return mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst)) == MP_OBJ_NULL;
+    return mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
 mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
@@ -857,7 +857,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_ob
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-int mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
+mp_obj_t mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
@@ -885,28 +885,26 @@ int mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
             goto too_long;
         }
     }
-    return 0;
+    return MP_OBJ_SENTINEL; // success
 
 too_short:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        mp_raise_ValueError_o("wrong number of values to unpack");
+        return mp_raise_ValueError_o("wrong number of values to unpack");
     } else {
-        mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+        return mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
             "need more than %d values to unpack", (int)seq_len));
     }
-    return 1;
 too_long:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        mp_raise_ValueError_o("wrong number of values to unpack");
+        return mp_raise_ValueError_o("wrong number of values to unpack");
     } else {
-        mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+        return mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
             "too many values to unpack (expected %d)", (int)num));
     }
-    return 1;
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-int mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
+mp_obj_t mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     size_t num_left = num_in & 0xff;
     size_t num_right = (num_in >> 8) & 0xff;
     DEBUG_OP_printf("unpack ex " UINT_FMT " " UINT_FMT "\n", num_left, num_right);
@@ -956,23 +954,22 @@ int mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
         }
         mp_obj_list_set_len(MP_OBJ_FROM_PTR(rest), rest->len - num_right);
     }
-    return 0;
+    return MP_OBJ_SENTINEL; // success
 
 too_short:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        mp_raise_ValueError_o("wrong number of values to unpack");
+        return mp_raise_ValueError_o("wrong number of values to unpack");
     } else {
-        mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+        return mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
             "need more than %d values to unpack", (int)seq_len));
     }
-    return 1;
 }
 
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
     DEBUG_OP_printf("load attr %p.%s\n", base, qstr_str(attr));
     // use load_method
     mp_obj_t dest[2];
-    if (mp_load_method(base, attr, dest)) {
+    if (mp_load_method(base, attr, dest) == MP_OBJ_NULL) {
         return MP_OBJ_NULL;
     }
     if (dest[1] == MP_OBJ_NULL) {
@@ -1080,7 +1077,7 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
 // no attribute found, returns:     dest[0] == MP_OBJ_NULL, dest[1] == MP_OBJ_NULL
 // normal attribute found, returns: dest[0] == <attribute>, dest[1] == MP_OBJ_NULL
 // method attribute found, returns: dest[0] == <method>,    dest[1] == <self>
-int mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
+mp_obj_t mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     // clear output to indicate no attribute/method found yet
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
@@ -1102,7 +1099,9 @@ int mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     } else if (type->attr != NULL) {
         // this type can do its own load, so call it
         type->attr(obj, attr, dest);
-        return MP_STATE_THREAD(cur_exc) != NULL;
+        if (MP_STATE_THREAD(cur_exc) != NULL) {
+            return MP_OBJ_NULL;
+        }
 
     } else if (type->locals_dict != NULL) {
         // generic method lookup
@@ -1115,43 +1114,41 @@ int mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         }
     }
 
-    return 0;
+    return MP_OBJ_SENTINEL; // success
 }
 
-int mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
+mp_obj_t mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     DEBUG_OP_printf("load method %p.%s\n", base, qstr_str(attr));
 
-    mp_load_method_maybe(base, attr, dest);
-    if (MP_STATE_THREAD(cur_exc) != NULL) {
+    if (mp_load_method_maybe(base, attr, dest) == MP_OBJ_NULL) {
         // exception
-        return 1;
+        return MP_OBJ_NULL;
     }
 
     if (dest[0] == MP_OBJ_NULL) {
         // no attribute/method called attr
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_msg_o(&mp_type_AttributeError, "no such attribute");
+            return mp_raise_msg_o(&mp_type_AttributeError, "no such attribute");
         } else {
             // following CPython, we give a more detailed error message for type objects
             if (mp_obj_is_type(base, &mp_type_type)) {
-                mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+                return mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
                     "type object '%q' has no attribute '%q'",
                     ((mp_obj_type_t*)MP_OBJ_TO_PTR(base))->name, attr));
             } else {
-                mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+                return mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
                     "'%s' object has no attribute '%q'",
                     mp_obj_get_type_str(base), attr));
             }
         }
-        return 1;
     }
 
-    return 0;
+    return MP_OBJ_SENTINEL; // success
 }
 
 // Acts like mp_load_method_maybe but catches AttributeError, and all other exceptions if requested
-int mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc) {
-    if (mp_load_method_maybe(obj, attr, dest)) {
+mp_obj_t mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc) {
+    if (mp_load_method_maybe(obj, attr, dest) == MP_OBJ_NULL) {
         // exception
         mp_obj_base_t *exc = MP_STATE_THREAD(cur_exc);
         MP_STATE_THREAD(cur_exc) = NULL;
@@ -1159,14 +1156,13 @@ int mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch
             && !mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type),
                 MP_OBJ_FROM_PTR(&mp_type_AttributeError))) {
             // Re-raise the exception
-            mp_raise_o(MP_OBJ_FROM_PTR(exc));
-            return 1;
+            return mp_raise_o(MP_OBJ_FROM_PTR(exc));
         }
     }
-    return 0;
+    return MP_OBJ_SENTINEL; // success
 }
 
-int mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
+mp_obj_t mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
     mp_obj_type_t *type = mp_obj_get_type(base);
     if (type->attr != NULL) {
@@ -1174,21 +1170,19 @@ int mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         type->attr(base, attr, dest);
         if (MP_STATE_THREAD(cur_exc) != NULL) {
             // exception
-            return 1;
+            return MP_OBJ_NULL;
         }
         if (dest[0] == MP_OBJ_NULL) {
             // success
-            return 0;
+            return MP_OBJ_SENTINEL;
         }
     }
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        mp_raise_msg_o(&mp_type_AttributeError, "no such attribute");
-        return 1;
+        return mp_raise_msg_o(&mp_type_AttributeError, "no such attribute");
     } else {
-        mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+        return mp_raise_o(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
             "'%s' object has no attribute '%q'",
             mp_obj_get_type_str(base), attr));
-        return 1;
     }
 }
 
