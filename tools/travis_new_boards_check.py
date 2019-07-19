@@ -45,16 +45,10 @@ with open(travis_path, 'r') as travis:
 info_boards.sort()
 travis_boards.sort()
 
-exit_status = 0
-
 missing_boards = list(set(info_boards) - set(travis_boards))
 
 if len(missing_boards) is not 0:
-    exit_status = 1
-
-if exit_status is 1:
     print('Boards missing in TRAVIS_BOARDS:')
     for board in missing_boards:
         print(board)
-
-sys.exit(exit_status)
+    sys.exit(1)
