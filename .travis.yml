@@ -103,6 +103,10 @@ script:
   - cd tools && python3 -u build_release_files.py
   - cd ..
 
+  # Check if there's any board missing in TRAVIS_BOARDS
+  - cd tools && python3 -u travis_new_boards_check.py
+  - cd ..
+
   - echo 'Building unix' && echo 'travis_fold:start:unix'
   - (! var_search "${TRAVIS_TESTS-}" unix || (make -C ports/unix deplibs -j2 && make -C ports/unix -j2 && make -C ports/unix coverage -j2)) ; S=$? ; echo $S > status ; (exit $S)
   - echo 'travis_fold:end:unix' && tools/print_status.py status
