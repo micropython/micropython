@@ -211,11 +211,12 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
                            + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
-static inline int INIT_CODESTATE(mp_code_state_t *code_state, mp_obj_fun_bc_t *_fun_bc, size_t _n_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static inline mp_obj_t INIT_CODESTATE(mp_code_state_t *code_state, mp_obj_fun_bc_t *_fun_bc, size_t _n_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     code_state->fun_bc = _fun_bc; \
     code_state->ip = 0; \
     code_state->n_state = _n_state; \
-    int ret = mp_setup_code_state(code_state, n_args, n_kw, args); \
+    // TODO can we save old_globals before this call?
+    mp_obj_t ret = mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
     return ret;
 }
@@ -245,6 +246,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     }
     #endif
 
+    // TODO write test where this fails
     INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
@@ -292,7 +294,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     }
     #endif
 
-    if (INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args)) {
+    if (INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args) == MP_OBJ_NULL) {
         // exception
         #if MICROPY_ENABLE_PYSTACK
         mp_pystack_free(code_state);
