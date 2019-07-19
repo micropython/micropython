@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-25 17:53-0700\n"
+"POT-Creation-Date: 2019-07-19 10:38-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -1181,8 +1181,12 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr "Píng pū gāodù bìxū huàfēn wèi tú gāodù"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
-msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -2447,10 +2451,6 @@ msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
 msgid "threshold must be in the range 0-65536"
 msgstr "yùzhí bìxū zài fànwéi 0-65536"
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr "kuài suǒyǐn chāochū fànwéi"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
@@ -2668,11 +2668,17 @@ msgstr "líng bù"
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Jǐn zhīchí 8 wèi yánsè huò xiǎoyú"
 
+#~ msgid "Tile indices must be 0 - 255"
+#~ msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"
+
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "qídài de DigitalInOut"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
+
+#~ msgid "tile index out of bounds"
+#~ msgstr "kuài suǒyǐn chāochū fànwéi"
 
 #~ msgid "too many arguments"
 #~ msgstr "tài duō cānshù"

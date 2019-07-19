@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-25 17:53-0700\n"
+"POT-Creation-Date: 2019-07-19 10:38-0700\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -247,7 +247,9 @@ msgstr "Todos los canales de eventos estan siendo usados"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
-msgstr "Todos los canales de eventos de sincronización (sync event channels) están siendo utilizados"
+msgstr ""
+"Todos los canales de eventos de sincronización (sync event channels) están "
+"siendo utilizados"
 
 #: shared-bindings/pulseio/PWMOut.c
 msgid "All timers for this pin are in use"
@@ -287,7 +289,9 @@ msgstr "Valores del array deben ser bytes individuales."
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running.\n"
-msgstr "Intento de allocation de heap cuando la VM de MicroPython no estaba corriendo.\n"
+msgstr ""
+"Intento de allocation de heap cuando la VM de MicroPython no estaba "
+"corriendo.\n"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -297,7 +301,9 @@ msgstr "Auto-recarga deshabilitada.\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr "Auto-reload habilitado. Simplemente guarda los archivos via USB para ejecutarlos o entra al REPL para desabilitarlos.\n"
+msgstr ""
+"Auto-reload habilitado. Simplemente guarda los archivos via USB para "
+"ejecutarlos o entra al REPL para desabilitarlos.\n"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -735,7 +741,9 @@ msgstr "operación I2C no soportada"
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
-msgstr "Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte http://adafru.it/mpy-update para más información"
+msgstr ""
+"Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte "
+"http://adafru.it/mpy-update para más información"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -959,7 +967,8 @@ msgstr "No reproduciendo"
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo objeto"
+"El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo "
+"objeto"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1186,8 +1195,12 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr "La altura del Tile debe dividir exacto la altura del bitmap"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
-msgstr "Los índices de Tile deben ser 0 - 255"
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -1370,8 +1383,8 @@ msgstr "argumento es una secuencia vacía"
 msgid "argument has wrong type"
 msgstr "el argumento tiene un tipo erroneo"
 
-#: py/argcheck.c shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/gamepad/GamePad.c shared-bindings/_stage/__init__.c
+#: py/argcheck.c shared-bindings/_stage/__init__.c
+#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
 msgstr "argumento número/tipos no coinciden"
 
@@ -2465,10 +2478,6 @@ msgstr "error de sintaxis en el descriptor uctypes"
 msgid "threshold must be in the range 0-65536"
 msgstr "limite debe ser en el rango 0-65536"
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr "el indice del tile fuera de limite"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() toma un sequencio 9"
@@ -2766,6 +2775,9 @@ msgstr "paso cero"
 #~ msgid "STA required"
 #~ msgstr "STA requerido"
 
+#~ msgid "Tile indices must be 0 - 255"
+#~ msgstr "Los índices de Tile deben ser 0 - 255"
+
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) no existe"
 
@@ -2857,6 +2869,9 @@ msgstr "paso cero"
 
 #~ msgid "scan failed"
 #~ msgstr "scan ha fallado"
+
+#~ msgid "tile index out of bounds"
+#~ msgstr "el indice del tile fuera de limite"
 
 #~ msgid "too many arguments"
 #~ msgstr "muchos argumentos"
