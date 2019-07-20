@@ -1339,7 +1339,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
         
         // lookup __import__ and call that instead of going straight to builtin implementation
         if (bo_dict != NULL) {        
-            mp_map_elem_t *cust_imp = mp_map_lookup(&bo_dict->map, MP_ROM_QSTR(MP_QSTR___import__), MP_MAP_LOOKUP);
+            mp_map_elem_t *cust_imp = mp_map_lookup(&bo_dict->map, MP_OBJ_NEW_QSTR(MP_QSTR___import__), MP_MAP_LOOKUP);
             if (cust_imp != NULL) {
                 return mp_call_function_n_kw(cust_imp->value, 5, 0, args);
             }
