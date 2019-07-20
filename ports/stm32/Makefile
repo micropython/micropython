@@ -261,6 +261,7 @@ SRC_C = \
 	eth.c \
 	gccollect.c \
 	help.c \
+	machine_adc.c \
 	machine_i2c.c \
 	machine_spi.c \
 	machine_uart.c \
