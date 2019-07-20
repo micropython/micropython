@@ -259,109 +259,34 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H)
 
 ESPIDF_DRIVER_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/driver/*.c))
 
-ESPIDF_EFUSE_O = $(addprefix $(ESPCOMP)/efuse/,\
-	esp32/esp_efuse_table.o \
-	src/esp_efuse_api.o \
-	src/esp_efuse_utility.o \
+ESPIDF_EFUSE_O = $(patsubst %.c,%.o,\
+	$(wildcard $(ESPCOMP)/efuse/esp32/*.c)\
+	$(wildcard $(ESPCOMP)/efuse/src/*.c)\
 	)
 
 $(BUILD)/$(ESPCOMP)/esp32/dport_access.o: CFLAGS += -Wno-array-bounds
-ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
-	brownout.o \
-	cache_sram_mmu.o \
-	coexist.o \
-	dbg_stubs.o \
-	dport_panic_highint_hdl.o \
-	esp_adapter.o \
-	esp_err_to_name.o \
-	esp_himem.o \
-	panic.o \
-	pm_trace.o \
-	reset_reason.o \
-	restore.o \
-	stack_check.o \
-	esp_timer.o \
-	esp_timer_esp32.o \
-	ets_timer_legacy.o \
-	event_default_handlers.o \
-	fast_crypto_ops.o \
-	task_wdt.o \
-	cache_err_int.o \
-	clk.o \
-	cpu_start.o \
-	gdbstub.o \
-	crosscore_int.o \
-	ipc.o \
-	int_wdt.o \
-	event_loop.o \
-	hwcrypto/sha.o \
-	hwcrypto/aes.o \
-	lib_printf.o \
-	freertos_hooks.o \
-	system_api.o \
-	hw_random.o \
-	phy_init.o \
-	pm_esp32.o \
-	pm_locks.o \
-	intr_alloc.o \
-	dport_access.o \
-	wifi_init.o \
-	sleep_modes.o \
-	spiram.o \
-	spiram_psram.o \
+ESPIDF_ESP32_O = \
+	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/esp32/*.c)) \
+	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/esp32/hwcrypto/*.c)) \
+	$(patsubst %.S,%.o,$(wildcard $(ESPCOMP)/esp32/*.S)) \
+
+ESPIDF_ESP_RINGBUF_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/esp_ringbuf/*.c))
+
+ESPIDF_HEAP_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/heap/*.c))
+
+ESPIDF_SOC_O = $(patsubst %.c,%.o,\
+	$(wildcard $(ESPCOMP)/soc/esp32/*.c) \
+	$(wildcard $(ESPCOMP)/soc/src/*.c) \
 	)
 
-ESPIDF_ESP_RINGBUF_O = $(addprefix $(ESPCOMP)/esp_ringbuf/,\
-	ringbuf.o \
+ESPIDF_CXX_O = $(patsubst %.cpp,%.o,$(wildcard $(ESPCOMP)/cxx/*.cpp))
+
+ESPIDF_ETHERNET_O = $(patsubst %.c,%.o,\
+	$(wildcard $(ESPCOMP)/ethernet/*.c) \
+	$(wildcard $(ESPCOMP)/ethernet/eth_phy/*.c) \
 	)
 
-ESPIDF_HEAP_O = $(addprefix $(ESPCOMP)/heap/,\
-	heap_caps.o \
-	heap_caps_init.o \
-	multi_heap.o \
-	)
-
-ESPIDF_SOC_O = $(addprefix $(ESPCOMP)/soc/,\
-	esp32/cpu_util.o \
-	esp32/gpio_periph.o \
-	esp32/rtc_clk.o \
-	esp32/rtc_init.o \
-	esp32/rtc_periph.o \
-	esp32/rtc_pm.o \
-	esp32/rtc_sleep.o \
-	esp32/rtc_time.o \
-	esp32/rtc_wdt.o \
-	esp32/sdmmc_periph.o \
-	esp32/soc_memory_layout.o \
-	esp32/spi_periph.o \
-	src/memory_layout_utils.o \
-	)
-
-ESPIDF_CXX_O = $(addprefix $(ESPCOMP)/cxx/,\
-	cxx_guards.o \
-	)
-
-ESPIDF_ETHERNET_O = $(addprefix $(ESPCOMP)/ethernet/,\
-	emac_dev.o \
-	emac_main.o \
-	eth_phy/phy_tlk110.o \
-	eth_phy/phy_lan8720.o \
-	eth_phy/phy_common.o \
-	)
-
-$(BUILD)/$(ESPCOMP)/expat/%.o: CFLAGS += -DHAVE_EXPAT_CONFIG_H -DHAVE_GETRANDOM
-ESPIDF_EXPAT_O = $(addprefix $(ESPCOMP)/expat/,\
-	expat/expat/lib/xmltok_ns.o \
-	expat/expat/lib/xmltok.o \
-	expat/expat/lib/xmlparse.o \
-	expat/expat/lib/xmlrole.o \
-	expat/expat/lib/xmltok_impl.o \
-	)
-
-ESPIDF_PTHREAD_O = $(addprefix $(ESPCOMP)/pthread/,\
-	pthread.o \
-	pthread_local_storage.o \
-	)
+ESPIDF_PTHREAD_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/pthread/*.c))
 
 # Assembler .S files need only basic flags, and in particular should not have
 # -Os because that generates subtly different code.
@@ -374,308 +299,60 @@ $(BUILD)/$(ESPCOMP)/freertos/xtensa_intr_asm.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vectors.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vector_defaults.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
-ESPIDF_FREERTOS_O = $(addprefix $(ESPCOMP)/freertos/,\
-	croutine.o \
-	event_groups.o \
-	FreeRTOS-openocd.o \
-	list.o \
-	portasm.o \
-	port.o \
-	queue.o \
-	tasks.o \
-	timers.o \
-	xtensa_context.o \
-	xtensa_init.o \
-	xtensa_intr_asm.o \
-	xtensa_intr.o \
-	xtensa_overlay_os_hook.o \
-	xtensa_vector_defaults.o \
-	xtensa_vectors.o \
-	)
+ESPIDF_FREERTOS_O = \
+	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/freertos/*.c)) \
+	$(patsubst %.S,%.o,$(wildcard $(ESPCOMP)/freertos/*.S)) \
 
-ESPIDF_VFS_O = $(addprefix $(ESPCOMP)/vfs/,\
-	vfs_uart.o \
-	vfs.o \
-	)
+ESPIDF_VFS_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/vfs/*.c))
 
-ESPIDF_JSON_O = $(addprefix $(ESPCOMP)/json/cJSON/,\
-	cJSON.o \
-	cJSON_Utils.o \
-	)
+ESPIDF_JSON_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/json/cJSON/cJSON*.c))
 
-ESPIDF_LOG_O = $(addprefix $(ESPCOMP)/log/,\
-	log.o \
-	)
+ESPIDF_LOG_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/log/*.c))
 
-ESPIDF_XTENSA_DEBUG_MODULE_O = $(addprefix $(ESPCOMP)/xtensa-debug-module/,\
-	eri.o \
-	trax.o \
-	)
+ESPIDF_XTENSA_DEBUG_MODULE_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/xtensa-debug-module/*.c))
 
-ESPIDF_TCPIP_ADAPTER_O = $(addprefix $(ESPCOMP)/tcpip_adapter/,\
-	tcpip_adapter_lwip.o \
-	)
+ESPIDF_TCPIP_ADAPTER_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/tcpip_adapter/*.c))
 
-ESPIDF_APP_TRACE_O = $(addprefix $(ESPCOMP)/app_trace/,\
-	app_trace.o \
-	)
+ESPIDF_APP_TRACE_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/app_trace/*.c))
 
-ESPIDF_APP_UPDATE_O = $(addprefix $(ESPCOMP)/app_update/,\
-	esp_app_desc.o \
-	esp_ota_ops.o \
-	)
+ESPIDF_APP_UPDATE_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/app_update/*.c))
 
-ESPIDF_NEWLIB_O = $(addprefix $(ESPCOMP)/newlib/,\
-	time.o \
-	select.o \
-	syscalls.o \
-	syscall_table.o \
-	reent_init.o \
-	locks.o \
-	)
+ESPIDF_NEWLIB_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/newlib/*.c))
 
-ESPIDF_NGHTTP_O = $(addprefix $(ESPCOMP)/nghttp/,\
-	nghttp2/lib/nghttp2_http.o \
-	nghttp2/lib/nghttp2_version.o \
-	nghttp2/lib/nghttp2_mem.o \
-	nghttp2/lib/nghttp2_hd_huffman.o \
-	nghttp2/lib/nghttp2_rcbuf.o \
-	nghttp2/lib/nghttp2_callbacks.o \
-	nghttp2/lib/nghttp2_session.o \
-	nghttp2/lib/nghttp2_stream.o \
-	nghttp2/lib/nghttp2_hd.o \
-	nghttp2/lib/nghttp2_priority_spec.o \
-	nghttp2/lib/nghttp2_buf.o \
-	nghttp2/lib/nghttp2_option.o \
-	nghttp2/lib/nghttp2_npn.o \
-	nghttp2/lib/nghttp2_helper.o \
-	nghttp2/lib/nghttp2_frame.o \
-	nghttp2/lib/nghttp2_outbound_item.o \
-	nghttp2/lib/nghttp2_hd_huffman_data.o \
-	nghttp2/lib/nghttp2_pq.o \
-	nghttp2/lib/nghttp2_queue.o \
-	nghttp2/lib/nghttp2_submit.o \
-	nghttp2/lib/nghttp2_map.o \
-	port/http_parser.o \
-	)
+ESPIDF_NVS_FLASH_O = $(patsubst %.cpp,%.o,$(wildcard $(ESPCOMP)/nvs_flash/src/*.cpp))
 
-ESPIDF_NVS_FLASH_O = $(addprefix $(ESPCOMP)/nvs_flash/,\
-	src/nvs_ops.o \
-	src/nvs_types.o \
-	src/nvs_page.o \
-	src/nvs_item_hash_list.o \
-	src/nvs_pagemanager.o \
-	src/nvs_storage.o \
-	src/nvs_api.o \
-	)
+ESPIDF_SMARTCONFIG_ACK_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/smartconfig_ack/*.c))
 
-ESPIDF_OPENSSL_O = $(addprefix $(ESPCOMP)/openssl/,\
-	)
+ESPIDF_SPI_FLASH_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/spi_flash/*.c))
 
-ESPIDF_SMARTCONFIG_ACK_O = $(addprefix $(ESPCOMP)/smartconfig_ack/,\
-	smartconfig_ack.o \
-	)
-
-ESPIDF_SPI_FLASH_O = $(addprefix $(ESPCOMP)/spi_flash/,\
-	flash_mmap.o \
-	partition.o \
-	spi_flash_rom_patch.o \
-	cache_utils.o \
-	flash_ops.o \
-	)
-
-ESPIDF_ULP_O = $(addprefix $(ESPCOMP)/ulp/,\
-	ulp.o \
-	)
+ESPIDF_ULP_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/ulp/*.c))
 
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
-ESPIDF_LWIP_O = $(addprefix $(ESPCOMP)/lwip/,\
-	apps/dhcpserver/dhcpserver.o \
-	lwip/src/api/netbuf.o \
-	lwip/src/api/api_lib.o \
-	lwip/src/api/netifapi.o \
-	lwip/src/api/tcpip.o \
-	lwip/src/api/netdb.o \
-	lwip/src/api/err.o \
-	lwip/src/api/api_msg.o \
-	lwip/src/api/sockets.o \
-	lwip/src/apps/sntp/sntp.o \
-	lwip/src/core/ipv4/dhcp.o \
-	lwip/src/core/ipv4/etharp.o \
-	lwip/src/core/ipv4/ip4_addr.o \
-	lwip/src/core/ipv4/igmp.o \
-	lwip/src/core/ipv4/ip4.o \
-	lwip/src/core/ipv4/autoip.o \
-	lwip/src/core/ipv4/icmp.o \
-	lwip/src/core/ipv6/ip6_frag.o \
-	lwip/src/core/ipv6/dhcp6.o \
-	lwip/src/core/ipv6/inet6.o \
-	lwip/src/core/ipv6/ip6_addr.o \
-	lwip/src/core/ipv6/ip6.o \
-	lwip/src/core/ipv6/nd6.o \
-	lwip/src/core/ipv6/mld6.o \
-	lwip/src/core/ipv6/ethip6.o \
-	lwip/src/core/ipv6/icmp6.o \
-	lwip/src/core/mem.o \
-	lwip/src/core/init.o \
-	lwip/src/core/memp.o \
-	lwip/src/core/sys.o \
-	lwip/src/core/tcp_in.o \
-	lwip/src/core/timeouts.o \
-	lwip/src/core/dns.o \
-	lwip/src/core/ip.o \
-	lwip/src/core/pbuf.o \
-	lwip/src/core/raw.o \
-	lwip/src/core/tcp.o \
-	lwip/src/core/def.o \
-	lwip/src/core/netif.o \
-	lwip/src/core/stats.o \
-	lwip/src/core/inet_chksum.o \
-	lwip/src/core/udp.o \
-	lwip/src/core/tcp_out.o \
-	lwip/src/netif/slipif.o \
-	lwip/src/netif/ethernet.o \
-	lwip/src/netif/lowpan6.o \
-	lwip/src/netif/ethernetif.o \
-	lwip/src/netif/ppp/auth.o \
-	lwip/src/netif/ppp/chap-md5.o \
-	lwip/src/netif/ppp/chap-new.o \
-	lwip/src/netif/ppp/fsm.o \
-	lwip/src/netif/ppp/ipcp.o \
-	lwip/src/netif/ppp/ipv6cp.o \
-	lwip/src/netif/ppp/lcp.o \
-	lwip/src/netif/ppp/magic.o \
-	lwip/src/netif/ppp/polarssl/md5.o \
-	lwip/src/netif/ppp/ppp.o \
-	lwip/src/netif/ppp/pppapi.o \
-	lwip/src/netif/ppp/pppos.o \
-	lwip/src/netif/ppp/upap.o \
-	lwip/src/netif/ppp/utils.o \
-	lwip/src/netif/ppp/vj.o \
-	port/esp32/freertos/sys_arch.o \
-	port/esp32/netif/ethernetif.o \
-	port/esp32/netif/wlanif.o \
-	port/esp32/vfs_lwip.o \
+ESPIDF_LWIP_O = $(patsubst %.c,%.o,\
+	$(wildcard $(ESPCOMP)/lwip/apps/dhcpserver/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/lwip/src/api/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/lwip/src/apps/sntp/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/lwip/src/core/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/lwip/src/core/*/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/lwip/src/netif/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/lwip/src/netif/*/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/lwip/src/netif/*/*/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/port/esp32/*.c) \
+	$(wildcard $(ESPCOMP)/lwip/port/esp32/*/*.c) \
 	)
 
-ESPIDF_MBEDTLS_O = $(addprefix $(ESPCOMP)/mbedtls/,\
-	mbedtls/library/entropy.o \
-	mbedtls/library/pkcs12.o \
-	mbedtls/library/ccm.o \
-	mbedtls/library/pk.o \
-	mbedtls/library/sha1.o \
-	mbedtls/library/x509_csr.o \
-	mbedtls/library/ssl_cli.o \
-	mbedtls/library/ecp.o \
-	mbedtls/library/blowfish.o \
-	mbedtls/library/x509.o \
-	mbedtls/library/ecp_curves.o \
-	mbedtls/library/error.o \
-	mbedtls/library/ssl_ticket.o \
-	mbedtls/library/entropy_poll.o \
-	mbedtls/library/cipher.o \
-	mbedtls/library/version_features.o \
-	mbedtls/library/ripemd160.o \
-	mbedtls/library/rsa.o \
-	mbedtls/library/rsa_internal.o \
-	mbedtls/library/md.o \
-	mbedtls/library/md_wrap.o \
-	mbedtls/library/sha256.o \
-	mbedtls/library/dhm.o \
-	mbedtls/library/ssl_cache.o \
-	mbedtls/library/pkwrite.o \
-	mbedtls/library/base64.o \
-	mbedtls/library/asn1parse.o \
-	mbedtls/library/ssl_tls.o \
-	mbedtls/library/hmac_drbg.o \
-	mbedtls/library/pem.o \
-	mbedtls/library/version.o \
-	mbedtls/library/gcm.o \
-	mbedtls/library/memory_buffer_alloc.o \
-	mbedtls/library/md2.o \
-	mbedtls/library/ecdsa.o \
-	mbedtls/library/ssl_srv.o \
-	mbedtls/library/x509_crt.o \
-	mbedtls/library/ecdh.o \
-	mbedtls/library/asn1write.o \
-	mbedtls/library/md4.o \
-	mbedtls/library/debug.o \
-	mbedtls/library/x509_create.o \
-	mbedtls/library/ecjpake.o \
-	mbedtls/library/oid.o \
-	mbedtls/library/md5.o \
-	mbedtls/library/ssl_ciphersuites.o \
-	mbedtls/library/sha512.o \
-	mbedtls/library/xtea.o \
-	mbedtls/library/aes.o \
-	mbedtls/library/cipher_wrap.o \
-	mbedtls/library/arc4.o \
-	mbedtls/library/bignum.o \
-	mbedtls/library/pkparse.o \
-	mbedtls/library/padlock.o \
-	mbedtls/library/threading.o \
-	mbedtls/library/x509_crl.o \
-	mbedtls/library/pkcs11.o \
-	mbedtls/library/aesni.o \
-	mbedtls/library/timing.o \
-	mbedtls/library/certs.o \
-	mbedtls/library/pkcs5.o \
-	mbedtls/library/ssl_cookie.o \
-	mbedtls/library/camellia.o \
-	mbedtls/library/havege.o \
-	mbedtls/library/des.o \
-	mbedtls/library/x509write_csr.o \
-	mbedtls/library/platform.o \
-	mbedtls/library/platform_util.o \
-	mbedtls/library/ctr_drbg.o \
-	mbedtls/library/x509write_crt.o \
-	mbedtls/library/pk_wrap.o \
-	port/esp_bignum.o \
-	port/esp_hardware.o \
-	port/esp_mem.o \
-	port/esp_sha1.o \
-	port/esp_sha256.o \
-	port/esp_sha512.o \
+ESPIDF_MBEDTLS_O = $(patsubst %.c,%.o,\
+	$(wildcard $(ESPCOMP)/mbedtls/mbedtls/library/*.c) \
+	$(wildcard $(ESPCOMP)/mbedtls/port/*.c) \
 	)
 
-$(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DEMBEDDED_SUPP -DIEEE8021X_EAPOL -DEAP_PEER_METHOD -DEAP_MSCHAPv2 -DEAP_TTLS -DEAP_TLS -DEAP_PEAP -DUSE_WPA2_TASK -DCONFIG_WPS2 -DCONFIG_WPS_PIN -DUSE_WPS_TASK -DESPRESSIF_USE -DESP32_WORKAROUND -D__ets__ -Wno-strict-aliasing
-ESPIDF_WPA_SUPPLICANT_O = $(addprefix $(ESPCOMP)/wpa_supplicant/,\
-	src/crypto/aes-internal-enc.o \
-	src/crypto/sha256-internal.o \
-	src/crypto/md5-internal.o \
-	src/crypto/aes-internal.o \
-	src/crypto/sha1.o \
-	src/crypto/aes-internal-dec.o \
-	src/crypto/aes-unwrap.o \
-	src/crypto/crypto_internal-rsa.o \
-	src/crypto/dh_groups.o \
-	src/crypto/crypto_internal.o \
-	src/crypto/aes-wrap.o \
-	src/crypto/sha1-internal.o \
-	src/crypto/dh_group5.o \
-	src/crypto/sha256.o \
-	src/crypto/rc4.o \
-	src/crypto/md5.o \
-	src/crypto/aes-cbc.o \
-	src/crypto/sha1-pbkdf2.o \
-	src/crypto/bignum.o \
-	src/crypto/crypto_internal-modexp.o \
-	src/crypto/crypto_internal-cipher.o \
-	src/fast_crypto/fast_aes-unwrap.o \
-	src/fast_crypto/fast_aes-wrap.o \
-	src/fast_crypto/fast_sha256.o \
-	src/fast_crypto/fast_sha256-internal.o \
-	port/os_xtensa.o \
+$(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DEMBEDDED_SUPP -DIEEE8021X_EAPOL -DEAP_PEER_METHOD -DEAP_MSCHAPv2 -DEAP_TTLS -DEAP_TLS -DEAP_PEAP -DUSE_WPA2_TASK -DCONFIG_WPS2 -DCONFIG_WPS_PIN -DUSE_WPS_TASK -DESPRESSIF_USE -DESP32_WORKAROUND -DALLOW_EVEN_MOD -D__ets__ -Wno-strict-aliasing
+ESPIDF_WPA_SUPPLICANT_O = $(patsubst %.c,%.o,\
+	$(wildcard $(ESPCOMP)/wpa_supplicant/port/*.c) \
+	$(wildcard $(ESPCOMP)/wpa_supplicant/src/*/*.c) \
 	)
 
-ESPIDF_SDMMC_O = $(addprefix $(ESPCOMP)/sdmmc/,\
-	sdmmc_cmd.o \
-	sdmmc_common.o \
-	sdmmc_init.o \
-	sdmmc_mmc.o \
-	sdmmc_sd.o \
-	sdmmc_io.o \
-	)
+ESPIDF_SDMMC_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/sdmmc/*.c))
 
 OBJ_ESPIDF =
 LIB_ESPIDF =
@@ -697,7 +374,6 @@ $(eval $(call gen_espidf_lib_rule,heap,$(ESPIDF_HEAP_O)))
 $(eval $(call gen_espidf_lib_rule,soc,$(ESPIDF_SOC_O)))
 $(eval $(call gen_espidf_lib_rule,cxx,$(ESPIDF_CXX_O)))
 $(eval $(call gen_espidf_lib_rule,ethernet,$(ESPIDF_ETHERNET_O)))
-$(eval $(call gen_espidf_lib_rule,expat,$(ESPIDF_EXPAT_O)))
 $(eval $(call gen_espidf_lib_rule,pthread,$(ESPIDF_PTHREAD_O)))
 $(eval $(call gen_espidf_lib_rule,freertos,$(ESPIDF_FREERTOS_O)))
 $(eval $(call gen_espidf_lib_rule,vfs,$(ESPIDF_VFS_O)))
@@ -708,7 +384,6 @@ $(eval $(call gen_espidf_lib_rule,tcpip_adapter,$(ESPIDF_TCPIP_ADAPTER_O)))
 $(eval $(call gen_espidf_lib_rule,app_trace,$(ESPIDF_APP_TRACE_O)))
 $(eval $(call gen_espidf_lib_rule,app_update,$(ESPIDF_APP_UPDATE_O)))
 $(eval $(call gen_espidf_lib_rule,newlib,$(ESPIDF_NEWLIB_O)))
-$(eval $(call gen_espidf_lib_rule,nghttp,$(ESPIDF_NGHTTP_O)))
 $(eval $(call gen_espidf_lib_rule,nvs_flash,$(ESPIDF_NVS_FLASH_O)))
 $(eval $(call gen_espidf_lib_rule,smartconfig_ack,$(ESPIDF_SMARTCONFIG_ACK_O)))
 $(eval $(call gen_espidf_lib_rule,spi_flash,$(ESPIDF_SPI_FLASH_O)))
