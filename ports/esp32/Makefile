@@ -678,76 +678,12 @@ ESPIDF_SDMMC_O = $(addprefix $(ESPCOMP)/sdmmc/,\
 	)
 
 OBJ_ESPIDF =
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NEWLIB_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_DRIVER_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_EFUSE_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ESP32_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ESP_RINGBUF_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_HEAP_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SOC_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_CXX_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ETHERNET_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_EXPAT_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_PTHREAD_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_FREERTOS_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_VFS_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_JSON_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_LOG_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_LWIP_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_MBEDTLS_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_XTENSA_DEBUG_MODULE_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_TCPIP_ADAPTER_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_TRACE_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_UPDATE_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NGHTTP_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NVS_FLASH_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_OPENSSL_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SMARTCONFIG_ACK_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ULP_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SDMMC_O))
-
-$(OBJ_ESPIDF): $(SDKCONFIG_H)
-
 LIB_ESPIDF =
-LIB_ESPIDF += driver
-LIB_ESPIDF += efuse
-LIB_ESPIDF += esp32
-LIB_ESPIDF += esp_ringbuf
-LIB_ESPIDF += heap
-LIB_ESPIDF += soc
-LIB_ESPIDF += cxx
-LIB_ESPIDF += ethernet
-LIB_ESPIDF += expat
-LIB_ESPIDF += pthread
-LIB_ESPIDF += freertos
-LIB_ESPIDF += vfs
-LIB_ESPIDF += json
-LIB_ESPIDF += log
-LIB_ESPIDF += xtensa-debug-module
-LIB_ESPIDF += tcpip_adapter
-LIB_ESPIDF += app_trace
-LIB_ESPIDF += app_update
-LIB_ESPIDF += newlib
-LIB_ESPIDF += nghttp
-LIB_ESPIDF += nvs_flash
-LIB_ESPIDF += smartconfig_ack
-LIB_ESPIDF += spi_flash
-LIB_ESPIDF += ulp
-LIB_ESPIDF += lwip
-LIB_ESPIDF += mbedtls
-LIB_ESPIDF += wpa_supplicant
-LIB_ESPIDF += sdmmc
-
 BUILD_ESPIDF_LIB = $(BUILD)/esp-idf
 
-OBJ_ESPIDF_DIRS = $(sort $(dir $(OBJ_ESPIDF))) $(BUILD_ESPIDF_LIB) $(addprefix $(BUILD_ESPIDF_LIB)/,$(LIB_ESPIDF))
-$(OBJ_ESPIDF): | $(OBJ_ESPIDF_DIRS)
-$(OBJ_ESPIDF_DIRS):
-	$(MKDIR) -p $@
-
 define gen_espidf_lib_rule
+OBJ_ESPIDF += $(addprefix $$(BUILD)/,$(2))
+LIB_ESPIDF += $(1)
 $(BUILD_ESPIDF_LIB)/$(1)/lib$(1).a: $(addprefix $$(BUILD)/,$(2))
 	$(ECHO) "AR $$@"
 	$(Q)$(AR) cru $$@ $$^
@@ -782,6 +718,16 @@ $(eval $(call gen_espidf_lib_rule,mbedtls,$(ESPIDF_MBEDTLS_O)))
 $(eval $(call gen_espidf_lib_rule,wpa_supplicant,$(ESPIDF_WPA_SUPPLICANT_O)))
 $(eval $(call gen_espidf_lib_rule,sdmmc,$(ESPIDF_SDMMC_O)))
 
+# Create all destination build dirs before compiling IDF source
+OBJ_ESPIDF_DIRS = $(sort $(dir $(OBJ_ESPIDF))) $(BUILD_ESPIDF_LIB) $(addprefix $(BUILD_ESPIDF_LIB)/,$(LIB_ESPIDF))
+$(OBJ_ESPIDF): | $(OBJ_ESPIDF_DIRS)
+$(OBJ_ESPIDF_DIRS):
+	$(MKDIR) -p $@
+
+# Make all IDF object files depend on sdkconfig
+$(OBJ_ESPIDF): $(SDKCONFIG_H)
+
+# Add all IDF components to the set of libraries
 LIB = $(foreach lib,$(LIB_ESPIDF),$(BUILD_ESPIDF_LIB)/$(lib)/lib$(lib).a)
 
 ################################################################################
