@@ -2,7 +2,6 @@
 
 import sys
 import os
-import re
 import json
 
 import build_board_info

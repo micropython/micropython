@@ -71,10 +71,6 @@ before_script:
   - function var_search () { case "$1" in *$2*) true;; *) false;; esac; }
   - sudo dpkg --add-architecture i386
 
-  # Check if there's any board missing in TRAVIS_BOARDS
-  - cd tools && python3 -u travis_new_boards_check.py
-  - cd ..
-
   - (! var_search "${TRAVIS_SDK-}" arm || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~xenial1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
 
   # For huzzah builds
@@ -89,6 +85,10 @@ before_script:
   - (! var_search "${TRAVIS_TESTS-}" docs || pip install --user Sphinx sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter)
   - (! var_search "${TRAVIS_TESTS-}" translations || pip3 install --user polib)
 
+  # Check if there's any board missing in TRAVIS_BOARDS
+  - cd tools && python3 -u travis_new_boards_check.py
+  - cd ..
+  
   # report some good version numbers to the build
   - gcc --version
   - (! var_search "${TRAVIS_SDK-}" arm || arm-none-eabi-gcc --version)
