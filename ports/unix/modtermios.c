@@ -38,7 +38,7 @@ STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     int fd = mp_obj_get_int(fd_in);
 
     int res = tcgetattr(fd, &term);
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
 
     mp_obj_list_t *r = MP_OBJ_TO_PTR(mp_obj_new_list(7, NULL));
     r->items[0] = MP_OBJ_NEW_SMALL_INT(term.c_iflag);
@@ -95,12 +95,12 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
     }
 
     int res = cfsetispeed(&term, mp_obj_get_int(attrs->items[4]));
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
     res = cfsetospeed(&term, mp_obj_get_int(attrs->items[5]));
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
 
     res = tcsetattr(fd, when, &term);
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_termios_tcsetattr_obj, mod_termios_tcsetattr);
@@ -109,7 +109,7 @@ STATIC mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
     int res = tcgetattr(fd, &term);
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
 
     term.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
     term.c_oflag = 0;
@@ -118,7 +118,7 @@ STATIC mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
     term.c_cc[VMIN] = 1;
     term.c_cc[VTIME] = 0;
     res = tcsetattr(fd, TCSAFLUSH, &term);
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_setraw_obj, mod_termios_setraw);

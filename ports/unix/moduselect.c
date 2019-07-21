@@ -189,7 +189,7 @@ STATIC int poll_poll_internal(size_t n_args, const mp_obj_t *args) {
     self->flags = flags;
 
     int n_ready = poll(self->entries, self->len, timeout);
-    RAISE_ERRNO(n_ready, errno);
+    RAISE_ERRNO_R(n_ready, errno, -1);
     return n_ready;
 }
 
@@ -197,6 +197,10 @@ STATIC int poll_poll_internal(size_t n_args, const mp_obj_t *args) {
 /// Timeout is in milliseconds.
 STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     int n_ready = poll_poll_internal(n_args, args);
+
+    if (n_ready < 0) {
+        return MP_OBJ_NULL;
+    }
 
     if (n_ready == 0) {
         return mp_const_empty_tuple;
@@ -236,6 +240,10 @@ STATIC mp_obj_t poll_ipoll(size_t n_args, const mp_obj_t *args) {
     }
 
     int n_ready = poll_poll_internal(n_args, args);
+    if (n_ready < 0) {
+        return MP_OBJ_NULL;
+    }
+
     self->iter_cnt = n_ready;
     self->iter_idx = 0;
 

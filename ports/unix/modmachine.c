@@ -61,7 +61,8 @@ uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
         if (!fd) {
             int _fd = open("/dev/mem", O_RDWR | O_SYNC);
             if (_fd == -1) {
-                mp_raise_OSError(errno);
+                mp_raise_OSError_o(errno);
+                return 0;
             }
             fd = _fd;
         }

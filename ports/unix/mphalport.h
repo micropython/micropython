@@ -54,6 +54,9 @@ static inline void mp_hal_delay_ms(mp_uint_t ms) { usleep((ms) * 1000); }
 static inline void mp_hal_delay_us(mp_uint_t us) { usleep(us); }
 #define mp_hal_ticks_cpu() 0
 
-#define RAISE_ERRNO(err_flag, error_val) \
+#define RAISE_ERRNO_O(err_flag, error_val) \
     { if (err_flag == -1) \
-        { mp_raise_OSError(error_val); } }
+        { return mp_raise_OSError_o(error_val); } }
+#define RAISE_ERRNO_R(err_flag, error_val, ret_on_err) \
+    { if (err_flag == -1) \
+        { mp_raise_OSError_o(error_val); return ret_on_err; } }

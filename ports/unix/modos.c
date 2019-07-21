@@ -49,7 +49,7 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
 
     int res = stat(path, &sb);
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.st_mode);
@@ -89,7 +89,7 @@ STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
 
     int res = STATVFS(path, &sb);
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.f_bsize);
@@ -117,7 +117,7 @@ STATIC mp_obj_t mod_os_remove(mp_obj_t path_in) {
     // call POSIX unlink() here.
     int r = unlink(path);
 
-    RAISE_ERRNO(r, errno);
+    RAISE_ERRNO_O(r, errno);
 
     return mp_const_none;
 }
@@ -128,7 +128,7 @@ STATIC mp_obj_t mod_os_system(mp_obj_t cmd_in) {
 
     int r = system(cmd);
 
-    RAISE_ERRNO(r, errno);
+    RAISE_ERRNO_O(r, errno);
 
     return MP_OBJ_NEW_SMALL_INT(r);
 }
@@ -151,7 +151,7 @@ STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
     #else
     int r = mkdir(path, 0777);
     #endif
-    RAISE_ERRNO(r, errno);
+    RAISE_ERRNO_O(r, errno);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_mkdir_obj, mod_os_mkdir);

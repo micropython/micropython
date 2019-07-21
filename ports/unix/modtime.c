@@ -115,7 +115,7 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
         break;
         #endif
     }
-    RAISE_ERRNO(res, errno);
+    RAISE_ERRNO_O(res, errno);
 #else
     // TODO: Handle EINTR
     MP_THREAD_GIL_EXIT();
