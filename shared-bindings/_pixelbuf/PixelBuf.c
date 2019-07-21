@@ -133,7 +133,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     if (args[ARG_byteorder].u_obj == NULL)
         byteorder_str = "BGR";
     else 
-        byteorder_str = mp_obj_str_get_data(byteorder_str, bo_len);
+        byteorder_str = mp_obj_str_get_data(args[ARG_byteorder].u_obj, &bo_len);
 
     parse_byteorder_string(byteorder_str, byteorder_details);
 

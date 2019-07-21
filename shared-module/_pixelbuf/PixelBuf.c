@@ -102,7 +102,7 @@ mp_obj_t *pixelbuf_get_pixel_array(uint8_t *buf, uint len, pixelbuf_byteorder_de
     return mp_obj_new_tuple(len, elems);
 }
 
-mp_obj_t *pixelbuf_get_pixel(uint8_t *buf, pixelbuf_byteorder_obj_t *byteorder, bool dotstar) {
+mp_obj_t *pixelbuf_get_pixel(uint8_t *buf, pixelbuf_byteorder_details_t *byteorder, bool dotstar) {
     mp_obj_t elems[byteorder->bpp];
    
     elems[0] = mp_obj_new_int(buf[byteorder->byteorder.r]);
