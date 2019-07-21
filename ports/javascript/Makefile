@@ -23,11 +23,9 @@ ifdef EMSCRIPTEN
 	endif
 
 	CC = emcc
-	CPP = clang -E -D__CPP__ -D__EMSCRIPTEN__
+	CPP = clang -E -D__CPP__ -D__EMSCRIPTEN__ -Wno-macro-redefined
 	CPP += --sysroot $(EMSCRIPTEN)/system	
 	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) $(CFLAGS_EXTRA) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
-	# Act like 'emcc'
-	CPP += -U__i386 -U__i386 -Ui386 -U__SSE -U__SSE_MATH -U__SSE2 -U__SSE2_MATH -U__MMX__ -U__SSE__ -U__SSE_MATH__ -U__SSE2__ -U__SSE2_MATH__
 else
 	ifdef CLANG
 		CC=clang
@@ -58,12 +56,20 @@ SRC_C = \
 
 SRC_QSTR += $(SRC_C)
 
+ifdef EMSCRIPTEN
+	SRC_QSTR += $(BUILD)/clang_predefs.h
+endif
+
+
 OBJ = 
 OBJ = $(PY_O) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 JSFLAGS = -O0 -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" -s "BINARYEN_TRAP_MODE='clamp'" --memory-init-file 0 --js-library library.js
+
+$(BUILD)/clang_predefs.h:
+	@emcc $(JSFLAGS) -E -x c /dev/null -dM > $@
 
 all: $(BUILD)/micropython.js
 
