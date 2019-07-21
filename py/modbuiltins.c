@@ -496,7 +496,7 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
         }
 
         #if !MICROPY_PY_BUILTINS_ROUND_INT
-        mp_raise_NotImplementedError(NULL);
+        return mp_raise_NotImplementedError_o(NULL);
         #else
         mp_int_t num_dig = mp_obj_get_int(args[1]);
         if (num_dig >= 0) {
