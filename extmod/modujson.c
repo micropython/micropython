@@ -81,7 +81,9 @@ typedef struct _ujson_stream_t {
 STATIC byte ujson_stream_next(ujson_stream_t *s) {
     mp_uint_t ret = s->read(s->stream_obj, &s->cur, 1, &s->errcode);
     if (s->errcode != 0) {
-        mp_raise_OSError(s->errcode);
+        // TODO deal with raising exception
+        mp_raise_OSError_o(s->errcode);
+        return 0xff;
     }
     if (ret == 0) {
         s->cur = S_EOF;

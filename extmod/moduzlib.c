@@ -58,10 +58,14 @@ STATIC int read_src_stream(TINF_DATA *data) {
     byte c;
     mp_uint_t out_sz = stream->read(self->src_stream, &c, 1, &err);
     if (out_sz == MP_STREAM_ERROR) {
-        mp_raise_OSError(err);
+        // TODO deal with raising exception
+        mp_raise_OSError_o(err);
+        return -1;
     }
     if (out_sz == 0) {
-        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
+        // TODO deal with raising exception
+        mp_raise_o(mp_obj_new_exception(&mp_type_EOFError));
+        return -1;
     }
     return c;
 }

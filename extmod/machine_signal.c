@@ -105,7 +105,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
             }
         } else {
         error:
-            mp_raise_TypeError(NULL);
+            return mp_raise_TypeError_o(NULL);
         }
     }
 
