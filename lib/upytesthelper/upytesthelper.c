@@ -96,16 +96,15 @@ void upytest_execute_test(const char *src) {
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
 
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
+    qstr source_name = lex->source_name;
+    mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
+    mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
+    if (module_fun != MP_OBJ_NULL) {
         mp_call_function_0(module_fun);
-        nlr_pop();
-    } else {
-        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
+    }
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        mp_obj_t exc = MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception));
         if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
             // Assume that sys.exit() is called to skip the test.
             // TODO: That can be always true, we should set up convention to
