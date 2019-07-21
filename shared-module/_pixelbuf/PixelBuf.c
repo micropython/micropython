@@ -31,7 +31,7 @@
 #include "PixelBuf.h"
 #include <string.h>
 
-void pixelbuf_set_pixel_int(uint8_t *buf, mp_int_t value, pixelbuf_byteorder_obj_t *byteorder) {
+void pixelbuf_set_pixel_int(uint8_t *buf, mp_int_t value, pixelbuf_byteorder_details_t *byteorder) {
     buf[byteorder->byteorder.r] = value >> 16 & 0xff;
     buf[byteorder->byteorder.g] = (value >> 8) & 0xff;
     buf[byteorder->byteorder.b] = value & 0xff;
@@ -43,7 +43,7 @@ void pixelbuf_set_pixel_int(uint8_t *buf, mp_int_t value, pixelbuf_byteorder_obj
     }
 }
 
-void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_t *item, pixelbuf_byteorder_obj_t *byteorder, bool dotstar) {
+void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_t *item, pixelbuf_byteorder_details_t *byteorder, bool dotstar) {
     if (MP_OBJ_IS_INT(item)) {
         uint8_t *target = rawbuf ? rawbuf : buf;
         pixelbuf_set_pixel_int(target, mp_obj_get_int_truncated(item), byteorder);
@@ -94,7 +94,7 @@ void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_
     }
 }
 
-mp_obj_t *pixelbuf_get_pixel_array(uint8_t *buf, uint len, pixelbuf_byteorder_obj_t *byteorder, uint8_t step, bool dotstar) {
+mp_obj_t *pixelbuf_get_pixel_array(uint8_t *buf, uint len, pixelbuf_byteorder_details_t *byteorder, uint8_t step, bool dotstar) {
     mp_obj_t elems[len];
     for (uint i = 0; i < len; i++) {
         elems[i] = pixelbuf_get_pixel(buf + (i * step), byteorder, dotstar);

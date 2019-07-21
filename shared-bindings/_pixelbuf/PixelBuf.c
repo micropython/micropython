@@ -42,7 +42,7 @@
 
 extern const int32_t colorwheel(float pos);
 
-int parse_byteorder_string(const char *byteorder, pixelbuf_byteorder_details_t details) {
+void parse_byteorder_string(const char *byteorder, pixelbuf_byteorder_details_t details) {
     details.bpp = strlen(byteorder);
     char *dotstar = strchr(byteorder, 'D');
     char *r = strchr(byteorder, 'R');

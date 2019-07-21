@@ -56,41 +56,6 @@
 //|     PixelBuf
 
 
-STATIC void pixelbuf_byteorder_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_byteorder_type));
-    pixelbuf_byteorder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (dest[0] == MP_OBJ_NULL) {
-        // load attribute
-        mp_obj_t val;
-        if (attr == MP_QSTR_bpp) {
-            val = MP_OBJ_NEW_SMALL_INT(self->bpp);
-        } else if (attr == MP_QSTR_has_white) {
-            val = mp_obj_new_bool(self->has_white);
-        } else if (attr == MP_QSTR_has_luminosity) {
-            val = mp_obj_new_bool(self->has_luminosity);
-        } else if (attr == MP_QSTR_byteorder) {
-            mp_obj_t items[4];
-            uint8_t n = self->bpp;
-            if (self->has_luminosity || self->has_white) {
-                n = 4;
-            }
-            uint8_t *values = (uint8_t *)&(self->byteorder);
-            for (uint8_t i=0; i<n; i++) {
-                items[i] = MP_OBJ_NEW_SMALL_INT(values[i]);
-            }
-            val = mp_obj_new_tuple(n, items);
-        } else {
-            mp_raise_AttributeError(translate("no such attribute"));
-        }
-        dest[0] = val;
-    } else {
-        // delete/store attribute (ignored)
-        dest[0] = MP_OBJ_NULL;
-        mp_raise_AttributeError(translate("readonly attribute"));
-    }
-}
-
-
 //| .. function:: wheel(n)
 //|
 //|     C implementation of the common wheel() function found in many examples.
