@@ -60,13 +60,14 @@ ifdef EMSCRIPTEN
 	SRC_QSTR += $(BUILD)/clang_predefs.h
 endif
 
-
 OBJ = 
 OBJ = $(PY_O) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-JSFLAGS = -O0 -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" -s "BINARYEN_TRAP_MODE='clamp'" --memory-init-file 0 --js-library library.js
+JSFLAGS = -O0  -s "BINARYEN_TRAP_MODE='clamp'" --memory-init-file 0 --js-library library.js
+JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
+JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" 
 
 $(BUILD)/clang_predefs.h:
 	@emcc $(JSFLAGS) -E -x c /dev/null -dM > $@
