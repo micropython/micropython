@@ -28,13 +28,25 @@
 
 #include <stdint.h>
 
+// 软件复位mcu
 NORETURN void powerctrl_mcu_reset(void);
+
+// 进入bootloader
 NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr);
+
+// 检查是否通过 powerctl_mcu_reset 复位，是的话进入bootloader
 void powerctrl_check_enter_bootloader(void);
 
-int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai);
+// 配置系统时钟
+int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init);
+
+// 复位系统时钟
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2);
+
+// 进入停止模式
 void powerctrl_enter_stop_mode(void);
+
+// 进入待机模式
 void powerctrl_enter_standby_mode(void);
 
 #endif // MICROPY_INCLUDED_STM32_POWERCTRL_H

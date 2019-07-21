@@ -27,7 +27,7 @@
 // Common settings and defaults for board configuration.
 // The defaults here should be overridden in mpconfigboard.h.
 
-#include STM32_HAL_H
+#include <stm32f1xx_hal.h>
 
 /*****************************************************************************/
 // Feature settings with defaults
@@ -53,7 +53,8 @@
 #endif
 
 // Whether to enable the hardware RNG peripheral, exposed as pyb.rng()
-#ifndef MICROPY_HW_ENABLE_RNG
+#ifdef MICROPY_HW_ENABLE_RNG
+#undef  MICROPY_HW_ENABLE_RNG
 #define MICROPY_HW_ENABLE_RNG (0)
 #endif
 
@@ -65,11 +66,6 @@
 // Whether to enable the DAC peripheral, exposed as pyb.DAC
 #ifndef MICROPY_HW_ENABLE_DAC
 #define MICROPY_HW_ENABLE_DAC (0)
-#endif
-
-// Whether to enable the DCMI peripheral
-#ifndef MICROPY_HW_ENABLE_DCMI
-#define MICROPY_HW_ENABLE_DCMI (0)
 #endif
 
 // Whether to enable USB support
@@ -134,15 +130,11 @@
 #endif
 
 // Configuration for STM32F1 series (just STM32F103xx)
-#if defined(STM32F1)
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ffff7e8)
 #define PYB_EXTI_NUM_VECTORS (19)
 #define MICROPY_HW_MAX_I2C (2)
 #define MICROPY_HW_MAX_TIMER (14)
 #define MICROPY_HW_MAX_UART (5)
-#else
-#error Unsupported MCU series
-#endif
 
 #if MICROPY_HW_CLK_USE_HSI
 // Use HSI as clock source
@@ -155,12 +147,12 @@
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_OFF)
 #else
 // Use HSE as a clock source (bypass or oscillator)
-#define MICROPY_HW_CLK_VALUE (HSE_VALUE)
+#define MICROPY_HW_CLK_VALUE           (HSE_VALUE)
 #define MICROPY_HW_RCC_OSCILLATOR_TYPE (RCC_OSCILLATORTYPE_HSE)
-#define MICROPY_HW_RCC_PLL_SRC (RCC_PLLSOURCE_HSE)
-#define MICROPY_HW_RCC_CR_HSxON (RCC_CR_HSEON)
-#define MICROPY_HW_RCC_HSI_STATE (RCC_HSI_OFF)
-#define MICROPY_HW_RCC_FLAG_HSxRDY (RCC_FLAG_HSERDY)
+#define MICROPY_HW_RCC_PLL_SRC         (RCC_PLLSOURCE_HSE)
+#define MICROPY_HW_RCC_CR_HSxON        (RCC_CR_HSEON)
+#define MICROPY_HW_RCC_HSI_STATE       (RCC_HSI_OFF)
+#define MICROPY_HW_RCC_FLAG_HSxRDY     (RCC_FLAG_HSERDY)
 #if MICROPY_HW_CLK_USE_BYPASS
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_BYPASS)
 #else
@@ -189,26 +181,19 @@
 #endif
 
 // Enable hardware I2C if there are any peripherals defined
-#if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL) \
-    || defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C4_SCL)
+#if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL)
 #define MICROPY_HW_ENABLE_HW_I2C (1)
 #else
 #define MICROPY_HW_ENABLE_HW_I2C (0)
 #endif
 
 // Enable CAN if there are any peripherals defined
-#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
+#if defined(MICROPY_HW_CAN1_TX) && 0 // TODO: in planing
 #define MICROPY_HW_ENABLE_CAN (1)
+#define MICROPY_HW_MAX_CAN (1)
 #else
 #define MICROPY_HW_ENABLE_CAN (0)
 #define MICROPY_HW_MAX_CAN (0)
-#endif
-#if defined(MICROPY_HW_CAN3_TX)
-#define MICROPY_HW_MAX_CAN (3)
-#elif defined(MICROPY_HW_CAN2_TX)
-#define MICROPY_HW_MAX_CAN (2)
-#elif defined(MICROPY_HW_CAN1_TX)
-#define MICROPY_HW_MAX_CAN (1)
 #endif
 
 // Configure maximum number of CDC VCP interfaces
@@ -219,17 +204,8 @@
 // Pin definition header file
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"
 
-// D-cache clean/invalidate helpers
-#if __DCACHE_PRESENT == 1
-#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
-    (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
-#define MP_HAL_CLEAN_DCACHE(addr, size) \
-    (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
-#else
+
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)
-#endif
 
 #define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)

@@ -32,27 +32,36 @@
 #include MICROPY_PIN_DEFS_PORT_H
 #include "py/obj.h"
 
-typedef struct {
-  mp_obj_base_t base;
-  qstr name;
-  uint8_t idx;
-  uint8_t fn;
-  uint8_t unit;
-  uint8_t type;
-  void *reg; // The peripheral associated with this AF
-} pin_af_obj_t;
+// stm32f1 Pin特有功能映射定义
+enum {
+  MP_HAL_PIN_REMAP_NONE = 0, // 无重映射
+  MP_HAL_PIN_REMAP_PART1,    // 部分映射1
+  MP_HAL_PIN_REMAP_PART2,    // 部分映射2
+  MP_HAL_PIN_REMAP_FULL,     // 全部映射
+};
 
 typedef struct {
   mp_obj_base_t base;
   qstr name;
-  uint32_t port   : 4;
-  uint32_t pin    : 5;      // Some ARM processors use 32 bits/PORT
-  uint32_t num_af : 4;
+  uint8_t idx;  // 指AF功能组， 例如AF1, AF2, AF3等
+  uint8_t fn;   // 对应AF_FN_xxx 宏定义， 例如AF_FN_TIM, AF_FN_USART
+  uint8_t unit; // 同一类外设的索引, 例如SPI2 的索引是2
+  uint8_t remap_type;  // 对应MP_HAL_PIN_REMAP_xxx， 重映射值
+  uint32_t remap_mask; // 重映射mask
+  void *reg; // 对应的外设地址
+} pin_af_obj_t;
+
+typedef struct {
+  mp_obj_base_t base;       // micropython object 基类
+  qstr name;                // Pin 的名称
+  uint32_t port : 4;        // Pin 的 Port
+  uint32_t pin : 5;         // Pin 索引， 如PA11, 则索引是11
+  uint32_t num_af : 4;      // 复用功能数组大小
   uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
-  uint32_t adc_num  : 3;    // 1 bit per ADC
-  uint32_t pin_mask;
+  uint32_t adc_num : 3;     // 1 bit per ADC
+  uint32_t pin_mask;        // 管脚Set Mask
   pin_gpio_t *gpio;
-  const pin_af_obj_t *af;
+  const pin_af_obj_t *af; // 复用功能数组
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
@@ -72,9 +81,9 @@ extern const pin_named_pin_t pin_cpu_pins[];
 //extern pin_map_obj_t pin_map_obj;
 
 typedef struct {
-    mp_obj_base_t base;
-    qstr name;
-    const pin_named_pin_t *named_pins;
+  mp_obj_base_t base;
+  qstr name;
+  const pin_named_pin_t *named_pins;
 } pin_named_pins_obj_t;
 
 extern const mp_obj_type_t pin_board_pins_obj_type;

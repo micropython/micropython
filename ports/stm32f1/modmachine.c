@@ -239,20 +239,15 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
            mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
            mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
            mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-           #if !defined(STM32F0)
            mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
-           #endif
         };
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L4)
-        mp_raise_NotImplementedError("machine.freq set not supported yet");
-        #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
         mp_int_t ahb = sysclk;
-        mp_int_t apb1 = ahb / 4;
-        mp_int_t apb2 = ahb / 2;
+        mp_int_t apb1 = ahb / 2;
+        mp_int_t apb2 = ahb / 1;
         if (n_args > 1) {
             ahb = mp_obj_get_int(args[1]);
             if (n_args > 2) {
@@ -270,7 +265,6 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             __fatal_error("can't change freq");
         }
         return mp_const_none;
-        #endif
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);

@@ -35,11 +35,6 @@ typedef enum {
     PYB_UART_3 = 3,
     PYB_UART_4 = 4,
     PYB_UART_5 = 5,
-    PYB_UART_6 = 6,
-    PYB_UART_7 = 7,
-    PYB_UART_8 = 8,
-    PYB_UART_9 = 9,
-    PYB_UART_10 = 10,
 } pyb_uart_t;
 
 #define CHAR_WIDTH_8BIT (0)
@@ -70,6 +65,8 @@ extern const mp_obj_type_t pyb_uart_type;
 void uart_init0(void);
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
+
+// 串口初始化
 bool uart_init(pyb_uart_obj_t *uart_obj,
     uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow);
 void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf);
@@ -86,11 +83,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 
 static inline bool uart_tx_avail(pyb_uart_obj_t *self) {
-    #if defined(STM32F4) || defined(STM32F1)
     return self->uartx->SR & USART_SR_TXE;
-    #else
-    return self->uartx->ISR & USART_ISR_TXE;
-    #endif
 }
 
 #endif // MICROPY_INCLUDED_STM32_UART_H

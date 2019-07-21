@@ -27,18 +27,8 @@
 #define MICROPY_INCLUDED_STM32_PENDSV_H
 
 enum {
-    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #if MICROPY_PY_NETWORK_CYW43
-    PENDSV_DISPATCH_CYW43,
-    #endif
-    #endif
     PENDSV_DISPATCH_MAX
 };
-
-#if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
-#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
-#endif
 
 typedef void (*pendsv_dispatch_t)(void);
 

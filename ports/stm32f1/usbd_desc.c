@@ -47,20 +47,8 @@
 #define USBD_MANUFACTURER_STRING      "MicroPython"
 #endif
 
-#ifndef USBD_PRODUCT_HS_STRING
-#define USBD_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
-#endif
-
 #ifndef USBD_PRODUCT_FS_STRING
 #define USBD_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
-#endif
-
-#ifndef USBD_CONFIGURATION_HS_STRING
-#define USBD_CONFIGURATION_HS_STRING  "Pyboard Config"
-#endif
-
-#ifndef USBD_INTERFACE_HS_STRING
-#define USBD_INTERFACE_HS_STRING      "Pyboard Interface"
 #endif
 
 #ifndef USBD_CONFIGURATION_FS_STRING
@@ -144,11 +132,7 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
             break;
 
         case USBD_IDX_PRODUCT_STR:
-            if (pdev->dev_speed == USBD_SPEED_HIGH) {
-                str = USBD_PRODUCT_HS_STRING;
-            } else {
-                str = USBD_PRODUCT_FS_STRING;
-            }
+            str = USBD_PRODUCT_FS_STRING;
             break;
 
         case USBD_IDX_SERIAL_STR: {
@@ -173,19 +157,11 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
         }
 
         case USBD_IDX_CONFIG_STR:
-            if (pdev->dev_speed == USBD_SPEED_HIGH) {
-                str = USBD_CONFIGURATION_HS_STRING;
-            } else {
-                str = USBD_CONFIGURATION_FS_STRING;
-            }
+            str = USBD_CONFIGURATION_FS_STRING;
             break;
 
         case USBD_IDX_INTERFACE_STR:
-            if (pdev->dev_speed == USBD_SPEED_HIGH) {
-                str = USBD_INTERFACE_HS_STRING;
-            } else {
-                str = USBD_INTERFACE_FS_STRING;
-            }
+            str = USBD_INTERFACE_FS_STRING;
             break;
 
         default:

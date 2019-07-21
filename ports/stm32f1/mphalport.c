@@ -21,15 +21,6 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
 
 MP_WEAK int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-#if 0
-#ifdef USE_HOST_MODE
-        pyb_usb_host_process();
-        int c = pyb_usb_host_get_keyboard();
-        if (c != 0) {
-            return c;
-        }
-#endif
-#endif
         if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
@@ -49,9 +40,6 @@ MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
-#if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
-    lcd_print_strn(str, len);
-#endif
     mp_uos_dupterm_tx_strn(str, len);
 }
 
@@ -75,19 +63,13 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
 }
 
-#if __CORTEX_M >= 0x03
 void mp_hal_ticks_cpu_enable(void) {
     if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
         CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-        #if defined(__CORTEX_M) && __CORTEX_M == 7
-        // on Cortex-M7 we must unlock the DWT before writing to its registers
-        DWT->LAR = 0xc5acce55;
-        #endif
         DWT->CYCCNT = 0;
         DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
     }
 }
-#endif
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     uint32_t gpio_idx = ((uint32_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
@@ -97,15 +79,15 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
 }
 
 #define MP_HAL_PIN_MODE_INVALID    (4)
-// this table converts from MP_HAL_PIN_MODE_xxx to STM32F1 CRL/CRH value
+// this table converts from MP_HAL_PIN_MODE_xxx to STM32F1 CRL/CRH value, output use highest speed
 const byte mp_hal_pin_mod_cfg[7] = {
-	[MP_HAL_PIN_MODE_INPUT]          = 0x04,
-	[MP_HAL_PIN_MODE_OUTPUT]         = 0x03,
-	[MP_HAL_PIN_MODE_ALT]            = 0x0b,
-	[MP_HAL_PIN_MODE_ANALOG]         = 0x00,
-	[MP_HAL_PIN_MODE_INVALID]        = 0x00,
-	[MP_HAL_PIN_MODE_OPEN_DRAIN]     = 0x07,
-	[MP_HAL_PIN_MODE_ALT_OPEN_DRAIN] = 0x0f,
+	[MP_HAL_PIN_MODE_INPUT]          = 0x04, // floating input
+	[MP_HAL_PIN_MODE_OUTPUT]         = 0x03, // output PP, 50MHz
+	[MP_HAL_PIN_MODE_ALT]            = 0x0b, // alternat PP, 50MHz
+	[MP_HAL_PIN_MODE_ANALOG]         = 0x00, // analog input
+	[MP_HAL_PIN_MODE_INVALID]        = 0x00, // not used
+	[MP_HAL_PIN_MODE_OPEN_DRAIN]     = 0x07, // output OD, 50MHz
+	[MP_HAL_PIN_MODE_ALT_OPEN_DRAIN] = 0x0f, // alternat OD, 50MHz
 };
 
 void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
@@ -115,25 +97,32 @@ void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, u
 	uint32_t moder = mp_hal_pin_mod_cfg[mode];
 
 	// 带上拉/下拉的输入
-	if (mode  && pull ) {
-		moder = 0x08;
+	if ( (moder & 3) == 0  && pull ) {
+		moder = 0x08U;
 	}
 
     // 获取需要修改的寄存器 CRL/CRH (pin0~pin7 use CRL, pin8~pin15 use CRH)
-    register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin>7 ? 4 : 0));
+    register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin / 7 * 4));
+	
 	// pin 配置占4bit, 前2bit是CNF， 后2bit是MODE
 	// 对于CRL, mask = 0x0f << (pin * 4)
 	// 对于CRH, mask = 0x0f << ( (pin - 8) * 4 )
 	// 以上可统一为: mask = 0x0f << ( (pin % 8) * 4 )
 	*pReg = (*pReg & ~(0x0f << ( (pin%8) * 4))) | ( (moder & 0x0f) << ( (pin%8) * 4) );
 
-	// 设置上拉下拉电阻
-	if (pull > 0) {
-		gpio->ODR = (gpio->ODR & ~(0x01 << pin)) | ( (pull%2) << pin);
+	// 设置上拉下拉电阻(输入有效)
+	if (moder == 0 && pull > 0) {
+		gpio->ODR = (gpio->ODR & ~(1 << pin)) | ( (pull%2) << pin);
 	}
 	
-	// TODO: 设置AFIO
-	// 想办法使 AFIO->MAPR 及 AFIO->MAPR2 与 F4系列兼容
+	// 设置AFIO
+	if (mode == MP_HAL_PIN_MODE_ALT || mode == MP_HAL_PIN_MODE_ALT_OPEN_DRAIN) {
+		// 1. alt = 0, 及原先基本功能， 什么也不做(需要设为输出？)
+		// 2. alt = 15, 设为外部中断线
+		// 3. 其他的保持默认, 无需指定
+		
+		// 4. 有管脚映射或部分映射 如何设置?(存储AFIO->MAPRx set mask 到alt中？)
+	}
 }
 
 bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit) {
@@ -149,7 +138,7 @@ void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed) {
     GPIO_TypeDef *gpio = pin_obj->gpio;
     uint32_t pin = pin_obj->pin;
 	// FIXME: 这里需要保证是输出模式，否则会把输入变成输出
-    register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin>7 ? 0x04 : 0x00));
+    register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin / 7 * 4));
     *pReg = (*pReg & ~(0x03 << ( (pin%8) * 4))) | ( ( (speed+1) & 0x03) << ( (pin%8) *4) );
 }
 

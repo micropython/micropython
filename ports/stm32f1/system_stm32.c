@@ -108,8 +108,6 @@ void __fatal_error(const char *msg);
   * @{
   */
 
-#define CONFIG_RCC_CR_1ST  (RCC_CR_HSION);
-#define CONFIG_RCC_CR_2ND  (MICROPY_HW_RCC_CR_HSxON | RCC_CR_CSSON | RCC_CR_PLLON)
 const uint8_t AHBPrescTable[16U] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
 
@@ -118,8 +116,8 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
 /*!< Uncomment the following line if you need to relocate your vector Table in
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
-#define VECT_TAB_OFFSET  0x00 /*!< Vector Table base offset field.
-                                   This value must be a multiple of 0x200. */
+#define VECT_TAB_OFFSET 0x00 /*!< Vector Table base offset field. \
+								  This value must be a multiple of 0x200. */
 /******************************************************************************/
 
 /**
@@ -137,7 +135,7 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
 /** @addtogroup STM32Fxxx_System_Private_Variables
   * @{
   */
-  /* This variable is updated in three ways:
+/* This variable is updated in three ways:
       1) by calling CMSIS function SystemCoreClockUpdate()
       2) by calling HAL API function HAL_RCC_GetHCLKFreq()
       3) each time HAL_RCC_ClockConfig() is called to configure the system clock frequency
@@ -145,7 +143,7 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
                is no need to call the 2 first functions listed above, since SystemCoreClock
                variable is updated automatically.
   */
-  uint32_t SystemCoreClock = 16000000;
+uint32_t SystemCoreClock = 72000000U;
 
 /**
   * @}
@@ -172,153 +170,82 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
   */
 void SystemInit(void)
 {
-  /* Set configured startup clk source */
-  RCC->CR |= CONFIG_RCC_CR_1ST;
+	/* Set configured startup clk source */
+	RCC->CR |= RCC_CR_HSION;
 
-  /* Reset CFGR register */
-  RCC->CFGR &= 0x00000000U;
+	/* Reset CFGR register */
+	RCC->CFGR &= 0xF8FF0000U;
 
-  /* Reset HSxON, CSSON and PLLON bits */
-  RCC->CR &= ~ CONFIG_RCC_CR_2ND;
+	/* Reset HSxON, CSSON and PLLON bits */
+	RCC->CR &= ~(MICROPY_HW_RCC_CR_HSxON | RCC_CR_CSSON | RCC_CR_PLLON);
 
-  /* Reset PLLCFGR register */
-  // RCC->PLLCFGR = CONFIG_RCC_PLLCFGR;
+	/* Reset HSEBYP bit */
+	RCC->CR &= 0xFFFBFFFFU;
 
-  /* Reset HSEBYP bit */
-  RCC->CR &= (uint32_t)0xFFFBFFFF;
+	/* Reset PLLSRC, PLLXTPRE, PLLMUL and USBPRE/OTGFSPRE bits */
+	RCC->CFGR &= 0xFF80FFFFU;
 
-  /* Disable all interrupts */
-  RCC->CIR = 0x009F0000U;
+	/* Disable all interrupts */
+	RCC->CIR = 0x009F0000U;
 
-  /* Configure the Vector Table location add offset address ------------------*/
+	/* Configure the Vector Table location add offset address ------------------*/
 #ifdef MICROPY_HW_VTOR
-  SCB->VTOR = MICROPY_HW_VTOR;
+	SCB->VTOR = MICROPY_HW_VTOR;
+#elif defined(VECT_TAB_SRAM)
+	SCB->VTOR = SRAM1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
 #else
-#ifdef VECT_TAB_SRAM
-  SCB->VTOR = SRAM1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
-#else
-  SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
-#endif
+	SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
 #endif
 
-  /* dpgeorge: enable 8-byte stack alignment for IRQ handlers, in accord with EABI */
-  SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+	/* dpgeorge: enable 8-byte stack alignment for IRQ handlers, in accord with EABI */
+	SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 }
-
 
 /**
   * @brief  System Clock Configuration
   *
-  *         The system Clock is configured for F4/F7 as follows:
-  *         (HSx should be read as HSE or HSI depending on the value of MICROPY_HW_CLK_USE_HSI)
-  *            System Clock source            = PLL (HSx)
-  *            SYSCLK(Hz)                     = 168000000
-  *            HCLK(Hz)                       = 168000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 4
-  *            APB2 Prescaler                 = 2
-  *            HSx Frequency(Hz)              = HSx_VALUE
-  *            PLL_M                          = HSx_VALUE/1000000
-  *            PLL_N                          = 336
-  *            PLL_P                          = 4
-  *            PLL_Q                          = 7
-  *            VDD(V)                         = 3.3
-  *            Main regulator output voltage  = Scale1 mode
-  *            Flash Latency(WS)              = 5
-  *
-  *         The system Clock is configured for L4 as follows:
-  *            System Clock source            = PLL (MSI)
-  *            SYSCLK(Hz)                     = 80000000
-  *            HCLK(Hz)                       = 80000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 1
-  *            APB2 Prescaler                 = 1
-  *            MSI Frequency(Hz)              = MSI_VALUE (4000000)
-  *            LSE Frequency(Hz)              = 32768
-  *            PLL_M                          = 1
-  *            PLL_N                          = 40
-  *            PLL_P                          = 7
-  *            PLL_Q                          = 2
-  *            PLL_R                          = 2 <= This is the source for SysClk, not as on F4/7 PLL_P
-  *            Flash Latency(WS)              = 4
-  * @param  None
-  * @retval None
-  *
-  * PLL is configured as follows:
-  *
-  *     VCO_IN
-  *         F4/F7 = HSx / M
-  *         L4    = MSI / M
-  *     VCO_OUT
-  *         F4/F7 = HSx / M * N
-  *         L4    = MSI / M * N
-  *     PLLCLK
-  *         F4/F7 = HSx / M * N / P
-  *         L4    = MSI / M * N / R
-  *     PLL48CK
-  *         F4/F7 = HSx / M * N / Q
-  *         L4    = MSI / M * N / Q  USB Clock is obtained over PLLSAI1
-  *
-  *     SYSCLK = PLLCLK
-  *     HCLK   = SYSCLK / AHB_PRESC
-  *     PCLKx  = HCLK / APBx_PRESC
-  *
-  * Constraints on parameters:
-  *
-  *     VCO_IN between 1MHz and 2MHz (2MHz recommended)
-  *     VCO_OUT between 192MHz and 432MHz
-  *     HSE = 8MHz
-  *     HSI = 16MHz
-  *     M = 2 .. 63 (inclusive)
-  *     N = 192 ... 432 (inclusive)
-  *     P = 2, 4, 6, 8
-  *     Q = 2 .. 15 (inclusive)
-  *
-  *     AHB_PRESC=1,2,4,8,16,64,128,256,512
-  *     APBx_PRESC=1,2,4,8,16
-  *
   * Output clocks:
   *
-  * CPU             SYSCLK      max 168MHz
+  * CPU             SYSCLK      max 72MHz
   * USB,RNG,SDIO    PLL48CK     must be 48MHz for USB
-  * AHB             HCLK        max 168MHz
-  * APB1            PCLK1       max 42MHz
-  * APB2            PCLK2       max 84MHz
+  * AHB             HCLK        max 72MHz
+  * APB1            PCLK1       max 36MHz
+  * APB2            PCLK2       max 72MHz
   *
   * Timers run from APBx if APBx_PRESC=1, else 2x APBx
   */
 void SystemClock_Config(void)
 {
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    RCC_OscInitTypeDef RCC_OscInitStruct;
+	/* Enable Power Control clock */
+	__HAL_RCC_PWR_CLK_ENABLE();
 
-    /* Enable Power Control clock */
-    __HAL_RCC_PWR_CLK_ENABLE();
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {
+		.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2),
+		.AHBCLKDivider = RCC_SYSCLK_DIV1,
+		.APB1CLKDivider = RCC_HCLK_DIV2,
+		.APB2CLKDivider = RCC_HCLK_DIV1,
+	};
 
-    /* Enable HSE Oscillator and activate PLL with HSE as source */
-    RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
-    RCC_OscInitStruct.HSEState       = MICROPY_HW_RCC_HSE_STATE;
-    RCC_OscInitStruct.HSEPredivValue = MICROPY_HW_HSE_PREDIV;
+	RCC_OscInitTypeDef RCC_OscInitStruct = {
+		.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE,
+		.HSEState = MICROPY_HW_RCC_HSE_STATE,
+		.HSEPredivValue = MICROPY_HW_HSE_PREDIV,
+		.HSIState = MICROPY_HW_RCC_HSI_STATE,
+		.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT,
+		.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC,
+		.PLL.PLLState = RCC_PLL_ON,
+		.PLL.PLLMUL = MICROPY_HW_CLK_PLLMUL,
+	};
 
-    RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-    RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
-    RCC_OscInitStruct.PLL.PLLState  = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLMUL    = MICROPY_HW_CLK_PLLMUL;
+	/* Enable HSE Oscillator and activate PLL with HSE as source */
 
-	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-    RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	{
+		__fatal_error("HAL_RCC_OscConfig");
+	}
 
-    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-      __fatal_error("HAL_RCC_OscConfig");
-    }
-
-    uint32_t vco_out = (MICROPY_HW_CLK_VALUE / 2000000);
-    uint32_t sysclk_mhz = vco_out;
-    bool need_pllsai = vco_out % 48 != 0;
-    if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pllsai) != 0) {
-        __fatal_error("HAL_RCC_ClockConfig");
-    }
+	if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct) != 0)
+	{
+		__fatal_error("HAL_RCC_ClockConfig");
+	}
 }

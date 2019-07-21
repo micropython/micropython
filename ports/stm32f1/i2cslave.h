@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_I2CSLAVE_H
 #define MICROPY_INCLUDED_STM32_I2CSLAVE_H
 
-#include STM32_HAL_H
+#include <stm32f1xx_hal.h>
 
 typedef I2C_TypeDef i2c_slave_t;
 

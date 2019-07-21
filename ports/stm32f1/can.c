@@ -117,28 +117,6 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
             __HAL_RCC_CAN1_CLK_ENABLE();
             break;
         #endif
-
-        #if defined(MICROPY_HW_CAN2_TX)
-        case PYB_CAN_2:
-            CANx = CAN2;
-            sce_irq = CAN2_SCE_IRQn;
-            pins[0] = MICROPY_HW_CAN2_TX;
-            pins[1] = MICROPY_HW_CAN2_RX;
-            __HAL_RCC_CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
-            __HAL_RCC_CAN2_CLK_ENABLE();
-            break;
-        #endif
-
-        #if defined(MICROPY_HW_CAN3_TX)
-        case PYB_CAN_3:
-            CANx = CAN3;
-            sce_irq = CAN3_SCE_IRQn;
-            pins[0] = MICROPY_HW_CAN3_TX;
-            pins[1] = MICROPY_HW_CAN3_RX;
-            __HAL_RCC_CAN3_CLK_ENABLE(); // CAN3 is a "master" and doesn't need CAN1 enabled as well
-            break;
-        #endif
-
         default:
             return false;
     }
@@ -412,7 +390,6 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
 /// The physical pins of the CAN busses are:
 ///
 ///   - `CAN(1)` is on `YA`: `(RX, TX) = (Y3, Y4) = (PB8, PB9)`
-///   - `CAN(2)` is on `YB`: `(RX, TX) = (Y5, Y6) = (PB12, PB13)`
 STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -425,14 +402,6 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
         #ifdef MICROPY_HW_CAN1_NAME
         } else if (strcmp(port, MICROPY_HW_CAN1_NAME) == 0) {
             can_idx = PYB_CAN_1;
-        #endif
-        #ifdef MICROPY_HW_CAN2_NAME
-        } else if (strcmp(port, MICROPY_HW_CAN2_NAME) == 0) {
-            can_idx = PYB_CAN_2;
-        #endif
-        #ifdef MICROPY_HW_CAN3_NAME
-        } else if (strcmp(port, MICROPY_HW_CAN3_NAME) == 0) {
-            can_idx = PYB_CAN_3;
         #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%s) doesn't exist", port));
@@ -496,24 +465,6 @@ STATIC mp_obj_t pyb_can_deinit(mp_obj_t self_in) {
         __HAL_RCC_CAN1_FORCE_RESET();
         __HAL_RCC_CAN1_RELEASE_RESET();
         __HAL_RCC_CAN1_CLK_DISABLE();
-    #if defined(CAN2)
-    } else if (self->can.Instance == CAN2) {
-        HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
-        HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
-        HAL_NVIC_DisableIRQ(CAN2_SCE_IRQn);
-        __HAL_RCC_CAN2_FORCE_RESET();
-        __HAL_RCC_CAN2_RELEASE_RESET();
-        __HAL_RCC_CAN2_CLK_DISABLE();
-    #endif
-    #if defined(CAN3)
-    } else if (self->can.Instance == CAN3) {
-        HAL_NVIC_DisableIRQ(CAN3_RX0_IRQn);
-        HAL_NVIC_DisableIRQ(CAN3_RX1_IRQn);
-        HAL_NVIC_DisableIRQ(CAN3_SCE_IRQn);
-        __HAL_RCC_CAN3_FORCE_RESET();
-        __HAL_RCC_CAN3_RELEASE_RESET();
-        __HAL_RCC_CAN3_CLK_DISABLE();
-    #endif
     }
     return mp_const_none;
 }

@@ -50,8 +50,6 @@
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
 #if defined(MICROPY_HW_USB_FS)
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#elif defined(MICROPY_HW_USB_HS)
-#define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
 #else
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
 #endif
@@ -237,9 +235,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_msc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_empty_tuple_obj)} },
         { MP_QSTR_hid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&pyb_usb_hid_mouse_obj)} },
-        #if USBD_SUPPORT_HS_MODE
-        { MP_QSTR_high_speed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        #endif
     };
 
     // fetch the current usb mode -> pyb.usb_mode()
@@ -395,12 +390,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         // need to keep a copy of this so report_desc does not get GC'd
         MP_STATE_PORT(pyb_hid_report_desc) = items[4];
     }
-
-    #if USBD_SUPPORT_HS_MODE
-    if (args[ARG_high_speed].u_bool) {
-        mode |= USBD_MODE_HIGH_SPEED;
-    }
-    #endif
 
     // init the USB device
     if (!pyb_usb_dev_init(vid, pid, mode, msc_n, msc_unit, &hid_info)) {
@@ -808,70 +797,5 @@ const mp_obj_type_t pyb_usb_hid_type = {
     .protocol = &pyb_usb_hid_stream_p,
     .locals_dict = (mp_obj_dict_t*)&pyb_usb_hid_locals_dict,
 };
-
-/******************************************************************************/
-// code for experimental USB OTG support
-
-#ifdef USE_HOST_MODE
-
-#include "led.h"
-#include "usbh_core.h"
-#include "usbh_usr.h"
-#include "usbh_hid_core.h"
-#include "usbh_hid_keybd.h"
-#include "usbh_hid_mouse.h"
-
-__ALIGN_BEGIN USBH_HOST USB_Host __ALIGN_END ;
-
-static int host_is_enabled = 0;
-
-void pyb_usb_host_init(void) {
-    if (!host_is_enabled) {
-        // only init USBH once in the device's power-lifetime
-        /* Init Host Library */
-        USBH_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USB_Host, &HID_cb, &USR_Callbacks);
-    }
-    host_is_enabled = 1;
-}
-
-void pyb_usb_host_process(void) {
-    USBH_Process(&USB_OTG_Core, &USB_Host);
-}
-
-uint8_t usb_keyboard_key = 0;
-
-// TODO this is an ugly hack to get key presses
-uint pyb_usb_host_get_keyboard(void) {
-    uint key = usb_keyboard_key;
-    usb_keyboard_key = 0;
-    return key;
-}
-
-void USR_MOUSE_Init(void) {
-    led_state(4, 1);
-    USB_OTG_BSP_mDelay(100);
-    led_state(4, 0);
-}
-
-void USR_MOUSE_ProcessData(HID_MOUSE_Data_TypeDef *data) {
-    led_state(4, 1);
-    USB_OTG_BSP_mDelay(50);
-    led_state(4, 0);
-}
-
-void USR_KEYBRD_Init(void) {
-    led_state(4, 1);
-    USB_OTG_BSP_mDelay(100);
-    led_state(4, 0);
-}
-
-void USR_KEYBRD_ProcessData(uint8_t pbuf) {
-    led_state(4, 1);
-    USB_OTG_BSP_mDelay(50);
-    led_state(4, 0);
-    usb_keyboard_key = pbuf;
-}
-
-#endif // USE_HOST_MODE
 
 #endif // MICROPY_HW_ENABLE_USB

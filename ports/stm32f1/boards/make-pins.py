@@ -30,8 +30,31 @@ CONDITIONAL_VAR = {
     'CAN'   : 'MICROPY_HW_CAN{num}_TX',
 }
 
+REMAP_FN = {
+    'SPI1'     : 1<<0,
+    'I2C1'     : 1<<1,
+    'USART1'   : 1<<2,
+    'USART2'   : 1<<3,
+    'USART3'   : 3<<4,  # use 2bit
+    'TIM1'     : 3<<6,  # use 2bit
+    'TIM2'     : 3<<8,  # use 2bit
+    'TIM3'     : 3<<10, # use 2bit
+    'TIM4'     : 1<<12,
+    'CAN1'     : 3<<13, # use 2bit
+    'RCC_OSC'  : 1<<15,
+    'TIM5_CH4' : 1<<16,
+# unused
+#    'ADC1_ETRGINJ' : 1<<17,
+#    'ADC1_ETRGREG' : 1<<18,
+#    'ADC2_ETRGINJ' : 1<<19,
+#    'ADC2_ETRGREG' : 1<<20,
+}
+
 def parse_port_pin(name_str):
-    """Parses a string and returns a (port-num, pin-num) tuple."""
+    """解析字符串到 (port-num, pin-num) 元组.  
+       port-num : 从A开始的索引(0开始)  
+       pin-num  : 管脚索引 PA11, 值是11
+    """
     if len(name_str) < 3:
         raise ValueError("Expecting pin name to be at least 3 charcters.")
     if name_str[0] != 'P':
@@ -82,19 +105,21 @@ def print_conditional_endif(cond_var, file=None):
 
 
 class AlternateFunction(object):
-    """Holds the information associated with a pins alternate function."""
+    """管理管脚复用功能信息信息"""
 
     def __init__(self, idx, af_str):
+        """ idx: 功能索引[0,15]                       
+            af_str: 复用功能字符串, `USART1_TX`, `SPI1_NSS`等
+        """
         self.idx = idx
         # Special case. We change I2S2ext_SD into I2S2_EXTSD so that it parses
         # the same way the other peripherals do.
         af_str = af_str.replace('ext_', '_EXT')
 
         self.af_str = af_str
-
-        self.func = ''
-        self.fn_num = None
-        self.pin_type = ''
+        self.func = ''            # 复用功能(外设,    eg: USART)
+        self.fn_num = None        # 功能编号(外设序号, eg: 1), 
+        self.pin_type = ''        # 功能具体管脚(外设管脚, eg: TX)
         self.supported = False
 
         af_words = af_str.split('_', 1)
@@ -130,8 +155,19 @@ class AlternateFunction(object):
         fn_num = self.fn_num
         if fn_num is None:
             fn_num = 0
-        print('({:2d}, {:8s}, {:2d}, {:10s}, {:8s}), // {:s}'.format(self.idx,
-              self.func, fn_num, self.pin_type, self.ptr(), self.af_str))
+        remap_mask = 0
+        if self.ptr() in REMAP_FN:
+            remap_mask = REMAP_FN[self.ptr()]
+        print('({:2d}, {:8s}, {:2d}, {:10s}, {:#08x}, {:8s}), // {:s}'.format(
+            self.idx,
+            self.func, 
+            fn_num, 
+            # self.pin_type,
+            'MP_HAL_PIN_REMAP_NONE',  # TODO: 这里需要依据管脚来判断插入复用映射类型, 用于设置AFIO->MAPRx
+            remap_mask,
+            self.ptr(), 
+            self.af_str)
+        )
         print_conditional_endif(cond_var)
 
     def qstr_list(self):
@@ -165,28 +201,13 @@ class Pin(object):
     def parse_adc(self, adc_str):
         if (adc_str[:3] != 'ADC'):
             return
-
-        if adc_str.find('_INP') != -1:
-            # STM32H7xx, entries have the form: ADCxx_IN[PN]yy/...
-            # for now just pick the entry with the most ADC periphs
-            adc, channel = None, None
-            for ss in adc_str.split('/'):
-                if ss.find('_INP') != -1:
-                    a, c = ss.split('_')
-                    if adc is None or len(a) > len(adc):
-                        adc, channel = a, c
-            if adc is None:
-                return
-            channel = channel[3:]
-        else:
-            # all other MCUs, entries have the form: ADCxx_INyy
-            adc, channel = adc_str.split('_')
-            channel = channel[2:]
-
+        
+        # all other MCUs, entries have the form: ADCxx_INyy
+        adc, channel = adc_str.split('_')
+        self.adc_channel = int(channel[2:])
         for idx in range(3, len(adc)):
             adc_num = int(adc[idx]) # 1, 2, or 3
             self.adc_num |= (1 << (adc_num - 1))
-        self.adc_channel = int(channel)
 
     def parse_af(self, af_idx, af_strs_in):
         if len(af_strs_in) == 0:
@@ -270,7 +291,6 @@ class NamedPin(object):
 
 
 class Pins(object):
-
     def __init__(self):
         self.cpu_pins = []   # list of NamedPin objects
         self.board_pins = [] # list of NamedPin objects
@@ -290,11 +310,11 @@ class Pins(object):
                 except:
                     continue
                 pin = Pin(port_num, pin_num)
-                for af_idx in range(af_col, len(row)):
+                for af_idx in range(af_col, len(row)): # 从AF0列开始遍历至行结尾
                     if af_idx < af_col + 16:
                         pin.parse_af(af_idx - af_col, row[af_idx])
                     elif af_idx == af_col + 16:
-                        pin.parse_adc(row[af_idx])
+                        pin.parse_adc(row[af_idx])    # 第(af_col+16)列定义为ADC复用列
                 self.cpu_pins.append(NamedPin(pin.cpu_pin_name(), pin))
 
     def parse_board_file(self, filename):
@@ -323,7 +343,7 @@ class Pins(object):
     def print(self):
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
-            if pin.is_board_pin():
+            if pin.is_board_pin():        # 只输出板子定义的管脚
                 pin.print()
         self.print_named('cpu', self.cpu_pins)
         print('')
@@ -352,6 +372,7 @@ class Pins(object):
 
     def print_header(self, hdr_filename, obj_decls):
         with open(hdr_filename, 'wt') as hdr_file:
+            hdr_file.write("// ----- Pins.print_header start\n")
             if obj_decls:
                 for named_pin in self.cpu_pins:
                     pin = named_pin.pin()
@@ -363,6 +384,7 @@ class Pins(object):
             # provide #define's mapping board to cpu name
             for named_pin in self.board_pins:
                 hdr_file.write("#define pyb_pin_{:s} pin_{:s}\n".format(named_pin.name(), named_pin.pin().cpu_pin_name()))
+            hdr_file.write("// ----- Pins.print_header end\n")
 
     def print_qstr(self, qstr_filename):
         with open(qstr_filename, 'wt') as qstr_file:
@@ -386,6 +408,7 @@ class Pins(object):
 
     def print_af_hdr(self, af_const_filename):
         with open(af_const_filename,  'wt') as af_const_file:
+            af_const_file.write("// ----- Pins.print_af_hdr start\n")
             af_hdr_set = set([])
             mux_name_width = 0
             for named_pin in self.cpu_pins:
@@ -406,6 +429,7 @@ class Pins(object):
                 print('    { %-*s %s },' % (mux_name_width + 26, key, val),
                       file=af_const_file)
                 print_conditional_endif(cond_var, file=af_const_file)
+            af_const_file.write("// ---- Pins.print_af_hdr end\n")
 
     def print_af_defs(self, af_defs_filename, cmp_strings):
         with open(af_defs_filename,  'wt') as af_defs_file:
@@ -459,7 +483,7 @@ def main():
         "-a", "--af",
         dest="af_filename",
         help="Specifies the alternate function file for the chip",
-        default="stm32f4xx_af.csv"
+        default="stm32f1xx_af.csv"
     )
     parser.add_argument(
         "--af-const",
@@ -494,7 +518,7 @@ def main():
         "-p", "--prefix",
         dest="prefix_filename",
         help="Specifies beginning portion of generated pins file",
-        default="stm32f4xx_prefix.c"
+        default="stm32f1xx_prefix.c"
     )
     parser.add_argument(
         "-q", "--qstr",
@@ -518,21 +542,24 @@ def main():
 
     pins = Pins()
 
-    print('// This file was automatically generated by make-pins.py')
+    # 输出生成文件头部
+    print('// This file was automatically generated by boards/make-pins.py')
     print('//')
     if args.af_filename:
         print('// --af {:s}'.format(args.af_filename))
-        pins.parse_af_file(args.af_filename, 1, 2)
+        pins.parse_af_file(args.af_filename, 1, 2)  # 解析复用功能定义文件.csv
 
     if args.board_filename:
         print('// --board {:s}'.format(args.board_filename))
-        pins.parse_board_file(args.board_filename)
+        pins.parse_board_file(args.board_filename) # 解析MCU板子管脚及定义文件.csv
 
+    # 读取stm32f1xx_prefix.c文件
     if args.prefix_filename:
         print('// --prefix {:s}'.format(args.prefix_filename))
         print('')
         with open(args.prefix_filename, 'r') as prefix_file:
             print(prefix_file.read())
+
     pins.print()
     pins.print_adc(1)
     pins.print_adc(2)

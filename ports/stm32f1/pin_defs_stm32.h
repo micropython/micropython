@@ -119,6 +119,7 @@ enum {
 #define GPIO_AF5_I2S3   GPIO_AF5_I2S3ext
 #define GPIO_AF6_I2S2   GPIO_AF6_I2S2ext
 #define GPIO_AF6_I2S3   GPIO_AF6_SPI3
+#define GPIO_AF6_CAN1   6
 #define GPIO_AF7_I2S2   GPIO_AF7_SPI2
 #define GPIO_AF7_I2S3   GPIO_AF7_I2S3ext
 

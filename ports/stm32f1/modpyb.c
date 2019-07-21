@@ -187,10 +187,6 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
 
-#if MICROPY_HW_ENABLE_RNG
-    { MP_ROM_QSTR(MP_QSTR_rng), MP_ROM_PTR(&pyb_rng_get_obj) },
-#endif
-
 #if MICROPY_HW_ENABLE_RTC
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
 #endif

@@ -3,20 +3,17 @@
 #define MICROPY_HW_BOARD_NAME       "QiMing STM32F103RC"
 #define MICROPY_HW_MCU_NAME         "STM32F103RC"
 
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
-#define MICROPY_PY_USOCKET          (0)
-#define MICROPY_PY_NETWORK          (0)
-#define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
 #define MICROPY_VFS_FAT             (0)
+#define MICROPY_EMIT_THUMB          (0)
+#define MICROPY_EMIT_INLINE_THUMB   (0)
+
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 
-#define MICROPY_HW_HAS_SWITCH       (1)		// has 2 buttons KEY0=PC12, KEY1=PD2
+// #define MICROPY_HW_HAS_SWITCH       (0)		// has 2 buttons KEY0=PC12, KEY1=PD2
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
+#define MICROPY_HW_USB_CDC_NUM      (0)
 
 // HSE is 8MHz, TODO: Clock need calc
 #define MICROPY_HW_CLK_USE_HSE (1)
@@ -24,7 +21,7 @@
 #define MICROPY_HW_HSE_PREDIV  (RCC_HSE_PREDIV_DIV1)
 #define MICROPY_HW_CLK_PLLMUL  (RCC_PLL_MUL9) // mul pull clock HSE(8MHz) / 1 * 9 = 72MHz
 
-#define MICROPY_HW_FLASH_LATENCY FLASH_ACR_LATENCY_2
+// #define MICROPY_HW_FLASH_LATENCY FLASH_ACR_LATENCY_2
 
 // The board has a 32kHz crystal for the RTC
 #define MICROPY_HW_RTC_USE_LSE      (1)
@@ -33,8 +30,8 @@
 
 // --------------------------------------------------------------
 // USART1
-#define MICROPY_HW_UART1_TX     (pin_A9)   // PA9,PB6
-#define MICROPY_HW_UART1_RX     (pin_A10)  // PA10,PB7
+#define MICROPY_HW_UART1_TX     (pin_A9)   // [PA9/PA10,PB6/PB7]
+#define MICROPY_HW_UART1_RX     (pin_A10)
 
 // USART2
 #define MICROPY_HW_UART2_TX     (pin_A2)  // PA2
@@ -58,7 +55,6 @@
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)  // PB8,PB6
 #define MICROPY_HW_I2C1_SDA (pin_B7)  // PB9,PB7
-
 #define MICROPY_HW_I2C2_SCL (pin_B10) // PB10
 #define MICROPY_HW_I2C2_SDA (pin_B11) // PB11
 
@@ -80,20 +76,18 @@
 #define MICROPY_HW_SPI3_MOSI (pin_B5)  // PB5,PC12
 
 // 1 x CAN busses
-// #define MICROPY_HW_CAN1_TX (pin_B9) // PB9,PD1,PA12
-// #define MICROPY_HW_CAN1_RX (pin_B8) // PB8,PD0,PA11
-// #define MICROPY_HW_CAN2_TX (pin_B6) // PB6,PB13
-// #define MICROPY_HW_CAN2_RX (pin_B5) // PB5,PB12
+#define MICROPY_HW_CAN1_TX (pin_B9) // PB9,PD1,PA12
+#define MICROPY_HW_CAN1_RX (pin_B8) // PB8,PD0,PA11
 
 // DAC
 // DAC_OUT1 PA4
 // DAC_OUT2 PA5
 
 // KEY0 has no pullup or pulldown, and pressing the switch makes the input go low
-#define MICROPY_HW_USRSW_PIN        (pin_C12)
-#define MICROPY_HW_USRSW_PULL       (GPIO_PULLUP)
-#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
-#define MICROPY_HW_USRSW_PRESSED    (0)
+// #define MICROPY_HW_USRSW_PIN        (pin_C12)
+// #define MICROPY_HW_USRSW_PULL       (GPIO_PULLUP)
+// #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
+// #define MICROPY_HW_USRSW_PRESSED    (0)
 
 // KEY1 - no support for multiple user buttons, yet
 // pin_E3

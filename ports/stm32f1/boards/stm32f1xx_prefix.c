@@ -6,14 +6,17 @@
 #include "py/mphal.h"
 #include "pin.h"
 
-#define AF(af_idx, af_fn, af_unit, af_type, af_ptr) \
+// AF快捷宏
+// [af索引, 外设(枚举), 外设序号, 外设具体Pin, 外设实例地址]
+#define AF(af_idx, af_fn, af_unit, af_remap_type, af_remap_mask, af_ptr) \
 { \
     { &pin_af_type }, \
     .name = MP_QSTR_AF ## af_idx ## _ ## af_fn ## af_unit, \
     .idx = (af_idx), \
     .fn = AF_FN_ ## af_fn, \
     .unit = (af_unit), \
-    .type = AF_PIN_TYPE_ ## af_fn ## _ ## af_type, \
+    .remap_type = af_remap_type, \
+    .remap_mask = af_remap_mask, \
     .reg = (af_ptr) \
 }
 

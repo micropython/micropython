@@ -27,8 +27,6 @@
 #define MICROPY_INCLUDED_STM32_CAN_H
 
 #define PYB_CAN_1 (1)
-#define PYB_CAN_2 (2)
-#define PYB_CAN_3 (3)
 
 extern const mp_obj_type_t pyb_can_type;
 

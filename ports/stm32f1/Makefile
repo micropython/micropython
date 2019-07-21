@@ -69,7 +69,6 @@ CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
-CFLAGS += -DSTM32_HAL_H='<stm32f1xx_hal.h>'
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -185,12 +184,8 @@ SRC_LIBM = $(addprefix lib/libm/,\
 	sf_tan.c \
 	wf_lgamma.c \
 	wf_tgamma.c \
+	ef_sqrt.c \
 	)
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f1))
-SRC_LIBM += lib/libm/ef_sqrt.c
-else
-SRC_LIBM += lib/libm/thumb_vfp_sqrtf.c
-endif
 endif
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -245,9 +240,6 @@ SRC_C = \
 	modstm.c \
 	moduos.c \
 	modutime.c \
-	modusocket.c \
-	network_lan.c \
-	modnetwork.c \
 	extint.c \
 	usrsw.c \
 	rtc.c \
@@ -308,50 +300,6 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_bot.c \
 	class/src/usbd_msc_scsi.c \
 	)
-
-ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
-CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
-SRC_C += sdio.c
-EXTMOD_SRC_C += extmod/network_cyw43.c
-DRIVERS_SRC_C += drivers/cyw43/cyw43_ctrl.c drivers/cyw43/cyw43_lwip.c
-LIBS += $(TOP)/drivers/cyw43/libcyw43.a
-endif
-
-ifneq ($(MICROPY_PY_WIZNET5K),0)
-WIZNET5K_DIR=drivers/wiznet5k
-INC += -I$(TOP)/$(WIZNET5K_DIR)
-CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-SRC_MOD += network_wiznet5k.c modnwwiznet5k.c
-SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
-	ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
-	ethernet/wizchip_conf.c \
-	ethernet/socket.c \
-	internet/dns/dns.c \
-	)
-endif
-
-# for CC3000 module
-ifeq ($(MICROPY_PY_CC3K),1)
-CC3000_DIR=drivers/cc3000
-INC += -I$(TOP)/$(CC3000_DIR)/inc
-CFLAGS_MOD += -DMICROPY_PY_CC3K=1
-SRC_MOD += modnwcc3k.c
-SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
-	cc3000_common.c \
-	evnt_handler.c \
-	hci.c \
-	netapp.c \
-	nvmem.c \
-	security.c \
-	socket.c \
-	wlan.c \
-	ccspi.c \
-	inet_ntop.c \
-	inet_pton.c \
-	patch.c \
-	patch_prog.c \
-	)
-endif
 
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'

@@ -84,6 +84,9 @@
 #define USE_RTOS        0
 #define USE_SPI_CRC     1
 
+#define CAN_FIFO0                   ((uint8_t)0x00)  /*!< CAN FIFO 0 used to receive */
+#define CAN_FIFO1                   ((uint8_t)0x01)  /*!< CAN FIFO 1 used to receive */
+
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)
 

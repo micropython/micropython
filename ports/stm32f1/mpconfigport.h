@@ -161,12 +161,6 @@
 #define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_FRAMEBUF         (1)
-#ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET          (1)
-#endif
-#ifndef MICROPY_PY_NETWORK
-#define MICROPY_PY_NETWORK          (1)
-#endif
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -201,7 +195,6 @@ extern const struct _mp_obj_module_t mp_module_uhashlib;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if MICROPY_PY_STM
@@ -210,19 +203,9 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define STM_BUILTIN_MODULE
 #endif
 
-#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
-// usocket implementation provided by lwIP
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
-#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_lwip) },
-#elif MICROPY_PY_USOCKET
-// usocket implementation provided by skeleton wrapper
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_usocket) },
-#else
 // no usocket module
 #define SOCKET_BUILTIN_MODULE
 #define SOCKET_BUILTIN_MODULE_WEAK_LINKS
-#endif
 
 #if MICROPY_PY_USSL
 #define SSL_BUILTIN_MODULE_WEAK_LINKS       { MP_ROM_QSTR(MP_QSTR_ssl), MP_ROM_PTR(&mp_module_ussl) },
@@ -230,11 +213,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define SSL_BUILTIN_MODULE_WEAK_LINKS
 #endif
 
-#if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
-#else
 #define NETWORK_BUILTIN_MODULE
-#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
@@ -372,11 +351,6 @@ static inline mp_uint_t disable_irq(void) {
 
 #define MICROPY_THREAD_YIELD()
 #endif
-
-// The LwIP interface must run at a raised IRQ priority
-#define MICROPY_PY_LWIP_ENTER   uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_REENTER irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_EXIT    restore_irq_pri(irq_state);
 
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)
