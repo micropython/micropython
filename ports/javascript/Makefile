@@ -23,8 +23,9 @@ ifdef EMSCRIPTEN
 	endif
 
 	CC = emcc
-	CPP = clang -E -D__CPP__ -D__EMSCRIPTEN__ -Wno-macro-redefined
-	CPP += --sysroot $(EMSCRIPTEN)/system	
+	CPP = clang -E -undef -D__CPP__ -D__EMSCRIPTEN__
+	CPP += --sysroot $(EMSCRIPTEN)/system
+	CPP += -include $(BUILD)/clang_predefs.h	
 	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) $(CFLAGS_EXTRA) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
 else
 	ifdef CLANG
@@ -54,11 +55,14 @@ SRC_C = \
 	mphalport.c \
 	modutime.c \
 
-SRC_QSTR += $(SRC_C)
-
+#force preprocessor env to be created before qstr extraction
 ifdef EMSCRIPTEN
 	SRC_QSTR += $(BUILD)/clang_predefs.h
 endif
+
+SRC_QSTR += $(SRC_C)
+
+
 
 OBJ = 
 OBJ = $(PY_O) 
@@ -70,7 +74,7 @@ JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
 JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" 
 
 $(BUILD)/clang_predefs.h:
-	@emcc $(JSFLAGS) -E -x c /dev/null -dM > $@
+	@emcc $(CFLAGS) $(CFLAGS_EXTRA) $(JSFLAGS) -E -x c /dev/null -dM > $@
 
 all: $(BUILD)/micropython.js
 
