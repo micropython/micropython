@@ -125,7 +125,7 @@ typedef struct _mp_call_args_t {
 // prepares argument array suitable for passing to ->call() method of a
 // function object (and mp_call_function_n_kw()).
 // (Only needed in stackless mode.)
-void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args);
+int mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args);
 #endif
 
 mp_obj_t mp_unpack_sequence(mp_obj_t seq, size_t num, mp_obj_t *items);

@@ -247,7 +247,15 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     #endif
 
     // TODO write test where this fails
-    INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
+    if (INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args) == MP_OBJ_NULL) {
+        #if MICROPY_ENABLE_PYSTACK
+        mp_nonlocal_free(code_state, sizeof(mp_code_state_t));
+        #else
+        m_del_var(mp_code_state_t, byte, state_size, code_state);
+        #endif
+        // exception
+        return NULL;
+    }
 
     // execute the byte code with the correct globals context
     mp_globals_set(self->globals);
