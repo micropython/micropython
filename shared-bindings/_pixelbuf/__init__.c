@@ -42,9 +42,11 @@
 //| .. module:: _pixelbuf
 //|   :synopsis: A fast RGB(W) pixel buffer library for like NeoPixel and DotStar.
 //|
-//| The `_pixelbuf` module provides :py:class:`PixelBuf` and :py:class:`ByteOrder` classes to accelerate
+//| The `_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
 //|
+//| Byteorders are configured with strings, such as "RGB" or "RGBD".
+//| TODO: Pull in docs from pypixelbuf.
 
 //| Libraries
 //|
@@ -52,31 +54,6 @@
 //|     :maxdepth: 3
 //|
 //|     PixelBuf
-
-//| .. class:: ByteOrder()
-//|
-//|   Classes representing byteorders for circuitpython
-
-
-//|   .. attribute:: bpp
-//|
-//|     The number of bytes per pixel (read-only)
-//|
-
-//|   .. attribute:: has_white
-//|
-//|     Whether the pixel has white (in addition to RGB)
-//|
-
-//|   .. attribute:: has_luminosity
-//|
-//|     Whether the pixel has luminosity (in addition to RGB)
-//|
-
-//|   .. attribute:: byteorder
-//|
-//|     Tuple of byte order (r, g, b) or (r, g, b, w) or (r, g, b, l)
-//|
 
 
 STATIC void pixelbuf_byteorder_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -113,33 +90,6 @@ STATIC void pixelbuf_byteorder_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest)
     }
 }
 
-STATIC mp_obj_t pixelbuf_byteorder_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    pixelbuf_byteorder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    switch (op) {
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->bpp);
-        default: return MP_OBJ_NULL; // op not supported
-    }
-}
-
-const mp_obj_type_t pixelbuf_byteorder_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ByteOrder,
-    .print = pixelbuf_byteorder_print,
-    .unary_op = pixelbuf_byteorder_unary_op,
-    .attr = pixelbuf_byteorder_attr,
-};
-
-
-// This macro is used to simplify RGB subclass definition
-#define PIXELBUF_BYTEORDER(p_name, p_bpp, p_r, p_g, p_b, p_w, p_has_white, p_has_luminosity) \
-const pixelbuf_byteorder_obj_t byteorder_## p_name = { \
-    { &pixelbuf_byteorder_type }, \
-    .name = MP_QSTR_## p_name, \
-    .bpp = p_bpp, \
-    .byteorder = { p_r, p_g, p_b, p_w }, \
-    .has_white = p_has_white, \
-    .has_luminosity = p_has_luminosity, \
-};
 
 //| .. function:: wheel(n)
 //|
@@ -290,35 +240,28 @@ PIXELBUF_BYTEORDER(LBGR, 4, 3, 2, 1, 0, false, true)
 STATIC const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__pixelbuf) },
     { MP_ROM_QSTR(MP_QSTR_PixelBuf), MP_ROM_PTR(&pixelbuf_pixelbuf_type) },
-    { MP_ROM_QSTR(MP_QSTR_ByteOrder), MP_ROM_PTR(&pixelbuf_byteorder_type) },
-    { MP_ROM_QSTR(MP_QSTR_RGB),  MP_ROM_PTR(&byteorder_RGB) },
-    { MP_ROM_QSTR(MP_QSTR_RBG),  MP_ROM_PTR(&byteorder_RBG) },
-    { MP_ROM_QSTR(MP_QSTR_GRB),  MP_ROM_PTR(&byteorder_GRB) },
-    { MP_ROM_QSTR(MP_QSTR_GBR),  MP_ROM_PTR(&byteorder_GBR) },
-    { MP_ROM_QSTR(MP_QSTR_BRG),  MP_ROM_PTR(&byteorder_BRG) },
-    { MP_ROM_QSTR(MP_QSTR_BGR),  MP_ROM_PTR(&byteorder_BGR) },
-    { MP_ROM_QSTR(MP_QSTR_RGBW), MP_ROM_PTR(&byteorder_RGBW) },
-    { MP_ROM_QSTR(MP_QSTR_RBGW), MP_ROM_PTR(&byteorder_RBGW) },
-    { MP_ROM_QSTR(MP_QSTR_GRBW), MP_ROM_PTR(&byteorder_GRBW) },
-    { MP_ROM_QSTR(MP_QSTR_GBRW), MP_ROM_PTR(&byteorder_GBRW) },
-    { MP_ROM_QSTR(MP_QSTR_BRGW), MP_ROM_PTR(&byteorder_BRGW) },
-    { MP_ROM_QSTR(MP_QSTR_BGRW), MP_ROM_PTR(&byteorder_BGRW) },
-    { MP_ROM_QSTR(MP_QSTR_LRGB), MP_ROM_PTR(&byteorder_LRGB) },
-    { MP_ROM_QSTR(MP_QSTR_LRBG), MP_ROM_PTR(&byteorder_LRBG) },
-    { MP_ROM_QSTR(MP_QSTR_LGRB), MP_ROM_PTR(&byteorder_LGRB) },
-    { MP_ROM_QSTR(MP_QSTR_LGBR), MP_ROM_PTR(&byteorder_LGBR) },
-    { MP_ROM_QSTR(MP_QSTR_LBRG), MP_ROM_PTR(&byteorder_LBRG) },
-    { MP_ROM_QSTR(MP_QSTR_LBGR), MP_ROM_PTR(&byteorder_LBGR) },
-    { MP_ROM_QSTR(MP_QSTR_wheel), MP_ROM_PTR(&pixelbuf_wheel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_RGB),   MP_ROM_QSTR(MP_QSTR_RGB) },
+    { MP_ROM_QSTR(MP_QSTR_RBG),   MP_ROM_QSTR(MP_QSTR_RBG) },
+    { MP_ROM_QSTR(MP_QSTR_GRB),   MP_ROM_QSTR(MP_QSTR_GRB) },
+    { MP_ROM_QSTR(MP_QSTR_GBR),   MP_ROM_QSTR(MP_QSTR_GBR) },
+    { MP_ROM_QSTR(MP_QSTR_BRG),   MP_ROM_QSTR(MP_QSTR_BRG) },
+    { MP_ROM_QSTR(MP_QSTR_BGR),   MP_ROM_QSTR(MP_QSTR_BGR) },
+    { MP_ROM_QSTR(MP_QSTR_RGBW),  MP_ROM_QSTR(MP_QSTR_RGBW) },
+    { MP_ROM_QSTR(MP_QSTR_RBGW),  MP_ROM_QSTR(MP_QSTR_RBGW) },
+    { MP_ROM_QSTR(MP_QSTR_GRBW),  MP_ROM_QSTR(MP_QSTR_GRBW) },
+    { MP_ROM_QSTR(MP_QSTR_GBRW),  MP_ROM_QSTR(MP_QSTR_GBRW) },
+    { MP_ROM_QSTR(MP_QSTR_BRGW),  MP_ROM_QSTR(MP_QSTR_BRGW) },
+    { MP_ROM_QSTR(MP_QSTR_BGRW),  MP_ROM_QSTR(MP_QSTR_BGRW) },
+    { MP_ROM_QSTR(MP_QSTR_RGBD),  MP_ROM_QSTR(MP_QSTR_RGBD) },
+    { MP_ROM_QSTR(MP_QSTR_RBGD),  MP_ROM_QSTR(MP_QSTR_RBGD) },
+    { MP_ROM_QSTR(MP_QSTR_GRBD),  MP_ROM_QSTR(MP_QSTR_GRBD) },
+    { MP_ROM_QSTR(MP_QSTR_GBRD),  MP_ROM_QSTR(MP_QSTR_GBRD) },
+    { MP_ROM_QSTR(MP_QSTR_BRGD),  MP_ROM_QSTR(MP_QSTR_BRGD) },
+    { MP_ROM_QSTR(MP_QSTR_BGRD),  MP_ROM_QSTR(MP_QSTR_BGRD) },
+    { MP_ROM_QSTR(MP_QSTR_wheel), MP_ROM_QSTR(&pixelbuf_wheel_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pixelbuf_module_globals, pixelbuf_module_globals_table);
-
-STATIC void pixelbuf_byteorder_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pixelbuf_byteorder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "%q.%q", MP_QSTR__pixelbuf, self->name);
-    return;
-}
 
 const mp_obj_module_t pixelbuf_module = {
         .base = { &mp_type_module },

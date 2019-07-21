@@ -36,13 +36,12 @@ typedef struct {
     size_t pixels;
     size_t bytes;
     size_t pixel_step;
-    pixelbuf_byteorder_obj_t byteorder;
+    pixelbuf_byteorder_details_t byteorder;
     mp_obj_t bytearray;
     mp_obj_t rawbytearray;
     mp_float_t brightness;
     bool two_buffers;
     size_t offset;
-    bool dotstar_mode;
     uint8_t *rawbuf;
     uint8_t *buf;
     mp_obj_t write_function;
