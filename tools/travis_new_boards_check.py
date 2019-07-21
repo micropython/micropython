@@ -10,9 +10,7 @@ import build_board_info
 boards_info_json = build_board_info.get_board_mapping()
 
 # Get all the boards out of the json format
-info_boards = boards_info_json.keys()
-# Turn the dict_keys into a list
-info_boards = list(info_boards)
+info_boards = [board for board in boards_info_json.keys() if not boards_info_json[board].get("alias", False)]
 
 # We need to know the path of the .travis.yml file
 base_path = os.path.dirname(__file__)
