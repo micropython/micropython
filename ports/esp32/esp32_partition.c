@@ -109,6 +109,37 @@ STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(esp32_partition_new(part));
 }
 
+STATIC mp_obj_t esp32_partition_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // Parse args
+    enum { ARG_type, ARG_subtype, ARG_label };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_type, MP_ARG_INT, {.u_int = ESP_PARTITION_TYPE_APP} },
+        { MP_QSTR_subtype, MP_ARG_INT, {.u_int = ESP_PARTITION_SUBTYPE_ANY} },
+        { MP_QSTR_label, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // Get optional label string
+    const char *label = NULL;
+    if (args[ARG_label].u_obj != mp_const_none) {
+        label = mp_obj_str_get_str(args[ARG_label].u_obj);
+    }
+
+    // Build list of matching partitions
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    esp_partition_iterator_t iter = esp_partition_find(args[ARG_type].u_int, args[ARG_subtype].u_int, label);
+    while (iter != NULL) {
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(esp32_partition_new(esp_partition_get(iter))));
+        iter = esp_partition_next(iter);
+    }
+    esp_partition_iterator_release(iter);
+
+    return list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_partition_find_fun_obj, 0, esp32_partition_find);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(esp32_partition_find_obj, MP_ROM_PTR(&esp32_partition_find_fun_obj));
+
 STATIC mp_obj_t esp32_partition_info(mp_obj_t self_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t tuple[] = {
@@ -167,6 +198,8 @@ STATIC mp_obj_t esp32_partition_get_next_update(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_get_next_update_obj, esp32_partition_get_next_update);
 
 STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&esp32_partition_find_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&esp32_partition_info_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&esp32_partition_readblocks_obj) },
