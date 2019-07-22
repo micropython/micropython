@@ -185,7 +185,6 @@ SRC_C += \
 	mphalport.c \
 	tick.c \
 	boards/$(BOARD)/board.c \
-	boards/$(BOARD)/pins.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -198,6 +197,8 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	supervisor/shared/memory.c
+
+	#boards/$(BOARD)/pins.c \
 	
 ifneq ($(USB),FALSE)
 SRC_C += lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
