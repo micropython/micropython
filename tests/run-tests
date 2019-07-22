@@ -49,7 +49,7 @@ def convert_regex_escapes(line):
     return bytes(''.join(cs), 'utf8')
 
 
-def run_micropython(pyb, args, test_file, is_special=False):
+def run_micropython(pyb, args, test_file, is_special=False, crash_info=None):
     special_tests = (
         'micropython/meminfo.py', 'basics/bytes_compare3.py',
         'basics/builtin_help.py', 'thread/thread_exc2.py',
@@ -128,6 +128,9 @@ def run_micropython(pyb, args, test_file, is_special=False):
             if args.heapsize is not None:
                 cmdlist.extend(['-X', 'heapsize=' + args.heapsize])
 
+            if hasattr(args, 'alloc_max'):
+                cmdlist.extend(['-X', 'alloc-max=' + str(args.alloc_max)])
+
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
                 subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
@@ -140,7 +143,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
                 output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError as er:
                 had_crash = True
+                #print(er, dir(er), er.args, er.cmd, er.output, er.returncode)
                 output_mupy = er.output + b'CRASH'
+                if crash_info is not None:
+                    crash_info[0] = er.returncode
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
@@ -458,6 +464,34 @@ def run_tests(pyb, tests, args, base_path="."):
         if skip_it:
             print("skip ", test_file)
             skipped_tests.append(test_name)
+            continue
+
+        # set to True to run special OOM testing
+        if False:
+            print("run", test_file)
+            got_success = 0
+            args.alloc_max = 0
+            while True:
+                rc = [0]
+                output_mupy = run_micropython(pyb, args, test_file, crash_info=rc)
+                if rc[0] == 2 and 0 <= args.alloc_max <= 5:
+                    # accept uncaught NLR for first 6 allocs (not handled properly by unix port)
+                    continue
+                elif output_mupy == b'SKIP\n':
+                    print("skip ", test_file)
+                    skipped_tests.append(test_name)
+                    break
+                elif args.alloc_max > 1000:
+                    print("no success", args.alloc_max, test_file)
+                    break
+                elif rc[0] == 0:
+                    got_success += 1
+                    if got_success >= 3:
+                        break
+                elif rc[0] != 1:
+                    print(args.alloc_max, rc[0])
+                args.alloc_max += 1
+
             continue
 
         # get expected output

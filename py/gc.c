@@ -434,6 +434,9 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
+unsigned gc_alloc_count_max = (unsigned)-1;
+static unsigned gc_alloc_count = 0;
+
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
@@ -450,6 +453,16 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         GC_EXIT();
         return NULL;
+    }
+
+    if (gc_alloc_count_max != (unsigned)-1) {
+        if (gc_alloc_count == gc_alloc_count_max) {
+            GC_EXIT();
+            printf("** gc_alloc: %u force fail n_bytes=%u\n", gc_alloc_count, (unsigned)n_bytes);
+            return NULL;
+        }
+        printf("** gc_alloc: %u\n", gc_alloc_count);
+        ++gc_alloc_count;
     }
 
     size_t i;

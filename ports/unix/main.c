@@ -391,6 +391,13 @@ STATIC void pre_process_options(int argc, char **argv) {
                     if (heap_size < 700) {
                         goto invalid_arg;
                     }
+                } else if (strncmp(argv[a + 1], "alloc-max=", sizeof("alloc-max=") - 1) == 0) {
+                    char *end;
+                    extern unsigned gc_alloc_count_max;
+                    gc_alloc_count_max = strtol(argv[a + 1] + sizeof("alloc-max=") - 1, &end, 0);
+                    if (*end != 0) {
+                        goto invalid_arg;
+                    }
 #endif
                 } else {
 invalid_arg:
@@ -722,5 +729,5 @@ uint mp_import_stat(const char *path) {
 
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught NLR %p\n", val);
-    exit(1);
+    exit(2);
 }
