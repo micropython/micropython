@@ -119,7 +119,8 @@
 			var editor, iframe;
 			var script_passed = false;
 			function beginAnimationLoop() {
-				iframe.contentWindow.handle_pending();
+				if(iframe !== undefined && iframe !== null && iframe.contentWindow !== null)
+					iframe.contentWindow.handle_pending();
 				window.requestAnimationFrame(beginAnimationLoop);
 			}
 			// Ctrl+L is mandatory ! need xterm.js 3.14+
