@@ -44,7 +44,7 @@ PCD_HandleTypeDef pcd_fs_handle;
 PCD_HandleTypeDef pcd_hs_handle;
 #endif
 
-#if defined(STM32L0) || defined(STM32WB)
+#if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
 // The STM32L0xx has a single USB device-only instance
 #define USB_OTG_FS USB
 #endif
@@ -64,6 +64,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
         #elif defined(STM32L0)
         const uint32_t otg_alt = GPIO_AF0_USB;
+        #elif defined(STM32L432xx)
+        const uint32_t otg_alt = GPIO_AF10_USB_FS;
         #elif defined(STM32WB)
         const uint32_t otg_alt = GPIO_AF10_USB;
         #else
@@ -92,7 +94,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #endif
 
         // Enable USB FS Clocks
-        #if defined(STM32L0) || defined(STM32WB)
+        #if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
         __HAL_RCC_USB_CLK_ENABLE();
         #else
         __USB_OTG_FS_CLK_ENABLE();
@@ -113,6 +115,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #if defined(STM32L0)
         NVIC_SetPriority(USB_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_IRQn);
+        #elif defined(STM32L432xx)
+        NVIC_SetPriority(USB_FS_IRQn, IRQ_PRI_OTG_FS);
+        HAL_NVIC_EnableIRQ(USB_FS_IRQn);
         #elif defined(STM32WB)
         NVIC_SetPriority(USB_LP_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_LP_IRQn);
@@ -195,7 +200,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
-    #if defined(STM32L0) || defined(STM32WB)
+    #if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
     __HAL_RCC_USB_CLK_DISABLE();
     #else
 
@@ -379,7 +384,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         pcd_fs_handle.Init.lpm_enable = DISABLE;
         pcd_fs_handle.Init.battery_charging_enable = DISABLE;
         #endif
-        #if !defined(STM32L0) && !defined(STM32WB)
+        #if !defined(STM32L0) && !defined(STM32L432xx) && !defined(STM32WB)
         pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         pcd_fs_handle.Init.dma_enable = 0;
         #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
@@ -396,7 +401,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_fs_handle);
 
-        #if defined(STM32L0) || defined(STM32WB)
+        #if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
         // We have 512 16-bit words it total to use here (when using PCD_SNG_BUF)
         HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x00, PCD_SNG_BUF, 64); // EP0
         HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80, PCD_SNG_BUF, 128); // EP0
