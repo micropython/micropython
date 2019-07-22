@@ -137,6 +137,10 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
         lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, str, str_len, 0);
     }
 
+    if (lex == NULL) {
+        return MP_OBJ_NULL;
+    }
+
     return mp_parse_compile_execute(lex, parse_input_kind, globals, locals);
 }
 

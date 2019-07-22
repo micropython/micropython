@@ -33,6 +33,9 @@
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
     // name adding/lookup
     id_info_t *id = scope_find_or_add_id(scope, qst, ID_INFO_KIND_GLOBAL_IMPLICIT);
+    if (id == NULL) {
+        return;
+    }
     if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
         // rebind as a local variable
         id->kind = ID_INFO_KIND_LOCAL;

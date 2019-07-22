@@ -416,6 +416,9 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
         n_extra_args += 1;
     }
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
+    if (o == NULL) {
+        return MP_OBJ_NULL;
+    }
     o->base.type = &mp_type_fun_bc;
     o->globals = mp_globals_get();
     o->bytecode = code;

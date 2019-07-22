@@ -241,6 +241,9 @@ STATIC void compile_decrease_except_level(compiler_t *comp) {
 
 STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse_node_t pn, uint emit_options) {
     scope_t *scope = scope_new(kind, pn, comp->source_file, emit_options);
+    if (scope == NULL) {
+        return NULL;
+    }
     scope->parent = comp->scope_cur;
     scope->next = NULL;
     if (comp->scope_head == NULL) {
@@ -3444,6 +3447,9 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     // create standard emitter; it's used at least for MP_PASS_SCOPE
     emit_t *emit_bc = emit_bc_new();
 
+    if (module_scope == NULL || emit_bc == NULL) {
+        return NULL;
+    }
     // compile pass 1
     comp->emit = emit_bc;
     #if MICROPY_EMIT_NATIVE
@@ -3458,6 +3464,10 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
         #endif
         {
             compile_scope(comp, s, MP_PASS_SCOPE);
+
+            if (MP_STATE_THREAD(active_exception) != NULL) {
+                return NULL;
+            }
 
             // Check if any implicitly declared variables should be closed over
             for (size_t i = 0; i < s->id_info_len; ++i) {
@@ -3481,6 +3491,9 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 
     // set max number of labels now that it's calculated
     emit_bc_set_max_num_labels(emit_bc, max_num_labels);
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        return NULL;
+    }
 
     // compile pass 2 and 3
 #if MICROPY_EMIT_NATIVE
@@ -3541,12 +3554,12 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
             compile_scope(comp, s, MP_PASS_STACK_SIZE);
 
             // second last pass: compute code size
-            if (comp->compile_error == MP_OBJ_NULL) {
+            if (MP_STATE_THREAD(active_exception) == NULL && comp->compile_error == MP_OBJ_NULL) {
                 compile_scope(comp, s, MP_PASS_CODE_SIZE);
             }
 
             // final pass: emit code
-            if (comp->compile_error == MP_OBJ_NULL) {
+            if (MP_STATE_THREAD(active_exception) == NULL && comp->compile_error == MP_OBJ_NULL) {
                 compile_scope(comp, s, MP_PASS_EMIT);
             }
         }

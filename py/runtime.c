@@ -95,9 +95,15 @@ void mp_init(void) {
 
     // init global module dict
     mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        return;
+    }
 
     // initialise the __main__ module
     mp_obj_dict_init(&MP_STATE_VM(dict_main), 1);
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        return;
+    }
     mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(dict_main)), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())

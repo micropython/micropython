@@ -280,6 +280,9 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
             alloc = num_bytes;
         }
         chunk = (mp_parse_chunk_t*)m_new(byte, sizeof(mp_parse_chunk_t) + alloc);
+        if (chunk == NULL) {
+            return NULL;
+        }
         chunk->alloc = alloc;
         chunk->union_.used = 0;
         parser->cur_chunk = chunk;
@@ -442,6 +445,9 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
 
 STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line, mp_obj_t obj) {
     mp_parse_node_struct_t *pn = parser_alloc(parser, sizeof(mp_parse_node_struct_t) + sizeof(mp_obj_t));
+    if (pn == NULL) {
+        return MP_PARSE_NODE_NULL;
+    }
     pn->source_line = src_line;
     #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
     // nodes are 32-bit pointers, but need to store 64-bit object
@@ -808,6 +814,9 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
     #endif
 
     mp_parse_node_struct_t *pn = parser_alloc(parser, sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * num_args);
+    if (pn == NULL) {
+        return;
+    }
     pn->source_line = src_line;
     pn->kind_num_nodes = (rule_id & 0xff) | (num_args << 8);
     for (size_t i = num_args; i > 0; i--) {
@@ -829,6 +838,10 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     parser.result_stack_alloc = MICROPY_ALLOC_PARSE_RESULT_INIT;
     parser.result_stack_top = 0;
     parser.result_stack = m_new(mp_parse_node_t, parser.result_stack_alloc);
+
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        return parser.tree;
+    }
 
     parser.lexer = lex;
 

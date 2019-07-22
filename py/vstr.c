@@ -106,6 +106,10 @@ char *vstr_extend(vstr_t *vstr, size_t size) {
 }
 
 STATIC int vstr_ensure_extra(vstr_t *vstr, size_t size) {
+    if (vstr->buf == NULL) {
+        // could not allocate a buffer
+        return -1;
+    }
     if (vstr->len + size > vstr->alloc) {
         if (vstr->fixed_buf) {
             // We can't reallocate, and the caller is expecting the space to
