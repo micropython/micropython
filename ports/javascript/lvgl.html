@@ -104,7 +104,10 @@
 			/* Load the screen */
 			"lv.scr_load(scr)"
 		];
-    	
+    	var the_mp_handle_pending;
+		function handle_pending() {
+				the_mp_handle_pending();
+		}
 		/*Initialization function*/
 		function startRunning() {
 			/*Setup printing event handler*/
@@ -121,21 +124,17 @@
 				decompressScript(compressedScript);
 
 			/*Setup lv_task_handler loop*/
-			var the_mp_handle_pending = Module.cwrap('mp_handle_pending', null);
-			function handle_pending() {
-				the_mp_handle_pending();
-				setTimeout(handle_pending, 10);
-			}
+			the_mp_handle_pending = Module.cwrap('mp_handle_pending', null);
+			
 			/*Initialize the REPL.*/
             mp_js_init_repl();
-			/*Start the main loop, asynchronously.*/
-			handle_pending();
 			window.top.reenableButton();
 		}
 		window.onload = function() {
 			console.log("onload");
 			
 			startRunning();
+			window.top.beginAnimationLoop();
 		}
 
 
