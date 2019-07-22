@@ -28,7 +28,6 @@
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "nrfx_uarte.h"
 
 #include "py/obj.h"
 #include "py/ringbuf.h"

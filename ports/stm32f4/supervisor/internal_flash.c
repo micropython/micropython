@@ -35,13 +35,6 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-// #include "peripherals/nrf/nvm.h"
-
-// #ifdef BLUETOOTH_SD
-// #include "ble_drv.h"
-// #include "nrf_sdm.h"
-// #endif
-
 
 /*------------------------------------------------------------------*/
 /* Internal Flash API

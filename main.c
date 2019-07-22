@@ -45,7 +45,6 @@
 
 #include "background.h"
 #include "mpconfigboard.h"
-//#include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
@@ -57,6 +56,10 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
+
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
@@ -187,7 +190,7 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     supervisor_move_memory();
 
     reset_port();
-    //reset_board_busses();
+    reset_board_busses();
     reset_board();
     reset_status_led();
 }
@@ -392,8 +395,10 @@ int __attribute__((used)) main(void) {
     safe_mode_t safe_mode = port_init();
 
     // Turn on LEDs
-    //init_status_leds();
-    //rgb_led_status_init();
+    #if MICROPY_HW_LED_RX && MICROPY_HW_LED_RX
+    init_status_leds();
+    rgb_led_status_init();
+    #endif
 
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
     if (safe_mode == NO_SAFE_MODE) {

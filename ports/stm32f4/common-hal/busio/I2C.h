@@ -27,8 +27,6 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_I2C_H
 
-#include "nrfx_twim.h"
-
 #include "py/obj.h"
 
 typedef struct {

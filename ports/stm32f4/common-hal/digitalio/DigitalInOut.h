@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
 
-//#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/microcontroller/Pin.h"
 
 typedef struct {
     mp_obj_base_t base;

@@ -2,20 +2,17 @@ SRC_SUPERVISOR = \
 	main.c \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
+	supervisor/shared/display.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/micropython.c \
 	supervisor/shared/rgb_led_status.c \
-	supervisor/shared/stack.c \
 	supervisor/shared/safe_mode.c \
-	supervisor/shared/translate.c
-
-#bug, not conditional
-#	supervisor/shared/display.c \
-#	supervisor/shared/status_leds.c \
-#	supervisor/shared/safe_mode.c \
-
-
+	supervisor/shared/stack.c \
+	supervisor/shared/status_leds.c \
+	supervisor/shared/safe_mode.c \
+	supervisor/shared/translate.c \
+	
 ifndef $(NO_USB)
 NO_USB = $(wildcard supervisor/usb.c)
 endif

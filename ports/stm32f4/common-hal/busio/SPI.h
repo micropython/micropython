@@ -27,7 +27,6 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_SPI_H
 
-#include "nrfx_spim.h"
 #include "py/obj.h"
 
 typedef struct {

@@ -59,16 +59,16 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     common_hal_digitalio_digitalinout_construct(&status_led, MICROPY_HW_LED_STATUS);
     common_hal_digitalio_digitalinout_switch_to_output(&status_led, true, DRIVE_MODE_PUSH_PULL);
     #endif
-    // uint64_t start_ticks = 0;//ticks_ms;
-    // uint64_t diff = 0;
-    // while (diff < 700) {
-    //     #ifdef MICROPY_HW_LED_STATUS
-    //     // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
-    //     common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
-    //     #endif
-    //     diff = 0 - start_ticks;
-    //     //diff = ticks_ms - start_ticks;
-    // }
+    uint64_t start_ticks = ticks_ms;
+    uint64_t diff = 0;
+    while (diff < 700) {
+        #ifdef MICROPY_HW_LED_STATUS
+        // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
+        common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
+        #endif
+        diff = 0 - start_ticks;
+        //diff = ticks_ms - start_ticks;
+    }
     #ifdef MICROPY_HW_LED_STATUS
     common_hal_digitalio_digitalinout_deinit(&status_led);
     #endif

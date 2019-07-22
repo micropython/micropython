@@ -30,7 +30,7 @@
 #include "lib/oofatfs/ff.h"
 #include "py/mpconfig.h"
 
-//#include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/status_leds.h"
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
@@ -38,14 +38,14 @@ int mp_hal_stdin_rx_chr(void) {
             MICROPY_VM_HOOK_LOOP
         #endif
         if (serial_bytes_available()) {
-            //toggle_rx_led();
+            toggle_rx_led();
             return serial_read();
         }
     }
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    //toggle_tx_led();
+    toggle_tx_led();
 
     #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
     if (boot_output_file != NULL) {
