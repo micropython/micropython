@@ -120,6 +120,10 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
 
+        if (lex == NULL) {
+            return handle_uncaught_exception();
+        }
+
         qstr source_name = lex->source_name;
 
         #if MICROPY_PY___FILE__
@@ -456,6 +460,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     mp_init();
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        return handle_uncaught_exception();
+    }
 
     #if MICROPY_EMIT_NATIVE
     // Set default emitter options
@@ -496,6 +503,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), path_num);
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        return handle_uncaught_exception();
+    }
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
@@ -513,6 +523,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
             vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
             vstr_add_strn(&vstr, home, home_l);
             vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+            if (MP_STATE_THREAD(active_exception) != NULL) {
+                return handle_uncaught_exception();
+            }
             path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
         } else {
             path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
@@ -522,6 +535,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
 
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+    if (MP_STATE_THREAD(active_exception) != NULL) {
+        return handle_uncaught_exception();
+    }
 
     #if defined(MICROPY_UNIX_COVERAGE)
     {
