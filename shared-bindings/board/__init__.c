@@ -65,11 +65,11 @@ mp_obj_t board_i2c(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 
-// //| .. function:: SPI()
-// //|
-// //|   Returns the `busio.SPI` object for the board designated SCK, MOSI and MISO pins. It is a
-// //|   singleton.
-// //|
+//| .. function:: SPI()
+//|
+//|   Returns the `busio.SPI` object for the board designated SCK, MOSI and MISO pins. It is a
+//|   singleton.
+//|
 #if BOARD_SPI
 mp_obj_t board_spi(void) {
     mp_obj_t singleton = common_hal_board_get_spi();
@@ -89,10 +89,10 @@ mp_obj_t board_spi(void) {
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
 
-// //| .. function:: UART()
-// //|
-// //|   Returns the `busio.UART` object for the board designated TX and RX pins. It is a singleton.
-// //|
+//| .. function:: UART()
+//|
+//|   Returns the `busio.UART` object for the board designated TX and RX pins. It is a singleton.
+//|
 #if BOARD_UART
 mp_obj_t board_uart(void) {
     mp_obj_t singleton = common_hal_board_get_uart();

@@ -66,8 +66,7 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
         common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
         #endif
-        diff = 0 - start_ticks;
-        //diff = ticks_ms - start_ticks;
+        diff = ticks_ms - start_ticks;
     }
     #ifdef MICROPY_HW_LED_STATUS
     common_hal_digitalio_digitalinout_deinit(&status_led);

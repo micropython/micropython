@@ -10,9 +10,8 @@ SRC_SUPERVISOR = \
 	supervisor/shared/safe_mode.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
-	supervisor/shared/safe_mode.c \
-	supervisor/shared/translate.c \
-	
+	supervisor/shared/translate.c
+
 ifndef $(NO_USB)
 NO_USB = $(wildcard supervisor/usb.c)
 endif
