@@ -3,6 +3,8 @@
 
 #include "py/obj.h"
 
+#define ESP32_TASK_COREID 1
+
 typedef enum {
     //MACHINE_WAKE_IDLE=0x01,
     MACHINE_WAKE_SLEEP=0x02,
