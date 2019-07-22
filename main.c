@@ -395,10 +395,8 @@ int __attribute__((used)) main(void) {
     safe_mode_t safe_mode = port_init();
 
     // Turn on LEDs
-    #if MICROPY_HW_LED_RX && MICROPY_HW_LED_RX
     init_status_leds();
     rgb_led_status_init();
-    #endif
 
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
     if (safe_mode == NO_SAFE_MODE) {
