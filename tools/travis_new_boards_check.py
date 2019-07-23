@@ -48,4 +48,3 @@ if len(missing_boards) is not 0:
     print('Boards missing in TRAVIS_BOARDS:')
     for board in missing_boards:
         print(board)
-    sys.exit(1)
