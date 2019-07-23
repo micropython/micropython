@@ -98,14 +98,21 @@ c_file.write("""\
 """)
 
 c_file.write("""\
-uint32_t terminal_transparency[1] = {0x00000000};
-
-// These colors are RGB 565 with the bytes swapped.
-uint32_t terminal_colors[1] = {0xffff0000};
+_displayio_color_t terminal_colors[2] = {
+    {
+        .rgb888 = 0x000000,
+        .rgb565 = 0x0000,
+        .luma = 0x00
+    },
+    {
+        .rgb888 = 0xffffff,
+        .rgb565 = 0xffff,
+        .luma = 0xff
+    },
+};
 
 displayio_palette_t supervisor_terminal_color = {
     .base = {.type = &displayio_palette_type },
-    .opaque = terminal_transparency,
     .colors = terminal_colors,
     .color_count = 2,
     .needs_refresh = false

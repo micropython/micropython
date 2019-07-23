@@ -59,6 +59,11 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
         never_reset_pin_number(reset->number);
+
+        common_hal_digitalio_digitalinout_set_value(&self->reset, false);
+        common_hal_mcu_delay_us(10);
+        common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+        common_hal_mcu_delay_us(10);
     }
 
     never_reset_pin_number(command->number);
@@ -88,13 +93,19 @@ bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
 
 void common_hal_displayio_fourwire_send(mp_obj_t obj, bool command, uint8_t *data, uint32_t data_length) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
-    if (command) {
-        common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
-        common_hal_mcu_delay_us(1);
-        common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
-    }
     common_hal_digitalio_digitalinout_set_value(&self->command, !command);
-    common_hal_busio_spi_write(self->bus, data, data_length);
+    if (command) {
+        // Toggle chip select after each command byte in case the display driver
+        // IC latches commands based on it.
+        for (size_t i = 0; i < data_length; i++) {
+            common_hal_busio_spi_write(self->bus, &data[i], 1);
+            common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
+            common_hal_mcu_delay_us(1);
+            common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
+        }
+    } else {
+        common_hal_busio_spi_write(self->bus, data, data_length);
+    }
 }
 
 void common_hal_displayio_fourwire_end_transaction(mp_obj_t obj) {

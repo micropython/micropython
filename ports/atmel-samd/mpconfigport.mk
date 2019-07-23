@@ -17,7 +17,7 @@ endif
 # Put samd21-only choices here.
 ifeq ($(CHIP_FAMILY),samd21)
 # frequencyio not yet verified as working on SAMD21.
-CIRCUITPY_FRQUENCYIO = 0
+CIRCUITPY_FREQUENCYIO = 0
 endif
 
 # Put samd51-only choices here.

@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_I2CDISPLAY_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_I2CDISPLAY_H
 
-#include "shared-module/displayio/ColorConverter.h"
+#include "common-hal/busio/I2C.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
-#include "shared-module/displayio/Palette.h"
+typedef struct {
+    mp_obj_base_t base;
+    busio_i2c_obj_t* bus;
+    busio_i2c_obj_t inline_bus;
+    digitalio_digitalinout_obj_t reset;
+    uint16_t address;
+} displayio_i2cdisplay_obj_t;
 
-extern const mp_obj_type_t displayio_colorconverter_type;
-
-void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self);
-void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *colorconverter, const _displayio_colorspace_t* colorspace, uint32_t input_color, uint32_t* output_color);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_I2CDISPLAY_H

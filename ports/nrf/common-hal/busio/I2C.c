@@ -57,10 +57,27 @@ STATIC twim_peripheral_t twim_peripherals[] = {
 #endif
 };
 
+STATIC bool never_reset[MP_ARRAY_SIZE(twim_peripherals)];
+
 void i2c_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
+        if (never_reset[i]) {
+            continue;
+        }
         nrf_twim_disable(twim_peripherals[i].twim.p_twim);
         twim_peripherals[i].in_use = false;
+    }
+}
+
+void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
+        if (self->twim_peripheral == &twim_peripherals[i]) {
+            never_reset[i] = true;
+
+            never_reset_pin_number(self->scl_pin_number);
+            never_reset_pin_number(self->sda_pin_number);
+            break;
+        }
     }
 }
 
