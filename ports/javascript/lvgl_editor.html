@@ -8,6 +8,7 @@
 		<link rel="stylesheet" href="https://littlevgl.com/bootstrap/css/bootstrap.min.css"/>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/xterm.min.css" />
 		<link rel="stylesheet" href="https://littlevgl.com/common.css"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"/>
 		<title>LittlevGL/MicroPython Simulator</title>
 		<style>
 			* {
@@ -192,13 +193,14 @@
 			document.onmouseup = forward_event;
 			function editor_change() {
 				var new_href;
+				$("#share-link").removeClass("disabled");
 				if(editor.getValue() != external_script_value) {
 					online_script_input.value = "";
 					var script_string = LZString.compressToEncodedURIComponent(editor.getValue());
 					$("#script-compressed").val(script_string);
 					new_href = update_query_string(window.location.href, "script_direct", script_string);
 					new_href = removeURLParameter(new_href, "script");
-					$("#share-link").removeClass("disabled");
+					
 					if(new_href.length > 2000) {
 						$("#share-link").text("URL is too long to be shared");
 						new_href = "#";
