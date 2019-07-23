@@ -170,7 +170,7 @@ HAL_StatusTypeDef HAL_CRYPEx_AESGCM_GenerateAuthTAG(CRYP_HandleTypeDef *hcryp, u
     /* Select final phase */  
     MODIFY_REG(hcryp->Instance->CR, CRYP_CR_GCM_CCMPH, CRYP_PHASE_FINAL);  
     
-    /*ALGODIR bit must be set to ‘0’.*/ 
+    /*ALGODIR bit must be set to '0'.*/ 
     hcryp->Instance->CR &=  ~CRYP_CR_ALGODIR;
     
     /* Enable the CRYP peripheral */
@@ -388,7 +388,7 @@ HAL_StatusTypeDef HAL_CRYPEx_AESCCM_GenerateAuthTAG(CRYP_HandleTypeDef *hcryp, u
     /* Disable CRYP to start the final phase */
     __HAL_CRYP_DISABLE(hcryp);
 
-    /* Select final phase & ALGODIR bit must be set to ‘0’. */
+    /* Select final phase & ALGODIR bit must be set to '0'. */
     MODIFY_REG(hcryp->Instance->CR, CRYP_CR_GCM_CCMPH|CRYP_CR_ALGODIR, CRYP_PHASE_FINAL|CRYP_OPERATINGMODE_ENCRYPT);
 
     /* Enable the CRYP peripheral */
