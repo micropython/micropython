@@ -81,13 +81,13 @@
 #define NRFX_TIMER1_ENABLED 1
 #define NRFX_TIMER2_ENABLED 1
 
-#ifdef NRFX_TIMER3
+#ifdef NRF_TIMER3
 #define NRFX_TIMER3_ENABLED 1
 #else
 #define NRFX_TIMER3_ENABLED 0
 #endif
 
-#ifdef NRFX_TIMER4
+#ifdef NRF_TIMER4
 #define NRFX_TIMER4_ENABLED 1
 #else
 #define NRFX_TIMER4_ENABLED 0
