@@ -92,31 +92,37 @@
 			This is the JavaScript version of MicroPython, plus the LittlevGL bindings available at
 			<a href="https://github.com/littlevgl/lv_binding_micropython">https://github.com/littlevgl/lv_binding_micropython</a>.
 			<br>
-			You can type your own Python code into the prompt in the usual way.
+			You can type your own Python code into the prompt in the usual way, or by using the editor. When you want to run your
+			customized script, click Restart.
 			<br>
 			For examples, see the README for the MicroPython binding.
 		
 			<p></p>
-			<input type="button" disabled="disabled" id="run-button" value="Run the script" onclick="runScript();"/>
+			<input type="button" disabled="disabled" id="run-button" value="Restart" onclick="runScript();"/>
 
 			<span>
-			<a id="share-link" href="">Share current script</a>
+			<a id="share-link" data-toggle="tooltip" title="Right click to share" href="">Share current script</a>
 			</span>
-
+			<input type="url" data-toggle="tooltip" title="Paste a link to a script here" placeholder="Link to online script" id="online-script" oninput="new_external_link(this.value);"/>
 
 			</div>
 			<div id="editor">print("Hello world")</div>
 			<div class="display-objects">
 				
-				<canvas id="canvas" width="480" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+				<canvas id="canvas" data-toggle="tooltip" title="This is the virtual LittlevGL screen" width="480" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 				<div id="mp_js_stdout"></div>
 			</div>
 		</div>
 		<iframe src="about:blank" id="emscripten-iframe"></iframe>
         
 		<script>
-			var editor, iframe;
+			var external_link = null;
+			var external_script_value = null;
+			var editor, iframe, online_script_input;
 			var script_passed = false;
+			function new_external_link(url) {
+				processScriptArg(url, false);
+			}
 			// Ctrl+L is mandatory ! need xterm.js 3.14+
 		    function xterm_helper(term, key) {
 				function ESC(data) {
@@ -151,16 +157,43 @@
 						iframe.contentWindow.document.dispatchEvent(new MouseEvent('mouseup'));
 				}
 			}
-			
-			document.onmouseup = forward_event;
-			function input_change() {
-				editor.session.setValue(LZString.decompressFromEncodedURIComponent($("#script-compressed").val()));
+			/* From https://stackoverflow.com/a/1634841 */
+			function removeURLParameter(url, parameter) {
+				//prefer to use l.search if you have a location/link object
+				var urlparts = url.split('?');   
+				if (urlparts.length >= 2) {
+
+					var prefix = encodeURIComponent(parameter) + '=';
+					var pars = urlparts[1].split(/[&;]/g);
+
+					//reverse iteration as may be destructive
+					for (var i = pars.length; i-- > 0;) {    
+						//idiom for string.startsWith
+						if (pars[i].lastIndexOf(prefix, 0) !== -1) {  
+							pars.splice(i, 1);
+						}
+					}
+
+					return urlparts[0] + (pars.length > 0 ? '?' + pars.join('&') : '');
+				}
+				return url;
 			}
+			document.onmouseup = forward_event;
 			function editor_change() {
-				var script_string = LZString.compressToEncodedURIComponent(editor.getValue());
-				$("#script-compressed").val(script_string);
-				
-				var new_href = update_query_string(window.location.href, "script_direct", script_string);
+				var new_href;
+				if(editor.getValue() != external_script_value) {
+					online_script_input.value = "";
+					var script_string = LZString.compressToEncodedURIComponent(editor.getValue());
+					$("#script-compressed").val(script_string);
+					new_href = update_query_string(window.location.href, "script_direct", script_string);
+					new_href = removeURLParameter(new_href, "script");
+					$("#share-link").text("Share custom script");
+				} else {
+					online_script_input.value = external_link;
+					new_href = update_query_string(window.location.href, "script", external_link);
+					new_href = removeURLParameter(new_href, "script_direct");
+					$("#share-link").text("Share linked script");
+				}
 				// Create a dummy element to parse the URI with
 				$("#share-link").attr("href", new_href);
 			}
@@ -201,23 +234,54 @@
 					script_passed = false;
 				};
 				if(!lzstring) {
+					var prev_external_link = external_link;
+					var request = null;
+
+					var error_handler = function() {
+						if(prev_external_link != null) {
+							external_link = prev_external_link;
+							online_script_input.value = external_link;
+						}
+						if(request != null)
+							alert("Failed to load script due to error " + request.status + ": " + request.statusText + "\nThe contents of the external link box have been reverted.");
+						else
+							alert("The URL you passed is invalid.");
+					};
+
+					try {
+						new URL(url);
+					} catch(e) {
+						error_handler();
+						return;
+					}
+
+					external_link = url;
+					if(online_script_input.value != external_link)
+						online_script_input.value = external_link;
 					// read text from URL location
-					var request = new XMLHttpRequest();
+					request = new XMLHttpRequest();
 					console.log("GET " + url);
+					request.overrideMimeType("text/plain");
 					request.open('GET', url, true);
 					request.send(null);
+					request.onerror = error_handler;
 					request.onreadystatechange = function () {
-						if (request.readyState === 4 && request.status === 200) {
-						
-							console.log(request.reponseText);
-							if(request.responseText === undefined)
-								return;
-							editor.session.getUndoManager().reset();
-							editor.session.setValue(request.responseText, -1);
-							script_passed_handler();
+						if (request.readyState === 4) {
+							if(request.status == 200) {
+								console.log(request.reponseText);
+								if(request.responseText === undefined)
+									return;
+								editor.session.getUndoManager().reset();
+								external_script_value = request.responseText;
+								editor.session.setValue(request.responseText, -1);
+								script_passed_handler();
+							} else {
+								error_handler();
+							}
 						}
 					}
 				} else {
+					external_link = null;
 					// decompress LZString
 					editor.session.setValue(LZString.decompressFromEncodedURIComponent(url));
 					script_passed_handler();
@@ -240,12 +304,21 @@
 				iframe.contentWindow.document.close();
 			}
 			$(window).load(function() {
+				$(document).on('shown.bs.tooltip', function (e) {
+					setTimeout(function () {
+						$(e.target).tooltip('hide');
+					}, 5000);
+				});
+				/* Enable tooltips */
+				$('[data-toggle="tooltip"]').tooltip(); 
+
 			    editor = ace.edit("editor");
 				editor.getSession().setUseWrapMode(true);
 				editor.setAutoScrollEditorIntoView(true);
 				var PythonMode = ace.require("ace/mode/python").Mode;
 				editor.session.setMode(new PythonMode());
 				iframe = document.getElementById("emscripten-iframe");
+				online_script_input = document.getElementById("online-script");
 				iframe.src = "about:blank";
 				iframe.contentWindow.location.href = iframe.src;
 				clear_iframe(iframe);
