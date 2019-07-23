@@ -42,9 +42,9 @@ with open(travis_path, 'r') as travis:
 info_boards.sort()
 travis_boards.sort()
 
-missing_boards = list(set(info_boards) - set(travis_boards))
+missing_boards = set(info_boards) - set(travis_boards)
 
-if len(missing_boards) is not 0:
+if missing_boards:
     print('Boards missing in TRAVIS_BOARDS:')
     for board in missing_boards:
         print(board)
