@@ -74,6 +74,15 @@
 				font-size: 12px;
 				line-height: normal;
 			}
+			a.disabled {
+				/* Make the disabled links grayish*/
+				color: gray;
+			}
+			a.disabled:hover {
+				text-decoration: none;
+				color: gray;
+				pointer-events: none;
+			}
 		</style>
 		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 		<script src="https://littlevgl.com/bootstrap/js/bootstrap.min.js"></script>
@@ -121,7 +130,9 @@
 			var editor, iframe, online_script_input;
 			var script_passed = false;
 			function new_external_link(url) {
-				processScriptArg(url, false);
+				if(url.length > 0) {
+					processScriptArg(url, false);
+				}
 			}
 			// Ctrl+L is mandatory ! need xterm.js 3.14+
 		    function xterm_helper(term, key) {
@@ -187,7 +198,13 @@
 					$("#script-compressed").val(script_string);
 					new_href = update_query_string(window.location.href, "script_direct", script_string);
 					new_href = removeURLParameter(new_href, "script");
-					$("#share-link").text("Share custom script");
+					$("#share-link").removeClass("disabled");
+					if(new_href.length > 2000) {
+						$("#share-link").text("URL is too long to be shared");
+						new_href = "#";
+						$("#share-link").addClass("disabled");
+					} else
+						$("#share-link").text("Share custom script");
 				} else {
 					online_script_input.value = external_link;
 					new_href = update_query_string(window.location.href, "script", external_link);
