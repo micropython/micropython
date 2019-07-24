@@ -45,13 +45,13 @@ def read_mpconfig():
     return configs
 
 
-def build_json(modules, configs):
+def build_module_map(modules, configs):
     """ Establish the base of the JSON file, based on the contents from
         `configs`. Base will contain module names, if they're part of
         the `FULL_BUILD`, or their default value (0 | 1).
 
     """
-    base_json = dict()
+    base = dict()
     full_build = False
     for module in modules:
         full_name = module
@@ -67,22 +67,22 @@ def build_json(modules, configs):
             default_val = find_config.group(1)
         else:
             default_val = "None"
-        base_json[search_name] = {
+        base[search_name] = {
             "name": full_name,
             "full_build": str(full_build),
             "default_value": default_val,
             "excluded": []
         }
 
-    return get_excluded_boards(base_json)
+    return get_excluded_boards(base)
 
 
-def get_excluded_boards(base_json):
+def get_excluded_boards(base):
     """ Cycles through each board's `mpconfigboard.mk` file to determine
         if each module is included or not. Boards are selected by existence
         in a port listed in `SUPPORTED_PORTS` (e.g. `/port/nrf/feather_52840`)
     """
-    modules = list(base_json.keys())
+    modules = list(base.keys())
     for port in SUPPORTED_PORTS:
         port_dir = "ports/{}/boards".format(port)
         for entry in os.scandir(port_dir):
@@ -97,8 +97,8 @@ def get_excluded_boards(base_json):
                 # check if board uses `SMALL_BUILD`. if yes, and current
                 # module is marked as `FULL_BUILD`, board is excluded
                 small_build = re.search("CIRCUITPY_SMALL_BUILD = 1", contents)
-                if small_build and base_json[module]["full_build"] == "1":
-                    base_json[module]["excluded"].append(entry.name)
+                if small_build and base[module]["full_build"] == "1":
+                    base[module]["excluded"].append(entry.name)
                     continue
 
                 # check if module is specifically disabled for this board
@@ -107,27 +107,19 @@ def get_excluded_boards(base_json):
                 if not find_module:
                     # check if default inclusion is off ('0'). if the board doesn't
                     # have it explicitly enabled, its excluded.
-                    if base_json[module]["default_value"] == "0":
-                        base_json[module]["excluded"].append(entry.name)
+                    if base[module]["default_value"] == "0":
+                        base[module]["excluded"].append(entry.name)
                     continue
                 if (find_module.group(1) == "0" and
-                   find_module.group(1) != base_json[module]["default_value"]):
-                        base_json[module]["excluded"].append(entry.name)
+                   find_module.group(1) != base[module]["default_value"]):
+                        base[module]["excluded"].append(entry.name)
 
-    return base_json
+    return base
 
-if __name__ == "__main__":
+
+def support_matrix():
     modules = get_shared_bindings()
     configs = read_mpconfig()
-    base = build_json(sorted(modules), configs)
+    base = build_module_map(sorted(modules), configs)
 
-    final_json = json.dumps(base, indent=2)
-
-    shared_bindings_json = 'support_matrix.json'
-    if 'TRAVIS' in os.environ:
-        shared_bindings_json = os.path.join(os.environ['HOME'], shared_bindings_json)
-    else:
-        print(final_json)
-        shared_bindings_json = os.path.join('shared-bindings', shared_bindings_json)
-    with open(shared_bindings_json, "w") as matrix:
-        json.dump(base, matrix, indent=2)
+    return base

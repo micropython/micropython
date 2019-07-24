@@ -25,17 +25,15 @@ from recommonmark.parser import CommonMarkParser
 sys.path.insert(0, os.path.abspath('docs'))
 sys.path.insert(0, os.path.abspath('.'))
 
+import shared_bindings_matrix
+
 master_doc = 'docs/index'
 
 # Grab the JSON values to use while building the module support matrix
 # in 'shared-bindings/index.rst'
-shared_bindings_json = 'support_matrix.json'
-if 'TRAVIS' in os.environ:
-    shared_bindings_json = os.path.join(os.environ['HOME'], shared_bindings_json)
-else:
-    shared_bindings_json = os.path.join('shared-bindings', shared_bindings_json)
-with open(shared_bindings_json) as json_file:
-    modules_support_matrix = json.load(json_file)
+
+modules_support_matrix = shared_bindings_matrix.support_matrix()
+
 html_context = {
     'support_matrix': modules_support_matrix
 }
