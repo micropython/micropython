@@ -65,7 +65,7 @@ void mp_handle_pending(void) {
 void mp_handle_pending_tail(mp_uint_t atomic_state) {
     MP_STATE_VM(sched_state) = MP_SCHED_LOCKED;
     if (!mp_sched_empty()) {
-        mp_sched_item_t item = MP_STATE_VM(sched_stack)[MP_STATE_VM(sched_idx)];
+        mp_sched_item_t item = MP_STATE_VM(sched_queue)[MP_STATE_VM(sched_idx)];
         MP_STATE_VM(sched_idx) = IDX_MASK(MP_STATE_VM(sched_idx) + 1);
         --MP_STATE_VM(sched_len);
         MICROPY_END_ATOMIC_SECTION(atomic_state);
@@ -107,11 +107,11 @@ bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg) {
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
         }
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
-        MP_STATE_VM(sched_stack)[iput].func = function;
-        MP_STATE_VM(sched_stack)[iput].arg = arg;
+        MP_STATE_VM(sched_queue)[iput].func = function;
+        MP_STATE_VM(sched_queue)[iput].arg = arg;
         ret = true;
     } else {
-        // schedule stack is full
+        // schedule queue is full
         ret = false;
     }
     MICROPY_END_ATOMIC_SECTION(atomic_state);

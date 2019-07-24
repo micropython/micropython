@@ -78,6 +78,8 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
+
 void __fatal_error(const char *msg);
 
 /**
@@ -392,3 +394,5 @@ void SystemClock_Config(void)
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, TICK_INT_PRIORITY, 0));
 #endif
 }
+
+#endif

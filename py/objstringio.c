@@ -244,12 +244,6 @@ STATIC const mp_stream_p_t stringio_stream_p = {
     .is_text = true,
 };
 
-STATIC const mp_stream_p_t bytesio_stream_p = {
-    .read = stringio_read,
-    .write = stringio_write,
-    .ioctl = stringio_ioctl,
-};
-
 const mp_obj_type_t mp_type_stringio = {
     { &mp_type_type },
     .name = MP_QSTR_StringIO,
@@ -262,6 +256,12 @@ const mp_obj_type_t mp_type_stringio = {
 };
 
 #if MICROPY_PY_IO_BYTESIO
+STATIC const mp_stream_p_t bytesio_stream_p = {
+    .read = stringio_read,
+    .write = stringio_write,
+    .ioctl = stringio_ioctl,
+};
+
 const mp_obj_type_t mp_type_bytesio = {
     { &mp_type_type },
     .name = MP_QSTR_BytesIO,

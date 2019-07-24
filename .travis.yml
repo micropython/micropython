@@ -106,13 +106,14 @@ jobs:
 
     # unix stackless
     - stage: test
-      env: NAME="unix stackless port build and tests"
+      env: NAME="unix stackless port build and tests with clang"
+      install:
+        - sudo apt-get install clang
       script:
         - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
-        - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix deplibs
-        - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
-        - make ${MAKEOPTS} -C ports/unix test
+        - make ${MAKEOPTS} -C mpy-cross CC=clang
+        - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - make ${MAKEOPTS} -C ports/unix CC=clang test
 
     # windows port via mingw
     - stage: test

@@ -49,7 +49,7 @@ def run_script_on_target(target, script):
     else:
         # Run local executable
         try:
-            p = subprocess.run([target], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, input=script)
+            p = subprocess.run(target, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, input=script)
             output = p.stdout
         except subprocess.CalledProcessError as er:
             err = er
@@ -195,6 +195,7 @@ def main():
     cmd_parser.add_argument('-p', '--pyboard', action='store_true', help='run tests via pyboard.py')
     cmd_parser.add_argument('-d', '--device', default='/dev/ttyACM0', help='the device for pyboard.py')
     cmd_parser.add_argument('-a', '--average', default='8', help='averaging number')
+    cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('N', nargs=1, help='N parameter (approximate target CPU frequency)')
     cmd_parser.add_argument('M', nargs=1, help='M parameter (approximate target heap in kbytes)')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
@@ -215,7 +216,7 @@ def main():
         target = pyboard.Pyboard(args.device)
         target.enter_raw_repl()
     else:
-        target = MICROPYTHON
+        target = [MICROPYTHON, '-X', 'emit=' + args.emit]
 
     if len(args.files) == 0:
         tests_skip = ('benchrun.py',)
