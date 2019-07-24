@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -34,4 +35,4 @@ typedef struct {
     const mcu_pin_obj_t *pin;
 } digitalio_digitalinout_obj_t;
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

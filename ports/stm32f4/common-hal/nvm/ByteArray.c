@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
+//TODO: Implement for STM32. File required by Microcontroller Init
+
 #include "common-hal/nvm/ByteArray.h"
 
 #include <stdio.h>
 #include <string.h>
-
-#include "peripherals/nrf/nvm.h"
 
 // defined in linker
 extern uint32_t __fatfs_flash_start_addr[];
@@ -43,34 +43,35 @@ uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
 }
 
 static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_t *bytes) {
+    //
     // Write a whole page to flash, buffering it first and then erasing and rewriting 
     // it since we can only clear a whole page at a time.
 
-    if (offset == 0 && len == FLASH_PAGE_SIZE) {
-        nrf_nvm_safe_flash_page_write(page_addr, bytes);
-    } else {
-        uint8_t buffer[FLASH_PAGE_SIZE];
-        memcpy(buffer, (uint8_t *)page_addr, FLASH_PAGE_SIZE);
-        memcpy(buffer + offset, bytes, len);
-        nrf_nvm_safe_flash_page_write(page_addr, buffer);
-    }
+    // if (offset == 0 && len == FLASH_PAGE_SIZE) {
+    //     nrf_nvm_safe_flash_page_write(page_addr, bytes);
+    // } else {
+    //     uint8_t buffer[FLASH_PAGE_SIZE];
+    //     memcpy(buffer, (uint8_t *)page_addr, FLASH_PAGE_SIZE);
+    //     memcpy(buffer + offset, bytes, len);
+    //     nrf_nvm_safe_flash_page_write(page_addr, buffer);
+    // }
 }
 
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-        uint32_t start_index, uint8_t* values, uint32_t len) {
+    //     uint32_t start_index, uint8_t* values, uint32_t len) {
 
-    uint32_t address = NVM_START_ADDR + start_index;
-    uint32_t offset = address % FLASH_PAGE_SIZE;
-    uint32_t page_addr = address - offset;
+    // uint32_t address = NVM_START_ADDR + start_index;
+    // uint32_t offset = address % FLASH_PAGE_SIZE;
+    // uint32_t page_addr = address - offset;
 
-    while (len) {
-        uint32_t write_len = MIN(len, FLASH_PAGE_SIZE - offset);
-        write_page(page_addr, offset, write_len, values);
-        len -= write_len;
-        values += write_len;
-        page_addr += FLASH_PAGE_SIZE;
-        offset = 0;
-    }
+    // while (len) {
+    //     uint32_t write_len = MIN(len, FLASH_PAGE_SIZE - offset);
+    //     write_page(page_addr, offset, write_len, values);
+    //     len -= write_len;
+    //     values += write_len;
+    //     page_addr += FLASH_PAGE_SIZE;
+    //     offset = 0;
+    // }
     return true;
 }
 

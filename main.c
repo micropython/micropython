@@ -190,11 +190,9 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     supervisor_move_memory();
 
     reset_port();
-
     #if CIRCUITPY_BOARD
     reset_board_busses();
     #endif
-    
     reset_board();
     reset_status_led();
 }

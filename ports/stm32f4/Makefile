@@ -40,6 +40,7 @@ include ../../py/mkenv.mk
 include boards/$(BOARD)/mpconfigboard.mk
 # Port-specific
 include mpconfigport.mk
+
 # CircuitPython-specific
 include $(TOP)/py/circuitpy_mpconfig.mk
 
@@ -99,9 +100,6 @@ ifeq ($(MCU_SUB_VARIANT), stm32f411xe)
 C_DEFS =  \
 	-DUSE_HAL_DRIVER \
 	-DSTM32F411xE
-CIRCUITPY_BOARD = 0
-CIRCUITPY_DIGITALIO = 0
-CIRCUITPY_MICROCONTROLLER = 0
 endif
 
 #TODO: Add ASM Flags? -Werror
@@ -185,6 +183,8 @@ SRC_C += \
 	mphalport.c \
 	tick.c \
 	boards/$(BOARD)/board.c \
+	peripherals/stm32f4/$(MCU_SUB_VARIANT)/clocks.c \
+	peripherals/stm32f4/$(MCU_SUB_VARIANT)/gpio.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -205,7 +205,8 @@ SRC_C += lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
 endif
 
 ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
-SRC_C += peripherals/stm32f4/stm32f412zg/pins.c
+SRC_C += peripherals/stm32f4/stm32f412zx/pins.c
+SRC_C += boards/$(BOARD)/pins.c
 endif
 
 SRC_S = \

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +67,7 @@ extern const mp_obj_type_t mcu_pin_type;
 
 // Choose based on chip
 #ifdef STM32F412Zx
-#include "stm32f412zg/pins.h"
+#include "stm32f412zx/pins.h"
 #endif
 
 #endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__
