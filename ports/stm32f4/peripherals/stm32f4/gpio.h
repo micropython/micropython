@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,4 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_BACKGROUND_H
-#define MICROPY_INCLUDED_STM32F4_BACKGROUND_H
-
-#include <stdbool.h>
-
-void background_tasks_reset(void);
-void run_background_tasks(void);
-
-#endif  // MICROPY_INCLUDED_STM32F4_BACKGROUND_H
+void stm32f4_peripherals_gpio_init(void);

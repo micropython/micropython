@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __NRF52_HAL
-#define __NRF52_HAL
+#ifndef __STM32F4_HAL
+#define __STM32F4_HAL
 
 #include <stdbool.h>
 #include <stdint.h>

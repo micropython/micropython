@@ -1,9 +1,9 @@
-/*
+ /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_BACKGROUND_H
-#define MICROPY_INCLUDED_STM32F4_BACKGROUND_H
+#include "py/obj.h"
+#include "py/mphal.h"
+#include "stm32f4/pins.h"
 
-#include <stdbool.h>
 
-void background_tasks_reset(void);
-void run_background_tasks(void);
-
-#endif  // MICROPY_INCLUDED_STM32F4_BACKGROUND_H
+//TODO
+//const mcu_pin_obj_t pin_PE02 = PIN(4, GPIOE, 2);
