@@ -60,9 +60,13 @@ bool usb_enabled(void) {
 
 void usb_init(void) {
     init_usb_hardware();
-    load_serial_number();
+    //load_serial_number();
 
     tusb_init();
+
+    while(1) {
+        tud_task();
+    }
 
 #if MICROPY_KBD_EXCEPTION
     // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() callback will be invoked when Ctrl+C is received

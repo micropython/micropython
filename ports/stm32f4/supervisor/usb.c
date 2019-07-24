@@ -30,7 +30,6 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 #include "stm32f4xx_hal.h"
-//#include "tusb_config.h"
 
 void init_usb_hardware(void) {
  // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_RESET); //LED 2
