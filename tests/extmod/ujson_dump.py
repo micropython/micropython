@@ -17,11 +17,6 @@ s = StringIO()
 json.dump({"a": (2, [3, None])}, s)
 print(s.getvalue())
 
-# New tests per https://github.com/micropython/micropython/pull/4926
-s = StringIO()
-json.dump({1:2, 3:4, 5.5:6}, s)
-print(s.getvalue())
-
 # dump to a small-int not allowed
 try:
     json.dump(123, 1)
