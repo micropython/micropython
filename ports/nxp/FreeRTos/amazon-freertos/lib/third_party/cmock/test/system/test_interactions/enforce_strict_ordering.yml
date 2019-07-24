@@ -1,0 +1,247 @@
+---
+:cmock:
+  :enforce_strict_ordering: 1
+  :plugins:
+  - :ignore
+  - :cexception
+
+:systest:
+  :types: |
+    #define UINT32 unsigned int
+
+    typedef signed int custom_type;
+
+  :mockable: |
+    #include  "CException.h"
+    UINT32 foo(custom_type a);
+    UINT32 bar(custom_type b);
+    void baz(custom_type c);
+
+  :source:
+    :header: |
+      #include "CException.h"
+      UINT32 function_a(int a, int b);
+      void function_b(void);
+      void function_c(void);
+      void function_d(void);
+
+    :code: |
+      UINT32 function_a(int a, int b)
+      {
+        return foo((custom_type)a) + bar((custom_type)b);
+      }
+
+      void function_b(void)
+      {
+        baz((custom_type)1);
+        foo((custom_type)2);
+        bar((custom_type)3);
+        baz((custom_type)4);
+        foo((custom_type)5);
+        bar((custom_type)6);
+        baz((custom_type)7);
+      }
+
+      void function_c(void)
+      {
+        foo((custom_type)1);
+        foo((custom_type)2);
+        bar((custom_type)3);
+        bar((custom_type)4);
+        foo((custom_type)5);
+      }
+
+      void function_d(void)
+      {
+        CEXCEPTION_T e;
+        Try
+        {
+          foo((custom_type)1);
+        }
+        Catch(e) {}
+        Try
+        {
+          bar((custom_type)2);
+        }
+        Catch(e) {}
+        Try
+        {
+          foo((custom_type)3);
+        }
+        Catch(e) {}
+      }
+
+  :tests:
+    :common: |
+      #include "CException.h"
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: 'successfully exercise two simple ExpectAndReturn mock calls'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          bar_ExpectAndReturn((custom_type)2, 20);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+        }
+
+    - :pass: FALSE
+      :should: 'fail because bar() is called but is not expected'
+      :verify_error: 'Called more times than expected'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+        }
+
+    - :pass: FALSE
+      :should: 'fail because bar() is called twice but is expected once'
+      :verify_error: 'Called less times than expected'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          bar_ExpectAndReturn((custom_type)2, 20);
+          bar_ExpectAndReturn((custom_type)3, 30);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+        }
+
+    - :pass: FALSE
+      :should: 'fail because bar and foo called in reverse order'
+      :verify_error: 'Called earlier than expected'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn((custom_type)2, 20);
+          foo_ExpectAndReturn((custom_type)1, 10);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+        }
+
+    - :pass: TRUE
+      :should: 'pass because bar and foo called in order with multiple params'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          foo_ExpectAndReturn((custom_type)2, 10);
+          bar_ExpectAndReturn((custom_type)3, 20);
+          bar_ExpectAndReturn((custom_type)4, 10);
+          foo_ExpectAndReturn((custom_type)5, 10);
+          function_c();
+        }
+
+    - :pass: FALSE
+      :should: 'fail because bar and foo called out of order at end'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          foo_ExpectAndReturn((custom_type)2, 10);
+          bar_ExpectAndReturn((custom_type)3, 20);
+          foo_ExpectAndReturn((custom_type)5, 10);
+          bar_ExpectAndReturn((custom_type)4, 10);
+          function_c();
+        }
+
+    - :pass: FALSE
+      :should: 'fail because bar and foo called out of order at start'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)2, 10);
+          foo_ExpectAndReturn((custom_type)1, 10);
+          bar_ExpectAndReturn((custom_type)3, 20);
+          bar_ExpectAndReturn((custom_type)4, 10);
+          foo_ExpectAndReturn((custom_type)5, 10);
+          function_c();
+        }
+
+    - :pass: TRUE
+      :should: 'pass because we are properly ignoring baz'
+      :code: |
+        test()
+        {
+          baz_Ignore();
+          foo_ExpectAndReturn((custom_type)2, 10);
+          bar_ExpectAndReturn((custom_type)3, 20);
+          foo_ExpectAndReturn((custom_type)5, 10);
+          bar_ExpectAndReturn((custom_type)6, 10);
+          function_b();
+        }
+
+    - :pass: FALSE
+      :should: 'fail because bar and foo out of order, even though baz is ignored'
+      :code: |
+        test()
+        {
+          baz_Ignore();
+          foo_ExpectAndReturn((custom_type)2, 10);
+          foo_ExpectAndReturn((custom_type)5, 10);
+          bar_ExpectAndReturn((custom_type)3, 20);
+          bar_ExpectAndReturn((custom_type)6, 10);
+          function_b();
+        }
+
+    - :pass: TRUE
+      :should: 'pass when using cexception, as long as the order is right'
+      :code: |
+        test()
+        {
+          foo_ExpectAndThrow((custom_type)1, 10);
+          bar_ExpectAndReturn((custom_type)2, 20);
+          foo_ExpectAndReturn((custom_type)3, 10);
+          function_d();
+        }
+
+    - :pass: FALSE
+      :should: 'fail when an throw call is made out of order'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn((custom_type)2, 20);
+          foo_ExpectAndThrow((custom_type)1, 10);
+          foo_ExpectAndReturn((custom_type)3, 10);
+          function_d();
+        }
+
+    - :pass: TRUE
+      :should: 'successfully handle back to back ExpectAndReturn setup and mock calls'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          bar_ExpectAndReturn((custom_type)2, 20);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+
+          foo_ExpectAndReturn((custom_type)3, 30);
+          bar_ExpectAndReturn((custom_type)4, 40);
+          TEST_ASSERT_EQUAL(70, function_a(3, 4));
+
+          foo_ExpectAndReturn((custom_type)1, 50);
+          bar_ExpectAndReturn((custom_type)9, 60);
+          TEST_ASSERT_EQUAL(110, function_a(1, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'successfully catch errors during back to back ExpectAndReturn setup and mock calls'
+      :verify_error: 'Called earlier than expected'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          bar_ExpectAndReturn((custom_type)2, 20);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+
+          foo_ExpectAndReturn((custom_type)3, 30);
+          bar_ExpectAndReturn((custom_type)4, 40);
+          TEST_ASSERT_EQUAL(70, function_a(3, 4));
+
+          bar_ExpectAndReturn((custom_type)9, 60);
+          foo_ExpectAndReturn((custom_type)1, 50);
+          TEST_ASSERT_EQUAL(110, function_a(1, 9));
+        }
+...

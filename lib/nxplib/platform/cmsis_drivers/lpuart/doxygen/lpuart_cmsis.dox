@@ -1,0 +1,50 @@
+/*!
+@defgroup lpuart LPUART:  Low Power Universal Asynchronous Receiver/Transmitter Driver
+*/
+
+/*!
+@defgroup lpuart_cmsis_driver LPUART CMSIS Driver
+@ingroup lpuart
+@details This section describes the programming interface of the LPUART Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. And this driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord please refer to http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+
+The LPUART driver includes  transactional APIs.
+
+
+Transactional APIs can be used to enable the peripheral quickly and in the
+application if the code size and performance of transactional APIs can satisfy the
+requirements. If the code size and performance are critical requirements please write 
+custom code. 
+
+# Function groups{#LPUARTFunGrps}
+
+## LPUART CMSIS GetVersion Operation {#LPUARTGetVersionOps}
+
+This function group will return the LPUART CMSIS Driver version to user.
+
+## LPUART CMSIS GetCapabilities Operation {#LPUARTGetCapOps}
+
+This function group will return the capabilities of this driver.
+
+##LPUART CMSIS Initialize and Uninitialize Operation{#LPUARTInitResetOps}
+
+This function will initialize and uninitialize the lpuart instance . And this API must be called before you configure a lpuart instance or after you Deinit a lpuart instance.The right steps to start an instance is that you must initialize the instance which been slected firstly,then you can power on the instance.After these all have been done,you can configure the instance by using control operation.If you want to Uninitialize the instance, you must power off the instance first.
+
+## LPUART CMSIS Transfer Operation {#LPUARTTransOps}
+
+This function group controls the transfer, send/receive data.
+
+## LPUART CMSIS Status Operation {#LPUARTStatusOps}
+
+This function group gets the LPUART transfer status.
+
+## LPUART CMSIS Control Operation {#LPUARTControlOps}
+
+This function can configure an instance ,set baudrate for lpuart, get current baudrate ,set transfer data bits and other control command.
+
+*/
+

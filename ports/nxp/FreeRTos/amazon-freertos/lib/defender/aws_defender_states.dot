@@ -1,0 +1,35 @@
+digraph G {
+        concentrate = true;
+        overlap     = false;
+        splines     = true;
+            eDefenderStateInit                   -> {DEFENDER_StateInit [shape=rectangle]}
+    eDefenderStateStarted                -> {DEFENDER_StateNewMQTT [shape=rectangle]}
+    eDefenderStateNewMqttFailed        -> {DEFENDER_StateSleep [shape=rectangle]}
+[color=red]    eDefenderStateNewMqttSuccess       -> {DEFENDER_StateConnectMqtt [shape=rectangle]}
+    eDefenderStateConnectMqttFailed    -> {DEFENDER_StateDeleteMqtt [shape=rectangle]}
+[color=red]    eDefenderStateConnectMqttSuccess   -> {DEFENDER_StateSubscribe [shape=rectangle]}
+    eDefenderStateSubscribeMqttFailed  -> {DEFENDER_StateDisconnectMqtt [shape=rectangle]}
+[color=red]    eDefenderStateSubscribeMqttSuccess -> {DEFENDER_StateCreateReport [shape=rectangle]}
+    eDefenderStateSubmitReportFailed   -> {DEFENDER_StateDisconnectMqtt [shape=rectangle]}
+[color=red]    eDefenderStateSubmitReportSuccess  -> {DEFENDER_StateDisconnectMqtt [shape=rectangle]}
+    eDefenderStateDisconnectFailed      -> {DEFENDER_StateDisconnectMqtt [shape=rectangle]}
+[color=red]    eDefenderStateDisconnected           -> {DEFENDER_StateDeleteMqtt [shape=rectangle]}
+    eDefenderStateDeleteFailed          -> {DEFENDER_StateDeleteMqtt [shape=rectangle]}
+[color=red]    eDefenderStateSleep                  -> {DEFENDER_StateSleep [shape=rectangle]}
+DEFENDER_StateInit -> eDefenderStateStarted
+DEFENDER_StateNewMQTT -> eDefenderStateNewMqttFailed[color=red]
+DEFENDER_StateNewMQTT -> eDefenderStateNewMqttSuccess
+DEFENDER_StateConnectMqtt -> eDefenderStateConnectMqttFailed[color=red]
+DEFENDER_StateConnectMqtt -> eDefenderStateConnectMqttSuccess
+DEFENDER_StateSubscribe -> eDefenderStateSubscribeMqttFailed[color=red]
+DEFENDER_StateSubscribe -> eDefenderStateSubscribeMqttSuccess
+DEFENDER_StateCreateReport -> eDefenderStateSubmitReportFailed[color=red]
+DEFENDER_StateCreateReport -> eDefenderStateSubmitReportFailed[color=red]
+DEFENDER_StateCreateReport -> eDefenderStateSubmitReportSuccess
+DEFENDER_StateDisconnectMqtt -> eDefenderStateDisconnectFailed[color=red]
+DEFENDER_StateDisconnectMqtt -> eDefenderStateDisconnected
+DEFENDER_StateDeleteMqtt -> eDefenderStateDeleteFailed[color=red]
+DEFENDER_StateDeleteMqtt -> eDefenderStateSleep
+DEFENDER_StateSleep -> eDefenderStateStarted
+
+}

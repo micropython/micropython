@@ -1,0 +1,56 @@
+/**
+@page rtos_log RTOS Change Log
+
+@section FreeRTOS FreeRTOS for MCUXpresso SDK.
+The current version is Amazon-FreeRTOS 1.4.0 Original package is available at <a href="https://github.com/aws/amazon-freertos">github.com/aws/amazon-freertos</a>.
+
+  - 1.4.0_rev1
+    - New features:
+      - Add implementation of vTaskEndScheduler for CM0 GCC port.
+      - Support for CM33, CM33F architectures based on CM3, CM4F ports
+
+  - 1.4.0_rev0
+    - New features:
+      - Support for pkcs11 for several platforms, secure element host library under pkcs11/portable/nxp folder
+      - Lwip, wifi_qca support for secure_sockets in secure_sockets/portable/nxp folder
+      - Flash driver support for several platforms in third_party/mcu_vendor/nxp folder
+      - Generic support for aws_wifi under wifi/portable/nxp/common folder
+    - Other changes:
+      - Fix several build warnings, errors
+
+Updates applied to FreeRTOS kernel up to version 10.0.0 (up to Amazon - FreeRTOS merge).
+New kernel related changes will be described in section above as part of AWS package.
+
+  - 9.0.0_rev3
+    - New features:
+      - Tickless idle mode support for Cortex-A7. Add fsl_tickless_epit.c and fsl_tickless_generic.h in portable/IAR/ARM_CA9 folder.
+      - Enabled float context saving in IAR for Cortex-A7. Added configUSE_TASK_FPU_SUPPORT macros. Modified port.c and portmacro.h in portable/IAR/ARM_CA9 folder.
+    - Other changes:
+      - Transformed ARM_CM core specific tickless low power support into generic form under freertos/Source/portable/low_power_tickless/.
+
+  - 9.0.0_rev2
+    - New features:
+      - Enabled MCUXpresso thread aware debugging. Add freertos_tasks_c_additions.h and configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H and configFRTOS_MEMORY_SCHEME macros.
+
+  - 9.0.0_rev1
+    - New features:
+      - Enabled -flto optimization in GCC by adding __attribute__((used)) for vTaskSwitchContext.
+      - Enabled KDS Task Aware Debugger. Apply FreeRTOS patch to enable configRECORD_STACK_HIGH_ADDRESS macro. Modified files are task.c and FreeRTOS.h.
+
+  - 9.0.0_rev0
+    - New features:
+      - Example freertos_sem_static.
+      - Static allocation support RTOS driver wrappers.
+    - Other changes:
+      - Tickless idle rework. Support for different timers is in separated files (fsl_tickless_systick.c, fsl_tickless_lptmr.c).
+      - Removed configuration option configSYSTICK_USE_LOW_POWER_TIMER. Low power timer is now selected by linking of apropriate file fsl_tickless_lptmr.c.
+      - Removed configOVERRIDE_DEFAULT_TICK_CONFIGURATION in RVDS port. Use of __attribute__((weak)) is the preferred solution. Not same as _weak!
+
+  - 8.2.3
+    - New features:
+      - Tickless idle mode support.
+      - Added template application for Kinetis Expert (KEx) tool (template_application).
+    - Other changes:
+      - Folder structure reduction. Keep only Kinetis related parts.
+
+*/

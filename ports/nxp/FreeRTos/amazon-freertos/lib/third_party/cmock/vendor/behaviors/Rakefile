@@ -1,0 +1,19 @@
+require 'rake'
+require 'rubygems'
+require 'hoe'
+
+Hoe.new('behaviors','1.0.3') do |p|
+  p.author = "Atomic Object LLC" 
+  p.email = "dev@atomicobject.com" 
+  p.url = "http://behaviors.rubyforge.org" 
+  p.summary = "behavior-driven unit test helper" 
+  p.description = <<-EOS
+Behaviors allows for Test::Unit test case methods to be defined as 
+human-readable descriptions of program behavior. It also provides 
+Rake tasks to list the behaviors of your project.
+  EOS
+  p.test_globs = ['test/*_test.rb']
+
+  p.changes = <<-EOS
+  EOS
+end

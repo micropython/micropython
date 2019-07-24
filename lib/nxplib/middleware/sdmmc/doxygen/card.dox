@@ -1,0 +1,251 @@
+/*
+@page drv_err Driver errors status
+ - #kStatus_SDMMC_NotSupportYet = 1800
+ - #kStatus_SDMMC_TransferFailed = 1801
+ - #kStatus_SDMMC_SetCardBlockSizeFailed = 1802
+ - #kStatus_SDMMC_HostNotSupport = 1803
+ - #kStatus_SDMMC_CardNotSupport = 1804
+ - #kStatus_SDMMC_AllSendCidFailed = 1805
+ - #kStatus_SDMMC_SendRelativeAddressFailed = 1806
+ - #kStatus_SDMMC_SendCsdFailed = 1807
+ - #kStatus_SDMMC_SelectCardFailed = 1808
+ - #kStatus_SDMMC_SendScrFailed = 1809
+ - #kStatus_SDMMC_SetDataBusWidthFailed = 1810
+ - #kStatus_SDMMC_GoIdleFailed = 1811
+ - #kStatus_SDMMC_HandShakeOperationConditionFailed = 1812
+ - #kStatus_SDMMC_SendApplicationCommandFailed = 1813
+ - #kStatus_SDMMC_SwitchFailed = 1814
+ - #kStatus_SDMMC_StopTransmissionFailed = 1815
+ - #kStatus_SDMMC_WaitWriteCompleteFailed = 1816
+ - #kStatus_SDMMC_SetBlockCountFailed = 1817
+ - #kStatus_SDMMC_SetRelativeAddressFailed = 1818
+ - #kStatus_SDMMC_SwitchHighSpeedFailed = 1819
+ - #kStatus_SDMMC_SendExtendedCsdFailed = 1820
+ - #kStatus_SDMMC_ConfigureBootFailed = 1821
+ - #kStatus_SDMMC_ConfigureExtendedCsdFailed = 1822
+ - #kStatus_SDMMC_EnableHighCapacityEraseFailed = 1823
+ - #kStatus_SDMMC_SendTestPatternFailed = 1824
+ - #kStatus_SDMMC_ReceiveTestPatternFailed = 1825
+ - #kStatus_SDMMC_SDIO_ResponseError  = 1826
+ - #kStatus_SDMMC_SDIO_InvalidArgument  = 1827
+ - #kStatus_SDMMC_SDIO_SendOperationConditionFail  = 1828
+ - #kStatus_SDMMC_InvalidVoltage  = 1829
+ - #kStatus_SDMMC_SDIO_SwitchHighSpeedFail  = 1830
+ - #kStatus_SDMMC_SDIO_ReadCISFail  = 1831
+ - #kStatus_SDMMC_SDIO_InvalidCard  = 1832
+ - #kStatus_SDMMC_TuningFail  = 1833
+ - #kStatus_SDMMC_SwitchVoltageFail  = 1834
+ - #kStatus_SDMMC_SwitchVoltage18VFail33VSuccess  = 1835
+ - #kStatus_SDMMC_ReTuningRequest  = 1836
+ - #kStatus_SDMMC_SetDriverStrengthFail  = 1837
+ - #kStatus_SDMMC_SetPowerClassFail  = 1838
+ - #kStatus_SDMMC_HostNotReady  = 1839
+ - #kStatus_SDMMC_CardDetectFailed  = 1840
+ - #kStatus_SDMMC_AuSizeNotSetProperly  = 1841
+*/
+
+/*!
+@defgroup CARD Secure Digital Card/Embedded MultiMedia Card (CARD)
+@details The MCUXpresso SDK provides a driver to access the Secure Digital Card
+and Embedded MultiMedia Card based on the SDHC/USDHC/SDIF driver.
+
+# Function groups
+
+## SDCARD Function {#SDCARDFunctional}
+
+This function group implements the SD card functional API.
+
+## MMCCARD Function {#MMCCARDFunctional}
+
+This function group implements the MMC card functional API.
+
+# SDIO CARD Operation {#SDIOCardOperation}
+## error log support
+Not support yet
+## User configuable
+## Board dependency
+## Typical use case
+*/
+
+/*!
+@defgroup SDIOCARD SDIO Card Driver
+@ingroup CARD
+*/
+
+/*!
+@defgroup SDCARD SD Card Driver
+@ingroup CARD
+
+# Typical use case
+
+# SD CARD Operation {#SDCardOperation}
+## error log support
+Lots of error log has been added to sd relate functions, if error occurs during initial/read/write, please enable the error log print functionality with
+#define SDMMC_ENABLE_LOG_PRINT 1
+And rerun the project then user can check what kind of error happened.
+
+## User configurable
+~~~~~{.c}
+        typedef struct _sd_card
+        {
+            SDMMCHOST_CONFIG host; /*!< Host information */
+            sdcard_usr_param_t usrParam; /*!< user parameter */
+            bool isHostReady; /*!< use this flag to indicate if need host re-init or not*/
+            bool noInteralAlign; /*!< use this flag to disable sdmmc align. If disable, sdmmc will not make sure the
+            data buffer address is word align, otherwise all the transfer are align to low level driver */
+            uint32_t busClock_Hz; /*!< SD bus clock frequency united in Hz */
+            uint32_t relativeAddress; /*!< Relative address of the card */
+            uint32_t version; /*!< Card version */
+            uint32_t flags; /*!< Flags in _sd_card_flag */
+            uint32_t rawCid[4U]; /*!< Raw CID content */
+            uint32_t rawCsd[4U]; /*!< Raw CSD content */
+            uint32_t rawScr[2U]; /*!< Raw CSD content */
+            uint32_t ocr; /*!< Raw OCR content */
+            sd_cid_t cid; /*!< CID */
+            sd_csd_t csd; /*!< CSD */
+            sd_scr_t scr; /*!< SCR */
+            uint32_t blockCount; /*!< Card total block number */
+            uint32_t blockSize; /*!< Card block size */
+            sd_timing_mode_t currentTiming; /*!< current timing mode */
+            sd_driver_strength_t driverStrength; /*!< driver strength */
+            sd_max_current_t maxCurrent; /*!< card current limit */
+            sdmmc_operation_voltage_t operationVoltage; /*!< card operation voltage */
+} sd_card_t;
+~~~~~
+Part of The variables above is user configurable,
+    1. SDMMCHOST_CONFIG host
+    Application need to provide host controller base address and the host's source clock frequency.
+
+    2. sdcard_usr_param_t usrParam
+    Two member in the userParam structure,
+        a. cd-which allow application define the card insert/remove callback function, redefine the card detect timeout ms and also allow application determine how to detect card.
+        b. pwr-which allow application redefine the power on/off function and the power on/off delay ms.
+    However, sdmmc always use the default setting if application not define it in application. The default setting is depend on the macro defined in the board.h.
+
+    3. bool noInteralAlign
+    Sdmmc include an address align internal buffer(to use host controller internal DMA), to improve read/write performance while application cannot make sure the data address used to read/write is align, set it to true will achieve a better performance.
+
+    4. sd_timing_mode_t currentTiming
+    It is used to indicate the currentTiming the card is working on, however sdmmc also support preset timing mode, then sdmmc will try to switch to this timing first, if failed,  a valid timing will switch to automatically.
+    Generally, user may not set this variable if you don't know what kind of timing the card support, sdmmc will switch to the highest timing which the card support.
+
+    5. sd_driver_strength_t driverStrength
+    Choose a valid  card driver strength if application required and call  SD_SetDriverStrength in application.
+
+    6. sd_max_current_t maxCurrent
+    Choose a valid  card current if application required and call SD_SetMaxCurrent in application.
+
+## Board dependency
+Sdmmc depend on some board specific settings, such as
+card detect -
+    which is used to detect card, the card active level is determine by the socket you are using,  low level is active usually, but some socket use high as active, please set the macro
+    #define BOARD_xxxx_CARD_INSERT_CD_LEVEL (0U)
+    According to your board specific if you cannot detect card even if card is inserted.
+
+power control - Macro for USDHC only, SDHC/SDIF support high speed timing only, so please ignore the power reset pin for SDHC/SDIF.
+    which is used to reset card power for UHS card, to make UHS timing work properly, please make sure the power reset pin is configured properly in board.h.
+    #define BOARD_SD_POWER_RESET_GPIO (GPIO1)
+    #define BOARD_SD_POWER_RESET_GPIO_PIN (5U)
+    #define BOARD_USDHC_SDCARD_POWER_CONTROL_INIT() \
+
+pin configurations - Function for USDHC only.
+     which is used to switch the signal pin configurations include driver strength/speed mode dynamiclly for different timing mode, reference the function defined in board.c
+    void BOARD_SD_Pin_Config(uint32_t speed, uint32_t strength)
+
+## Typical use case
+~~~~~{.c}
+    /* Save host information. */
+    card->host.base = BOARD_SDHC_BASEADDR;
+    card->host.sourceClock_Hz = CLOCK_GetFreq(BOARD_SDHC_CLKSRC);
+
+    /*Redefine the cd and pwr in the application if required*/
+    card->usrParam.cd = &s_sdCardDetect;
+    card->usrParam.pwr = &s_sdCardPwrCtrl;
+    /* intial the host controller */
+    SD_HostInit(card);
+    /*wait card inserted, before detect card  you can power off card first and power on again after card inserted, such as*/
+    SD_PowerOffCard(card->host.base, card->usrParam.pwr);
+    SD_WaitCardDetectStatus(card->host.base, card->usrParam.cd, true);
+    SD_PowerOnCard(card->host.base, card->usrParam.pwr);
+    /*call card initial function*/
+    SD_CardInit(card);
+
+    /* Or you can call below function directly, it is a highlevel init function which will include host initialize,card detect, card initial */
+
+    /* Init card. */
+    if (SD_Init(card))
+    {
+        PRINTF("\r\nSD card init failed.\r\n");
+    }
+
+    /* after initialization finised, access the card with below functions. */
+
+    while (true)
+    {
+        if (kStatus_Success != SD_WriteBlocks(card, g_dataWrite, DATA_BLOCK_START, DATA_BLOCK_COUNT))
+        {
+            PRINTF("Write multiple data blocks failed.\r\n");
+        }
+        if (kStatus_Success != SD_ReadBlocks(card, g_dataRead, DATA_BLOCK_START, DATA_BLOCK_COUNT))
+        {
+            PRINTF("Read multiple data blocks failed.\r\n");
+        }
+
+        if (kStatus_Success != SD_EraseBlocks(card, DATA_BLOCK_START, DATA_BLOCK_COUNT))
+        {
+            PRINTF("Erase multiple data blocks failed.\r\n");
+        }
+    }
+
+    SD_Deinit(card);
+*/
+
+/*!
+@defgroup MMCCARD MMC Card Driver
+@ingroup CARD
+# MMC CARD Operation {#MMCCardOperation}
+## error log support
+Not support yet
+## User configuable
+## Board dependency
+## Typical use case
+
+~~~~~{.c}
+
+    /* Save host information. */
+    card->host.base = BOARD_SDHC_BASEADDR;
+    card->host.sourceClock_Hz = CLOCK_GetFreq(BOARD_SDHC_CLKSRC);
+    /* MMC card VCC supply, only allow 3.3 or 1.8v, depend on your board config.
+    * If a power reset circuit is avaliable on you board for mmc, and 1.8v is supported,
+    * #define BOARD_USDHC_MMCCARD_POWER_CONTROL_INIT()
+    * #define BOARD_USDHC_MMCCARD_POWER_CONTROL(state)
+    * in board.h must be implemented.
+    * User can remove preset the voltage window and sdmmc will switch VCC automatically. */
+    card->hostVoltageWindowVCC = BOARD_MMC_VCC_SUPPLY;
+
+    /* Init card. */
+    if (MMC_Init(card))
+    {
+        PRINTF("\n MMC card init failed \n");
+    }
+
+    /* after initialization finised, access the card with below functions. */
+    while (true)
+    {
+        if (kStatus_Success != MMC_WriteBlocks(card, g_dataWrite, DATA_BLOCK_START, DATA_BLOCK_COUNT))
+        {
+            PRINTF("Write multiple data blocks failed.\r\n");
+        }
+        if (kStatus_Success != MMC_ReadBlocks(card, g_dataRead, DATA_BLOCK_START, DATA_BLOCK_COUNT))
+        {
+            PRINTF("Read multiple data blocks failed.\r\n");
+        }
+    }
+
+    MMC_Deinit(card);
+*/
+
+/*!
+@defgroup SDMMCHOST HOST adapter Driver
+@ingroup CARD
+*/

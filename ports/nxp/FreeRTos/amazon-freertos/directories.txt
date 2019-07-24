@@ -1,0 +1,15 @@
+This file describes the directories found at the root of the Amazon FreeRTOS
+distribution.
+
+lib:
+Contains the implementation of AWS and third party libraries.  AWS libraries use
+abstracted interfaces to enable interchangeability and facilitate porting to new
+hardware.
+
+demos:
+Contains a set of pre-configured demo projects for various target platforms.
+The projects in the demos directory build the libraries from the lib directory.
+
+tests:
+Various module and integration tests that use the Unity framework. These tests 
+also support the Amazon FreeRTOS Qualification Program (AFQP).

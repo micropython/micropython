@@ -1,0 +1,19 @@
+require 'rake'
+require 'rake/testtask'
+
+here = File.expand_path(File.dirname(__FILE__))
+require "#{here}/../../lib/behaviors/reporttask"
+
+desc 'Default: run unit tests.'
+task :default => :test
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << "#{here}/../../lib"
+  t.pattern = 'test/**/*_test.rb'
+  t.verbose = true
+end
+
+Behaviors::ReportTask.new(:behaviors) do |t|
+  t.pattern = 'test/**/*_test.rb'
+  t.html_dir = 'behaviors_doc'
+end

@@ -1,0 +1,68 @@
+/*
+@page drv_err Driver errors status
+ - #kStatus_SDSPI_SetFrequencyFailed = 2200
+ - #kStatus_SDSPI_ExchangeFailed = 2201
+ - #kStatus_SDSPI_WaitReadyFailed = 2202
+ - #kStatus_SDSPI_ResponseError = 2203
+ - #kStatus_SDSPI_WriteProtected = 2204
+ - #kStatus_SDSPI_GoIdleFailed = 2205
+ - #kStatus_SDSPI_SendCommandFailed = 2206
+ - #kStatus_SDSPI_ReadFailed = 2207
+ - #kStatus_SDSPI_WriteFailed = 2208
+ - #kStatus_SDSPI_SendInterfaceConditionFailed = 2209
+ - #kStatus_SDSPI_SendOperationConditionFailed = 2210
+ - #kStatus_SDSPI_ReadOcrFailed = 2211
+ - #kStatus_SDSPI_SetBlockSizeFailed = 2212
+ - #kStatus_SDSPI_SendCsdFailed = 2213
+ - #kStatus_SDSPI_SendCidFailed = 2214
+ - #kStatus_SDSPI_StopTransmissionFailed = 2215
+ - #kStatus_SDSPI_SendApplicationCommandFailed = 2216
+*/
+
+/*!
+@defgroup SDSPI SPI based Secure Digital Card (SDSPI)
+@details The MCUXpresso SDK provides a driver to access the Secure Digital Card 
+based on the SPI driver.
+
+# Function groups
+
+## SDSPI Function {#SDSPIFunctional}
+
+This function group implements the SD card functional API in the SPI mode.
+
+# Typical use case
+
+## SDSPI Operation {#CARDOperation}
+
+~~~~~{.c}
+    /* SPI_Init(). */
+    
+    /* Register the SDSPI driver callback. */
+    
+    /* Initializes card. */
+    if (kStatus_Success != SDSPI_Init(card))
+    {
+        SDSPI_Deinit(card)
+        return;
+    }
+
+    /* Read/Write card */
+    memset(g_testWriteBuffer, 0x17U, sizeof(g_testWriteBuffer));
+    
+    while (true)
+    {
+        memset(g_testReadBuffer, 0U, sizeof(g_testReadBuffer));
+        
+        SDSPI_WriteBlocks(card, g_testWriteBuffer, TEST_START_BLOCK, TEST_BLOCK_COUNT);
+        
+        SDSPI_ReadBlocks(card, g_testReadBuffer, TEST_START_BLOCK, TEST_BLOCK_COUNT);
+        
+        if (memcmp(g_testReadBuffer, g_testReadBuffer, sizeof(g_testWriteBuffer)))
+        {
+            break;
+        }
+    }
+    
+~~~~~
+
+*/

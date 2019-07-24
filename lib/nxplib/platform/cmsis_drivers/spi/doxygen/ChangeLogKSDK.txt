@@ -1,0 +1,22 @@
+/*!
+@page driver_log Driver Change Log
+
+@section spi_cmsis SPI_CMSIS
+  Current spi_cmsis driver version is 2.1
+
+  - 2.0
+    - - Initial version.
+
+  - 2.1
+    - Bug Fix:
+      - Fix the wrong clock polarity assignment in driver. 
+        For ARM_SPI_CPOL0_CPHA0 and other frame format parameters, CPOL = 0 menas kSPI_ClockPolarityActiveHigh
+        not kSPI_ClockPolarityActiveLow in driver.
+
+    - New feature:
+      - Add new feature to support 3-wire mode for both master and slave instance.
+        Users can use ARM_SPI_MODE_MASTER_SIMPLEX to set the MOSI pin as output/input pin.
+        And using the ARM_SPI_MODE_SLAVE_SIMPLEX to set the MISO pin as output/input pin.
+        
+	  - Allow user to set up the default Transmit value by using ARM_SPI_SET_DEFAULT_TX_VALUE.
+*/

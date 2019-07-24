@@ -1,0 +1,91 @@
+---
+#The purpose of this test is to play with things like "const char const *" which isn't supported by some compilers
+:cmock:
+  :enforce_strict_ordering: 1
+  :plugins:
+  - :array
+  - :cexception
+  - :ignore
+
+:systest:
+  :types: |
+    typedef struct _POINT_T {
+      int x;
+      int y;
+    } POINT_T;
+
+  :mockable: |
+    #include  "CException.h"
+    void foos(const char const * a);
+    const char const * bars(void);
+
+  :source: 
+    :header: |   
+      #include "CException.h" 
+      void function_a(void);
+      void function_b(void);
+      void function_c(void);
+      int function_d(void);
+
+    :code: |
+      void function_c(void) {
+        CEXCEPTION_T e;
+        Try {
+          foos(bars());
+        } Catch(e) { foos("err"); }
+      }
+      
+  :tests:
+    :common: |
+      #include "CException.h"
+      void setUp(void) {}
+      void tearDown(void) {}
+      
+    :units:
+    - :pass: TRUE
+      :should: 'handle standard c string as null terminated on not do crappy memory compares of a byte, passing'
+      :code: |
+        test()
+        {
+          bars_ExpectAndReturn("This is a\0 silly string");
+          foos_Expect("This is a\0 wacky string");
+          
+          function_c();
+        }
+        
+    - :pass: FALSE
+      :should: 'handle standard c string as null terminated on not do crappy memory compares of a byte, finding failures'
+      :code: |
+        test()
+        {
+          bars_ExpectAndReturn("This is a silly string");
+          foos_Expect("This is a wacky string");
+          
+          function_c();
+        }
+
+    - :pass: TRUE
+      :should: 'handle an exception being caught'
+      :code: |
+        test()
+        {
+          bars_ExpectAndReturn("This is a\0 silly string");
+          foos_ExpectAndThrow("This is a\0 wacky string", 55);
+          foos_Expect("err");
+          
+          function_c();
+        }
+
+    - :pass: FALSE
+      :should: 'handle an exception being caught but still catch following errors'
+      :code: |
+        test()
+        {
+          bars_ExpectAndReturn("This is a\0 silly string");
+          foos_ExpectAndThrow("This is a\0 wacky string", 55);
+          foos_Expect("wrong error");
+          
+          function_c();
+        }
+
+...

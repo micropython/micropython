@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Amazon FreeRTOS Developer Demos Certificate Configuration Tool</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="js/generatorGeneric.js"></script>
+</head>
+<body>
+    <script>
+        // Check for the various File API support.
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            // Success! All the File APIs are supported.
+        } else {
+            alert('Please use a web browser that supports HTML5 file APIs.');
+        }
+
+
+        function formatCredentialText(credentialText) {
+            // Remove whitespace at end of PEM file (to eliminate differences between input files)
+            credentialText = credentialText.trim();
+
+            // Replace any CR/LF pairs with a newline character.
+            credentialText = credentialText.replace(/\r\n/g, "\n");
+
+            // Add line endings & html line break for C-language variable declaration.
+            credentialText = credentialText.replace(/\n/g, "\\n\"<br>\n\"");
+
+            // Format the end of the last line with " and semicolon.
+            credentialText = credentialText + "\";\n";
+
+            return credentialText;
+        }
+
+        function generatePemTextToDisplay() {
+            var readerPemFile = new FileReader()
+
+            // Define a handler to create appropriate private key file text.
+            readerPemFile.onload = (function (e) {
+                pemCredentialText = e.target.result;
+
+                // Add C-language variable declaration plus EOL formatting.
+                pemCredentialText = "\"" + formatCredentialText(pemCredentialText);
+
+                // Give the HTML a way to access the text to display.
+                document.getElementById("pemToDisplay").innerHTML = pemCredentialText;
+            });
+
+            //Start first async read - other calls are chained inline
+            readerPemFile.readAsText(pemInputFile.files[0]);
+        }
+    </script>
+
+    <div class="row">
+        <div class="col-lg-2"></div>
+        <div class="col-lg-8">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2>PEM to C String Conversion Tool</h2>
+                    <h4>Use with Amazon FreeRTOS Developer Tests</h4>
+                </div>
+                <div class="panel-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p class="text-primary" id="header-text" style="font-size:18px">
+                                    Select a PEM key or PEM certificate file to be converted into the format required by aws_clientcredential_keys.h
+                                </p>
+                                <div class="panel panel-default">
+                                    <div class="panel-body" style="background:#F8F8F8;">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="pemInputFile" style="font-size:16px">
+                                                        PEM Certificate or Key:
+                                                    </label>
+                                                    <input type="file" id="pemInputFile" />
+                                                </div>
+                                                <button type="button" class="btn btn-primary" style="font-size:16px"
+                                                        onclick='generatePemTextToDisplay()'>
+                                                    <span class="glyphicon glyphicon-download"></span>
+                                                    Display formatted PEM string to be copied into aws_clientcredential_keys.h
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-primary" style="font-size:14px">
+                                    <span class="glyphicon glyphicon-warning-sign" style="font-size:16px"></span>
+                                    Copy the key or certificate into the appropriate variable in <i>tests/common/include/aws_clientcredential_keys.h</i> file of the test project.
+                                </p>
+                                <p style="font-family: Consolas;">
+                                    <span id="pemToDisplay"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        Copyright &copy; 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2"></div>
+    </div>
+</body>
+</html>

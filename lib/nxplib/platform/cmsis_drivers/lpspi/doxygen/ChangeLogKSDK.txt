@@ -1,0 +1,29 @@
+/*!
+@page driver_log Driver Change Log
+
+@section lpspi_cmsis LPSPI_CMSIS
+  Current LPSPI_CMSIS driver version is 2.1
+
+  - 2.1
+    - Bug Fix:
+      - Fix the incorrect clock polarity assignment in the driver. 
+        For ARM_SPI_CPOL0_CPHA0 and other frame format parameters, CPOL = 0 means kSPI_ClockPolarityActiveHigh
+        not kSPI_ClockPolarityActiveLow in driver.
+
+    - New feature:
+      - Allow user to set up the default Transmit value by using ARM_SPI_SET_DEFAULT_TX_VALUE.
+        Please note that set default value is not supported in slave interrupts, because the pin will stay
+        tristated if TX buffer is NULL.
+        
+      - Enable slave select mode in the new driver, but this has no effect when users set any of them because
+        the driver can only support the hardware control function.
+		
+	  - Enable 3-Wire mode, users can use ARM_SPI_MODE_MASTER_SIMPLEX/ARM_SPI_MODE_SLAVE_SIMPLEX to enable this 
+	    feature. For ARM_SPI_MODE_MASTER_SIMPLEX mode, select SOUT pin as the input/output pin,
+		and for ARM_SPI_MODE_SLAVE_SIMPLEX, the SIN pin is selected as the input/output pin.
+
+  - 2.0
+    - - Initial version.
+  
+*/
+

@@ -1,0 +1,130 @@
+/*!
+@defgroup i2c I2C: Inter-Integrated Circuit Driver
+*/
+
+/*!
+@defgroup i2c_cmsis_driver I2C CMSIS Driver
+@ingroup i2c
+@details This section describes the programming interface of the I2C Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. This driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord see http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+ 
+The I2C CMSIS driver includes transactional APIs.
+
+Transactional APIs are transaction target high-level APIs.
+The transactional APIs can be used to enable the peripheral quickly and also in the
+application if the code size and performance of transactional APIs satisfy
+the requirements. If the code size and performance are critical requirements,
+see the transactional API implementation and write custom code accessing the hardware registers.
+
+
+## Master Operation in interrupt transactional method{#I2CMasterOpsTransIRQ}
+
+~~~~~{.c}
+    void I2C_MasterSignalEvent_t(uint32_t event)
+    {
+        if (event == ARM_I2C_EVENT_TRANSFER_DONE)
+        {
+            g_MasterCompletionFlag = true;
+        }
+    }
+    /*Init I2C0*/
+    Driver_I2C0.Initialize(I2C_MasterSignalEvent_t);
+    
+    Driver_I2C0.PowerControl(ARM_POWER_FULL);
+    
+    /*config transmit speed*/
+    Driver_I2C0.Control(ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_STANDARD);
+    
+    /*start transmit*/
+    Driver_I2C0.MasterTransmit(I2C_MASTER_SLAVE_ADDR, g_master_buff, I2C_DATA_LENGTH, false);
+    
+    /*  Wait for transfer completed. */
+    while (!g_MasterCompletionFlag)
+    {
+    }
+    g_MasterCompletionFlag = false;
+~~~~~
+
+## Master Operation in DMA transactional method{#I2CMasterOpsTransDMA}
+
+~~~~~{.c}
+    void I2C_MasterSignalEvent_t(uint32_t event)
+    {
+        /*  Transfer done */
+        if (event == ARM_I2C_EVENT_TRANSFER_DONE)
+        {
+            g_MasterCompletionFlag = true;
+        }
+    }
+
+/* Init DMAMUX and DMA/EDMA. */
+    DMAMUX_Init(EXAMPLE_I2C_DMAMUX_BASEADDR)
+
+#if defined(FSL_FEATURE_SOC_DMA_COUNT) && FSL_FEATURE_SOC_DMA_COUNT > 0U
+    DMA_Init(EXAMPLE_I2C_DMA_BASEADDR);
+#endif /* FSL_FEATURE_SOC_DMA_COUNT */
+
+#if defined(FSL_FEATURE_SOC_EDMA_COUNT) && FSL_FEATURE_SOC_EDMA_COUNT > 0U
+    edma_config_t edmaConfig;
+
+    EDMA_GetDefaultConfig(&edmaConfig);
+    EDMA_Init(EXAMPLE_I2C_DMA_BASEADDR, &edmaConfig);
+#endif /* FSL_FEATURE_SOC_EDMA_COUNT */
+    
+    /*Init I2C0*/
+    Driver_I2C0.Initialize(I2C_MasterSignalEvent_t);
+
+    Driver_I2C0.PowerControl(ARM_POWER_FULL);
+    
+    /*config transmit speed*/
+    Driver_I2C0.Control(ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_STANDARD);
+    
+    /*start transfer*/
+    Driver_I2C0.MasterReceive(I2C_MASTER_SLAVE_ADDR, g_master_buff, I2C_DATA_LENGTH, false);
+    
+    /*  Wait for transfer completed. */
+    while (!g_MasterCompletionFlag)
+    {
+    }
+    g_MasterCompletionFlag = false;
+~~~~~
+
+
+## Slave Operation in interrupt transactional method{#I2CSlaveOpsTransIRQ}
+
+~~~~~{.c}
+    void I2C_SlaveSignalEvent_t(uint32_t event)
+    {
+        /*  Transfer done */
+        if (event == ARM_I2C_EVENT_TRANSFER_DONE)
+        {
+            g_SlaveCompletionFlag = true;
+        }
+    }
+
+    /*Init I2C1*/
+    Driver_I2C1.Initialize(I2C_SlaveSignalEvent_t);
+
+    Driver_I2C1.PowerControl(ARM_POWER_FULL);
+
+    /*config slave addr*/
+    Driver_I2C1.Control(ARM_I2C_OWN_ADDRESS, I2C_MASTER_SLAVE_ADDR);
+
+    /*start transfer*/
+    Driver_I2C1.SlaveReceive(g_slave_buff, I2C_DATA_LENGTH);
+    
+    /*  Wait for transfer completed. */
+    while (!g_SlaveCompletionFlag)
+    {
+    }
+    g_SlaveCompletionFlag = false;
+~~~~~
+
+*/
+
+/*!
+

@@ -1,0 +1,177 @@
+Changes between 160919 and 180821 releases:
+
+	+ Multiple security improvements and fixes in packet parsing routines, DNS
+	  caching, and TCP sequence number and ID generation.
+	+ Disable NBNS and LLMNR by default.
+	+ Add TCP hang protection by default.
+
+We thank Ori Karliner of Zimperium zLabs Team for reporting these issues.
+
+Changes between 160908 and 160919 releases:
+
+	+ Add a NULL check before attempting to close the DHCP socket.  [Prior to
+	  160823 the IP task closed the DHCP socket by calling a public API function
+	  - which checked for the socket being NULL.  This was changed to call a
+	  local private function, which did not have a NULL check, in place of the
+	  public API function.]
+	+ Various [internal only] naming changes to better comply with the FreeRTOS
+	  naming conventions.
+	+ Improvements to the Zynq network driver.  DMA transmission buffers now use
+	  a counting semaphore. When all TX-buffers are in-use, the IP-task will
+	  block momentarily until a TX-buffer becomes available.
+	+ Experimental implementation of the TCP window scaling protocol.  The
+	  scaling option will always be offered, at least with a factor 1. If the
+	  TCP sliding window size becomes more than 64KB, the factor will increase
+	  automatically.
+	+ ipconfigETHERNET_MINIMUM_PACKET_BYTES is now applied for every protocol:
+	  TCP, UDP, and ARP.
+	+ Updated the Zynq project to use BufferAllocation_1.c rather than
+	  BufferAllocation_2.c - which is a requirement with its current
+	  configuration (due to the alignment requirements on the combined cache and
+	  DMA configuration).
+
+Changes between 160823 and 160908 releases:
+
+	+ Use ipconfigZERO_COPY_TX_DRIVER as the xReleaseAfterSend() parameter where
+	  prvTCPReturnPacket() is called in prvSendData() to prevent unnecessary
+	  copying of data.
+	+ Remove the use of the uxGetRxEventCount variable, which was used to give
+	  priority to incoming messages, but could result in the IP task starving
+	  application tasks of processing time.
+
+Changes between 160112 and 160823 releases
+
+	NOTE:  The 160908 release is a maintenance release for the 160112 single
+	interface labs release - not a release of the current development branch.
+
+	+ Various minor stability enhancements, including the ability to work with
+	  configTICK_RATE_HZ set to less than 1KHz, closing DHCP sockets directly
+	  rather than via FreeRTOS_closesocket(), and better handling of unknown
+	  TCP packets before an IP address has been assigned.
+	+ ipBUFFER_PADDING is now configurable through the ipconfigBUFFER_PADDING
+	  constant to improve network buffer alignment handling capabilities (expert
+	  users/driver writers only).
+	+ Multiple improvements to the FTP server, including to how read only and
+	  zero length files are handled.
+	+ ipconfigFTP_HAS_USER_PROPERTIES_HOOK (to allow each user to have a
+	  different root directory and access rights) and
+	  ipconfigHTTP_HAS_HANDLE_REQUEST_HOOK (to handle AJAX style data)
+	  introduced, although these are not yet fully tested and the constant names
+	  are likely to change.
+	+ Introduce ipconfigHAS_TX_CRC_OFFLOADING.
+	+ ipconfigUSE_DHCP_HOOK is now called ipconfigUSE_DHCP_HOOK, and the name
+	  of the callback function has also changed.  See the web documentation for
+	  details.
+	+ ipconfigTCP_RX_BUF_LEN is now ipconfigTCP_RX_BUFFER_LENGTH, and
+	  ipconfigTCP_TX_BUF_LEN is now ipconfigTCP_TX_BUFFER_LENGTH, which is
+	  actually how they have always been documented.
+	+ Added example TFTP server capable of receiving (not sending) files.
+	  Intended for bootloader type functionality.
+	+ Various variable name changes for consistency (mainly ensuring UDP, TCP,
+	  DNS, etc. always use the same case letters, and type prefixes are correct).
+	+ Various minor edits to improve types used by internal variables.
+	+ Simplified mapping of standard library functions to their Visual Studio
+	  equivalents.
+	+ Improve robustness of network drivers.
+	+ Introduce pxResizeNetworkBufferWithDescriptor().
+	+ Removed obsolete FreeRTOSIPConfig.h constants from
+	  FreeRTOSIPConfigDefaults.h.
+	+ Added additional asserts() - predominantly to catch incorrect structure
+	  packing.
+
+Changes between 160112 and 160111 releases
+
+	+ Updated the STM32 network driver so checksums are calculated by the
+	  hardware.
+	+ Implemented a simple "quit" command in the TCP command console.
+
+Changes between 150825 and 160111 releases
+
+	+ New device support:  Demo applications and example drivers are provided
+	  for Atmel SAM4E and ST STM32F4 microcontrollers.
+	+ Various updates to improve compliance with the FreeRTOS coding standard.
+	+ Added a command console example that uses TCP/IP for input and output (the
+	  pre-existing command console example uses UDP/IP).
+	+ Updated the UDP logging example so it will send log messages to the local
+	  UDP broadcast address if a specific IP address is not provided.  This
+	  simplifies configuration, but note not all switches and routers will pass
+	  broadcast messages.
+	+ Add TCP echo client and TCP echo server examples to the Zynq demo.
+	+ Minor updates to the Zynq network driver.
+	+ Update the Zynq project to use version 2015.4 of the Xilinx SDK.
+	+ Introduce FreeRTOS_SignalSocket(), which can be used to interrupt a task
+	  that is blocked while reading from a socket ( FreeRTOS_recv[from] ).
+	+ Make use of FreeRTOS_SignalSocket() in the FTP and HTTP servers.
+	+ Major updates to the NTP client, although this is not included in any of
+	  the pre-configured demo applications yet.
+	+ Added support for DHCP zero pad option.
+	+ Added uxGetMinimumIPQueueSpace(), a function to monitor the minimum amount
+	  of space on the message queue.
+	+ Better handling of zero length files in the FTP server.
+	+ Fixed a bug reported by Andrey Ivanov from swissEmbedded that affects
+	  users of 'ipconfigZERO_COPY_TX_DRIVER'.
+
+
+Changes between 150825 150825 (?)
+
+	+ Added xApplicationDHCPUserHook() so a user defined hook will be
+	  called at certain points in the DHCP process if
+	  ipconfigDHCP_USES_USER_HOOK is set to 1.
+	+ Added FreeRTOS_get_tx_head() to improve TCP zero copy behaviour - for
+	  expert use only.
+	+ RST is no longer sent if only the ACK flag is set.
+	+ Previously, an immediate ACK was only sent when buffer space was
+	  exhausted.  Now, to improve performance, it is possible to send an
+	  immediate ACK earlier - dependent on the ipconfigTCP_ACK_EARLIER_PACKET
+	  setting.
+	+ LLMNR and NBNS requests can now be sent to locate other devices -
+	  previously these protocols would only be replied to, not generated.
+	+ Added Auto-IP functionality (still in test) in case DHCP fails.  Dependent
+	  on the ipconfigDHCP_FALL_BACK_LINK_LAYER_ADDRESS and
+	  ipconfigARP_USE_CLASH_DETECTION settings.
+	+ Added NTP code and demo.
+	+ FTP can now STOR and RETR zero-length files.
+	+ Added LLMNR demo to Win32 demo - so now the Win32 responds to
+	  "ping RTOSDemo".
+
+Changes between 141019 and 150825
+
+	+ Added FTP server, which uses the new FreeRTOS+FAT component.
+	+ Added basic HTTP server, which uses the new FreeRTOS+FAT component.
+	+ Multiple definitions that are now common with FreeRTOS+FAT have been moved
+	  into FreeRTOS's ProjDefs.h header file, and so prefixed with 'pd'.
+	+ Introduced ipconfigZERO_COPY_TX_DRIVER, which defines who is responsible
+	  for freeing a buffer sent to to the MAC driver for transmission, and
+	  facilitates the development of zero copy drivers.
+	+ Introduced the FREERTOS_MSG_DONTWAIT flag.  The flag can be used as a
+	  simpler and faster alternative to using FreeRTOS_setsockopt() to set the
+	  send or receive timeout to 0.
+	+ A few functions that were previously all lower case are now mixed case, as
+	  lower case function names are only used when they are equivalent to a
+	  a Berkeley sockets API function of the same name.
+	+ Introduced uxGetMinimumFreeNetworkBuffers() to return the minimum number
+	  of network buffers that have ever existed since the application started
+	  executing.
+	+ Introduce ipconfigETHERNET_MINIMUM_PACKET_BYTES to allow the application
+	  writer to set their own minimum buffer size should the hardware not be
+	  capable of padding under-sized Ethernet frames.
+	+ vNetworkBufferRelease() renamed vReleaseNetworkBuffer() - just for
+	  consistency with the names of other functions in the same file.
+	+ Grouped DHCP status data into a structure.
+	+ DHCP is now tried both with and without the broadcast flag.
+	+ Replaced occurrences of configASSERT_VOID() with configASSERT().
+	+ ipconfigDNS_USE_CALLBACKS introduced to allow FreeRTOS_gethostbyname() to
+	  be used without blocking.
+	+ Fix: LLMNR and NBNS behaviour when the reply is in a larger buffer than the
+	  request, and BufferAllocation_2 was used.
+	+ Introduced ipMAX_IP_TASK_SLEEP_TIME to allow the application writer to
+	  override the default value of 10 seconds.
+	+ Fix:  Correct error in *pxUDPPayloadBuffer_to_NetworkBuffer().
+	+ FreeRTOS_recv() now recognises the FREERTOS_ZERO_COPY flag, which, when
+	  set, the void *pvBuffer parameter is interpreted as void **pvBuffer.
+	+ FreeRTOS_listen() now returns an error code.  Previously it always
+	  returned 0.
+	+ Fix:  Previously if a listening socket was reused, and a connection
+	  failed, the TCP/IP stack closed the socket, now the socket is correctly
+	  left unclosed as it is owned by the application.
+	+ Various other formatting and minor fix alterations.

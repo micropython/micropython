@@ -1,0 +1,3 @@
+# Ignore uncrustify backups
+*.unc*
+doc/html/*

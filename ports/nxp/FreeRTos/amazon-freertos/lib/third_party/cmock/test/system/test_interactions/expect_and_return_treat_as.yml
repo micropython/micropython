@@ -1,0 +1,173 @@
+---
+:cmock:
+  :plugins:
+  - # none
+  :treat_as:
+    MY_STRING: STRING
+    MY_INT: INT
+    PTR_INT: INT*
+    MY_HEX: HEX32
+
+:systest:
+  :types: |
+    typedef const char* MY_STRING;
+    typedef int MY_INT;
+    typedef unsigned int MY_HEX;
+    typedef int* PTR_INT;
+
+  :mockable: |
+    MY_INT foo(MY_HEX a);
+    MY_INT bar(MY_HEX b);
+    MY_STRING foo_char_strings(MY_STRING a, MY_STRING b);
+    float float_adder(float a, float b);
+    MY_INT* pointer_foo(MY_HEX* a);
+    void pointer_bar(PTR_INT a);
+
+  :source:
+    :header: |
+      MY_INT function_a(MY_INT a, MY_INT b);
+      MY_STRING function_b(MY_STRING a, MY_STRING b);
+      float function_c(float a, float b);
+      MY_INT function_d(MY_HEX a);
+      void function_e(PTR_INT a);
+
+    :code: |
+      MY_INT function_a(MY_INT a, MY_INT b)
+      {
+        return foo((MY_HEX)a) + bar((MY_HEX)b);
+      }
+
+      MY_STRING function_b(MY_STRING a, MY_STRING b)
+      {
+        return foo_char_strings(a, b);
+      }
+
+      float function_c(float a, float b)
+      {
+        return float_adder(b, a);
+      }
+
+      MY_INT function_d(MY_HEX a)
+      {
+        MY_HEX b = a;
+        MY_INT* c = pointer_foo(&b);
+        return *c;
+      }
+
+      void function_e(PTR_INT a)
+      {
+        pointer_bar(a);
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: 'successfully exercise two simple ExpectAndReturn mock calls'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((MY_HEX)1, 10);
+          bar_ExpectAndReturn((MY_HEX)2, 20);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+        }
+
+    - :pass: FALSE
+      :should: 'fail because bar() is expected but not called'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((MY_HEX)1, 10);
+          TEST_ASSERT_EQUAL(30, function_a(1, 2));
+        }
+
+    - :pass: FALSE
+      :should: 'fail because foo_char_strings() is called but is not expected'
+      :code: |
+        test()
+        {
+          foo_char_strings_ExpectAndReturn((MY_STRING)"jello", (MY_STRING)"jiggle", (MY_STRING)"boing!");
+          function_a(1,2);
+        }
+
+    - :pass: TRUE
+      :should: 'handle char strings'
+      :code: |
+        test()
+        {
+          foo_char_strings_ExpectAndReturn((MY_STRING)"jello", (MY_STRING)"jiggle", (MY_STRING)"boing!");
+          TEST_ASSERT_EQUAL_STRING("boing!", function_b((MY_STRING)"jello", (MY_STRING)"jiggle"));
+        }
+
+    - :pass: TRUE
+      :should: 'handle floating point numbers with Unity support: pass'
+      :code: |
+        test()
+        {
+          float_adder_ExpectAndReturn(1.2345f, 6.7890f, 8.0235f);
+          TEST_ASSERT_EQUAL_FLOAT(8.0235f, function_c(6.7890f, 1.2345f));
+        }
+
+    - :pass: FALSE
+      :should: 'handle floating point numbers with Unity support: fail'
+      :code: |
+        test()
+        {
+          float_adder_ExpectAndReturn(1.2345f, 6.7892f, 8.0235f);
+          TEST_ASSERT_EQUAL_FLOAT(8.0235f, function_c(6.7890f, 1.2345f));
+        }
+
+    - :pass: TRUE
+      :should: 'handle pointers to treat_as values just as cleanly as the treat_as itself for passes'
+      :code: |
+        test()
+        {
+          MY_HEX TestHex = (MY_HEX)45;
+          MY_INT TestInt = (MY_INT)33;
+          pointer_foo_ExpectAndReturn(&TestHex, &TestInt);
+          TEST_ASSERT_EQUAL_INT(33, function_d(45));
+        }
+
+    - :pass: FALSE
+      :should: 'handle pointers to treat_as values just as cleanly as the treat_as itself for failures'
+      :verify_error: 'Element 0 Expected 0x0000002D Was 0x0000002B'
+      :code: |
+        test()
+        {
+          MY_HEX TestHex = (MY_HEX)45;
+          MY_INT TestInt = (MY_INT)33;
+          pointer_foo_ExpectAndReturn(&TestHex, &TestInt);
+          TEST_ASSERT_EQUAL_INT(33, function_d(43));
+        }
+
+    - :pass: TRUE
+      :should: 'handle treat_as values containing pointers for passes'
+      :code: |
+        test()
+        {
+          MY_INT ExpInt = (MY_INT)33;
+          PTR_INT ExpPtr = (PTR_INT)(&ExpInt);
+          MY_INT ActInt = (MY_INT)33;
+          PTR_INT ActPtr = (PTR_INT)(&ActInt);
+          pointer_bar_Expect(ExpPtr);
+          function_e(ActPtr);
+        }
+
+    - :pass: FALSE
+      :should: 'handle treat_as values containing pointers for failures'
+      :verify_error: 'Element 0 Expected 33 Was 45'
+      :code: |
+        test()
+        {
+          MY_INT ExpInt = (MY_INT)33;
+          PTR_INT ExpPtr = (PTR_INT)(&ExpInt);
+          MY_INT ActInt = (MY_INT)45;
+          PTR_INT ActPtr = (PTR_INT)(&ActInt);
+          pointer_bar_Expect(ExpPtr);
+          function_e(ActPtr);
+        }
+
+...

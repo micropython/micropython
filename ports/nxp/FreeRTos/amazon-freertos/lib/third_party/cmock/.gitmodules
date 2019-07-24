@@ -1,0 +1,8 @@
+[submodule "vendor/unity"]
+	path = vendor/unity
+	url = https://github.com/throwtheswitch/unity.git
+	branch = master
+[submodule "vendor/c_exception"]
+	path = vendor/c_exception
+	url = https://github.com/throwtheswitch/cexception.git
+	branch = master

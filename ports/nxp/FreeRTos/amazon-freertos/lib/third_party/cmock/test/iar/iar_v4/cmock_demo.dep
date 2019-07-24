@@ -1,0 +1,3691 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$PROJ_DIR$\Debug\Obj\Main.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\IntrinsicsWrapper.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\cmock_demo.pbd</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerInterruptConfigurator.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcConductor.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcModel.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\Model.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcModel.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartModel.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\TemperatureFilter.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\AdcHardwareConfigurator.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartConductor.pbi</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Types.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.h</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AT91SAM7X256.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcConductor.h</file>
+      <file>$PROJ_DIR$\Debug\List\TimerInterruptHandler.lst</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TaskScheduler.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Model.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartHardware.pbi</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\cmock_demo.d79</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartPutChar.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\Executor.pbi</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.h</file>
+      <file>$PROJ_DIR$\Debug\List\UsartBaudRateRegisterCalculator.lst</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartHardware.h</file>
+      <file>$PROJ_DIR$\Debug\List\UsartModel.lst</file>
+      <file>$PROJ_DIR$\Debug\List\Executor.lst</file>
+      <file>$PROJ_DIR$\Debug\List\UsartTransmitBufferStatus.lst</file>
+      <file>$PROJ_DIR$\Debug\Exe\cmock_demo.sim</file>
+      <file>$PROJ_DIR$\Debug\List\TimerModel.lst</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.h</file>
+      <file>$PROJ_DIR$\Debug\List\TimerHardware.lst</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartTransmitBufferStatus.r79</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerModel.h</file>
+      <file>$PROJ_DIR$\Debug\List\IntrinsicsWrapper.lst</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.h</file>
+      <file>$PROJ_DIR$\Debug\List\Cstartup_SAM7.lst</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Product.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartModel.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\math.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcHardware.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerModel.r79</file>
+      <file>$TOOLKIT_DIR$\inc\stdio.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\AdcModel.lst</file>
+      <file>$PROJ_DIR$\Debug\List\AdcConductor.lst</file>
+      <file>$PROJ_DIR$\Debug\List\UsartConductor.lst</file>
+      <file>$PROJ_DIR$\Debug\List\Model.lst</file>
+      <file>$PROJ_DIR$\Debug\List\TaskScheduler.lst</file>
+      <file>$PROJ_DIR$\Debug\List\UsartHardware.lst</file>
+      <file>$PROJ_DIR$\Debug\List\AdcHardware.lst</file>
+      <file>$PROJ_DIR$\Debug\List\Main.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartBaudRateRegisterCalculator.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcConductor.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\TaskScheduler.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\UsartConfigurator.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\TaskScheduler.r79</file>
+      <file>$TOOLKIT_DIR$\inc\ymath.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\TemperatureFilter.r79</file>
+      <file>$TOOLKIT_DIR$\inc\ysizet.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerHardware.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\TemperatureCalculator.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcTemperatureSensor.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\TemperatureCalculator.lst</file>
+      <file>$PROJ_DIR$\Debug\List\AdcTemperatureSensor.lst</file>
+      <file>$TOOLKIT_DIR$\lib\dl4tptinl8n.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcHardware.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartConfigurator.r79</file>
+      <file>$TOOLKIT_DIR$\inc\xencoding_limits.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerConfigurator.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcTemperatureSensor.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\Main.pbi</file>
+      <file>$TOOLKIT_DIR$\lib\dl4tptinl8n.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerInterruptHandler.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartHardware.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartPutChar.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerInterruptConfigurator.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\yvals.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartTransmitBufferStatus.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\IntrinsicsWrapper.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcHardwareConfigurator.r79</file>
+      <file>$PROJ_DIR$\incIAR\AT91SAM7X256_inc.h</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerConductor.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerInterruptHandler.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartPutChar.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartConductor.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerHardware.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\Cstartup_SAM7.r79</file>
+      <file>$PROJ_DIR$\Debug\List\cmock_demo.map</file>
+      <file>$PROJ_DIR$\Debug\List\TimerInterruptConfigurator.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerConductor.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\Model.r79</file>
+      <file>$PROJ_DIR$\Debug\Obj\UsartBaudRateRegisterCalculator.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\AdcHardwareConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\TemperatureCalculator.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\Cstartup_SAM7.pbi</file>
+      <file>$PROJ_DIR$\Resource\at91SAM7X256_FLASH.xcl</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerHardware.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartHardware.c</file>
+      <file>$PROJ_DIR$\Cstartup.s79</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartPutChar.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.c</file>
+      <file>$PROJ_DIR$\Cstartup_SAM7.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Executor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Main.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Model.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TaskScheduler.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardware.c</file>
+      <file>$PROJ_DIR$\Debug\Obj\Cstartup.r79</file>
+      <file>$PROJ_DIR$\Debug\List\TimerConfigurator.lst</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Executor.h</file>
+      <file>$PROJ_DIR$\Debug\List\TimerConductor.lst</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\ModelConfig.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\Executor.r79</file>
+      <file>$PROJ_DIR$\Debug\List\UsartPutChar.lst</file>
+      <file>$PROJ_DIR$\Debug\List\TemperatureFilter.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\TimerModel.pbi</file>
+      <file>$PROJ_DIR$\srcIAR\Cstartup.s79</file>
+      <file>$PROJ_DIR$\srcIAR\Cstartup_SAM7.c</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 25 105 39</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\cmock_demo.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 68 81 110 5 77 112 31 94 86 6 69 111 9 99 98 75 91 100 150 109 11 58 22 53 90 93</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\cmock_demo.d79</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 105 39</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 113 4 55 95 7 85 141 104 147 1 0 108 71 76 73 107 84 103 3 88 56 67 102 82 89 8 101 45 87</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 107 144</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 99</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 29 46 49 44</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 29 46 49 44</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 84 142</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 98</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 48 42</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 48 42</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 103 43</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 75</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 49 48</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 49 48</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 3 106</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 91</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 42 44</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 42 44</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 56 40</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 150</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 46 18</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 46 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 67 34</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 109</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 50</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 50</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 8 36</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 53</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 32 146 50 28 57 92 14 80 52 83 97 74 54 72</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 32 146 50 28 57 92 14 52 83 97 74 54 72</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 102 61</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 11</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 19 35 32 18</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 19 35 32 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 82 70</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 58</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 26</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 26</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 89 64</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 22</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 35 26 30</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 35 26 30</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Cstartup.s79</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 141</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartPutChar.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 101 148</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 90</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 30 41</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 30 41</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 45 38</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 93</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 41</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 41</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Cstartup_SAM7.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 104 51</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 112</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 15</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 7 59</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 5</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 145 18 23 28</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 145 18 23 28</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 85 79</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 77</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 24</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 24</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Executor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 147 37</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 31</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 143 20 19 29 16 33</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 143 20 19 29 16 33</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Main.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 0 66</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 86</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 33 143 20 18 23 28 19 35 26 30 32 50 41 29 49 48 42 44 46 16 27 13 24 145</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 33 143 20 18 23 28 19 35 26 30 32 50 41 29 49 48 42 44 46 16 27 13 24 145</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 47</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 94</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 33 21</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 33 21</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Model.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 108 62</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 6</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 20 12 15 18 28</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 20 12 15 18 28</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 76 78</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 111</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 23 54 72 92 14 80 52 83 97</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 23 54 72 92 14 52 83 97</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TaskScheduler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 63</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 69</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 18</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 88 17</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 100</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 44 42</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 44 42</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 73 149</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 28 54 72 92 14 80 52 83 97</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 28 54 72 92 14 52 83 97</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 95 10</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 110</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 13 146</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 13 146</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 4 60</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 68</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 16 145 27</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 16 145 27</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 55 65</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 81</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 12 15 27 13 24</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12 15 27 13 24</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\srcIAR\Cstartup.s79</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 141</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 96</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\srcIAR\Cstartup_SAM7.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 104 51</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 112</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 15</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureCalculator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Types.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.h</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AT91SAM7X256.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TaskScheduler.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Model.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartPutChar.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.h</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Product.h</file>
+      <file>$TOOLKIT_DIR$\inc\math.h</file>
+      <file>$TOOLKIT_DIR$\inc\stdio.h</file>
+      <file>$TOOLKIT_DIR$\inc\ymath.h</file>
+      <file>$TOOLKIT_DIR$\inc\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\lib\dl4tptinl8n.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartPutChar.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcTemperatureSensor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TaskScheduler.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartTransmitBufferStatus.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AT91SAM7X256.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartBaudRateRegisterCalculator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Executor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\ModelConfig.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerModel.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptHandler.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Main.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\Model.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardwareConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerModel.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartModel.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartHardware.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartTransmitBufferStatus.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartPutChar.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartBaudRateRegisterCalculator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TaskScheduler.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcConductor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Model.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureFilter.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcModel.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerHardware.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcTemperatureSensor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcConductor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardware.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardware.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Executor.c</file>
+      <file>$TOOLKIT_DIR$\inc\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\lib\dl4tptinl8n.r79</file>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureCalculator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\Types.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureFilter.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConductor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerHardware.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptHandler.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConductor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartHardware.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConductor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcModel.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardwareConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConductor.h</file>
+      <file>$PROJ_DIR$\Release\Obj\Executor.pbi</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartModel.h</file>
+      <file>$PROJ_DIR$\Release\Obj\Model.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\Cstartup_SAM7.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartConductor.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcConductor.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcHardware.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerModel.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcTemperatureSensor.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartHardware.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TemperatureFilter.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartPutChar.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TemperatureCalculator.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcHardwareConfigurator.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\cmock_demo.pbd</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartModel.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartBaudRateRegisterCalculator.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\Model.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcModel.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcHardware.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerModel.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerHardware.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartPutChar.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcHardwareConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerInterruptConfigurator.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TaskScheduler.pbi</file>
+      <file>$PROJ_DIR$\Release\List\cmock_demo.map</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartTransmitBufferStatus.pbi</file>
+      <file>$PROJ_DIR$\Release\Exe\cmock_demo.d79</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcTemperatureSensor.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerConductor.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerConfigurator.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\Main.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerInterruptConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartTransmitBufferStatus.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcModel.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TemperatureFilter.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartHardware.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\Cstartup.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartConductor.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerInterruptHandler.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerConductor.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\Main.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\Executor.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\Cstartup_SAM7.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\TemperatureCalculator.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerHardware.pbi</file>
+      <file>$PROJ_DIR$\Release\Exe\cmock_demo.sim</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartModel.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TaskScheduler.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartBaudRateRegisterCalculator.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\AdcConductor.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\TimerInterruptHandler.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\UsartConfigurator.r79</file>
+      <file>$PROJ_DIR$\Release\Obj\IntrinsicsWrapper.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\IntrinsicsWrapper.r79</file>
+      <file>$TOOLKIT_DIR$\inc\yvals.h</file>
+      <file>$PROJ_DIR$\incIAR\AT91SAM7X256_inc.h</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\Resource\at91SAM7X256_FLASH.xcl</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerHardware.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartHardware.c</file>
+      <file>$PROJ_DIR$\Cstartup.s79</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartPutChar.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.c</file>
+      <file>$PROJ_DIR$\Cstartup_SAM7.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Executor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Main.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Model.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TaskScheduler.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardware.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Executor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\ModelConfig.h</file>
+      <file>$PROJ_DIR$\srcIAR\Cstartup.s79</file>
+      <file>$PROJ_DIR$\srcIAR\Cstartup_SAM7.c</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 111 109 131</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\Main.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 125</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 115</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 41 58 35 0 59 82 78 37 33 84 40 36 79 61 38 57 44 43 56 65 81 34 80</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\Model.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 100</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 85</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 58 70 39 35 59</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcHardwareConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 96</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 106</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 81 42</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 103</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 90</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 43 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 98</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 133</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 84 42 40 59 29 141 3 32 27 67 143 31 28 30</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 92</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 120</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 78 37 33</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartTransmitBufferStatus.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 117</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 110</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartPutChar.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 105</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 94</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 33 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerInterruptConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 107</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 116</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 57 44</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartBaudRateRegisterCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 99</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 135</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 40</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TaskScheduler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 134</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 108</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 101</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 118</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 80 35 0 59</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcTemperatureSensor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 112</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 91</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 34</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 88</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 136</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 89</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 102</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 65 81 34</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\Executor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 127</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 83</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 41 58 82 79 56</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TemperatureCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 95</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 129</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 0 28 30 141 3 32 27 67 143</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TemperatureFilter.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 119</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 93</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 59 28 30 141 3 32 27 67 143</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 113</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 124</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 79 43 61 44</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 114</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 132</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 38 57</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 104</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 130</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 61 38</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerInterruptHandler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 137</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 123</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 44 57</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 122</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 87</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 82 78 84 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 138</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 126</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 70 39 37</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Release\Obj\cmock_demo.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 136 102 106 118 91 86 83 139 115 85 108 129 93 124 132 130 116 123 90 135 87 126 120 133 94 110</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Release\Exe\cmock_demo.d79</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 109 131</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 144 88 89 96 101 112 121 128 127 140 125 100 134 95 119 113 114 104 107 137 103 99 122 138 92 98 105 117 68</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 113</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 124</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 15 23 25 22</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 15 23 25 22</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 114</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 132</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 24 21</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 24 21</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 104</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 130</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 25 24</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 25 24</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 107</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 116</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 21 22</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 21 22</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 103</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 90</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 23 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 23 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 99</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 135</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 26</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 26</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 98</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 133</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 17 174 26 14 29 141 3 32 27 67 143 31 28 30</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 17 174 26 14 29 141 3 27 67 143 31 28 30</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 122</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 87</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 7 19 17 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 7 19 17 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 138</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 126</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 12</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 12</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 92</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 120</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 19 12 16</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 19 12 16</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Cstartup.s79</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 121</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 142</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartPutChar.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 105</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 94</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 16 20</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 16 20</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 117</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 110</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 20</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 20</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Cstartup_SAM7.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 128</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 86</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 4</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 4</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 101</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 118</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 173 6 10 14</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 173 6 10 14</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 112</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 91</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 11</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 11</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Executor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 127</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 83</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 172 8 7 15 5 18</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 172 8 7 15 5 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Main.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 125</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 115</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 18 172 8 6 10 14 7 19 12 16 17 26 20 15 25 24 21 22 23 5 13 2 11 173</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 18 172 8 6 10 14 7 19 12 16 17 26 20 15 25 24 21 22 23 5 13 2 11 173</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 140</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 139</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 18 9</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 18 9</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Model.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 100</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 85</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 8 1 4 6 14</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 8 1 4 6 14</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 95</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 129</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 10 28 30 141 3 32 27 67 143</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 10 28 30 141 3 27 67 143</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TaskScheduler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 134</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 108</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 137</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 123</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 22 21</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 22 21</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 119</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 93</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 14 28 30 141 3 32 27 67 143</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 14 28 30 141 3 27 67 143</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 96</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 106</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 2 174</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 2 174</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 88</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 136</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 5 173 13</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 5 173 13</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 89</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 102</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 13 2 11</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 13 2 11</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\srcIAR\Cstartup.s79</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 121</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 142</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\srcIAR\Cstartup_SAM7.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 128</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 86</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 4</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 4</file>
+        </tool>
+      </inputs>
+    </file>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\Main.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\Model.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\AdcHardwareConfigurator.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TimerModel.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\UsartModel.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\UsartHardware.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\UsartTransmitBufferStatus.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\UsartPutChar.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TimerInterruptConfigurator.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\UsartBaudRateRegisterCalculator.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TaskScheduler.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\AdcModel.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\AdcTemperatureSensor.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\AdcConductor.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\AdcHardware.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\Executor.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TemperatureCalculator.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TemperatureFilter.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TimerConductor.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TimerConfigurator.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TimerHardware.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\TimerInterruptHandler.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\UsartConductor.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>$PROJ_DIR$\..\test\system\src\UsartConfigurator.c</name>
+      <tool>ICCARM</tool>
+    </forcedrebuild>
+  </configuration>
+  <configuration>
+    <name>Simulate</name>
+    <outputs>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureCalculator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Types.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.h</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AT91SAM7X256.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TaskScheduler.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Model.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConductor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartPutChar.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerHardware.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.h</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Product.h</file>
+      <file>$TOOLKIT_DIR$\inc\math.h</file>
+      <file>$TOOLKIT_DIR$\inc\stdio.h</file>
+      <file>$TOOLKIT_DIR$\inc\ymath.h</file>
+      <file>$TOOLKIT_DIR$\inc\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\lib\dl4tptinl8n.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartPutChar.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcTemperatureSensor.h</file>
+      <file>$PROJ_DIR$\Simulate\Obj\cmock_demo.pbd</file>
+      <file>$PROJ_DIR$\..\test\system\src\TaskScheduler.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartTransmitBufferStatus.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AT91SAM7X256.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartBaudRateRegisterCalculator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Executor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\ModelConfig.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerModel.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptHandler.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Main.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\Model.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardwareConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerModel.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartModel.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartHardware.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartTransmitBufferStatus.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartPutChar.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartBaudRateRegisterCalculator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TaskScheduler.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcConductor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Model.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureFilter.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcModel.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerHardware.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcTemperatureSensor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcConductor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardware.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardware.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\Executor.c</file>
+      <file>$TOOLKIT_DIR$\inc\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\lib\dl4tptinl8n.r79</file>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureCalculator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\Types.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TemperatureFilter.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConductor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerHardware.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerInterruptHandler.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConductor.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConfigurator.c</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartHardware.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\TimerConductor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcModel.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\AdcHardwareConfigurator.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartConductor.h</file>
+      <file>$PROJ_DIR$\..\test\system\src\UsartModel.h</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcConductor.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Cstartup_SAM7.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartHardware.r79</file>
+      <file>$TOOLKIT_DIR$\inc\yvals.h</file>
+      <file>$PROJ_DIR$\incIAR\AT91SAM7X256_inc.h</file>
+      <file>$PROJ_DIR$\Simulate\List\TimerModel.lst</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Executor.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerHardware.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartModel.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\IntrinsicsWrapper.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerConductor.pbi</file>
+      <file>$PROJ_DIR$\Simulate\List\UsartConductor.lst</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Main.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcHardwareConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Exe\cmock_demo.sim</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartTransmitBufferStatus.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcHardware.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Main.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcTemperatureSensor.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartPutChar.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcHardwareConfigurator.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartConductor.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerHardware.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TemperatureFilter.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TemperatureCalculator.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerInterruptConfigurator.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartTransmitBufferStatus.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerConductor.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Executor.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartConductor.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerModel.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcModel.pbi</file>
+      <file>$PROJ_DIR$\Simulate\List\TaskScheduler.lst</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerModel.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TemperatureFilter.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartBaudRateRegisterCalculator.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartHardware.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TaskScheduler.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcConductor.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerConfigurator.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Cstartup.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerInterruptHandler.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcModel.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\IntrinsicsWrapper.pbi</file>
+      <file>$PROJ_DIR$\Simulate\List\cmock_demo.map</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerInterruptConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Exe\cmock_demo.d79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TaskScheduler.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Model.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartConfigurator.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartModel.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Cstartup_SAM7.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TemperatureCalculator.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartPutChar.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartConfigurator.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcHardware.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\AdcTemperatureSensor.r79</file>
+      <file>$PROJ_DIR$\Simulate\Obj\Model.pbi</file>
+      <file>$PROJ_DIR$\Simulate\Obj\UsartBaudRateRegisterCalculator.r79</file>
+      <file>$PROJ_DIR$\Simulate\List\UsartBaudRateRegisterCalculator.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\UsartTransmitBufferStatus.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\AdcHardware.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\TimerInterruptConfigurator.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\Model.lst</file>
+      <file>$PROJ_DIR$\Simulate\Obj\TimerInterruptHandler.r79</file>
+      <file>$PROJ_DIR$\Simulate\List\UsartPutChar.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\UsartHardware.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\Executor.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\TimerConfigurator.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\AdcTemperatureSensor.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\Cstartup_SAM7.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\AdcHardwareConfigurator.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\AdcModel.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\TemperatureFilter.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\AdcConductor.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\UsartConfigurator.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\IntrinsicsWrapper.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\TimerHardware.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\TemperatureCalculator.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\TimerInterruptHandler.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\UsartModel.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\Main.lst</file>
+      <file>$PROJ_DIR$\Simulate\List\TimerConductor.lst</file>
+      <file>$PROJ_DIR$\Resource\at91SAM7X256_FLASH.xcl</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerHardware.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartHardware.c</file>
+      <file>$PROJ_DIR$\Cstartup.s79</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartPutChar.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.c</file>
+      <file>$PROJ_DIR$\Cstartup_SAM7.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcModel.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Executor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Main.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Model.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TaskScheduler.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcConductor.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcHardware.c</file>
+      <file>$PROJ_DIR$\..\..\examples\src\Executor.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\AdcModel.h</file>
+      <file>$PROJ_DIR$\..\..\examples\src\ModelConfig.h</file>
+      <file>$PROJ_DIR$\srcIAR\Cstartup.s79</file>
+      <file>$PROJ_DIR$\srcIAR\Cstartup_SAM7.c</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 133 131 101</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Simulate\Obj\cmock_demo.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 125 142 99 118 105 86 115 130 97 144 124 111 121 95 100 92 132 128 117 122 116 136 123 93 140 102</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\Main.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 104</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 97</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 42 59 36 0 60 83 79 38 33 84 41 37 80 62 39 58 45 44 57 66 82 34 81</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 42 59 36 0 60 83 79 38 33 84 41 37 80 62 39 58 45 44 57 66 82 34 81</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\Model.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 135</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 144</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 59 71 40 36 60</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 59 71 40 36 60</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcHardwareConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 107</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 99</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 82 43</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 82 43</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 120</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 117</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 44 36</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 44 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 137</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 93</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 84 43 41 60 29 88 3 32 27 68 98 31 28 30</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 84 43 41 60 29 88 3 27 68 98 31 28 30</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 87</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 123</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 79 38 33</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 79 38 33</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartTransmitBufferStatus.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 113</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 102</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 37</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 37</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartPutChar.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 106</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 140</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 33 37 29 88 3 32 27 68 98 31</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 33 37 29 88 3 27 68 98 31</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerInterruptConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 112</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 132</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 58 45</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 58 45</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartBaudRateRegisterCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 145</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 122</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 41</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 41</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TaskScheduler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 134</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 124</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 36</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 129</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 118</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 81 36 0 60</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 81 36 0 60</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcTemperatureSensor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 143</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 105</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 34</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 34</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 85</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 125</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 57 81 66</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 57 81 66</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\AdcHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 103</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 142</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 66 82 34</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 66 82 34</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\Executor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 91</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 115</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 42 59 83 80 57</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 42 59 83 80 57</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TemperatureCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 139</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 111</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 0 28 30 88 3 32 27 68 98</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 0 28 30 88 3 27 68 98</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TemperatureFilter.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 110</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 121</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 60 28 30 88 3 32 27 68 98</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 60 28 30 88 3 27 68 98</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 114</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 95</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 80 44 62 45</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 80 44 62 45</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 126</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 100</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 39 58</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 39 58</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 109</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 92</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 62 39</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 62 39</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\TimerInterruptHandler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 151</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 128</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 45 58</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 45 58</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 108</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 116</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 83 79 84 36</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 83 79 84 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\test\system\src\UsartConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 141</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 136</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 71 40 38</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71 40 38</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Simulate\Exe\cmock_demo.d79</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 131 101</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 170 85 103 107 129 143 127 138 91 94 104 135 134 139 110 114 126 109 112 151 120 145 108 141 87 137 106 113 69</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 114 169</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 95</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 15 23 25 22</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 15 23 25 22</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 126 155</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 100</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 24 21</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 24 21</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 109 164</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 92</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 25 24</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 25 24</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerInterruptConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 112 149</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 132</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 21 22</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 21 22</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 120 90</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 117</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 23 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 23 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartBaudRateRegisterCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 145 146</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 122</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 26</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 26</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 137 167</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 93</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 17 200 26 14 29 88 3 32 27 68 98 31 28 30</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 17 200 26 14 29 88 3 27 68 98 31 28 30</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 108 96</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 116</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 7 19 17 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 7 19 17 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 141 162</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 136</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 12</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 12</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 87 153</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 123</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 19 12 16</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 19 12 16</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Cstartup.s79</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 127</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 89</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartPutChar.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 106 152</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 140</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 16 20 29 88 3 32 27 68 98 31</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 16 20 29 88 3 27 68 98 31</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\UsartTransmitBufferStatus.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 113 147</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 102</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 20</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 20</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Cstartup_SAM7.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 138 157</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 86</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 4</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 4</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcModel.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 129 159</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 118</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 199 6 10 14</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 199 6 10 14</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcTemperatureSensor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 143 156</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 105</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 11</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 11</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Executor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 91 154</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 115</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 198 8 7 15 5 18</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 198 8 7 15 5 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Main.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 104 168</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 97</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 18 198 8 6 10 14 7 19 12 16 17 26 20 15 25 24 21 22 23 5 13 2 11 199</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 18 198 8 6 10 14 7 19 12 16 17 26 20 15 25 24 21 22 23 5 13 2 11 199</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\IntrinsicsWrapper.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 94 163</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 130</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 18 9</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 18 9</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\Model.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 135 150</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 144</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 8 1 4 6 14</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 8 1 4 6 14</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TemperatureCalculator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 139 165</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 111</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 10 28 30 88 3 32 27 68 98</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 10 28 30 88 3 27 68 98</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TaskScheduler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 134 119</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 124</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TimerInterruptHandler.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 151 166</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 128</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 22 21</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 22 21</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\TemperatureFilter.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 110 160</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 121</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 14 28 30 88 3 32 27 68 98</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 14 28 30 88 3 27 68 98</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcHardwareConfigurator.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 107 158</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 99</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 2 200</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 2 200</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcConductor.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 85 161</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 125</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 5 199 13</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 5 199 13</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\examples\src\AdcHardware.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 103 148</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 142</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 1 4 13 2 11</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 4 13 2 11</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\srcIAR\Cstartup.s79</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 127</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 89</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\srcIAR\Cstartup_SAM7.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 138 157</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 86</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 4</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 4</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+</project>
+
+

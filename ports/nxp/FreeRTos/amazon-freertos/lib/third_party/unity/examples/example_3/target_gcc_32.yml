@@ -1,0 +1,46 @@
+# Copied from ~Unity/targets/gcc_32.yml
+unity_root:  &unity_root '../..'
+compiler:
+  path: gcc
+  source_path:     'src/'
+  unit_tests_path: &unit_tests_path 'test/'
+  build_path:      &build_path 'build/'
+  options:
+    - '-c'
+    - '-m32'
+    - '-Wall'
+    - '-Wno-address'
+    - '-std=c99'
+    - '-pedantic'
+  includes:
+    prefix: '-I'
+    items:
+      - 'src/'
+      - '../../src/'
+      - *unit_tests_path
+  defines:
+    prefix: '-D'
+    items:
+      - UNITY_INCLUDE_DOUBLE
+      - UNITY_SUPPORT_TEST_CASES
+  object_files:
+    prefix: '-o'
+    extension: '.o'
+    destination: *build_path
+linker:
+  path: gcc
+  options:
+    - -lm
+    - '-m32'
+  includes:
+    prefix: '-I'
+  object_files:
+    path: *build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.exe'
+    destination: *build_path
+colour: true
+:unity:
+  :plugins: []

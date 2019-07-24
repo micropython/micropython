@@ -1,0 +1,8 @@
+test/system/build
+test/system/generated
+*.sublime-project
+Gemfile.lock
+.rake_t_cache
+.DS_Store
+*.swp
+examples/make_example/build

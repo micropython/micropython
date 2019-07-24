@@ -1,0 +1,10 @@
+This file describes the subdirectories found in the /lib/third_party directory
+of the Amazon FreeRTOS distribution.
+
+mcu_vendor:
+Contains the vendor supplied device specific driver libraries required to build
+target specific demo projects.  Organized by vendor.
+
+All other directories:
+Contain the implementation of non device specific libraries required to build
+demo projects.

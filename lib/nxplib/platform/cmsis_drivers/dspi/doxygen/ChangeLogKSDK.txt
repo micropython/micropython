@@ -1,0 +1,21 @@
+/*!
+@page driver_log Driver Change Log
+
+@section dspi_cmsis DSPI_CMSIS
+  Current dspi_cmsis driver version is 2.1
+
+  - 2.0
+    - - Initial version.
+
+  - 2.1
+    - Bug Fix:
+      - Fix the wrong clock polarity assignment in driver. 
+        For ARM_SPI_CPOL0_CPHA0 and other frame format parameters, CPOL = 0 menas kSPI_ClockPolarityActiveHigh
+        not kSPI_ClockPolarityActiveLow in driver.
+        
+    - New feature:
+	  - Allow user to set up the default Transmit value by using ARM_SPI_SET_DEFAULT_TX_VALUE.
+      - Enable slave select mode in the new driver, but this has no effect when user set any of them because
+        the driver can only support the hardware control function.
+
+*/

@@ -1,0 +1,26 @@
+Eclipse error parsers
+=====================
+
+These are a godsend for extracting  & quickly navigating to
+warnings & error messages from console output. Unforunately
+I don't know how to write an Eclipse plugin so you'll have
+to add them manually.
+
+To add a console parser to Eclipse, go to Window --> Preferences
+--> C/C++ --> Build --> Settings. Click on the 'Error Parsers'
+tab and then click the 'Add...' button. See the table below for
+the parser fields to add.
+
+Eclipse will only parse the console output during a build, so
+running your unit tests must be part of your build process.
+Either add this to your make/rakefile, or add it as a post-
+build step in your Eclipse project settings.
+
+
+Unity unit test error parsers
+-----------------------------
+Severity    Pattern                                 File    Line    Description
+-------------------------------------------------------------------------------
+Error       (\.+)(.*?):(\d+):(.*?):FAIL: (.*)       $2      $3      $5
+Warning     (\.+)(.*?):(\d+):(.*?):IGNORE: (.*)     $2      $3      $5
+Warning     (\.+)(.*?):(\d+):(.*?):IGNORE\s*$       $2      $3      Ignored test

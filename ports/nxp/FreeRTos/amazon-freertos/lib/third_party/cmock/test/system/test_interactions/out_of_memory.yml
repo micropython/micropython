@@ -1,0 +1,65 @@
+---
+:cmock:
+  :plugins: []
+  :treat_as:
+    custom_type: INT
+
+:systest:
+  :types: |
+    typedef struct _BIG_FAT_STRUCT_T
+    {
+      char bytes[512];
+    } BIG_FAT_STRUCT_T;
+
+  :mockable: |
+    void foo(BIG_FAT_STRUCT_T a);
+
+  :source:
+    :header: |
+      void   function_a(void);
+      void   function_b(void);
+
+    :code: |
+      void function_a(void)
+      {
+        BIG_FAT_STRUCT_T stuff = { { 8, 0 } };
+        foo(stuff);
+      }
+
+      void function_b(void)
+      {
+        BIG_FAT_STRUCT_T stuff1 = { { 9, 1, 0 } };
+        BIG_FAT_STRUCT_T stuff2 = { { 9, 2, 0 } };
+        foo(stuff1);
+        foo(stuff2);
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: 'successfully should be able to run function a because it only takes half the memory'
+      :code: |
+        test()
+        {
+          BIG_FAT_STRUCT_T expected = { { 8, 0 } };
+          foo_Expect(expected);
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'should error out because we do not have eough memory to handle two of these structures'
+      :code: |
+        test()
+        {
+          BIG_FAT_STRUCT_T expected1 = { { 9, 1, 0 } };
+          BIG_FAT_STRUCT_T expected2 = { { 9, 2, 0 } };
+          foo_Expect(expected1);
+          foo_Expect(expected2);
+          function_b();
+        }
+
+...

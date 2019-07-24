@@ -1,0 +1,10 @@
+/*!
+@page driver_log Driver Change Log
+
+@section lpsci cmsis LPSCI CMSIS
+  Current LPSCI CMSIS driver version is 2.0
+
+  - 2.0
+    - Initial version.
+
+*/

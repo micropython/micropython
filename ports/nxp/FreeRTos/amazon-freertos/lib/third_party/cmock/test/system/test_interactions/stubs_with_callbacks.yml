@@ -1,0 +1,221 @@
+---
+:cmock:
+  :plugins:
+  - :callback
+  :treat_as:
+    custom_type: INT
+
+:systest:
+  :types: |
+    #define UINT32 unsigned int
+
+    typedef signed int custom_type;
+
+  :mockable: |
+    UINT32 foo(custom_type* a);
+    UINT32 bar(custom_type* b);
+    int    baz(void);
+    void   fuz(int* args, int num);
+
+  :source:
+    :header: |
+      void   function_a(int a, int b);
+      UINT32 function_b(void);
+      int    function_c(void);
+
+    :code: |
+      void function_a(int a, int b)
+      {
+        int args[6] = {0, 1, 2, 3, 5, 5};
+        args[0] = a;
+        fuz(args, b);
+      }
+
+      UINT32 function_b(void)
+      {
+        UINT32 sum = 0;
+        custom_type a = 0;
+        custom_type b = 0;
+        sum = foo(&a) + bar(&b);
+        return (UINT32)((custom_type)sum + a + b);
+      }
+
+      int function_c(void)
+      {
+        return (baz() + baz() + baz());
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+
+      UINT32 FooAndBarHelper(custom_type* data, int num)
+      {
+          num++;
+          *data = (custom_type)(num * 2);
+          return (UINT32)(*data * 2);
+      }
+
+      int BazCallbackPointless(int num)
+      {
+          return num;
+      }
+
+      int BazCallbackComplainsIfCalledMoreThanTwice(int num)
+      {
+          TEST_ASSERT_MESSAGE(num < 2, "Do Not Call Baz More Than Twice");
+          return num;
+      }
+
+      void FuzVerifier(int* args, int num_args, int num_calls)
+      {
+          int i;
+          TEST_ASSERT_MESSAGE(num_args < 5, "No More Than 5 Args Allowed");
+          for (i = 0; i < num_args; i++)
+          {
+              TEST_ASSERT_EQUAL(num_calls + i, args[i]);
+          }
+      }
+
+    :units:
+    - :pass: TRUE
+      :should: 'successfully exercise two simple ExpectAndReturn mock calls the normal way'
+      :code: |
+        test()
+        {
+          custom_type exp = 0;
+          foo_ExpectAndReturn(&exp, 10);
+          bar_ExpectAndReturn(&exp, 20);
+          TEST_ASSERT_EQUAL(30, function_b());
+        }
+
+    - :pass: FALSE
+      :should: 'successfully exercise two simple ExpectAndReturn mock calls and catch failure the normal way'
+      :code: |
+        test()
+        {
+          custom_type exp = 1;
+          foo_ExpectAndReturn(&exp, 10);
+          bar_ExpectAndReturn(&exp, 20);
+          TEST_ASSERT_EQUAL(30, function_b());
+        }
+
+    - :pass: TRUE
+      :should: 'successfully exercise using some basic callbacks'
+      :code: |
+        test()
+        {
+          foo_StubWithCallback((CMOCK_foo_CALLBACK)FooAndBarHelper);
+          bar_StubWithCallback((CMOCK_bar_CALLBACK)FooAndBarHelper);
+          TEST_ASSERT_EQUAL(12, function_b());
+        }
+
+    - :pass: TRUE
+      :should: 'successfully exercise using some basic callbacks even if there were expects'
+      :code: |
+        test()
+        {
+          custom_type exp = 500;
+          foo_ExpectAndReturn(&exp, 10);
+          foo_StubWithCallback((CMOCK_foo_CALLBACK)FooAndBarHelper);
+          bar_StubWithCallback((CMOCK_bar_CALLBACK)FooAndBarHelper);
+          TEST_ASSERT_EQUAL(12, function_b());
+        }
+
+    - :pass: FALSE
+      :should: 'successfully exercise using some basic callbacks and notice failures'
+      :code: |
+        test()
+        {
+          foo_StubWithCallback((CMOCK_foo_CALLBACK)FooAndBarHelper);
+          bar_StubWithCallback((CMOCK_bar_CALLBACK)FooAndBarHelper);
+          TEST_ASSERT_EQUAL(10, function_b());
+        }
+
+    - :pass: TRUE
+      :should: 'successfully exercise a callback with no arguments'
+      :code: |
+        test()
+        {
+          baz_StubWithCallback((CMOCK_baz_CALLBACK)BazCallbackPointless);
+          TEST_ASSERT_EQUAL(3, function_c());
+        }
+
+    - :pass: FALSE
+      :should: 'successfully throw a failure from within a callback function'
+      :code: |
+        test()
+        {
+          baz_StubWithCallback((CMOCK_baz_CALLBACK)BazCallbackComplainsIfCalledMoreThanTwice);
+          function_c();
+        }
+
+    - :pass: TRUE
+      :should: 'be usable for things like dynamically sized memory checking for passing conditions'
+      :code: |
+        test()
+        {
+          fuz_StubWithCallback((CMOCK_fuz_CALLBACK)FuzVerifier);
+          function_a(0, 4);
+        }
+
+    - :pass: FALSE
+      :should: 'be usable for things like dynamically sized memory checking for failing conditions'
+      :code: |
+        test()
+        {
+          fuz_StubWithCallback((CMOCK_fuz_CALLBACK)FuzVerifier);
+          function_a(0, 5);
+        }
+
+    - :pass: FALSE
+      :should: 'be usable for things like dynamically sized memory checking for failing conditions 2'
+      :code: |
+        test()
+        {
+          fuz_StubWithCallback((CMOCK_fuz_CALLBACK)FuzVerifier);
+          function_a(1, 4);
+        }
+
+    - :pass: TRUE
+      :should: 'run them interlaced'
+      :code: |
+        test()
+        {
+          custom_type exp = 0;
+          foo_ExpectAndReturn(&exp, 10);
+          foo_ExpectAndReturn(&exp, 15);
+          bar_ExpectAndReturn(&exp, 20);
+          bar_ExpectAndReturn(&exp, 40);
+          fuz_StubWithCallback((CMOCK_fuz_CALLBACK)FuzVerifier);
+          baz_StubWithCallback((CMOCK_baz_CALLBACK)BazCallbackPointless);
+
+          TEST_ASSERT_EQUAL(30, function_b());
+          TEST_ASSERT_EQUAL(55, function_b());
+          function_a(0, 4);
+          TEST_ASSERT_EQUAL(3, function_c());
+        }
+
+    - :pass: TRUE
+      :should: 'run them back to back'
+      :code: |
+        test()
+        {
+          custom_type exp = 0;
+          foo_ExpectAndReturn(&exp, 10);
+          bar_ExpectAndReturn(&exp, 20);
+          TEST_ASSERT_EQUAL(30, function_b());
+
+          foo_ExpectAndReturn(&exp, 15);
+          bar_ExpectAndReturn(&exp, 40);
+          TEST_ASSERT_EQUAL(55, function_b());
+
+          fuz_StubWithCallback((CMOCK_fuz_CALLBACK)FuzVerifier);
+          function_a(0, 4);
+
+          baz_StubWithCallback((CMOCK_baz_CALLBACK)BazCallbackPointless);
+          TEST_ASSERT_EQUAL(3, function_c());
+        }
+
+...

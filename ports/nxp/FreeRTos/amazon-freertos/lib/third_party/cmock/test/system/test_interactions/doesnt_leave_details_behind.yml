@@ -1,0 +1,308 @@
+---
+:cmock:
+  :enforce_strict_ordering: 1
+  :plugins:
+  - :array
+  - :cexception
+  - :ignore
+  - :callback
+  - :return_thru_ptr
+  - :ignore_arg
+  - :expect_any_args
+  :callback_after_arg_check: false
+  :callback_include_count: false
+  :treat_externs: :include
+
+:systest:
+  :types: |
+    typedef struct _POINT_T {
+      int x;
+      int y;
+    } POINT_T;
+
+  :mockable: |
+    #include  "CException.h"
+    extern void foo(POINT_T* a);
+    POINT_T* bar(void);
+    void no_args(void);
+
+  :source:
+    :header: |
+      #include "CException.h"
+      void function_a(void);
+      int function_b(void);
+
+    :code: |
+      void function_a(void)
+      {
+        foo(bar());
+        no_args();
+      }
+
+      int function_b(void)
+      {
+        POINT_T pt = { 1, 2 };
+        foo(&pt);
+        return (pt.x + pt.y);
+      }
+
+  :tests:
+    :common: |
+      #include "CException.h"
+      void setUp(void) {}
+      void tearDown(void) {}
+      void my_foo_callback(POINT_T* a) { TEST_ASSERT_EQUAL_INT(2, a->x); }
+
+    :units:
+    - :pass: TRUE
+      :should: 'just pass if we do not insert anything ugly into it'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+          no_args_Expect();
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after an expect and return'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+          foo_Expect(NULL);
+          no_args_Expect();
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after an expect'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+          no_args_Expect();
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after throw expectation'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          CEXCEPTION_T e;
+
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+          no_args_ExpectAndThrow(5);
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+
+          Try { function_a(); } Catch(e) {}
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after a mock call'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+          no_args_Expect();
+
+          function_a();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after throw'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          CEXCEPTION_T e;
+
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+          no_args_ExpectAndThrow(5);
+
+          Try { function_a(); } Catch(e) {}
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after ignore'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+          no_args_Ignore();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after ignored mock'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+          no_args_Ignore();
+
+          function_a();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after callback setup'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          POINT_T pt = { 2, 2 };
+          bar_ExpectAndReturn(&pt);
+          foo_StubWithCallback(my_foo_callback);
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+
+          no_args_Expect();
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after mock with callback'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          POINT_T pt = { 2, 2 };
+          bar_ExpectAndReturn(&pt);
+          foo_StubWithCallback(my_foo_callback);
+          no_args_Expect();
+
+          function_a();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after expect any args'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          POINT_T pt = { 2, 2 };
+          bar_ExpectAndReturn(&pt);
+          foo_ExpectAnyArgs();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+
+          no_args_Expect();
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after mock which expected any args'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          POINT_T pt = { 2, 2 };
+          bar_ExpectAndReturn(&pt);
+          foo_ExpectAnyArgs();
+          no_args_Expect();
+
+          function_a();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after ignored arg'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          POINT_T pt = { 2, 2 };
+          bar_ExpectAndReturn(&pt);
+          foo_Expect(NULL);
+          foo_IgnoreArg_a();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+
+          no_args_Expect();
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after mock which ignored an arg'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          POINT_T pt = { 2, 2 };
+          bar_ExpectAndReturn(&pt);
+          foo_Expect(NULL);
+          foo_IgnoreArg_a();
+          no_args_Expect();
+
+          function_a();
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after mock which threw a CException'
+      :verify_error: 'FAIL: Expected 1 Was 2. CustomFail'
+      :code: |
+        test()
+        {
+          CEXCEPTION_T e;
+          bar_ExpectAndThrow(0x12);
+
+          Try {
+            function_a();
+          }
+          Catch(e) {}
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(1,2,"CustomFail");
+        }
+
+    - :pass: FALSE
+      :should: 'not contain mock details in failed assertion after mock which used a return thru ptr'
+      :verify_error: 'FAIL: Expected 3 Was 7. CustomFail'
+      :code: |
+        test()
+        {
+          POINT_T pt1 = { 1, 2 };
+          POINT_T pt2 = { 3, 4 };
+
+          foo_Expect(&pt1);
+          foo_ReturnThruPtr_a(&pt2);
+
+          TEST_ASSERT_EQUAL_INT_MESSAGE(3, function_b(), "CustomFail");
+        }
+
+...

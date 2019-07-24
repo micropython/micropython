@@ -1,0 +1,9 @@
+compile_commands.json
+
+lib/*
+build/*
+*.o
+*.out
+
+*.profdata
+*.profraw

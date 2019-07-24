@@ -1,0 +1,10 @@
+/*!
+@page driver_log Driver Change Log
+
+@section uart cmsis  UART CMSIS
+  The current UART CMSIS driver version is 2.0.
+
+  - 2.0
+    - Initial version.
+
+*/

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+  <CurrentConfigs><Project>cmock_demo/Debug</Project></CurrentConfigs></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>237</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1115</ColumnWidth1><ColumnWidth2>297</ColumnWidth2><ColumnWidth3>74</ColumnWidth3></Build>
+      <Debug-Log/>
+      <TerminalIO/>
+      <CodeCoveragePlugin/>
+      <Profiling/>
+    <Disassembly><MixedMode>1</MixedMode><CodeCovEnabled>0</CodeCovEnabled><CodeCovShow>0</CodeCovShow></Disassembly></Static>
+    <Windows>
+      
+      
+    <Wnd1>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-20770-112</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>cmock_demo</ExpandedNode><ExpandedNode>cmock_demo/Source</ExpandedNode><ExpandedNode>cmock_demo/source</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd1><Wnd3>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-10733-1323</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-27316-3469</Identity>
+            <TabName>Debug Log</TabName>
+            <Factory>Debug-Log</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd3></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>C:\svn\cmock\examples\src\Main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>568</SelStart><SelEnd>568</SelEnd></Tab><ActiveTab>0</ActiveTab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-008fe830><key>iaridepm1</key></Toolbar-008fe830></Sizes></Row0></Top><Left><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>554</Bottom><Right>328</Right><x>-2</x><y>-2</y><xscreen>179</xscreen><yscreen>148</yscreen><sizeHorzCX>129149</sizeHorzCX><sizeHorzCY>173302</sizeHorzCY><sizeVertCX>238095</sizeVertCX><sizeVertCY>651054</sizeVertCY></Rect></Wnd1></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>256</Bottom><Right>1388</Right><x>-2</x><y>-2</y><xscreen>1390</xscreen><yscreen>258</yscreen><sizeHorzCX>1002886</sizeHorzCX><sizeHorzCY>302108</sizeHorzCY><sizeVertCX>129149</sizeVertCX><sizeVertCY>173302</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+

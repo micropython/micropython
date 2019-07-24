@@ -1,0 +1,170 @@
+---
+:cmock:
+  :plugins:
+  - :cexception
+
+:systest:
+  :types: |
+    #define UINT32 unsigned int
+    typedef signed int custom_type;
+
+  :mockable: |
+    #include "CException.h"
+    UINT32 foo(custom_type a);
+    UINT32 bar(custom_type b);
+    UINT32 foo_varargs(custom_type a, ...);
+
+  :source: 
+    :header: |
+      #include "CException.h"
+      UINT32 function_a(int a);
+      void function_b(char a);
+
+    :code: |
+      UINT32 function_a(int a)    
+      {
+        UINT32 r = 0;
+        CEXCEPTION_T e;
+        
+        Try
+        {
+          r = (UINT32)foo((custom_type)a);
+        }
+        Catch(e)
+        {
+          r = (UINT32)e*2;
+        }
+        return r;
+      }
+      
+      void function_b(char a)
+      {
+        if (a)
+        {
+          Throw((CEXCEPTION_T)a);
+        }
+      }
+      
+  :tests:
+    :common: |
+      #include "CException.h"
+      void setUp(void) {}
+      void tearDown(void) {}
+      
+    :units:
+    - :pass: TRUE
+      :should: 'successfully exercise a simple ExpectAndReturn mock calls'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          TEST_ASSERT_EQUAL(10, function_a(1));
+        }
+      
+    - :pass: TRUE
+      :should: 'successfully throw an error on first call'
+      :code: |
+        test()
+        {
+          foo_ExpectAndThrow((custom_type)1, 55);
+          TEST_ASSERT_EQUAL(110, function_a(1));
+        }
+      
+    - :pass: TRUE
+      :should: 'successfully throw an error on later calls'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          foo_ExpectAndReturn((custom_type)2, 20);
+          foo_ExpectAndThrow((custom_type)3, 15);
+          foo_ExpectAndReturn((custom_type)4, 40);
+          TEST_ASSERT_EQUAL(10, function_a(1));
+          TEST_ASSERT_EQUAL(20, function_a(2));
+          TEST_ASSERT_EQUAL(30, function_a(3));
+          TEST_ASSERT_EQUAL(40, function_a(4));
+        }
+      
+    - :pass: TRUE
+      :should: 'pass because we nothing happens'
+      :code: |
+        test()
+        {
+          function_b(0);
+        }
+      
+    - :pass: FALSE
+      :should: 'fail because we did not expect function B to throw'
+      :code: |
+        test()
+        {
+          function_b(1);
+        }
+      
+    - :pass: TRUE
+      :should: 'fail because we expect function B to throw'
+      :code: |
+        test()
+        {
+          CEXCEPTION_T e;
+          Try
+          {
+            function_b(3);
+            TEST_FAIL_MESSAGE("Should Have Thrown");
+          }
+          Catch(e)
+          {
+            TEST_ASSERT_EQUAL(3, e);
+          }
+        }
+      
+    - :pass: TRUE
+      :should: 'successfully throw an error on consecutive calls'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          foo_ExpectAndReturn((custom_type)1, 20);
+          foo_ExpectAndThrow((custom_type)1, 15);
+          foo_ExpectAndThrow((custom_type)3, 40);
+          TEST_ASSERT_EQUAL(10, function_a(1));
+          TEST_ASSERT_EQUAL(20, function_a(1));
+          TEST_ASSERT_EQUAL(30, function_a(1));
+          TEST_ASSERT_EQUAL(80, function_a(3));
+        }
+      
+    - :pass: TRUE
+      :should: 'successfully throw an error on later calls and after a previous mock call'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          foo_ExpectAndReturn((custom_type)1, 20);
+          foo_ExpectAndThrow((custom_type)1, 15);
+          TEST_ASSERT_EQUAL(10, function_a(1));
+          TEST_ASSERT_EQUAL(20, function_a(1));
+          TEST_ASSERT_EQUAL(30, function_a(1));
+          
+          foo_ExpectAndReturn((custom_type)2, 20);
+          foo_ExpectAndThrow((custom_type)3, 40);
+          TEST_ASSERT_EQUAL(20, function_a(2));
+          TEST_ASSERT_EQUAL(80, function_a(3));
+        }
+      
+    - :pass: TRUE
+      :should: 'successfully throw an error if expects and mocks called before it'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn((custom_type)1, 10);
+          foo_ExpectAndReturn((custom_type)1, 20);
+          TEST_ASSERT_EQUAL(10, function_a(1));
+          TEST_ASSERT_EQUAL(20, function_a(1));
+          
+          foo_ExpectAndReturn((custom_type)2, 20);
+          foo_ExpectAndThrow((custom_type)3, 40);
+          TEST_ASSERT_EQUAL(20, function_a(2));
+          TEST_ASSERT_EQUAL(80, function_a(3));
+        }
+        
+...

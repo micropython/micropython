@@ -1,0 +1,108 @@
+---
+:cmock:
+  :plugins:
+  - # none
+  :memcmp_if_unknown: false
+
+:systest:
+  :types: |
+    typedef struct _EXAMPLE_STRUCT_T { int x; int y; } EXAMPLE_STRUCT_T;
+
+  :mockable: |
+    EXAMPLE_STRUCT_T foo(EXAMPLE_STRUCT_T a);
+
+  :source:
+    :header: |
+      EXAMPLE_STRUCT_T function_a(EXAMPLE_STRUCT_T a, EXAMPLE_STRUCT_T b);
+      EXAMPLE_STRUCT_T function_b(EXAMPLE_STRUCT_T a, EXAMPLE_STRUCT_T b);
+
+    :code: |
+      EXAMPLE_STRUCT_T function_a(EXAMPLE_STRUCT_T a, EXAMPLE_STRUCT_T b)
+      {
+        EXAMPLE_STRUCT_T retval = foo(a);
+        retval.x += b.x;
+        retval.y += b.y;
+        return retval;
+      }
+
+      EXAMPLE_STRUCT_T function_b(EXAMPLE_STRUCT_T a, EXAMPLE_STRUCT_T b)
+      {
+        EXAMPLE_STRUCT_T retval = foo(b);
+        retval.x *= a.x;
+        retval.y *= a.y;
+        return retval;
+      }
+
+  :tests:
+    :common: |
+      #include "expect_and_return_custom_types_unity_helper.h"
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: 'successfully exercise simple ExpectAndReturn mock calls'
+      :code: |
+        test()
+        {
+          EXAMPLE_STRUCT_T c = {1,2};
+          EXAMPLE_STRUCT_T d = {3,4};
+          EXAMPLE_STRUCT_T e = {2,4};
+          EXAMPLE_STRUCT_T f = {5,8};
+          foo_ExpectAndReturn(c, e);
+          TEST_ASSERT_EQUAL_EXAMPLE_STRUCT_T(f, function_a(c,d));
+        }
+
+    - :pass: FALSE
+      :should: 'fail because it is expecting to call foo with c not d'
+      :code: |
+        test()
+        {
+          EXAMPLE_STRUCT_T c = {1,2};
+          EXAMPLE_STRUCT_T d = {3,4};
+          EXAMPLE_STRUCT_T e = {2,4};
+          EXAMPLE_STRUCT_T f = {5,8};
+          foo_ExpectAndReturn(d, e);
+          TEST_ASSERT_EQUAL_EXAMPLE_STRUCT_T(f, function_a(c,d));
+        }
+
+    - :pass: TRUE
+      :should: 'successfully exercise simple ExpectAndReturn mock calls on other function'
+      :code: |
+        test()
+        {
+          EXAMPLE_STRUCT_T c = {1,2};
+          EXAMPLE_STRUCT_T d = {3,4};
+          EXAMPLE_STRUCT_T e = {2,4};
+          EXAMPLE_STRUCT_T f = {2,8};
+          foo_ExpectAndReturn(d, e);
+          TEST_ASSERT_EQUAL_EXAMPLE_STRUCT_T(f, function_b(c,d));
+        }
+
+    - :pass: FALSE
+      :should: 'fail because it is expecting to call foo with d not c'
+      :code: |
+        test()
+        {
+          EXAMPLE_STRUCT_T c = {1,2};
+          EXAMPLE_STRUCT_T d = {3,4};
+          EXAMPLE_STRUCT_T e = {2,4};
+          EXAMPLE_STRUCT_T f = {2,8};
+          foo_ExpectAndReturn(c, e);
+          TEST_ASSERT_EQUAL_EXAMPLE_STRUCT_T(f, function_b(c,d));
+        }
+
+  :unity_helper:
+    :header: |
+      void AssertEqualExampleStruct(EXAMPLE_STRUCT_T expected, EXAMPLE_STRUCT_T actual, unsigned short line);
+      #define UNITY_TEST_ASSERT_EQUAL_EXAMPLE_STRUCT_T(expected, actual, line, message) {AssertEqualExampleStruct(expected, actual, (unsigned short)line);}
+      #define TEST_ASSERT_EQUAL_EXAMPLE_STRUCT_T(expected, actual) UNITY_TEST_ASSERT_EQUAL_EXAMPLE_STRUCT_T(expected, actual, __LINE__, NULL);
+
+    :code: |
+      void AssertEqualExampleStruct(EXAMPLE_STRUCT_T expected, EXAMPLE_STRUCT_T actual, unsigned short line)
+      {
+        UNITY_TEST_ASSERT_EQUAL_INT(expected.x, actual.x, line, "Example Struct Failed For Field x");
+        UNITY_TEST_ASSERT_EQUAL_INT(expected.y, actual.y, line, "Example Struct Failed For Field y");
+      }
+
+...

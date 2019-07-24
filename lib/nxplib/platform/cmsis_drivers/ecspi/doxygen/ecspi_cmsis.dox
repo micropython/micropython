@@ -1,0 +1,93 @@
+/*!
+@defgroup ecspi ECSPI: Enhaned Configurable Serial Peripheral Interface
+@details The MCUXpresso SDK provides a peripheral driver for the Enhaned Configurable Serial Peripheral Interface (ecspi) module of MCUXpresso SDK devices.
+@{
+*/
+
+/*!
+@defgroup ecspi_driver ECSPI CMSIS driver
+@ingroup ECSPI
+@details This section describes the programming interface of the ecspi Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. And this driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord please refer to http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+
+# Function groups{#ecspiFunGrps}
+
+## ECSPI CMSIS GetVersion Operation {#ecspiGetVersionOps}
+
+This function group will return the ECSPI CMSIS Driver version to user.
+
+## ECSPI CMSIS GetCapabilities Operation {#ecspiGetCapOps}
+
+This function group will return the capabilities of this driver.
+
+##ECSPI CMSIS Initialize and Uninitialize Operation{#ecspiInitResetOps}
+
+This function will initialize and uninitialize the instance in master mode or slave mode. And this API must be called before you configure an instance or after you Deinit an instance.The right steps to start an instance is that you must initialize the instance which been slected firstly,then you can power on the instance.After these all have been done,you can configure the instance by using control operation.If you want to Uninitialize the instance, you must power off the instance first.
+
+## ECSPI CMSIS Transfer Operation {#ecspiTransOps}
+
+This function group controls the transfer, master send/receive data, and slave send/receive data.
+
+## ECSPI CMSIS Status Operation {#ecspiStatusOps}
+
+This function group gets the ecspi transfer status.
+
+## ECSPI CMSIS Control Operation {#ecspiControlOps}
+
+This function can select instance as master mode or slave mode, set baudrate for master mode transfer, get current baudrate of master mode transfer,set transfer data bits and set other control command.
+
+# Typical use case {#ecspiTpyUC}
+
+## Master Operation {#ecspiMasterOps}
+
+~~~~~{.c}
+ 	/* Variables */
+ 	uint8_t masterRxData[TRANSFER_SIZE] = {0U};
+	uint8_t masterTxData[TRANSFER_SIZE] = {0U};
+
+    /*ECSPI master init*/
+    Driver_SPI0.Initialize(ECSPI_MasterSignalEvent_t);
+    Driver_SPI0.PowerControl(ARM_POWER_FULL);
+    Driver_SPI0.Control(ARM_SPI_MODE_MASTER, TRANSFER_BAUDRATE);
+
+    /* Start master transfer */
+    Driver_SPI0.Transfer(masterTxData, masterRxData, TRANSFER_SIZE);
+
+    /* Master power off */
+    Driver_SPI0.PowerControl(ARM_POWER_OFF);
+
+    /* Master uninitialize */
+    Driver_SPI0.Uninitialize();
+~~~~~
+
+## Slave Operation {#spiSlaveOps}
+
+~~~~~{.c}
+	/* Variables */
+	uint8_t slaveRxData[TRANSFER_SIZE] = {0U};
+	uint8_t slaveTxData[TRANSFER_SIZE] = {0U};
+
+    /*DSPI slave init*/
+    Driver_SPI2.Initialize(ECSPI_SlaveSignalEvent_t);
+    Driver_SPI2.PowerControl(ARM_POWER_FULL);
+    Driver_SPI2.Control(ARM_SPI_MODE_SLAVE, false);
+
+    /* Start slave transfer */
+    Driver_SPI2.Transfer(slaveTxData, slaveRxData, TRANSFER_SIZE);
+
+    /* slave power off */
+    Driver_SPI2.PowerControl(ARM_POWER_OFF);
+
+    /* slave uninitialize */
+    Driver_SPI2.Uninitialize();
+~~~~~
+
+*/
+
+/*!
+ * @}
+ */

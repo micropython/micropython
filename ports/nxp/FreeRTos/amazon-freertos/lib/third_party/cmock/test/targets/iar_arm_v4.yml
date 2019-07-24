@@ -1,0 +1,110 @@
+tools_root: &tools_root 'C:\Program Files\IAR Systems\Embedded Workbench 4.0\'
+compiler:
+  path:             [*tools_root, 'arm\bin\iccarm.exe']
+  source_path:     &systest_generated_path './system/generated/'
+  unit_tests_path: &unit_tests_path '../examples/test/'
+  mocks_path:      &systest_mocks_path './system/generated/'
+  build_path:      &systest_build_path './system/build/'
+  options:
+    - --dlib_config
+    - [*tools_root, 'arm\lib\dl4tptinl8n.h']
+    - -z3
+    - --no_cse
+    - --no_unroll
+    - --no_inline
+    - --no_code_motion
+    - --no_tbaa
+    - --no_clustering
+    - --no_scheduling
+    - --debug
+    - --cpu_mode thumb
+    - --endian little
+    - --cpu ARM7TDMI
+    - --stack_align 4
+    - --interwork
+    - -e
+    - --silent
+    - --warnings_are_errors
+    - --fpu None
+    #We are supressing some warnings here because we test CMock against some questionable code to make sure it still works
+    - --diag_suppress Pa050
+    - --diag_suppress Pe191
+    - --diag_suppress=Pe494
+    - --diag_suppress=Pe083
+  includes:
+    prefix: '-I'
+    items:
+      - [*tools_root, 'arm\inc\']
+      - *systest_generated_path
+      - *unit_tests_path
+      - *systest_mocks_path
+      - '../src/'
+      - '../vendor/unity/src/'
+      - '../vendor/c_exception/lib/'
+      - './system/test_compilation/'
+      - './'
+  defines:
+    prefix: '-D'
+    items:
+      - CMOCK
+  object_files:
+    prefix: '-o'
+    extension: '.r79'
+    destination: *systest_build_path
+
+linker:
+  path: [*tools_root, 'common\bin\xlink.exe']
+  options:
+    - -rt
+    - [*tools_root, 'arm\lib\dl4tptinl8n.r79']
+    - -D_L_EXTMEM_START=0
+    - -D_L_EXTMEM_SIZE=0
+    - -D_L_HEAP_SIZE=120
+    - -D_L_STACK_SIZE=32
+    - -e_small_write=_formatted_write
+    - -s
+    - __program_start
+    - '-f iar\iar_v4\Resource\at91SAM7X256_FLASH.xcl'
+  includes:
+    prefix: '-I'
+    items:
+      - *systest_generated_path
+      - *unit_tests_path
+      - *systest_mocks_path
+      - 'vendor/unity/src/'
+      - [*tools_root, 'arm\config\']
+      - [*tools_root, 'arm\lib\']
+  object_files:
+    path: *systest_build_path
+    extension: '.r79'
+  bin_files:
+    prefix: '-o'
+    extension: '.d79'
+    destination: *systest_build_path
+
+simulator:
+  path: [*tools_root, 'common\bin\CSpyBat.exe']
+  pre_support:
+    - --silent
+    - [*tools_root, 'arm\bin\armproc.dll']
+    - [*tools_root, 'arm\bin\armsim.dll']
+  post_support:
+    - --plugin
+    - [*tools_root, 'arm\bin\armbat.dll']
+    - --macro
+    - 'iar\iar_v4\Resource\SAM7_SIM.mac'
+    - --backend
+    - -B
+    - -p
+    - [*tools_root, 'arm\config\ioat91sam7X256.ddf']
+    - -d
+    - sim
+
+unsupported:
+  - out_of_memory
+  - nonstandard_parsed_stuff_1
+  - const
+  - callingconv
+  - unity_64bit_support
+
+colour: true

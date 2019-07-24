@@ -1,0 +1,29 @@
+language: ruby
+
+os: 
+  - osx
+  - linux
+      
+rvm:
+  - "2.0.0"
+  - "2.2.2"
+  
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then rvm install 2.1 && rvm use 2.1 && ruby -v; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install --assume-yes --quiet gcc-multilib; fi
+  
+install:
+  - bundle install
+  - gem install rspec
+  - gem install rubocop
+  
+script:
+  - cd test && rake ci
+  - cd ..
+  - cd examples && cd make_example
+  - make clean 
+  - make setup 
+  - make test
+  - cd ..
+  - cd temp_sensor 
+  - rake ci

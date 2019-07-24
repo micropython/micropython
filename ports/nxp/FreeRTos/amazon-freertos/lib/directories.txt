@@ -1,0 +1,10 @@
+This file describes the subdirectories found in the /lib directory of the Amazon
+FreeRTOS distribution.
+
+third_party:
+Contains the third party libraries, including vendor supplied device specific
+driver libraries, required to build target specific demo projects.  Organized by
+vendor.
+
+All other directories:
+Contain the implementation of a single Amazon FreeRTOS library.

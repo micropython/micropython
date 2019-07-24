@@ -1,0 +1,37 @@
+---
+:cmock:
+  :plugins:
+  - 'ignore'
+  :fail_on_unexpected_calls: FALSE
+
+:systest:
+  :types: |
+
+  :mockable: |
+    int foo(int a);
+    void bar(int b);
+
+  :source:
+    :header: |
+      int function(int a, int b, int c);
+    :code: |
+      int function(int a, int b, int c)
+      {
+        bar(b);
+        return foo(a) + foo(b) + foo(c);
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+    :units:
+    - :pass: TRUE
+      :should: 'With "fail_on_unexpected_calls" disabled, Expect/Ignore/... of bar is NOT required.'
+      :code: |
+        test()
+        {
+          function(1, 2, 3);
+        }
+
+...

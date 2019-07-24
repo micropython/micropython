@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<metadata>
+    <components>
+        <component name="RTE_Device" provides="RTE_Device" requires="platform.drivers.edma platform.devices.MIMXRT1064" type="project_template" component_bundle="bundles.RTE_Device_project_templates">
+          <source path="./" type="c_include" target_path="board">
+            <files mask="RTE_Device.h"/>
+            <files mask="RTE_Device.meta"/>
+          </source> 
+        </component>
+    </components>
+</metadata>

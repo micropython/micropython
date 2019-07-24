@@ -1,0 +1,379 @@
+/*
+ * Amazon FreeRTOS
+ * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * http://aws.amazon.com/freertos
+ * http://www.FreeRTOS.org
+ */
+#ifndef _AWS_TLS_TEST_H_
+#define _AWS_TLS_TEST_H_
+
+/*
+ * PEM-encoded client certificate.
+ *
+ * Certificate for P-256 elliptic curve key.
+ */
+static const char tlstestCLIENT_CERTIFICATE_PEM_EC[] = 
+#ifdef IS_GGD
+"-----BEGIN CERTIFICATE-----\n"
+"MIIDWjCCAkKgAwIBAgIVAKLh4ENCpNu+2GJaJHzBFashA6uQMA0GCSqGSIb3DQEB\n"
+"CwUAME0xSzBJBgNVBAsMQkFtYXpvbiBXZWIgU2VydmljZXMgTz1BbWF6b24uY29t\n"
+"IEluYy4gTD1TZWF0dGxlIFNUPVdhc2hpbmd0b24gQz1VUzAeFw0xODA4MjExNDU2\n"
+"MDJaFw00OTEyMzEyMzU5NTlaMB4xHDAaBgNVBAMME0FXUyBJb1QgQ2VydGlmaWNh\n"
+"dGUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDAo4a6WZgdzSIrkOej\n"
+"/AYThWO6iB81qImTQDLv+QML9geb2eoxwqdCbe37gUk4O3MJvWo8FzOn65RbHDnJ\n"
+"h1NmZiXRZwAAHo34xrtQUWbW6MPKNI9qyseLnYMquQHyJf4OhUwM+NZ9PiglrULm\n"
+"+7Fq7PxHqNQlP1BVadvCAT82upIP+5kHmCrgDC4clr0X2+R7KbLeNEB3Es8yqFoc\n"
+"FQuSyJ6haJ/qwlxbQVljuqU0B4fJUrC2qwWyt3BBqiX0MSBLHxYyp8Ht696t43aK\n"
+"mNjJKOulKo+u0ifPMblJZS+riYfAzSwaD89WUKrMNyoRreiCaP+ibUlyfQKixbcU\n"
+"YEF9AgMBAAGjYDBeMB8GA1UdIwQYMBaAFO8qmcNAdBq5ybYCIai6rrSEmWkeMB0G\n"
+"A1UdDgQWBBRTov+J75ZT/H7JP/7doumjlXQSODAMBgNVHRMBAf8EAjAAMA4GA1Ud\n"
+"DwEB/wQEAwIHgDANBgkqhkiG9w0BAQsFAAOCAQEAJp3ph2lio/iQPemU/+JIbRZ8\n"
+"vOmGgJZWruA/5rTq5t1Wwu5vYHZAurykmqfSz4q6kLgCINxA2A3VX6WahzQ8DwRm\n"
+"so4NS34bIWMSDv7/sQtQ/L4tdWwml1yvUnEpo7Em63BJJrsEuCdwYv3LnPF+ciaQ\n"
+"ze8crk6HvvncV/QL+3MPb8LP0TMBh/DTllV/irhCG5qDU3JISkAGW1exF55I4qqE\n"
+"iAgOuqMVnifH/bVgbij4jZ1g0fELXBMHjD7bhFzb+zdbAsniZUX3V3ha3A2yu2hB\n"
+"6boCwdh2567C7UEPExDnRzMUbm61QdEEE9f3GGhOQ6etLft0vPI9tgt0MibLMg==\n"
+"-----END CERTIFICATE-----";
+#elif defined(IS_AWSKEY) //aws keys
+"-----BEGIN CERTIFICATE-----\n"
+"MIIDWjCCAkKgAwIBAgIVAOSxCunNoszrorisD+hr0WuVu+1dMA0GCSqGSIb3DQEB\n"
+"CwUAME0xSzBJBgNVBAsMQkFtYXpvbiBXZWIgU2VydmljZXMgTz1BbWF6b24uY29t\n"
+"IEluYy4gTD1TZWF0dGxlIFNUPVdhc2hpbmd0b24gQz1VUzAeFw0xODA0MzAxMjMy\n"
+"MjlaFw00OTEyMzEyMzU5NTlaMB4xHDAaBgNVBAMME0FXUyBJb1QgQ2VydGlmaWNh\n"
+"dGUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDLmp/4/EM9AWT1AVk7\n"
+"ADl7Y65cB34UOYqqxzFstBKMHuiLccJJhi0A5e7JYoHM0pY8XSOEon4QBKH86joK\n"
+"aL6LyJU0mhOydoqePEQ/khdjRAaVJE2rqHnNnF8MfD0OgJUZ6jNMUTwYMxz7a29q\n"
+"vSRoscYGSiuZYzmOOjOc+2AE3mIvS2xyrdt9KtvL8NJrxthlIo3qTfS/Qd+IZxb4\n"
+"5Ecyg1UwicTeJZb53Irq2mL8kMancQIKqSalpVH5oiIhk2EfvalLRL4XlO/sOtOt\n"
+"Zpxc2cu4xWStEoWJgCX/Wzkyoukti91+V9aNlEvRU83IG/QoDX4emsXSPSudkWcy\n"
+"3nj1AgMBAAGjYDBeMB8GA1UdIwQYMBaAFHF7EYAlADGaxDL17GHWnx3PqaWnMB0G\n"
+"A1UdDgQWBBQTu1qW60ZM75WNpaggsR5wBJ5sFjAMBgNVHRMBAf8EAjAAMA4GA1Ud\n"
+"DwEB/wQEAwIHgDANBgkqhkiG9w0BAQsFAAOCAQEAoZjhnsFthxsQYTZEDkzm0WRM\n"
+"T5lrtEk7G99IPOMfaR5M0f6fZBo0lw+YL6CKVWdiBiO9LW57IYUA+XhVwK0IXWjr\n"
+"zLbAREiMBFz8TasIOinoy8S4Ph1GZ4oWRCIhA+8xkmIpN+jDW3GPjMRC7q7Cpy68\n"
+"OTsjPGrG0ahzn2cg1w4ly1aJAV8U6vIEqkf+ABH7xhRPZRrxXD+BEYRIl4xSli+D\n"
+"GF4m5BRArnUEINbSfrT+DLY0FlO3AAGTBN/kWbFlAa/T5lRBigqhdaRfxasQvbd0\n"
+"QmJXXQRBXRWICHgQaH6yiP7NsOLE+zssKAO9A1JVZZImvbC/ugmVBhmcImiA+w==\n"
+"-----END CERTIFICATE-----\n";
+#else // localkey
+"-----BEGIN CERTIFICATE-----\n"
+"MIIDlDCCAnwCCQCCYKMKbQdxrjANBgkqhkiG9w0BAQsFADCBizELMAkGA1UEBhMC\n"
+"VVMxCzAJBgNVBAgMAldBMQ4wDAYDVQQHDAVQbGFjZTEUMBIGA1UECgwLWW91ckNv\n"
+"bXBhbnkxCzAJBgNVBAsMAklUMRYwFAYDVQQDDA13d3cueW91cnMuY29tMSQwIgYJ\n"
+"KoZIhvcNAQkBFhVtYXJpYW4uY2luZ2VsQG54cC5jb20wHhcNMTgwNDA1MTEzMTIy\n"
+"WhcNMTkwNDA1MTEzMTIyWjCBizELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAldBMQ4w\n"
+"DAYDVQQHDAVQbGFjZTEUMBIGA1UECgwLWW91ckNvbXBhbnkxCzAJBgNVBAsMAklU\n"
+"MRYwFAYDVQQDDA13d3cueW91cnMuY29tMSQwIgYJKoZIhvcNAQkBFhVtYXJpYW4u\n"
+"Y2luZ2VsQG54cC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCh\n"
+"ATRUliNxGlVSKe0jem5snNu619jSpcM5jk3O0Xmzy0G0sHe13fy1aKiqXiJ14FCL\n"
+"/YWNYIXgzFQWDhRLnOBPl9rPuHymYnVkeFVBdvUwzV5M92WhNMOg9zwXab2e4cSR\n"
+"9kG823/uxgJN+5bFhWm5nkQVC0GIDG9OUDaxKMYzCZxGIg1Jwb2d2VaUfF1JtWaJ\n"
+"gqgZ68a4BXulfkhxrzAlSf2ooFzGyqwaQGufj7ZkkNAGiQWDAlwENugSO8qFSjw0\n"
+"JB8R7brv5XQ/D+kItlzoZv/Z3iX084Rs2XBrZPRsGZ8E15E4O8vW6+Dh0h9Nc4ZW\n"
+"2Tt3qCXXv18nuILzNeGZAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGgl8xu2orS7\n"
+"6GNWEl2KmdIru8y9PVXnrRQjX82a9TISn5H+MUv3iBs4PZcdYaMN1b+1HfIgHS3P\n"
+"gHfkLat2TVbWLspT6gTTcf3QdpC3jPYRIYj/Wzw+maaZ2dwbpt6o4/PNzaHAQLOv\n"
+"MgGKM4yMlRj4EDgWD7Wn3Q/fwDCZczpZ6WcoMojtC8d+gm2W96Ov2IvQ/yfUIZj8\n"
+"BBQxBhJaL7vu4bW5wKrU8cXdauI1vXQZd03btd3xzN/ZC+KAzWbd811Yxc39uDfV\n"
+"/77jW+XE0naInD6uBBnEoOVxC3icZ68ix3+Q53nG++aGnWe8NbL7b8Ublr/tO/Km\n"
+"meRvPDOi8vc=\n"
+"-----END CERTIFICATE-----\n";
+#endif
+//"Paste client certificate here.";
+
+/*
+ * PEM-encoded client private key.
+ *
+ * This is a P-256 elliptic curve key.
+ */
+static const char tlstestCLIENT_PRIVATE_KEY_PEM_EC[] = 
+#ifdef IS_GGD
+"-----BEGIN RSA PRIVATE KEY-----\n"
+"MIIEpgIBAAKCAQEAwKOGulmYHc0iK5Dno/wGE4VjuogfNaiJk0Ay7/kDC/YHm9nq\n"
+"McKnQm3t+4FJODtzCb1qPBczp+uUWxw5yYdTZmYl0WcAAB6N+Ma7UFFm1ujDyjSP\n"
+"asrHi52DKrkB8iX+DoVMDPjWfT4oJa1C5vuxauz8R6jUJT9QVWnbwgE/NrqSD/uZ\n"
+"B5gq4AwuHJa9F9vkeymy3jRAdxLPMqhaHBULksieoWif6sJcW0FZY7qlNAeHyVKw\n"
+"tqsFsrdwQaol9DEgSx8WMqfB7evereN2ipjYySjrpSqPrtInzzG5SWUvq4mHwM0s\n"
+"Gg/PVlCqzDcqEa3ogmj/om1Jcn0CosW3FGBBfQIDAQABAoIBAQCV/b1lU2VRrusw\n"
+"KL9zu0Ov52hjUKGcUgHsmUwP9T8eDQ6XlvD2la1N1/I4pc2w7vj/WHBjIV2jHZaB\n"
+"6lRESg3x6Q8BIMWrUh8Q2Qv32anNI6duxcX1TLZaSuZaWXreZB6Qh9FTOF0pX0A7\n"
+"NdClsMvPiX5U/WtRJR8TojztrbLelMHpVeMR9+gHROt4OdvzQ+ZW3G2wlnNg+vFJ\n"
+"S5WHkZAnHthC5EGDwpKwVFuHpe5NtCpi5iPwXOOVHOruqbsB0TmJUsI6z3WAVOyJ\n"
+"q0U105vqibXuBvC8z4B+IsRxX6pHZkp293mP7zLBl686k7fpaCVQBPYFEb6vPNc4\n"
+"zA/58yWBAoGBAPoaY4p33r2Y2ziIGOeK6NH52yxL3lmj2iLVVx1eOsGpslzU5/uR\n"
+"wU7wO+uplewcWZ4Sc+Pkw3r6voJeGZnc5txs2MjuR34wX1gzGsLigWiD6cxqpWYC\n"
+"RcO45KezMHER6UiMDmnTDk57aBj1Fnzyg2teyxhQxUVIh0/Ogt6FKbS5AoGBAMUu\n"
+"SRHLAjOMW96oRXbEPGkfTb2C18IQfuC4HjY0Md1DGCV+vRpiVcPGsaXbC/M1pc4l\n"
+"erCISwQtOUkEZEAEhqGR/zSJQk1p+d5IGDwMoAx8CuJYao9Bqwwku7UdikYKLmUl\n"
+"r1ML8ZON0ToniwVkhMdOtdBPwEdsyWCaz8uqgljlAoGBAORrW4QojH8e7wDHk+9M\n"
+"t+ymRN1FAXNfKafsrt58pC8h3Gvaa3EgoquEz0UhonJ9RgAPnFaEJWDZR0trw/f5\n"
+"f8PLiYah0RvX9AxqyEM7ebNJ3ys6L4tmAe+KmxLqnhB2qlf+yl8uSn+1R9KbbQl6\n"
+"uDpE3jp78l+fqS1jT7UJa5jJAoGBAJV09ueos7t02THU5AoYxh18H8XUhkvPiww0\n"
+"Ipo9R8qJj6TkAtwbyxxA3+hyNwWbFVlC6VMji5DX4oLo9D/d7lpLOmCM5ZeeC0oj\n"
+"5VKm0y2DXBCiqep6APeMZEbs5CEgmHgMb28IL40DQqLM1EA7J7WWgJMrz/eTirRR\n"
+"w82BKZnNAoGBAIDF9hcK40ytkJkmLWRjK3DiGuOIKM9NvIKpfi5LIrP7PzLXRb4n\n"
+"vkjzisw4ZBfTp0di0fM0g1ujxhb53ecTncrkCi7tfuIubIVw4GryyeSi/6yifMK6\n"
+"PVl+paLTqwrfhSUF5prBPgIN/NWy1vqBdxDWIXJrLVhPedZWVpe/vgwA\n"
+"-----END RSA PRIVATE KEY-----";
+#elif defined(IS_AWSKEY) //aws keys
+"-----BEGIN RSA PRIVATE KEY-----\n"
+"MIIEpQIBAAKCAQEAy5qf+PxDPQFk9QFZOwA5e2OuXAd+FDmKqscxbLQSjB7oi3HC\n"
+"SYYtAOXuyWKBzNKWPF0jhKJ+EASh/Oo6Cmi+i8iVNJoTsnaKnjxEP5IXY0QGlSRN\n"
+"q6h5zZxfDHw9DoCVGeozTFE8GDMc+2tvar0kaLHGBkormWM5jjoznPtgBN5iL0ts\n"
+"cq3bfSrby/DSa8bYZSKN6k30v0HfiGcW+ORHMoNVMInE3iWW+dyK6tpi/JDGp3EC\n"
+"CqkmpaVR+aIiIZNhH72pS0S+F5Tv7DrTrWacXNnLuMVkrRKFiYAl/1s5MqLpLYvd\n"
+"flfWjZRL0VPNyBv0KA1+HprF0j0rnZFnMt549QIDAQABAoIBAQCc9ou1i+TaNyT5\n"
+"rRx5W+b0tRhKYoxUUzgQCJiV0Q0rcPid6Al8XTB8rMa2AndGzGJ+Dt++9PZyqt+m\n"
+"93vfYnjjkrNUZiQhRToAWz3SNHJLWLoqaF5oo+2jEZZFLdJ0R7Sq0d7SSx4lGeKS\n"
+"AXVXuJFFFSgw2SVbjx9kAoKf1ztjBBx578iW07D+AVD2pznB07W5/wRqB1/I74LO\n"
+"sTsCLBooD0D494p7GVE008mjaS6WYnppACmjlz3jV+lkEPL/SH2AvBIgkKo8+KH6\n"
+"Qpsr6GQ/C3/OVJwvzoIebm/do+dZkmEaVQFefyIbDfItADfchD/buASHbxUbHqMN\n"
+"/tRpqpQBAoGBAP3BjQNn4krXabSy9bNhLVtqWvRa4YI9Eh7tRGGRkFO30kjokkvl\n"
+"B1/sDdD3ZcH6mX2V46poIQf9ukq7snhROtOnUrwHQ3vUrdHTNgrHjtKVCJt3tqlW\n"
+"rsclfdSYzPPX68kBcN93V5nLZaYxVMY0eT/jI9Xs7WBsOYm3lHjqmlvBAoGBAM1n\n"
+"imQQObhnZlGO7/jU5zypcSqmkf50aHuQOz559VcdK3WCZUPRb2KeT3lSWryyBnEJ\n"
+"9YEfuF6RG6BSvTjXUhAhHf8t0WnBLPcMNOSM5AI/uLYIAI1OwV7InVVKpf/PCuX6\n"
+"/ILne3YVn6chT8V1x+SwSoO8ROTE6Is8a3VDD/o1AoGAG+mzgkFmIgdqCEd7QX0a\n"
+"CSk80g5BKhtfp+k/kV/6uUrKJdz3YsPRuNp1dpwQJHNVePwI7BDCOWfOmzPkYNnG\n"
+"l8ubDTXbVX7ClAcgtbTX4BAmvzs+64eueBeGrOEWAmio9hZjfSFakH9QMiTRB3B0\n"
+"OfPZWEnUnruo5J4+BcMAscECgYEAssUt9n8ErZEYxV0hULGD/BEBFHzazdrk4L4c\n"
+"QfkFZedWXrS5i/fo+K0OQGpD3L0YzCM90D8aSPwETloUpDcLDky0fdaTz3Y4u1+d\n"
+"XVmeTLLHAW8fg90KgYMbJBOPPIAnXRg/03LCynhxdpWQhyxGaKxifhtK3szeE+jn\n"
+"IazXaA0CgYEArWJt8I1rYBpGs0+ePOAlHRYRLk5rq556JNDVw6dfzt3swQZhGUv/\n"
+"dMh7UusjLwPp36j3ulywQ+6medUQNzmnDObWtImoSt5DuENMjhtOMWr1dc7aG/tQ\n"
+"BpwZzluo1phidsH5ymHtLu3xJbB6c53mjR880BpyX/s3e565jfT2+Vo=\n"
+"-----END RSA PRIVATE KEY-----\n";
+#else //local key
+"-----BEGIN RSA PRIVATE KEY-----\n"
+"MIIEowIBAAKCAQEAoQE0VJYjcRpVUintI3pubJzbutfY0qXDOY5NztF5s8tBtLB3\n"
+"td38tWioql4ideBQi/2FjWCF4MxUFg4US5zgT5faz7h8pmJ1ZHhVQXb1MM1eTPdl\n"
+"oTTDoPc8F2m9nuHEkfZBvNt/7sYCTfuWxYVpuZ5EFQtBiAxvTlA2sSjGMwmcRiIN\n"
+"ScG9ndlWlHxdSbVmiYKoGevGuAV7pX5Ica8wJUn9qKBcxsqsGkBrn4+2ZJDQBokF\n"
+"gwJcBDboEjvKhUo8NCQfEe267+V0Pw/pCLZc6Gb/2d4l9POEbNlwa2T0bBmfBNeR\n"
+"ODvL1uvg4dIfTXOGVtk7d6gl179fJ7iC8zXhmQIDAQABAoIBAF7JbbyKs4znuuln\n"
+"Y4PqlU3+PuJOJwlEq52b6LTk4Ch4dlNhPOjmKtvGJN5AEzugdusjs1ebRtYklTBy\n"
+"04H8dpaFST3XWBNAjeo7ab3jwdAcZ/MaB0wT20RNqaQDDa6XLfncp7D+7N9u1XaB\n"
+"sq7Qr4Cm62AUQ11MLM9HLBu6bI0ooSid/JvK/wjTnNPtmutbpkGcsOb6msdS8ixg\n"
+"rg5QIuuH71nmWTCDVvvn8I/wfYmLnytoO/CvkIVs6kkKgJLgOzsTIkRYNUEHRFrX\n"
+"alangJ8h051fZcOF7UexIK1TpU9khmR0DVFqsNu4HgxwvRnwpn7+bZF1lB8bZaF9\n"
+"CDO5eX0CgYEA0Am8oYCSeDiV5WzYaD4qjsIh09dwSnoxwukSMBekMk2/zArrFPfQ\n"
+"5Zb1IY9lLc7gSMnoiLAxtBaeF4yo9l3CBCGlF5Sg3r8FUzDnEBDUAdRKkwd6yE41\n"
+"a70BhSWBdMQkmu7vnd2OsDPk/q1wp7BBgej0ac8+KK1+mVxgBHifqgMCgYEAxh+X\n"
+"rGLa3ifJEvrkDYI9VASxa/Bll12109MkQS1eLiQCeznyEEYqBa760PzUzjnW7VtM\n"
+"TMDMLQpdFMUomqwpTdHlHSLtgP9NNqAIV1vctSANF9ojRunfEuxuldE1kDXUKR9f\n"
+"Ds6SDGS18AWPAbEFxZxrVYzRYQZLVKrjpyc/ATMCgYEAtUGGhAANnYlPsJDhDBH9\n"
+"6lviNTxjrcBBUtzW5+fxO5LaJODuaVpxO1gHQ7I4KW0xpLmmTFGXPJzoKQR4wg52\n"
+"WDsoKB9q+ifcb9sPtsOys9VPFENUCul5SeFnTaab4Cx06Dh9tUGwbH0Ka4qZuMCs\n"
+"ko9xRC84rSBcSSpezgZ6thkCgYBW8lxkyclVf05N5w8YIpT5f0nBnfFnmTeHq3yY\n"
+"oelYBHOWUpq5q6Ebd2wZNSvLCTUaW1vDv0Sba5Xn3JJyNqW1wixzOfXTC7d+BoNC\n"
+"m0zjrBoy4odiwpYkPuBVHUgNbqIaHetgmyUbDUOO/1GAI4jt7TRpifAFTXbXxFs9\n"
+"6wpKYwKBgBsBKBY0496qxMZnU2XXoT7uP21UMIc7jjINhmJzZ/6zYoH/GjiT/jsM\n"
+"VmpyguaRQpJQGDiC58snzc3ibtCzva2D9bpJLYisyLYJGitTTU5Jz0IQWoi0l4C1\n"
+"cFbCv2wWZoU2ql8CJ1dGRHrYmNb5kupzsWmAxMT/XTsCYjg92Z3f\n"
+"-----END RSA PRIVATE KEY-----\n";
+//"Paste client private key here.";
+#endif
+
+/* One character of this certificate has been changed in the issuer
+ * name from Amazon Web Services to Amazon Web Cervices. */
+#if 0
+static const char tlstestCLIENT_CERTIFICATE_PEM_MALFORMED[] = 
+"-----BEGIN CERTIFICATE-----\n"
+"MIIDWTCCAkGgAwIBAgIUIZOMl0gqhZygmHUcWsVtvw3ahDcwDQYJKoZIhvcNAQEL\n"
+"BQAwTTFLMEkGA1UECwxCQW1hem9uIFdlYiBDZXJ2aWNlcyBPPUFtYXpvbi5jb20g\n"
+"SW5jLiBMPVNlYXR0bGUgU1Q9V2FzaGluZ3RvbiBDPVVTMB4XDTE4MDExMjEzMjE1\n"
+"OVoXDTQ5MTIzMTIzNTk1OVowHjEcMBoGA1UEAwwTQVdTIElvVCBDZXJ0aWZpY2F0\n"
+"ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAM4ww/OYnnAWQpre7RWc\n"
+"wJIN5VraGK7ZLilSloA7KaitstRGjPspabN8psxh5nPrWGdR36DAL4L8eZtqqY4O\n"
+"VJGtRHs142je4aVtAl/gy+g62A5uN9ymQLdRCzTz9TiVlcJ8VQwLhJN5o/VPXwFq\n"
+"7D1ErXTFodA9LFrrcyv0BznasTkOxVC/uxVnckAzBs6Bz3rv7juujGF6XXJLVbYP\n"
+"Zwq0paXiC+A53pDeFIB0fv4RqgGyvkjpveNO1qS610FRNm6/nYcMmFmhHKcSZhIB\n"
+"wgK/X6CJK1Q+uAfXSnp+Q4MDFRZwQTKzzfMx/5qSQjvYg14QqlDOsyHzhxejpd7u\n"
+"oE0CAwEAAaNgMF4wHwYDVR0jBBgwFoAU8ZsqCjweXDemKrUZEW7TI+ntlCswHQYD\n"
+"VR0OBBYEFHtZ02r6sR2PXNe4vRyb9KhKR2SKMAwGA1UdEwEB/wQCMAAwDgYDVR0P\n"
+"AQH/BAQDAgeAMA0GCSqGSIb3DQEBCwUAA4IBAQAdF9OiAX7DBot5BuMdkPIOLadt\n"
+"GCfPQ7kHl3Z3Tnudsyr525egP2q6l6HcrmBQTPioo97KtLmSl5dCgsQH0ASV7pf8\n"
+"Gza6/PMgk3Xd0UxWXRkVXaHO3wMmt5GlK1vaM0nlsJ7fo6EVEjil0j4GJx8s/6sq\n"
+"MoToz033xLuodA5kF9PQ+Hyf+yAGZZFsdetK2XIyawNG30MDJSvdKw9oUmWUu9Mz\n"
+"OU+xnDpY1boCSu9a7nVTvLgHm81w44hmaUlsOps5GfdS5JbW5r323fLf1lF/pi7f\n"
+"pBTaNTuR61Ofv+dJXvCA0hkMHIDVduj+rmfhroWqzU4ESbMAouBY3U5VkFot\n"
+"-----END CERTIFICATE-----\n";
+#endif
+
+//www.xours.com instead of www.yours.com
+static const char tlstestCLIENT_CERTIFICATE_PEM_MALFORMED[] = 
+"-----BEGIN CERTIFICATE-----\n"
+"MIID6zCCAtOgAwIBAgIJAIHTdkTq3UueMA0GCSqGSIb3DQEBCwUAMIGLMQswCQYD\n"
+"VQQGEwJVUzELMAkGA1UECAwCV0ExDjAMBgNVBAcMBVBsYWNlMRQwEgYDVQQKDAtZ\n"
+"b3VyQ29tcGFueTELMAkGA1UECwwCSVQxFjAUBgNVBAMMDXd3dy54b3Vycy5jb20x\n"
+"JDAiBgkqhkiG9w0BCQEWFW1hcmlhbi5jaW5nZWxAbnhwLmNvbTAeFw0xODA0MDUw\n"
+"OTQ3MTJaFw0xOTA0MDUwOTQ3MTJaMIGLMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\n"
+"V0ExDjAMBgNVBAcMBVBsYWNlMRQwEgYDVQQKDAtZb3VyQ29tcGFueTELMAkGA1UE\n"
+"CwwCSVQxFjAUBgNVBAMMDXd3dy55b3Vycy5jb20xJDAiBgkqhkiG9w0BCQEWFW1h\n"
+"cmlhbi5jaW5nZWxAbnhwLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC\n"
+"ggEBAL9FfiLglU0AMd5HyGtrDWQIAtm4hGjZJ96vQbQvGecmGzfDvQQu2W8BkU9e\n"
+"N7qCMczIhbVgFk9c32DEx0UHngXgJ/yRk4bGjZCDXrsrq41sWpLZIlGGET7A4ETz\n"
+"69VBacr4h4CqZ+SN6takN5yWGF5nQ3brtBBCQWZUyoT3VjKQldKI3FCq/3os+t7V\n"
+"6zVeCWC2W50q/pY+qBtMo8N66m9TEh5/11P4dFiKeioRasq7WiPiPMl6BirRorec\n"
+"GPEe6WJiRjD2p8dHGLrQezzGpNURDghdNEei44+QC3ZWkVVs1K+8yryVFs4qIgq7\n"
+"bOsu9cmjjdaPraR/Bw3XYDTcYrMCAwEAAaNQME4wHQYDVR0OBBYEFD5udhpjV1rH\n"
+"NbC0QisHwLj0TsESMB8GA1UdIwQYMBaAFD5udhpjV1rHNbC0QisHwLj0TsESMAwG\n"
+"A1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAKIyCf4d4vyk9SRZYrY+Drcp\n"
+"eq+lZzJG9e4vFYhY3T+5nyDiCIyptOJCoYWhusURIWN3Azk/yfwfFNb/LVSvw+8g\n"
+"Kq3QWU3hSOT+o4lqJvjQSNN3JTniV81wCua7j+uuwnTeIqZaEHs6nlZN8gDXxuOF\n"
+"42052inkxJQpYc9VDFxo5bDLwQIgyxQ3H++QBAFGWq5H7IFdrVo4kMouCig6y/fW\n"
+"Gxi+RiHCrChtre6yQh1eWKsV2sHfBGLliNNCPd1bYkdwSySzVC/UMWXNwNbwO4iT\n"
+"0lK+FkzHcVm0/Re4575KVTU88ZsJNWYaDBodfeoJQMhJvU93ZKuqM4qA7arXBjY=\n"
+"-----END CERTIFICATE-----";
+
+/* Certificate which is not trusted by the broker - local key */
+static const char tlstestCLIENT_UNTRUSTED_CERTIFICATE_PEM[] = 
+"Bag Attributes\n"\
+"    localKeyID: DC 56 D1 A9 E8 07 0B 95 63 C0 63 08 1B 88 08 39 A0 18 C3 43 \n"\
+"subject=/C=CZ/ST=roznov/L=roznov/O=roznov/OU=roznov/CN=roznov/emailAddress=cingel.marian@gmail.com\n"\
+"issuer=/C=CZ/ST=roznov/L=roznov/O=roznov/OU=roznov/CN=roznov/emailAddress=cingel.marian@gmail.com\n"\
+"-----BEGIN CERTIFICATE-----\n"\
+"MIIF7DCCA9SgAwIBAgIJANAGlqVxyFcmMA0GCSqGSIb3DQEBCwUAMIGKMQswCQYD\n"\
+"VQQGEwJDWjEPMA0GA1UECAwGcm96bm92MQ8wDQYDVQQHDAZyb3pub3YxDzANBgNV\n"\
+"BAoMBnJvem5vdjEPMA0GA1UECwwGcm96bm92MQ8wDQYDVQQDDAZyb3pub3YxJjAk\n"\
+"BgkqhkiG9w0BCQEWF2NpbmdlbC5tYXJpYW5AZ21haWwuY29tMB4XDTE5MDMyODE0\n"\
+"MTUwMFoXDTIyMDExNTE0MTUwMFowgYoxCzAJBgNVBAYTAkNaMQ8wDQYDVQQIDAZy\n"\
+"b3pub3YxDzANBgNVBAcMBnJvem5vdjEPMA0GA1UECgwGcm96bm92MQ8wDQYDVQQL\n"\
+"DAZyb3pub3YxDzANBgNVBAMMBnJvem5vdjEmMCQGCSqGSIb3DQEJARYXY2luZ2Vs\n"\
+"Lm1hcmlhbkBnbWFpbC5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoIC\n"\
+"AQDDUDc/4B5cFMn2r4xbhyAC1ehKcb7XP6M87tA5R2PqHzX8gkXdH4b2HRUjOpeS\n"\
+"uTvkxnMLzWcjIQDQQ11CJgtFMm48+Px2Y1BaYQMx9G0gpMer7I3/svZL7jD49I3n\n"\
+"0O9qdurADV5p/NuLti8JU3ATUaSt1gQrX4XdEBWm8t5d3wsQnM2fIrPI32zj1US+\n"\
+"GZnjQgY/bmy0CeH3urSRbv+GQMSk2DCkjVLfujm/byphZhGhMTUmQ65WKJZi5/cr\n"\
+"5o5bF516DD56hHrYBjbccD41ZkFmGqKqZJdGoffaYS9yo/mTR6g8yx5kCC3XtcOz\n"\
+"mVH/Ji+SfE/o5AfEHGBWQLXLpS21yGFVd0mMYP5k6cU7Z2IeosM5HV80u4wIpbF2\n"\
+"JvRDDcJnXJyRSqUB4Pgug/7jQfZOt59s/WEO7WgMahlNqfHAk8lpPlhFs3WDAgH7\n"\
+"BwNYnruq7+Mq3wi98V9Tyn7q71EiiSnertDOuYCewXJnWkajaiJYosxqDwF8NNM3\n"\
+"5zbDOXCC4orZRrvyVNcBdMFZy3snv2XA0QArC7TUYuTXej7iQaRu4Xcfb+cRGqPG\n"\
+"P+40tYfeFDRyaveeolhDaroGhJQgBSAAfAxdE2tWtbvlRac/P1Y57SpEKDRR8ytL\n"\
+"AC0ueIh8UwSKjoBuksNpWBTnYuYWWRfcCh4tuAqAejOk+wIDAQABo1MwUTAdBgNV\n"\
+"HQ4EFgQU/Qrd3u45hsOxemoPS07ScbZYZyMwHwYDVR0jBBgwFoAU/Qrd3u45hsOx\n"\
+"emoPS07ScbZYZyMwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAgEA\n"\
+"g4fN45i3luoOWF5nihdp1SEUPDNN2ciJlvUu29Z4ZJjA3hCn/3Bflh5c03eAWHYE\n"\
+"mGp+ACPFRsLowr0bqnb59hW4Ox+q9rYkh+aCiRMU/UOs9qEDK7CzsFiyCUhbjVkI\n"\
+"o7QtLxQPVYWdzfHJLTO4d62Lg9jWEaDH1GNJAWF5nXGuVSWI4EfEn15IAzu7zAS1\n"\
+"fvN0L57X+zPY6X/+EC2Z7GLCeH30Ucxn7f0PEASrhGTQxrTJq/mJZ8rBOWPRNc7N\n"\
+"dyWNBB9f19/cMedxlrAMCyXSQ6iwu1m5X8/PYNHRgf3+bTW7jqNmTEPzwn0TlDMD\n"\
+"CvEGJv7M8SqqyA+XjBUhARwiJzrfhCV8rmlHqvA+g4m/eFXogTfgHtwRXLlLD27B\n"\
+"7D5WY3ZGgQ/kxx1pn+oWoKx7YC0mS4GT+/YZyO/6s+0TUYmB0BfSIXPwHdH+sFQV\n"\
+"+6IVWLD+7WHpMXNU4wNgStHCqRPk89DkQDdPLFIjTMLA0MB+agRvYLKjvZFgdWNA\n"\
+"CJiFd+zEpbP/9WgtUyXELi49smq5gu/KyOkYYD13pRIP6RulaJPqJ+heY7LAsE5c\n"\
+"RP6oxImB/K91HJtZ5oUhCE407x8MwjDNEgzdpyZhWu6SkDqYV94lKkS0XNzMKiKL\n"\
+"SQaOkQo/OVbUqs55IjUMjTsqkMDCR7y3FMBiWIba/Bo=\n"\
+"-----END CERTIFICATE-----\n"\
+"Bag Attributes\n"\
+"    localKeyID: DC 56 D1 A9 E8 07 0B 95 63 C0 63 08 1B 88 08 39 A0 18 C3 43 \n"\
+"Key Attributes: <No Attributes>\n"\
+"-----BEGIN PRIVATE KEY-----\n"\
+"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\n"\
+"tceC6U3u+fJyYD6mKbwSaqCrCIp7fcw=\n"\
+"-----END PRIVATE KEY-----";
+
+/* Private key corresponding to the untrusted certificate - local certificate */
+static const char tlstestCLIENT_UNTRUSTED_PRIVATE_KEY_PEM[] = 
+"-----BEGIN RSA PRIVATE KEY-----\n"\
+"MIIEpAIBAAKCAQEAx9UkyBnW5V2sRDar879Kv8x/aOkmOEfFz3iWmRdKxA/I9usJ\n"\
+"J8NCdedHdn6OAnTUZ4zPUgRudoNg63StkQJXi1JrtnP2fJHzJjGb20EbAKqplQxr\n"\
+"4l6uD3o+PNf2fFzzp9V1YHODLLISzUctVWokNuM5+mPWBEc9eTaNaDFbnnXpGo8e\n"\
+"Lr7YqMIN9lNH8UCsR/nNlPG7j1T1/HBs0xj99n7JAlJJCM07eU0gGPQoyv8IzmpW\n"\
+"ihQ9OgfybcwzNDOgh01hWLKHqEA9bIsMQz7L+8wkVv9jc16+rjSqKsLclTVu5cXa\n"\
+"LLSAs8HC02WAtxABNEjURxu7D8d2zMe6IbjrTwIDAQABAoIBAQCXq9ElB2ex4y0z\n"\
+"AQP2F0TW2pIBwKQ/p0oeNHqpa6JVuV1g+/eQ9ITnFEmLSHbkqmPkzF029SIaVZEk\n"\
+"ZQSvwUVM+5vBebalyejxHkobWgjyspXQCQOBZzdZjADdEVWGAs70nfFe6Y2wSOA4\n"\
+"akOgRtWBy2lgAJKZ4LBp5dviL0RIugIRmUngxs1kgAcvDCKlIPrdc5u5zkeuDNep\n"\
+"MMKVFmggBZ/mJRDeJ06s0uUPZ594s0OCo2iqd6fJ2GKrGPPNZVlHT1IslDu53TGU\n"\
+"ZBmRiNQL8Q5PfGWynLcO7GYJpDoyubP9Zx51DbkmtorpJ1PPuO+1c/Xbwj3qrc+v\n"\
+"i6PU/g0BAoGBAO3k5+BKjwiAHiTBFKkj9z8YQm2dnqJY/EiTIRlCWwubzXyMrqr1\n"\
+"oXUKbwxWKstJ+6K2wl3IHqSZ6jmY6AN2yopYhLeEvBZox9XNtNnn32AcGlMgR6+4\n"\
+"DIVM4axjcOilKSpVZd376lt5S/xe71GHCy34ynTxYrL2tgknRi4aJN9BAoGBANcK\n"\
+"puef24rjwwISE5jA2svRrQ4bpiK7UgeO6zI6Dv+r3YdRFVSgk64JqFPAamgilJpH\n"\
+"a/do7r1aldHDobrBwjDOwZ2B9JFE8QhZe720+4dkxMFZaXqHF4Dt8PHJcw5tYJsc\n"\
+"8Ti+e9L2q9OHW8xRG3uyoLlcH+RyuPUGW38eaLaPAoGBAKCcCIh/De45QSCjUqWW\n"\
+"6Jgqcr66yZzl4v3Eh3YcPIer2qGaAVrelvED6FE145J4EnGaXcMfFsEeQOo993ZP\n"\
+"PxMEDCYycSHYAAKy7MSpLUAf+Q3iH0PdSGa+ryXJxTLsPsyb9zhVmbXEQK7UEVLD\n"\
+"j6Kr81PcnDwjIGcxosoBUJ+BAoGAcKd+6qb/X5KUTZhktciKlu5AZ7yqW1Wg0p7X\n"\
+"rhdmViCWTFZ5Az2gQDOFAGM0G1vKV8yEzjclowM6q4p+RpVNAz69haNYGWZxkzs1\n"\
+"rRuMDdEHlncd3/e3o26DpFcxtGQukPQnlt+LhOh++bDWsYHoEPRyaMjPWGGVbZ+n\n"\
+"/T9UAhcCgYAZj/dGek6sL+OX9RXYnoTmR0YHUSo3/RH12IfIGV41moDIQ4C26Klm\n"\
+"N9vzRMAqKu1Hia1ih5ITys7UaB/fboZwSVMQ+KlNKMiZbxNVsd1o/66rFgmXvDZ6\n"\
+"nUbpVsZVWBNWi7bCPX02xTa1++OnqecsP9ri1N6AONr8OsOT5EMDrg==\n"\
+"-----END RSA PRIVATE KEY-----";
+
+/* Device certificate created using BYOC instructions. */
+static const char tlstestCLIENT_BYOC_CERTIFICATE_PEM[] = "Paste client certificate here.";
+
+/* Device private key created using BYOC instructions. */
+static const char tlstestCLIENT_BYOC_PRIVATE_KEY_PEM[] = "Paste client private key here.";
+
+#endif

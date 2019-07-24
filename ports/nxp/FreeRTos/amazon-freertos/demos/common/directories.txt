@@ -1,0 +1,16 @@
+This file describes the subdirectories found in the /demo/common directory of
+the Amazon FreeRTOS distribution.
+
+include:
+Contains all the header files required to build the demo files contained in the
+library specific demo directories.
+
+tools:
+Contains the tools required for setting up the environment for the demo projects
+to run.
+
+All other directories:
+Contains the implementation of non device-specific demos of the Amazon FreeRTOS
+libraries, organized by library.
+
+

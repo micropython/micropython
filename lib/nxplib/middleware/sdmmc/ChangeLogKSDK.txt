@@ -1,0 +1,205 @@
+/*!
+@page middleware_log Middleware Change Log
+
+@section sdmmc SDMMC
+  The current driver version is 2.2.12.
+
+  - 2.2.12
+    - Improvement:
+	  - Allow redefine of macro SDMMCHOST_STANDARD_START per different boards.
+
+  - 2.2.11
+    - BugFix
+      - Fix NULL pointer dereference issue when calling function SDMMCHOST_CardDetectInit in host adaptor layer.
+
+  - 2.2.10
+	- BugFix:
+	  - Add NUll pointer check for USDHC freertos adaptor transfer complete
+	  callback.
+	  - Add event value check for all the freertos event to fix program hang
+	  when a card event occur before create.
+
+  - 2.2.9
+     - Improvement:
+	   - Add NULL pointer check for sdmmchostcard_usr_param_t member cd in
+	   card detect callback to avoid memory corruption.
+	   - Add card voltage switch function in sdmmhostcard_usr_param_t to allow
+	   application reigster card signal line voltage switch function.
+     - Bug fix
+       - Fix host freertos adaptor and polling adaptor can't detect card insert bug for usdhc.
+       - Fix sdhc host layer build issue and typo issue.
+
+  - 2.2.8
+    - Improvement:
+      - Update sdmmc to support sdio interrupt.
+
+  - 2.2.7
+    - BugFix:
+      - Fix MDK 66-D warning.
+
+  - 2.2.6
+    - Improvement:
+      - Remove some soc specific header files from porting layer.
+      - Save MMC OCR registers while sending CMD1 with argument 0.
+
+    - Bugfix:
+      - Add MMC_PowerOn function in which there is delay function after powerup sdcard.otherwise,card may init failed.
+
+  - 2.2.5
+    - New features:
+      - Add SD_ReadStatus api to get 512bit SD status.
+      - Add error log support in sdcard functions.
+      - Add SDMMC_ENABLE_SOFTWARE_TUNING to enable/disable software tuning and it is disabled by default.
+      - Add error procedure in the transfer function to improve stability.
+      - Remove deprecated gpio api in host layer.
+
+  - 2.2.4
+    - Bug fix:
+      - Fixed DDR mode data sequence miss issue, which is caused by NIBBLE_POS.
+
+    - New features:
+      - Increased g_sdmmc 512byte to improve the performance when application use a non-word align data buffer address.
+      - Used OCR access mode bits to determine the mmccard high capacity flag.
+      - Enabled auto cmd12 for SD read/write.
+      - Disabled DDR mode frequency multiply by 2.
+
+  - 2.2.3
+    - Bug fix:
+      - Added response check for send operation condition command. If not checked, the card may occasionally init fail.
+
+  - 2.2.2
+    - Moved set card detect priority operation before enable IRQ.
+
+  - 2.2.1
+    - New features:
+      - Improved MMC Boot feature.
+      - Keep SD_Init/SDIO_Init function for forward compatibility.
+
+  - 2.2.0
+    - New features:
+      - Separated the SD/MMC/SDIO init API to xxx_CardInit/xxx_HostInit.
+      - Allowed user register card detect callback, select card detect type, and determine the card detect timeout value.
+      - Allowed user register the power on/off function, and determine the power on/off delay time.
+      - SD_Init/SDIO_Init will be deprecated in the next version.
+      - Added write complete wait operation for MMC_Write to fix command timeout issue.
+
+  - 2.1.6
+    - Enhanced SD IO default driver strength.
+
+  - 2.1.5
+    - Fixed coverity issue.
+    - Fixed SD v1.x card write fail issue. It was caused by the block length set error.
+
+  - 2.1.4
+    - Miscellaneous:
+      - Added Host reset function for card re-initialization.
+      - Added Host_ErrorRecovery function for host error recovery procedure.
+      - Added cache maintain operation
+      - Added HOST_CARD_INSERT_CD_LEVEL to improve compatibility.
+
+    - Bug fix:
+      - Fixed card cannot detect dynamically.
+
+  - 2.1.3
+    - Bug fix:
+      - Non high-speed sdcard init fail at switch to high speed.
+
+    - Miscellaneous:
+      - Optimized tuning/mmc switch voltage/mmc select power class/mmc select timing function.
+      - Added strobe dll for mmc HS400 mode.
+      - Added Delay for SDCard power up.
+
+  - 2.1.2
+    - New features:
+      - Added fsl_host.h to provide prototype to adapt different controller IPs(SDHC/SDIF).
+      - Added adaptor code in SDMMC/Port folder to adapt different host controller IPs with different.
+      transfer modes(interrupt/polling/freertos). Application includes a different adaptor code to make application
+      more simple.
+      - Adaptor code provides HOST_Init/HOST_Deinit/CardInsertDetect.
+      APIs to do host controller initialize and transfer function configuration. SDMMC card stack uses
+      adaptor code inside stack to wait card insert and configure host when calling card init APIs
+      (SD_Init/MMC_Init/SDIO_Init).
+      - This change requires the user to include host adaptor code into the application.
+      If not changed, link errors saying it cannot find the definition of HOST_Init/HOST_Deinit/CardInsertDetect appear.
+    - New features:
+      Improved SDMMC to support SD v3.0 and eMMC v5.0.
+
+    - Bug fix:
+      - Fixed incorrect comparison between count and length in MMC_ReadBlocks/MMC_WriteBlocks.
+
+  - 2.1.1
+    - Bug fix:
+      - Fixed the block range boundary error when transferring data to MMC card.
+      - Fixed the bit mask error in the SD card switch to high speed function.
+
+    - Other changes:
+      - Added error code to indicate that SDHC ADMA1 transfer type is not supported yet.
+      - Optimized the SD card initialization function.
+
+  - 2.1.0
+    - Bug fix:
+      - Change the callback mechanism when sending a command.
+      - Fix the performance low issue when transferring data.
+
+    - Other changes:
+      - Changed the name of some error codes returned by internal function.
+      - Merged all host related attributes to one structure.
+      - Optimize the function of setting maximum data bus width for MMC card.
+
+@section sdio SDIO
+The current driver version is 2.2.11.
+  - 2.2.11
+    - Buf fix:
+      - Add check card async interrupt capability in function
+	  SDIO_GetCardCapability.
+
+  - 2.2.10
+  	- Bug fix:
+	  - Fix sdio card driver get wrong io number when the card io number is
+	  bigger than 2.
+	- New feature:
+	  - Add sdio 3.0 support.
+      - Add api SDIO_IO_RW_Direct for direct read/write card register access.
+
+  - 2.2.9
+  	- Improvement:
+	  - Add api SDIO_SetIOIRQHandler/SDIO_HandlePendingIOInterrupt to handle multi io pending IRQ.
+
+  - 2.2.8
+    - Improvement:
+      - Update sdmmc to support sdio interrupt.
+      - Add api SDIO_GetPendingInterrupt to get the pending io interrupt.
+
+  - 2.2.7
+    - Bug fix:
+      - Fix MDK 66-D warning.
+
+  - 2.2.6
+    - New features:
+      - Add a unify transfer interface for SDIO.
+    - Bug fix:
+      - Wrong pointer address used by SDMMCHOST_Init.
+
+  - 2.1.5
+    - Bug fix:
+      - Improved SDIO card init sequence and add retry option for SDIO_SwitchToHighSpeed function.
+
+  - 2.1.4
+    - Miscellaneous:
+      - Added Go_Idle function for SDIO card.
+
+  - 2.0.0
+    - Initial version.
+
+@section sdspi SDSPI
+The current driver version is 2.1.4.
+  - 2.1.4
+    - Bug fix:
+      - Fix MDK 66-D warning.
+
+  - 2.1.3
+    - Improve sdspi code size and performance.
+
+  - 2.0.0
+    - Initial version.
+*/

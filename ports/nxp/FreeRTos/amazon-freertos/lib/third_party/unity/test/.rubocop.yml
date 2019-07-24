@@ -1,0 +1,58 @@
+# This is the configuration used to check the rubocop source code.
+
+#inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 2.1
+
+# These are areas where ThrowTheSwitch's coding style diverges from the Ruby standard
+Style/SpecialGlobalVars:
+  EnforcedStyle: use_perl_names
+Style/FormatString:
+  Enabled: false
+Style/GlobalVars:
+  Enabled: false
+Style/RegexpLiteral:
+  AllowInnerSlashes: true
+Style/HashSyntax:
+  EnforcedStyle: no_mixed_keys
+
+# This is disabled because it seems to get confused over nested hashes
+Style/AlignHash:
+  Enabled: false
+  EnforcedHashRocketStyle: table
+  EnforcedColonStyle: table
+
+# We purposefully use these insecure features because they're what makes Ruby awesome
+Security/Eval:
+  Enabled: false
+Security/YAMLLoad:
+  Enabled: false
+
+# At this point, we're not ready to enforce inline documentation requirements
+Style/Documentation:
+  Enabled: false
+Style/DocumentationMethod:
+  Enabled: false
+
+# At this point, we're not ready to enforce any metrics
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/BlockNesting:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/LineLength:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/ModuleLength:
+  Enabled: false
+Metrics/ParameterLists:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false

@@ -1,0 +1,36 @@
+
+# <Type>: <Subject text> # 50-char limit #########
+# 72-character lines for description ###################################
+
+# docs: Write a concise subject for each commit
+
+# Write capitalized imperative statement with no period for subject
+# Leave an empty line between the subject and the body
+# List details of significant changes below the subject line
+# Write details as capitalized imperative statements
+# Provide the below sections for further context
+
+# Why:
+
+# A short imperative subject helps when viewing the log, especially when
+# viewing one-line formatted logs.  Clear writing of what changed helps
+# give a clean understanding of context when reading blame messages and
+# when looking at a specific commit.
+
+# Related Issues:
+# Link to related issue numbers (hyper link if applicable), e.g.:
+# git issue 123
+
+# References:
+# List relevant references e.g.:
+# https://chris.beams.io/posts/git-commit/
+
+# Type can be
+#    chore    (updating grunt tasks etc; no production code change)
+#    docs     (changes to documentation)
+#    feat     (new feature)
+#    fix      (bug fix)
+#    refactor (refactoring production code)
+#    revert   (reverts a previous commit)
+#    style    (formatting, missing semi colons, etc; no code change)
+#    test     (adding or refactoring tests; no production code change)

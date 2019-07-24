@@ -1,0 +1,10 @@
+/*!
+@page driver_log Driver Change Log
+
+@section i2c cmsis I2C CMSIS
+  Current I2C CMSIS driver version is 2.0.0
+  
+  -2.0.0
+     - -Initial version.
+
+*/

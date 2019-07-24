@@ -1,0 +1,77 @@
+---
+#The purpose of this test is to play with things 64-bit integers, which aren't supported by all compilers
+:cmock:
+  :plugins:
+  - :array
+  - :ignore
+
+:systest:
+  :types: |
+    #include "unity_internals.h"
+    typedef UNITY_UINT64 TEST64;
+
+  :mockable: |
+    TEST64 foo(TEST64 a);
+    TEST64* bar(TEST64* b);
+
+  :source:
+    :header: |
+      TEST64 function_a(void);
+
+    :code: |
+      TEST64 function_a(void) {
+        TEST64 a = 0x1234567890123456;
+        TEST64 b;
+        TEST64* c;
+
+        b = foo(a);
+        c = bar(&b);
+        return *c;
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: 'handle a straightforward 64-bit series of calls'
+      :code: |
+        test()
+        {
+          TEST64 a = 0x0987654321543210;
+          TEST64 b = 0x5a5a5a5a5a5a5a5a;
+          foo_ExpectAndReturn(0x1234567890123456, 0x0987654321543210);
+          bar_ExpectAndReturn(&a, &b);
+
+          TEST_ASSERT_EQUAL_HEX64(b, function_a());
+        }
+
+    - :pass: FALSE
+      :should: 'handle a straightforward 64-bit series of calls with a failure'
+      :code: |
+        test()
+        {
+          TEST64 a = 0x0987654321543210;
+          TEST64 b = 0x5a5a5a5a5a5a5a5a;
+          foo_ExpectAndReturn(0x1234567890123456, 0x0987654321543211);
+          bar_ExpectAndReturn(&a, &b);
+
+          TEST_ASSERT_EQUAL_HEX64(b, function_a());
+        }
+
+    - :pass: FALSE
+      :should: 'handle a straightforward 64-bit series of calls returning a failure'
+      :code: |
+        test()
+        {
+          TEST64 a = 0x0987654321543210;
+          TEST64 b = 0x5a5a5a5a5a5a5a5a;
+          foo_ExpectAndReturn(0x1234567890123456, 0x0987654321543210);
+          bar_ExpectAndReturn(&a, &b);
+
+          TEST_ASSERT_EQUAL_HEX64(b+1, function_a());
+        }
+
+...

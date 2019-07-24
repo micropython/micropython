@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Amazon FreeRTOS Developer Demos Certificate Configuration Tool</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/generator.js"></script>
+</head>
+<body>
+    <div class="row">
+        <div class="col-lg-2"></div>
+        <div class="col-lg-8">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2>Certificate Configuration Tool</h2>
+                    <h4>Amazon FreeRTOS Developer Demos</h4>
+                </div>
+                <div class="panel-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p class="text-primary" style="font-size:18px">
+                                    Provide client certificate and private key PEM files downloaded from the AWS IoT Console.
+                                </p>
+                                <div class="panel panel-default">
+                                    <div class="panel-body" style="background:#F8F8F8;">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="pemInputFileCertificate" style="font-size:16px">
+                                                        Certificate PEM file:
+                                                    </label>
+                                                    <input type="file" id="pemInputFileCertificate" />
+                                                </div>
+                                                <br />
+                                                <div class="form-group">
+                                                    <label for="pemInputFilePrivateKey" style="font-size:16px">
+                                                        Private Key PEM file:
+                                                    </label>
+                                                    <input type="file" id="pemInputFilePrivateKey" />
+                                                </div>
+                                                <br />
+                                                <button type="button" class="btn btn-primary" style="font-size:16px" 
+                                                        onclick='generateCertificateConfigurationHeader()'>
+                                                    <span class="glyphicon glyphicon-download"></span> 
+                                                    Generate and save aws_clientcredential_keys.h
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-primary" style="font-size:14px">
+                                    <span class="glyphicon glyphicon-warning-sign" style="font-size:16px"></span> 
+                                    Save the generated header file to the <i>demos/common/include</i> folder of the demo project.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2"></div>
+    </div>
+</body>
+</html>

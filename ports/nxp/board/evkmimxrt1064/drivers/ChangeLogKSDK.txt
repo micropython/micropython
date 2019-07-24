@@ -1,0 +1,44 @@
+/*!
+@page driver_log Driver Change Log
+@section clock CLOCK
+  The current CLOCK driver version is 2.2.0.
+
+  - 2.2.0
+    - New feature
+	    - Adding new API CLOCK_DelayAtLeastUs() implemented by DWT to allow users set delay in unit of microsecond.
+
+  - 2.1.7
+    - Bug Fix:
+      - Fix build issue with GCC compiler when include header from C++ file.
+
+  - 2.1.6
+    - Bug Fix:
+      - Add initialization of the fractional mode and spread spectrum mode in CLOCK_InitSysPll().
+
+  - 2.1.5
+    - New feature:
+      - Add support for ENET2.
+  - 2.1.4
+    - Optimization:
+      - Add PerClk in clock_name_t and CLOCK_GetFreq.
+      - Add APIs to get the frequency of AHB clock and SEMC, IPG clock and PER clock.
+
+  - 2.1.3
+    - Use double instead of uint64_t to achieve better performance with double precision FPU.
+
+  - 2.1.2
+    - some minor fixes.
+  - 2.0.0
+    - initial version.
+
+@section iomuxc IOMUXC
+  The current IOMUXC driver version is 2.0.1.
+
+  - 2.0.1
+    - Add missing enum value kIOMUXC_GPR_ENET2RefClkMode & kIOMUXC_GPR_ENET2TxClkOutputDir in the iomuxc_gpr_mode_t.
+    - Cast the enum value kIOMUXC_GPR_AHBClockEnable whose bit 31 is 1 to int type.
+
+  - 2.0.0
+    - initial version.
+
+*/

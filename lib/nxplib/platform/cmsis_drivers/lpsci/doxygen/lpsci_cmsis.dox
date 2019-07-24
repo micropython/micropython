@@ -1,0 +1,91 @@
+/*!
+@defgroup lpsci LPSCI: Universal Asynchronous Receiver/Transmitter
+*/
+
+/*!
+@defgroup lpsci_cmsis_driver LPSCI CMSIS Driver
+@ingroup lpsci
+@details This section describes the programming interface of the LPSCI Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. And this driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord see http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+
+The LPSCI driver includes transactional APIs.
+
+The transactional APIs are transaction target high level APIs. Transactional APIs can be used to enable the peripheral quickly and also
+in the user's application if the code size and performance of transactional APIs can satisfy the user's requirements. If there are special requirements
+for the code size and performance please write custom  code. 
+
+## LPSCI Operation in interrupt transactional method{#LPSCIOperationTransIRQ}
+
+~~~~~{.c}
+    void lpsci_callback(uint32_t event)
+    {
+        if (event == ARM_USART_EVENT_SEND_COMPLETE)
+        {
+            txBufferFull = false;
+            txOnGoing = false;
+        }
+
+        if (event == ARM_USART_EVENT_RECEIVE_COMPLETE)
+        {
+            rxBufferEmpty = false;
+            rxOnGoing = false;
+        }
+    }
+       
+    /*init lpsci*/
+    Driver_USART0.Initialize(lpsci_callback);
+    
+    Driver_USART0.PowerControl(ARM_POWER_FULL);
+    
+    /*start transfer*/
+    Driver_USART0.Send(g_tipString, sizeof(g_tipString) - 1);
+    
+    txOnGoing = true;
+    /* Wait send finished */
+    while (txOnGoing)
+    {
+    }
+    
+~~~~~
+
+## LPSCI Operation in dma transactional method{#LPSCIOperationTransDMA}
+
+~~~~~{.c}
+    void lpsci_callback(uint32_t event)
+    {
+        if (event == ARM_USART_EVENT_SEND_COMPLETE)
+        {
+            txBufferFull = false;
+            txOnGoing = false;
+        }
+
+        if (event == ARM_USART_EVENT_RECEIVE_COMPLETE)
+        {
+            rxBufferEmpty = false;
+            rxOnGoing = false;
+        }
+    }
+    
+    /* DMAMux init and DMA init. */
+    DMAMUX_Init(EXAMPLE_LPSCI_DMAMUX_BASEADDR);
+    DMA_Init(EXAMPLE_LPSCI_DMA_BASEADDR);
+    
+    /*init lpsci*/
+    Driver_USART0.Initialize(lpsci_callback);
+    
+    Driver_USART0.PowerControl(ARM_POWER_FULL);
+    
+    /*start transfer*/
+    Driver_USART0.Send(g_tipString, sizeof(g_tipString) - 1);
+    
+    txOnGoing = true;
+    /* Wait send finished */
+    while (txOnGoing)
+    {
+    }
+    
+~~~~~

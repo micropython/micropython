@@ -1,0 +1,80 @@
+---
+compiler:
+  path: gcc
+  source_path:     &systest_generated_path './system/generated/'
+  unit_tests_path: &unit_tests_path '../examples/test/'
+  mocks_path:      &systest_mocks_path './system/generated/'
+  build_path:      &systest_build_path './system/build/'
+  options:
+    - '-c'
+    - '-Wall'
+    - '-Wextra'
+    - '-Wunused-parameter'
+    - '-Wno-address'
+    - '-Wno-invalid-token-paste'
+    - '-std=c99'
+    - '-pedantic'
+    - '-O0'
+  includes:
+    prefix: '-I'
+    items:
+      - *systest_generated_path
+      - *unit_tests_path
+      - *systest_mocks_path
+      - '../src/'
+      - '../vendor/unity/src/'
+      - '../vendor/c_exception/lib/'
+      - './system/test_compilation/'
+      - './'
+  defines:
+    prefix: '-D'
+    items:
+      - CMOCK
+      - 'CMOCK_MEM_STATIC'
+      - 'CMOCK_MEM_SIZE=1024'
+  object_files:
+    prefix: '-o'
+    extension: '.o'
+    destination: *systest_build_path
+
+linker:
+  path: gcc
+  options:
+    - -lm
+  includes:
+    prefix: '-I'
+  object_files:
+    path: *systest_build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.exe'
+    destination: *systest_build_path
+
+unsupported:
+  - all_plugins_but_other_limits
+  - all_plugins_coexist
+  - array_and_pointer_handling
+  - const_primitives_handling
+  - enforce_strict_ordering
+  - expect_and_return_custom_types
+  - expect_and_return_treat_as
+  - expect_and_throw
+  - expect_any_args
+  - fancy_pointer_handling
+  - function_pointer_handling
+  - newer_standards_stuff1
+  - nonstandard_pased_stuff_1
+  - nonstandard_pased_stuff_2
+  - parsing_challenges
+  - return_thru_ptr_and_expect_any_args
+  - return_thru_ptr_ignore_arg
+  - struct_union_enum_expect_and_return
+  - struct_union_enum_expect_and_return_with_plugins
+  - stubs_with_callbacks
+  - unity_64bit_support
+  - unity_ignores
+  - callingconv
+  - C
+
+colour: true

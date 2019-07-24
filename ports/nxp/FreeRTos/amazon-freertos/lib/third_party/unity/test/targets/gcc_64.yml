@@ -1,0 +1,50 @@
+compiler:
+  path: gcc
+  source_path:     '../src/'
+  unit_tests_path: &unit_tests_path 'tests/'
+  build_path:      &build_path 'build/'
+  options:
+    - '-c'
+    - '-m64'
+    - '-Wall'
+    - '-Wno-address'
+    - '-std=c99'
+    - '-pedantic'
+  includes:
+    prefix: '-I'
+    items:
+      - 'src/'
+      - '../src/'
+      - 'testdata/'
+      - *unit_tests_path
+  defines:
+    prefix: '-D'
+    items:
+      - UNITY_EXCLUDE_STDINT_H
+      - UNITY_EXCLUDE_LIMITS_H
+      - UNITY_INCLUDE_DOUBLE
+      - UNITY_SUPPORT_TEST_CASES
+      - UNITY_SUPPORT_64
+      - UNITY_INT_WIDTH=32
+      - UNITY_LONG_WIDTH=64
+  object_files:
+    prefix: '-o'
+    extension: '.o'
+    destination: *build_path
+linker:
+  path: gcc
+  options:
+    - -lm
+    - '-m64'
+  includes:
+    prefix: '-I'
+  object_files:
+    path: *build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.exe'
+    destination: *build_path
+colour: true
+:unity:
+  :plugins: []

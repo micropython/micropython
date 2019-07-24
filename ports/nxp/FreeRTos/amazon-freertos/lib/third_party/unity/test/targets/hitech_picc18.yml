@@ -1,0 +1,101 @@
+# rumor has it that this yaml file works for the standard edition of the
+# hitech PICC18 compiler, but not the pro version.
+#
+compiler:
+  path: cd build && picc18
+  source_path: '..\src\'
+  unit_tests_path: &unit_tests_path 'tests\'
+  build_path: &build_path 'build\'
+  options:
+    - --chip=18F87J10
+    - --ide=hitide
+    - --q #quiet please
+    - --asmlist
+    - --codeoffset=0
+    - --emi=wordwrite # External memory interface protocol
+    - --warn=0 # allow all normal warning messages
+    - --errors=10 # Number of errors before aborting compile
+    - --char=unsigned
+    - -Bl # Large memory model
+    - -G # generate symbol file
+    - --cp=16 # 16-bit pointers
+    - --double=24
+    - -N255 # 255-char symbol names
+    - --opt=none # Do not use any compiler optimziations
+    - -c # compile only
+    - -M
+  includes:
+    prefix: '-I'
+    items:
+      - 'c:/Projects/NexGen/Prototypes/CMockTest/src/'
+      - 'c:/Projects/NexGen/Prototypes/CMockTest/mocks/'
+      - 'c:/CMock/src/'
+      - 'c:/CMock/examples/src/'
+      - 'c:/CMock/vendor/unity/src/'
+      - 'c:/CMock/vendor/unity/examples/helper/'
+      - *unit_tests_path
+  defines:
+    prefix: '-D'
+    items:
+      - UNITY_INT_WIDTH=16
+      - UNITY_POINTER_WIDTH=16
+      - CMOCK_MEM_STATIC
+      - CMOCK_MEM_SIZE=3000
+      - UNITY_SUPPORT_TEST_CASES
+      - _PICC18
+  object_files:
+    # prefix: '-O' # Hi-Tech doesn't want a prefix. They key off of filename .extensions, instead
+    extension: '.obj'
+    destination: *build_path
+
+linker:
+  path: cd build && picc18
+  options:
+    - --chip=18F87J10
+    - --ide=hitide
+    - --cp=24 # 24-bit pointers. Is this needed for linker??
+    - --double=24 # Is this needed for linker??
+    - -Lw # Scan the pic87*w.lib in the lib/ of the compiler installation directory
+    - --summary=mem,file # info listing
+    - --summary=+psect
+    - --summary=+hex
+    - --output=+intel
+    - --output=+mcof
+    - --runtime=+init # Directs startup code to copy idata, ibigdata and ifardata psects from ROM to RAM.
+    - --runtime=+clear # Directs startup code to clear bss, bigbss, rbss and farbss psects
+    - --runtime=+clib # link in the c-runtime
+    - --runtime=+keep # Keep the generated startup src after its obj is linked
+    - -G # Generate src-level symbol file
+    - -MIWasTheLastToBuild.map
+    - --warn=0 # allow all normal warning messages
+    - -Bl # Large memory model (probably not needed for linking)
+  includes:
+    prefix: '-I'
+    object_files:
+      path: *build_path
+      extension: '.obj'
+    bin_files:
+      prefix: '-O'
+      extension: '.hex'
+      destination: *build_path
+
+simulator:
+  path:
+  pre_support:
+    - 'java -client -jar ' # note space
+    - ['C:\Program Files\HI-TECH Software\HI-TIDE\3.15\lib\', 'simpic18.jar']
+    - 18F87J10
+  post_support:
+
+:cmock:
+  :plugins: []
+  :includes:
+    - Types.h
+  :suite_teardown: |
+    if (num_failures)
+      _FAILED_TEST();
+    else
+      _PASSED_TESTS();
+    return 0;
+
+colour: true

@@ -1,0 +1,13 @@
+---
+:files:
+  - '../src/cmock.c'
+  - './c/TestCMockC.c'
+  - './c/TestCMockC_Runner.c'
+  - '../vendor/unity/src/unity.c'
+:options:
+  - 'TEST'
+  - 'CMOCK_MEM_STATIC'
+  - 'CMOCK_MEM_SIZE=128'
+  - 'CMOCK_MEM_ALIGN=2'
+  - 'CMOCK_MEM_INDEX_TYPE=int'
+

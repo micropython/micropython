@@ -1,0 +1,238 @@
+---
+:cmock:
+  :plugins:
+  - 'expect_any_args'
+
+:systest:
+  :types: |
+
+  :mockable: |
+    int foo(int a);
+    void bar(int b);
+
+  :source:
+    :header: |
+      int function(int a, int b, int c);
+      void func_b(int a);
+    :code: |
+      int function(int a, int b, int c)
+      {
+        bar(b);
+        return foo(a) + foo(b) + foo(c);
+      }
+      void func_b(int a)
+      {
+        bar(a);
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+    :units:
+    - :pass: TRUE
+      :should: 'successfully exercise simple ExpectAndReturn mock calls'
+      :code: |
+        test()
+        {
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 10);
+          foo_ExpectAndReturn(2, 20);
+          foo_ExpectAndReturn(3, 30);
+          TEST_ASSERT_EQUAL(60, function(1, 2, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'ignore foo() call details'
+      :code: |
+        test()
+        {
+          bar_Expect(4);
+          foo_ExpectAnyArgsAndReturn(10);
+          foo_ExpectAnyArgsAndReturn(40);
+          foo_ExpectAnyArgsAndReturn(80);
+          TEST_ASSERT_EQUAL(130, function(3, 4, 3));
+        }
+
+    - :pass: FALSE
+      :should: 'ignore foo() call details and notice if we called foo() more times than expected'
+      :code: |
+        test()
+        {
+          bar_Expect(4);
+          foo_ExpectAnyArgsAndReturn(20);
+          foo_ExpectAnyArgsAndReturn(30);
+          TEST_ASSERT_EQUAL(50, function(3, 4, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'ignore foo() call details and notice if we called foo() less times than expected'
+      :code: |
+        test()
+        {
+          bar_Expect(4);
+          foo_ExpectAnyArgsAndReturn(20);
+          foo_ExpectAnyArgsAndReturn(10);
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAnyArgsAndReturn(60);
+          TEST_ASSERT_EQUAL(70, function(3, 4, 9));
+        }
+
+    - :pass: TRUE
+      :should: 'ignore bar() and foo() call details'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAnyArgsAndReturn(50);
+          TEST_ASSERT_EQUAL(150, function(0, 0, 0));
+        }
+
+    - :pass: TRUE
+      :should: 'be able to handle an expect after ignore calls since we are ignoring args only'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAndReturn(3, 50);
+          TEST_ASSERT_EQUAL(150, function(1, 2, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'be able to handle an ignore after an expect call since we are ignoring args only'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAnyArgsAndReturn(50);
+          TEST_ASSERT_EQUAL(150, function(1, 2, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'be able to handle an ignore within expect calls since we are ignoring args only'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAndReturn(3, 50);
+          TEST_ASSERT_EQUAL(150, function(1, 2, 3));
+        }
+
+    - :pass: FALSE
+      :should: 'be able to detect problems with an expect even when using ignores'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAndReturn(4, 50);
+          TEST_ASSERT_EQUAL(150, function(1, 2, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'be able to handle a lone ExpectAnyArg call'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+          func_b(1);
+        }
+
+    - :pass: FALSE
+      :should: 'be able to handle a lone ExpectAnyArg call that does not get called'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+        }
+
+    - :pass: FALSE
+      :should: 'be able to handle a missing ExpectAnyArg call'
+      :code: |
+        test()
+        {
+          func_b(1);
+        }
+
+    - :pass: TRUE
+      :should: 'ignore foo() calls over multiple mock calls'
+      :code: |
+        test()
+        {
+          bar_ExpectAnyArgs();
+          foo_ExpectAnyArgsAndReturn(50);
+          foo_ExpectAnyArgsAndReturn(60);
+          foo_ExpectAnyArgsAndReturn(70);
+          TEST_ASSERT_EQUAL(180, function(0, 0, 0));
+
+          bar_ExpectAnyArgs();
+          foo_ExpectAnyArgsAndReturn(30);
+          foo_ExpectAnyArgsAndReturn(80);
+          foo_ExpectAnyArgsAndReturn(10);
+          TEST_ASSERT_EQUAL(120, function(0, 0, 0));
+
+          bar_ExpectAnyArgs();
+          foo_ExpectAnyArgsAndReturn(70);
+          foo_ExpectAnyArgsAndReturn(20);
+          foo_ExpectAnyArgsAndReturn(20);
+          TEST_ASSERT_EQUAL(110, function(0, 0, 0));
+        }
+
+    - :pass: TRUE
+      :should: 'have multiple cycles of expects still pass when this plugin enabled'
+      :code: |
+        test()
+        {
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAndReturn(2, 60);
+          foo_ExpectAndReturn(3, 70);
+          TEST_ASSERT_EQUAL(180, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(8);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(7, 8, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'have multiple cycles of expects still fail when this plugin enabled'
+      :code: |
+        test()
+        {
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAndReturn(2, 60);
+          foo_ExpectAndReturn(3, 70);
+          TEST_ASSERT_EQUAL(180, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(8);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(0, 8, 9));
+        }
+
+...

@@ -1,0 +1,9 @@
+# minimum valid address, 32-bit hexadecimal number
+MIN_ADDRESS = 0xBD000008
+
+# maximum valid address, 32-bit hexadecimal number
+MAX_ADDRESS = 0xBD0FFFFF
+
+
+
+

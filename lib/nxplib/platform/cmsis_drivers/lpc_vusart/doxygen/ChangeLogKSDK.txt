@@ -1,0 +1,10 @@
+/*!
+@page driver_log Driver Change Log
+
+@section usart cmsis  USART CMSIS
+  Current USART CMSIS driver version is 2.0
+
+  - 2.0
+    - Initial version.
+
+*/

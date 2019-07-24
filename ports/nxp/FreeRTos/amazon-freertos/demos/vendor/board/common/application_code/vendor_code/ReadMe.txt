@@ -1,0 +1,1 @@
+Place board support specific code in this directory.

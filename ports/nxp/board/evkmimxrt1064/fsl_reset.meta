@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <components>
+    <component description="Reset Driver" name="platform.drivers.reset" type="other" version="2.0.0" requires="devices.MIMXRT1064">
+      <source path="./">
+        <files mask="fsl_reset.meta"/>
+      </source>
+    </component>
+  </components>
+</metadata>

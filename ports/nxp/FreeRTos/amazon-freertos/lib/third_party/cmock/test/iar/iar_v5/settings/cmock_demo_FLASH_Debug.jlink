@@ -1,0 +1,12 @@
+[FLASH]
+SkipProgOnCRCMatch = 1
+VerifyDownload = 1
+AllowCaching = 1
+EnableFlashDL = 2
+Override = 0
+Device="ADUC7020X62"
+[BREAKPOINTS]
+ShowInfoWin = 1
+EnableFlashBP = 2
+[CPU]
+AllowSimulation = 1

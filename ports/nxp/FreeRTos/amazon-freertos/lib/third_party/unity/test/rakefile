@@ -1,0 +1,125 @@
+# ==========================================
+#   Unity Project - A Test Framework for C
+#   Copyright (c) 2007 Mike Karlesky, Mark VanderVoord, Greg Williams
+#   [Released under MIT License. Please refer to license.txt for details]
+# ==========================================
+
+UNITY_ROOT = File.expand_path(File.dirname(__FILE__)) + '/'
+$verbose = false
+
+require 'rake'
+require 'rake/clean'
+require UNITY_ROOT + 'rakefile_helper'
+require 'rspec/core/rake_task'
+
+TEMP_DIRS = [
+	File.join(UNITY_ROOT, 'build'),
+	File.join(UNITY_ROOT, 'sandbox')
+]
+
+TEMP_DIRS.each do |dir|
+  directory(dir)
+  CLOBBER.include(dir)
+end
+
+task :prepare_for_tests => TEMP_DIRS
+
+include RakefileHelpers
+
+# Load proper GCC as defult configuration
+DEFAULT_CONFIG_FILE = 'gcc_auto_stdint.yml'
+configure_toolchain(DEFAULT_CONFIG_FILE)
+
+desc "Test unity with its own unit tests"
+task :unit => [:prepare_for_tests] do
+  run_tests unit_test_files
+end
+
+desc "Test unity's helper scripts"
+task :scripts => [:prepare_for_tests] do
+  Dir['tests/test_*.rb'].each do |scriptfile|
+    require "./"+scriptfile
+  end
+end
+
+desc "Run all rspecs"
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.pattern = 'spec/**/*_spec.rb'
+end
+
+desc "Generate test summary"
+task :summary do
+  report_summary
+end
+
+desc "Build and test Unity"
+task :all => [:clean, :prepare_for_tests, :scripts, :unit, :style, :summary]
+task :default => [:clobber, :all]
+task :ci => [:no_color, :default]
+task :cruise => [:no_color, :default]
+
+desc "Load configuration"
+task :config, :config_file do |t, args|
+  configure_toolchain(args[:config_file])
+end
+
+task :no_color do
+  $colour_output = false
+end
+
+task :verbose do
+  $verbose = true
+end
+
+namespace :style do
+  desc "Check style"
+  task :check do
+    report "\nVERIFYING RUBY STYLE"
+    report execute("rubocop ../auto ../examples ../extras --config .rubocop.yml", true)
+    report "Styling Ruby:PASS"
+  end
+
+  namespace :check do
+    Dir['../**/*.rb'].each do |f|
+      filename = File.basename(f, '.rb')
+      desc "Check Style of #{filename}"
+      task filename.to_sym => ['style:clean'] do
+        report execute("rubocop #{f} --color --config .rubocop.yml", true)
+        report "Style Checked for #{f}"
+      end
+    end
+  end
+
+  desc "Fix Style of all C Code"
+  task :c do
+    run_astyle("../src/*.* ../extras/fixture/src/*.*")
+  end
+
+  namespace :c do
+    Dir['../{src,extras/**}/*.{c,h}'].each do |f|
+      filename = File.basename(f)[0..-3]
+      desc "Check Style of #{filename}"
+      task filename.to_sym do
+        run_astyle f
+      end
+    end
+  end
+
+  desc "Attempt to Autocorrect style"
+  task :auto  => ['style:clean'] do
+    execute("rubocop ../auto ../examples ../extras --auto-correct --config .rubocop.yml")
+    report "Autocorrected What We Could."
+  end
+
+  desc "Update style todo list"
+  task :todo  => ['style:clean'] do
+    execute("rubocop ../auto ../examples ../extras --auto-gen-config --config .rubocop.yml")
+    report "Updated Style TODO List."
+  end
+
+  task :clean do
+    File.delete(".rubocop_todo.yml") if File.exists?(".rubocop_todo.yml")
+  end
+end
+
+task :style => ['style:check']

@@ -1,0 +1,24 @@
+/*!
+@defgroup flash FLASH: C90TFS Flash Driver
+*/
+
+/*!
+@defgroup flash_cmsis_driver FLASH CMSIS Driver
+@ingroup flash
+@details This section describes the programming interface of the FLASH Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. This driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord see http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+ 
+The FLASH CMSIS driver includes transactional APIs.
+
+Transactional APIs are transaction target high-level APIs.
+The transactional APIs can be used to enable the peripheral quickly and also in the
+application if the code size and performance of transactional APIs satisfy
+the requirements. If the code size and performance are critical requirements,
+see the transactional API implementation and write custom code accessing the hardware registers.
+
+/*!
+

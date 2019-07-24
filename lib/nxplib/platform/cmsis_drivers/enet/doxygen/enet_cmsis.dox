@@ -1,0 +1,118 @@
+/*!
+@defgroup enet ENET: Ethernet MAC Driver
+*/
+
+/*!
+@defgroup enet_cmsis_driver ENET CMSIS Driver
+@ingroup enet
+@details This section describes the programming interface of the ENET Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. This driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord see http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+ 
+The ENET CMSIS driver includes transactional APIs.
+
+Transactional APIs are transaction target high-level APIs.
+The transactional APIs can be used to enable the peripheral quickly and also in the
+application if the code size and performance of transactional APIs satisfy
+the requirements. If the code size and performance are critical requirements,
+see the transactional API implementation and write custom code accessing the hardware registers.
+
+
+## Master Operation in interrupt transactional method{#I2CMasterOpsTransIRQ}
+
+~~~~~{.c}
+void ENET_SignalEvent_t(uint32_t event)
+{
+    if (event == ARM_ETH_MAC_EVENT_RX_FRAME)
+    {
+        uint32_t size;
+        uint32_t len;
+
+        /* Get the Frame size */
+        size =  EXAMPLE_ENET.GetRxFrameSize();
+        /* Call ENET_ReadFrame when there is a received frame. */
+        if (size != 0)
+        {
+            /* Received valid frame. Deliver the rx buffer with the size equal to length. */
+            uint8_t *data = (uint8_t *)malloc(size);
+            if (data)
+            {
+                len = EXAMPLE_ENET.ReadFrame(data, size);
+                if (size == len)
+                {
+                    /* Increase the received frame numbers. */
+                    if (g_rxIndex < ENET_EXAMPLE_LOOP_COUNT)
+                    {
+                        g_rxIndex++;
+                    }                        
+                }
+                free(data);                             
+            }
+         }
+    }
+    if (event == ARM_ETH_MAC_EVENT_TX_FRAME)
+    {
+        g_testTxNum ++;
+    }
+}
+
+    /* Initialize the ENET module. */
+    EXAMPLE_ENET.Initialize(ENET_SignalEvent_t);
+    EXAMPLE_ENET.PowerControl(ARM_POWER_FULL);
+    EXAMPLE_ENET.SetMacAddress((ARM_ETH_MAC_ADDR *)g_macAddr); 
+    EXAMPLE_ENET.Control(ARM_ETH_MAC_CONFIGURE, linkInfo.speed << ARM_ETH_MAC_SPEED_Pos  |
+                 linkInfo.duplex << ARM_ETH_MAC_DUPLEX_Pos | ARM_ETH_MAC_ADDRESS_BROADCAST);  
+    EXAMPLE_ENET_PHY.PowerControl(ARM_POWER_FULL);
+    EXAMPLE_ENET_PHY.SetMode(ARM_ETH_PHY_AUTO_NEGOTIATE);
+      EXAMPLE_ENET.Control(ARM_ETH_MAC_CONTROL_RX, 1);
+    EXAMPLE_ENET.Control(ARM_ETH_MAC_CONTROL_TX, 1);
+    if (EXAMPLE_ENET_PHY.GetLinkState() == ARM_ETH_LINK_UP)
+    {
+        linkInfo = EXAMPLE_ENET_PHY.GetLinkInfo();
+    }
+    else
+    {
+        PRINTF("\r\nPHY Link down, please check the cable connection and link partner setting.\r\n");
+    }
+
+    /* Build broadcast for sending. */
+    ENET_BuildBroadCastFrame();
+
+    while (1)
+    {
+        /* Check the total number of received number. */
+        if (g_rxCheckIdx != g_rxIndex)
+        {
+            PRINTF("The %d frame has been successfuly received!\r\n", g_rxIndex);
+            g_rxCheckIdx = g_rxIndex;
+        }          
+        if ( g_testTxNum && (g_txCheckIdx != g_testTxNum))
+        {
+            g_txCheckIdx = g_testTxNum;
+            PRINTF("The %d frame transmitted success!\r\n", g_txCheckIdx);
+        }
+        /* Get the Frame size */
+        if (txnumber < ENET_EXAMPLE_LOOP_COUNT)
+        {
+            txnumber ++;
+            /* Send a multicast frame when the PHY is link up. */
+            if (EXAMPLE_ENET.SendFrame(&g_frame[0], ENET_DATA_LENGTH, ARM_ETH_MAC_TX_FRAME_EVENT) == ARM_DRIVER_OK)
+            {
+                for (uint32_t count = 0; count < 0x3FF; count++)
+                {
+                    __ASM("nop");
+                }
+            }
+            else
+            {
+                PRINTF(" \r\nTransmit frame failed!\r\n");
+            }
+         }
+    }
+~~~~~
+
+*/
+

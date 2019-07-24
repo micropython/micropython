@@ -1,0 +1,7 @@
+{
+    "afr_source_dir":"../..",
+    "thing_name":"$thing_name",
+    "wifi_ssid":"$wifi_ssid",
+    "wifi_password":"$wifi_password",
+    "wifi_security":"$wifi_security"
+}

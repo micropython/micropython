@@ -1,0 +1,78 @@
+---
+compiler:
+  path: clang
+  source_path:     '../src/'
+  unit_tests_path: &unit_tests_path 'tests/'
+  build_path:      &build_path 'build/'
+  options:
+    - '-c'
+    - '-Wall'
+    - '-Wextra'
+    - '-Werror'
+    - '-Wcast-qual'
+    - '-Wconversion'
+    - '-Wdisabled-optimization'
+    - '-Wformat=2'
+    - '-Winit-self'
+    - '-Winline'
+    - '-Winvalid-pch'
+    - '-Wmissing-include-dirs'
+    - '-Wnonnull'
+    - '-Wpacked'
+    - '-Wpointer-arith'
+    - '-Wswitch-default'
+    - '-Wstrict-aliasing'
+    - '-Wstrict-overflow=5'
+    - '-Wuninitialized'
+    - '-Wunused'
+#   - '-Wunreachable-code'
+    - '-Wreturn-type'
+    - '-Wshadow'
+    - '-Wundef'
+    - '-Wwrite-strings'
+    - '-Wno-nested-externs'
+    - '-Wno-unused-parameter'
+    - '-Wno-variadic-macros'
+    - '-Wbad-function-cast'
+    - '-fms-extensions'
+    - '-fno-omit-frame-pointer'
+    - '-ffloat-store'
+    - '-fno-common'
+    - '-fstrict-aliasing'
+    - '-std=gnu99'
+    - '-pedantic'
+    - '-O0'
+  includes:
+    prefix: '-I'
+    items:
+      - 'src/'
+      - '../src/'
+      - 'testdata/'
+      - *unit_tests_path
+  defines:
+    prefix: '-D'
+    items:
+      - UNITY_INCLUDE_DOUBLE
+      - UNITY_SUPPORT_64
+      - UNITY_OUTPUT_RESULTS_FILE
+  object_files:
+    prefix: '-o'
+    extension: '.o'
+    destination: *build_path
+linker:
+  path: clang
+  options:
+    - -lm
+    - '-m64'
+  includes:
+    prefix: '-I'
+  object_files:
+    path: *build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.exe'
+    destination: *build_path
+colour: true
+:unity:
+  :plugins: []

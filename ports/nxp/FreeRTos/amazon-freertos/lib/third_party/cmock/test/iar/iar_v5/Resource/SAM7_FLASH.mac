@@ -1,0 +1,71 @@
+//  ----------------------------------------------------------------------------
+//          ATMEL Microcontroller Software Support  -  ROUSSET  -
+//  ----------------------------------------------------------------------------
+//  DISCLAIMER:  THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+//  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+//  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+//  DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+//  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+//  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+//  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+//  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+//  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//  ----------------------------------------------------------------------------
+//  File Name           : SAM7_FLASH.mac
+//  Object              : Generic Macro File for IAR
+//  1.0 17/Aug/05 FBr   : Creation
+//  ----------------------------------------------------------------------------
+
+/*********************************************************************
+*
+*       _InitRSTC()
+*
+* Function description
+*   Initializes the RSTC (Reset controller).
+*   This makes sense since the default is to not allow user resets, which makes it impossible to
+*   apply a second RESET via J-Link
+*/
+_InitRSTC() {
+    __writeMemory32(0xA5000001, 0xFFFFFD08,"Memory");    // Allow user reset
+}
+
+/*********************************************************************
+*
+*       _InitPLL()
+* Function description
+*   Initializes the PMC.
+*   1. Enable the Main Oscillator
+*   2. Configure PLL to 96MHz
+*   3. Switch Master Clock (MCK) on PLL/2 = 48MHz
+*/
+    _InitPLL() {
+
+    __message "Enable Main Oscillator";
+    __writeMemory32(0x00000601,0xFFFFFc20,"Memory");    // MOSC
+    while( !(__readMemory32(0xFFFFFc68,"Memory") & 0x1)  );
+
+    __message "Set PLL to 96MHz";
+    __writeMemory32(0x10191c05,0xFFFFFc2c,"Memory");    // LOCK
+    while( !(__readMemory32(0xFFFFFc68,"Memory") & 0x4)  );
+
+    __message "Set Master Clock to 48MHz";
+    __writeMemory32(0x00000004,0xFFFFFc30,"Memory");    // MCKRDY
+    while( !(__readMemory32(0xFFFFFc68,"Memory") & 0x8)  );
+    __writeMemory32(0x00000007,0xFFFFFc30,"Memory");    // MCKRDY
+    while( !(__readMemory32(0xFFFFFc68,"Memory") & 0x8)  );
+}
+
+/*********************************************************************
+*
+*       execUserReset() : JTAG set initially to Full Speed
+*/
+execUserReset() {
+    __message "execUserReset()";
+    __emulatorSpeed(30000);             // Set JTAG speed to 30kHz to make a hardware reset
+    __hwReset(0);                       // Hardware Reset: CPU is automatically halted after the reset (JTAG is already configured to 32kHz)
+    _InitPLL();                         // Allow to debug at JTAG Full Speed
+    _InitRSTC();                        // Enable User Reset to allow execUserReset() execution
+    __emulatorSpeed(0);                 // Set JTAG speed to full speed
+}
+

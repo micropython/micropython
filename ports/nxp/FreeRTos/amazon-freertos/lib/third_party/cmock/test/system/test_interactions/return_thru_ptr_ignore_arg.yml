@@ -1,0 +1,231 @@
+---
+:cmock:
+    :mock_path: test/mocks
+    :mock_prefix: mock_
+    :treat_as:
+        abs_struct: PTR
+        intptr: INT*
+    :when_ptr: :smart
+    :plugins:
+        - :array
+        - :expect_any_args
+        - :return_thru_ptr
+
+:systest:
+  :types: |
+    typedef int *intptr;
+
+    struct a_struct
+    {
+        int i1;
+        int i2;
+        int i3;
+    };
+
+    struct _abs_struct
+    {
+        int abs_i1;
+        int abs_i2;
+    };
+
+    typedef struct _abs_struct abs_struct;
+
+  :mockable: |
+      void ptr_ret_int(int *r);
+      void ptr_ret_ints(int *r, int *s);
+      void ptr_ret_array(char r[], int len);
+      void ptr_ret_typedef(intptr r);
+      void ptr_ret_struct(struct a_struct *r);
+      void ptr_ret_abstract(abs_struct *r);
+      void ptr_ret_abstract_array(abs_struct *r, int len);
+      void ptr_ret_const_int(int *r, const int *s);
+      void ptr_ret_string(char *s);
+
+  :source:
+    :header: |
+      #include <string.h>
+      #define lengthof(x) (sizeof(x)/sizeof((x)[0]))
+
+    :code: |
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: "handle a single int* argument"
+      :code: |
+        test()
+        {
+          int r = 1;
+          int res = 4;
+
+          ptr_ret_int_Expect(&r);
+          ptr_ret_int_ReturnThruPtr_r(&res);
+          ptr_ret_int(&r);
+          TEST_ASSERT_EQUAL(4, r);
+        }
+
+    - :pass: TRUE
+      :should: "handle multiple calls"
+      :code: |
+        test()
+        {
+          int r = 1;
+          int res1 = 4;
+          int res2 = 8;
+          int res3 = 16;
+
+          ptr_ret_int_Expect(&r);
+          ptr_ret_int_ReturnThruPtr_r(&res1);
+          ptr_ret_int_Expect(&r);
+          ptr_ret_int_ReturnThruPtr_r(&res2);
+          ptr_ret_int_Expect(&r);
+          ptr_ret_int_ReturnThruPtr_r(&res3);
+
+          ptr_ret_int(&r);
+          TEST_ASSERT_EQUAL(4, r);
+          ptr_ret_int(&r);
+          TEST_ASSERT_EQUAL(8, r);
+          ptr_ret_int(&r);
+          TEST_ASSERT_EQUAL(16, r);
+
+        }
+
+    - :pass: TRUE
+      :should: "ignore an argument"
+      :code: |
+        test()
+        {
+          int s = 2;
+          int res = 4;
+
+          ptr_ret_int_ExpectAnyArgs();
+          ptr_ret_int_ReturnThruPtr_r(&res);
+          ptr_ret_int(&s);
+          TEST_ASSERT_EQUAL(4, s);
+        }
+
+    - :pass: TRUE
+      :should: "ignore a null pointer argument"
+      :code: |
+        test()
+        {
+          int r = 1;
+          int res = 4;
+
+          ptr_ret_int_ExpectAnyArgs();
+          ptr_ret_int_ReturnThruPtr_r(&res);
+          ptr_ret_int(&r);
+          TEST_ASSERT_EQUAL(4, r);
+        }
+
+    - :pass: TRUE
+      :should: "handle multiple int* arguments"
+      :code: |
+        test()
+        {
+          int r, s = 0x0880AA55;
+          int r_res = 4;
+          int s_res = 6;
+
+          ptr_ret_ints_Expect(&r, &s);
+          ptr_ret_ints_ReturnThruPtr_r(&r_res);
+          ptr_ret_ints_ReturnThruPtr_s(&s_res);
+          ptr_ret_ints(&r, &s);
+          TEST_ASSERT_EQUAL(4, r);
+          TEST_ASSERT_EQUAL(6, s);
+        }
+
+    - :pass: TRUE
+      :should: "only return through pointer when asked to"
+      :code: |
+        test()
+        {
+          int r = 0x0880AA55;
+          int s = 0xAA55;
+          int r_res = 4;
+
+          ptr_ret_ints_Expect(&r, &s);
+          ptr_ret_ints_ReturnThruPtr_r(&r_res);
+          ptr_ret_ints(&r, &s);
+          TEST_ASSERT_EQUAL(4, r);
+          TEST_ASSERT_EQUAL(0xAA55, s);
+        }
+
+    - :pass: TRUE
+      :should: "return an array through a pointer correctly"
+      :code: |
+        test()
+        {
+          char r_a[] = "booboorooboo";
+          char r_a_ret[] = "FEEFI";
+
+          ptr_ret_array_Expect(r_a, lengthof(r_a));
+          ptr_ret_array_ReturnArrayThruPtr_r(r_a_ret, (int)strlen(r_a_ret));
+          ptr_ret_array(r_a, lengthof(r_a));
+          TEST_ASSERT_EQUAL_STRING("FEEFIorooboo", r_a);
+        }
+
+    - :pass: TRUE
+      :should: "handle structs"
+      :code: |
+        test()
+        {
+          struct a_struct r_s = { .i1 = 2, .i2 = 3, .i3 = 4, };
+          struct a_struct r_s_ret = { .i1 = 8, .i2 = 16, .i3 = 32, };
+
+          ptr_ret_struct_Expect(&r_s);
+          ptr_ret_struct_ReturnThruPtr_r(&r_s_ret);
+          ptr_ret_struct(&r_s);
+          TEST_ASSERT_EQUAL_MEMORY(&r_s_ret, &r_s, sizeof(struct a_struct));
+        }
+
+    - :pass: TRUE
+      :should: "handle typedefs"
+      :code: |
+        test()
+        {
+          abs_struct r_as = {.abs_i1 = 0x1234, .abs_i2 = 0x4567};
+          abs_struct r_as_ret = {.abs_i1 = 0xFFAA55, .abs_i2 = 0xAAFFAA};
+          ptr_ret_abstract_Expect(&r_as);
+          ptr_ret_abstract_ReturnMemThruPtr_r(&r_as_ret, sizeof(abs_struct));
+          ptr_ret_abstract(&r_as);
+          TEST_ASSERT_EQUAL_MEMORY(&r_as_ret, &r_as, sizeof(abs_struct));
+        }
+
+    - :pass: TRUE
+      :should: "only generate ReturnThruPtr definitions for non-const arguments"
+      :code: |
+        test()
+        {
+        #if !defined(ptr_ret_const_int_ReturnThruPtr_r)
+            TEST_FAIL_MESSAGE("ReturnThruPtr not defined for a pointer argument.");
+        #endif
+
+        #if defined(ptr_ret_const_int_ReturnThruPtr_s)
+            TEST_FAIL_MESSAGE("ReturnThruPtr defined for a const pointer argument.");
+        #endif
+        }
+
+    - :pass: TRUE
+      :should: "generate ReturnThruPtr definitions for string arguments"
+      :code: |
+        test()
+        {
+        #if !defined(ptr_ret_string_ReturnThruPtr_s)
+            TEST_FAIL_MESSAGE("ReturnThruPtr not defined for a string argument.");
+        #endif
+        }
+
+    - :pass: TRUE
+      :should: "generate ExpectAnyArgs definitions"
+      :code: |
+        test()
+        {
+        #if !defined(ptr_ret_array_ExpectAnyArgs)
+            TEST_FAIL_MESSAGE("ExpectAnyArgs not defined for an argument.");
+        #endif
+        }

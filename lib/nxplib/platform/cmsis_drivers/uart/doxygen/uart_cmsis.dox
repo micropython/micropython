@@ -1,0 +1,89 @@
+/*!
+@defgroup uart UART: Universal Asynchronous Receiver/Transmitter Driver
+*/
+
+/*!
+@defgroup uart_cmsis_driver UART CMSIS Driver
+@ingroup uart
+@details This section describes the programming interface of the UART Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. And this driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord see http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+
+The UART driver includes  transactional APIs.
+
+Transactional APIs can be used to enable the peripheral quickly and in the
+application if the code size and performance of transactional APIs can satisfy the
+requirements. If the code size and performance are critical requirements please write 
+custom code. 
+
+
+## UART Send using an interrupt method {#UARTCaseInterrupt}
+
+~~~~~{.c}
+    /* UART  callback */
+    void UART_Callback(uint32_t event)
+    {
+        if (event == ARM_USART_EVENT_SEND_COMPLETE)
+        {
+            txBufferFull = false;
+            txOnGoing = false;
+        }
+
+        if (event == ARM_USART_EVENT_RECEIVE_COMPLETE)
+        {
+            rxBufferEmpty = false;
+            rxOnGoing = false;
+        }
+    }
+    Driver_USART0.Initialize(UART_Callback);
+    Driver_USART0.PowerControl(ARM_POWER_FULL);
+    /* Send g_tipString out. */
+    txOnGoing = true;
+    Driver_USART0.Send(g_tipString, sizeof(g_tipString) - 1);
+
+    /* Wait send finished */
+    while (txOnGoing)
+    {
+    }
+~~~~~
+
+
+## UART Send using the DMA method {#UARTCaseDma}
+
+~~~~~{.c}
+    /* UART  callback */
+    void UART_Callback(uint32_t event)
+    {
+        if (event == ARM_USART_EVENT_SEND_COMPLETE)
+        {
+            txBufferFull = false;
+            txOnGoing = false;
+        }
+
+        if (event == ARM_USART_EVENT_RECEIVE_COMPLETE)
+        {
+            rxBufferEmpty = false;
+            rxOnGoing = false;
+        }
+    }
+
+    Driver_USART0.Initialize(UART_Callback);
+    DMAMGR_Init();
+    Driver_USART0.PowerControl(ARM_POWER_FULL);
+
+    /* Send g_tipString out. */
+    txOnGoing = true;
+
+    Driver_USART0.Send(g_tipString, sizeof(g_tipString) - 1);
+
+    /* Wait send finished */
+    while (txOnGoing)
+    {
+    }
+~~~~~
+
+*/
+

@@ -1,0 +1,139 @@
+---
+:cmock:
+  :plugins:
+  - # none
+
+:systest:
+  :types: |
+    #define UINT32 unsigned int
+
+  :mockable: |
+    UINT32 foo(UINT32 a);
+    void bar(void);
+
+  :source: 
+    :header: |    
+      UINT32 function_a(int a);
+      void function_b(void);
+
+    :code: |
+      UINT32 function_a(int a)    
+      {
+        bar();
+        return foo((UINT32)a);
+      }    
+
+      void function_b(void) 
+      {
+        bar();
+      }
+      
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+      
+    :units:
+    - :pass: :ignore
+      :should: 'ignore incorrect expects after the TEST_IGNORE call'
+      :code: |
+        test()
+        {
+          TEST_IGNORE();
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          TEST_ASSERT_EQUAL(40, function_a(30));
+        }
+      
+    - :pass: :ignore
+      :should: 'ignore missing expects after the TEST_IGNORE call'
+      :code: |
+        test()
+        {
+          TEST_IGNORE();
+          foo_ExpectAndReturn(10, 20);
+          TEST_ASSERT_EQUAL(20, function_a(10));
+        }
+      
+    - :pass: :ignore
+      :should: 'ignore extra expects after the TEST_IGNORE call'
+      :code: |
+        test()
+        {
+          TEST_IGNORE();
+          bar_Expect();
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          foo_ExpectAndReturn(10, 20);
+          foo_ExpectAndReturn(10, 20);
+          TEST_ASSERT_EQUAL(20, function_a(10));
+        }
+      
+    - :pass: :ignore
+      :should: 'ignore no expects after the TEST_IGNORE call'
+      :code: |
+        test()
+        {
+          TEST_IGNORE();
+          TEST_ASSERT_EQUAL(20, function_a(10));
+        }
+        
+    - :pass: :ignore
+      :should: 'ignore extra expects after the TEST_IGNORE call even if it happens later'
+      :code: |
+        test()
+        {
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          function_a(10);
+          
+          TEST_IGNORE();
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          TEST_ASSERT_EQUAL(40, function_a(30));
+        }
+        
+    - :pass: false
+      :should: 'still fail if there are expect problems before the TEST_IGNORE'
+      :code: |
+        test()
+        {
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          function_a(30);
+          
+          TEST_IGNORE();
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          TEST_ASSERT_EQUAL(40, function_a(30));
+        }
+        
+    - :pass: false
+      :should: 'still fail if there are missing expect problems before the TEST_IGNORE'
+      :code: |
+        test()
+        {
+          bar_Expect();
+          function_a(10);
+          
+          TEST_IGNORE();
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          TEST_ASSERT_EQUAL(40, function_a(30));
+        }
+        
+    - :pass: :ignore
+      :should: 'ignore if extra expects before the TEST_IGNORE because it ignored the rest of the test that might have made calls to it'
+      :code: |
+        test()
+        {
+          bar_Expect();
+          bar_Expect();
+          foo_ExpectAndReturn(10, 20);
+          function_a(10);
+          
+          TEST_IGNORE();
+          foo_ExpectAndReturn(10, 20);
+          TEST_ASSERT_EQUAL(40, function_a(30));
+        }
+...

@@ -1,0 +1,95 @@
+tools_root:  &tools_root 'C:\Program Files\IAR Systems\Embedded Workbench 5.3 MSP430\'
+core_root:   &core_root [*tools_root, '430\']
+core_bin:    &core_bin [*core_root, 'bin\']
+core_config: &core_config [*core_root, 'config\']
+core_lib:    &core_lib [*core_root, 'lib\']
+core_inc:    &core_inc [*core_root, 'inc\']
+core_config: &core_config [*core_root, 'config\']
+
+compiler:
+  path:             [*core_bin, 'icc430.exe']
+  source_path:      '..\src\'
+  unit_tests_path:  &unit_tests_path 'tests\'
+  build_path:       &build_path 'build\'
+  options:
+    - --dlib_config
+    - [*core_lib, 'dlib\dl430fn.h']
+    - --no_cse
+    - --no_unroll
+    - --no_inline
+    - --no_code_motion
+    - --no_tbaa
+    - --debug
+    - -e
+    - -Ol
+    - --multiplier=16
+    - --double=32
+    - --diag_suppress Pa050
+    - --diag_suppress Pe111
+  includes:
+    prefix: '-I'
+    items:
+      - *core_inc
+      - [*core_inc, 'dlib']
+      - [*core_lib, 'dlib']
+      - 'src\'
+      - '../src/'
+      - 'testdata/'
+      - *unit_tests_path
+      - 'vendor\unity\src'
+  defines:
+    prefix: '-D'
+    items:
+      - '__MSP430F149__'
+      - 'INT_WIDTH=16'
+      - 'UNITY_EXCLUDE_FLOAT'
+      - 'UNITY_SUPPORT_TEST_CASES'
+  object_files:
+    prefix: '-o'
+    extension: '.r43'
+    destination: *build_path
+linker:
+  path: [*core_bin, 'xlink.exe']
+  options:
+    - -rt
+    - [*core_lib, 'dlib\dl430fn.r43']
+    - -e_PrintfTiny=_Printf
+    - -e_ScanfSmall=_Scanf
+    - -s __program_start
+    - -D_STACK_SIZE=50
+    - -D_DATA16_HEAP_SIZE=50
+    - -D_DATA20_HEAP_SIZE=50
+    - -f
+    - [*core_config, 'lnk430f5438.xcl']
+    - -f
+    - [*core_config, 'multiplier.xcl']
+  includes:
+    prefix: '-I'
+    items:
+      - *core_config
+      - *core_lib
+      - [*core_lib, 'dlib']
+  object_files:
+    path: *build_path
+    extension: '.r79'
+  bin_files:
+    prefix: '-o'
+    extension: '.d79'
+    destination: *build_path
+simulator:
+  path: [*tools_root, 'common\bin\CSpyBat.exe']
+  pre_support:
+    - --silent
+    - [*core_bin, '430proc.dll']
+    - [*core_bin, '430sim.dll']
+  post_support:
+    - --plugin
+    - [*core_bin, '430bat.dll']
+    - --backend -B
+    - --cpu MSP430F5438
+    - -p
+    - [*core_config, 'MSP430F5438.ddf']
+    - -d sim
+colour: true
+:unity:
+  :plugins: []

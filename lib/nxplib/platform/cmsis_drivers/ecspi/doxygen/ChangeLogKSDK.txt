@@ -1,0 +1,10 @@
+/*!
+@page driver_log Driver Change Log
+
+@section ecspi_cmsis ECSPI_CMSIS
+  Current ecspi_cmsis driver version is 2.0
+
+  - 2.0
+    - - Initial version.
+*/
+

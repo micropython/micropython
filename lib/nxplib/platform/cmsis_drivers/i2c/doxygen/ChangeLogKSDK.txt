@@ -1,0 +1,13 @@
+/*!
+@page driver_log Driver Change Log
+
+@section i2c cmsis I2C CMSIS
+  Current I2C CMSIS driver version is 2.0.1
+  
+  -2.0.0
+     - -Initial version.
+  -2.0.1
+     - -Bug fix: In ARM_I2C_ABORT_TRANSFER operation in I2C_InterruptControl, the method to check if I2C is
+        operating as slave is not correct, then master may have potential risk to block at the slave check code.
+
+*/

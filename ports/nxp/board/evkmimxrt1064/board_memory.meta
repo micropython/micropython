@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata>
+  <components>
+    <component name="platform.devices.evkmimxrt1064_flash" type="debugger" requires="devices.boards.evkmimxrt1064" provides="platform.devices.device platform.devices.MIMXRT1064xxxxA">
+      <source path="./" requires="mcuxpresso">
+        <files mask="board_memory.meta"/>
+      </source>
+      <!-- <source path="./mcuxpresso" requires="mcuxpresso"> -->
+        <!-- <files mask="MIMXRT1064.cfx"/> -->
+      <!-- </source> -->
+    </component>
+  </components>
+  <manifest_metadata_set>
+    <manifest_metadata key="memory" bindings="devices.boards.evkmimxrt1064">
+      <specific>
+        <content>
+          <memory ram_size_kb="32768" flash_size_kb="0">
+            <memoryBlock id="BOARD_SDRAM_evkmimxrt1064" name="BOARD_SDRAM" addr="80000000" size="02000000" type="RAM" access="RW"/>
+          </memory>
+        </content>
+      </specific>
+    </manifest_metadata>
+  </manifest_metadata_set>
+  <!-- <debug_configurations> -->
+    <!-- <debug_configuration id_refs="com.crt.advproject.config.exe.debug com.crt.advproject.config.exe.release" bindings="mcuxpresso devices.boards.evkmimxrt1064"> -->
+      <!-- <drivers> -->
+        <!-- <driver memory_block="BOARD_FLASH_evkmimxrt1064"> -->
+          <!-- <driver_binary path="devices/MIMXRT1064/mcuxpresso"> -->
+            <!-- <files mask="MIMXRT1064.cfx"/> -->
+          <!-- </driver_binary> -->
+        <!-- </driver> -->
+      <!-- </drivers> -->
+    <!-- </debug_configuration> -->
+  <!-- </debug_configurations> -->
+</metadata>

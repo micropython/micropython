@@ -1,0 +1,2259 @@
+; ----------------------------------------------------------------------------
+;          ATMEL Microcontroller Software Support  -  ROUSSET  -
+; ----------------------------------------------------------------------------
+;  DISCLAIMER:  THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+;  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+;  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+;  DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+;  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+;  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+;  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+;  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+; ----------------------------------------------------------------------------
+; File Name           : AT91SAM7X256.ddf
+; Object              : AT91SAM7X256 definitions
+; Generated           : AT91 SW Application Group  11/02/2005 (15:17:30)
+; 
+; CVS Reference       : /AT91SAM7X256.pl/1.14/Tue Sep 13 15:06:52 2005//
+; CVS Reference       : /SYS_SAM7X.pl/1.3/Tue Feb  1 17:01:43 2005//
+; CVS Reference       : /MC_SAM7X.pl/1.2/Fri May 20 14:13:04 2005//
+; CVS Reference       : /PMC_SAM7X.pl/1.4/Tue Feb  8 13:58:10 2005//
+; CVS Reference       : /RSTC_SAM7X.pl/1.2/Wed Jul 13 14:57:50 2005//
+; CVS Reference       : /UDP_SAM7X.pl/1.1/Tue May 10 11:35:35 2005//
+; CVS Reference       : /PWM_SAM7X.pl/1.1/Tue May 10 11:53:07 2005//
+; CVS Reference       : /AIC_6075B.pl/1.3/Fri May 20 14:01:30 2005//
+; CVS Reference       : /PIO_6057A.pl/1.2/Thu Feb  3 10:18:28 2005//
+; CVS Reference       : /RTTC_6081A.pl/1.2/Tue Nov  9 14:43:58 2004//
+; CVS Reference       : /PITC_6079A.pl/1.2/Tue Nov  9 14:43:56 2004//
+; CVS Reference       : /WDTC_6080A.pl/1.3/Tue Nov  9 14:44:00 2004//
+; CVS Reference       : /VREG_6085B.pl/1.1/Tue Feb  1 16:05:48 2005//
+; CVS Reference       : /PDC_6074C.pl/1.2/Thu Feb  3 08:48:54 2005//
+; CVS Reference       : /DBGU_6059D.pl/1.1/Mon Jan 31 13:15:32 2005//
+; CVS Reference       : /SPI_6088D.pl/1.3/Fri May 20 14:08:59 2005//
+; CVS Reference       : /US_6089C.pl/1.1/Mon Jul 12 18:23:26 2004//
+; CVS Reference       : /SSC_6078B.pl/1.1/Wed Jul 13 15:19:19 2005//
+; CVS Reference       : /TWI_6061A.pl/1.1/Tue Jul 13 07:38:06 2004//
+; CVS Reference       : /TC_6082A.pl/1.7/Fri Mar 11 12:52:17 2005//
+; CVS Reference       : /CAN_6019B.pl/1.1/Tue Mar  8 12:42:22 2005//
+; CVS Reference       : /EMACB_6119A.pl/1.6/Wed Jul 13 15:05:35 2005//
+; CVS Reference       : /ADC_6051C.pl/1.1/Fri Oct 17 09:12:38 2003//
+; ----------------------------------------------------------------------------
+
+[Sfr]
+
+; ========== Register definition for SYS peripheral ========== 
+; ========== Register definition for AIC peripheral ========== 
+sfr = "AIC_SMR", 	"Memory", 0xfffff000, 4, base=16
+sfr = "AIC_SMR.PRIOR", 	"Memory", 0xfffff000, 4, base=16, bitRange=0-2
+sfr = "AIC_SMR.SRCTYPE", 	"Memory", 0xfffff000, 4, base=16, bitRange=5-6
+sfr = "AIC_SVR", 	"Memory", 0xfffff080, 4, base=16
+sfr = "AIC_IVR", 	"Memory", 0xfffff100, 4, base=16
+sfr = "AIC_FVR", 	"Memory", 0xfffff104, 4, base=16
+sfr = "AIC_ISR", 	"Memory", 0xfffff108, 4, base=16
+sfr = "AIC_IPR", 	"Memory", 0xfffff10c, 4, base=16
+sfr = "AIC_IMR", 	"Memory", 0xfffff110, 4, base=16
+sfr = "AIC_CISR", 	"Memory", 0xfffff114, 4, base=16
+sfr = "AIC_CISR.NFIQ", 	"Memory", 0xfffff114, 4, base=16, bitRange=0
+sfr = "AIC_CISR.NIRQ", 	"Memory", 0xfffff114, 4, base=16, bitRange=1
+sfr = "AIC_IECR", 	"Memory", 0xfffff120, 4, base=16
+sfr = "AIC_IDCR", 	"Memory", 0xfffff124, 4, base=16
+sfr = "AIC_ICCR", 	"Memory", 0xfffff128, 4, base=16
+sfr = "AIC_ISCR", 	"Memory", 0xfffff12c, 4, base=16
+sfr = "AIC_EOICR", 	"Memory", 0xfffff130, 4, base=16
+sfr = "AIC_SPU", 	"Memory", 0xfffff134, 4, base=16
+sfr = "AIC_DCR", 	"Memory", 0xfffff138, 4, base=16
+sfr = "AIC_DCR.PROT", 	"Memory", 0xfffff138, 4, base=16, bitRange=0
+sfr = "AIC_DCR.GMSK", 	"Memory", 0xfffff138, 4, base=16, bitRange=1
+sfr = "AIC_FFER", 	"Memory", 0xfffff140, 4, base=16
+sfr = "AIC_FFDR", 	"Memory", 0xfffff144, 4, base=16
+sfr = "AIC_FFSR", 	"Memory", 0xfffff148, 4, base=16
+; ========== Register definition for PDC_DBGU peripheral ========== 
+sfr = "DBGU_RPR", 	"Memory", 0xfffff300, 4, base=16
+sfr = "DBGU_RCR", 	"Memory", 0xfffff304, 4, base=16
+sfr = "DBGU_TPR", 	"Memory", 0xfffff308, 4, base=16
+sfr = "DBGU_TCR", 	"Memory", 0xfffff30c, 4, base=16
+sfr = "DBGU_RNPR", 	"Memory", 0xfffff310, 4, base=16
+sfr = "DBGU_RNCR", 	"Memory", 0xfffff314, 4, base=16
+sfr = "DBGU_TNPR", 	"Memory", 0xfffff318, 4, base=16
+sfr = "DBGU_TNCR", 	"Memory", 0xfffff31c, 4, base=16
+sfr = "DBGU_PTCR", 	"Memory", 0xfffff320, 4, base=16
+sfr = "DBGU_PTCR.RXTEN", 	"Memory", 0xfffff320, 4, base=16, bitRange=0
+sfr = "DBGU_PTCR.RXTDIS", 	"Memory", 0xfffff320, 4, base=16, bitRange=1
+sfr = "DBGU_PTCR.TXTEN", 	"Memory", 0xfffff320, 4, base=16, bitRange=8
+sfr = "DBGU_PTCR.TXTDIS", 	"Memory", 0xfffff320, 4, base=16, bitRange=9
+sfr = "DBGU_PTSR", 	"Memory", 0xfffff324, 4, base=16
+sfr = "DBGU_PTSR.RXTEN", 	"Memory", 0xfffff324, 4, base=16, bitRange=0
+sfr = "DBGU_PTSR.TXTEN", 	"Memory", 0xfffff324, 4, base=16, bitRange=8
+; ========== Register definition for DBGU peripheral ========== 
+sfr = "DBGU_CR", 	"Memory", 0xfffff200, 4, base=16
+sfr = "DBGU_CR.RSTRX", 	"Memory", 0xfffff200, 4, base=16, bitRange=2
+sfr = "DBGU_CR.RSTTX", 	"Memory", 0xfffff200, 4, base=16, bitRange=3
+sfr = "DBGU_CR.RXEN", 	"Memory", 0xfffff200, 4, base=16, bitRange=4
+sfr = "DBGU_CR.RXDIS", 	"Memory", 0xfffff200, 4, base=16, bitRange=5
+sfr = "DBGU_CR.TXEN", 	"Memory", 0xfffff200, 4, base=16, bitRange=6
+sfr = "DBGU_CR.TXDIS", 	"Memory", 0xfffff200, 4, base=16, bitRange=7
+sfr = "DBGU_CR.RSTSTA", 	"Memory", 0xfffff200, 4, base=16, bitRange=8
+sfr = "DBGU_MR", 	"Memory", 0xfffff204, 4, base=16
+sfr = "DBGU_MR.PAR", 	"Memory", 0xfffff204, 4, base=16, bitRange=9-11
+sfr = "DBGU_MR.CHMODE", 	"Memory", 0xfffff204, 4, base=16, bitRange=14-15
+sfr = "DBGU_IER", 	"Memory", 0xfffff208, 4, base=16
+sfr = "DBGU_IER.RXRDY", 	"Memory", 0xfffff208, 4, base=16, bitRange=0
+sfr = "DBGU_IER.TXRDY", 	"Memory", 0xfffff208, 4, base=16, bitRange=1
+sfr = "DBGU_IER.ENDRX", 	"Memory", 0xfffff208, 4, base=16, bitRange=3
+sfr = "DBGU_IER.ENDTX", 	"Memory", 0xfffff208, 4, base=16, bitRange=4
+sfr = "DBGU_IER.OVRE", 	"Memory", 0xfffff208, 4, base=16, bitRange=5
+sfr = "DBGU_IER.FRAME", 	"Memory", 0xfffff208, 4, base=16, bitRange=6
+sfr = "DBGU_IER.PARE", 	"Memory", 0xfffff208, 4, base=16, bitRange=7
+sfr = "DBGU_IER.TXEMPTY", 	"Memory", 0xfffff208, 4, base=16, bitRange=9
+sfr = "DBGU_IER.TXBUFE", 	"Memory", 0xfffff208, 4, base=16, bitRange=11
+sfr = "DBGU_IER.RXBUFF", 	"Memory", 0xfffff208, 4, base=16, bitRange=12
+sfr = "DBGU_IER.TX", 	"Memory", 0xfffff208, 4, base=16, bitRange=30
+sfr = "DBGU_IER.RX", 	"Memory", 0xfffff208, 4, base=16, bitRange=31
+sfr = "DBGU_IDR", 	"Memory", 0xfffff20c, 4, base=16
+sfr = "DBGU_IDR.RXRDY", 	"Memory", 0xfffff20c, 4, base=16, bitRange=0
+sfr = "DBGU_IDR.TXRDY", 	"Memory", 0xfffff20c, 4, base=16, bitRange=1
+sfr = "DBGU_IDR.ENDRX", 	"Memory", 0xfffff20c, 4, base=16, bitRange=3
+sfr = "DBGU_IDR.ENDTX", 	"Memory", 0xfffff20c, 4, base=16, bitRange=4
+sfr = "DBGU_IDR.OVRE", 	"Memory", 0xfffff20c, 4, base=16, bitRange=5
+sfr = "DBGU_IDR.FRAME", 	"Memory", 0xfffff20c, 4, base=16, bitRange=6
+sfr = "DBGU_IDR.PARE", 	"Memory", 0xfffff20c, 4, base=16, bitRange=7
+sfr = "DBGU_IDR.TXEMPTY", 	"Memory", 0xfffff20c, 4, base=16, bitRange=9
+sfr = "DBGU_IDR.TXBUFE", 	"Memory", 0xfffff20c, 4, base=16, bitRange=11
+sfr = "DBGU_IDR.RXBUFF", 	"Memory", 0xfffff20c, 4, base=16, bitRange=12
+sfr = "DBGU_IDR.TX", 	"Memory", 0xfffff20c, 4, base=16, bitRange=30
+sfr = "DBGU_IDR.RX", 	"Memory", 0xfffff20c, 4, base=16, bitRange=31
+sfr = "DBGU_IMR", 	"Memory", 0xfffff210, 4, base=16
+sfr = "DBGU_IMR.RXRDY", 	"Memory", 0xfffff210, 4, base=16, bitRange=0
+sfr = "DBGU_IMR.TXRDY", 	"Memory", 0xfffff210, 4, base=16, bitRange=1
+sfr = "DBGU_IMR.ENDRX", 	"Memory", 0xfffff210, 4, base=16, bitRange=3
+sfr = "DBGU_IMR.ENDTX", 	"Memory", 0xfffff210, 4, base=16, bitRange=4
+sfr = "DBGU_IMR.OVRE", 	"Memory", 0xfffff210, 4, base=16, bitRange=5
+sfr = "DBGU_IMR.FRAME", 	"Memory", 0xfffff210, 4, base=16, bitRange=6
+sfr = "DBGU_IMR.PARE", 	"Memory", 0xfffff210, 4, base=16, bitRange=7
+sfr = "DBGU_IMR.TXEMPTY", 	"Memory", 0xfffff210, 4, base=16, bitRange=9
+sfr = "DBGU_IMR.TXBUFE", 	"Memory", 0xfffff210, 4, base=16, bitRange=11
+sfr = "DBGU_IMR.RXBUFF", 	"Memory", 0xfffff210, 4, base=16, bitRange=12
+sfr = "DBGU_IMR.TX", 	"Memory", 0xfffff210, 4, base=16, bitRange=30
+sfr = "DBGU_IMR.RX", 	"Memory", 0xfffff210, 4, base=16, bitRange=31
+sfr = "DBGU_CSR", 	"Memory", 0xfffff214, 4, base=16
+sfr = "DBGU_CSR.RXRDY", 	"Memory", 0xfffff214, 4, base=16, bitRange=0
+sfr = "DBGU_CSR.TXRDY", 	"Memory", 0xfffff214, 4, base=16, bitRange=1
+sfr = "DBGU_CSR.ENDRX", 	"Memory", 0xfffff214, 4, base=16, bitRange=3
+sfr = "DBGU_CSR.ENDTX", 	"Memory", 0xfffff214, 4, base=16, bitRange=4
+sfr = "DBGU_CSR.OVRE", 	"Memory", 0xfffff214, 4, base=16, bitRange=5
+sfr = "DBGU_CSR.FRAME", 	"Memory", 0xfffff214, 4, base=16, bitRange=6
+sfr = "DBGU_CSR.PARE", 	"Memory", 0xfffff214, 4, base=16, bitRange=7
+sfr = "DBGU_CSR.TXEMPTY", 	"Memory", 0xfffff214, 4, base=16, bitRange=9
+sfr = "DBGU_CSR.TXBUFE", 	"Memory", 0xfffff214, 4, base=16, bitRange=11
+sfr = "DBGU_CSR.RXBUFF", 	"Memory", 0xfffff214, 4, base=16, bitRange=12
+sfr = "DBGU_CSR.TX", 	"Memory", 0xfffff214, 4, base=16, bitRange=30
+sfr = "DBGU_CSR.RX", 	"Memory", 0xfffff214, 4, base=16, bitRange=31
+sfr = "DBGU_RHR", 	"Memory", 0xfffff218, 4, base=16
+sfr = "DBGU_THR", 	"Memory", 0xfffff21c, 4, base=16
+sfr = "DBGU_BRGR", 	"Memory", 0xfffff220, 4, base=16
+sfr = "DBGU_CIDR", 	"Memory", 0xfffff240, 4, base=16
+sfr = "DBGU_EXID", 	"Memory", 0xfffff244, 4, base=16
+sfr = "DBGU_FNTR", 	"Memory", 0xfffff248, 4, base=16
+sfr = "DBGU_FNTR.NTRST", 	"Memory", 0xfffff248, 4, base=16, bitRange=0
+; ========== Register definition for PIOA peripheral ========== 
+sfr = "PIOA_PER", 	"Memory", 0xfffff400, 4, base=16
+sfr = "PIOA_PDR", 	"Memory", 0xfffff404, 4, base=16
+sfr = "PIOA_PSR", 	"Memory", 0xfffff408, 4, base=16
+sfr = "PIOA_OER", 	"Memory", 0xfffff410, 4, base=16
+sfr = "PIOA_ODR", 	"Memory", 0xfffff414, 4, base=16
+sfr = "PIOA_OSR", 	"Memory", 0xfffff418, 4, base=16
+sfr = "PIOA_IFER", 	"Memory", 0xfffff420, 4, base=16
+sfr = "PIOA_IFDR", 	"Memory", 0xfffff424, 4, base=16
+sfr = "PIOA_IFSR", 	"Memory", 0xfffff428, 4, base=16
+sfr = "PIOA_SODR", 	"Memory", 0xfffff430, 4, base=16
+sfr = "PIOA_CODR", 	"Memory", 0xfffff434, 4, base=16
+sfr = "PIOA_ODSR", 	"Memory", 0xfffff438, 4, base=16
+sfr = "PIOA_PDSR", 	"Memory", 0xfffff43c, 4, base=16
+sfr = "PIOA_IER", 	"Memory", 0xfffff440, 4, base=16
+sfr = "PIOA_IDR", 	"Memory", 0xfffff444, 4, base=16
+sfr = "PIOA_IMR", 	"Memory", 0xfffff448, 4, base=16
+sfr = "PIOA_ISR", 	"Memory", 0xfffff44c, 4, base=16
+sfr = "PIOA_MDER", 	"Memory", 0xfffff450, 4, base=16
+sfr = "PIOA_MDDR", 	"Memory", 0xfffff454, 4, base=16
+sfr = "PIOA_MDSR", 	"Memory", 0xfffff458, 4, base=16
+sfr = "PIOA_PPUDR", 	"Memory", 0xfffff460, 4, base=16
+sfr = "PIOA_PPUER", 	"Memory", 0xfffff464, 4, base=16
+sfr = "PIOA_PPUSR", 	"Memory", 0xfffff468, 4, base=16
+sfr = "PIOA_ASR", 	"Memory", 0xfffff470, 4, base=16
+sfr = "PIOA_BSR", 	"Memory", 0xfffff474, 4, base=16
+sfr = "PIOA_ABSR", 	"Memory", 0xfffff478, 4, base=16
+sfr = "PIOA_OWER", 	"Memory", 0xfffff4a0, 4, base=16
+sfr = "PIOA_OWDR", 	"Memory", 0xfffff4a4, 4, base=16
+sfr = "PIOA_OWSR", 	"Memory", 0xfffff4a8, 4, base=16
+; ========== Register definition for PIOB peripheral ========== 
+sfr = "PIOB_PER", 	"Memory", 0xfffff600, 4, base=16
+sfr = "PIOB_PDR", 	"Memory", 0xfffff604, 4, base=16
+sfr = "PIOB_PSR", 	"Memory", 0xfffff608, 4, base=16
+sfr = "PIOB_OER", 	"Memory", 0xfffff610, 4, base=16
+sfr = "PIOB_ODR", 	"Memory", 0xfffff614, 4, base=16
+sfr = "PIOB_OSR", 	"Memory", 0xfffff618, 4, base=16
+sfr = "PIOB_IFER", 	"Memory", 0xfffff620, 4, base=16
+sfr = "PIOB_IFDR", 	"Memory", 0xfffff624, 4, base=16
+sfr = "PIOB_IFSR", 	"Memory", 0xfffff628, 4, base=16
+sfr = "PIOB_SODR", 	"Memory", 0xfffff630, 4, base=16
+sfr = "PIOB_CODR", 	"Memory", 0xfffff634, 4, base=16
+sfr = "PIOB_ODSR", 	"Memory", 0xfffff638, 4, base=16
+sfr = "PIOB_PDSR", 	"Memory", 0xfffff63c, 4, base=16
+sfr = "PIOB_IER", 	"Memory", 0xfffff640, 4, base=16
+sfr = "PIOB_IDR", 	"Memory", 0xfffff644, 4, base=16
+sfr = "PIOB_IMR", 	"Memory", 0xfffff648, 4, base=16
+sfr = "PIOB_ISR", 	"Memory", 0xfffff64c, 4, base=16
+sfr = "PIOB_MDER", 	"Memory", 0xfffff650, 4, base=16
+sfr = "PIOB_MDDR", 	"Memory", 0xfffff654, 4, base=16
+sfr = "PIOB_MDSR", 	"Memory", 0xfffff658, 4, base=16
+sfr = "PIOB_PPUDR", 	"Memory", 0xfffff660, 4, base=16
+sfr = "PIOB_PPUER", 	"Memory", 0xfffff664, 4, base=16
+sfr = "PIOB_PPUSR", 	"Memory", 0xfffff668, 4, base=16
+sfr = "PIOB_ASR", 	"Memory", 0xfffff670, 4, base=16
+sfr = "PIOB_BSR", 	"Memory", 0xfffff674, 4, base=16
+sfr = "PIOB_ABSR", 	"Memory", 0xfffff678, 4, base=16
+sfr = "PIOB_OWER", 	"Memory", 0xfffff6a0, 4, base=16
+sfr = "PIOB_OWDR", 	"Memory", 0xfffff6a4, 4, base=16
+sfr = "PIOB_OWSR", 	"Memory", 0xfffff6a8, 4, base=16
+; ========== Register definition for CKGR peripheral ========== 
+sfr = "CKGR_MOR", 	"Memory", 0xfffffc20, 4, base=16
+sfr = "CKGR_MOR.MOSCEN", 	"Memory", 0xfffffc20, 4, base=16, bitRange=0
+sfr = "CKGR_MOR.OSCBYPASS", 	"Memory", 0xfffffc20, 4, base=16, bitRange=1
+sfr = "CKGR_MOR.OSCOUNT", 	"Memory", 0xfffffc20, 4, base=16, bitRange=8-15
+sfr = "CKGR_MCFR", 	"Memory", 0xfffffc24, 4, base=16
+sfr = "CKGR_MCFR.MAINF", 	"Memory", 0xfffffc24, 4, base=16, bitRange=0-15
+sfr = "CKGR_MCFR.MAINRDY", 	"Memory", 0xfffffc24, 4, base=16, bitRange=16
+sfr = "CKGR_PLLR", 	"Memory", 0xfffffc2c, 4, base=16
+sfr = "CKGR_PLLR.DIV", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=0-7
+sfr = "CKGR_PLLR.PLLCOUNT", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=8-13
+sfr = "CKGR_PLLR.OUT", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=14-15
+sfr = "CKGR_PLLR.MUL", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=16-26
+sfr = "CKGR_PLLR.USBDIV", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=28-29
+; ========== Register definition for PMC peripheral ========== 
+sfr = "PMC_SCER", 	"Memory", 0xfffffc00, 4, base=16
+sfr = "PMC_SCER.PCK", 	"Memory", 0xfffffc00, 4, base=16, bitRange=0
+sfr = "PMC_SCER.UDP", 	"Memory", 0xfffffc00, 4, base=16, bitRange=7
+sfr = "PMC_SCER.PCK0", 	"Memory", 0xfffffc00, 4, base=16, bitRange=8
+sfr = "PMC_SCER.PCK1", 	"Memory", 0xfffffc00, 4, base=16, bitRange=9
+sfr = "PMC_SCER.PCK2", 	"Memory", 0xfffffc00, 4, base=16, bitRange=10
+sfr = "PMC_SCER.PCK3", 	"Memory", 0xfffffc00, 4, base=16, bitRange=11
+sfr = "PMC_SCDR", 	"Memory", 0xfffffc04, 4, base=16
+sfr = "PMC_SCDR.PCK", 	"Memory", 0xfffffc04, 4, base=16, bitRange=0
+sfr = "PMC_SCDR.UDP", 	"Memory", 0xfffffc04, 4, base=16, bitRange=7
+sfr = "PMC_SCDR.PCK0", 	"Memory", 0xfffffc04, 4, base=16, bitRange=8
+sfr = "PMC_SCDR.PCK1", 	"Memory", 0xfffffc04, 4, base=16, bitRange=9
+sfr = "PMC_SCDR.PCK2", 	"Memory", 0xfffffc04, 4, base=16, bitRange=10
+sfr = "PMC_SCDR.PCK3", 	"Memory", 0xfffffc04, 4, base=16, bitRange=11
+sfr = "PMC_SCSR", 	"Memory", 0xfffffc08, 4, base=16
+sfr = "PMC_SCSR.PCK", 	"Memory", 0xfffffc08, 4, base=16, bitRange=0
+sfr = "PMC_SCSR.UDP", 	"Memory", 0xfffffc08, 4, base=16, bitRange=7
+sfr = "PMC_SCSR.PCK0", 	"Memory", 0xfffffc08, 4, base=16, bitRange=8
+sfr = "PMC_SCSR.PCK1", 	"Memory", 0xfffffc08, 4, base=16, bitRange=9
+sfr = "PMC_SCSR.PCK2", 	"Memory", 0xfffffc08, 4, base=16, bitRange=10
+sfr = "PMC_SCSR.PCK3", 	"Memory", 0xfffffc08, 4, base=16, bitRange=11
+sfr = "PMC_PCER", 	"Memory", 0xfffffc10, 4, base=16
+sfr = "PMC_PCDR", 	"Memory", 0xfffffc14, 4, base=16
+sfr = "PMC_PCSR", 	"Memory", 0xfffffc18, 4, base=16
+sfr = "PMC_MOR", 	"Memory", 0xfffffc20, 4, base=16
+sfr = "PMC_MOR.MOSCEN", 	"Memory", 0xfffffc20, 4, base=16, bitRange=0
+sfr = "PMC_MOR.OSCBYPASS", 	"Memory", 0xfffffc20, 4, base=16, bitRange=1
+sfr = "PMC_MOR.OSCOUNT", 	"Memory", 0xfffffc20, 4, base=16, bitRange=8-15
+sfr = "PMC_MCFR", 	"Memory", 0xfffffc24, 4, base=16
+sfr = "PMC_MCFR.MAINF", 	"Memory", 0xfffffc24, 4, base=16, bitRange=0-15
+sfr = "PMC_MCFR.MAINRDY", 	"Memory", 0xfffffc24, 4, base=16, bitRange=16
+sfr = "PMC_PLLR", 	"Memory", 0xfffffc2c, 4, base=16
+sfr = "PMC_PLLR.DIV", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=0-7
+sfr = "PMC_PLLR.PLLCOUNT", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=8-13
+sfr = "PMC_PLLR.OUT", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=14-15
+sfr = "PMC_PLLR.MUL", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=16-26
+sfr = "PMC_PLLR.USBDIV", 	"Memory", 0xfffffc2c, 4, base=16, bitRange=28-29
+sfr = "PMC_MCKR", 	"Memory", 0xfffffc30, 4, base=16
+sfr = "PMC_MCKR.CSS", 	"Memory", 0xfffffc30, 4, base=16, bitRange=0-1
+sfr = "PMC_MCKR.PRES", 	"Memory", 0xfffffc30, 4, base=16, bitRange=2-4
+sfr = "PMC_PCKR", 	"Memory", 0xfffffc40, 4, base=16
+sfr = "PMC_PCKR.CSS", 	"Memory", 0xfffffc40, 4, base=16, bitRange=0-1
+sfr = "PMC_PCKR.PRES", 	"Memory", 0xfffffc40, 4, base=16, bitRange=2-4
+sfr = "PMC_IER", 	"Memory", 0xfffffc60, 4, base=16
+sfr = "PMC_IER.MOSCS", 	"Memory", 0xfffffc60, 4, base=16, bitRange=0
+sfr = "PMC_IER.LOCK", 	"Memory", 0xfffffc60, 4, base=16, bitRange=2
+sfr = "PMC_IER.MCKRDY", 	"Memory", 0xfffffc60, 4, base=16, bitRange=3
+sfr = "PMC_IER.PCK0RDY", 	"Memory", 0xfffffc60, 4, base=16, bitRange=8
+sfr = "PMC_IER.PCK1RDY", 	"Memory", 0xfffffc60, 4, base=16, bitRange=9
+sfr = "PMC_IER.PCK2RDY", 	"Memory", 0xfffffc60, 4, base=16, bitRange=10
+sfr = "PMC_IER.PCK3RDY", 	"Memory", 0xfffffc60, 4, base=16, bitRange=11
+sfr = "PMC_IDR", 	"Memory", 0xfffffc64, 4, base=16
+sfr = "PMC_IDR.MOSCS", 	"Memory", 0xfffffc64, 4, base=16, bitRange=0
+sfr = "PMC_IDR.LOCK", 	"Memory", 0xfffffc64, 4, base=16, bitRange=2
+sfr = "PMC_IDR.MCKRDY", 	"Memory", 0xfffffc64, 4, base=16, bitRange=3
+sfr = "PMC_IDR.PCK0RDY", 	"Memory", 0xfffffc64, 4, base=16, bitRange=8
+sfr = "PMC_IDR.PCK1RDY", 	"Memory", 0xfffffc64, 4, base=16, bitRange=9
+sfr = "PMC_IDR.PCK2RDY", 	"Memory", 0xfffffc64, 4, base=16, bitRange=10
+sfr = "PMC_IDR.PCK3RDY", 	"Memory", 0xfffffc64, 4, base=16, bitRange=11
+sfr = "PMC_SR", 	"Memory", 0xfffffc68, 4, base=16
+sfr = "PMC_SR.MOSCS", 	"Memory", 0xfffffc68, 4, base=16, bitRange=0
+sfr = "PMC_SR.LOCK", 	"Memory", 0xfffffc68, 4, base=16, bitRange=2
+sfr = "PMC_SR.MCKRDY", 	"Memory", 0xfffffc68, 4, base=16, bitRange=3
+sfr = "PMC_SR.PCK0RDY", 	"Memory", 0xfffffc68, 4, base=16, bitRange=8
+sfr = "PMC_SR.PCK1RDY", 	"Memory", 0xfffffc68, 4, base=16, bitRange=9
+sfr = "PMC_SR.PCK2RDY", 	"Memory", 0xfffffc68, 4, base=16, bitRange=10
+sfr = "PMC_SR.PCK3RDY", 	"Memory", 0xfffffc68, 4, base=16, bitRange=11
+sfr = "PMC_IMR", 	"Memory", 0xfffffc6c, 4, base=16
+sfr = "PMC_IMR.MOSCS", 	"Memory", 0xfffffc6c, 4, base=16, bitRange=0
+sfr = "PMC_IMR.LOCK", 	"Memory", 0xfffffc6c, 4, base=16, bitRange=2
+sfr = "PMC_IMR.MCKRDY", 	"Memory", 0xfffffc6c, 4, base=16, bitRange=3
+sfr = "PMC_IMR.PCK0RDY", 	"Memory", 0xfffffc6c, 4, base=16, bitRange=8
+sfr = "PMC_IMR.PCK1RDY", 	"Memory", 0xfffffc6c, 4, base=16, bitRange=9
+sfr = "PMC_IMR.PCK2RDY", 	"Memory", 0xfffffc6c, 4, base=16, bitRange=10
+sfr = "PMC_IMR.PCK3RDY", 	"Memory", 0xfffffc6c, 4, base=16, bitRange=11
+; ========== Register definition for RSTC peripheral ========== 
+sfr = "RSTC_RCR", 	"Memory", 0xfffffd00, 4, base=16
+sfr = "RSTC_RCR.PROCRST", 	"Memory", 0xfffffd00, 4, base=16, bitRange=0
+sfr = "RSTC_RCR.PERRST", 	"Memory", 0xfffffd00, 4, base=16, bitRange=2
+sfr = "RSTC_RCR.EXTRST", 	"Memory", 0xfffffd00, 4, base=16, bitRange=3
+sfr = "RSTC_RCR.KEY", 	"Memory", 0xfffffd00, 4, base=16, bitRange=24-31
+sfr = "RSTC_RSR", 	"Memory", 0xfffffd04, 4, base=16
+sfr = "RSTC_RSR.URSTS", 	"Memory", 0xfffffd04, 4, base=16, bitRange=0
+sfr = "RSTC_RSR.BODSTS", 	"Memory", 0xfffffd04, 4, base=16, bitRange=1
+sfr = "RSTC_RSR.RSTTYP", 	"Memory", 0xfffffd04, 4, base=16, bitRange=8-10
+sfr = "RSTC_RSR.NRSTL", 	"Memory", 0xfffffd04, 4, base=16, bitRange=16
+sfr = "RSTC_RSR.SRCMP", 	"Memory", 0xfffffd04, 4, base=16, bitRange=17
+sfr = "RSTC_RMR", 	"Memory", 0xfffffd08, 4, base=16
+sfr = "RSTC_RMR.URSTEN", 	"Memory", 0xfffffd08, 4, base=16, bitRange=0
+sfr = "RSTC_RMR.URSTIEN", 	"Memory", 0xfffffd08, 4, base=16, bitRange=4
+sfr = "RSTC_RMR.ERSTL", 	"Memory", 0xfffffd08, 4, base=16, bitRange=8-11
+sfr = "RSTC_RMR.BODIEN", 	"Memory", 0xfffffd08, 4, base=16, bitRange=16
+sfr = "RSTC_RMR.KEY", 	"Memory", 0xfffffd08, 4, base=16, bitRange=24-31
+; ========== Register definition for RTTC peripheral ========== 
+sfr = "RTTC_RTMR", 	"Memory", 0xfffffd20, 4, base=16
+sfr = "RTTC_RTMR.RTPRES", 	"Memory", 0xfffffd20, 4, base=16, bitRange=0-15
+sfr = "RTTC_RTMR.ALMIEN", 	"Memory", 0xfffffd20, 4, base=16, bitRange=16
+sfr = "RTTC_RTMR.RTTINCIEN", 	"Memory", 0xfffffd20, 4, base=16, bitRange=17
+sfr = "RTTC_RTMR.RTTRST", 	"Memory", 0xfffffd20, 4, base=16, bitRange=18
+sfr = "RTTC_RTAR", 	"Memory", 0xfffffd24, 4, base=16
+sfr = "RTTC_RTAR.ALMV", 	"Memory", 0xfffffd24, 4, base=16, bitRange=0-31
+sfr = "RTTC_RTVR", 	"Memory", 0xfffffd28, 4, base=16
+sfr = "RTTC_RTVR.CRTV", 	"Memory", 0xfffffd28, 4, base=16, bitRange=0-31
+sfr = "RTTC_RTSR", 	"Memory", 0xfffffd2c, 4, base=16
+sfr = "RTTC_RTSR.ALMS", 	"Memory", 0xfffffd2c, 4, base=16, bitRange=0
+sfr = "RTTC_RTSR.RTTINC", 	"Memory", 0xfffffd2c, 4, base=16, bitRange=1
+; ========== Register definition for PITC peripheral ========== 
+sfr = "PITC_PIMR", 	"Memory", 0xfffffd30, 4, base=16
+sfr = "PITC_PIMR.PIV", 	"Memory", 0xfffffd30, 4, base=16, bitRange=0-19
+sfr = "PITC_PIMR.PITEN", 	"Memory", 0xfffffd30, 4, base=16, bitRange=24
+sfr = "PITC_PIMR.PITIEN", 	"Memory", 0xfffffd30, 4, base=16, bitRange=25
+sfr = "PITC_PISR", 	"Memory", 0xfffffd34, 4, base=16
+sfr = "PITC_PISR.PITS", 	"Memory", 0xfffffd34, 4, base=16, bitRange=0
+sfr = "PITC_PIVR", 	"Memory", 0xfffffd38, 4, base=16
+sfr = "PITC_PIVR.CPIV", 	"Memory", 0xfffffd38, 4, base=16, bitRange=0-19
+sfr = "PITC_PIVR.PICNT", 	"Memory", 0xfffffd38, 4, base=16, bitRange=20-31
+sfr = "PITC_PIIR", 	"Memory", 0xfffffd3c, 4, base=16
+sfr = "PITC_PIIR.CPIV", 	"Memory", 0xfffffd3c, 4, base=16, bitRange=0-19
+sfr = "PITC_PIIR.PICNT", 	"Memory", 0xfffffd3c, 4, base=16, bitRange=20-31
+; ========== Register definition for WDTC peripheral ========== 
+sfr = "WDTC_WDCR", 	"Memory", 0xfffffd40, 4, base=16
+sfr = "WDTC_WDCR.WDRSTT", 	"Memory", 0xfffffd40, 4, base=16, bitRange=0
+sfr = "WDTC_WDCR.KEY", 	"Memory", 0xfffffd40, 4, base=16, bitRange=24-31
+sfr = "WDTC_WDMR", 	"Memory", 0xfffffd44, 4, base=16
+sfr = "WDTC_WDMR.WDV", 	"Memory", 0xfffffd44, 4, base=16, bitRange=0-11
+sfr = "WDTC_WDMR.WDFIEN", 	"Memory", 0xfffffd44, 4, base=16, bitRange=12
+sfr = "WDTC_WDMR.WDRSTEN", 	"Memory", 0xfffffd44, 4, base=16, bitRange=13
+sfr = "WDTC_WDMR.WDRPROC", 	"Memory", 0xfffffd44, 4, base=16, bitRange=14
+sfr = "WDTC_WDMR.WDDIS", 	"Memory", 0xfffffd44, 4, base=16, bitRange=15
+sfr = "WDTC_WDMR.WDD", 	"Memory", 0xfffffd44, 4, base=16, bitRange=16-27
+sfr = "WDTC_WDMR.WDDBGHLT", 	"Memory", 0xfffffd44, 4, base=16, bitRange=28
+sfr = "WDTC_WDMR.WDIDLEHLT", 	"Memory", 0xfffffd44, 4, base=16, bitRange=29
+sfr = "WDTC_WDSR", 	"Memory", 0xfffffd48, 4, base=16
+sfr = "WDTC_WDSR.WDUNF", 	"Memory", 0xfffffd48, 4, base=16, bitRange=0
+sfr = "WDTC_WDSR.WDERR", 	"Memory", 0xfffffd48, 4, base=16, bitRange=1
+; ========== Register definition for VREG peripheral ========== 
+sfr = "VREG_MR", 	"Memory", 0xfffffd60, 4, base=16
+sfr = "VREG_MR.PSTDBY", 	"Memory", 0xfffffd60, 4, base=16, bitRange=0
+; ========== Register definition for MC peripheral ========== 
+sfr = "MC_RCR", 	"Memory", 0xffffff00, 4, base=16
+sfr = "MC_RCR.RCB", 	"Memory", 0xffffff00, 4, base=16, bitRange=0
+sfr = "MC_ASR", 	"Memory", 0xffffff04, 4, base=16
+sfr = "MC_ASR.UNDADD", 	"Memory", 0xffffff04, 4, base=16, bitRange=0
+sfr = "MC_ASR.MISADD", 	"Memory", 0xffffff04, 4, base=16, bitRange=1
+sfr = "MC_ASR.ABTSZ", 	"Memory", 0xffffff04, 4, base=16, bitRange=8-9
+sfr = "MC_ASR.ABTTYP", 	"Memory", 0xffffff04, 4, base=16, bitRange=10-11
+sfr = "MC_ASR.MST0", 	"Memory", 0xffffff04, 4, base=16, bitRange=16
+sfr = "MC_ASR.MST1", 	"Memory", 0xffffff04, 4, base=16, bitRange=17
+sfr = "MC_ASR.SVMST0", 	"Memory", 0xffffff04, 4, base=16, bitRange=24
+sfr = "MC_ASR.SVMST1", 	"Memory", 0xffffff04, 4, base=16, bitRange=25
+sfr = "MC_AASR", 	"Memory", 0xffffff08, 4, base=16
+sfr = "MC_FMR", 	"Memory", 0xffffff60, 4, base=16
+sfr = "MC_FMR.FRDY", 	"Memory", 0xffffff60, 4, base=16, bitRange=0
+sfr = "MC_FMR.LOCKE", 	"Memory", 0xffffff60, 4, base=16, bitRange=2
+sfr = "MC_FMR.PROGE", 	"Memory", 0xffffff60, 4, base=16, bitRange=3
+sfr = "MC_FMR.NEBP", 	"Memory", 0xffffff60, 4, base=16, bitRange=7
+sfr = "MC_FMR.FWS", 	"Memory", 0xffffff60, 4, base=16, bitRange=8-9
+sfr = "MC_FMR.FMCN", 	"Memory", 0xffffff60, 4, base=16, bitRange=16-23
+sfr = "MC_FCR", 	"Memory", 0xffffff64, 4, base=16
+sfr = "MC_FCR.FCMD", 	"Memory", 0xffffff64, 4, base=16, bitRange=0-3
+sfr = "MC_FCR.PAGEN", 	"Memory", 0xffffff64, 4, base=16, bitRange=8-17
+sfr = "MC_FCR.KEY", 	"Memory", 0xffffff64, 4, base=16, bitRange=24-31
+sfr = "MC_FSR", 	"Memory", 0xffffff68, 4, base=16
+sfr = "MC_FSR.FRDY", 	"Memory", 0xffffff68, 4, base=16, bitRange=0
+sfr = "MC_FSR.LOCKE", 	"Memory", 0xffffff68, 4, base=16, bitRange=2
+sfr = "MC_FSR.PROGE", 	"Memory", 0xffffff68, 4, base=16, bitRange=3
+sfr = "MC_FSR.SECURITY", 	"Memory", 0xffffff68, 4, base=16, bitRange=4
+sfr = "MC_FSR.GPNVM0", 	"Memory", 0xffffff68, 4, base=16, bitRange=8
+sfr = "MC_FSR.GPNVM1", 	"Memory", 0xffffff68, 4, base=16, bitRange=9
+sfr = "MC_FSR.GPNVM2", 	"Memory", 0xffffff68, 4, base=16, bitRange=10
+sfr = "MC_FSR.GPNVM3", 	"Memory", 0xffffff68, 4, base=16, bitRange=11
+sfr = "MC_FSR.GPNVM4", 	"Memory", 0xffffff68, 4, base=16, bitRange=12
+sfr = "MC_FSR.GPNVM5", 	"Memory", 0xffffff68, 4, base=16, bitRange=13
+sfr = "MC_FSR.GPNVM6", 	"Memory", 0xffffff68, 4, base=16, bitRange=14
+sfr = "MC_FSR.GPNVM7", 	"Memory", 0xffffff68, 4, base=16, bitRange=15
+sfr = "MC_FSR.LOCKS0", 	"Memory", 0xffffff68, 4, base=16, bitRange=16
+sfr = "MC_FSR.LOCKS1", 	"Memory", 0xffffff68, 4, base=16, bitRange=17
+sfr = "MC_FSR.LOCKS2", 	"Memory", 0xffffff68, 4, base=16, bitRange=18
+sfr = "MC_FSR.LOCKS3", 	"Memory", 0xffffff68, 4, base=16, bitRange=19
+sfr = "MC_FSR.LOCKS4", 	"Memory", 0xffffff68, 4, base=16, bitRange=20
+sfr = "MC_FSR.LOCKS5", 	"Memory", 0xffffff68, 4, base=16, bitRange=21
+sfr = "MC_FSR.LOCKS6", 	"Memory", 0xffffff68, 4, base=16, bitRange=22
+sfr = "MC_FSR.LOCKS7", 	"Memory", 0xffffff68, 4, base=16, bitRange=23
+sfr = "MC_FSR.LOCKS8", 	"Memory", 0xffffff68, 4, base=16, bitRange=24
+sfr = "MC_FSR.LOCKS9", 	"Memory", 0xffffff68, 4, base=16, bitRange=25
+sfr = "MC_FSR.LOCKS10", 	"Memory", 0xffffff68, 4, base=16, bitRange=26
+sfr = "MC_FSR.LOCKS11", 	"Memory", 0xffffff68, 4, base=16, bitRange=27
+sfr = "MC_FSR.LOCKS12", 	"Memory", 0xffffff68, 4, base=16, bitRange=28
+sfr = "MC_FSR.LOCKS13", 	"Memory", 0xffffff68, 4, base=16, bitRange=29
+sfr = "MC_FSR.LOCKS14", 	"Memory", 0xffffff68, 4, base=16, bitRange=30
+sfr = "MC_FSR.LOCKS15", 	"Memory", 0xffffff68, 4, base=16, bitRange=31
+; ========== Register definition for PDC_SPI1 peripheral ========== 
+sfr = "SPI1_RPR", 	"Memory", 0xfffe4100, 4, base=16
+sfr = "SPI1_RCR", 	"Memory", 0xfffe4104, 4, base=16
+sfr = "SPI1_TPR", 	"Memory", 0xfffe4108, 4, base=16
+sfr = "SPI1_TCR", 	"Memory", 0xfffe410c, 4, base=16
+sfr = "SPI1_RNPR", 	"Memory", 0xfffe4110, 4, base=16
+sfr = "SPI1_RNCR", 	"Memory", 0xfffe4114, 4, base=16
+sfr = "SPI1_TNPR", 	"Memory", 0xfffe4118, 4, base=16
+sfr = "SPI1_TNCR", 	"Memory", 0xfffe411c, 4, base=16
+sfr = "SPI1_PTCR", 	"Memory", 0xfffe4120, 4, base=16
+sfr = "SPI1_PTCR.RXTEN", 	"Memory", 0xfffe4120, 4, base=16, bitRange=0
+sfr = "SPI1_PTCR.RXTDIS", 	"Memory", 0xfffe4120, 4, base=16, bitRange=1
+sfr = "SPI1_PTCR.TXTEN", 	"Memory", 0xfffe4120, 4, base=16, bitRange=8
+sfr = "SPI1_PTCR.TXTDIS", 	"Memory", 0xfffe4120, 4, base=16, bitRange=9
+sfr = "SPI1_PTSR", 	"Memory", 0xfffe4124, 4, base=16
+sfr = "SPI1_PTSR.RXTEN", 	"Memory", 0xfffe4124, 4, base=16, bitRange=0
+sfr = "SPI1_PTSR.TXTEN", 	"Memory", 0xfffe4124, 4, base=16, bitRange=8
+; ========== Register definition for SPI1 peripheral ========== 
+sfr = "SPI1_CR", 	"Memory", 0xfffe4000, 4, base=16
+sfr = "SPI1_CR.SPIEN", 	"Memory", 0xfffe4000, 4, base=16, bitRange=0
+sfr = "SPI1_CR.SPIDIS", 	"Memory", 0xfffe4000, 4, base=16, bitRange=1
+sfr = "SPI1_CR.SWRST", 	"Memory", 0xfffe4000, 4, base=16, bitRange=7
+sfr = "SPI1_CR.LASTXFER", 	"Memory", 0xfffe4000, 4, base=16, bitRange=24
+sfr = "SPI1_MR", 	"Memory", 0xfffe4004, 4, base=16
+sfr = "SPI1_MR.MSTR", 	"Memory", 0xfffe4004, 4, base=16, bitRange=0
+sfr = "SPI1_MR.PS", 	"Memory", 0xfffe4004, 4, base=16, bitRange=1
+sfr = "SPI1_MR.PCSDEC", 	"Memory", 0xfffe4004, 4, base=16, bitRange=2
+sfr = "SPI1_MR.FDIV", 	"Memory", 0xfffe4004, 4, base=16, bitRange=3
+sfr = "SPI1_MR.MODFDIS", 	"Memory", 0xfffe4004, 4, base=16, bitRange=4
+sfr = "SPI1_MR.LLB", 	"Memory", 0xfffe4004, 4, base=16, bitRange=7
+sfr = "SPI1_MR.PCS", 	"Memory", 0xfffe4004, 4, base=16, bitRange=16-19
+sfr = "SPI1_MR.DLYBCS", 	"Memory", 0xfffe4004, 4, base=16, bitRange=24-31
+sfr = "SPI1_RDR", 	"Memory", 0xfffe4008, 4, base=16
+sfr = "SPI1_RDR.RD", 	"Memory", 0xfffe4008, 4, base=16, bitRange=0-15
+sfr = "SPI1_RDR.RPCS", 	"Memory", 0xfffe4008, 4, base=16, bitRange=16-19
+sfr = "SPI1_TDR", 	"Memory", 0xfffe400c, 4, base=16
+sfr = "SPI1_TDR.TD", 	"Memory", 0xfffe400c, 4, base=16, bitRange=0-15
+sfr = "SPI1_TDR.TPCS", 	"Memory", 0xfffe400c, 4, base=16, bitRange=16-19
+sfr = "SPI1_TDR.LASTXFER", 	"Memory", 0xfffe400c, 4, base=16, bitRange=24
+sfr = "SPI1_SR", 	"Memory", 0xfffe4010, 4, base=16
+sfr = "SPI1_SR.RDRF", 	"Memory", 0xfffe4010, 4, base=16, bitRange=0
+sfr = "SPI1_SR.TDRE", 	"Memory", 0xfffe4010, 4, base=16, bitRange=1
+sfr = "SPI1_SR.MODF", 	"Memory", 0xfffe4010, 4, base=16, bitRange=2
+sfr = "SPI1_SR.OVRES", 	"Memory", 0xfffe4010, 4, base=16, bitRange=3
+sfr = "SPI1_SR.ENDRX", 	"Memory", 0xfffe4010, 4, base=16, bitRange=4
+sfr = "SPI1_SR.ENDTX", 	"Memory", 0xfffe4010, 4, base=16, bitRange=5
+sfr = "SPI1_SR.RXBUFF", 	"Memory", 0xfffe4010, 4, base=16, bitRange=6
+sfr = "SPI1_SR.TXBUFE", 	"Memory", 0xfffe4010, 4, base=16, bitRange=7
+sfr = "SPI1_SR.NSSR", 	"Memory", 0xfffe4010, 4, base=16, bitRange=8
+sfr = "SPI1_SR.TXEMPTY", 	"Memory", 0xfffe4010, 4, base=16, bitRange=9
+sfr = "SPI1_SR.SPIENS", 	"Memory", 0xfffe4010, 4, base=16, bitRange=16
+sfr = "SPI1_IER", 	"Memory", 0xfffe4014, 4, base=16
+sfr = "SPI1_IER.RDRF", 	"Memory", 0xfffe4014, 4, base=16, bitRange=0
+sfr = "SPI1_IER.TDRE", 	"Memory", 0xfffe4014, 4, base=16, bitRange=1
+sfr = "SPI1_IER.MODF", 	"Memory", 0xfffe4014, 4, base=16, bitRange=2
+sfr = "SPI1_IER.OVRES", 	"Memory", 0xfffe4014, 4, base=16, bitRange=3
+sfr = "SPI1_IER.ENDRX", 	"Memory", 0xfffe4014, 4, base=16, bitRange=4
+sfr = "SPI1_IER.ENDTX", 	"Memory", 0xfffe4014, 4, base=16, bitRange=5
+sfr = "SPI1_IER.RXBUFF", 	"Memory", 0xfffe4014, 4, base=16, bitRange=6
+sfr = "SPI1_IER.TXBUFE", 	"Memory", 0xfffe4014, 4, base=16, bitRange=7
+sfr = "SPI1_IER.NSSR", 	"Memory", 0xfffe4014, 4, base=16, bitRange=8
+sfr = "SPI1_IER.TXEMPTY", 	"Memory", 0xfffe4014, 4, base=16, bitRange=9
+sfr = "SPI1_IDR", 	"Memory", 0xfffe4018, 4, base=16
+sfr = "SPI1_IDR.RDRF", 	"Memory", 0xfffe4018, 4, base=16, bitRange=0
+sfr = "SPI1_IDR.TDRE", 	"Memory", 0xfffe4018, 4, base=16, bitRange=1
+sfr = "SPI1_IDR.MODF", 	"Memory", 0xfffe4018, 4, base=16, bitRange=2
+sfr = "SPI1_IDR.OVRES", 	"Memory", 0xfffe4018, 4, base=16, bitRange=3
+sfr = "SPI1_IDR.ENDRX", 	"Memory", 0xfffe4018, 4, base=16, bitRange=4
+sfr = "SPI1_IDR.ENDTX", 	"Memory", 0xfffe4018, 4, base=16, bitRange=5
+sfr = "SPI1_IDR.RXBUFF", 	"Memory", 0xfffe4018, 4, base=16, bitRange=6
+sfr = "SPI1_IDR.TXBUFE", 	"Memory", 0xfffe4018, 4, base=16, bitRange=7
+sfr = "SPI1_IDR.NSSR", 	"Memory", 0xfffe4018, 4, base=16, bitRange=8
+sfr = "SPI1_IDR.TXEMPTY", 	"Memory", 0xfffe4018, 4, base=16, bitRange=9
+sfr = "SPI1_IMR", 	"Memory", 0xfffe401c, 4, base=16
+sfr = "SPI1_IMR.RDRF", 	"Memory", 0xfffe401c, 4, base=16, bitRange=0
+sfr = "SPI1_IMR.TDRE", 	"Memory", 0xfffe401c, 4, base=16, bitRange=1
+sfr = "SPI1_IMR.MODF", 	"Memory", 0xfffe401c, 4, base=16, bitRange=2
+sfr = "SPI1_IMR.OVRES", 	"Memory", 0xfffe401c, 4, base=16, bitRange=3
+sfr = "SPI1_IMR.ENDRX", 	"Memory", 0xfffe401c, 4, base=16, bitRange=4
+sfr = "SPI1_IMR.ENDTX", 	"Memory", 0xfffe401c, 4, base=16, bitRange=5
+sfr = "SPI1_IMR.RXBUFF", 	"Memory", 0xfffe401c, 4, base=16, bitRange=6
+sfr = "SPI1_IMR.TXBUFE", 	"Memory", 0xfffe401c, 4, base=16, bitRange=7
+sfr = "SPI1_IMR.NSSR", 	"Memory", 0xfffe401c, 4, base=16, bitRange=8
+sfr = "SPI1_IMR.TXEMPTY", 	"Memory", 0xfffe401c, 4, base=16, bitRange=9
+sfr = "SPI1_CSR", 	"Memory", 0xfffe4030, 4, base=16
+sfr = "SPI1_CSR.CPOL", 	"Memory", 0xfffe4030, 4, base=16, bitRange=0
+sfr = "SPI1_CSR.NCPHA", 	"Memory", 0xfffe4030, 4, base=16, bitRange=1
+sfr = "SPI1_CSR.CSAAT", 	"Memory", 0xfffe4030, 4, base=16, bitRange=3
+sfr = "SPI1_CSR.BITS", 	"Memory", 0xfffe4030, 4, base=16, bitRange=4-7
+sfr = "SPI1_CSR.SCBR", 	"Memory", 0xfffe4030, 4, base=16, bitRange=8-15
+sfr = "SPI1_CSR.DLYBS", 	"Memory", 0xfffe4030, 4, base=16, bitRange=16-23
+sfr = "SPI1_CSR.DLYBCT", 	"Memory", 0xfffe4030, 4, base=16, bitRange=24-31
+; ========== Register definition for PDC_SPI0 peripheral ========== 
+sfr = "SPI0_RPR", 	"Memory", 0xfffe0100, 4, base=16
+sfr = "SPI0_RCR", 	"Memory", 0xfffe0104, 4, base=16
+sfr = "SPI0_TPR", 	"Memory", 0xfffe0108, 4, base=16
+sfr = "SPI0_TCR", 	"Memory", 0xfffe010c, 4, base=16
+sfr = "SPI0_RNPR", 	"Memory", 0xfffe0110, 4, base=16
+sfr = "SPI0_RNCR", 	"Memory", 0xfffe0114, 4, base=16
+sfr = "SPI0_TNPR", 	"Memory", 0xfffe0118, 4, base=16
+sfr = "SPI0_TNCR", 	"Memory", 0xfffe011c, 4, base=16
+sfr = "SPI0_PTCR", 	"Memory", 0xfffe0120, 4, base=16
+sfr = "SPI0_PTCR.RXTEN", 	"Memory", 0xfffe0120, 4, base=16, bitRange=0
+sfr = "SPI0_PTCR.RXTDIS", 	"Memory", 0xfffe0120, 4, base=16, bitRange=1
+sfr = "SPI0_PTCR.TXTEN", 	"Memory", 0xfffe0120, 4, base=16, bitRange=8
+sfr = "SPI0_PTCR.TXTDIS", 	"Memory", 0xfffe0120, 4, base=16, bitRange=9
+sfr = "SPI0_PTSR", 	"Memory", 0xfffe0124, 4, base=16
+sfr = "SPI0_PTSR.RXTEN", 	"Memory", 0xfffe0124, 4, base=16, bitRange=0
+sfr = "SPI0_PTSR.TXTEN", 	"Memory", 0xfffe0124, 4, base=16, bitRange=8
+; ========== Register definition for SPI0 peripheral ========== 
+sfr = "SPI0_CR", 	"Memory", 0xfffe0000, 4, base=16
+sfr = "SPI0_CR.SPIEN", 	"Memory", 0xfffe0000, 4, base=16, bitRange=0
+sfr = "SPI0_CR.SPIDIS", 	"Memory", 0xfffe0000, 4, base=16, bitRange=1
+sfr = "SPI0_CR.SWRST", 	"Memory", 0xfffe0000, 4, base=16, bitRange=7
+sfr = "SPI0_CR.LASTXFER", 	"Memory", 0xfffe0000, 4, base=16, bitRange=24
+sfr = "SPI0_MR", 	"Memory", 0xfffe0004, 4, base=16
+sfr = "SPI0_MR.MSTR", 	"Memory", 0xfffe0004, 4, base=16, bitRange=0
+sfr = "SPI0_MR.PS", 	"Memory", 0xfffe0004, 4, base=16, bitRange=1
+sfr = "SPI0_MR.PCSDEC", 	"Memory", 0xfffe0004, 4, base=16, bitRange=2
+sfr = "SPI0_MR.FDIV", 	"Memory", 0xfffe0004, 4, base=16, bitRange=3
+sfr = "SPI0_MR.MODFDIS", 	"Memory", 0xfffe0004, 4, base=16, bitRange=4
+sfr = "SPI0_MR.LLB", 	"Memory", 0xfffe0004, 4, base=16, bitRange=7
+sfr = "SPI0_MR.PCS", 	"Memory", 0xfffe0004, 4, base=16, bitRange=16-19
+sfr = "SPI0_MR.DLYBCS", 	"Memory", 0xfffe0004, 4, base=16, bitRange=24-31
+sfr = "SPI0_RDR", 	"Memory", 0xfffe0008, 4, base=16
+sfr = "SPI0_RDR.RD", 	"Memory", 0xfffe0008, 4, base=16, bitRange=0-15
+sfr = "SPI0_RDR.RPCS", 	"Memory", 0xfffe0008, 4, base=16, bitRange=16-19
+sfr = "SPI0_TDR", 	"Memory", 0xfffe000c, 4, base=16
+sfr = "SPI0_TDR.TD", 	"Memory", 0xfffe000c, 4, base=16, bitRange=0-15
+sfr = "SPI0_TDR.TPCS", 	"Memory", 0xfffe000c, 4, base=16, bitRange=16-19
+sfr = "SPI0_TDR.LASTXFER", 	"Memory", 0xfffe000c, 4, base=16, bitRange=24
+sfr = "SPI0_SR", 	"Memory", 0xfffe0010, 4, base=16
+sfr = "SPI0_SR.RDRF", 	"Memory", 0xfffe0010, 4, base=16, bitRange=0
+sfr = "SPI0_SR.TDRE", 	"Memory", 0xfffe0010, 4, base=16, bitRange=1
+sfr = "SPI0_SR.MODF", 	"Memory", 0xfffe0010, 4, base=16, bitRange=2
+sfr = "SPI0_SR.OVRES", 	"Memory", 0xfffe0010, 4, base=16, bitRange=3
+sfr = "SPI0_SR.ENDRX", 	"Memory", 0xfffe0010, 4, base=16, bitRange=4
+sfr = "SPI0_SR.ENDTX", 	"Memory", 0xfffe0010, 4, base=16, bitRange=5
+sfr = "SPI0_SR.RXBUFF", 	"Memory", 0xfffe0010, 4, base=16, bitRange=6
+sfr = "SPI0_SR.TXBUFE", 	"Memory", 0xfffe0010, 4, base=16, bitRange=7
+sfr = "SPI0_SR.NSSR", 	"Memory", 0xfffe0010, 4, base=16, bitRange=8
+sfr = "SPI0_SR.TXEMPTY", 	"Memory", 0xfffe0010, 4, base=16, bitRange=9
+sfr = "SPI0_SR.SPIENS", 	"Memory", 0xfffe0010, 4, base=16, bitRange=16
+sfr = "SPI0_IER", 	"Memory", 0xfffe0014, 4, base=16
+sfr = "SPI0_IER.RDRF", 	"Memory", 0xfffe0014, 4, base=16, bitRange=0
+sfr = "SPI0_IER.TDRE", 	"Memory", 0xfffe0014, 4, base=16, bitRange=1
+sfr = "SPI0_IER.MODF", 	"Memory", 0xfffe0014, 4, base=16, bitRange=2
+sfr = "SPI0_IER.OVRES", 	"Memory", 0xfffe0014, 4, base=16, bitRange=3
+sfr = "SPI0_IER.ENDRX", 	"Memory", 0xfffe0014, 4, base=16, bitRange=4
+sfr = "SPI0_IER.ENDTX", 	"Memory", 0xfffe0014, 4, base=16, bitRange=5
+sfr = "SPI0_IER.RXBUFF", 	"Memory", 0xfffe0014, 4, base=16, bitRange=6
+sfr = "SPI0_IER.TXBUFE", 	"Memory", 0xfffe0014, 4, base=16, bitRange=7
+sfr = "SPI0_IER.NSSR", 	"Memory", 0xfffe0014, 4, base=16, bitRange=8
+sfr = "SPI0_IER.TXEMPTY", 	"Memory", 0xfffe0014, 4, base=16, bitRange=9
+sfr = "SPI0_IDR", 	"Memory", 0xfffe0018, 4, base=16
+sfr = "SPI0_IDR.RDRF", 	"Memory", 0xfffe0018, 4, base=16, bitRange=0
+sfr = "SPI0_IDR.TDRE", 	"Memory", 0xfffe0018, 4, base=16, bitRange=1
+sfr = "SPI0_IDR.MODF", 	"Memory", 0xfffe0018, 4, base=16, bitRange=2
+sfr = "SPI0_IDR.OVRES", 	"Memory", 0xfffe0018, 4, base=16, bitRange=3
+sfr = "SPI0_IDR.ENDRX", 	"Memory", 0xfffe0018, 4, base=16, bitRange=4
+sfr = "SPI0_IDR.ENDTX", 	"Memory", 0xfffe0018, 4, base=16, bitRange=5
+sfr = "SPI0_IDR.RXBUFF", 	"Memory", 0xfffe0018, 4, base=16, bitRange=6
+sfr = "SPI0_IDR.TXBUFE", 	"Memory", 0xfffe0018, 4, base=16, bitRange=7
+sfr = "SPI0_IDR.NSSR", 	"Memory", 0xfffe0018, 4, base=16, bitRange=8
+sfr = "SPI0_IDR.TXEMPTY", 	"Memory", 0xfffe0018, 4, base=16, bitRange=9
+sfr = "SPI0_IMR", 	"Memory", 0xfffe001c, 4, base=16
+sfr = "SPI0_IMR.RDRF", 	"Memory", 0xfffe001c, 4, base=16, bitRange=0
+sfr = "SPI0_IMR.TDRE", 	"Memory", 0xfffe001c, 4, base=16, bitRange=1
+sfr = "SPI0_IMR.MODF", 	"Memory", 0xfffe001c, 4, base=16, bitRange=2
+sfr = "SPI0_IMR.OVRES", 	"Memory", 0xfffe001c, 4, base=16, bitRange=3
+sfr = "SPI0_IMR.ENDRX", 	"Memory", 0xfffe001c, 4, base=16, bitRange=4
+sfr = "SPI0_IMR.ENDTX", 	"Memory", 0xfffe001c, 4, base=16, bitRange=5
+sfr = "SPI0_IMR.RXBUFF", 	"Memory", 0xfffe001c, 4, base=16, bitRange=6
+sfr = "SPI0_IMR.TXBUFE", 	"Memory", 0xfffe001c, 4, base=16, bitRange=7
+sfr = "SPI0_IMR.NSSR", 	"Memory", 0xfffe001c, 4, base=16, bitRange=8
+sfr = "SPI0_IMR.TXEMPTY", 	"Memory", 0xfffe001c, 4, base=16, bitRange=9
+sfr = "SPI0_CSR", 	"Memory", 0xfffe0030, 4, base=16
+sfr = "SPI0_CSR.CPOL", 	"Memory", 0xfffe0030, 4, base=16, bitRange=0
+sfr = "SPI0_CSR.NCPHA", 	"Memory", 0xfffe0030, 4, base=16, bitRange=1
+sfr = "SPI0_CSR.CSAAT", 	"Memory", 0xfffe0030, 4, base=16, bitRange=3
+sfr = "SPI0_CSR.BITS", 	"Memory", 0xfffe0030, 4, base=16, bitRange=4-7
+sfr = "SPI0_CSR.SCBR", 	"Memory", 0xfffe0030, 4, base=16, bitRange=8-15
+sfr = "SPI0_CSR.DLYBS", 	"Memory", 0xfffe0030, 4, base=16, bitRange=16-23
+sfr = "SPI0_CSR.DLYBCT", 	"Memory", 0xfffe0030, 4, base=16, bitRange=24-31
+; ========== Register definition for PDC_US1 peripheral ========== 
+sfr = "US1_RPR", 	"Memory", 0xfffc4100, 4, base=16
+sfr = "US1_RCR", 	"Memory", 0xfffc4104, 4, base=16
+sfr = "US1_TPR", 	"Memory", 0xfffc4108, 4, base=16
+sfr = "US1_TCR", 	"Memory", 0xfffc410c, 4, base=16
+sfr = "US1_RNPR", 	"Memory", 0xfffc4110, 4, base=16
+sfr = "US1_RNCR", 	"Memory", 0xfffc4114, 4, base=16
+sfr = "US1_TNPR", 	"Memory", 0xfffc4118, 4, base=16
+sfr = "US1_TNCR", 	"Memory", 0xfffc411c, 4, base=16
+sfr = "US1_PTCR", 	"Memory", 0xfffc4120, 4, base=16
+sfr = "US1_PTCR.RXTEN", 	"Memory", 0xfffc4120, 4, base=16, bitRange=0
+sfr = "US1_PTCR.RXTDIS", 	"Memory", 0xfffc4120, 4, base=16, bitRange=1
+sfr = "US1_PTCR.TXTEN", 	"Memory", 0xfffc4120, 4, base=16, bitRange=8
+sfr = "US1_PTCR.TXTDIS", 	"Memory", 0xfffc4120, 4, base=16, bitRange=9
+sfr = "US1_PTSR", 	"Memory", 0xfffc4124, 4, base=16
+sfr = "US1_PTSR.RXTEN", 	"Memory", 0xfffc4124, 4, base=16, bitRange=0
+sfr = "US1_PTSR.TXTEN", 	"Memory", 0xfffc4124, 4, base=16, bitRange=8
+; ========== Register definition for US1 peripheral ========== 
+sfr = "US1_CR", 	"Memory", 0xfffc4000, 4, base=16
+sfr = "US1_CR.RSTRX", 	"Memory", 0xfffc4000, 4, base=16, bitRange=2
+sfr = "US1_CR.RSTTX", 	"Memory", 0xfffc4000, 4, base=16, bitRange=3
+sfr = "US1_CR.RXEN", 	"Memory", 0xfffc4000, 4, base=16, bitRange=4
+sfr = "US1_CR.RXDIS", 	"Memory", 0xfffc4000, 4, base=16, bitRange=5
+sfr = "US1_CR.TXEN", 	"Memory", 0xfffc4000, 4, base=16, bitRange=6
+sfr = "US1_CR.TXDIS", 	"Memory", 0xfffc4000, 4, base=16, bitRange=7
+sfr = "US1_CR.RSTSTA", 	"Memory", 0xfffc4000, 4, base=16, bitRange=8
+sfr = "US1_CR.STTBRK", 	"Memory", 0xfffc4000, 4, base=16, bitRange=9
+sfr = "US1_CR.STPBRK", 	"Memory", 0xfffc4000, 4, base=16, bitRange=10
+sfr = "US1_CR.STTTO", 	"Memory", 0xfffc4000, 4, base=16, bitRange=11
+sfr = "US1_CR.SENDA", 	"Memory", 0xfffc4000, 4, base=16, bitRange=12
+sfr = "US1_CR.RSTIT", 	"Memory", 0xfffc4000, 4, base=16, bitRange=13
+sfr = "US1_CR.RSTNACK", 	"Memory", 0xfffc4000, 4, base=16, bitRange=14
+sfr = "US1_CR.RETTO", 	"Memory", 0xfffc4000, 4, base=16, bitRange=15
+sfr = "US1_CR.DTREN", 	"Memory", 0xfffc4000, 4, base=16, bitRange=16
+sfr = "US1_CR.DTRDIS", 	"Memory", 0xfffc4000, 4, base=16, bitRange=17
+sfr = "US1_CR.RTSEN", 	"Memory", 0xfffc4000, 4, base=16, bitRange=18
+sfr = "US1_CR.RTSDIS", 	"Memory", 0xfffc4000, 4, base=16, bitRange=19
+sfr = "US1_MR", 	"Memory", 0xfffc4004, 4, base=16
+sfr = "US1_MR.USMODE", 	"Memory", 0xfffc4004, 4, base=16, bitRange=0-3
+sfr = "US1_MR.CLKS", 	"Memory", 0xfffc4004, 4, base=16, bitRange=4-5
+sfr = "US1_MR.CHRL", 	"Memory", 0xfffc4004, 4, base=16, bitRange=6-7
+sfr = "US1_MR.SYNC", 	"Memory", 0xfffc4004, 4, base=16, bitRange=8
+sfr = "US1_MR.PAR", 	"Memory", 0xfffc4004, 4, base=16, bitRange=9-11
+sfr = "US1_MR.NBSTOP", 	"Memory", 0xfffc4004, 4, base=16, bitRange=12-13
+sfr = "US1_MR.CHMODE", 	"Memory", 0xfffc4004, 4, base=16, bitRange=14-15
+sfr = "US1_MR.MSBF", 	"Memory", 0xfffc4004, 4, base=16, bitRange=16
+sfr = "US1_MR.MODE9", 	"Memory", 0xfffc4004, 4, base=16, bitRange=17
+sfr = "US1_MR.CKLO", 	"Memory", 0xfffc4004, 4, base=16, bitRange=18
+sfr = "US1_MR.OVER", 	"Memory", 0xfffc4004, 4, base=16, bitRange=19
+sfr = "US1_MR.INACK", 	"Memory", 0xfffc4004, 4, base=16, bitRange=20
+sfr = "US1_MR.DSNACK", 	"Memory", 0xfffc4004, 4, base=16, bitRange=21
+sfr = "US1_MR.ITER", 	"Memory", 0xfffc4004, 4, base=16, bitRange=24
+sfr = "US1_MR.FILTER", 	"Memory", 0xfffc4004, 4, base=16, bitRange=28
+sfr = "US1_IER", 	"Memory", 0xfffc4008, 4, base=16
+sfr = "US1_IER.RXRDY", 	"Memory", 0xfffc4008, 4, base=16, bitRange=0
+sfr = "US1_IER.TXRDY", 	"Memory", 0xfffc4008, 4, base=16, bitRange=1
+sfr = "US1_IER.RXBRK", 	"Memory", 0xfffc4008, 4, base=16, bitRange=2
+sfr = "US1_IER.ENDRX", 	"Memory", 0xfffc4008, 4, base=16, bitRange=3
+sfr = "US1_IER.ENDTX", 	"Memory", 0xfffc4008, 4, base=16, bitRange=4
+sfr = "US1_IER.OVRE", 	"Memory", 0xfffc4008, 4, base=16, bitRange=5
+sfr = "US1_IER.FRAME", 	"Memory", 0xfffc4008, 4, base=16, bitRange=6
+sfr = "US1_IER.PARE", 	"Memory", 0xfffc4008, 4, base=16, bitRange=7
+sfr = "US1_IER.TIMEOUT", 	"Memory", 0xfffc4008, 4, base=16, bitRange=8
+sfr = "US1_IER.TXEMPTY", 	"Memory", 0xfffc4008, 4, base=16, bitRange=9
+sfr = "US1_IER.ITERATION", 	"Memory", 0xfffc4008, 4, base=16, bitRange=10
+sfr = "US1_IER.TXBUFE", 	"Memory", 0xfffc4008, 4, base=16, bitRange=11
+sfr = "US1_IER.RXBUFF", 	"Memory", 0xfffc4008, 4, base=16, bitRange=12
+sfr = "US1_IER.NACK", 	"Memory", 0xfffc4008, 4, base=16, bitRange=13
+sfr = "US1_IER.RIIC", 	"Memory", 0xfffc4008, 4, base=16, bitRange=16
+sfr = "US1_IER.DSRIC", 	"Memory", 0xfffc4008, 4, base=16, bitRange=17
+sfr = "US1_IER.DCDIC", 	"Memory", 0xfffc4008, 4, base=16, bitRange=18
+sfr = "US1_IER.CTSIC", 	"Memory", 0xfffc4008, 4, base=16, bitRange=19
+sfr = "US1_IDR", 	"Memory", 0xfffc400c, 4, base=16
+sfr = "US1_IDR.RXRDY", 	"Memory", 0xfffc400c, 4, base=16, bitRange=0
+sfr = "US1_IDR.TXRDY", 	"Memory", 0xfffc400c, 4, base=16, bitRange=1
+sfr = "US1_IDR.RXBRK", 	"Memory", 0xfffc400c, 4, base=16, bitRange=2
+sfr = "US1_IDR.ENDRX", 	"Memory", 0xfffc400c, 4, base=16, bitRange=3
+sfr = "US1_IDR.ENDTX", 	"Memory", 0xfffc400c, 4, base=16, bitRange=4
+sfr = "US1_IDR.OVRE", 	"Memory", 0xfffc400c, 4, base=16, bitRange=5
+sfr = "US1_IDR.FRAME", 	"Memory", 0xfffc400c, 4, base=16, bitRange=6
+sfr = "US1_IDR.PARE", 	"Memory", 0xfffc400c, 4, base=16, bitRange=7
+sfr = "US1_IDR.TIMEOUT", 	"Memory", 0xfffc400c, 4, base=16, bitRange=8
+sfr = "US1_IDR.TXEMPTY", 	"Memory", 0xfffc400c, 4, base=16, bitRange=9
+sfr = "US1_IDR.ITERATION", 	"Memory", 0xfffc400c, 4, base=16, bitRange=10
+sfr = "US1_IDR.TXBUFE", 	"Memory", 0xfffc400c, 4, base=16, bitRange=11
+sfr = "US1_IDR.RXBUFF", 	"Memory", 0xfffc400c, 4, base=16, bitRange=12
+sfr = "US1_IDR.NACK", 	"Memory", 0xfffc400c, 4, base=16, bitRange=13
+sfr = "US1_IDR.RIIC", 	"Memory", 0xfffc400c, 4, base=16, bitRange=16
+sfr = "US1_IDR.DSRIC", 	"Memory", 0xfffc400c, 4, base=16, bitRange=17
+sfr = "US1_IDR.DCDIC", 	"Memory", 0xfffc400c, 4, base=16, bitRange=18
+sfr = "US1_IDR.CTSIC", 	"Memory", 0xfffc400c, 4, base=16, bitRange=19
+sfr = "US1_IMR", 	"Memory", 0xfffc4010, 4, base=16
+sfr = "US1_IMR.RXRDY", 	"Memory", 0xfffc4010, 4, base=16, bitRange=0
+sfr = "US1_IMR.TXRDY", 	"Memory", 0xfffc4010, 4, base=16, bitRange=1
+sfr = "US1_IMR.RXBRK", 	"Memory", 0xfffc4010, 4, base=16, bitRange=2
+sfr = "US1_IMR.ENDRX", 	"Memory", 0xfffc4010, 4, base=16, bitRange=3
+sfr = "US1_IMR.ENDTX", 	"Memory", 0xfffc4010, 4, base=16, bitRange=4
+sfr = "US1_IMR.OVRE", 	"Memory", 0xfffc4010, 4, base=16, bitRange=5
+sfr = "US1_IMR.FRAME", 	"Memory", 0xfffc4010, 4, base=16, bitRange=6
+sfr = "US1_IMR.PARE", 	"Memory", 0xfffc4010, 4, base=16, bitRange=7
+sfr = "US1_IMR.TIMEOUT", 	"Memory", 0xfffc4010, 4, base=16, bitRange=8
+sfr = "US1_IMR.TXEMPTY", 	"Memory", 0xfffc4010, 4, base=16, bitRange=9
+sfr = "US1_IMR.ITERATION", 	"Memory", 0xfffc4010, 4, base=16, bitRange=10
+sfr = "US1_IMR.TXBUFE", 	"Memory", 0xfffc4010, 4, base=16, bitRange=11
+sfr = "US1_IMR.RXBUFF", 	"Memory", 0xfffc4010, 4, base=16, bitRange=12
+sfr = "US1_IMR.NACK", 	"Memory", 0xfffc4010, 4, base=16, bitRange=13
+sfr = "US1_IMR.RIIC", 	"Memory", 0xfffc4010, 4, base=16, bitRange=16
+sfr = "US1_IMR.DSRIC", 	"Memory", 0xfffc4010, 4, base=16, bitRange=17
+sfr = "US1_IMR.DCDIC", 	"Memory", 0xfffc4010, 4, base=16, bitRange=18
+sfr = "US1_IMR.CTSIC", 	"Memory", 0xfffc4010, 4, base=16, bitRange=19
+sfr = "US1_CSR", 	"Memory", 0xfffc4014, 4, base=16
+sfr = "US1_CSR.RXRDY", 	"Memory", 0xfffc4014, 4, base=16, bitRange=0
+sfr = "US1_CSR.TXRDY", 	"Memory", 0xfffc4014, 4, base=16, bitRange=1
+sfr = "US1_CSR.RXBRK", 	"Memory", 0xfffc4014, 4, base=16, bitRange=2
+sfr = "US1_CSR.ENDRX", 	"Memory", 0xfffc4014, 4, base=16, bitRange=3
+sfr = "US1_CSR.ENDTX", 	"Memory", 0xfffc4014, 4, base=16, bitRange=4
+sfr = "US1_CSR.OVRE", 	"Memory", 0xfffc4014, 4, base=16, bitRange=5
+sfr = "US1_CSR.FRAME", 	"Memory", 0xfffc4014, 4, base=16, bitRange=6
+sfr = "US1_CSR.PARE", 	"Memory", 0xfffc4014, 4, base=16, bitRange=7
+sfr = "US1_CSR.TIMEOUT", 	"Memory", 0xfffc4014, 4, base=16, bitRange=8
+sfr = "US1_CSR.TXEMPTY", 	"Memory", 0xfffc4014, 4, base=16, bitRange=9
+sfr = "US1_CSR.ITERATION", 	"Memory", 0xfffc4014, 4, base=16, bitRange=10
+sfr = "US1_CSR.TXBUFE", 	"Memory", 0xfffc4014, 4, base=16, bitRange=11
+sfr = "US1_CSR.RXBUFF", 	"Memory", 0xfffc4014, 4, base=16, bitRange=12
+sfr = "US1_CSR.NACK", 	"Memory", 0xfffc4014, 4, base=16, bitRange=13
+sfr = "US1_CSR.RIIC", 	"Memory", 0xfffc4014, 4, base=16, bitRange=16
+sfr = "US1_CSR.DSRIC", 	"Memory", 0xfffc4014, 4, base=16, bitRange=17
+sfr = "US1_CSR.DCDIC", 	"Memory", 0xfffc4014, 4, base=16, bitRange=18
+sfr = "US1_CSR.CTSIC", 	"Memory", 0xfffc4014, 4, base=16, bitRange=19
+sfr = "US1_CSR.RI", 	"Memory", 0xfffc4014, 4, base=16, bitRange=20
+sfr = "US1_CSR.DSR", 	"Memory", 0xfffc4014, 4, base=16, bitRange=21
+sfr = "US1_CSR.DCD", 	"Memory", 0xfffc4014, 4, base=16, bitRange=22
+sfr = "US1_CSR.CTS", 	"Memory", 0xfffc4014, 4, base=16, bitRange=23
+sfr = "US1_RHR", 	"Memory", 0xfffc4018, 4, base=16
+sfr = "US1_THR", 	"Memory", 0xfffc401c, 4, base=16
+sfr = "US1_BRGR", 	"Memory", 0xfffc4020, 4, base=16
+sfr = "US1_RTOR", 	"Memory", 0xfffc4024, 4, base=16
+sfr = "US1_TTGR", 	"Memory", 0xfffc4028, 4, base=16
+sfr = "US1_FIDI", 	"Memory", 0xfffc4040, 4, base=16
+sfr = "US1_NER", 	"Memory", 0xfffc4044, 4, base=16
+sfr = "US1_IF", 	"Memory", 0xfffc404c, 4, base=16
+; ========== Register definition for PDC_US0 peripheral ========== 
+sfr = "US0_RPR", 	"Memory", 0xfffc0100, 4, base=16
+sfr = "US0_RCR", 	"Memory", 0xfffc0104, 4, base=16
+sfr = "US0_TPR", 	"Memory", 0xfffc0108, 4, base=16
+sfr = "US0_TCR", 	"Memory", 0xfffc010c, 4, base=16
+sfr = "US0_RNPR", 	"Memory", 0xfffc0110, 4, base=16
+sfr = "US0_RNCR", 	"Memory", 0xfffc0114, 4, base=16
+sfr = "US0_TNPR", 	"Memory", 0xfffc0118, 4, base=16
+sfr = "US0_TNCR", 	"Memory", 0xfffc011c, 4, base=16
+sfr = "US0_PTCR", 	"Memory", 0xfffc0120, 4, base=16
+sfr = "US0_PTCR.RXTEN", 	"Memory", 0xfffc0120, 4, base=16, bitRange=0
+sfr = "US0_PTCR.RXTDIS", 	"Memory", 0xfffc0120, 4, base=16, bitRange=1
+sfr = "US0_PTCR.TXTEN", 	"Memory", 0xfffc0120, 4, base=16, bitRange=8
+sfr = "US0_PTCR.TXTDIS", 	"Memory", 0xfffc0120, 4, base=16, bitRange=9
+sfr = "US0_PTSR", 	"Memory", 0xfffc0124, 4, base=16
+sfr = "US0_PTSR.RXTEN", 	"Memory", 0xfffc0124, 4, base=16, bitRange=0
+sfr = "US0_PTSR.TXTEN", 	"Memory", 0xfffc0124, 4, base=16, bitRange=8
+; ========== Register definition for US0 peripheral ========== 
+sfr = "US0_CR", 	"Memory", 0xfffc0000, 4, base=16
+sfr = "US0_CR.RSTRX", 	"Memory", 0xfffc0000, 4, base=16, bitRange=2
+sfr = "US0_CR.RSTTX", 	"Memory", 0xfffc0000, 4, base=16, bitRange=3
+sfr = "US0_CR.RXEN", 	"Memory", 0xfffc0000, 4, base=16, bitRange=4
+sfr = "US0_CR.RXDIS", 	"Memory", 0xfffc0000, 4, base=16, bitRange=5
+sfr = "US0_CR.TXEN", 	"Memory", 0xfffc0000, 4, base=16, bitRange=6
+sfr = "US0_CR.TXDIS", 	"Memory", 0xfffc0000, 4, base=16, bitRange=7
+sfr = "US0_CR.RSTSTA", 	"Memory", 0xfffc0000, 4, base=16, bitRange=8
+sfr = "US0_CR.STTBRK", 	"Memory", 0xfffc0000, 4, base=16, bitRange=9
+sfr = "US0_CR.STPBRK", 	"Memory", 0xfffc0000, 4, base=16, bitRange=10
+sfr = "US0_CR.STTTO", 	"Memory", 0xfffc0000, 4, base=16, bitRange=11
+sfr = "US0_CR.SENDA", 	"Memory", 0xfffc0000, 4, base=16, bitRange=12
+sfr = "US0_CR.RSTIT", 	"Memory", 0xfffc0000, 4, base=16, bitRange=13
+sfr = "US0_CR.RSTNACK", 	"Memory", 0xfffc0000, 4, base=16, bitRange=14
+sfr = "US0_CR.RETTO", 	"Memory", 0xfffc0000, 4, base=16, bitRange=15
+sfr = "US0_CR.DTREN", 	"Memory", 0xfffc0000, 4, base=16, bitRange=16
+sfr = "US0_CR.DTRDIS", 	"Memory", 0xfffc0000, 4, base=16, bitRange=17
+sfr = "US0_CR.RTSEN", 	"Memory", 0xfffc0000, 4, base=16, bitRange=18
+sfr = "US0_CR.RTSDIS", 	"Memory", 0xfffc0000, 4, base=16, bitRange=19
+sfr = "US0_MR", 	"Memory", 0xfffc0004, 4, base=16
+sfr = "US0_MR.USMODE", 	"Memory", 0xfffc0004, 4, base=16, bitRange=0-3
+sfr = "US0_MR.CLKS", 	"Memory", 0xfffc0004, 4, base=16, bitRange=4-5
+sfr = "US0_MR.CHRL", 	"Memory", 0xfffc0004, 4, base=16, bitRange=6-7
+sfr = "US0_MR.SYNC", 	"Memory", 0xfffc0004, 4, base=16, bitRange=8
+sfr = "US0_MR.PAR", 	"Memory", 0xfffc0004, 4, base=16, bitRange=9-11
+sfr = "US0_MR.NBSTOP", 	"Memory", 0xfffc0004, 4, base=16, bitRange=12-13
+sfr = "US0_MR.CHMODE", 	"Memory", 0xfffc0004, 4, base=16, bitRange=14-15
+sfr = "US0_MR.MSBF", 	"Memory", 0xfffc0004, 4, base=16, bitRange=16
+sfr = "US0_MR.MODE9", 	"Memory", 0xfffc0004, 4, base=16, bitRange=17
+sfr = "US0_MR.CKLO", 	"Memory", 0xfffc0004, 4, base=16, bitRange=18
+sfr = "US0_MR.OVER", 	"Memory", 0xfffc0004, 4, base=16, bitRange=19
+sfr = "US0_MR.INACK", 	"Memory", 0xfffc0004, 4, base=16, bitRange=20
+sfr = "US0_MR.DSNACK", 	"Memory", 0xfffc0004, 4, base=16, bitRange=21
+sfr = "US0_MR.ITER", 	"Memory", 0xfffc0004, 4, base=16, bitRange=24
+sfr = "US0_MR.FILTER", 	"Memory", 0xfffc0004, 4, base=16, bitRange=28
+sfr = "US0_IER", 	"Memory", 0xfffc0008, 4, base=16
+sfr = "US0_IER.RXRDY", 	"Memory", 0xfffc0008, 4, base=16, bitRange=0
+sfr = "US0_IER.TXRDY", 	"Memory", 0xfffc0008, 4, base=16, bitRange=1
+sfr = "US0_IER.RXBRK", 	"Memory", 0xfffc0008, 4, base=16, bitRange=2
+sfr = "US0_IER.ENDRX", 	"Memory", 0xfffc0008, 4, base=16, bitRange=3
+sfr = "US0_IER.ENDTX", 	"Memory", 0xfffc0008, 4, base=16, bitRange=4
+sfr = "US0_IER.OVRE", 	"Memory", 0xfffc0008, 4, base=16, bitRange=5
+sfr = "US0_IER.FRAME", 	"Memory", 0xfffc0008, 4, base=16, bitRange=6
+sfr = "US0_IER.PARE", 	"Memory", 0xfffc0008, 4, base=16, bitRange=7
+sfr = "US0_IER.TIMEOUT", 	"Memory", 0xfffc0008, 4, base=16, bitRange=8
+sfr = "US0_IER.TXEMPTY", 	"Memory", 0xfffc0008, 4, base=16, bitRange=9
+sfr = "US0_IER.ITERATION", 	"Memory", 0xfffc0008, 4, base=16, bitRange=10
+sfr = "US0_IER.TXBUFE", 	"Memory", 0xfffc0008, 4, base=16, bitRange=11
+sfr = "US0_IER.RXBUFF", 	"Memory", 0xfffc0008, 4, base=16, bitRange=12
+sfr = "US0_IER.NACK", 	"Memory", 0xfffc0008, 4, base=16, bitRange=13
+sfr = "US0_IER.RIIC", 	"Memory", 0xfffc0008, 4, base=16, bitRange=16
+sfr = "US0_IER.DSRIC", 	"Memory", 0xfffc0008, 4, base=16, bitRange=17
+sfr = "US0_IER.DCDIC", 	"Memory", 0xfffc0008, 4, base=16, bitRange=18
+sfr = "US0_IER.CTSIC", 	"Memory", 0xfffc0008, 4, base=16, bitRange=19
+sfr = "US0_IDR", 	"Memory", 0xfffc000c, 4, base=16
+sfr = "US0_IDR.RXRDY", 	"Memory", 0xfffc000c, 4, base=16, bitRange=0
+sfr = "US0_IDR.TXRDY", 	"Memory", 0xfffc000c, 4, base=16, bitRange=1
+sfr = "US0_IDR.RXBRK", 	"Memory", 0xfffc000c, 4, base=16, bitRange=2
+sfr = "US0_IDR.ENDRX", 	"Memory", 0xfffc000c, 4, base=16, bitRange=3
+sfr = "US0_IDR.ENDTX", 	"Memory", 0xfffc000c, 4, base=16, bitRange=4
+sfr = "US0_IDR.OVRE", 	"Memory", 0xfffc000c, 4, base=16, bitRange=5
+sfr = "US0_IDR.FRAME", 	"Memory", 0xfffc000c, 4, base=16, bitRange=6
+sfr = "US0_IDR.PARE", 	"Memory", 0xfffc000c, 4, base=16, bitRange=7
+sfr = "US0_IDR.TIMEOUT", 	"Memory", 0xfffc000c, 4, base=16, bitRange=8
+sfr = "US0_IDR.TXEMPTY", 	"Memory", 0xfffc000c, 4, base=16, bitRange=9
+sfr = "US0_IDR.ITERATION", 	"Memory", 0xfffc000c, 4, base=16, bitRange=10
+sfr = "US0_IDR.TXBUFE", 	"Memory", 0xfffc000c, 4, base=16, bitRange=11
+sfr = "US0_IDR.RXBUFF", 	"Memory", 0xfffc000c, 4, base=16, bitRange=12
+sfr = "US0_IDR.NACK", 	"Memory", 0xfffc000c, 4, base=16, bitRange=13
+sfr = "US0_IDR.RIIC", 	"Memory", 0xfffc000c, 4, base=16, bitRange=16
+sfr = "US0_IDR.DSRIC", 	"Memory", 0xfffc000c, 4, base=16, bitRange=17
+sfr = "US0_IDR.DCDIC", 	"Memory", 0xfffc000c, 4, base=16, bitRange=18
+sfr = "US0_IDR.CTSIC", 	"Memory", 0xfffc000c, 4, base=16, bitRange=19
+sfr = "US0_IMR", 	"Memory", 0xfffc0010, 4, base=16
+sfr = "US0_IMR.RXRDY", 	"Memory", 0xfffc0010, 4, base=16, bitRange=0
+sfr = "US0_IMR.TXRDY", 	"Memory", 0xfffc0010, 4, base=16, bitRange=1
+sfr = "US0_IMR.RXBRK", 	"Memory", 0xfffc0010, 4, base=16, bitRange=2
+sfr = "US0_IMR.ENDRX", 	"Memory", 0xfffc0010, 4, base=16, bitRange=3
+sfr = "US0_IMR.ENDTX", 	"Memory", 0xfffc0010, 4, base=16, bitRange=4
+sfr = "US0_IMR.OVRE", 	"Memory", 0xfffc0010, 4, base=16, bitRange=5
+sfr = "US0_IMR.FRAME", 	"Memory", 0xfffc0010, 4, base=16, bitRange=6
+sfr = "US0_IMR.PARE", 	"Memory", 0xfffc0010, 4, base=16, bitRange=7
+sfr = "US0_IMR.TIMEOUT", 	"Memory", 0xfffc0010, 4, base=16, bitRange=8
+sfr = "US0_IMR.TXEMPTY", 	"Memory", 0xfffc0010, 4, base=16, bitRange=9
+sfr = "US0_IMR.ITERATION", 	"Memory", 0xfffc0010, 4, base=16, bitRange=10
+sfr = "US0_IMR.TXBUFE", 	"Memory", 0xfffc0010, 4, base=16, bitRange=11
+sfr = "US0_IMR.RXBUFF", 	"Memory", 0xfffc0010, 4, base=16, bitRange=12
+sfr = "US0_IMR.NACK", 	"Memory", 0xfffc0010, 4, base=16, bitRange=13
+sfr = "US0_IMR.RIIC", 	"Memory", 0xfffc0010, 4, base=16, bitRange=16
+sfr = "US0_IMR.DSRIC", 	"Memory", 0xfffc0010, 4, base=16, bitRange=17
+sfr = "US0_IMR.DCDIC", 	"Memory", 0xfffc0010, 4, base=16, bitRange=18
+sfr = "US0_IMR.CTSIC", 	"Memory", 0xfffc0010, 4, base=16, bitRange=19
+sfr = "US0_CSR", 	"Memory", 0xfffc0014, 4, base=16
+sfr = "US0_CSR.RXRDY", 	"Memory", 0xfffc0014, 4, base=16, bitRange=0
+sfr = "US0_CSR.TXRDY", 	"Memory", 0xfffc0014, 4, base=16, bitRange=1
+sfr = "US0_CSR.RXBRK", 	"Memory", 0xfffc0014, 4, base=16, bitRange=2
+sfr = "US0_CSR.ENDRX", 	"Memory", 0xfffc0014, 4, base=16, bitRange=3
+sfr = "US0_CSR.ENDTX", 	"Memory", 0xfffc0014, 4, base=16, bitRange=4
+sfr = "US0_CSR.OVRE", 	"Memory", 0xfffc0014, 4, base=16, bitRange=5
+sfr = "US0_CSR.FRAME", 	"Memory", 0xfffc0014, 4, base=16, bitRange=6
+sfr = "US0_CSR.PARE", 	"Memory", 0xfffc0014, 4, base=16, bitRange=7
+sfr = "US0_CSR.TIMEOUT", 	"Memory", 0xfffc0014, 4, base=16, bitRange=8
+sfr = "US0_CSR.TXEMPTY", 	"Memory", 0xfffc0014, 4, base=16, bitRange=9
+sfr = "US0_CSR.ITERATION", 	"Memory", 0xfffc0014, 4, base=16, bitRange=10
+sfr = "US0_CSR.TXBUFE", 	"Memory", 0xfffc0014, 4, base=16, bitRange=11
+sfr = "US0_CSR.RXBUFF", 	"Memory", 0xfffc0014, 4, base=16, bitRange=12
+sfr = "US0_CSR.NACK", 	"Memory", 0xfffc0014, 4, base=16, bitRange=13
+sfr = "US0_CSR.RIIC", 	"Memory", 0xfffc0014, 4, base=16, bitRange=16
+sfr = "US0_CSR.DSRIC", 	"Memory", 0xfffc0014, 4, base=16, bitRange=17
+sfr = "US0_CSR.DCDIC", 	"Memory", 0xfffc0014, 4, base=16, bitRange=18
+sfr = "US0_CSR.CTSIC", 	"Memory", 0xfffc0014, 4, base=16, bitRange=19
+sfr = "US0_CSR.RI", 	"Memory", 0xfffc0014, 4, base=16, bitRange=20
+sfr = "US0_CSR.DSR", 	"Memory", 0xfffc0014, 4, base=16, bitRange=21
+sfr = "US0_CSR.DCD", 	"Memory", 0xfffc0014, 4, base=16, bitRange=22
+sfr = "US0_CSR.CTS", 	"Memory", 0xfffc0014, 4, base=16, bitRange=23
+sfr = "US0_RHR", 	"Memory", 0xfffc0018, 4, base=16
+sfr = "US0_THR", 	"Memory", 0xfffc001c, 4, base=16
+sfr = "US0_BRGR", 	"Memory", 0xfffc0020, 4, base=16
+sfr = "US0_RTOR", 	"Memory", 0xfffc0024, 4, base=16
+sfr = "US0_TTGR", 	"Memory", 0xfffc0028, 4, base=16
+sfr = "US0_FIDI", 	"Memory", 0xfffc0040, 4, base=16
+sfr = "US0_NER", 	"Memory", 0xfffc0044, 4, base=16
+sfr = "US0_IF", 	"Memory", 0xfffc004c, 4, base=16
+; ========== Register definition for PDC_SSC peripheral ========== 
+sfr = "SSC_RPR", 	"Memory", 0xfffd4100, 4, base=16
+sfr = "SSC_RCR", 	"Memory", 0xfffd4104, 4, base=16
+sfr = "SSC_TPR", 	"Memory", 0xfffd4108, 4, base=16
+sfr = "SSC_TCR", 	"Memory", 0xfffd410c, 4, base=16
+sfr = "SSC_RNPR", 	"Memory", 0xfffd4110, 4, base=16
+sfr = "SSC_RNCR", 	"Memory", 0xfffd4114, 4, base=16
+sfr = "SSC_TNPR", 	"Memory", 0xfffd4118, 4, base=16
+sfr = "SSC_TNCR", 	"Memory", 0xfffd411c, 4, base=16
+sfr = "SSC_PTCR", 	"Memory", 0xfffd4120, 4, base=16
+sfr = "SSC_PTCR.RXTEN", 	"Memory", 0xfffd4120, 4, base=16, bitRange=0
+sfr = "SSC_PTCR.RXTDIS", 	"Memory", 0xfffd4120, 4, base=16, bitRange=1
+sfr = "SSC_PTCR.TXTEN", 	"Memory", 0xfffd4120, 4, base=16, bitRange=8
+sfr = "SSC_PTCR.TXTDIS", 	"Memory", 0xfffd4120, 4, base=16, bitRange=9
+sfr = "SSC_PTSR", 	"Memory", 0xfffd4124, 4, base=16
+sfr = "SSC_PTSR.RXTEN", 	"Memory", 0xfffd4124, 4, base=16, bitRange=0
+sfr = "SSC_PTSR.TXTEN", 	"Memory", 0xfffd4124, 4, base=16, bitRange=8
+; ========== Register definition for SSC peripheral ========== 
+sfr = "SSC_CR", 	"Memory", 0xfffd4000, 4, base=16
+sfr = "SSC_CR.RXEN", 	"Memory", 0xfffd4000, 4, base=16, bitRange=0
+sfr = "SSC_CR.RXDIS", 	"Memory", 0xfffd4000, 4, base=16, bitRange=1
+sfr = "SSC_CR.TXEN", 	"Memory", 0xfffd4000, 4, base=16, bitRange=8
+sfr = "SSC_CR.TXDIS", 	"Memory", 0xfffd4000, 4, base=16, bitRange=9
+sfr = "SSC_CR.SWRST", 	"Memory", 0xfffd4000, 4, base=16, bitRange=15
+sfr = "SSC_CMR", 	"Memory", 0xfffd4004, 4, base=16
+sfr = "SSC_RCMR", 	"Memory", 0xfffd4010, 4, base=16
+sfr = "SSC_RCMR.CKS", 	"Memory", 0xfffd4010, 4, base=16, bitRange=0-1
+sfr = "SSC_RCMR.CKO", 	"Memory", 0xfffd4010, 4, base=16, bitRange=2-4
+sfr = "SSC_RCMR.CKI", 	"Memory", 0xfffd4010, 4, base=16, bitRange=5
+sfr = "SSC_RCMR.CKG", 	"Memory", 0xfffd4010, 4, base=16, bitRange=6-7
+sfr = "SSC_RCMR.START", 	"Memory", 0xfffd4010, 4, base=16, bitRange=8-11
+sfr = "SSC_RCMR.STOP", 	"Memory", 0xfffd4010, 4, base=16, bitRange=12
+sfr = "SSC_RCMR.STTDLY", 	"Memory", 0xfffd4010, 4, base=16, bitRange=16-23
+sfr = "SSC_RCMR.PERIOD", 	"Memory", 0xfffd4010, 4, base=16, bitRange=24-31
+sfr = "SSC_RFMR", 	"Memory", 0xfffd4014, 4, base=16
+sfr = "SSC_RFMR.DATLEN", 	"Memory", 0xfffd4014, 4, base=16, bitRange=0-4
+sfr = "SSC_RFMR.LOOP", 	"Memory", 0xfffd4014, 4, base=16, bitRange=5
+sfr = "SSC_RFMR.MSBF", 	"Memory", 0xfffd4014, 4, base=16, bitRange=7
+sfr = "SSC_RFMR.DATNB", 	"Memory", 0xfffd4014, 4, base=16, bitRange=8-11
+sfr = "SSC_RFMR.FSLEN", 	"Memory", 0xfffd4014, 4, base=16, bitRange=16-19
+sfr = "SSC_RFMR.FSOS", 	"Memory", 0xfffd4014, 4, base=16, bitRange=20-22
+sfr = "SSC_RFMR.FSEDGE", 	"Memory", 0xfffd4014, 4, base=16, bitRange=24
+sfr = "SSC_TCMR", 	"Memory", 0xfffd4018, 4, base=16
+sfr = "SSC_TCMR.CKS", 	"Memory", 0xfffd4018, 4, base=16, bitRange=0-1
+sfr = "SSC_TCMR.CKO", 	"Memory", 0xfffd4018, 4, base=16, bitRange=2-4
+sfr = "SSC_TCMR.CKI", 	"Memory", 0xfffd4018, 4, base=16, bitRange=5
+sfr = "SSC_TCMR.CKG", 	"Memory", 0xfffd4018, 4, base=16, bitRange=6-7
+sfr = "SSC_TCMR.START", 	"Memory", 0xfffd4018, 4, base=16, bitRange=8-11
+sfr = "SSC_TCMR.STTDLY", 	"Memory", 0xfffd4018, 4, base=16, bitRange=16-23
+sfr = "SSC_TCMR.PERIOD", 	"Memory", 0xfffd4018, 4, base=16, bitRange=24-31
+sfr = "SSC_TFMR", 	"Memory", 0xfffd401c, 4, base=16
+sfr = "SSC_TFMR.DATLEN", 	"Memory", 0xfffd401c, 4, base=16, bitRange=0-4
+sfr = "SSC_TFMR.DATDEF", 	"Memory", 0xfffd401c, 4, base=16, bitRange=5
+sfr = "SSC_TFMR.MSBF", 	"Memory", 0xfffd401c, 4, base=16, bitRange=7
+sfr = "SSC_TFMR.DATNB", 	"Memory", 0xfffd401c, 4, base=16, bitRange=8-11
+sfr = "SSC_TFMR.FSLEN", 	"Memory", 0xfffd401c, 4, base=16, bitRange=16-19
+sfr = "SSC_TFMR.FSOS", 	"Memory", 0xfffd401c, 4, base=16, bitRange=20-22
+sfr = "SSC_TFMR.FSDEN", 	"Memory", 0xfffd401c, 4, base=16, bitRange=23
+sfr = "SSC_TFMR.FSEDGE", 	"Memory", 0xfffd401c, 4, base=16, bitRange=24
+sfr = "SSC_RHR", 	"Memory", 0xfffd4020, 4, base=16
+sfr = "SSC_THR", 	"Memory", 0xfffd4024, 4, base=16
+sfr = "SSC_RSHR", 	"Memory", 0xfffd4030, 4, base=16
+sfr = "SSC_TSHR", 	"Memory", 0xfffd4034, 4, base=16
+sfr = "SSC_SR", 	"Memory", 0xfffd4040, 4, base=16
+sfr = "SSC_SR.TXRDY", 	"Memory", 0xfffd4040, 4, base=16, bitRange=0
+sfr = "SSC_SR.TXEMPTY", 	"Memory", 0xfffd4040, 4, base=16, bitRange=1
+sfr = "SSC_SR.ENDTX", 	"Memory", 0xfffd4040, 4, base=16, bitRange=2
+sfr = "SSC_SR.TXBUFE", 	"Memory", 0xfffd4040, 4, base=16, bitRange=3
+sfr = "SSC_SR.RXRDY", 	"Memory", 0xfffd4040, 4, base=16, bitRange=4
+sfr = "SSC_SR.OVRUN", 	"Memory", 0xfffd4040, 4, base=16, bitRange=5
+sfr = "SSC_SR.ENDRX", 	"Memory", 0xfffd4040, 4, base=16, bitRange=6
+sfr = "SSC_SR.RXBUFF", 	"Memory", 0xfffd4040, 4, base=16, bitRange=7
+sfr = "SSC_SR.CP0", 	"Memory", 0xfffd4040, 4, base=16, bitRange=8
+sfr = "SSC_SR.CP1", 	"Memory", 0xfffd4040, 4, base=16, bitRange=9
+sfr = "SSC_SR.TXSYN", 	"Memory", 0xfffd4040, 4, base=16, bitRange=10
+sfr = "SSC_SR.RXSYN", 	"Memory", 0xfffd4040, 4, base=16, bitRange=11
+sfr = "SSC_SR.TXENA", 	"Memory", 0xfffd4040, 4, base=16, bitRange=16
+sfr = "SSC_SR.RXENA", 	"Memory", 0xfffd4040, 4, base=16, bitRange=17
+sfr = "SSC_IER", 	"Memory", 0xfffd4044, 4, base=16
+sfr = "SSC_IER.TXRDY", 	"Memory", 0xfffd4044, 4, base=16, bitRange=0
+sfr = "SSC_IER.TXEMPTY", 	"Memory", 0xfffd4044, 4, base=16, bitRange=1
+sfr = "SSC_IER.ENDTX", 	"Memory", 0xfffd4044, 4, base=16, bitRange=2
+sfr = "SSC_IER.TXBUFE", 	"Memory", 0xfffd4044, 4, base=16, bitRange=3
+sfr = "SSC_IER.RXRDY", 	"Memory", 0xfffd4044, 4, base=16, bitRange=4
+sfr = "SSC_IER.OVRUN", 	"Memory", 0xfffd4044, 4, base=16, bitRange=5
+sfr = "SSC_IER.ENDRX", 	"Memory", 0xfffd4044, 4, base=16, bitRange=6
+sfr = "SSC_IER.RXBUFF", 	"Memory", 0xfffd4044, 4, base=16, bitRange=7
+sfr = "SSC_IER.CP0", 	"Memory", 0xfffd4044, 4, base=16, bitRange=8
+sfr = "SSC_IER.CP1", 	"Memory", 0xfffd4044, 4, base=16, bitRange=9
+sfr = "SSC_IER.TXSYN", 	"Memory", 0xfffd4044, 4, base=16, bitRange=10
+sfr = "SSC_IER.RXSYN", 	"Memory", 0xfffd4044, 4, base=16, bitRange=11
+sfr = "SSC_IDR", 	"Memory", 0xfffd4048, 4, base=16
+sfr = "SSC_IDR.TXRDY", 	"Memory", 0xfffd4048, 4, base=16, bitRange=0
+sfr = "SSC_IDR.TXEMPTY", 	"Memory", 0xfffd4048, 4, base=16, bitRange=1
+sfr = "SSC_IDR.ENDTX", 	"Memory", 0xfffd4048, 4, base=16, bitRange=2
+sfr = "SSC_IDR.TXBUFE", 	"Memory", 0xfffd4048, 4, base=16, bitRange=3
+sfr = "SSC_IDR.RXRDY", 	"Memory", 0xfffd4048, 4, base=16, bitRange=4
+sfr = "SSC_IDR.OVRUN", 	"Memory", 0xfffd4048, 4, base=16, bitRange=5
+sfr = "SSC_IDR.ENDRX", 	"Memory", 0xfffd4048, 4, base=16, bitRange=6
+sfr = "SSC_IDR.RXBUFF", 	"Memory", 0xfffd4048, 4, base=16, bitRange=7
+sfr = "SSC_IDR.CP0", 	"Memory", 0xfffd4048, 4, base=16, bitRange=8
+sfr = "SSC_IDR.CP1", 	"Memory", 0xfffd4048, 4, base=16, bitRange=9
+sfr = "SSC_IDR.TXSYN", 	"Memory", 0xfffd4048, 4, base=16, bitRange=10
+sfr = "SSC_IDR.RXSYN", 	"Memory", 0xfffd4048, 4, base=16, bitRange=11
+sfr = "SSC_IMR", 	"Memory", 0xfffd404c, 4, base=16
+sfr = "SSC_IMR.TXRDY", 	"Memory", 0xfffd404c, 4, base=16, bitRange=0
+sfr = "SSC_IMR.TXEMPTY", 	"Memory", 0xfffd404c, 4, base=16, bitRange=1
+sfr = "SSC_IMR.ENDTX", 	"Memory", 0xfffd404c, 4, base=16, bitRange=2
+sfr = "SSC_IMR.TXBUFE", 	"Memory", 0xfffd404c, 4, base=16, bitRange=3
+sfr = "SSC_IMR.RXRDY", 	"Memory", 0xfffd404c, 4, base=16, bitRange=4
+sfr = "SSC_IMR.OVRUN", 	"Memory", 0xfffd404c, 4, base=16, bitRange=5
+sfr = "SSC_IMR.ENDRX", 	"Memory", 0xfffd404c, 4, base=16, bitRange=6
+sfr = "SSC_IMR.RXBUFF", 	"Memory", 0xfffd404c, 4, base=16, bitRange=7
+sfr = "SSC_IMR.CP0", 	"Memory", 0xfffd404c, 4, base=16, bitRange=8
+sfr = "SSC_IMR.CP1", 	"Memory", 0xfffd404c, 4, base=16, bitRange=9
+sfr = "SSC_IMR.TXSYN", 	"Memory", 0xfffd404c, 4, base=16, bitRange=10
+sfr = "SSC_IMR.RXSYN", 	"Memory", 0xfffd404c, 4, base=16, bitRange=11
+; ========== Register definition for TWI peripheral ========== 
+sfr = "TWI_CR", 	"Memory", 0xfffb8000, 4, base=16
+sfr = "TWI_CR.START", 	"Memory", 0xfffb8000, 4, base=16, bitRange=0
+sfr = "TWI_CR.STOP", 	"Memory", 0xfffb8000, 4, base=16, bitRange=1
+sfr = "TWI_CR.MSEN", 	"Memory", 0xfffb8000, 4, base=16, bitRange=2
+sfr = "TWI_CR.MSDIS", 	"Memory", 0xfffb8000, 4, base=16, bitRange=3
+sfr = "TWI_CR.SWRST", 	"Memory", 0xfffb8000, 4, base=16, bitRange=7
+sfr = "TWI_MMR", 	"Memory", 0xfffb8004, 4, base=16
+sfr = "TWI_MMR.IADRSZ", 	"Memory", 0xfffb8004, 4, base=16, bitRange=8-9
+sfr = "TWI_MMR.MREAD", 	"Memory", 0xfffb8004, 4, base=16, bitRange=12
+sfr = "TWI_MMR.DADR", 	"Memory", 0xfffb8004, 4, base=16, bitRange=16-22
+sfr = "TWI_IADR", 	"Memory", 0xfffb800c, 4, base=16
+sfr = "TWI_CWGR", 	"Memory", 0xfffb8010, 4, base=16
+sfr = "TWI_CWGR.CLDIV", 	"Memory", 0xfffb8010, 4, base=16, bitRange=0-7
+sfr = "TWI_CWGR.CHDIV", 	"Memory", 0xfffb8010, 4, base=16, bitRange=8-15
+sfr = "TWI_CWGR.CKDIV", 	"Memory", 0xfffb8010, 4, base=16, bitRange=16-18
+sfr = "TWI_SR", 	"Memory", 0xfffb8020, 4, base=16
+sfr = "TWI_SR.TXCOMP", 	"Memory", 0xfffb8020, 4, base=16, bitRange=0
+sfr = "TWI_SR.RXRDY", 	"Memory", 0xfffb8020, 4, base=16, bitRange=1
+sfr = "TWI_SR.TXRDY", 	"Memory", 0xfffb8020, 4, base=16, bitRange=2
+sfr = "TWI_SR.OVRE", 	"Memory", 0xfffb8020, 4, base=16, bitRange=6
+sfr = "TWI_SR.UNRE", 	"Memory", 0xfffb8020, 4, base=16, bitRange=7
+sfr = "TWI_SR.NACK", 	"Memory", 0xfffb8020, 4, base=16, bitRange=8
+sfr = "TWI_IER", 	"Memory", 0xfffb8024, 4, base=16
+sfr = "TWI_IER.TXCOMP", 	"Memory", 0xfffb8024, 4, base=16, bitRange=0
+sfr = "TWI_IER.RXRDY", 	"Memory", 0xfffb8024, 4, base=16, bitRange=1
+sfr = "TWI_IER.TXRDY", 	"Memory", 0xfffb8024, 4, base=16, bitRange=2
+sfr = "TWI_IER.OVRE", 	"Memory", 0xfffb8024, 4, base=16, bitRange=6
+sfr = "TWI_IER.UNRE", 	"Memory", 0xfffb8024, 4, base=16, bitRange=7
+sfr = "TWI_IER.NACK", 	"Memory", 0xfffb8024, 4, base=16, bitRange=8
+sfr = "TWI_IDR", 	"Memory", 0xfffb8028, 4, base=16
+sfr = "TWI_IDR.TXCOMP", 	"Memory", 0xfffb8028, 4, base=16, bitRange=0
+sfr = "TWI_IDR.RXRDY", 	"Memory", 0xfffb8028, 4, base=16, bitRange=1
+sfr = "TWI_IDR.TXRDY", 	"Memory", 0xfffb8028, 4, base=16, bitRange=2
+sfr = "TWI_IDR.OVRE", 	"Memory", 0xfffb8028, 4, base=16, bitRange=6
+sfr = "TWI_IDR.UNRE", 	"Memory", 0xfffb8028, 4, base=16, bitRange=7
+sfr = "TWI_IDR.NACK", 	"Memory", 0xfffb8028, 4, base=16, bitRange=8
+sfr = "TWI_IMR", 	"Memory", 0xfffb802c, 4, base=16
+sfr = "TWI_IMR.TXCOMP", 	"Memory", 0xfffb802c, 4, base=16, bitRange=0
+sfr = "TWI_IMR.RXRDY", 	"Memory", 0xfffb802c, 4, base=16, bitRange=1
+sfr = "TWI_IMR.TXRDY", 	"Memory", 0xfffb802c, 4, base=16, bitRange=2
+sfr = "TWI_IMR.OVRE", 	"Memory", 0xfffb802c, 4, base=16, bitRange=6
+sfr = "TWI_IMR.UNRE", 	"Memory", 0xfffb802c, 4, base=16, bitRange=7
+sfr = "TWI_IMR.NACK", 	"Memory", 0xfffb802c, 4, base=16, bitRange=8
+sfr = "TWI_RHR", 	"Memory", 0xfffb8030, 4, base=16
+sfr = "TWI_THR", 	"Memory", 0xfffb8034, 4, base=16
+; ========== Register definition for PWMC_CH3 peripheral ========== 
+sfr = "PWMC_CH3_CMR", 	"Memory", 0xfffcc260, 4, base=16
+sfr = "PWMC_CH3_CMR.CPRE", 	"Memory", 0xfffcc260, 4, base=16, bitRange=0-3
+sfr = "PWMC_CH3_CMR.CALG", 	"Memory", 0xfffcc260, 4, base=16, bitRange=8
+sfr = "PWMC_CH3_CMR.CPOL", 	"Memory", 0xfffcc260, 4, base=16, bitRange=9
+sfr = "PWMC_CH3_CMR.CPD", 	"Memory", 0xfffcc260, 4, base=16, bitRange=10
+sfr = "PWMC_CH3_CDTYR", 	"Memory", 0xfffcc264, 4, base=16
+sfr = "PWMC_CH3_CDTYR.CDTY", 	"Memory", 0xfffcc264, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH3_CPRDR", 	"Memory", 0xfffcc268, 4, base=16
+sfr = "PWMC_CH3_CPRDR.CPRD", 	"Memory", 0xfffcc268, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH3_CCNTR", 	"Memory", 0xfffcc26c, 4, base=16
+sfr = "PWMC_CH3_CCNTR.CCNT", 	"Memory", 0xfffcc26c, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH3_CUPDR", 	"Memory", 0xfffcc270, 4, base=16
+sfr = "PWMC_CH3_CUPDR.CUPD", 	"Memory", 0xfffcc270, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH3_Reserved", 	"Memory", 0xfffcc274, 4, base=16
+; ========== Register definition for PWMC_CH2 peripheral ========== 
+sfr = "PWMC_CH2_CMR", 	"Memory", 0xfffcc240, 4, base=16
+sfr = "PWMC_CH2_CMR.CPRE", 	"Memory", 0xfffcc240, 4, base=16, bitRange=0-3
+sfr = "PWMC_CH2_CMR.CALG", 	"Memory", 0xfffcc240, 4, base=16, bitRange=8
+sfr = "PWMC_CH2_CMR.CPOL", 	"Memory", 0xfffcc240, 4, base=16, bitRange=9
+sfr = "PWMC_CH2_CMR.CPD", 	"Memory", 0xfffcc240, 4, base=16, bitRange=10
+sfr = "PWMC_CH2_CDTYR", 	"Memory", 0xfffcc244, 4, base=16
+sfr = "PWMC_CH2_CDTYR.CDTY", 	"Memory", 0xfffcc244, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH2_CPRDR", 	"Memory", 0xfffcc248, 4, base=16
+sfr = "PWMC_CH2_CPRDR.CPRD", 	"Memory", 0xfffcc248, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH2_CCNTR", 	"Memory", 0xfffcc24c, 4, base=16
+sfr = "PWMC_CH2_CCNTR.CCNT", 	"Memory", 0xfffcc24c, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH2_CUPDR", 	"Memory", 0xfffcc250, 4, base=16
+sfr = "PWMC_CH2_CUPDR.CUPD", 	"Memory", 0xfffcc250, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH2_Reserved", 	"Memory", 0xfffcc254, 4, base=16
+; ========== Register definition for PWMC_CH1 peripheral ========== 
+sfr = "PWMC_CH1_CMR", 	"Memory", 0xfffcc220, 4, base=16
+sfr = "PWMC_CH1_CMR.CPRE", 	"Memory", 0xfffcc220, 4, base=16, bitRange=0-3
+sfr = "PWMC_CH1_CMR.CALG", 	"Memory", 0xfffcc220, 4, base=16, bitRange=8
+sfr = "PWMC_CH1_CMR.CPOL", 	"Memory", 0xfffcc220, 4, base=16, bitRange=9
+sfr = "PWMC_CH1_CMR.CPD", 	"Memory", 0xfffcc220, 4, base=16, bitRange=10
+sfr = "PWMC_CH1_CDTYR", 	"Memory", 0xfffcc224, 4, base=16
+sfr = "PWMC_CH1_CDTYR.CDTY", 	"Memory", 0xfffcc224, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH1_CPRDR", 	"Memory", 0xfffcc228, 4, base=16
+sfr = "PWMC_CH1_CPRDR.CPRD", 	"Memory", 0xfffcc228, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH1_CCNTR", 	"Memory", 0xfffcc22c, 4, base=16
+sfr = "PWMC_CH1_CCNTR.CCNT", 	"Memory", 0xfffcc22c, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH1_CUPDR", 	"Memory", 0xfffcc230, 4, base=16
+sfr = "PWMC_CH1_CUPDR.CUPD", 	"Memory", 0xfffcc230, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH1_Reserved", 	"Memory", 0xfffcc234, 4, base=16
+; ========== Register definition for PWMC_CH0 peripheral ========== 
+sfr = "PWMC_CH0_CMR", 	"Memory", 0xfffcc200, 4, base=16
+sfr = "PWMC_CH0_CMR.CPRE", 	"Memory", 0xfffcc200, 4, base=16, bitRange=0-3
+sfr = "PWMC_CH0_CMR.CALG", 	"Memory", 0xfffcc200, 4, base=16, bitRange=8
+sfr = "PWMC_CH0_CMR.CPOL", 	"Memory", 0xfffcc200, 4, base=16, bitRange=9
+sfr = "PWMC_CH0_CMR.CPD", 	"Memory", 0xfffcc200, 4, base=16, bitRange=10
+sfr = "PWMC_CH0_CDTYR", 	"Memory", 0xfffcc204, 4, base=16
+sfr = "PWMC_CH0_CDTYR.CDTY", 	"Memory", 0xfffcc204, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH0_CPRDR", 	"Memory", 0xfffcc208, 4, base=16
+sfr = "PWMC_CH0_CPRDR.CPRD", 	"Memory", 0xfffcc208, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH0_CCNTR", 	"Memory", 0xfffcc20c, 4, base=16
+sfr = "PWMC_CH0_CCNTR.CCNT", 	"Memory", 0xfffcc20c, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH0_CUPDR", 	"Memory", 0xfffcc210, 4, base=16
+sfr = "PWMC_CH0_CUPDR.CUPD", 	"Memory", 0xfffcc210, 4, base=16, bitRange=0-31
+sfr = "PWMC_CH0_Reserved", 	"Memory", 0xfffcc214, 4, base=16
+; ========== Register definition for PWMC peripheral ========== 
+sfr = "PWMC_MR", 	"Memory", 0xfffcc000, 4, base=16
+sfr = "PWMC_MR.DIVA", 	"Memory", 0xfffcc000, 4, base=16, bitRange=0-7
+sfr = "PWMC_MR.PREA", 	"Memory", 0xfffcc000, 4, base=16, bitRange=8-11
+sfr = "PWMC_MR.DIVB", 	"Memory", 0xfffcc000, 4, base=16, bitRange=16-23
+sfr = "PWMC_MR.PREB", 	"Memory", 0xfffcc000, 4, base=16, bitRange=24-27
+sfr = "PWMC_ENA", 	"Memory", 0xfffcc004, 4, base=16
+sfr = "PWMC_ENA.CHID0", 	"Memory", 0xfffcc004, 4, base=16, bitRange=0
+sfr = "PWMC_ENA.CHID1", 	"Memory", 0xfffcc004, 4, base=16, bitRange=1
+sfr = "PWMC_ENA.CHID2", 	"Memory", 0xfffcc004, 4, base=16, bitRange=2
+sfr = "PWMC_ENA.CHID3", 	"Memory", 0xfffcc004, 4, base=16, bitRange=3
+sfr = "PWMC_DIS", 	"Memory", 0xfffcc008, 4, base=16
+sfr = "PWMC_DIS.CHID0", 	"Memory", 0xfffcc008, 4, base=16, bitRange=0
+sfr = "PWMC_DIS.CHID1", 	"Memory", 0xfffcc008, 4, base=16, bitRange=1
+sfr = "PWMC_DIS.CHID2", 	"Memory", 0xfffcc008, 4, base=16, bitRange=2
+sfr = "PWMC_DIS.CHID3", 	"Memory", 0xfffcc008, 4, base=16, bitRange=3
+sfr = "PWMC_SR", 	"Memory", 0xfffcc00c, 4, base=16
+sfr = "PWMC_SR.CHID0", 	"Memory", 0xfffcc00c, 4, base=16, bitRange=0
+sfr = "PWMC_SR.CHID1", 	"Memory", 0xfffcc00c, 4, base=16, bitRange=1
+sfr = "PWMC_SR.CHID2", 	"Memory", 0xfffcc00c, 4, base=16, bitRange=2
+sfr = "PWMC_SR.CHID3", 	"Memory", 0xfffcc00c, 4, base=16, bitRange=3
+sfr = "PWMC_IER", 	"Memory", 0xfffcc010, 4, base=16
+sfr = "PWMC_IER.CHID0", 	"Memory", 0xfffcc010, 4, base=16, bitRange=0
+sfr = "PWMC_IER.CHID1", 	"Memory", 0xfffcc010, 4, base=16, bitRange=1
+sfr = "PWMC_IER.CHID2", 	"Memory", 0xfffcc010, 4, base=16, bitRange=2
+sfr = "PWMC_IER.CHID3", 	"Memory", 0xfffcc010, 4, base=16, bitRange=3
+sfr = "PWMC_IDR", 	"Memory", 0xfffcc014, 4, base=16
+sfr = "PWMC_IDR.CHID0", 	"Memory", 0xfffcc014, 4, base=16, bitRange=0
+sfr = "PWMC_IDR.CHID1", 	"Memory", 0xfffcc014, 4, base=16, bitRange=1
+sfr = "PWMC_IDR.CHID2", 	"Memory", 0xfffcc014, 4, base=16, bitRange=2
+sfr = "PWMC_IDR.CHID3", 	"Memory", 0xfffcc014, 4, base=16, bitRange=3
+sfr = "PWMC_IMR", 	"Memory", 0xfffcc018, 4, base=16
+sfr = "PWMC_IMR.CHID0", 	"Memory", 0xfffcc018, 4, base=16, bitRange=0
+sfr = "PWMC_IMR.CHID1", 	"Memory", 0xfffcc018, 4, base=16, bitRange=1
+sfr = "PWMC_IMR.CHID2", 	"Memory", 0xfffcc018, 4, base=16, bitRange=2
+sfr = "PWMC_IMR.CHID3", 	"Memory", 0xfffcc018, 4, base=16, bitRange=3
+sfr = "PWMC_ISR", 	"Memory", 0xfffcc01c, 4, base=16
+sfr = "PWMC_ISR.CHID0", 	"Memory", 0xfffcc01c, 4, base=16, bitRange=0
+sfr = "PWMC_ISR.CHID1", 	"Memory", 0xfffcc01c, 4, base=16, bitRange=1
+sfr = "PWMC_ISR.CHID2", 	"Memory", 0xfffcc01c, 4, base=16, bitRange=2
+sfr = "PWMC_ISR.CHID3", 	"Memory", 0xfffcc01c, 4, base=16, bitRange=3
+sfr = "PWMC_VR", 	"Memory", 0xfffcc0fc, 4, base=16
+; ========== Register definition for UDP peripheral ========== 
+sfr = "UDP_NUM", 	"Memory", 0xfffb0000, 4, base=16
+sfr = "UDP_NUM.NUM", 	"Memory", 0xfffb0000, 4, base=16, bitRange=0-10
+sfr = "UDP_NUM.ERR", 	"Memory", 0xfffb0000, 4, base=16, bitRange=16
+sfr = "UDP_NUM.OK", 	"Memory", 0xfffb0000, 4, base=16, bitRange=17
+sfr = "UDP_GLBSTATE", 	"Memory", 0xfffb0004, 4, base=16
+sfr = "UDP_GLBSTATE.FADDEN", 	"Memory", 0xfffb0004, 4, base=16, bitRange=0
+sfr = "UDP_GLBSTATE.CONFG", 	"Memory", 0xfffb0004, 4, base=16, bitRange=1
+sfr = "UDP_GLBSTATE.ESR", 	"Memory", 0xfffb0004, 4, base=16, bitRange=2
+sfr = "UDP_GLBSTATE.RSMINPR", 	"Memory", 0xfffb0004, 4, base=16, bitRange=3
+sfr = "UDP_GLBSTATE.RMWUPE", 	"Memory", 0xfffb0004, 4, base=16, bitRange=4
+sfr = "UDP_FADDR", 	"Memory", 0xfffb0008, 4, base=16
+sfr = "UDP_FADDR.FADD", 	"Memory", 0xfffb0008, 4, base=16, bitRange=0-7
+sfr = "UDP_FADDR.FEN", 	"Memory", 0xfffb0008, 4, base=16, bitRange=8
+sfr = "UDP_IER", 	"Memory", 0xfffb0010, 4, base=16
+sfr = "UDP_IER.EPINT0", 	"Memory", 0xfffb0010, 4, base=16, bitRange=0
+sfr = "UDP_IER.EPINT1", 	"Memory", 0xfffb0010, 4, base=16, bitRange=1
+sfr = "UDP_IER.EPINT2", 	"Memory", 0xfffb0010, 4, base=16, bitRange=2
+sfr = "UDP_IER.EPINT3", 	"Memory", 0xfffb0010, 4, base=16, bitRange=3
+sfr = "UDP_IER.EPINT4", 	"Memory", 0xfffb0010, 4, base=16, bitRange=4
+sfr = "UDP_IER.EPINT5", 	"Memory", 0xfffb0010, 4, base=16, bitRange=5
+sfr = "UDP_IER.RXSUSP", 	"Memory", 0xfffb0010, 4, base=16, bitRange=8
+sfr = "UDP_IER.RXRSM", 	"Memory", 0xfffb0010, 4, base=16, bitRange=9
+sfr = "UDP_IER.EXTRSM", 	"Memory", 0xfffb0010, 4, base=16, bitRange=10
+sfr = "UDP_IER.SOFINT", 	"Memory", 0xfffb0010, 4, base=16, bitRange=11
+sfr = "UDP_IER.WAKEUP", 	"Memory", 0xfffb0010, 4, base=16, bitRange=13
+sfr = "UDP_IDR", 	"Memory", 0xfffb0014, 4, base=16
+sfr = "UDP_IDR.EPINT0", 	"Memory", 0xfffb0014, 4, base=16, bitRange=0
+sfr = "UDP_IDR.EPINT1", 	"Memory", 0xfffb0014, 4, base=16, bitRange=1
+sfr = "UDP_IDR.EPINT2", 	"Memory", 0xfffb0014, 4, base=16, bitRange=2
+sfr = "UDP_IDR.EPINT3", 	"Memory", 0xfffb0014, 4, base=16, bitRange=3
+sfr = "UDP_IDR.EPINT4", 	"Memory", 0xfffb0014, 4, base=16, bitRange=4
+sfr = "UDP_IDR.EPINT5", 	"Memory", 0xfffb0014, 4, base=16, bitRange=5
+sfr = "UDP_IDR.RXSUSP", 	"Memory", 0xfffb0014, 4, base=16, bitRange=8
+sfr = "UDP_IDR.RXRSM", 	"Memory", 0xfffb0014, 4, base=16, bitRange=9
+sfr = "UDP_IDR.EXTRSM", 	"Memory", 0xfffb0014, 4, base=16, bitRange=10
+sfr = "UDP_IDR.SOFINT", 	"Memory", 0xfffb0014, 4, base=16, bitRange=11
+sfr = "UDP_IDR.WAKEUP", 	"Memory", 0xfffb0014, 4, base=16, bitRange=13
+sfr = "UDP_IMR", 	"Memory", 0xfffb0018, 4, base=16
+sfr = "UDP_IMR.EPINT0", 	"Memory", 0xfffb0018, 4, base=16, bitRange=0
+sfr = "UDP_IMR.EPINT1", 	"Memory", 0xfffb0018, 4, base=16, bitRange=1
+sfr = "UDP_IMR.EPINT2", 	"Memory", 0xfffb0018, 4, base=16, bitRange=2
+sfr = "UDP_IMR.EPINT3", 	"Memory", 0xfffb0018, 4, base=16, bitRange=3
+sfr = "UDP_IMR.EPINT4", 	"Memory", 0xfffb0018, 4, base=16, bitRange=4
+sfr = "UDP_IMR.EPINT5", 	"Memory", 0xfffb0018, 4, base=16, bitRange=5
+sfr = "UDP_IMR.RXSUSP", 	"Memory", 0xfffb0018, 4, base=16, bitRange=8
+sfr = "UDP_IMR.RXRSM", 	"Memory", 0xfffb0018, 4, base=16, bitRange=9
+sfr = "UDP_IMR.EXTRSM", 	"Memory", 0xfffb0018, 4, base=16, bitRange=10
+sfr = "UDP_IMR.SOFINT", 	"Memory", 0xfffb0018, 4, base=16, bitRange=11
+sfr = "UDP_IMR.WAKEUP", 	"Memory", 0xfffb0018, 4, base=16, bitRange=13
+sfr = "UDP_ISR", 	"Memory", 0xfffb001c, 4, base=16
+sfr = "UDP_ISR.EPINT0", 	"Memory", 0xfffb001c, 4, base=16, bitRange=0
+sfr = "UDP_ISR.EPINT1", 	"Memory", 0xfffb001c, 4, base=16, bitRange=1
+sfr = "UDP_ISR.EPINT2", 	"Memory", 0xfffb001c, 4, base=16, bitRange=2
+sfr = "UDP_ISR.EPINT3", 	"Memory", 0xfffb001c, 4, base=16, bitRange=3
+sfr = "UDP_ISR.EPINT4", 	"Memory", 0xfffb001c, 4, base=16, bitRange=4
+sfr = "UDP_ISR.EPINT5", 	"Memory", 0xfffb001c, 4, base=16, bitRange=5
+sfr = "UDP_ISR.RXSUSP", 	"Memory", 0xfffb001c, 4, base=16, bitRange=8
+sfr = "UDP_ISR.RXRSM", 	"Memory", 0xfffb001c, 4, base=16, bitRange=9
+sfr = "UDP_ISR.EXTRSM", 	"Memory", 0xfffb001c, 4, base=16, bitRange=10
+sfr = "UDP_ISR.SOFINT", 	"Memory", 0xfffb001c, 4, base=16, bitRange=11
+sfr = "UDP_ISR.ENDBUSRES", 	"Memory", 0xfffb001c, 4, base=16, bitRange=12
+sfr = "UDP_ISR.WAKEUP", 	"Memory", 0xfffb001c, 4, base=16, bitRange=13
+sfr = "UDP_ICR", 	"Memory", 0xfffb0020, 4, base=16
+sfr = "UDP_ICR.EPINT0", 	"Memory", 0xfffb0020, 4, base=16, bitRange=0
+sfr = "UDP_ICR.EPINT1", 	"Memory", 0xfffb0020, 4, base=16, bitRange=1
+sfr = "UDP_ICR.EPINT2", 	"Memory", 0xfffb0020, 4, base=16, bitRange=2
+sfr = "UDP_ICR.EPINT3", 	"Memory", 0xfffb0020, 4, base=16, bitRange=3
+sfr = "UDP_ICR.EPINT4", 	"Memory", 0xfffb0020, 4, base=16, bitRange=4
+sfr = "UDP_ICR.EPINT5", 	"Memory", 0xfffb0020, 4, base=16, bitRange=5
+sfr = "UDP_ICR.RXSUSP", 	"Memory", 0xfffb0020, 4, base=16, bitRange=8
+sfr = "UDP_ICR.RXRSM", 	"Memory", 0xfffb0020, 4, base=16, bitRange=9
+sfr = "UDP_ICR.EXTRSM", 	"Memory", 0xfffb0020, 4, base=16, bitRange=10
+sfr = "UDP_ICR.SOFINT", 	"Memory", 0xfffb0020, 4, base=16, bitRange=11
+sfr = "UDP_ICR.WAKEUP", 	"Memory", 0xfffb0020, 4, base=16, bitRange=13
+sfr = "UDP_RSTEP", 	"Memory", 0xfffb0028, 4, base=16
+sfr = "UDP_RSTEP.EP0", 	"Memory", 0xfffb0028, 4, base=16, bitRange=0
+sfr = "UDP_RSTEP.EP1", 	"Memory", 0xfffb0028, 4, base=16, bitRange=1
+sfr = "UDP_RSTEP.EP2", 	"Memory", 0xfffb0028, 4, base=16, bitRange=2
+sfr = "UDP_RSTEP.EP3", 	"Memory", 0xfffb0028, 4, base=16, bitRange=3
+sfr = "UDP_RSTEP.EP4", 	"Memory", 0xfffb0028, 4, base=16, bitRange=4
+sfr = "UDP_RSTEP.EP5", 	"Memory", 0xfffb0028, 4, base=16, bitRange=5
+sfr = "UDP_CSR", 	"Memory", 0xfffb0030, 4, base=16
+sfr = "UDP_CSR.TXCOMP", 	"Memory", 0xfffb0030, 4, base=16, bitRange=0
+sfr = "UDP_CSR.BK0", 	"Memory", 0xfffb0030, 4, base=16, bitRange=1
+sfr = "UDP_CSR.RXSETUP", 	"Memory", 0xfffb0030, 4, base=16, bitRange=2
+sfr = "UDP_CSR.ISOERROR", 	"Memory", 0xfffb0030, 4, base=16, bitRange=3
+sfr = "UDP_CSR.TXPKTRDY", 	"Memory", 0xfffb0030, 4, base=16, bitRange=4
+sfr = "UDP_CSR.FORCESTALL", 	"Memory", 0xfffb0030, 4, base=16, bitRange=5
+sfr = "UDP_CSR.BK1", 	"Memory", 0xfffb0030, 4, base=16, bitRange=6
+sfr = "UDP_CSR.DIR", 	"Memory", 0xfffb0030, 4, base=16, bitRange=7
+sfr = "UDP_CSR.EPTYPE", 	"Memory", 0xfffb0030, 4, base=16, bitRange=8-10
+sfr = "UDP_CSR.DTGLE", 	"Memory", 0xfffb0030, 4, base=16, bitRange=11
+sfr = "UDP_CSR.EPEDS", 	"Memory", 0xfffb0030, 4, base=16, bitRange=15
+sfr = "UDP_CSR.RXBYTECNT", 	"Memory", 0xfffb0030, 4, base=16, bitRange=16-26
+sfr = "UDP_FDR", 	"Memory", 0xfffb0050, 4, base=16
+sfr = "UDP_TXVC", 	"Memory", 0xfffb0074, 4, base=16
+sfr = "UDP_TXVC.TXVDIS", 	"Memory", 0xfffb0074, 4, base=16, bitRange=8
+sfr = "UDP_TXVC.PUON", 	"Memory", 0xfffb0074, 4, base=16, bitRange=9
+; ========== Register definition for TC0 peripheral ========== 
+sfr = "TC0_CCR", 	"Memory", 0xfffa0000, 4, base=16
+sfr = "TC0_CCR.CLKEN", 	"Memory", 0xfffa0000, 4, base=16, bitRange=0
+sfr = "TC0_CCR.CLKDIS", 	"Memory", 0xfffa0000, 4, base=16, bitRange=1
+sfr = "TC0_CCR.SWTRG", 	"Memory", 0xfffa0000, 4, base=16, bitRange=2
+sfr = "TC0_CMR", 	"Memory", 0xfffa0004, 4, base=16
+sfr = "TC0_CMR.CLKS", 	"Memory", 0xfffa0004, 4, base=16, bitRange=0-2
+sfr = "TC0_CMR.CLKI", 	"Memory", 0xfffa0004, 4, base=16, bitRange=3
+sfr = "TC0_CMR.BURST", 	"Memory", 0xfffa0004, 4, base=16, bitRange=4-5
+sfr = "TC0_CMR.CPCSTOP", 	"Memory", 0xfffa0004, 4, base=16, bitRange=6
+sfr = "TC0_CMR.LDBSTOP", 	"Memory", 0xfffa0004, 4, base=16, bitRange=6
+sfr = "TC0_CMR.CPCDIS", 	"Memory", 0xfffa0004, 4, base=16, bitRange=7
+sfr = "TC0_CMR.LDBDIS", 	"Memory", 0xfffa0004, 4, base=16, bitRange=7
+sfr = "TC0_CMR.ETRGEDG", 	"Memory", 0xfffa0004, 4, base=16, bitRange=8-9
+sfr = "TC0_CMR.EEVTEDG", 	"Memory", 0xfffa0004, 4, base=16, bitRange=8-9
+sfr = "TC0_CMR.EEVT", 	"Memory", 0xfffa0004, 4, base=16, bitRange=10-11
+sfr = "TC0_CMR.ABETRG", 	"Memory", 0xfffa0004, 4, base=16, bitRange=10
+sfr = "TC0_CMR.ENETRG", 	"Memory", 0xfffa0004, 4, base=16, bitRange=12
+sfr = "TC0_CMR.WAVESEL", 	"Memory", 0xfffa0004, 4, base=16, bitRange=13-14
+sfr = "TC0_CMR.CPCTRG", 	"Memory", 0xfffa0004, 4, base=16, bitRange=14
+sfr = "TC0_CMR.WAVE", 	"Memory", 0xfffa0004, 4, base=16, bitRange=15
+sfr = "TC0_CMR.ACPA", 	"Memory", 0xfffa0004, 4, base=16, bitRange=16-17
+sfr = "TC0_CMR.LDRA", 	"Memory", 0xfffa0004, 4, base=16, bitRange=16-17
+sfr = "TC0_CMR.ACPC", 	"Memory", 0xfffa0004, 4, base=16, bitRange=18-19
+sfr = "TC0_CMR.LDRB", 	"Memory", 0xfffa0004, 4, base=16, bitRange=18-19
+sfr = "TC0_CMR.AEEVT", 	"Memory", 0xfffa0004, 4, base=16, bitRange=20-21
+sfr = "TC0_CMR.ASWTRG", 	"Memory", 0xfffa0004, 4, base=16, bitRange=22-23
+sfr = "TC0_CMR.BCPB", 	"Memory", 0xfffa0004, 4, base=16, bitRange=24-25
+sfr = "TC0_CMR.BCPC", 	"Memory", 0xfffa0004, 4, base=16, bitRange=26-27
+sfr = "TC0_CMR.BEEVT", 	"Memory", 0xfffa0004, 4, base=16, bitRange=28-29
+sfr = "TC0_CMR.BSWTRG", 	"Memory", 0xfffa0004, 4, base=16, bitRange=30-31
+sfr = "TC0_CV", 	"Memory", 0xfffa0010, 4, base=16
+sfr = "TC0_RA", 	"Memory", 0xfffa0014, 4, base=16
+sfr = "TC0_RB", 	"Memory", 0xfffa0018, 4, base=16
+sfr = "TC0_RC", 	"Memory", 0xfffa001c, 4, base=16
+sfr = "TC0_SR", 	"Memory", 0xfffa0020, 4, base=16
+sfr = "TC0_SR.COVFS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=0
+sfr = "TC0_SR.LOVRS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=1
+sfr = "TC0_SR.CPAS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=2
+sfr = "TC0_SR.CPBS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=3
+sfr = "TC0_SR.CPCS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=4
+sfr = "TC0_SR.LDRAS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=5
+sfr = "TC0_SR.LDRBS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=6
+sfr = "TC0_SR.ETRGS", 	"Memory", 0xfffa0020, 4, base=16, bitRange=7
+sfr = "TC0_SR.CLKSTA", 	"Memory", 0xfffa0020, 4, base=16, bitRange=16
+sfr = "TC0_SR.MTIOA", 	"Memory", 0xfffa0020, 4, base=16, bitRange=17
+sfr = "TC0_SR.MTIOB", 	"Memory", 0xfffa0020, 4, base=16, bitRange=18
+sfr = "TC0_IER", 	"Memory", 0xfffa0024, 4, base=16
+sfr = "TC0_IER.COVFS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=0
+sfr = "TC0_IER.LOVRS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=1
+sfr = "TC0_IER.CPAS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=2
+sfr = "TC0_IER.CPBS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=3
+sfr = "TC0_IER.CPCS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=4
+sfr = "TC0_IER.LDRAS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=5
+sfr = "TC0_IER.LDRBS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=6
+sfr = "TC0_IER.ETRGS", 	"Memory", 0xfffa0024, 4, base=16, bitRange=7
+sfr = "TC0_IDR", 	"Memory", 0xfffa0028, 4, base=16
+sfr = "TC0_IDR.COVFS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=0
+sfr = "TC0_IDR.LOVRS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=1
+sfr = "TC0_IDR.CPAS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=2
+sfr = "TC0_IDR.CPBS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=3
+sfr = "TC0_IDR.CPCS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=4
+sfr = "TC0_IDR.LDRAS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=5
+sfr = "TC0_IDR.LDRBS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=6
+sfr = "TC0_IDR.ETRGS", 	"Memory", 0xfffa0028, 4, base=16, bitRange=7
+sfr = "TC0_IMR", 	"Memory", 0xfffa002c, 4, base=16
+sfr = "TC0_IMR.COVFS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=0
+sfr = "TC0_IMR.LOVRS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=1
+sfr = "TC0_IMR.CPAS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=2
+sfr = "TC0_IMR.CPBS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=3
+sfr = "TC0_IMR.CPCS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=4
+sfr = "TC0_IMR.LDRAS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=5
+sfr = "TC0_IMR.LDRBS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=6
+sfr = "TC0_IMR.ETRGS", 	"Memory", 0xfffa002c, 4, base=16, bitRange=7
+; ========== Register definition for TC1 peripheral ========== 
+sfr = "TC1_CCR", 	"Memory", 0xfffa0040, 4, base=16
+sfr = "TC1_CCR.CLKEN", 	"Memory", 0xfffa0040, 4, base=16, bitRange=0
+sfr = "TC1_CCR.CLKDIS", 	"Memory", 0xfffa0040, 4, base=16, bitRange=1
+sfr = "TC1_CCR.SWTRG", 	"Memory", 0xfffa0040, 4, base=16, bitRange=2
+sfr = "TC1_CMR", 	"Memory", 0xfffa0044, 4, base=16
+sfr = "TC1_CMR.CLKS", 	"Memory", 0xfffa0044, 4, base=16, bitRange=0-2
+sfr = "TC1_CMR.CLKI", 	"Memory", 0xfffa0044, 4, base=16, bitRange=3
+sfr = "TC1_CMR.BURST", 	"Memory", 0xfffa0044, 4, base=16, bitRange=4-5
+sfr = "TC1_CMR.CPCSTOP", 	"Memory", 0xfffa0044, 4, base=16, bitRange=6
+sfr = "TC1_CMR.LDBSTOP", 	"Memory", 0xfffa0044, 4, base=16, bitRange=6
+sfr = "TC1_CMR.CPCDIS", 	"Memory", 0xfffa0044, 4, base=16, bitRange=7
+sfr = "TC1_CMR.LDBDIS", 	"Memory", 0xfffa0044, 4, base=16, bitRange=7
+sfr = "TC1_CMR.ETRGEDG", 	"Memory", 0xfffa0044, 4, base=16, bitRange=8-9
+sfr = "TC1_CMR.EEVTEDG", 	"Memory", 0xfffa0044, 4, base=16, bitRange=8-9
+sfr = "TC1_CMR.EEVT", 	"Memory", 0xfffa0044, 4, base=16, bitRange=10-11
+sfr = "TC1_CMR.ABETRG", 	"Memory", 0xfffa0044, 4, base=16, bitRange=10
+sfr = "TC1_CMR.ENETRG", 	"Memory", 0xfffa0044, 4, base=16, bitRange=12
+sfr = "TC1_CMR.WAVESEL", 	"Memory", 0xfffa0044, 4, base=16, bitRange=13-14
+sfr = "TC1_CMR.CPCTRG", 	"Memory", 0xfffa0044, 4, base=16, bitRange=14
+sfr = "TC1_CMR.WAVE", 	"Memory", 0xfffa0044, 4, base=16, bitRange=15
+sfr = "TC1_CMR.ACPA", 	"Memory", 0xfffa0044, 4, base=16, bitRange=16-17
+sfr = "TC1_CMR.LDRA", 	"Memory", 0xfffa0044, 4, base=16, bitRange=16-17
+sfr = "TC1_CMR.ACPC", 	"Memory", 0xfffa0044, 4, base=16, bitRange=18-19
+sfr = "TC1_CMR.LDRB", 	"Memory", 0xfffa0044, 4, base=16, bitRange=18-19
+sfr = "TC1_CMR.AEEVT", 	"Memory", 0xfffa0044, 4, base=16, bitRange=20-21
+sfr = "TC1_CMR.ASWTRG", 	"Memory", 0xfffa0044, 4, base=16, bitRange=22-23
+sfr = "TC1_CMR.BCPB", 	"Memory", 0xfffa0044, 4, base=16, bitRange=24-25
+sfr = "TC1_CMR.BCPC", 	"Memory", 0xfffa0044, 4, base=16, bitRange=26-27
+sfr = "TC1_CMR.BEEVT", 	"Memory", 0xfffa0044, 4, base=16, bitRange=28-29
+sfr = "TC1_CMR.BSWTRG", 	"Memory", 0xfffa0044, 4, base=16, bitRange=30-31
+sfr = "TC1_CV", 	"Memory", 0xfffa0050, 4, base=16
+sfr = "TC1_RA", 	"Memory", 0xfffa0054, 4, base=16
+sfr = "TC1_RB", 	"Memory", 0xfffa0058, 4, base=16
+sfr = "TC1_RC", 	"Memory", 0xfffa005c, 4, base=16
+sfr = "TC1_SR", 	"Memory", 0xfffa0060, 4, base=16
+sfr = "TC1_SR.COVFS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=0
+sfr = "TC1_SR.LOVRS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=1
+sfr = "TC1_SR.CPAS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=2
+sfr = "TC1_SR.CPBS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=3
+sfr = "TC1_SR.CPCS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=4
+sfr = "TC1_SR.LDRAS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=5
+sfr = "TC1_SR.LDRBS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=6
+sfr = "TC1_SR.ETRGS", 	"Memory", 0xfffa0060, 4, base=16, bitRange=7
+sfr = "TC1_SR.CLKSTA", 	"Memory", 0xfffa0060, 4, base=16, bitRange=16
+sfr = "TC1_SR.MTIOA", 	"Memory", 0xfffa0060, 4, base=16, bitRange=17
+sfr = "TC1_SR.MTIOB", 	"Memory", 0xfffa0060, 4, base=16, bitRange=18
+sfr = "TC1_IER", 	"Memory", 0xfffa0064, 4, base=16
+sfr = "TC1_IER.COVFS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=0
+sfr = "TC1_IER.LOVRS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=1
+sfr = "TC1_IER.CPAS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=2
+sfr = "TC1_IER.CPBS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=3
+sfr = "TC1_IER.CPCS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=4
+sfr = "TC1_IER.LDRAS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=5
+sfr = "TC1_IER.LDRBS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=6
+sfr = "TC1_IER.ETRGS", 	"Memory", 0xfffa0064, 4, base=16, bitRange=7
+sfr = "TC1_IDR", 	"Memory", 0xfffa0068, 4, base=16
+sfr = "TC1_IDR.COVFS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=0
+sfr = "TC1_IDR.LOVRS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=1
+sfr = "TC1_IDR.CPAS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=2
+sfr = "TC1_IDR.CPBS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=3
+sfr = "TC1_IDR.CPCS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=4
+sfr = "TC1_IDR.LDRAS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=5
+sfr = "TC1_IDR.LDRBS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=6
+sfr = "TC1_IDR.ETRGS", 	"Memory", 0xfffa0068, 4, base=16, bitRange=7
+sfr = "TC1_IMR", 	"Memory", 0xfffa006c, 4, base=16
+sfr = "TC1_IMR.COVFS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=0
+sfr = "TC1_IMR.LOVRS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=1
+sfr = "TC1_IMR.CPAS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=2
+sfr = "TC1_IMR.CPBS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=3
+sfr = "TC1_IMR.CPCS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=4
+sfr = "TC1_IMR.LDRAS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=5
+sfr = "TC1_IMR.LDRBS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=6
+sfr = "TC1_IMR.ETRGS", 	"Memory", 0xfffa006c, 4, base=16, bitRange=7
+; ========== Register definition for TC2 peripheral ========== 
+sfr = "TC2_CCR", 	"Memory", 0xfffa0080, 4, base=16
+sfr = "TC2_CCR.CLKEN", 	"Memory", 0xfffa0080, 4, base=16, bitRange=0
+sfr = "TC2_CCR.CLKDIS", 	"Memory", 0xfffa0080, 4, base=16, bitRange=1
+sfr = "TC2_CCR.SWTRG", 	"Memory", 0xfffa0080, 4, base=16, bitRange=2
+sfr = "TC2_CMR", 	"Memory", 0xfffa0084, 4, base=16
+sfr = "TC2_CMR.CLKS", 	"Memory", 0xfffa0084, 4, base=16, bitRange=0-2
+sfr = "TC2_CMR.CLKI", 	"Memory", 0xfffa0084, 4, base=16, bitRange=3
+sfr = "TC2_CMR.BURST", 	"Memory", 0xfffa0084, 4, base=16, bitRange=4-5
+sfr = "TC2_CMR.CPCSTOP", 	"Memory", 0xfffa0084, 4, base=16, bitRange=6
+sfr = "TC2_CMR.LDBSTOP", 	"Memory", 0xfffa0084, 4, base=16, bitRange=6
+sfr = "TC2_CMR.CPCDIS", 	"Memory", 0xfffa0084, 4, base=16, bitRange=7
+sfr = "TC2_CMR.LDBDIS", 	"Memory", 0xfffa0084, 4, base=16, bitRange=7
+sfr = "TC2_CMR.ETRGEDG", 	"Memory", 0xfffa0084, 4, base=16, bitRange=8-9
+sfr = "TC2_CMR.EEVTEDG", 	"Memory", 0xfffa0084, 4, base=16, bitRange=8-9
+sfr = "TC2_CMR.EEVT", 	"Memory", 0xfffa0084, 4, base=16, bitRange=10-11
+sfr = "TC2_CMR.ABETRG", 	"Memory", 0xfffa0084, 4, base=16, bitRange=10
+sfr = "TC2_CMR.ENETRG", 	"Memory", 0xfffa0084, 4, base=16, bitRange=12
+sfr = "TC2_CMR.WAVESEL", 	"Memory", 0xfffa0084, 4, base=16, bitRange=13-14
+sfr = "TC2_CMR.CPCTRG", 	"Memory", 0xfffa0084, 4, base=16, bitRange=14
+sfr = "TC2_CMR.WAVE", 	"Memory", 0xfffa0084, 4, base=16, bitRange=15
+sfr = "TC2_CMR.ACPA", 	"Memory", 0xfffa0084, 4, base=16, bitRange=16-17
+sfr = "TC2_CMR.LDRA", 	"Memory", 0xfffa0084, 4, base=16, bitRange=16-17
+sfr = "TC2_CMR.ACPC", 	"Memory", 0xfffa0084, 4, base=16, bitRange=18-19
+sfr = "TC2_CMR.LDRB", 	"Memory", 0xfffa0084, 4, base=16, bitRange=18-19
+sfr = "TC2_CMR.AEEVT", 	"Memory", 0xfffa0084, 4, base=16, bitRange=20-21
+sfr = "TC2_CMR.ASWTRG", 	"Memory", 0xfffa0084, 4, base=16, bitRange=22-23
+sfr = "TC2_CMR.BCPB", 	"Memory", 0xfffa0084, 4, base=16, bitRange=24-25
+sfr = "TC2_CMR.BCPC", 	"Memory", 0xfffa0084, 4, base=16, bitRange=26-27
+sfr = "TC2_CMR.BEEVT", 	"Memory", 0xfffa0084, 4, base=16, bitRange=28-29
+sfr = "TC2_CMR.BSWTRG", 	"Memory", 0xfffa0084, 4, base=16, bitRange=30-31
+sfr = "TC2_CV", 	"Memory", 0xfffa0090, 4, base=16
+sfr = "TC2_RA", 	"Memory", 0xfffa0094, 4, base=16
+sfr = "TC2_RB", 	"Memory", 0xfffa0098, 4, base=16
+sfr = "TC2_RC", 	"Memory", 0xfffa009c, 4, base=16
+sfr = "TC2_SR", 	"Memory", 0xfffa00a0, 4, base=16
+sfr = "TC2_SR.COVFS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=0
+sfr = "TC2_SR.LOVRS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=1
+sfr = "TC2_SR.CPAS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=2
+sfr = "TC2_SR.CPBS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=3
+sfr = "TC2_SR.CPCS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=4
+sfr = "TC2_SR.LDRAS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=5
+sfr = "TC2_SR.LDRBS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=6
+sfr = "TC2_SR.ETRGS", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=7
+sfr = "TC2_SR.CLKSTA", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=16
+sfr = "TC2_SR.MTIOA", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=17
+sfr = "TC2_SR.MTIOB", 	"Memory", 0xfffa00a0, 4, base=16, bitRange=18
+sfr = "TC2_IER", 	"Memory", 0xfffa00a4, 4, base=16
+sfr = "TC2_IER.COVFS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=0
+sfr = "TC2_IER.LOVRS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=1
+sfr = "TC2_IER.CPAS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=2
+sfr = "TC2_IER.CPBS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=3
+sfr = "TC2_IER.CPCS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=4
+sfr = "TC2_IER.LDRAS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=5
+sfr = "TC2_IER.LDRBS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=6
+sfr = "TC2_IER.ETRGS", 	"Memory", 0xfffa00a4, 4, base=16, bitRange=7
+sfr = "TC2_IDR", 	"Memory", 0xfffa00a8, 4, base=16
+sfr = "TC2_IDR.COVFS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=0
+sfr = "TC2_IDR.LOVRS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=1
+sfr = "TC2_IDR.CPAS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=2
+sfr = "TC2_IDR.CPBS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=3
+sfr = "TC2_IDR.CPCS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=4
+sfr = "TC2_IDR.LDRAS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=5
+sfr = "TC2_IDR.LDRBS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=6
+sfr = "TC2_IDR.ETRGS", 	"Memory", 0xfffa00a8, 4, base=16, bitRange=7
+sfr = "TC2_IMR", 	"Memory", 0xfffa00ac, 4, base=16
+sfr = "TC2_IMR.COVFS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=0
+sfr = "TC2_IMR.LOVRS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=1
+sfr = "TC2_IMR.CPAS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=2
+sfr = "TC2_IMR.CPBS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=3
+sfr = "TC2_IMR.CPCS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=4
+sfr = "TC2_IMR.LDRAS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=5
+sfr = "TC2_IMR.LDRBS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=6
+sfr = "TC2_IMR.ETRGS", 	"Memory", 0xfffa00ac, 4, base=16, bitRange=7
+; ========== Register definition for TCB peripheral ========== 
+sfr = "TCB_BCR", 	"Memory", 0xfffa00c0, 4, base=16
+sfr = "TCB_BCR.SYNC", 	"Memory", 0xfffa00c0, 4, base=16, bitRange=0
+sfr = "TCB_BMR", 	"Memory", 0xfffa00c4, 4, base=16
+sfr = "TCB_BMR.TC0XC0S", 	"Memory", 0xfffa00c4, 4, base=16, bitRange=0-1
+sfr = "TCB_BMR.TC1XC1S", 	"Memory", 0xfffa00c4, 4, base=16, bitRange=2-3
+sfr = "TCB_BMR.TC2XC2S", 	"Memory", 0xfffa00c4, 4, base=16, bitRange=4-5
+; ========== Register definition for CAN_MB0 peripheral ========== 
+sfr = "CAN_MB0_MMR", 	"Memory", 0xfffd0200, 4, base=16
+sfr = "CAN_MB0_MMR.MTIMEMARK", 	"Memory", 0xfffd0200, 4, base=16, bitRange=0-15
+sfr = "CAN_MB0_MMR.PRIOR", 	"Memory", 0xfffd0200, 4, base=16, bitRange=16-19
+sfr = "CAN_MB0_MMR.MOT", 	"Memory", 0xfffd0200, 4, base=16, bitRange=24-26
+sfr = "CAN_MB0_MAM", 	"Memory", 0xfffd0204, 4, base=16
+sfr = "CAN_MB0_MAM.MIDvB", 	"Memory", 0xfffd0204, 4, base=16, bitRange=0-17
+sfr = "CAN_MB0_MAM.MIDvA", 	"Memory", 0xfffd0204, 4, base=16, bitRange=18-28
+sfr = "CAN_MB0_MAM.MIDE", 	"Memory", 0xfffd0204, 4, base=16, bitRange=29
+sfr = "CAN_MB0_MID", 	"Memory", 0xfffd0208, 4, base=16
+sfr = "CAN_MB0_MID.MIDvB", 	"Memory", 0xfffd0208, 4, base=16, bitRange=0-17
+sfr = "CAN_MB0_MID.MIDvA", 	"Memory", 0xfffd0208, 4, base=16, bitRange=18-28
+sfr = "CAN_MB0_MID.MIDE", 	"Memory", 0xfffd0208, 4, base=16, bitRange=29
+sfr = "CAN_MB0_MFID", 	"Memory", 0xfffd020c, 4, base=16
+sfr = "CAN_MB0_MSR", 	"Memory", 0xfffd0210, 4, base=16
+sfr = "CAN_MB0_MSR.MTIMESTAMP", 	"Memory", 0xfffd0210, 4, base=16, bitRange=0-15
+sfr = "CAN_MB0_MSR.MDLC", 	"Memory", 0xfffd0210, 4, base=16, bitRange=16-19
+sfr = "CAN_MB0_MSR.MRTR", 	"Memory", 0xfffd0210, 4, base=16, bitRange=20
+sfr = "CAN_MB0_MSR.MABT", 	"Memory", 0xfffd0210, 4, base=16, bitRange=22
+sfr = "CAN_MB0_MSR.MRDY", 	"Memory", 0xfffd0210, 4, base=16, bitRange=23
+sfr = "CAN_MB0_MSR.MMI", 	"Memory", 0xfffd0210, 4, base=16, bitRange=24
+sfr = "CAN_MB0_MDL", 	"Memory", 0xfffd0214, 4, base=16
+sfr = "CAN_MB0_MDH", 	"Memory", 0xfffd0218, 4, base=16
+sfr = "CAN_MB0_MCR", 	"Memory", 0xfffd021c, 4, base=16
+sfr = "CAN_MB0_MCR.MDLC", 	"Memory", 0xfffd021c, 4, base=16, bitRange=16-19
+sfr = "CAN_MB0_MCR.MRTR", 	"Memory", 0xfffd021c, 4, base=16, bitRange=20
+sfr = "CAN_MB0_MCR.MACR", 	"Memory", 0xfffd021c, 4, base=16, bitRange=22
+sfr = "CAN_MB0_MCR.MTCR", 	"Memory", 0xfffd021c, 4, base=16, bitRange=23
+; ========== Register definition for CAN_MB1 peripheral ========== 
+sfr = "CAN_MB1_MMR", 	"Memory", 0xfffd0220, 4, base=16
+sfr = "CAN_MB1_MMR.MTIMEMARK", 	"Memory", 0xfffd0220, 4, base=16, bitRange=0-15
+sfr = "CAN_MB1_MMR.PRIOR", 	"Memory", 0xfffd0220, 4, base=16, bitRange=16-19
+sfr = "CAN_MB1_MMR.MOT", 	"Memory", 0xfffd0220, 4, base=16, bitRange=24-26
+sfr = "CAN_MB1_MAM", 	"Memory", 0xfffd0224, 4, base=16
+sfr = "CAN_MB1_MAM.MIDvB", 	"Memory", 0xfffd0224, 4, base=16, bitRange=0-17
+sfr = "CAN_MB1_MAM.MIDvA", 	"Memory", 0xfffd0224, 4, base=16, bitRange=18-28
+sfr = "CAN_MB1_MAM.MIDE", 	"Memory", 0xfffd0224, 4, base=16, bitRange=29
+sfr = "CAN_MB1_MID", 	"Memory", 0xfffd0228, 4, base=16
+sfr = "CAN_MB1_MID.MIDvB", 	"Memory", 0xfffd0228, 4, base=16, bitRange=0-17
+sfr = "CAN_MB1_MID.MIDvA", 	"Memory", 0xfffd0228, 4, base=16, bitRange=18-28
+sfr = "CAN_MB1_MID.MIDE", 	"Memory", 0xfffd0228, 4, base=16, bitRange=29
+sfr = "CAN_MB1_MFID", 	"Memory", 0xfffd022c, 4, base=16
+sfr = "CAN_MB1_MSR", 	"Memory", 0xfffd0230, 4, base=16
+sfr = "CAN_MB1_MSR.MTIMESTAMP", 	"Memory", 0xfffd0230, 4, base=16, bitRange=0-15
+sfr = "CAN_MB1_MSR.MDLC", 	"Memory", 0xfffd0230, 4, base=16, bitRange=16-19
+sfr = "CAN_MB1_MSR.MRTR", 	"Memory", 0xfffd0230, 4, base=16, bitRange=20
+sfr = "CAN_MB1_MSR.MABT", 	"Memory", 0xfffd0230, 4, base=16, bitRange=22
+sfr = "CAN_MB1_MSR.MRDY", 	"Memory", 0xfffd0230, 4, base=16, bitRange=23
+sfr = "CAN_MB1_MSR.MMI", 	"Memory", 0xfffd0230, 4, base=16, bitRange=24
+sfr = "CAN_MB1_MDL", 	"Memory", 0xfffd0234, 4, base=16
+sfr = "CAN_MB1_MDH", 	"Memory", 0xfffd0238, 4, base=16
+sfr = "CAN_MB1_MCR", 	"Memory", 0xfffd023c, 4, base=16
+sfr = "CAN_MB1_MCR.MDLC", 	"Memory", 0xfffd023c, 4, base=16, bitRange=16-19
+sfr = "CAN_MB1_MCR.MRTR", 	"Memory", 0xfffd023c, 4, base=16, bitRange=20
+sfr = "CAN_MB1_MCR.MACR", 	"Memory", 0xfffd023c, 4, base=16, bitRange=22
+sfr = "CAN_MB1_MCR.MTCR", 	"Memory", 0xfffd023c, 4, base=16, bitRange=23
+; ========== Register definition for CAN_MB2 peripheral ========== 
+sfr = "CAN_MB2_MMR", 	"Memory", 0xfffd0240, 4, base=16
+sfr = "CAN_MB2_MMR.MTIMEMARK", 	"Memory", 0xfffd0240, 4, base=16, bitRange=0-15
+sfr = "CAN_MB2_MMR.PRIOR", 	"Memory", 0xfffd0240, 4, base=16, bitRange=16-19
+sfr = "CAN_MB2_MMR.MOT", 	"Memory", 0xfffd0240, 4, base=16, bitRange=24-26
+sfr = "CAN_MB2_MAM", 	"Memory", 0xfffd0244, 4, base=16
+sfr = "CAN_MB2_MAM.MIDvB", 	"Memory", 0xfffd0244, 4, base=16, bitRange=0-17
+sfr = "CAN_MB2_MAM.MIDvA", 	"Memory", 0xfffd0244, 4, base=16, bitRange=18-28
+sfr = "CAN_MB2_MAM.MIDE", 	"Memory", 0xfffd0244, 4, base=16, bitRange=29
+sfr = "CAN_MB2_MID", 	"Memory", 0xfffd0248, 4, base=16
+sfr = "CAN_MB2_MID.MIDvB", 	"Memory", 0xfffd0248, 4, base=16, bitRange=0-17
+sfr = "CAN_MB2_MID.MIDvA", 	"Memory", 0xfffd0248, 4, base=16, bitRange=18-28
+sfr = "CAN_MB2_MID.MIDE", 	"Memory", 0xfffd0248, 4, base=16, bitRange=29
+sfr = "CAN_MB2_MFID", 	"Memory", 0xfffd024c, 4, base=16
+sfr = "CAN_MB2_MSR", 	"Memory", 0xfffd0250, 4, base=16
+sfr = "CAN_MB2_MSR.MTIMESTAMP", 	"Memory", 0xfffd0250, 4, base=16, bitRange=0-15
+sfr = "CAN_MB2_MSR.MDLC", 	"Memory", 0xfffd0250, 4, base=16, bitRange=16-19
+sfr = "CAN_MB2_MSR.MRTR", 	"Memory", 0xfffd0250, 4, base=16, bitRange=20
+sfr = "CAN_MB2_MSR.MABT", 	"Memory", 0xfffd0250, 4, base=16, bitRange=22
+sfr = "CAN_MB2_MSR.MRDY", 	"Memory", 0xfffd0250, 4, base=16, bitRange=23
+sfr = "CAN_MB2_MSR.MMI", 	"Memory", 0xfffd0250, 4, base=16, bitRange=24
+sfr = "CAN_MB2_MDL", 	"Memory", 0xfffd0254, 4, base=16
+sfr = "CAN_MB2_MDH", 	"Memory", 0xfffd0258, 4, base=16
+sfr = "CAN_MB2_MCR", 	"Memory", 0xfffd025c, 4, base=16
+sfr = "CAN_MB2_MCR.MDLC", 	"Memory", 0xfffd025c, 4, base=16, bitRange=16-19
+sfr = "CAN_MB2_MCR.MRTR", 	"Memory", 0xfffd025c, 4, base=16, bitRange=20
+sfr = "CAN_MB2_MCR.MACR", 	"Memory", 0xfffd025c, 4, base=16, bitRange=22
+sfr = "CAN_MB2_MCR.MTCR", 	"Memory", 0xfffd025c, 4, base=16, bitRange=23
+; ========== Register definition for CAN_MB3 peripheral ========== 
+sfr = "CAN_MB3_MMR", 	"Memory", 0xfffd0260, 4, base=16
+sfr = "CAN_MB3_MMR.MTIMEMARK", 	"Memory", 0xfffd0260, 4, base=16, bitRange=0-15
+sfr = "CAN_MB3_MMR.PRIOR", 	"Memory", 0xfffd0260, 4, base=16, bitRange=16-19
+sfr = "CAN_MB3_MMR.MOT", 	"Memory", 0xfffd0260, 4, base=16, bitRange=24-26
+sfr = "CAN_MB3_MAM", 	"Memory", 0xfffd0264, 4, base=16
+sfr = "CAN_MB3_MAM.MIDvB", 	"Memory", 0xfffd0264, 4, base=16, bitRange=0-17
+sfr = "CAN_MB3_MAM.MIDvA", 	"Memory", 0xfffd0264, 4, base=16, bitRange=18-28
+sfr = "CAN_MB3_MAM.MIDE", 	"Memory", 0xfffd0264, 4, base=16, bitRange=29
+sfr = "CAN_MB3_MID", 	"Memory", 0xfffd0268, 4, base=16
+sfr = "CAN_MB3_MID.MIDvB", 	"Memory", 0xfffd0268, 4, base=16, bitRange=0-17
+sfr = "CAN_MB3_MID.MIDvA", 	"Memory", 0xfffd0268, 4, base=16, bitRange=18-28
+sfr = "CAN_MB3_MID.MIDE", 	"Memory", 0xfffd0268, 4, base=16, bitRange=29
+sfr = "CAN_MB3_MFID", 	"Memory", 0xfffd026c, 4, base=16
+sfr = "CAN_MB3_MSR", 	"Memory", 0xfffd0270, 4, base=16
+sfr = "CAN_MB3_MSR.MTIMESTAMP", 	"Memory", 0xfffd0270, 4, base=16, bitRange=0-15
+sfr = "CAN_MB3_MSR.MDLC", 	"Memory", 0xfffd0270, 4, base=16, bitRange=16-19
+sfr = "CAN_MB3_MSR.MRTR", 	"Memory", 0xfffd0270, 4, base=16, bitRange=20
+sfr = "CAN_MB3_MSR.MABT", 	"Memory", 0xfffd0270, 4, base=16, bitRange=22
+sfr = "CAN_MB3_MSR.MRDY", 	"Memory", 0xfffd0270, 4, base=16, bitRange=23
+sfr = "CAN_MB3_MSR.MMI", 	"Memory", 0xfffd0270, 4, base=16, bitRange=24
+sfr = "CAN_MB3_MDL", 	"Memory", 0xfffd0274, 4, base=16
+sfr = "CAN_MB3_MDH", 	"Memory", 0xfffd0278, 4, base=16
+sfr = "CAN_MB3_MCR", 	"Memory", 0xfffd027c, 4, base=16
+sfr = "CAN_MB3_MCR.MDLC", 	"Memory", 0xfffd027c, 4, base=16, bitRange=16-19
+sfr = "CAN_MB3_MCR.MRTR", 	"Memory", 0xfffd027c, 4, base=16, bitRange=20
+sfr = "CAN_MB3_MCR.MACR", 	"Memory", 0xfffd027c, 4, base=16, bitRange=22
+sfr = "CAN_MB3_MCR.MTCR", 	"Memory", 0xfffd027c, 4, base=16, bitRange=23
+; ========== Register definition for CAN_MB4 peripheral ========== 
+sfr = "CAN_MB4_MMR", 	"Memory", 0xfffd0280, 4, base=16
+sfr = "CAN_MB4_MMR.MTIMEMARK", 	"Memory", 0xfffd0280, 4, base=16, bitRange=0-15
+sfr = "CAN_MB4_MMR.PRIOR", 	"Memory", 0xfffd0280, 4, base=16, bitRange=16-19
+sfr = "CAN_MB4_MMR.MOT", 	"Memory", 0xfffd0280, 4, base=16, bitRange=24-26
+sfr = "CAN_MB4_MAM", 	"Memory", 0xfffd0284, 4, base=16
+sfr = "CAN_MB4_MAM.MIDvB", 	"Memory", 0xfffd0284, 4, base=16, bitRange=0-17
+sfr = "CAN_MB4_MAM.MIDvA", 	"Memory", 0xfffd0284, 4, base=16, bitRange=18-28
+sfr = "CAN_MB4_MAM.MIDE", 	"Memory", 0xfffd0284, 4, base=16, bitRange=29
+sfr = "CAN_MB4_MID", 	"Memory", 0xfffd0288, 4, base=16
+sfr = "CAN_MB4_MID.MIDvB", 	"Memory", 0xfffd0288, 4, base=16, bitRange=0-17
+sfr = "CAN_MB4_MID.MIDvA", 	"Memory", 0xfffd0288, 4, base=16, bitRange=18-28
+sfr = "CAN_MB4_MID.MIDE", 	"Memory", 0xfffd0288, 4, base=16, bitRange=29
+sfr = "CAN_MB4_MFID", 	"Memory", 0xfffd028c, 4, base=16
+sfr = "CAN_MB4_MSR", 	"Memory", 0xfffd0290, 4, base=16
+sfr = "CAN_MB4_MSR.MTIMESTAMP", 	"Memory", 0xfffd0290, 4, base=16, bitRange=0-15
+sfr = "CAN_MB4_MSR.MDLC", 	"Memory", 0xfffd0290, 4, base=16, bitRange=16-19
+sfr = "CAN_MB4_MSR.MRTR", 	"Memory", 0xfffd0290, 4, base=16, bitRange=20
+sfr = "CAN_MB4_MSR.MABT", 	"Memory", 0xfffd0290, 4, base=16, bitRange=22
+sfr = "CAN_MB4_MSR.MRDY", 	"Memory", 0xfffd0290, 4, base=16, bitRange=23
+sfr = "CAN_MB4_MSR.MMI", 	"Memory", 0xfffd0290, 4, base=16, bitRange=24
+sfr = "CAN_MB4_MDL", 	"Memory", 0xfffd0294, 4, base=16
+sfr = "CAN_MB4_MDH", 	"Memory", 0xfffd0298, 4, base=16
+sfr = "CAN_MB4_MCR", 	"Memory", 0xfffd029c, 4, base=16
+sfr = "CAN_MB4_MCR.MDLC", 	"Memory", 0xfffd029c, 4, base=16, bitRange=16-19
+sfr = "CAN_MB4_MCR.MRTR", 	"Memory", 0xfffd029c, 4, base=16, bitRange=20
+sfr = "CAN_MB4_MCR.MACR", 	"Memory", 0xfffd029c, 4, base=16, bitRange=22
+sfr = "CAN_MB4_MCR.MTCR", 	"Memory", 0xfffd029c, 4, base=16, bitRange=23
+; ========== Register definition for CAN_MB5 peripheral ========== 
+sfr = "CAN_MB5_MMR", 	"Memory", 0xfffd02a0, 4, base=16
+sfr = "CAN_MB5_MMR.MTIMEMARK", 	"Memory", 0xfffd02a0, 4, base=16, bitRange=0-15
+sfr = "CAN_MB5_MMR.PRIOR", 	"Memory", 0xfffd02a0, 4, base=16, bitRange=16-19
+sfr = "CAN_MB5_MMR.MOT", 	"Memory", 0xfffd02a0, 4, base=16, bitRange=24-26
+sfr = "CAN_MB5_MAM", 	"Memory", 0xfffd02a4, 4, base=16
+sfr = "CAN_MB5_MAM.MIDvB", 	"Memory", 0xfffd02a4, 4, base=16, bitRange=0-17
+sfr = "CAN_MB5_MAM.MIDvA", 	"Memory", 0xfffd02a4, 4, base=16, bitRange=18-28
+sfr = "CAN_MB5_MAM.MIDE", 	"Memory", 0xfffd02a4, 4, base=16, bitRange=29
+sfr = "CAN_MB5_MID", 	"Memory", 0xfffd02a8, 4, base=16
+sfr = "CAN_MB5_MID.MIDvB", 	"Memory", 0xfffd02a8, 4, base=16, bitRange=0-17
+sfr = "CAN_MB5_MID.MIDvA", 	"Memory", 0xfffd02a8, 4, base=16, bitRange=18-28
+sfr = "CAN_MB5_MID.MIDE", 	"Memory", 0xfffd02a8, 4, base=16, bitRange=29
+sfr = "CAN_MB5_MFID", 	"Memory", 0xfffd02ac, 4, base=16
+sfr = "CAN_MB5_MSR", 	"Memory", 0xfffd02b0, 4, base=16
+sfr = "CAN_MB5_MSR.MTIMESTAMP", 	"Memory", 0xfffd02b0, 4, base=16, bitRange=0-15
+sfr = "CAN_MB5_MSR.MDLC", 	"Memory", 0xfffd02b0, 4, base=16, bitRange=16-19
+sfr = "CAN_MB5_MSR.MRTR", 	"Memory", 0xfffd02b0, 4, base=16, bitRange=20
+sfr = "CAN_MB5_MSR.MABT", 	"Memory", 0xfffd02b0, 4, base=16, bitRange=22
+sfr = "CAN_MB5_MSR.MRDY", 	"Memory", 0xfffd02b0, 4, base=16, bitRange=23
+sfr = "CAN_MB5_MSR.MMI", 	"Memory", 0xfffd02b0, 4, base=16, bitRange=24
+sfr = "CAN_MB5_MDL", 	"Memory", 0xfffd02b4, 4, base=16
+sfr = "CAN_MB5_MDH", 	"Memory", 0xfffd02b8, 4, base=16
+sfr = "CAN_MB5_MCR", 	"Memory", 0xfffd02bc, 4, base=16
+sfr = "CAN_MB5_MCR.MDLC", 	"Memory", 0xfffd02bc, 4, base=16, bitRange=16-19
+sfr = "CAN_MB5_MCR.MRTR", 	"Memory", 0xfffd02bc, 4, base=16, bitRange=20
+sfr = "CAN_MB5_MCR.MACR", 	"Memory", 0xfffd02bc, 4, base=16, bitRange=22
+sfr = "CAN_MB5_MCR.MTCR", 	"Memory", 0xfffd02bc, 4, base=16, bitRange=23
+; ========== Register definition for CAN_MB6 peripheral ========== 
+sfr = "CAN_MB6_MMR", 	"Memory", 0xfffd02c0, 4, base=16
+sfr = "CAN_MB6_MMR.MTIMEMARK", 	"Memory", 0xfffd02c0, 4, base=16, bitRange=0-15
+sfr = "CAN_MB6_MMR.PRIOR", 	"Memory", 0xfffd02c0, 4, base=16, bitRange=16-19
+sfr = "CAN_MB6_MMR.MOT", 	"Memory", 0xfffd02c0, 4, base=16, bitRange=24-26
+sfr = "CAN_MB6_MAM", 	"Memory", 0xfffd02c4, 4, base=16
+sfr = "CAN_MB6_MAM.MIDvB", 	"Memory", 0xfffd02c4, 4, base=16, bitRange=0-17
+sfr = "CAN_MB6_MAM.MIDvA", 	"Memory", 0xfffd02c4, 4, base=16, bitRange=18-28
+sfr = "CAN_MB6_MAM.MIDE", 	"Memory", 0xfffd02c4, 4, base=16, bitRange=29
+sfr = "CAN_MB6_MID", 	"Memory", 0xfffd02c8, 4, base=16
+sfr = "CAN_MB6_MID.MIDvB", 	"Memory", 0xfffd02c8, 4, base=16, bitRange=0-17
+sfr = "CAN_MB6_MID.MIDvA", 	"Memory", 0xfffd02c8, 4, base=16, bitRange=18-28
+sfr = "CAN_MB6_MID.MIDE", 	"Memory", 0xfffd02c8, 4, base=16, bitRange=29
+sfr = "CAN_MB6_MFID", 	"Memory", 0xfffd02cc, 4, base=16
+sfr = "CAN_MB6_MSR", 	"Memory", 0xfffd02d0, 4, base=16
+sfr = "CAN_MB6_MSR.MTIMESTAMP", 	"Memory", 0xfffd02d0, 4, base=16, bitRange=0-15
+sfr = "CAN_MB6_MSR.MDLC", 	"Memory", 0xfffd02d0, 4, base=16, bitRange=16-19
+sfr = "CAN_MB6_MSR.MRTR", 	"Memory", 0xfffd02d0, 4, base=16, bitRange=20
+sfr = "CAN_MB6_MSR.MABT", 	"Memory", 0xfffd02d0, 4, base=16, bitRange=22
+sfr = "CAN_MB6_MSR.MRDY", 	"Memory", 0xfffd02d0, 4, base=16, bitRange=23
+sfr = "CAN_MB6_MSR.MMI", 	"Memory", 0xfffd02d0, 4, base=16, bitRange=24
+sfr = "CAN_MB6_MDL", 	"Memory", 0xfffd02d4, 4, base=16
+sfr = "CAN_MB6_MDH", 	"Memory", 0xfffd02d8, 4, base=16
+sfr = "CAN_MB6_MCR", 	"Memory", 0xfffd02dc, 4, base=16
+sfr = "CAN_MB6_MCR.MDLC", 	"Memory", 0xfffd02dc, 4, base=16, bitRange=16-19
+sfr = "CAN_MB6_MCR.MRTR", 	"Memory", 0xfffd02dc, 4, base=16, bitRange=20
+sfr = "CAN_MB6_MCR.MACR", 	"Memory", 0xfffd02dc, 4, base=16, bitRange=22
+sfr = "CAN_MB6_MCR.MTCR", 	"Memory", 0xfffd02dc, 4, base=16, bitRange=23
+; ========== Register definition for CAN_MB7 peripheral ========== 
+sfr = "CAN_MB7_MMR", 	"Memory", 0xfffd02e0, 4, base=16
+sfr = "CAN_MB7_MMR.MTIMEMARK", 	"Memory", 0xfffd02e0, 4, base=16, bitRange=0-15
+sfr = "CAN_MB7_MMR.PRIOR", 	"Memory", 0xfffd02e0, 4, base=16, bitRange=16-19
+sfr = "CAN_MB7_MMR.MOT", 	"Memory", 0xfffd02e0, 4, base=16, bitRange=24-26
+sfr = "CAN_MB7_MAM", 	"Memory", 0xfffd02e4, 4, base=16
+sfr = "CAN_MB7_MAM.MIDvB", 	"Memory", 0xfffd02e4, 4, base=16, bitRange=0-17
+sfr = "CAN_MB7_MAM.MIDvA", 	"Memory", 0xfffd02e4, 4, base=16, bitRange=18-28
+sfr = "CAN_MB7_MAM.MIDE", 	"Memory", 0xfffd02e4, 4, base=16, bitRange=29
+sfr = "CAN_MB7_MID", 	"Memory", 0xfffd02e8, 4, base=16
+sfr = "CAN_MB7_MID.MIDvB", 	"Memory", 0xfffd02e8, 4, base=16, bitRange=0-17
+sfr = "CAN_MB7_MID.MIDvA", 	"Memory", 0xfffd02e8, 4, base=16, bitRange=18-28
+sfr = "CAN_MB7_MID.MIDE", 	"Memory", 0xfffd02e8, 4, base=16, bitRange=29
+sfr = "CAN_MB7_MFID", 	"Memory", 0xfffd02ec, 4, base=16
+sfr = "CAN_MB7_MSR", 	"Memory", 0xfffd02f0, 4, base=16
+sfr = "CAN_MB7_MSR.MTIMESTAMP", 	"Memory", 0xfffd02f0, 4, base=16, bitRange=0-15
+sfr = "CAN_MB7_MSR.MDLC", 	"Memory", 0xfffd02f0, 4, base=16, bitRange=16-19
+sfr = "CAN_MB7_MSR.MRTR", 	"Memory", 0xfffd02f0, 4, base=16, bitRange=20
+sfr = "CAN_MB7_MSR.MABT", 	"Memory", 0xfffd02f0, 4, base=16, bitRange=22
+sfr = "CAN_MB7_MSR.MRDY", 	"Memory", 0xfffd02f0, 4, base=16, bitRange=23
+sfr = "CAN_MB7_MSR.MMI", 	"Memory", 0xfffd02f0, 4, base=16, bitRange=24
+sfr = "CAN_MB7_MDL", 	"Memory", 0xfffd02f4, 4, base=16
+sfr = "CAN_MB7_MDH", 	"Memory", 0xfffd02f8, 4, base=16
+sfr = "CAN_MB7_MCR", 	"Memory", 0xfffd02fc, 4, base=16
+sfr = "CAN_MB7_MCR.MDLC", 	"Memory", 0xfffd02fc, 4, base=16, bitRange=16-19
+sfr = "CAN_MB7_MCR.MRTR", 	"Memory", 0xfffd02fc, 4, base=16, bitRange=20
+sfr = "CAN_MB7_MCR.MACR", 	"Memory", 0xfffd02fc, 4, base=16, bitRange=22
+sfr = "CAN_MB7_MCR.MTCR", 	"Memory", 0xfffd02fc, 4, base=16, bitRange=23
+; ========== Register definition for CAN peripheral ========== 
+sfr = "CAN_MR", 	"Memory", 0xfffd0000, 4, base=16
+sfr = "CAN_MR.CANEN", 	"Memory", 0xfffd0000, 4, base=16, bitRange=0
+sfr = "CAN_MR.LPM", 	"Memory", 0xfffd0000, 4, base=16, bitRange=1
+sfr = "CAN_MR.ABM", 	"Memory", 0xfffd0000, 4, base=16, bitRange=2
+sfr = "CAN_MR.OVL", 	"Memory", 0xfffd0000, 4, base=16, bitRange=3
+sfr = "CAN_MR.TEOF", 	"Memory", 0xfffd0000, 4, base=16, bitRange=4
+sfr = "CAN_MR.TTM", 	"Memory", 0xfffd0000, 4, base=16, bitRange=5
+sfr = "CAN_MR.TIMFRZ", 	"Memory", 0xfffd0000, 4, base=16, bitRange=6
+sfr = "CAN_MR.DRPT", 	"Memory", 0xfffd0000, 4, base=16, bitRange=7
+sfr = "CAN_IER", 	"Memory", 0xfffd0004, 4, base=16
+sfr = "CAN_IER.MB0", 	"Memory", 0xfffd0004, 4, base=16, bitRange=0
+sfr = "CAN_IER.MB1", 	"Memory", 0xfffd0004, 4, base=16, bitRange=1
+sfr = "CAN_IER.MB2", 	"Memory", 0xfffd0004, 4, base=16, bitRange=2
+sfr = "CAN_IER.MB3", 	"Memory", 0xfffd0004, 4, base=16, bitRange=3
+sfr = "CAN_IER.MB4", 	"Memory", 0xfffd0004, 4, base=16, bitRange=4
+sfr = "CAN_IER.MB5", 	"Memory", 0xfffd0004, 4, base=16, bitRange=5
+sfr = "CAN_IER.MB6", 	"Memory", 0xfffd0004, 4, base=16, bitRange=6
+sfr = "CAN_IER.MB7", 	"Memory", 0xfffd0004, 4, base=16, bitRange=7
+sfr = "CAN_IER.MB8", 	"Memory", 0xfffd0004, 4, base=16, bitRange=8
+sfr = "CAN_IER.MB9", 	"Memory", 0xfffd0004, 4, base=16, bitRange=9
+sfr = "CAN_IER.MB10", 	"Memory", 0xfffd0004, 4, base=16, bitRange=10
+sfr = "CAN_IER.MB11", 	"Memory", 0xfffd0004, 4, base=16, bitRange=11
+sfr = "CAN_IER.MB12", 	"Memory", 0xfffd0004, 4, base=16, bitRange=12
+sfr = "CAN_IER.MB13", 	"Memory", 0xfffd0004, 4, base=16, bitRange=13
+sfr = "CAN_IER.MB14", 	"Memory", 0xfffd0004, 4, base=16, bitRange=14
+sfr = "CAN_IER.MB15", 	"Memory", 0xfffd0004, 4, base=16, bitRange=15
+sfr = "CAN_IER.ERRA", 	"Memory", 0xfffd0004, 4, base=16, bitRange=16
+sfr = "CAN_IER.WARN", 	"Memory", 0xfffd0004, 4, base=16, bitRange=17
+sfr = "CAN_IER.ERRP", 	"Memory", 0xfffd0004, 4, base=16, bitRange=18
+sfr = "CAN_IER.BOFF", 	"Memory", 0xfffd0004, 4, base=16, bitRange=19
+sfr = "CAN_IER.SLEEP", 	"Memory", 0xfffd0004, 4, base=16, bitRange=20
+sfr = "CAN_IER.WAKEUP", 	"Memory", 0xfffd0004, 4, base=16, bitRange=21
+sfr = "CAN_IER.TOVF", 	"Memory", 0xfffd0004, 4, base=16, bitRange=22
+sfr = "CAN_IER.TSTP", 	"Memory", 0xfffd0004, 4, base=16, bitRange=23
+sfr = "CAN_IER.CERR", 	"Memory", 0xfffd0004, 4, base=16, bitRange=24
+sfr = "CAN_IER.SERR", 	"Memory", 0xfffd0004, 4, base=16, bitRange=25
+sfr = "CAN_IER.AERR", 	"Memory", 0xfffd0004, 4, base=16, bitRange=26
+sfr = "CAN_IER.FERR", 	"Memory", 0xfffd0004, 4, base=16, bitRange=27
+sfr = "CAN_IER.BERR", 	"Memory", 0xfffd0004, 4, base=16, bitRange=28
+sfr = "CAN_IDR", 	"Memory", 0xfffd0008, 4, base=16
+sfr = "CAN_IDR.MB0", 	"Memory", 0xfffd0008, 4, base=16, bitRange=0
+sfr = "CAN_IDR.MB1", 	"Memory", 0xfffd0008, 4, base=16, bitRange=1
+sfr = "CAN_IDR.MB2", 	"Memory", 0xfffd0008, 4, base=16, bitRange=2
+sfr = "CAN_IDR.MB3", 	"Memory", 0xfffd0008, 4, base=16, bitRange=3
+sfr = "CAN_IDR.MB4", 	"Memory", 0xfffd0008, 4, base=16, bitRange=4
+sfr = "CAN_IDR.MB5", 	"Memory", 0xfffd0008, 4, base=16, bitRange=5
+sfr = "CAN_IDR.MB6", 	"Memory", 0xfffd0008, 4, base=16, bitRange=6
+sfr = "CAN_IDR.MB7", 	"Memory", 0xfffd0008, 4, base=16, bitRange=7
+sfr = "CAN_IDR.MB8", 	"Memory", 0xfffd0008, 4, base=16, bitRange=8
+sfr = "CAN_IDR.MB9", 	"Memory", 0xfffd0008, 4, base=16, bitRange=9
+sfr = "CAN_IDR.MB10", 	"Memory", 0xfffd0008, 4, base=16, bitRange=10
+sfr = "CAN_IDR.MB11", 	"Memory", 0xfffd0008, 4, base=16, bitRange=11
+sfr = "CAN_IDR.MB12", 	"Memory", 0xfffd0008, 4, base=16, bitRange=12
+sfr = "CAN_IDR.MB13", 	"Memory", 0xfffd0008, 4, base=16, bitRange=13
+sfr = "CAN_IDR.MB14", 	"Memory", 0xfffd0008, 4, base=16, bitRange=14
+sfr = "CAN_IDR.MB15", 	"Memory", 0xfffd0008, 4, base=16, bitRange=15
+sfr = "CAN_IDR.ERRA", 	"Memory", 0xfffd0008, 4, base=16, bitRange=16
+sfr = "CAN_IDR.WARN", 	"Memory", 0xfffd0008, 4, base=16, bitRange=17
+sfr = "CAN_IDR.ERRP", 	"Memory", 0xfffd0008, 4, base=16, bitRange=18
+sfr = "CAN_IDR.BOFF", 	"Memory", 0xfffd0008, 4, base=16, bitRange=19
+sfr = "CAN_IDR.SLEEP", 	"Memory", 0xfffd0008, 4, base=16, bitRange=20
+sfr = "CAN_IDR.WAKEUP", 	"Memory", 0xfffd0008, 4, base=16, bitRange=21
+sfr = "CAN_IDR.TOVF", 	"Memory", 0xfffd0008, 4, base=16, bitRange=22
+sfr = "CAN_IDR.TSTP", 	"Memory", 0xfffd0008, 4, base=16, bitRange=23
+sfr = "CAN_IDR.CERR", 	"Memory", 0xfffd0008, 4, base=16, bitRange=24
+sfr = "CAN_IDR.SERR", 	"Memory", 0xfffd0008, 4, base=16, bitRange=25
+sfr = "CAN_IDR.AERR", 	"Memory", 0xfffd0008, 4, base=16, bitRange=26
+sfr = "CAN_IDR.FERR", 	"Memory", 0xfffd0008, 4, base=16, bitRange=27
+sfr = "CAN_IDR.BERR", 	"Memory", 0xfffd0008, 4, base=16, bitRange=28
+sfr = "CAN_IMR", 	"Memory", 0xfffd000c, 4, base=16
+sfr = "CAN_IMR.MB0", 	"Memory", 0xfffd000c, 4, base=16, bitRange=0
+sfr = "CAN_IMR.MB1", 	"Memory", 0xfffd000c, 4, base=16, bitRange=1
+sfr = "CAN_IMR.MB2", 	"Memory", 0xfffd000c, 4, base=16, bitRange=2
+sfr = "CAN_IMR.MB3", 	"Memory", 0xfffd000c, 4, base=16, bitRange=3
+sfr = "CAN_IMR.MB4", 	"Memory", 0xfffd000c, 4, base=16, bitRange=4
+sfr = "CAN_IMR.MB5", 	"Memory", 0xfffd000c, 4, base=16, bitRange=5
+sfr = "CAN_IMR.MB6", 	"Memory", 0xfffd000c, 4, base=16, bitRange=6
+sfr = "CAN_IMR.MB7", 	"Memory", 0xfffd000c, 4, base=16, bitRange=7
+sfr = "CAN_IMR.MB8", 	"Memory", 0xfffd000c, 4, base=16, bitRange=8
+sfr = "CAN_IMR.MB9", 	"Memory", 0xfffd000c, 4, base=16, bitRange=9
+sfr = "CAN_IMR.MB10", 	"Memory", 0xfffd000c, 4, base=16, bitRange=10
+sfr = "CAN_IMR.MB11", 	"Memory", 0xfffd000c, 4, base=16, bitRange=11
+sfr = "CAN_IMR.MB12", 	"Memory", 0xfffd000c, 4, base=16, bitRange=12
+sfr = "CAN_IMR.MB13", 	"Memory", 0xfffd000c, 4, base=16, bitRange=13
+sfr = "CAN_IMR.MB14", 	"Memory", 0xfffd000c, 4, base=16, bitRange=14
+sfr = "CAN_IMR.MB15", 	"Memory", 0xfffd000c, 4, base=16, bitRange=15
+sfr = "CAN_IMR.ERRA", 	"Memory", 0xfffd000c, 4, base=16, bitRange=16
+sfr = "CAN_IMR.WARN", 	"Memory", 0xfffd000c, 4, base=16, bitRange=17
+sfr = "CAN_IMR.ERRP", 	"Memory", 0xfffd000c, 4, base=16, bitRange=18
+sfr = "CAN_IMR.BOFF", 	"Memory", 0xfffd000c, 4, base=16, bitRange=19
+sfr = "CAN_IMR.SLEEP", 	"Memory", 0xfffd000c, 4, base=16, bitRange=20
+sfr = "CAN_IMR.WAKEUP", 	"Memory", 0xfffd000c, 4, base=16, bitRange=21
+sfr = "CAN_IMR.TOVF", 	"Memory", 0xfffd000c, 4, base=16, bitRange=22
+sfr = "CAN_IMR.TSTP", 	"Memory", 0xfffd000c, 4, base=16, bitRange=23
+sfr = "CAN_IMR.CERR", 	"Memory", 0xfffd000c, 4, base=16, bitRange=24
+sfr = "CAN_IMR.SERR", 	"Memory", 0xfffd000c, 4, base=16, bitRange=25
+sfr = "CAN_IMR.AERR", 	"Memory", 0xfffd000c, 4, base=16, bitRange=26
+sfr = "CAN_IMR.FERR", 	"Memory", 0xfffd000c, 4, base=16, bitRange=27
+sfr = "CAN_IMR.BERR", 	"Memory", 0xfffd000c, 4, base=16, bitRange=28
+sfr = "CAN_SR", 	"Memory", 0xfffd0010, 4, base=16
+sfr = "CAN_SR.MB0", 	"Memory", 0xfffd0010, 4, base=16, bitRange=0
+sfr = "CAN_SR.MB1", 	"Memory", 0xfffd0010, 4, base=16, bitRange=1
+sfr = "CAN_SR.MB2", 	"Memory", 0xfffd0010, 4, base=16, bitRange=2
+sfr = "CAN_SR.MB3", 	"Memory", 0xfffd0010, 4, base=16, bitRange=3
+sfr = "CAN_SR.MB4", 	"Memory", 0xfffd0010, 4, base=16, bitRange=4
+sfr = "CAN_SR.MB5", 	"Memory", 0xfffd0010, 4, base=16, bitRange=5
+sfr = "CAN_SR.MB6", 	"Memory", 0xfffd0010, 4, base=16, bitRange=6
+sfr = "CAN_SR.MB7", 	"Memory", 0xfffd0010, 4, base=16, bitRange=7
+sfr = "CAN_SR.MB8", 	"Memory", 0xfffd0010, 4, base=16, bitRange=8
+sfr = "CAN_SR.MB9", 	"Memory", 0xfffd0010, 4, base=16, bitRange=9
+sfr = "CAN_SR.MB10", 	"Memory", 0xfffd0010, 4, base=16, bitRange=10
+sfr = "CAN_SR.MB11", 	"Memory", 0xfffd0010, 4, base=16, bitRange=11
+sfr = "CAN_SR.MB12", 	"Memory", 0xfffd0010, 4, base=16, bitRange=12
+sfr = "CAN_SR.MB13", 	"Memory", 0xfffd0010, 4, base=16, bitRange=13
+sfr = "CAN_SR.MB14", 	"Memory", 0xfffd0010, 4, base=16, bitRange=14
+sfr = "CAN_SR.MB15", 	"Memory", 0xfffd0010, 4, base=16, bitRange=15
+sfr = "CAN_SR.ERRA", 	"Memory", 0xfffd0010, 4, base=16, bitRange=16
+sfr = "CAN_SR.WARN", 	"Memory", 0xfffd0010, 4, base=16, bitRange=17
+sfr = "CAN_SR.ERRP", 	"Memory", 0xfffd0010, 4, base=16, bitRange=18
+sfr = "CAN_SR.BOFF", 	"Memory", 0xfffd0010, 4, base=16, bitRange=19
+sfr = "CAN_SR.SLEEP", 	"Memory", 0xfffd0010, 4, base=16, bitRange=20
+sfr = "CAN_SR.WAKEUP", 	"Memory", 0xfffd0010, 4, base=16, bitRange=21
+sfr = "CAN_SR.TOVF", 	"Memory", 0xfffd0010, 4, base=16, bitRange=22
+sfr = "CAN_SR.TSTP", 	"Memory", 0xfffd0010, 4, base=16, bitRange=23
+sfr = "CAN_SR.CERR", 	"Memory", 0xfffd0010, 4, base=16, bitRange=24
+sfr = "CAN_SR.SERR", 	"Memory", 0xfffd0010, 4, base=16, bitRange=25
+sfr = "CAN_SR.AERR", 	"Memory", 0xfffd0010, 4, base=16, bitRange=26
+sfr = "CAN_SR.FERR", 	"Memory", 0xfffd0010, 4, base=16, bitRange=27
+sfr = "CAN_SR.BERR", 	"Memory", 0xfffd0010, 4, base=16, bitRange=28
+sfr = "CAN_SR.RBSY", 	"Memory", 0xfffd0010, 4, base=16, bitRange=29
+sfr = "CAN_SR.TBSY", 	"Memory", 0xfffd0010, 4, base=16, bitRange=30
+sfr = "CAN_SR.OVLY", 	"Memory", 0xfffd0010, 4, base=16, bitRange=31
+sfr = "CAN_BR", 	"Memory", 0xfffd0014, 4, base=16
+sfr = "CAN_BR.PHASE2", 	"Memory", 0xfffd0014, 4, base=16, bitRange=0-2
+sfr = "CAN_BR.PHASE1", 	"Memory", 0xfffd0014, 4, base=16, bitRange=4-6
+sfr = "CAN_BR.PROPAG", 	"Memory", 0xfffd0014, 4, base=16, bitRange=8-10
+sfr = "CAN_BR.SYNC", 	"Memory", 0xfffd0014, 4, base=16, bitRange=12-13
+sfr = "CAN_BR.BRP", 	"Memory", 0xfffd0014, 4, base=16, bitRange=16-22
+sfr = "CAN_BR.SMP", 	"Memory", 0xfffd0014, 4, base=16, bitRange=24
+sfr = "CAN_TIM", 	"Memory", 0xfffd0018, 4, base=16
+sfr = "CAN_TIM.TIMER", 	"Memory", 0xfffd0018, 4, base=16, bitRange=0-15
+sfr = "CAN_TIMESTP", 	"Memory", 0xfffd001c, 4, base=16
+sfr = "CAN_TIMESTP.MTIMESTAMP", 	"Memory", 0xfffd001c, 4, base=16, bitRange=0-15
+sfr = "CAN_ECR", 	"Memory", 0xfffd0020, 4, base=16
+sfr = "CAN_ECR.REC", 	"Memory", 0xfffd0020, 4, base=16, bitRange=0-7
+sfr = "CAN_ECR.TEC", 	"Memory", 0xfffd0020, 4, base=16, bitRange=16-23
+sfr = "CAN_TCR", 	"Memory", 0xfffd0024, 4, base=16
+sfr = "CAN_TCR.MB0", 	"Memory", 0xfffd0024, 4, base=16, bitRange=0
+sfr = "CAN_TCR.MB1", 	"Memory", 0xfffd0024, 4, base=16, bitRange=1
+sfr = "CAN_TCR.MB2", 	"Memory", 0xfffd0024, 4, base=16, bitRange=2
+sfr = "CAN_TCR.MB3", 	"Memory", 0xfffd0024, 4, base=16, bitRange=3
+sfr = "CAN_TCR.MB4", 	"Memory", 0xfffd0024, 4, base=16, bitRange=4
+sfr = "CAN_TCR.MB5", 	"Memory", 0xfffd0024, 4, base=16, bitRange=5
+sfr = "CAN_TCR.MB6", 	"Memory", 0xfffd0024, 4, base=16, bitRange=6
+sfr = "CAN_TCR.MB7", 	"Memory", 0xfffd0024, 4, base=16, bitRange=7
+sfr = "CAN_TCR.MB8", 	"Memory", 0xfffd0024, 4, base=16, bitRange=8
+sfr = "CAN_TCR.MB9", 	"Memory", 0xfffd0024, 4, base=16, bitRange=9
+sfr = "CAN_TCR.MB10", 	"Memory", 0xfffd0024, 4, base=16, bitRange=10
+sfr = "CAN_TCR.MB11", 	"Memory", 0xfffd0024, 4, base=16, bitRange=11
+sfr = "CAN_TCR.MB12", 	"Memory", 0xfffd0024, 4, base=16, bitRange=12
+sfr = "CAN_TCR.MB13", 	"Memory", 0xfffd0024, 4, base=16, bitRange=13
+sfr = "CAN_TCR.MB14", 	"Memory", 0xfffd0024, 4, base=16, bitRange=14
+sfr = "CAN_TCR.MB15", 	"Memory", 0xfffd0024, 4, base=16, bitRange=15
+sfr = "CAN_TCR.TIMRST", 	"Memory", 0xfffd0024, 4, base=16, bitRange=31
+sfr = "CAN_ACR", 	"Memory", 0xfffd0028, 4, base=16
+sfr = "CAN_ACR.MB0", 	"Memory", 0xfffd0028, 4, base=16, bitRange=0
+sfr = "CAN_ACR.MB1", 	"Memory", 0xfffd0028, 4, base=16, bitRange=1
+sfr = "CAN_ACR.MB2", 	"Memory", 0xfffd0028, 4, base=16, bitRange=2
+sfr = "CAN_ACR.MB3", 	"Memory", 0xfffd0028, 4, base=16, bitRange=3
+sfr = "CAN_ACR.MB4", 	"Memory", 0xfffd0028, 4, base=16, bitRange=4
+sfr = "CAN_ACR.MB5", 	"Memory", 0xfffd0028, 4, base=16, bitRange=5
+sfr = "CAN_ACR.MB6", 	"Memory", 0xfffd0028, 4, base=16, bitRange=6
+sfr = "CAN_ACR.MB7", 	"Memory", 0xfffd0028, 4, base=16, bitRange=7
+sfr = "CAN_ACR.MB8", 	"Memory", 0xfffd0028, 4, base=16, bitRange=8
+sfr = "CAN_ACR.MB9", 	"Memory", 0xfffd0028, 4, base=16, bitRange=9
+sfr = "CAN_ACR.MB10", 	"Memory", 0xfffd0028, 4, base=16, bitRange=10
+sfr = "CAN_ACR.MB11", 	"Memory", 0xfffd0028, 4, base=16, bitRange=11
+sfr = "CAN_ACR.MB12", 	"Memory", 0xfffd0028, 4, base=16, bitRange=12
+sfr = "CAN_ACR.MB13", 	"Memory", 0xfffd0028, 4, base=16, bitRange=13
+sfr = "CAN_ACR.MB14", 	"Memory", 0xfffd0028, 4, base=16, bitRange=14
+sfr = "CAN_ACR.MB15", 	"Memory", 0xfffd0028, 4, base=16, bitRange=15
+sfr = "CAN_VR", 	"Memory", 0xfffd00fc, 4, base=16
+; ========== Register definition for EMAC peripheral ========== 
+sfr = "EMAC_NCR", 	"Memory", 0xfffdc000, 4, base=16
+sfr = "EMAC_NCR.LB", 	"Memory", 0xfffdc000, 4, base=16, bitRange=0
+sfr = "EMAC_NCR.LLB", 	"Memory", 0xfffdc000, 4, base=16, bitRange=1
+sfr = "EMAC_NCR.RE", 	"Memory", 0xfffdc000, 4, base=16, bitRange=2
+sfr = "EMAC_NCR.TE", 	"Memory", 0xfffdc000, 4, base=16, bitRange=3
+sfr = "EMAC_NCR.MPE", 	"Memory", 0xfffdc000, 4, base=16, bitRange=4
+sfr = "EMAC_NCR.CLRSTAT", 	"Memory", 0xfffdc000, 4, base=16, bitRange=5
+sfr = "EMAC_NCR.INCSTAT", 	"Memory", 0xfffdc000, 4, base=16, bitRange=6
+sfr = "EMAC_NCR.WESTAT", 	"Memory", 0xfffdc000, 4, base=16, bitRange=7
+sfr = "EMAC_NCR.BP", 	"Memory", 0xfffdc000, 4, base=16, bitRange=8
+sfr = "EMAC_NCR.TSTART", 	"Memory", 0xfffdc000, 4, base=16, bitRange=9
+sfr = "EMAC_NCR.THALT", 	"Memory", 0xfffdc000, 4, base=16, bitRange=10
+sfr = "EMAC_NCR.TPFR", 	"Memory", 0xfffdc000, 4, base=16, bitRange=11
+sfr = "EMAC_NCR.TZQ", 	"Memory", 0xfffdc000, 4, base=16, bitRange=12
+sfr = "EMAC_NCFGR", 	"Memory", 0xfffdc004, 4, base=16
+sfr = "EMAC_NCFGR.SPD", 	"Memory", 0xfffdc004, 4, base=16, bitRange=0
+sfr = "EMAC_NCFGR.FD", 	"Memory", 0xfffdc004, 4, base=16, bitRange=1
+sfr = "EMAC_NCFGR.JFRAME", 	"Memory", 0xfffdc004, 4, base=16, bitRange=3
+sfr = "EMAC_NCFGR.CAF", 	"Memory", 0xfffdc004, 4, base=16, bitRange=4
+sfr = "EMAC_NCFGR.NBC", 	"Memory", 0xfffdc004, 4, base=16, bitRange=5
+sfr = "EMAC_NCFGR.MTI", 	"Memory", 0xfffdc004, 4, base=16, bitRange=6
+sfr = "EMAC_NCFGR.UNI", 	"Memory", 0xfffdc004, 4, base=16, bitRange=7
+sfr = "EMAC_NCFGR.BIG", 	"Memory", 0xfffdc004, 4, base=16, bitRange=8
+sfr = "EMAC_NCFGR.EAE", 	"Memory", 0xfffdc004, 4, base=16, bitRange=9
+sfr = "EMAC_NCFGR.CLK", 	"Memory", 0xfffdc004, 4, base=16, bitRange=10-11
+sfr = "EMAC_NCFGR.RTY", 	"Memory", 0xfffdc004, 4, base=16, bitRange=12
+sfr = "EMAC_NCFGR.PAE", 	"Memory", 0xfffdc004, 4, base=16, bitRange=13
+sfr = "EMAC_NCFGR.RBOF", 	"Memory", 0xfffdc004, 4, base=16, bitRange=14-15
+sfr = "EMAC_NCFGR.RLCE", 	"Memory", 0xfffdc004, 4, base=16, bitRange=16
+sfr = "EMAC_NCFGR.DRFCS", 	"Memory", 0xfffdc004, 4, base=16, bitRange=17
+sfr = "EMAC_NCFGR.EFRHD", 	"Memory", 0xfffdc004, 4, base=16, bitRange=18
+sfr = "EMAC_NCFGR.IRXFCS", 	"Memory", 0xfffdc004, 4, base=16, bitRange=19
+sfr = "EMAC_NSR", 	"Memory", 0xfffdc008, 4, base=16
+sfr = "EMAC_NSR.LINKR", 	"Memory", 0xfffdc008, 4, base=16, bitRange=0
+sfr = "EMAC_NSR.MDIO", 	"Memory", 0xfffdc008, 4, base=16, bitRange=1
+sfr = "EMAC_NSR.IDLE", 	"Memory", 0xfffdc008, 4, base=16, bitRange=2
+sfr = "EMAC_TSR", 	"Memory", 0xfffdc014, 4, base=16
+sfr = "EMAC_TSR.UBR", 	"Memory", 0xfffdc014, 4, base=16, bitRange=0
+sfr = "EMAC_TSR.COL", 	"Memory", 0xfffdc014, 4, base=16, bitRange=1
+sfr = "EMAC_TSR.RLES", 	"Memory", 0xfffdc014, 4, base=16, bitRange=2
+sfr = "EMAC_TSR.TGO", 	"Memory", 0xfffdc014, 4, base=16, bitRange=3
+sfr = "EMAC_TSR.BEX", 	"Memory", 0xfffdc014, 4, base=16, bitRange=4
+sfr = "EMAC_TSR.COMP", 	"Memory", 0xfffdc014, 4, base=16, bitRange=5
+sfr = "EMAC_TSR.UND", 	"Memory", 0xfffdc014, 4, base=16, bitRange=6
+sfr = "EMAC_RBQP", 	"Memory", 0xfffdc018, 4, base=16
+sfr = "EMAC_TBQP", 	"Memory", 0xfffdc01c, 4, base=16
+sfr = "EMAC_RSR", 	"Memory", 0xfffdc020, 4, base=16
+sfr = "EMAC_RSR.BNA", 	"Memory", 0xfffdc020, 4, base=16, bitRange=0
+sfr = "EMAC_RSR.REC", 	"Memory", 0xfffdc020, 4, base=16, bitRange=1
+sfr = "EMAC_RSR.OVR", 	"Memory", 0xfffdc020, 4, base=16, bitRange=2
+sfr = "EMAC_ISR", 	"Memory", 0xfffdc024, 4, base=16
+sfr = "EMAC_ISR.MFD", 	"Memory", 0xfffdc024, 4, base=16, bitRange=0
+sfr = "EMAC_ISR.RCOMP", 	"Memory", 0xfffdc024, 4, base=16, bitRange=1
+sfr = "EMAC_ISR.RXUBR", 	"Memory", 0xfffdc024, 4, base=16, bitRange=2
+sfr = "EMAC_ISR.TXUBR", 	"Memory", 0xfffdc024, 4, base=16, bitRange=3
+sfr = "EMAC_ISR.TUNDR", 	"Memory", 0xfffdc024, 4, base=16, bitRange=4
+sfr = "EMAC_ISR.RLEX", 	"Memory", 0xfffdc024, 4, base=16, bitRange=5
+sfr = "EMAC_ISR.TXERR", 	"Memory", 0xfffdc024, 4, base=16, bitRange=6
+sfr = "EMAC_ISR.TCOMP", 	"Memory", 0xfffdc024, 4, base=16, bitRange=7
+sfr = "EMAC_ISR.LINK", 	"Memory", 0xfffdc024, 4, base=16, bitRange=9
+sfr = "EMAC_ISR.ROVR", 	"Memory", 0xfffdc024, 4, base=16, bitRange=10
+sfr = "EMAC_ISR.HRESP", 	"Memory", 0xfffdc024, 4, base=16, bitRange=11
+sfr = "EMAC_ISR.PFRE", 	"Memory", 0xfffdc024, 4, base=16, bitRange=12
+sfr = "EMAC_ISR.PTZ", 	"Memory", 0xfffdc024, 4, base=16, bitRange=13
+sfr = "EMAC_IER", 	"Memory", 0xfffdc028, 4, base=16
+sfr = "EMAC_IER.MFD", 	"Memory", 0xfffdc028, 4, base=16, bitRange=0
+sfr = "EMAC_IER.RCOMP", 	"Memory", 0xfffdc028, 4, base=16, bitRange=1
+sfr = "EMAC_IER.RXUBR", 	"Memory", 0xfffdc028, 4, base=16, bitRange=2
+sfr = "EMAC_IER.TXUBR", 	"Memory", 0xfffdc028, 4, base=16, bitRange=3
+sfr = "EMAC_IER.TUNDR", 	"Memory", 0xfffdc028, 4, base=16, bitRange=4
+sfr = "EMAC_IER.RLEX", 	"Memory", 0xfffdc028, 4, base=16, bitRange=5
+sfr = "EMAC_IER.TXERR", 	"Memory", 0xfffdc028, 4, base=16, bitRange=6
+sfr = "EMAC_IER.TCOMP", 	"Memory", 0xfffdc028, 4, base=16, bitRange=7
+sfr = "EMAC_IER.LINK", 	"Memory", 0xfffdc028, 4, base=16, bitRange=9
+sfr = "EMAC_IER.ROVR", 	"Memory", 0xfffdc028, 4, base=16, bitRange=10
+sfr = "EMAC_IER.HRESP", 	"Memory", 0xfffdc028, 4, base=16, bitRange=11
+sfr = "EMAC_IER.PFRE", 	"Memory", 0xfffdc028, 4, base=16, bitRange=12
+sfr = "EMAC_IER.PTZ", 	"Memory", 0xfffdc028, 4, base=16, bitRange=13
+sfr = "EMAC_IDR", 	"Memory", 0xfffdc02c, 4, base=16
+sfr = "EMAC_IDR.MFD", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=0
+sfr = "EMAC_IDR.RCOMP", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=1
+sfr = "EMAC_IDR.RXUBR", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=2
+sfr = "EMAC_IDR.TXUBR", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=3
+sfr = "EMAC_IDR.TUNDR", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=4
+sfr = "EMAC_IDR.RLEX", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=5
+sfr = "EMAC_IDR.TXERR", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=6
+sfr = "EMAC_IDR.TCOMP", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=7
+sfr = "EMAC_IDR.LINK", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=9
+sfr = "EMAC_IDR.ROVR", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=10
+sfr = "EMAC_IDR.HRESP", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=11
+sfr = "EMAC_IDR.PFRE", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=12
+sfr = "EMAC_IDR.PTZ", 	"Memory", 0xfffdc02c, 4, base=16, bitRange=13
+sfr = "EMAC_IMR", 	"Memory", 0xfffdc030, 4, base=16
+sfr = "EMAC_IMR.MFD", 	"Memory", 0xfffdc030, 4, base=16, bitRange=0
+sfr = "EMAC_IMR.RCOMP", 	"Memory", 0xfffdc030, 4, base=16, bitRange=1
+sfr = "EMAC_IMR.RXUBR", 	"Memory", 0xfffdc030, 4, base=16, bitRange=2
+sfr = "EMAC_IMR.TXUBR", 	"Memory", 0xfffdc030, 4, base=16, bitRange=3
+sfr = "EMAC_IMR.TUNDR", 	"Memory", 0xfffdc030, 4, base=16, bitRange=4
+sfr = "EMAC_IMR.RLEX", 	"Memory", 0xfffdc030, 4, base=16, bitRange=5
+sfr = "EMAC_IMR.TXERR", 	"Memory", 0xfffdc030, 4, base=16, bitRange=6
+sfr = "EMAC_IMR.TCOMP", 	"Memory", 0xfffdc030, 4, base=16, bitRange=7
+sfr = "EMAC_IMR.LINK", 	"Memory", 0xfffdc030, 4, base=16, bitRange=9
+sfr = "EMAC_IMR.ROVR", 	"Memory", 0xfffdc030, 4, base=16, bitRange=10
+sfr = "EMAC_IMR.HRESP", 	"Memory", 0xfffdc030, 4, base=16, bitRange=11
+sfr = "EMAC_IMR.PFRE", 	"Memory", 0xfffdc030, 4, base=16, bitRange=12
+sfr = "EMAC_IMR.PTZ", 	"Memory", 0xfffdc030, 4, base=16, bitRange=13
+sfr = "EMAC_MAN", 	"Memory", 0xfffdc034, 4, base=16
+sfr = "EMAC_MAN.DATA", 	"Memory", 0xfffdc034, 4, base=16, bitRange=0-15
+sfr = "EMAC_MAN.CODE", 	"Memory", 0xfffdc034, 4, base=16, bitRange=16-17
+sfr = "EMAC_MAN.REGA", 	"Memory", 0xfffdc034, 4, base=16, bitRange=18-22
+sfr = "EMAC_MAN.PHYA", 	"Memory", 0xfffdc034, 4, base=16, bitRange=23-27
+sfr = "EMAC_MAN.RW", 	"Memory", 0xfffdc034, 4, base=16, bitRange=28-29
+sfr = "EMAC_MAN.SOF", 	"Memory", 0xfffdc034, 4, base=16, bitRange=30-31
+sfr = "EMAC_PTR", 	"Memory", 0xfffdc038, 4, base=16
+sfr = "EMAC_PFR", 	"Memory", 0xfffdc03c, 4, base=16
+sfr = "EMAC_FTO", 	"Memory", 0xfffdc040, 4, base=16
+sfr = "EMAC_SCF", 	"Memory", 0xfffdc044, 4, base=16
+sfr = "EMAC_MCF", 	"Memory", 0xfffdc048, 4, base=16
+sfr = "EMAC_FRO", 	"Memory", 0xfffdc04c, 4, base=16
+sfr = "EMAC_FCSE", 	"Memory", 0xfffdc050, 4, base=16
+sfr = "EMAC_ALE", 	"Memory", 0xfffdc054, 4, base=16
+sfr = "EMAC_DTF", 	"Memory", 0xfffdc058, 4, base=16
+sfr = "EMAC_LCOL", 	"Memory", 0xfffdc05c, 4, base=16
+sfr = "EMAC_ECOL", 	"Memory", 0xfffdc060, 4, base=16
+sfr = "EMAC_TUND", 	"Memory", 0xfffdc064, 4, base=16
+sfr = "EMAC_CSE", 	"Memory", 0xfffdc068, 4, base=16
+sfr = "EMAC_RRE", 	"Memory", 0xfffdc06c, 4, base=16
+sfr = "EMAC_ROV", 	"Memory", 0xfffdc070, 4, base=16
+sfr = "EMAC_RSE", 	"Memory", 0xfffdc074, 4, base=16
+sfr = "EMAC_ELE", 	"Memory", 0xfffdc078, 4, base=16
+sfr = "EMAC_RJA", 	"Memory", 0xfffdc07c, 4, base=16
+sfr = "EMAC_USF", 	"Memory", 0xfffdc080, 4, base=16
+sfr = "EMAC_STE", 	"Memory", 0xfffdc084, 4, base=16
+sfr = "EMAC_RLE", 	"Memory", 0xfffdc088, 4, base=16
+sfr = "EMAC_TPF", 	"Memory", 0xfffdc08c, 4, base=16
+sfr = "EMAC_HRB", 	"Memory", 0xfffdc090, 4, base=16
+sfr = "EMAC_HRT", 	"Memory", 0xfffdc094, 4, base=16
+sfr = "EMAC_SA1L", 	"Memory", 0xfffdc098, 4, base=16
+sfr = "EMAC_SA1H", 	"Memory", 0xfffdc09c, 4, base=16
+sfr = "EMAC_SA2L", 	"Memory", 0xfffdc0a0, 4, base=16
+sfr = "EMAC_SA2H", 	"Memory", 0xfffdc0a4, 4, base=16
+sfr = "EMAC_SA3L", 	"Memory", 0xfffdc0a8, 4, base=16
+sfr = "EMAC_SA3H", 	"Memory", 0xfffdc0ac, 4, base=16
+sfr = "EMAC_SA4L", 	"Memory", 0xfffdc0b0, 4, base=16
+sfr = "EMAC_SA4H", 	"Memory", 0xfffdc0b4, 4, base=16
+sfr = "EMAC_TID", 	"Memory", 0xfffdc0b8, 4, base=16
+sfr = "EMAC_TPQ", 	"Memory", 0xfffdc0bc, 4, base=16
+sfr = "EMAC_USRIO", 	"Memory", 0xfffdc0c0, 4, base=16
+sfr = "EMAC_USRIO.RMII", 	"Memory", 0xfffdc0c0, 4, base=16, bitRange=0
+sfr = "EMAC_USRIO.CLKEN", 	"Memory", 0xfffdc0c0, 4, base=16, bitRange=1
+sfr = "EMAC_WOL", 	"Memory", 0xfffdc0c4, 4, base=16
+sfr = "EMAC_WOL.IP", 	"Memory", 0xfffdc0c4, 4, base=16, bitRange=0-15
+sfr = "EMAC_WOL.MAG", 	"Memory", 0xfffdc0c4, 4, base=16, bitRange=16
+sfr = "EMAC_WOL.ARP", 	"Memory", 0xfffdc0c4, 4, base=16, bitRange=17
+sfr = "EMAC_WOL.SA1", 	"Memory", 0xfffdc0c4, 4, base=16, bitRange=18
+sfr = "EMAC_WOL.MTI", 	"Memory", 0xfffdc0c4, 4, base=16, bitRange=19
+sfr = "EMAC_REV", 	"Memory", 0xfffdc0fc, 4, base=16
+sfr = "EMAC_REV.REVREF", 	"Memory", 0xfffdc0fc, 4, base=16, bitRange=0-15
+sfr = "EMAC_REV.PARTREF", 	"Memory", 0xfffdc0fc, 4, base=16, bitRange=16-31
+; ========== Register definition for PDC_ADC peripheral ========== 
+sfr = "ADC_RPR", 	"Memory", 0xfffd8100, 4, base=16
+sfr = "ADC_RCR", 	"Memory", 0xfffd8104, 4, base=16
+sfr = "ADC_TPR", 	"Memory", 0xfffd8108, 4, base=16
+sfr = "ADC_TCR", 	"Memory", 0xfffd810c, 4, base=16
+sfr = "ADC_RNPR", 	"Memory", 0xfffd8110, 4, base=16
+sfr = "ADC_RNCR", 	"Memory", 0xfffd8114, 4, base=16
+sfr = "ADC_TNPR", 	"Memory", 0xfffd8118, 4, base=16
+sfr = "ADC_TNCR", 	"Memory", 0xfffd811c, 4, base=16
+sfr = "ADC_PTCR", 	"Memory", 0xfffd8120, 4, base=16
+sfr = "ADC_PTCR.RXTEN", 	"Memory", 0xfffd8120, 4, base=16, bitRange=0
+sfr = "ADC_PTCR.RXTDIS", 	"Memory", 0xfffd8120, 4, base=16, bitRange=1
+sfr = "ADC_PTCR.TXTEN", 	"Memory", 0xfffd8120, 4, base=16, bitRange=8
+sfr = "ADC_PTCR.TXTDIS", 	"Memory", 0xfffd8120, 4, base=16, bitRange=9
+sfr = "ADC_PTSR", 	"Memory", 0xfffd8124, 4, base=16
+sfr = "ADC_PTSR.RXTEN", 	"Memory", 0xfffd8124, 4, base=16, bitRange=0
+sfr = "ADC_PTSR.TXTEN", 	"Memory", 0xfffd8124, 4, base=16, bitRange=8
+; ========== Register definition for ADC peripheral ========== 
+sfr = "ADC_CR", 	"Memory", 0xfffd8000, 4, base=16
+sfr = "ADC_CR.SWRST", 	"Memory", 0xfffd8000, 4, base=16, bitRange=0
+sfr = "ADC_CR.START", 	"Memory", 0xfffd8000, 4, base=16, bitRange=1
+sfr = "ADC_MR", 	"Memory", 0xfffd8004, 4, base=16
+sfr = "ADC_MR.TRGEN", 	"Memory", 0xfffd8004, 4, base=16, bitRange=0
+sfr = "ADC_MR.TRGSEL", 	"Memory", 0xfffd8004, 4, base=16, bitRange=1-3
+sfr = "ADC_MR.LOWRES", 	"Memory", 0xfffd8004, 4, base=16, bitRange=4
+sfr = "ADC_MR.SLEEP", 	"Memory", 0xfffd8004, 4, base=16, bitRange=5
+sfr = "ADC_MR.PRESCAL", 	"Memory", 0xfffd8004, 4, base=16, bitRange=8-13
+sfr = "ADC_MR.STARTUP", 	"Memory", 0xfffd8004, 4, base=16, bitRange=16-20
+sfr = "ADC_MR.SHTIM", 	"Memory", 0xfffd8004, 4, base=16, bitRange=24-27
+sfr = "ADC_CHER", 	"Memory", 0xfffd8010, 4, base=16
+sfr = "ADC_CHER.CH0", 	"Memory", 0xfffd8010, 4, base=16, bitRange=0
+sfr = "ADC_CHER.CH1", 	"Memory", 0xfffd8010, 4, base=16, bitRange=1
+sfr = "ADC_CHER.CH2", 	"Memory", 0xfffd8010, 4, base=16, bitRange=2
+sfr = "ADC_CHER.CH3", 	"Memory", 0xfffd8010, 4, base=16, bitRange=3
+sfr = "ADC_CHER.CH4", 	"Memory", 0xfffd8010, 4, base=16, bitRange=4
+sfr = "ADC_CHER.CH5", 	"Memory", 0xfffd8010, 4, base=16, bitRange=5
+sfr = "ADC_CHER.CH6", 	"Memory", 0xfffd8010, 4, base=16, bitRange=6
+sfr = "ADC_CHER.CH7", 	"Memory", 0xfffd8010, 4, base=16, bitRange=7
+sfr = "ADC_CHDR", 	"Memory", 0xfffd8014, 4, base=16
+sfr = "ADC_CHDR.CH0", 	"Memory", 0xfffd8014, 4, base=16, bitRange=0
+sfr = "ADC_CHDR.CH1", 	"Memory", 0xfffd8014, 4, base=16, bitRange=1
+sfr = "ADC_CHDR.CH2", 	"Memory", 0xfffd8014, 4, base=16, bitRange=2
+sfr = "ADC_CHDR.CH3", 	"Memory", 0xfffd8014, 4, base=16, bitRange=3
+sfr = "ADC_CHDR.CH4", 	"Memory", 0xfffd8014, 4, base=16, bitRange=4
+sfr = "ADC_CHDR.CH5", 	"Memory", 0xfffd8014, 4, base=16, bitRange=5
+sfr = "ADC_CHDR.CH6", 	"Memory", 0xfffd8014, 4, base=16, bitRange=6
+sfr = "ADC_CHDR.CH7", 	"Memory", 0xfffd8014, 4, base=16, bitRange=7
+sfr = "ADC_CHSR", 	"Memory", 0xfffd8018, 4, base=16
+sfr = "ADC_CHSR.CH0", 	"Memory", 0xfffd8018, 4, base=16, bitRange=0
+sfr = "ADC_CHSR.CH1", 	"Memory", 0xfffd8018, 4, base=16, bitRange=1
+sfr = "ADC_CHSR.CH2", 	"Memory", 0xfffd8018, 4, base=16, bitRange=2
+sfr = "ADC_CHSR.CH3", 	"Memory", 0xfffd8018, 4, base=16, bitRange=3
+sfr = "ADC_CHSR.CH4", 	"Memory", 0xfffd8018, 4, base=16, bitRange=4
+sfr = "ADC_CHSR.CH5", 	"Memory", 0xfffd8018, 4, base=16, bitRange=5
+sfr = "ADC_CHSR.CH6", 	"Memory", 0xfffd8018, 4, base=16, bitRange=6
+sfr = "ADC_CHSR.CH7", 	"Memory", 0xfffd8018, 4, base=16, bitRange=7
+sfr = "ADC_SR", 	"Memory", 0xfffd801c, 4, base=16
+sfr = "ADC_SR.EOC0", 	"Memory", 0xfffd801c, 4, base=16, bitRange=0
+sfr = "ADC_SR.EOC1", 	"Memory", 0xfffd801c, 4, base=16, bitRange=1
+sfr = "ADC_SR.EOC2", 	"Memory", 0xfffd801c, 4, base=16, bitRange=2
+sfr = "ADC_SR.EOC3", 	"Memory", 0xfffd801c, 4, base=16, bitRange=3
+sfr = "ADC_SR.EOC4", 	"Memory", 0xfffd801c, 4, base=16, bitRange=4
+sfr = "ADC_SR.EOC5", 	"Memory", 0xfffd801c, 4, base=16, bitRange=5
+sfr = "ADC_SR.EOC6", 	"Memory", 0xfffd801c, 4, base=16, bitRange=6
+sfr = "ADC_SR.EOC7", 	"Memory", 0xfffd801c, 4, base=16, bitRange=7
+sfr = "ADC_SR.OVRE0", 	"Memory", 0xfffd801c, 4, base=16, bitRange=8
+sfr = "ADC_SR.OVRE1", 	"Memory", 0xfffd801c, 4, base=16, bitRange=9
+sfr = "ADC_SR.OVRE2", 	"Memory", 0xfffd801c, 4, base=16, bitRange=10
+sfr = "ADC_SR.OVRE3", 	"Memory", 0xfffd801c, 4, base=16, bitRange=11
+sfr = "ADC_SR.OVRE4", 	"Memory", 0xfffd801c, 4, base=16, bitRange=12
+sfr = "ADC_SR.OVRE5", 	"Memory", 0xfffd801c, 4, base=16, bitRange=13
+sfr = "ADC_SR.OVRE6", 	"Memory", 0xfffd801c, 4, base=16, bitRange=14
+sfr = "ADC_SR.OVRE7", 	"Memory", 0xfffd801c, 4, base=16, bitRange=15
+sfr = "ADC_SR.DRDY", 	"Memory", 0xfffd801c, 4, base=16, bitRange=16
+sfr = "ADC_SR.GOVRE", 	"Memory", 0xfffd801c, 4, base=16, bitRange=17
+sfr = "ADC_SR.ENDRX", 	"Memory", 0xfffd801c, 4, base=16, bitRange=18
+sfr = "ADC_SR.RXBUFF", 	"Memory", 0xfffd801c, 4, base=16, bitRange=19
+sfr = "ADC_LCDR", 	"Memory", 0xfffd8020, 4, base=16
+sfr = "ADC_LCDR.LDATA", 	"Memory", 0xfffd8020, 4, base=16, bitRange=0-9
+sfr = "ADC_IER", 	"Memory", 0xfffd8024, 4, base=16
+sfr = "ADC_IER.EOC0", 	"Memory", 0xfffd8024, 4, base=16, bitRange=0
+sfr = "ADC_IER.EOC1", 	"Memory", 0xfffd8024, 4, base=16, bitRange=1
+sfr = "ADC_IER.EOC2", 	"Memory", 0xfffd8024, 4, base=16, bitRange=2
+sfr = "ADC_IER.EOC3", 	"Memory", 0xfffd8024, 4, base=16, bitRange=3
+sfr = "ADC_IER.EOC4", 	"Memory", 0xfffd8024, 4, base=16, bitRange=4
+sfr = "ADC_IER.EOC5", 	"Memory", 0xfffd8024, 4, base=16, bitRange=5
+sfr = "ADC_IER.EOC6", 	"Memory", 0xfffd8024, 4, base=16, bitRange=6
+sfr = "ADC_IER.EOC7", 	"Memory", 0xfffd8024, 4, base=16, bitRange=7
+sfr = "ADC_IER.OVRE0", 	"Memory", 0xfffd8024, 4, base=16, bitRange=8
+sfr = "ADC_IER.OVRE1", 	"Memory", 0xfffd8024, 4, base=16, bitRange=9
+sfr = "ADC_IER.OVRE2", 	"Memory", 0xfffd8024, 4, base=16, bitRange=10
+sfr = "ADC_IER.OVRE3", 	"Memory", 0xfffd8024, 4, base=16, bitRange=11
+sfr = "ADC_IER.OVRE4", 	"Memory", 0xfffd8024, 4, base=16, bitRange=12
+sfr = "ADC_IER.OVRE5", 	"Memory", 0xfffd8024, 4, base=16, bitRange=13
+sfr = "ADC_IER.OVRE6", 	"Memory", 0xfffd8024, 4, base=16, bitRange=14
+sfr = "ADC_IER.OVRE7", 	"Memory", 0xfffd8024, 4, base=16, bitRange=15
+sfr = "ADC_IER.DRDY", 	"Memory", 0xfffd8024, 4, base=16, bitRange=16
+sfr = "ADC_IER.GOVRE", 	"Memory", 0xfffd8024, 4, base=16, bitRange=17
+sfr = "ADC_IER.ENDRX", 	"Memory", 0xfffd8024, 4, base=16, bitRange=18
+sfr = "ADC_IER.RXBUFF", 	"Memory", 0xfffd8024, 4, base=16, bitRange=19
+sfr = "ADC_IDR", 	"Memory", 0xfffd8028, 4, base=16
+sfr = "ADC_IDR.EOC0", 	"Memory", 0xfffd8028, 4, base=16, bitRange=0
+sfr = "ADC_IDR.EOC1", 	"Memory", 0xfffd8028, 4, base=16, bitRange=1
+sfr = "ADC_IDR.EOC2", 	"Memory", 0xfffd8028, 4, base=16, bitRange=2
+sfr = "ADC_IDR.EOC3", 	"Memory", 0xfffd8028, 4, base=16, bitRange=3
+sfr = "ADC_IDR.EOC4", 	"Memory", 0xfffd8028, 4, base=16, bitRange=4
+sfr = "ADC_IDR.EOC5", 	"Memory", 0xfffd8028, 4, base=16, bitRange=5
+sfr = "ADC_IDR.EOC6", 	"Memory", 0xfffd8028, 4, base=16, bitRange=6
+sfr = "ADC_IDR.EOC7", 	"Memory", 0xfffd8028, 4, base=16, bitRange=7
+sfr = "ADC_IDR.OVRE0", 	"Memory", 0xfffd8028, 4, base=16, bitRange=8
+sfr = "ADC_IDR.OVRE1", 	"Memory", 0xfffd8028, 4, base=16, bitRange=9
+sfr = "ADC_IDR.OVRE2", 	"Memory", 0xfffd8028, 4, base=16, bitRange=10
+sfr = "ADC_IDR.OVRE3", 	"Memory", 0xfffd8028, 4, base=16, bitRange=11
+sfr = "ADC_IDR.OVRE4", 	"Memory", 0xfffd8028, 4, base=16, bitRange=12
+sfr = "ADC_IDR.OVRE5", 	"Memory", 0xfffd8028, 4, base=16, bitRange=13
+sfr = "ADC_IDR.OVRE6", 	"Memory", 0xfffd8028, 4, base=16, bitRange=14
+sfr = "ADC_IDR.OVRE7", 	"Memory", 0xfffd8028, 4, base=16, bitRange=15
+sfr = "ADC_IDR.DRDY", 	"Memory", 0xfffd8028, 4, base=16, bitRange=16
+sfr = "ADC_IDR.GOVRE", 	"Memory", 0xfffd8028, 4, base=16, bitRange=17
+sfr = "ADC_IDR.ENDRX", 	"Memory", 0xfffd8028, 4, base=16, bitRange=18
+sfr = "ADC_IDR.RXBUFF", 	"Memory", 0xfffd8028, 4, base=16, bitRange=19
+sfr = "ADC_IMR", 	"Memory", 0xfffd802c, 4, base=16
+sfr = "ADC_IMR.EOC0", 	"Memory", 0xfffd802c, 4, base=16, bitRange=0
+sfr = "ADC_IMR.EOC1", 	"Memory", 0xfffd802c, 4, base=16, bitRange=1
+sfr = "ADC_IMR.EOC2", 	"Memory", 0xfffd802c, 4, base=16, bitRange=2
+sfr = "ADC_IMR.EOC3", 	"Memory", 0xfffd802c, 4, base=16, bitRange=3
+sfr = "ADC_IMR.EOC4", 	"Memory", 0xfffd802c, 4, base=16, bitRange=4
+sfr = "ADC_IMR.EOC5", 	"Memory", 0xfffd802c, 4, base=16, bitRange=5
+sfr = "ADC_IMR.EOC6", 	"Memory", 0xfffd802c, 4, base=16, bitRange=6
+sfr = "ADC_IMR.EOC7", 	"Memory", 0xfffd802c, 4, base=16, bitRange=7
+sfr = "ADC_IMR.OVRE0", 	"Memory", 0xfffd802c, 4, base=16, bitRange=8
+sfr = "ADC_IMR.OVRE1", 	"Memory", 0xfffd802c, 4, base=16, bitRange=9
+sfr = "ADC_IMR.OVRE2", 	"Memory", 0xfffd802c, 4, base=16, bitRange=10
+sfr = "ADC_IMR.OVRE3", 	"Memory", 0xfffd802c, 4, base=16, bitRange=11
+sfr = "ADC_IMR.OVRE4", 	"Memory", 0xfffd802c, 4, base=16, bitRange=12
+sfr = "ADC_IMR.OVRE5", 	"Memory", 0xfffd802c, 4, base=16, bitRange=13
+sfr = "ADC_IMR.OVRE6", 	"Memory", 0xfffd802c, 4, base=16, bitRange=14
+sfr = "ADC_IMR.OVRE7", 	"Memory", 0xfffd802c, 4, base=16, bitRange=15
+sfr = "ADC_IMR.DRDY", 	"Memory", 0xfffd802c, 4, base=16, bitRange=16
+sfr = "ADC_IMR.GOVRE", 	"Memory", 0xfffd802c, 4, base=16, bitRange=17
+sfr = "ADC_IMR.ENDRX", 	"Memory", 0xfffd802c, 4, base=16, bitRange=18
+sfr = "ADC_IMR.RXBUFF", 	"Memory", 0xfffd802c, 4, base=16, bitRange=19
+sfr = "ADC_CDR0", 	"Memory", 0xfffd8030, 4, base=16
+sfr = "ADC_CDR0.DATA", 	"Memory", 0xfffd8030, 4, base=16, bitRange=0-9
+sfr = "ADC_CDR1", 	"Memory", 0xfffd8034, 4, base=16
+sfr = "ADC_CDR1.DATA", 	"Memory", 0xfffd8034, 4, base=16, bitRange=0-9
+sfr = "ADC_CDR2", 	"Memory", 0xfffd8038, 4, base=16
+sfr = "ADC_CDR2.DATA", 	"Memory", 0xfffd8038, 4, base=16, bitRange=0-9
+sfr = "ADC_CDR3", 	"Memory", 0xfffd803c, 4, base=16
+sfr = "ADC_CDR3.DATA", 	"Memory", 0xfffd803c, 4, base=16, bitRange=0-9
+sfr = "ADC_CDR4", 	"Memory", 0xfffd8040, 4, base=16
+sfr = "ADC_CDR4.DATA", 	"Memory", 0xfffd8040, 4, base=16, bitRange=0-9
+sfr = "ADC_CDR5", 	"Memory", 0xfffd8044, 4, base=16
+sfr = "ADC_CDR5.DATA", 	"Memory", 0xfffd8044, 4, base=16, bitRange=0-9
+sfr = "ADC_CDR6", 	"Memory", 0xfffd8048, 4, base=16
+sfr = "ADC_CDR6.DATA", 	"Memory", 0xfffd8048, 4, base=16, bitRange=0-9
+sfr = "ADC_CDR7", 	"Memory", 0xfffd804c, 4, base=16
+sfr = "ADC_CDR7.DATA", 	"Memory", 0xfffd804c, 4, base=16, bitRange=0-9
+
+
+[SfrGroupInfo]
+group = "TC0",	"TC0_CCR",	"TC0_CMR",	"TC0_CV",	"TC0_RA",	"TC0_RB",	"TC0_RC",	"TC0_SR",	"TC0_IER",	"TC0_IDR",	"TC0_IMR"
+group = "TCB",	"TCB_BCR",	"TCB_BMR"
+group = "TC1",	"TC1_CCR",	"TC1_CMR",	"TC1_CV",	"TC1_RA",	"TC1_RB",	"TC1_RC",	"TC1_SR",	"TC1_IER",	"TC1_IDR",	"TC1_IMR"
+group = "TC2",	"TC2_CCR",	"TC2_CMR",	"TC2_CV",	"TC2_RA",	"TC2_RB",	"TC2_RC",	"TC2_SR",	"TC2_IER",	"TC2_IDR",	"TC2_IMR"
+group = "UDP",	"UDP_NUM",	"UDP_GLBSTATE",	"UDP_FADDR",	"UDP_IER",	"UDP_IDR",	"UDP_IMR",	"UDP_ISR",	"UDP_ICR",	"UDP_RSTEP",	"UDP_CSR",	"UDP_FDR",	"UDP_TXVC"
+group = "TWI",	"TWI_CR",	"TWI_MMR",	"TWI_IADR",	"TWI_CWGR",	"TWI_SR",	"TWI_IER",	"TWI_IDR",	"TWI_IMR",	"TWI_RHR",	"TWI_THR"
+group = "US0",	"US0_CR",	"US0_MR",	"US0_IER",	"US0_IDR",	"US0_IMR",	"US0_CSR",	"US0_RHR",	"US0_THR",	"US0_BRGR",	"US0_RTOR",	"US0_TTGR",	"US0_FIDI",	"US0_NER",	"US0_IF"
+group = "PDC_US0",	"US0_RPR",	"US0_RCR",	"US0_TPR",	"US0_TCR",	"US0_RNPR",	"US0_RNCR",	"US0_TNPR",	"US0_TNCR",	"US0_PTCR",	"US0_PTSR"
+group = "US1",	"US1_CR",	"US1_MR",	"US1_IER",	"US1_IDR",	"US1_IMR",	"US1_CSR",	"US1_RHR",	"US1_THR",	"US1_BRGR",	"US1_RTOR",	"US1_TTGR",	"US1_FIDI",	"US1_NER",	"US1_IF"
+group = "PDC_US1",	"US1_RPR",	"US1_RCR",	"US1_TPR",	"US1_TCR",	"US1_RNPR",	"US1_RNCR",	"US1_TNPR",	"US1_TNCR",	"US1_PTCR",	"US1_PTSR"
+group = "PWMC",	"PWMC_MR",	"PWMC_ENA",	"PWMC_DIS",	"PWMC_SR",	"PWMC_IER",	"PWMC_IDR",	"PWMC_IMR",	"PWMC_ISR",	"PWMC_VR"
+group = "PWMC_CH0",	"PWMC_CH0_CMR",	"PWMC_CH0_CDTYR",	"PWMC_CH0_CPRDR",	"PWMC_CH0_CCNTR",	"PWMC_CH0_CUPDR",	"PWMC_CH0_Reserved"
+group = "PWMC_CH1",	"PWMC_CH1_CMR",	"PWMC_CH1_CDTYR",	"PWMC_CH1_CPRDR",	"PWMC_CH1_CCNTR",	"PWMC_CH1_CUPDR",	"PWMC_CH1_Reserved"
+group = "PWMC_CH2",	"PWMC_CH2_CMR",	"PWMC_CH2_CDTYR",	"PWMC_CH2_CPRDR",	"PWMC_CH2_CCNTR",	"PWMC_CH2_CUPDR",	"PWMC_CH2_Reserved"
+group = "PWMC_CH3",	"PWMC_CH3_CMR",	"PWMC_CH3_CDTYR",	"PWMC_CH3_CPRDR",	"PWMC_CH3_CCNTR",	"PWMC_CH3_CUPDR",	"PWMC_CH3_Reserved"
+group = "CAN",	"CAN_MR",	"CAN_IER",	"CAN_IDR",	"CAN_IMR",	"CAN_SR",	"CAN_BR",	"CAN_TIM",	"CAN_TIMESTP",	"CAN_ECR",	"CAN_TCR",	"CAN_ACR",	"CAN_VR"
+group = "CAN_MB0",	"CAN_MB0_MMR",	"CAN_MB0_MAM",	"CAN_MB0_MID",	"CAN_MB0_MFID",	"CAN_MB0_MSR",	"CAN_MB0_MDL",	"CAN_MB0_MDH",	"CAN_MB0_MCR"
+group = "CAN_MB1",	"CAN_MB1_MMR",	"CAN_MB1_MAM",	"CAN_MB1_MID",	"CAN_MB1_MFID",	"CAN_MB1_MSR",	"CAN_MB1_MDL",	"CAN_MB1_MDH",	"CAN_MB1_MCR"
+group = "CAN_MB2",	"CAN_MB2_MMR",	"CAN_MB2_MAM",	"CAN_MB2_MID",	"CAN_MB2_MFID",	"CAN_MB2_MSR",	"CAN_MB2_MDL",	"CAN_MB2_MDH",	"CAN_MB2_MCR"
+group = "CAN_MB3",	"CAN_MB3_MMR",	"CAN_MB3_MAM",	"CAN_MB3_MID",	"CAN_MB3_MFID",	"CAN_MB3_MSR",	"CAN_MB3_MDL",	"CAN_MB3_MDH",	"CAN_MB3_MCR"
+group = "CAN_MB4",	"CAN_MB4_MMR",	"CAN_MB4_MAM",	"CAN_MB4_MID",	"CAN_MB4_MFID",	"CAN_MB4_MSR",	"CAN_MB4_MDL",	"CAN_MB4_MDH",	"CAN_MB4_MCR"
+group = "CAN_MB5",	"CAN_MB5_MMR",	"CAN_MB5_MAM",	"CAN_MB5_MID",	"CAN_MB5_MFID",	"CAN_MB5_MSR",	"CAN_MB5_MDL",	"CAN_MB5_MDH",	"CAN_MB5_MCR"
+group = "CAN_MB6",	"CAN_MB6_MMR",	"CAN_MB6_MAM",	"CAN_MB6_MID",	"CAN_MB6_MFID",	"CAN_MB6_MSR",	"CAN_MB6_MDL",	"CAN_MB6_MDH",	"CAN_MB6_MCR"
+group = "CAN_MB7",	"CAN_MB7_MMR",	"CAN_MB7_MAM",	"CAN_MB7_MID",	"CAN_MB7_MFID",	"CAN_MB7_MSR",	"CAN_MB7_MDL",	"CAN_MB7_MDH",	"CAN_MB7_MCR"
+group = "SSC",	"SSC_CR",	"SSC_CMR",	"SSC_RCMR",	"SSC_RFMR",	"SSC_TCMR",	"SSC_TFMR",	"SSC_RHR",	"SSC_THR",	"SSC_RSHR",	"SSC_TSHR",	"SSC_SR",	"SSC_IER",	"SSC_IDR",	"SSC_IMR"
+group = "PDC_SSC",	"SSC_RPR",	"SSC_RCR",	"SSC_TPR",	"SSC_TCR",	"SSC_RNPR",	"SSC_RNCR",	"SSC_TNPR",	"SSC_TNCR",	"SSC_PTCR",	"SSC_PTSR"
+group = "ADC",	"ADC_CR",	"ADC_MR",	"ADC_CHER",	"ADC_CHDR",	"ADC_CHSR",	"ADC_SR",	"ADC_LCDR",	"ADC_IER",	"ADC_IDR",	"ADC_IMR",	"ADC_CDR0",	"ADC_CDR1",	"ADC_CDR2",	"ADC_CDR3",	"ADC_CDR4",	"ADC_CDR5",	"ADC_CDR6",	"ADC_CDR7"
+group = "PDC_ADC",	"ADC_RPR",	"ADC_RCR",	"ADC_TPR",	"ADC_TCR",	"ADC_RNPR",	"ADC_RNCR",	"ADC_TNPR",	"ADC_TNCR",	"ADC_PTCR",	"ADC_PTSR"
+group = "EMAC",	"EMAC_NCR",	"EMAC_NCFGR",	"EMAC_NSR",	"EMAC_TSR",	"EMAC_RBQP",	"EMAC_TBQP",	"EMAC_RSR",	"EMAC_ISR",	"EMAC_IER",	"EMAC_IDR",	"EMAC_IMR",	"EMAC_MAN",	"EMAC_PTR",	"EMAC_PFR",	"EMAC_FTO",	"EMAC_SCF",	"EMAC_MCF",	"EMAC_FRO",	"EMAC_FCSE",	"EMAC_ALE",	"EMAC_DTF",	"EMAC_LCOL",	"EMAC_ECOL",	"EMAC_TUND",	"EMAC_CSE",	"EMAC_RRE",	"EMAC_ROV",	"EMAC_RSE",	"EMAC_ELE",	"EMAC_RJA",	"EMAC_USF",	"EMAC_STE",	"EMAC_RLE",	"EMAC_TPF",	"EMAC_HRB",	"EMAC_HRT",	"EMAC_SA1L",	"EMAC_SA1H",	"EMAC_SA2L",	"EMAC_SA2H",	"EMAC_SA3L",	"EMAC_SA3H",	"EMAC_SA4L",	"EMAC_SA4H",	"EMAC_TID",	"EMAC_TPQ",	"EMAC_USRIO",	"EMAC_WOL",	"EMAC_REV"
+group = "SPI0",	"SPI0_CR",	"SPI0_MR",	"SPI0_RDR",	"SPI0_TDR",	"SPI0_SR",	"SPI0_IER",	"SPI0_IDR",	"SPI0_IMR",	"SPI0_CSR"
+group = "PDC_SPI0",	"SPI0_RPR",	"SPI0_RCR",	"SPI0_TPR",	"SPI0_TCR",	"SPI0_RNPR",	"SPI0_RNCR",	"SPI0_TNPR",	"SPI0_TNCR",	"SPI0_PTCR",	"SPI0_PTSR"
+group = "SPI1",	"SPI1_CR",	"SPI1_MR",	"SPI1_RDR",	"SPI1_TDR",	"SPI1_SR",	"SPI1_IER",	"SPI1_IDR",	"SPI1_IMR",	"SPI1_CSR"
+group = "PDC_SPI1",	"SPI1_RPR",	"SPI1_RCR",	"SPI1_TPR",	"SPI1_TCR",	"SPI1_RNPR",	"SPI1_RNCR",	"SPI1_TNPR",	"SPI1_TNCR",	"SPI1_PTCR",	"SPI1_PTSR"
+group = "SYS"
+group = "AIC",	"AIC_SMR",	"AIC_SVR",	"AIC_IVR",	"AIC_FVR",	"AIC_ISR",	"AIC_IPR",	"AIC_IMR",	"AIC_CISR",	"AIC_IECR",	"AIC_IDCR",	"AIC_ICCR",	"AIC_ISCR",	"AIC_EOICR",	"AIC_SPU",	"AIC_DCR",	"AIC_FFER",	"AIC_FFDR",	"AIC_FFSR"
+group = "DBGU",	"DBGU_CR",	"DBGU_MR",	"DBGU_IER",	"DBGU_IDR",	"DBGU_IMR",	"DBGU_CSR",	"DBGU_RHR",	"DBGU_THR",	"DBGU_BRGR",	"DBGU_CIDR",	"DBGU_EXID",	"DBGU_FNTR"
+group = "PDC_DBGU",	"DBGU_RPR",	"DBGU_RCR",	"DBGU_TPR",	"DBGU_TCR",	"DBGU_RNPR",	"DBGU_RNCR",	"DBGU_TNPR",	"DBGU_TNCR",	"DBGU_PTCR",	"DBGU_PTSR"
+group = "PIOA",	"PIOA_PER",	"PIOA_PDR",	"PIOA_PSR",	"PIOA_OER",	"PIOA_ODR",	"PIOA_OSR",	"PIOA_IFER",	"PIOA_IFDR",	"PIOA_IFSR",	"PIOA_SODR",	"PIOA_CODR",	"PIOA_ODSR",	"PIOA_PDSR",	"PIOA_IER",	"PIOA_IDR",	"PIOA_IMR",	"PIOA_ISR",	"PIOA_MDER",	"PIOA_MDDR",	"PIOA_MDSR",	"PIOA_PPUDR",	"PIOA_PPUER",	"PIOA_PPUSR",	"PIOA_ASR",	"PIOA_BSR",	"PIOA_ABSR",	"PIOA_OWER",	"PIOA_OWDR",	"PIOA_OWSR"
+group = "PIOB",	"PIOB_PER",	"PIOB_PDR",	"PIOB_PSR",	"PIOB_OER",	"PIOB_ODR",	"PIOB_OSR",	"PIOB_IFER",	"PIOB_IFDR",	"PIOB_IFSR",	"PIOB_SODR",	"PIOB_CODR",	"PIOB_ODSR",	"PIOB_PDSR",	"PIOB_IER",	"PIOB_IDR",	"PIOB_IMR",	"PIOB_ISR",	"PIOB_MDER",	"PIOB_MDDR",	"PIOB_MDSR",	"PIOB_PPUDR",	"PIOB_PPUER",	"PIOB_PPUSR",	"PIOB_ASR",	"PIOB_BSR",	"PIOB_ABSR",	"PIOB_OWER",	"PIOB_OWDR",	"PIOB_OWSR"
+group = "PMC",	"PMC_SCER",	"PMC_SCDR",	"PMC_SCSR",	"PMC_PCER",	"PMC_PCDR",	"PMC_PCSR",	"PMC_MOR",	"PMC_MCFR",	"PMC_PLLR",	"PMC_MCKR",	"PMC_PCKR",	"PMC_IER",	"PMC_IDR",	"PMC_SR",	"PMC_IMR"
+group = "CKGR",	"CKGR_MOR",	"CKGR_MCFR",	"CKGR_PLLR"
+group = "RSTC",	"RSTC_RCR",	"RSTC_RSR",	"RSTC_RMR"
+group = "RTTC",	"RTTC_RTMR",	"RTTC_RTAR",	"RTTC_RTVR",	"RTTC_RTSR"
+group = "PITC",	"PITC_PIMR",	"PITC_PISR",	"PITC_PIVR",	"PITC_PIIR"
+group = "WDTC",	"WDTC_WDCR",	"WDTC_WDMR",	"WDTC_WDSR"
+group = "VREG",	"VREG_MR"
+group = "MC",	"MC_RCR",	"MC_ASR",	"MC_AASR",	"MC_FMR",	"MC_FCR",	"MC_FSR"

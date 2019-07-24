@@ -1,0 +1,59 @@
+---
+#The purpose of this test is to play with our really rough multidimensional array support, which involves an implicit cast not supported everywhere
+:cmock:
+  :plugins:
+  - :array
+
+:systest:
+  :types: |
+
+
+  :mockable: |
+    void foo(unsigned char** a);
+    unsigned char** bar(void);
+
+  :source:
+    :header: |
+      void function_a(void);
+
+    :code: |
+      void function_a(void) {
+        foo(bar());
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: 'handle two dimensional array of unsigned characters just like we would handle a single dimensional array in expect (where we really only care about first element)'
+      :code: |
+        test()
+        {
+          unsigned char a[] = { 1, 2, 3, 4, 5, 6 };
+          unsigned char** pa = (unsigned char**)(&a);
+
+          bar_ExpectAndReturn(pa);
+          foo_Expect(pa);
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'handle two dimensional array of unsigned characters just like we would handle a single dimensional array in expect as failures (where we really only care about first element)'
+      :code: |
+        test()
+        {
+          unsigned char a[] = { 1, 2, 3, 4, 5, 6 };
+          unsigned char b[] = { 5, 6, 7, 8, 9, 0 };
+          unsigned char** pa = (unsigned char**)(&a);
+          unsigned char** pb = (unsigned char**)(&b);
+
+          bar_ExpectAndReturn(pa);
+          foo_Expect(pb);
+
+          function_a();
+        }
+...

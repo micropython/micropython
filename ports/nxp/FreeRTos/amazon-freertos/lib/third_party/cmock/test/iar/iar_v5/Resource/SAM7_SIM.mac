@@ -1,0 +1,67 @@
+//=========================================================
+// Simulation setup file for esc07_demo project
+//=========================================================
+
+__var _timer0_interrupt_ID;
+
+irqBreak()
+{
+  __var __AIC_SMR;
+  __var __AIC_IECR;
+  __var __AIC_IVR;
+
+  // read AIC_IECR instead, since not fully supported by simulator
+  __AIC_IECR = __readMemory32(0xFFFFF120, "Memory");
+  if(__AIC_IECR & 0x1000)
+  {
+    __AIC_SMR = __readMemory32(0xFFFFF060, "Memory");
+    __AIC_IVR = __readMemory32(0xFFFFF0B0, "Memory"); //AIC_IVR = AIC_SVR[x]
+    __writeMemory32(__AIC_IVR, 0xFFFFF100, "Memory"); //AIC_IVR
+    __writeMemory32(0x1000, 0xFFFFF10C, "Memory");    //AIC_IPR
+    __writeMemory32(0x2, 0xFFFFF114, "Memory");       //AIC_CISR
+  }
+
+  return 0;
+}
+
+setupProcessorRegisters()
+{
+  // Write TC0_SR.CPCS with correct status for ISR (Clock enabled; RC Compare Flag = TRUE)
+  __writeMemory32(0x00010010, 0xfffa0020, "Memory");
+
+  // Set TX ready flag in USART0 status register
+  // USART0_BASE->US_CSR = AT91C_US_TXRDY
+  __writeMemory32(0x00000002, 0xfffc0014, "Memory");
+}
+
+configureTimer0Interrupt()
+{
+  __var _master_clock_frequency;
+  __var _timer0_period_cycles;
+
+  // Calculate timer0 frequency in master clock cycles
+  _master_clock_frequency = 48054857;
+  _timer0_period_cycles = _master_clock_frequency / 100;
+  if((_master_clock_frequency % 100) >= 50)
+  {
+    _timer0_period_cycles++;
+  }
+
+  __cancelAllInterrupts();
+  __enableInterrupts();
+
+  _timer0_interrupt_ID = __orderInterrupt("IRQ", _timer0_period_cycles, _timer0_period_cycles, 0, 0, 0, 100);
+
+  if(-1 == _timer0_interrupt_ID)
+  {
+    __message "ERROR: failed to order timer 0 interrupt";
+  }
+
+  __setCodeBreak("0x18", 0, "irqBreak()", "TRUE", "");
+}
+
+execUserReset()
+{
+  setupProcessorRegisters();
+  configureTimer0Interrupt();
+}

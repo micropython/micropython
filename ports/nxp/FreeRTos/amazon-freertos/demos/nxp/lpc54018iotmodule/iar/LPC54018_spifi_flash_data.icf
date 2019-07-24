@@ -1,0 +1,153 @@
+/*
+** ###################################################################
+**     Processors:          LPC54018JBD208
+**                          LPC54018JET180
+**
+**     Compiler:            IAR ANSI C/C++ Compiler for ARM
+**     Reference manual:    LPC540xx User manual Rev.0.2 19 October 2017
+**     Version:             rev. 1.2, 2017-06-08
+**     Build:               b170823
+**
+**     Abstract:
+**         Linker file for the IAR ANSI C/C++ Compiler for ARM
+**
+**     The Clear BSD License
+**     Copyright 2016 Freescale Semiconductor, Inc.
+**     Copyright 2016-2017 NXP
+**     All rights reserved.
+**     
+**     Redistribution and use in source and binary forms, with or without modification,
+**     are permitted (subject to the limitations in the disclaimer below) provided
+**      that the following conditions are met:
+**
+**     1. Redistributions of source code must retain the above copyright notice, this list
+**       of conditions and the following disclaimer.
+**
+**     2. Redistributions in binary form must reproduce the above copyright notice, this
+**       list of conditions and the following disclaimer in the documentation and/or
+**       other materials provided with the distribution.
+**
+**     3. Neither the name of the copyright holder nor the names of its
+**       contributors may be used to endorse or promote products derived from this
+**       software without specific prior written permission.
+**
+**     NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS LICENSE.
+**     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+**     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+**     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+**     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+**     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+**     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+**     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+**     ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+**     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+**     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**
+**     http:                 www.nxp.com
+**     mail:                 support@nxp.com
+**
+** ###################################################################
+*/
+
+
+/* USB BDT size */
+define symbol usb_bdt_size             = 0x0;
+/* Stack and Heap Sizes */
+if (isdefinedsymbol(__stack_size__)) {
+  define symbol __size_cstack__        = __stack_size__;
+} else {
+  define symbol __size_cstack__        = 0x200;
+}
+
+if (isdefinedsymbol(__heap_size__)) {
+  define symbol __size_heap__          = __heap_size__;
+} else {
+  define symbol __size_heap__          = 0x200;
+}
+
+if (isdefinedsymbol(XIP_IMAGE)) {
+define symbol m_interrupts_start               = 0x10000000;
+define symbol m_interrupts_end                 = 0x100001C4;
+} else {
+define symbol m_interrupts_start               = 0x00000000;
+define symbol m_interrupts_end                 = 0x000001C4;
+}
+
+if (isdefinedsymbol(XIP_IMAGE)) {
+define symbol m_text_start                     = 0x100001C4;
+define symbol m_text_end                       = 0x107FFE3C;
+/* Reserved area for "mflash_files" */
+define symbol m_mflash_start                   = 0x10800000;
+define symbol m_mflash_end                     = 0X10FFFFFF;
+} else {
+define symbol m_text_start                     = 0x000001C4;
+define symbol m_text_end                       = 0x0002FFFF;
+}
+
+if (isdefinedsymbol(XIP_IMAGE)) {
+define symbol m_data_start                     = 0x00000004;
+define symbol m_data_end                       = 0x0002FFFC - __size_cstack__;
+} else {
+define symbol m_data_start                     = 0x20000000;
+define symbol m_data_end                       = 0x20027FFF - __size_cstack__;
+}
+
+if (isdefinedsymbol(XIP_IMAGE)) {
+define symbol m_stack_start                    = 0x0002FFFF - __size_cstack__;
+define symbol m_stack_end                      = 0x0002FFFF;
+} else {
+define symbol m_stack_start                    = 0x20027FFF - __size_cstack__;
+define symbol m_stack_end                      = 0x20027FFF;
+}
+
+define symbol m_usb_sram_start                 = 0x40100000;
+define symbol m_usb_sram_end                   = 0x40101FFF;
+
+define memory mem with size = 4G;
+
+define region TEXT_region             = mem:[from m_interrupts_start to m_interrupts_end]
+                                      | mem:[from m_text_start to m_text_end];
+define region DATA_region             = mem:[from m_data_start to m_stack_start - 1];
+define region CSTACK_region           = mem:[from m_stack_start to m_stack_end];
+
+define block CSTACK    with alignment = 8, size = __size_cstack__   { };
+define block HEAP      with alignment = 8, size = __size_heap__     { };
+define block RW        { readwrite };
+define block RO        { readonly };
+define block ZI        { zi };
+
+/* regions for USB */
+define region USB_BDT_region = mem:[from m_usb_sram_start to m_usb_sram_start + usb_bdt_size - 1];
+define region USB_SRAM_region = mem:[from m_usb_sram_start + usb_bdt_size to m_usb_sram_end];
+place in USB_BDT_region                     { section m_usb_bdt };
+place in USB_SRAM_region                    { section m_usb_global };
+
+initialize by copy {
+  readwrite,
+  /* Place in RAM flash and performance dependent functions  */
+  object mflash_drv.o,
+  object fsl_spifi.o,
+  object bignum.o,
+  /* explicit "__ram_func" functions */
+  section .textrw
+};
+
+
+if (isdefinedsymbol(__USE_DLIB_PERTHREAD))
+{
+  /* Required in a multi-threaded application */
+  initialize by copy with packing = none { section __DLIB_PERTHREAD };
+}
+
+do not initialize  { section .noinit, section m_usb_bdt, section m_usb_global };
+
+place at address mem: m_interrupts_start    { readonly section .intvec };
+place in TEXT_region                        { block RO };
+place in DATA_region                        { block RW };
+place in DATA_region                        { block ZI };
+place in DATA_region                        { last block HEAP };
+place in CSTACK_region                      { block CSTACK };
+
+
+
+

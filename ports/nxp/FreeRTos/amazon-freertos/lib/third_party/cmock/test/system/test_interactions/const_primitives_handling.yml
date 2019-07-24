@@ -1,0 +1,87 @@
+---
+:cmock:
+  :plugins:
+  - # none
+
+:systest:
+  :types: |
+
+  :mockable: |
+    // no argument names
+    void foo(char const*, char* const, const char*);
+    
+    // argument names
+    void bar(char const* param1, char* const param2, const char* param3);
+
+  :source: 
+    :header: |
+      void exercise_const1(char const* param1, char* const param2, const char* param3);
+      void exercise_const2(char const* param1, char* const param2, const char* param3);
+
+    :code: |
+      char value1 = '1';
+      char value2 = '2';
+    
+      const char* A = &value1;
+      char* const B = &value2;
+      const char* C = "C";
+      const char* D = "D";
+    
+      void exercise_const1(char const* param1, char* const param2, const char* param3)
+      {
+        foo(param1, param2, param3);
+      }
+
+      void exercise_const2(char const* param1, char* const param2, const char* param3)
+      {
+        bar(param1, param2, param3);
+      }
+      
+  :tests:
+    :common: |
+      extern const char* A;
+      extern char* const B;
+      extern const char* C;
+      extern const char* D;
+      
+      void setUp(void) {}
+      void tearDown(void) {}
+    :units:
+    - :pass: TRUE
+      :should: 'successfully pass several const parameters'
+      :code: |
+        test()
+        {
+          foo_Expect( A, B, C );
+          exercise_const1( A, B, C );
+        }
+      
+    - :pass: FALSE
+      :should: 'should fail upon wrong const arguments passed'
+      :code: |
+        test()
+        {
+          foo_Expect( A, B, C );
+          exercise_const1( (const char*)B, (char * const)A, C );
+        }
+
+    - :pass: FALSE
+      :should: 'should fail upon wrong const arguments passed'
+      :code: |
+        test()
+        {
+          foo_Expect( A, B, C );
+          exercise_const1( A, B, D );
+        }
+
+    - :pass: FALSE
+      :should: 'should fail upon wrong const arguments passed'
+      :code: |
+        test()
+        {
+          bar_Expect( A, B, C );
+          exercise_const2( A, (char * const)C, (const char *)B );
+        }
+
+
+...

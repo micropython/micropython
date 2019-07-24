@@ -1,0 +1,210 @@
+---
+:cmock:
+  :plugins:
+  - # none
+  :treat_as:
+    INT_PTR: INT*
+
+:systest:
+  :types: |
+    typedef struct _POINT_T {
+      int x;
+      int y;
+    } POINT_T;
+    typedef int* INT_PTR;
+
+  :mockable: |
+    void foo(POINT_T* a);
+    POINT_T* bar(void);
+    void fooa(POINT_T a[]);
+    void foos(const char *a);
+    const char* bars(void);
+    INT_PTR zoink(INT_PTR a);
+
+  :source:
+    :header: |
+      void function_a(void);
+      void function_b(void);
+      void function_c(void);
+      int  function_d(void);
+
+    :code: |
+      void function_a(void)
+      {
+        foo(bar());
+      }
+
+      void function_b(void) {
+        fooa(bar());
+      }
+
+      void function_c(void) {
+        foos(bars());
+      }
+
+      int function_d(void) {
+        int i = 456;
+        INT_PTR ptr = (INT_PTR)(&i);
+        return (int)(*(zoink(ptr)));
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+
+    :units:
+    - :pass: TRUE
+      :should: 'handle the situation where we pass nulls to pointers'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          foo_Expect(NULL);
+
+          function_a();
+        }
+
+    - :pass: TRUE
+      :should: 'handle the situation where we pass single object with expect'
+      :code: |
+        test()
+        {
+          POINT_T pt = {1, 2};
+          POINT_T ex = {1, 2};
+          bar_ExpectAndReturn(&pt);
+          foo_Expect(&ex);
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'handle the situation where we pass single object with expect and it is wrong'
+      :code: |
+        test()
+        {
+          POINT_T pt = {1, 2};
+          POINT_T ex = {1, 3};
+          bar_ExpectAndReturn(&pt);
+          foo_Expect(&ex);
+
+          function_a();
+        }
+
+    - :pass: FALSE
+      :should: 'handle the situation where we pass nulls to pointers and fail'
+      :code: |
+        test()
+        {
+          POINT_T pt = {1, 2};
+          bar_ExpectAndReturn(&pt);
+          foo_Expect(NULL);
+
+          function_a();
+        }
+
+    - :pass: TRUE
+      :should: 'handle the situation where we pass nulls to arrays'
+      :code: |
+        test()
+        {
+          bar_ExpectAndReturn(NULL);
+          fooa_Expect(NULL);
+
+          function_b();
+        }
+
+    - :pass: TRUE
+      :should: 'handle the situation where we pass single array element with expect'
+      :code: |
+        test()
+        {
+          POINT_T pt = {1, 2};
+          POINT_T ex = {1, 2};
+          bar_ExpectAndReturn(&pt);
+          fooa_Expect(&ex);
+
+          function_b();
+        }
+
+    - :pass: FALSE
+      :should: 'handle the situation where we pass single array element with expect and it is wrong'
+      :code: |
+        test()
+        {
+          POINT_T pt = {1, 2};
+          POINT_T ex = {1, 3};
+          bar_ExpectAndReturn(&pt);
+          fooa_Expect(&ex);
+
+          function_b();
+        }
+
+    - :pass: FALSE
+      :should: 'handle the situation where we pass nulls to arrays and fail'
+      :code: |
+        test()
+        {
+          POINT_T pt = {1, 2};
+          bar_ExpectAndReturn(&pt);
+          fooa_Expect(NULL);
+
+          function_b();
+        }
+
+    - :pass: TRUE
+      :should: 'handle standard c string as null terminated on not do crappy memory compares of a byte, passing'
+      :code: |
+        test()
+        {
+          const char* retval = "This is a\0 silly string";
+          bars_ExpectAndReturn((char*)retval);
+          foos_Expect("This is a\0 wacky string");
+
+          function_c();
+        }
+
+    - :pass: FALSE
+      :should: 'handle standard c string as null terminated on not do crappy memory compares of a byte, finding failures'
+      :code: |
+        test()
+        {
+          const char* retval = "This is a silly string";
+          bars_ExpectAndReturn((char*)retval);
+          foos_Expect("This is a wacky string");
+
+          function_c();
+        }
+
+    - :pass: TRUE
+      :should: 'handle handle typedefs that ARE pointers by using treat_as'
+      :code: |
+        test()
+        {
+          int e = 456;
+          int r = 789;
+          INT_PTR ptr_e = (INT_PTR)(&e);
+          INT_PTR ptr_r = (INT_PTR)(&r);
+
+          zoink_ExpectAndReturn(ptr_e, ptr_r);
+
+          TEST_ASSERT_EQUAL(r, function_d());
+        }
+
+    - :pass: FALSE
+      :should: 'handle handle typedefs that ARE pointers by using treat_as and catch failures'
+      :code: |
+        test()
+        {
+          int e = 457;
+          int r = 789;
+          INT_PTR ptr_e = (INT_PTR)(&e);
+          INT_PTR ptr_r = (INT_PTR)(&r);
+
+          zoink_ExpectAndReturn(ptr_e, ptr_r);
+
+          TEST_ASSERT_EQUAL(r, function_d());
+        }
+
+
+...

@@ -1,0 +1,11 @@
+:cmock:
+  :callback_after_arg_check: false
+  :mock_prefix: mock_
+  :plugins:
+    - :ignore
+    - :ignore_arg
+    - :expect_any_args
+    - :array
+    - :callback
+    - :return_thru_ptr 
+  :mock_path: ../../../Common/Mocks

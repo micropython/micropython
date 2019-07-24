@@ -1,0 +1,329 @@
+---
+:cmock:
+  :plugins:
+  - 'ignore'
+
+:systest:
+  :types: |
+
+  :mockable: |
+    int foo(int a);
+    void bar(int b);
+
+  :source:
+    :header: |
+      int function(int a, int b, int c);
+    :code: |
+      int function(int a, int b, int c)
+      {
+        bar(b);
+        return foo(a) + foo(b) + foo(c);
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+    :units:
+    - :pass: TRUE
+      :should: 'successfully exercise simple ExpectAndReturn mock calls'
+      :code: |
+        test()
+        {
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 10);
+          foo_ExpectAndReturn(2, 20);
+          foo_ExpectAndReturn(3, 30);
+          TEST_ASSERT_EQUAL(60, function(1, 2, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'ignore foo() calls'
+      :code: |
+        test()
+        {
+          bar_Expect(4);
+          foo_IgnoreAndReturn(10);
+          foo_IgnoreAndReturn(40);
+          foo_IgnoreAndReturn(80);
+          TEST_ASSERT_EQUAL(130, function(3, 4, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'ignore the situation where foo() is not called even though we explicitly ignored it'
+      :code: |
+        test()
+        {
+          foo_IgnoreAndReturn(20);
+          //notice we do not call foo
+        }
+
+    - :pass: TRUE
+      :should: 'ignore foo() calls and always return last item if we run out'
+      :code: |
+        test()
+        {
+          bar_Expect(4);
+          foo_IgnoreAndReturn(20);
+          foo_IgnoreAndReturn(30);
+          TEST_ASSERT_EQUAL(80, function(3, 4, 9));
+        }
+
+    - :pass: TRUE
+      :should: 'ignore foo() calls and always return only item if only one specified'
+      :code: |
+        test()
+        {
+          bar_Expect(4);
+          foo_IgnoreAndReturn(20);
+          TEST_ASSERT_EQUAL(60, function(3, 4, 9));
+        }
+
+    - :pass: TRUE
+      :should: 'ignore bar() and foo() calls'
+      :code: |
+        test()
+        {
+          bar_Ignore();
+          foo_IgnoreAndReturn(50);
+          TEST_ASSERT_EQUAL(150, function(0, 0, 0));
+        }
+
+    - :pass: TRUE
+      :should: 'ignore foo() calls over multiple mock calls'
+      :code: |
+        test()
+        {
+          bar_Ignore();
+          foo_IgnoreAndReturn(50);
+          foo_IgnoreAndReturn(60);
+          foo_IgnoreAndReturn(70);
+          TEST_ASSERT_EQUAL(180, function(0, 0, 0));
+
+          bar_Ignore();
+          foo_IgnoreAndReturn(30);
+          foo_IgnoreAndReturn(80);
+          foo_IgnoreAndReturn(10);
+          TEST_ASSERT_EQUAL(120, function(0, 0, 0));
+
+          foo_IgnoreAndReturn(70);
+          foo_IgnoreAndReturn(20);
+          TEST_ASSERT_EQUAL(110, function(0, 0, 0));
+        }
+
+    - :pass: TRUE
+      :should: 'multiple cycles of expects still pass when ignores enabled'
+      :code: |
+        test()
+        {
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAndReturn(2, 60);
+          foo_ExpectAndReturn(3, 70);
+          TEST_ASSERT_EQUAL(180, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(8);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(7, 8, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'multiple cycles of expects still fail when ignores enabled'
+      :code: |
+        test()
+        {
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAndReturn(2, 60);
+          foo_ExpectAndReturn(3, 70);
+          TEST_ASSERT_EQUAL(180, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(8);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(0, 8, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'With "fail_on_unexpected_calls" enabled, Expect/Ignore/... of bar is required and test fails.'
+      :code: |
+        test()
+        {
+          function(1, 2, 3);
+        }
+
+    - :pass: TRUE
+      :should: 'we can override an ignore with an expect and pass'
+      :code: |
+        test()
+        {
+          bar_Ignore();
+
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAndReturn(2, 60);
+          foo_ExpectAndReturn(3, 70);
+          TEST_ASSERT_EQUAL(180, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(8);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(7, 8, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'we can override an ignore with an expect and fail'
+      :code: |
+        test()
+        {
+          bar_Ignore();
+
+          bar_Expect(2);
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAndReturn(2, 60);
+          foo_ExpectAndReturn(3, 70);
+          TEST_ASSERT_EQUAL(180, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(9);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(7, 8, 9));
+        }
+
+    - :pass: TRUE
+      :should: 'we can override an ignore and return with an expect and pass'
+      :code: |
+        test()
+        {
+          bar_Ignore();
+          foo_IgnoreAndReturn(30);
+          TEST_ASSERT_EQUAL(90, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(8);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(7, 8, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'we can override an ignore and return with an expect and fail'
+      :code: |
+        test()
+        {
+          bar_Ignore();
+          foo_IgnoreAndReturn(0);
+          TEST_ASSERT_EQUAL(0, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_ExpectAndReturn(6, 10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Expect(9);
+          foo_ExpectAndReturn(7, 70);
+          foo_ExpectAndReturn(8, 20);
+          foo_ExpectAndReturn(9, 20);
+          TEST_ASSERT_EQUAL(110, function(7, 8, 9));
+        }
+
+    - :pass: TRUE
+      :should: 'we can override an an expect with an ignore'
+      :code: |
+        test()
+        {
+          bar_Expect(5);
+          bar_Ignore();
+          foo_ExpectAndReturn(1, 50);
+          foo_ExpectAndReturn(2, 60);
+          foo_ExpectAndReturn(3, 70);
+          TEST_ASSERT_EQUAL(180, function(1, 2, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'we can override an expect with an ignore and return and pass'
+      :code: |
+        test()
+        {
+          bar_Ignore();
+          foo_IgnoreAndReturn(0);
+          TEST_ASSERT_EQUAL(0, function(1, 2, 3));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 80);
+          foo_IgnoreAndReturn(10);
+          TEST_ASSERT_EQUAL(120, function(4, 5, 6));
+
+          bar_Ignore();
+          foo_IgnoreAndReturn(60);
+          TEST_ASSERT_EQUAL(180, function(7, 8, 9));
+        }
+
+    - :pass: FALSE
+      :should: 'we can override an expect with an ignore and return and fail after'
+      :code: |
+        test()
+        {
+          bar_Expect(5);
+          foo_ExpectAndReturn(4, 30);
+          foo_ExpectAndReturn(5, 50);
+          foo_IgnoreAndReturn(20);
+          TEST_ASSERT_EQUAL(100, function(4, 5, 6));
+
+          bar_Expect(5);
+          foo_ExpectAndReturn(9, 30); //THIS ONE WILL FAIL
+          foo_ExpectAndReturn(2, 80);
+          foo_ExpectAndReturn(3, 60);
+          TEST_ASSERT_EQUAL(170, function(1, 2, 3));
+        }
+
+    - :pass: TRUE
+      :should: 'we can override an expect with an ignore and return and the expected values are ignored'
+      :code: |
+        test()
+        {
+          bar_Expect(5);
+          foo_ExpectAndReturn(2, 30); //NOTE THIS WOULD NORMALLY FAIL
+          foo_ExpectAndReturn(5, 50);
+          foo_IgnoreAndReturn(20);    //BUT WE SAID WE NO LONGER CARE
+          TEST_ASSERT_EQUAL(100, function(4, 5, 6));
+        }
+
+...

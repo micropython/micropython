@@ -1,0 +1,266 @@
+;-  ----------------------------------------------------------------------------
+;-          ATMEL Microcontroller Software Support  -  ROUSSET  -
+;-  ----------------------------------------------------------------------------
+;-  DISCLAIMER:  THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+;-  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+;-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+;-  DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+;-  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+;-  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+;-  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;-  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;-  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+;-  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;-  ----------------------------------------------------------------------------
+;- File source          : Cstartup.s79
+;- Object               : Generic CStartup
+;- 1.0 01/Sep/05 FBr    : Creation
+;- 1.1 09/Sep/05 JPP    : Change Interrupt management
+;------------------------------------------------------------------------------
+
+;------------------------------------------------------------------------------
+; Include your AT91 Library files
+;------------------------------------------------------------------------------
+#include "AT91SAM7X256_inc.h"
+;------------------------------------------------------------------------------
+
+;------------------------------------------------------------------------------
+; ?RESET
+; Reset Vector.
+; Normally, segment INTVEC is linked at address 0.
+; For debugging purposes, INTVEC may be placed at other addresses.
+; A debugger that honors the entry point will start the
+; program in a normal way even if INTVEC is not at address 0.
+;------------------------------------------------------------------------------
+
+    PROGRAM	?RESET              ;- Begins a program module
+    RSEG	INTRAMEND_REMAP     ;- Begins a relocatable segment
+    RSEG	ICODE:CODE (2)      ;- Begins a relocatable segment : corresponding address is 32-bit aligned
+    CODE32	                    ;- Always ARM mode after reset	
+    ORG	0	                    ;- Sets the location counter: corresponds to the RESET vector address
+
+;------------------------------------------------------------------------------
+;- Exception vectors
+;------------------------------------------------------------------------------
+;- These vectors can be read at address 0 or at RAM address
+;- They ABSOLUTELY requires to be in relative addresssing mode in order to
+;- guarantee a valid jump. For the moment, all are just looping.
+;- If an exception occurs before remap, this would result in an infinite loop.
+;- To ensure if a exeption occurs before start application to infinite loop.
+;------------------------------------------------------------------------------
+
+reset
+                B           InitReset           ; 0x00 Reset handler
+undefvec:
+                B           undefvec            ; 0x04 Undefined Instruction
+swivec:
+                B           swivec              ; 0x08 Software Interrupt
+pabtvec:
+                B           pabtvec             ; 0x0C Prefetch Abort
+dabtvec:
+                B           dabtvec             ; 0x10 Data Abort
+rsvdvec:
+                B           rsvdvec             ; 0x14 reserved
+irqvec:
+                B           IRQ_Handler_Entry   ; 0x18 IRQ
+              				
+fiqvec:               				; 0x1c FIQ
+;------------------------------------------------------------------------------
+;- Function             : FIQ_Handler_Entry
+;- Treatments           : FIQ Controller Interrupt Handler.
+;- Called Functions     : AIC_FVR[interrupt]
+;------------------------------------------------------------------------------
+
+FIQ_Handler_Entry:
+
+;- Switch in SVC/User Mode to allow User Stack access for C code
+; because the FIQ is not yet acknowledged
+
+;- Save and r0 in FIQ_Register
+            mov         r9,r0
+	    ldr         r0 , [r8, #AIC_FVR]
+            msr         CPSR_c,#I_BIT | F_BIT | ARM_MODE_SVC
+;- Save scratch/used registers and LR in User Stack
+            stmfd       sp!, { r1-r3, r12, lr}
+
+;- Branch to the routine pointed by the AIC_FVR
+            mov         r14, pc
+            bx          r0
+
+;- Restore scratch/used registers and LR from User Stack
+            ldmia       sp!, { r1-r3, r12, lr}
+
+;- Leave Interrupts disabled and switch back in FIQ mode
+            msr         CPSR_c, #I_BIT | F_BIT | ARM_MODE_FIQ
+
+;- Restore the R0 ARM_MODE_SVC register
+            mov         r0,r9
+
+;- Restore the Program Counter using the LR_fiq directly in the PC
+            subs        pc,lr,#4
+
+;------------------------------------------------------------------------------
+;- Manage exception: The exception must be ensure in ARM mode
+;------------------------------------------------------------------------------
+;------------------------------------------------------------------------------
+;- Function             : IRQ_Handler_Entry
+;- Treatments           : IRQ Controller Interrupt Handler.
+;- Called Functions     : AIC_IVR[interrupt]
+;------------------------------------------------------------------------------
+IRQ_Handler_Entry:
+
+;-------------------------
+;- Manage Exception Entry
+;-------------------------
+;- Adjust and save LR_irq in IRQ stack
+    sub         lr, lr, #4
+    stmfd       sp!, {lr}
+
+;- Save r0 and SPSR (need to be saved for nested interrupt)
+    mrs         r14, SPSR
+    stmfd       sp!, {r0,r14}
+
+;- Write in the IVR to support Protect Mode
+;- No effect in Normal Mode
+;- De-assert the NIRQ and clear the source in Protect Mode
+    ldr         r14, =AT91C_BASE_AIC
+    ldr         r0 , [r14, #AIC_IVR]
+    str         r14, [r14, #AIC_IVR]
+
+;- Enable Interrupt and Switch in Supervisor Mode
+    msr         CPSR_c, #ARM_MODE_SVC
+
+;- Save scratch/used registers and LR in User Stack
+    stmfd       sp!, { r1-r3, r12, r14}
+
+;----------------------------------------------
+;- Branch to the routine pointed by the AIC_IVR
+;----------------------------------------------
+    mov         r14, pc
+    bx          r0
+
+;----------------------------------------------
+;- Manage Exception Exit
+;----------------------------------------------
+;- Restore scratch/used registers and LR from User Stack
+    ldmia       sp!, { r1-r3, r12, r14}
+
+;- Disable Interrupt and switch back in IRQ mode
+    msr         CPSR_c, #I_BIT | ARM_MODE_IRQ
+
+;- Mark the End of Interrupt on the AIC
+    ldr         r14, =AT91C_BASE_AIC
+    str         r14, [r14, #AIC_EOICR]
+
+;- Restore SPSR_irq and r0 from IRQ stack
+    ldmia       sp!, {r0,r14}
+    msr         SPSR_cxsf, r14
+
+;- Restore adjusted  LR_irq from IRQ stack directly in the PC
+    ldmia       sp!, {pc}^
+
+
+
+InitReset:
+
+;------------------------------------------------------------------------------
+;- Low level Init is performed in a C function: AT91F_LowLevelInit
+;- Init Stack Pointer to a valid memory area before calling AT91F_LowLevelInit
+;------------------------------------------------------------------------------
+
+;- Retrieve end of RAM address
+__iramend EQU SFB(INTRAMEND_REMAP)      ;- Segment begin
+
+    EXTERN   AT91F_LowLevelInit
+    ldr     r13,=__iramend              ;- Temporary stack in internal RAM for Low Level Init execution
+    ldr	    r0,=AT91F_LowLevelInit
+    mov     lr, pc
+    bx	    r0                          ;- Branch on C function (with interworking)
+
+;------------------------------------------------------------------------------
+;- Top of Stack Definition
+;------------------------------------------------------------------------------
+;- Interrupt and Supervisor Stack are located at the top of internal memory in
+;- order to speed the exception handling context saving and restoring.
+;- ARM_MODE_SVC (Application, C) Stack is located at the top of the external memory.
+;------------------------------------------------------------------------------
+
+IRQ_STACK_SIZE          EQU     (3*8*4)     ; 3 words to be saved per interrupt priority level
+ARM_MODE_FIQ            EQU     0x11
+ARM_MODE_IRQ            EQU     0x12
+ARM_MODE_SVC            EQU     0x13
+I_BIT                   EQU     0x80
+F_BIT                   EQU     0x40
+
+;------------------------------------------------------------------------------
+;- Setup the stack for each mode
+;------------------------------------------------------------------------------
+    ldr     r0, =__iramend
+
+;- Set up Fast Interrupt Mode and set FIQ Mode Stack
+            msr     CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
+;- Init the FIQ register
+            ldr     r8, =AT91C_BASE_AIC
+
+;- Set up Interrupt Mode and set IRQ Mode Stack
+    msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+    mov     r13, r0                     ; Init stack IRQ
+    sub     r0, r0, #IRQ_STACK_SIZE
+
+;- Enable interrupt & Set up Supervisor Mode and set Supervisor Mode Stack
+    msr     CPSR_c, #ARM_MODE_SVC
+    mov     r13, r0
+
+;------------------------------------------------------------------------------
+; Initialize segments.
+;------------------------------------------------------------------------------
+; __segment_init is assumed to use
+; instruction set and to be reachable by BL from the ICODE segment
+; (it is safest to link them in segment ICODE).
+;------------------------------------------------------------------------------
+    EXTERN	__segment_init
+    ldr	r0,=__segment_init
+    mov     lr, pc
+    bx	r0
+
+;------------------------------------------------------------------------------
+;- Branch on C code Main function (with interworking)
+;------------------------------------------------------------------------------
+    EXTERN	main
+    PUBLIC	__main
+?jump_to_main:
+    ldr	lr,=?call_exit
+    ldr	r0,=main
+__main:
+    bx	r0
+
+;------------------------------------------------------------------------------
+;- Loop for ever
+;------------------------------------------------------------------------------
+;- End of application. Normally, never occur.
+;- Could jump on Software Reset ( B 0x0 ).
+;------------------------------------------------------------------------------
+?call_exit:
+End
+    b       End
+
+;------------------------------------------------------------------------------
+;- Exception Vectors
+;------------------------------------------------------------------------------
+    PUBLIC    AT91F_Default_FIQ_handler
+    PUBLIC    AT91F_Default_IRQ_handler
+    PUBLIC    AT91F_Spurious_handler
+
+    CODE32      ; Always ARM mode after exeption
+
+AT91F_Default_FIQ_handler
+    b         AT91F_Default_FIQ_handler
+
+AT91F_Default_IRQ_handler
+    b         AT91F_Default_IRQ_handler
+
+AT91F_Spurious_handler
+    b         AT91F_Spurious_handler
+
+    ENDMOD      ;- Terminates the assembly of the current module
+    END         ;- Terminates the assembly of the last module in a file

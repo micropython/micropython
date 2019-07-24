@@ -1,0 +1,58 @@
+---
+compiler:
+  path: gcc
+  source_path:     &systest_generated_path './system/generated/'
+  unit_tests_path: &unit_tests_path '../examples/test/'
+  mocks_path:      &systest_mocks_path './system/generated/'
+  build_path:      &systest_build_path './system/build/'
+  options:
+    - '-c'
+    - '-Wall'
+    - '-Wextra'
+    - '-Wunused-parameter'
+    - '-Wno-address'
+    - '-Wno-invalid-token-paste'
+    - '-std=c99'
+    - '-pedantic'
+    - '-O0'
+  includes:
+    prefix: '-I'
+    items:
+      - *systest_generated_path
+      - *unit_tests_path
+      - *systest_mocks_path
+      - '../src/'
+      - '../vendor/unity/src/'
+      - '../vendor/c_exception/lib/'
+      - './system/test_compilation/'
+      - './'
+  defines:
+    prefix: '-D'
+    items:
+      - CMOCK
+      - 'UNITY_SUPPORT_64'
+  object_files:
+    prefix: '-o'
+    extension: '.o'
+    destination: *systest_build_path
+
+linker:
+  path: gcc
+  options:
+    - -lm
+  includes:
+    prefix: '-I'
+  object_files:
+    path: *systest_build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.exe'
+    destination: *systest_build_path
+
+unsupported:
+  - out_of_memory
+  - unity_64bit_support
+  - callingconv
+
+colour: true

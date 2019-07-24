@@ -1,0 +1,50 @@
+/*!
+@defgroup uart UART: Universal Asynchronous Receiver/Transmitter Driver
+*/
+
+/*!
+@defgroup uart_cmsis_driver UART CMSIS Driver
+@ingroup uart
+@details This section describes the programming interface of the UART Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. And this driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord please refer to http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+
+The UART driver includes  transactional APIs.
+
+
+Transactional APIs can be used to enable the peripheral quickly and in the
+application if the code size and performance of transactional APIs can satisfy the
+requirements. If the code size and performance are critical requirements please write 
+custom code. 
+
+# Function groups{#UARTFunGrps}
+
+## UART CMSIS GetVersion Operation {#UARTGetVersionOps}
+
+This function group will return the UART CMSIS Driver version to user.
+
+## UART CMSIS GetCapabilities Operation {#UARTGetCapOps}
+
+This function group will return the capabilities of this driver.
+
+##UART CMSIS Initialize and Uninitialize Operation{#UARTInitResetOps}
+
+This function will initialize and uninitialize the uart instance . And this API must be called before you configure an uart instance or after you Deinit an uart instance.The right steps to start an instance is that you must initialize the instance which been slected firstly,then you can power on the instance.After these all have been done,you can configure the instance by using control operation.If you want to Uninitialize the instance, you must power off the instance first.
+
+## UART CMSIS Transfer Operation {#UARTTransOps}
+
+This function group controls the transfer, send/receive data.
+
+## UART CMSIS Status Operation {#UARTStatusOps}
+
+This function group gets the UART transfer status.
+
+## UART CMSIS Control Operation {#UARTControlOps}
+
+This function can configure an instance ,set baudrate for uart, get current baudrate ,set transfer data bits and other control command.
+
+*/
+

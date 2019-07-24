@@ -1,0 +1,98 @@
+/*!
+@defgroup dspi DSPI: Serial Peripheral Interface
+@details The MCUXpresso SDK provides a peripheral driver for the  Serial Peripheral Interface (DSPI) module of MCUXpresso SDK devices.
+@{
+*/
+
+/*!
+@defgroup dspi_driver DSPI CMSIS driver
+@ingroup dspi
+@details This section describes the programming interface of the DSPI Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. And this driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord see http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+
+# Function groups{#DSPIFunGrps}
+
+## DSPI CMSIS GetVersion Operation {#DSPIGetVersionOps}
+
+This function group will return the DSPI CMSIS Driver version to user.
+
+## DSPI CMSIS GetCapabilities Operation {#DSPIGetCapOps}
+
+This function group will return the capabilities of this driver.
+
+##DSPI CMSIS Initialize and Uninitialize Operation{#DSPIInitResetOps}
+
+This function will initialize and uninitialize the instance in master mode or slave mode. And this API
+must be called before you configure an instance or after you Deinit an instance.The right steps to start an 
+instance is that you must initialize the instance which been slected firstly,then you can power on the instance.
+After these all have been done,you can configure the instance by using control operation.If you want to Uninitialize 
+the instance, you must power off the instance first.
+
+## DSPI CMSIS Transfer Operation {#DSPITransOps}
+
+This function group controls the transfer, master send/receive data, and slave send/receive data.
+
+## DSPI CMSIS Status Operation {#DSPIStatusOps}
+
+This function group gets the DSPI transfer status.
+
+## DSPI CMSIS Control Operation {#DSPIControlOps}
+
+This function can configure instance as master mode or slave mode, set baudrate for master mode transfer, get current baudrate 
+of master mode transfer,set transfer data bits and other control command.
+
+# Typical use case {#DSPITpyUC}
+
+## Master Operation {#DSPIMasterOps}
+
+~~~~~{.c}
+ 	/* Variables */
+ 	uint8_t masterRxData[TRANSFER_SIZE] = {0U};
+	uint8_t masterTxData[TRANSFER_SIZE] = {0U};
+
+    /*DSPI master init*/
+    Driver_SPI0.Initialize(DSPI_MasterSignalEvent_t);
+    Driver_SPI0.PowerControl(ARM_POWER_FULL);
+    Driver_SPI0.Control(ARM_SPI_MODE_MASTER, TRANSFER_BAUDRATE);
+
+    /* Start master transfer */
+    Driver_SPI0.Transfer(masterTxData, masterRxData, TRANSFER_SIZE);
+
+    /* Master power off */
+    Driver_SPI0.PowerControl(ARM_POWER_OFF);
+
+    /* Master uninitialize */
+    Driver_SPI0.Uninitialize();
+~~~~~
+
+## Slave Operation {#LPSPISlaveOps}
+
+~~~~~{.c}
+	/* Variables */
+	uint8_t slaveRxData[TRANSFER_SIZE] = {0U};
+	uint8_t slaveTxData[TRANSFER_SIZE] = {0U};
+
+    /*DSPI slave init*/
+    Driver_SPI1.Initialize(DSPI_SlaveSignalEvent_t);
+    Driver_SPI1.PowerControl(ARM_POWER_FULL);
+    Driver_SPI1.Control(ARM_SPI_MODE_SLAVE, false);
+
+    /* Start slave transfer */
+    Driver_SPI1.Transfer(slaveTxData, slaveRxData, TRANSFER_SIZE);
+
+    /* slave power off */
+    Driver_SPI1.PowerControl(ARM_POWER_OFF);
+    
+    /* slave uninitialize */
+    Driver_SPI1.Uninitialize();
+~~~~~
+
+*/
+
+/*!
+ * @}
+ */

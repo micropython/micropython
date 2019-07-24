@@ -1,0 +1,93 @@
+/*!
+@defgroup lpspi LPSPI: Low Power Serial Peripheral Interface
+@details The MCUXpresso SDK provides a peripheral driver for the Low Power Serial Peripheral Interface (LPSPI) module of MCUXpresso SDK devices.
+@{
+*/
+
+/*!
+@defgroup lpspi_cmsis_driver LPSPI CMSIS driver
+@ingroup lpspi
+@details This section describes the programming interface of the LPSPI Cortex Microcontroller Software 
+ Interface Standard (CMSIS) driver. And this driver defines generic peripheral driver interfaces for middleware
+ making it reusable across a wide range of supported microcontroller devices. The API connects microcontroller 
+ peripherals with middleware that implements for example communication stacks, file systems, or graphic user 
+ interfaces. 
+ More information and usage methord please refer to http://www.keil.com/pack/doc/cmsis/Driver/html/index.html.
+
+# Function groups{#LPSPIFunGrps}
+
+## LPSPI CMSIS GetVersion Operation {#LPSPIGetVersionOps}
+
+This function group will return the DSPI CMSIS Driver version to user.
+
+## LPSPI CMSIS GetCapabilities Operation {#LPSPIGetCapOps}
+
+This function group will return the capabilities of this driver.
+
+##LPSPI CMSIS Initialize and Uninitialize Operation{#LPSPIInitResetOps}
+
+This function will initialize and uninitialize the instance in master mode or slave mode. And this API must be called before you configure an instance or after you Deinit an instance.The right steps to start an instance is that you must initialize the instance which been slected firstly,then you can power on the instance.After these all have been done,you can configure the instance by using control operation.If you want to Uninitialize the instance, you must power off the instance first.
+
+## LPSPI CMSIS Transfer Operation {#LPSPITransOps}
+
+This function group controls the transfer, master send/receive data, and slave send/receive data.
+
+## LPSPI CMSIS Status Operation {#LPSPIStatusOps}
+
+This function group gets the LPSPI transfer status.
+
+## LPSPI CMSIS Control Operation {#LPSPIControlOps}
+
+This function can select instance as master mode or slave mode, set baudrate for master mode transfer, get current baudrate of master mode transfer,set transfer data bits and set other control command.
+
+# Typical use case {#LPSPITpyUC}
+
+## Master Operation {#LPSPIMasterOps}
+
+~~~~~{.c}
+ 	/* Variables */
+ 	uint8_t masterRxData[TRANSFER_SIZE] = {0U};
+	uint8_t masterTxData[TRANSFER_SIZE] = {0U};
+
+    /*DSPI master init*/
+    Driver_SPI0.Initialize(DSPI_MasterSignalEvent_t);
+    Driver_SPI0.PowerControl(ARM_POWER_FULL);
+    Driver_SPI0.Control(ARM_SPI_MODE_MASTER, TRANSFER_BAUDRATE);
+
+    /* Start master transfer */
+    Driver_SPI0.Transfer(masterTxData, masterRxData, TRANSFER_SIZE);
+
+    /* Master power off */
+    Driver_SPI0.PowerControl(ARM_POWER_OFF);
+
+    /* Master uninitialize */
+    Driver_SPI0.Uninitialize();
+~~~~~
+
+## Slave Operation {#LPSPISlaveOps}
+
+~~~~~{.c}
+	/* Variables */
+	uint8_t slaveRxData[TRANSFER_SIZE] = {0U};
+	uint8_t slaveTxData[TRANSFER_SIZE] = {0U};
+
+    /*DSPI slave init*/
+    Driver_SPI2.Initialize(DSPI_SlaveSignalEvent_t);
+    Driver_SPI2.PowerControl(ARM_POWER_FULL);
+    Driver_SPI2.Control(ARM_SPI_MODE_SLAVE, false);
+
+    /* Start slave transfer */
+    Driver_SPI2.Transfer(slaveTxData, slaveRxData, TRANSFER_SIZE);
+
+    /* slave power off */
+    Driver_SPI2.PowerControl(ARM_POWER_OFF);
+
+    /* slave uninitialize */
+    Driver_SPI2.Uninitialize();
+~~~~~
+
+*/
+
+/*!
+ * @}
+ */

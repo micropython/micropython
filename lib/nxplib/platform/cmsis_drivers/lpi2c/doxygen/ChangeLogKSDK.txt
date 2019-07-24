@@ -1,0 +1,10 @@
+/*!
+@page driver_log Driver Change Log
+
+@section lpi2c_cmsis LPI2C_CMSIS
+  Current LPI2C_CMSIS driver version is 2.0
+
+  - 2.0
+    - Initial version.
+
+*/

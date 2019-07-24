@@ -1,0 +1,9 @@
+/*!
+@page driver_log Driver Change Log
+
+@section xip_device XIP_DEVICE
+  Current XIP_DEVICE driver version is 2.0.0
+
+  - 2.0.0
+    - Initial version.
+*/

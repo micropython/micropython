@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata>  
+  <components>  
+    <component name="manifest_metadata.MIMXRT1064" requires="devices.MIMXRT1064" provides="platform.devices.device">
+      <source path="./">
+        <files mask="manifest_metadata.meta"/>
+      </source>
+    </component>
+  </components>
+  <manifest_metadata_set>
+    <manifest_metadata key="vendor" value="NXP" bindings="devices.MIMXRT1064"/>
+    <manifest_metadata key="vendor.device.type" value="i.MX" bindings="devices.MIMXRT1064"/>
+    <manifest_metadata key="vendor.device.family" value="MIMXRT1064" bindings="devices.MIMXRT1064"/>
+    <manifest_metadata key="compatible_device.segger" value="MIMXRT1064DVL6A" bindings="devices.MIMXRT1064"/>
+    <manifest_metadata key="compatible_device.pemicro" value="IMXRT1064" bindings="devices.MIMXRT1064"/>
+    <manifest_metadata key="description" bindings="devices.MIMXRT1064">
+      <specific>
+        <content>MIMXRT1064: i.MX® MIMXRT1064 600MHz, 512KB SRAM Microcontrollers (MCUs) based on ARM® Cortex®-M7 Core</content>
+      </specific>
+    </manifest_metadata>
+    <manifest_metadata key="image" value="docs/images/device.jpg" bindings="devices.MIMXRT1064"/>
+    <manifest_metadata key="href" value="http://www.nxp.com/kinetis" bindings="devices.MIMXRT1064"/>
+    <manifest_metadata key="html" bindings="devices.MIMXRT1064">
+      <specific>
+        <content>
+The MIMXRT1064 are ARM Cortex-M7 based microcontrollers for embedded applications.
+        </content>
+      </specific>
+    </manifest_metadata>
+  </manifest_metadata_set>
+  <manifest_metadata_set>
+    <manifest_metadata key="description" bindings="devices.boards.evkmimxrt1064">
+      <specific>
+        <content>MIMXRT1064-EVK: EVK Development Platform for i.MX MIMXRT1064 MCUs</content>
+      </specific>
+    </manifest_metadata>
+    <manifest_metadata key="image" value="docs/images/EVK-MIMXRT1064.gif" bindings="devices.boards.evkmimxrt1064"/>
+    <manifest_metadata key="href" value="https://www.nxp.com/mimxrt1064-evk" bindings="devices.boards.evkmimxrt1064"/>
+    <manifest_metadata key="html" bindings="devices.boards.evkmimxrt1064">
+      <specific>
+        <content>
+The NXP MIMXRT1064-EVK is a development board for the i.MX MIMXRT1064 600 MHz 32-bit ARM® Cortex®-M7 MCUs
+        </content>
+      </specific>
+    </manifest_metadata>
+  </manifest_metadata_set>
+</metadata>

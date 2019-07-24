@@ -1,0 +1,80 @@
+tools_root: &tools_root 'C:\Program Files\IAR Systems\Embedded Workbench 5.3\'
+compiler:
+  path:             [*tools_root, 'arm\bin\iccarm.exe']
+  source_path:      '..\src\'
+  unit_tests_path:  &unit_tests_path 'tests\'
+  build_path:       &build_path 'build\'
+  options:
+    - --dlib_config
+    - [*tools_root, 'arm\inc\DLib_Config_Normal.h']
+    - --no_cse
+    - --no_unroll
+    - --no_inline
+    - --no_code_motion
+    - --no_tbaa
+    - --no_clustering
+    - --no_scheduling
+    - --debug
+    - --cpu_mode thumb
+    - --endian=little
+    - --cpu=ARM7TDMI
+    - --interwork
+    - --warnings_are_errors
+    - --fpu=None
+    - --diag_suppress=Pa050
+    - --diag_suppress=Pe111
+    - -e
+    - -On
+  includes:
+    prefix: '-I'
+    items:
+      - [*tools_root, 'arm\inc\']
+      - 'src\'
+      - '..\src\'
+      - 'testdata/'
+      - *unit_tests_path
+      - 'vendor\unity\src\'
+      - 'iar\iar_v5\incIAR\'
+  defines:
+    prefix: '-D'
+    items:
+      - UNITY_SUPPORT_64
+      - 'UNITY_SUPPORT_TEST_CASES'
+  object_files:
+    prefix: '-o'
+    extension: '.r79'
+    destination: *build_path
+linker:
+  path: [*tools_root, 'arm\bin\ilinkarm.exe']
+  options:
+    - --redirect _Printf=_PrintfLarge
+    - --redirect _Scanf=_ScanfSmall
+    - --semihosting
+    - --entry __iar_program_start
+    - --config
+    - [*tools_root, 'arm\config\generic.icf']
+  object_files:
+    path: *build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.out'
+    destination: *build_path
+simulator:
+  path: [*tools_root, 'common\bin\CSpyBat.exe']
+  pre_support:
+    - --silent
+    - [*tools_root, 'arm\bin\armproc.dll']
+    - [*tools_root, 'arm\bin\armsim.dll']
+  post_support:
+    - --plugin
+    - [*tools_root, 'arm\bin\armbat.dll']
+    - --backend
+    - -B
+    - -p
+    - [*tools_root, 'arm\config\debugger\atmel\ioat91sam7X256.ddf']
+    - -d
+    - sim
+colour: true
+:unity:
+  :plugins: []

@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata>
+  <components>
+    <component name="platform.devices.MIMXRT1064" requires="devices.MIMXRT1064" provides="platform.devices.device" type="driver">
+      <source path="./">
+        <files mask="MIMXRT1064.meta"/>
+        <files mask="MIMXRT1064_device.meta"/>
+      </source>
+    </component>
+    <component name="platform.devices.MIMXRT1064_debugger" type="debugger" requires="devices.MIMXRT1064" provides="platform.devices.device platform.devices.MIMXRT1064">
+      <source path="./">
+        <files mask="MIMXRT1064.xml"/>
+      </source>
+    </component>
+    <component name="platform.devices.MIMXRT1064_startup" type="startup" requires="devices.MIMXRT1064" provides="platform.devices.device platform.devices.MIMXRT1064">
+      <source path="./arm" requires="mdk">
+        <files mask="startup_MIMXRT1064.s"/>
+      </source>
+      <source path="./gcc" requires="armgcc">
+        <files mask="startup_MIMXRT1064.S"/>
+      </source>
+      <source path="./iar" requires="iar">
+        <files mask="startup_MIMXRT1064.s"/>
+      </source>
+      <source path="./mcuxpresso" requires="mcuxpresso">
+        <files mask="startup_mimxrt1064.c"/>
+        <files mask="startup_mimxrt1064.cpp"/>
+      </source>
+    </component>
+    <component name="platform.devices.MIMXRT1064_linker" type="linker" requires="devices.MIMXRT1064" provides="platform.devices.device platform.devices.MIMXRT1064">
+      <source path="./arm" requires="mdk">
+        <files mask="MIMXRT1064xxxxx_flexspi_nor.scf" requires="devices.MIMXRT1064xxxxA"/>
+        <files mask="MIMXRT1064xxxxx_flexspi_nor_sdram.scf" requires="devices.MIMXRT1064xxxxA"/>
+        <files mask="MIMXRT1064xxxxx_ram.scf" requires="devices.MIMXRT1064xxxxA"/>
+    	<files mask="MIMXRT1064xxxxx_sdram.scf" requires="devices.MIMXRT1064xxxxA"/>
+    	<files mask="MIMXRT1064xxxxx_sdram_txt.scf" requires="devices.MIMXRT1064xxxxA"/>
+      </source>
+      <source path="./gcc" requires="armgcc">
+        <files mask="MIMXRT1064xxxxx_flexspi_nor.ld" requires="devices.MIMXRT1064xxxxA"/>
+        <files mask="MIMXRT1064xxxxx_flexspi_nor_sdram.ld" requires="devices.MIMXRT1064xxxxA"/>
+    	<files mask="MIMXRT1064xxxxx_ram.ld" requires="devices.MIMXRT1064xxxxA"/>
+    	<files mask="MIMXRT1064xxxxx_sdram.ld" requires="devices.MIMXRT1064xxxxA"/>
+    	<files mask="MIMXRT1064xxxxx_sdram_txt.ld" requires="devices.MIMXRT1064xxxxA"/>
+      </source>
+      <source path="./gcc" requires="kds">
+        <files mask="MIMXRT1064xxxxx_ram.ld" requires="devices.MIMXRT1064xxxxA"/>
+      </source>
+      <source path="./iar" requires="iar">
+        <files mask="MIMXRT1064xxxxx_flexspi_nor.icf" requires="devices.MIMXRT1064xxxxA"/>
+        <files mask="MIMXRT1064xxxxx_flexspi_nor_sdram.icf" requires="devices.MIMXRT1064xxxxA"/>
+        <files mask="MIMXRT1064xxxxx_ram.icf" requires="devices.MIMXRT1064xxxxA"/>
+    	<files mask="MIMXRT1064xxxxx_sdram.icf" requires="devices.MIMXRT1064xxxxA"/>
+    	<files mask="MIMXRT1064xxxxx_sdram_txt.icf" requires="devices.MIMXRT1064xxxxA"/>
+      </source>
+    </component>
+    <component name="platform.devices.MIMXRT1064_CMSIS" type="CMSIS_Include" requires="devices.MIMXRT1064 platform.Include_core_cm7" provides="platform.devices.device platform.devices.MIMXRT1064 platform.devices.CMSIS">
+      <source path="./">
+        <files mask="fsl_device_registers.h"/>
+        <files mask="MIMXRT1064.h"/>
+        <files mask="MIMXRT1064_features.h"/>
+        <files mask="system_MIMXRT1064.c"/>
+        <files mask="system_MIMXRT1064.h"/>
+      </source>
+    </component>
+    <component name="platform.devices.MIMXRT1064_flash" type="debugger" requires="devices.MIMXRT1064" provides="platform.devices.device platform.devices.MIMXRT1064">
+      <source path="./mcuxpresso" requires="mcuxpresso">
+        <files mask="MIMXRT1064.cfx"/>
+      </source>
+    </component>
+  </components>
+  <toolchains>
+    <toolchain compiler="gcc" ids="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.debug" name="gcc" user_name="Cross ARM GCC" requires="devices.MIMXRT1064">
+      <option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" type="enum" user_name="ARM family" variants="NpwNonPe">
+        <value>ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m7</value>
+      </option>
+      <option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.abi" type="enum" user_name="Float ABI" variants="NpwNonPe">
+        <value>ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.abi.hard</value>
+      </option>
+      <option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit" type="enum" user_name="FPU Type" variants="NpwNonPe">
+        <value>ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.fpv5spd16</value>
+      </option>
+    </toolchain>
+  </toolchains>
+  <debug_configurations>
+    <debug_configuration id_refs="com.crt.advproject.config.exe.debug com.crt.advproject.config.exe.release" bindings="mcuxpresso devices.MIMXRT1064">
+      <params>
+        <param id="misc.options" name="misc.options" value="--no-packed"/>
+      </params>
+    </debug_configuration>
+    <debug_configuration id_refs="com.crt.advproject.config.exe.debug com.crt.advproject.config.exe.release" bindings="mcuxpresso devices.MIMXRT1064">
+      <params>
+        <param id="internal.wiretype.release" name="internal.wiretype" value="SWD"/>
+        <param id="internal.has_swo.release" name="internal.has_swo" value="false"/>
+      </params>
+      <drivers>
+        <driver memory_block="PROGRAM_FLASH">
+          <driver_binary path="devices/MIMXRT1064/mcuxpresso">
+            <files mask="MIMXRT1064.cfx"/>
+          </driver_binary>
+        </driver>
+      </drivers>
+    </debug_configuration>
+  </debug_configurations>
+  <linker_settings>
+    <linker_setting nature="c_nature" bindings="devices.MIMXRT1064">
+      <linker property="start_symbol" value="ResetISR"/>
+      <linker property="text_align" value="4"/>
+      <linker property="data_align" value="4"/>
+      <linker property="bss_align" value="4"/>
+      <linker property="mtb_supported" value="false"/>
+    </linker_setting>
+    <linker_setting nature="cpp_nature" bindings="devices.MIMXRT1064">
+      <linker property="start_symbol" value="ResetISR"/>
+      <linker property="text_align" value="4"/>
+      <linker property="data_align" value="4"/>
+      <linker property="bss_align" value="4"/>
+      <linker property="mtb_supported" value="false"/>
+    </linker_setting>
+  </linker_settings>
+</metadata>
+

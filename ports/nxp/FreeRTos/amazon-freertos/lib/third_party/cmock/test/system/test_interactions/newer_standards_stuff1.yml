@@ -1,0 +1,52 @@
+---
+#The purpose of this test is to pull in some standard library stuff from C99
+:cmock:
+  :includes:
+    - "<stdint.h>"
+    - "<limits.h>"
+
+:systest:
+  :types: |
+    #include <stdint.h>
+    #include <limits.h>
+  
+  
+  :mockable: |
+    int32_t foo(int32_t a);
+
+  :source: 
+    :header: |    
+      int8_t function_a(void);
+
+    :code: |
+      int8_t function_a(void) {
+        return (int8_t)(INT_MIN == foo(INT_MAX));
+      }
+      
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+      
+    :units:
+    - :pass: TRUE
+      :should: 'handle handle a simple comparison of C99 types which pass'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn(INT_MAX, INT_MIN);
+          
+          TEST_ASSERT_TRUE(function_a());
+        }
+
+    - :pass: FALSE
+      :should: 'handle handle a simple comparison of C99 types which fail'
+      :code: |
+        test()
+        {
+          foo_ExpectAndReturn(INT_MIN, INT_MIN);
+          
+          TEST_ASSERT_TRUE(function_a());
+        }
+        
+...

@@ -1,0 +1,82 @@
+---
+:cmock:
+  :plugins:
+  - # none
+  :treat_as:
+    FUNCTION_T: PTR
+
+:systest:
+  :types: |
+    typedef void (*FUNCTION_T)(void);
+
+  :mockable: |
+    void takes_function_type( FUNCTION_T myfunc );
+    void takes_function_ptr( unsigned int (*func_ptr)(int, char) );
+    void takes_const_function_ptr( unsigned int (* const)(int, char) );
+    unsigned short (*returns_function_ptr( const char op_code ))( int, long int );
+
+  :source: 
+    :header: |
+      void exercise_function_pointer_param(void);
+      unsigned short (*exercise_function_pointer_return( const char op_code ))( int, long int );
+      
+      // functions for function pointer tests
+      unsigned int dummy_function1(int a, char b);
+      unsigned short dummy_function2(int a, long int b);
+
+    :code: |
+      /*
+       * functions used in tests
+       */
+       
+      unsigned int dummy_function1(int a, char b)
+      {
+        // prevent compiler warnings by using everything
+        return (unsigned int)a + (unsigned int)b;
+      }
+
+      unsigned short dummy_function2(int a, long int b)
+      {
+        // prevent compiler warnings by using everything
+        return (unsigned short)a + (unsigned short)b;
+      }
+
+      /*
+       * functions executed by tests
+       */
+
+      void exercise_function_pointer_param(void)
+      {
+        takes_function_ptr(dummy_function1);
+      }
+
+      unsigned short (*exercise_function_pointer_return( const char op_code ))( int, long int )
+      {
+        return returns_function_ptr(op_code);
+      }
+
+  :tests:
+    :common: |
+      void setUp(void) {}
+      void tearDown(void) {}
+    :units:
+    - :pass: TRUE
+      :should: 'expect a function pointer param'
+      :code: |
+        test()
+        {
+          takes_function_ptr_Expect(dummy_function1);
+          exercise_function_pointer_param();
+        }
+
+    - :pass: TRUE
+      :should: 'return a function pointer'
+      :code: |
+        test()
+        {
+          returns_function_ptr_ExpectAndReturn('z', dummy_function2);
+          TEST_ASSERT_EQUAL_PTR(dummy_function2, exercise_function_pointer_return('z'));
+        }
+
+
+...

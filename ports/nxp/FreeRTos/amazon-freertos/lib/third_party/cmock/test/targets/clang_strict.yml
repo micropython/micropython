@@ -1,0 +1,90 @@
+---
+compiler:
+  path: clang
+  source_path:     &systest_generated_path './system/generated/'
+  unit_tests_path: &unit_tests_path '../examples/test/'
+  mocks_path:      &systest_mocks_path './system/generated/'
+  build_path:      &systest_build_path './system/build/'
+  options:
+    - '-c'
+    - '-Wall'
+    - '-Wextra'
+    - '-Werror'
+    #- '-Wcast-qual'
+    - '-Wconversion'
+    - '-Wtautological-compare'
+    #- '-Wtautological-pointer-compare'
+    - '-Wdisabled-optimization'
+    - '-Wformat=2'
+    - '-Winit-self'
+    - '-Winline'
+    - '-Winvalid-pch'
+    - '-Wmissing-declarations'
+    - '-Wmissing-include-dirs'
+    - '-Wmissing-prototypes'
+    - '-Wnonnull'
+    - '-Wpacked'
+    - '-Wpointer-arith'
+    - '-Wredundant-decls'
+    - '-Wswitch-default'
+    - '-Wstrict-aliasing=2'
+    - '-Wstrict-overflow=5'
+    - '-Wuninitialized'
+    - '-Wunused'
+    - '-Wunreachable-code'
+    - '-Wreturn-type'
+    - '-Wshadow'
+    - '-Wundef'
+    - '-Wwrite-strings'
+    - '-Wbad-function-cast'
+    - '-Wno-missing-prototypes' #we've been lazy about things like setUp and tearDown
+    - '-Wno-invalid-token-paste'
+    - '-fms-extensions'
+    - '-fno-omit-frame-pointer'
+    #- '-ffloat-store'
+    - '-fno-common'
+    - '-fstrict-aliasing'
+    - '-std=gnu99'
+    - '-pedantic'
+    - '-O0'
+  includes:
+    prefix: '-I'
+    items:
+      - *systest_generated_path
+      - *unit_tests_path
+      - *systest_mocks_path
+      - '../src/'
+      - '../vendor/unity/src/'
+      - '../vendor/c_exception/lib/'
+      - './system/test_compilation/'
+      - './'
+  defines:
+    prefix: '-D'
+    items:
+      - CMOCK
+      - 'UNITY_SUPPORT_64'
+      - 'UNITY_POINTER_WIDTH=64'
+  object_files:
+    prefix: '-o'
+    extension: '.o'
+    destination: *systest_build_path
+
+linker:
+  path: gcc
+  options:
+    - -lm
+  includes:
+    prefix: '-I'
+  object_files:
+    path: *systest_build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.exe'
+    destination: *systest_build_path
+
+unsupported:
+  - out_of_memory
+  - callingconv
+
+colour: true

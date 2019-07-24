@@ -1,0 +1,86 @@
+tools_root: &tools_root 'C:\Program Files\IAR Systems\Embedded Workbench 6.0\'
+compiler:
+  path:             [*tools_root, 'sh\bin\iccsh.exe']
+  source_path:      '..\src\'
+  unit_tests_path:  &unit_tests_path 'tests\'
+  build_path:       &build_path 'build\'
+  options:
+    - -e
+    - --char_is_signed
+    - -Ol
+    - --no_cse
+    - --no_unroll
+    - --no_inline
+    - --no_code_motion
+    - --no_tbaa
+    - --no_scheduling
+    - --no_clustering
+    - --debug
+    - --dlib_config
+    - [*tools_root, 'sh\inc\DLib_Product.h']
+    - --double=32
+    - --code_model=huge
+    - --data_model=huge
+    - --core=sh2afpu
+    - --warnings_affect_exit_code
+    - --warnings_are_errors
+    - --mfc
+    - --use_unix_directory_separators
+    - --diag_suppress=Pe161
+  includes:
+    prefix: '-I'
+    items:
+      - [*tools_root, 'sh\inc\']
+      - [*tools_root, 'sh\inc\c']
+      - 'src\'
+      - '..\src\'
+      - 'testdata/'
+      - *unit_tests_path
+      - 'vendor\unity\src\'
+  defines:
+    prefix: '-D'
+    items:
+      - UNITY_SUPPORT_64
+      - 'UNITY_SUPPORT_TEST_CASES'
+  object_files:
+    prefix: '-o'
+    extension: '.o'
+    destination: *build_path
+linker:
+  path: [*tools_root, 'sh\bin\ilinksh.exe']
+  options:
+    - --redirect __Printf=__PrintfSmall
+    - --redirect __Scanf=__ScanfSmall
+    - --config
+    - [*tools_root, 'sh\config\generic.icf']
+    - --config_def _CSTACK_SIZE=0x800
+    - --config_def _HEAP_SIZE=0x800
+    - --config_def _INT_TABLE=0x10
+    - --entry __iar_program_start
+    - --debug_lib
+  object_files:
+    path: *build_path
+    extension: '.o'
+  bin_files:
+    prefix: '-o'
+    extension: '.out'
+    destination: *build_path
+simulator:
+  path: [*tools_root, 'common\bin\CSpyBat.exe']
+  pre_support:
+    - --silent
+    - [*tools_root, 'sh\bin\shproc.dll']
+    - [*tools_root, 'sh\bin\shsim.dll']
+  post_support:
+    - --plugin
+    - [*tools_root, 'sh\bin\shbat.dll']
+    - --backend
+    - -B
+    - --core sh2afpu
+    - -p
+    - [*tools_root, 'sh\config\debugger\io7264.ddf']
+    - -d
+    - sim
+colour: true
+:unity:
+  :plugins: []

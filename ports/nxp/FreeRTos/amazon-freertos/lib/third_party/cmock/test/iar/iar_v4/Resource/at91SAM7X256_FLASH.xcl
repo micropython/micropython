@@ -1,0 +1,185 @@
+//  ----------------------------------------------------------------------------
+//          ATMEL Microcontroller Software Support  -  ROUSSET  -
+//  ----------------------------------------------------------------------------
+//  DISCLAIMER:  THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+//  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+//  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+//  DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+//  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+//  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+//  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+//  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+//  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//  ----------------------------------------------------------------------------
+//  File Name           : at91SAM7X256_FLASH.xcl
+//  Object              : Generic Linker Command File for IAR
+//  1.0 30/Aug/05 FBr   : Creation for 4.30A
+//  ----------------------------------------------------------------------------
+
+//*************************************************************************
+// XLINK command file template for EWARM/ICCARM
+//
+// Usage:  xlink  -f lnkarm  <your_object_file(s)>
+//                -s <program start label>  <C/C++ runtime library>
+//*************************************************************************
+//
+// -------------
+// Code segments - may be placed anywhere in memory.
+// -------------
+//
+//   INTVEC     -- Exception vector table.
+//   SWITAB     -- Software interrupt vector table.
+//   ICODE      -- Startup (cstartup) and exception code.
+//   DIFUNCT    -- Dynamic initialization vectors used by C++.
+//   CODE       -- Compiler generated code.
+//   CODE_I     -- Compiler generated code declared __ramfunc (executes in RAM)
+//   CODE_ID    -- Initializer for CODE_I (ROM).
+//
+// -------------
+// Data segments - may be placed anywhere in memory.
+// -------------
+//
+//   CSTACK     -- The stack used by C/C++ programs (system and user mode).
+//   IRQ_STACK  -- The stack used by IRQ service routines.
+//   SVC_STACK  -- The stack used in supervisor mode
+//                 (Define other exception stacks as needed for
+//                 FIQ, ABT, UND).
+//   HEAP       -- The heap used by malloc and free in C and new and
+//                 delete in C++.
+//   INITTAB    -- Table containing addresses and sizes of segments that
+//                 need to be initialized at startup (by cstartup).
+//   CHECKSUM   -- The linker places checksum byte(s) in this segment,
+//                 when the -J linker command line option is used.
+//   DATA_y     -- Data objects.
+//
+// Where _y can be one of:
+//
+//   _AN        -- Holds uninitialized located objects, i.e. objects with
+//                 an absolute location given by the @ operator or the
+//                 #pragma location directive. Since these segments
+//                 contain objects which already have a fixed address,
+//                 they should not be mentioned in this linker command
+//                 file.
+//   _C         -- Constants (ROM).
+//   _I         -- Initialized data (RAM).
+//   _ID        -- The original content of _I (copied to _I by cstartup) (ROM).
+//   _N         -- Uninitialized data (RAM).
+//   _Z         -- Zero initialized data (RAM).
+//
+// Note:  Be sure to use end values for the defined address ranges.
+//        Otherwise, the linker may allocate space outside the
+//        intended memory range.
+//*************************************************************************
+
+//*************************************************************************
+// Inform the linker about the CPU family used.
+// AT91SAM7X256 Memory mapping
+// No remap
+//  ROMSTART
+//  Start address 0x0000 0000
+//  Size 256 Kbo  0x0004 0000
+//  RAMSTART
+//  Start address 0x0020 0000
+//  Size  64 Kbo  0x0001 0000
+// Remap done
+//  RAMSTART
+//  Start address 0x0000 0000
+//  Size  64 Kbo  0x0001 0000
+//  ROMSTART
+//  Start address 0x0010 0000
+//  Size 256 Kbo  0x0004 0000
+
+//*************************************************************************
+-carm
+
+//*************************************************************************
+// Internal Ram segments mapped AFTER REMAP 64 K.
+//*************************************************************************
+-Z(CONST)INTRAMSTART_REMAP=00200000
+-Z(CONST)INTRAMEND_REMAP=0020FFFF
+
+//*************************************************************************
+// Read-only segments mapped to Flash 256 K.
+//*************************************************************************
+-DROMSTART=00000000
+-DROMEND=0003FFFF
+//*************************************************************************
+// Read/write segments mapped to 64 K RAM.
+//*************************************************************************
+-DRAMSTART=00200000
+-DRAMEND=0020FFFF
+
+//*************************************************************************
+// Address range for reset and exception
+// vectors (INTVEC).
+// The vector area is 32 bytes,
+// an additional 32 bytes is allocated for the
+// constant table used by ldr PC in cstartup.s79.
+//*************************************************************************
+-Z(CODE)INTVEC=00-3F
+
+//*************************************************************************
+// Startup code and exception routines (ICODE).
+//*************************************************************************
+-Z(CODE)ICODE,DIFUNCT=ROMSTART-ROMEND
+-Z(CODE)SWITAB=ROMSTART-ROMEND
+
+//*************************************************************************
+// Code segments may be placed anywhere.
+//*************************************************************************
+-Z(CODE)CODE=ROMSTART-ROMEND
+
+//*************************************************************************
+// Various constants and initializers.
+//*************************************************************************
+-Z(CONST)INITTAB,DATA_ID,DATA_C=ROMSTART-ROMEND
+-Z(CONST)CHECKSUM=ROMSTART-ROMEND
+
+//*************************************************************************
+// Data segments.
+//*************************************************************************
+-Z(DATA)DATA_I,DATA_Z,DATA_N=RAMSTART-RAMEND
+
+//*************************************************************************
+// __ramfunc code copied to and executed from RAM.
+//*************************************************************************
+-Z(DATA)CODE_I=RAMSTART-RAMEND
+-Z(CONST)CODE_ID=ROMSTART-ROMEND // Initializer for
+-QCODE_I=CODE_ID
+
+//*************************************************************************
+// ICCARM produces code for __ramfunc functions in
+// CODE_I segments. The -Q XLINK command line
+// option redirects XLINK to emit the code in the
+// debug information associated with the CODE_I
+// segment, where the code will execute.
+//*************************************************************************
+
+//*************************************************************************
+// Stack and heap segments.
+//*************************************************************************
+-D_CSTACK_SIZE=(100*4)
+-D_IRQ_STACK_SIZE=(3*8*4)
+-D_HEAP_SIZE=(1024*1)
+
+-Z(DATA)CSTACK+_CSTACK_SIZE=RAMSTART-RAMEND
+-Z(DATA)IRQ_STACK+_IRQ_STACK_SIZE=RAMSTART-RAMEND
+-Z(DATA)HEAP+_HEAP_SIZE=RAMSTART-RAMEND
+
+//*************************************************************************
+// ELF/DWARF support.
+//
+// Uncomment the line "-Felf" below to generate ELF/DWARF output.
+// Available format specifiers are:
+//
+//   "-yn": Suppress DWARF debug output
+//   "-yp": Multiple ELF program sections
+//   "-yas": Format suitable for debuggers from ARM Ltd (also sets -p flag)
+//
+// "-Felf" and the format specifiers can also be supplied directly as
+// command line options, or selected from the Xlink Output tab in the
+// IAR Embedded Workbench.
+//*************************************************************************
+
+// -Felf
