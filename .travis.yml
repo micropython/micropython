@@ -24,7 +24,7 @@ env:
   - TRAVIS_TESTS="unix docs translations website" TRAVIS_BOARDS="circuitplayground_express mini_sam_m4 grandcentral_m4_express capablerobot_usbhub pygamer pca10056 pca10059 feather_nrf52840_express makerdiary_nrf52840_mdk makerdiary_nrf52840_mdk_usb_dongle particle_boron particle_argon particle_xenon sparkfun_nrf52840_mini electronut_labs_papyr electronut_labs_blip" TRAVIS_SDK=arm:nrf
   - TRAVIS_BOARDS="metro_m0_express metro_m4_express metro_m4_airlift_lite pirkey_m0 trellis_m4_express trinket_m0 sparkfun_lumidrive sparkfun_redboard_turbo bast_pro_mini_m0 datum_distance pyruler" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_radiofruit_zigbee gemma_m0 hallowing_m0_express itsybitsy_m0_express itsybitsy_m4_express meowmeow sam32 uchip escornabot_makech pygamer_advance datum_imu" TRAVIS_SDK=arm
-  - TRAVIS_BOARDS="feather_m0_express_crickit feather_m0_rfm69 feather_m0_rfm9x feather_m4_express arduino_zero arduino_mkr1300 arduino_mkrzero pewpew10 kicksat-sprite ugame10 robohatmm1 datum_light" TRAVIS_SDK=arm
+  - TRAVIS_BOARDS="feather_m0_express_crickit feather_m0_rfm69 feather_m0_rfm9x feather_m4_express arduino_zero arduino_mkr1300 arduino_mkrzero pewpew10 kicksat-sprite ugame10 robohatmm1 datum_light hallowing_m4_express" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="circuitplayground_express_crickit feather_m0_adalogger feather_m0_basic feather_m0_express catwan_usbstick pyportal sparkfun_samd21_mini sparkfun_samd21_dev pybadge pybadge_airlift datum_weather" TRAVIS_SDK=arm
 
 addons:
