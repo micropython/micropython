@@ -224,7 +224,7 @@ $(filter $(SRC_PATTERNS), \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
 	bleio/Adapter.c \
-	bleio/Broadcaster.c \
+	bleio/Central.c \
 	bleio/Characteristic.c \
 	bleio/CharacteristicBuffer.c \
 	bleio/Descriptor.c \
@@ -289,8 +289,6 @@ SRC_BINDINGS_ENUMS += \
 SRC_BINDINGS_ENUMS += \
 $(filter $(SRC_PATTERNS), \
 	bleio/Address.c \
-	bleio/AddressType.c \
-	bleio/AdvertisementData.c \
 	bleio/ScanEntry.c \
 )
 
@@ -311,12 +309,15 @@ $(filter $(SRC_PATTERNS), \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	board/__init__.c \
+	bleio/Address.c \
+	bleio/ScanEntry.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
 	displayio/FourWire.c \
 	displayio/Group.c \
+	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \

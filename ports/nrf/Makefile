@@ -81,6 +81,7 @@ INC += -I./nrfx
 INC += -I./nrfx/hal
 INC += -I./nrfx/mdk
 INC += -I./nrfx/drivers/include
+INC += -I./nrfx/drivers/src
 INC += -I./bluetooth
 INC += -I./peripherals
 INC += -I../../lib/mp-readline
@@ -159,7 +160,6 @@ SRC_C += \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	bluetooth/ble_drv.c \
-	bluetooth/ble_uart.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \

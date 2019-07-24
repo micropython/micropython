@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-11 14:59-0700\n"
+"POT-Creation-Date: 2019-07-19 16:10-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -221,13 +221,12 @@ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 
 #: shared-bindings/bleio/Address.c
 #, c-format
-msgid "Address is not %d bytes long or is in wrong format"
-msgstr "Dìzhǐ bùshì %d zì jié zhǎng, huòzhě géshì cuòwù"
-
-#: shared-bindings/bleio/Address.c
-#, c-format
 msgid "Address must be %d bytes long"
 msgstr "Dìzhǐ bìxū shì %d zì jié zhǎng"
+
+#: shared-bindings/bleio/Address.c
+msgid "Address type out of range"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -313,6 +312,10 @@ msgstr "Bǐtè shēndù bìxū shì 8 bèi yǐshàng."
 msgid "Both pins must support hardware interrupts"
 msgstr "Liǎng gè yǐn jiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
+#: shared-bindings/displayio/Display.c
+msgid "Brightness must be 0-1.0"
+msgstr ""
+
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
 msgstr "Liàngdù bìxū jiè yú 0 dào 255 zhī jiān"
@@ -353,21 +356,9 @@ msgstr ""
 msgid "Can not use dotstar with %s"
 msgstr "Wúfǎ yǔ dotstar yīqǐ shǐyòng %s"
 
-#: shared-bindings/bleio/Device.c
-msgid "Can't add services in Central mode"
-msgstr "Wúfǎ zài zhōngyāng móshì xià tiānjiā fúwù"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't advertise in Central mode"
-msgstr "Wúfǎ zài zhōngyāng móshì zhōng guǎnggào"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't change the name in Central mode"
-msgstr "Wúfǎ gēnggǎi zhōngyāng móshì de míngchēng"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't connect in Peripheral mode"
-msgstr "Wúfǎ zài biānyuán móshì zhōng liánjiē"
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Can't set CCCD for local Characteristic"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -450,9 +441,21 @@ msgstr "Shǐyòng shízhōng dānwèi"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
 
+#: shared-bindings/displayio/I2CDisplay.c
+msgid "Command must be 0-255"
+msgstr ""
+
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr ""
+
+#: py/emitglue.c
+msgid "Corrupt raw code"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/UUID.c
 #, c-format
@@ -488,13 +491,8 @@ msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
-msgstr "Guǎnggào bāo de shùjù tài dà"
-
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Data too large for the advertisement packet"
 msgstr "Guǎnggào bāo de shùjù tài dà"
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -534,6 +532,10 @@ msgstr "Yùqí de tèdiǎn"
 msgid "Expected a UUID"
 msgstr "Yùqí UUID"
 
+#: shared-bindings/bleio/Central.c
+msgid "Expected an Address"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -543,11 +545,7 @@ msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
 msgid "Failed sending command."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to acquire mutex"
-msgstr "Wúfǎ huòdé mutex"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
@@ -556,10 +554,6 @@ msgstr "Wúfǎ huòdé mutex, err 0x%04x"
 #, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to add service"
-msgstr "Tiānjiā fúwù shībài"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
@@ -580,24 +574,21 @@ msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
 msgid "Failed to change softdevice state"
 msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to connect:"
-msgstr "Liánjiē shībài:"
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to configure advertising, err 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to continue scanning"
-msgstr "Jìxù sǎomiáo shībài"
+#: ports/nrf/common-hal/bleio/Central.c
+msgid "Failed to connect: timeout"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Jìxù sǎomiáo shībài, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to create mutex"
-msgstr "Wúfǎ chuàngjiàn hù chì suǒ"
-
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 msgid "Failed to discover services"
 msgstr "Fāxiàn fúwù shībài"
 
@@ -634,43 +625,40 @@ msgstr "Wúfǎ dòu qǔ gatts zhí, err 0x%04x"
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Wúfǎ zhùcè màizhǔ tèdìng de UUID, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to release mutex"
-msgstr "Wúfǎ shìfàng mutex"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to start advertising"
-msgstr "Qǐdòng guǎnggào shībài"
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to set device name, err 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to start scanning"
-msgstr "Qǐdòng sǎomiáo shībài"
+#: ports/nrf/common-hal/bleio/Central.c
+#, c-format
+msgid "Failed to start connecting, error 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Qǐdòng sǎomiáo shībài, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to stop advertising"
-msgstr "Wúfǎ tíngzhǐ guǎnggào"
-
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to write CCCD, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
@@ -893,6 +881,10 @@ msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "No CCCD for this Characteristic"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Méiyǒu DAC zài xīnpiàn shàng de"
@@ -943,6 +935,7 @@ msgstr "Shèbèi shàng méiyǒu kònggé"
 msgid "No such file/directory"
 msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "Not connected"
 msgstr "Wèi liánjiē"
@@ -1188,7 +1181,8 @@ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
 msgid "Too many channels in sample."
 msgstr "Chōuyàng zhōng de píndào tài duō."
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Too many display busses"
 msgstr "Xiǎnshì zǒngxiàn tài duōle"
 
@@ -1213,8 +1207,8 @@ msgid "USB Error"
 msgstr "USB Cuòwù"
 
 #: shared-bindings/bleio/UUID.c
-msgid "UUID integer value not in range 0 to 0xffff"
-msgstr "UUID zhěngshù zhí bùzài fànwéi 0 zhì 0xffff"
+msgid "UUID integer value must be 0-0xffff"
+msgstr ""
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -1228,6 +1222,11 @@ msgstr "UUID zhí bùshì str,int huò zì jié huǎnchōng qū"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
+
+#: shared-module/displayio/I2CDisplay.c
+#, c-format
+msgid "Unable to find I2C Display at %x"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1911,9 +1910,10 @@ msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
 msgid "integer required"
 msgstr "xūyào zhěngshù"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-msgid "interval not in range 0.0020 to 10.24"
-msgstr "jùlí 0.0020 Zhì 10.24 Zhī jiān de jiàngé shíjiān"
+#: shared-bindings/bleio/Peripheral.c shared-bindings/bleio/Scanner.c
+#, c-format
+msgid "interval must be in range %s-%s"
+msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
@@ -2128,6 +2128,14 @@ msgstr "méiyǒu mókuài '%q'"
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
 
+#: shared-bindings/bleio/Peripheral.c
+msgid "non-Service found in services"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
+msgid "non-UUID found in service_uuids"
+msgstr ""
+
 #: py/compile.c
 msgid "non-default argument follows default argument"
 msgstr "bùshì mòrèn cānshù zūnxún mòrèn cānshù"
@@ -2337,10 +2345,6 @@ msgstr "jìhuà duīzhàn yǐ mǎn"
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "bù zhīchí jiǎoběn biānyì"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "services includes an object that is not a Service"
-msgstr "fúwù bāokuò yīgè bùshì fúwù de wùjiàn"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2608,6 +2612,10 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
+#: shared-bindings/bleio/Scanner.c
+msgid "window must be <= interval"
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "write_args must be a list, tuple, or None"
 msgstr "xiě cānshù bìxū shì yuán zǔ, lièbiǎo huò None"
@@ -2636,6 +2644,51 @@ msgstr "y zhí chāochū biānjiè"
 msgid "zero step"
 msgstr "líng bù"
 
+#~ msgid "Address is not %d bytes long or is in wrong format"
+#~ msgstr "Dìzhǐ bùshì %d zì jié zhǎng, huòzhě géshì cuòwù"
+
+#~ msgid "Can't add services in Central mode"
+#~ msgstr "Wúfǎ zài zhōngyāng móshì xià tiānjiā fúwù"
+
+#~ msgid "Can't advertise in Central mode"
+#~ msgstr "Wúfǎ zài zhōngyāng móshì zhōng guǎnggào"
+
+#~ msgid "Can't change the name in Central mode"
+#~ msgstr "Wúfǎ gēnggǎi zhōngyāng móshì de míngchēng"
+
+#~ msgid "Can't connect in Peripheral mode"
+#~ msgstr "Wúfǎ zài biānyuán móshì zhōng liánjiē"
+
+#~ msgid "Data too large for the advertisement packet"
+#~ msgstr "Guǎnggào bāo de shùjù tài dà"
+
+#~ msgid "Failed to acquire mutex"
+#~ msgstr "Wúfǎ huòdé mutex"
+
+#~ msgid "Failed to add service"
+#~ msgstr "Tiānjiā fúwù shībài"
+
+#~ msgid "Failed to connect:"
+#~ msgstr "Liánjiē shībài:"
+
+#~ msgid "Failed to continue scanning"
+#~ msgstr "Jìxù sǎomiáo shībài"
+
+#~ msgid "Failed to create mutex"
+#~ msgstr "Wúfǎ chuàngjiàn hù chì suǒ"
+
+#~ msgid "Failed to release mutex"
+#~ msgstr "Wúfǎ shìfàng mutex"
+
+#~ msgid "Failed to start advertising"
+#~ msgstr "Qǐdòng guǎnggào shībài"
+
+#~ msgid "Failed to start scanning"
+#~ msgstr "Qǐdòng sǎomiáo shībài"
+
+#~ msgid "Failed to stop advertising"
+#~ msgstr "Wúfǎ tíngzhǐ guǎnggào"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
 
@@ -2660,11 +2713,20 @@ msgstr "líng bù"
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Jǐn zhīchí 8 wèi yánsè huò xiǎoyú"
 
+#~ msgid "UUID integer value not in range 0 to 0xffff"
+#~ msgstr "UUID zhěngshù zhí bùzài fànwéi 0 zhì 0xffff"
+
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "qídài de DigitalInOut"
 
+#~ msgid "interval not in range 0.0020 to 10.24"
+#~ msgstr "jùlí 0.0020 Zhì 10.24 Zhī jiān de jiàngé shíjiān"
+
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
+
+#~ msgid "services includes an object that is not a Service"
+#~ msgstr "fúwù bāokuò yīgè bùshì fúwù de wùjiàn"
 
 #~ msgid "too many arguments"
 #~ msgstr "tài duō cānshù"

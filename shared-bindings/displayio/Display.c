@@ -51,7 +51,7 @@
 //| Most people should not use this class directly. Use a specific display driver instead that will
 //| contain the initialization sequence at minimum.
 //|
-//| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, rotation=0, color_depth=16, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c, set_vertical_scroll=0, backlight_pin=None, brightness=1.0, auto_brightness=False, single_byte_bounds=False, data_as_commands=False)
+//| .. class:: Display(display_bus, init_sequence, *, width, height, colstart=0, rowstart=0, rotation=0, color_depth=16, grayscale=False, pixels_in_byte_share_row=True, set_column_command=0x2a, set_row_command=0x2b, write_ram_command=0x2c, set_vertical_scroll=0, backlight_pin=None, brightness_command=None, brightness=1.0, auto_brightness=False, single_byte_bounds=False, data_as_commands=False)
 //|
 //|   Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
@@ -88,18 +88,21 @@
 //|   :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)
 //|   :param int color_depth: The number of bits of color per pixel transmitted. (Some displays
 //|       support 18 bit but 16 is easier to transmit. The last bit is extrapolated.)
+//|   :param bool grayscale: True if the display only shows a single color.
+//|   :param bool pixels_in_byte_share_row: True when pixels are less than a byte and a byte includes pixels from the same row of the display. When False, pixels share a column.
 //|   :param int set_column_command: Command used to set the start and end columns to update
 //|   :param int set_row_command: Command used so set the start and end rows to update
-//|   :param int write_ram_command: Command used to write pixels values into the update region
+//|   :param int write_ram_command: Command used to write pixels values into the update region. Ignored if data_as_commands is set.
 //|   :param int set_vertical_scroll: Command used to set the first row to show
 //|   :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
+//|   :param int brightness_command: Command to set display brightness. Usually available in OLED controllers.
 //|   :param bool brightness: Initial display brightness. This value is ignored if auto_brightness is True.
 //|   :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
 //|   :param bool single_byte_bounds: Display column and row commands use single bytes
 //|   :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands };
+    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command, ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -109,11 +112,14 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_rowstart, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_rotation, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_color_depth, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 16} },
+        { MP_QSTR_grayscale, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+        { MP_QSTR_pixels_in_byte_share_row, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_set_column_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2a} },
         { MP_QSTR_set_row_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2b} },
         { MP_QSTR_write_ram_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2c} },
         { MP_QSTR_set_vertical_scroll, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x0} },
         { MP_QSTR_backlight_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_brightness_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = NO_BRIGHTNESS_COMMAND} },
         { MP_QSTR_brightness, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
         { MP_QSTR_auto_brightness, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_single_byte_bounds, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
@@ -157,11 +163,13 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     common_hal_displayio_display_construct(
         self,
         display_bus, args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
-        args[ARG_color_depth].u_int, args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
+        args[ARG_color_depth].u_int, args[ARG_grayscale].u_bool, args[ARG_pixels_in_byte_share_row].u_bool,
+        args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
         args[ARG_write_ram_command].u_int,
         args[ARG_set_vertical_scroll].u_int,
         bufinfo.buf, bufinfo.len,
         MP_OBJ_TO_PTR(backlight_pin),
+        args[ARG_brightness_command].u_int,
         brightness,
         args[ARG_auto_brightness].u_bool,
         args[ARG_single_byte_bounds].u_bool,
@@ -234,10 +242,14 @@ STATIC mp_obj_t displayio_display_obj_get_brightness(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_brightness_obj, displayio_display_obj_get_brightness);
 
-STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness) {
+STATIC mp_obj_t displayio_display_obj_set_brightness(mp_obj_t self_in, mp_obj_t brightness_obj) {
     displayio_display_obj_t *self = native_display(self_in);
     common_hal_displayio_display_set_auto_brightness(self, false);
-    bool ok = common_hal_displayio_display_set_brightness(self, mp_obj_get_float(brightness));
+    mp_float_t brightness = mp_obj_get_float(brightness_obj);
+    if (brightness < 0 || brightness > 1.0) {
+        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+    }
+    bool ok = common_hal_displayio_display_set_brightness(self, brightness);
     if (!ok) {
         mp_raise_RuntimeError(translate("Brightness not adjustable"));
     }

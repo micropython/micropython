@@ -30,11 +30,13 @@
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
+#include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/ParallelBus.h"
 
 typedef struct {
     union {
         displayio_fourwire_obj_t fourwire_bus;
+        displayio_i2cdisplay_obj_t i2cdisplay_bus;
         displayio_parallelbus_obj_t parallel_bus;
     };
     displayio_display_obj_t display;

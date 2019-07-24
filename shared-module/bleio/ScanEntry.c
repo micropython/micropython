@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 hathach for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +26,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef USB_DESC_H_
-#define USB_DESC_H_
+#include <string.h>
 
-#include "lib/tinyusb/src/tusb.h"
+#include "shared-bindings/bleio/Address.h"
+#include "shared-module/bleio/Address.h"
+#include "shared-module/bleio/ScanEntry.h"
 
-#ifdef __cplusplus
- extern "C" {
-#endif
+mp_obj_t common_hal_bleio_scanentry_get_address(bleio_scanentry_obj_t *self) {
+    return MP_OBJ_FROM_PTR(self->address);
+}
 
-// Descriptors set used by tinyusb stack
-extern tud_desc_set_t tud_desc_set;
+mp_obj_t common_hal_bleio_scanentry_get_advertisement_bytes(bleio_scanentry_obj_t *self) {
+    return self->data;
+}
 
-#ifdef __cplusplus
- }
-#endif
-
-#endif /* USB_DESC_H_ */
+mp_int_t common_hal_bleio_scanentry_get_rssi(bleio_scanentry_obj_t *self) {
+    return self->rssi;
+}

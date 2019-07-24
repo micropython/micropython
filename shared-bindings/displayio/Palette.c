@@ -66,11 +66,26 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+//|   .. method:: __len__()
+//|
+//|     Returns the number of colors in a Palette
+//|
+STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+        case MP_UNARY_OP_BOOL: return mp_const_true;
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_palette_get_len(self));
+        default: return MP_OBJ_NULL; // op not supported
+    }
+}
+
 //|   .. method:: __setitem__(index, value)
 //|
 //|     Sets the pixel color at the given index. The index should be an integer in the range 0 to color_count-1.
 //|
-//|     The value argument represents a color, and can be from 0x000000 to 0xFFFFFF (to represent an RGB value). 
+//|     The value argument represents a color, and can be from 0x000000 to 0xFFFFFF (to represent an RGB value).
 //|     Value can be an int, bytes (3 bytes (RGB) or 4 bytes (RGB + pad byte)), or bytearray.
 //|
 //|     This allows you to::
@@ -89,12 +104,12 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
         return MP_OBJ_NULL;
     }
-    // index read is not supported
-    if (value == MP_OBJ_SENTINEL) {
-        return MP_OBJ_NULL;
-    }
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
     size_t index = mp_get_index(&displayio_palette_type, self->color_count, index_in, false);
+    // index read
+    if (value == MP_OBJ_SENTINEL) {
+        return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_palette_get_color(self, index));
+    }
 
     uint32_t color;
     mp_int_t int_value;
@@ -160,5 +175,7 @@ const mp_obj_type_t displayio_palette_type = {
     .name = MP_QSTR_Palette,
     .make_new = displayio_palette_make_new,
     .subscr = palette_subscr,
+    .unary_op = group_unary_op,
+    .getiter = mp_obj_new_generic_iterator,
     .locals_dict = (mp_obj_dict_t*)&displayio_palette_locals_dict,
 };

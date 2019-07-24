@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +25,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_BROADCASTER_H
-#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_BROADCASTER_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
 
-#include "ble.h"
-
-#include "shared-module/bleio/__init__.h"
-#include "shared-module/bleio/Address.h"
+#include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    // In seconds.
-    mp_float_t interval;
-    // The advertising data buffer is held by us, not by the SD, so we must
-    // maintain it and not change it. If we need to change its contents during advertising,
-    // there are tricks to get the SD to notice (see DevZone - TBS).
-    uint8_t adv_data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
+    mp_obj_t scan_entries;
+    uint16_t interval;
+    uint16_t window;
+} bleio_scanner_obj_t;
 
-} bleio_broadcaster_obj_t;
-
-#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_BROADCASTER_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H

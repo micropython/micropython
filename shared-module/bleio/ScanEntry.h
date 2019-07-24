@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,13 +28,14 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANENTRY_H
 
-#include "shared-module/bleio/Address.h"
+#include "py/obj.h"
+#include "shared-bindings/bleio/Address.h"
 
 typedef struct {
     mp_obj_base_t base;
-    bleio_address_obj_t address;
     bool connectable;
     int8_t rssi;
+    bleio_address_obj_t *address;
     mp_obj_t data;
 } bleio_scanentry_obj_t;
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DEVICE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DEVICE_H
+#include "boards/board.h"
 
-#include "shared-module/bleio/AdvertisementData.h"
-#include "shared-module/bleio/Device.h"
-#include "shared-module/bleio/Service.h"
+void board_init(void)
+{
+}
 
-extern const mp_obj_type_t bleio_device_type;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-extern void common_hal_bleio_device_add_service(bleio_device_obj_t *device, bleio_service_obj_t *service);
-extern void common_hal_bleio_device_start_advertising(bleio_device_obj_t *device, bool connectable, mp_buffer_info_t *raw_data);
-extern void common_hal_bleio_device_stop_advertising(bleio_device_obj_t *device);
-extern void common_hal_bleio_device_connect(bleio_device_obj_t *device);
-extern void common_hal_bleio_device_disconnect(bleio_device_obj_t *device);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DEVICE_H
+void reset_board(void) {
+}

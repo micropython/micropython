@@ -107,7 +107,9 @@
 // USB RAM PLACEMENT
 //--------------------------------------------------------------------+
 #define CFG_TUSB_ATTR_USBRAM
-#define CFG_TUSB_MEM_ALIGN          TU_ATTR_ALIGNED(4)
+
+#define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
+
 
 
 #ifdef __cplusplus

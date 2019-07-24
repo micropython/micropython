@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_I2CDISPLAY_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_I2CDISPLAY_H
 
-#include "py/obj.h"
+#include "common-hal/busio/I2C.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t adv_reports;
-    uint16_t interval;
-    uint16_t window;
-} bleio_scanner_obj_t;
+    busio_i2c_obj_t* bus;
+    busio_i2c_obj_t inline_bus;
+    digitalio_digitalinout_obj_t reset;
+    uint16_t address;
+} displayio_i2cdisplay_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANNER_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_I2CDISPLAY_H

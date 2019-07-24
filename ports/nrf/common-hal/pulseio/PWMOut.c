@@ -77,33 +77,37 @@ void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
     }
 }
 
+void reset_single_pwmout(uint8_t i) {
+    NRF_PWM_Type* pwm = pwms[i];
+
+    pwm->ENABLE          = 0;
+    pwm->MODE            = PWM_MODE_UPDOWN_Up;
+    pwm->DECODER         = PWM_DECODER_LOAD_Individual;
+    pwm->LOOP            = 0;
+    pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // default is 500 hz
+    pwm->COUNTERTOP      = (PWM_MAX_FREQ/500);                // default is 500 hz
+
+    pwm->SEQ[0].PTR      = (uint32_t) pwm_seq[i];
+    pwm->SEQ[0].CNT      = CHANNELS_PER_PWM; // default mode is Individual --> count must be 4
+    pwm->SEQ[0].REFRESH  = 0;
+    pwm->SEQ[0].ENDDELAY = 0;
+
+    pwm->SEQ[1].PTR      = 0;
+    pwm->SEQ[1].CNT      = 0;
+    pwm->SEQ[1].REFRESH  = 0;
+    pwm->SEQ[1].ENDDELAY = 0;
+
+    for(int ch =0; ch < CHANNELS_PER_PWM; ch++) {
+        pwm_seq[i][ch] = (1 << 15); // polarity = 0
+    }
+}
+
 void pwmout_reset(void) {
     for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
         if (never_reset_pwm[i] > 0) {
             continue;
         }
-        NRF_PWM_Type* pwm = pwms[i];
-
-        pwm->ENABLE          = 0;
-        pwm->MODE            = PWM_MODE_UPDOWN_Up;
-        pwm->DECODER         = PWM_DECODER_LOAD_Individual;
-        pwm->LOOP            = 0;
-        pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // default is 500 hz
-        pwm->COUNTERTOP      = (PWM_MAX_FREQ/500);                // default is 500 hz
-
-        pwm->SEQ[0].PTR      = (uint32_t) pwm_seq[i];
-        pwm->SEQ[0].CNT      = CHANNELS_PER_PWM; // default mode is Individual --> count must be 4
-        pwm->SEQ[0].REFRESH  = 0;
-        pwm->SEQ[0].ENDDELAY = 0;
-
-        pwm->SEQ[1].PTR      = 0;
-        pwm->SEQ[1].CNT      = 0;
-        pwm->SEQ[1].REFRESH  = 0;
-        pwm->SEQ[1].ENDDELAY = 0;
-
-        for(int ch =0; ch < CHANNELS_PER_PWM; ch++) {
-            pwm_seq[i][ch] = (1 << 15); // polarity = 0
-        }
+        reset_single_pwmout(i);
     }
 }
 
@@ -148,9 +152,9 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     self->channel = CHANNELS_PER_PWM;    // out-of-range value.
     bool pwm_already_in_use;
     NRF_PWM_Type* pwm;
-
-    for (size_t i = 0 ; i < MP_ARRAY_SIZE(pwms); i++) {
-        pwm = pwms[i];
+    size_t pwm_index = 0;
+    for (; pwm_index < MP_ARRAY_SIZE(pwms); pwm_index++) {
+        pwm = pwms[pwm_index];
         pwm_already_in_use = pwm->ENABLE & SPIM_ENABLE_ENABLE_Msk;
         if (pwm_already_in_use) {
             if (variable_frequency) {
@@ -199,6 +203,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     nrf_pwm_disable(pwm);
 
     if (!pwm_already_in_use) {
+        reset_single_pwmout(pwm_index);
         nrf_pwm_configure(pwm, base_clock, NRF_PWM_MODE_UP, countertop);
     }
 

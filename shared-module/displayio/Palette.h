@@ -33,14 +33,29 @@
 #include "py/obj.h"
 
 typedef struct {
+    uint8_t depth;
+    bool grayscale;
+    bool pixels_in_byte_share_row;
+    uint8_t hue;
+} _displayio_colorspace_t;
+
+typedef struct {
+    uint32_t rgb888;
+    uint16_t rgb565;
+    uint8_t luma;
+    bool transparent; // This may have additional bits added later for blending.
+} _displayio_color_t;
+
+typedef struct {
     mp_obj_base_t base;
-    uint32_t* opaque;
-    uint32_t* colors;
+    _displayio_color_t* colors;
     uint32_t color_count;
     bool needs_refresh;
 } displayio_palette_t;
 
-bool displayio_palette_get_color(displayio_palette_t *palette, uint32_t palette_index, uint16_t* color);
+// Returns false if color fetch did not succeed (out of range or transparent).
+// Returns true if color is opaque, and sets color.
+bool displayio_palette_get_color(displayio_palette_t *palette, const _displayio_colorspace_t* colorspace, uint32_t palette_index, uint32_t* color);
 bool displayio_palette_needs_refresh(displayio_palette_t *self);
 void displayio_palette_finish_refresh(displayio_palette_t *self);
 

@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESSTYPE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESSTYPE_H
+#include "boards/board.h"
 
-#include "py/obj.h"
+void board_init(void)
+{
+}
 
-typedef enum {
-    ADDRESS_PUBLIC,
-    ADDRESS_RANDOM_STATIC,
-    ADDRESS_RANDOM_PRIVATE_RESOLVABLE,
-    ADDRESS_RANDOM_PRIVATE_NON_RESOLVABLE
-} bleio_address_type_t;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-extern const mp_obj_type_t bleio_addresstype_type;
-
-typedef struct {
-    mp_obj_base_t base;
-} bleio_addresstype_obj_t;
-
-extern const bleio_addresstype_obj_t bleio_addresstype_public_obj;
-extern const bleio_addresstype_obj_t bleio_addresstype_random_static_obj;
-extern const bleio_addresstype_obj_t bleio_addresstype_random_private_resolvable_obj;
-extern const bleio_addresstype_obj_t bleio_addresstype_random_private_non_resolvable_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADDRESSTYPE_H
+void reset_board(void) {
+}

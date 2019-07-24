@@ -40,25 +40,42 @@
 #include "common-hal/bleio/__init__.h"
 #include "common-hal/bleio/CharacteristicBuffer.h"
 
+STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {
+    // Push all the data onto the ring buffer.
+    uint8_t is_nested_critical_region;
+    sd_nvic_critical_region_enter(&is_nested_critical_region);
+    for (size_t i = 0; i < len; i++) {
+        ringbuf_put(&self->ringbuf, data[i]);
+    }
+    sd_nvic_critical_region_exit(is_nested_critical_region);
+}
+
 STATIC void characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *) param;
     switch (ble_evt->header.evt_id) {
-    case BLE_GATTS_EVT_WRITE: {
-        ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
-        // Event handle must match the handle for my characteristic.
-        if (evt_write->handle == self->characteristic->handle) {
-            // Push all the data onto the ring buffer.
-            uint8_t is_nested_critical_region;
-            sd_nvic_critical_region_enter(&is_nested_critical_region);
-            for (size_t i = 0; i < evt_write->len; i++) {
-                ringbuf_put(&self->ringbuf, evt_write->data[i]);
+        case BLE_GATTS_EVT_WRITE: {
+            // A client wrote to this server characteristic.
+
+            ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
+            // Event handle must match the handle for my characteristic.
+            if (evt_write->handle == self->characteristic->handle) {
+                write_to_ringbuf(self, evt_write->data, evt_write->len);
             }
-            sd_nvic_critical_region_exit(is_nested_critical_region);
+            break;
+        }
+
+        case BLE_GATTC_EVT_HVX: {
+            // A remote service wrote to this characteristic.
+
+            ble_gattc_evt_hvx_t* evt_hvx = &ble_evt->evt.gattc_evt.params.hvx;
+            // Must be a notification, and event handle must match the handle for my characteristic.
+            if (evt_hvx->type == BLE_GATT_HVX_NOTIFICATION &&
+                evt_hvx->handle == self->characteristic->handle) {
+                write_to_ringbuf(self, evt_hvx->data, evt_hvx->len);
+            }
             break;
         }
     }
-    }
-
 }
 
 // Assumes that timeout and buffer_size have been validated before call.
@@ -82,13 +99,11 @@ int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_
 
     // Wait for all bytes received or timeout
     while ( (ringbuf_count(&self->ringbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
+        MICROPY_VM_HOOK_LOOP;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if ( mp_hal_is_interrupted() ) {
             return 0;
         }
-#endif
     }
 
     // Copy received data. Lock out write interrupt handler while copying.

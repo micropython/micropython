@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,18 +30,43 @@
 #include "py/runtime.h"
 #include "common-hal/bleio/__init__.h"
 #include "common-hal/bleio/Characteristic.h"
+#include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/Adapter.h"
 
-void common_hal_bleio_service_construct(bleio_service_obj_t *self) {
+void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, mp_obj_list_t *characteristic_list, bool is_secondary) {
+    self->device = mp_const_none;
+    self->handle = 0xFFFF;
+    self->uuid = uuid;
+    self->characteristic_list = characteristic_list;
+    self->is_secondary = is_secondary;
+
+    for (size_t characteristic_idx = 0; characteristic_idx < characteristic_list->len; ++characteristic_idx) {
+        bleio_characteristic_obj_t *characteristic =
+            MP_OBJ_TO_PTR(characteristic_list->items[characteristic_idx]);
+        characteristic->service = self;
+    }
+
+}
+
+bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self) {
+    return self->uuid;
+}
+
+mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_obj_t *self) {
+    return self->characteristic_list;
+}
+
+bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
+    return self->is_secondary;
 }
 
 // Call this after the Service has been added to the Peripheral.
 void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self) {
     // Add all the characteristics.
-    const mp_obj_list_t *char_list = MP_OBJ_TO_PTR(self->char_list);
-    for (size_t char_idx = 0; char_idx < char_list->len; ++char_idx) {
-        bleio_characteristic_obj_t *characteristic = char_list->items[char_idx];
+    for (size_t characteristic_idx = 0; characteristic_idx < self->characteristic_list->len; ++characteristic_idx) {
+        bleio_characteristic_obj_t *characteristic =
+            MP_OBJ_TO_PTR(self->characteristic_list->items[characteristic_idx]);
 
         ble_gatts_char_md_t char_md = {
             .char_props.broadcast      = characteristic->props.broadcast,

@@ -3,8 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +28,7 @@
 
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
+#include "shared-bindings/bleio/Central.h"
 #include "shared-bindings/bleio/Peripheral.h"
 #include "common-hal/bleio/__init__.h"
 
@@ -48,9 +50,8 @@ const super_adapter_obj_t common_hal_bleio_adapter_obj = {
 gatt_role_t common_hal_bleio_device_get_gatt_role(mp_obj_t device) {
     if (MP_OBJ_IS_TYPE(device, &bleio_peripheral_type)) {
         return ((bleio_peripheral_obj_t*) MP_OBJ_TO_PTR(device))->gatt_role;
-// Does not exist yet.
-//    } else if (MP_OBJ_IS_TYPE(device, &bleio_central_type)) {
-//        return ((bleio_central_obj_t*) MP_OBJ_TO_PTR(device))->gatt_role;
+    } else if (MP_OBJ_IS_TYPE(device, &bleio_central_type)) {
+        return ((bleio_central_obj_t*) MP_OBJ_TO_PTR(device))->gatt_role;
     } else {
         return GATT_ROLE_NONE;
     }
@@ -59,9 +60,8 @@ gatt_role_t common_hal_bleio_device_get_gatt_role(mp_obj_t device) {
 uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device) {
     if (MP_OBJ_IS_TYPE(device, &bleio_peripheral_type)) {
         return ((bleio_peripheral_obj_t*) MP_OBJ_TO_PTR(device))->conn_handle;
-// Does not exist yet.
-//    } else if (MP_OBJ_IS_TYPE(device, &bleio_central_type)) {
-//        return ((bleio_central_obj_t*) MP_OBJ_TO_PTR(device))->conn_handle;
+    } else if (MP_OBJ_IS_TYPE(device, &bleio_central_type)) {
+        return ((bleio_central_obj_t*) MP_OBJ_TO_PTR(device))->conn_handle;
     } else {
         return 0;
     }

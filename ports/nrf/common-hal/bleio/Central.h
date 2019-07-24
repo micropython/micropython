@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,22 +25,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_DEVICE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_DEVICE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
 
 #include <stdbool.h>
 
+#include "py/objlist.h"
+#include "shared-module/bleio/__init__.h"
 #include "shared-module/bleio/Address.h"
 
 typedef struct {
     mp_obj_base_t base;
-    bool is_peripheral;
-    mp_obj_t name;
-    bleio_address_obj_t address;
+    gatt_role_t gatt_role;
+    volatile bool waiting_to_connect;
     volatile uint16_t conn_handle;
-    mp_obj_t service_list;
-    mp_obj_t notif_handler;
-    mp_obj_t conn_handler;
-} bleio_device_obj_t;
+    mp_obj_list_t *service_list;
+} bleio_central_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_DEVICE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
