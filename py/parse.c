@@ -644,21 +644,11 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            static const uint8_t token_to_op[] = {
-                MP_BINARY_OP_LSHIFT,
-                MP_BINARY_OP_RSHIFT,
-                MP_BINARY_OP_ADD,
-                MP_BINARY_OP_SUBTRACT,
-                MP_BINARY_OP_MULTIPLY,
-                MP_BINARY_OP_FLOOR_DIVIDE,
-                255,//MP_BINARY_OP_TRUE_DIVIDE,
-                MP_BINARY_OP_MODULO,
-                255,//MP_BINARY_OP_POWER,
-            };
-            mp_binary_op_t op = token_to_op[tok - MP_TOKEN_OP_DBL_LESS];
-            if (op == (mp_binary_op_t)255) {
+            if (tok == MP_TOKEN_OP_SLASH || tok == MP_TOKEN_OP_DBL_STAR) {
+                // Can't fold / or **
                 return false;
             }
+            mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
             int rhs_sign = mp_obj_int_sign(arg1);
             if (op <= MP_BINARY_OP_RSHIFT) {
                 // << and >> can't have negative rhs
@@ -681,13 +671,11 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, 1));
         mp_unary_op_t op;
-        if (tok == MP_TOKEN_OP_PLUS) {
-            op = MP_UNARY_OP_POSITIVE;
-        } else if (tok == MP_TOKEN_OP_MINUS) {
-            op = MP_UNARY_OP_NEGATIVE;
-        } else {
-            assert(tok == MP_TOKEN_OP_TILDE); // should be
+        if (tok == MP_TOKEN_OP_TILDE) {
             op = MP_UNARY_OP_INVERT;
+        } else {
+            assert(tok == MP_TOKEN_OP_PLUS || tok == MP_TOKEN_OP_MINUS); // should be
+            op = MP_UNARY_OP_POSITIVE + (tok - MP_TOKEN_OP_PLUS);
         }
         arg0 = mp_unary_op(op, arg0);
 
