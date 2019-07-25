@@ -106,7 +106,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_MORE_EQUAL,
     MP_TOKEN_OP_NOT_EQUAL,
 
-    // Order of these 12 matches corresponding mp_binary_op_t operator
+    // Order of these 13 matches corresponding mp_binary_op_t operator
     MP_TOKEN_OP_PIPE,
     MP_TOKEN_OP_CARET,
     MP_TOKEN_OP_AMPERSAND,
@@ -115,12 +115,13 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_PLUS,
     MP_TOKEN_OP_MINUS,
     MP_TOKEN_OP_STAR,
+    MP_TOKEN_OP_AT,
     MP_TOKEN_OP_DBL_SLASH,
     MP_TOKEN_OP_SLASH,
     MP_TOKEN_OP_PERCENT,
     MP_TOKEN_OP_DBL_STAR,
 
-    // Order of these 12 matches corresponding mp_binary_op_t operator
+    // Order of these 13 matches corresponding mp_binary_op_t operator
     MP_TOKEN_DEL_PIPE_EQUAL,
     MP_TOKEN_DEL_CARET_EQUAL,
     MP_TOKEN_DEL_AMPERSAND_EQUAL,
@@ -129,6 +130,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_PLUS_EQUAL,
     MP_TOKEN_DEL_MINUS_EQUAL,
     MP_TOKEN_DEL_STAR_EQUAL,
+    MP_TOKEN_DEL_AT_EQUAL,
     MP_TOKEN_DEL_DBL_SLASH_EQUAL,
     MP_TOKEN_DEL_SLASH_EQUAL,
     MP_TOKEN_DEL_PERCENT_EQUAL,
@@ -144,7 +146,6 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_COLON,
     MP_TOKEN_DEL_PERIOD,
     MP_TOKEN_DEL_SEMICOLON,
-    MP_TOKEN_DEL_AT,
     MP_TOKEN_DEL_EQUAL,
     MP_TOKEN_DEL_MINUS_MORE,
 } mp_token_kind_t;

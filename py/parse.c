@@ -135,8 +135,8 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 #define RULE_EXPAND(x) x
 #define RULE_PADDING(rule, ...) RULE_PADDING2(rule, __VA_ARGS__, RULE_PADDING_IDS(rule))
 #define RULE_PADDING2(rule, ...) RULE_EXPAND(RULE_PADDING3(rule, __VA_ARGS__))
-#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, ...) __VA_ARGS__
-#define RULE_PADDING_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
+#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) __VA_ARGS__
+#define RULE_PADDING_IDS(r) PAD13_##r, PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
 
 // Use an enum to create constants specifying how much room a rule takes in rule_arg_combined_table
 enum {
@@ -155,8 +155,8 @@ enum {
 // Macro to compute the start of a rule in rule_arg_combined_table
 #define RULE_ARG_OFFSET(rule, ...) RULE_ARG_OFFSET2(rule, __VA_ARGS__, RULE_ARG_OFFSET_IDS(rule))
 #define RULE_ARG_OFFSET2(rule, ...) RULE_EXPAND(RULE_ARG_OFFSET3(rule, __VA_ARGS__))
-#define RULE_ARG_OFFSET3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) _13
-#define RULE_ARG_OFFSET_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r, PAD0_##r,
+#define RULE_ARG_OFFSET3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, ...) _14
+#define RULE_ARG_OFFSET_IDS(r) PAD13_##r, PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r, PAD0_##r,
 
 // Use the above enum values to create a table of offsets for each rule's arg
 // data, which indexes rule_arg_combined_table.  The offsets require 9 bits of
@@ -632,7 +632,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     } else if (rule_id == RULE_shift_expr
         || rule_id == RULE_arith_expr
         || rule_id == RULE_term) {
-        // folding for binary ops: << >> + - * / % //
+        // folding for binary ops: << >> + - * @ / % //
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
@@ -644,8 +644,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            if (tok == MP_TOKEN_OP_SLASH || tok == MP_TOKEN_OP_DBL_STAR) {
-                // Can't fold / or **
+            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH || tok == MP_TOKEN_OP_DBL_STAR) {
+                // Can't fold @ or / or **
                 return false;
             }
             mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);

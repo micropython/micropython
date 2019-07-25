@@ -81,7 +81,7 @@ typedef enum {
     MP_BINARY_OP_IS,
     MP_BINARY_OP_EXCEPTION_MATCH,
 
-    // 12 inplace arithmetic operations; order matches corresponding mp_token_kind_t
+    // 13 inplace arithmetic operations; order matches corresponding mp_token_kind_t
     MP_BINARY_OP_INPLACE_OR,
     MP_BINARY_OP_INPLACE_XOR,
     MP_BINARY_OP_INPLACE_AND,
@@ -90,12 +90,13 @@ typedef enum {
     MP_BINARY_OP_INPLACE_ADD,
     MP_BINARY_OP_INPLACE_SUBTRACT,
     MP_BINARY_OP_INPLACE_MULTIPLY,
+    MP_BINARY_OP_INPLACE_MAT_MULTIPLY,
     MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
     MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
     MP_BINARY_OP_INPLACE_MODULO,
     MP_BINARY_OP_INPLACE_POWER,
 
-    // 12 normal arithmetic operations; order matches corresponding mp_token_kind_t
+    // 13 normal arithmetic operations; order matches corresponding mp_token_kind_t
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
     MP_BINARY_OP_AND,
@@ -104,6 +105,7 @@ typedef enum {
     MP_BINARY_OP_ADD,
     MP_BINARY_OP_SUBTRACT,
     MP_BINARY_OP_MULTIPLY,
+    MP_BINARY_OP_MAT_MULTIPLY,
     MP_BINARY_OP_FLOOR_DIVIDE,
     MP_BINARY_OP_TRUE_DIVIDE,
     MP_BINARY_OP_MODULO,
@@ -123,6 +125,7 @@ typedef enum {
     MP_BINARY_OP_REVERSE_ADD,
     MP_BINARY_OP_REVERSE_SUBTRACT,
     MP_BINARY_OP_REVERSE_MULTIPLY,
+    MP_BINARY_OP_REVERSE_MAT_MULTIPLY,
     MP_BINARY_OP_REVERSE_FLOOR_DIVIDE,
     MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
     MP_BINARY_OP_REVERSE_MODULO,
