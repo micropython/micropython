@@ -645,19 +645,17 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
             static const uint8_t token_to_op[] = {
+                MP_BINARY_OP_LSHIFT,
+                MP_BINARY_OP_RSHIFT,
                 MP_BINARY_OP_ADD,
                 MP_BINARY_OP_SUBTRACT,
                 MP_BINARY_OP_MULTIPLY,
-                255,//MP_BINARY_OP_POWER,
-                255,//MP_BINARY_OP_TRUE_DIVIDE,
                 MP_BINARY_OP_FLOOR_DIVIDE,
+                255,//MP_BINARY_OP_TRUE_DIVIDE,
                 MP_BINARY_OP_MODULO,
-                255,//MP_BINARY_OP_LESS
-                MP_BINARY_OP_LSHIFT,
-                255,//MP_BINARY_OP_MORE
-                MP_BINARY_OP_RSHIFT,
+                255,//MP_BINARY_OP_POWER,
             };
-            mp_binary_op_t op = token_to_op[tok - MP_TOKEN_OP_PLUS];
+            mp_binary_op_t op = token_to_op[tok - MP_TOKEN_OP_DBL_LESS];
             if (op == (mp_binary_op_t)255) {
                 return false;
             }
