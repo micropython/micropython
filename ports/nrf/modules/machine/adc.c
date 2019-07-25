@@ -169,6 +169,20 @@ int16_t machine_adc_value_read(machine_adc_obj_t * adc_obj) {
     return value;
 }
 
+// read_u16()
+STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
+    machine_adc_obj_t *self = self_in;
+    int16_t raw = machine_adc_value_read(self);
+    #if defined(NRF52_SERIES)
+    // raw is signed but the channel is in single-ended mode and this method cannot return negative values
+    if (raw < 0) {
+        raw = 0;
+    }
+    #endif
+    // raw is an 8-bit value
+    return MP_OBJ_NEW_SMALL_INT(raw << 8 | raw);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_read_u16_obj, machine_adc_read_u16);
 
 /// \method value()
 /// Read adc level.
@@ -263,6 +277,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_adc_battery_level_obj, machine_adc_b
 
 STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     // instance methods
+    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&mp_machine_adc_read_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&mp_machine_adc_value_obj) },
 
     // class methods
