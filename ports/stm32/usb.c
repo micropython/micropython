@@ -787,6 +787,11 @@ STATIC mp_obj_t pyb_usb_hid_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
     // receive the data
     int ret = usbd_hid_rx(&self->usb_dev->usbd_hid_itf, vstr.len, (uint8_t*)vstr.buf, vals[1].u_int);
 
+    if (ret < 0) {
+        // error, just return 0/empty bytes
+        ret = 0;
+    }
+
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
         return mp_obj_new_int(ret); // number of bytes read into given buffer
