@@ -26,5 +26,5 @@ print(json.dumps({"a":1}))
 print(json.dumps({"a":(2,[3,None])}))
 print(json.dumps('"quoted"'))
 print(json.dumps('space\n\r\tspace'))
-print(json.dumps({1:2, 3:4, 5.5:6}))
+print(json.dumps({1:2}))
 
