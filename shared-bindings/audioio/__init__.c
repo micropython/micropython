@@ -32,11 +32,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audioio/__init__.h"
 #include "shared-bindings/audioio/AudioOut.h"
-#include "shared-bindings/audiocore/__init__.h"
-#include "shared-bindings/audioio/AudioOut.h"
-#include "shared-bindings/audiocore/Mixer.h"
-#include "shared-bindings/audiocore/RawSample.h"
-#include "shared-bindings/audiocore/WaveFile.h"
 
 //| :mod:`audioio` --- Support for audio input and output
 //| ======================================================
